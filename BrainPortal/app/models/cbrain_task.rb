@@ -73,7 +73,7 @@ class CbrainTask < ActiveRecord::Base
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
   
-  scope :status, lambda { |s|  
+  cb_scope :status, lambda { |s|  
                          case s.to_sym
                          when :completed
                            value = CbrainTask::COMPLETED_STATUS
@@ -93,28 +93,28 @@ class CbrainTask < ActiveRecord::Base
                          { :conditions => { :status => value } }    
                        }
 
-  scope :real_tasks,          
+  cb_scope :real_tasks,          
         where( "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
 
-  scope :not_archived,        
+  cb_scope :not_archived,        
         where( "cbrain_tasks.workdir_archived = 0 OR cbrain_tasks.workdir_archived IS NULL" )
 
-  scope :archived_on_cluster, 
+  cb_scope :archived_on_cluster, 
         where( "cbrain_tasks.workdir_archived" => true, "cbrain_tasks.workdir_archive_userfile_id" => nil )
 
-  scope :archived_as_file,    
+  cb_scope :archived_as_file,    
         where( "cbrain_tasks.workdir_archived" => true ).where( "cbrain_tasks.workdir_archive_userfile_id IS NOT NULL" )
 
-  scope :shared_wd,
+  cb_scope :shared_wd,
         where( "cbrain_tasks.share_wd_tid IS NOT NULL" )
 
-  scope :not_shared_wd,
+  cb_scope :not_shared_wd,
         where( "cbrain_tasks.share_wd_tid" => nil )
 
-  scope :wd_present,
+  cb_scope :wd_present,
         not_shared_wd.where( "cbrain_tasks.cluster_workdir IS NOT NULL" )
 
-  scope :wd_not_present,
+  cb_scope :wd_not_present,
         where( "cbrain_tasks.cluster_workdir" => nil )
 
 

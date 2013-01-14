@@ -22,6 +22,14 @@
 
 require 'spec_helper'
 
+def mock_upload_file_param(name = "dummy_file")
+  file_name = "cbrain_test_file_#{name}"
+  FileUtils.touch("spec/fixtures/#{file_name}")
+  file = fixture_file_upload("/#{file_name}")
+  class << file; attr_reader :tempfile; end
+  file
+end
+
 describe UserfilesController do
   let!(:admin) {Factory.create(:admin_user, :login => "admin_user" )}
   let!(:site_manager) {Factory.create(:site_manager)}
@@ -33,6 +41,10 @@ describe UserfilesController do
   let!(:group_userfile) {Factory.create(:single_file, :group => user.groups.last, :data_provider => data_provider)}
   let!(:mock_userfile) {mock_model(Userfile).as_null_object}
   let!(:data_provider)  {Factory.create(:data_provider, :user => user)}
+  
+  after(:all) do
+    FileUtils.rm(Dir.glob("spec/fixtures/cbrain_test_file_*"))
+  end
   
   context "collection action" do
     
@@ -265,7 +277,7 @@ describe UserfilesController do
     
     
     describe "create" do
-      let(:mock_upload_stream) {double("upload_file", :original_filename => "new_file", :blank? => false).as_null_object}
+      let(:mock_upload_stream) {mock_upload_file_param}
     
       before(:each) do
         session[:user_id] = admin.id
@@ -280,7 +292,7 @@ describe UserfilesController do
       end
       
       it "should redirect to index if the upload file has an invalid name" do
-        post :create, :upload_file => double("upload_file", :original_filename => "/x/y/.Bad*").as_null_object
+        post :create, :upload_file => mock_upload_file_param(".BAD**")
         response.should redirect_to(:action => :index)
       end
       
@@ -565,7 +577,7 @@ describe UserfilesController do
       end
     
       it "should set the filelist variable" do
-        filelist = [1,2,3]
+        filelist = ["1","2","3"]
         get :quality_control, :file_ids => filelist
         assigns[:filelist].should =~ filelist
       end

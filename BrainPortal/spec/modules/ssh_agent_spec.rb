@@ -391,7 +391,8 @@ describe SshAgent do
       agent = SshAgent.new('test','/tmp/abcd/wrong/socket',nil)
       conf  = agent.agent_bash_config_file_path
       Process.stub!(:kill)
-      File.should_receive(:unlink).with(conf).and_return 1
+      File.should_receive(:unlink).once.with(conf).and_return 1
+      File.should_receive(:unlink).once.with(agent.socket).and_return 1
       agent.destroy.should be_true
     end
 

@@ -43,5 +43,7 @@ class Control < ActiveResource::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
+  self.format = :xml
+  
 end
 

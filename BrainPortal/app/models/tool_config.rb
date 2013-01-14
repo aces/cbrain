@@ -47,9 +47,9 @@ class ToolConfig < ActiveRecord::Base
 
   validate       :presence_of_description # only when both tool_id and bourreau_id are defined
 
-  scope          :global_for_tools     , where( { :bourreau_id => nil } )
-  scope          :global_for_bourreaux , where( { :tool_id => nil } )
-  scope          :specific_versions    , where( "bourreau_id is not null and tool_id is not null" )
+  cb_scope          :global_for_tools     , where( { :bourreau_id => nil } )
+  cb_scope          :global_for_bourreaux , where( { :tool_id => nil } )
+  cb_scope          :specific_versions    , where( "bourreau_id is not null and tool_id is not null" )
 
   attr_accessible :description, :tool_id, :bourreau_id, :env_array, :script_prologue, :group_id, :ncpus
 

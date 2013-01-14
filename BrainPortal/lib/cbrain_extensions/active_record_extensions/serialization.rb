@@ -34,15 +34,14 @@ module CBRAINExtensions #:nodoc:
         end
       end
 
-      # Call this method in a :after_initialize callback, passsing it
+      # Call this method in a :after_initialize callback, passing it
       # a list of attributes that are supposed to be serialized hash
       # with indifferent access; if they are, nothing happens. If they
       # happen to be ordinary hashes, they'll be upgraded.
       def ensure_serialized_hash_are_indifferent #:nodoc:
         to_update = {}
         ser_attinfo = self.class.serialized_attributes
-        attlist = ser_attinfo.keys.select { |att| ser_attinfo[att] == BasicObject }
-        #attlist = ser_attinfo.keys
+        attlist = self.class.indifferent_attributes.keys
         attlist.each do |att|
           the_hash = read_attribute(att) # value of serialized attribute, as reconstructed by ActiveRecord
           if the_hash.is_a?(Hash) && ! the_hash.is_a?(HashWithIndifferentAccess)
@@ -79,10 +78,15 @@ module CBRAINExtensions #:nodoc:
         def serialize_as_indifferent_hash(*attlist)
           attlist.each do |att|
             raise "Attribute '#{att}' not a symbol?!?" unless att.is_a?(Symbol)
-            serialize att, BasicObject # we use this to record which attributes are to be indifferent.
-            #serialize att
+            indifferent_attributes[att] = true
+            serialize att  
           end
           after_initialize :ensure_serialized_hash_are_indifferent
+        end
+           
+        # List of attributes that are stored as HashWithIndifferentAccess        
+        def indifferent_attributes
+          @indifferent_attributes ||= defined?(super) ? super.cb_deep_clone : {}
         end
       end
       

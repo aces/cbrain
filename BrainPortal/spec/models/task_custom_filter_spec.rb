@@ -46,7 +46,7 @@ describe TaskCustomFilter do
     end
 
     it "should not scope type if type filter not given" do
-      filter.should_not_receive(:scope_type).and_return(task_scope)
+      filter.should_not_receive(:scope_type)
       filter.filter_scope(task_scope)
     end
     

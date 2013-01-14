@@ -86,6 +86,12 @@ module ActiveRecord #:nodoc:
 
     include CBRAINExtensions::ActiveRecordExtensions::CoreModels
     
+    ###################################################################
+    # +scopes+ method behaviour lost in Rails 3.1.
+    ###################################################################
+
+    include CBRAINExtensions::ActiveRecordExtensions::CbrainScopes
+    
   end # class Base of ActiveRecord
   
 
@@ -107,10 +113,10 @@ module ActiveRecord #:nodoc:
     
   end
 
-  # CBRAIN ActiveRecord::Associations::AssociationCollection extensions
+  # CBRAIN ActiveRecord::Associations::CollectionProxy extensions
   # delegating extended Relation methods.
   module Associations #:nodoc:
-    class AssociationCollection #:nodoc:
+    class CollectionProxy #:nodoc:
       delegate :raw_first_column, :raw_rows, :undo_where, :to => :scoped
     end
   end

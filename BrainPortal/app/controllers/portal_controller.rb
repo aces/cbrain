@@ -122,7 +122,7 @@ class PortalController < ApplicationController
     #command += " | grep -E -v '#{remove_egrep.join("|")}'" if remove_egrep.size > 0
 
     # Version 2: filter first, tail after. Bad if log file is really large, but perl is fast.
-    command  = "perl -pe 's/\\e\\[[\\d;]*\\S//g' #{Rails.configuration.paths.log.first.to_s.bash_escape}"
+    command  = "perl -pe 's/\\e\\[[\\d;]*\\S//g' #{Rails.configuration.paths["log"].first.to_s.bash_escape}"
     command += " | grep -E -v '#{remove_egrep.join("|")}'" if remove_egrep.size > 0
     command += " | tail -#{num_lines}"
 

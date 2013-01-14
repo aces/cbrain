@@ -68,6 +68,7 @@ class CbrainChecker
         puts "\n"
         puts "CBRAIN initial check failed: #{check}"
         puts failed_check.message
+        puts failed_check.backtrace.join("\n")
         raise SystemExit.new("CBRAIN process failed initial checks.")
       end
     end

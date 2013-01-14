@@ -25,6 +25,12 @@ class CbrainMailer < ActionMailer::Base
   
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
+  # Patch for Rails 3.1 charset warning. Should be fixed in
+  # Rails 3.2
+  def charset #:nodoc:
+    @charset
+  end
+  
   # Send a registration confirmation to new users.
   def registration_confirmation(user, plain_password, no_password_reset_needed = false)
     @user                     = user

@@ -85,15 +85,15 @@ class Userfile < ActiveRecord::Base
   
   attr_accessible         :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable, :num_files, :format_source_id, :tag_ids, :hidden
   
-  scope                   :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
-  scope                   :file_format, lambda { |f|
-                                          format_filter = Userfile.descendants.map(&:to_s).find{ |c| c == f }
-                                          format_ids = Userfile.connection.select_values("select format_source_id from userfiles where format_source_id IS NOT NULL AND type='#{format_filter}'").join(",")
-                                          format_ids = " OR userfiles.id IN (#{format_ids})" unless format_ids.blank?
-                                          where("userfiles.type='#{format_filter}'#{format_ids}")
-                                        }
-  scope                   :has_no_parent, :conditions => {:parent_id => nil}
-  scope                   :has_no_child,  lambda { |ignored|
+  cb_scope                :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
+  cb_scope                :file_format, lambda { |f|
+                                       format_filter = Userfile.descendants.map(&:to_s).find{ |c| c == f }
+                                       format_ids = Userfile.connection.select_values("select format_source_id from userfiles where format_source_id IS NOT NULL AND type='#{format_filter}'").join(",")
+                                       format_ids = " OR userfiles.id IN (#{format_ids})" unless format_ids.blank?
+                                       where("userfiles.type='#{format_filter}'#{format_ids}")
+                                     }
+  cb_scope                :has_no_parent, :conditions => {:parent_id => nil}
+  cb_scope                :has_no_child,  lambda { |ignored|
                                             all_parents = Userfile.connection.select_values("SELECT DISTINCT parent_id FROM userfiles WHERE parent_id IS NOT NULL").join(",")
                                             where("userfiles.id NOT IN (#{all_parents})")
                                           }

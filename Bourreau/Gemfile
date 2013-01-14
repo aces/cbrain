@@ -22,7 +22,7 @@
 
 source 'http://rubygems.org'
 
-gem 'rails', '3.0.19'
+gem 'rails', '3.1.10'
 
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
@@ -56,7 +56,7 @@ gem "net-ssh",  :require => 'net/ssh'
 gem "net-sftp", :require => 'net/sftp'
 gem "log4r"
 #gem "mysql"
-gem "mysql2", "< 0.3"
+gem "mysql2"
 gem "sys-proctable", :git => 'https://github.com/djberg96/sys-proctable.git'
 #gem "sys-proctable", "~> 0.7.6"
 gem "thin"

@@ -23,33 +23,31 @@
 module CBRAINExtensions #:nodoc:
   module ActiveRecordExtensions #:nodoc:
     
-    # Allows for the adjustment of mass-assignable attributes on an object by
-    # object basis.
-    module MassAssignmentAuthorization
+    # Restore +scopes+ method behaviour that was lost in Rails 3.1
+    module CbrainScopes
       
       Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
       
-      # Makes the list of attributes given available to mass-assignement.
-      def make_accessible!(*args)
-        @accessible_attributes = [] unless @accessible_attributes.is_a?(Array)
-        @accessible_attributes += args
-      end
-      
-      # Makes all attributes (except +id+) available to mass-assignement.
-      def make_all_accessible!
-        @accessible_attributes = :all
-      end
-      
-      private
-
-      def mass_assignment_authorizer(role) #:nodoc:
-        if @accessible_attributes == :all
-          ActiveModel::MassAssignmentSecurity::BlackList.new(["id"])
-        else
-          super + (@accessible_attributes || [])
+      def self.included(includer) #:nodoc:
+        includer.class_eval do
+          extend ClassMethods
         end
       end
-       
+
+      
+      module ClassMethods
+        def cb_scopes
+          @cb_scopes ||= defined?(super) ? super.cb_deep_clone : {}
+        end
+        
+        private
+        
+        def cb_scope(scope_name, *args)
+          cb_scopes[scope_name] = args
+          scope(scope_name, *args)
+        end
+      end
+      
     end
   end
 end

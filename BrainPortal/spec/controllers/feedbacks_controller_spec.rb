@@ -105,7 +105,7 @@ describe FeedbacksController do
       end
       describe "show" do
         it "should find the requested record" do
-          Feedback.should_receive(:find).with(feedback.id)
+          Feedback.should_receive(:find).with(feedback.id.to_s)
           get :show, :id => feedback.id
         end
         it "should render the show page" do
@@ -115,7 +115,7 @@ describe FeedbacksController do
       end
       describe "update" do
         it "should find the requested record" do
-          Feedback.should_receive(:find).with(feedback.id)
+          Feedback.should_receive(:find).with(feedback.id.to_s)
           put :update, :id => feedback.id
         end
         it "should update the record" do
@@ -138,7 +138,7 @@ describe FeedbacksController do
       end
       describe "destroy" do
         it "should find the requested record" do
-          Feedback.should_receive(:find).with(feedback.id)
+          Feedback.should_receive(:find).with(feedback.id.to_s)
           delete :destroy, :id => feedback.id
         end
         it "should destroy the record" do

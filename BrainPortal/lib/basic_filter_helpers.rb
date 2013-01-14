@@ -58,7 +58,7 @@ module BasicFilterHelpers
   # scope.
   def base_filtered_scope(filtered_scope = resource_class.scoped({}))
     @filter_params["filter_hash"].each do |att, val|
-      if filtered_scope.scopes[att.to_sym] && att.to_sym != :scoped
+      if filtered_scope.cb_scopes[att.to_sym] && att.to_sym != :scoped
         filtered_scope = filtered_scope.send(att, *val)
       elsif table_column?(resource_class, att)
         filtered_scope = filtered_scope.scoped(:conditions => {att => val})
