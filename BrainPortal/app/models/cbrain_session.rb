@@ -86,12 +86,12 @@ class CbrainSession
   
   #Mark this session as active in the database.
   def activate
-    @session_model.update_attributes!(:user_id => @session[:user_id], :active => true)
+    @session_model && @session_model.update_attributes!(:user_id => @session[:user_id], :active => true)
   end
   
   #Mark this session as inactive in the database.
   def deactivate
-    @session_model.update_attributes!(:active => false)
+    @session_model && @session_model.update_attributes!(:active => false)
   end
   
   #Returns the list of currently active users on the system.
@@ -249,6 +249,7 @@ class CbrainSession
   
   #Hash-like assignment to session attributes.
   def []=(key, value)
+    return unless @session_model
     if key == :user_id
       @session_model.update_attributes!(:user_id => value)
     end

@@ -86,7 +86,7 @@ module CBRAINExtensions #:nodoc:
            
         # List of attributes that are stored as HashWithIndifferentAccess        
         def indifferent_attributes
-          @indifferent_attributes ||= defined?(super) ? super.cb_deep_clone : {}
+          @indifferent_attributes ||= (superclass.indifferent_attributes.cb_deep_clone rescue {}) || {}
         end
       end
       
