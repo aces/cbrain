@@ -66,7 +66,7 @@ class Group < ActiveRecord::Base
 
   # Returns the unique and special group 'everyone'
   def self.everyone
-    @everyone ||= SystemGroup.find_by_name('everyone')
+    @everyone ||= EveryoneGroup.find_by_name('everyone')
   end
 
   # Returns itself; this method is here to make it symetrical

@@ -62,6 +62,7 @@ gem "mysql2"
 gem "sys-proctable", :git => 'git://github.com/djberg96/sys-proctable.git'
 #gem "sys-proctable", "~> 0.7.6"
 gem "thin"
+gem "rails_autolink"
 
 group :development do
   gem "wirble"
