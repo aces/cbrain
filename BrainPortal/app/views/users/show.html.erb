@@ -60,7 +60,7 @@
       end
     %>
 
-    <% t.edit_cell(:email, :content => auto_link_email_addresses(h(@user.email))) { text_field_tag "user[email]", @user.email } %>
+    <% t.edit_cell(:email, :content => mail_to(h(@user.email))) { text_field_tag "user[email]", @user.email } %>
 
     <%
       t.cell("Last Connected") do
