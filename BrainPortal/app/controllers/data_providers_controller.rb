@@ -20,8 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-require 'will_paginate/array'
-
 #Restful controller for the DataProvider resource.
 class DataProvidersController < ApplicationController
 
