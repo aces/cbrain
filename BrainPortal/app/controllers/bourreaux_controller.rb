@@ -325,7 +325,7 @@ class BourreauxController < ApplicationController
     #                          |---- files to be deleted ----|
 
     date_filtration["relative_from"] ||= 50.years.to_i.to_s
-    date_filtration["relative_to"]   ||= 1.months.to_i.to_s
+    date_filtration["relative_to"]   ||= 1.week.to_i.to_s
     accessed_after  = date_filtration["relative_from"].to_i.ago
     accessed_before = date_filtration["relative_to"].to_i.ago
 
