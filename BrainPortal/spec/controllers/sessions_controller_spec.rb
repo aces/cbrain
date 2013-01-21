@@ -27,7 +27,6 @@ describe SessionsController do
   let(:portal) { double("portal", :portal_locked? => false).as_null_object }
   
   before(:each) do
-    controller.stub!(:current_session).and_return(current_session)
     BrainPortal.stub!(:current_resource).and_return(portal)
     Kernel.stub!(:sleep)
   end
@@ -91,11 +90,13 @@ describe SessionsController do
     end
     
     it "should activate the session" do
+      controller.stub!(:current_session).and_return(current_session)
       current_session.should_receive(:activate)
       post :create
     end
     
     it "should load user preferences" do
+      controller.stub!(:current_session).and_return(current_session)
       current_session.should_receive(:load_preferences_for_user)
       post :create
     end
@@ -129,7 +130,6 @@ describe SessionsController do
     
     before(:each) do
       controller.stub!(:current_user).and_return(current_user)
-      controller.stub!(:current_session).and_return(current_session)
       BrainPortal.stub!(:current_resource).and_return(portal)
     end
     
@@ -141,6 +141,7 @@ describe SessionsController do
     end
     
     it "should deactivate the session" do
+      controller.stub!(:current_session).and_return(current_session)
       current_session.should_receive(:deactivate)
       delete :destroy
     end
@@ -152,6 +153,7 @@ describe SessionsController do
     end
     
     it "should clear the session data" do
+      controller.stub!(:current_session).and_return(current_session)
       current_session.should_receive(:clear_data!)
       delete :destroy
     end

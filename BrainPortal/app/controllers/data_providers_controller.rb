@@ -20,8 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-require 'will_paginate/array'
-
 #Restful controller for the DataProvider resource.
 class DataProvidersController < ApplicationController
 
@@ -290,7 +288,11 @@ class DataProvidersController < ApplicationController
 
     @file_count   = @fileinfolist.count
     unless request.format.to_sym == :xml
-      @fileinfolist = @fileinfolist.paginate(:page => @current_page, :per_page => @per_page) 
+      @fileinfolist = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
+        pager.replace(@fileinfolist[(@current_page-1)*@per_page, @per_page] || [])
+        pager.total_entries = @file_count
+        pager
+      end
     end
     
     current_session.save_preferences_for_user(current_user, :data_providers, :browse_hash)
