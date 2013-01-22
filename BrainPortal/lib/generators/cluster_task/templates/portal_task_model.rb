@@ -208,7 +208,7 @@ class <%= "CbrainTask::#{class_name}" %> < PortalTask
     # Example: launch ten tasks that differs in params[:cnt]
     mytasklist = []
     10.times do |cnt|
-      task=self.clone
+      task=self.dup # not .clone, as of Rails 3.1.10
       task.params[:cnt] = cnt
       mytasklist << task
     end

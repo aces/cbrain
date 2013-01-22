@@ -734,7 +734,7 @@ class DataProvider < ActiveRecord::Base
 
     # Because of all the back and forth assignments below,
     # we need a full copy of the source userfile's attributes
-    orig_file = userfile.clone
+    orig_file = userfile.dup # not .clone, as of Rails 3.1.10
 
     # Get path to cached copy on current provider
     sync_to_cache(userfile)
@@ -814,7 +814,7 @@ class DataProvider < ActiveRecord::Base
     return false if target_exists && (target_exists.class != userfile.class) # must be of same class
 
     # Prepare destination
-    newfile = target_exists || userfile.clone
+    newfile = target_exists || userfile.dup # not .clone, as of Rails 3.1.10
     newfile.data_provider_id = otherprovider.id
     newfile.name             = new_name
     newfile.user_id          = new_user_id

@@ -72,7 +72,7 @@ class CbrainTask::BashScriptor < PortalTask
 
     offset_cnt = 0
     while file_ids.size > 0
-      task   = self.clone
+      task   = self.dup # not .clone, as of Rails 3.1.10
       subset = file_ids.slice!(0,ser_factor)
       task.params[:interface_userfile_ids] = subset
       desc = task.description.blank? ? "" : task.description.strip + "\n\n"
