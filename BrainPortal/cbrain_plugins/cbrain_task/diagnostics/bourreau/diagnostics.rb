@@ -132,8 +132,8 @@ class CbrainTask::Diagnostics < ClusterTask
 
     if mybool(params[:no_cluster_job])
       self.addlog("No cluster job script to prepare.")
-      File.open("self.stdout_cluster_filename","w") { |fh| fh.write "Fake STDOUT output (because no cluster script)" }
-      File.open("self.stderr_cluster_filename","w") { |fh| fh.write "Fake STDERR output (because no cluster script)" }
+      File.open(self.stdout_cluster_filename,"w") { |fh| fh.write "Fake STDOUT output (because no cluster script)" }
+      File.open(self.stderr_cluster_filename,"w") { |fh| fh.write "Fake STDERR output (because no cluster script)" }
       return nil
     end
 

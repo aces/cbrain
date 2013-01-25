@@ -876,7 +876,7 @@ class TasksController < ApplicationController
       preset_name = params[:save_preset_name]
       preset = nil
       if ! preset_name.blank?
-        preset = @task.clone
+        preset = @task.dup # not .clone, as of Rails 3.1.10
         preset.description = preset_name
       else
         preset_id = params[:save_preset_id]

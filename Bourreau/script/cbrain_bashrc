@@ -30,7 +30,7 @@
 # script for the Bourreau side through a SSH persistent
 # connection.
 
-if test -z "$rvm_version$_CBRAIN_BASHRC_SOURCED"; then
+if test -z "$rvm_version$CBRAIN_BASHRC_SOURCED"; then
   source $HOME/.bashrc  # let's try that, hoping that rvm is setup there.
   CBRAIN_BASHRC_SOURCED="OK"
 fi

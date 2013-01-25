@@ -145,7 +145,7 @@ class CbrainTask::Diagnostics < PortalTask
 
     task_list = []
     num_copies.times do |i|
-      task                       = self.clone
+      task                       = self.dup # not .clone, as of Rails 3.1.10
       task.description           = (desc.blank? ? "" : "#{desc} - ") + "Diagnostics with #{numfiles} files" + (num_copies > 1 ? ", copy #{i+1}." : ".")
       task.params[:copy_number]  = (i + 1)
       task.params.keys.select { |x| x.to_s =~ /_delay/ }.each do |delay_key|
