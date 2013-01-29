@@ -130,7 +130,6 @@ class DataProvidersController < ApplicationController
       end   
     else
       @provider.reload
-      @ssh_keys = get_ssh_public_keys
       respond_to do |format|
         format.html { render :action => 'show' }
         format.xml  { render :xml  => @provider.errors, :status  => :unprocessable_entity }
