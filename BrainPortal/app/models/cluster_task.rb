@@ -596,7 +596,7 @@ class ClusterTask < CbrainTask
 
     # Steady states for cluster jobs
     if clusterstatus.match(/^(On CPU|Suspended|On Hold|Queued)$/)
-      self.status_transition(self.status,clusterstatus) # try to update; ignore errors.
+      self.status_transition(ar_status,clusterstatus) if ar_status != clusterstatus # try to update; ignore errors.
       return self.status
     end
 

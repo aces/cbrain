@@ -213,7 +213,10 @@ class BourreauWorker < Worker
     unless task.status =~ /^(Recover|Restart)/
       task.update_status
       new_status = task.status
+
       worker_log.debug "Updated #{task.bname_tid} to state #{new_status}"
+
+      return if initial_status == 'On CPU' && new_status == 'On CPU'; # nothing else to do
 
       # Record bourreau delay time for Queued -> On CPU
       if initial_status == 'Queued' && new_status =~ /On CPU|Data Ready/
