@@ -244,7 +244,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     gridshare_dir = myself.cms_shared_dir
  
     if gridshare_dir.blank? || ! Dir.exists?(gridshare_dir)
-      puts "C> \t- SKIPPING! No task work directory yet configured!"
+      puts "C> \t- SKIPPING! No global task work directory yet configured!"
       return
     end
 
@@ -287,6 +287,61 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
         :send_email    => false
       ) rescue true
     end
+
+  end
+
+
+
+  def self.a090_check_for_spurious_task_workdirs
+
+    #-----------------------------------------------------------------------------
+    puts "C> Trying to see if there are any spurious task work directories..."
+    #-----------------------------------------------------------------------------
+
+    myself        = RemoteResource.current_resource
+    gridshare_dir = myself.cms_shared_dir
+ 
+    if gridshare_dir.blank? || ! Dir.exists?(gridshare_dir)
+      puts "C> \t- SKIPPING! No global task work directory yet configured!"
+      return
+    end
+
+    # The find command below has been tested on Linux and Mac OS X
+    # It MUST generate exactly three levels deep so it can properly
+    # infer the original task ID !
+    dirlist = Dir.chdir(gridshare_dir) do
+      IO.popen("find . -mindepth 3 -maxdepth 3 -type d -print","r") { |fh| fh.readlines rescue [] }
+    end
+
+    uids2path = {} # this is the main list of all tasks
+    dirlist.each do |path|  # path should be  "./01/23/45\n"
+      next unless path =~ /^\.\/(\d+)\/(\d+)\/(\d+)\s*$/ # make sure
+      idstring = Regexp.last_match[1..3].join("")
+      uids2path[idstring.to_i] = path.strip.sub(/^\.\//,"") #  12345 => "01/23/45"
+    end
+
+    all_task_ids  = CbrainTask.where({}).raw_first_column(:id)
+    spurious_ids  = uids2path.keys - all_task_ids
+
+    if spurious_ids.empty?
+      puts "C> \t- No spurious task work directories detected."
+      return
+    else
+      puts "C> \t- There are #{spurious_ids.size} spurious task work directories. Notifying admin."
+    end
+
+    message = spurious_ids.collect { |id| "rm -rf #{uids2path[id]}" }.join("\n");
+    Message.send_message(User.admin,
+      :type          => :error,
+      :header        => "Spurious task work directories found on '#{myself.name}'",
+      :description   => "Some spurious task work directories were found.\n" +
+                        "These correspond to tasks that no longer exist in the database.",
+      :variable_text => "Bash commands to clean them:\n" +
+                        "cd #{gridshare_dir.bash_escape}\n" +
+                        "#{message}\n",
+      :critical      => true,
+      :send_email    => false
+    ) rescue true
 
   end
 
