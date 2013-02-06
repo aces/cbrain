@@ -55,6 +55,7 @@ if program_name =~ /console/ # console or dbconsole
   if ENV['CBRAIN_SKIP_VALIDATIONS']
     puts "C> \t- Warning: environment variable 'CBRAIN_SKIP_VALIDATIONS' is set, so we\n"
     puts "C> \t-          are skipping all validations! Proceed at your own risks!\n"
+    CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself]) rescue true
   else
     puts "C> \t- Note:  You can skip all CBRAIN validations by temporarily setting the\n"
     puts "C> \t         environment variable 'CBRAIN_SKIP_VALIDATIONS' to '1'.\n"
