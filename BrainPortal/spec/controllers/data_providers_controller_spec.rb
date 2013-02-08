@@ -256,7 +256,7 @@ describe DataProvidersController do
             response.should redirect_to(:action => :index)
           end
         end
-        context "provider is not browsable" do
+        context "provider is not online" do
           before(:each) do
             data_provider.stub!(:online?).and_return(false)
           end
