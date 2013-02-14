@@ -49,8 +49,8 @@ module CBRAINExtensions #:nodoc:
         def undo_where(*args)
           mymodel    = self.model_name.classify.constantize
           mytable    = mymodel.table_name
-          without    = self.scoped # will create a new array for its where_values, but having the SAME elems!
-          where_vals = without.where_values # this is what we need to prune
+          without    = clone # will create a new array for its where_values, but having the SAME elems!
+          where_vals = without.where_values.clone # this is what we need to prune
 
           to_reject = {} #  "tab1.col1" => true, "tab1.col2" => true etc...
           args.map do |colspec|  #  "col" or "table.col"
