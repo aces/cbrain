@@ -32,7 +32,7 @@ namespace :doc do
      rdoc.rdoc_files.include('app/*/*.rb')
      rdoc.rdoc_files.include('app/models/userfiles/*.rb')
      rdoc.rdoc_files.include('lib/*.rb')
-     rdoc.rdoc_files.include('lib/cbrain_extensions/*/*.rb')
+     rdoc.rdoc_files.include('lib/cbrain_extensions/**/*.rb')
      rdoc.rdoc_files.include('cbrain_plugins/cbrain_task/*/bourreau/*.rb')
      rdoc.rdoc_files.include('cbrain_plugins/cbrain_task/*/common/*.rb')
      rdoc.rdoc_files.include('config/initializers/cbrain.rb')

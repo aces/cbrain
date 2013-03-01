@@ -23,7 +23,7 @@
 module CBRAINExtensions #:nodoc:
   module ActiveRecordExtensions #:nodoc:
     module RelationExtensions
-      # ActiveRecord::Relation Added Behavior For Unstructured Data Fetches
+      # ActiveRecord::Relation Added Behavior; remove a where() condition from an existing relation.
       module UndoWhere
       
         Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
