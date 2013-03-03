@@ -30,8 +30,8 @@ module CBRAINExtensions #:nodoc:
       
         # Returns a new Relation where some clauses have been
         # removed; the arguments can be one or several attribute
-        # names (which can be qualified with table names) and
-        # any previous 'where' clauses that match one of these
+        # names (which can be qualified with table names).
+        # Any previous 'where' clauses that match one of these
         # attributes will be removed.
         #
         #   r = Author.joins(:book).where(:last => 'Austen').where('first like "J%"').where('books.title' like "Pride%")
