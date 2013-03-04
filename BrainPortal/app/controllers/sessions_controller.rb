@@ -116,8 +116,13 @@ class SessionsController < ApplicationController
     current_session[:raw_user_agent]     = raw_agent
 
     # Record that the user logged in
-    current_user.addlog("Logged in from #{request.remote_ip}")
-    portal.addlog("User #{current_user.login} logged in from #{request.remote_ip}")
+    parsed   = HttpUserAgent.new(raw_agent)
+    browser  = (parsed.browser_name    || 'unknown browser')
+    brow_ver = (parsed.browser_version || '?')
+    os       = (parsed.os_name         || 'unknown OS')
+    pretty   = "#{browser} #{brow_ver} on #{os}"
+    current_user.addlog("Logged in from #{request.remote_ip} using #{pretty}")
+    portal.addlog("User #{current_user.login} logged in from #{request.remote_ip} using #{pretty}")
     
     if current_user.has_role?(:admin_user)
       current_session[:active_group_id] = "all"
