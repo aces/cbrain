@@ -25,28 +25,6 @@ module TasksHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # Given a plain name for a task's private partial, such
-  # as 'my_stuff' or :my_stuff, will return a full path
-  # to the partial suitable for Rails:
-  #
-  #   task_partial(:my_stuff) or task_partial('my_stuff')
-  #
-  # will return
-  #
-  #   "tasks/cbrain_plugins/cbrain_task/{taskname}/views/my_stuff.html.erb"
-  #
-  # which will work through the symlink at the 'cbrain_plugins' level.
-  # Note that the real file must start with a '_', like all partials.
-  #
-  # This is useful for developers of tasks that are 'plugins', they
-  # don't have to know exatcly where their partial will end up on the
-  # filesystem and can just use the plain name of their file in their own
-  # task's 'views'.
-  def task_partial(partial_name)
-    plain = partial_name.to_s.sub(/^_/,"").sub(/(\.html)?(\.erb)?/i,"")
-    "tasks/cbrain_plugins/cbrain_task/#{@task.name.underscore}/views/#{plain}.html.erb"
-  end
-
   StatesToColor = {
           # Task state name                  => [ color, sort_rank ]
           # --------------------------------    --------------------

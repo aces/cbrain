@@ -1,0 +1,72 @@
+
+<%
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+-%>
+
+<%
+   # This partial must be provided with these locals:
+   #
+   #   form        : the form object in the task's params page
+   #
+   #   param_name  : the name of the params text field (symbol)
+   #                 default: :output_renaming_pattern
+   #
+   #   dt_dd_pairs : must contain pairs of special keywords
+   #                 for the task's renaming mechanism. E.g.:
+   #
+   #     dt_dd_pairs = 
+   #     [
+   #        [ "{author}",           "The name of the <i>author</i>".html_safe ],
+   #        [ "{in-1}, {in-2} etc", "The n'th component of the input file name" ],
+   #     ]
+   #
+
+   param_name ||= :output_renaming_pattern
+%>
+
+<fieldset class="groupentry">
+<legend>Output filenames renaming</legend>
+
+<p>
+
+Output files can be named or renamed automatically using this pattern:
+<br>
+<%= form.params_text_field param_name, :size => 80 %><br>
+<small>(Leave blank to let the program name the files automatically using its own rules)</small>
+
+<P>
+
+Patterns can include the following special
+<em>{keywords}</em> in curly brackets that will be substituted
+automatically. The supported keywords are:
+
+<dl>
+
+  <% dt_dd_pairs.each do |pair| %>
+    <dt><%= pair[0] %></dt>
+    <dd><%= pair[1] %></dd>
+  <% end %>
+
+</dl>
+
+</fieldset>
+
