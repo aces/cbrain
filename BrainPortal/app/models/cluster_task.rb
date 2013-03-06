@@ -509,7 +509,7 @@ class ClusterTask < CbrainTask
   #     'in-1' => 'patient', 'in-2' => '00123', 'in-3' => '45', 'in-4' => 'txt', 'in-5' => 'gz'
   #   }
   #
-  # Then you call the string method 'pattern_substitute' to build the
+  # Then you call the string method pattern_substitute() to build the
   # output filename:
   #
   #   outname = pattern.pattern_substitute(keywords)  # returns "out-00123.45.2013-03-18.gz"
