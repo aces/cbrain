@@ -84,7 +84,7 @@ class HttpUserAgent
     end
 
     # Identify the browser
-    priority_list = [ 'Konqueror', 'Chrome', 'Safari', 'Opera', 'SeaMonkey', 'Firefox', 'MSIE', "CbrainPerlAPI", lastname ]
+    priority_list = [ 'WebPositive', 'Konqueror', 'Chrome', 'Safari', 'Opera', 'SeaMonkey', 'Firefox', 'MSIE', "CbrainPerlAPI", lastname ]
     priority_list.each do |name|
       lcname = name.downcase
       next unless keyvals.has_key?(lcname)
@@ -111,6 +111,7 @@ class HttpUserAgent
       when /linux(\/(\S+))?/i           ; "Linux #{$2}"
       when /wii/i                       ; "Wii"
       when /playstation/i               ; "Playstation"
+      when /Haiku\/(\S+)/i              ; "Haiku #{$1}"
       else                              ; "Unknown"
     end
 
