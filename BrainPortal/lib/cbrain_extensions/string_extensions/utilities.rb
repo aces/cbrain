@@ -65,12 +65,19 @@ module CBRAINExtensions #:nodoc:
         self.force_encoding(orig_encoding)
       end
 
-      # Used by views for CbrainTasks to transform a
-      # string such as "abc" or "abc[def]" into a path to a
-      # variable inside the params[] hash, as in
-      # "cbrain_task[params][abc]" or "cbrain_task[params][abc][def]"
+      # Used by views for CbrainTasks to transform strings such as these:
+      #
+      #    "abc", "abc[def]", 
+      #
+      # into paths to a variables inside the params[] hash, as in:
+      #
+      #   "cbrain_task[params][abc]", "cbrain_task[params][abc][xyz]"
       #
       # CBRAIN adds a similar method in the Symbol class.
+      #
+      # This can be used to build custom input fields for CbrainTask's
+      # params hashes, although there are already a nice collection of
+      # helper methods defined in CbrainTaskFormBuilder .
       def to_la
         key = self
         if key =~ /^(\w+)/
@@ -80,15 +87,22 @@ module CBRAINExtensions #:nodoc:
         "cbrain_task[params]#{key}"
       end
 
-      # Used by views for CbrainTasks to transform a
-      # string such as "abc" or "abc[def]" (representing
-      # a path to a variable inside the params[] hash, as in
-      # "cbrain_task[params][abc]" or "cbrain_task[params][abc][def]")
-      # into the name of a pseudo accessor method for that variable.
+      # Used by views for CbrainTasks to transform strings such as these:
+      #
+      #    "abc", "abc[def]"
+      #
+      # into names of a pseudo accessor method for that variable, as in:
+      #
+      #    "cbrain_task_params_abc", "cbrain_task_params_abc_def"
+      #
       # This is also the name of the input field's HTML ID
       # attribute, used for error validations.
       #
       # CBRAIN adds a similar method in the Symbol class.
+      #
+      # This can be used to give IDs to input fields for CbrainTask's
+      # params hashes, although there are already a nice collection of
+      # helper methods defined in CbrainTaskFormBuilder .
       def to_la_id
         self.to_la.gsub(/\W+/,"_").sub(/_+$/,"").sub(/^_+/,"")
       end

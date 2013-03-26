@@ -128,10 +128,8 @@ class ToolConfigsController < ApplicationController
     id                = params[:id] || "NEW" # can be 'new' if we create()
     id                = nil if id == "NEW"
     form_tool_config  = ToolConfig.new(params[:tool_config]) # just to store the new attributes
-    form_tool_id      = form_tool_config.tool_id
-    form_tool_id      = nil if form_tool_id.blank?
-    form_bourreau_id  = form_tool_config.bourreau_id
-    form_bourreau_id  = nil if form_bourreau_id.blank?
+    form_tool_id      = form_tool_config.tool_id.presence
+    form_bourreau_id  = form_tool_config.bourreau_id.presence
 
     @tool_config   = nil
     @tool_config   = ToolConfig.find(id) unless id.blank?

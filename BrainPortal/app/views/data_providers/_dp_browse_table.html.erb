@@ -56,7 +56,7 @@
   
   <table class="resource_list" id="dp_browse_table"> 
     <tr>
-      <th><%= select_all_checkbox "checkbox" %></th>
+      <th><%= select_all_checkbox "file_checkbox" %></th>
       <th>Name</th>
       <th>Size</th>
       <th>Type<br>
@@ -82,7 +82,7 @@
       <tr class="<%= cycle('list-odd', 'list-even') %>  row_highlight">
     
         <% if fi_ok %>
-          <td><%= check_box_tag("basenames[]",fi_name, false, :class  => "checkbox") %></td>
+          <td><%= check_box_tag("basenames[]",fi_name, false, :class => "file_checkbox") %></td>
         <% else %>
           <td></td>
         <% end %>

@@ -36,5 +36,5 @@ resource in BrainPortal are:
 *CbrainTask*:: Represents a task request to a cluster, and its evolving states. 
 *PortalTask*:: The subclass of CbrainTask used to model tasks as seen on the BrainPortal side.
 *Bourreau*:: Represents a remote execution server for processing tasks. 
-           All CbrainTask requests are sent to one of these.
+             All CbrainTask requests are sent to one of these.
 

@@ -78,8 +78,14 @@ describe CbrainSession do
   
   describe "#activate" do
 
-    it "should call update_attributes!" do
-      sess_model.should_receive(:update_attributes!).with(:user_id => cb_session.user_id, :active => true)
+    before(:each) do
+      session[:user_id] = 12345
+    end
+
+    it "should set the 'active' and 'user_id' attributes" do
+      sess_model.should_receive(:user_id=).with(session[:user_id])
+      sess_model.should_receive(:active=).with(true)
+      sess_model.should_receive(:save!)
       cb_session.activate
     end
     
@@ -89,8 +95,9 @@ describe CbrainSession do
   
   describe "#deactivate" do
     
-    it "should call update_attributes!" do
-      sess_model.should_receive(:update_attributes!).with(:active => false)
+    it "should reset the 'active' attribute" do
+      sess_model.should_receive(:active=).with(false)
+      sess_model.should_receive(:save!)
       cb_session.deactivate
     end
     

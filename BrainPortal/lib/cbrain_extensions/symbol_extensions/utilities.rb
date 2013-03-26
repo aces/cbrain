@@ -28,9 +28,15 @@ module CBRAINExtensions #:nodoc:
       
       # Used by views for CbrainTasks to transform a
       # symbol such as :abc into a path to a variable
-      # inside the params[] hash, as "cbrain_task[params][abc]".
+      # inside the params[] hash, like this:
+      #
+      #   "cbrain_task[params][abc]"
       #
       # CBRAIN adds a similar method in the String class.
+      #
+      # This can be used to build custom input fields for CbrainTask's
+      # params hashes, although there are already a nice collection of
+      # helper methods defined in CbrainTaskFormBuilder .
       def to_la
         "cbrain_task[params][#{self}]"
       end
@@ -38,15 +44,21 @@ module CBRAINExtensions #:nodoc:
       # Used by views for CbrainTasks to transform a
       # symbol such as :abc (representing a path to a
       # variable inside the params[] hash) into the name
-      # of a pseudo accessor method for that variable.
+      # of a pseudo accessor method for that variable, like:
+      #
+      #   "cbrain_task_params_abc"
+      #
       # This is also the name of the input field's HTML ID
       # attribute, used for error validations.
       #
       # CBRAIN adds a similar method in the String class.
+      #
+      # This can be used to give IDs to input fields for CbrainTask's
+      # params hashes, although there are already a nice collection of
+      # helper methods defined in CbrainTaskFormBuilder .
       def to_la_id
         self.to_s.to_la_id
       end
-      
   
     end
   end

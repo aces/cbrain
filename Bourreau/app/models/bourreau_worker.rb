@@ -78,7 +78,7 @@ class BourreauWorker < Worker
     # Asks the DB for the list of tasks that need handling.
     sleep 1+rand(3)
     worker_log.debug "-----------------------------------------------"
-    tasks_todo = CbrainTask.not_archived.where( :status => ReadyTasks, :bourreau_id => @rr_id )
+    tasks_todo = CbrainTask.not_archived.where( :status => ReadyTasks, :bourreau_id => @rr_id ).all
     worker_log.info "Found #{tasks_todo.size} tasks to handle."
 
     # Detects and turns on sleep mode. We enter sleep mode once we
@@ -213,7 +213,10 @@ class BourreauWorker < Worker
     unless task.status =~ /^(Recover|Restart)/
       task.update_status
       new_status = task.status
+
       worker_log.debug "Updated #{task.bname_tid} to state #{new_status}"
+
+      return if initial_status == 'On CPU' && new_status == 'On CPU'; # nothing else to do
 
       # Record bourreau delay time for Queued -> On CPU
       if initial_status == 'Queued' && new_status =~ /On CPU|Data Ready/

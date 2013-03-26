@@ -597,7 +597,12 @@ class SshMaster
     if @category
       cat_dir = "#{sock_dir}/#{@category}"
       unless File.directory?(cat_dir)
-        Dir.mkdir(cat_dir,0700) # prepare subdir for category
+        begin
+          Dir.mkdir(cat_dir,0700) # prepare subdir for category
+        rescue Errno::EEXIST
+          raise unless File.directory?(cat_dir)
+          # all OK, seems we got a race condition
+        end
       end
     end
     sock_path
@@ -606,7 +611,12 @@ class SshMaster
   def pidfile_path #:nodoc:
     base = self.control_path.sub(/.*\//,"") + ".pid"
     dir  = @category.presence ? "#{CONFIG[:PID_DIR]}/#{@category}" : CONFIG[:PID_DIR]
-    Dir.mkdir(dir,0700) if ! File.directory?(dir)
+    begin
+      Dir.mkdir(dir,0700) if ! File.directory?(dir)
+    rescue Errno::EEXIST
+      raise unless File.directory?(dir)
+      # all OK, seems we got a race condition
+    end
     "#{dir}/#{base}"
   end
 

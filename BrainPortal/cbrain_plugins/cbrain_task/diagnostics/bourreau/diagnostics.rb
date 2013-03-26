@@ -270,7 +270,8 @@ class CbrainTask::Diagnostics < ClusterTask
       self.addlog("No Data Provider ID provided, so no report created.")
       params.delete(:report_id)
     elsif report.save
-      report.cache_writehandle do |fh|
+      self.addlog "Report entry created: #{report.name} (ID=#{report.id})"
+      write_ok = report.cache_writehandle do |fh|
         fh.write( <<-"REPORT_DIAGNOSTICS" )
 
 ######################
@@ -286,13 +287,19 @@ class CbrainTask::Diagnostics < ClusterTask
 #{stderr_text}
 
         REPORT_DIAGNOSTICS
+      end rescue nil
+      if write_ok
+        self.addlog "Report content saved properly to Data Provider '#{report.data_provider.name}'"
+      else
+        self.addlog "Report content COULD NOT be saved to Data Provider '#{report.data_provider.name}'"
       end
-      params[:report_id] = report.id
       self.addlog_to_userfiles_created(report)
 
       if mybool(params[:erase_report])
         self.addlog("Erasing report, as specified.")
         report.destroy
+      else
+        params[:report_id] = report.id
       end
     else
       self.addlog("Could not save report?!?")

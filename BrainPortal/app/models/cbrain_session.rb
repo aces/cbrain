@@ -42,7 +42,7 @@ class CbrainSession
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   def initialize(session, params, sess_model) #:nodoc:
-    @session       = session # rails session
+    @session       = session    # rails session
     @session_model = sess_model # active record model that stores the session
     
     @session[:persistent_userfile_ids] ||= {}
@@ -86,12 +86,18 @@ class CbrainSession
   
   #Mark this session as active in the database.
   def activate
-    @session_model && @session_model.update_attributes!(:user_id => @session[:user_id], :active => true)
+    return unless @session_model
+    # @session_model.update_attributes!(:user_id => @session[:user_id], :active => true)
+    @session_model.user_id = @session[:user_id]
+    @session_model.active  = true
+    @session_model.save!
   end
   
   #Mark this session as inactive in the database.
   def deactivate
-    @session_model && @session_model.update_attributes!(:active => false)
+    return unless @session_model
+    @session_model.active  = false
+    @session_model.save!
   end
   
   #Returns the list of currently active users on the system.

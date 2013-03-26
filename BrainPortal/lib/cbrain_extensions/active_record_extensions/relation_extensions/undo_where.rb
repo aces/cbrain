@@ -23,15 +23,15 @@
 module CBRAINExtensions #:nodoc:
   module ActiveRecordExtensions #:nodoc:
     module RelationExtensions
-      # ActiveRecord::Relation Added Behavior For Unstructured Data Fetches
+      # ActiveRecord::Relation Added Behavior; remove a where() condition from an existing relation.
       module UndoWhere
       
         Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
       
         # Returns a new Relation where some clauses have been
         # removed; the arguments can be one or several attribute
-        # names (which can be qualified with table names) and
-        # any previous 'where' clauses that match one of these
+        # names (which can be qualified with table names).
+        # Any previous 'where' clauses that match one of these
         # attributes will be removed.
         #
         #   r = Author.joins(:book).where(:last => 'Austen').where('first like "J%"').where('books.title' like "Pride%")
@@ -49,8 +49,8 @@ module CBRAINExtensions #:nodoc:
         def undo_where(*args)
           mymodel    = self.model_name.classify.constantize
           mytable    = mymodel.table_name
-          without    = self.scoped # will create a new array for its where_values, but having the SAME elems!
-          where_vals = without.where_values # this is what we need to prune
+          without    = clone # will create a new array for its where_values, but having the SAME elems!
+          where_vals = without.where_values.clone # this is what we need to prune
 
           to_reject = {} #  "tab1.col1" => true, "tab1.col2" => true etc...
           args.map do |colspec|  #  "col" or "table.col"

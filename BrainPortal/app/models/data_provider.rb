@@ -1147,7 +1147,7 @@ class DataProvider < ActiveRecord::Base
 
       return [] if uids2path.empty?
 
-      # We wipe from the cache some dirs for which the no
+      # We wipe from the cache some dirs for which no
       # userfile exists, or dirs for which the userfile exist
       # but has no known synchronization status.
       all_uids        = Userfile.where({}).raw_first_column(:id)
