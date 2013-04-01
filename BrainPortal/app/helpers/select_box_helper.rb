@@ -49,7 +49,7 @@ module SelectBoxHelper
     end
 
     # Final HTML rendering of the options for select
-    user_by_lock_status = group_user_by_lock_status(users)
+    user_by_lock_status = regroup_users_by_lock_status(users)
     grouped_options     = grouped_options_for_select user_by_lock_status, selected
     blank_label         = select_tag_options.delete(:include_blank) || options[:include_blank]
     if blank_label
@@ -112,13 +112,12 @@ module SelectBoxHelper
     ordered_category_grouped << [ "My Work Projects", category_grouped_pairs.delete("My Work Projects") ] if category_grouped_pairs["My Work Projects"]
 
     # Step 2: All personal work projects first
-    category_grouped_pairs.keys.each do |proj|
-       next unless proj =~ /Personal Work Projects/i
+    category_grouped_pairs.keys.select { |proj| proj =~ /Personal Work Projects/ }.sort.each do |proj|
        ordered_category_grouped << [ proj, category_grouped_pairs.delete(proj) ]
     end
 
     # Step 3: Other project categories, in that order
-    [ "Shared Work Projects", "Empty Work Projects", "Site Projects", "User Projects", "System Projects", "Invisible Projects" ].each do |proj|
+    [ "Shared Work Projects", "Empty Work Projects", "Site Projects", "User Projects", "System Projects", "Invisible Projects", "Everyone Projects" ].each do |proj|
       ordered_category_grouped << [ proj, category_grouped_pairs.delete(proj) ] if category_grouped_pairs[proj]
     end
 
@@ -536,17 +535,14 @@ module SelectBoxHelper
     options_for_select ordered_type_grouped, selected
   end
 
-  #Create an array, with 2 sub-category, one for active users 
-  #another for locked users
-  def group_user_by_lock_status(users) #:nodoc:
+  # Group a list of users into two sub-categories:
+  # one for active users and another for locked users
+  def regroup_users_by_lock_status(users) #:nodoc:
     user_by_lock_status_hash = users.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"}
     ordered_by_lock_status   = []
     
     user_by_lock_status_hash.sort.each do |status,users|
-      user_name_id = []
-      users.each do |u|
-        user_name_id << ["#{u.login} (#{u.full_name})" , u.id]
-      end
+      user_name_id = users.sort_by { |u| u.login }.map { |u| ["#{u.login} (#{u.full_name})" , u.id] }
       ordered_by_lock_status << [status, user_name_id]
     end
 

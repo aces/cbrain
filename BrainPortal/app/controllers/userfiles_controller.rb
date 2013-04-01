@@ -830,12 +830,13 @@ class UserfilesController < ApplicationController
     CBRAIN.spawn_with_active_records(current_user,"#{word_move.capitalize} To Other Data Provider") do
       moved_list  = []
       failed_list = {}
-      filelist.each do |id|
+      filelist.each_with_index do |id,count|
+        $0 = "#{word_move.capitalize} #{count+1}/#{filelist.size} To #{new_provider.name}"
         begin
           u = Userfile.find_accessible_by_user(id, current_user, :access_requested => (task == 'copy' ? :read : :write) )
           next unless u
           orig_provider = u.data_provider
-          next if orig_provider.id == data_provider_id # not support for copy to same provider in the interface, yet.
+          next if orig_provider.id == data_provider_id # no support for copy to same provider in the interface, yet.
           res = nil
           if task == 'move'
             raise "Not owner." unless u.has_owner_access?(current_user)
@@ -933,13 +934,15 @@ class UserfilesController < ApplicationController
     filelist    = params[:file_ids] || []
 
     # Delete in background
-    CBRAIN.spawn_with_active_records(current_user, "Delete files.") do
+    CBRAIN.spawn_with_active_records(current_user, "Delete files") do
 
       first_error        = nil
       deleted_count      = 0
       unregistered_count = 0
       error_count        = 0
-      Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
+      to_delete = Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).all
+      to_delete.each_with_index do |userfile,count|
+        $0 = "Delete #{count+1}/#{to_delete.size}"
         begin
           basename = userfile.name
           if userfile.data_provider.is_browsable? && userfile.data_provider.meta[:must_erase].blank?
