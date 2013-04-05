@@ -53,11 +53,11 @@ else
       BourreauSystemChecks.check([
         :a050_ensure_proper_cluster_management_layer_is_loaded, :z000_ensure_we_have_a_forwarded_ssh_agent,
       ])
-      $0 = "Rails Console #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
+      $0 = "Rails Console #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}\0"
     else # normal server mode
       CbrainSystemChecks.check(:all)
       BourreauSystemChecks.check(:all)
-      $0 = "Rails Server #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
+      $0 = "Rails Server #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}\0"
     end
   end
 end

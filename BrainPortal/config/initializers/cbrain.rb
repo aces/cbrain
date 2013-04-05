@@ -95,7 +95,7 @@ class CBRAIN
 
         # Background code execution
         begin
-          $0 = "#{taskname}" # Clever!
+          $0 = "#{taskname}\0" # Clever!
           Process.setpgrp rescue true
 
           $stdin.reopen( "/dev/null", "r") rescue true # fd 0
@@ -204,7 +204,7 @@ class CBRAIN
 
         # Background code execution
         begin
-          $0 = "#{taskname}" # Clever!
+          $0 = "#{taskname}\0" # Clever!
           Process.setpgrp rescue true
           yield
         rescue => itswrong

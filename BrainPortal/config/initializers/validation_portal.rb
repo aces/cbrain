@@ -62,7 +62,7 @@ if program_name =~ /console/ # console or dbconsole
     CbrainSystemChecks.check(:all)
     PortalSystemChecks.check(:all)
   end
-  $0 = "Rails Console #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
+  $0 = "Rails Console #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}\0"
 elsif program_name == "rails" # probably 'generate', 'destroy', 'plugin' etc, but we can't tell!
   puts "C> \t- Running Rails utility."
 elsif program_name == 'rspec' # test suite
@@ -91,7 +91,7 @@ elsif program_name == "rake"
 else # all other cases
   CbrainSystemChecks.check(:all)
   PortalSystemChecks.check(:all)
-  $0 = "Rails Server #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
+  $0 = "Rails Server #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}\0"
 end
 
 #-----------------------------------------------------------------------------

@@ -831,7 +831,7 @@ class UserfilesController < ApplicationController
       moved_list  = []
       failed_list = {}
       filelist.each_with_index do |id,count|
-        $0 = "#{word_move.capitalize} #{count+1}/#{filelist.size} To #{new_provider.name}"
+        $0 = "#{word_move.capitalize} #{count+1}/#{filelist.size} To #{new_provider.name}\0"
         begin
           u = Userfile.find_accessible_by_user(id, current_user, :access_requested => (task == 'copy' ? :read : :write) )
           next unless u
@@ -940,9 +940,9 @@ class UserfilesController < ApplicationController
       deleted_count      = 0
       unregistered_count = 0
       error_count        = 0
-      to_delete = Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).all
+      to_delete = Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write)
       to_delete.each_with_index do |userfile,count|
-        $0 = "Delete #{count+1}/#{to_delete.size}"
+        $0 = "Delete #{count+1}/#{to_delete.size}\0"
         begin
           basename = userfile.name
           if userfile.data_provider.is_browsable? && userfile.data_provider.meta[:must_erase].blank?
