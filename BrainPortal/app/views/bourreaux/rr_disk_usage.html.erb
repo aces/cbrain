@@ -55,8 +55,11 @@
                 <%= rr.capitalize %>
               <% else %>
                 <%= link_to_bourreau_if_accessible(rr, current_user) %>
-                <br/>
+                <br>
                 <small><%= rr.is_a?(Bourreau) ? "(Execution)" : "(Portal)" %></small>
+                <% if rr.has_owner_access?(current_user) %>
+                  <br><small><%= rr.dp_cache_dir %></small>
+                <% end %>
               <% end %>
             </th>
           <% end %>

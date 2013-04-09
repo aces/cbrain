@@ -78,7 +78,11 @@ class BourreauWorker < Worker
     # Asks the DB for the list of tasks that need handling.
     sleep 1+rand(3)
     worker_log.debug "-----------------------------------------------"
-    tasks_todo = CbrainTask.not_archived.where( :status => ReadyTasks, :bourreau_id => @rr_id ).all
+
+    # The list of tasks, here, contains the minimum number of attributes
+    # necessary for us to be able to make a decision as to what to do with them.
+    # The full objects are reloaded in process_task() later on.
+    tasks_todo = CbrainTask.not_archived.where( :status => ReadyTasks, :bourreau_id => @rr_id ).select([:id, :type, :user_id, :bourreau_id, :status, :updated_at]).all
     worker_log.info "Found #{tasks_todo.size} tasks to handle."
 
     # Detects and turns on sleep mode. We enter sleep mode once we
@@ -198,12 +202,12 @@ class BourreauWorker < Worker
   # *On* *CPU* and *On* *CPU* to *Data* *Ready* based on
   # the activity on the cluster, but no code is run for
   # these transitions.
-  def process_task(task)
+  def process_task(task) # when entering this methods task is a partial object, with only a few attributes
 
     mypid = Process.pid
     notification_needed = true # set to false later, in the case of restarts and recovers
 
-    task.reload
+    task.reload # reloads the task and all its attributes
 
     initial_status      = task.status
     initial_change_time = task.updated_at
