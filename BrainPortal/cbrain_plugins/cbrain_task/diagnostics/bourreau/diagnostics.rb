@@ -173,6 +173,12 @@ class CbrainTask::Diagnostics < ClusterTask
         echo ""
       fi
 
+      if test -n "`which lsb_release`" ; then
+        echo "==== LSB Release ===="
+        lsb_release -a
+        echo ""
+      fi
+
       if test -e /proc/cpuinfo ; then
         echo "==== CPU Info ===="
         cat /proc/cpuinfo | sort | uniq

@@ -575,11 +575,9 @@ class RemoteResource < ActiveRecord::Base
   def get_ssh_public_key #:nodoc:
     cb_error "SSH public key only accessible for the current resource." unless self.id == self.class.current_resource.id
     return @ssh_public_key if @ssh_public_key
-    home              = CBRAIN::Rails_UserHome
-    if File.exists?("#{home}/.ssh/id_rsa.pub")
-      @ssh_public_key = File.read("#{home}/.ssh/id_rsa.pub") rescue ""
-    elsif File.exists?("#{home}/.ssh/id_dsa.pub")
-      @ssh_public_key = File.read("#{home}/.ssh/id_dsa.pub") rescue ""
+    home = CBRAIN::Rails_UserHome
+    if File.exists?("#{home}/.ssh/id_cbrain_portal.pub")
+      @ssh_public_key = File.read("#{home}/.ssh/id_cbrain_portal.pub") rescue ""
     else
       @ssh_public_key = ""
     end
