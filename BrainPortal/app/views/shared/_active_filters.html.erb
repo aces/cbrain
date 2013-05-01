@@ -46,7 +46,7 @@
       text = val == '1' ? "Read" : "Unread"
       "<span class=\"current_filters_item\">#{text}</span>"
     elsif att == "type"
-      "<span class=\"current_filters_item\">#{crop_text_to(30, val.constantize.pretty_type)}</span>"
+      "<span class=\"current_filters_item\">#{crop_text_to(30, Array(val).map(&:constantize).map(&:pretty_type).join(", "))}</span>"
     elsif att == "account_locked"
       text = val == '1' ? "Locked" : "Unlocked"
       "<span class=\"current_filters_item\">#{text}</span>"
