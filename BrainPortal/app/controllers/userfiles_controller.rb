@@ -763,11 +763,10 @@ class UserfilesController < ApplicationController
       file_group = current_user.own_group.id
     end
     
-    collection = FileCollection.new(
-        :user_id          => current_user.id,
-        :group_id         => file_group,
-        :data_provider    => DataProvider.find(params[:data_provider_id])
-        )
+    collection = FileCollection.new()
+    collection.user_id          = current_user.id
+    collection.group_id         = file_group
+    collection.data_provider    = DataProvider.find(params[:data_provider_id])
 
     CBRAIN.spawn_with_active_records(current_user,"Collection Merge") do
       result = collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read))

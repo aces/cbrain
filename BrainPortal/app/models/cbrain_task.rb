@@ -271,12 +271,12 @@ class CbrainTask < ActiveRecord::Base
   # a task and a tool; it's based on the class name stored
   # in one of the tool's attribute.
   def self.tool
-    @tool_cache ||= Tool.where( :cbrain_task_class => self.to_s ).first
+    Tool.where( :cbrain_task_class => self.to_s ).first
   end
 
   # Same as the class method of the same name.
   def tool
-    self.class.tool
+    @tool_cache ||= self.class.tool
   end
   
   # Define sort orders that don't refer to actual columns in the table.
