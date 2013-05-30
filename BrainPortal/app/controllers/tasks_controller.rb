@@ -302,8 +302,8 @@ class TasksController < ApplicationController
     @task.addlog_current_resource_revision
 
     # Give a task the ability to do a refresh of its form
-    commit_name    = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ])
-    commit_name  ||= params[:commit] =~ /refresh/i ? :refresh : :whatever
+    commit_name = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ])
+    commit_name = :refresh if params[:commit] =~ /refresh/i
     if commit_name == :refresh
       initialize_common_form_values
       flash.now[:notice] += @task.wrapper_refresh_form
@@ -483,7 +483,8 @@ class TasksController < ApplicationController
     @task.group    = @task.changed_attributes['group_id'] || @task.group_id  unless current_user.available_groups.map(&:id).include?(@task.group_id)
 
     # Give a task the ability to do a refresh of its form
-    commit_name    = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ], :whatever)
+    commit_name = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ], :whatever)
+    commit_name = :refresh if params[:commit] =~ /refresh/i
     if commit_name == :refresh
       initialize_common_form_values
       flash[:notice] += @task.wrapper_refresh_form
