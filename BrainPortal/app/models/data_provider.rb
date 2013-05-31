@@ -117,7 +117,7 @@ require 'digest/md5'
 #
 # * is_alive?
 # * is_alive!
-# * is_browsable?
+# * is_browsable?(by_user = nil)
 # * is_fast_syncing?
 # * allow_file_owner_change?
 #
@@ -324,7 +324,7 @@ class DataProvider < ActiveRecord::Base
   # This method returns true if the provider is 'browsable', that is
   # you can call provider_list_all() without fear of an exception.
   # Most data providers are not browsable.
-  def is_browsable?
+  def is_browsable?(by_user = nil)
     false
   end
   

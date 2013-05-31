@@ -80,7 +80,7 @@ class DataProvidersController < ApplicationController
     @provider.user_id ||= current_user.id # disabled field in form DOES NOT send value!
     
     if @provider.save
-      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers])
+      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers, :browse_gid])
     end
 
     if @provider.errors.empty?
@@ -122,7 +122,7 @@ class DataProvidersController < ApplicationController
          )
       )
       meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/^dp_no_copy_\d+$|^rr_no_sync_\d+$/)
-      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers] + meta_flags_for_restrictions)
+      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers, :browse_gid] + meta_flags_for_restrictions)
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
         format.html { redirect_to :action => :show }
@@ -198,7 +198,7 @@ class DataProvidersController < ApplicationController
   def browse
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
 
-    unless @provider.is_browsable? && @provider.online?
+    unless @provider.is_browsable?(current_user) && @provider.online?
       flash[:error]  = "You cannot browse Data Provider '#{@provider.name}'.\n"
       flash[:error] += "It is currently marked as 'offline'." if ! @provider.online
       respond_to do |format|
@@ -314,7 +314,7 @@ class DataProvidersController < ApplicationController
     @as_user = current_user.available_users.where(:id => as_user_id).first || current_user
     @filter_params["browse_hash"]["as_user_id"] = @as_user.id.to_s
 
-    unless @provider.is_browsable?
+    unless @provider.is_browsable?(current_user)
       flash[:error] = "You cannot register files from this provider."
       respond_to do |format|
         format.html { redirect_to :action => :index }

@@ -27,7 +27,7 @@
 <div class="menu_bar">
   <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
   
-    <% if @provider.is_browsable? && @provider.online? %>
+    <% if @provider.is_browsable?(current_user) && @provider.online? %>
       <%= link_to 'Browse', browse_data_provider_path(@provider), :class => "button" %>
     <% end %>
     
@@ -139,17 +139,25 @@
 
   <%= show_table(@provider, :header => "Other Properties", :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
 
+    <% t.boolean_edit_cell("meta[no_uploads]", @provider.meta["no_uploads"],  "on", "", :header => "Cannot be used for uploading files in the file manager") %>
+
+    <% t.boolean_edit_cell("meta[no_viewers]", @provider.meta["no_viewers"],  "on", "", :header => "Files cannot be viewed in the file manager") %>
+
     <% if @provider.is_browsable? %>
 
       <% t.boolean_edit_cell("meta[must_move]", @provider.meta["must_move"], "on", "", :header => "Files must be copied/moved upon registration") %>
 
       <% t.boolean_edit_cell("meta[must_erase]", @provider.meta["must_erase"], "on", "", :header => "Files will always be erased upon de-registration") %>
 
+      <% t.edit_cell("meta[browse_gid]", 
+           :header  => "Files can be browsed only by members of this project",
+           :content => @provider.meta[:browse_gid].present? ? link_to_group_if_accessible(@provider.meta[:browse_gid]) : '(Any Users)',
+           :show_width => 2
+         ) do %>
+         <%= group_select 'meta[browse_gid]', { :selector => @provider.meta[:browse_gid] }, { :include_blank => "(Any Users)" } %>
+      <% end %>
+
     <% end %>
-
-    <% t.boolean_edit_cell("meta[no_uploads]", @provider.meta["no_uploads"],  "on", "", :header => "Cannot be used for uploading files in the file manager") %>
-
-    <% t.boolean_edit_cell("meta[no_viewers]", @provider.meta["no_viewers"],  "on", "", :header => "Files cannot be viewed in the file manager") %>
 
   <% end %>
 

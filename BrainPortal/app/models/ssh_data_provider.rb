@@ -50,8 +50,10 @@ class SshDataProvider < DataProvider
 
   # Please make sure that subclasses that are not
   # browsable resets this value to false.
-  def is_browsable? #:nodoc:
-    true
+  def is_browsable?(by_user = nil) #:nodoc:
+    return true if by_user.blank? || self.meta[:browse_gid].blank?
+    return true if by_user.is_a?(AdminUser) || by_user.id == self.id
+    by_user.is_member_of_group(self.meta[:browse_gid].to_i)
   end
   
   def allow_file_owner_change? #:nodoc:

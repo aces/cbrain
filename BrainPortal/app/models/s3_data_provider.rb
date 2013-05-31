@@ -67,7 +67,7 @@ class S3DataProvider < DataProvider
     false
   end
 
-  def is_browsable? #:nodoc:
+  def is_browsable?(by_user = nil) #:nodoc:
     false
   end
 

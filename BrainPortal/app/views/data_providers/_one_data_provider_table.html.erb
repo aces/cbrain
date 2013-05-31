@@ -69,7 +69,7 @@
     end
 
     t.column("Operations") do |dp|
-      if dp.is_browsable? && dp.can_be_accessed_by?(current_user) && dp.online?
+      if dp.is_browsable?(current_user) && dp.can_be_accessed_by?(current_user) && dp.online?
         link_to 'Browse', browse_data_provider_path(dp), :class => 'action_link'
       end
     end

@@ -36,7 +36,7 @@ class VaultSshDataProvider < SshDataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  def is_browsable? #:nodoc:
+  def is_browsable?(by_user = nil) #:nodoc:
     false
   end
 
@@ -53,7 +53,7 @@ class VaultSshDataProvider < SshDataProvider
   end
 
   def impl_provider_list_all(user=nil) #:nodoc:
-    cb_error "This data provider cannot be browsed." unless self.is_browsable?
+    cb_error "This data provider cannot be browsed." unless self.is_browsable?(user)
     super(user)
   end
 

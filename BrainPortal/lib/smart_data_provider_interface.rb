@@ -101,8 +101,8 @@ module SmartDataProviderInterface
     @provider && @provider.is_alive!
   end
 
-  def is_browsable? #:nodoc:
-    @provider && @provider.is_browsable?
+  def is_browsable?(by_user = nil) #:nodoc:
+    @provider && @provider.is_browsable?(by_user)
   end
 
   def is_fast_syncing? #:nodoc:
