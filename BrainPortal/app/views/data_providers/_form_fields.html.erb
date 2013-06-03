@@ -260,7 +260,7 @@
   <%= check_box_tag 'meta[must_erase]', "on", @provider.new_record? ? false : !@provider.meta[:must_erase].blank? %>
   
   <p><label for='meta_browse_gid'>Files can be browsed only by members of this project (browsable DPs only):</label>
-  <%= group_select 'meta[browse_gid]', { :selector => @provider.meta[:browse_gid] }, { :include_blank => "(Any Users)" } %>
+  <%= group_select 'meta[browse_gid]', { :selector => (@provider.new_record? ? nil : @provider.meta[:browse_gid]) }, { :include_blank => "(Any Users)" } %>
   
   <p><label for='meta_no_uploads'>Cannot be used for uploading files in the file manager:</label>
   <%= check_box_tag 'meta[no_uploads]', "on", @provider.new_record? ? false : !@provider.meta[:no_uploads].blank? %>
