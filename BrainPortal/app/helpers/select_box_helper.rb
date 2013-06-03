@@ -176,7 +176,7 @@ module SelectBoxHelper
            opt_pair[0] += " (offline)"
            opt_pair << { :disabled => "true" }
          end
-         opt_pair #  [ "DpName", "3" ]    or   [ "DpName", "3", { :disabled => "true" } ]
+         opt_pair #  [ "DpName", "3" ]    or   [ "DpName (offline)", "3", { :disabled => "true" } ]
        end
        grouped_oplists << [ group_title, options_dps ]  # [ "GroupName", [  [ dp1, 1 ], [dp2, 2] ] ]
     end
