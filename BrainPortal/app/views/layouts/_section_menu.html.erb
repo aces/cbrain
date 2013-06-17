@@ -33,7 +33,7 @@
       - 
       <%= hover_dropdown(link_to(current_project.name, group_path(current_project)), :dropdown_class => "project_select_dropdown") do %>
         <div style="margin-right:0.2em">
-          <% current_user.groups.where(:type => "WorkGroup").limit(20).all.each do |g| %>
+          <% current_user.groups.where(:type => "WorkGroup", :invisible => false).limit(20).all.each do |g| %>
             <%= link_to h(crop_text_to(15, g.name)), {:controller => :groups, :action => :switch, :id  => g.id}, :method => :post %><br>
           <% end %><br>
           <%= link_to "All Projects", {:controller => :groups, :action => :switch, :id  => "all"}, :method => :post %><br>
