@@ -440,7 +440,7 @@ class BourreauWorker < Worker
                              :message_type  => :error,
                              :header        => "Task #{task.name} #{task.status}",
                              :description   => "Sorry about that. Check the task's log.\n" .
-                                               "Consider using the 'Recovery' button to try the task agin, in case\n"
+                                               "Consider using the 'Recovery' button to try the task agin, in case\n" .
                                                "it's just a system error: CBRAIN will do its best to fix it.",
                              :variable_text => "[[#{task.bname_tid}][/tasks/#{task.id}]]"
                             )
