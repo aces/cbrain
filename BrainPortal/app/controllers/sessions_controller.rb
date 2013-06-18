@@ -53,7 +53,7 @@ class SessionsController < ApplicationController
 
     # Bad login/password?
     if ! logged_in?
-      flash[:error] = 'Invalid user name or password.'
+      flash.now[:error] = 'Invalid user name or password.'
       Kernel.sleep 3 # Annoying, as it blocks the instance for other users too. Sigh.
       
       respond_to do |format|
