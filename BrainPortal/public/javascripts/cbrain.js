@@ -763,6 +763,9 @@ $(
       var x = trigger.position().left + parseInt(offset_x, 10);
       var y = trigger.position().top  + parseInt(offset_y, 10);
       
+      // Fixed position bug.
+      tool_tip.remove().appendTo(trigger.parent());
+      
       tool_tip.css('top',  y + 'px');
       tool_tip.css('left', x + 'px');
       
