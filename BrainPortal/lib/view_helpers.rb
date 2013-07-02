@@ -256,7 +256,7 @@ module ViewHelpers
   def html_for_js(string)
     # "'" + string.gsub("'","\\\\'").gsub(/\r?\n/,'\n') + "'"
     return "''".html_safe if string.nil? || string == ""
-    with_substititions = string.gsub(/(\\|\r?\n|[\n\r'])/) { HTML_FOR_JS_ESCAPE_MAP[$1] } # MAKE SURE THIS REGEX MATCHES THE HASH ABOVE!
+    with_substititions = string.gsub(/(\\|\r?\n|[\n\r'])/) { |m| HTML_FOR_JS_ESCAPE_MAP[m] } # MAKE SURE THIS REGEX MATCHES THE HASH ABOVE!
     with_quotes = "'#{with_substititions}'"
     with_quotes.html_safe
   end
