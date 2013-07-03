@@ -756,31 +756,31 @@ class UserfilesController < ApplicationController
   
   #Create a collection from the selected files.
   def create_collection #:nodoc:
-    filelist    = params[:file_ids] || []
+    filelist     = params[:file_ids] || []
     if current_project
       file_group = current_project.id
     else
       file_group = current_user.own_group.id
     end
     
-    collection = FileCollection.new()
-    collection.user_id          = current_user.id
-    collection.group_id         = file_group
-    collection.data_provider    = DataProvider.find(params[:data_provider_id])
+    collection               = FileCollection.new()
+    collection.user_id       = current_user.id
+    collection.group_id      = file_group
+    collection.data_provider = DataProvider.find(params[:data_provider_id_for_collection])
 
     CBRAIN.spawn_with_active_records(current_user,"Collection Merge") do
       result = collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read))
       if result == :success
         Message.send_message(current_user,
                             :message_type  => 'notice', 
-                            :header  => "Collections Merged", 
-                            :variable_text  => "[[#{collection.name}][/userfiles/#{collection.id}]]"
+                            :header        => "Collections Merged", 
+                            :variable_text => "[[#{collection.name}][/userfiles/#{collection.id}]]"
                             )
       else
         Message.send_message(current_user,
                             :message_type  => 'error', 
-                            :header  => "Collection could not be merged.", 
-                            :variable_text  => "There was a collision among the file names."
+                            :header        => "Collection could not be merged.", 
+                            :variable_text => "There was a collision among the file names."
                             )
       end
     end # spawn
@@ -817,7 +817,7 @@ class UserfilesController < ApplicationController
     end
 
     # Destination provider
-    data_provider_id = params[:data_provider_id]
+    data_provider_id = params[:data_provider_id_for_mv_cp]
     new_provider = DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first
     unless new_provider
       flash[:error] = "Data provider #{data_provider_id} not accessible.\n"
