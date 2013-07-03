@@ -71,11 +71,10 @@ class TasksController < ApplicationController
     offset = (@current_page - 1) * @per_page
 
     if @filter_params["sort_hash"]["order"] == "cbrain_tasks.batch" && !@filter_params["filter_hash"]["batch_id"] && request.format.to_sym != :xml
-      @total_entries = scope.count(:batch_id)
-      batch_ids      = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).raw_first_column("distinct(cbrain_tasks.batch_id)")
-
+      batch_ids            = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).raw_first_column("distinct(cbrain_tasks.batch_id)")
       task_counts_in_batch = scope.where(:batch_id => batch_ids).group(:batch_id).count
-
+      @total_entries       = task_counts_in_batch.count
+      
       @tasks = {} # hash batch_id => task_info
       batch_ids.each do |batch_id|
          num_tasks  = task_counts_in_batch[batch_id] || 0
