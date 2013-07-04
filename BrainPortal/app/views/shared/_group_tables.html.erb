@@ -27,8 +27,8 @@
       work_groups  = WorkGroup.where(invisible: false).all
       invis_groups = WorkGroup.where(invisible: true).all
     elsif current_user.has_role? :site_manager
-      work_groups  = current_user.site.groups.where( :type  => "WorkGroup" )
-      invis_groups = []
+      work_groups  = current_user.site.groups.where( :type  => "WorkGroup", :invisible => false ).all | current_user.groups.where( :type => "WorkGroup", :invisible => false )
+      invis_groups = current_user.groups.where( :type  => "WorkGroup", :invisible => true )
     else
       work_groups  = []
       invis_groups = []
