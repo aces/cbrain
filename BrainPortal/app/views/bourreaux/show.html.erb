@@ -49,9 +49,6 @@
 <%= error_messages_for @bourreau, :header_message => "Server could not be updated." %>
 
 <div class="display_inline_block" style="min-width: 50%">
-
-
-
   <%= show_table(@bourreau, :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
     <% t.edit_cell(:name) do %>
@@ -89,7 +86,17 @@
     <% t.cell("Revision Info (Client Side)") { Bourreau.revision_info.svn_id_pretty_rev_author_date } %>
 
     <% t.cell("Site") { link_to_site_if_accessible(@bourreau.site_affiliation) } %>
-
+    
+    
+    <% if is_bourreau %>
+      <% external_status_page_url = @bourreau.external_status_page_url.nil? ? 
+                                      "(None)" : link_to(@bourreau.external_status_page_url, @bourreau.external_status_page_url, :class => "action_link", :target => "_blank") %>
+      <% t.edit_cell(:external_status_page_url, :header => "External status page URL", :content => external_status_page_url ) do %>
+        <%= text_field_tag "bourreau[external_status_page_url]", @bourreau.external_status_page_url, :size => 60 %><br>
+        <div class="field_explanation">Link to external status page for the server.</div><br>
+      <% end %>
+    <% end %>
+      
     <% if is_portal %>
 
       <% t.edit_cell(:license_agreements, :content => @bourreau.license_agreements.join(", ")) do %>

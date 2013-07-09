@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121031194710) do
+ActiveRecord::Schema.define(:version => 20130709170149) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -187,8 +187,8 @@ ActiveRecord::Schema.define(:version => 20121031194710) do
     t.string   "actres_host"
     t.integer  "actres_port"
     t.string   "actres_dir"
-    t.boolean  "online",                :default => false, :null => false
-    t.boolean  "read_only",             :default => false, :null => false
+    t.boolean  "online",                   :default => false, :null => false
+    t.boolean  "read_only",                :default => false, :null => false
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -199,8 +199,8 @@ ActiveRecord::Schema.define(:version => 20121031194710) do
     t.integer  "tunnel_mysql_port"
     t.integer  "tunnel_actres_port"
     t.string   "cache_md5"
-    t.boolean  "portal_locked",         :default => false, :null => false
-    t.integer  "cache_trust_expire",    :default => 0
+    t.boolean  "portal_locked",            :default => false, :null => false
+    t.integer  "cache_trust_expire",       :default => 0
     t.datetime "time_of_death"
     t.string   "time_zone"
     t.string   "site_url_prefix"
@@ -219,6 +219,7 @@ ActiveRecord::Schema.define(:version => 20121031194710) do
     t.string   "proxied_host"
     t.string   "support_email"
     t.string   "system_from_email"
+    t.string   "external_status_page_url"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"

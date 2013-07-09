@@ -68,7 +68,7 @@ class RemoteResource < ActiveRecord::Base
 
   cbrain_abstract_model! # objects of this class are not to be instanciated
 
-  serialize   :dp_ignore_patterns
+  serialize               :dp_ignore_patterns
 
   validates               :name,
                           :uniqueness => true,
@@ -116,7 +116,7 @@ class RemoteResource < ActiveRecord::Base
                    :time_zone, :site_url_prefix, :dp_cache_dir, :dp_ignore_patterns, :cms_class, 
                    :cms_default_queue, :cms_extra_qsub_args, :cms_shared_dir, :workers_instances, 
                    :workers_chk_time, :workers_log_to, :workers_verbose, :help_url, :rr_timeout, :proxied_host,
-                   :spaced_dp_ignore_patterns, :license_agreements, :support_email, :system_from_email
+                   :spaced_dp_ignore_patterns, :license_agreements, :support_email, :system_from_email, :external_status_page_url
   
 
 

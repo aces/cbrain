@@ -36,8 +36,8 @@
 %>
 
 <tr class="row_highlight <%= row_number % 2 == 0 ? "list-even" : "list-odd" %>" id="bourreau_<%= bourreau.id %>">
-  <td><%= isbourreau ? "Execution" : "Portal" %></td>
-  <td><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => { :class => b_alive ? nil : 'error_link' } ) %></td>
+  <td class="left_align"><%= isbourreau ? "Execution" : "Portal" %></td>
+  <td class="left_align"><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => { :class => b_alive ? nil : 'error_link' } ) %></td>
   <% if @filter_params["details"] == 'on' %>
     <td>
         <%= red_if(runrev  != '???' && runrev  != $CBRAIN_StartTime_Revision, runrev, nil, :color2 => 'red') %>
@@ -95,9 +95,17 @@
   <% end %>
 
   <% if @filter_params["details"] == 'on' %>
-    <td><%= overlay_description(bourreau.description) %></td>
+    <td class="left_align"><%= overlay_description(bourreau.description) %></td>
   <% end %>
 
+  <% if isbourreau %>
+    <% external_status_page_url = bourreau.external_status_page_url.nil? ? 
+         "" : link_to("Status", bourreau.external_status_page_url, :class => "action_link", :target => "_blank") %>
+    <td><%= external_status_page_url %></td>
+  <% elsif %>
+    <td></td>
+  <% end %>
+  
   <% if bourreau.has_owner_access?(current_user) %>
     <% if ! isbourreau %>
       <td colspan="2"></td>

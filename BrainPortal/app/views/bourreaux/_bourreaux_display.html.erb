@@ -90,7 +90,8 @@
     if @filter_params["details"] == 'on'
       t.sort_column("Description", RemoteResource, :description)
     end
-    t.column("Operations", :colspan => operations_width_colspan)  
+    t.column("Status page URL")    
+    t.column("Operations", :colspan => operations_width_colspan)
   %>
   
   <% row_number = 0 %>
