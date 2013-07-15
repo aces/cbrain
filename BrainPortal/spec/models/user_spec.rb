@@ -215,43 +215,133 @@ describe User do
     
   end
 
-
   
+  # Old encrypt method
   describe "#self.encrypt" do
 
-    it "should call Digest::SHA1" do
-      Digest::SHA1.should_receive(:hexdigest).at_least(:once)
-      User.encrypt(normal_user.password, normal_user.salt) 
+    it "should call encrypt_in_pbkdf2" do
+      User.should_receive(:encrypt_in_pbkdf2).at_least(:once)
+      User.encrypt(normal_user.password,normal_user.salt)
     end
-    
+   
+    	
   end
 
 
   
   describe "#encrypt" do
 
-    it "should encrypts password with the user salt" do
-      User.should_receive(:encrypt).at_least(:once).with(normal_user.password,normal_user.salt)
+    it "should call class method" do
+      User.should_receive(:encrypt).at_least(:once)
       normal_user.encrypt(normal_user.password)
     end
     
   end
+  
+  
+  # Encrypt methods in sha1
+  describe "#self.encrypt_in_sha1" do 
+  
+    it "should return a sha1 string with 40 chars" do
+      User.encrypt_in_sha1(normal_user.password,normal_user.salt).size.should be == 40
+    end
+ 
+  end
+
+
+  
+  describe "#encrypt_in_sha1" do 
+  
+    it "should call class method" do
+      User.should_receive(:encrypt_in_sha1).at_least(:once)
+      normal_user.encrypt_in_sha1(normal_user.password)
+    end
+ 
+  end
+
+  
+  # Encrypt method in PBKDF2
+  describe "#self.encrypt_in_pbkdf2" do
+  
+    it "should return a pbkdf2 string with 64 chars" do
+      User.encrypt_in_pbkdf2(normal_user.password,normal_user.salt).size.should be == 64
+    end
+ 
+  end
+  
+  
+  
+  describe "encrypt_in_pbkdf2" do 
+   
+    it "should call class method" do
+      User.should_receive(:encrypt_in_pbkdf2).at_least(:once)
+      normal_user.encrypt_in_pbkdf2(normal_user.password)
+    end
+ 
+  end
+  
 
 
   
   describe "#autheticated?" do
 
-    it "should return true if crypted_password is equal to encrypt(password)" do
+    it "should call save in order to changed encryption password if the password is in SHA1" do 
+    	normal_user.stub!(:password_type).and_return(:sha1)
+    	normal_user.stub!(:encrypt_in_sha1).and_return(normal_user.crypted_password)
+        normal_user.should_receive(:save)
+        normal_user.authenticated?(normal_user.password)
+    end
+    
+    it "should changed the password encryption if crypted_password is in SHA1" do 
+        normal_user.crypted_password = User.encrypt_in_sha1(normal_user.password,normal_user.salt)
+        puts_yellow  normal_user.crypted_password.size
+        normal_user.authenticated?(normal_user.password)
+        normal_user.crypted_password.size.should be == 64
+    end
+    
+    it "should return true if crypted_password is equal to encrypt(password) and encryption is in PBKDF2" do
+      normal_user.stub!(:password_type).and_return(:pbkdf2)
+      normal_user.stub!(:encrypt_in_pbkdf2).and_return(normal_user.crypted_password)
       normal_user.authenticated?(normal_user.password).should be(true) 
     end
 
-    it "should return false if crypted_password isn't equal to encrypt(password)" do
-      normal_user.authenticated?(normal_user.password + "other").should be(false) 
+    it "should return false if crypted_password isn't equal to encrypt(password) and encryption is in PBKDF2" do
+      normal_user.stub!(:password_type).and_return(:pbkdf2)
+      normal_user.stub!(:encrypt_in_pbkdf2).and_return(:other)
+      normal_user.authenticated?(normal_user.password).should be(false) 
+    end
+    
+     it "should return false if encryption method is unknown" do
+      normal_user.stub!(:password_type).and_return(:other)
+      normal_user.authenticated?(normal_user.password).should be(false) 
     end
     
   end
 
+  
+  
+  describe "#password_type" do
+    
+    it "should return :sha1 if crypted_password size is 40" do 
+      normal_user.crypted_password = "a"*40
+      normal_user.password_type(normal_user.crypted_password).should be == :sha1
+    end
+    
+    it "should return :sha1 if crypted_password size is 64" do 
+      normal_user.crypted_password = "a"*64
+      normal_user.password_type(normal_user.crypted_password).should be == :pbkdf2
+    end
+    
+    it "should return nil otherwise" do 
+      normal_user.crypted_password = "a"
+      normal_user.password_type(normal_user.crypted_password).should be == nil
+    end
+  
+  
+  
+  end
 
+  
   
   describe "#remenber_token?" do
 

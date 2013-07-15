@@ -21,6 +21,7 @@
 #
 
 require 'digest/sha1'
+require 'pbkdf2'
 
 #Model representing CBrain users. 
 #All authentication of user access to the system is handle by the User model.
@@ -125,15 +126,6 @@ class User < ActiveRecord::Base
     @@all_admins ||= AdminUser.all  
   end
   
-  # Authenticates a user by their login name and unencrypted password. Returns the user or nil.
-  def self.authenticate(login, password)
-    u = find_by_login(login) # need to get the salt
-    return nil unless u && u.authenticated?(password)
-    u.last_connected_at = Time.now
-    u.save
-    u
-  end
-  
   # Alias for login.
   def name
     self.login
@@ -147,27 +139,6 @@ class User < ActiveRecord::Base
     RemoteResource.current_resource.license_agreements - self.signed_license_agreements
   end
   
-  #Create a random password (to be sent for resets).
-  def set_random_password
-    s = random_string
-    self.password = s
-    self.password_confirmation = s
-  end
-
-  # Encrypts some data with the salt.
-  def self.encrypt(password, salt) #:nodoc:
-    Digest::SHA1.hexdigest("--#{salt}--#{password}--")
-  end
-
-  # Encrypts the password with the user salt
-  def encrypt(password) #:nodoc:
-    self.class.encrypt(password, salt)
-  end
-
-  def authenticated?(password) #:nodoc:
-    crypted_password == encrypt(password)
-  end
-
   def remember_token? #:nodoc:
     remember_token_expires_at && Time.now.utc < remember_token_expires_at 
   end
@@ -183,7 +154,7 @@ class User < ActiveRecord::Base
 
   def remember_me_until(time) #:nodoc:
     self.remember_token_expires_at = time
-    self.remember_token            = encrypt("#{email}--#{remember_token_expires_at}")
+    self.remember_token            = encrypt_in_sha1("#{email}--#{remember_token_expires_at}")
     save(:validate => false)
   end
 
@@ -191,6 +162,93 @@ class User < ActiveRecord::Base
     self.remember_token_expires_at = nil
     self.remember_token            = nil
     save(:validate => false)
+  end
+
+  ###############################################
+  #
+  # Password and login gestion
+  #
+  ###############################################
+
+  # Authenticates a user by their login name and unencrypted password. Returns the user or nil.
+  def self.authenticate(login, password)
+    u = find_by_login(login) # need to get the salt
+    return nil unless u && u.authenticated?(password)
+    password = nil
+    u.last_connected_at = Time.now
+    u.save
+    u
+  end
+
+  def authenticated?(password) #:nodoc:
+    # Changed encryption type if crypted_password is in sha1
+    if password_type(crypted_password) == :sha1 && crypted_password == encrypt_in_sha1(password)
+      self.crypted_password = encrypt_in_pbkdf2(password)
+      self.save # Save the new User record; as a side effect of the callback 'encrypt_password' the encrypted password will be updated
+      true
+    elsif password_type(crypted_password) == :pbkdf2 # Just check that it matches the PBKDF2 password
+      crypted_password == encrypt_in_pbkdf2(password)
+    else 
+      false
+    end
+  end
+  
+  #Create a random password (to be sent for resets).
+  def set_random_password
+    s = random_string
+    self.password = s
+    self.password_confirmation = s
+  end
+
+  def password_type(crypted_password)
+    if crypted_password.size == 40
+      :sha1
+    elsif crypted_password.size == 64
+      :pbkdf2
+    else
+      nil
+    end
+  end
+
+  ###############################################
+  #
+  # Encryption methods
+  #
+  ###############################################
+  
+  # Old encrypt methods
+  # Encrypts some data with the salt.
+  def self.encrypt(password, salt) #:nodoc:
+    encrypt_in_pbkdf2(password,salt)
+  end
+
+  # Encrypts the password with the user salt
+  def encrypt(password) #:nodoc:
+    self.class.encrypt(password, salt)
+  end
+
+  
+  # Encrypt methods in sha1
+  # Encrypts some data with the salt.
+  def self.encrypt_in_sha1(password, salt) #:nodoc:
+    Digest::SHA1.hexdigest("--#{salt}--#{password}--")
+  end
+
+  # Encrypts the password with the user salt
+  def encrypt_in_sha1(password) #:nodoc:
+    self.class.encrypt_in_sha1(password, salt)
+  end
+
+  
+  # Encrypt methods in PBKDF2
+  # Encrypts some data with the salt.
+  def self.encrypt_in_pbkdf2(password, salt) #:nodoc:
+    PBKDF2.new(:password => password, :salt => salt, :iterations => 10000).hex_string
+  end
+
+  # Encrypts the password with the user salt
+  def encrypt_in_pbkdf2(password) #:nodoc:
+    self.class.encrypt_in_pbkdf2(password, salt)
   end
   
   ###############################################
@@ -282,13 +340,17 @@ class User < ActiveRecord::Base
 
   protected
 
-  # before filter 
+  # "before save" callback; whenever the record is saved, if the 'password'
+  # pseudo-attribute is set it will:
+  # 1- generate a salt
+  # 2- encrypt the password with the salt and
+  # 3- save it in crypted_password
   def encrypt_password #:nodoc:
     return if password.blank?
-    self.salt = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--") if new_record?
-    self.crypted_password = encrypt(password)
+    self.salt             = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--") if new_record?
+    self.crypted_password = encrypt_in_pbkdf2(password)
   end
-    
+  
   def password_required? #:nodoc:
     crypted_password.blank? || !password.blank?
   end
@@ -333,7 +395,7 @@ class User < ActiveRecord::Base
       end
       unless self.changes["site_id"].last.blank?
         new_site = Site.find(self.changes["site_id"].last)
-        new_site.own_group.users << self
+        new_site.own_group.users << self            
       end
     end
   end
