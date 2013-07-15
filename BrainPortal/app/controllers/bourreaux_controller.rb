@@ -330,7 +330,7 @@ class BourreauxController < ApplicationController
     accessed_before = date_filtration["relative_to"].to_i.ago
 
     # Used only relative value for determine_date_range_start_end --> harcode the 4 first values.
-    (accessed_after,accessed_before) = determine_date_range_start_end(false , false, Time.now, Time.now , date_filtration["relative_from"], date_filtration["relative_to"], false)
+    (accessed_after,accessed_before) = determine_date_range_start_end(false , false, Time.now, Time.now , date_filtration["relative_from"], date_filtration["relative_to"])
 
     # For the interface
     @cache_younger = Time.now.to_i - accessed_after.to_i  # partial will adjust to closest value in selection box
