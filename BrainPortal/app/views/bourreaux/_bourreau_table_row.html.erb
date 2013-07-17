@@ -120,7 +120,7 @@
       <td><%= link_to 'Stop',  stop_bourreau_path(bourreau),  :class => 'action_link', :method  => :post %></td>
     <% end %>
 
-    <% if isbourreau %>
+    <% if isbourreau && current_user.has_role?(:admin_user)%>
       <td><%= link_to 'Access?', { :controller => :tool_configs, :action => :index, :bourreau_id => bourreau.id }, :class => 'action_link' %></td>
     <% else %>
       <td></td>
