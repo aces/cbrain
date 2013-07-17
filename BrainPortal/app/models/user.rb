@@ -52,7 +52,7 @@ class User < ActiveRecord::Base
   cbrain_abstract_model! # objects of this class are not to be instanciated
 
   # Virtual attribute for the unencrypted password
-  attr_accessor :password #:nodoc:
+  attr_accessor             :password #:nodoc:
 
   validates                 :full_name,
                             :presence => true
@@ -174,7 +174,6 @@ class User < ActiveRecord::Base
   def self.authenticate(login, password)
     u = find_by_login(login) # need to get the salt
     return nil unless u && u.authenticated?(password)
-    password = nil
     u.last_connected_at = Time.now
     u.save
     u
@@ -183,7 +182,8 @@ class User < ActiveRecord::Base
   def authenticated?(password) #:nodoc:
     # Changed encryption type if crypted_password is in sha1
     if password_type(crypted_password) == :sha1 && crypted_password == encrypt_in_sha1(password)
-      self.crypted_password = encrypt_in_pbkdf2(password)
+      self.password = password
+      self.encrypt_password # explicit call to compute the crypted password (a real rails attribute)
       self.save # Save the new User record; as a side effect of the callback 'encrypt_password' the encrypted password will be updated
       true
     elsif password_type(crypted_password) == :pbkdf2 # Just check that it matches the PBKDF2 password
@@ -346,10 +346,13 @@ class User < ActiveRecord::Base
   # 2- encrypt the password with the salt and
   # 3- save it in crypted_password
   def encrypt_password #:nodoc:
-    return if password.blank?
-    self.salt             = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--") if new_record?
+    return true if password.blank?
+    self.salt             = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--") if salt.blank?
     self.crypted_password = encrypt_in_pbkdf2(password)
+    self.password         = nil # zap pseudo-attribute for security
+    true
   end
+  
   
   def password_required? #:nodoc:
     crypted_password.blank? || !password.blank?

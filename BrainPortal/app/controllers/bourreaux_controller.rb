@@ -33,7 +33,7 @@ class BourreauxController < ApplicationController
   api_available :except  => :row_data
 
   before_filter :login_required
-  before_filter :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :rr_access_dp]
+  before_filter :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :rr_access_dp, :update, :start, :stop]
                                                                 
 
   def index #:nodoc:
@@ -213,6 +213,7 @@ class BourreauxController < ApplicationController
   def start #:nodoc:
     @bourreau = Bourreau.find(params[:id])
 
+    cb_notice "This #{@bourreau.class.to_s} is not accessible by you."                         unless @bourreau.has_owner_access?(current_user)
     cb_notice "Execution Server '#{@bourreau.name}' not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
     cb_notice "Execution Server '#{@bourreau.name}' is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
     cb_notice "Execution Server '#{@bourreau.name}' has already been alive for #{pretty_elapsed(@bourreau.info(:ping).uptime)}." if @bourreau.is_alive?(:ping)
@@ -268,6 +269,7 @@ class BourreauxController < ApplicationController
   def stop #:nodoc:
     @bourreau = Bourreau.find(params[:id])
 
+    cb_notice "This #{@bourreau.class.to_s} is not accessible by you."                         unless @bourreau.has_owner_access?(current_user)
     cb_notice "Execution Server '#{@bourreau.name}' not accessible by current user."           unless @bourreau.can_be_accessed_by?(current_user)
     cb_notice "Execution Server '#{@bourreau.name}' is not yet configured for remote control." unless @bourreau.has_ssh_control_info?
 

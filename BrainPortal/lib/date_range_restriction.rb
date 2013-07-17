@@ -75,14 +75,16 @@ module DateRangeRestriction
   #Define start time and end time for futur filtration
   def determine_date_range_start_end(mode_is_absolute_from, mode_is_absolute_to, absolute_from, absolute_to, relative_from, relative_to)
     
+    utc_offset = Time.now.in_time_zone.utc_offset.seconds
+    
     if mode_is_absolute_from.present?
-      user_start = DateTime.parse(absolute_from)
+      user_start = DateTime.parse(absolute_from) - utc_offset
     else
       user_start = Time.now - relative_from.to_i
     end
 
     if mode_is_absolute_to.present?
-      user_end = DateTime.parse(absolute_to)
+      user_end = DateTime.parse(absolute_to) - utc_offset
     else
       user_end = Time.now - relative_to.to_i
     end
