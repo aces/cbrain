@@ -99,7 +99,7 @@
   <% end %>
 
   <% if isbourreau %>
-    <% external_status_page_url = bourreau.external_status_page_url.nil? ? 
+    <% external_status_page_url = bourreau.external_status_page_url.blank? ? 
          "" : link_to("Status", bourreau.external_status_page_url, :class => "action_link", :target => "_blank") %>
     <td><%= external_status_page_url %></td>
   <% elsif %>
