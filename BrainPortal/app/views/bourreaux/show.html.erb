@@ -93,7 +93,7 @@
                                       "(None)" : link_to(@bourreau.external_status_page_url, @bourreau.external_status_page_url, :class => "action_link", :target => "_blank") %>
       <% t.edit_cell(:external_status_page_url, :header => "External status page URL", :content => external_status_page_url ) do %>
         <%= text_field_tag "bourreau[external_status_page_url]", @bourreau.external_status_page_url, :size => 60 %><br>
-        <div class="field_explanation">Link to external status page for the server.</div><br>
+        <div class="field_explanation">Link to external status page for the server.</div>
       <% end %>
     <% end %>
       
