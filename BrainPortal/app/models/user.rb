@@ -180,15 +180,18 @@ class User < ActiveRecord::Base
   end
 
   def authenticated?(password) #:nodoc:
-    # Changed encryption type if crypted_password is in sha1
-    if password_type(crypted_password) == :sha1 && crypted_password == encrypt_in_sha1(password)
+    # Changed encryption type if crypted_password is in sha1or in pbkdf2
+    plain_crypted_password = crypted_password.sub(/^\w+:/,"")
+    if (password_type(crypted_password) == :sha1   && plain_crypted_password == encrypt_in_sha1(password)) ||
+       (password_type(crypted_password) == :pbkdf2 && plain_crypted_password == encrypt_in_pbkdf2(password))
       self.password = password
       self.encrypt_password # explicit call to compute the crypted password (a real rails attribute)
-      self.save # Save the new User record; as a side effect of the callback 'encrypt_password' the encrypted password will be updated
+      self.password   = nil # zap pseudo-attribute for security
+      self.save             # Save the new User record; as a side effect of the callback 'encrypt_password' the encrypted password will be updated
       true
-    elsif password_type(crypted_password) == :pbkdf2 # Just check that it matches the PBKDF2 password
-      crypted_password == encrypt_in_pbkdf2(password)
-    else 
+    elsif password_type(crypted_password) == :pbkdf2_sha1 # Just check that it matches the PBKDF2 with digest SHA1
+      plain_crypted_password == encrypt_in_pbkdf2_sha1(password)
+    else
       false
     end
   end
@@ -201,9 +204,11 @@ class User < ActiveRecord::Base
   end
 
   def password_type(crypted_password)
-    if crypted_password.size == 40
+    if crypted_password =~ /^(\w+):/               # "PBKDF2_SHA1:a2c2646186828474b754591a547c18f132d88d744c152655a470161a1a052135"
+      Regexp.last_match[1].downcase.to_sym
+    elsif crypted_password.size == 40              # "547c18f132d88d744c152655a470161a1a052135"
       :sha1
-    elsif crypted_password.size == 64
+    elsif crypted_password.size == 64              # "a2c2646186828474b754591a547c18f132d88d744c152655a470161a1a052135"
       :pbkdf2
     else
       nil
@@ -249,6 +254,17 @@ class User < ActiveRecord::Base
   # Encrypts the password with the user salt
   def encrypt_in_pbkdf2(password) #:nodoc:
     self.class.encrypt_in_pbkdf2(password, salt)
+  end
+
+  def self.encrypt_in_pbkdf2_sha1(password, salt) #:nodoc:
+    password               = PBKDF2.new(:password => password, :salt => salt, :iterations => 10000)
+    password.hash_function = OpenSSL::Digest::SHA1.new
+    password.hex_string
+  end
+
+  # Encrypts the password with the user salt
+  def encrypt_in_pbkdf2_sha1(password) #:nodoc:
+    self.class.encrypt_in_pbkdf2_sha1(password, salt)
   end
   
   ###############################################
@@ -348,8 +364,7 @@ class User < ActiveRecord::Base
   def encrypt_password #:nodoc:
     return true if password.blank?
     self.salt             = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--") if salt.blank?
-    self.crypted_password = encrypt_in_pbkdf2(password)
-    self.password         = nil # zap pseudo-attribute for security
+    self.crypted_password = "pbkdf2_sha1:" + encrypt_in_pbkdf2_sha1(password)
     true
   end
   

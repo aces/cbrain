@@ -279,35 +279,54 @@ describe User do
     end
  
   end
+
   
+  # Encrypt method in PBKDF2_SHA1
+  describe "#self.encrypt_in_pbkdf2_sha1" do
+  
+    it "should return a pbkdf2_sha1 string with 64 chars" do
+      User.encrypt_in_pbkdf2_sha1(normal_user.password,normal_user.salt).size.should be == 64
+    end
+ 
+  end
+  
+  
+  
+  describe "encrypt_in_pbkdf2_sha1" do 
+   
+    it "should call class method" do
+      User.should_receive(:encrypt_in_pbkdf2_sha1).at_least(:once).and_return("pwd")
+      normal_user.encrypt_in_pbkdf2_sha1(normal_user.password)
+    end
+ 
+  end
 
 
   
   describe "#autheticated?" do
-
-    it "should call save in order to changed encryption password if the password is in SHA1" do 
-    	normal_user.stub!(:password_type).and_return(:sha1)
-    	normal_user.stub!(:encrypt_in_sha1).and_return(normal_user.crypted_password)
-        normal_user.should_receive(:save)
-        normal_user.authenticated?(normal_user.password)
-    end
     
     it "should changed the password encryption if crypted_password is in SHA1" do 
         normal_user.crypted_password = User.encrypt_in_sha1(normal_user.password,normal_user.salt)
-        puts_yellow  normal_user.crypted_password.size
         normal_user.authenticated?(normal_user.password)
-        normal_user.crypted_password.size.should be == 64
+        normal_user.crypted_password.should match /^pbkdf2_sha1:\w+/
+    end
+
+    it "should changed the password encryption if crypted_password is in PBKDF2" do 
+        normal_user.crypted_password = User.encrypt_in_pbkdf2(normal_user.password,normal_user.salt)
+        normal_user.authenticated?(normal_user.password)
+        normal_user.crypted_password.should match /^pbkdf2_sha1:\w+/
     end
     
-    it "should return true if crypted_password is equal to encrypt(password) and encryption is in PBKDF2" do
-      normal_user.stub!(:password_type).and_return(:pbkdf2)
-      normal_user.stub!(:encrypt_in_pbkdf2).and_return(normal_user.crypted_password)
+    it "should return true if crypted_password is equal to encrypt(password) and encryption is in PBKDF2_SHA1" do
+      normal_user.stub!(:password_type).and_return(:pbkdf2_sha1)                            
+      plain_crypted_password = normal_user.crypted_password.sub(/^\w+:/,"")
+      normal_user.stub!(:encrypt_in_pbkdf2_sha1).and_return(plain_crypted_password)
       normal_user.authenticated?(normal_user.password).should be(true) 
     end
 
-    it "should return false if crypted_password isn't equal to encrypt(password) and encryption is in PBKDF2" do
-      normal_user.stub!(:password_type).and_return(:pbkdf2)
-      normal_user.stub!(:encrypt_in_pbkdf2).and_return(:other)
+    it "should return false if crypted_password isn't equal to encrypt(password) and encryption is in PBKDF2_SHA1" do
+      normal_user.stub!(:password_type).and_return(:pbkdf2_sha1)
+      normal_user.stub!(:encrypt_in_pbkdf2_sha1).and_return(:other)
       normal_user.authenticated?(normal_user.password).should be(false) 
     end
     
@@ -321,6 +340,11 @@ describe User do
   
   
   describe "#password_type" do
+
+    it "should return :pbkdf2_sha1 if crypted_password size start with 'pbkdf2_sha1'" do 
+      normal_user.crypted_password = "pbkdf2_sha1:1"
+      normal_user.password_type(normal_user.crypted_password).should be == :pbkdf2_sha1
+    end
     
     it "should return :sha1 if crypted_password size is 40" do 
       normal_user.crypted_password = "a"*40
