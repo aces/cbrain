@@ -25,7 +25,6 @@
 <% title 'Data Provider Info' %>
 
 <div class="menu_bar">
-  <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
   
     <% if @provider.is_browsable?(current_user) && @provider.online? %>
       <%= link_to 'Browse', browse_data_provider_path(@provider), :class => "button" %>
@@ -38,10 +37,11 @@
                   :col_type         => :type,
                   :generate         => "ok"
                 ), :class => "button" %>
-    
+
+  <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
     <%= link_to 'Delete', data_provider_path(@provider), { :confirm => "Are you sure you want to delete '#{@provider.name}' ?", :method => :delete, :class => "button" } %>
-    
   <% end %>
+
 </div>
 
 <P>
