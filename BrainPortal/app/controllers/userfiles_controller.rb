@@ -756,20 +756,55 @@ class UserfilesController < ApplicationController
   
   #Create a collection from the selected files.
   def create_collection #:nodoc:
-    filelist     = params[:file_ids] || []
-    if current_project
-      file_group = current_project.id
-    else
-      file_group = current_user.own_group.id
+    filelist         = params[:file_ids]
+    data_provider_id = params[:data_provider_id_for_collection]
+    collection_name  = params[:collection_name]
+    file_group       = current_project ? current_project.id : current_user.own_group.id
+
+    if data_provider_id.blank? 
+      flash[:error] = "No data provider selected.\n"
+      redirect_to :action => :index, :format => request.format.to_sym
+      return
     end
     
-    collection               = FileCollection.new()
-    collection.user_id       = current_user.id
-    collection.group_id      = file_group
-    collection.data_provider = DataProvider.find(params[:data_provider_id_for_collection])
+    # Handle collection name
+    if collection_name.blank?
+      suffix = Time.now.to_i
+      while Userfile.where(:user_id => current_user.id, :name => "Collection-#{suffix}").first.present?
+        suffix += 1
+      end
+      collection_name = "Collection-#{suffix}"
+    end
+
+    if ! Userfile.is_legal_filename?(collection_name)
+      flash[:error] = "Error: collection name '#{collection_name}' is not acceptable (illegal characters?)."
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+    
+    # Check if the collection name chosen by the user already exists for this user on the data_provider
+    if current_user.userfiles.exists?(:name => collection_name, :data_provider_id => data_provider_id)
+      flash[:error] = "Error: collection with name '#{collection_name}' already exists."
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+
+    if Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read).count == 0
+      flash[:error] = "Error: No accessible files selected."
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+
+    collection = FileCollection.new(
+      :user_id          => current_user.id,
+      :group_id         => file_group,
+      :data_provider_id => data_provider_id,
+      :name             => collection_name
+    )
 
     CBRAIN.spawn_with_active_records(current_user,"Collection Merge") do
-      result = collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read))
+      userfiles = Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read)
+      result    = collection.merge_collections(userfiles)
       if result == :success
         Message.send_message(current_user,
                             :message_type  => 'notice', 
@@ -802,6 +837,14 @@ class UserfilesController < ApplicationController
       task      = 'copy'
     end
 
+    # Destination provider
+    data_provider_id = params[:data_provider_id_for_mv_cp]
+    if data_provider_id.blank?
+      flash[:error] = "No data provider selected.\n"
+      redirect_to :action => :index, :format => request.format.to_sym
+      return
+    end
+
     # Option for move or copy.
     crush_destination = (params[:crush_destination].to_s =~ /crush/i) ? true : false
     
@@ -816,9 +859,8 @@ class UserfilesController < ApplicationController
       word_moved = 'copied'
     end
 
-    # Destination provider
-    data_provider_id = params[:data_provider_id_for_mv_cp]
-    new_provider = DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first
+   
+    new_provider     = DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first
     unless new_provider
       flash[:error] = "Data provider #{data_provider_id} not accessible.\n"
       redirect_to :action => :index, :format => request.format.to_sym
@@ -1048,8 +1090,8 @@ class UserfilesController < ApplicationController
       return
     end
 
-    collection = FileCollection.find_accessible_by_user(params[:id], current_user, :access_requested  => :read)
-    collection_path = collection.cache_full_path
+    collection       = FileCollection.find_accessible_by_user(params[:id], current_user, :access_requested  => :read)
+    collection_path  = collection.cache_full_path
     data_provider_id = collection.data_provider_id
     params[:file_names].each do |file|
       userfile = SingleFile.new(
@@ -1189,7 +1231,7 @@ class UserfilesController < ApplicationController
       redirect_to :action => :index, :format => request.format.to_sym
       return
     end
-
+    
     yield
   rescue ActiveRecord::RecordNotFound => e
     flash[:error] += "\n" unless flash[:error].blank?

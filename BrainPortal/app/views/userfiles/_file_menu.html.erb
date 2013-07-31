@@ -48,6 +48,8 @@
       <hr>
       
       <h4>Create collection</h4>
+      Name for the collection (optionnal):
+      <%= text_field_tag :collection_name %>
       To Data Provider:
       <%= data_provider_select(:data_provider_id_for_collection, { :data_providers => writable_dps }, :include_blank => "(Select Destination)") %>
       <%= hijacker_submit_button("Create Collection", :url    => url_for(:action  => :create_collection),
