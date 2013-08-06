@@ -1,0 +1,51 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+-%>
+<strong>Disk image: </strong>
+  <%= h(Userfile.find(params[:interface_userfile_ids][0]).name) %>
+  <%= form.params_hidden_field :disk_image %>
+<br/>
+<strong>VM username:</strong>
+   <%= text_field_tag :vm_user.to_la, params[:vm_user], size:15 %>
+<br/>
+<strong>VM password:</strong>
+   <%= password_field_tag :vm_password.to_la, params[:vm_password], size:25 %>
+<br/>
+<strong>VM boot timeout (s):</strong>
+   <%= text_field_tag :vm_boot_timeout.to_la, params[:vm_boot_timeout], size:4 %>
+<br/>
+
+<strong>SSH port:</strong>
+   <%= text_field_tag :ssh_port.to_la, params[:ssh_port], size:4 %>
+<br/>
+<strong>VNC display:</strong>
+   <%= text_field_tag :vnc_display.to_la, params[:vnc_display], size:4 %>
+<br/>
+<strong>QEMU options:</strong>
+   <%= text_field_tag :qemu_params.to_la, params[:qemu_params], size:65 %>
+<br/>
+<strong>Use emulation</strong>
+
+  <%= form.params_check_box :emulation %>
+
+
