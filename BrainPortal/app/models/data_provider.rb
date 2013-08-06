@@ -374,9 +374,10 @@ class DataProvider < ActiveRecord::Base
   # Synchronizes the content of +userfile+ from the
   # local cache back to the provider.
   def sync_to_provider(userfile)
-    cb_error "Error: provider #{self.name} is offline."      unless self.online?
-    cb_error "Error: provider #{self.name} is read_only."    if     self.read_only?
-    cb_error "Error: provider #{self.name} is not syncable." if     self.not_syncable?
+    cb_error "Error: provider #{self.name} is offline."        unless self.online?
+    cb_error "Error: provider #{self.name} is read_only."      if     self.read_only?
+    cb_error "Error: provider #{self.name} is not syncable."   if     self.not_syncable?
+    cb_error "Error: file #{userfile.name} is immutable."      if     userfile.immutable?
     rr_allowed_syncing!("synchronize content to")
     SyncStatus.ready_to_copy_to_dp(userfile) do
       impl_sync_to_provider(userfile)
@@ -425,14 +426,14 @@ class DataProvider < ActiveRecord::Base
   #     content = fh.read
   #   end
   def cache_readhandle(userfile, rel_path = nil)
-    cb_error "Error: provider #{self.name} is offline."   unless self.online?
-    cb_error "Error: cannot use relative path argument with a SingleFile." if userfile.is_a?(SingleFile) && rel_path
+    cb_error "Error: provider #{self.name} is offline."                    unless self.online?
+    cb_error "Error: cannot use relative path argument with a SingleFile." if     userfile.is_a?(SingleFile) && rel_path
     sync_to_cache(userfile)
     full_path = cache_full_path(userfile)
     if userfile.is_a?(FileCollection) && rel_path
       full_path += rel_path
     end
-    cb_error "Error: read handle cannot be provided for non-file." unless File.file? full_path
+    cb_error "Error: read handle cannot be provided for non-file."         unless File.file? full_path
     File.open(full_path,"r") do |fh|
       yield(fh)
     end
@@ -466,9 +467,10 @@ class DataProvider < ActiveRecord::Base
   #     end
   #   end
   def cache_writehandle(userfile, rel_path = nil)
-    cb_error "Error: provider #{self.name} is offline."   unless self.online?
-    cb_error "Error: provider #{self.name} is read_only." if     self.read_only?
-    cb_error "Error: cannot use relative path argument with a SingleFile." if userfile.is_a?(SingleFile) && rel_path
+    cb_error "Error: provider #{self.name} is offline."                    unless self.online?
+    cb_error "Error: provider #{self.name} is read_only."                  if     self.read_only?
+    cb_error "Error: file #{userfile.name} is immutable."                  if     userfile.immutable?
+    cb_error "Error: cannot use relative path argument with a SingleFile." if     userfile.is_a?(SingleFile) && rel_path
     cache_prepare(userfile)
     localpath = cache_full_path(userfile)
     SyncStatus.ready_to_modify_cache(userfile) do
@@ -489,10 +491,11 @@ class DataProvider < ActiveRecord::Base
   # The syncronization method +sync_to_provider+ will automatically
   # be called after the copy is performed.
   def cache_copy_from_local_file(userfile, localpath)
-    cb_error "Error: provider #{self.name} is offline."      unless self.online?
-    cb_error "Error: provider #{self.name} is read_only."    if     self.read_only?
-    cb_error "Error: file does not exist: #{localpath.to_s}" unless File.exists?(localpath)
-    cb_error "Error: incompatible directory '#{localpath}' given for a SingleFile." if
+    cb_error "Error: provider #{self.name} is offline."                                   unless self.online?
+    cb_error "Error: provider #{self.name} is read_only."                                 if     self.read_only?
+    cb_error "Error: file does not exist: #{localpath.to_s}"                              unless File.exists?(localpath)
+    cb_error "Error: file #{userfile.name} is immutable."                                 if     userfile.immutable?
+    cb_error "Error: incompatible directory '#{localpath}' given for a SingleFile."       if
         userfile.is_a?(SingleFile)     && File.directory?(localpath)
     cb_error "Error: incompatible normal file '#{localpath}' given for a FileCollection." if
         userfile.is_a?(FileCollection) && File.file?(localpath)
@@ -656,8 +659,9 @@ class DataProvider < ActiveRecord::Base
 
   # Deletes the content of +userfile+ on the provider side.
   def provider_erase(userfile)
-    cb_error "Error: provider #{self.name} is offline."   unless self.online?
-    cb_error "Error: provider #{self.name} is read_only." if     self.read_only?
+    cb_error "Error: provider #{self.name} is offline."        unless self.online?
+    cb_error "Error: provider #{self.name} is read_only."      if     self.read_only?
+    cb_error "Error: file #{userfile.name} is immutable."      if     userfile.immutable?
     rr_allowed_syncing!("erase content on")
     SyncStatus.ready_to_modify_dp(userfile) do
       impl_provider_erase(userfile)
@@ -673,6 +677,7 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider #{self.name} is offline."               unless self.online?
     cb_error "Error: provider #{self.name} is read_only."             if     self.read_only?
     cb_error "Error: userfile #{userfile.name} in an invalid state."  unless userfile.valid?
+    cb_error "Error: file #{userfile.name} is immutable."             if     userfile.immutable?
     rr_allowed_syncing!("rename content on")
     return true if newname == userfile.name
     unless Userfile.is_legal_filename?(newname)
@@ -705,6 +710,7 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider #{self.name} is read_only."          if     self.read_only?
     cb_error "Error: provider #{otherprovider.name} is offline."   unless otherprovider.online?
     cb_error "Error: provider #{otherprovider.name} is read_only." if     otherprovider.read_only?
+    cb_error "Error: file #{userfile.name} is immutable."          if     userfile.immutable?
     rr_allowed_syncing!("synchronize content from")
     rr_allowed_syncing!("synchronize content to", nil, otherprovider)
     dp_allows_copy!(otherprovider)
@@ -821,6 +827,7 @@ class DataProvider < ActiveRecord::Base
     newfile.group_id         = new_group_id
     newfile.created_at       = Time.now unless target_exists
     newfile.updated_at       = Time.now
+    newfile.immutable        = false
     newfile.save
 
     # Get path to cached copy on current provider
@@ -1105,7 +1112,7 @@ class DataProvider < ActiveRecord::Base
   # This is a class method.
   def self.cache_rootdir #:nodoc:
     @cache_rootdir = RemoteResource.current_resource.dp_cache_dir if @cache_rootdir.blank?
-    cb_error "No cache directory for Data Providers configured!" if @cache_rootdir.blank? || ! ( @cache_rootdir.is_a?(String) || @cache_rootdir.is_a?(Pathname) )
+    cb_error "No cache directory for Data Providers configured!"  if @cache_rootdir.blank? || ! ( @cache_rootdir.is_a?(String) || @cache_rootdir.is_a?(Pathname) )
     @cache_rootdir = Pathname.new(@cache_rootdir)
   end
 
