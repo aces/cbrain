@@ -23,9 +23,11 @@
 -%>
 
 <%
-   info        = bourreau.info(:ping)
    isbourreau  = bourreau.is_a?(Bourreau).presence # make sure it's 'nil' if false so substition -> empty string
    isdisk_image = bourreau.is_a?(DiskImage)
+   info        = bourreau.info(:ping) 
+
+   #TODO: b_alive should return false for disk images. But overriding is_alive is a bit tricky since it also defines @info...
    b_alive     = isdisk_image ? true : info.name != "???"
    runrev      = isdisk_image ? '???' : info.starttime_revision
    worker_pids = isdisk_image ? '???' : info.worker_pids
