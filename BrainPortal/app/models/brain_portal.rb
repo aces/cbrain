@@ -50,4 +50,8 @@ class BrainPortal < RemoteResource
     self.meta[:license_agreements] = agrs
   end
 
+  def type_string
+    "Portal"
+  end
+
 end

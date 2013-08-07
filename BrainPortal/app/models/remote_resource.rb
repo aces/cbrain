@@ -930,4 +930,9 @@ class RemoteResource < ActiveRecord::Base
     return "source #{cbrain_bashrc_path.to_s.bash_escape}; #{shell_command}"
   end
 
+  # String used to name the remote resource in the portal. Should be redefined by sub-classes
+  def type_string
+    return "Remote Resource"
+  end
+
 end

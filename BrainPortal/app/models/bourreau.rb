@@ -334,6 +334,9 @@ class Bourreau < RemoteResource
     send_command(command)
   end
 
+  def type_string
+    return "Bourreau"
+  end
 
 
   ############################################################################
