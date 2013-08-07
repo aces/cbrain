@@ -100,6 +100,10 @@ class RemoteResource < ActiveRecord::Base
     :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
     :allow_blank => true
 
+  validates_format_of     :disk_image_file_id, :with => /^[0-9]*$/, 
+    :message => 'should be an integer',
+    :allow_blank => true
+
   belongs_to  :user
   belongs_to  :group
   has_many    :sync_status
@@ -116,7 +120,8 @@ class RemoteResource < ActiveRecord::Base
                    :time_zone, :site_url_prefix, :dp_cache_dir, :dp_ignore_patterns, :cms_class, 
                    :cms_default_queue, :cms_extra_qsub_args, :cms_shared_dir, :workers_instances, 
                    :workers_chk_time, :workers_log_to, :workers_verbose, :help_url, :rr_timeout, :proxied_host,
-                   :spaced_dp_ignore_patterns, :license_agreements, :support_email, :system_from_email, :external_status_page_url
+                   :spaced_dp_ignore_patterns, :license_agreements, :support_email, :system_from_email, :external_status_page_url,
+                   :disk_image_file_id, :disk_image_user, :disk_image_password
   
 
   ############################################################################

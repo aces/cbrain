@@ -84,14 +84,15 @@
     <fieldset class="groupentry">
       <legend>Disk Image Configuration</legend>
       
+      <font color="red">TODO: parameter validation</font><br/>
       <p><%= f.label :disk_image_file_id, "Disk Image File Id" %><br/>
       <%= f.text_field :disk_image_file_id %></p>
 
       <p><%= f.label :disk_image_user, "Disk Image User" %><br/>
       <%= f.text_field :disk_image_user %></p>
 
-      <p><%= f.label :disk_image_password, "Disk Image Password" %> <font color="red">This isn't safe; to be replaced with key auth</font><br/>
-	<%= f.text_field :disk_image_password %></p>
+      <p><%= f.label :disk_image_password, "Disk Image Password" %> <font color="red">TODO: This isn't safe; to be replaced with key auth</font><br/>
+	<%= f.password_field :disk_image_password %></p>
       
     </fieldset>
 

@@ -25,6 +25,7 @@
 <% 
   is_bourreau = @bourreau.is_a?(Bourreau)
   is_portal   = @bourreau.is_a?(BrainPortal) 
+  is_disk_image = @bourreau.is_a?(DiskImage)
   info = @bourreau.info
  %>
 
@@ -132,7 +133,7 @@
 
   <% if (check_role(:admin_user) || @bourreau.user_id == current_user.id) %>
 
-    <% if is_bourreau %>
+    <% if is_bourreau && !is_disk_image %>
 
       <%= show_table(@bourreau, :header => "Connection Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
@@ -169,20 +170,20 @@
     <% end %>
 
 
-
-    <%= show_table(@bourreau, :header => "Cache Management Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
-      <% t.edit_cell(:dp_cache_dir, :header => "Path to Data Provider caches") do %>
-        <%= text_field_tag "bourreau[dp_cache_dir]", @bourreau.dp_cache_dir, :size => 60 %><br/>
-        <div class="field_explanation">Warning! Changing this field will result in resetting the synchronization
+    <% if !is_disk_image %>
+      <%= show_table(@bourreau, :header => "Cache Management Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+        <% t.edit_cell(:dp_cache_dir, :header => "Path to Data Provider caches") do %>
+          <%= text_field_tag "bourreau[dp_cache_dir]", @bourreau.dp_cache_dir, :size => 60 %><br/>
+          <div class="field_explanation">Warning! Changing this field will result in resetting the synchronization
         status of all files from all Data Providers! Also, the Rails app will have to
         be restarted, and all files in that directory will be erased!</div>
-      <% end %>
-      <% t.edit_cell(:spaced_dp_ignore_patterns, :header => "Patterns for filenames to ignore", :content => @bourreau.spaced_dp_ignore_patterns) do %>
-        <%= text_field_tag "bourreau[spaced_dp_ignore_patterns]", @bourreau.spaced_dp_ignore_patterns, :size => 60 %><br/>
-        <div class="field_explanation">Separate several patterns with spaces; each pattern can contain<br> single '*'s, but no '/'s or special characters.</div>
-      <% end %>
-      <% t.edit_cell(:cache_trust_expire, :header => "Cache Expiration Timeout (in seconds)", :content => (@bourreau.cache_trust_expire == 0 ? "Never" : @bourreau.cache_trust_expire)) do %>
-        <%= select_tag("bourreau[cache_trust_expire]", options_for_select([
+        <% end %>
+        <% t.edit_cell(:spaced_dp_ignore_patterns, :header => "Patterns for filenames to ignore", :content => @bourreau.spaced_dp_ignore_patterns) do %>
+          <%= text_field_tag "bourreau[spaced_dp_ignore_patterns]", @bourreau.spaced_dp_ignore_patterns, :size => 60 %><br/>
+          <div class="field_explanation">Separate several patterns with spaces; each pattern can contain<br> single '*'s, but no '/'s or special characters.</div>
+        <% end %>
+        <% t.edit_cell(:cache_trust_expire, :header => "Cache Expiration Timeout (in seconds)", :content => (@bourreau.cache_trust_expire == 0 ? "Never" : @bourreau.cache_trust_expire)) do %>
+          <%= select_tag("bourreau[cache_trust_expire]", options_for_select([
                 [ "Never",        "0"                  ],
                 [ "Six hours",     6.hours.to_i.to_s   ],
                 [ "Twelve hours", 12.hours.to_i.to_s   ],
@@ -195,17 +196,17 @@
                 [ "Three months",  3.months.to_i.to_s  ],
                 [ "Six months",    6.months.to_i.to_s  ]
             ], :selected => @bourreau.cache_trust_expire ))
-        %></br>
-        <div class="field_explanation">This means that in the execution server's cache, files that have been recorded
+          %></br>
+          <div class="field_explanation">This means that in the execution server's cache, files that have been recorded
         as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy
         and will be re-synchronized the next time they are accessed. Set this to a value less than <em>N</em>
         if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days.</div>
+        <% end %>
       <% end %>
     <% end %>
 
 
-
-    <% if is_bourreau %>
+    <% if is_bourreau && !is_disk_image %>
       <%= show_table(@bourreau, :header => "Cluster Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
         <% t.edit_cell(:cms_class, :header => "Type of cluster") do %>
@@ -281,6 +282,8 @@
           <% end %>
         <% end %>
       <% end %>
+   <% end %>
+   <% if is_bourreau && !is_disk_image %>
       <%= show_table(@bourreau, :header => "Worker Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
         <% t.edit_cell :workers_instances, :header => "Number of workers" do %>
           <%= select_tag "bourreau[workers_instances]", options_for_select([
@@ -330,7 +333,19 @@
       <% end %>
     <% end %>
 
-
+  <% if is_disk_image %>
+    <%= show_table(@bourreau, :header => "Disk Image Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <% t.edit_cell(:disk_image_file_id, :header => "Disk Image File Id") do %>
+        <%= text_field_tag "bourreau[disk_image_file_id]", @bourreau.disk_image_file_id, :size => 6 %>
+      <% end %>
+      <% t.edit_cell(:disk_image_user, :header => "Disk Image User") do %>
+        <%= text_field_tag "bourreau[disk_image_user]", @bourreau.disk_image_user, :size => 60 %>
+      <% end %>
+      <% t.edit_cell(:disk_image_password, :header => "Disk Image Password") do %>
+        <%= password_field_tag "bourreau[disk_image_password]", @bourreau.disk_image_password, :size => 6 %>
+      <% end %>
+    <% end %>
+  <% end %>
 
     <%= show_table(info, :header => "Runtime Information") do |t| %>
       <% if info.name == "???" %>
@@ -382,7 +397,9 @@
     <% end %>
   <% end %>
 
+  
 </div>
+
 
 <% if @bourreau.has_owner_access?(current_user) %>
   <P>

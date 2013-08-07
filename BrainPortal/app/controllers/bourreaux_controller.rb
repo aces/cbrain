@@ -90,7 +90,7 @@ class BourreauxController < ApplicationController
     @bourreau.save
       
     if @bourreau.errors.empty?
-      flash[:notice] = "Execution Server (#{@bourreau.type_string}) successfully created."
+      flash[:notice] = "Execution Server (#{@bourreau.type_string}) successfully created"
       
       respond_to do |format|
         format.js  { redirect_to :action => :index, :format => :js }
