@@ -609,7 +609,7 @@ class UserfilesController < ApplicationController
   # userfiles.
   def update_multiple #:nodoc:
     file_ids        = params[:file_ids]
-    commit_name     = extract_params_key([ :update_tags, :update_projects, :update_permissions, :update_owner, :update_file_type, :update_hidden ], "")
+    commit_name     = extract_params_key([ :update_tags, :update_projects, :update_permissions, :update_owner, :update_file_type, :update_hidden , :update_immutable], "")
     commit_humanize = commit_name.to_s.humanize
 
     # First selection no need to be in spawn
@@ -635,14 +635,16 @@ class UserfilesController < ApplicationController
           ["update_file_type", params[:file_type], current_user]
         when :update_hidden
           ["update_attributes_with_logging", {:hidden => params[:userfile][:hidden]}, current_user, [ 'hidden' ] ]
+        when :update_immutable
+          ["update_attributes_with_logging", {:immutable => params[:userfile][:immutable]}, current_user, [ 'immutable' ] ]
         else
           nil
       end
-    if unable_to_update.present? || operation.blank?
-      flash[:error]   = "You do not have access to this #{unable_to_update}." if unable_to_update.present?
-      flash[:error]   = "Unknown operation requested for updating the files." if operation.blank?
-      redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
-      redirect_to redirect_action
+      if unable_to_update.present? || operation.blank?
+        flash[:error]   = "You do not have access to this #{unable_to_update}." if unable_to_update.present?
+        flash[:error]   = "Unknown operation requested for updating the files." if operation.blank?
+        redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
+        redirect_to redirect_action
       return
     end
 
@@ -676,7 +678,7 @@ class UserfilesController < ApplicationController
         if userfile.send(*operation)
           success_count += 1
         else
-          failure_count +=1
+          failure_count += 1
         end
       end
       # Async Notification

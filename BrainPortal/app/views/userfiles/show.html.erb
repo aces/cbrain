@@ -99,15 +99,20 @@
     <% t.cell("Parent") { link_to_userfile_if_accessible(@userfile.parent) } %>
 
     <% t.edit_cell("Hidden file", :content => check_box_tag(nil ,nil, @userfile.hidden?, :disabled => true) + "&nbsp;".html_safe + hidden_icon) do %>
-        <%= hidden_field_tag "userfile[hidden]", "0" %>
-        <%= check_box_tag("userfile[hidden]",    "1", @userfile.hidden?) %>
-        <%= hidden_icon %>
+      <%= hidden_field_tag "userfile[hidden]", "0" %>
+      <%= check_box_tag("userfile[hidden]",    "1", @userfile.hidden?) %>
+      <%= hidden_icon %>
     <% end %>
-
-    <% t.cell("Children", :show_width => 2) do %>
+    
+    <% t.cell("Children") do %>
       <%= array_to_table(@userfile.children.sort {|a,b| a.name.casecmp(b.name)}, :table_class => 'simple', :min_data => 3, :cols => 3, :fill_by_columns => true ) do |u,r,c| %>
         <%= link_to_userfile_if_accessible(u) %>
       <% end %>
+    <% end %>
+    
+    <% t.edit_cell("Immutable file", :content => check_box_tag(nil ,nil, @userfile.immutable?, :disabled => true) + "&nbsp;".html_safe) do %>
+      <%= hidden_field_tag "userfile[immutable]", "0" %>
+      <%= check_box_tag("userfile[immutable]",    "1", @userfile.immutable?) %>
     <% end %>
 
     <% if current_user.has_role? :admin_user %>
