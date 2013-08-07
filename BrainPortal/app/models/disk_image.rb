@@ -1,4 +1,3 @@
-
 #
 # CBRAIN Project
 #
@@ -21,23 +20,23 @@
 #
 
 
-# A Virtual Bourreau represents a Disk Image. Tasks submitted to a
+# Tasks submitted to a
 # Disk Image don't have any "concrete" Bourreau until one decides to
-# execute them. Virtual Bourreau needs at least :cbrain_tasks,
+# execute them. DiskImage needs at least :cbrain_tasks,
 # :tool_configs and :tools from class Bourreau. It also needs :user
 # and :group from RemoteResource.  Inheriting class Bourreau is not
 # really correct, since the methods used for remote controlling don't
 # make sense here. This should be discussed with Pierre when a first,
-# working version of VirtualBourreau is available.  By the way,
+# working version of DiskImage is available.  By the way,
 # inheritance of RemoteResource for BrainPortal is a bit weird too:
 # for instance, RemoteResource has :cms_class, which doesn't really
 # make sense for BrainPortal (same for :workers_instances and all
 # other symbols specific to bourreau). Following this, I put symbols
-# specific to VirtualBourreau in RemoteResources too...
+# specific to DiskImage in RemoteResources too...
 
-class VirtualBourreau < Bourreau
+class DiskImage < Bourreau
   def start
-    cb_error "You cannot start a Virtual Bourreau"
+    cb_error "This should launch StartVM"
   end
 
   def type_string
