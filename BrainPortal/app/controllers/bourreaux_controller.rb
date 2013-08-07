@@ -82,11 +82,15 @@ class BourreauxController < ApplicationController
   def create #:nodoc:
     fields    = params[:bourreau]
 
-    @bourreau = Bourreau.new( fields )
+    if fields[:disk_image_file_id].empty?
+      @bourreau = Bourreau.new( fields )
+    else
+      @bourreau = DiskImage.new( fields )
+    end
     @bourreau.save
-
+      
     if @bourreau.errors.empty?
-      flash[:notice] = "Execution Server successfully created."
+      flash[:notice] = "Execution Server (#{@bourreau.type_string}) successfully created."
       
       respond_to do |format|
         format.js  { redirect_to :action => :index, :format => :js }

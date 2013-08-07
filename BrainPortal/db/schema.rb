@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130805152115) do
+ActiveRecord::Schema.define(:version => 20130807185414) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -47,6 +47,7 @@ ActiveRecord::Schema.define(:version => 20130805152115) do
     t.decimal  "cluster_workdir_size",        :precision => 24, :scale => 0
     t.boolean  "workdir_archived",                                           :default => false, :null => false
     t.integer  "workdir_archive_userfile_id"
+    t.string   "ip"
   end
 
   add_index "cbrain_tasks", ["batch_id"], :name => "index_cbrain_tasks_on_batch_id"
@@ -220,6 +221,9 @@ ActiveRecord::Schema.define(:version => 20130805152115) do
     t.string   "support_email"
     t.string   "system_from_email"
     t.string   "external_status_page_url"
+    t.integer  "disk_image_file_id"
+    t.string   "disk_image_user"
+    t.string   "disk_image_password"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"

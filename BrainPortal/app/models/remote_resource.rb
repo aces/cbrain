@@ -119,7 +119,6 @@ class RemoteResource < ActiveRecord::Base
                    :spaced_dp_ignore_patterns, :license_agreements, :support_email, :system_from_email, :external_status_page_url
   
 
-
   ############################################################################
   # Pseudo-attributes Access
   ############################################################################

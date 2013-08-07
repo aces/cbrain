@@ -81,6 +81,20 @@
 
   <p>
 
+    <fieldset class="groupentry">
+      <legend>Disk Image Configuration</legend>
+      
+      <p><%= f.label :disk_image_file_id, "Disk Image File Id" %><br/>
+      <%= f.text_field :disk_image_file_id %></p>
+
+      <p><%= f.label :disk_image_user, "Disk Image User" %><br/>
+      <%= f.text_field :disk_image_user %></p>
+
+      <p><%= f.label :disk_image_password, "Disk Image Password" %> <font color="red">This isn't safe; to be replaced with key auth</font><br/>
+	<%= f.text_field :disk_image_password %></p>
+      
+    </fieldset>
+
   <fieldset class="groupentry">
   <legend>SSH Remote Control Configuration</legend>
 

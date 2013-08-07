@@ -30,7 +30,7 @@
    worker_pids = nil if worker_pids == "???"
    num_workers = worker_pids ? worker_pids.count(',')+1 : 0
    isbourreau  = bourreau.is_a?(Bourreau).presence # make sure it's 'nil' if false so substition -> empty string
-   isvirtual_bourreau = bourreau.is_a?(VirtualBourreau)
+   isdisk_image = bourreau.is_a?(DiskImage)
    num_running = isbourreau ? CbrainTask.status(:active).where( :bourreau_id => bourreau.id ).count : 0
    task_space_known = isbourreau ? CbrainTask.real_tasks.where( :bourreau_id => bourreau.id ).sum(:cluster_workdir_size)                                               : ""
    task_space_unkn  = isbourreau ? CbrainTask.real_tasks.where( :bourreau_id => bourreau.id, :cluster_workdir_size => nil ).where("cluster_workdir IS NOT NULL").count : ""
