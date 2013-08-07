@@ -1,0 +1,67 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+-%>
+
+<% tool_list = current_user.available_tools.where("tools.category <> 'background'") %>
+
+<% if tool_list.present? %>
+  
+  <% grouped_tools = tool_list.group_by(&:category) %>
+  <% grouped_tools = grouped_tools.map{ |cat, tools| [cat.pluralize.titleize, tools.sort { |t1,t2| t1.name <=> t2.name }.map { |t| [t.select_menu_text, t.id] }] }.sort_by(&:first) %>
+  
+   <p class="medium_paragraphs">
+     	
+     <font color="red">TODO: check accessibility by user</font><br/>
+     Select a CBRAIN task to boot the disk image. 
+     <br/> <font color="red">TODO: should we fix this task?</font>
+   </p>
+  
+   <div class="userfiles_tool_selector">
+    <%= ajax_onchange_select(
+          "tool_id", 
+          url_for(:controller  => :tools, :action => :bourreau_select), 
+          "<option value=\"\">Select a task to launch</option>".html_safe + grouped_options_for_select(grouped_tools),
+          :target  => "#bourreau_select_convert", 
+          :loading_message  => "<span class='warning'>Checking availability...</span>"
+      ) 
+    %>
+   </div> 
+
+   <br>
+
+   <div class="userfiles_bourreau_selector" id="bourreau_select_convert">
+   </div>
+
+   <font color="red">TODO: unfinished, launch won't work (have to figure out how file id and param are passed to task)</font>
+
+<% else %>
+
+   <br>
+   <% if current_user.has_role? :admin_user %>
+       <h1 class="warning">No tools available. New tools may be registered from the Tools index.</h1>
+   <% else %>
+       <h1 class="warning">No tools available. Contact your admin to have them registered.</h1>
+   <% end %>
+   <br>
+
+<% end %>

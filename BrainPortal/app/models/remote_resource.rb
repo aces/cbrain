@@ -376,6 +376,11 @@ class RemoteResource < ActiveRecord::Base
     false
   end
 
+  # Returns true if this remote resource has enough info to boot a VM
+  def has_vm_info
+    return !(self.disk_image_file_id.blank? || self.disk_image_user.blank? || self.disk_image_password.blank?)
+  end
+
 
 
   ############################################################################

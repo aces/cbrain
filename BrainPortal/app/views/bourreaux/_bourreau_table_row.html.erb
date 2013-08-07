@@ -110,15 +110,29 @@
   <% if bourreau.has_owner_access?(current_user) %>
     <% if ! isbourreau %>
       <td colspan="2"></td>
-    <% elsif ! bourreau.has_remote_control_info? %>
-      <td colspan="2"><%= html_colorize("(Missing SSH control info)") %></td>
-    <% elsif ! bourreau.has_actres_tunnelling_info? %>
-      <td colspan="2"><%= html_colorize("(Missing ActiveResource SSH tunnel info)") %></td>
-    <% elsif ! bourreau.has_db_tunnelling_info? %>
-      <td colspan="2"><%= html_colorize("(Missing database SSH tunnel info)") %></td>
+    <% elsif ! isdisk_image %>
+      <% if ! bourreau.has_remote_control_info? %>
+        <td colspan="2"><%= html_colorize("(Missing SSH control info)") %></td>
+      <% elsif ! bourreau.has_actres_tunnelling_info? %>
+        <td colspan="2"><%= html_colorize("(Missing ActiveResource SSH tunnel info)") %></td>
+      <% elsif ! bourreau.has_db_tunnelling_info? %>
+        <td colspan="2"><%= html_colorize("(Missing database SSH tunnel info)") %></td>
+      <% else %>
+        <td><%= link_to 'Start', start_bourreau_path(bourreau), :class => 'action_link', :method  => :post %></td>
+        <td><%= link_to 'Stop',  stop_bourreau_path(bourreau),  :class => 'action_link', :method  => :post %></td>
+      <% end %>
     <% else %>
-      <td><%= link_to 'Start', start_bourreau_path(bourreau), :class => 'action_link', :method  => :post %></td>
-      <td><%= link_to 'Stop',  stop_bourreau_path(bourreau),  :class => 'action_link', :method  => :post %></td>
+      <!-- disk image actions -->
+      <% if ! bourreau.has_vm_info %>
+        <td colspan="2"><%= html_colorize("(Missing VM info)") %></td>
+      <% else %>
+        <td>
+	  <%= button_with_dropdown_menu("Start VM")  do %>
+	  <%= render :partial => 'userfiles/vm_server_selection' %>
+	  <% end %>
+	</td>
+        <td><%= link_to 'Stop all VMs',  stop_bourreau_path(bourreau),  :class => 'action_link', :method  => :post %> <font color="red">(TODO)</font></td>
+      <% end %>
     <% end %>
 
     <% if isbourreau && current_user.has_role?(:admin_user)%>

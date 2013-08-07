@@ -35,8 +35,12 @@
 # specific to DiskImage in RemoteResources too...
 
 class DiskImage < Bourreau
-  def start
-    cb_error "This should launch StartVM"
+  def start #:nodoc:
+    raise "Disk Images are not supposed to be started with their start method"  
+  end
+  
+  def stop #:nodoc
+    raise "Not implemented yet. Will stop all VMs of this bourreau." 
   end
 
   def type_string
