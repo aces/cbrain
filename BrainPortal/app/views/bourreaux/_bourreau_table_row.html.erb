@@ -62,6 +62,8 @@
             Since: <%= to_localtime(info.uptime.to_i.ago,:datetime) %>
             (for <%= pretty_elapsed(info.uptime.to_i) %>)
           <% end %>
+	  <% else %>
+	    -
         <% end %>
       <% end %>
   </td>
@@ -126,19 +128,9 @@
         <td><%= link_to 'Stop',  stop_bourreau_path(bourreau),  :class => 'action_link', :method  => :post %></td>
       <% end %>
     <% else %>
-      <!-- disk image actions -->
-      <td colspan="2">Not applicable to disk images</td>
-    <!--   <% if ! bourreau.has_vm_info %> -->
-    <!--     <td colspan="2"><%= html_colorize("(Missing VM info)") %></td> -->
-    <!--   <% else %> -->
-    <!--     <td> -->
-    <!-- 	  <%= button_with_dropdown_menu("Start VM")  do %> -->
-    <!-- 	  <%= render :partial => 'userfiles/vm_server_selection' %> -->
-    <!-- 	  <% end %> -->
-    <!-- 	</td> -->
-    <!--     <td><%= link_to 'Stop all VMs',  stop_bourreau_path(bourreau),  :class => 'action_link', :method  => :post %> <font color="red">(TODO)</font></td> -->
-    <!--   <% end %> -->
-    <!-- <% end %> -->
+    <!-- disk image actions -->
+      <td colspan="2"> - </td>
+     <% end %> 
 
     <% if isbourreau && current_user.has_role?(:admin_user)%>
       <td><%= link_to 'Access?', { :controller => :tool_configs, :action => :index, :bourreau_id => bourreau.id }, :class => 'action_link' %></td>
