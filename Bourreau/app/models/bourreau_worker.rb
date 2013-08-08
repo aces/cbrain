@@ -82,7 +82,10 @@ class BourreauWorker < Worker
     # The list of tasks, here, contains the minimum number of attributes
     # necessary for us to be able to make a decision as to what to do with them.
     # The full objects are reloaded in process_task() later on.
+
+    # TODO select also tasks for local VMs: runnable or already running (task.params[:concrete_bourreau]) on the locally deployed VMs
     tasks_todo = CbrainTask.not_archived.where( :status => ReadyTasks, :bourreau_id => @rr_id ).select([:id, :type, :user_id, :bourreau_id, :status, :updated_at]).all
+
     worker_log.info "Found #{tasks_todo.size} tasks to handle."
 
     # Detects and turns on sleep mode. We enter sleep mode once we
@@ -215,7 +218,7 @@ class BourreauWorker < Worker
     worker_log.debug "--- Got #{task.bname_tid} in state #{initial_status}"
 
     unless task.status =~ /^(Recover|Restart)/
-      task.update_status
+      task.update_status 
       new_status = task.status
 
       worker_log.debug "Updated #{task.bname_tid} to state #{new_status}"

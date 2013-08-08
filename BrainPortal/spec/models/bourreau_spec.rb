@@ -62,7 +62,7 @@ describe Bourreau do
       File.stub!(:unlink)
     end
     it "should set online to true" do
-      bourreau.online = false
+      bourreau.online = false 
       lambda do
         bourreau.start
       end.should change{ bourreau.online }.to(true)

@@ -1256,8 +1256,29 @@ class ClusterTask < CbrainTask
   # Bourreau's cluster management system's session.
   # This is really a property of the whole Rails app,
   # but it's provided here in the model for convenience.
+
+  #TODO redefine session in @scir_session.class instead of ScirUnix::Session
+  class ScirUnix::Session
+
+    alias orig_run run
+
+    def run(job)  
+      def vm_run(job)
+        raise "This job should be submitted to a VM (not implemented yet)"
+      end
+      if !job.goes_to_vm
+        vm_run(job)
+      else
+        orig_run(job)
+      end
+    end
+  end
+  
   def self.scir_session #:nodoc:
+
     @scir_session ||= RemoteResource.current_resource.scir_session
+
+    return @scir_session
   end
 
   # Returns the class name which implements this
@@ -1315,8 +1336,7 @@ class ClusterTask < CbrainTask
     logger.error("Exception was: #{ex.class} : #{ex.message}")                   rescue nil
     nil
   end
-
-
+  
 
   ##################################################################
   # Cluster Task Creation Methods
@@ -1409,6 +1429,7 @@ class ClusterTask < CbrainTask
     job.wd       = workdir
     job.name     = self.tname_tid  # "#{self.name}-#{self.id}" # some clusters want all names to be different!
     job.walltime = self.job_walltime_estimate
+    job.goes_to_vm = self.job_template_goes_to_vm?
 
     # Log version of Scir lib
     drm     = scir_class.drm_system
@@ -1547,6 +1568,18 @@ class ClusterTask < CbrainTask
     return nil
   end
 
+  #returns true if the task is supposed to be executed by a VM
+  def job_template_goes_to_vm? 
+    retval =  Bourreau.find(self.bourreau_id).type == "DiskImage"
+    addlog "Task #{self} goes to VM? #{retval}"
+    return retval
+  end
+
+  #returns true if this job id looks like a jobid for a VM
+  def job_id_goes_to_vm?(jobid)
+    #to be unique a jobid for a VM should look like VM:bourreau_id:local_ip:pid:time_start
+    #TODO put this method in ScirVM
+  end
 
 
   ##################################################################
