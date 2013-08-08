@@ -25,7 +25,7 @@
 <%
    isbourreau  = bourreau.is_a?(Bourreau).presence # make sure it's 'nil' if false so substition -> empty string
    isdisk_image = bourreau.is_a?(DiskImage)
-   info        = bourreau.info(:ping) 
+   info        = isdisk_image ? nil : bourreau.info(:ping) 
 
    #TODO: b_alive should return false for disk images. But overriding is_alive is a bit tricky since it also defines @info...
    b_alive     = isdisk_image ? true : info.name != "???"
@@ -57,15 +57,17 @@
       <% if ! b_alive %>
         <%= red_if( bourreau.online? , "-", "Down!" ) %>
       <% else %>
-        <%= html_tool_tip("#{pretty_elapsed(info.uptime.to_i, :num_components => 2, :short => true)}", :offset_x => 50) do %>
-          Since: <%= to_localtime(info.uptime.to_i.ago,:datetime) %>
-          (for <%= pretty_elapsed(info.uptime.to_i) %>)
+        <% if !isdisk_image %>
+          <%= html_tool_tip("#{pretty_elapsed(info.uptime.to_i, :num_components => 2, :short => true)}", :offset_x => 50) do %>
+            Since: <%= to_localtime(info.uptime.to_i.ago,:datetime) %>
+            (for <%= pretty_elapsed(info.uptime.to_i) %>)
+          <% end %>
         <% end %>
       <% end %>
   </td>
 
   <td>
-    <% if (! isbourreau) || (! bourreau.online?) %>
+    <% if (! isbourreau) || (! bourreau.online?) || isdisk_image %>
       -
     <% elsif worker_pids.blank? %>
       <%= html_colorize("Stopped", "red") %>
@@ -125,17 +127,18 @@
       <% end %>
     <% else %>
       <!-- disk image actions -->
-      <% if ! bourreau.has_vm_info %>
-        <td colspan="2"><%= html_colorize("(Missing VM info)") %></td>
-      <% else %>
-        <td>
-	  <%= button_with_dropdown_menu("Start VM")  do %>
-	  <%= render :partial => 'userfiles/vm_server_selection' %>
-	  <% end %>
-	</td>
-        <td><%= link_to 'Stop all VMs',  stop_bourreau_path(bourreau),  :class => 'action_link', :method  => :post %> <font color="red">(TODO)</font></td>
-      <% end %>
-    <% end %>
+      <td colspan="2">Not applicable to disk images</td>
+    <!--   <% if ! bourreau.has_vm_info %> -->
+    <!--     <td colspan="2"><%= html_colorize("(Missing VM info)") %></td> -->
+    <!--   <% else %> -->
+    <!--     <td> -->
+    <!-- 	  <%= button_with_dropdown_menu("Start VM")  do %> -->
+    <!-- 	  <%= render :partial => 'userfiles/vm_server_selection' %> -->
+    <!-- 	  <% end %> -->
+    <!-- 	</td> -->
+    <!--     <td><%= link_to 'Stop all VMs',  stop_bourreau_path(bourreau),  :class => 'action_link', :method  => :post %> <font color="red">(TODO)</font></td> -->
+    <!--   <% end %> -->
+    <!-- <% end %> -->
 
     <% if isbourreau && current_user.has_role?(:admin_user)%>
       <td><%= link_to 'Access?', { :controller => :tool_configs, :action => :index, :bourreau_id => bourreau.id }, :class => 'action_link' %></td>
