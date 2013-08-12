@@ -609,7 +609,7 @@ class UserfilesController < ApplicationController
   # userfiles.
   def update_multiple #:nodoc:
     file_ids        = params[:file_ids]
-    commit_name     = extract_params_key([ :update_tags, :update_projects, :update_permissions, :update_owner, :update_file_type, :update_hidden ], "")
+    commit_name     = extract_params_key([ :update_tags, :update_projects, :update_permissions, :update_owner, :update_file_type, :update_hidden , :update_immutable], "")
     commit_humanize = commit_name.to_s.humanize
 
     # First selection no need to be in spawn
@@ -635,14 +635,16 @@ class UserfilesController < ApplicationController
           ["update_file_type", params[:file_type], current_user]
         when :update_hidden
           ["update_attributes_with_logging", {:hidden => params[:userfile][:hidden]}, current_user, [ 'hidden' ] ]
+        when :update_immutable
+          ["update_attributes_with_logging", {:immutable => params[:userfile][:immutable]}, current_user, [ 'immutable' ] ]
         else
           nil
       end
-    if unable_to_update.present? || operation.blank?
-      flash[:error]   = "You do not have access to this #{unable_to_update}." if unable_to_update.present?
-      flash[:error]   = "Unknown operation requested for updating the files." if operation.blank?
-      redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
-      redirect_to redirect_action
+      if unable_to_update.present? || operation.blank?
+        flash[:error]   = "You do not have access to this #{unable_to_update}." if unable_to_update.present?
+        flash[:error]   = "Unknown operation requested for updating the files." if operation.blank?
+        redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
+        redirect_to redirect_action
       return
     end
 
@@ -676,7 +678,7 @@ class UserfilesController < ApplicationController
         if userfile.send(*operation)
           success_count += 1
         else
-          failure_count +=1
+          failure_count += 1
         end
       end
       # Async Notification
@@ -756,31 +758,86 @@ class UserfilesController < ApplicationController
   
   #Create a collection from the selected files.
   def create_collection #:nodoc:
-    filelist     = params[:file_ids] || []
-    if current_project
-      file_group = current_project.id
-    else
-      file_group = current_user.own_group.id
+    filelist         = params[:file_ids]
+    data_provider_id = params[:data_provider_id_for_collection]
+    collection_name  = params[:collection_name]
+    file_group       = current_project ? current_project.id : current_user.own_group.id
+
+    if data_provider_id.blank? 
+      flash[:error] = "No data provider selected.\n"
+      redirect_to :action => :index, :format => request.format.to_sym
+      return
     end
     
-    collection               = FileCollection.new()
-    collection.user_id       = current_user.id
-    collection.group_id      = file_group
-    collection.data_provider = DataProvider.find(params[:data_provider_id_for_collection])
+    # Handle collection name
+    if collection_name.blank?
+      suffix = Time.now.to_i
+      while Userfile.where(:user_id => current_user.id, :name => "Collection-#{suffix}").first.present?
+        suffix += 1
+      end
+      collection_name = "Collection-#{suffix}"
+    end
+
+    if ! Userfile.is_legal_filename?(collection_name)
+      flash[:error] = "Error: collection name '#{collection_name}' is not acceptable (illegal characters?)."
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+    
+    # Check if the collection name chosen by the user already exists for this user on the data_provider
+    if current_user.userfiles.exists?(:name => collection_name, :data_provider_id => data_provider_id)
+      flash[:error] = "Error: collection with name '#{collection_name}' already exists."
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+
+    if Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read).count == 0
+      flash[:error] = "Error: No accessible files selected."
+      redirect_to :action => :index, :format =>  request.format.to_sym
+      return
+    end
+
+    collection = FileCollection.new(
+      :user_id          => current_user.id,
+      :group_id         => file_group,
+      :data_provider_id => data_provider_id,
+      :name             => collection_name
+    )
 
     CBRAIN.spawn_with_active_records(current_user,"Collection Merge") do
-      result = collection.merge_collections(Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read))
-      if result == :success
-        Message.send_message(current_user,
-                            :message_type  => 'notice', 
-                            :header        => "Collections Merged", 
-                            :variable_text => "[[#{collection.name}][/userfiles/#{collection.id}]]"
-                            )
-      else
+      failed_list = {}
+      begin
+      userfiles = Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read)
+      result    = collection.merge_collections(userfiles)
+        if result == :success
+          Message.send_message(current_user,
+                              :message_type  => 'notice', 
+                              :header        => "Collections Merged", 
+                              :variable_text => "[[#{collection.name}][/userfiles/#{collection.id}]]"
+                              )
+        elsif result == :collision
+          Message.send_message(current_user,
+                              :message_type  => 'error', 
+                              :header        => "Collection could not be merged.", 
+                              :variable_text => "There was a collision among the file names."
+                              )
+        end
+      rescue => e
+        err_message = e.message
+        failed_list[err_message] ||= []
+        failed_list[err_message] << collection
+      end
+
+      if failed_list.size > 0
+        report = ""
+        failed_list.each do |message,collections|
+          report += "Failed because: #{message}\n"
+          report += collections.map { |c| "[[#{c.name}][/userfiles/#{c.id}]]\n" }.join("")
+        end
         Message.send_message(current_user,
                             :message_type  => 'error', 
-                            :header        => "Collection could not be merged.", 
-                            :variable_text => "There was a collision among the file names."
+                            :header        => "The collection was not created correctly on #{DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first.name}",
+                            :variable_text => report
                             )
       end
     end # spawn
@@ -793,13 +850,12 @@ class UserfilesController < ApplicationController
   # Copy or move files to a new provider.
   def change_provider #:nodoc:
 
-    # Operaton to perform
-    commit_name     = extract_params_key([ :move, :copy ], "")
-
-    if commit_name == :move
-      task      = 'move'
-    elsif commit_name == :copy
-      task      = 'copy'
+    # Destination provider
+    data_provider_id = params[:data_provider_id_for_mv_cp]
+    if data_provider_id.blank?
+      flash[:error] = "No data provider selected.\n"
+      redirect_to :action => :index, :format => request.format.to_sym
+      return
     end
 
     # Option for move or copy.
@@ -808,17 +864,12 @@ class UserfilesController < ApplicationController
     # File list to apply operation
     filelist    = params[:file_ids] || []
 
-    # Default message keywords for 'move'
-    word_move  = 'move'
-    word_moved = 'moved'
-    if task == 'copy'  # switches to 'copy' mode, so adjust the words
-      word_move  = 'copy'
-      word_moved = 'copied'
-    end
-
-    # Destination provider
-    data_provider_id = params[:data_provider_id_for_mv_cp]
-    new_provider = DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first
+    # Operaton to perform
+    task       = extract_params_key([ :move, :copy ], "")
+    word_move  = task == :move ? 'move'  : 'copy'
+    word_moved = task == :move ? 'moved' : 'copied'
+   
+    new_provider    = DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first
     unless new_provider
       flash[:error] = "Data provider #{data_provider_id} not accessible.\n"
       redirect_to :action => :index, :format => request.format.to_sym
@@ -832,12 +883,12 @@ class UserfilesController < ApplicationController
       filelist.each_with_index do |id,count|
         $0 = "#{word_move.capitalize} #{count+1}/#{filelist.size} To #{new_provider.name}\0"
         begin
-          u = Userfile.find_accessible_by_user(id, current_user, :access_requested => (task == 'copy' ? :read : :write) )
+          u = Userfile.find_accessible_by_user(id, current_user, :access_requested => (task == :copy ? :read : :write) )
           next unless u
           orig_provider = u.data_provider
           next if orig_provider.id == data_provider_id # no support for copy to same provider in the interface, yet.
           res = nil
-          if task == 'move'
+          if task == :move
             raise "Not owner." unless u.has_owner_access?(current_user)
             res = u.provider_move_to_otherprovider(new_provider, :crush_destination => crush_destination)
           else
@@ -1048,8 +1099,8 @@ class UserfilesController < ApplicationController
       return
     end
 
-    collection = FileCollection.find_accessible_by_user(params[:id], current_user, :access_requested  => :read)
-    collection_path = collection.cache_full_path
+    collection       = FileCollection.find_accessible_by_user(params[:id], current_user, :access_requested  => :read)
+    collection_path  = collection.cache_full_path
     data_provider_id = collection.data_provider_id
     params[:file_names].each do |file|
       userfile = SingleFile.new(
@@ -1189,7 +1240,7 @@ class UserfilesController < ApplicationController
       redirect_to :action => :index, :format => request.format.to_sym
       return
     end
-
+    
     yield
   rescue ActiveRecord::RecordNotFound => e
     flash[:error] += "\n" unless flash[:error].blank?

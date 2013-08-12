@@ -75,10 +75,18 @@ class SshMaster
 
   # Class configuration variables.
   CONFIG = {
+
     # Location of sockets and PID files
     :CONTROL_SOCKET_DIR_1 => (Rails.root rescue nil) ? "#{Rails.root.to_s}/tmp/sockets" : "/tmp",
-    # Alternate location if DIR_1 path is too long (control path MUST be < 100 characters long!)
+
+    # Alternate location if DIR_1 path is too long (control path MUST be < (max length below)  characters long!)
     :CONTROL_SOCKET_DIR_2 => "/tmp",
+
+    # Limit on control socket length; in the SSH suite the limit is hardcoded to 100,
+    # and in some platforms a temporary extension of 20 more characters are added while
+    # it is being created, so we end up with a limit of about 80.
+    :CONTROL_SOCKET_MAX_LENGTH => 80,
+
     # PID files location
     :PID_DIR              => (Rails.root rescue nil) ? "#{Rails.root.to_s}/tmp/pids" : "/tmp",
 
@@ -297,7 +305,7 @@ class SshMaster
   # If a subprocess is already running, nothing will happen:
   # you have to stop() if before you can restart it.
   def start(label = nil)
-
+    
     self.properly_registered?
     return true if @nomaster # special option: not a master at all!
     return true if self.read_pidfile
@@ -590,9 +598,9 @@ class SshMaster
     base      = "#{@category}/#{simple_base}" if @category
     sock_dir  = "#{CONFIG[:CONTROL_SOCKET_DIR_1]}"
     sock_path = "#{sock_dir}/#{base}" # prefered location
-    if sock_path.size >= 100 || ! File.directory?(sock_dir) # limitation in control path length in ssh
+    if sock_path.size >= CONFIG[:CONTROL_SOCKET_MAX_LENGTH] || ! File.directory?(sock_dir) # limitation in control path length in ssh
       sock_dir  = "#{CONFIG[:CONTROL_SOCKET_DIR_2]}"
-      sock_path = "#{sock_dir}/#{base}" # alternative, hopefully shorter than 100 chars long!
+      sock_path = "#{sock_dir}/#{base}" # alternative, hopefully shorter than 80 chars long!
     end
     if @category
       cat_dir = "#{sock_dir}/#{@category}"

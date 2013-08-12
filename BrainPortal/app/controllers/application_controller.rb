@@ -116,7 +116,7 @@ class ApplicationController < ActionController::Base
     # (no-cache) Instructs the browser not to cache and get a fresh version of the resource
     # (no-store) Makes sure the resource is not stored to disk anywhere - does not guarantee that the 
     # resource will not be written
-    # (must-revalidate) the cache may use the response in replying to a subsequent reques but if the resonse is stale
+    # (must-revalidate) the cache may use the response in replying to a subsequent request but if the resonse is stale
     # all caches must first revalidate with the origin server using the request headers from the new request to allow
     # the origin server to authenticate the new reques
     # (max-age) Indicates that the client is willing to accept a response whose age is no greater than the specified time in seconds. 

@@ -24,9 +24,10 @@ require 'spec_helper'
 
 describe DataProvider do
   
-  let(:provider) { Factory.create(:data_provider, :online => true, :read_only => false) }
-  
-  let(:userfile) { mock_model(Userfile, :name => "userfile_mock", :user_id => 1).as_null_object }
+  let(:provider)        { Factory.create(:data_provider, :online => true, :read_only => false) }
+  let(:userfile)        { mock_model(Userfile, :name => "userfile_mock", :user_id => 1).as_null_object }
+  let(:singlefile)      { mock_model(SingleFile, :name => "singlefile_mock", :user_id => 1).as_null_object }
+  let(:filecollection)  { mock_model(FileCollection, :name => "filecollection_mock", :user_id => 1).as_null_object }
   
   describe "validations" do
     it "should create a new instance given valid attributes" do
@@ -150,6 +151,9 @@ describe DataProvider do
   end
   
   describe "#sync_to_provider" do
+    before(:each) do
+      userfile.stub!(:immutable?).and_return(false)
+    end
     it "should raise an exception if not online" do
       provider.online = false
       lambda{provider.sync_to_provider(userfile)}.should raise_error(CbrainError, "Error: provider #{provider.name} is offline.")
@@ -164,6 +168,10 @@ describe DataProvider do
     end
     it "should raise an exception when sync_to_provider called but not implemented" do
       lambda{provider.sync_to_provider(userfile)}.should raise_error("Error: method not yet implemented in subclass.")
+    end
+    it "should raise an exception if userfile is immutable" do
+      userfile.stub!(:immutable?).and_return(true)
+      lambda{provider.sync_to_provider(userfile)}.should raise_error(CbrainError, /immutable/)
     end
   end
   
@@ -229,6 +237,7 @@ describe DataProvider do
   
   describe "#cache_readhandle" do
     before(:each) do
+      userfile.stub!(:immutable?).and_return(false)
       provider.stub!(:sync_to_cache).and_return(true)
     end
     it "should raise an exception if offline" do
@@ -236,17 +245,17 @@ describe DataProvider do
       lambda{provider.cache_readhandle(userfile)}.should raise_error(CbrainError, "Error: provider #{provider.name} is offline.")
     end
     it "should raise and exception if relative path argument set for a SingleFile" do
-      userfile = Factory.build(:single_file)
-      lambda{provider.cache_readhandle(userfile, "path")}.should raise_error(CbrainError, "Error: cannot use relative path argument with a SingleFile.")
-    end
-    it "should raise an exception if I try to read a non userfile" do 
-      lambda{provider.cache_readhandle(userfile)}.should raise_error(CbrainError, "Error: read handle cannot be provided for non-file.")
+      lambda{provider.cache_readhandle(singlefile, "path")}.should raise_error(CbrainError, "Error: cannot use relative path argument with a SingleFile.")
     end
     context "opening a readhandle" do
       before(:each) do
         provider.stub!(:cache_full_path).and_return("cache_path")
         File.stub!(:file?).and_return(true)
         File.stub!(:open)
+      end
+      it "should raise an exception if I try to read a non userfile" do
+        File.stub!(:file?).and_return(false)
+        lambda{provider.cache_readhandle(userfile)}.should raise_error(CbrainError, "Error: read handle cannot be provided for non-file.")
       end
       it "should sync to cache" do
         provider.should_receive(:sync_to_cache)
@@ -273,14 +282,19 @@ describe DataProvider do
       lambda{provider.cache_writehandle(userfile)}.should raise_error(CbrainError, "Error: provider #{provider.name} is read_only.")
     end
     it "should raise and exception if relative path argument set for a SingleFile" do
-      userfile = Factory.build(:single_file)
-      lambda{provider.cache_writehandle(userfile, "path")}.should raise_error(CbrainError, "Error: cannot use relative path argument with a SingleFile.")
+      singlefile.stub!(:immutable?).and_return(false)
+      lambda{provider.cache_writehandle(singlefile, "path")}.should raise_error(CbrainError, "Error: cannot use relative path argument with a SingleFile.")
+    end
+    it "should raise an exception if userfile is immutable" do
+      userfile.stub!(:immutable?).and_return(true)
+      lambda{provider.sync_to_provider(userfile)}.should raise_error(CbrainError, /immutable/)
     end
     context "opening a writehandle" do
       before(:each) do
         provider.stub!(:cache_prepare)
         provider.stub!(:cache_full_path).and_return("cache_path")
         provider.stub!(:sync_to_provider)
+        userfile.stub!(:immutable?).and_return(false)
         SyncStatus.stub!(:ready_to_modify_cache)
         File.stub!(:open)
       end
@@ -309,6 +323,11 @@ describe DataProvider do
   end
   
   describe "#cache_copy_from_local_file" do
+    before(:each) do
+      userfile.stub!(:immutable?).and_return(false)
+      DataProvider.stub!(:cache_rootdir).and_return("cache")
+    end
+
     it "should raise an exception when offline" do
       provider.online = false
       lambda{provider.cache_copy_from_local_file(userfile, "localpath")}.should raise_error(CbrainError, "Error: provider #{provider.name} is offline.")
@@ -321,6 +340,10 @@ describe DataProvider do
       File.stub!(:exists?).and_return(false)
       lambda{provider.cache_copy_from_local_file(userfile, "localpath")}.should raise_error(CbrainError, /^Error: file does not exist/)
     end
+    it "should raise an exception if userfile is immutable" do
+      userfile.stub!(:immutable?).and_return(true)
+      lambda{provider.sync_to_provider(userfile)}.should raise_error(CbrainError, /immutable/)
+    end
     context "checking file type conflicts" do
       before(:each) do
         File.stub!(:exists?).and_return(true)
@@ -328,14 +351,14 @@ describe DataProvider do
         File.stub!(:file?).and_return(false)
       end
       it "should raise an exception if directory given as local path for single file" do
-        userfile = Factory.create(:single_file)
         File.stub!(:directory?).and_return(true)
-        lambda{provider.cache_copy_from_local_file(userfile, "localpath")}.should raise_error(CbrainError, /^Error: incompatible directory .+ given for a SingleFile./)
+        singlefile.stub!(:immutable?).and_return(false)
+        lambda{provider.cache_copy_from_local_file(singlefile, "localpath")}.should raise_error(CbrainError, /^Error: incompatible directory .+ given for a SingleFile./)
       end
       it "should raise an exception if file given as local path for a file collection" do    
-        userfile = Factory.create(:file_collection)
         File.stub!(:file?).and_return(true)
-        lambda{provider.cache_copy_from_local_file(userfile, "localpath")}.should raise_error(CbrainError, /^Error: incompatible normal file .+ given for a FileCollection./)
+        filecollection.stub!(:immutable?).and_return(false)
+        lambda{provider.cache_copy_from_local_file(filecollection, "localpath")}.should raise_error(CbrainError, /^Error: incompatible normal file .+ given for a FileCollection./)
       end
     end
     context "copying from local file" do
@@ -379,6 +402,7 @@ describe DataProvider do
       end
     end
   end
+  
   describe "#cache_copy_to_local_file" do
     it "should raise an exception when offline" do
       provider.online = false
@@ -422,14 +446,16 @@ describe DataProvider do
       end
     end
   end
+  
   describe "#cache_erase" do
     before(:each) do
+      DataProvider.stub!(:cache_rootdir).and_return("cache")
       provider.stub!(:cache_full_pathname).and_return(Pathname.new("cache_path"))
       SyncStatus.stub!(:ready_to_modify_cache).and_yield
       FileUtils.stub!(:remove_entry)
       Dir.stub!(:rmdir)
     end
-    it "should ensure that the cache is ready to be modifiedand update the sync status" do
+    it "should ensure that the cache is ready to be modified and update the sync status" do
       SyncStatus.should_receive(:ready_to_modify_cache)
       provider.cache_erase(userfile)
     end
@@ -439,6 +465,7 @@ describe DataProvider do
       provider.cache_erase(userfile)
     end
   end
+  
   describe "#cache_collection_index" do
     it "should raise an exception when offline" do
       provider.online = false
@@ -478,8 +505,10 @@ describe DataProvider do
       end
     end
   end
+  
   describe "#provider_erase" do
     before(:each) do
+      userfile.stub!(:immutable?).and_return(false)
       SyncStatus.stub!(:ready_to_modify_dp)
     end
     it "should raise an exception if offline" do
@@ -494,12 +523,20 @@ describe DataProvider do
       SyncStatus.should_receive(:ready_to_modify_dp)
       provider.provider_erase(userfile)
     end
+    it "should raise an exception if userfile is immutable" do
+      userfile.stub!(:immutable?).and_return(true)
+      lambda{provider.sync_to_provider(userfile)}.should raise_error(CbrainError, /immutable/)
+    end
     it "should raise an exception, if not implemented in a subclass" do
       SyncStatus.stub!(:ready_to_modify_dp).and_yield
       lambda{provider.provider_erase(userfile)}.should raise_error("Error: method not yet implemented in subclass.")
     end
   end
+  
   describe "#provider_rename"  do
+    before(:each) do
+      userfile.stub!(:immutable?).and_return(false)
+    end
     it "should raise an exception if offline" do
       provider.online = false
       lambda{provider.provider_rename(userfile, "abc")}.should raise_error(CbrainError, "Error: provider #{provider.name} is offline.")
@@ -518,6 +555,10 @@ describe DataProvider do
       conflict_file = Factory.create(:userfile, :name => "abc", :data_provider => provider)
       userfile.stub!(:user_id).and_return(conflict_file.user_id)
       provider.provider_rename(userfile, "abc").should be_false
+    end
+    it "should raise an exception if userfile is immutable" do
+      userfile.stub!(:immutable?).and_return(true)
+      lambda{provider.sync_to_provider(userfile)}.should raise_error(CbrainError, /immutable/)
     end
     context "renaming on the provider" do
       before(:each) do
@@ -540,8 +581,12 @@ describe DataProvider do
       end
     end
   end
+  
   describe "#provider_move_to_otherprovider" do
     let(:other_provider) { Factory.create(:data_provider, :online => true, :read_only => false) }
+    before(:each) do
+      userfile.stub!(:immutable?).and_return(false)
+    end
     it "should raise an exception if offline"do
       provider.online = false
       lambda{provider.provider_move_to_otherprovider(userfile, other_provider)}.should raise_error(CbrainError, "Error: provider #{provider.name} is offline.")
@@ -557,6 +602,10 @@ describe DataProvider do
     it "should raise an exception if destination provider is read only" do
       other_provider.read_only = true
       lambda{provider.provider_move_to_otherprovider(userfile, other_provider)}.should raise_error(CbrainError, "Error: provider #{other_provider.name} is read_only.")
+    end
+    it "should raise an exception if userfile is immutable" do
+      userfile.stub!(:immutable?).and_return(true)
+      lambda{provider.sync_to_provider(userfile)}.should raise_error(CbrainError, /immutable/)
     end
     it "should return true if copying to itself" do
       provider.provider_move_to_otherprovider(userfile, provider).should be_true
@@ -618,6 +667,7 @@ describe DataProvider do
       end
     end
   end
+  
   describe "#provider_copy_to_otherprovider" do
     let(:other_provider) { Factory.create(:data_provider, :online => true, :read_only => false) }
     it "should raise an exception if offline" do
@@ -693,6 +743,7 @@ describe DataProvider do
       lambda{provider.provider_list_all}.should raise_error("Error: method not yet implemented in subclass.")
     end
   end
+  
   describe "#provider_collection_index" do
     it "should raise an exception if offline" do
       provider.online = false
@@ -702,6 +753,7 @@ describe DataProvider do
       lambda{provider.provider_collection_index(userfile)}.should raise_error("Error: method not yet implemented in subclass.")
     end
   end
+  
   describe "#provider_readhandle" do
     it "should raise an exception if offline" do
       provider.online = false
@@ -717,11 +769,13 @@ describe DataProvider do
       lambda{provider.provider_readhandle(userfile)}.should raise_error("Error: method not yet implemented in subclass.")
     end
   end
+  
   describe "#site" do
     it "should return the associated site" do
       provider.site.should == provider.user.site
     end
   end
+  
   describe "#validate_destroy" do
     it "should prevent desctruction if associated userfiles still exist" do
       destroyed_provider = Factory.create(:data_provider, :userfiles => [Factory.create(:userfile)])
@@ -732,8 +786,10 @@ describe DataProvider do
       lambda { destroyed_provider.destroy }.should change{ DataProvider.count }.by(-1)
     end
   end
+  
   describe "#cache_md5" do
     before(:each) do
+      DataProvider.stub!(:cache_rootdir).and_return("cache")
       DataProvider.class_variable_set("@@key", nil)
     end
     
@@ -777,9 +833,11 @@ describe DataProvider do
       end
     end
   end
+  
   describe "#cache_revision_of_last_init" do
     let(:cache_rev)       { "1234-12-12" }
     before(:each) do
+      DataProvider.stub!(:cache_rootdir).and_return("cache")
       DataProvider.stub!(:class_variable_defined?).and_return(false)
       DataProvider.stub!(:this_is_a_proper_cache_dir!)
       File.stub!(:exist?).and_return(true)
@@ -848,6 +906,7 @@ describe DataProvider do
       end
     end
   end
+  
   describe "#this_is_a_proper_cache_dir!" do
     let(:cache_root) { "/cache_root" }
     before(:each) do
@@ -895,6 +954,7 @@ describe DataProvider do
       lambda {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.should raise_error
     end
   end
+  
   describe "#cache_rootdir" do
     before(:each) do
       @old_cache_rootdir = DataProvider.instance_eval { @cache_rootdir}
@@ -918,6 +978,7 @@ describe DataProvider do
       lambda {DataProvider.cache_rootdir}.should raise_error
     end
   end
+  
   describe "#rsync_ignore_patterns" do
     it "should return the app's rsync ignore patterns" do
       current_resource = double("current_ressource")

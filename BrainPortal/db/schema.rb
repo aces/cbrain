@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130710205207) do
+ActiveRecord::Schema.define(:version => 20130805152115) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -328,6 +328,7 @@ ActiveRecord::Schema.define(:version => 20130710205207) do
     t.integer  "num_files"
     t.integer  "format_source_id"
     t.boolean  "hidden",                                          :default => false
+    t.boolean  "immutable",                                       :default => false
   end
 
   add_index "userfiles", ["data_provider_id"], :name => "index_userfiles_on_data_provider_id"

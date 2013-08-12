@@ -89,29 +89,24 @@ class FileCollection < Userfile
   #Returns the status of the merge as a *symbol*:
   #[*success*] if the merge is successful.
   #[*collision*] if the collections share common file names (the merge is aborted in this case).
-  def merge_collections(userfiles)    
-    full_names = userfiles.inject([]){|list, file| list += file.list_files.map(&:name)}    
+  def merge_collections(userfiles)
+
+    # Check for collision
+    full_names = userfiles.inject([]){|list, file| list += file.list_files.map(&:name)}
     
     unless full_names.uniq.size == full_names.size
       return :collision
     end
-    
-    suffix = Time.now.to_i
-    
-    while Userfile.where(:user_id => self.user_id, :name => "Collection-#{suffix}").first.present?
-      suffix += 1
-    end
-    
-    self.name = "Collection-#{suffix}"
+
     self.cache_prepare
-    destname = self.cache_full_path.to_s
+    destname  = self.cache_full_path.to_s
     Dir.mkdir(destname) unless File.directory?(destname)
-    
+
     total_size = 0
     total_num_files  = 0
     
     userfiles.each do |file|
-
+    
       file.sync_to_cache
       filename = file.cache_full_path.to_s
       total_size += file.size
@@ -120,13 +115,13 @@ class FileCollection < Userfile
       else
         total_num_files += 1
       end
-    
+      
       FileUtils.cp_r(filename,destname) # file or dir INTO dir
     end
     
     self.size      = total_size
     self.num_files = total_num_files
-
+    
     self.save!
     self.sync_to_provider
     :success

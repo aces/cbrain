@@ -48,6 +48,8 @@
       <hr>
       
       <h4>Create collection</h4>
+      Name for the collection (optionnal):
+      <%= text_field_tag :collection_name %>
       To Data Provider:
       <%= data_provider_select(:data_provider_id_for_collection, { :data_providers => writable_dps }, :include_blank => "(Select Destination)") %>
       <%= hijacker_submit_button("Create Collection", :url    => url_for(:action  => :create_collection),
@@ -93,6 +95,10 @@
         Mark Or Unmark As Hidden (<%= hidden_icon %>):
         <%= select(:userfile, :hidden, [['Not Hidden', false],['Mark as Hidden', true]]) %>
         <%= hijacker_submit_button("Update", :name => :update_hidden, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
+        <hr>
+        Mark Or Unmark As Immutable:
+        <%= select(:userfile, :immutable, [['Not Immutable', false],['Mark as Immutable', true]]) %>
+        <%= hijacker_submit_button("Update", :name => :update_immutable, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
         <hr>
         Update Parent-Child Relationships:
         <%= hijacker_submit_button("Update",  :url  => url_for(:action  => :new_parent_child ),
