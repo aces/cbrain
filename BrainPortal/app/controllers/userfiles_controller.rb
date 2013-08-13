@@ -941,7 +941,7 @@ class UserfilesController < ApplicationController
   end
 
   # Adds the selected userfile IDs to the session's persistent list
-  def manage_persistent #:nodoc:
+  def manage_persistent
     filelist    = params[:file_ids] || []
 
     if (params[:operation] || 'clear') =~ /(clear|add|remove|replace)/i
