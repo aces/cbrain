@@ -96,6 +96,10 @@
         <%= select(:userfile, :hidden, [['Not Hidden', false],['Mark as Hidden', true]]) %>
         <%= hijacker_submit_button("Update", :name => :update_hidden, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
         <hr>
+        Mark Or Unmark As Immutable:
+        <%= select(:userfile, :immutable, [['Not Immutable', false],['Mark as Immutable', true]]) %>
+        <%= hijacker_submit_button("Update", :name => :update_immutable, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
+        <hr>
         Update Parent-Child Relationships:
         <%= hijacker_submit_button("Update",  :url  => url_for(:action  => :new_parent_child ),
                                                      :datatype => 'html',
