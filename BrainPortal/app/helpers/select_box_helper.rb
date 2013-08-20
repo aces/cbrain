@@ -228,10 +228,10 @@ module SelectBoxHelper
        end
        opt_pair #  [ "BoName", "3" ]    or   [ "BoName", "3", { :disabled => "true" } ]
     end
-    options_html = options_for_select(bourreaux_pairs, selected)
-    blank_label = select_tag_options.delete(:include_blank) || options[:include_blank]
+    options_html   = options_for_select(bourreaux_pairs, selected)
+    blank_label    = select_tag_options.delete(:include_blank) || options[:include_blank]
     if blank_label
-      blank_label = "" if blank_label == true
+      blank_label  = "" if blank_label == true
       options_html = "<option value=\"\">#{h(blank_label)}</option>".html_safe + options_html
     end
     
@@ -312,6 +312,7 @@ module SelectBoxHelper
     ordered_bourreau_ids = tcs_by_bourreau_id.keys.sort { |bid1,bid2| bourreaux_by_ids[bid1].name <=> bourreaux_by_ids[bid2].name }
     ordered_bourreau_ids.each do |bid|
       bourreau              = bourreaux_by_ids[bid]
+      b_is_online           = bourreau.online?
       bourreau_tool_configs = tcs_by_bourreau_id[bid]
       tcs_by_tool_id        = bourreau_tool_configs.group_by { |tc| tc.tool_id }
       ordered_tool_ids      = tcs_by_tool_id.keys.sort { |tid1,tid2| tools_by_ids[tid1].name <=> tools_by_ids[tid2].name }
@@ -320,13 +321,16 @@ module SelectBoxHelper
         tool_tool_configs = tcs_by_tool_id[tid].sort do |tc1,tc2|
           tc1.created_at <=> tc2.created_at # creation date usually sorts by 'most recent version'
         end
+        
         pairlist = []
         tool_tool_configs.each do |tc|
-          desc = tc.short_description
-          pairlist << [ desc, tc.id.to_s ]
+          desc     = tc.short_description
+          tc_pair  = !b_is_online ? [ desc, tc.id.to_s, {:disabled => "true"} ] : [ desc, tc.id.to_s ]
+          pairlist << tc_pair 
         end
         if same_tool && (! same_bourreau || ordered_bourreau_ids.size == 1)
-          label = "On #{bourreau.name}:"
+          offline = b_is_online ? "" : " (offline)"
+          label = "On #{bourreau.name}#{offline}:"
         elsif same_bourreau && ! same_tool
           label = "For tool #{tool.name}:"
         else
