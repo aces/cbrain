@@ -1266,7 +1266,7 @@ class ClusterTask < CbrainTask
       def vm_run(job)
         raise "This job should be submitted to a VM (not implemented yet)"
       end
-      if !job.goes_to_vm
+      if job.goes_to_vm
         vm_run(job)
       else
         orig_run(job)
