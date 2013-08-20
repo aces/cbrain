@@ -355,8 +355,8 @@ class Bourreau < RemoteResource
     log_to        = myself.workers_log_to
     verbose       = myself.workers_verbose   || 0
 
-    cb_error "Cannot start workers: improper number of instances to start in config (must be 1..20)." unless
-       num_instances && num_instances > 0 && num_instances < 21
+    cb_error "Cannot start workers: improper number of instances to start in config (must be 0..20)." unless
+       num_instances && num_instances >= 0 && num_instances < 21
     cb_error "Cannot start workers: improper check interval in config (must be 5..3600)." unless
        chk_time && chk_time >= 5 && chk_time <= 3600
     cb_error "Cannot start workers: improper log destination keyword in config (must be none, separate, stdout|stderr, combined, or bourreau)." unless
