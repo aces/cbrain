@@ -83,10 +83,47 @@ class BourreauWorker < Worker
     # necessary for us to be able to make a decision as to what to do with them.
     # The full objects are reloaded in process_task() later on.
 
-    # TODO select also tasks for local VMs: runnable or already running (task.params[:concrete_bourreau]) on the locally deployed VMs
+    # TODO (VM tristan) select also tasks for local VMs: runnable or already running (task.params[:concrete_bourreau]) on the locally deployed VMs
     tasks_todo = CbrainTask.not_archived.where( :status => ReadyTasks, :bourreau_id => @rr_id ).select([:id, :type, :user_id, :bourreau_id, :status, :updated_at]).all
 
-    worker_log.info "Found #{tasks_todo.size} tasks to handle."
+    worker_log.info "Found #{tasks_todo.size} regular tasks to handle."
+
+    #gets all tasks going to DiskImage bourreaux
+    tasks_for_vms = Array.new
+    disk_images = Bourreau::DiskImage.all
+    disk_images.each { |bourreau|
+      #list tasks going to these bourreaux
+      tasks_for_vms.concat CbrainTask.not_archived.where(:bourreau_id => bourreau.id, :status => ReadyTasks) 
+      tasks_for_vms.each { |x| worker_log.info "Found task id #{x.id} for virtual bourreau \"#{bourreau.name}\"" }
+    }
+
+    #gets VMs available to me
+    vms = CbrainTask.not_archived.where(:type => "CbrainTask::StartVM", :bourreau_id => @rr_id, :status => "On CPU")  #TODO (VM tristan) remove this ugly "CbrainTask::StartVM"
+    
+    #now joins
+    tasks_todo_vms = Array.new #will contain the tasks that I could send to my VMs
+    vms.each { |x| 
+      if x.params[:vm_status] == "booted"
+        worker_log.info "Found a booted VM: task id = #{x.id}, vm file id = #{x.params[:disk_image]}" 
+        free_slots = 1 #TODO (VM tristan) here I assume that any running VM can execute a task: needs to be changed   
+       
+        #check if a task could go to this booted VM
+        tasks_for_vms.each { |y| 
+          task_image_file_id = Bourreau::DiskImage.where(:id => y.bourreau_id)
+          worker_log.info "Task #{y.id} needs image file id #{task_image_file_id[0].disk_image_file_id}"
+          if task_image_file_id[0].disk_image_file_id.to_i == x.params[:disk_image].to_i 
+              worker_log.info "  => VM task #{y.id} may go to VM #{x.id}"
+              free_slots = free_slots - 1
+              tasks_todo_vms << y
+              break unless free_slots > 0
+           else
+             worker_log.info "  => VM task #{y.id} may not go to VM #{x.id} (VM disk file id is #{x.params[:disk_image]})"
+           end
+          }
+      end     
+    }
+    tasks_todo.concat tasks_todo_vms
+
 
     # Detects and turns on sleep mode. We enter sleep mode once we
     # find no task to process for three normal scan cycles in a row.

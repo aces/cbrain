@@ -1257,7 +1257,7 @@ class ClusterTask < CbrainTask
   # This is really a property of the whole Rails app,
   # but it's provided here in the model for convenience.
 
-  #TODO redefine session in @scir_session.class instead of ScirUnix::Session
+  #TODO (VM tristan) redefine session in @scir_session.class instead of ScirUnix::Session
   class ScirUnix::Session
 
     alias orig_run run
@@ -1578,7 +1578,7 @@ class ClusterTask < CbrainTask
   #returns true if this job id looks like a jobid for a VM
   def job_id_goes_to_vm?(jobid)
     #to be unique a jobid for a VM should look like VM:bourreau_id:local_ip:pid:time_start
-    #TODO put this method in ScirVM
+    #TODO (VM tristan) put this method in ScirVM
   end
 
 
