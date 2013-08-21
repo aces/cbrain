@@ -1274,6 +1274,28 @@ class ClusterTask < CbrainTask
       else
         orig_run(job)
       end
+    end    
+
+  end
+
+  class Scir::Session
+
+    def job_id_goes_to_vm?(jobid)
+      return jobid.start_with? "VM:"
+    end
+
+    alias orig_job_ps job_ps
+
+    def job_ps(jid,caller_updated_at = nil)
+      def vm_job_ps(jid,caller_updated_at = nil)
+        #TODO (VM tristan) implement this seriously
+        return Scir::STATE_DONE
+      end
+      if job_id_goes_to_vm? jid
+        vm_job_ps(jid,caller_updated_at)
+      else
+        orig_job_ps(jid,caller_updated_at)
+      end
     end
   end
   
@@ -1334,10 +1356,10 @@ class ClusterTask < CbrainTask
     state = self.scir_session.job_ps(self.cluster_jobid, self.updated_at)
     status = @@Cluster_States_To_Status[state] || "Does Not Exist"
     return status
-  rescue => ex
-    logger.error("Cannot get cluster status for #{self.scir_session.class} ?!?") rescue nil
-    logger.error("Exception was: #{ex.class} : #{ex.message}")                   rescue nil
-    nil
+ # rescue => ex
+ #   logger.error("Cannot get cluster status for #{self.scir_session.class} ?!?") rescue nil
+ #   logger.error("Exception was: #{ex.class} : #{ex.message}")                   rescue nil
+ #   nil
   end
   
 
@@ -1573,11 +1595,6 @@ class ClusterTask < CbrainTask
   end
 
 
-  #returns true if this job id looks like a jobid for a VM
-  def job_id_goes_to_vm?(jobid)
-    #to be unique a jobid for a VM should look like VM:bourreau_id:local_ip:pid:time_start
-    #TODO (VM tristan) put this method in ScirVM
-  end
 
 
   ##################################################################

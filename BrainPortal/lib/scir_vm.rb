@@ -4,9 +4,8 @@ class ScirVM < Scir
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def run(job)
-    #select a VM where to run the job
-    task_id = job.task_id
-    task = CbrainTask.where(:id => task_id).first      
+
+    task = CbrainTask.where(:id => job.task_id).first      
     
     vm_id = task.params[:vm_id]
     vm_task = CbrainTask.where(:id => vm_id).first
@@ -33,7 +32,7 @@ class ScirVM < Scir
     
     pid = run_command(command,vm_task)
     
-    return "#{vm_id}:#{pid}"
+    return "VM:#{vm_id}:#{pid}"
   end
 
   def run_command(command,vm_task)
