@@ -205,7 +205,10 @@ class BourreauWorker < Worker
   end
 
   #This method returns an array containing tasks that may be handled by this physical bourreau
+  #TODO (VM tristan) make this more efficient (use less queries)
   def get_vm_tasks_to_handle
+    #TODO (VM tristan) also needs to return tasks that are running on the local VMs: currently these won't be updated
+
     #gets all tasks going to DiskImage bourreaux
     tasks_for_vms = Array.new
     disk_images = Bourreau::DiskImage.all
@@ -223,26 +226,29 @@ class BourreauWorker < Worker
     vms.each { |x| 
       if x.params[:vm_status] == "booted"
         worker_log.info "Found a booted VM: task id = #{x.id}, vm file id = #{x.params[:disk_image]}" 
-        free_slots = 1 #TODO (VM tristan) here I assume that any running VM can execute a task: needs to be changed   
-       
-        #check if a task could go to this booted VM
-        tasks_for_vms.each { |y| 
-          task_image_file_id = Bourreau::DiskImage.where(:id => y.bourreau_id).first
-          worker_log.info "Task #{y.id} needs image file id #{task_image_file_id.disk_image_file_id}"
-          if task_image_file_id.disk_image_file_id.to_i == x.params[:disk_image].to_i 
+        free_slots = x.params[:job_slots].to_i #TODO (VM tristan) subtract tasks running on this VM
+        
+        if free_slots > 0 
+          #check if a task could go to this booted VM
+          tasks_for_vms.each { |y| 
+            task_image_file_id = Bourreau::DiskImage.where(:id => y.bourreau_id).first
+            worker_log.info "Task #{y.id} needs image file id #{task_image_file_id.disk_image_file_id}"
+            if task_image_file_id.disk_image_file_id.to_i == x.params[:disk_image].to_i 
               worker_log.info "  => VM task #{y.id} may go to VM #{x.id}"
               free_slots = free_slots - 1
               #TODO (VM tristan) add a field to cbrain_task to store the physical bourreau
               if y.params[:physical_bourreau] != @rr_id 
                 y.params[:physical_bourreau] = @rr_id 
+                y.params[:vm_id] = x.id #TODO (VM tristan) check if we really want to fix *now* the VM id where this task will be executed. 
                 y.save
               end
               tasks << y
               break unless free_slots > 0
-           else
-             worker_log.info "  => VM task #{y.id} may not go to VM #{x.id} (VM disk file id is #{x.params[:disk_image]})"
-           end
+            else
+              worker_log.info "  => VM task #{y.id} may not go to VM #{x.id} (VM disk file id is #{x.params[:disk_image]})"
+            end
           }
+        end
       end     
     }
     return tasks

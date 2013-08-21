@@ -1264,8 +1264,10 @@ class ClusterTask < CbrainTask
 
     def run(job)  
       def vm_run(job)
-        #orig_run(job)
-        raise "This job should be submitted to a VM (not implemented yet)"
+        #TODO (VM tristan) fix this: use a "static" method? 
+        s = ScirVM.new
+        s.run(job)
+#        raise "This job should be submitted to a VM (not implemented yet)"
       end
       if job.goes_to_vm
         vm_run(job)
@@ -1431,6 +1433,7 @@ class ClusterTask < CbrainTask
     job.name     = self.tname_tid  # "#{self.name}-#{self.id}" # some clusters want all names to be different!
     job.walltime = self.job_walltime_estimate
     job.goes_to_vm = self.job_template_goes_to_vm?
+    job.task_id = self.id
 
     # Log version of Scir lib
     drm     = scir_class.drm_system

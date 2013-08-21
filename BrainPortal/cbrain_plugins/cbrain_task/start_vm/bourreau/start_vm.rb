@@ -134,6 +134,7 @@ class CbrainTask::StartVM < ClusterTask
   end
   
   def booted?
+    #TODO (VM tristan) use Pierre's ssh lib instead
     addlog "Trying to ssh #{params[:vm_user]}@#{params[:vm_local_ip]}:#{params[:ssh_port]} with password #{params[:vm_password]}"
     Net::SSH.start(params[:vm_local_ip], params[:vm_user], :port=>params[:ssh_port],:password => params[:vm_password] ) do|ssh|
       result = ssh.exec!('ls')

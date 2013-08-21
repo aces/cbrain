@@ -44,8 +44,10 @@
 <strong>QEMU options:</strong>
    <%= text_field_tag :qemu_params.to_la, params[:qemu_params], size:65 %>
 <br/>
+<strong>Job slots</strong>
+   <%= text_field_tag :job_slots.to_la, params[:job_slots], size:3 %>
+<br/>
 <strong>Use emulation</strong>
-
   <%= form.params_check_box :emulation %>
 
 

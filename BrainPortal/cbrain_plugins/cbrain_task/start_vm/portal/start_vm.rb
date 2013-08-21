@@ -40,7 +40,8 @@ class CbrainTask::StartVM < PortalTask
       :emulation => "0",
       :vm_user => "root",
       :vm_password => "home2013",
-      :vm_boot_timeout => 60
+      :vm_boot_timeout => 60,
+      :job_slots => 1
     }
   end
   
@@ -67,6 +68,7 @@ class CbrainTask::StartVM < PortalTask
     cb_error "Missing VM user!"  if params[:vm_user].blank?
     cb_error "Missing VM password!"  if params[:vm_password].blank?
     cb_error "Missing VM boot timeout!"  if params[:vm_boot_timeout].blank?
+    cb_error "Missing number of job slots!" if params[:job_slots].blank?
 
     #params[:vm_status] is the status of the VM embedded in the task.
     #For now we use a task param, maybe we'll create a VM object
