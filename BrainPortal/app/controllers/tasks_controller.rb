@@ -65,15 +65,16 @@ class TasksController < ApplicationController
     @total_tasks       = scope.count    # number of TASKS
     @total_space_known = scope.sum(:cluster_workdir_size)
     @total_space_unkn  = scope.where(:cluster_workdir_size => nil).where("cluster_workdir IS NOT NULL").count
-    @total_entries     = @total_tasks # number of ENTRIES, a batch line is 1 entry even if it represents N tasks
 
     # For Pagination
     offset = (@current_page - 1) * @per_page
 
     if @filter_params["sort_hash"]["order"] == "cbrain_tasks.batch" && !@filter_params["filter_hash"]["batch_id"] && request.format.to_sym != :xml
-      batch_ids            = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).raw_first_column("distinct(cbrain_tasks.batch_id)")
-      task_counts_in_batch = scope.where(:batch_id => batch_ids).group(:batch_id).count
-      @total_entries       = task_counts_in_batch.count
+      batch_ids                 = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).raw_first_column("distinct(cbrain_tasks.batch_id)")
+      task_counts_in_batch      = scope.where(:batch_id => batch_ids).group(:batch_id).count
+      full_batch_ids            = scope.raw_first_column("distinct(cbrain_tasks.batch_id)")
+      full_task_counts_in_batch = scope.where(:batch_id => full_batch_ids).group(:batch_id).count
+      @total_entries            = full_task_counts_in_batch.count
       
       @tasks = {} # hash batch_id => task_info
       batch_ids.each do |batch_id|
@@ -86,7 +87,7 @@ class TasksController < ApplicationController
       end
       pagination_list = batch_ids
     else
-      
+      @total_entries = @total_tasks 
       task_list = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).all
       
       @tasks = {} # hash task_id -> task_info for a single task
