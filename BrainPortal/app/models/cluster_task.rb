@@ -1264,6 +1264,7 @@ class ClusterTask < CbrainTask
 
     def run(job)  
       def vm_run(job)
+        #orig_run(job)
         raise "This job should be submitted to a VM (not implemented yet)"
       end
       if job.goes_to_vm
@@ -1568,12 +1569,6 @@ class ClusterTask < CbrainTask
     return nil
   end
 
-  #returns true if the task is supposed to be executed by a VM
-  def job_template_goes_to_vm? 
-    retval =  Bourreau.find(self.bourreau_id).type == "DiskImage"
-    addlog "Task #{self} goes to VM? #{retval}"
-    return retval
-  end
 
   #returns true if this job id looks like a jobid for a VM
   def job_id_goes_to_vm?(jobid)

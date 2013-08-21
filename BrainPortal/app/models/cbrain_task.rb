@@ -332,6 +332,9 @@ class CbrainTask < ActiveRecord::Base
   # not defined!
   def cluster_shared_dir
     mybourreau = self.bourreau
+    if self.job_template_goes_to_vm?
+      mybourreau = Bourreau.where(:id => self.params[:physical_bourreau]).first
+    end
     cb_error "No Bourreau associated with this task." unless mybourreau
     shared_dir = mybourreau.cms_shared_dir
     cb_error "Cluster shared work directory not defined for Bourreau '#{self.bourreau.name}'." if shared_dir.blank?
@@ -816,6 +819,13 @@ class CbrainTask < ActiveRecord::Base
     return :workdir
   end
 
+  #returns true if the task is supposed to be executed by a VM
+  def job_template_goes_to_vm? 
+    retval =  Bourreau.find(self.bourreau_id).type == "DiskImage"
+    addlog "Task #{self} goes to VM? #{retval}"
+    return retval
+  end
+
 
 
   ##################################################################
@@ -851,6 +861,7 @@ class CbrainTask < ActiveRecord::Base
   rescue
     true
   end
+
 
 end
 
