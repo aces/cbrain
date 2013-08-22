@@ -703,16 +703,27 @@ $(
    });
    
    $(document).delegate(".request_on_change", "change", function(){
-     var input_element = $(this);
-     var param_name = input_element.attr("name");
-     var current_value = input_element.attr("value");
-     var url = input_element.attr("data-url");
-     var method = input_element.attr("data-method");
-     var target = input_element.attr("data-target");
-     var data_type = input_element.attr("data-type");
-     var update_text = input_element.attr("data-loading-message");
-     if(!method) method = "GET";
+     var input_element        = $(this);
+     var param_name           = input_element.attr("name");
+     var current_value        = input_element.attr("value");
+     var url                  = input_element.attr("data-url");
+     var method               = input_element.attr("data-method");
+     var target               = input_element.attr("data-target");
+     var data_type            = input_element.attr("data-type");
+     var update_text          = input_element.attr("data-loading-message");
+     var optgroup_change      = input_element.attr("data-optgroup-change")
+     var old_onchange_value   = input_element.data("old-onchange-value");
+     if(!method) method       = "GET";
      if(!data_type) data_type = "html";
+     var selected             = input_element.find("option:selected").parent();
+     var optgroup_label       = selected.attr("label");
+     
+     if ( optgroup_change && optgroup_label && optgroup_label == old_onchange_value) {
+       return false;
+     }
+     else {
+       input_element.data("old-onchange-value",optgroup_label);
+     }
      
      if(target && update_text){
        $(target).html(update_text);
@@ -722,9 +733,9 @@ $(
      parameters[param_name] = current_value;
       
      $.ajax({
-       url : url,
-       type : method,
-       dataType : data_type,
+       url       : url,
+       type      : method,
+       dataType  : data_type,
        beforeSend: function(){
          $("#loading_image").show();
        },

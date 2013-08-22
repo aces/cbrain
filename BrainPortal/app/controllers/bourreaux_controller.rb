@@ -198,19 +198,20 @@ class BourreauxController < ApplicationController
   end
 
   def load_info #:nodoc:
-
-    if params[:bourreau_id].blank?
+    
+    if params[:bourreau_id].blank? && params[:tool_config_id].blank? 
       render :text  => ""
       return
     end
 
-    @bourreau  = Bourreau.find(params[:bourreau_id])
+    bourreau_id = params[:bourreau_id] || ToolConfig.find(params[:tool_config_id]).bourreau_id
+    @bourreau   = Bourreau.find(bourreau_id)
 
     respond_to do |format|
       format.html { render :partial => 'load_info', :locals => { :bourreau => @bourreau } }
       format.xml  { render :xml     => @bourreau   }
     end
-
+    
   rescue => ex
     #render :text  => "#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
     render :text  => '<strong style="color:red">No Information Available</strong>'

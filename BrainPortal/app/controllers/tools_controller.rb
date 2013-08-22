@@ -26,7 +26,7 @@ class ToolsController < ApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
  
   before_filter :login_required
-  before_filter :admin_role_required, :except  => [:index, :bourreau_select]
+  before_filter :admin_role_required, :except  => [:index, :tool_config_select]
  
   # GET /tools
   # GET /tools.xml
@@ -44,23 +44,33 @@ class ToolsController < ApplicationController
     end
   end
   
-  def bourreau_select #:nodoc:
+   def tool_config_select #:nodoc:
     if params[:tool_id].blank?
       render :text  => ""
       return
     end
-    
-    @tool        = current_user.available_tools.find(params[:tool_id])
-    bourreau_ids = @tool.bourreaux.map &:id
-    @bourreaux   = Bourreau.find_all_accessible_by_user(current_user).where( :id => bourreau_ids ).all
-    @bourreaux.reject! do |b|
-      tool_configs = ToolConfig.where( :tool_id => @tool.id, :bourreau_id => b.id )
-      ! ( tool_configs.detect { |tc| tc.can_be_accessed_by?(current_user) } ) # need at least one config available for user
-    end
-    
+
+    tool_id          = params[:tool_id]
+    @tool            = current_user.available_tools.find(tool_id)
+
+    # All accessible bourreaux for this tool
+    bourreau_ids  = @tool.bourreaux.map &:id
+    @bourreaux    = Bourreau.find_all_accessible_by_user(current_user).where( :id => bourreau_ids)
+    # All accessible tc for this tool on accessible bourreaux
+    bourreaux_ids = @bourreaux.map &:id
+    @tool_configs = ToolConfig.find_all_accessible_by_user(current_user).where(:tool_id => tool_id, :bourreau_id => bourreau_ids)
+    # Reduce list of bourreaux, bourreaux need at least one config available
+    bourreaux_ids = @tool_configs.map(&:bourreau_id)
+    @bourreaux    = @bourreaux.where(:id => bourreaux_ids).all
+
+    # Select a specific tool_config
+    selected_by_default = current_user.meta["pref_bourreau_id"]
+    @tool_config = bourreaux_ids.include?(selected_by_default) && @bourreaux.detect? { |b| b.id == selected_by_default && b.online? } ? 
+                        @tool_configs.where(:bourreau_id => selected_by_default).last : nil
+
     respond_to do |format|
-      format.html { render :partial => 'tools/bourreau_select' }
-      format.xml  { render :xml     => @bourreaux }
+      format.html { render :partial => 'tools/tool_config_select' }
+      format.xml  { render :xml     => @tool_configs }
     end
     
   rescue => ex

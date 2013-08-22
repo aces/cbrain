@@ -47,9 +47,9 @@
    <div class="userfiles_tool_selector">
     <%= ajax_onchange_select(
           "tool_id", 
-          url_for(:controller  => :tools, :action => :bourreau_select), 
+          url_for(:controller  => :tools, :action => :tool_config_select), 
           "<option value=\"\">Select a task to launch</option>".html_safe + grouped_options_for_select(grouped_tools),
-          :target  => "#bourreau_select_convert", 
+          :target  => "#tool_version_selector", 
           :loading_message  => "<span class='warning'>Checking availability...</span>"
       ) 
     %>
@@ -57,7 +57,7 @@
 
    <br>
 
-   <div class="userfiles_bourreau_selector" id="bourreau_select_convert">
+   <div class="userfiles_bourreau_selector" id="tool_version_selector">
    </div>
 
 <% else %>

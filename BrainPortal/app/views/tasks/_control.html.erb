@@ -31,7 +31,7 @@
   <tr>
     <td <%= 'class="error_display"' if @task.status == 'Duplicated' %>>
       <strong>Server&nbsp;&amp;&nbsp;Version:</strong><br>
-      <%= tool_config_select "cbrain_task[tool_config_id]", :tool_configs => @tool_configs, :selector => @task %>
+      <%= tool_config_select "cbrain_task[tool_config_id]", :tool_configs => @tool_configs, :selector => @task, :include_blank => "Select Server & Version" %>
     </td>
 
     <td>

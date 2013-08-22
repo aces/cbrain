@@ -128,7 +128,7 @@ CbrainRailsPortal::Application.routes.draw do
 
   resources :tools do
     collection do
-      get    'bourreau_select'
+      get    'tool_config_select'
       post   'assign_tools'
     end
   end
