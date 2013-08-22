@@ -33,8 +33,7 @@ class ScirVM < Scir
     #launch process
     command = job.qsub_command
     command.sub!(task.full_cluster_workdir,task.cluster_workdir) #TODO (VM tristan) fix these awful substitutions
-    command.gsub!(task.full_cluster_workdir,"./")
-    
+    command.gsub!(task.full_cluster_workdir,"./")  
     command+=" & echo \$!" #so that the command is backgrounded and its PID is returned
 
     pid = run_command(command,vm_task).gsub("\n","")
@@ -92,9 +91,13 @@ class ScirVM < Scir
     vm_id,pid = get_vm_id_and_pid jid
     vm_task = get_task vm_id
     command = "ps -p #{pid} -o state | awk '$1 != \"PID\" {print $2}'"
-    run_command(command,vm_task)
+    status_letter = run_command(command,vm_task).gsub("\n","")
 
-    raise "Virtual job ps: command is #{command}"
+    return Scir::STATE_DONE if status_letter == "" #TODO (VM tristan) find a way to return STATE_FAILED when exit code was not 0
+    return Scir::STATE_RUNNING if status_letter.match(/[srzu]/i)
+    return Scir::STATE_USER_SUSPENDED if status_letter.match(/[t]/i)
+    return Scir::STATE_UNDETERMINED
+
   end
   
   def get_task(vm_id)
