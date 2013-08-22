@@ -1,14 +1,19 @@
 # Scir class to handle tasks running inside VMs
+# Didn't use the concept of session which is unclear to me. 
+# This scir is only used as a "hijack" of the physical bourreau 
+# The relevance of inheriting Scir is to be questioned
 # Original author: Tristan Glatard
+
 class ScirVM < Scir
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def run(job)
 
-    task = CbrainTask.where(:id => job.task_id).first      
+    task = get_task job.task_id
     
     vm_id = task.params[:vm_id]
-    vm_task = CbrainTask.where(:id => vm_id).first
+    vm_task = get_task vm_id
     
     #create the remote dir
     create_task_dir(task,vm_task)
@@ -30,16 +35,30 @@ class ScirVM < Scir
     command.sub!(task.full_cluster_workdir,task.cluster_workdir) #TODO (VM tristan) fix these awful substitutions
     command.gsub!(task.full_cluster_workdir,"./")
     
-    pid = run_command(command,vm_task)
+    command+=" & echo \$!" #so that the command is backgrounded and its PID is returned
+
+    pid = run_command(command,vm_task).gsub("\n","")
     
+    job_id = create_job_id(vm_id,pid)
+
+    return job_id
+  end
+
+  def create_job_id(vm_id,pid)
     return "VM:#{vm_id}:#{pid}"
+  end
+
+  def get_vm_id_and_pid(jid)
+    s = jid.split(":")
+    raise "#{jid} doesn't look like a VM job id" unless ( s[0] == "VM" && s.size == 3 )
+    return [s[1],s[2]]
   end
 
   def run_command(command,vm_task)
     master = get_ssh_master vm_task
-    master.remote_shell_command_reader command
+    result = master.remote_shell_command_reader(command) {|io| io.read}
     master.stop
-    return 1234 #TODO return PID
+    return result 
   end
   
   def mount_dir(local_dir,remote_dir,vm_task)
@@ -66,6 +85,20 @@ class ScirVM < Scir
     master.start
     raise "Cannot establish connection with VM id #{vm_task.id} (#{user}@#{ip}:#{port})" unless master.is_alive?
     return master
+  end
+
+  def job_ps(jid,caller_updated_at = nil)
+    
+    vm_id,pid = get_vm_id_and_pid jid
+    vm_task = get_task vm_id
+    command = "ps -p #{pid} -o state | awk '$1 != \"PID\" {print $2}'"
+    run_command(command,vm_task)
+
+    raise "Virtual job ps: command is #{command}"
+  end
+  
+  def get_task(vm_id)
+    CbrainTask.where(:id => vm_id).first
   end
 
 end

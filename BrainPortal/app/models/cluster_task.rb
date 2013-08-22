@@ -1287,9 +1287,10 @@ class ClusterTask < CbrainTask
     alias orig_job_ps job_ps
 
     def job_ps(jid,caller_updated_at = nil)
+
       def vm_job_ps(jid,caller_updated_at = nil)
-        #TODO (VM tristan) implement this seriously
-        return Scir::STATE_DONE
+        s = ScirVM.new
+        s.job_ps(jid,caller_updated_at = nil)
       end
       if job_id_goes_to_vm? jid
         vm_job_ps(jid,caller_updated_at)
@@ -1356,10 +1357,10 @@ class ClusterTask < CbrainTask
     state = self.scir_session.job_ps(self.cluster_jobid, self.updated_at)
     status = @@Cluster_States_To_Status[state] || "Does Not Exist"
     return status
- # rescue => ex
- #   logger.error("Cannot get cluster status for #{self.scir_session.class} ?!?") rescue nil
- #   logger.error("Exception was: #{ex.class} : #{ex.message}")                   rescue nil
- #   nil
+  rescue => ex
+    logger.error("Cannot get cluster status for #{self.scir_session.class} ?!?") rescue nil
+    logger.error("Exception was: #{ex.class} : #{ex.message}")                   rescue nil
+       nil
   end
   
 
