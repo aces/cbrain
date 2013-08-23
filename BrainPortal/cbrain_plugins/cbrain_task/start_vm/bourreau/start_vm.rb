@@ -63,14 +63,23 @@ class CbrainTask::StartVM < ClusterTask
     params = self.params
     snapshot_name = "image-snapshot-#{self.id}"
     snapshot_creation = "qemu-img create -f qcow2 -b image #{snapshot_name}"
+
+    #TODO (VM tristan) may fail in case someone (not us) already uses this port on the host
+    ssh_port = 2200 + ( self.id % 3000 ) #make sure this doesn't overlap with display ports which typically start at 5900
+    self.params[:ssh_port] = ssh_port
+    display_port = ( self.id % 99 )
+    self.params[:vnc_display] = display_port
+    self.save
+    
     command = "#{snapshot_creation} ; "
+
     if mybool(params[:emulation])
       then 
       command << "qemu-system-x86_64"
       else
       command << "qemu-kvm"
     end
-    command << " -hda #{snapshot_name} -redir tcp:#{params[:ssh_port]}::22 -display vnc=#{params[:vnc_display]} #{params[:qemu_params]}"
+    command << " -hda #{snapshot_name} -redir tcp:#{params[:ssh_port]}::22 -display vnc=:#{params[:vnc_display]} #{params[:qemu_params]}"
     commands = [
                 "echo \"Command: #{command}\"",
                 command

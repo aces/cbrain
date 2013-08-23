@@ -35,7 +35,6 @@ class CbrainTask::StartVM < PortalTask
     {
       :disk_image => "default_disk_image.vdi",
       :qemu_params => "-boot d -net nic -net user -m 2g -localtime",
-      :ssh_port => 2222,
       :vnc_display => ":0",
       :emulation => "0",
       :vm_user => "root",
@@ -62,8 +61,6 @@ class CbrainTask::StartVM < PortalTask
     params = self.params
 
     cb_error "Missing disk image file!"  if params[:disk_image].blank?
-    cb_error "Missing ssh port!"  if params[:ssh_port].blank?
-    cb_error "Missing VNC display!"  if params[:vnc_display].blank?
     cb_error "Missing VM user!"  if params[:vm_user].blank?
     cb_error "Missing VM boot timeout!"  if params[:vm_boot_timeout].blank?
     cb_error "Missing number of job slots!" if params[:job_slots].blank?
