@@ -67,7 +67,7 @@ class CbrainTask::StartVM < ClusterTask
     #TODO (VM tristan) may fail in case someone (not us) already uses this port on the host
     ssh_port = 2200 + ( self.id % 3000 ) #make sure this doesn't overlap with display ports which typically start at 5900
     self.params[:ssh_port] = ssh_port
-    display_port = ( self.id % 99 )
+    display_port = ( self.id % 100 )
     self.params[:vnc_display] = display_port
     self.save
     
@@ -84,7 +84,7 @@ class CbrainTask::StartVM < ClusterTask
                 "echo \"Command: #{command}\"",
                 command
                ]
-    return commands
+    return  commands
   end
   
   def save_results

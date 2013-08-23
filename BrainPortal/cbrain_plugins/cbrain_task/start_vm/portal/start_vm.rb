@@ -39,6 +39,7 @@ class CbrainTask::StartVM < PortalTask
       :emulation => "0",
       :vm_user => "root",
       :vm_boot_timeout => 60,
+      :number_of_vms => 1,
       :job_slots => 1
     }
   end
@@ -57,6 +58,16 @@ class CbrainTask::StartVM < PortalTask
     ""
   end
 
+  def final_task_list
+    task_list = [ ]
+    params[:number_of_vms].to_i.times{
+      task_list << self.dup
+    }
+    return task_list,""
+  end
+
+  
+
   def after_form #:nodoc:
     params = self.params
 
@@ -64,6 +75,8 @@ class CbrainTask::StartVM < PortalTask
     cb_error "Missing VM user!"  if params[:vm_user].blank?
     cb_error "Missing VM boot timeout!"  if params[:vm_boot_timeout].blank?
     cb_error "Missing number of job slots!" if params[:job_slots].blank?
+    cb_error "Missing number of instances!" if params[:number_of_vms].blank?
+    cb_error "Please don't try to start more than 20 instances at once for now." if params[:number_of_vms].to_i > 20
 
     #params[:vm_status] is the status of the VM embedded in the task.
     #For now we use a task param, maybe we'll create a VM object
