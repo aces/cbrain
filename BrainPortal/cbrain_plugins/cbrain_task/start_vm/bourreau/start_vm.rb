@@ -61,19 +61,20 @@ class CbrainTask::StartVM < ClusterTask
 
   def cluster_commands
     params = self.params
+    snapshot_name = "image-snapshot-#{self.id}"
+    snapshot_creation = "qemu-img create -f qcow2 -b image #{snapshot_name}"
+    command = "#{snapshot_creation} ; "
     if mybool(params[:emulation])
       then 
-      command = "qemu-system-x86_64"
+      command << "qemu-system-x86_64"
       else
-      command = "qemu-kvm"
+      command << "qemu-kvm"
     end
-    command << " -hda image -redir tcp:#{params[:ssh_port]}::22 -display vnc=#{params[:vnc_display]} #{params[:qemu_params]}"
-
+    command << " -hda #{snapshot_name} -redir tcp:#{params[:ssh_port]}::22 -display vnc=#{params[:vnc_display]} #{params[:qemu_params]}"
     commands = [
                 "echo \"Command: #{command}\"",
                 command
                ]
-
     return commands
   end
   
