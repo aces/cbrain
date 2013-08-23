@@ -135,13 +135,19 @@ class CbrainTask::StartVM < ClusterTask
   
   def booted?
     #TODO (VM tristan) use Pierre's ssh lib instead
-    addlog "Trying to ssh #{params[:vm_user]}@#{params[:vm_local_ip]}:#{params[:ssh_port]} with password #{params[:vm_password]}"
-    Net::SSH.start(params[:vm_local_ip], params[:vm_user], :port=>params[:ssh_port],:password => params[:vm_password] ) do|ssh|
-      result = ssh.exec!('ls')
-      return true   
+    addlog "Trying to ssh #{params[:vm_user]}@#{params[:vm_local_ip]}:#{params[:ssh_port]}"
+    
+    user = params[:vm_user]
+    ip = params[:vm_local_ip]
+    port = params[:ssh_port]
+
+    master = SshMaster.find_or_create(user,ip,port)
+    CBRAIN.with_unlocked_agent 
+    master.start
+    if !master.is_alive?
+      addlog "Cannot connect to VM"
+      return false
     end
-  rescue Exception => ex
-    addlog "Couldn't connect to VM: #{ex}"
-    return false
+    return true
   end
 end      
