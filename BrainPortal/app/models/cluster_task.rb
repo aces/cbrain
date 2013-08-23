@@ -543,6 +543,14 @@ class ClusterTask < CbrainTask
       self.addlog("Setting Up.")
       self.record_cbraintask_revs
       self.make_cluster_workdir
+
+      # mount workdir in VM in case task goes to VM
+      # this should be done before chdir
+      if self.job_template_goes_to_vm?
+        s = ScirVM.new
+        s.mount_work_dir self
+      end
+
       self.apply_tool_config_environment do
         Dir.chdir(self.full_cluster_workdir) do
           if ! self.setup  # as defined by subclass
@@ -1224,6 +1232,7 @@ class ClusterTask < CbrainTask
     tar_file = self.in_situ_workdir_archive_file
 
     self.make_cluster_workdir
+
     Dir.chdir(self.full_cluster_workdir) do
       safe_symlink(file.cache_full_path, tar_file)
     end
@@ -1290,8 +1299,9 @@ class ClusterTask < CbrainTask
 
       def vm_job_ps(jid,caller_updated_at = nil)
         s = ScirVM.new
-        s.job_ps(jid,caller_updated_at = nil)
+        status = s.job_ps(jid,caller_updated_at = nil)
       end
+
       if job_id_goes_to_vm? jid
         vm_job_ps(jid,caller_updated_at)
       else
@@ -1439,6 +1449,7 @@ class ClusterTask < CbrainTask
 
     QSUB_SCRIPT
     qsubfile = self.qsub_script_basename
+
     File.open(qsubfile,"w") do |io|
       io.write( script )
     end
