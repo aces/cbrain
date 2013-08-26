@@ -40,6 +40,7 @@ class Tool < ActiveRecord::Base
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
   include ResourceAccess
+  include LicenseAgreements
   
   Categories = ["scientific tool", "conversion tool", "background"]
   
@@ -54,7 +55,7 @@ class Tool < ActiveRecord::Base
   has_many                :tool_configs, :dependent => :destroy
   has_many                :bourreaux, :through => :tool_configs, :uniq => true
 
-  attr_accessible         :name, :user_id, :group_id, :category, 
+  attr_accessible         :name, :user_id, :group_id, :category, :license_agreements,
                           :cbrain_task_class, :select_menu_text, :description
 
   # CBRAIN extension

@@ -136,7 +136,18 @@ class User < ActiveRecord::Base
   end
   
   def unsigned_license_agreements
-    RemoteResource.current_resource.license_agreements - self.signed_license_agreements
+
+    all_object_with_license = RemoteResource.find_all_accessible_by_user(self) +
+                              Tool.find_all_accessible_by_user(self)
+    license_agreements = []
+    # List all license_agreements
+    all_object_with_license.each do |o|
+      o_license_agreements = o.meta[:license_agreements]
+      license_agreements.concat(o_license_agreements) if o_license_agreements
+    end
+
+    # Difference between all license agreements and whom signed by the user
+    RemoteResource.current_resource.license_agreements + license_agreements - self.signed_license_agreements 
   end
   
   def remember_token? #:nodoc:
