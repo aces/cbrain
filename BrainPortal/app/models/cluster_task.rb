@@ -1396,9 +1396,16 @@ class ClusterTask < CbrainTask
   # Expects that the WD has already been changed.
   def submit_cluster_job
     self.addlog("Launching job on cluster.")
-
     name     = self.name
     commands = self.cluster_commands  # Supplied by subclass; can use self.params
+    #modify data cache paths for tasks going to VMs
+    if self.job_template_goes_to_vm?
+      mybourreau = Bourreau.where(:id => self.params[:physical_bourreau]).first
+      dir = mybourreau.dp_cache_dir
+      commands.each {|x| 
+        x.gsub!(dir,File.join("$HOME",File.basename(dir)))  #TODO (VM tristan) fix these awful substitutions
+      } 
+    end
     workdir  = self.full_cluster_workdir
 
     # Special case of RUBY-only jobs (jobs that have no cluster-side).
