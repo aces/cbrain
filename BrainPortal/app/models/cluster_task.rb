@@ -1402,8 +1402,10 @@ class ClusterTask < CbrainTask
     if self.job_template_goes_to_vm?
       mybourreau = Bourreau.where(:id => self.params[:physical_bourreau]).first
       dir = mybourreau.dp_cache_dir
+      dir2 = mybourreau.cms_shared_dir
       commands.each {|x| 
         x.gsub!(dir,File.join("$HOME",File.basename(dir)))  #TODO (VM tristan) fix these awful substitutions
+        x.gsub!(dir2,File.join("$HOME",File.basename(dir2)))  #TODO (VM tristan) fix these awful substitutions
       } 
     end
     workdir  = self.full_cluster_workdir
