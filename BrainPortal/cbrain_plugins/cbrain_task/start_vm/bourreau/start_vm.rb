@@ -31,7 +31,7 @@ class CbrainTask::StartVM < ClusterTask
   after_status_transition '*', 'On CPU', :starting
   
   def setup 
-    #sychronize VM disk image
+    #synchronize VM disk image
 
     disk_image_file_id = params[:disk_image]
     addlog "Synchronizing file with id #{disk_image_file_id}"
@@ -44,7 +44,7 @@ class CbrainTask::StartVM < ClusterTask
     difftime = timestop - timestart 
     self.addlog "Synchronized file #{disk_image_file.name} in #{difftime}s"
 
-    disk_image_filename = disk_image_file.cache_full_path #TODO or copy...
+    disk_image_filename = disk_image_file.cache_full_path 
     safe_symlink(disk_image_filename,"image")
 
     if !File.exists? disk_image_filename
@@ -137,6 +137,11 @@ class CbrainTask::StartVM < ClusterTask
       sleep 5
     end
     
+    addlog "Mounting shared directories"
+    mount_cache_dir
+    mount_task_dir
+
+    
     #WM has booted
     addlog "VM has booted"
     update_vm_status("booted")
@@ -145,19 +150,46 @@ class CbrainTask::StartVM < ClusterTask
   
   def booted?
     #TODO (VM tristan) use Pierre's ssh lib instead
-    addlog "Trying to ssh #{params[:vm_user]}@#{params[:vm_local_ip]}:#{params[:ssh_port]}"
+    addlog "Trying to ssh -p #{params[:ssh_port]} #{params[:vm_user]}@#{params[:vm_local_ip]}"
     
     user = params[:vm_user]
     ip = params[:vm_local_ip]
     port = params[:ssh_port]
 
-    master = SshMaster.find_or_create(user,ip,port)
-    CBRAIN.with_unlocked_agent 
-    master.start
-    if !master.is_alive?
-      addlog "Cannot connect to VM"
-      return false
-    end
+    s = ScirVM.new
+    master = s.get_ssh_master self
     return true
+  rescue => ex
+    return false
   end
+  
+  def mount_cache_dir
+    full_cache_dir = RemoteResource.current_resource.dp_cache_dir
+    if full_cache_dir.blank? 
+      addlog "No cache directory configured"
+      return
+    end
+    local_cache_dir = File.basename(full_cache_dir)
+    mount_dir full_cache_dir,local_cache_dir
+  rescue => ex
+    addlog "#{ex.class} #{ex.message}"
+  end
+  
+  def mount_task_dir
+    bourreau_shared_dir = self.bourreau.cms_shared_dir
+    mount_dir bourreau_shared_dir,File.basename(bourreau_shared_dir)
+  rescue => ex
+    addlog "#{ex.class} #{ex.message}"
+  end
+  
+  def mount_dir(remote_dir,local_dir)
+    scir = ScirVM.new
+    user = ENV['USER'] #quite unix-specific...
+    sshfs_command = "mkdir #{local_dir} -p ; sshfs -p 2222 -o StrictHostKeyChecking=no #{user}@localhost:#{remote_dir} #{local_dir}" #TODO (VM tristan) put this 2222 somewhere in config
+    addlog "Mounting dir: #{sshfs_command}"
+    addlog scir.run_command(sshfs_command,self) 
+  rescue => ex
+    addlog "#{ex.class} #{ex.message}"
+  end
+
 end      

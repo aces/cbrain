@@ -35,7 +35,6 @@ class CbrainTask::StartVM < PortalTask
     {
       :disk_image => "default_disk_image.vdi",
       :qemu_params => "-boot d -net nic -net user -m 2g -localtime",
-      :vnc_display => ":0",
       :emulation => "0",
       :vm_user => "root",
       :vm_boot_timeout => 60,

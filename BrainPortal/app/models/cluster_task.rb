@@ -544,13 +544,6 @@ class ClusterTask < CbrainTask
       self.record_cbraintask_revs
       self.make_cluster_workdir
 
-      # mount workdir in VM in case task goes to VM
-      # this should be done before chdir
-      if self.job_template_goes_to_vm?
-        s = ScirVM.new
-        s.mount_work_dir self
-      end
-
       self.apply_tool_config_environment do
         Dir.chdir(self.full_cluster_workdir) do
           if ! self.setup  # as defined by subclass

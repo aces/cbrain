@@ -11,12 +11,10 @@ class ScirVM < Scir
   def run(job)
     task,vm_task = get_task_and_vm_task job
     command = job.qsub_command
-    command.sub!(task.full_cluster_workdir,task.cluster_workdir) #TODO (VM tristan) fix these awful substitutions
+    command.sub!(task.full_cluster_workdir,File.join(File.basename(RemoteResource.current_resource.cms_shared_dir),task.cluster_workdir)) #TODO (VM tristan) fix these awful substitutions
     command.gsub!(task.full_cluster_workdir,"./")  
     command+=" & echo \$!" #so that the command is backgrounded and its PID is returned
-
     pid = run_command(command,vm_task).gsub("\n","")  
-
     return create_job_id(vm_task.id,pid)
   end
 
@@ -24,9 +22,7 @@ class ScirVM < Scir
     vm_id,pid = get_vm_id_and_pid jid
     vm_task = get_task vm_id
     command = "ps -p #{pid} -o state | awk '$1 != \"PID\" {print $2}'"
-
     status_letter = run_command(command,vm_task).gsub("\n","")
-
     return Scir::STATE_DONE if status_letter == "" #TODO (VM tristan) find a way to return STATE_FAILED when exit code was not 0
     return Scir::STATE_RUNNING if status_letter.match(/[srzu]/i)
     return Scir::STATE_USER_SUSPENDED if status_letter.match(/[t]/i)
@@ -46,13 +42,7 @@ class ScirVM < Scir
   def run_command(command,vm_task)
     master = get_ssh_master vm_task
     result = master.remote_shell_command_reader(command) {|io| io.read}
-    master.stop
     return result 
-  end
-  
-  def create_task_dir(task,vm_task)
-    command = "mkdir -p ./#{task.cluster_workdir}"
-    run_command(command,vm_task)
   end
   
   def get_ssh_master(vm_task)
@@ -61,26 +51,11 @@ class ScirVM < Scir
     ip = vm_task.params[:vm_local_ip]
     port = vm_task.params[:ssh_port]
     master = SshMaster.find_or_create(user,ip,port)
+    master.add_tunnel(:reverse,2222,'localhost',22) unless ( master.get_tunnels(:reverse).size !=0) #tunnel used to sshfs from the VM to the host
     CBRAIN.with_unlocked_agent 
     master.start
     raise "Cannot establish connection with VM id #{vm_task.id} (#{user}@#{ip}:#{port})" unless master.is_alive?
     return master
-  end
-  
-  def mount_work_dir(task)  
-    vm_id = task.params[:vm_id]
-    vm_task = get_task vm_id
-    create_task_dir(task,vm_task)
-    mount_dir(task.full_cluster_workdir,task.cluster_workdir,vm_task)
-  end
-
-  def mount_dir(local_dir,remote_dir,vm_task)
-    #TODO (VM tristan) use CBRAIN's agent instead of system call
-    user = vm_task.params[:vm_user]
-    ip = vm_task.params[:vm_local_ip]
-    port = vm_task.params[:ssh_port]
-    command = "sshfs -p #{port} #{user}@#{ip}:#{remote_dir} #{local_dir}"
-    Kernel.system(command)
   end
   
   def get_task(vm_id)
