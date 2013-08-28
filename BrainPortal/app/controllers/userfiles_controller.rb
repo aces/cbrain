@@ -1499,7 +1499,6 @@ class UserfilesController < ApplicationController
     unless tag_filters.blank?
       filtered_scope   = filtered_scope.where( "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})" )
     end
-    puts_magenta filtered_scope.inspect
     return filtered_scope
   end
     
