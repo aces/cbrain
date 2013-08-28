@@ -110,9 +110,10 @@
       <% end %>
     <% end %>
     
-    <% t.edit_cell("Immutable file", :content => check_box_tag(nil ,nil, @userfile.immutable?, :disabled => true) + "&nbsp;".html_safe) do %>
+    <% t.edit_cell("Immutable file", :content => check_box_tag(nil ,nil, @userfile.immutable?, :disabled => true) + "&nbsp;".html_safe + immutable_icon) do %>
       <%= hidden_field_tag "userfile[immutable]", "0" %>
       <%= check_box_tag("userfile[immutable]",    "1", @userfile.immutable?) %>
+      <%= immutable_icon %>
     <% end %>
 
     <% if current_user.has_role? :admin_user %>

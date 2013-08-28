@@ -46,75 +46,27 @@ class UserfilesController < ApplicationController
     # Header scope
     #------------------------------
 
-    @header_scope = Userfile.scoped
-
-    # Restrict by 'view all' or not
-    @filter_params["view_all"] ||= current_user.has_role?(:admin_user) ? 'off' : 'on'
-    if @filter_params["view_all"] == 'on'
-      @header_scope = Userfile.restrict_access_on_query(current_user, @header_scope, :access_requested => :read)
-    else
-      @header_scope = @header_scope.where( :user_id => current_user.id )
-    end
-
-    # Filter by current project
-    if current_project
-      @header_scope = @header_scope.where( :group_id  => current_project.id )
-    end
-
-    # Filter by 'view hidden' or not
-    unless @filter_params["view_hidden"] == 'on'
-      @header_scope = @header_scope.where( :hidden => false ) # show only the non-hidden files
-    end
-    
-    # The userfile index only show and count the main files, not their subformats.
-    @header_scope = @header_scope.where( :format_source_id => nil )
-
-
+    @header_scope = header_scope(@filter_params) 
 
     #------------------------------
     # Filtered scope
     #------------------------------
 
-    # Prepare filters
-    @filter_params["filter_hash"]                 ||= {}
-    @filter_params["filter_custom_filters_array"] ||= []
-    @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)  
-    @filter_params["filter_tags_array"]           ||= [] 
-    @filter_params["filter_tags_array"]           &= current_user.available_tags.map{ |t| t.id.to_s }  
-    @filter_params["sort_hash"]["order"] ||= 'userfiles.name'
-   
-    # Prepare custom filters
-    custom_filter_tags = @filter_params["filter_custom_filters_array"].map { |filter| UserfileCustomFilter.find(filter).tag_ids }.flatten.uniq
-        
-    # Prepare tag filters
-    tag_filters    = @filter_params["filter_tags_array"] + custom_filter_tags
-    #Apply filters
-    @filtered_scope = base_filtered_scope(@header_scope)
+    @filtered_scope = filter_scope(@filter_params,@header_scope)
     
-    @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
-      custom_filter = UserfileCustomFilter.find(custom_filter_id)
-      @filtered_scope = custom_filter.filter_scope(@filtered_scope)
-    end
-    
-    unless tag_filters.blank?
-      @filtered_scope = @filtered_scope.where( "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})" )
-    end
-    
-
-
     #------------------------------
     # Sorting scope
     #------------------------------
 
-    sorted_scope = base_sorted_scope @filtered_scope
-    
+    sorted_scope          = base_sorted_scope @filtered_scope
     tags_and_total_counts = @header_scope.select("tags.name as tag_name, tags.id as tag_id, COUNT(tags.name) as tag_count").joins(:tags).group("tags.name")
     filt_tag_counts       = @filtered_scope.joins(:tags).group("tags.name").count
     @tag_filters          = tags_and_total_counts.map { |tc| ["#{tc.tag_name} (#{filt_tag_counts[tc.tag_name].to_i}/#{tc.tag_count})", { :parameter  => :filter_tags_array, :value => tc.tag_id, :class => "#{"filter_zero" if filt_tag_counts[tc.tag_name].blank?}" }]  }
     
     # Identify and add necessary table joins
-    joins = []
-    sort_table = @filter_params["sort_hash"]["order"].split(".")[0]
+    joins                                  = []
+    @filter_params["sort_hash"]["order"] ||= 'userfiles.name'
+    sort_table                             = @filter_params["sort_hash"]["order"].split(".")[0]
     if sort_table == "users" || current_user.has_role?(:site_manager)
       joins << :user
     end
@@ -153,7 +105,7 @@ class UserfilesController < ApplicationController
     if @filter_params["tree_sort"] == "off" || ![:html, :js].include?(request.format.to_sym)
       @filtered_scope  = @filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
       @userfiles_total = @filtered_scope.count
-      ordered_real  = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
+      ordered_real     = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
     # ---- WITH tree sort ----
     else
       # We first get a list of 'simple' objects [ id, parent_id ]
@@ -942,10 +894,21 @@ class UserfilesController < ApplicationController
 
   # Adds the selected userfile IDs to the session's persistent list
   def manage_persistent
-    filelist    = params[:file_ids] || []
-
+    
     if (params[:operation] || 'clear') =~ /(clear|add|remove|replace)/i
+      filelist  = params[:file_ids] || []
       operation = Regexp.last_match[1].downcase
+    elsif (params[:operation]) =~ /select/i
+      operation      = "add"
+      # Reduce userfiles list according to @filter_params
+      filelist       = []
+      header_scope   = header_scope(@filter_params)
+      puts_green "-#{header_scope.size}-"
+      filtered_scope = filter_scope(@filter_params, header_scope)
+      puts_cyan "-#{filtered_scope}-"
+      filtered_scope.each do |f|
+        filelist << f.id.to_s if f.available?
+      end
     else
       operation = 'clear'
     end
@@ -976,7 +939,7 @@ class UserfilesController < ApplicationController
     flash[:notice] += "No changes made to the persistent list of userfiles." if
       added_count == 0 && removed_count == 0 && cleared_count == 0
 
-    redirect_to :action => :index, :page => params[:page]
+    redirect_to :action => :index, :page => params[:page] 
   end
   
   #Delete the selected files.
@@ -1417,8 +1380,6 @@ class UserfilesController < ApplicationController
     return tarfilename
   end
 
-  private
-
   # Sort a list of files in "tree order" where
   # parents are listed just before their children.
   # It also keeps the original list's ordering
@@ -1485,4 +1446,64 @@ class UserfilesController < ApplicationController
     result
   end
 
+  # Reduce Userfile scoped according with the header scope
+  # selected by user
+  def header_scope(filters)
+    header_scope = Userfile.scoped
+
+    # Restrict by 'view all' or not
+    filters["view_all"] ||= current_user.has_role?(:admin_user) ? 'off' : 'on'
+    if filters["view_all"] == 'on'
+      header_scope = Userfile.restrict_access_on_query(current_user, header_scope, :access_requested => :read)
+    else
+      header_scope = header_scope.where( :user_id => current_user.id )
+    end
+
+    # Filter by current project
+    if current_project
+      header_scope = header_scope.where( :group_id  => current_project.id )
+    end
+
+    # Filter by 'view hidden' or not
+    unless filters["view_hidden"] == 'on'
+      header_scope = header_scope.where( :hidden => false ) # show only the non-hidden files
+    end
+    
+    # The userfile index only show and count the main files, not their subformats.
+    header_scope = header_scope.where( :format_source_id => nil )
+
+    header_scope
+  end
+
+  # Reduce Userfile scoped according with the filters
+  # selected by user
+  def filter_scope(filters,header_scope)
+    # Prepare filters
+    filters["filter_hash"]                 ||= {}
+    filters["filter_custom_filters_array"] ||= []
+    filters["filter_custom_filters_array"]  &= current_user.custom_filter_ids.map(&:to_s)
+    filters["filter_tags_array"]           ||= []
+    filters["filter_tags_array"]            &= current_user.available_tags.map{ |t| t.id.to_s }
+   
+    # Prepare custom filters
+    custom_filter_tags = filters["filter_custom_filters_array"].map { |filter| UserfileCustomFilter.find(filter).tag_ids }.flatten.uniq
+    
+    # Prepare tag filters
+    tag_filters        = filters["filter_tags_array"] + custom_filter_tags
+    #Apply filters
+    filtered_scope     = base_filtered_scope(header_scope)
+    
+    filters["filter_custom_filters_array"].each do |custom_filter_id|
+      custom_filter    = UserfileCustomFilter.find(custom_filter_id)
+      filtered_scope   = custom_filter.filter_scope(filtered_scope)
+    end
+
+    unless tag_filters.blank?
+      filtered_scope   = filtered_scope.where( "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})" )
+    end
+    puts_magenta filtered_scope.inspect
+    return filtered_scope
+  end
+    
+  
 end

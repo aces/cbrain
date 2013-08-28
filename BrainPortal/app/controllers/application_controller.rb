@@ -121,7 +121,7 @@ class ApplicationController < ActionController::Base
     # the origin server to authenticate the new reques
     # (max-age) Indicates that the client is willing to accept a response whose age is no greater than the specified time in seconds. 
     # Unless max- stale directive is also included, the client is not willing to accept a stale response.
-    response.headers["Last-Modified"] = Time.now.httpdate
+    response.headers["Last-Modified"] = Time.now.httpdate    
     response.headers["Expires"] = "#{1.year.ago}"
     # HTTP 1.0
     # When the no-cache directive is present in a request message, an application SHOULD forward the request 
@@ -136,12 +136,13 @@ class ApplicationController < ActionController::Base
   def check_account_validity
     return unless current_user
     return if params[:controller] == "sessions"
-
+    
     #Check if license agreement have been signed
     unsigned_agreements = current_user.unsigned_license_agreements
     unless unsigned_agreements.empty?
       return if params[:controller] == "portal" && params[:action] =~ /license$/
       return if current_user.has_role?(:admin_user) && params[:controller] == "bourreaux"
+
       if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
         redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first, :status => 303
       elsif current_user.has_role?(:admin_user)

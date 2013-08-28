@@ -20,26 +20,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-# This model represents a BrainPortal RAILS app.
-class BrainPortal < RemoteResource
+# Module containing common methods for set and access the
+# license agreements
+module LicenseAgreements
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  
-  def self.pretty_type #:nodoc:
-    "Portal"
-  end
-
-  def lock! #:nodoc:
-    self.update_attributes!(:portal_locked => true)
+  def license_agreements
+    self.meta[:license_agreements] || []
   end
   
-  def unlock! #:nodoc:
-    self.update_attributes!(:portal_locked => false)
+  def license_agreements=(agreements)
+    agrs = agreements
+    unless agrs.is_a? Array
+      agrs = agrs.to_s.split(/[,\s]+/).map { |a| a.sub(/\.html$/, "").gsub(/[^\w-]+/, "") }.uniq
+    end
+    self.meta[:license_agreements] = agrs
   end
-
-  def type_string
-    "Portal"
-  end
-
+  
 end

@@ -43,6 +43,10 @@ module UserfilesHelper
       html << " "
       html << hidden_icon
     end
+    if userfile.immutable?
+      html << " "
+      html << immutable_icon
+    end
     userfile.sync_status.each do |syncstat| 
       html << render(:partial => 'userfiles/syncstatus', :locals => { :syncstat => syncstat })
     end 
