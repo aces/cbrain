@@ -186,6 +186,11 @@ module ResourceLinkHelper
     link_to_model_if_accessible(CbrainTask,task,:name,cur_user,options)
   end
 
+  def link_to_vm_task_if_accessible(vm_id, cur_user = current_user, options ={})
+    t = CbrainTask.where(:id => vm_id).first
+    link_to_task_if_accessible(t,cur_user,options)
+  end
+
   # Implements the link_to_{SOMETHING}_if_available() methods
   # where SOMETHING is one of CBRAIN's models. The method will
   # check for as many access privileges as the object's model supports;
