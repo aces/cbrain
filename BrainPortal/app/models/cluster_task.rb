@@ -1257,52 +1257,7 @@ class ClusterTask < CbrainTask
   # Returns the object which implements this
   # Bourreau's cluster management system's session.
   # This is really a property of the whole Rails app,
-  # but it's provided here in the model for convenience.
-
-  #TODO (VM tristan) redefine session in @scir_session.class instead of ScirUnix::Session
-  class ScirUnix::Session
-
-    alias orig_run run
-
-    def run(job)  
-      def vm_run(job)
-        #TODO (VM tristan) fix this: use a "static" method? 
-        s = ScirVM.new
-        s.run(job)
-#        raise "This job should be submitted to a VM (not implemented yet)"
-      end
-      if job.goes_to_vm
-        vm_run(job)
-      else
-        orig_run(job)
-      end
-    end    
-
-  end
-
-  class Scir::Session
-
-    def job_id_goes_to_vm?(jobid)
-      return jobid.start_with? "VM:"
-    end
-
-    alias orig_job_ps job_ps
-
-    def job_ps(jid,caller_updated_at = nil)
-
-      def vm_job_ps(jid,caller_updated_at = nil)
-        s = ScirVM.new
-        status = s.job_ps(jid,caller_updated_at = nil)
-      end
-
-      if job_id_goes_to_vm? jid
-        vm_job_ps(jid,caller_updated_at)
-      else
-        orig_job_ps(jid,caller_updated_at)
-      end
-    end
-  end
-  
+  # but it's provided here in the model for convenience.  
   def self.scir_session #:nodoc:
 
     @scir_session ||= RemoteResource.current_resource.scir_session
@@ -1398,15 +1353,11 @@ class ClusterTask < CbrainTask
     self.addlog("Launching job on cluster.")
     name     = self.name
     commands = self.cluster_commands  # Supplied by subclass; can use self.params
-    #modify data cache paths for tasks going to VMs
+   
+    # Tweak tasks going to VMs
     if self.job_template_goes_to_vm?
-      mybourreau = Bourreau.where(:id => self.params[:physical_bourreau]).first
-      dir = mybourreau.dp_cache_dir
-      dir2 = mybourreau.cms_shared_dir
-      commands.each {|x| 
-        x.gsub!(dir,File.join("$HOME",File.basename(dir)))  #TODO (VM tristan) fix these awful substitutions
-        x.gsub!(dir2,File.join("$HOME",File.basename(dir2)))  #TODO (VM tristan) fix these awful substitutions
-      } 
+      self.modify_scir_class_for_vm 
+      self.tweak_commands commands
     end
     workdir  = self.full_cluster_workdir
 
@@ -1608,9 +1559,30 @@ class ClusterTask < CbrainTask
     return nil
   end
 
-
-
-
+  # Re-route run method of scir_class to use ScirVM instead of default scir for jobs going to VMs
+  def modify_scir_class_for_vm
+    scir_class = self.scir_session
+    self.addlog "Modifying class #{scir_class} for VMs"
+    scir_class.class_eval{
+      def run(job)
+        #TODO (VM tristan) fix this: use a "static" method? 
+        s = ScirVM.new
+        s.run(job)
+        #        raise "This job should be submitted to a VM (not implemented yet)"
+      end
+    }
+  end
+  
+  def tweak_commands commands
+    mybourreau = Bourreau.where(:id => self.params[:physical_bourreau]).first
+    cache_dir = mybourreau.dp_cache_dir
+    tasks_dir = mybourreau.cms_shared_dir
+    commands.each {|x| 
+      x.gsub!(cache_dir,File.join("$HOME",File.basename(cache_dir)))  #TODO (VM tristan) fix these awful substitutions
+      x.gsub!(tasks_dir,File.join("$HOME",File.basename(tasks_dir)))  #TODO (VM tristan) fix these awful substitutions
+    } 
+  end
+  
   ##################################################################
   # Lifecycle hooks
   ##################################################################

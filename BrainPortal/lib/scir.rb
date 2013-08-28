@@ -140,17 +140,30 @@ class Scir
       @cache_last_updated = (100*@job_ps_cache_delay).seconds.ago
     end
 
-    def job_ps(jid,caller_updated_at = nil)
-      caller_updated_at ||= (5*@job_ps_cache_delay).seconds.ago
-      if @job_info_cache.nil? || @cache_last_updated < @job_ps_cache_delay.ago || caller_updated_at > @job_ps_cache_delay.ago
-        update_job_info_cache
-        @cache_last_updated = Time.now
-      end
-      jinfo = @job_info_cache[jid.to_s]
-      return jinfo[:drmaa_state] if jinfo
-      Scir::STATE_UNDETERMINED
+    def job_id_goes_to_vm?(jobid)
+      return jobid.start_with? "VM:"
     end
-
+    
+    def vm_job_ps(jid,caller_updated_at = nil)
+      s = ScirVM.new
+      status = s.job_ps(jid,caller_updated_at = nil)
+    end
+    
+    def job_ps(jid,caller_updated_at = nil)
+      if job_id_goes_to_vm? jid
+        vm_job_ps(jid,caller_updated_at)
+      else
+        caller_updated_at ||= (5*@job_ps_cache_delay).seconds.ago
+        if @job_info_cache.nil? || @cache_last_updated < @job_ps_cache_delay.ago || caller_updated_at > @job_ps_cache_delay.ago
+          update_job_info_cache
+          @cache_last_updated = Time.now
+        end
+        jinfo = @job_info_cache[jid.to_s]
+        return jinfo[:drmaa_state] if jinfo
+        Scir::STATE_UNDETERMINED
+      end
+    end
+    
     def hold(jid)
       raise "This method must be provided in a subclass"
     end
