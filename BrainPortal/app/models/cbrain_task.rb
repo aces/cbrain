@@ -58,6 +58,7 @@ class CbrainTask < ActiveRecord::Base
   attr_accessible       :type, :batch_id, :cluster_jobid, :cluster_workdir, :status, :user_id, :bourreau_id, :description, 
                         :launch_time, :prerequisites, :share_wd_tid, :run_number, :group_id, :tool_config_id, :level, :rank, 
                         :results_data_provider_id, :cluster_workdir_size, :workdir_archived, :workdir_archive_userfile_id,
+                        :vm_id,
                         :params
 
   # Pseudo Attributes (not saved in DB)

@@ -92,7 +92,7 @@ class BourreauWorker < Worker
 
     tasks_todo.concat tasks_todo_vms
 
-    worker_log.info "Found #{tasks_todo.size} tasks to handle overall"
+    worker_log.info "Found #{tasks_todo.size} tasks to handle in total"
 
     # Detects and turns on sleep mode. We enter sleep mode once we
     # find no task to process for three normal scan cycles in a row.
@@ -204,6 +204,7 @@ class BourreauWorker < Worker
 
   end
 
+
   #This method returns an array containing tasks that may be handled by this physical bourreau
   #TODO (VM tristan) make this more efficient (use less queries)
   def get_vm_tasks_to_handle
@@ -222,35 +223,46 @@ class BourreauWorker < Worker
     vms = CbrainTask.not_archived.where(:type => "CbrainTask::StartVM", :bourreau_id => @rr_id, :status => "On CPU")  #TODO (VM tristan) remove this ugly "CbrainTask::StartVM"
     
     #now joins
-    tasks = Array.new #will contain the tasks that I could send to my VMs
+    tasks = Array.new #will contain the new tasks that I could send to my VMs + the tasks that I need to handle
+
+    #add the tasks already on my VMs
+    tasks_for_vms.each { |y| 
+      tasks << y if y.params[:physical_bourreau] == @rr_id
+    }
+
     vms.each { |x| 
       if x.params[:vm_status] == "booted"
         worker_log.info "Found a booted VM: task id = #{x.id}, vm file id = #{x.params[:disk_image]}" 
-        free_slots = x.params[:job_slots].to_i #TODO (VM tristan) subtract tasks running on this VM
-        
+        job_slots = x.params[:job_slots].to_i #TODO (VM tristan) subtract tasks running on this VM
+        active_jobs = CbrainTask.where(:vm_id => x.id,:status => ReadyTasks).count
+        free_slots = job_slots - active_jobs
+        worker_log.info "Task #{x.id} has #{free_slots} free job slots"
+
+        #add new tasks if free job slots available
         if free_slots > 0 
           #check if a task could go to this booted VM
           tasks_for_vms.each { |y| 
-            task_image_file_id = Bourreau::DiskImage.where(:id => y.bourreau_id).first
-            worker_log.info "Task #{y.id} needs image file id #{task_image_file_id.disk_image_file_id}"
-            if task_image_file_id.disk_image_file_id.to_i == x.params[:disk_image].to_i 
-              worker_log.info "  => VM task #{y.id} may go to VM #{x.id}"
-              free_slots = free_slots - 1
-              #TODO (VM tristan) add a field to cbrain_task to store the physical bourreau
-              if y.params[:physical_bourreau] != @rr_id 
+            if y.status == 'New'
+              task_image_file_id = Bourreau::DiskImage.where(:id => y.bourreau_id).first
+              worker_log.info "Task #{y.id} needs image file id #{task_image_file_id.disk_image_file_id}"
+              if task_image_file_id.disk_image_file_id.to_i == x.params[:disk_image].to_i 
+                worker_log.info "  => VM task #{y.id} may go to VM #{x.id}"
+                free_slots = free_slots - 1
+                # TODO (VM tristan) this is not thread safe: several workers may take the task
                 y.params[:physical_bourreau] = @rr_id 
-                y.params[:vm_id] = x.id #TODO (VM tristan) check if we really want to fix *now* the VM id where this task will be executed. 
+                y.vm_id = x.id #TODO (VM tristan) check if we really want to fix *now* the VM id where this task will be executed. 
                 y.save
+                tasks << y
+                break unless free_slots > 0
+              else
+                worker_log.info "  => VM task #{y.id} may not go to VM #{x.id} (VM disk file id is #{x.params[:disk_image]})"
               end
-              tasks << y
-              break unless free_slots > 0
-            else
-              worker_log.info "  => VM task #{y.id} may not go to VM #{x.id} (VM disk file id is #{x.params[:disk_image]})"
             end
           }
         end
-      end     
+      end          
     }
+    
     return tasks
   end
 

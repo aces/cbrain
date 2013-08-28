@@ -64,7 +64,7 @@ class ScirVM < Scir
 
   def get_task_and_vm_task(job)
     task = get_task job.task_id
-    vm_id = task.params[:vm_id]
+    vm_id = task.vm_id
     vm_task = get_task vm_id
     return [task,vm_task]
   end

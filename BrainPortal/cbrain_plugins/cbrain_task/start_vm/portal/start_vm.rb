@@ -85,10 +85,6 @@ class CbrainTask::StartVM < PortalTask
     #For now we use a task param, maybe we'll create a VM object
     params[:vm_status_time] = Time.now
 
-    #params[:vm_jobs] contains the list of task ids that the VM executes
-    #For now we use a task param, maybe we'll create a VM object
-    params[:vm_tasks]=[]
-    
     #params[:vm_local_ip] is the local IP of the worker node where the VM runs 
     #It will be used by the Bourreau worker to ssh to the VM
     #For now we use a task param, maybe we'll create a VM object
