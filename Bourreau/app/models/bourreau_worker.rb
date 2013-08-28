@@ -241,7 +241,6 @@ class BourreauWorker < Worker
         worker_log.info "VM #{x.id} has #{active_jobs} active jobs"
         free_slots = job_slots - active_jobs
         worker_log.info "VM #{x.id} has #{free_slots} free job slots"
-
         #add new tasks if free job slots available
         if free_slots > 0 
           #check if a task could go to this booted VM
@@ -250,14 +249,17 @@ class BourreauWorker < Worker
               task_image_file_id = Bourreau::DiskImage.where(:id => y.bourreau_id).first
               worker_log.info "Task #{y.id} needs image file id #{task_image_file_id.disk_image_file_id}"
               if task_image_file_id.disk_image_file_id.to_i == x.params[:disk_image].to_i 
-                # TODO (VM tristan) this is not thread safe: several workers may take the task
                 if y.vm_id.blank? #don't take a task that someone else took
-                  worker_log.info "====> VM task #{y.id} may go to VM #{x.id}"
-                  free_slots = free_slots - 1
-                  y.params[:physical_bourreau] = @rr_id 
-                  y.vm_id = x.id #TODO (VM tristan) check if we really want to fix *now* the VM id where this task will be executed. 
-                  y.save!
-                  tasks << y
+                  CbrainTask.transaction do
+                    # It's probably nicer to put this update after status transition to "Setting Up" in process_task. But then we'd need to redo VM selection there.
+                    y.lock!
+                    worker_log.info "====> VM task #{y.id} may go to VM #{x.id}"
+                    free_slots = free_slots - 1
+                    y.params[:physical_bourreau] = @rr_id 
+                    y.vm_id = x.id #TODO (VM tristan) check if we really want to fix *now* the VM id where this task will be executed. 
+                    tasks << y
+                    y.save!
+                  end
                 end
                 break unless free_slots > 0
               else
@@ -269,9 +271,6 @@ class BourreauWorker < Worker
       end          
     }
     return tasks
-  rescue => ex
-    worker_log.info "#{ex.message}"
-    
   end
 
   # This is the worker method that executes the necessary
