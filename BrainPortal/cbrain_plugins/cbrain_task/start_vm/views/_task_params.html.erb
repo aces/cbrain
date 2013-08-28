@@ -27,6 +27,7 @@
 <br/>
 <strong>VM username:</strong>
    <%= params[:vm_user] %>
+   <%= form.params_hidden_field :vm_user %>
 <br/>
 <strong>VM boot timeout (s):</strong>
    <%= text_field_tag :vm_boot_timeout.to_la, params[:vm_boot_timeout], size:4 %>

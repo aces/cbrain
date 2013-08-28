@@ -208,8 +208,6 @@ class BourreauWorker < Worker
   #This method returns an array containing tasks that may be handled by this physical bourreau
   #TODO (VM tristan) make this more efficient (use less queries)
   def get_vm_tasks_to_handle
-    #TODO (VM tristan) also needs to return tasks that are running on the local VMs: currently these won't be updated
-
     #gets all tasks going to DiskImage bourreaux
     tasks_for_vms = Array.new
     disk_images = Bourreau::DiskImage.all
