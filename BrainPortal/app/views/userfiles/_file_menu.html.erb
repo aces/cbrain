@@ -96,7 +96,7 @@
         <%= select(:userfile, :hidden, [['Not Hidden', false],['Mark as Hidden', true]]) %>
         <%= hijacker_submit_button("Update", :name => :update_hidden, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
         <hr>
-        Mark Or Unmark As Immutable:
+        Mark Or Unmark As Immutable (<%= immutable_icon %>):
         <%= select(:userfile, :immutable, [['Not Immutable', false],['Mark as Immutable', true]]) %>
         <%= hijacker_submit_button("Update", :name => :update_immutable, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
         <hr>
@@ -129,9 +129,9 @@
     <% select_label = "Selected Files" + (current_session.persistent_userfile_ids.size != 0 ? " (now: #{current_session.persistent_userfile_ids.size})" : "") %>
     <%= button_with_dropdown_menu(select_label) do %>
       <p class="left_align">
-      This panel manages your list of <em>persistently</em> selected files.<br/>
+      This panel manages your list of <em>persistently</em> selected files.
       This list is maintained even when you switch from page to page.<br/>
-      These files plus those selected on the current page will all be used<br/>
+      These files plus those selected on the current page will all be used
       for all operation buttons (move/copy, submit tasks, etc).
       </p>
       <p>
@@ -142,7 +142,7 @@
       <% end %>
       </p>
       <p>
-      <% [ 'Add To List', 'Remove From List', 'Clear The List' ].each do |label| %>
+      <% [ 'Select all files on all pages', 'Add To List', 'Remove From List', 'Clear The List'].each do |label| %>
         <%= hijacker_submit_button(label,
               :url => url_for(:action  => :manage_persistent, :operation => label),
               :method => :post,
