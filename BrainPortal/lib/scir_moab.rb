@@ -104,6 +104,14 @@ class ScirMoab < Scir
       end
     end
 
+    def get_local_ip(jid)
+      command = "for i in `mshow -j 540218.moab.colosse.clumeq.ca`; do if [[ \"$i\" =~ \"AllocNodeList=.*\" ]]; then echo $i | awk -F '\"' '{print $2}' | awk -F ':' '{print $1}'; fi; done"
+      IO.popen(command) do |i|
+        p = i.read
+      end
+      return p.gsub("\n","")
+    end
+
     def queue_tasks_tot_max
       job_ps("!dummy!") # trigger refresh if necessary
       moab_cluster_info = @job_info_cache["!moab_cluster_info!"]
