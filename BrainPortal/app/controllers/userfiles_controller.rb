@@ -903,9 +903,7 @@ class UserfilesController < ApplicationController
       # Reduce userfiles list according to @filter_params
       filelist       = []
       header_scope   = header_scope(@filter_params)
-      puts_green "-#{header_scope.size}-"
       filtered_scope = filter_scope(@filter_params, header_scope)
-      puts_cyan "-#{filtered_scope}-"
       filtered_scope.each do |f|
         filelist << f.id.to_s if f.available?
       end
