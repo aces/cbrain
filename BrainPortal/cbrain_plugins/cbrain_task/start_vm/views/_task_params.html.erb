@@ -26,7 +26,7 @@
   <%= form.params_hidden_field :disk_image %>
 <br/>
 <strong>VM username:</strong>
-   <%= text_field_tag :vm_user.to_la, params[:vm_user], size:15 %>
+   <%= params[:vm_user] %>
 <br/>
 <strong>VM boot timeout (s):</strong>
    <%= text_field_tag :vm_boot_timeout.to_la, params[:vm_boot_timeout], size:4 %>

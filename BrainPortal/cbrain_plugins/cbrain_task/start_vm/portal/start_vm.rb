@@ -36,7 +36,6 @@ class CbrainTask::StartVM < PortalTask
       :disk_image => "default_disk_image.vdi",
       :qemu_params => "-boot d -net nic -net user -m 2g -localtime",
       :emulation => "0",
-      :vm_user => "root",
       :vm_boot_timeout => 60,
       :number_of_vms => 1,
       :job_slots => 1
@@ -54,6 +53,16 @@ class CbrainTask::StartVM < PortalTask
     cb_error "Expecting a single user file as input, found #{ids.size}" unless ids.size == 1
 
     params[:disk_image]=ids[0]
+
+    # Check if disk image is associated to a virtual bourreau
+    virtual_bourreaux = Bourreau::DiskImage.where(:disk_image_file_id => params[:disk_image])
+    cb_error "File id #{params[:disk_image]} is not associated to any Virtual Bourreau. You cannot start a VM with it." unless virtual_bourreaux.size != 0 
+    cb_error "File id #{params[:disk_image]} has more than 1 Virtual Bourreau associated to it. This is not supported yet." unless virtual_bourreaux.size == 1
+
+    virtual_bourreau = virtual_bourreaux.first
+
+    params[:vm_user] = virtual_bourreau.disk_image_user
+
     ""
   end
 

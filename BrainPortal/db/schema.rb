@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130828133324) do
+ActiveRecord::Schema.define(:version => 20130828195925) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -224,7 +224,6 @@ ActiveRecord::Schema.define(:version => 20130828133324) do
     t.string   "external_status_page_url"
     t.integer  "disk_image_file_id"
     t.string   "disk_image_user"
-    t.string   "disk_image_password"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"

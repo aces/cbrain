@@ -341,9 +341,6 @@
       <% t.edit_cell(:disk_image_user, :header => "Disk Image User") do %>
         <%= text_field_tag "bourreau[disk_image_user]", @bourreau.disk_image_user, :size => 60 %>
       <% end %>
-      <% t.edit_cell(:disk_image_password, :header => "Disk Image Password") do %>
-        <%= password_field_tag "bourreau[disk_image_password]", @bourreau.disk_image_password, :size => 6 %>
-      <% end %>
     <% end %>
   <% end %>
 
