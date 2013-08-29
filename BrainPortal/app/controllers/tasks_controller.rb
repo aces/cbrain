@@ -1,4 +1,3 @@
-
 #
 # CBRAIN Project
 #
@@ -720,6 +719,7 @@ class TasksController < ApplicationController
 
     # This block will either run in background or not depending
     # on do_in_spawn
+    message = ""
     CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending #{operation} to tasks") do
 
       tasks = []
@@ -746,12 +746,27 @@ class TasksController < ApplicationController
       new_bourreau_id = nil unless new_bourreau_id &&     Bourreau.find_all_accessible_by_user(current_user).where(:id => new_bourreau_id).exists?
       archive_dp_id   = nil unless archive_dp_id   && DataProvider.find_all_accessible_by_user(current_user).where(:id => archive_dp_id).exists?
 
+      # Tweak tasks to re-route operations to physical bourreaux in case of virtual tasks
+      tasks.each { |t|
+        if Bourreau.find(t.bourreau_id).is_a? Bourreau::DiskImage
+            if t.params[:physical_bourreau].blank?
+              # Task has no physical bourreau. I have to terminate it myself
+              # TODO (VM tristan) race condition: a worker could now have taken the task and set a physical bourreau. 
+              t.status = "Terminated" 
+              t.save
+            else
+              t.bourreau_id = t.params[:physical_bourreau] 
+            end
+          end
+        
+      } # TODO (VM tristan) ... wait a minute, this is dangerous in case the task is saved later on. It doesn't seem to be the case, but this should rather be fixed!
+
       # Go through tasks, grouped by bourreau
       grouped_tasks = tasks.group_by &:bourreau_id
       grouped_tasks.each do |pair_bid_tasklist|
         bid       = pair_bid_tasklist[0]
         btasklist = pair_bid_tasklist[1]
-        bourreau  = Bourreau.find(bid)
+        bourreau  = Bourreau.find(bid) 
         begin
           if operation == 'delete'
             bourreau.send_command_alter_tasks(btasklist,'Destroy') # TODO parse returned command object?

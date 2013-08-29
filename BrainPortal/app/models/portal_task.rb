@@ -633,7 +633,11 @@ class PortalTask < CbrainTask
   # STDOUT, STDERR and job script.
   def capture_job_out_err(run_number=nil,stdout_lim=2000,stderr_lim=2000)
     cb_error "Cannot get task's stdout and stderr: this task is archived." if self.workdir_archived?
-    bourreau             = !self.job_template_goes_to_vm? ? self.bourreau : Bourreau.where(:id => self.params[:physical_bourreau]).first 
+    bourreau = self.bourreau
+    if self.job_template_goes_to_vm? 
+      return unless !self.params[:physical_bourreau].blank? #task is not taken by any physical bourreau yet
+      bourreau = Bourreau.where(:id => self.params[:physical_bourreau]).first
+    end
     control              = bourreau.send_command_get_task_outputs(self.id,run_number,stdout_lim,stderr_lim)
     self.cluster_stdout = control.cluster_stdout
     self.cluster_stderr = control.cluster_stderr
