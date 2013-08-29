@@ -673,7 +673,7 @@ class ClusterTask < CbrainTask
   #Terminate the task (if it's currently in an appropriate state.)
   def terminate
     cur_status = self.status
-    self.modify_scir_class_for_vm
+    self.modify_scir_class_for_vm if self.job_template_goes_to_vm?
     return false if self.workdir_archived?
 
     # Cluster job termination
@@ -702,7 +702,7 @@ class ClusterTask < CbrainTask
 
   # Suspend the task (if it's currently in an appropriate state.)
   def suspend
-    self.modify_scir_class_for_vm
+    self.modify_scir_class_for_vm if self.job_template_goes_to_vm?
     return false unless self.status == "On CPU"
     return false if self.workdir_archived?
     begin
@@ -715,7 +715,7 @@ class ClusterTask < CbrainTask
 
   # Resume processing the task if it was suspended.
   def resume
-    self.modify_scir_class_for_vm
+    self.modify_scir_class_for_vm if self.job_template_goes_to_vm?
     return false if self.workdir_archived?
     begin
       return false unless self.status == "Suspended"
@@ -728,7 +728,7 @@ class ClusterTask < CbrainTask
 
   # Put the task on hold if it is currently queued.
   def hold
-    self.modify_scir_class_for_vm
+    self.modify_scir_class_for_vm if self.job_template_goes_to_vm?
     return false unless self.status == "Queued"
     return false if self.workdir_archived?
     begin
@@ -741,7 +741,7 @@ class ClusterTask < CbrainTask
 
   # Release the task from state On Hold.
   def release
-    self.modify_scir_class_for_vm
+    self.modify_scir_class_for_vm if self.job_template_goes_to_vm?
     return false if self.workdir_archived?
     begin
       return false unless self.status == "On Hold"
