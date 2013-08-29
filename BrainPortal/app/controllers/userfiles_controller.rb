@@ -903,9 +903,7 @@ class UserfilesController < ApplicationController
       # Reduce userfiles list according to @filter_params
       filelist       = []
       header_scope   = header_scope(@filter_params)
-      puts_green "-#{header_scope.size}-"
       filtered_scope = filter_scope(@filter_params, header_scope)
-      puts_cyan "-#{filtered_scope}-"
       filtered_scope.each do |f|
         filelist << f.id.to_s if f.available?
       end
@@ -1501,7 +1499,6 @@ class UserfilesController < ApplicationController
     unless tag_filters.blank?
       filtered_scope   = filtered_scope.where( "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})" )
     end
-    puts_magenta filtered_scope.inspect
     return filtered_scope
   end
     
