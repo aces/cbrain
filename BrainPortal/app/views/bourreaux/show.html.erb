@@ -87,6 +87,11 @@
 
     <% t.cell("Site") { link_to_site_if_accessible(@bourreau.site_affiliation) } %>
     
+    <% licenses = @bourreau.license_agreements.count == 0 ? "(None)": @bourreau.license_agreements.join("\n") %>
+    <% t.edit_cell(:license_agreements, :content => licenses) do %>
+      <%= text_area_tag "bourreau[license_agreements]", @bourreau.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
+      <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
+    <% end %>       
     
     <% if is_bourreau %>
       <% external_status_page_url = @bourreau.external_status_page_url.nil? ? 
@@ -98,11 +103,6 @@
     <% end %>
       
     <% if is_portal %>
-
-      <% t.edit_cell(:license_agreements, :content => @bourreau.license_agreements.join(", ")) do %>
-        <%= text_area_tag "bourreau[license_agreements]", @bourreau.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
-        <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
-      <% end %>
 
       <% t.edit_cell(:help_url, :header => "User Manual URL") do %>
         <%= text_field_tag "bourreau[help_url]", @bourreau.help_url, :size => 40 %><br/>

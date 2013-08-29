@@ -205,6 +205,7 @@ class DataProvider < ActiveRecord::Base
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include ResourceAccess
+  include LicenseAgreements
   include NumericalSubdirTree
   
   cbrain_abstract_model! # objects of this class are not to be instantiated
@@ -239,7 +240,7 @@ class DataProvider < ActiveRecord::Base
   
   attr_accessible :name, :user_id, :group_id, :remote_user, :remote_host, :remote_port, :remote_dir, :online, 
                   :read_only, :description, :time_of_death, :not_syncable, :time_zone, :cloud_storage_client_identifier, 
-                  :cloud_storage_client_token
+                  :cloud_storage_client_token, :license_agreements
 
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description

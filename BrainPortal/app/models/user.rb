@@ -138,7 +138,9 @@ class User < ActiveRecord::Base
   def unsigned_license_agreements
 
     all_object_with_license = RemoteResource.find_all_accessible_by_user(self) +
-                              Tool.find_all_accessible_by_user(self)
+                              Tool.find_all_accessible_by_user(self) +
+                              DataProvider.find_all_accessible_by_user(self)
+
     license_agreements = []
     # List all license_agreements
     all_object_with_license.each do |o|
