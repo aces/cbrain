@@ -694,7 +694,8 @@ class ClusterTask < CbrainTask
 
     # Otherwise, we don't do nothin'
     return false
-  rescue
+  rescue => ex
+    self.addlog "Cannot terminate task: #{ex.message}"
     false
   end
 
@@ -1570,6 +1571,27 @@ class ClusterTask < CbrainTask
         s.run(job)
         #        raise "This job should be submitted to a VM (not implemented yet)"
       end
+      def hold(jid)
+        s = ScirVM.new
+        s.hold(jid)
+      end
+      def release(jid)
+        s = ScirVM.new
+        s.release(jid)
+      end
+      def suspend(jid)
+        s = ScirVM.new
+        s.suspend(jid)
+      end
+      def resume(jid)
+        s = ScirVM.new
+        s.resume(jid)
+      end
+      def terminate(jid)
+        s = ScirVM.new
+        s.terminate(jid)
+      end
+      
     }
   end
   

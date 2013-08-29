@@ -235,36 +235,42 @@ class BourreauWorker < Worker
         worker_log.info "=== Found a booted VM: task id = #{x.id}, vm file id = #{x.params[:disk_image]}" 
         job_slots = x.params[:job_slots].to_i 
         worker_log.info "VM #{x.id} has #{job_slots} job slots"
-        active_jobs = CbrainTask.where(:vm_id => x.id,:status => ReadyTasks).count
-        worker_log.info "VM #{x.id} has #{active_jobs} active jobs"
-        free_slots = job_slots - active_jobs
-        worker_log.info "VM #{x.id} has #{free_slots} free job slots"
-        #add new tasks if free job slots available
-        if free_slots > 0 
-          #check if a task could go to this booted VM
-          tasks_for_vms.each { |y| 
-            if y.status == 'New'
-              task_image_file_id = Bourreau::DiskImage.where(:id => y.bourreau_id).first
-              worker_log.info "Task #{y.id} needs image file id #{task_image_file_id.disk_image_file_id}"
-              if task_image_file_id.disk_image_file_id.to_i == x.params[:disk_image].to_i 
-                if y.vm_id.blank? #don't take a task that someone else took
-                  CbrainTask.transaction do
-                    # It's probably nicer to put this update after status transition to "Setting Up" in process_task. But then we'd need to redo VM selection there.
-                    y.lock!
-                    worker_log.info "====> VM task #{y.id} may go to VM #{x.id}"
-                    free_slots = free_slots - 1
-                    y.params[:physical_bourreau] = @rr_id 
-                    y.vm_id = x.id #TODO (VM tristan) check if we really want to fix *now* the VM id where this task will be executed. 
-                    tasks << y
-                    y.save!
+        allTasks = ActiveTasks.dup
+        allTasks.concat(ReadyTasks)
+        CbrainTask.transaction do
+          x.lock! # to prevent different workers to concurrently send tasks to the same VM, potentially more jobs than job slots on the VM
+          active_jobs = CbrainTask.where(:vm_id => x.id,:status => allTasks).count
+          worker_log.info "VM #{x.id} has #{active_jobs} active jobs"
+          free_slots = job_slots - active_jobs
+          worker_log.info "VM #{x.id} has #{free_slots} free job slots"
+          #add new tasks if free job slots available
+          if free_slots > 0 
+            #check if a task could go to this booted VM
+            tasks_for_vms.each { |y| 
+              if y.status == 'New'
+                task_image_file_id = Bourreau::DiskImage.where(:id => y.bourreau_id).first
+                worker_log.info "Task #{y.id} needs image file id #{task_image_file_id.disk_image_file_id}"
+                if task_image_file_id.disk_image_file_id.to_i == x.params[:disk_image].to_i 
+                  if y.vm_id.blank? #don't take a task that someone else took
+                    CbrainTask.transaction do
+                      # It's probably nicer to put this update after status transition to "Setting Up" in process_task. But then we'd need to redo VM selection there.
+                      y.lock! # to prevent different workers to send this task concurrently to (different) VMs
+                      worker_log.info "====> VM task #{y.id} may go to VM #{x.id}"
+                      free_slots = free_slots - 1
+                      y.params[:physical_bourreau] = @rr_id 
+                      y.vm_id = x.id #TODO (VM tristan) check if we really want to fix *now* the VM id where this task will be executed. 
+                      tasks << y
+                      y.save!
+                    end
                   end
+                  break unless free_slots > 0
+                else
+                  worker_log.info "====> VM task #{y.id} may not go to VM #{x.id} (VM disk file id is #{x.params[:disk_image]})"
                 end
-                break unless free_slots > 0
-              else
-                worker_log.info "====> VM task #{y.id} may not go to VM #{x.id} (VM disk file id is #{x.params[:disk_image]})"
               end
-            end
-          }
+            }
+          end
+          x.save
         end
       end          
     }

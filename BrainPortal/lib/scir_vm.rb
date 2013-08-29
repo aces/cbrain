@@ -29,6 +29,35 @@ class ScirVM < Scir
     return Scir::STATE_UNDETERMINED
   end
 
+  def hold(jid)
+    true
+  end
+
+  def release(jid)
+    true
+  end
+  
+  def suspend(jid)
+    vm_id,pid = get_vm_id_and_pid jid
+    vm_task = get_task vm_id
+    command = "kill -STOP #{pid}"
+    run_command(command,vm_task)
+  end
+
+  def resume(jid)
+    vm_id,pid = get_vm_id_and_pid jid
+    vm_task = get_task vm_id
+    command = "kill -CONT #{pid}"
+    run_command(command,vm_task)
+  end
+
+  def terminate(jid)
+    vm_id,pid = get_vm_id_and_pid jid
+    vm_task = get_task vm_id
+    command = "kill -TERM #{pid}"
+    run_command(command,vm_task)
+  end
+
   def create_job_id(vm_id,pid)
     return "VM:#{vm_id}:#{pid}"
   end
