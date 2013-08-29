@@ -131,12 +131,25 @@ class User < ActiveRecord::Base
     self.login
   end
   
-  def signed_license_agreements
+  def signed_license_agreements(license_agreement_set=self.license_agreement_set)
+    current_user_license = self.meta[:signed_license_agreements] || []
+
+    return current_user_license if current_user_license.empty?
+
+    extra_license = current_user_license - license_agreement_set
+    self.meta[:signed_license_agreements] =  current_user_license  - extra_license
+    self.save 
     self.meta[:signed_license_agreements] || []
   end
   
   def unsigned_license_agreements
+    license_agreement_set = self.license_agreement_set 
 
+    # Difference between all license agreements and whom signed by the user
+    RemoteResource.current_resource.license_agreements + license_agreement_set - self.signed_license_agreements(license_agreement_set) 
+  end
+  
+  def license_agreement_set #:nodoc:
     all_object_with_license = RemoteResource.find_all_accessible_by_user(self) +
                               Tool.find_all_accessible_by_user(self) +
                               DataProvider.find_all_accessible_by_user(self)
@@ -148,10 +161,9 @@ class User < ActiveRecord::Base
       license_agreements.concat(o_license_agreements) if o_license_agreements
     end
 
-    # Difference between all license agreements and whom signed by the user
-    RemoteResource.current_resource.license_agreements + license_agreements - self.signed_license_agreements 
+    return license_agreements
   end
-  
+
   def remember_token? #:nodoc:
     remember_token_expires_at && Time.now.utc < remember_token_expires_at 
   end
