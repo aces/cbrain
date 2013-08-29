@@ -48,6 +48,7 @@
       <td><%= link_to_group_if_accessible(first_task.group) if false && batch_id %></td>
     <% end %>
     <td><%= link_to_bourreau_if_accessible(first_task.bourreau) if false && batch_id %></td>
+    <td/>
     <td colspan="2" class="left_align">
       <% stat_cnt = @tasks.to_a.hashed_partitions { |t| t.status =~ /Fail/ ? 'Failed' : t.status } %>
       <% if stat_cnt.size > 1 %>

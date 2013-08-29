@@ -21,7 +21,7 @@ class ScirVM < Scir
   def job_ps(jid,caller_updated_at = nil)   
     vm_id,pid = get_vm_id_and_pid jid
     vm_task = get_task vm_id
-    command = "ps -p #{pid} -o state | awk '$1 != \"PID\" {print $2}'"
+    command = "ps -p #{pid} -o pid,state | awk '$1 == \"#{pid}\" {print $2}'"
     status_letter = run_command(command,vm_task).gsub("\n","")
     return Scir::STATE_DONE if status_letter == "" #TODO (VM tristan) find a way to return STATE_FAILED when exit code was not 0
     return Scir::STATE_RUNNING if status_letter.match(/[srzu]/i)
