@@ -146,7 +146,7 @@ class User < ActiveRecord::Base
     license_agreement_set = self.license_agreement_set 
 
     # Difference between all license agreements and whom signed by the user
-    RemoteResource.current_resource.license_agreements + license_agreement_set - self.signed_license_agreements(license_agreement_set) 
+    license_agreement_set - self.signed_license_agreements(license_agreement_set) 
   end
   
   def license_agreement_set #:nodoc:
@@ -161,7 +161,7 @@ class User < ActiveRecord::Base
       license_agreements.concat(o_license_agreements) if o_license_agreements
     end
 
-    return license_agreements
+    RemoteResource.current_resource.license_agreements  + license_agreements
   end
 
   def remember_token? #:nodoc:

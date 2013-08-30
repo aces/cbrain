@@ -168,13 +168,17 @@ describe User do
 
   
   describe "#signed_license_agreements" do
-
+    before (:each) do
+      RemoteResource.stub_chain(:current_resource, :license_agreements).and_return(["license"])
+    end
+    
     it "should return an empty array if meta[:signed_license_agreements] not defined" do
       normal_user.signed_license_agreements.should be == []
     end
 
     it "should return a field array if meta[:signed_license_agreements] defined" do
       normal_user.meta[:signed_license_agreements] = ["license"]
+      puts_cyan normal_user.meta.inspect
       normal_user.signed_license_agreements.should be == ["license"]
     end
     
