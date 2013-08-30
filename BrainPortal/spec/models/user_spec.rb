@@ -178,7 +178,6 @@ describe User do
 
     it "should return a field array if meta[:signed_license_agreements] defined" do
       normal_user.meta[:signed_license_agreements] = ["license"]
-      puts_cyan normal_user.meta.inspect
       normal_user.signed_license_agreements.should be == ["license"]
     end
     
