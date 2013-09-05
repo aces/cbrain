@@ -37,13 +37,14 @@ class UserfileCustomFilter < CustomFilter
   
   #See CustomFilter
   def filter_scope(scope)
-    scope = scope_name(scope)  unless self.data["file_name_type"].blank? || self.data["file_name_term"].blank?
-    scope = scope_date(scope)  unless self.data["date_attribute"].blank?
-    scope = scope_size(scope)  unless self.data["size_type"].blank? || self.data["size_term"].blank?
-    scope = scope_user(scope)  unless self.data["user_id"].blank?
-    scope = scope_group(scope) unless self.data["group_id"].blank?
-    scope = scope_dp(scope)    unless self.data["data_provider_id"].blank?
-    scope = scope_type(scope)  unless self.data["type"].blank?
+    scope = scope_name(scope)       unless self.data["file_name_type"].blank? || self.data["file_name_term"].blank?
+    scope = scope_date(scope)       unless self.data["date_attribute"].blank?
+    scope = scope_size(scope)       unless self.data["size_type"].blank? || self.data["size_term"].blank?
+    scope = scope_user(scope)       unless self.data["user_id"].blank?
+    scope = scope_group(scope)      unless self.data["group_id"].blank?
+    scope = scope_dp(scope)         unless self.data["data_provider_id"].blank?
+    scope = scope_type(scope)       unless self.data["type"].blank?
+    scope = scope_syncstatus(scope) unless self.data["sync_status"].blank?
     scope
   end
 
@@ -118,6 +119,10 @@ class UserfileCustomFilter < CustomFilter
   #Return +scope+ modified to filter the Userfile entry's type.
   def scope_type(scope)
     scope.where( :type  =>  self.data["type"] )
+  end
+
+  def scope_syncstatus(scope)
+    scope.includes(:sync_status).where(:sync_status => {:status => self.data["sync_status"]})
   end
   
 end
