@@ -273,8 +273,8 @@ class DataProvider < ActiveRecord::Base
       root = options[:root].to_s
     
       options[:builder].__send__(:method_missing, root) do
-        self.instance_variables.each do |key|
-          key.sub! "@", ""
+        self.instance_variables.each do |key_sym|
+          key = key_sym.to_s.sub "@", ""   # changes '@name' or :@name to 'name'
           value = self.__send__(key)
           options[:builder].tag!(key, value)
         end
