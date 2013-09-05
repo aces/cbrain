@@ -105,11 +105,13 @@ class ScirMoab < Scir
     end
 
     def get_local_ip(jid)
-      command = "for i in `mshow -j 540218.moab.colosse.clumeq.ca`; do if [[ \"$i\" =~ \"AllocNodeList=.*\" ]]; then echo $i | awk -F '\"' '{print $2}' | awk -F ':' '{print $1}'; fi; done"
+      cluster_jobid = CbrainTask.where(:id => jid).first.cluster_jobid
+      command = "for i in `mshow -j #{cluster_jobid}`; do if [[ \"$i\" =~ \"AllocNodeList=.*\" ]]; then echo $i | awk -F '\"' '{print $2}' | awk -F ':' '{print $1}'; fi; done"
       IO.popen(command) do |i|
         p = i.read
       end
-      return p.gsub("\n","")
+      return p.gsub("\n","") unless p.is_blank?
+      raise "Cannot get VM local IP with command #{command}"
     end
 
     def queue_tasks_tot_max
