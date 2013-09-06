@@ -80,7 +80,7 @@ class CbrainTask::StartVM < ClusterTask
       else
       command << "qemu-kvm"
     end
-    command << " -hda #{snapshot_name} -redir tcp:#{params[:ssh_port]}::22 -display vnc=:#{params[:vnc_display]} -smp #{params[:vm_cpus]} -m #{params[:vm_ram_gb]} #{params[:qemu_params]}"
+    command << " -hda #{snapshot_name} -redir tcp:#{params[:ssh_port]}::22 -display vnc=:#{params[:vnc_display]} -smp #{params[:vm_cpus]} -m #{params[:vm_ram_gb]}g #{params[:qemu_params]}"
     commands = [
                 "echo \"Command: #{command}\"",
                 command
