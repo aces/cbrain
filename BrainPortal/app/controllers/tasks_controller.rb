@@ -759,7 +759,7 @@ class TasksController < ApplicationController
             end
           end
         
-      } # TODO (VM tristan) ... wait a minute, this is dangerous in case the task is saved later on. It doesn't seem to be the case, but this should rather be fixed!
+      } # TODO (VM tristan) this is dangerous in case the task is saved later on. It doesn't seem to be the case, but this should rather be fixed!
 
       # Go through tasks, grouped by bourreau
       grouped_tasks = tasks.group_by &:bourreau_id
