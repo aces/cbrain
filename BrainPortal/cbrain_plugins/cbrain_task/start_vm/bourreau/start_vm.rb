@@ -1,3 +1,4 @@
+
 #
 # CBRAIN Project
 #
@@ -79,7 +80,7 @@ class CbrainTask::StartVM < ClusterTask
       else
       command << "qemu-kvm"
     end
-    command << " -hda #{snapshot_name} -redir tcp:#{params[:ssh_port]}::22 -display vnc=:#{params[:vnc_display]} #{params[:qemu_params]}"
+    command << " -hda #{snapshot_name} -redir tcp:#{params[:ssh_port]}::22 -display vnc=:#{params[:vnc_display]} -smp #{params[:vm_cpus]} -m #{params[:vm_ram_gb]} #{params[:qemu_params]}"
     commands = [
                 "echo \"Command: #{command}\"",
                 command
@@ -124,13 +125,11 @@ class CbrainTask::StartVM < ClusterTask
     start_time = Time.now
     while !booted? do
       elapsed = Time.now - start_time
-#      addlog "Elapsed time is #{elapsed}s, timeout is #{params[:vm_boot_timeout]}, timedout? #{elapsed > params[:vm_boot_timeout].to_f}"
       if elapsed > params[:vm_boot_timeout].to_f
       then
         addlog "Boot timeout reached. Terminate VM task (id = #{self.id})."
         update_vm_status("unreachable")
         self.save!
-        #TODO terminate doesn't work
         self.terminate
         return 
       end
@@ -149,17 +148,12 @@ class CbrainTask::StartVM < ClusterTask
   end
   
   def booted?
-    #TODO (VM tristan) use Pierre's ssh lib instead
     addlog "Trying to ssh -p #{params[:ssh_port]} #{params[:vm_user]}@#{params[:vm_local_ip]}"
-    
-    user = params[:vm_user]
-    ip = params[:vm_local_ip]
-    port = params[:ssh_port]
-
     s = ScirVM.new
     master = s.get_ssh_master self
     return true
   rescue => ex
+    addlog "Error: #{ex.message}"
     return false
   end
   

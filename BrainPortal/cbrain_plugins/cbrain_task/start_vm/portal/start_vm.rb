@@ -34,11 +34,13 @@ class CbrainTask::StartVM < PortalTask
   def self.default_launch_args
     {
       :disk_image => "default_disk_image.vdi",
-      :qemu_params => "-boot d -net nic -net user -m 2g -localtime",
+      :qemu_params => "-boot d -net nic -net user -localtime",
       :emulation => "0",
-      :vm_boot_timeout => 60,
+      :vm_boot_timeout => 600,
       :number_of_vms => 1,
-      :job_slots => 1
+      :vm_cpus => 8,
+      :vm_ram_gb => 16,
+      :job_slots => 8
     }
   end
   
@@ -74,8 +76,6 @@ class CbrainTask::StartVM < PortalTask
     return task_list,""
   end
 
-  
-
   def after_form #:nodoc:
     params = self.params
 
@@ -84,6 +84,8 @@ class CbrainTask::StartVM < PortalTask
     cb_error "Missing VM boot timeout!"  if params[:vm_boot_timeout].blank?
     cb_error "Missing number of job slots!" if params[:job_slots].blank?
     cb_error "Missing number of instances!" if params[:number_of_vms].blank?
+    cb_error "Missing number of CPUs !" if params[:vm_cpus].blank?
+    cb_error "Missing RAM!" if params[:vm_ram_gb].blank?
     cb_error "Please don't try to start more than 20 instances at once for now." if params[:number_of_vms].to_i > 20
 
     #params[:vm_status] is the status of the VM embedded in the task.

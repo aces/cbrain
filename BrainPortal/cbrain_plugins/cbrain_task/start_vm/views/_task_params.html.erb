@@ -32,6 +32,12 @@
 <strong>VM boot timeout (s):</strong>
    <%= text_field_tag :vm_boot_timeout.to_la, params[:vm_boot_timeout], size:4 %>
 <br/>
+<strong>VM CPUs:</strong>
+   <%= text_field_tag :vm_cpus.to_la, params[:vm_cpus], size:4 %>
+<br/>
+<strong>VM RAM (GB):</strong>
+   <%= text_field_tag :vm_ram_gb.to_la, params[:vm_ram_gb], size:4 %>
+<br/>
 <strong>QEMU options:</strong>
    <%= text_field_tag :qemu_params.to_la, params[:qemu_params], size:65 %>
 <br/>

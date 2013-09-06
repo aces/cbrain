@@ -10,7 +10,7 @@ class ScirVM < Scir
 
   def run(job)
     task,vm_task = get_task_and_vm_task job
-    command = job.qsub_command
+    command = qsub_command(job)
     command.sub!(task.full_cluster_workdir,File.join(File.basename(RemoteResource.current_resource.cms_shared_dir),task.cluster_workdir)) #TODO (VM tristan) fix these awful substitutions
     command.gsub!(task.full_cluster_workdir,"./")  
     command+=" & echo \$!" #so that the command is backgrounded and its PID is returned
@@ -75,15 +75,15 @@ class ScirVM < Scir
   end
   
   def get_ssh_master(vm_task)
-    #TODO (VM tristan) find a way to have a singleton connection per vm_task
     user = vm_task.params[:vm_user]
     ip = vm_task.params[:vm_local_ip]
     port = vm_task.params[:ssh_port]
     master = SshMaster.find_or_create(user,ip,port)
-    master.add_tunnel(:reverse,2222,'localhost',22) unless ( master.get_tunnels(:reverse).size !=0) #tunnel used to sshfs from the VM to the host
+    #tunnel used to sshfs from the VM to the host
+    master.add_tunnel(:reverse,2222,'localhost',22) unless ( master.get_tunnels(:reverse).size !=0) 
     CBRAIN.with_unlocked_agent 
     master.start
-    raise "Cannot establish connection with VM id #{vm_task.id} (#{user}@#{ip}:#{port})" unless master.is_alive?
+    raise "Cannot establish connection with VM id #{vm_task.id} (#{master.ssh_shared_options})" unless master.is_alive?
     return master
   end
   
@@ -97,5 +97,30 @@ class ScirVM < Scir
     vm_task = get_task vm_id
     return [task,vm_task]
   end
+
+  def shell_escape(s) #:nodoc:
+    "'" + s.gsub(/'/,"'\\\\''") + "'"
+  end
+    
+  def qsub_command(job) #adapted from scir_unix
+    raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless
+      job.command == "/bin/bash" && job.arg.size == 1
+    raise "Error: stdin not supported" if job.stdin
+
+      stdout = job.stdout || ":/dev/null"
+      stderr = job.stderr || (job.join ? nil : ":/dev/null")
+
+      stdout.sub!(/^:/,"") if stdout
+      stderr.sub!(/^:/,"") if stderr
+
+      command = ""
+      command += "cd #{shell_escape(job.wd)} || exit 20;"  if job.wd
+      command += "/bin/bash #{shell_escape(job.arg[0])}"
+      command += "  > #{shell_escape(stdout)}"
+      command += " 2> #{shell_escape(stderr)}"              if stderr
+      command += " 2>&1"                                    if job.join && stderr.blank?
+
+      return command
+    end
 
 end

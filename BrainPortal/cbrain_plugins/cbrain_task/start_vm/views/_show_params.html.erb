@@ -31,6 +31,12 @@
 <strong>VM boot timeout (s):</strong>
    <%= params[:vm_boot_timeout] %>
 <br/>
+<strong>VM CPUs</strong>
+   <%= params[:vm_cpus] %>
+<br/>
+<strong>VM RAM</strong>
+   <%= params[:vm_ram)gb] %> GB
+<br/>
 <strong>QEMU options:</strong>
    <%= params[:qemu_params] %>
 <br/>
@@ -38,7 +44,7 @@
    <%= params[:job_slots] %>
 <br/>
 <strong>Use emulation:</strong>
-  <%= (params[:emulation] == 1)? "yes" : "no" %>
+  <%= (params[:emulation] == "1")? "yes" : "no" %>
 <br/>
 <hr/>
 <strong>VM status:</strong>
