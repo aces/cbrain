@@ -109,11 +109,13 @@ class ScirMoab < Scir
       command = "for i in `mshow -j #{cluster_jobid}`; do if [[ \"$i\" =~ \"AllocNodeList=.*\" ]]; then echo $i | awk -F '\"' '{print $2}' | awk -F ':' '{print $1}'; fi; done"
       IO.popen(command) do |i|
         p = i.read
+        return p.gsub("\n","") unless p == nil
       end
-      return p.gsub("\n","") unless p.is_blank?
       raise "Cannot get VM local IP with command #{command}"
+    rescue => ex
+      raise "Cannot get VM local IP with command #{command}: #{ex.message}"
     end
-
+    
     def queue_tasks_tot_max
       job_ps("!dummy!") # trigger refresh if necessary
       moab_cluster_info = @job_info_cache["!moab_cluster_info!"]
