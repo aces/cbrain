@@ -1169,6 +1169,7 @@ class DataProvider < ActiveRecord::Base
       if do_it
         maybe_spurious_parents={}
         uids2path.each do |id,path| # 12345, "01/23/45"
+          system("chmod","-R","u+w",path)
           FileUtils.remove_entry(path, true) rescue true
           maybe_spurious_parents[path.sub(/\/\d+$/,"")]      = 1  # "01/23"
           maybe_spurious_parents[path.sub(/\/\d+\/\d+$/,"")] = 1  # "01"

@@ -90,8 +90,11 @@ class CbrainTask < ActiveRecord::Base
                          else
                            value = s
                          end
-                         { :conditions => { :status => value } }    
+                         # { :conditions => { :status => value } }    
+                         where(:status => value)
                        }
+
+  cb_scope :active, lambda { status( :active ) }
 
   cb_scope :real_tasks,          
         where( "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
