@@ -55,6 +55,14 @@ Project<br>
   <%= data_provider_select("data[data_provider_id]", { :selector => custom_filter.data["data_provider_id"] || '!' }, { :include_blank => true })  %>
 </p>
 
+<p>
+  Synchronization status<br>
+  <%= 
+  select_tag "data[sync_status]", options_for_select(["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"], :selected => custom_filter.data["sync_status"]), 
+              :multiple => true, :size => 6, :selected => custom_filter.data["sync_status"]
+  %>
+</p>
+
 <% unless current_user.available_tags.blank? %>
   Tags
   <table>
