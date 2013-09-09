@@ -104,7 +104,7 @@ class UserfilesController < ApplicationController
     @filter_params["tree_sort"] = "on" if @filter_params["tree_sort"].blank?
     if @filter_params["tree_sort"] == "off" || ![:html, :js].include?(request.format.to_sym)
       @filtered_scope  = @filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
-      @userfiles_total = @filtered_scope.uniq.count
+      @userfiles_total = @filtered_scope.count("distinct userfiles.id")
       ordered_real     = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
     # ---- WITH tree sort ----
     else
@@ -112,7 +112,7 @@ class UserfilesController < ApplicationController
       simple_pairs      = sorted_scope.raw_rows( [ "userfiles.id", "userfiles.parent_id" ] )
       simple_pairs      = tree_sort_by_pairs(simple_pairs) # private method in this controller
       # At this point, each simple_pair is [ userfile_id, parent_id, [ child1_id, child2_id... ], orig_idx, level ]
-      @userfiles_total  = simple_pairs.uniq.size
+      @userfiles_total  = simple_pairs.size
       if params[:find_file_id]
         find_file_id    = params[:find_file_id].to_i
         find_file_index = simple_pairs.index { |u| u[0] == find_file_id }
