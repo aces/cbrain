@@ -122,7 +122,7 @@ class UserfileCustomFilter < CustomFilter
   end
 
   def scope_syncstatus(scope)
-    scope.includes(:sync_status).where(:sync_status => {:status => self.data["sync_status"]})
+    scope.joins(:sync_status).where(:sync_status => {:status => self.data["sync_status"]})
   end
   
 end
