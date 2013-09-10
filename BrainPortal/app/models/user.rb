@@ -83,6 +83,7 @@ class User < ActiveRecord::Base
   
   before_create             :add_system_groups
   before_save               :encrypt_password
+  before_save               :destroy_sessions_if_locked
   after_update              :system_group_site_update
   after_destroy             :destroy_system_group
   after_destroy             :destroy_user_sessions
@@ -390,6 +391,15 @@ class User < ActiveRecord::Base
     return true if password.blank?
     self.salt             = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--") if salt.blank?
     self.crypted_password = "pbkdf2_sha1:" + encrypt_in_pbkdf2_sha1(password)
+    true
+  end
+
+  # "before save" callback, destroy sessions of
+  # user if account_locked
+  def destroy_sessions_if_locked #:nodoc:
+    if self.changed_attributes.has_key?("account_locked") && self.changed_attributes["account_locked"] == false
+      destroy_user_sessions rescue true
+    end
     true
   end
   

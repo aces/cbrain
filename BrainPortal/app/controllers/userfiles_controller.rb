@@ -104,9 +104,11 @@ class UserfilesController < ApplicationController
     @filter_params["tree_sort"] = "on" if @filter_params["tree_sort"].blank?
     if @filter_params["tree_sort"] == "off" || ![:html, :js].include?(request.format.to_sym)
       @filtered_scope  = @filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
+      # use 'distinct userfiles.id' on count in order to remove duplicate entry
+      # due to the presence of file with multiple status
       @userfiles_total = @filtered_scope.count("distinct userfiles.id")
       ordered_real     = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
-    # ---- WITH tree sort ----
+    # ---- WITH tree sort ----
     else
       # We first get a list of 'simple' objects [ id, parent_id ]
       simple_pairs      = sorted_scope.raw_rows( [ "userfiles.id", "userfiles.parent_id" ] )

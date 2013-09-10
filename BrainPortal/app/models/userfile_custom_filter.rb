@@ -121,6 +121,8 @@ class UserfileCustomFilter < CustomFilter
     scope.where( :type  =>  self.data["type"] )
   end
 
+  #Return +scope+ modified to filter the Userfile entry's sync_status.
+  #note that the scope will return 1 entry by status/file combination. 
   def scope_syncstatus(scope)
     scope.joins(:sync_status).where(:sync_status => {:status => self.data["sync_status"]})
   end
