@@ -60,6 +60,7 @@
       t.sort_column("Action", 'ExceptionLog', 'request_action', :filters => basic_filters_for(@filtered_scope, ExceptionLog.scoped, ExceptionLog, :request_action), &:request_action)
       t.sort_column("Format", 'ExceptionLog', 'request_format', :filters => basic_filters_for(@filtered_scope, ExceptionLog.scoped, ExceptionLog, :request_format), &:request_format)
       t.sort_column("User", 'User', 'login', :filters => association_filters_for(@filtered_scope, ExceptionLog.scoped, "exception_log", "user", :name_method => "login")) { |e| link_to_user_with_tooltip(e.user) }
+      t.sort_column("Revision", 'ExceptionLog', 'revision_no', :filters => basic_filters_for(@filtered_scope, ExceptionLog.scoped, ExceptionLog, :revision_no), &:revision_no)
       t.reverse_sort_column("Raised at", 'ExceptionLog', 'created_at') { |e| to_localtime(e.created_at,:datetime) }
     %>
   <% end %>

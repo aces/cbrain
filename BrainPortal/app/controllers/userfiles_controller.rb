@@ -41,80 +41,32 @@ class UserfilesController < ApplicationController
   # GET /userfiles
   # GET /userfiles.xml
   def index #:nodoc:
-    
+
     #------------------------------
     # Header scope
     #------------------------------
 
-    @header_scope = Userfile.scoped
-
-    # Restrict by 'view all' or not
-    @filter_params["view_all"] ||= current_user.has_role?(:admin_user) ? 'off' : 'on'
-    if @filter_params["view_all"] == 'on'
-      @header_scope = Userfile.restrict_access_on_query(current_user, @header_scope, :access_requested => :read)
-    else
-      @header_scope = @header_scope.where( :user_id => current_user.id )
-    end
-
-    # Filter by current project
-    if current_project
-      @header_scope = @header_scope.where( :group_id  => current_project.id )
-    end
-
-    # Filter by 'view hidden' or not
-    unless @filter_params["view_hidden"] == 'on'
-      @header_scope = @header_scope.where( :hidden => false ) # show only the non-hidden files
-    end
-    
-    # The userfile index only show and count the main files, not their subformats.
-    @header_scope = @header_scope.where( :format_source_id => nil )
-
-
+    @header_scope = header_scope(@filter_params) 
 
     #------------------------------
     # Filtered scope
     #------------------------------
 
-    # Prepare filters
-    @filter_params["filter_hash"]                 ||= {}
-    @filter_params["filter_custom_filters_array"] ||= []
-    @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)  
-    @filter_params["filter_tags_array"]           ||= [] 
-    @filter_params["filter_tags_array"]           &= current_user.available_tags.map{ |t| t.id.to_s }  
-    @filter_params["sort_hash"]["order"] ||= 'userfiles.name'
-   
-    # Prepare custom filters
-    custom_filter_tags = @filter_params["filter_custom_filters_array"].map { |filter| UserfileCustomFilter.find(filter).tag_ids }.flatten.uniq
-        
-    # Prepare tag filters
-    tag_filters    = @filter_params["filter_tags_array"] + custom_filter_tags
-    #Apply filters
-    @filtered_scope = base_filtered_scope(@header_scope)
+    @filtered_scope = filter_scope(@filter_params,@header_scope)
     
-    @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
-      custom_filter = UserfileCustomFilter.find(custom_filter_id)
-      @filtered_scope = custom_filter.filter_scope(@filtered_scope)
-    end
-    
-    unless tag_filters.blank?
-      @filtered_scope = @filtered_scope.where( "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})" )
-    end
-    
-
-
     #------------------------------
     # Sorting scope
     #------------------------------
 
-    sorted_scope = base_sorted_scope @filtered_scope
-    
+    sorted_scope          = base_sorted_scope @filtered_scope
     tags_and_total_counts = @header_scope.select("tags.name as tag_name, tags.id as tag_id, COUNT(tags.name) as tag_count").joins(:tags).group("tags.name")
     filt_tag_counts       = @filtered_scope.joins(:tags).group("tags.name").count
     @tag_filters          = tags_and_total_counts.map { |tc| ["#{tc.tag_name} (#{filt_tag_counts[tc.tag_name].to_i}/#{tc.tag_count})", { :parameter  => :filter_tags_array, :value => tc.tag_id, :class => "#{"filter_zero" if filt_tag_counts[tc.tag_name].blank?}" }]  }
     
     # Identify and add necessary table joins
-    joins = []
-    sort_table = @filter_params["sort_hash"]["order"].split(".")[0]
+    joins                                  = []
+    @filter_params["sort_hash"]["order"] ||= 'userfiles.name'
+    sort_table                             = @filter_params["sort_hash"]["order"].split(".")[0]
     if sort_table == "users" || current_user.has_role?(:site_manager)
       joins << :user
     end
@@ -148,13 +100,15 @@ class UserfilesController < ApplicationController
 
     includes = [ :user, :data_provider, :sync_status, :tags, :group ] # used only when fetching objects for rendering the page
 
-    # ---- NO tree sort ----
+    # ---- NO tree sort ----         
     @filter_params["tree_sort"] = "on" if @filter_params["tree_sort"].blank?
     if @filter_params["tree_sort"] == "off" || ![:html, :js].include?(request.format.to_sym)
       @filtered_scope  = @filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
-      @userfiles_total = @filtered_scope.count
-      ordered_real  = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
-    # ---- WITH tree sort ----
+      # use 'distinct userfiles.id' on count in order to remove duplicate entry
+      # due to the presence of file with multiple status
+      @userfiles_total = @filtered_scope.count("distinct userfiles.id")
+      ordered_real     = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
+    # ---- WITH tree sort ----
     else
       # We first get a list of 'simple' objects [ id, parent_id ]
       simple_pairs      = sorted_scope.raw_rows( [ "userfiles.id", "userfiles.parent_id" ] )
@@ -609,7 +563,7 @@ class UserfilesController < ApplicationController
   # userfiles.
   def update_multiple #:nodoc:
     file_ids        = params[:file_ids]
-    commit_name     = extract_params_key([ :update_tags, :update_projects, :update_permissions, :update_owner, :update_file_type, :update_hidden ], "")
+    commit_name     = extract_params_key([ :update_tags, :update_projects, :update_permissions, :update_owner, :update_file_type, :update_hidden , :update_immutable], "")
     commit_humanize = commit_name.to_s.humanize
 
     # First selection no need to be in spawn
@@ -635,14 +589,16 @@ class UserfilesController < ApplicationController
           ["update_file_type", params[:file_type], current_user]
         when :update_hidden
           ["update_attributes_with_logging", {:hidden => params[:userfile][:hidden]}, current_user, [ 'hidden' ] ]
+        when :update_immutable
+          ["update_attributes_with_logging", {:immutable => params[:userfile][:immutable]}, current_user, [ 'immutable' ] ]
         else
           nil
       end
-    if unable_to_update.present? || operation.blank?
-      flash[:error]   = "You do not have access to this #{unable_to_update}." if unable_to_update.present?
-      flash[:error]   = "Unknown operation requested for updating the files." if operation.blank?
-      redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
-      redirect_to redirect_action
+      if unable_to_update.present? || operation.blank?
+        flash[:error]   = "You do not have access to this #{unable_to_update}." if unable_to_update.present?
+        flash[:error]   = "Unknown operation requested for updating the files." if operation.blank?
+        redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
+        redirect_to redirect_action
       return
     end
 
@@ -676,7 +632,7 @@ class UserfilesController < ApplicationController
         if userfile.send(*operation)
           success_count += 1
         else
-          failure_count +=1
+          failure_count += 1
         end
       end
       # Async Notification
@@ -803,19 +759,39 @@ class UserfilesController < ApplicationController
     )
 
     CBRAIN.spawn_with_active_records(current_user,"Collection Merge") do
+      failed_list = {}
+      begin
       userfiles = Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read)
       result    = collection.merge_collections(userfiles)
-      if result == :success
-        Message.send_message(current_user,
-                            :message_type  => 'notice', 
-                            :header        => "Collections Merged", 
-                            :variable_text => "[[#{collection.name}][/userfiles/#{collection.id}]]"
-                            )
-      else
+        if result == :success
+          Message.send_message(current_user,
+                              :message_type  => 'notice', 
+                              :header        => "Collections Merged", 
+                              :variable_text => "[[#{collection.name}][/userfiles/#{collection.id}]]"
+                              )
+        elsif result == :collision
+          Message.send_message(current_user,
+                              :message_type  => 'error', 
+                              :header        => "Collection could not be merged.", 
+                              :variable_text => "There was a collision among the file names."
+                              )
+        end
+      rescue => e
+        err_message = e.message
+        failed_list[err_message] ||= []
+        failed_list[err_message] << collection
+      end
+
+      if failed_list.size > 0
+        report = ""
+        failed_list.each do |message,collections|
+          report += "Failed because: #{message}\n"
+          report += collections.map { |c| "[[#{c.name}][/userfiles/#{c.id}]]\n" }.join("")
+        end
         Message.send_message(current_user,
                             :message_type  => 'error', 
-                            :header        => "Collection could not be merged.", 
-                            :variable_text => "There was a collision among the file names."
+                            :header        => "The collection was not created correctly on #{DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first.name}",
+                            :variable_text => report
                             )
       end
     end # spawn
@@ -827,15 +803,6 @@ class UserfilesController < ApplicationController
   
   # Copy or move files to a new provider.
   def change_provider #:nodoc:
-
-    # Operaton to perform
-    commit_name     = extract_params_key([ :move, :copy ], "")
-
-    if commit_name == :move
-      task      = 'move'
-    elsif commit_name == :copy
-      task      = 'copy'
-    end
 
     # Destination provider
     data_provider_id = params[:data_provider_id_for_mv_cp]
@@ -851,16 +818,12 @@ class UserfilesController < ApplicationController
     # File list to apply operation
     filelist    = params[:file_ids] || []
 
-    # Default message keywords for 'move'
-    word_move  = 'move'
-    word_moved = 'moved'
-    if task == 'copy'  # switches to 'copy' mode, so adjust the words
-      word_move  = 'copy'
-      word_moved = 'copied'
-    end
-
+    # Operaton to perform
+    task       = extract_params_key([ :move, :copy ], "")
+    word_move  = task == :move ? 'move'  : 'copy'
+    word_moved = task == :move ? 'moved' : 'copied'
    
-    new_provider     = DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first
+    new_provider    = DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first
     unless new_provider
       flash[:error] = "Data provider #{data_provider_id} not accessible.\n"
       redirect_to :action => :index, :format => request.format.to_sym
@@ -874,12 +837,12 @@ class UserfilesController < ApplicationController
       filelist.each_with_index do |id,count|
         $0 = "#{word_move.capitalize} #{count+1}/#{filelist.size} To #{new_provider.name}\0"
         begin
-          u = Userfile.find_accessible_by_user(id, current_user, :access_requested => (task == 'copy' ? :read : :write) )
+          u = Userfile.find_accessible_by_user(id, current_user, :access_requested => (task == :copy ? :read : :write) )
           next unless u
           orig_provider = u.data_provider
           next if orig_provider.id == data_provider_id # no support for copy to same provider in the interface, yet.
           res = nil
-          if task == 'move'
+          if task == :move
             raise "Not owner." unless u.has_owner_access?(current_user)
             res = u.provider_move_to_otherprovider(new_provider, :crush_destination => crush_destination)
           else
@@ -932,11 +895,20 @@ class UserfilesController < ApplicationController
   end
 
   # Adds the selected userfile IDs to the session's persistent list
-  def manage_persistent #:nodoc:
-    filelist    = params[:file_ids] || []
-
+  def manage_persistent
+    
     if (params[:operation] || 'clear') =~ /(clear|add|remove|replace)/i
+      filelist  = params[:file_ids] || []
       operation = Regexp.last_match[1].downcase
+    elsif (params[:operation]) =~ /select/i
+      operation      = "add"
+      # Reduce userfiles list according to @filter_params
+      filelist       = []
+      header_scope   = header_scope(@filter_params)
+      filtered_scope = filter_scope(@filter_params, header_scope)
+      filtered_scope.each do |f|
+        filelist << f.id.to_s if f.available?
+      end
     else
       operation = 'clear'
     end
@@ -967,7 +939,7 @@ class UserfilesController < ApplicationController
     flash[:notice] += "No changes made to the persistent list of userfiles." if
       added_count == 0 && removed_count == 0 && cleared_count == 0
 
-    redirect_to :action => :index, :page => params[:page]
+    redirect_to :action => :index, :page => params[:page] 
   end
   
   #Delete the selected files.
@@ -1408,8 +1380,6 @@ class UserfilesController < ApplicationController
     return tarfilename
   end
 
-  private
-
   # Sort a list of files in "tree order" where
   # parents are listed just before their children.
   # It also keeps the original list's ordering
@@ -1476,4 +1446,63 @@ class UserfilesController < ApplicationController
     result
   end
 
+  # Reduce Userfile scoped according with the header scope
+  # selected by user
+  def header_scope(filters)
+    header_scope = Userfile.scoped
+
+    # Restrict by 'view all' or not
+    filters["view_all"] ||= current_user.has_role?(:admin_user) ? 'off' : 'on'
+    if filters["view_all"] == 'on'
+      header_scope = Userfile.restrict_access_on_query(current_user, header_scope, :access_requested => :read)
+    else
+      header_scope = header_scope.where( :user_id => current_user.id )
+    end
+
+    # Filter by current project
+    if current_project
+      header_scope = header_scope.where( :group_id  => current_project.id )
+    end
+
+    # Filter by 'view hidden' or not
+    unless filters["view_hidden"] == 'on'
+      header_scope = header_scope.where( :hidden => false ) # show only the non-hidden files
+    end
+    
+    # The userfile index only show and count the main files, not their subformats.
+    header_scope = header_scope.where( :format_source_id => nil )
+
+    header_scope
+  end
+
+  # Reduce Userfile scoped according with the filters
+  # selected by user
+  def filter_scope(filters,header_scope)
+    # Prepare filters
+    filters["filter_hash"]                 ||= {}
+    filters["filter_custom_filters_array"] ||= []
+    filters["filter_custom_filters_array"]  &= current_user.custom_filter_ids.map(&:to_s)
+    filters["filter_tags_array"]           ||= []
+    filters["filter_tags_array"]            &= current_user.available_tags.map{ |t| t.id.to_s }
+   
+    # Prepare custom filters
+    custom_filter_tags = filters["filter_custom_filters_array"].map { |filter| UserfileCustomFilter.find(filter).tag_ids }.flatten.uniq
+    
+    # Prepare tag filters
+    tag_filters        = filters["filter_tags_array"] + custom_filter_tags
+    #Apply filters
+    filtered_scope     = base_filtered_scope(header_scope)
+    
+    filters["filter_custom_filters_array"].each do |custom_filter_id|
+      custom_filter    = UserfileCustomFilter.find(custom_filter_id)
+      filtered_scope   = custom_filter.filter_scope(filtered_scope)
+    end
+
+    unless tag_filters.blank?
+      filtered_scope   = filtered_scope.where( "((SELECT COUNT(DISTINCT tags_userfiles.tag_id) FROM tags_userfiles WHERE tags_userfiles.userfile_id = userfiles.id AND tags_userfiles.tag_id IN (#{tag_filters.join(",")})) = #{tag_filters.size})" )
+    end
+    return filtered_scope
+  end
+    
+  
 end

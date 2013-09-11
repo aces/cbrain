@@ -83,6 +83,7 @@ class User < ActiveRecord::Base
   
   before_create             :add_system_groups
   before_save               :encrypt_password
+  before_save               :destroy_sessions_if_locked
   after_update              :system_group_site_update
   after_destroy             :destroy_system_group
   after_destroy             :destroy_user_sessions
@@ -131,14 +132,39 @@ class User < ActiveRecord::Base
     self.login
   end
   
-  def signed_license_agreements
+  def signed_license_agreements(license_agreement_set=self.license_agreement_set)
+    current_user_license = self.meta[:signed_license_agreements] || []
+
+    return current_user_license if current_user_license.empty?
+
+    extra_license = current_user_license - license_agreement_set
+    self.meta[:signed_license_agreements] =  current_user_license  - extra_license
+    self.save 
     self.meta[:signed_license_agreements] || []
   end
   
   def unsigned_license_agreements
-    RemoteResource.current_resource.license_agreements - self.signed_license_agreements
+    license_agreement_set = self.license_agreement_set 
+
+    # Difference between all license agreements and whom signed by the user
+    license_agreement_set - self.signed_license_agreements(license_agreement_set) 
   end
   
+  def license_agreement_set #:nodoc:
+    all_object_with_license = RemoteResource.find_all_accessible_by_user(self) +
+                              Tool.find_all_accessible_by_user(self) +
+                              DataProvider.find_all_accessible_by_user(self)
+
+    license_agreements = []
+    # List all license_agreements
+    all_object_with_license.each do |o|
+      o_license_agreements = o.meta[:license_agreements]
+      license_agreements.concat(o_license_agreements) if o_license_agreements
+    end
+
+    RemoteResource.current_resource.license_agreements  + license_agreements
+  end
+
   def remember_token? #:nodoc:
     remember_token_expires_at && Time.now.utc < remember_token_expires_at 
   end
@@ -365,6 +391,15 @@ class User < ActiveRecord::Base
     return true if password.blank?
     self.salt             = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--") if salt.blank?
     self.crypted_password = "pbkdf2_sha1:" + encrypt_in_pbkdf2_sha1(password)
+    true
+  end
+
+  # "before save" callback, destroy sessions of
+  # user if account_locked
+  def destroy_sessions_if_locked #:nodoc:
+    if self.changed_attributes.has_key?("account_locked") && self.changed_attributes["account_locked"] == false
+      destroy_user_sessions rescue true
+    end
     true
   end
   

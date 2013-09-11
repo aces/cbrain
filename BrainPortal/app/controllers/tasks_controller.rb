@@ -65,15 +65,16 @@ class TasksController < ApplicationController
     @total_tasks       = scope.count    # number of TASKS
     @total_space_known = scope.sum(:cluster_workdir_size)
     @total_space_unkn  = scope.where(:cluster_workdir_size => nil).where("cluster_workdir IS NOT NULL").count
-    @total_entries     = @total_tasks # number of ENTRIES, a batch line is 1 entry even if it represents N tasks
 
     # For Pagination
     offset = (@current_page - 1) * @per_page
 
     if @filter_params["sort_hash"]["order"] == "cbrain_tasks.batch" && !@filter_params["filter_hash"]["batch_id"] && request.format.to_sym != :xml
-      batch_ids            = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).raw_first_column("distinct(cbrain_tasks.batch_id)")
-      task_counts_in_batch = scope.where(:batch_id => batch_ids).group(:batch_id).count
-      @total_entries       = task_counts_in_batch.count
+      batch_ids                 = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).raw_first_column("distinct(cbrain_tasks.batch_id)")
+      task_counts_in_batch      = scope.where(:batch_id => batch_ids).group(:batch_id).count
+      full_batch_ids            = scope.raw_first_column("distinct(cbrain_tasks.batch_id)")
+      full_task_counts_in_batch = scope.where(:batch_id => full_batch_ids).group(:batch_id).count
+      @total_entries            = full_task_counts_in_batch.count
       
       @tasks = {} # hash batch_id => task_info
       batch_ids.each do |batch_id|
@@ -86,7 +87,7 @@ class TasksController < ApplicationController
       end
       pagination_list = batch_ids
     else
-      
+      @total_entries = @total_tasks 
       task_list = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).all
       
       @tasks = {} # hash task_id -> task_info for a single task
@@ -171,21 +172,24 @@ class TasksController < ApplicationController
     @task             = CbrainTask.const_get(@toolname).new
 
     # Our new task object needs some initializing
-    @task.params      = @task.class.wrapper_default_launch_args.clone
-    @task.bourreau_id = params[:bourreau_id] # may or may not be there
-    @task.user        = current_user
-    @task.group_id    = current_project.try(:id) || current_user.own_group.id
-    @task.status      = "New"
-
-    # Offer latest accessible tool config as default
-    if @task.bourreau_id
-      tool = @task.tool
-      toolconfigs = ToolConfig.where( :bourreau_id => @task.bourreau_id, :tool_id => tool.id )
-      toolconfigs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }
-      lastest_toolconfig = toolconfigs.last
-      @task.tool_config = lastest_toolconfig if lastest_toolconfig
-    end
-
+    @task.params         = @task.class.wrapper_default_launch_args.clone
+    @task.bourreau_id    = params[:bourreau_id]     # Just for compatibility with old code
+    @task.tool_config_id = params[:tool_config_id]  # Normaly send by interface but it's optionnal 
+    @task.user           = current_user
+    @task.group_id       = current_project.try(:id) || current_user.own_group.id
+    @task.status         = "New"
+    
+    if @task.tool_config_id.present? 
+      @task.tool_config = ToolConfig.find(@task.tool_config_id)
+      @task.bourreau_id = @task.tool_config.bourreau_id
+    elsif @task.bourreau_id # Offer latest accessible tool config as default id ! @task.tool_config                                                                                                                                                                                                                 
+      tool = @task.tool                                                                                                                                                                                                                    
+      toolconfigs = ToolConfig.where( :bourreau_id => @task.bourreau_id, :tool_id => tool.id )                                                                                                                 
+      toolconfigs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }                                                                                                                          
+      lastest_toolconfig = toolconfigs.last                                                                                                                                                                         
+      @task.tool_config = lastest_toolconfig if lastest_toolconfig                                                                                                                      
+    end                                                                    
+    
     # Filter list of files as provided by the get request
     file_ids = (params[:file_ids] || []) | current_session.persistent_userfile_ids_list
     @files            = Userfile.find_accessible_by_user(file_ids, current_user, :access_requested => :write) rescue []
@@ -272,8 +276,8 @@ class TasksController < ApplicationController
     # For support with the external APIs, we'll try to guess missing values if we
     # only receive a tool_config_id.
     params_tool_config_id = params[:cbrain_task][:tool_config_id] # can be nil
-    tool_config = ToolConfig.find(params_tool_config_id) rescue nil
-    tool_config = nil unless tool_config && tool_config.can_be_accessed_by?(current_user) &&
+    tool_config           = ToolConfig.find(params_tool_config_id) rescue nil
+    tool_config           = nil unless tool_config && tool_config.can_be_accessed_by?(current_user) &&
                              tool_config.bourreau_and_tool_can_be_accessed_by?(current_user)
     if tool_config
       params[:tool_id]                   = tool_config.tool_id     # replace whatever was there or not
@@ -290,9 +294,13 @@ class TasksController < ApplicationController
     @task.status      = "New" if @task.status.blank? || @task.status !~ /Standby/ # Standby is special.
 
     # Extract the Bourreau ID from the ToolConfig
-    tool_config = @task.tool_config
-    @task.bourreau = tool_config.bourreau if tool_config && tool_config.bourreau
-
+    tool_config    = @task.tool_config
+    if tool_config && tool_config.bourreau
+      @task.bourreau = tool_config.bourreau
+    else
+      @task.errors.add(:base, "Please select a Server and a Version for the tool.")
+    end
+      
     # Security checks
     @task.user     = current_user           unless current_user.available_users.map(&:id).include?(@task.user_id)
     @task.group    = current_user.own_group unless current_user.available_groups.map(&:id).include?(@task.group_id)

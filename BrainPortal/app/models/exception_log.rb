@@ -39,24 +39,24 @@ class ExceptionLog < ActiveRecord::Base
     session = request.session
     hdrs    = request.headers.select { |k| k =~ /^[A-Z]/ }
     
-    e = self.new
-    e.exception_class = exception.class.to_s
-    e.request_controller      = params[:controller]
-    e.request_action          = params[:action]
-    e.request_method          = request.method.to_s.upcase
-    e.request_format          = request.format.to_sym.to_s
-    e.user_id         = user.try(:id)
-    e.message         = exception.message
-    e.backtrace       = exception.backtrace
-    e.request         = {
+    e                    = self.new
+    e.exception_class    = exception.class.to_s
+    e.request_controller = params[:controller]
+    e.request_action     = params[:action]
+    e.request_method     = request.method.to_s.upcase
+    e.request_format     = request.format.to_sym.to_s
+    e.user_id            = user.try(:id)
+    e.message            = exception.message
+    e.backtrace          = exception.backtrace
+    e.request            = {
                           :url         => "#{request.protocol}#{request.env["HTTP_HOST"]}#{request.fullpath}",
                           :parameters  => params.inspect, 
                           :format      => request.format.to_s
-                        }
-    e.session         = session
-    e.request_headers = hdrs
-    e.instance_name   = CBRAIN::Instance_Name rescue "(?)"
-    e.revision_no     = $CBRAIN_StartTime_Revision
+                          }
+    e.session            = session
+    e.request_headers    = hdrs
+    e.instance_name      = CBRAIN::Instance_Name rescue "(?)"
+    e.revision_no        = $CBRAIN_StartTime_Revision
     e.save
     
     e

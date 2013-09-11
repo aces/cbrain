@@ -288,6 +288,11 @@ class CbrainSession
   def persistent_userfile_ids_add(id_list)
     added_count    = 0
     persistent_ids = self[:persistent_userfile_ids] ||= {}
+    size_limit = 2500
+    if (persistent_ids.size + id_list.size) > size_limit
+      cb_error "You cannot have more than a total of #{size_limit} files selected persistently."
+      return
+    end
     id_list.each do |id|
       next if persistent_ids[id]
       persistent_ids[id] = true

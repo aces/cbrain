@@ -93,6 +93,12 @@
     <% else %>
       <% t.empty_cell %>
     <% end %>
+    
+    <% licenses = @provider.license_agreements.count == 0 ? "(None)": @provider.license_agreements.join("\n") %>
+    <% t.edit_cell(:license_agreements, :content => licenses) do %>
+      <%= text_area_tag "data_provider[license_agreements]", @provider.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
+      <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
+    <% end %>       
 
     <% t.edit_cell(:time_zone, :content => (@provider.time_zone || "(Unset)") ) do %>
       <%= select_tag "data_provider[time_zone]", time_zone_options_for_select(@provider.time_zone, /canada/i), :include_blank => true %>

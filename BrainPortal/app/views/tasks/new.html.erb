@@ -35,7 +35,7 @@
 <% end %>
 
 
-<%= render :partial => 'tasks/control' %>
+<%= render :partial => 'tasks/control', :locals  => { :form => form } %>
 
 <% unless @task.class.properties[:no_presets] %>
   <%= render :partial => "tasks/presets",
