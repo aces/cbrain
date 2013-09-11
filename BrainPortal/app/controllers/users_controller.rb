@@ -115,9 +115,7 @@ class UsersController < ApplicationController
 
     @user.password_reset = no_password_reset_needed ? false : true
     
-    @user.save
-    
-    if @user.errors.empty?
+    if @user.save
       flash[:notice] = "User successfully created."
       current_user.addlog_context(self,"Created account for user '#{@user.login}'")
       @user.addlog_context(self,"Account created by '#{current_user.login}'")

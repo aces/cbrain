@@ -83,9 +83,9 @@ class BourreauxController < ApplicationController
     fields    = params[:bourreau]
 
     @bourreau = Bourreau.new( fields )
-    @bourreau.save
 
-    if @bourreau.errors.empty?
+    if @bourreau.save
+      @bourreau.addlog_context(self,"Created by #{current_user.login}")
       flash[:notice] = "Execution Server successfully created."
       
       respond_to do |format|

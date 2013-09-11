@@ -403,7 +403,7 @@ class UserfilesController < ApplicationController
         redirect_to redirect_path
         return
       end
-
+      
       flash[:notice] += "File '#{basename}' being added in background."
 
       system("cp #{rack_tempfile_path.to_s.bash_escape} #{tmpcontentfile.to_s.bash_escape}") # fast, hopefully; maybe 'mv' would work?
@@ -412,7 +412,7 @@ class UserfilesController < ApplicationController
           userfile.cache_copy_from_local_file(tmpcontentfile)
           userfile.size = rack_tempfile_size
           userfile.save
-          userfile.addlog("Uploaded by #{current_user.login}")
+          userfile.addlog_context(self, "Uploaded by #{current_user.login}")
           Message.send_message(current_user,
                                :message_type  => 'notice', 
                                :header  => "File Uploaded", 

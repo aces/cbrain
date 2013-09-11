@@ -107,7 +107,8 @@ class ToolsController < ApplicationController
     end
 
     respond_to do |format|
-      if @tool.errors.empty? && @tool.save
+      if @tool.save
+        @tool.addlog_context(self,"Created by #{current_user.login}")
         flash[:notice] = 'Tool was successfully created.'
         format.js  { redirect_to :action => :index, :format => :js }
         format.xml { render :xml => @tool, :status => :created, :location => @tool }

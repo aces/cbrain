@@ -307,7 +307,8 @@ class TasksController < ApplicationController
 
     # Log revision number of portal.
     @task.addlog_current_resource_revision
-
+    @task.addlog_context(self,"Created by #{current_user.login}")
+                                                            
     # Give a task the ability to do a refresh of its form
     commit_name = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ])
     commit_name = :refresh if params[:commit] =~ /refresh/i

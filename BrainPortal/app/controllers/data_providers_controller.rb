@@ -81,9 +81,7 @@ class DataProvidersController < ApplicationController
     
     if @provider.save
       add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers, :browse_gid])
-    end
-
-    if @provider.errors.empty?
+      @provider.addlog_context(self,"Created by #{current_user.login}")
       flash[:notice] = "Provider successfully created."
       respond_to do |format|
         format.js  { redirect_to :action => :index, :format => :js  }
@@ -446,7 +444,7 @@ class DataProvidersController < ApplicationController
         previously_registered_userfiles << registered_file
       elsif userfile.save
         newly_registered_userfiles << userfile
-        userfile.addlog("Registered on DataProvider '#{@provider.name}' as '#{userfile.name}'.")
+        userfile.addlog_context(self, "Registered on DataProvider '#{@provider.name}' as '#{userfile.name}' by #{current_user.login}.")
       else
         flash[:error] += "Error: could not register #{subtype} '#{basename}'... maybe the file exists already?\n"
         num_skipped += 1
