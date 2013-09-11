@@ -42,6 +42,7 @@ class SessionsController < ApplicationController
     respond_to do |format|
       format.html
       format.xml
+      format.json { render :json => {:authenticity_token => form_authenticity_token} }
       format.txt
     end
   end
@@ -58,6 +59,7 @@ class SessionsController < ApplicationController
       
       respond_to do |format|
         format.html { render :action => 'new' }
+        format.json { render :nothing => true, :status  => 401 }
         format.xml  { render :nothing => true, :status  => 401 }
       end
       return
@@ -69,6 +71,7 @@ class SessionsController < ApplicationController
       flash.now[:error] = "This account is locked, please write to #{User.admin.email || "the support staff"} to get this account unlocked."
       respond_to do |format|
         format.html { render :action => 'new' }
+        format.json { render :nothing => true, :status  => 401 }
         format.xml  { render :nothing => true, :status  => 401 }
       end
       return
@@ -80,6 +83,7 @@ class SessionsController < ApplicationController
       flash.now[:error] = 'The system is currently locked. Please try again later.'
       respond_to do |format|
         format.html { render :action => 'new' }
+        format.json { render :nothing => true, :status  => 401 }
         format.xml  { render :nothing => true, :status  => 401 }
       end
       return
@@ -130,6 +134,7 @@ class SessionsController < ApplicationController
     
     respond_to do |format|
       format.html { redirect_back_or_default(start_page_path) }
+      format.json { render :json => {:session_id => request.session_options[:id]}, :status => 200 }
       format.xml  { render :nothing => true, :status  => 200 }
     end
 

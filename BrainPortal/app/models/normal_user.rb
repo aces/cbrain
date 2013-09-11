@@ -44,11 +44,7 @@ class NormalUser < User
   end
   
   def visible_users #:nodoc:
-    if site
-      site.users.where("users.type <> 'AdminUser'")
-    else
-      User.where(:id => -1)  # empty scope!
-    end
+    User.where("users.type <> 'AdminUser'")
   end
   
 end
