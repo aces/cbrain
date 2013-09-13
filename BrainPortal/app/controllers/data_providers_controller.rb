@@ -231,7 +231,7 @@ class DataProvidersController < ApplicationController
     # - the state_ok flag that tell whether or not it's OK to register/unregister
     # - a message.
     if @fileinfolist.size > 0
-       @fileinfolist[0].class.class_eval("attr_accessor :userfile, :state_ok, :message")
+       @fileinfolist[0].class.class_eval("attr_accessor :userfile, :state_ok, :message, :userfile_id")
     end
 
     # NOTE: next paragraph for initializing registered_files is also in register() action
@@ -253,7 +253,8 @@ class DataProvidersController < ApplicationController
 
       registered = registered_files[fi_name]
       if registered
-        fi.userfile = registered # the userfile object itself
+        fi.userfile    = registered # the userfile object itself
+        fi.userfile_id = registered.id 
         if ((fi_type == :symlink)                                    ||
             (fi_type == :regular    && registered.is_a?(SingleFile)) ||
             (fi_type == :directory  && registered.is_a?(FileCollection)))
@@ -293,7 +294,7 @@ class DataProvidersController < ApplicationController
     end
     
     current_session.save_preferences_for_user(current_user, :data_providers, :browse_hash)
-        
+
     respond_to do |format|
       format.html
       format.xml { render :xml  => @fileinfolist }
