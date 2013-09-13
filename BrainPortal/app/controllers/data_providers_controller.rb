@@ -297,7 +297,10 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml { render :xml  => @fileinfolist }
+      format.xml do
+        @fileinfolist.each { |fil| fil.instance_eval {remove_instance_variable :@userfile} }
+        render :xml  => @fileinfolist
+      end
       format.js
     end
 
