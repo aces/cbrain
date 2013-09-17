@@ -23,10 +23,15 @@
 -%>
 
 <%= form_tag :action  => :create_parent_child do %>
+  
   <% for file in @userfiles %>
     <%= hidden_field_tag "child_ids[]", file.id %>
   <% end %>
-  Select File To Become Parent: <%= select_tag "parent_id", options_for_select(@userfiles.map{ |p| [p.name, p.id] }) %>
+
+  File To Become Parent: 
+  <%= select_tag "parent_id", 
+    options_for_select( @userfiles.count > 1  ? @userfiles.map{ |p| [p.name, p.id] } : []), 
+    @have_parent ? {:prompt => "Remove all parents"} : {}%>
   
   <%= submit_tag "Submit" %>
 <% end %>

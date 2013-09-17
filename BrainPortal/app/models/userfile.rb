@@ -521,6 +521,12 @@ class Userfile < ActiveRecord::Base
     true
   end
 
+  # Remove parent relationship
+  def remove_parent
+    self.parent_id = nil
+    self.save
+  end
+
   # List all descendants of the calling userfile.
   def descendants(seen = {})
     result     = []
@@ -842,10 +848,7 @@ class Userfile < ActiveRecord::Base
   end
   
   def nullify_children
-    self.children.each do |c|
-      c.parent_id = nil
-      c.save!
-    end    
+    self.children.each &:remove_parent
   end
   
   def validate_group_update

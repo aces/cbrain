@@ -174,10 +174,11 @@ class UserfilesController < ApplicationController
 
   def new_parent_child #:nodoc:
 
-    file_ids   = params[:file_ids]
-    @userfiles = Userfile.find_all_accessible_by_user(current_user, :access_requested => :write).where(:id => file_ids).all
-    if @userfiles.size < 2 
-      render :text  => "<span class=\"warning\">You must select at least two files to which you have write access.</span>"
+    file_ids     = params[:file_ids]
+    @userfiles   = Userfile.find_all_accessible_by_user(current_user, :access_requested => :write).where(:id => file_ids).all
+    @have_parent = @userfiles.any? { |u| u.parent_id  }
+    if ! ( @userfiles.size >= 2  || @have_parent )
+      render :text  => "<span class=\"warning\">You must select either:<br> 1) several files without parents or<br> 2) one file with a parent.</span>"
       return
     end
     
@@ -187,14 +188,15 @@ class UserfilesController < ApplicationController
   def create_parent_child #:nodoc:
     parent_id = params[:parent_id]
     child_ids = params[:child_ids]
-    
-    if parent_id.blank? || child_ids.blank?
-      flash[:error] = "Must have both parent and children selected for this operation."
-    else
+
+    if child_ids.blank?
+      flash[:error] = "Must have at least one file selected for this operation."
+    else 
       child_ids.delete(parent_id)
       @children = Userfile.find_accessible_by_user(params[:child_ids], current_user)
-      @parent   = Userfile.find_accessible_by_user(params[:parent_id], current_user)
-      @children.each { |c| c.move_to_child_of(@parent) }
+      @parent   = parent_id.present? && Userfile.find_accessible_by_user(params[:parent_id], current_user)
+      @parent ? @children.each { |c| c.move_to_child_of(@parent) }
+              : @children.each { |c| c.remove_parent() }
     end
     
     redirect_to :action => :index
