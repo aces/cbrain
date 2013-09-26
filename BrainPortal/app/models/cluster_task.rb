@@ -1025,6 +1025,7 @@ class ClusterTask < CbrainTask
 
       self.addlog("Attempting to archive work directory.")
 
+      system("chmod","-R","u+rwX",".") # uppercase X mode affects only directories
       ret = system("tar -czf '#{temp_tar_file}' --exclude '*#{temp_tar_file}' . </dev/null >'#{tar_capture}' 2>&1")
       out = File.read(tar_capture) rescue ""
 
