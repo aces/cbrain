@@ -40,7 +40,6 @@ class CbrainTask::StartVM < ClusterTask
 
     timestart = Time.now
     disk_image_file.sync_to_cache  
-    #TODO make a copy in the task work dir so that each VM has its own
     timestop = Time.now
     difftime = timestop - timestart 
     self.addlog "Synchronized file #{disk_image_file.name} in #{difftime}s"
