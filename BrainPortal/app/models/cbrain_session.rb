@@ -17,15 +17,15 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#Model represeting the current session. The current session object can 
+#Model represeting the current session. The current session object can
 #be accessed using the <b><tt>current_session</tt></b> method of the ApplicationController
 #class.
 #
 #This model is meant to act as a wrapper around the session hash.
-#It takes care of updating the values of and performing any logic related 
+#It takes care of updating the values of and performing any logic related
 #to the following attributes of the current session (mainly related
 #to the Userfile index page):
 #* currently active filters.
@@ -40,11 +40,11 @@
 class CbrainSession
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   def initialize(session, params, sess_model) #:nodoc:
     @session       = session    # rails session
     @session_model = sess_model # active record model that stores the session
-    
+
     @session[:persistent_userfile_ids] ||= {}
 
     controller = params[:proxy_destination_controller] || params[:controller]
@@ -52,13 +52,13 @@ class CbrainSession
     @session[controller.to_sym]["filter_hash"] ||= {}
     @session[controller.to_sym]["sort_hash"] ||= {}
   end
-  
+
   #Import a user's saved preferences from the db into the session.
   def load_preferences_for_user(current_user)
     user_preferences = current_user.meta[:preferences] || {}
     user_preferences.each { |k, v|  @session[k.to_sym] = v || {}}
   end
-  
+
   # Save given preferences from session into the db.
   def save_preferences_for_user(current_user, cont, *ks)
     controller = cont.to_sym
@@ -83,7 +83,7 @@ class CbrainSession
       current_user.meta[:preferences] = user_preferences
     end
   end
-  
+
   #Mark this session as active in the database.
   def activate
     return unless @session_model
@@ -92,14 +92,14 @@ class CbrainSession
     @session_model.active  = true
     @session_model.save!
   end
-  
+
   #Mark this session as inactive in the database.
   def deactivate
     return unless @session_model
     @session_model.active  = false
     @session_model.save!
   end
-  
+
   #Returns the list of currently active users on the system.
   def self.active_users(options = {})
     active_sessions = session_class.where(
@@ -109,12 +109,12 @@ class CbrainSession
     scope = User.where(options)
     scope.where( :id => user_ids )
   end
-  
+
   def self.count(options = {}) #:nodoc:
     scope = session_class.where(options)
     scope.count
   end
-  
+
   def self.session_class #:nodoc:
      ActiveRecord::SessionStore::Session
   end
@@ -122,12 +122,12 @@ class CbrainSession
   def self.all #:nodoc:
     self.session_class.all
   end
-  
+
   def self.recent_activity(n = 10, options = {}) #:nodoc:
     self.clean_sessions
     last_sessions = session_class.where( "sessions.user_id IS NOT NULL" ).order("sessions.updated_at DESC")
     entries = []
-    
+
     last_sessions.each do |sess|
       break if entries.size >= n
       next  if sess.user_id.blank?
@@ -143,7 +143,7 @@ class CbrainSession
         :raw_user_agent => sessdata["raw_user_agent"],       # can be nil, must be fecthed with string not symbol
       }
     end
-    
+
     entries
   end
 
@@ -170,7 +170,7 @@ class CbrainSession
       @session.delete(k)
     end
   end
-  
+
   #Update attributes of the session object based on the incoming request parameters
   #contained in the +params+ hash.
   def update(params)
@@ -213,24 +213,24 @@ class CbrainSession
           end
         else
           if @session[controller.to_sym][k].is_a? Hash
-            params[controller][k].delete_if { |pk, pv| pv.blank?   }
-            @session[controller.to_sym][k].merge!(sanitize_params(k, params[controller][k]) || {})
+            @session[controller.to_sym][k].merge!(sanitize_params(k, v) || {})
+            @session[controller.to_sym][k].delete_if { |pk, pv| pv.blank? }
           elsif @session[controller.to_sym][k].is_a? Array
-            sanitized_param = sanitize_params(k, params[controller][k])
+            sanitized_param = sanitize_params(k, v)
             @session[controller.to_sym][k] |= [sanitized_param] if sanitized_param
           else
-            @session[controller.to_sym][k] = sanitize_params(k, params[controller][k])
+            @session[controller.to_sym][k] = sanitize_params(k, v)
           end
         end
       end
     end
   end
-  
+
   #Returns the params saved for +controller+.
   def params_for(controller)
     @session[controller.to_sym] || {}
   end
-  
+
   #Find nested values without raising an exception.
   def param_chain(*keys)
     return nil if keys.empty?
@@ -238,7 +238,7 @@ class CbrainSession
     empty_value = nil
     empty_value = {} if final_key =~ /_hash$/
     empty_value = [] if final_key =~ /_array$/
-    
+
     current_hash = @session
     keys.each do |k|
       current_hash = current_hash[k]
@@ -247,12 +247,12 @@ class CbrainSession
     return empty_value unless current_hash.has_key?(final_key)
     current_hash[final_key]
   end
-  
+
   #Hash-like access to session attributes.
   def [](key)
     @session[key]
   end
-  
+
   #Hash-like assignment to session attributes.
   def []=(key, value)
     return unless @session_model
@@ -261,7 +261,7 @@ class CbrainSession
     end
     @session[key] = value
   end
-  
+
   #The method_missing method has been redefined to allow for simplified access to session parameters.
   #
   #*Example*: calling +current_session+.+current_filters+ will access <tt>session[:current_filters]</tt>
@@ -328,36 +328,36 @@ class CbrainSession
   end
 
   private
-  
+
   def sanitize_params(k, param) #:nodoc:
     key = k.to_sym
-    
+
     if key == :sort_hash
       param["order"] = sanitize_sort_order(param["order"])
       param["dir"] = sanitize_sort_dir(param["dir"])
     end
-    
+
     param
   end
-  
+
   def sanitize_sort_order(order) #:nodoc:
     table, column = order.strip.split(".")
     table = table.tableize
-    
+
     unless ActiveRecord::Base.connection.tables.include?(table)
       cb_error "Invalid sort table: #{table}."
     end
-    
+
     klass = Class.const_get table.classify
-    
+
     unless klass.column_names.include?(column) ||
         (klass.respond_to?(:pseudo_sort_columns) && klass.pseudo_sort_columns.include?(column))
       cb_error "Invalid sort column: #{table}.#{column}"
     end
-    
+
     "#{table}.#{column}"
   end
-  
+
   def sanitize_sort_dir(dir) #:nodoc:
     if dir.to_s.strip.upcase == "DESC"
       "DESC"
@@ -365,5 +365,5 @@ class CbrainSession
       ""
     end
   end
-  
+
 end
