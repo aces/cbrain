@@ -29,7 +29,7 @@ module BasicFilterHelpers
   def self.included(includer) #:nodoc:
     includer.class_eval do
       helper_method :basic_filters_for, :association_filters_for
-      before_filter :update_filters,             :only => [ :index, :filter_proxy ]
+      before_filter :update_filters,             :only => [ :index, :filter_proxy, :row_data ]
       before_filter :validate_pagination_values, :only => [ :index, :filter_proxy ]
     end
   end
