@@ -28,30 +28,12 @@ module BasicFilterHelpers
 
   def self.included(includer) #:nodoc:
     includer.class_eval do
-      helper_method :current_session,   :current_project
       helper_method :basic_filters_for, :association_filters_for
-      before_filter :update_filters
+      before_filter :update_filters,             :only => [ :index, :filter_proxy ]
+      before_filter :validate_pagination_values, :only => [ :index, :filter_proxy ]
     end
   end
 
-  #Returns the current session as a CbrainSession object.
-  def current_session
-    @cbrain_session ||= CbrainSession.new(session, params, request.env['rack.session.record'] )
-  end
-  
-  #Returns currently active project.
-  def current_project
-    return nil unless current_session[:active_group_id]
-    return nil if current_session[:active_group_id] == "all"
-    
-    if !@current_project || @current_project.id.to_i != current_session[:active_group_id].to_i
-      @current_project = Group.find_by_id(current_session[:active_group_id])
-      current_session[:active_group_id] = nil if @current_project.nil?
-    end
-    
-    @current_project
-  end
-  
   # Easy and safe filtering based on individual attributes or named scopes.
   # Simply adding <att>=<val> to a URL on an index page that uses this method
   # will automatically filter as long as <att> is a valid attribute or named
@@ -75,12 +57,6 @@ module BasicFilterHelpers
       sorted_scope = sorted_scope.order("#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}")
     end
     sorted_scope
-  end
-  
-  
-  def always_activate_session
-    session[:cbrain_toggle] = (1 - (session[:cbrain_toggle] || 0))
-    true
   end
   
   # Convenience method to determine wether a given model has the provided attribute.
@@ -185,7 +161,6 @@ module BasicFilterHelpers
     current_session.update(params)
 
     @filter_params = current_session.params_for(params[:proxy_destination_controller] || params[:controller])
-    validate_pagination_values
   end
 
   ########################################################################

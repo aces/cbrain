@@ -33,6 +33,7 @@ class ApplicationController < ActionController::Base
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include AuthenticatedSystem
+  include SessionHelpers
   include BasicFilterHelpers
   include ViewHelpers
   include ApiHelpers
@@ -42,7 +43,6 @@ class ApplicationController < ActionController::Base
   helper        :all # include all helpers, all the time
   helper_method :start_page_path
 
-  before_filter :always_activate_session
   before_filter :set_cache_killer
   before_filter :prepare_messages
   before_filter :check_account_validity
