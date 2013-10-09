@@ -31,12 +31,12 @@ module BasicFilterHelpers
       helper_method :basic_filters_for, :association_filters_for
       # To improve performance update_filters should be called only in certain case in:
       before_filter :update_filters,             :only => [
-          :index,             # for all controllers
-          :filter_proxy,      # in application controller
-          :row_data,          # in bourreaux controller
-          :browse, :register, # in data_providers controller
-          :operation,         # in tasks controller
-          :manage_persistent, # in userfiles controller
+          :index,                  # for all controllers
+          :filter_proxy,           # in application controller
+          :row_data,               # in bourreaux controller
+          :browse, :register,      # in data_providers controller
+          :operation, :batch_list, # in tasks controller
+          :manage_persistent,      # in userfiles controller
           ]
       before_filter :validate_pagination_values, :only => [ :index, :filter_proxy ]
     end
