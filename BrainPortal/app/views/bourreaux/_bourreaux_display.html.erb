@@ -104,10 +104,10 @@
                            :class          => "row_highlight #{cycle("list-odd", "list-even")}",
                            :replace        => true,
                            :error_message  => "<td colspan=\"#{full_width_colspan}\" class=\"loading_message\">Information for '#{h(rr.name)}' unavailable</td>" do %>
-          <td colspan="<%= full_width_colspan %>" class="loading_message">Checking '<%= rr.name %>'...</td>
+        <%= render :partial => 'bourreau_table_row', :locals  => { :render_mode => :placeholder, :bourreau  => rr, :row_number => row_number } %>
       <% end %>
     <% else %>
-      <%= render :partial => 'bourreau_table_row', :locals  => { :bourreau  => rr, :row_number => row_number } %>
+      <%= render :partial => 'bourreau_table_row', :locals  => {  :render_mode => :active_check, :bourreau  => rr, :row_number => row_number } %>
     <% end %>
   <% end %>
   
