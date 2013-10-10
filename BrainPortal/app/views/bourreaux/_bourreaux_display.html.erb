@@ -98,10 +98,10 @@
   <% t.row_override do |rr| %>
     <% row_number += 1 %>
     <% full_width_colspan = t.num_cells + operations_width_colspan - 1 %>
-    <% if rr.is_a?(Bourreau) && rr.online? && !rr.info_cached?(:ping)  %>
+    <% if rr.is_a?(Bourreau) && rr.online? # && !rr.info_cached?(:ping)  %>
       <%= staggered_loading "tr", url_for(:action  => :row_data, :id => rr.id, :row_number => row_number), 
                            :id             => "bourreau_#{rr.id}",
-                           :class          => "row_highlight #{cycle("list-odd", "list-even")}",
+                           :class          => "row_highlight #{row_number % 2 == 0 ? "list-even" : "list-odd"}",
                            :replace        => true,
                            :error_message  => "<td colspan=\"#{full_width_colspan}\" class=\"loading_message\">Information for '#{h(rr.name)}' unavailable</td>" do %>
         <%= render :partial => 'bourreau_table_row', :locals  => { :render_mode => :placeholder, :bourreau  => rr, :row_number => row_number } %>

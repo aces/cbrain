@@ -174,7 +174,15 @@
 
     <% if @tasks.size > 0 %>
 
-    <h1><%= sort_link("Latest Updated Tasks", CbrainTask, :updated_at, :dir => "DESC", :controller => :tasks, :action => :index, :ajax => false, :url_params => {:clear_filter => true}) %></h1>
+    <h1>
+       <%= sort_link("Latest Updated Tasks", CbrainTask, :updated_at, :dir => "DESC", :controller => :tasks, :action => :index, :ajax => false, :url_params => {:clear_filter => true}) %>
+       <% active_count = CbrainTask.active.count rescue 0 %>
+       <% if active_count > 0 %>
+         <%= filter_add_link "(#{active_count} active)", :controller => :tasks, :filters  => { :status => :active }, :ajax => false %>
+       <% else %>
+         (None active)
+       <% end %>
+    </h1>
 
       <table class="latest_summary_table">
         <% for task in @tasks %>

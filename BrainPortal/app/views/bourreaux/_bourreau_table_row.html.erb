@@ -18,11 +18,11 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<% 
+<%
    # render_mode controls what kind of HTML row we will generate.
    # if set to :placeholder :
    #    * no TR element is generated
@@ -32,37 +32,37 @@
    #    * the values for the four cells above will be fetched either from the cache
    #      if recent enough, or actively checked through the network. If the
    #      remote resource is down, red warnings will be shown.
-   render_mode    ||= :active_check 
-   
+   render_mode    ||= :active_check
+
    # Control variables
    is_a_placeholder = render_mode == :placeholder       ? true : false
    show_details     = @filter_params["details"] == 'on' ? true : false
-   
+
    # Extract information about the RemoteResource or create a dummy_record
    info = !is_a_placeholder ? bourreau.info(:ping) : RemoteResourceInfo.dummy_record
    if is_a_placeholder
      b_alive      = false
-     rev_info     = html_colorize("fetching", "orange")
-     uptime_info  = html_colorize("fetching", "orange")
-     workers_info = html_colorize("fetching", "orange")
+     rev_info     = html_colorize("(...)", "magenta")
+     uptime_info  = html_colorize("(...)", "magenta")
+     workers_info = html_colorize("(...)", "magenta")
    else
      b_alive      = info.name != "???"
-     
+
      # Revision info
      runrev       = info.starttime_revision
      rev_info     = red_if(runrev  != '???' && runrev  != $CBRAIN_StartTime_Revision, runrev, nil, :color2 => 'red')
-     
+
      # Uptime
      uptime_info  = ! b_alive ? red_if( bourreau.online? , "-", "Down!" ) : pretty_elapsed(info.uptime.to_i, :num_components => 2, :short => true)
-     
+
      # Worker status
      worker_pids  = info.worker_pids
      worker_pids  = nil if worker_pids == "???"
      num_workers  = worker_pids ? worker_pids.count(',')+1 : 0
-     workers_info = worker_pids.blank? ? html_colorize("Stopped", "red") : 
+     workers_info = worker_pids.blank? ? html_colorize("Stopped", "red") :
                                          red_if(num_workers != bourreau.workers_instances, "Running (x #{num_workers})", nil, :color2 => "orange")
-   end 
-   
+   end
+
    isbourreau       = bourreau.is_a?(Bourreau).presence # make sure it's 'nil ' if false so substition -> empty string
    num_running      = isbourreau ? CbrainTask.status(:active).where( :bourreau_id => bourreau.id ).count : 0
    task_space_known = isbourreau ? CbrainTask.real_tasks.where( :bourreau_id => bourreau.id ).sum(:cluster_workdir_size)                                               : ""
@@ -75,19 +75,19 @@
 
   <td class="left_align"><%= isbourreau ? "Execution" : "Portal" %></td>
   <td class="left_align"><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => { :class => (b_alive || is_a_placeholder) ? nil : 'error_link' } ) %></td>
-  
+
   <% if show_details %>
     <td><%= rev_info %></td>
     <td><%= link_to_user_with_tooltip(bourreau.user) %></td>
   <% end %>
-  
+
   <td><%= link_to_group_if_accessible(bourreau.group) %></td>
-  
+
   <% if show_details %>
     <td><%= link_to_site_if_accessible(bourreau.site_affiliation) %></td>
     <td><%= bourreau.time_zone || "(Unset)" %></td>
   <% end %>
-  
+
   <td><%= red_if( ! bourreau.online, "Yes", "Offline" ) %></td>
   <td>
     <% if ! b_alive %>
@@ -107,7 +107,7 @@
       <%= workers_info %>
     <% end %>
   </td>
-  
+
   <td>
     <%= isbourreau && html_tool_tip(
         index_count_filter(num_running, :tasks, { :bourreau_id => bourreau.id, :status => :active }, :show_zeros => true),
@@ -116,7 +116,7 @@
           <%= render :partial => 'load_info', :locals => { :bourreau => bourreau } %>
     <% end %>
   </td>
-  
+
   <% if show_details %>
     <td>
       <% if isbourreau %>
@@ -135,13 +135,13 @@
   <% end %>
 
   <% if isbourreau %>
-    <% external_status_page_url = bourreau.external_status_page_url.blank? ? 
+    <% external_status_page_url = bourreau.external_status_page_url.blank? ?
          "" : link_to("Status", bourreau.external_status_page_url, :class => "action_link", :target => "_blank") %>
     <td><%= external_status_page_url %></td>
   <% elsif %>
     <td></td>
   <% end %>
-  
+
   <% if bourreau.has_owner_access?(current_user) %>
     <% if ! isbourreau %>
       <td colspan="2"></td>
