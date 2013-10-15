@@ -33,9 +33,9 @@ class CbrainTask::StartVM < PortalTask
 
   def self.default_launch_args
     {
-      :disk_image => "default_disk_image.vdi",
+      :disk_image => 240, #centos disk image in test portal
       :qemu_params => "-boot d -net nic -net user -localtime",
-      :emulation => "0",
+      :emulation => "1",
       :vm_boot_timeout => 600,
       :number_of_vms => 1,
       :vm_cpus => 8,
