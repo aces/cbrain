@@ -497,6 +497,7 @@ class SshMaster
                       " -A"                                   +
                       " -o ConnectTimeout=10"                 +
                       " -o StrictHostKeyChecking=no"          +
+		      " -o GlobalKnownHostsFile=.known_hosts" +
                       " -o PasswordAuthentication=no"         +
                       " -o KbdInteractiveAuthentication=no"   +
                       " -o KbdInteractiveDevices=none"        +
