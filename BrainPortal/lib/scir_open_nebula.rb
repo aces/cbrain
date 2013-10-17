@@ -27,7 +27,7 @@
 # Original author: Tristan Glatard
 require 'openstack'
 
-class ScirOpenNebula < Scir
+class ScirOpenStack < Scir
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

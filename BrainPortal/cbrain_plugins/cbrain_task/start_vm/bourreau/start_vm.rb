@@ -64,9 +64,12 @@ class CbrainTask::StartVM < ClusterTask
     snapshot_name = "image-snapshot-#{self.id}"
     snapshot_creation = "qemu-img create -f qcow2 -b image #{snapshot_name}"
 
-    #TODO (VM tristan) may fail in case someone (not us) already uses this port on the host
-    ssh_port = 2200 + ( self.id % 3000 ) #make sure this doesn't overlap with display ports which typically start at 5900
-    self.params[:ssh_port] = ssh_port
+    if Bourreau.find(self.bourreau_id).scir_class.to_s == "ScirOpenStack"
+    	self.params[:ssh_port] = 22
+    else	
+      #TODO (VM tristan) may fail in case someone (not us) already uses this port on the host
+      self.params[:ssh_port] = 2200 + ( self.id % 3000 ) #make sure this doesn't overlap with display ports which typically start at 5900
+    end
     display_port = ( self.id % 100 )
     self.params[:vnc_display] = display_port
     self.save
@@ -138,7 +141,6 @@ class CbrainTask::StartVM < ClusterTask
     addlog "Mounting shared directories"
     mount_cache_dir
     mount_task_dir
-
     
     #WM has booted
     addlog "VM has booted"
