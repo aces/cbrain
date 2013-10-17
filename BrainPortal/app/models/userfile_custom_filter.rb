@@ -122,6 +122,7 @@ class UserfileCustomFilter < CustomFilter
     flatlist = []
     Array(self.data["type"]).each do |klassname|
       subtypes = klassname.constantize.descendants.map(&:name)
+      subtypes << klassname  # because descendants() does not include the class itself
       flatlist += subtypes
     end
     scope.where( :type => flatlist.uniq )
