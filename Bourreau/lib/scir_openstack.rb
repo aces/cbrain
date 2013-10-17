@@ -1,1 +1,1 @@
-../../BrainPortal/lib/scir_open_nebula.rb
+../../BrainPortal/lib/scir_openstack.rb
