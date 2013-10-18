@@ -1168,10 +1168,11 @@ class UserfilesController < ApplicationController
           end
         end
         Message.send_message(current_user,
-                             :message_type => 'notice',
-                             :header       => "Finished compressing or uncompressing files." + (error_messages.blank? ? "" : " (with some errors)"),
-                             :variable_text => done_ok.map { |u| "[[#{u.name}][/userfiles/#{u.id}]]" }.join(", ") + "\n" + error_messages
-                            )
+          :message_type  => 'notice',
+          :header        => "Finished compressing or uncompressing files." + (error_messages.blank? ? "" : " (with some errors)"),
+          :variable_text => "Files affected:\n" +
+                             done_ok.map { |u| "[[#{u.name}][/userfiles/#{u.id}]]" }.join("\n") + "\n\n" + error_messages
+        )
       end # spawn
     end # if anything to do
   
@@ -1253,10 +1254,11 @@ class UserfilesController < ApplicationController
 
       # Final processing message
       Message.send_message(current_user,
-                         :message_type => 'notice',
-                         :header       => "Finished archiving or unarchiving files." + (error_messages.blank? ? "" : " (with some errors)"),
-                         :variable_text => done_ok.map { |u| "[[#{u.name}][/userfiles/#{u.id}]]" }.join(", ") + "\n" + error_messages
-                          )
+        :message_type  => 'notice',
+        :header        => "Finished archiving or unarchiving files." + (error_messages.blank? ? "" : " (with some errors)"),
+        :variable_text => "Files affected:\n" +
+                           done_ok.map { |u| "[[#{u.name}][/userfiles/#{u.id}]]" }.join("\n") + "\n\n" + error_messages
+      )
     end # spawn
     
     flash[:notice] = "#{view_pluralize(filelist.size, "file collection")} being archived/unarchived in background.\n"
