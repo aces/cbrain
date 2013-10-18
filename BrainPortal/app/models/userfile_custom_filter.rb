@@ -117,8 +117,15 @@ class UserfileCustomFilter < CustomFilter
   end
   
   #Return +scope+ modified to filter the Userfile entry's type.
+  #This scope filters by all subclasses of the chosen class type.
   def scope_type(scope)
-    scope.where( :type  =>  self.data["type"] )
+    flatlist = []
+    Array(self.data["type"]).each do |klassname|
+      subtypes = klassname.constantize.descendants.map(&:name)
+      subtypes << klassname  # because descendants() does not include the class itself
+      flatlist += subtypes
+    end
+    scope.where( :type => flatlist.uniq )
   end
 
   #Return +scope+ modified to filter the Userfile entry's sync_status.

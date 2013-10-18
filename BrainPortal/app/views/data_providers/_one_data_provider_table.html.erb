@@ -45,10 +45,10 @@
   <% t.column("Alive?") do |dp| %>
     <% if dp.online? %>
       <%= staggered_loading "span", url_for(:action  => :is_alive, :id  => dp.id), :error_message  => "<span class=\"warning\">???</span>" do %>
-        <span class="loading_message">Checking...</span>
+        <span class="loading_message"><%= html_colorize("(...)","magenta") %></span>
       <% end %>
     <% else %>
-      <%= html_colorize("No","red") %>
+      No
     <% end %>
   <% end %>
   <% 
