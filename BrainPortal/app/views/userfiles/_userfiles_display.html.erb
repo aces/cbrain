@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -63,14 +63,25 @@
     <% end %>
   <% end %>
   <% t.sort_column("Size", 'Userfile', 'size') do |u| %>
-    <% if u.size != nil %>
-      <span title="<%= u.size %> bytes"><%= colored_format_size(u) %></span>
+    <%= u.archived? ? archived_icon : "" %>
+    <% if u.size.present?  %>
+      <span title="<%= u.size %> bytes"><%= u.archived ? colored_pretty_size(u.size) : colored_format_size(u) %></span>
     <% else %>
       <%= html_colorize("unknown","red") %>
     <% end %>
+    <% if u.archived? %>
+      <% before_archiving_size      = u.meta[:before_archiving_size].presence %>
+      <% before_archiving_num_files = u.meta[:before_archiving_num_files].presence %>
+      <% if before_archiving_size || before_archiving_num_files %>
+      (was:
+        <%= colored_pretty_size(before_archiving_size) %> in
+        <%= before_archiving_num_files ? view_pluralize(before_archiving_num_files, "file") : "unknown" %>
+      )
+      <% end %>
+    <% end %>
   <% end %>
   <% t.column("Tags", :filters => @tag_filters) { |u| u.get_tags_for_user(current_user).collect{ |t| h(t.name) }.join("<br>").html_safe } %>
-  <% 
+  <%
     unless current_project
        t.describe_sort_column("Project", 'Group', 'name', :filters => association_filters_for(@filtered_scope, @header_scope, Userfile, :group)) do |col|
          col.cell(:if => Proc.new { |u| u.group } ) { |u| link_to_group_if_accessible(u.group) }

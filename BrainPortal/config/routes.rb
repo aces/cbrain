@@ -110,6 +110,7 @@ CbrainRailsPortal::Application.routes.draw do
       put    'update_multiple'
       post   'change_provider'
       post   'compress'
+      post   'archive_management'
       post   'quality_control'
       post   'quality_control_panel'
       post   'manage_persistent'

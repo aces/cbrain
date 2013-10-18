@@ -159,8 +159,11 @@ class UserfilesController < ApplicationController
     # This code depends on AREL's 'where_values' method, which is not official ?
     @hidden_total = nil
     if @filter_params["view_hidden"] != 'on'
-      @hidden_total = @filtered_scope.undo_where(:hidden).where(:hidden => true).count
+      @hidden_total  = @filtered_scope.undo_where(:hidden).where(:hidden => true).count
     end
+
+    @archived_total  = @filtered_scope.where(:archived => true).count
+    @immutable_total = @filtered_scope.where(:immutable => true).count
     
     current_session.save_preferences_for_user(current_user, :userfiles, :view_hidden, :tree_sort, :view_all, :details, :per_page)
     
@@ -1188,6 +1191,79 @@ class UserfilesController < ApplicationController
     
     redirect_to :action => :index, :format => request.format.to_sym
   end
+
+
+
+  # Convertion to/from archived only available for FileCollection.
+  # On the filesystem an archived FileCollection: 
+  # abcd/*  ->  abcd/CONTENT.tar.gz
+  # On the an Database archived FileCollection:
+  # "abcd"  ->  "abcd" with 'archived' attribute set to true
+  def archive_management
+    filelist    = params[:file_ids] || []
+
+    # Validation of file list
+    userfiles        = []
+    skipped_messages = {}
+    Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
+      unless userfile.is_a?(FileCollection)
+        (skipped_messages["Not a FileCollection"] ||= []) << userfile
+        next
+      end
+      
+      if userfile.data_provider.read_only?
+        (skipped_messages["Data Provider not writable"] ||= []) << userfile
+        next
+      end
+      
+      userfiles << userfile 
+    end
+
+    # Skipped file notification
+    if skipped_messages.present?
+      flash[:error] = skipped_messages.map { |mes,list| "#{list.size} file collections skipped: #{mes}\n" }.join("")
+    end
+
+    # Nothing to do?
+    if userfiles.blank?
+      flash[:notice] = "No file collections selected for archiving or unarchiving."
+      redirect_to :action => :index, :format => request.format.to_sym
+      return
+    end
+
+    # Main processing in background
+    CBRAIN.spawn_with_active_records(current_user, "Archive") do
+      error_messages = ""
+      done_ok        = []
+      
+      userfiles.each_with_index do |userfile,i|
+        if userfile.archived?
+          $0 = "Unarchive #{i+1}/#{userfiles.size}\0"
+          error_message = userfile.provider_unarchive
+        else
+          $0 = "Archive #{i+1}/#{userfiles.size}\0"
+          error_message = userfile.provider_archive
+        end
+        if error_message.blank?
+          done_ok << userfile
+        else
+          error_messages += error_message
+        end 
+      end
+
+      # Final processing message
+      Message.send_message(current_user,
+                         :message_type => 'notice',
+                         :header       => "Finished archiving or unarchiving files." + (error_messages.blank? ? "" : " (with some errors)"),
+                         :variable_text => done_ok.map { |u| "[[#{u.name}][/userfiles/#{u.id}]]" }.join(", ") + "\n" + error_messages
+                          )
+    end # spawn
+    
+    flash[:notice] = "#{view_pluralize(filelist.size, "file collection")} being archived/unarchived in background.\n"
+    
+    redirect_to :action => :index, :format => request.format.to_sym
+  end
+      
 
   private
 

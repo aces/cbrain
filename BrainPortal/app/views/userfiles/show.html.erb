@@ -63,10 +63,32 @@
     <% end %>
 
     <% t.cell("Size") do %>
-      <%= colored_format_size(@userfile) %>
-      <% if @userfile.size && @userfile.size >= 1_000 -%>
-        = <%= @userfile.size %> bytes
-      <% end -%>
+      <% if @userfile.archived? %>
+        <!-- Information after compression -->
+        <%= archived_icon %>
+        <%= colored_pretty_size(@userfile.size) %>
+        <% if @userfile.size && @userfile.size >= 1_000 -%>
+          = <%= @userfile.size %> bytes
+        <% end %>
+        <!-- Information before compression -->
+        <% before_archiving_size      = @userfile.meta[:before_archiving_size].presence %>
+        <% before_archiving_num_files = @userfile.meta[:before_archiving_num_files].presence %>
+        <% if before_archiving_size || before_archiving_num_files %>
+          <br>
+          ( was:
+            <%= colored_pretty_size(before_archiving_size) %> in
+            <%= before_archiving_num_files ? view_pluralize(before_archiving_num_files, "file") : "unknown" %>
+          )
+        <% end %>
+        <% if before_archiving_size && before_archiving_size >= 1_000 -%>
+          = <%= before_archiving_size %> bytes
+        <% end %>
+      <% else %>
+        <%= colored_format_size(@userfile) %>
+        <% if @userfile.size && @userfile.size >= 1_000 -%>
+          = <%= @userfile.size %> bytes
+        <% end %>
+      <% end %>
     <% end %>
 
     <% t.cell("Data Provider") do %>
@@ -96,25 +118,31 @@
       <%= select_tag("userfile[group_writable]", options_for_select([['Read Only', false],['Read/Write', true]])) %>
     <% end %>
 
-    <% t.cell("Parent") { link_to_userfile_if_accessible(@userfile.parent) } %>
-
     <% t.edit_cell("Hidden file", :content => check_box_tag(nil ,nil, @userfile.hidden?, :disabled => true) + "&nbsp;".html_safe + hidden_icon) do %>
       <%= hidden_field_tag "userfile[hidden]", "0" %>
       <%= check_box_tag("userfile[hidden]",    "1", @userfile.hidden?) %>
       <%= hidden_icon %>
     <% end %>
-    
-    <% t.cell("Children") do %>
-      <%= array_to_table(@userfile.children.sort {|a,b| a.name.casecmp(b.name)}, :table_class => 'simple', :min_data => 3, :cols => 3, :fill_by_columns => true ) do |u,r,c| %>
-        <%= link_to_userfile_if_accessible(u) %>
-      <% end %>
-    <% end %>
-    
-    <% t.edit_cell("Immutable file", :content => check_box_tag(nil ,nil, @userfile.immutable?, :disabled => true) + "&nbsp;".html_safe + immutable_icon) do %>
+
+    <% t.edit_cell("Immutable file", :content => check_box_tag(nil ,nil, @userfile.immutable?, :disabled => true) + "&nbsp;".html_safe + immutable_icon ) do %>
       <%= hidden_field_tag "userfile[immutable]", "0" %>
       <%= check_box_tag("userfile[immutable]",    "1", @userfile.immutable?) %>
       <%= immutable_icon %>
     <% end %>
+
+    <% if @userfile.parent %>
+      <% t.cell("Parent") { link_to_userfile_if_accessible(@userfile.parent) } %>
+      <% t.empty_cell %>
+    <% end %>
+
+    <% if @userfile.children.present? %>
+      <% t.cell("Children", :show_width => 2) do %>
+        <%= array_to_table(@userfile.children.sort {|a,b| a.name.casecmp(b.name)}, :table_class => 'simple', :min_data => 3, :cols => 3, :fill_by_columns => true ) do |u,r,c| %>
+          <%= link_to_userfile_if_accessible(u) %>
+        <% end %>
+      <% end %>
+    <% end %>
+
 
     <% if current_user.has_role? :admin_user %>
       <% t.attribute_cell(:cache_full_path, :header => "Local Data Provider (cache) path", :show_width => 2) %>
