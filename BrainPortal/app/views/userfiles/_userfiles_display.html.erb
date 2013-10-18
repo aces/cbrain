@@ -75,8 +75,7 @@
       <% if before_archiving_size || before_archiving_num_files %>
       (was:
         <%= colored_pretty_size(before_archiving_size) %> in
-        <%= before_archiving_num_files ? view_pluralize(before_archiving_num_files, "file") : "unknown" %>
-      )
+        <%= before_archiving_num_files ? view_pluralize(before_archiving_num_files, "file") + ")" : "unknown)" %>
       <% end %>
     <% end %>
   <% end %>

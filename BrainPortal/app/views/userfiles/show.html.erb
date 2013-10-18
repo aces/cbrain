@@ -75,14 +75,13 @@
         <% before_archiving_num_files = @userfile.meta[:before_archiving_num_files].presence %>
         <% if before_archiving_size || before_archiving_num_files %>
           <br>
-          ( was:
+          Was:
             <%= colored_pretty_size(before_archiving_size) %> in
             <%= before_archiving_num_files ? view_pluralize(before_archiving_num_files, "file") : "unknown" %>
-          )
-        <% end %>
-        <% if before_archiving_size && before_archiving_size >= 1_000 -%>
-          = <%= before_archiving_size %> bytes
-        <% end %>
+            <% if before_archiving_size && before_archiving_size >= 1_000 -%>
+              = <%= before_archiving_size %> bytes
+            <% end %>            
+         <% end %>
       <% else %>
         <%= colored_format_size(@userfile) %>
         <% if @userfile.size && @userfile.size >= 1_000 -%>
