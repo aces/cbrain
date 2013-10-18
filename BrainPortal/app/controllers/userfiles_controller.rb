@@ -1232,16 +1232,16 @@ class UserfilesController < ApplicationController
     end
 
     # Main processing in background
-    CBRAIN.spawn_with_active_records(current_user, "Archive") do
+    CBRAIN.spawn_with_active_records(current_user, "ArchiveFile") do
       error_messages = ""
       done_ok        = []
       
       userfiles.each_with_index do |userfile,i|
         if userfile.archived?
-          $0 = "Unarchive #{i+1}/#{userfiles.size}\0"
+          $0 = "UnarchiveFile #{i+1}/#{userfiles.size}\0"
           error_message = userfile.provider_unarchive
         else
-          $0 = "Archive #{i+1}/#{userfiles.size}\0"
+          $0 = "ArchiveFile #{i+1}/#{userfiles.size}\0"
           error_message = userfile.provider_archive
         end
         if error_message.blank?
