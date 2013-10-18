@@ -56,6 +56,15 @@ Project<br>
 </p>
 
 <p>
+Archiving status<br>
+<%= select :data, :archiving_status,
+[
+  ["Don't filter by archiving status", ''        ],
+  ["Archived",                         'archived' ],
+  ["Not archived",                     'none'    ],
+], :selected => custom_filter.data["archiving_status"] %>
+
+<p>
   Synchronization status<br>
   <%= 
   select_tag "data[sync_status]", options_for_select(["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"], :selected => custom_filter.data["sync_status"]), 

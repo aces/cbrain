@@ -44,6 +44,7 @@ class UserfileCustomFilter < CustomFilter
     scope = scope_group(scope)      unless self.data["group_id"].blank?
     scope = scope_dp(scope)         unless self.data["data_provider_id"].blank?
     scope = scope_type(scope)       unless self.data["type"].blank?
+    scope = scope_archive(scope)    unless self.data["archiving_status"].blank?
     scope = scope_syncstatus(scope) unless self.data["sync_status"].blank?
     scope
   end
@@ -126,6 +127,18 @@ class UserfileCustomFilter < CustomFilter
       flatlist += subtypes
     end
     scope.where( :type => flatlist.uniq )
+  end
+
+  #Return +scope+ modified to filter the Userfile entry's by archived status.
+  def scope_archive(scope)
+    keyword = self.data["archiving_status"] || ""
+    case keyword
+    when "none"
+      return scope.where( :archived => false )
+    when "archived"
+      return scope.where( :archived => true )
+    end
+    return scope # anything else, no operation
   end
 
   #Return +scope+ modified to filter the Userfile entry's sync_status.
