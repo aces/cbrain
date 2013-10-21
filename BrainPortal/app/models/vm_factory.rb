@@ -36,13 +36,13 @@ class VMFactory
 
   def start
 
-    tau = 5
-    mu_plus = 1.2
-    mu_minus = 0.7
+    tau = 10
+    mu_plus = 1.3
+    mu_minus = 0.5
     nu_plus = 5
     nu_minus = 5
-    k_plus = 2 # in number of VMs
-    k_minus = 2 # in number of VMs
+    k_plus = 1 # in number of VMs
+    k_minus = 1 # in number of VMs
 
     # TODO (Tristan) monitor all types of disk images separately. 
     while ( true )
@@ -95,7 +95,7 @@ class VMFactory
     else
       if job_slots != 0 then load = tasks.to_f/job_slots.to_f  end
     end
-    log_vm "Load is #{load}"
+    log_vm "Load is #{load.to_s.colorize(33)}"
     return load
   end
 
@@ -104,10 +104,10 @@ class VMFactory
     log_vm "Submitting a new VM"
     task = CbrainTask.const_get("StartVM").new
     task.params = task.class.wrapper_default_launch_args.clone
-    task.bourreau_id = 20 #Mammouth
-    task.params[:vm_user] = "root"
+    task.bourreau_id = 21 #Nimbus  #20 Mammouth
+    task.params[:vm_user] = "cbrain"
     task.user = User.where(:login => "admin").first
-    task.tool_config = ToolConfig.find(11)
+    task.tool_config = ToolConfig.find(13) #Nimbus  #Mammouth 11
     task.status = "New" 
     task.save!
     Bourreau.find(task.bourreau_id).send_command_start_workers rescue true
