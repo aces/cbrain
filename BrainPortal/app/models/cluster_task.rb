@@ -1322,8 +1322,8 @@ class ClusterTask < CbrainTask
     status = @@Cluster_States_To_Status[state] || "Does Not Exist"
     return status
   rescue => ex
-    logger.error("Cannot get cluster status for #{self.scir_session.class} ?!?") rescue nil
-    logger.error("Exception was: #{ex.class} : #{ex.message}")                   rescue nil
+    logger.error("Cannot get cluster status for #{self.scir_session.class} ?!?, exception was: #{ex.class} : #{ex.message} #{e.backtrace}") rescue nil
+#    logger.error("Exception was: #{ex.class} : #{ex.message} #{e.backtrace}" )                   rescue nil
        nil
   end
   
