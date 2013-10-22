@@ -983,6 +983,10 @@ class ClusterTask < CbrainTask
   # state of the workdir can be performed with
   # unarchive_work_directory().
   def archive_work_directory
+
+    # Keep updated_at value in order to reset it at the end of method
+    updated_at_value = self.updated_at
+    
     return false if self.share_wd_tid
     return true  if self.workdir_archived?
 
@@ -1075,6 +1079,8 @@ class ClusterTask < CbrainTask
   ensure
     File.unlink(tar_capture)        rescue true
     File.unlink(full_temp_tar_file) rescue true
+    # Reset update timestamp
+    self.update_column(:updated_at, updated_at_value)
   end
 
   # This method performs the inverse of 
@@ -1127,19 +1133,25 @@ class ClusterTask < CbrainTask
       File.unlink(tar_file) rescue true
     end
 
+    # Keep updated_at value in order to reset it at the end of method.
+    updated_at_value = self.updated_at
+
+    # Mark task not archived
     self.workdir_archived = false
     self.save!
     self.update_size_of_cluster_workdir
 
+    # Reset update timestamp
+    self.update_column(:updated_at, updated_at_value)
+     
     true
-
   rescue => ex
     self.addlog_exception(ex, "Unarchiving process exception:")
     return false
 
   ensure
     File.unlink(tar_capture)   rescue true
-  end
+   end
 
   # This method performs the same steps as
   # archive_work_directory, with the added
@@ -1188,13 +1200,21 @@ class ClusterTask < CbrainTask
       file.meta[:original_task_id]       = self.id
       file.meta[:original_task_fullname] = self.fullname
       file.save
-      self.addlog_to_userfiles_created(file)
       self.workdir_archive_userfile_id = file.id
+      self.addlog_to_userfiles_created(file)
       self.addlog("Added archive file '#{file.name}' (ID #{file.id}).")
-      self.save
     end
 
+    # Keep updated_at value in order to reset it at the end of method.
+    updated_at_value = self.updated_at
+
+    # Mark task as archived and remove the work directory. 
+    self.save 
     self.remove_cluster_workdir
+    
+    # Reset update timestamp
+    self.update_column(:updated_at, updated_at_value)
+      
     true
   end
 
@@ -1213,8 +1233,7 @@ class ClusterTask < CbrainTask
     file = TaskWorkdirArchive.find_by_id(self.workdir_archive_userfile_id)
     unless file
       self.addlog("Cannot unarchive: TaskWorkdirArchive does not exist.")
-      self.workdir_archive_userfile_id=nil
-      self.save
+      self.update_column(:workdir_archive_userfile_id,nil)
       return false
     end
 
@@ -1224,6 +1243,9 @@ class ClusterTask < CbrainTask
 
     tar_file = self.in_situ_workdir_archive_file
 
+    # Keep updated_at value in order to reset it at the end of method.
+    updated_at_value = self.updated_at
+    
     self.make_cluster_workdir
     Dir.chdir(self.full_cluster_workdir) do
       safe_symlink(file.cache_full_path, tar_file)
@@ -1235,7 +1257,11 @@ class ClusterTask < CbrainTask
     file.cache_erase
 
     self.workdir_archive_userfile_id=nil
-    self.save
+    self.save 
+
+    # Reset update timestamp
+    self.update_column(:updated_at, updated_at_value)
+    self.update_column(:workdir_archive_userfile_id,nil)
   end
 
 

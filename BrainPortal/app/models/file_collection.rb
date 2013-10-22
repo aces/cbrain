@@ -186,6 +186,9 @@ class FileCollection < Userfile
   # the error message.
   def provider_archive()
 
+    # Keep updated_at value in order to reset it at the end of method
+    updated_at_value = self.updated_at
+    
     return "" if self.archived?
 
     self.sync_to_cache
@@ -242,6 +245,8 @@ class FileCollection < Userfile
   ensure
     File.unlink(tar_capture)   rescue true
     File.unlink(temp_tar_file) rescue true
+    # Reset update timestamp
+    self.update_column(:updated_at, updated_at_value)
   end
 
   # This method will desarchive a FileCollection in-situ and
@@ -250,6 +255,9 @@ class FileCollection < Userfile
   # the error message.
   def provider_unarchive
 
+    # Keep updated_at value in order to reset it at the end of method.
+    updated_at_value = self.updated_at
+    
     return "" if ! self.archived?
     
     self.sync_to_cache
@@ -297,6 +305,8 @@ class FileCollection < Userfile
       return "Archiving process exception for #{self.name}: #{ex.class}: #{ex.message}"
     ensure
       File.unlink(tar_capture) rescue true
+      # Reset update timestamp
+      self.update_column(:updated_at, updated_at_value)
   end
 
   def verify_tar_execution(out,error_status,userfile_name,temp_tar_file=nil) #:nodoc:
