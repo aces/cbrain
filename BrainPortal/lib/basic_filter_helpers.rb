@@ -35,7 +35,7 @@ module BasicFilterHelpers
           :filter_proxy,           # in application controller
           :row_data,               # in bourreaux controller
           :browse, :register,      # in data_providers controller
-          :operation, :batch_list, # in tasks controller
+          :operation, :batch_list, :update_multiple, # in tasks controller
           :manage_persistent,      # in userfiles controller
           ]
       before_filter :validate_pagination_values, :only => [ :index, :filter_proxy ]
