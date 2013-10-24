@@ -32,17 +32,19 @@ class VMFactory
 
   def initialize(arguments = {})
     log_vm "Creating new VM factory"
+    #initializes round robin
+    @next_site = 0 
   end
 
   def start
 
-    tau = 5
-    mu_plus = 1.2
-    mu_minus = 0.7
+    tau = 10
+    mu_plus = 1.3
+    mu_minus = 0.5
     nu_plus = 5
     nu_minus = 5
-    k_plus = 2 # in number of VMs
-    k_minus = 2 # in number of VMs
+    k_plus = 1 # in number of VMs
+    k_minus = 1 # in number of VMs
 
     # TODO (Tristan) monitor all types of disk images separately. 
     while ( true )
@@ -57,7 +59,10 @@ class VMFactory
         sleep 1
         time = time + 1
       end
-      if time >= nu_plus then (1..k_plus).each { submit_vm } end
+      if time >= nu_plus then (1..k_plus).each { 
+          site_name,bourreau_id,tool_config = self.select_site_round_robin
+          self.submit_vm site_name,bourreau_id,tool_config
+        } end
 
       #check lower bound
       time = 0
@@ -95,22 +100,30 @@ class VMFactory
     else
       if job_slots != 0 then load = tasks.to_f/job_slots.to_f  end
     end
-    log_vm "Load is #{load}"
+    log_vm "Load is #{load.to_s.colorize(33)}"
     return load
   end
 
-  def submit_vm
-    # TODO (Tristan) really implement this...
-    log_vm "Submitting a new VM"
+  def select_site_round_robin 
+    site_names = ["Nimbus","Colosse","Guillimin", "Mammouth"] 
+    bourreau_ids = [21, 18, 19, 20]
+    tool_configs = [13, 8, 9, 11]
+    @next_site = (@next_site + 1) % site_names.length
+    return [site_names[@next_site],bourreau_ids[@next_site],tool_configs[@next_site]]
+  end
+  
+  def submit_vm(site_name, bourreau_id, tool_config)
+    log_vm "Submitting a new VM to #{site_name.colorize(33)}"
     task = CbrainTask.const_get("StartVM").new
     task.params = task.class.wrapper_default_launch_args.clone
-    task.bourreau_id = 20 #Mammouth
-    task.params[:vm_user] = "root"
+    task.params[:vm_user] = "root" 
     task.user = User.where(:login => "admin").first
-    task.tool_config = ToolConfig.find(11)
+    task.bourreau_id = bourreau_id
+    task.tool_config = ToolConfig.find(tool_config) 
     task.status = "New" 
     task.save!
     Bourreau.find(task.bourreau_id).send_command_start_workers rescue true
+
   end
 
   def remove_vm
