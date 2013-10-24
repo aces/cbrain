@@ -180,7 +180,7 @@ class CbrainTask::StartVM < ClusterTask
   def mount_dir(remote_dir,local_dir)
     scir = ScirVM.new
     user = ENV['USER'] #quite unix-specific...
-    sshfs_command = "mkdir #{local_dir} -p ; sshfs -p 2222 -C -o follow_symlinks -o reconnect -o StrictHostKeyChecking=no #{user}@localhost:#{remote_dir} #{local_dir}" #TODO (VM tristan) put this 2222 somewhere in config
+    sshfs_command = "mkdir #{local_dir} -p ; sshfs -p 2222 -C -o nonempty -o follow_symlinks -o reconnect -o StrictHostKeyChecking=no #{user}@localhost:#{remote_dir} #{local_dir}" #TODO (VM tristan) put this 2222 somewhere in config
     addlog "Mounting dir: #{sshfs_command}"
     addlog scir.run_command(sshfs_command,self) 
   rescue => ex

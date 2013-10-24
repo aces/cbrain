@@ -15,6 +15,7 @@ class ScirVM < Scir
     command.gsub!(task.full_cluster_workdir,"./")  
     command+=" & echo \$!" #so that the command is backgrounded and its PID is returned
     pid = run_command(command,vm_task).gsub("\n","")  
+    if pid.to_s == "" then raise "Cannot run job on VM #{vm_task.id}" end
     return create_job_id(vm_task.id,pid)
   end
 
@@ -60,6 +61,10 @@ class ScirVM < Scir
 
   def create_job_id(vm_id,pid)
     return "VM:#{vm_id}:#{pid}"
+  end
+
+  def is_valid_jobid?(job_id)
+    return job_id.start_with?("VM:")
   end
 
   def get_vm_id_and_pid(jid)

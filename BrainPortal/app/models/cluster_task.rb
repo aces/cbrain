@@ -1322,8 +1322,8 @@ class ClusterTask < CbrainTask
     status = @@Cluster_States_To_Status[state] || "Does Not Exist"
     return status
   rescue => ex
-    logger.error("Cannot get cluster status for #{self.scir_session.class} ?!?") rescue nil
-    logger.error("Exception was: #{ex.class} : #{ex.message}")                   rescue nil
+    logger.error("Cannot get cluster status for #{self.scir_session.class} ?!?, exception was: #{ex.class} : #{ex.message} #{e.backtrace}") rescue nil
+#    logger.error("Exception was: #{ex.class} : #{ex.message} #{e.backtrace}" )                   rescue nil
        nil
   end
   
@@ -1570,30 +1570,60 @@ class ClusterTask < CbrainTask
     scir_class = self.scir_session
     self.addlog "Modifying class #{scir_class} for VMs"
     scir_class.class_eval{
+      alias_method :init_run, :run
       def run(job)
         #TODO (VM tristan) fix this: use a "static" method? 
-        s = ScirVM.new
-        s.run(job)
+        if job.goes_to_vm then
+          s = ScirVM.new
+          s.run(job)
+        else
+          init_run job
+        end
       end
+      alias_method :init_hold, :hold
       def hold(jid)
         s = ScirVM.new
-        s.hold(jid)
+        if s.is_valid_jobid? jid then
+          s.hold(jid)
+        else
+          init_hold jid
+        end
       end
+      alias_method :init_release, :release
       def release(jid)
         s = ScirVM.new
-        s.release(jid)
+        if s.is_valid_jobid? jid then
+          s.release(jid)
+        else
+          init_release jid
+        end
       end
+      alias_method :init_suspend, :suspend
       def suspend(jid)
         s = ScirVM.new
-        s.suspend(jid)
+        if s.is_valid_jobid? jid then
+          s.suspend(jid)
+        else
+          init_suspend jid
+        end
       end
+      alias_method :init_resume, :resume
       def resume(jid)
         s = ScirVM.new
-        s.resume(jid)
+        if s.is_valid_jobid? jid then
+          s.resume(jid)
+        else
+          init_resume jid
+        end
       end
+      alias_method :init_terminate, :terminate
       def terminate(jid)
         s = ScirVM.new
-        s.terminate(jid)
+        if s.is_valid_jobid? jid then
+          s.terminate(jid)
+        else
+          init_terminate jid
+        end
       end
       
     }
