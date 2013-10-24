@@ -69,3 +69,4 @@ group :development, :test do
   gem "hirb"
 end
 
+gem 'openstack'
