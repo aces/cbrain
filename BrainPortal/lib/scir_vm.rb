@@ -15,7 +15,7 @@ class ScirVM < Scir
     command.gsub!(task.full_cluster_workdir,"./")  
     command+=" & echo \$!" #so that the command is backgrounded and its PID is returned
     pid = run_command(command,vm_task).gsub("\n","")  
-    if pid.to_s == "" then raise "Cannot run job on VM #{vm_task.id}" end
+    if pid.to_s == "" then raise "Cannot submit job on VM #{vm_task.id}" end
     return create_job_id(vm_task.id,pid)
   end
 
@@ -75,7 +75,7 @@ class ScirVM < Scir
 
   def run_command(command,vm_task)
     master = get_ssh_master vm_task
-    result = master.remote_shell_command_reader(command) {|io| io.read}
+    result = master.remote_shell_command_reader(command,:stderr => '/tmp/ssh_log.err') {|io| io.read}
     return result 
   end
   
