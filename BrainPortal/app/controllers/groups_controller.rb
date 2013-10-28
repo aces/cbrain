@@ -130,6 +130,7 @@ class GroupsController < ApplicationController
 
     respond_to do |format|
       if @group.save
+        @group.addlog_context(self,"Created by #{current_user.login}")
         flash[:notice] = 'Project was successfully created.'
         format.js   { redirect_to :action => :index, :format => :js}
         format.xml  { render :xml => @group, :status => :created, :location => @group }
