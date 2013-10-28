@@ -241,7 +241,7 @@ class FileCollection < Userfile
     "" # everything OK
   rescue => ex
     File.unlink(temp_tar_file) rescue true
-    return "Archiving process exception for #{self.name}: #{ex.class}: #{ex.message}"
+    return "Archiving process exception: #{ex.class}"
   ensure
     File.unlink(tar_capture)   rescue true
     File.unlink(temp_tar_file) rescue true
@@ -302,7 +302,7 @@ class FileCollection < Userfile
     "" # everything OK
     
     rescue => ex
-      return "Archiving process exception for #{self.name}: #{ex.class}: #{ex.message}"
+      return "Unarchiving process exception: #{ex.class}"
     ensure
       File.unlink(tar_capture) rescue true
       # Reset update timestamp
