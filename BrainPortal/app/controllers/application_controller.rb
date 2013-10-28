@@ -39,6 +39,7 @@ class ApplicationController < ActionController::Base
   include ApiHelpers
   include PermissionHelpers
   include ExceptionHelpers
+  include MessageHelpers
   
   helper        :all # include all helpers, all the time
   helper_method :start_page_path

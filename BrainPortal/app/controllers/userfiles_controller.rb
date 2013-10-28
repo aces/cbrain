@@ -421,7 +421,7 @@ class UserfilesController < ApplicationController
           Message.send_message(current_user,
                                :message_type  => 'notice', 
                                :header  => "File Uploaded", 
-                               :variable_text  => "#{userfile.class} '#{userfile.name}' [[View][/userfiles/#{userfile.id}]]"
+                               :variable_text  => "#{userfile.pretty_type} [[#{userfile.name}][/userfiles/#{userfile.id}]]"
                                )
         ensure
           File.delete(tmpcontentfile) rescue true
@@ -465,7 +465,6 @@ class UserfilesController < ApplicationController
       )
       
       if collection.save
-
         system("cp #{rack_tempfile_path.to_s.bash_escape} #{tmpcontentfile.to_s.bash_escape}") # fast, hopefully; maybe 'mv' would work?
         CBRAIN.spawn_with_active_records(current_user,"FileCollection Extraction") do
           begin
@@ -473,7 +472,7 @@ class UserfilesController < ApplicationController
             Message.send_message(current_user,
                                   :message_type  => 'notice', 
                                   :header  => "Collection Uploaded", 
-                                  :variable_text  => "#{collection.class} '#{collection.name}' [[View][/userfiles/#{collection.id}]]"
+                                  :variable_text  => "#{collection.pretty_type} [[#{collection.name}][/userfiles/#{collection.id}]]"
                                   )
           ensure
             File.delete(tmpcontentfile) rescue true
@@ -608,57 +607,65 @@ class UserfilesController < ApplicationController
     end
 
     flash[:error] = "You do not have access to all tags you want to update." unless invalid_tags == 0
-    do_in_spawn      = file_ids.size > 5
-    success_count    = 0
-    failure_count    = 0
+    do_in_spawn   = file_ids.size > 5
+    success_list  = []
+    failed_list   = {} 
     CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending update to files") do
       access_requested = commit_name == :update_tags ? :read : :write
       filelist         = Userfile.find_all_accessible_by_user(current_user, :access_requested => access_requested ).where(:id => file_ids).all 
-      failure_count   += file_ids.size - filelist.size   
+      failure_ids      = file_ids - filelist.map {|u| u.id.to_s }
+      failed_files     = Userfile.where(:id => failure_ids).select([:id, :name, :type]).all
+      failed_list["you don't have write access"] = filelist failed_files if failed_files.present?
 
       # Filter file list
       case commit_name
         # Critical! Case values must match labels of submit buttons!
         when :update_projects
           user_to_avail_group_ids = {}
-          filelist.reject! do |file|
+          new_filelist            = filelist
+          new_filelist.reject! do |file|
             f_uid = file.user_id
             # File's owner need to have access to new group
             user_to_avail_group_ids[f_uid] ||= User.find(f_uid).available_groups.map(&:id).index_by { |id| id }
-            (! user_to_avail_group_ids[f_uid][new_group_id]) && failure_count += 1
+            (! user_to_avail_group_ids[f_uid][new_group_id])
           end
+          failed_files = filelist - new_filelist
+          failed_list["new group is not accessible by file's owner"] = failed_files if failed_files.present?
         when :update_owner
           new_filelist = filelist.select(&:allow_file_owner_change?)
-          failure_count += (filelist.size - new_filelist.size)
-          filelist = new_filelist
+          failed_files = filelist - new_filelist 
+          failed_list["you are not allowed to change file owner on this data provider"] = failed_files if failed_files.present?
+          filelist     = new_filelist
       end
       # Update the attribute for each file
       filelist.each do |userfile|
         if userfile.send(*operation)
-          success_count += 1
+          success_list << userfile
         else
-          failure_count += 1
+          (failed_list["cannot update attribute"] ||= []) << userfile
         end
       end
       # Async Notification
       if do_in_spawn
-       variable_text  = success_count > 0 ? "#{commit_humanize} successful for #{view_pluralize(success_count, "file")}.\n" : ""
-       variable_text += "#{commit_humanize} unsuccessful for #{view_pluralize(failure_count, "file")}." if failure_count > 0
-       Message.send_message(current_user, {
-          :header        => "Finished sending update to your files.\n",
-          :message_type  => :notice,
-          :variable_text => variable_text
-          }
-        )
+        # Message for successful actions
+        if success_list.present?
+          notice_message_sender("#{commit_humanize} successful for your file(s)", success_list)
+        end
+        # Message for failed actions 
+        if failed_list.present?
+          error_message_sender("#{commit_humanize} failed for your file(s)", failed_list)
+        end
       end
       
     end # spawn end
 
     # Sync notification
     if do_in_spawn
-      flash[:notice] = "The file are being updated in background."
+      flash[:notice] = "The files are being updated in background."
     else
-      flash[:notice] = "#{commit_humanize} successful for #{view_pluralize(success_count, "file")}."   if success_count > 0
+      flash[:notice] = "#{commit_humanize} successful for #{view_pluralize(success_list.count, "file")}."   if success_list.present?
+      failure_count  = 0
+      failed_list.each_value { |v| failure_count += v.size }
       flash[:error]  = "#{commit_humanize} unsuccessful for #{view_pluralize(failure_count, "file")}." if failure_count > 0
     end
     
@@ -764,40 +771,28 @@ class UserfilesController < ApplicationController
     )
 
     CBRAIN.spawn_with_active_records(current_user,"Collection Merge") do
-      failed_list = {}
       begin
-      userfiles = Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read)
-      result    = collection.merge_collections(userfiles)
+        userfiles = Userfile.find_accessible_by_user(filelist, current_user, :access_requested  => :read)
+        result    = collection.merge_collections(userfiles)
         if result == :success
           Message.send_message(current_user,
-                              :message_type  => 'notice', 
+                              :message_type  => :notice, 
                               :header        => "Collections Merged", 
                               :variable_text => "[[#{collection.name}][/userfiles/#{collection.id}]]"
                               )
         elsif result == :collision
           Message.send_message(current_user,
-                              :message_type  => 'error', 
+                              :message_type  => :error, 
                               :header        => "Collection could not be merged.", 
                               :variable_text => "There was a collision among the file names."
                               )
         end
       rescue => e
-        err_message = e.message
-        failed_list[err_message] ||= []
-        failed_list[err_message] << collection
-      end
-
-      if failed_list.size > 0
-        report = ""
-        failed_list.each do |message,collections|
-          report += "Failed because: #{message}\n"
-          report += collections.map { |c| "[[#{c.name}][/userfiles/#{c.id}]]\n" }.join("")
-        end
         Message.send_message(current_user,
-                            :message_type  => 'error', 
-                            :header        => "The collection was not created correctly on #{DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first.name}",
-                            :variable_text => report
-                            )
+                            :message_type  => :error, 
+                            :header        => "The collection was not created correctly on #{DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first.name}", 
+                            :variable_text => "#{e.message}\n#{collection.name}\n"
+                              )
       end
     end # spawn
 
@@ -837,8 +832,8 @@ class UserfilesController < ApplicationController
 
     # Spawn subprocess to perform the move operations
     CBRAIN.spawn_with_active_records(current_user,"#{word_move.capitalize} To Other Data Provider") do
-      moved_list  = []
-      failed_list = {}
+      success_list  = []
+      failed_list   = {}
       filelist.each_with_index do |id,count|
         $0 = "#{word_move.capitalize} #{count+1}/#{filelist.size} To #{new_provider.name}\0"
         begin
@@ -848,7 +843,7 @@ class UserfilesController < ApplicationController
           next if orig_provider.id == data_provider_id # no support for copy to same provider in the interface, yet.
           res = nil
           if task == :move
-            raise "Not owner." unless u.has_owner_access?(current_user)
+            raise "not owner" unless u.has_owner_access?(current_user)
             res = u.provider_move_to_otherprovider(new_provider, :crush_destination => crush_destination)
           else
             my_group_id  = current_project ? current_project.id : current_user.own_group.id
@@ -858,39 +853,23 @@ class UserfilesController < ApplicationController
                      :crush_destination => crush_destination
                   )
           end
-          raise "File collision: there is already such a file on the other provider." unless res
+          raise "file collision: there is already such a file on the other provider" unless res
           u.cache_erase rescue nil 
-          moved_list << u
+          success_list << u
         rescue => e
           if u.is_a?(Userfile)
-            err_message = e.message
-            failed_list[err_message] ||= []
-            failed_list[err_message] << u
+            (failed_list[e.message] ||= []) << u
           else
             raise e
           end
         end
       end
 
-      if moved_list.size > 0
-        Message.send_message(current_user,
-                            :message_type  => 'notice', 
-                            :header  => "Files #{word_moved} to #{new_provider.name}",
-                            :variable_text  => "List:\n" + moved_list.map { |u| "[[#{u.name}][/userfiles/#{u.id}]]\n" }.join("")
-                            ) 
+      if success_list.present?
+        notice_message_sender("Files #{word_moved} to #{new_provider.name}",success_list)
       end
-
-      if failed_list.size > 0
-        report = ""
-        failed_list.each do |message,userfiles|
-          report += "Failed because: #{message}\n"
-          report += userfiles.map { |u| "[[#{u.name}][/userfiles/#{u.id}]]\n" }.join("")
-        end
-        Message.send_message(current_user,
-                            :message_type  => 'error', 
-                            :header        => "Some files could not be #{word_moved} to #{new_provider.name}",
-                            :variable_text => report
-                            )
+      if failed_list.present?
+        error_message_sender("Some files could not be #{word_moved} to #{new_provider.name}",failed_list)
       end
 
     end # spawn
@@ -954,47 +933,34 @@ class UserfilesController < ApplicationController
     # Delete in background
     CBRAIN.spawn_with_active_records(current_user, "Delete files") do
 
-      first_error        = nil
-      deleted_count      = 0
-      unregistered_count = 0
-      error_count        = 0
+      deleted_success_list      = []
+      unregistered_success_list = []
+      failed_list               = {}
       to_delete = Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write)
       to_delete.each_with_index do |userfile,count|
         $0 = "Delete #{count+1}/#{to_delete.size}\0"
         begin
           basename = userfile.name
           if userfile.data_provider.is_browsable? && userfile.data_provider.meta[:must_erase].blank?
-            unregistered_count += 1
+            unregistered_success_list << userfile
           else
-            deleted_count += 1
+            deleted_success_list << userfile
           end
           userfile.destroy
         rescue => e
-          error_count += 1
-          first_error ||= "for '#{userfile.name}': #{e.message}.\n"
+          (failed_list[e.message] ||= []) << userfile
         end
       end
 
-      variable_text  = ""
-      error_messages = ""
-      if deleted_count > 0
-        variable_text += "#{view_pluralize(deleted_count, "file")} deleted.\n"
+      if deleted_success_list.present?
+        notice_message_sender("Finished deleting file(s)",deleted_success_list)
       end
-      if unregistered_count > 0
-        variable_text += "#{view_pluralize(unregistered_count, "file")} unregistered.\n"
+      if unregistered_success_list.present?
+        notice_message_sender("Finished unregistering file(s)",unregistered_success_list)
       end
-      if error_count > 0
-        error_messages += "#{view_pluralize(error_count, "internal error")} when deleting/unregistering file(s).\n"
-        error_messages += "The first error was #{first_error}.\n"
+      if failed_list.present?
+        error_message_sender("Error when deleting/unregistering file(s)",failed_list)
       end
-
-      variable_text = "No file has been deleted or unregistered.\n" if variable_text.blank?
-      
-      Message.send_message(current_user,
-                     :message_type => 'notice',
-                     :header       => "Finished deleting/unregistering files." + (error_messages.blank? ? "" : " (with some errors)"),
-                     :variable_text => "#{variable_text}#{error_messages}" 
-                    )
     end # spawn
 
     flash[:notice] = "Your files are being deleted in background."
@@ -1106,8 +1072,10 @@ class UserfilesController < ApplicationController
     to_uncompress      = []
     skipped_messages   = {}
 
+    # First do basic verification on Userfile and split into 2 categories (compress/uncompress)
     Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
 
+      # Basic verification
       unless userfile.is_a?(SingleFile)
         (skipped_messages["Not a SingleFile"] ||= []) << userfile
         next
@@ -1117,23 +1085,19 @@ class UserfilesController < ApplicationController
         next
       end
 
+      # Check for collision
       basename = userfile.name
-
-      if basename =~ /\.gz$/i
-        destbase = basename.sub(/\.gz$/i,"")
-      else
-        destbase = basename + ".gz"
-      end
-
+      destbase = basename =~ /\.gz$/i ? basename.sub(/\.gz$/i,"") : basename + ".gz"
       if Userfile.where(
            :name             => destbase,
            :user_id          => userfile.user_id,
            :data_provider_id => userfile.data_provider_id
-         ).first
+         ).exists?
         (skipped_messages["Filename collision"] ||= []) << userfile
         next
       end
 
+      # Split in 2 categories
       if basename =~ /\.gz$/i
         to_uncompress << [ userfile, :uncompress, destbase ]
       else
@@ -1142,15 +1106,20 @@ class UserfilesController < ApplicationController
 
     end
 
+    # Skipped file notification
+    if skipped_messages.present?
+      flash[:error] = skipped_messages.map { |mes,list| "#{list.size} file collections skipped: #{mes}\n" }.join("")
+    end
+
     if to_compress.size > 0 || to_uncompress.size > 0
       CBRAIN.spawn_with_active_records(current_user, "Compression") do
-        error_messages = ""
-        done_ok = []
+        success_list = []
+        failed_list  = {}
         (to_compress + to_uncompress).each do |u_triplet|
           userfile,do_what,destbase = *u_triplet
           begin
             if ! userfile.provider_rename(destbase)
-              error_messages += "Could not do basic renaming to #{destbase}'.\n"
+            (failed_list["could not do basic renaming"] ||= []) << userfile
               next
             end
             userfile.sync_to_cache
@@ -1162,30 +1131,27 @@ class UserfilesController < ApplicationController
               File.rename(full_tmp,full_after) # crush it
             end
             userfile.sync_to_provider
-            done_ok << userfile
+            success_list << userfile
           rescue => e
-            error_messages += "Internal error (un)compresssing for '#{userfile.name}': #{e.message}.\n"
+            (failed_list[e.message] ||= []) << userfile
           end
         end
-        Message.send_message(current_user,
-          :message_type  => 'notice',
-          :header        => "Finished compressing or uncompressing files." + (error_messages.blank? ? "" : " (with some errors)"),
-          :variable_text => "Files affected:\n" +
-                             done_ok.map { |u| "[[#{u.name}][/userfiles/#{u.id}]]" }.join("\n") + "\n\n" + error_messages
-        )
+
+        if success_list.present?
+          notice_message_sender("Finished compressing/uncompressing file(s)",success_list)
+        end
+        if failed_list.present?
+          error_message_sender("Error when compressing/uncompressing file(s)",failed_list)
+        end
       end # spawn
     end # if anything to do
   
     info_message = ""
-    if to_compress.size > 0
+    if to_compress.present?
       info_message += "#{view_pluralize(to_compress.size, "file")} being compressed in background.\n"
     end
-    if to_uncompress.size > 0
+    if to_uncompress.present?
       info_message += "#{view_pluralize(to_uncompress.size, "file")} being uncompressed in background.\n"
-    end
-    skipped_messages.each do |mess,userfiles|
-      info_message += "Warning: some files were skipped; Reason: #{mess}; Files: "
-      info_message += userfiles.map { |u| "#{u.name}" }.join(", ") + "\n"
     end
 
     flash[:notice] = info_message unless info_message.blank?
@@ -1229,13 +1195,13 @@ class UserfilesController < ApplicationController
     if userfiles.blank?
       flash[:notice] = "No file collections selected for archiving or unarchiving."
       redirect_to :action => :index, :format => request.format.to_sym
-      return
+      returns
     end
 
     # Main processing in background
     CBRAIN.spawn_with_active_records(current_user, "ArchiveFile") do
-      error_messages = ""
-      done_ok        = []
+      success_list = []
+      failed_list  = {}
       
       userfiles.each_with_index do |userfile,i|
         if userfile.archived?
@@ -1246,19 +1212,18 @@ class UserfilesController < ApplicationController
           error_message = userfile.provider_archive
         end
         if error_message.blank?
-          done_ok << userfile
+          success_list << userfile
         else
-          error_messages += error_message
-        end 
+          (failed_list[error_message] ||= []) << userfile
+        end
       end
 
-      # Final processing message
-      Message.send_message(current_user,
-        :message_type  => 'notice',
-        :header        => "Finished archiving or unarchiving files." + (error_messages.blank? ? "" : " (with some errors)"),
-        :variable_text => "Files affected:\n" +
-                           done_ok.map { |u| "[[#{u.name}][/userfiles/#{u.id}]]" }.join("\n") + "\n\n" + error_messages
-      )
+      if success_list.present?
+        notice_message_sender("Finished archiving/unarchiving file(s)",success_list)
+      end
+      if failed_list.present?
+        error_message_sender("Error when archiving/unarchiving file(s)",failed_list)
+      end
     end # spawn
     
     flash[:notice] = "#{view_pluralize(filelist.size, "file collection")} being archived/unarchived in background.\n"
