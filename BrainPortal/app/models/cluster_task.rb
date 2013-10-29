@@ -1568,23 +1568,25 @@ class ClusterTask < CbrainTask
   # Re-route run method of scir_class to use ScirVM instead of default scir for jobs going to VMs
   def modify_scir_class_for_vm
     scir_class = self.scir_session
-    if not scir_class.respond_to?("modified") then return end 
+    if scir_class.respond_to?("modified") then return end 
     self.addlog "Modifying class #{scir_class} for VMs"
     scir_class.class_eval{
       def modified 		
 	return
       end
-      alias_method :init_run, :run
+      alias :init_run :run
       def run(job)
         #TODO (VM tristan) fix this: use a "static" method? 
         if job.goes_to_vm then
+          #self.addlog "Job is going to VM, using ScirVM class"
           s = ScirVM.new
           s.run(job)
         else
+          #self.addlog "Job is not going to VM, using native Scir class"
           init_run job
         end
       end
-      alias_method :init_hold, :hold
+      alias :init_hold :hold
       def hold(jid)
         s = ScirVM.new
         if s.is_valid_jobid? jid then
@@ -1593,7 +1595,7 @@ class ClusterTask < CbrainTask
           init_hold jid
         end
       end
-      alias_method :init_release, :release
+      alias :init_release :release
       def release(jid)
         s = ScirVM.new
         if s.is_valid_jobid? jid then
@@ -1602,7 +1604,7 @@ class ClusterTask < CbrainTask
           init_release jid
         end
       end
-      alias_method :init_suspend, :suspend
+      alias :init_suspend :suspend
       def suspend(jid)
         s = ScirVM.new
         if s.is_valid_jobid? jid then
@@ -1611,7 +1613,7 @@ class ClusterTask < CbrainTask
           init_suspend jid
         end
       end
-      alias_method :init_resume, :resume
+      alias :init_resume :resume
       def resume(jid)
         s = ScirVM.new
         if s.is_valid_jobid? jid then
@@ -1620,7 +1622,7 @@ class ClusterTask < CbrainTask
           init_resume jid
         end
       end
-      alias_method :init_terminate, :terminate
+      alias :init_terminate :terminate
       def terminate(jid)
         s = ScirVM.new
         if s.is_valid_jobid? jid then
