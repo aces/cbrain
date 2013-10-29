@@ -38,9 +38,9 @@ class CbrainTask::StartVM < PortalTask
       :emulation => "1",
       :vm_boot_timeout => 600,
       :number_of_vms => 1,
-      :vm_cpus => 8,
-      :vm_ram_gb => 16,
-      :job_slots => 8
+      :vm_cpus => 2,
+      :vm_ram_gb => 8,
+      :job_slots => 2
     }
   end
   

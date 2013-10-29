@@ -110,7 +110,7 @@ class CbrainTask::StartVM < ClusterTask
     #update VM params
     params[:vm_local_ip] = self.scir_session.get_local_ip(self.id)
     self.update_vm_status "booting" 
-    self.save! #will launch an exception if save fails
+    self.save! #will launch an exception if save fails   
 
     #monitor VM until it's booted
     CBRAIN.spawn_with_active_records("Monitor VM")  do
