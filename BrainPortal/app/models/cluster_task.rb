@@ -1568,8 +1568,12 @@ class ClusterTask < CbrainTask
   # Re-route run method of scir_class to use ScirVM instead of default scir for jobs going to VMs
   def modify_scir_class_for_vm
     scir_class = self.scir_session
+    if not scir_class.respond_to?("modified") then return end 
     self.addlog "Modifying class #{scir_class} for VMs"
     scir_class.class_eval{
+      def modified 		
+	return
+      end
       alias_method :init_run, :run
       def run(job)
         #TODO (VM tristan) fix this: use a "static" method? 
