@@ -207,7 +207,7 @@ class VmFactory
   def select_site_round_robin_with_max_active
     n_attempts = 1
     incr_next_site
-    while get_active_tasks(@bourreau_ids[@next_site]) >= @max_active[@next_site] && n_attempts <= @n_sites  do
+    while (get_active_tasks(@bourreau_ids[@next_site]) >= @max_active[@next_site] || !Bourreau.find(@bourreau_ids[@next_site]).online?) && n_attempts <= @n_sites  do
       incr_next_site 
       n_attempts += 1
     end
