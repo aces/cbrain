@@ -1461,6 +1461,7 @@ class ClusterTask < CbrainTask
       self.cluster_jobid = jobid
       self.status_transition(self.status, "Queued")
       self.addlog("Queued as job ID '#{jobid}'.")
+      self[:queued_timestamp] = Time.now
     end
     self.save
 

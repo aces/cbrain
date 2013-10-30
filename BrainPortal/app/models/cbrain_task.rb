@@ -453,6 +453,8 @@ class CbrainTask < ActiveRecord::Base
       return false if self.status != from_state
       return true  if from_state == to_state # NOOP
       self.status = to_state
+      self[:queued_timestamp] = Time.now if to_state == "Queued"
+      self[:on_cpu_timestamp] = Time.now if to_state == "On CPU"
       self.save!
     end
     self.invoke_after_status_transition_callbacks(from_state, to_state)
