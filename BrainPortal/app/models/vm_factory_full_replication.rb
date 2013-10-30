@@ -20,12 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-class VmFactoryThresholdQueue < VmFactory
+class VmFactoryFullReplication < VmFactory
 
-  # def initialize(tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus)
-  #   log_vm "===="
-  #   super(tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus)
-  # end
+  def initialize(disk_image_id,tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus)
+    super(disk_image_id,tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus)
+  end
 
   def submit_vm
     #submit and replicate VMs on all sites

@@ -85,8 +85,8 @@
 
 class VmFactoryPareto < VmFactory
   
-  def initialize(tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus,alpha,lambda)
-    super(tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus)
+  def initialize(disk_image_id,tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus,alpha,lambda)
+    super(disk_image_id,tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus)
     @alpha = alpha
     @lambda = lambda
   end
@@ -175,7 +175,11 @@ class VmFactoryPareto < VmFactory
     sites = Array.new
     0.upto(@site_names.length-1) do |i|
       #log_vm "Adding site with parameters #{@site_queues[i]}, #{@site_costs[i]}, #{@site_names[i]}"
-      sites << Site.new(@site_queues[i],@site_costs[i],@site_names[i])
+      if Bourreau.find(@bourreau_ids[i]).online? then
+        sites << Site.new(@site_queues[i],@site_costs[i],@site_names[i])
+      else
+        log_vm "Don't consider offline site #{@site_names[i]} in bi-objective optimization"
+      end
     end
     
     # generate all actions
