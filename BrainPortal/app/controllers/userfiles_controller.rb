@@ -835,7 +835,7 @@ class UserfilesController < ApplicationController
       success_list  = []
       failed_list   = {}
       filelist.each_with_index do |id,count|
-        $0 = "#{word_move.capitalize} #{count+1}/#{filelist.size} To #{new_provider.name}\0"
+        $0 = "#{word_move.capitalize} ID=#{id} #{count+1}/#{filelist.size} To #{new_provider.name}\0"
         begin
           u = Userfile.find_accessible_by_user(id, current_user, :access_requested => (task == :copy ? :read : :write) )
           next unless u
@@ -938,7 +938,7 @@ class UserfilesController < ApplicationController
       failed_list               = {}
       to_delete = Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write)
       to_delete.each_with_index do |userfile,count|
-        $0 = "Delete #{count+1}/#{to_delete.size}\0"
+        $0 = "Delete ID=#{userfile.id} #{count+1}/#{to_delete.size}\0"
         begin
           basename = userfile.name
           if userfile.data_provider.is_browsable? && userfile.data_provider.meta[:must_erase].blank?
@@ -1205,10 +1205,10 @@ class UserfilesController < ApplicationController
       
       userfiles.each_with_index do |userfile,i|
         if userfile.archived?
-          $0 = "UnarchiveFile #{i+1}/#{userfiles.size}\0"
+          $0 = "UnarchiveFile ID=#{userfile.id} #{i+1}/#{userfiles.size}\0"
           error_message = userfile.provider_unarchive
         else
-          $0 = "ArchiveFile #{i+1}/#{userfiles.size}\0"
+          $0 = "ArchiveFile ID=#{userfile.id} #{i+1}/#{userfiles.size}\0"
           error_message = userfile.provider_archive
         end
         if error_message.blank?
