@@ -266,8 +266,10 @@ class UserfilesController < ApplicationController
       else
         render :text => "<div class=\"warning\">Could not find viewer #{params[:viewer]}.</div>", :status  => "404"
       end
-    rescue
-      render :text => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>", :status => "404"
+    rescue => exception
+      raise unless Rails.env == 'production'
+      ExceptionLog.log_exception(exception, current_user, request)
+      render :text => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>", :status => "500"
     end
   end
   
