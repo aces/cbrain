@@ -633,6 +633,7 @@ class UserfilesController < ApplicationController
           end
           failed_files = filelist - new_filelist
           failed_list["new group is not accessible by file's owner"] = failed_files if failed_files.present?
+          filelist     = new_filelist
         when :update_owner
           new_filelist = filelist.select(&:allow_file_owner_change?)
           failed_files = filelist - new_filelist 
