@@ -6,3 +6,4 @@ config/initializers/config_portal.rb
 coverage/
 vendor/cache
 vendor/plugins
+seeds_dev_support_dir
