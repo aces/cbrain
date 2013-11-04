@@ -42,21 +42,20 @@ module MessageHelpers
   # Each error message is displayed with the number of objects that
   # triggered the error and list it.
   def error_message_sender(header,failed_list,receiver=current_user)
+
     # Return the first object of failed_list
-    object = failed_list.first.last.first
+  	object = failed_list.first.last.first
     type   = generic_human_type(object)
     # Define path 
     path   = object.class.sti_root_class.to_s.underscore.pluralize
     if object.is_a?(RemoteResource)
-      path = "bourreaux"
+    	path = "bourreaux"
     elsif object.is_a?(CbrainTask)
-      path = "tasks"
+    	path = "tasks"
 		end
 
-    report      = ""
-    failed_list.each do |m,objects|
-      message = m.dup
-      message.sub!(/\.$/,"")
+	  report      = ""
+		failed_list.each do |message,objects|
       report     += "For #{view_pluralize(objects.size,type)}, #{message}:\n"
       report     += objects.sort_by(&:name).map { |o| "[[#{o.name}][/#{path}/#{o.id}]]\n" }.join("")
     end
