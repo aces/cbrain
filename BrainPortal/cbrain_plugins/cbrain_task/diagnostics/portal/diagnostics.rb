@@ -86,6 +86,13 @@ class CbrainTask::Diagnostics < PortalTask
     }
   end
 
+  # TODO (VM Tristan) I need this estimate on the portal for a test. But this duplicates code with the Bourreau.
+  def job_walltime_estimate #:nodoc:
+    params        = self.params || {}
+    cluster_delay = params[:cluster_delay] ? params[:cluster_delay].to_i : 0
+    2.minutes + cluster_delay.seconds
+  end
+
   def self.pretty_params_names #:nodoc:
     {
     :inptest_text_odd_number => 'Odd number field',

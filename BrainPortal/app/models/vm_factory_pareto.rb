@@ -55,13 +55,13 @@
     end
 
     def bi_objective_min(lambda)
-      qmin = self[0].get_queue 
+      qmin = self[0].get_performance
       qmax = qmin
       cmin = self[0].get_cost
       cmax = cmin
       each do |x|
-        qmin = x.get_queue < qmin ? x.get_queue : qmin
-        qmax = x.get_queue > qmax ? x.get_queue : qmax
+        qmin = x.get_performance < qmin ? x.get_performance : qmin
+        qmax = x.get_performance > qmax ? x.get_performance : qmax
         cmin = x.get_cost < cmin ? x.get_cost : cmin
         cmax = x.get_cost > cmax ? x.get_cost : cmax
       end
@@ -79,25 +79,24 @@
       return best_element,best_bi_objective
     end
     def bi_objective(x,lambda,qmin,qmax,cmin,cmax)
-      return lambda*(x.get_queue-qmin)/(qmax-qmin+0.0)+(1-lambda)*(x.get_cost-cmin)/(cmax-cmin+0.0)
+      return lambda*(x.get_performance-qmin)/(qmax-qmin+0.0)+(1-lambda)*(x.get_cost-cmin)/(cmax-cmin+0.0)
     end
   end
 
 class VmFactoryPareto < VmFactory
   
-  def initialize(disk_image_id,tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus,alpha,lambda)
+  def initialize(disk_image_id,tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus,lambda)
     super(disk_image_id,tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus)
-    @alpha = alpha
     @lambda = lambda
   end
 
   # A generic class to represent 2-uples
-  class QueueCostCouple
-    def initialize(queue,cost)
-      @q=queue
+  class PerformanceCostCouple
+    def initialize(performance,cost)
+      @q=performance
       @c=cost
     end
-    def get_queue
+    def get_performance
       return @q
     end
     def get_cost
@@ -107,28 +106,32 @@ class VmFactoryPareto < VmFactory
       return "(#{@q},#{@c})" 
     end
     def dominates?(x)
-      if @q == x.get_queue and @c == x.get_cost then return false end
-      if @q <= x.get_queue and @c <= x.get_cost then return true end
+      if @q == x.get_performance and @c == x.get_cost then return false end
+      if @q <= x.get_performance and @c <= x.get_cost then return true end
       return false
     end
   end
 
-  class Site < QueueCostCouple
-    def initialize(q,c,name)
+  class Site < PerformanceCostCouple
+    def initialize(performance,cost,cost_overhead,name)
       @name = name
-      super(q,c)
+      @cost_overhead = cost_overhead
+      super(performance,cost)
     end
     def get_name
       return @name
     end
+    def get_cost_overhead
+      return @cost_overhead
+    end
     def to_s
-      "#{@name} ; #{self.get_queue} ; #{self.get_cost}"
+      "#{@name} ; #{self.get_performance} ; #{self.get_cost}"
     end
   end
 
   # An action is a VM submission decision. 
-  class Action < QueueCostCouple
-    def initialize(sites,alpha)
+  class Action < PerformanceCostCouple
+    def initialize(sites)
       @name = ""
       @sites = sites.dup
       if sites.size == 0 then 
@@ -136,32 +139,32 @@ class VmFactoryPareto < VmFactory
         return
       end    
 
-      # determines queue and cost of the action
-      # determines q
-      # qmin and cmax and sum(ci)
-      qmin = @sites[0].get_queue
-      cmax = @sites[0].get_cost
-      sum_c = 0
+      # determines performance and cost of the action
+      # qmin and cmax 
+      pmin = @sites[0].get_performance
+      cmax = 0 
+      sum_overheads = 0 
+      @sites.each do |x|
+        sum_overheads += x.get_cost_overhead
+      end
       @sites.each do |s|
         @name += "#{s.get_name} "
-        s_q = s.get_queue
-        if s_q < qmin then qmin = s_q end
-        s_c = s.get_cost
-        sum_c += s_c
-        if s_c > cmax then cmax = s_c end
+        s_p = s.get_performance
+        if s_p < pmin then pmin = s_p end
+        #overhead of other sites also has to be added
+        cost = s.get_cost + sum_overheads - s.get_overhead 
+        if cost > cmax then cmax = cost end
       end
-      # sum(qmin/qi)
+      # sum(pmin/pi)
       sum = 0 
       @sites.each do |s|
-        sum += qmin/(0.0+s.get_queue)
+        sum += pmin/(0.0+s.get_performance)
       end
-      q = (qmin/2.0)*(Math.exp(1-sum)+1)    
-      # determines c
-      c = cmax + alpha*(sum_c-cmax)
-      super(q,c)
+      p = (pmin/2.0)*(Math.exp(1-sum)+1)    
+      super(p,cmax)
     end
     def to_s
-      return "* #{@name} ; C=#{get_cost} ; Q=#{get_queue}"
+      return "* #{@name} ; C=#{get_cost} ; P=#{get_performance}"
     end
     def get_sites
       return @sites
@@ -171,12 +174,19 @@ class VmFactoryPareto < VmFactory
   def submit_vm
     
     update_site_queues
+    update_site_booting_times
+    update_site_performance_factors
+    median_duration = get_median_task_durations_of_queued_tasks
 
     sites = Array.new
     0.upto(@site_names.length-1) do |i|
       #log_vm "Adding site with parameters #{@site_queues[i]}, #{@site_costs[i]}, #{@site_names[i]}"
       if Bourreau.find(@bourreau_ids[i]).online? then
-        sites << Site.new(@site_queues[i],@site_costs[i],@site_names[i])
+        expected_on_cpu = @site_booting_times[i]+median_duration*@site_performance_factors[i]
+        # site performance : queueing time + expected time on CPU
+        # site cost : site cost factor * expected time on CPU
+        # site overhead : site cost factor * booting time 
+        sites << Site.new(@site_queues[i]+expected_on_cpu,@site_costs[i]*expected_on_cpu,@site_booting_times[i]*@site_costs[i],@site_names[i])
       else
         log_vm "Don't consider offline site #{@site_names[i]} in bi-objective optimization"
       end
@@ -188,9 +198,9 @@ class VmFactoryPareto < VmFactory
     sites.each do |x|
       n_actions = actions.dup
       actions.each do |a| 
-        n_actions << Action.new(a.get_sites + [x],@alpha)
+        n_actions << Action.new(a.get_sites + [x])
       end
-      n_actions << Action.new([x],@alpha) 
+      n_actions << Action.new([x]) 
       actions = n_actions
     end
     
@@ -205,16 +215,18 @@ class VmFactoryPareto < VmFactory
       log_vm "#{a}"
     end
     
-    puts " == Bi-objective minimization == "
-    (best_action,best_bo) = pareto_set.bi_objective_min(@lambda) 
-    log_vm " Best Action is #{best_action} (#{best_bo})"
-    
-    #now implement this action
-    site_indexes = Array.new 
-    best_action.get_sites.each do |x|
-      site_indexes <<  @site_names.index(x.get_name)
+    if not pareto_set.blank? then
+      puts " == Bi-objective minimization == "
+      (best_action,best_bo) = pareto_set.bi_objective_min(@lambda) 
+      log_vm " Best Action is #{best_action} (#{best_bo})"
+      
+      #now implement this action
+      site_indexes = Array.new 
+      best_action.get_sites.each do |x|
+        site_indexes <<  @site_names.index(x.get_name)
+      end
+      submit_vm_and_replicate site_indexes
     end
-    submit_vm_and_replicate site_indexes
   end
   
   #sites = [Site.new(32,11,"A"),Site.new(21,12,"B"),Site.new(1,3,"C"),Site.new(1,30,"D"),Site.new(11,31,"E"),Site.new(21,32,"F")]
