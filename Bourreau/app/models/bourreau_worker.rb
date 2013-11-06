@@ -214,8 +214,8 @@ class BourreauWorker < Worker
     disk_images.each { |bourreau|
       #list tasks going to these bourreaux
       tasks_for_vms.concat CbrainTask.not_archived.where(:bourreau_id => bourreau.id, :status => ReadyTasks) 
-      tasks_for_vms.each { |x| worker_log.info "== Found task id #{x.id} for virtual bourreau \"#{bourreau.name}\"" }
     }
+    tasks_for_vms.each { |x| worker_log.info "== Found task id #{x.id}" }
 
     #gets VMs available to me
     vms = CbrainTask.not_archived.where(:type => "CbrainTask::StartVM", :bourreau_id => @rr_id, :status => "On CPU")  #TODO (VM tristan) remove this ugly "CbrainTask::StartVM"
@@ -316,6 +316,16 @@ class BourreauWorker < Worker
         @rr.meta[:latest_in_queue_delay]         = n2q.to_i + q2r.to_i
         @rr.meta[:time_of_latest_in_queue_delay] = Time.now
       end
+
+      # Recored bourreau performance factor for On CPU -> Data ready 
+      if initial_status == 'On CPU' && new_status == 'Data Ready'
+        # will miss it in case task is too short
+        @rr.meta.reload 
+        time_on_cpu = Time.now - initial_change_time 
+        task.addlog "Task spent #{time_on_cpu} on CPU"
+        @rr.meta[:latest_performance_factor] = time_on_cpu.to_f / task.job_walltime_estimate.to_f
+      end
+
     end
 
     case task.status

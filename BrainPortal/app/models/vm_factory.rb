@@ -35,7 +35,8 @@ class VmFactory
 
     
     @disk_image_file_id = disk_image_file_id
-    @disk_image_name = DiskImage.where(:disk_image_file_id => disk_image_file_id).first.name#Userfile.find(disk_image_file_id).name
+di =  DiskImage.where(:disk_image_file_id => disk_image_file_id).first#Userfile.find(disk_image_file_id).name
+    @disk_image_name = di.blank? ? "Void" : di.name
 
     #initialize threshold parameters
     @tau = tau #= 10
@@ -51,23 +52,37 @@ class VmFactory
     #initializes bourreaux (should be obtained from DB)
     @site_names = Array.new 
     @max_active = Array.new
-    @bourreau_ids = [21, 18,  20, 19]
+    @tool_configs = Array.new
+
+    @bourreau_ids = [21, 20] #Nimbus, Mammouth
+    @site_costs = [10,1] # parameters, should be moved to bourreau properties
+
+
+    #  @bourreau_ids = [21, 18,  20, 19] #Nimbus, Colosse, Mammouth, Guillimin
+    # @site_costs = [10,1,5,1] # parameters, should be moved to bourreau properties
+    
     0.upto(@bourreau_ids.count - 1) do |i|
       bourreau = Bourreau.find(@bourreau_ids[i])
       @site_names[i] = bourreau.name 
       @max_active[i] = bourreau.meta["task_limit_total"].blank? ? Float::INFINITY : bourreau.meta["task_limit_total"].to_i
+      @tool_configs[i] = ToolConfig.where(tool_id: 43, bourreau_id: bourreau.id).first.id
     end
   
-    @tool_configs = [13, 8,  11,9] #start vm tool configurations
-    @site_costs = [10,1,1,1] # parameters, should be moved to bourreau properties
+
 #    @max_active = [24,200,200,200] # parameters, should be moved to bourreau properties
 
     @n_sites = @site_names.length
 
     @site_queues = Array.new
+    @site_booting_times = Array.new
+    @site_performance_factors = Array.new    
 
     log_vm "Creating new VM factory"
     
+  end
+
+  def get_costs
+    return @site_costs
   end
 
   def log_vm(object)
@@ -79,7 +94,10 @@ class VmFactory
     out = "#{prompt.colorize(36)} #{time.colorize(36)} #{@disk_image_name.colorize(33)} \t #{text}\n"
     File.open(logfile, 'a') {|f| f.write(out) }
   end
-  
+
+  def get_bourreau_ids
+    return @bourreau_ids
+  end
 
   def start
     # TODO (Tristan) monitor all types of disk images separately. 
@@ -90,11 +108,12 @@ class VmFactory
       while time < @nu_plus do
         vms = get_active_vms_without_replicas
         load = self.measure_load vms
-        if load >= @mu_plus then log_vm "Load  has been too HIGH for #{time}s" else break end
+        if load >= @mu_plus then log_vm "Load  has been too "+"HIGH".colorize(32)+" for #{time}s" else break end
         sleep 1
         time = time + 1
       end
-      if time >= @nu_plus then (1..@k_plus).each { 
+      if time >= @nu_plus then (1..@k_plus).each { |i|
+          log "Submiting VM #{i} of #{@k_plus}"
           submit_vm
         } 
       end
@@ -102,7 +121,7 @@ class VmFactory
       time = 0
       while time < @nu_minus do
         vms = get_active_vms_without_replicas
-        if vms.count != 0 && load <= @mu_minus && ( vms.count != 1 || load == 0 ) then log_vm "Load  has been too LOW for #{time}s" else break end
+        if vms.count != 0 && load <= @mu_minus && ( vms.count != 1 || load == 0 ) then log_vm "Load  has been too " +"LOW".colorize(32)+" for #{time}s" else break end
         sleep 1
         load = self.measure_load vms
         time = time + 1
@@ -139,10 +158,7 @@ class VmFactory
   end
 
   def measure_load vms
-    # TODO (Tristan) measure only tasks going to a particular disk image
-    # TODO (Tristan) do this with only 1 query, written as an SQL string (Active Record doesn't seem to support NOT)
     disk_images = DiskImage.where(:disk_image_file_id => @disk_image_file_id)
-    log_vm "There are #{disk_images.count} bourreaux"
     tasks = 0
     disk_images.each do |b|
       log_vm "Checking active tasks"
@@ -200,6 +216,7 @@ class VmFactory
     log_vm  "Submitted #{task_replicas.length} VMs"
     task_replicas.each { |t|
       t.params[:replicas].concat(task_ids)
+      log_vm "Replicas of task #{t.id} are #{t.params[:replicas]}"
       t.save!
     }
   end
@@ -226,6 +243,7 @@ class VmFactory
     # will submit with user associated to the first virtual bourreau we find with this disk image
     disk_image = DiskImage.where(:disk_image_file_id => @disk_image_file_id).first
     task.params[:vm_user] = disk_image.disk_image_user 
+    task.params[:disk_image] = @disk_image_file_id
 
     task.user = User.where(:login => "admin").first
     task.bourreau_id = bourreau_id
@@ -252,7 +270,7 @@ class VmFactory
     end
     if youngest_queued != nil then
       # race condition: VM may not be queuing any more at this point
-      log_vm ( "Terminating queuing VM id " + "#{youngest_queued.id}".colorize(33) )
+      log_vm ( "Terminating".colorize(32)+" queuing VM id " + "#{youngest_queued.id}".colorize(33) )
       terminate_vm youngest_queued.id
       return youngest_queued.id
     else
@@ -269,7 +287,7 @@ class VmFactory
         if youngest_booting == nil || youngest_booting.updated_at < task.updated_at then youngest_booting = task end
       end
       if youngest_booting != nil then 
-        log_vm ("Terminating booting VM id " + "#{youngest_booting.id}".colorize(33)) 
+        log_vm ("Terminating ".colorize(32)+"booting VM id " + "#{youngest_booting.id}".colorize(33)) 
         # race condition: VM may not be booting any more at this point
         terminate_vm youngest_booting.id
         return youngest_booting.id
@@ -288,7 +306,7 @@ class VmFactory
           if oldest_idle == nil || oldest_idle.updated_at > task.updated_at then oldest_idle = task end
         end
         if oldest_idle != nil then 
-          log_vm ( "Terminating idle VM id "+ "#{oldest_idle.id}".colorize(33))
+          log_vm ( "Terminating".colorize(32)+" idle VM id "+ "#{oldest_idle.id}".colorize(33))
           # race condition again
           terminate_vm oldest_idle.id
           return oldest_idle.id
@@ -300,12 +318,17 @@ class VmFactory
 
   def terminate_vm(id)
     task = CbrainTask.where(:id => id).first
-    Bourreau.find(task.bourreau_id).send_command_alter_tasks(task, PortalTask::OperationToNewStatus["terminate"], nil, nil)
+    begin
+      Bourreau.find(task.bourreau_id).send_command_alter_tasks(task, PortalTask::OperationToNewStatus["terminate"], nil, nil) 
+    rescue => ex
+      log_vm ex
+    end
   end
 
   def handle_replicas
     #handle replicas of OnCPU VMs
-    on_cpu = CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'On CPU'] )
+    on_cpu_all = CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'On CPU'] )
+    on_cpu = on_cpu_all.reject{ |x| x.params[:disk_image] != @disk_image_file_id}
     on_cpu.each do |task|
       # task is now on cpu
       # r_id/r_task is its replicas
@@ -314,10 +337,11 @@ class VmFactory
 
       #TODO (VM tristan) maybe remove condition on vm_status to reduce overhead
       if (not task.params[:replicas].blank?) && task.params[:vm_status] == "booted" then 
-        replica_ids = task.params[:replicas] 
-        log_vm "Task #{task.id} is OnCPU and has replicas. Removing VMs from these replicas' sites." unless replica_ids.blank?
+        replica_ids = task.params[:replicas]-[task.id]
+        log_vm "Task #{task.id} is OnCPU, has booted and has #{replica_ids.count} replicas. Removing VMs from these replicas' sites." unless replica_ids.blank?
         replica_ids.each do |r_id|
           if r_id != task.id then
+            log_vm "Removing a task for replica #{r_id}"
             r_task = CbrainTask.find(r_id)
             r_bourreau_id = Bourreau.find(r_task.bourreau_id)
             rr_id = remove_vm_from_site r_bourreau_id 
@@ -333,7 +357,7 @@ class VmFactory
                     rrr_task.save!
                   end
                   if not r_task.params[:replicas].blank? then 
-                    r_task.params[:replicas].map! { |x| x==rr_id ? rrr_id : x} 
+                    r_task.params[:replicas].map! { |x| x== task.id ? rrr_id : x} 
                     r_task.save!
                   end
                 end
@@ -354,4 +378,35 @@ class VmFactory
       log_vm "Updated queuing time of site #{@site_names[i]} to #{@site_queues[i]}"
     end
   end
+
+  def update_site_booting_times
+    0.upto(@n_sites-1) do |i|
+      b = Bourreau.find(@bourreau_ids[i])
+      @site_booting_times[i] = b.meta[:latest_booting_delay]
+      log_vm "Updated booting of site #{@site_names[i]} to #{@site_booting_times[i]}"
+    end
+  end
+
+  def update_site_performance_factors
+    0.upto(@n_sites-1) do |i|
+      b = Bourreau.find(@bourreau_ids[i])
+      @site_performance_factors[i] = b.meta[:latest_performance_factor]
+      log_vm "Updated booting of site #{@site_names[i]} to #{@site_booting_times[i]}"
+    end
+  end
+  
+  def get_median_task_durations_of_queued_tasks
+    queued_all =  CbrainTask.where(:status => [ 'New'] ) - CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'New'] ) 
+    queued = queued_all.reject{ |x| x.params[:disk_image] != @disk_image_file_id}    
+    durations = Array.new
+    queued.each { |t| 
+      durations << t.job_walltime_estimate
+    }
+    sorted_durations = durations.sort
+    len = durations.length
+    median_duration = len % 2 == 1 ? sorted_durations[len/2] : (sorted_durations[len/2 - 1] + sorted_durations[len/2]) / 2.0
+    return median_duration
+  end
+
+
 end  

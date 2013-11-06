@@ -146,6 +146,12 @@ class CbrainTask::StartVM < ClusterTask
     addlog "VM has booted"
     update_vm_status("booted")
     self.save!
+
+    #Update bourreau boot time
+    self.bourreau.meta.reload
+    self.bourreau.meta[:latest_booting_delay] = Time.now - start_time
+    self.bourreau.meta[:time_of_latest_booting_delay] = Time.now
+    self.bourreau.save!
   end
   
   def booted?

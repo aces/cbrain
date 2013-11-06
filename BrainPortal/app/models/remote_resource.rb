@@ -803,7 +803,7 @@ class RemoteResource < ActiveRecord::Base
 
     # Send remote
     Control.site    = self.site
-    Control.timeout = 10
+    Control.timeout = 30
     control = Control.new(command)
     control.save
 

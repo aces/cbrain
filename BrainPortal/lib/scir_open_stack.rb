@@ -114,7 +114,7 @@ class ScirOpenStack < Scir
     def run(job)
 
       # TODO (Tristan VM) get instance id and flavor from disk image
-      vm = submit_VM("tglatard","PowchEdip0","http://204.19.23.16:5000/v2.0", "CBRAIN Worker", "cbrain", "06344688-6d13-4361-90cc-adb8ffe3cea8", "http://204.19.23.16:8774/9dd2bfba6bf040ad83e5140508aa31f0/flavors/9f9703e4-d8f5-496c-9ecd-52677e144578")
+      vm = submit_VM("tglatard","PowchEdip0","http://204.19.23.16:5000/v2.0", "CBRAIN Worker", "cbrain", "b6766906-1f3d-44c6-aa33-44d1b569ffb2", "http://204.19.23.16:8774/9dd2bfba6bf040ad83e5140508aa31f0/flavors/9f9703e4-d8f5-496c-9ecd-52677e144578")
       return vm.id.to_s
     end
 
