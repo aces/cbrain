@@ -617,7 +617,7 @@ class UserfilesController < ApplicationController
       filelist         = Userfile.find_all_accessible_by_user(current_user, :access_requested => access_requested ).where(:id => file_ids).all 
       failure_ids      = file_ids - filelist.map {|u| u.id.to_s }
       failed_files     = Userfile.where(:id => failure_ids).select([:id, :name, :type]).all
-      failed_list["you don't have write access"] = filelist failed_files if failed_files.present?
+      failed_list["you don't have write access"] = failed_files if failed_files.present?
 
       # Filter file list
       case commit_name
@@ -633,6 +633,7 @@ class UserfilesController < ApplicationController
           end
           failed_files = filelist - new_filelist
           failed_list["new group is not accessible by file's owner"] = failed_files if failed_files.present?
+          filelist     = new_filelist
         when :update_owner
           new_filelist = filelist.select(&:allow_file_owner_change?)
           failed_files = filelist - new_filelist 
