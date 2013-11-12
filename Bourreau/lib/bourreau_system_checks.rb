@@ -232,7 +232,67 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
   end
 
+  def self.a076_ensure_task_archived_status_is_consistent
 
+    #-----------------------------------------------------------------------------
+    puts "C> Verifying CbrainTask with inconsistent archiving information..."
+    #-----------------------------------------------------------------------------
+    
+    # 4 valid cases
+    # CASE workdir_archived?  workdir_archive_userfile_id (waui)  cluster_workdir_size (cws)
+    # A    false,             nil,                                nil,    # workdir doesn't exist, and no archive known
+    # B    false,             nil,                                size,   # workdir exists on cluster, no archive known
+    # C    true,              nil,                                size,   # workdir exists on cluster, archive is there
+    # D    true,              id,                                 nil,    # workdir doesn't exist, archived as file
+
+    # 4 invalid cases 
+    # CASE workdir_archived?  workdir_archive_userfile_id (waui)  cluster_workdir_size (cws)
+    # 1    true,              nil,                                nil,    # workdir_archived? should be turned to false
+    # 2    false,             id,                                 nil,    # workdir_archived? should be turned to true
+    # 3    false,             id,                                 size,   # If waui and cws: verify existance of waui if it exist turn cws to nil and turn workdir_archived to true
+    # 4    true,              id,                                 size,   # If waui and cws: verify existance of waui if it exist turn cws to nil
+    
+    # CASE 1
+    case1_tasks = CbrainTask.where(:workdir_archived => true, :workdir_archive_userfile_id => nil, :cluster_workdir_size => nil)
+    puts "C> \t- Processing CbrainTasks that seem to be archived but missing their archiving information." if case1_tasks.exists?
+    case1_tasks.all.each do |t|
+      t.addlog("INCONSISTENCY REPAIR: This task was marked as archived but the archiving information was lost.")
+      t.workdir_archived = false # turn to CASE A
+      t.save
+    end
+      
+    # CASE 2
+    case2_tasks = CbrainTask.where(:workdir_archived => false, :cluster_workdir_size => nil).where("workdir_archive_userfile_id IS NOT null")
+    puts "C> \t- Processing CbrainTasks that seem to be archived as a file but are not marked as archived." if case2_tasks.exists?
+    case2_tasks.all.each do |t|
+      userfile_id = t.workdir_archive_userfile_id
+      if TaskWorkdirArchive.where(:id => userfile_id).exists? # turn CASE D
+        t.addlog("INCONSISTENCY REPAIR: This task was marked as not archived but it was linked to a file archive.")
+        t.workdir_archived = true
+      else # turn CASE A
+        t.addlog("INCONSISTENCY REPAIR: This task was linked to an invalid file archive.") 
+        t.workdir_archive_userfile_id = nil
+      end
+      t.save
+    end
+      
+    # CASE 3 and CASE 4 
+    case3_and_case4_tasks = CbrainTask.where("workdir_archive_userfile_id IS NOT null").where("cluster_workdir_size IS NOT null")
+    puts "C> \t- Processing CbrainTasks that seem to be archived both as a file and on cluster." if case3_and_case4_tasks.exists?
+    case3_and_case4_tasks.all.each do |t|
+      userfile_id = t.workdir_archive_userfile_id
+      if TaskWorkdirArchive.where(:id => userfile_id).exists? # turn to case D
+        t.addlog("INCONSISTENCY REPAIR: This task was marked archived both as a file and on cluster (cluster archive is invalid)")
+        t.workdir_archived     = true
+        t.cluster_workdir_size = nil
+       else # turn to case C
+        t.addlog("INCONSISTENCY REPAIR: This task was marked archived both as a file and on cluster (file archive is invalid)")
+        t.workdir_archive_userfile_id = nil
+       end
+       t.save
+    end
+
+  end
 
   def self.a080_ensure_tasks_have_workdir_sizes
 
@@ -289,8 +349,6 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     end
 
   end
-
-
 
   def self.a090_check_for_spurious_task_workdirs
 
