@@ -256,7 +256,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     local_tasks = CbrainTask.where(:bourreau_id => myself.id)
 
     # CASE 1
-    case1_tasks = local_tasks.where(:bourreau_id => , :workdir_archived => true, :workdir_archive_userfile_id => nil, :cluster_workdir_size => nil)
+    case1_tasks = local_tasks.where(:workdir_archived => true, :workdir_archive_userfile_id => nil, :cluster_workdir_size => nil)
     puts "C> \t- Processing CbrainTasks that seem to be archived but missing their archiving information." if case1_tasks.exists?
     case1_tasks.all.each do |t|
       t.addlog("INCONSISTENCY REPAIR: This task was marked as archived but the archiving information was lost")
