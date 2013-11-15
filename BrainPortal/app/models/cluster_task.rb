@@ -1225,6 +1225,8 @@ class ClusterTask < CbrainTask
   # the method fetches it, and use its content
   # to recreate the task's work directory.
   def unarchive_work_directory_from_userfile
+    tar_file = self.in_situ_workdir_archive_file
+
     return false unless self.workdir_archived? && self.workdir_archive_userfile_id
 
     raise "Tried to unarchive a TaskWorkdirArchive while in the wrong Rails app." unless
@@ -1240,8 +1242,6 @@ class ClusterTask < CbrainTask
     self.addlog("Attempting to restore TaskWorkdirArchive.")
 
     file.sync_to_cache
-
-    tar_file = self.in_situ_workdir_archive_file
 
     # Keep updated_at value in order to reset it at the end of method.
     updated_at_value = self.updated_at
@@ -1262,6 +1262,8 @@ class ClusterTask < CbrainTask
     # Reset update timestamp
     self.update_column(:updated_at, updated_at_value)
     self.update_column(:workdir_archive_userfile_id,nil)
+  ensure
+    File.unlink(tar_file) rescue true
   end
 
 
