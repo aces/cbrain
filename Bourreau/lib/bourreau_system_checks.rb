@@ -123,7 +123,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     ).all
 
     if local_old_tasks.empty?
-      puts "C> \t- No task needs updating."
+      puts "C> \t- No tasks need updating."
       return true
     else
       puts "C> \t- Found #{local_old_tasks.size} tasks to update."
@@ -257,7 +257,8 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
     # CASE 1
     case1_tasks = local_tasks.where(:workdir_archived => true, :workdir_archive_userfile_id => nil, :cluster_workdir_size => nil)
-    puts "C> \t- Processing CbrainTasks that seem to be archived but missing their archiving information." if case1_tasks.exists?
+    case1_count = case1_tasks.count
+    puts "C> \t- Processing #{case1_count} CbrainTasks that seem to be archived but missing their archiving information." if case1_tasks.exists?
     case1_tasks.all.each do |t|
       t.addlog("INCONSISTENCY REPAIR: This task was marked as archived but the archiving information was lost")
       t.workdir_archived = false # turn to CASE A
@@ -266,7 +267,8 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
     # CASE 2
     case2_tasks = local_tasks.where(:workdir_archived => false, :cluster_workdir_size => nil).where("workdir_archive_userfile_id IS NOT null")
-    puts "C> \t- Processing CbrainTasks that seem to be archived as a file but are not marked as archived." if case2_tasks.exists?
+    case2_count = case2_tasks.count
+    puts "C> \t- Processing #{case2_count} CbrainTasks that seem to be archived as a file but are not marked as archived." if case2_tasks.exists?
     case2_tasks.all.each do |t|
       userfile_id = t.workdir_archive_userfile_id
       if TaskWorkdirArchive.where(:id => userfile_id).exists? # turn CASE D
@@ -281,7 +283,8 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
     # CASE 3 and CASE 4
     case3_and_case4_tasks = local_tasks.where("workdir_archive_userfile_id IS NOT null").where("cluster_workdir_size IS NOT null")
-    puts "C> \t- Processing CbrainTasks that seem to be archived both as a file and on cluster." if case3_and_case4_tasks.exists?
+    case3_and_case4_count = case3_and_case4_tasks.count
+    puts "C> \t- Processing #{case3_and_case4_count} CbrainTasks that seem to be archived both as a file and on cluster." if case3_and_case4_tasks.exists?
     case3_and_case4_tasks.all.each do |t|
       userfile_id = t.workdir_archive_userfile_id
       if TaskWorkdirArchive.where(:id => userfile_id).exists? # turn to case D
@@ -294,6 +297,9 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
        end
        t.save
     end
+
+    total_count = case1_count + case2_count + case3_and_case4_count
+    puts "C> \t- No tasks need to be updated." if total_count == 0
 
   end
 
