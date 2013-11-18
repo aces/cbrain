@@ -84,7 +84,7 @@ class HttpUserAgent
     end
 
     # Identify the browser
-    priority_list = [ 'WebPositive', 'Konqueror', 'Chrome', 'Safari', 'Opera', 'SeaMonkey', 'Firefox', 'MSIE', "CbrainPerlAPI", lastname ]
+    priority_list = [ 'WebPositive', 'Konqueror', 'Chrome', 'Safari', 'Opera', 'SeaMonkey', 'Firefox', 'MSIE', "CbrainPerlAPI", "CbrainRubyAPI", "CbrainJavaAPI", lastname ]
     priority_list.each do |name|
       lcname = name.downcase
       next unless keyvals.has_key?(lcname)
