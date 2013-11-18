@@ -25,7 +25,7 @@ class UsersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :only => [ :create, :show, :destroy ]
+  api_available :only => [ :index, :create, :show, :destroy ]
 
   before_filter :login_required,        :except => [:request_password, :send_password]  
   before_filter :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password]  
