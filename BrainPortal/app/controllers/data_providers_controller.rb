@@ -513,10 +513,9 @@ class DataProvidersController < ApplicationController
       flash[:error] += "No files are left to #{move_or_copy.downcase} !\n"
     else
       flash[:notice] += "Warning! #{to_operate.size} files are now being #{past_tense} in background.\n"
+      success_list  = []
+      failed_list   = {}
       CBRAIN.spawn_with_active_records(:admin, "#{move_or_copy} Registered Files") do
-        errors = ""
-        num_ok  = 0
-        num_err = 0
         to_operate.each do |u|
           orig_name = u.name
           begin
@@ -528,25 +527,19 @@ class DataProvidersController < ApplicationController
               u.destroy rescue true # will simply unregister
               new.set_size!
             end
-            num_ok += 1
+            success_list << u
           rescue => ex
-            num_err += 1
-            errors += "Error for file '#{orig_name}': #{ex.class}: #{ex.message}\n"
+            (failed_list[ex.message] ||= []) << u
           end
         end # each file
-        if num_ok > 0
-          Message.send_message(current_user, 
-                                :message_type   => 'notice', 
-                                :header         => "#{num_ok} files #{past_tense} during registration.",
-                                :variable_text  => ""
-                                )
+        
+        # Message for successful actions
+        if success_list.present?
+          notice_message_sender("Files #{past_tense} during registration", success_list)
         end
-        if num_err > 0
-          Message.send_message(current_user, 
-                                :message_type   => 'error', 
-                                :header         => "#{num_err} files FAILED to be #{past_tense} during registration. See report below.",
-                                :variable_text  => errors
-                                )
+        # Message for failed actions 
+        if failed_list.present?
+          error_message_sender("Files FAILED to be #{past_tense} during registration", failed_list)
         end
       end # spawn
     end # if move or copy
