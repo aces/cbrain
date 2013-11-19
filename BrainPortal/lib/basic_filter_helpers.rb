@@ -17,10 +17,10 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Helpers to create filter lists for index tables 
+# Helpers to create filter lists for index tables
 # (see index_table_helper.rb).
 module BasicFilterHelpers
 
@@ -58,7 +58,7 @@ module BasicFilterHelpers
     end
     filtered_scope
   end
-  
+
   #Apply currently active sort parameters to a scope
   def base_sorted_scope(sorted_scope = resource_class.scoped)
     if @filter_params["sort_hash"] && @filter_params["sort_hash"]["order"] && table_column?(*@filter_params["sort_hash"]["order"].split("."))
@@ -66,19 +66,19 @@ module BasicFilterHelpers
     end
     sorted_scope
   end
-  
+
   # Convenience method to determine wether a given model has the provided attribute.
   # Note: mainly for security reasons; this allows easy sanitization of parameters related
   # to attributes.
   def table_column?(model, attribute)
     column = attribute
     klass = Class.const_get model.to_s.classify
-    
+
     klass.columns_hash[column]
   rescue
-    false   
+    false
   end
-  
+
   #Create filtered array to be used by TableBuilder for
   #basic attribute filters.
   def basic_filters_for(filtered_scope, header_scope, tab, col, &formatter)
@@ -95,20 +95,25 @@ module BasicFilterHelpers
       order( table_column ).
       raw_rows(table_column, "COUNT(#{table_column})").
       reject { |pair| pair[0].blank? }.
-      map do |pair|
-        raw_name, count = pair
+      map { |pair|
+        raw_name, count = pair     # [ 'CbrainTask::Civet', 45 ]
         name            = column_object.type_cast(raw_name)
         pretty_name     = column == :type ? name.constantize.pretty_type : name
         formatted_name  = formatter ? formatter.call(pretty_name) : pretty_name
         filt_count      = filt_counts[name].to_i
 
-        [ "#{formatted_name} (#{filt_count}/#{count})", 
+        [ formatted_name, filt_count, count, raw_name ]
+      }.
+      sort_by { |tuple| tuple[0] }.
+      map { |tuple|
+        formatted_name, filt_count, count, raw_name = tuple
+        [ "#{formatted_name} (#{filt_count}/#{count})",
             :filters => { column => raw_name },
             :class   => filt_count == 0 ? "filter_zero" : nil
         ]
-      end
+      }
   end
-  
+
   #Create filtered array to be used by TableBuilder for
   #basic association filters.
   def association_filters_for(filtered_scope, header_scope, tab, assoc, options = {}, &formatter)
@@ -120,9 +125,9 @@ module BasicFilterHelpers
 
     table_fkey  = "#{table}.#{foreign_key}"
     assoc_name  = "#{assoc_table}.#{name_method}"
-    
+
     filt_counts = filtered_scope.undo_where(table_fkey).joins(association.to_sym).group(table_fkey).count
-    
+
     header_scope.
       joins(association.to_sym).
       order(assoc_name).
@@ -139,7 +144,7 @@ module BasicFilterHelpers
         ]
       end
   end
-  
+
   # Set up the current_session variable. Mainly used to set up the filter hash to be
   # used by index actions.
   def update_filters
