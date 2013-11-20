@@ -17,14 +17,14 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #Helpers for creating filter links.
 module FilterHelper
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   # Add to currently active filters. Options include:
   # [:parameter] which filter parameter to adjust (default to :filter_hash).
   # [:value]     the value to update it with.
@@ -40,18 +40,18 @@ module FilterHelper
     options[:pretty] = true
     build_filter_link name, params_hash, options
   end
-  
-  # Remove a filter from those currently active. +key+ is the filter 
+
+  # Remove a filter from those currently active. +key+ is the filter
   # attribute to be adjusted.
-  # 
+  #
   # Options:
-  # [:parameter] which filter to adjust (defaults to :filter_hash). 
+  # [:parameter] which filter to adjust (defaults to :filter_hash).
   def filter_remove_link(name, key, options = {})
     filter_param = options.delete(:parameter) || :filter_hash
     params_hash = {:remove => {filter_param => key}}
     build_filter_link name, params_hash, options
   end
-  
+
   # Clear a filter. The option :clear_params can be used in two ways.
   # The first is to set it to the name of a know filter. The second is to
   # set the value to clear_<x>, where +x+ is the prefix of a 'type' of filter.
@@ -59,15 +59,15 @@ module FilterHelper
   def filter_clear_link(name, options = {})
     cleared_params = options.delete(:clear_params) || :clear_filter
     if !cleared_params.is_a?(Array) && cleared_params.to_s =~ /^clear_/
-      params_hash = {cleared_params => true}  
+      params_hash = {cleared_params => true}
     else
       params_hash = {:clear_all  => cleared_params}
     end
     options[:pretty] = true
     build_filter_link name, params_hash, options
   end
-  
-  # Combines the functionality of filter_add_link and filter_clear_link. 
+
+  # Combines the functionality of filter_add_link and filter_clear_link.
   # A filter is cleared and than a new value is added to the the empty filter.
   def filter_reset_link(name, options = {})
     filter_param = options.delete(:parameter) || :filter_hash
@@ -87,11 +87,12 @@ module FilterHelper
     options[:pretty] = true
     build_filter_link name, params_hash, options
   end
-  
+
   def build_filter_link(name, params_hash, options = {}) #:nodoc:
     controller   = options.delete(:controller) || params[:controller]
     action       = options.delete(:action)     || :index
-    if options.has_key?(:ajax) 
+    id           = options.delete(:id)
+    if options.has_key?(:ajax)
       ajax         = options.delete(:ajax)
     else
       ajax         = true
@@ -99,7 +100,7 @@ module FilterHelper
     unless options.delete(:pretty)
       params_hash = {controller.to_sym  => params_hash}
     end
-    url_hash = {:proxy_destination_controller => controller, :proxy_destination_action => action}.merge params_hash
+    url_hash = {:proxy_destination_controller => controller, :proxy_destination_action => action, :proxy_destination_id => id}.merge params_hash
     url = filter_proxy_path(url_hash)
     if ajax
       options[:datatype] ||= :script
@@ -108,14 +109,14 @@ module FilterHelper
       link_to h(name.to_s), url, options
     end
   end
-  
+
   #Will check for associations to display them properly.
   def display_filter(model, key, value, methods = {})
     exceptions = {
       "group" => "project",
       "bourreau"  => "server"
     }
-    
+
     klass = Class.const_get model.to_s.classify
     association = klass.reflect_on_all_associations(:belongs_to).find { |a| a.primary_key_name == key.to_s  }
     if association
