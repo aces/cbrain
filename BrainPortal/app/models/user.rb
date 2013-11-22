@@ -17,13 +17,13 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'digest/sha1'
 require 'pbkdf2'
 
-#Model representing CBrain users. 
+#Model representing CBrain users.
 #All authentication of user access to the system is handle by the User model.
 #User level access to pages are handled through a given user's +class+ (currently *NormalUser*, *SiteManager*, *AdminUser*).
 #
@@ -43,7 +43,7 @@ require 'pbkdf2'
 #=Dependencies
 #[<b>On Destroy</b>] A user cannot be destroyed if it is still associated with any
 #                    Userfile, RemoteResource or DataProvider resources.
-#                    Destroying a user will destroy the associated 
+#                    Destroying a user will destroy the associated
 #                    Tag, Feedback and CustomFilter resources.
 class User < ActiveRecord::Base
 
@@ -56,31 +56,31 @@ class User < ActiveRecord::Base
 
   validates                 :full_name,
                             :presence => true
-  
-  validates                 :login,    
+
+  validates                 :login,
                             :length => { :within => 3..40 },
                             :uniqueness => {:case_sensitive => false},
                             :presence => true,
                             :filename_format => true
-                            
+
   validates                 :password,
                             :length => { :minimum => 8 },
                             :confirmation => true,
                             :presence => true,
                             :if => :password_required?
-  
-  validates                 :type, 
+
+  validates                 :type,
                             :subclass => true
-                            
+
   validates_presence_of     :password_confirmation,      :if => :password_required?
-  
-  validates                 :email,    
+
+  validates                 :email,
                             :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost$/i },
                             :allow_blank => true
-                            
+
   validate                  :immutable_login,            :on => :update
   validate                  :password_strength_check,    :if => :password_required?
-  
+
   before_create             :add_system_groups
   before_save               :encrypt_password
   before_save               :destroy_sessions_if_locked
@@ -93,8 +93,8 @@ class User < ActiveRecord::Base
   has_many                :data_providers,    :dependent => :restrict
   has_many                :remote_resources,  :dependent => :restrict
   has_many                :cbrain_tasks,      :dependent => :restrict
-  
-  has_and_belongs_to_many :groups   
+
+  has_and_belongs_to_many :groups
   belongs_to              :site
 
   # The following resources are destroyed automatically when the user is destroyed.
@@ -104,52 +104,52 @@ class User < ActiveRecord::Base
   has_many                :feedbacks,       :dependent => :destroy
   has_many                :custom_filters,  :dependent => :destroy
   has_many                :exception_logs,  :dependent => :destroy
-  
+
   # prevents a user from submitting a crafted form that bypasses activation
   # anything else you want your user to change should be added here.
   attr_accessible :full_name, :email, :password, :password_confirmation, :time_zone, :city, :country
 
   force_text_attribute_encoding 'UTF-8', :full_name, :city, :country
-    
+
   cb_scope                   :name_like, lambda { |n| where("users.login LIKE ? OR users.full_name LIKE ?", "%#{n}%", "%#{n}%") }
-    
+
   #Return the admin user
   def self.admin
     @@admin ||= self.find_by_login("admin")
   end
-  
+
   #Return all users with admin users.
   def self.all_admins(reset = false)
     if reset
       @@all_admins = AdminUser.all
     end
-    
-    @@all_admins ||= AdminUser.all  
+
+    @@all_admins ||= AdminUser.all
   end
-  
+
   # Alias for login.
   def name
     self.login
   end
-  
-  def signed_license_agreements(license_agreement_set=self.license_agreement_set)
+
+  def signed_license_agreements(license_agreement_set=self.license_agreement_set) #:nodoc:
     current_user_license = self.meta[:signed_license_agreements] || []
 
     return current_user_license if current_user_license.empty?
 
     extra_license = current_user_license - license_agreement_set
     self.meta[:signed_license_agreements] =  current_user_license  - extra_license
-    self.save 
+    self.save
     self.meta[:signed_license_agreements] || []
   end
-  
-  def unsigned_license_agreements
-    license_agreement_set = self.license_agreement_set 
+
+  def unsigned_license_agreements #:nodoc:
+    license_agreement_set = self.license_agreement_set
 
     # Difference between all license agreements and whom signed by the user
-    license_agreement_set - self.signed_license_agreements(license_agreement_set) 
+    license_agreement_set - self.signed_license_agreements(license_agreement_set)
   end
-  
+
   def license_agreement_set #:nodoc:
     all_object_with_license = RemoteResource.find_all_accessible_by_user(self) +
                               Tool.find_all_accessible_by_user(self) +
@@ -165,8 +165,16 @@ class User < ActiveRecord::Base
     RemoteResource.current_resource.license_agreements  + license_agreements
   end
 
+  def all_licenses_signed #:nodoc:
+    self.meta[:all_licenses_signed]
+  end
+
+  def all_licenses_signed=(x) #:nodoc:
+    self.meta[:all_licenses_signed] = x
+  end
+
   def remember_token? #:nodoc:
-    remember_token_expires_at && Time.now.utc < remember_token_expires_at 
+    remember_token_expires_at && Time.now.utc < remember_token_expires_at
   end
 
   # These create and unset the fields required for remembering users between browser closes.
@@ -221,14 +229,15 @@ class User < ActiveRecord::Base
       false
     end
   end
-  
-  #Create a random password (to be sent for resets).
+
+  # Create a random password (to be sent for resets).
   def set_random_password
     s = random_string
     self.password = s
     self.password_confirmation = s
   end
 
+  # Try to define password type (sha1 or pbkdf2)
   def password_type(crypted_password)
     if crypted_password =~ /^(\w+):/               # "PBKDF2_SHA1:a2c2646186828474b754591a547c18f132d88d744c152655a470161a1a052135"
       Regexp.last_match[1].downcase.to_sym
@@ -246,7 +255,7 @@ class User < ActiveRecord::Base
   # Encryption methods
   #
   ###############################################
-  
+
   # Old encrypt methods
   # Encrypts some data with the salt.
   def self.encrypt(password, salt) #:nodoc:
@@ -258,7 +267,7 @@ class User < ActiveRecord::Base
     self.class.encrypt(password, salt)
   end
 
-  
+
   # Encrypt methods in sha1
   # Encrypts some data with the salt.
   def self.encrypt_in_sha1(password, salt) #:nodoc:
@@ -270,7 +279,7 @@ class User < ActiveRecord::Base
     self.class.encrypt_in_sha1(password, salt)
   end
 
-  
+
   # Encrypt methods in PBKDF2
   # Encrypts some data with the salt.
   def self.encrypt_in_pbkdf2(password, salt) #:nodoc:
@@ -292,46 +301,46 @@ class User < ActiveRecord::Base
   def encrypt_in_pbkdf2_sha1(password) #:nodoc:
     self.class.encrypt_in_pbkdf2_sha1(password, salt)
   end
-  
+
   ###############################################
   #
   # Permission methods
   #
   ###############################################
-  
+
   #Does this user's role match +role+?
   def has_role?(role)
     return self.is_a?(role.to_s.classify.constantize)
   end
-  
+
   #Find the tools that this user has access to.
   def available_tools
     cb_error "#available_tools called from User base class! Method must be implement in a subclass."
   end
-  
+
   #Find the scientific tools that this user has access to.
   def available_scientific_tools
     self.available_tools.where( :category  => "scientific tool" ).order( "tools.select_menu_text" )
   end
-  
+
   #Find the conversion tools that this user has access to.
   def available_conversion_tools
     self.available_tools.where( :category  => "conversion tool" ).order( "tools.select_menu_text" )
   end
-  
+
   #Return the list of groups available to this user based on role.
   def available_groups
     cb_error "#available_groups called from User base class! Method must be implement in a subclass."
   end
-  
+
   def available_tags
     Tag.where( ["tags.user_id=? OR tags.group_id IN (?)", self.id, self.group_ids] )
   end
-  
+
   def available_tasks
     cb_error "#available_tasks called from User base class! Method must be implement in a subclass."
   end
-  
+
   #Return the list of users under this user's control based on role.
   def available_users
     cb_error "#available_users called from User base class! Method must be implement in a subclass."
@@ -342,7 +351,7 @@ class User < ActiveRecord::Base
     return true if user.has_role?(:site_manager) && self.site_id == user.site_id
     self.id == user.id
   end
-  
+
   # Returns the SystemGroup associated with the user; this is a
   # group with the same name as the user.
   def system_group
@@ -402,14 +411,14 @@ class User < ActiveRecord::Base
     end
     true
   end
-  
-  
+
+
   def password_required? #:nodoc:
     crypted_password.blank? || !password.blank?
   end
 
   private
-  
+
   #Create a random string (currently for passwords).
   def random_string
     length = rand(5) + 4
@@ -425,22 +434,22 @@ class User < ActiveRecord::Base
     s += ["!", "@", "#", "$", "%", "^", "&", "*"][rand(8)]
     s
   end
-   
+
   def prevent_group_collision #:nodoc:
     if self.login && SystemGroup.find_by_name(self.login)
       errors.add(:login, "already in use by an existing project.")
     end
   end
-  
+
   def immutable_login #:nodoc:
     if self.changed.include? "login"
       errors.add(:login, "is immutable.")
     end
   end
-  
+
   def system_group_site_update  #:nodoc:
     self.own_group.update_attributes(:site_id => self.site_id)
-    
+
     if self.changed.include?("site_id")
       unless self.changes["site_id"].first.blank?
         old_site = Site.find(self.changes["site_id"].first)
@@ -448,11 +457,11 @@ class User < ActiveRecord::Base
       end
       unless self.changes["site_id"].last.blank?
         new_site = Site.find(self.changes["site_id"].last)
-        new_site.own_group.users << self            
+        new_site.own_group.users << self
       end
     end
   end
-  
+
   def password_strength_check #:nodoc:
     score = 0
     unless self.password.blank?
@@ -466,19 +475,19 @@ class User < ActiveRecord::Base
       errors.add(:password, "must have three of the following properties: an uppercase letter, a lowercase letter, a digit, a symbol or be at least 15 characters in length")
     end
   end
-  
+
   def destroy_system_group #:nodoc:
     system_group = UserGroup.where( :name => self.login ).first
     system_group.destroy if system_group
   end
-  
+
   def add_system_groups #:nodoc:
     user_group = UserGroup.new(:name => self.login, :site_id  => self.site_id)
     unless user_group.save
       self.errors.add(:base, "User Group: #{user_group.errors.full_messages.join(", ")}")
       return false
     end
-    
+
     everyone_group = Group.everyone
     group_ids = self.group_ids
     group_ids << user_group.id

@@ -45,8 +45,8 @@ class ApplicationController < ActionController::Base
   helper_method :start_page_path
 
   before_filter :set_cache_killer
-  before_filter :prepare_messages
   before_filter :check_account_validity
+  before_filter :prepare_messages
   before_filter :adjust_system_time_zone
   around_filter :activate_user_time_zone
   after_filter  :log_user_info
@@ -141,19 +141,22 @@ class ApplicationController < ActionController::Base
     return if params[:controller] == "sessions"
 
     #Check if license agreement have been signed
-    unsigned_agreements = current_user.unsigned_license_agreements
-    unless unsigned_agreements.empty?
-      return if params[:controller] == "portal" && params[:action] =~ /license$/
-      return if current_user.has_role?(:admin_user) && params[:controller] == "bourreaux"
+    if current_user.all_licenses_signed.blank?
+      unsigned_agreements = current_user.unsigned_license_agreements
+      unless unsigned_agreements.empty?
+        return if params[:controller] == "portal" && params[:action] =~ /license$/
+        return if current_user.has_role?(:admin_user) && params[:controller] == "bourreaux"
 
-      if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
-        redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first, :status => 303
-      elsif current_user.has_role?(:admin_user)
-        flash[:error] =  "License agreement '#{unsigned_agreements.first}' doesn't seem to exist.\n"
-        flash[:error] += "Please place the license file in /public/licenses or remove it from below."
-        redirect_to bourreau_path(RemoteResource.current_resource), :status => 303
+        if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
+          redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first, :status => 303
+        elsif current_user.has_role?(:admin_user)
+          flash[:error] =  "License agreement '#{unsigned_agreements.first}' doesn't seem to exist.\n"
+          flash[:error] += "Please place the license file in /public/licenses or remove it from below."
+          redirect_to bourreau_path(RemoteResource.current_resource), :status => 303
+        end
+        return
       end
-      return
+      current_user.all_licenses_signed = "yes"
     end
 
     #Check if passwords been reset.
@@ -206,7 +209,7 @@ class ApplicationController < ActionController::Base
   # Find new messages to be displayed at the top of the page.
   def prepare_messages
     return unless current_user
-    return unless current_user.unsigned_license_agreements.empty?
+    return if     current_user.all_licenses_signed.blank?
     return if     request.format.blank?
     return unless request.format.to_sym == :html || params[:controller] == 'messages'
 

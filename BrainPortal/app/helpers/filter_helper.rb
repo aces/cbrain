@@ -118,9 +118,9 @@ module FilterHelper
     }
 
     klass = Class.const_get model.to_s.classify
-    association = klass.reflect_on_all_associations(:belongs_to).find { |a| a.primary_key_name == key.to_s  }
+    association = klass.reflect_on_all_associations(:belongs_to).find { |a| a.foreign_key == key.to_s  }
     if association
-      association_key   = association.primary_key_name
+      association_key   = association.foreign_key
       association_name  = association.name.to_s
       association_class = Class.const_get association.class_name
       name_method = methods[association_key.to_sym] || methods[association_name.to_sym] || :name
