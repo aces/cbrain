@@ -106,10 +106,15 @@ class ScirMoab < Scir
 
     def get_local_ip(jid)
       cluster_jobid = CbrainTask.where(:id => jid).first.cluster_jobid
-      command = "for i in `mshow -j #{cluster_jobid}`; do if [[ \"$i\" =~ \"AllocNodeList=.*\" ]]; then echo $i | awk -F '\"' '{print $2}' | awk -F ':' '{print $1}'; fi; done"
+      command = "for i in `mshow -j #{cluster_jobid}`; do if [[ \\\"$i\\\" =~ \\\"AllocNodeList=.*\\\" ]]; then echo $i | awk -F '\\\"' '{print $2}' | awk -F ':' '{print $1}'; fi; done"
       IO.popen(command) do |i|
         p = i.read
-        return p.gsub("\n","") unless p == nil
+        id =  p.gsub("\n","") unless p == nil
+	if id == "" then 
+	  raise "Empty VM id" 
+	else 
+	  return id
+	end
       end
       raise "Cannot get VM local IP with command #{command}"
     rescue => ex
