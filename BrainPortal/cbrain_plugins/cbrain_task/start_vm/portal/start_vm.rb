@@ -35,11 +35,11 @@ class CbrainTask::StartVM < PortalTask
     {
       :disk_image => 240, #centos disk image in test portal
       :qemu_params => "-boot d -net nic -net user -localtime",
-      :emulation => "1",
+      :emulation => "0",
       :vm_boot_timeout => 600,
       :number_of_vms => 1,
       :vm_cpus => 2,
-      :vm_ram_gb => 8,
+      :vm_ram_gb => 4,
       :job_slots => 2
     }
   end

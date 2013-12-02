@@ -75,7 +75,7 @@ class ScirVM < Scir
 
   def run_command(command,vm_task)
     master = get_ssh_master vm_task
-    result = master.remote_shell_command_reader(command,:stderr => '/tmp/ssh_log.err') {|io| io.read}
+    result = master.remote_shell_command_reader(command) {|io| io.read}
     return result 
   end
   

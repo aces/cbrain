@@ -19,6 +19,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
+class String
+  def colorize(color_code)
+    "\e[#{color_code}m#{self}\e[0m"
+  end
+end
+
 
 class VmFactory 
 
@@ -54,8 +60,10 @@ di =  DiskImage.where(:disk_image_file_id => disk_image_file_id).first#Userfile.
     @max_active = Array.new
     @tool_configs = Array.new
 
-    @bourreau_ids = [21, 20] #Nimbus, Mammouth
-    @site_costs = [10,1] # parameters, should be moved to bourreau properties
+#    @bourreau_ids = [27, 21, 20] #Creatis Nimbus Mammouth
+
+    @bourreau_ids = [27, 21, 19] #Creatis Nimbus Guillimin
+    @site_costs = [10,100,1] # parameters, should be moved to bourreau properties
 
 
     #  @bourreau_ids = [21, 18,  20, 19] #Nimbus, Colosse, Mammouth, Guillimin
@@ -319,6 +327,8 @@ di =  DiskImage.where(:disk_image_file_id => disk_image_file_id).first#Userfile.
   def terminate_vm(id)
     task = CbrainTask.where(:id => id).first
     begin
+      task.params[:timestamp_terminate_signal_sent] = Time.now 
+      task.save!
       Bourreau.find(task.bourreau_id).send_command_alter_tasks(task, PortalTask::OperationToNewStatus["terminate"], nil, nil) 
     rescue => ex
       log_vm ex
@@ -336,7 +346,7 @@ di =  DiskImage.where(:disk_image_file_id => disk_image_file_id).first#Userfile.
       # rrr_id/rrr_tasks is the task referring to removed replicas
 
       #TODO (VM tristan) maybe remove condition on vm_status to reduce overhead
-      if (not task.params[:replicas].blank?) && task.params[:vm_status] == "booted" then 
+      if (not task.params[:replicas].blank?) && (not task.params[:replicas].count == 1) && task.params[:vm_status] == "booted" then 
         replica_ids = task.params[:replicas]-[task.id]
         log_vm "Task #{task.id} is OnCPU, has booted and has #{replica_ids.count} replicas. Removing VMs from these replicas' sites." unless replica_ids.blank?
         replica_ids.each do |r_id|
@@ -349,13 +359,14 @@ di =  DiskImage.where(:disk_image_file_id => disk_image_file_id).first#Userfile.
               #do the substitution trick
               rr_task = CbrainTask.find(rr_id)
               if not rr_task.params[:replicas].blank? then
-                  rr_task.params[:replicas].each do |rrr_id|
-                    rrr_task = CbrainTask.find(rrr_id)
-                    # replace RR by R in all RRR tasks
+                rr_task.params[:replicas].each do |rrr_id|
+                  rrr_task = CbrainTask.find(rrr_id)
+                  # replace RR by R in all RRR tasks
                   if not rrr_task.params[:replicas].blank? then
                     rrr_task.params[:replicas].map! { |x| x==rr_id ? r_id : x} #task referring to a removed replica now refers to the unremoved replica
                     rrr_task.save!
                   end
+                  #we should add all rrr_id to r_task.replicas and remove task.id from id (see algo in paper)
                   if not r_task.params[:replicas].blank? then 
                     r_task.params[:replicas].map! { |x| x== task.id ? rrr_id : x} 
                     r_task.save!
@@ -365,8 +376,8 @@ di =  DiskImage.where(:disk_image_file_id => disk_image_file_id).first#Userfile.
             end
           end
         end
-        task.params[:replicas] = nil
-        task.save!
+        task.params[:replicas] = [ task.id ]
+        task.save
       end
     end
     
@@ -396,12 +407,15 @@ di =  DiskImage.where(:disk_image_file_id => disk_image_file_id).first#Userfile.
   end
   
   def get_median_task_durations_of_queued_tasks
-    queued_all =  CbrainTask.where(:status => [ 'New'] ) - CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'New'] ) 
-    queued = queued_all.reject{ |x| x.params[:disk_image] != @disk_image_file_id}    
+    puts "hello"
+    queued_all =  CbrainTask.where(:status => [ 'New'] ) - CbrainTask.where(:type => "CbrainTask::StartVM") 
+    queued = queued_all.reject{ |x| (not Bourreau.find(x.bourreau_id).is_a? DiskImage) || (DiskImage.find(x.bourreau_id).disk_image_file_id != @disk_image_file_id)}    
+    if queued.length == 0 then return 0 end
     durations = Array.new
     queued.each { |t| 
       durations << t.job_walltime_estimate
     }
+    
     sorted_durations = durations.sort
     len = durations.length
     median_duration = len % 2 == 1 ? sorted_durations[len/2] : (sorted_durations[len/2 - 1] + sorted_durations[len/2]) / 2.0
@@ -410,3 +424,4 @@ di =  DiskImage.where(:disk_image_file_id => disk_image_file_id).first#Userfile.
 
 
 end  
+

@@ -162,6 +162,9 @@ class BourreauWorker < Worker
       user_max_tasks = user_max_tasks.to_i # nil, "" and "0" means unlimited
       user_tasks     = by_user[user_id].shuffle # go through tasks in random order
 
+      bourreau_limit = false 
+      user_limit = false
+      
       # Loop for each task
       while user_tasks.size > 0
 
@@ -170,8 +173,9 @@ class BourreauWorker < Worker
         if bourreau_max_tasks > 0 # i.e. 'if there is a limit configured'
           bourreau_active_tasks_cnt = bourreau_active_tasks.count
           if bourreau_active_tasks_cnt >= bourreau_max_tasks
-            worker_log.info "Bourreau limit: found #{bourreau_active_tasks_cnt} active tasks, but the limit is #{bourreau_max_tasks}. Skipping."
-            return # done for this cycle
+            worker_log.info "Bourreau limit: found #{bourreau_active_tasks_cnt} active tasks, but the limit is #{bourreau_max_tasks}. Will only process VM tasks now."
+            bourreau_limit = true
+#            return # done for this cycle
           end
         end
 
@@ -180,13 +184,18 @@ class BourreauWorker < Worker
         if user_max_tasks > 0 # i.e. 'if there is a limit configured'
           user_active_tasks_cnt = bourreau_active_tasks.where( :user_id => user_id ).count
           if user_active_tasks_cnt >= user_max_tasks
-            worker_log.info "User ##{user_id} limit: found #{user_active_tasks_cnt} active tasks, but the limit is #{user_max_tasks}. Skipping."
-            break # go to next user
+            worker_log.info "User ##{user_id} limit: found #{user_active_tasks_cnt} active tasks, but the limit is #{user_max_tasks}. Will only process VM tasks now."
+            user_limit = true
+#            break # go to next user
           end
         end
 
         # Alright, move the task along its lifecycle
         task = user_tasks.pop
+        if ((user_limit || bourreau_limit) and not task.goes_to_vm) then 
+          worker_log.info "Skipping non VM task #{task.id} due to reached limit."
+          break 
+        end
         timezone = ActiveSupport::TimeZone[task.user.time_zone] rescue Time.zone
         Time.use_zone(timezone) do
           process_task(task) # this can take a long time...
@@ -324,6 +333,7 @@ class BourreauWorker < Worker
         time_on_cpu = Time.now - initial_change_time 
         task.addlog "Task spent #{time_on_cpu} on CPU"
         @rr.meta[:latest_performance_factor] = time_on_cpu.to_f / task.job_walltime_estimate.to_f
+        @rr.meta[:time_of_latest_performance_factor] = Time.now
       end
 
     end

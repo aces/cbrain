@@ -476,8 +476,16 @@ class Bourreau < RemoteResource
         task.resume       if newstatus == "On CPU"
         task.hold         if newstatus == "On Hold"
         task.release      if newstatus == "Queued"
-        task.terminate    if newstatus == "Terminated"
 
+        if newstatus == "Terminated" then
+          active_tasks_on_vm = CbrainTask.where(:vm_id => task_id, :status => CbrainTask::ACTIVE_STATUS)
+          if active_tasks_on_vm.count !=0 then
+             Rails.logger.info "Refusing to terminate task #{task.id} where #{active_tasks_on_vm.count} tasks are running"
+          else
+            task.terminate    
+            task.params[:terminate_timstamp] = Time.now if newstatus == "Terminated"
+          end
+        end
         # These actions trigger special handling code in the workers
         task.recover                       if newstatus == "Recover"        # For 'Failed*' tasks
         task.restart(Regexp.last_match[1]) if newstatus =~ /^Restart (\S+)/ # For 'Completed' or 'Terminated' tasks only

@@ -19,69 +19,73 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-  # Some methods to handle Pareto optimization in class Array
-  class Array 
-    def to_s
-      s = "[ "
-      each do |x| 
-        s += "#{x} "
-      end
-      s+= "]"
-      return s
+# Some methods to handle Pareto optimization in class Array
+class Array 
+  def to_s
+    s = "[ "
+    each do |x| 
+      s += "#{x} "
     end
-
-    def pareto_set
-      pareto_set = Array.new
-      n = length
-      each  do |x| 
-        pareto_set = pareto_set.add_to_pareto_set(x)
-      end
-      return pareto_set
-    end
-
-    def add_to_pareto_set(a)
-      q = Array.new
-      q << a
-      each  do |x|
-        if x.dominates? a then 
-          return self 
-        else
-          if !a.dominates? x then
-            q << x
-          end
-        end
-      end
-      return q
-    end
-
-    def bi_objective_min(lambda)
-      qmin = self[0].get_performance
-      qmax = qmin
-      cmin = self[0].get_cost
-      cmax = cmin
-      each do |x|
-        qmin = x.get_performance < qmin ? x.get_performance : qmin
-        qmax = x.get_performance > qmax ? x.get_performance : qmax
-        cmin = x.get_cost < cmin ? x.get_cost : cmin
-        cmax = x.get_cost > cmax ? x.get_cost : cmax
-      end
-
-      best_bi_objective = bi_objective(self[0],lambda,qmin,qmax,cmin,cmax)
-      best_element = self[0]
-      each do |x|
-        bo = bi_objective(x,lambda,qmin,qmax,cmin,cmax)
-        puts "#{x} (#{bo})"
-        if bo < best_bi_objective then 
-          best_bi_objective = bo
-          best_element = x 
-        end
-      end
-      return best_element,best_bi_objective
-    end
-    def bi_objective(x,lambda,qmin,qmax,cmin,cmax)
-      return lambda*(x.get_performance-qmin)/(qmax-qmin+0.0)+(1-lambda)*(x.get_cost-cmin)/(cmax-cmin+0.0)
-    end
+    s+= "]"
+    return s
   end
+
+  def pareto_set
+    pareto_set = Array.new
+    n = length
+    each  do |x| 
+      pareto_set = pareto_set.add_to_pareto_set(x)
+    end
+    return pareto_set
+  end
+
+  def add_to_pareto_set(a)
+    q = Array.new
+    q << a
+    each  do |x|
+      if x.dominates? a then 
+        return self 
+      else
+        if !a.dominates? x then
+          q << x
+        end
+      end
+    end
+    return q
+  end
+
+  def bi_objective_min(lambda)
+    pmin = self[0].get_performance
+    pmax = pmin
+    cmin = self[0].get_cost
+    cmax = cmin
+    each do |x|
+      pmin = x.get_performance < pmin ? x.get_performance : pmin
+      pmax = x.get_performance > pmax ? x.get_performance : pmax
+      cmin = x.get_cost < cmin ? x.get_cost : cmin
+      cmax = x.get_cost > cmax ? x.get_cost : cmax
+    end
+
+    best_bi_objective = bi_objective(self[0],lambda,pmin,pmax,cmin,cmax)
+    best_element = self[0]
+    each do |x|
+      bo = bi_objective(x,lambda,pmin,pmax,cmin,cmax)
+      puts "#{x} (#{bo})"
+      if bo < best_bi_objective then 
+        best_bi_objective = bo
+        best_element = x 
+      end
+    end
+    return best_element,best_bi_objective
+  end
+
+  def bi_objective(x,lambda,pmin,pmax,cmin,cmax)
+    perf_term = pmin==pmax ? lambda : lambda*(x.get_performance-pmin)/(pmax-pmin+0.0)
+    cost_term = cmin==cmax ? 1-lambda : (1-lambda)*(x.get_cost-cmin)/(cmax-cmin+0.0)
+    bio = perf_term + cost_term
+    return bio
+  end
+end
 
 class VmFactoryPareto < VmFactory
   
@@ -113,9 +117,10 @@ class VmFactoryPareto < VmFactory
   end
 
   class Site < PerformanceCostCouple
-    def initialize(performance,cost,cost_overhead,name)
+    def initialize(performance,cost,cost_overhead,expected_task_duration,name)
       @name = name
       @cost_overhead = cost_overhead
+      @expected_task_duration = expected_task_duration
       super(performance,cost)
     end
     def get_name
@@ -123,6 +128,9 @@ class VmFactoryPareto < VmFactory
     end
     def get_cost_overhead
       return @cost_overhead
+    end
+    def get_expected_task_duration
+      return @expected_task_duration
     end
     def to_s
       "#{@name} ; #{self.get_performance} ; #{self.get_cost}"
@@ -141,27 +149,30 @@ class VmFactoryPareto < VmFactory
 
       # determines performance and cost of the action
       # qmin and cmax 
-      pmin = @sites[0].get_performance
+      q_and_b_min = @sites[0].get_performance
       cmax = 0 
       sum_overheads = 0 
+      cpu_of_min_q_and_b = 0
+      cost_of_min_q_and_b = 0
       @sites.each do |x|
         sum_overheads += x.get_cost_overhead
       end
       @sites.each do |s|
         @name += "#{s.get_name} "
-        s_p = s.get_performance
-        if s_p < pmin then pmin = s_p end
-        #overhead of other sites also has to be added
-        cost = s.get_cost + sum_overheads - s.get_overhead 
-        if cost > cmax then cmax = cost end
-      end
+        s_q_and_b = s.get_performance - s.get_expected_task_duration
+        if s_q_and_b < q_and_b_min then 
+          q_and_b_min = s_q_and_b 
+          cpu_of_min_q_and_b = s.get_expected_task_duration
+          cost_of_min_q_and_b = s.get_cost + sum_overheads - s.get_cost_overhead 
+        end
+       end
       # sum(pmin/pi)
       sum = 0 
       @sites.each do |s|
-        sum += pmin/(0.0+s.get_performance)
+        sum += q_and_b_min/(0.0+s.get_performance-s.get_expected_task_duration)
       end
-      p = (pmin/2.0)*(Math.exp(1-sum)+1)    
-      super(p,cmax)
+      q_and_b = (q_and_b_min/2.0)*(Math.exp(1-sum)+1)    
+      super(q_and_b+cpu_of_min_q_and_b,cost_of_min_q_and_b)
     end
     def to_s
       return "* #{@name} ; C=#{get_cost} ; P=#{get_performance}"
@@ -178,15 +189,27 @@ class VmFactoryPareto < VmFactory
     update_site_performance_factors
     median_duration = get_median_task_durations_of_queued_tasks
 
+    log_vm "Median duration of queued tasks: #{median_duration}"
+    log_vm "Site queuing times: #{@site_queues}"
+    log_vm "Site booting times: #{@site_booting_times}"
+    log_vm "Site performance factors: #{@site_performance_factors}"
+
     sites = Array.new
     0.upto(@site_names.length-1) do |i|
       #log_vm "Adding site with parameters #{@site_queues[i]}, #{@site_costs[i]}, #{@site_names[i]}"
-      if Bourreau.find(@bourreau_ids[i]).online? then
+      bourreau = Bourreau.find(@bourreau_ids[i])
+      if bourreau.online? then
+        if get_active_tasks(@bourreau_ids[i]) >= @max_active[i] then
+          log_vm "Not".colorize(31)+" including bourreau "+"#{bourreau.name}".colorize(33)+" in Pareto optimization because it reached its max active tasks"
+          next
+        else
+          log_vm "Bourreau "+"#{bourreau.name}".colorize(33)+" hasn't reached its max active tasks (#{get_active_tasks(@bourreau_ids[i])} < #{@max_active[i]}): including it in Pareto optimization."
+        end
         expected_on_cpu = @site_booting_times[i]+median_duration*@site_performance_factors[i]
         # site performance : queueing time + expected time on CPU
         # site cost : site cost factor * expected time on CPU
         # site overhead : site cost factor * booting time 
-        sites << Site.new(@site_queues[i]+expected_on_cpu,@site_costs[i]*expected_on_cpu,@site_booting_times[i]*@site_costs[i],@site_names[i])
+        sites << Site.new(@site_queues[i]+expected_on_cpu,@site_costs[i]*expected_on_cpu,@site_booting_times[i]*@site_costs[i],median_duration*@site_performance_factors[i],@site_names[i])
       else
         log_vm "Don't consider offline site #{@site_names[i]} in bi-objective optimization"
       end
@@ -209,8 +232,9 @@ class VmFactoryPareto < VmFactory
       log_vm "#{a}"
     end
     
-    log_vm " == Pareto set == "
+
     pareto_set = actions.pareto_set
+    log_vm " == Pareto set (#{pareto_set.length} elements) == "
     pareto_set.each do |a|
       log_vm "#{a}"
     end
