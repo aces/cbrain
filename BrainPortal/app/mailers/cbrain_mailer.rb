@@ -71,7 +71,8 @@ class CbrainMailer < ActionMailer::Base
     
     mail(
       :from    => build_from,
-      :to      => emails,
+      :to      => emails.size == 1 ? emails : [],
+      :bcc     => emails.size  > 1 ? emails : [],
       :subject => "CBRAIN Message: #{@subject}"
     )
   end
