@@ -219,7 +219,7 @@ class BourreauWorker < Worker
   def get_vm_tasks_to_handle
     #gets all tasks going to DiskImage bourreaux
     tasks_for_vms = Array.new
-    disk_images = Bourreau::DiskImage.all
+    disk_images = Bourreau::DiskImageBourreau.all
     disk_images.each { |bourreau|
       #list tasks going to these bourreaux
       tasks_for_vms.concat CbrainTask.not_archived.where(:bourreau_id => bourreau.id, :status => ReadyTasks) 
@@ -257,7 +257,7 @@ class BourreauWorker < Worker
             #check if a task could go to this booted VM
             tasks_for_vms.each { |y| 
               if y.status == 'New'
-                task_image_file_id = Bourreau::DiskImage.where(:id => y.bourreau_id).first
+                task_image_file_id = Bourreau::DiskImageBourreau.where(:id => y.bourreau_id).first
                 worker_log.info "Task #{y.id} needs image file id #{task_image_file_id.disk_image_file_id}"
                 if task_image_file_id.disk_image_file_id.to_i == x.params[:disk_image].to_i 
                   if y.vm_id.blank? #don't take a task that someone else took

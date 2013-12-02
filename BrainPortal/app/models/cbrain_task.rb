@@ -827,7 +827,7 @@ class CbrainTask < ActiveRecord::Base
 
   #returns true if the task is supposed to be executed by a VM
   def job_template_goes_to_vm? 
-    retval =  Bourreau.find(self.bourreau_id).type == "DiskImage"
+    retval =  Bourreau.find(self.bourreau_id).type == "DiskImageBourreau"
     return retval
   end
 

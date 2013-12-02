@@ -41,7 +41,7 @@ class VmFactory
 
     
     @disk_image_file_id = disk_image_file_id
-di =  DiskImage.where(:disk_image_file_id => disk_image_file_id).first#Userfile.find(disk_image_file_id).name
+di =  DiskImageBourreau.where(:disk_image_file_id => disk_image_file_id).first#Userfile.find(disk_image_file_id).name
     @disk_image_name = di.blank? ? "Void" : di.name
 
     #initialize threshold parameters
@@ -166,7 +166,7 @@ di =  DiskImage.where(:disk_image_file_id => disk_image_file_id).first#Userfile.
   end
 
   def measure_load vms
-    disk_images = DiskImage.where(:disk_image_file_id => @disk_image_file_id)
+    disk_images = DiskImageBourreau.where(:disk_image_file_id => @disk_image_file_id)
     tasks = 0
     disk_images.each do |b|
       log_vm "Checking active tasks"
@@ -249,7 +249,7 @@ di =  DiskImage.where(:disk_image_file_id => disk_image_file_id).first#Userfile.
     task.params = task.class.wrapper_default_launch_args.clone
 
     # will submit with user associated to the first virtual bourreau we find with this disk image
-    disk_image = DiskImage.where(:disk_image_file_id => @disk_image_file_id).first
+    disk_image = DiskImageBourreau.where(:disk_image_file_id => @disk_image_file_id).first
     task.params[:vm_user] = disk_image.disk_image_user 
     task.params[:disk_image] = @disk_image_file_id
 
@@ -409,7 +409,7 @@ di =  DiskImage.where(:disk_image_file_id => disk_image_file_id).first#Userfile.
   def get_median_task_durations_of_queued_tasks
     puts "hello"
     queued_all =  CbrainTask.where(:status => [ 'New'] ) - CbrainTask.where(:type => "CbrainTask::StartVM") 
-    queued = queued_all.reject{ |x| (not Bourreau.find(x.bourreau_id).is_a? DiskImage) || (DiskImage.find(x.bourreau_id).disk_image_file_id != @disk_image_file_id)}    
+    queued = queued_all.reject{ |x| (not Bourreau.find(x.bourreau_id).is_a? DiskImageBourreau) || (DiskImageBourreau.find(x.bourreau_id).disk_image_file_id != @disk_image_file_id)}    
     if queued.length == 0 then return 0 end
     durations = Array.new
     queued.each { |t| 

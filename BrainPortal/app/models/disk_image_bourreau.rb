@@ -34,7 +34,7 @@
 # other symbols specific to bourreau). Following this, I put symbols
 # specific to DiskImage in RemoteResources too...
 
-class DiskImage < Bourreau
+class DiskImageBourreau < Bourreau
   def start #:nodoc:
     raise "Disk Images are not supposed to be started with their start method"  
   end

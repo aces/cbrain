@@ -57,7 +57,7 @@ class CbrainTask::StartVM < PortalTask
     params[:disk_image]=ids[0]
 
     # Check if disk image is associated to a virtual bourreau
-    virtual_bourreaux = Bourreau::DiskImage.where(:disk_image_file_id => params[:disk_image])
+    virtual_bourreaux = Bourreau::DiskImageBourreau.where(:disk_image_file_id => params[:disk_image])
     cb_error "File id #{params[:disk_image]} is not associated to any Virtual Bourreau. You cannot start a VM with it." unless virtual_bourreaux.size != 0 
     cb_error "File id #{params[:disk_image]} has more than 1 Virtual Bourreau associated to it. This is not supported yet." unless virtual_bourreaux.size == 1
 

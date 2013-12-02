@@ -776,7 +776,7 @@ def create #:nodoc:
 
       # Tweak tasks to re-route operations to physical bourreaux in case of virtual tasks
       tasks.each { |t|
-        if Bourreau.find(t.bourreau_id).is_a? Bourreau::DiskImage
+        if Bourreau.find(t.bourreau_id).is_a? Bourreau::DiskImageBourreau
             if t.params[:physical_bourreau].blank?
               # Task has no physical bourreau. I have to terminate it myself
               # TODO (VM tristan) race condition: a worker could now have taken the task and set a physical bourreau. 

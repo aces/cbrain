@@ -85,7 +85,7 @@ class BourreauxController < ApplicationController
     if fields[:disk_image_file_id].empty?
       @bourreau = Bourreau.new( fields )
     else
-      @bourreau = DiskImage.new( fields )
+      @bourreau = DiskImageBourreau.new( fields )
       #a DiskImage is always online
       @bourreau.online = true
     end
