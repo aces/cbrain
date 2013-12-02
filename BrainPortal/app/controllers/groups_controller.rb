@@ -43,6 +43,11 @@ class GroupsController < ApplicationController
     # For Pagination
     @per_page = 50 unless @filter_params["per_page"]
     offset = (@current_page - 1) * @per_page
+    
+    unless [:html, :js].include?(request.format.to_sym)
+      @per_page = 999_999_999
+      offset = 0
+    end
      
     if @filter_params["button_view"] == "on"
       pagination_list = @sorted_scope.limit(@per_page).offset(offset).where("groups.type = 'WorkGroup'").all.sort_by(&:short_pretty_type)
@@ -87,8 +92,9 @@ class GroupsController < ApplicationController
 
     respond_to do |format|
       format.js
-      format.html # index.html.erb
-      format.xml  { render :xml => @groups }
+      format.html  # index.html.erb
+      format.xml   { render :xml => @groups }
+      format.json { render :json => @groups.to_json(methods: :type) }
     end
   end
   
@@ -124,6 +130,7 @@ class GroupsController < ApplicationController
 
     respond_to do |format|
       if @group.save
+        @group.addlog_context(self,"Created by #{current_user.login}")
         flash[:notice] = 'Project was successfully created.'
         format.js   { redirect_to :action => :index, :format => :js}
         format.xml  { render :xml => @group, :status => :created, :location => @group }

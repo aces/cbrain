@@ -35,7 +35,17 @@
   if @hidden_total.present? && (@hidden_total.is_a?(String) || @hidden_total > 0)
     (", #{@hidden_total} hidden " + hidden_icon).html_safe
   end
-%>)
+  %><%=
+  if @archived_total.present? && (@archived_total.is_a?(String) || @archived_total > 0)
+    (", #{@archived_total} archived " + archived_icon).html_safe
+  end
+  %>
+  <%=
+  if @immutable_total.present? && (@immutable_total.is_a?(String) || @immutable_total > 0)
+    (", #{@immutable_total} immutable " + immutable_icon).html_safe
+  end
+%>
+)
 </div>
 
 <div class="pagination_right_side">

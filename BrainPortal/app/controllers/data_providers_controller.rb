@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #Restful controller for the DataProvider resource.
@@ -29,10 +29,10 @@ class DataProvidersController < ApplicationController
 
   before_filter :login_required
   before_filter :manager_role_required, :only => [:new, :create]
-   
+
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "data_providers.name"
-    
+
     @header_scope   = DataProvider.find_all_accessible_by_user(current_user)
     @filtered_scope = base_filtered_scope @header_scope.includes(:user, :group)
     @data_providers = base_sorted_scope @filtered_scope
@@ -69,21 +69,19 @@ class DataProvidersController < ApplicationController
                                   :online    => true,
                                   :read_only => false
                                 )
-    
+
     @typelist = get_type_list
-    
+
     render :partial => "new"
   end
 
-  def create #:nodoc:    
+  def create #:nodoc:
     @provider = DataProvider.sti_new(params[:data_provider])
     @provider.user_id ||= current_user.id # disabled field in form DOES NOT send value!
-    
+
     if @provider.save
       add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers, :browse_gid])
-    end
-
-    if @provider.errors.empty?
+      @provider.addlog_context(self,"Created by #{current_user.login}")
       flash[:notice] = "Provider successfully created."
       respond_to do |format|
         format.js  { redirect_to :action => :index, :format => :js  }
@@ -127,7 +125,7 @@ class DataProvidersController < ApplicationController
       respond_to do |format|
         format.html { redirect_to :action => :show }
         format.xml  { render :xml  => @provider }
-      end   
+      end
     else
       @provider.reload
       respond_to do |format|
@@ -143,33 +141,33 @@ class DataProvidersController < ApplicationController
     unless @data_provider.has_owner_access?(current_user)
       raise CbrainDeleteRestrictionError.new("You cannot remove a provider that you do not own.")
     end
-    
+
     @data_provider.destroy
-    
+
     flash[:notice] = "Provider successfully deleted."
-    
+
     respond_to do |format|
       format.html { redirect_to :action => :index }
       format.js   { redirect_to :action => :index, :format => :js } # no longer used?
-      format.xml  { head :ok }  
+      format.xml  { head :ok }
     end
   rescue ActiveRecord::DeleteRestrictionError => e
     flash[:error]  = "Provider not destroyed: #{e.message}"
-    
+
     respond_to do |format|
       format.html { redirect_to :action => :index }
       format.js   { redirect_to :action => :index, :format => :js } # no longer used?
       format.xml  { head :conflict }
     end
   end
-  
+
   def is_alive #:nodoc:
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
     is_alive =  @provider.is_alive?
     respond_to do |format|
       format.html { render :text  => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }
       format.xml { render :xml  => { :is_alive  => is_alive }  }
-    end  
+    end
   end
 
   def dp_access #:nodoc:
@@ -194,7 +192,7 @@ class DataProvidersController < ApplicationController
 
   #Browse the files of a data provider.
   #This action is only available for data providers that are browsable.
-  #Both registered and unregistered files will appear in the list. 
+  #Both registered and unregistered files will appear in the list.
   def browse
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
 
@@ -219,7 +217,7 @@ class DataProvidersController < ApplicationController
       # [ base, size, type, mtime ]
       @fileinfolist = get_recent_provider_list_all(params[:refresh], @as_user)
     rescue => e
-      flash[:error] = 'Cannot get list of files. Maybe the remote directory doesn\'t exist or is locked?' #emacs fails to parse this properly so I switched to single quotes. 
+      flash[:error] = 'Cannot get list of files. Maybe the remote directory doesn\'t exist or is locked?' #emacs fails to parse this properly so I switched to single quotes.
       Message.send_internal_error_message(User.find_by_login('admin'), "Browse DP exception, YAML=#{YAML.inspect}", e, params) rescue nil
       respond_to do |format|
         format.html { redirect_to :action => :index }
@@ -233,7 +231,7 @@ class DataProvidersController < ApplicationController
     # - the state_ok flag that tell whether or not it's OK to register/unregister
     # - a message.
     if @fileinfolist.size > 0
-       @fileinfolist[0].class.class_eval("attr_accessor :userfile, :state_ok, :message")
+       @fileinfolist[0].class.class_eval("attr_accessor :userfile, :state_ok, :message, :userfile_id")
     end
 
     # NOTE: next paragraph for initializing registered_files is also in register() action
@@ -255,7 +253,8 @@ class DataProvidersController < ApplicationController
 
       registered = registered_files[fi_name]
       if registered
-        fi.userfile = registered # the userfile object itself
+        fi.userfile    = registered # the userfile object itself
+        fi.userfile_id = registered.id
         if ((fi_type == :symlink)                                    ||
             (fi_type == :regular    && registered.is_a?(SingleFile)) ||
             (fi_type == :directory  && registered.is_a?(FileCollection)))
@@ -279,9 +278,9 @@ class DataProvidersController < ApplicationController
 
     end
 
-    if params[:search].present?
-      search_term = params[:search].to_s.downcase
-      params[:page] = 1
+    # Search by name
+    if @filter_params["browse_hash"]["name_like"].present?
+      search_term   = @filter_params["browse_hash"]["name_like"].to_s.downcase
       @fileinfolist = @fileinfolist.select{|file| file.name.to_s.downcase.index(search_term)}
     end
 
@@ -293,12 +292,15 @@ class DataProvidersController < ApplicationController
         pager
       end
     end
-    
+
     current_session.save_preferences_for_user(current_user, :data_providers, :browse_hash)
-        
+
     respond_to do |format|
       format.html
-      format.xml { render :xml  => @fileinfolist }
+      format.xml do
+        @fileinfolist.each { |fil| fil.instance_eval {remove_instance_variable :@userfile} }
+        render :xml  => @fileinfolist
+      end
       format.js
     end
 
@@ -340,7 +342,7 @@ class DataProvidersController < ApplicationController
       redirect_to :action => :browse
       return
     end
-    
+
     @fileinfolist = get_recent_provider_list_all(params[:refresh].presence, @as_user)
 
     base2info = {}
@@ -353,7 +355,7 @@ class DataProvidersController < ApplicationController
       base = $2
       base2type[base] = type
     end
-    
+
     newly_registered_userfiles      = []
     previously_registered_userfiles = []
     num_unregistered = 0
@@ -435,18 +437,18 @@ class DataProvidersController < ApplicationController
       file_group_id   = current_user.own_group.id unless current_user.available_groups.map(&:id).include?(file_group_id)
 
       subclass = Class.const_get(subtype)
-      userfile = subclass.new( :name             => basename, 
+      userfile = subclass.new( :name             => basename,
                                :size             => size,
                                :user_id          => @as_user.id, # cannot use current_user, since it might be a vault_ssh dp
                                :group_id         => file_group_id,
                                :data_provider_id => @provider.id )
-      
+
       registered_file = registered_files[basename]
       if registered_file
         previously_registered_userfiles << registered_file
       elsif userfile.save
         newly_registered_userfiles << userfile
-        userfile.addlog("Registered on DataProvider '#{@provider.name}' as '#{userfile.name}'.")
+        userfile.addlog_context(self, "Registered on DataProvider '#{@provider.name}' as '#{userfile.name}' by #{current_user.login}.")
       else
         flash[:error] += "Error: could not register #{subtype} '#{basename}'... maybe the file exists already?\n"
         num_skipped += 1
@@ -511,10 +513,9 @@ class DataProvidersController < ApplicationController
       flash[:error] += "No files are left to #{move_or_copy.downcase} !\n"
     else
       flash[:notice] += "Warning! #{to_operate.size} files are now being #{past_tense} in background.\n"
+      success_list  = []
+      failed_list   = {}
       CBRAIN.spawn_with_active_records(:admin, "#{move_or_copy} Registered Files") do
-        errors = ""
-        num_ok  = 0
-        num_err = 0
         to_operate.each do |u|
           orig_name = u.name
           begin
@@ -526,25 +527,19 @@ class DataProvidersController < ApplicationController
               u.destroy rescue true # will simply unregister
               new.set_size!
             end
-            num_ok += 1
+            success_list << u
           rescue => ex
-            num_err += 1
-            errors += "Error for file '#{orig_name}': #{ex.class}: #{ex.message}\n"
+            (failed_list[ex.message] ||= []) << u
           end
         end # each file
-        if num_ok > 0
-          Message.send_message(current_user, 
-                                :message_type   => 'notice', 
-                                :header         => "#{num_ok} files #{past_tense} during registration.",
-                                :variable_text  => ""
-                                )
+
+        # Message for successful actions
+        if success_list.present?
+          notice_message_sender("Files #{past_tense} during registration", success_list)
         end
-        if num_err > 0
-          Message.send_message(current_user, 
-                                :message_type   => 'error', 
-                                :header         => "#{num_err} files FAILED to be #{past_tense} during registration. See report below.",
-                                :variable_text  => errors
-                                )
+        # Message for failed actions
+        if failed_list.present?
+          error_message_sender("Files FAILED to be #{past_tense} during registration", failed_list)
         end
       end # spawn
     end # if move or copy
@@ -562,17 +557,17 @@ class DataProvidersController < ApplicationController
     end
 
   end
-  
+
   private
 
   def get_type_list #:nodoc:
-    typelist = %w{ SshDataProvider } 
+    typelist = %w{ SshDataProvider }
     if check_role(:site_manager) || check_role(:admin_user)
-      typelist += %w{ 
+      typelist += %w{
                       EnCbrainSshDataProvider EnCbrainLocalDataProvider EnCbrainSmartDataProvider
                       CbrainSshDataProvider CbrainLocalDataProvider CbrainSmartDataProvider
                       VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider
-                      IncomingVaultSshDataProvider 
+                      IncomingVaultSshDataProvider
                       S3DataProvider
                       LorisAssemblyNativeSshDataProvider
                     }

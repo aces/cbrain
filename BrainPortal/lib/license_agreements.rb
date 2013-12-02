@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Module containing common methods for set and access the
@@ -29,13 +29,18 @@ module LicenseAgreements
   def license_agreements
     self.meta[:license_agreements] || []
   end
-  
+
   def license_agreements=(agreements)
     agrs = agreements
     unless agrs.is_a? Array
       agrs = agrs.to_s.split(/[,\s]+/).map { |a| a.sub(/\.html$/, "").gsub(/[^\w-]+/, "") }.uniq
     end
-    self.meta[:license_agreements] = agrs
+    self.meta[:license_agreements]  = agrs
+
+    # Unset all licenses signed when a new license is added
+    User.all.each do |u|
+      u.all_licenses_signed = nil
+    end
   end
-  
+
 end

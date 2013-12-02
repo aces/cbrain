@@ -16,7 +16,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #Restful controller for the CbrainTask resource.
@@ -28,10 +28,10 @@ class TasksController < ApplicationController
 
   before_filter :login_required
 
-  def index #:nodoc:   
+  def index #:nodoc:
     bourreaux = Bourreau.find_all_accessible_by_user(current_user).all
     bourreau_ids = bourreaux.map &:id
-    
+
     scope = filter_variable_setup current_user.available_tasks.real_tasks.where( :bourreau_id => bourreau_ids )
 
     if request.format.to_sym == :xml
@@ -40,7 +40,7 @@ class TasksController < ApplicationController
     else
       @filter_params["sort_hash"]["order"] ||= "cbrain_tasks.batch"
     end
-    
+
     # Set sort order and make it persistent.
     @sort_order = @filter_params["sort_hash"]["order"]
     @sort_dir   = @filter_params["sort_hash"]["dir"]
@@ -74,7 +74,7 @@ class TasksController < ApplicationController
       full_batch_ids            = scope.raw_first_column("distinct(cbrain_tasks.batch_id)")
       full_task_counts_in_batch = scope.where(:batch_id => full_batch_ids).group(:batch_id).count
       @total_entries            = full_task_counts_in_batch.count
-      
+
       @tasks = {} # hash batch_id => task_info
       batch_ids.each do |batch_id|
          num_tasks  = task_counts_in_batch[batch_id] || 0
@@ -86,9 +86,9 @@ class TasksController < ApplicationController
       end
       pagination_list = batch_ids
     else
-      @total_entries = @total_tasks 
+      @total_entries = @total_tasks
       task_list = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).all
-      
+
       @tasks = {} # hash task_id -> task_info for a single task
       task_list.each do |t|
         @tasks[t.id] = { :first_task => t, :statuses => [t.status], :num_tasks => 1 }
@@ -101,7 +101,7 @@ class TasksController < ApplicationController
       pager.total_entries = @total_entries
       pager
     end
-    
+
     current_session.save_preferences_for_user(current_user, :tasks, :per_page)
 
     @bourreau_status = {}
@@ -112,20 +112,20 @@ class TasksController < ApplicationController
       format.js
     end
   end
-  
+
   def batch_list #:nodoc:
     scope = filter_variable_setup current_user.available_tasks.real_tasks.where(:batch_id => params[:batch_id] )
 
     scope = scope.includes( [:bourreau, :user, :group] ).order( "cbrain_tasks.rank, cbrain_tasks.level, cbrain_tasks.id" ).readonly(false)
-        
-    @tasks = scope                     
+
+    @tasks = scope
     @bourreau_status = {}
-    Bourreau.find_all_accessible_by_user(current_user).all.each { |bo| @bourreau_status[bo.id] = bo.online?}    
-    
+    Bourreau.find_all_accessible_by_user(current_user).all.each { |bo| @bourreau_status[bo.id] = bo.online?}
+
     render :layout => false
   end
-  
-  
+
+
   # GET /tasks/1
   # GET /tasks/1.xml
   def show #:nodoc:
@@ -157,38 +157,38 @@ class TasksController < ApplicationController
       format.xml  { render :xml => @task }
     end
   end
-  
+
   def new #:nodoc:
-      
+
     if params[:tool_id].blank?
       flash[:error] = "Please select a task to perform."
       redirect_to :controller  => :userfiles, :action  => :index
       return
     end
-    
+
     @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.demodulize
-    
+
     @task             = CbrainTask.const_get(@toolname).new
 
     # Our new task object needs some initializing
     @task.params         = @task.class.wrapper_default_launch_args.clone
     @task.bourreau_id    = params[:bourreau_id]     # Just for compatibility with old code
-    @task.tool_config_id = params[:tool_config_id]  # Normaly send by interface but it's optionnal 
+    @task.tool_config_id = params[:tool_config_id]  # Normaly send by interface but it's optionnal
     @task.user           = current_user
     @task.group_id       = current_project.try(:id) || current_user.own_group.id
     @task.status         = "New"
-    
-    if @task.tool_config_id.present? 
+
+    if @task.tool_config_id.present?
       @task.tool_config = ToolConfig.find(@task.tool_config_id)
       @task.bourreau_id = @task.tool_config.bourreau_id
-    elsif @task.bourreau_id # Offer latest accessible tool config as default id ! @task.tool_config                                                                                                                                                                                                                 
-      tool = @task.tool                                                                                                                                                                                                                    
-      toolconfigs = ToolConfig.where( :bourreau_id => @task.bourreau_id, :tool_id => tool.id )                                                                                                                 
-      toolconfigs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }                                                                                                                          
-      lastest_toolconfig = toolconfigs.last                                                                                                                                                                         
-      @task.tool_config = lastest_toolconfig if lastest_toolconfig                                                                                                                      
-    end                                                                    
-    
+    elsif @task.bourreau_id # Offer latest accessible tool config as default id ! @task.tool_config
+      tool = @task.tool
+      toolconfigs = ToolConfig.where( :bourreau_id => @task.bourreau_id, :tool_id => tool.id )
+      toolconfigs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }
+      lastest_toolconfig = toolconfigs.last
+      @task.tool_config = lastest_toolconfig if lastest_toolconfig
+    end
+
     # Filter list of files as provided by the get request
     file_ids = (params[:file_ids] || []) | current_session.persistent_userfile_ids_list
     @files            = Userfile.find_accessible_by_user(file_ids, current_user, :access_requested => :write) rescue []
@@ -197,7 +197,7 @@ class TasksController < ApplicationController
       redirect_to :controller  => :userfiles, :action  => :index
       return
     end
-    
+
     @task.params[:interface_userfile_ids] = @files.map &:id
 
     # Other common instance variables, such as @data_providers and @bourreaux
@@ -263,7 +263,7 @@ class TasksController < ApplicationController
 
   end
 
-  def create #:nodoc:
+def create #:nodoc:
     flash[:notice]     = ""
     flash[:error]      = ""
     flash.now[:notice] = ""
@@ -299,13 +299,14 @@ class TasksController < ApplicationController
     else
       @task.errors.add(:base, "Please select a Server and a Version for the tool.")
     end
-      
+
     # Security checks
     @task.user     = current_user           unless current_user.available_users.map(&:id).include?(@task.user_id)
     @task.group    = current_user.own_group unless current_user.available_groups.map(&:id).include?(@task.group_id)
 
     # Log revision number of portal.
     @task.addlog_current_resource_revision
+    @task.addlog_context(self,"Created by #{current_user.login}")
 
     # Give a task the ability to do a refresh of its form
     commit_name = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ])
@@ -320,7 +321,7 @@ class TasksController < ApplicationController
 
     # Handle preset loads/saves
     unless @task.class.properties[:no_presets]
-      if commit_name == :load_preset || commit_name == :delete_preset || commit_name == :save_preset 
+      if commit_name == :load_preset || commit_name == :delete_preset || commit_name == :save_preset
         handle_preset_actions
         initialize_common_form_values
         render :action => :new
@@ -344,7 +345,7 @@ class TasksController < ApplicationController
       respond_to do |format|
         format.html { render :action => 'new' }
         format.xml  { render :xml => @task.errors, :status => :unprocessable_entity }
-      end    
+      end
       return
     end
 
@@ -378,7 +379,7 @@ class TasksController < ApplicationController
       messages += "\n" unless messages.blank? || messages =~ /\n$/
       messages += task_list_message
     end
-    
+
     # Spawn a background process to launch the tasks.
     CBRAIN.spawn_with_active_records_if(request.format.to_sym != :xml, :admin, "Spawn Tasks") do
 
@@ -458,7 +459,7 @@ class TasksController < ApplicationController
   end
 
   def update #:nodoc:
-    
+
     flash[:notice]     = ""
     flash[:error]      = ""
     flash.now[:notice] = ""
@@ -501,7 +502,7 @@ class TasksController < ApplicationController
 
     # Handle preset loads/saves
     unless @task.class.properties[:no_presets]
-      if commit_name == :load_preset || commit_name == :delete_preset || commit_name == :save_preset 
+      if commit_name == :load_preset || commit_name == :delete_preset || commit_name == :save_preset
         handle_preset_actions
         initialize_common_form_values
         @bourreaux = [ @task.bourreau ] # override so we leave only one, even a non-active bourreau
@@ -541,19 +542,19 @@ class TasksController < ApplicationController
   end
 
   def update_multiple #:nodoc:
-    
+
     # Construct task_ids and batch_ids
     task_ids    = Array(params[:tasklist]  || [])
     batch_ids   = Array(params[:batch_ids] || [])
-    
+
     if batch_ids.delete "nil"
       task_ids += filter_variable_setup(CbrainTask.real_tasks.where( :batch_id => nil )).select("id").raw_first_column
     end
     task_ids   += filter_variable_setup(CbrainTask.real_tasks.where( :batch_id => batch_ids )).select("id").raw_first_column
     task_ids    = task_ids.map(&:to_i).uniq
-    
+
     commit_name = extract_params_key([ :update_user_id, :update_group_id, :update_results_data_provider_id, :update_tool_config_id ])
-    
+
     # If commit_name undef
     unless commit_name.present?
       flash[:error] = "No operation to perform."
@@ -566,26 +567,26 @@ class TasksController < ApplicationController
       case commit_name
         when :update_user_id
           new_user_id = params[:task][:user_id].to_i
-          unable_to_update = "user"   if 
+          unable_to_update = "user"   if
           ! current_user.available_users.where(:id => new_user_id).exists?
           :user
         when :update_group_id
           new_group_id = params[:task][:group_id].to_i
-          unable_to_update = "project" if 
+          unable_to_update = "project" if
           ! current_user.available_groups.where(:id => new_group_id).exists?
           :group
         when :update_results_data_provider_id
           new_dp_id = params[:task][:results_data_provider_id].to_i
-          unable_to_update = "data provider" if 
+          unable_to_update = "data provider" if
           ! DataProvider.find_all_accessible_by_user(current_user).where(:id => new_dp_id).exists?
           :results_data_provider
         when :update_tool_config_id
-          new_tool_config = ToolConfig.find(params[:task][:tool_config_id].to_i)  
-          unable_to_update = "tool version" if 
+          new_tool_config = ToolConfig.find(params[:task][:tool_config_id].to_i)
+          unable_to_update = "tool version" if
             ! new_tool_config.bourreau_and_tool_can_be_accessed_by?(current_user)
           :tool_config
         else
-        :unknown   
+        :unknown
       end
 
     if unable_to_update.present?
@@ -600,43 +601,58 @@ class TasksController < ApplicationController
       redirect_to :action => :index, :format  => request.format.to_sym
       return
     end
-    
+
     do_in_spawn   = task_ids.size > 5
     success_count = 0
+    success_list  = []
+    failed_list   = {}
 
     CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending update to tasks") do
       accessible_bourreau = Bourreau.find_all_accessible_by_user(current_user)
       tasklist            = CbrainTask.where(:id => task_ids, :bourreau_id => accessible_bourreau).all
 
       # Remove tasks who aren't accessible by current_user
-      tasklist.reject! { |task| ! task.has_owner_access?(current_user) }
+      new_tasklist = tasklist.dup
+      new_tasklist.reject! { |task| ! task.has_owner_access?(current_user) }
+      failed_tasks = tasklist - new_tasklist
+      failed_list["you don't have access to this task(s)"]  = failed_tasks if failed_tasks.present?
+      tasklist     = new_tasklist
 
-      operation = 
+      operation =
         case field_to_update
           when :user
             ["update_attributes", {:user_id => new_user_id}]
           when :group
             user_to_avail_group_ids = {}
-            tasklist.reject! do |task|
+            new_tasklist = tasklist.dup
+            new_tasklist.reject! do |task|
               t_uid = task.user_id
               # Task user need to have access to new group
               user_to_avail_group_ids[t_uid] ||= User.find(t_uid).available_groups.map(&:id).index_by { |id| id }
               (! user_to_avail_group_ids[t_uid][new_group_id])
             end
+            failed_tasks = tasklist - new_tasklist
+            failed_list["new group is not accessible by task's owner"] = failed_tasks if failed_tasks.present?
+            tasklist     = new_tasklist
             ["update_attributes", {:group_id => new_group_id}]
           when :results_data_provider
             user_to_avail_dp_ids = {}
-            tasklist.reject! do |task|
+            new_tasklist = tasklist.dup
+            new_tasklist.reject! do |task|
               t_uid = task.user_id
               # Task user need to have access to new data provider
               user_to_avail_dp_ids[t_uid] ||= DataProvider.find_all_accessible_by_user(User.find(t_uid)).index_by { |dp| dp.id }
               (! user_to_avail_dp_ids[t_uid][new_dp_id])
             end
+            failed_tasks = tasklist - new_tasklist
+            failed_list["new data provider is not accessible by task's owner"] = failed_tasks if failed_tasks.present?
+            tasklist     = new_tasklist
             ["update_attributes", {:results_data_provider_id => new_dp_id}]
           when :tool_config
             user_to_avail_new_tool_config = {}
             old_tcid_to_tool_id           = {}
-            tasklist.reject! do |task|
+            new_tasklist = tasklist.dup
+            new_tasklist.reject! do |task|
               t_uid    = task.user_id
               old_tcid = task.tool_config_id
               old_bid  = task.bourreau_id
@@ -647,18 +663,23 @@ class TasksController < ApplicationController
               # (user has access to new tc)                     (new tc is same tool as old tc)                         (new tc has same bourreau as old tc)
               (user_to_avail_new_tool_config[t_uid] == 0) || (old_tcid_to_tool_id[old_tcid] != tool_config.tool_id) || (old_bid != new_tool_config.bourreau_id)
             end
+            failed_tasks = tasklist - new_tasklist
+            failed_list["error when updating tool config"] = failed_tasks if failed_tasks.present?
+            tasklist     = new_tasklist
             ["update_attributes", {:tool_config_id => new_tool_config.id}]
         end
 
-      tasklist.each { |task| success_count += 1 if task.send(*operation) }  
+      tasklist.each { |task| success_list << task if task.send(*operation) }
 
       if do_in_spawn
-        Message.send_message(current_user, {
-          :header        => "Finished sending update to your tasks.",
-          :message_type  => :notice,
-          :variable_text => "#{view_pluralize(success_count, "task")} updated."
-          }
-        )
+        # Message for successful actions
+        if success_list.present?
+          notice_message_sender("Finished sending update to your task(s)", success_list)
+        end
+        # Message for failed actions
+        if failed_list.present?
+          error_message_sender("Failed to update your task(s)", failed_list)
+        end
       end
 
     end # End of spawn_if block
@@ -666,9 +687,12 @@ class TasksController < ApplicationController
     if do_in_spawn
       flash[:notice] = "The tasks are being updated in background."
     else
-      flash[:notice] = "#{view_pluralize(success_count, "task")} updated"
+     flash[:notice] = "Successfully update #{view_pluralize(success_list.count, "task")}."   if success_list.present?
+     failure_count  = 0
+     failed_list.each_value { |v| failure_count += v.size }
+     flash[:error]  = "Failed to update #{view_pluralize(failure_count, "task")}." if failure_count > 0
     end
-    
+
     redirect_to :action => :index, :format  => request.format.to_sym
   end
 
@@ -679,7 +703,7 @@ class TasksController < ApplicationController
   #[*Suspend*] Stop processing of the task (while it is on cpu).
   #[*Resume*] Release task from <tt>Suspended</tt> status (i.e. continue processing).
   #[*Terminate*] Kill the task, while maintaining its temporary files and its entry in the database.
-  #[*Delete*] Kill the task, delete the temporary files and remove its entry in the database. 
+  #[*Delete*] Kill the task, delete the temporary files and remove its entry in the database.
   def operation #:nodoc:
     operation   = params[:operation]
     tasklist    = params[:tasklist]  || []
@@ -713,6 +737,10 @@ class TasksController < ApplicationController
     sent_failed  = 0
     sent_skipped = 0
 
+    skipped_list = {}
+    success_list = []
+    failed_list  = {}
+
     # Decide in which conditions we spawn a background job to send
     # the operation to the tasks...
     do_in_spawn  = tasklist.size > 5
@@ -728,13 +756,13 @@ class TasksController < ApplicationController
         begin
           task = current_user.available_tasks.find(task_id)
         rescue
-          sent_failed += 1
+          (failed_list["Task not available"] ||= [])
           next
         end
 
         if task.user_id != current_user.id && current_user.type != 'AdminUser'
-          sent_skipped += 1
-          next 
+          (skipped_list["you not allowed to #{operation} this task(s)"] ||= []) << task
+          next
         end
 
         tasks << task
@@ -743,7 +771,7 @@ class TasksController < ApplicationController
       # Some security validations
       new_bourreau_id = params[:dup_bourreau_id].presence
       archive_dp_id   = params[:archive_dp_id].presence
-      new_bourreau_id = nil unless new_bourreau_id &&     Bourreau.find_all_accessible_by_user(current_user).where(:id => new_bourreau_id).exists?
+      new_bourreau_id = nil unless new_bourreau_id && Bourreau.find_all_accessible_by_user(current_user).where(:id => new_bourreau_id).exists?
       archive_dp_id   = nil unless archive_dp_id   && DataProvider.find_all_accessible_by_user(current_user).where(:id => archive_dp_id).exists?
 
       # Tweak tasks to re-route operations to physical bourreaux in case of virtual tasks
@@ -770,7 +798,7 @@ class TasksController < ApplicationController
         begin
           if operation == 'delete'
             bourreau.send_command_alter_tasks(btasklist,'Destroy') # TODO parse returned command object?
-            sent_ok += btasklist.size
+            success_list << btasklist
             next
           end
           new_status  = PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
@@ -779,24 +807,27 @@ class TasksController < ApplicationController
             allowed_new = PortalTask::AllowedOperations[cur_status] || []
             new_status && allowed_new.include?(new_status)
           end
-          skippedtasks = btasklist - oktasks
           if oktasks.size > 0
             bourreau.send_command_alter_tasks(oktasks, new_status, new_bourreau_id, archive_dp_id) # TODO parse returned command object?
-            sent_ok += oktasks.size
+            succes_list << oktasks
           end
-          sent_skipped += skippedtasks.size
-        rescue => e # TODO record what error occured to inform user?
-          sent_failed += btasklist.size
+          skippedtasks = btasklist - oktasks
+          skipped_list["you are not allowed to #{operation} for"] = skippedtasks if skippedtasks.present?
+        rescue => e
+          (failed_list[e.message] ||= []) << btasklist
         end
       end # foreach bourreaux' tasklist
 
       if do_in_spawn
-        Message.send_message(current_user, {
-          :header        => "Finished sending '#{operation}' to your tasks.",
-          :message_type  => :notice,
-          :variable_text => "Number of tasks notified: #{sent_ok} OK, #{sent_skipped} skipped, #{sent_failed} failed.\n"
-          }
-        )
+        if success_list.present?
+          notice_message_sender("Finished sending '#{operation}' to your tasks.",success_list)
+        end
+        if skipped_list.present?
+          error_message_sender("Task skipped when sending '#{operation}' to your tasks.",skipped_list)
+        end
+        if failed_list.present?
+          error_message_sender("Error when sending '#{operation}' to your tasks.",failed_list)
+        end
       end
 
     end # End of spawn_if block
@@ -804,7 +835,11 @@ class TasksController < ApplicationController
     if do_in_spawn
       flash[:notice] += "The tasks are being notified in background."
     else
-      flash[:notice] += "Number of tasks notified: #{sent_ok} OK, #{sent_skipped} skipped, #{sent_failed} failed.\n"
+      failure_count  = 0
+      failed_list.each_value { |v| failure_count += v.size }
+      skipped_count  = 0
+      skipped_list.each_value { |v| skipped_count += v.size }
+      flash[:notice] += "Number of tasks notified: #{success_list.count} OK, #{skipped_count} skipped, #{failure_count} failed.\n"
     end
 
     #current_user.addlog_context(self,"Sent '#{operation}' to #{tasklist.size} tasks.")
@@ -944,13 +979,13 @@ class TasksController < ApplicationController
   def filter_variable_setup(starting_scope)
     @header_scope = starting_scope
     @header_scope = @header_scope.where( :group_id => current_project.id ) if current_project
-    
+
     @filtered_scope = base_filtered_scope(@header_scope)
-    
+
     if @filter_params["filter_hash"]["bourreau_id"].blank?
       @filtered_scope = @filtered_scope.where( :bourreau_id => Bourreau.find_all_accessible_by_user(current_user).all.map(&:id) )
     end
-    
+
     # Handle custom filters
     @filter_params["filter_custom_filters_array"] ||= []
     @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)
@@ -958,7 +993,7 @@ class TasksController < ApplicationController
       custom_filter = TaskCustomFilter.find(custom_filter_id)
       @filtered_scope = custom_filter.filter_scope(@filtered_scope)
     end
-    
+
     @filtered_scope
   end
 

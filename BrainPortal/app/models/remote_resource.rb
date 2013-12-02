@@ -922,8 +922,10 @@ class RemoteResource < ActiveRecord::Base
       syncs = syncs.where([ "sync_status.accessed_at > ?", after_date])           if after_date.present?
       syncs = syncs.joins(:userfile).where( 'userfiles.user_id' => user_id_list ) if user_id_list
 
-      syncs.all.each do |ss|
+      syncs = syncs.all
+      syncs.each_with_index do |ss,i|
         userfile = ss.userfile
+        $0 = "CacheCleanup ID=#{userfile.id} #{i+1}/#{syncs.size}\0"
         userfile.cache_erase rescue nil
       end
     end

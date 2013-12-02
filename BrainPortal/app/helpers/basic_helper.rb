@@ -86,6 +86,11 @@ module BasicHelper
   def delete_icon
     "<span class=\"delete_icon\">&otimes;</span>".html_safe
   end
+
+  # Produces a pretty symbol for archived FileCollection
+  def archived_icon(color="purple")
+    "<span style=\"color:#{color}\" class=\"bold_icon\">A</span>".html_safe
+  end
   
 end
 

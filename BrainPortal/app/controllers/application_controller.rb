@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Filters added to this controller apply to all controllers in the application.
@@ -33,39 +33,42 @@ class ApplicationController < ActionController::Base
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include AuthenticatedSystem
+  include SessionHelpers
   include BasicFilterHelpers
   include ViewHelpers
   include ApiHelpers
   include PermissionHelpers
   include ExceptionHelpers
-  
+  include MessageHelpers
+
   helper        :all # include all helpers, all the time
   helper_method :start_page_path
 
-  before_filter :always_activate_session
   before_filter :set_cache_killer
-  before_filter :prepare_messages
   before_filter :check_account_validity
+  before_filter :prepare_messages
   before_filter :adjust_system_time_zone
   around_filter :activate_user_time_zone
   after_filter  :log_user_info
   before_filter :login_required, :only => :filter_proxy
-    
+
   # See ActionController::RequestForgeryProtection for details
   # Uncomment the :secret if you're not using the cookie session store
   protect_from_forgery :secret => 'b5e7873bd1bd67826a2661e01621334b'
 
 
   def filter_proxy
-    redirect_to(:controller  => params[:proxy_destination_controller], :action  =>  params[:proxy_destination_action] || "index")
+    redirect_to(:controller  => params[:proxy_destination_controller],
+                :action      => params[:proxy_destination_action] || "index",
+                :id          => params[:proxy_destination_id])
   end
-  
+
   ########################################################################
   # Controller Filters
   ########################################################################
 
   private
-  
+
   # Returns the name of the model class associated with a given contoller. By default
   # takes the name from the name of the controller, but can be redefined in subclasses
   # as needed.
@@ -107,50 +110,53 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  #Prevents pages from being cached in the browser. 
+  #Prevents pages from being cached in the browser.
   #This prevents users from being able to access pages after logout by hitting
   #the 'back' button on the browser.
   #
   #NOTE: Does not seem to be effective for all browsers.
   def set_cache_killer
     # (no-cache) Instructs the browser not to cache and get a fresh version of the resource
-    # (no-store) Makes sure the resource is not stored to disk anywhere - does not guarantee that the 
+    # (no-store) Makes sure the resource is not stored to disk anywhere - does not guarantee that the
     # resource will not be written
     # (must-revalidate) the cache may use the response in replying to a subsequent request but if the resonse is stale
     # all caches must first revalidate with the origin server using the request headers from the new request to allow
     # the origin server to authenticate the new reques
-    # (max-age) Indicates that the client is willing to accept a response whose age is no greater than the specified time in seconds. 
+    # (max-age) Indicates that the client is willing to accept a response whose age is no greater than the specified time in seconds.
     # Unless max- stale directive is also included, the client is not willing to accept a stale response.
-    response.headers["Last-Modified"] = Time.now.httpdate    
+    response.headers["Last-Modified"] = Time.now.httpdate
     response.headers["Expires"] = "#{1.year.ago}"
     # HTTP 1.0
-    # When the no-cache directive is present in a request message, an application SHOULD forward the request 
+    # When the no-cache directive is present in a request message, an application SHOULD forward the request
     # toward the origin server even if it has a cached copy of what is being requested
     response.headers["Pragma"] = "no-cache"
     # HTTP 1.1 'pre-check=0, post-check=0' (IE specific)
     response.headers["Cache-Control"] = 'no-store, no-cache, must-revalidate, max-age=0, pre-check=0, post-check=0'
   end
-  
+
   # Check if the user needs to change their password
   # or sign license agreements.
   def check_account_validity
     return unless current_user
     return if params[:controller] == "sessions"
-    
-    #Check if license agreement have been signed
-    unsigned_agreements = current_user.unsigned_license_agreements
-    unless unsigned_agreements.empty?
-      return if params[:controller] == "portal" && params[:action] =~ /license$/
-      return if current_user.has_role?(:admin_user) && params[:controller] == "bourreaux"
 
-      if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
-        redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first, :status => 303
-      elsif current_user.has_role?(:admin_user)
-        flash[:error] =  "License agreement '#{unsigned_agreements.first}' doesn't seem to exist.\n"
-        flash[:error] += "Please place the license file in /public/licenses or remove it from below."
-        redirect_to bourreau_path(RemoteResource.current_resource), :status => 303
+    #Check if license agreement have been signed
+    if current_user.all_licenses_signed.blank?
+      unsigned_agreements = current_user.unsigned_license_agreements
+      unless unsigned_agreements.empty?
+        return if params[:controller] == "portal" && params[:action] =~ /license$/
+        return if current_user.has_role?(:admin_user) && params[:controller] == "bourreaux"
+
+        if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
+          redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first, :status => 303
+        elsif current_user.has_role?(:admin_user)
+          flash[:error] =  "License agreement '#{unsigned_agreements.first}' doesn't seem to exist.\n"
+          flash[:error] += "Please place the license file in /public/licenses or remove it from below."
+          redirect_to bourreau_path(RemoteResource.current_resource), :status => 303
+        end
+        return
       end
-      return
+      current_user.all_licenses_signed = "yes"
     end
 
     #Check if passwords been reset.
@@ -195,23 +201,23 @@ class ApplicationController < ActionController::Base
   rescue
     true
   end
-  
+
   ########################################################################
   # CBRAIN Messaging System Filters
   ########################################################################
-    
+
   # Find new messages to be displayed at the top of the page.
   def prepare_messages
     return unless current_user
-    return unless current_user.unsigned_license_agreements.empty?
+    return if     current_user.all_licenses_signed.blank?
     return if     request.format.blank?
     return unless request.format.to_sym == :html || params[:controller] == 'messages'
-    
+
     @display_messages = []
-    
+
     unread_messages = current_user.messages.where( :read => false ).order( "last_sent DESC" )
     @unread_message_count = unread_messages.count
-    
+
     unread_messages.each do |mess|
       if mess.expiry.blank? || mess.expiry > Time.now
         if mess.critical? || mess.display?
@@ -220,7 +226,7 @@ class ApplicationController < ActionController::Base
             mess.update_attributes(:display  => false)
           end
         end
-      else  
+      else
         mess.update_attributes(:read  => true)
       end
     end
@@ -260,13 +266,13 @@ class ApplicationController < ActionController::Base
     meta_params = meta_params.presence || params[:meta] || {}
     target_object.update_meta_data(meta_params, meta_keys, { :delete_on_blank => true }.merge(options))
   end
-  
+
   ####################################################
   #
   # Changing default redirect code from 302 to 303
   #
   ####################################################
-  
+
   alias :old_redirect_to :redirect_to
 
   # Change default redirect code to 303
@@ -278,18 +284,18 @@ class ApplicationController < ActionController::Base
     end
     old_redirect_to(options, response_status)
   end
-  
+
   #Home pages in hash form.
   def start_page_params
     if current_user.nil?
       { :controller => :sessions, :action => :new }
     elsif current_user.has_role?(:normal_user)
       { :controller => :groups, :action => :index }
-    else   
+    else
       { :controller => :portal, :action => :welcome }
     end
   end
-  
+
   #Different home pages for admins and other users.
   def start_page_path
     url_for(start_page_params)
@@ -300,7 +306,7 @@ class ApplicationController < ActionController::Base
   # General params handler helper
   #
   ####################################################
-  
+
   #Use in order to return param key if it's present in params
   def extract_params_key (list=[], default=nil)
     list.detect { |x| params.has_key?(x) && x } || default
@@ -316,7 +322,7 @@ begin
       require_dependency "#{model}.rb" unless Object.const_defined? model.classify
     end
   end
-  
+
   #Load userfile file types
   Dir.chdir(File.join(Rails.root.to_s, "app", "models", "userfiles")) do
     Dir.glob("*.rb").each do |model|

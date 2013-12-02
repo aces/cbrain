@@ -65,7 +65,7 @@ class SitesController < ApplicationController
     
     respond_to do |format|
       if @site.save
-        @site.addlog("Created by #{current_user.login}")
+        @site.addlog_context(self,"Created by '#{current_user.login}'")
         flash[:notice] = 'Site was successfully created.'
         format.js  { redirect_to :action => :index, :format => :js }
         format.xml { render :xml => @site, :status => :created, :location => @site }

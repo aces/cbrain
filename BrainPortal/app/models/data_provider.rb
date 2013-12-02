@@ -205,6 +205,7 @@ class DataProvider < ActiveRecord::Base
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   include ResourceAccess
+  include LicenseAgreements
   include NumericalSubdirTree
   
   cbrain_abstract_model! # objects of this class are not to be instantiated
@@ -239,7 +240,7 @@ class DataProvider < ActiveRecord::Base
   
   attr_accessible :name, :user_id, :group_id, :remote_user, :remote_host, :remote_port, :remote_dir, :online, 
                   :read_only, :description, :time_of_death, :not_syncable, :time_zone, :cloud_storage_client_identifier, 
-                  :cloud_storage_client_token
+                  :cloud_storage_client_token, :license_agreements
 
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
@@ -273,7 +274,7 @@ class DataProvider < ActiveRecord::Base
     
       options[:builder].__send__(:method_missing, root) do
         self.instance_variables.each do |key_sym|
-          key = key_sym.to_s.sub "@", ""
+          key = key_sym.to_s.sub "@", ""   # changes '@name' or :@name to 'name'
           value = self.__send__(key)
           options[:builder].tag!(key, value)
         end
@@ -1168,6 +1169,7 @@ class DataProvider < ActiveRecord::Base
       if do_it
         maybe_spurious_parents={}
         uids2path.each do |id,path| # 12345, "01/23/45"
+          system("chmod","-R","u+rwX",path)   # uppercase X affects only directories
           FileUtils.remove_entry(path, true) rescue true
           maybe_spurious_parents[path.sub(/\/\d+$/,"")]      = 1  # "01/23"
           maybe_spurious_parents[path.sub(/\/\d+\/\d+$/,"")] = 1  # "01"

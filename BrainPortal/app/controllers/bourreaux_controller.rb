@@ -89,10 +89,10 @@ class BourreauxController < ApplicationController
       #a DiskImage is always online
       @bourreau.online = true
     end
-    @bourreau.save
-      
-    if @bourreau.errors.empty?
-      flash[:notice] = "Execution Server (#{@bourreau.type_string}) successfully created"
+
+    if @bourreau.save
+      @bourreau.addlog_context(self,"Created by #{current_user.login}")
+      flash[:notice] = "Execution Server successfully created."
       
       respond_to do |format|
         format.js  { redirect_to :action => :index, :format => :js }

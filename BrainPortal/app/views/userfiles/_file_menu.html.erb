@@ -58,13 +58,22 @@
       %>
       <hr>
       
-      <h4>Other</h4>
+      <h4>Compression, archiving and deletion</h4>
+      For file(s):
       <%= hijacker_submit_button("(Un)compress",  :url     => url_for(:action  => :compress ),
                                                   :confirm => "Are you sure you want to compress or uncompress the selected files?",
                                                   :class   => "button", 
                                                   :method  => :post) 
       %>
       
+      For collection(s): 
+      <%= hijacker_submit_button("(Un)archive",   :url     => url_for(:action  => :archive_management ),
+                                                  :confirm => "Are you sure you want to archive or unarchive the selected files collection?",
+                                                  :class   => "button", 
+                                                  :method  => :post) 
+      %>
+      
+      For any type:
       <%= hijacker_submit_button("Delete", :url     => url_for(:action  => :delete_files),
                                            :confirm => "Are you sure you want to delete the selected files?",
                                            :class     => "button", 

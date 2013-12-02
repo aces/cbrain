@@ -22,22 +22,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 -%>
-
-<% if @users.present? %>
+<div style="max-height: 600px; overflow-y: auto; padding-right: 30px">
+  <% if @users.present? %>
   <%= form_tag invitations_path do -%>
-    <small>
-      Note that only users from your site, <%= current_user.site.try(:name) || "(unassigned)" %>,  are visible to you. <br>
-      If you wish to add a user who is not visible to you, please<br>
-      contact your site manager or a CBRAIN administrator. 
-    </small>
-    <br><br>
-    <%= hidden_field_tag :group_id, @group.id %>
-    <%= render :partial => 'groups/users_form', :locals => {:parameter_name => "user_ids"} %>
-  
-    <p>
-      <%= submit_tag "Send Invitations" %>
-    </p>
+      <%= hidden_field_tag :group_id, @group.id %>
+      <%= render :partial => 'groups/users_form', :locals => {:parameter_name => "user_ids", :show_locked => false} %>
+    
+      <p>
+        <%= submit_tag "Send Invitations" %>
+      </p>
+    <% end %>
+  <% else %>
+    <strong style="color:red">No users available to invite.</strong>
   <% end %>
-<% else %>
-  <strong style="color:red">No users available to invite.</strong>
-<% end %>
+</div>

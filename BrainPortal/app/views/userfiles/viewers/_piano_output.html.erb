@@ -22,17 +22,5 @@
 #
 -%>
 
-<%= form_tag :action  => :create_parent_child do %>
-  
-  <% for file in @userfiles %>
-    <%= hidden_field_tag "child_ids[]", file.id %>
-  <% end %>
-
-  File To Become Parent: 
-  <%= select_tag "parent_id", 
-    options_for_select( @userfiles.count > 1  ? @userfiles.map{ |p| [p.name, p.id] } : []), 
-    @have_parent ? {:prompt => "Remove all parents"} : {}%>
-  
-  <%= submit_tag "Submit" %>
-<% end %>
+<%= render :partial  => "userfiles/viewers/file_collection_form", :locals  => {:collection_partial  => "file_collection_plain_file_list"} %>
 

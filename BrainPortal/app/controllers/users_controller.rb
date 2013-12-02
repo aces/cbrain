@@ -25,7 +25,7 @@ class UsersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :only => [ :create, :show ]
+  api_available :only => [ :index, :create, :show, :destroy ]
 
   before_filter :login_required,        :except => [:request_password, :send_password]  
   before_filter :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password]  
@@ -115,9 +115,7 @@ class UsersController < ApplicationController
 
     @user.password_reset = no_password_reset_needed ? false : true
     
-    @user.save
-    
-    if @user.errors.empty?
+    if @user.save
       flash[:notice] = "User successfully created."
       current_user.addlog_context(self,"Created account for user '#{@user.login}'")
       @user.addlog_context(self,"Account created by '#{current_user.login}'")

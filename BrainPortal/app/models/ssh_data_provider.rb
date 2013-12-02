@@ -106,7 +106,7 @@ class SshDataProvider < DataProvider
   # Returns :absent if no file or directory could be found
   # on the provider side.
   #
-  # Careful! This returns nil if there is a DP connection error
+  # Careful! This returns :error if there is a DP connection error
   # even if the file exists!
   def provider_file_exists?(userfile) #:nodoc:
     remotefull  = provider_full_path(userfile).to_s
@@ -115,7 +115,9 @@ class SshDataProvider < DataProvider
     if text.present? && text =~ /(dir|file|absent)Exists/
       return Regexp.last_match[1].to_sym
     end
-    nil
+    :error
+  rescue
+    :error
   end
 
   def impl_provider_erase(userfile) #:nodoc:

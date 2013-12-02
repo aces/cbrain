@@ -52,17 +52,17 @@ describe ToolsController do
         let(:real_tool) {Factory.create(:tool, :user_id => current_user.id )}
   
         it "should render empty text if tool_id is empty" do
-          get(:bourreau_select, {'tool_id' => ""})
+          get(:tool_config_select, {'tool_id' => ""})
           response.body.should be_empty
         end
   
         it "should render bourreau_select" do
-          get(:bourreau_select,{'tool_id' => real_tool.id.to_s})
-          response.should render_template("tools/_bourreau_select")
+          get(:tool_config_select,{'tool_id' => real_tool.id.to_s})
+          response.should render_template("tools/_tool_config_select")
         end 
         
         it "should display error text if go in rescue" do
-          get(:bourreau_select, {'tool_id' => "abc"})
+          get(:tool_config_select, {'tool_id' => "abc"})
           response.body.should =~ /No Execution Servers/
         end
       end
@@ -176,21 +176,21 @@ describe ToolsController do
         end
       end
   
-      describe "bourreau_select" do
+      describe "tool_config_select" do
         let(:real_tool) {Factory.create(:tool, :user_id => current_user.id )}
   
         it "should render empty text if tool_id is empty" do
-          get(:bourreau_select, {'tool_id' => ""})
+          get(:tool_config_select, {'tool_id' => ""})
           response.body.should be_empty
         end
   
         it "should render bourreau_select" do
-          get(:bourreau_select,{'tool_id' => real_tool.id.to_s})
-          response.should render_template("tools/_bourreau_select")
+          get(:tool_config_select,{'tool_id' => real_tool.id.to_s})
+          response.should render_template("tools/_tool_config_select")
         end 
         
         it "should display error text if go in rescue" do
-          get(:bourreau_select, {'tool_id' => "abc"})
+          get(:tool_config_select, {'tool_id' => "abc"})
           response.body.should =~ /No Execution Servers/
         end
       end
@@ -252,21 +252,21 @@ describe ToolsController do
         end
       end
   
-      describe "bourreau_select" do
+      describe "tool_config_select" do
         let(:real_tool) {Factory.create(:tool, :user_id => current_user.id )}
   
         it "should render empty text if tool_id is empty" do
-          get(:bourreau_select, {'tool_id' => ""})
+          get(:tool_config_select, {'tool_id' => ""})
           response.body.should be_empty
         end
   
-        it "should render bourreau_select" do
-          get(:bourreau_select,{'tool_id' => real_tool.id.to_s})
-          response.should render_template("tools/_bourreau_select")
+        it "should render tool_config_select" do
+          get(:tool_config_select,{'tool_id' => real_tool.id.to_s})
+          response.should render_template("tools/_tool_config_select")
         end 
         
         it "should display error text if go in rescue" do
-          get(:bourreau_select, {'tool_id' => "abc"})
+          get(:tool_config_select, {'tool_id' => "abc"})
           response.body.should =~ /No Execution Servers/
         end
       end
