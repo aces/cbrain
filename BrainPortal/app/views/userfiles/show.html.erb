@@ -26,7 +26,7 @@
 
 <div class="menu_bar">
   <% if @userfile.can_be_accessed_by?(current_user, requested_access = :write) %>
-    <%= link_to 'Delete', { :action => 'delete_files', :file_ids => [@userfile.id] }, :confirm => "Are you sure you want to delete '#{@userfile.name}' ?", :class  => "button menu_button", :method => :delete  %>
+    <%= link_to 'Delete', { :action => 'delete_files', :ignore_persistent => "1", :file_ids => [@userfile.id] }, :confirm => "Are you sure you want to delete '#{@userfile.name}' ?", :class  => "button menu_button", :method => :delete  %>
   <% end %>
   <% if @userfile.can_be_accessed_by?(current_user, requested_access = :read) %>
     <%= link_to(@userfile.is_a?(FileCollection) ? "Download Collection" : "Download File", { :action => 'download', :file_ids => [@userfile.id] }, :class => "button menu_button", :method  => :get) %>
@@ -80,7 +80,7 @@
             <%= before_archiving_num_files ? view_pluralize(before_archiving_num_files, "file") : "unknown" %>
             <% if before_archiving_size && before_archiving_size >= 1_000 -%>
               = <%= before_archiving_size %> bytes
-            <% end %>            
+            <% end %>
          <% end %>
       <% else %>
         <%= colored_format_size(@userfile) %>
@@ -167,46 +167,46 @@
 
   <fieldset>
     <legend>Content</legend>
-    
+
     <% if @userfile.archived? %>
       <%= html_colorize("This #{@userfile.pretty_type} has been archived.", 'red') %><br>
       Content viewers are disabled until the file is unarchived.
     <% else %>
       <% if ! @userfile.can_be_accessed_by?(current_user, :read) %>
-  
+
         (This file cannot be viewed by you; I wonder how you got here.)
-  
+
       <% elsif @userfile.data_provider.meta[:no_viewers] %>
-  
+
         (This file cannot be viewed as it is stored on Data Provider
         <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
         which is marked as <strong>non-viewable</strong>)
-  
+
       <% elsif @userfile.data_provider.not_syncable? %>
-  
+
         (This file cannot be viewed as it is stored on Data Provider
         <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
         which is configured to <strong>not allow synchronization</strong> <em>at all</em>)
-  
+
       <% elsif ! @userfile.data_provider.rr_allowed_syncing? %>
-  
+
         (This file cannot be viewed as it is stored on Data Provider
         <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
         which is configured to <strong>not allow synchronization</strong> to <em>this Portal</em>)
-  
+
       <% elsif (! @userfile.is_locally_synced?) && (! @userfile.data_provider.online?) %>
-  
+
         (This data is not currently synchronized and its Data Provider
         <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
         is offline, so its content is not viewable for the moment)
-  
+
       <% elsif @userfile.is_locally_synced? && @userfile.viewers.blank? %>
-  
+
         (The contents of this file cannot be viewed: no viewer code available at this moment
         for files of type '<%= @userfile.pretty_type %>')
-  
+
       <% else %>
-  
+
         <% if ! @userfile.is_locally_synced? %>
           <% if @sync_status =~ /^To/ %>
             (This data file is currently being synchronized. Wait a few seconds for this to complete)
@@ -217,7 +217,7 @@
             This may allow you to view displayable content<% if @userfile.is_a?(FileCollection) %> and extract files from this collection<% end %>).
           <% end %>
         <% end %>
-  
+
         <% if @userfile.viewers.size > 1 %>
           <%= ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer", :reset_form  => false do %>
             <%= select_tag "viewer", options_for_select(@userfile.viewers.map{ |v| [v.name, v.name] }, @userfile.class.name.underscore) %>
@@ -225,7 +225,7 @@
           <% end %>
           <br>
         <% end  %>
-  
+
         <div id="userfile_viewer">
           <div class="display_userfile">
             <% if @default_viewer %>
