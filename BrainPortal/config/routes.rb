@@ -34,6 +34,7 @@ CbrainRailsPortal::Application.routes.draw do
   resources :sites
   resources :custom_filters
   resources :tool_configs
+  resources :disk_image_configs
   resources :tags
 
   # Standard CRUD resources, with extra methods

@@ -343,6 +343,39 @@
         <%= text_field_tag "bourreau[disk_image_user]", @bourreau.disk_image_user, :size => 60 %>
       <% end %>
     <% end %>
+      Image IDs on OpenStack execution servers:<br/> 
+      <table>
+	<% for bourreau in Bourreau.find_all_accessible_by_user(current_user).all %>
+	  <% if bourreau.cms_class == "ScirOpenStack" %>
+	   <tr>
+            <th colspan="6" class="centered">
+              <%= link_to_bourreau_if_accessible(bourreau) %>
+            </th>
+	    </tr>
+	    <% tcs = DiskImageConfig.where( :bourreau_id => bourreau.id, :disk_image_bourreau_id => @bourreau.id ) %>
+	    <% tcs << 'Dummy entry for "add new" row' %>
+	    <% rows = tcs.size %>
+	      <% tcs.each_with_index do |tc,i| %>
+	      <tr class="<%= cycle("list-odd", "list-even") %>">
+	  	  <% if i == rows - 1 %>
+	  	    <td colspan="6">
+	  	    <center>
+		    <% if rows <= 1 %>
+	  	      <%= html_colorize("(No associated OpenStack image).") %>
+		      <%= link_to "Add new", new_disk_image_config_path( :disk_image_bourreau_id => @bourreau.id, :bourreau_id => bourreau.id ) %>
+	            <% end %>
+                    </center>
+                    </td>
+                  <% else %>
+                    <td><%= tc.open_stack_disk_image_id %></td>
+                    <td><%= link_to "Edit", edit_disk_image_config_path(tc) %></td>
+                    <td><%= link_to 'Delete', tc, :confirm => "Are you sure you want to delete this Disk Image Configuration?", :method => :delete %></td>
+                  <% end %>
+              </tr>  
+              <% end %> 
+          <% end %>
+        <% end %>
+    </table>
   <% end %>
 
     <%= show_table(info, :header => "Runtime Information") do |t| %>

@@ -73,6 +73,10 @@ class Scir
     @config = {
       :extra_qsub_args => rr.cms_extra_qsub_args || "",
       :default_queue   => rr.cms_default_queue   || "",
+      :open_stack_auth_url => rr.open_stack_auth_url || "",
+      :open_stack_tenant => rr.open_stack_tenant || "",
+      :open_stack_user_name => rr.open_stack_user_name || "",
+      :open_stack_password => rr.open_stack_password || "",
     }
   end
 

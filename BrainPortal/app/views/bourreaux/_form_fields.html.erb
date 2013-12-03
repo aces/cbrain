@@ -77,20 +77,18 @@
     %>
   </span>
 
-<% if is_bourreau %>
 
+  <% if is_bourreau %>
   <p>
-
     <fieldset class="groupentry">
       <legend>Disk Image Configuration</legend>
       <div class="field_explanation">Disk image must have sshd up and sshfs available. CBRAIN's public key must be installed in disk image user's account.</div>
       <p><%= f.label :disk_image_file_id, "Disk Image File Id" %><br/>
       <%= f.text_field :disk_image_file_id %></p>
-
+      <div class="field_explanation">This file is used to deploy the disk image on clusters.</div>
       <p><%= f.label :disk_image_user, "Disk Image User" %><br/>
       <%= f.text_field :disk_image_user %></p>
-     
-    </fieldset>
+  </fieldset>
 
   <fieldset class="groupentry">
   <legend>SSH Remote Control Configuration</legend>
@@ -112,7 +110,6 @@
       <div class="field_explanation">This is an experimental field for advanced and non-standard setups
              where the remote hostname, above, is actually just a login node and
              the real host where we run the server is one step further.</div>
-
   </fieldset>
 
   <p>
@@ -216,6 +213,22 @@
     <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
     <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
 
+     <p><%= f.label :open_stack_auth_url, "OpenStack Authentication URL" %><br/> 
+     <%= f.text_field :open_stack_auth_url, :size => 60 %><br/> 
+     <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div> 
+
+     <p><%= f.label :open_stack_tenant, "OpenStack tenant" %><br/> 
+     <%= f.text_field :open_stack_tenant, :size => 60 %><br/> 
+     <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div> 
+
+     <p><%= f.label :open_stack_user_name, "OpenStack user name" %><br/> 
+     <%= f.text_field :open_stack_user_name, :size => 60 %><br/> 
+     <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div> 
+
+     <p><%= f.label :open_stack_password, "OpenStack password" %><br/> 
+     <%= f.text_field :open_stack_password, :size => 60 %><br/> 
+     <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div> 
+       
   </fieldset>
 
   <p>

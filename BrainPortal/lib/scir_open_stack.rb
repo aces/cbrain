@@ -35,7 +35,7 @@ class ScirOpenStack < Scir
 
     def update_job_info_cache
       @job_info_cache = {}
-      os = get_open_stack_connection("tglatard", "PowchEdip0","http://204.19.23.16:5000/v2.0", "cbrain")
+      os = get_open_stack_connection()
       os.servers.each do |s|
         # get status
         state = statestring_to_stateconst(os.server(s[:id]).status)
@@ -70,13 +70,13 @@ class ScirOpenStack < Scir
     end
 
     def terminate(jid)
-      os = get_open_stack_connection("tglatard", "PowchEdip0","http://204.19.23.16:5000/v2.0", "cbrain")
+      os = get_open_stack_connection()
       os.server(jid).delete!
     end
     
     def get_local_ip(jid)
       cluster_jobid = CbrainTask.where(:id => jid).first.cluster_jobid
-      os = get_open_stack_connection("tglatard", "PowchEdip0","http://204.19.23.16:5000/v2.0", "cbrain")
+      os = get_open_stack_connection()
       return os.server(cluster_jobid).accessipv4
     end
 
@@ -101,7 +101,11 @@ class ScirOpenStack < Scir
       [ "exception", "exception" ]
     end
 
-    def get_open_stack_connection(username, password,auth_url,tenant_name)
+    def get_open_stack_connection()
+      username = Scir.cbrain_config[:open_stack_user_name]
+      password = Scir.cbrain_config[:open_stack_password]
+      auth_url = Scir.cbrain_config[:open_stack_auth_url]
+      tenant_name = Scir.cbrain_config[:open_stack_tenant]  
       os = OpenStack::Connection.create({:username => username, :api_key=> password, :auth_method=>"password", :auth_url => auth_url, :authtenant_name =>tenant_name, :service_type=>"compute"})
     end
 
@@ -114,7 +118,14 @@ class ScirOpenStack < Scir
     def run(job)
 
       # TODO (Tristan VM) get instance id and flavor from disk image
-      vm = submit_VM("tglatard","PowchEdip0","http://204.19.23.16:5000/v2.0", "CBRAIN Worker", "cbrain", "b6766906-1f3d-44c6-aa33-44d1b569ffb2", "http://204.19.23.16:8774/9dd2bfba6bf040ad83e5140508aa31f0/flavors/9f9703e4-d8f5-496c-9ecd-52677e144578")
+      username = Scir.cbrain_config[:open_stack_user_name]
+      password = Scir.cbrain_config[:open_stack_password]
+      auth_url = Scir.cbrain_config[:open_stack_auth_url]
+      tenant = Scir.cbrain_config[:open_stack_tenant]  
+#      vm = submit_VM("tglatard","PowchEdip0","http://204.19.23.16:5000/v2.0", "CBRAIN Worker", "cbrain", "b6766906-1f3d-44c6-aa33-44d1b569ffb2", "http://204.19.23.16:8774/9dd2bfba6bf040ad83e5140508aa31f0/flavors/9f9703e4-d8f5-496c-9ecd-52677e144578")
+      task = CbrainTask.find(job.task_id)
+      image_id = DiskImageConfig.where(disk_image_bourreau_id => task.params[:disk_image], bourreau_id => RemoteResources.current_resource.id)
+      vm = submit_VM(username,password,auth_url, "CBRAIN Worker", tenant, image_id, "http://204.19.23.16:8774/9dd2bfba6bf040ad83e5140508aa31f0/flavors/9f9703e4-d8f5-496c-9ecd-52677e144578")
       return vm.id.to_s
     end
 

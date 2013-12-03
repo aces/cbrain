@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131030014033) do
+ActiveRecord::Schema.define(:version => 20131203213213) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -97,6 +97,14 @@ ActiveRecord::Schema.define(:version => 20131030014033) do
   add_index "data_providers", ["group_id"], :name => "index_data_providers_on_group_id"
   add_index "data_providers", ["type"], :name => "index_data_providers_on_type"
   add_index "data_providers", ["user_id"], :name => "index_data_providers_on_user_id"
+
+  create_table "disk_image_configs", :force => true do |t|
+    t.integer  "disk_image_bourreau_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "bourreau_id"
+    t.string   "open_stack_disk_image_id"
+  end
 
   create_table "exception_logs", :force => true do |t|
     t.string   "exception_class"
@@ -226,6 +234,10 @@ ActiveRecord::Schema.define(:version => 20131030014033) do
     t.string   "external_status_page_url"
     t.integer  "disk_image_file_id"
     t.string   "disk_image_user"
+    t.string   "open_stack_user_name"
+    t.string   "open_stack_auth_url"
+    t.string   "open_stack_tenant"
+    t.string   "open_stack_password"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
