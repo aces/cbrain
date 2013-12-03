@@ -17,12 +17,12 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Controller for managing ToolConfig objects.
 class ToolConfigsController < ApplicationController
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   before_filter :login_required
@@ -72,7 +72,7 @@ class ToolConfigsController < ApplicationController
     @tool_config          = config if   config.tool_id &&   config.bourreau_id # leaves nil otherwise
     @tool_glob_config     = config if   config.tool_id && ! config.bourreau_id # leaves nul otherwise
     @bourreau_glob_config = config if ! config.tool_id &&   config.bourreau_id # leaves nil otherwise
-    
+
     @tool_glob_config     ||=
       ToolConfig.where( :tool_id => @tool_config.tool_id, :bourreau_id => nil                      ).first if @tool_config
     @bourreau_glob_config ||=
@@ -112,7 +112,7 @@ class ToolConfigsController < ApplicationController
     @tool_config.env_array ||= []
 
     @tool_config.group = Group.everyone if @tool_config.group_id.blank?
-      
+
     respond_to do |format|
       format.html # edit.html.erb
       format.xml  { render :xml => @tool_config }
@@ -142,7 +142,7 @@ class ToolConfigsController < ApplicationController
     form_tool_config.bourreau_id = @tool_config.bourreau_id
 
     # Update everything else
-    [ :description, :script_prologue, :group_id, :ncpus ].each do |att|
+    [ :version_name, :description, :script_prologue, :group_id, :ncpus ].each do |att|
        @tool_config[att] = form_tool_config[att]
     end
 
@@ -197,7 +197,7 @@ class ToolConfigsController < ApplicationController
                     end
                     }
         format.xml  { head :ok }
-      else        
+      else
         format.html { render :action => "edit" }
         format.xml  { render :xml => @tool_config.errors, :status => :unprocessable_entity }
       end
@@ -212,7 +212,7 @@ class ToolConfigsController < ApplicationController
     flash[:notice] = "Tool configuration deleted."
 
     respond_to do |format|
-      format.html { 
+      format.html {
                     if @tool_config.tool_id
                       redirect_to edit_tool_path(@tool_config.tool)
                     else
