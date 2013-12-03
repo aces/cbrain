@@ -324,7 +324,7 @@ module SelectBoxHelper
 
         pairlist = []
         tool_tool_configs.each do |tc|
-          desc     = tc.version_name
+          desc     = tc.description
           tc_pair  = !b_is_online ? [ desc, tc.id.to_s, {:disabled => "true"} ] : [ desc, tc.id.to_s ]
           pairlist << tc_pair
         end

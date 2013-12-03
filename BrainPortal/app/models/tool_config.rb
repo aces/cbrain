@@ -92,7 +92,6 @@ class ToolConfig < ActiveRecord::Base
   # Returns the verion name or the first line of the description.
   # This is used to represent the 'name' of the version.
   def short_description
-    return self.version_name if self.version_name.present?
     description = self.description || ""
     raise "Internal error: can't parse description!?!" unless description =~ /^(.+\n?)/ # the . doesn't match \n
     header = Regexp.last_match[1].strip
