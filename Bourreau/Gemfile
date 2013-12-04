@@ -70,3 +70,4 @@ group :development, :test do
 end
 
 gem 'openstack'
+gem 'rb-readline', '~> 0.4.2'

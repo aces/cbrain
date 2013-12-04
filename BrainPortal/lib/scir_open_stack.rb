@@ -109,8 +109,8 @@ class ScirOpenStack < Scir
       os = OpenStack::Connection.create({:username => username, :api_key=> password, :auth_method=>"password", :auth_url => auth_url, :authtenant_name =>tenant_name, :service_type=>"compute"})
     end
 
-    def submit_VM(username, password,auth_url,vm_name,tenant_name,image_id,flavor_ref)
-      os = get_open_stack_connection(username, password,auth_url,tenant_name)
+    def submit_VM(vm_name,image_id,flavor_ref)
+      os = get_open_stack_connection()
       image = os.get_image(image_id)
       new_server = os.create_server(:name => vm_name , :imageRef => image.id, :flavorRef => flavor_ref)
     end
@@ -118,14 +118,14 @@ class ScirOpenStack < Scir
     def run(job)
 
       # TODO (Tristan VM) get instance id and flavor from disk image
-      username = Scir.cbrain_config[:open_stack_user_name]
-      password = Scir.cbrain_config[:open_stack_password]
-      auth_url = Scir.cbrain_config[:open_stack_auth_url]
-      tenant = Scir.cbrain_config[:open_stack_tenant]  
-#      vm = submit_VM("tglatard","PowchEdip0","http://204.19.23.16:5000/v2.0", "CBRAIN Worker", "cbrain", "b6766906-1f3d-44c6-aa33-44d1b569ffb2", "http://204.19.23.16:8774/9dd2bfba6bf040ad83e5140508aa31f0/flavors/9f9703e4-d8f5-496c-9ecd-52677e144578")
       task = CbrainTask.find(job.task_id)
-      image_id = DiskImageConfig.where(disk_image_bourreau_id => task.params[:disk_image], bourreau_id => RemoteResources.current_resource.id)
-      vm = submit_VM(username,password,auth_url, "CBRAIN Worker", tenant, image_id, "http://204.19.23.16:8774/9dd2bfba6bf040ad83e5140508aa31f0/flavors/9f9703e4-d8f5-496c-9ecd-52677e144578")
+      disk_image_bourreaux = Bourreau.where(:disk_image_file_id => task.params[:disk_image])
+      image_id = nil
+      disk_image_bourreaux.each do |b|
+      	image_id = DiskImageConfig.where(:disk_image_bourreau_id => b.id, :bourreau_id => RemoteResource.current_resource.id).first.open_stack_disk_image_id
+      end
+      raise "Cannot find Disk Image Bourreau associated with file id #{task.params[:disk_image]} or Disk Image Bourreau has no OpenStack image id for #{RemoteResource.current_resource.name}" unless !image_id.blank?
+      vm = submit_VM("CBRAIN Worker", image_id, "http://204.19.23.16:8774/9dd2bfba6bf040ad83e5140508aa31f0/flavors/9f9703e4-d8f5-496c-9ecd-52677e144578")
       return vm.id.to_s
     end
 
