@@ -30,8 +30,25 @@
   <% if @disk_image_config.disk_image_bourreau_id && @disk_image_config.bourreau_id %>
 
   <span title="Image id to use on OpenStack bourreau #{@disk_image_config.bourreau.name}">
-    <p><label>Image id to use on OpenStack bourreau <%= @disk_image_config.bourreau.name  %>:</label><br/>
-      <%= f.text_area :open_stack_disk_image_id, :rows => 1, :cols => 40 %><br/>
+    <p><label>Image to use on OpenStack bourreau <%= @disk_image_config.bourreau.name  %>:</label><br/>
+      <%=    
+	 bourreau = Bourreau.find(@disk_image_config.bourreau.id)
+	 images = Array.new
+	 if bourreau.cms_class == "ScirOpenStack"
+	   username = bourreau.open_stack_user_name
+	   password = bourreau.open_stack_password
+	   auth_url = bourreau.open_stack_auth_url
+	   tenant_name = bourreau.open_stack_tenant
+	   os = OpenStack::Connection.create({:username => username, :api_key=> password, :auth_method=>"password", :auth_url => auth_url, :authtenant_name =>tenant_name, :service_type=>"compute"})
+           os.list_images.each do |image|
+              images << [image[:name].to_s, image[:id]]
+           end
+          else
+             return "Bourreau #{bourreau.name} is not an OpenStack Bourreau!"
+          end
+      
+       f.select :open_stack_disk_image_id, images %>
+
     </p>
   </span>
   <% end %>

@@ -239,6 +239,28 @@
           <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
         <% end %>
 
+	<% if @bourreau.cms_class == "ScirOpenStack" %>
+	<% t.edit_cell(:open_stack_auth_url, :header => "OpenStack Authentication URL") do %>
+          <%= text_field_tag "bourreau[open_stack_auth_url]", @bourreau.open_stack_auth_url, :size => 60 %><br/>
+          <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div>
+        <% end %>
+
+	<% t.edit_cell(:open_stack_tenant, :header => "OpenStack Tenant") do %>
+          <%= text_field_tag "bourreau[open_stack_tenant]", @bourreau.open_stack_tenant, :size => 60 %><br/>
+          <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div>
+        <% end %>
+
+	<% t.edit_cell(:open_stack_user_name, :header => "OpenStack User Name") do %>
+          <%= text_field_tag "bourreau[open_stack_user_name]", @bourreau.open_stack_user_name, :size => 60 %><br/>
+          <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div>
+        <% end %>
+
+	<% t.edit_cell(:open_stack_password, :header => "OpenStack Password") do %>
+          <%= text_field_tag "bourreau[open_stack_password]", @bourreau.open_stack_password, :size => 60 %><br/>
+          <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div>
+        <% end %>  
+	<% end %>
+
         <% t.edit_cell 'meta[task_limit_user_default]', 
                        :header => "Default maximum number of active tasks for each user", 
                        :content => (@bourreau.meta["task_limit_user_default"].blank? ? "Server's max" : @bourreau.meta["task_limit_user_default"]) do %>
@@ -343,7 +365,7 @@
         <%= text_field_tag "bourreau[disk_image_user]", @bourreau.disk_image_user, :size => 60 %>
       <% end %>
     <% end %>
-      Image IDs on OpenStack execution servers:<br/> 
+      Corresponding image IDs on OpenStack execution servers:<br/> 
       <table>
 	<% for bourreau in Bourreau.find_all_accessible_by_user(current_user).all %>
 	  <% if bourreau.cms_class == "ScirOpenStack" %>

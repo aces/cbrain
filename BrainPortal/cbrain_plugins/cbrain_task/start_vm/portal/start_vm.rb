@@ -21,12 +21,12 @@
 
 # A task to start a virtual machine 
 
+require 'openstack'
+
 class CbrainTask::StartVM < PortalTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
-  #TODO what's after_find ? (see nii2mnc.rb)
-
   def self.properties
     { :use_parallelizer => false }
   end  
@@ -40,7 +40,8 @@ class CbrainTask::StartVM < PortalTask
       :number_of_vms => 1,
       :vm_cpus => 2,
       :vm_ram_gb => 4,
-      :job_slots => 2
+      :job_slots => 2,
+      :open_stack_image_flavor => "",
     }
   end
   
@@ -65,6 +66,19 @@ class CbrainTask::StartVM < PortalTask
 
     params[:vm_user] = virtual_bourreau.disk_image_user
 
+    bourreau = Bourreau.find(ToolConfig.find(self.tool_config_id).bourreau_id)
+    if bourreau.cms_class == "ScirOpenStack"
+      username = bourreau.open_stack_user_name
+      password = bourreau.open_stack_password
+      auth_url = bourreau.open_stack_auth_url
+      tenant_name = bourreau.open_stack_tenant
+      os = OpenStack::Connection.create({:username => username, :api_key=> password, :auth_method=>"password", :auth_url => auth_url, :authtenant_name =>tenant_name, :service_type=>"compute"})
+      
+      params[:available_flavors] =  Array.new
+      os.list_flavors.each do |flavor|
+        params[:available_flavors] << [ flavor[:name].to_s , flavor[:id].to_s]
+      end
+    end
     ""
   end
 
@@ -82,11 +96,15 @@ class CbrainTask::StartVM < PortalTask
     cb_error "Missing disk image file!"  if params[:disk_image].blank?
     cb_error "Missing VM user!"  if params[:vm_user].blank?
     cb_error "Missing VM boot timeout!"  if params[:vm_boot_timeout].blank?
-    cb_error "Missing number of job slots!" if params[:job_slots].blank?
-    cb_error "Missing number of instances!" if params[:number_of_vms].blank?
-    cb_error "Missing number of CPUs !" if params[:vm_cpus].blank?
-    cb_error "Missing RAM!" if params[:vm_ram_gb].blank?
+
+    cb_error "Missing number of instances!" if params[:number_of_vms].blank? 
     cb_error "Please don't try to start more than 20 instances at once for now." if params[:number_of_vms].to_i > 20
+
+    bourreau = Bourreau.find(ToolConfig.find(self.tool_config_id).bourreau_id)
+    cb_error "Missing number of job slots!" if params[:job_slots].blank? && bourreau.cms_class != "ScirOpenStack"
+    cb_error "Missing number of CPUs !" if params[:vm_cpus].blank? && bourreau.cms_class != "ScirOpenStack"
+    cb_error "Missing RAM!" if params[:vm_ram_gb].blank? && bourreau.cms_class != "ScirOpenStack"
+    cb_error "Missing OpenStack flavor" if params[:open_stack_image_flavor].blank? && bourreau.cms_class == "ScirOpenStack"
 
     #params[:vm_status] is the status of the VM embedded in the task.
     #For now we use a task param, maybe we'll create a VM object

@@ -21,6 +21,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 -%>
+
+<h3>General</h3>
+
 <strong>Disk image: </strong>
   <%= h(Userfile.find(params[:interface_userfile_ids][0]).name) %>
   <%= form.params_hidden_field :disk_image %>
@@ -32,6 +35,24 @@
 <strong>VM boot timeout (s):</strong>
    <%= text_field_tag :vm_boot_timeout.to_la, params[:vm_boot_timeout], size:4 %>
 <br/>
+<strong>Number of instances to start (&le;20):</strong>
+   <%= text_field_tag :number_of_vms.to_la, params[:number_of_vms], size:5 %>
+<br/>
+
+<% if Bourreau.find(ToolConfig.find(@task.tool_config_id).bourreau_id).cms_class == "ScirOpenStack" %>
+
+<h3>OpenStack</h3>
+
+<strong>Image Flavor:</strong>
+
+<% if !params[:available_flavors].blank? %>
+<%=  select_tag :open_stack_image_flavor.to_la, options_for_select(params[:available_flavors], params[:open_stack_image_flavor]) %>
+<% end %>
+
+<% else %>
+
+<h3>Cluster System</h3>
+
 <strong>VM CPUs:</strong>
    <%= text_field_tag :vm_cpus.to_la, params[:vm_cpus], size:4 %>
 <br/>
@@ -47,7 +68,6 @@
 <strong>Use emulation</strong>
   <%= form.params_check_box :emulation %>
 <br/>
-<strong>Number of instances to start (&le;20):</strong>
-   <%= text_field_tag :number_of_vms.to_la, params[:number_of_vms], size:5 %>
+<% end %> 
 
 
