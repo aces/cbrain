@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -63,7 +63,7 @@
 
 <h1>Quick Links To Individual Access Reports</h1>
 
-<h5>By Execution Server (or <%= link_to "all of them", :action => :index %>)</h5>
+<h5>By Execution Server (or <%= link_to "all of them", :action => :index, :view => 'by_bourreau' %>)</h5>
 <%= array_to_table(Bourreau.all.sort { |a,b| a.name <=> b.name }, :table_class => 'simple', :rows => 1 ) do |bourreau,r,c| %>
   <%= link_to bourreau.name, :action => :index, :bourreau_id => bourreau.id %>
 <% end %>

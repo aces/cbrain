@@ -190,6 +190,8 @@ class TasksController < ApplicationController
       @task.tool_config = lastest_toolconfig if lastest_toolconfig
     end
 
+    @tool_config = @task.tool_config
+
     # Filter list of files as provided by the get request
     file_ids = (params[:file_ids] || []) | current_session.persistent_userfile_ids_list
     @files            = Userfile.find_accessible_by_user(file_ids, current_user, :access_requested => :write) rescue []
@@ -228,9 +230,10 @@ class TasksController < ApplicationController
   end
 
   def edit #:nodoc:
-    @task       = current_user.available_tasks.find(params[:id])
+    @task        = current_user.available_tasks.find(params[:id])
     @task.add_new_params_defaults # auto-adjust params with new defaults if needed
-    @toolname   = @task.name
+    @toolname    = @task.name
+    @tool_config = @task.tool_config
 
     if @task.class.properties[:cannot_be_edited]
       flash[:error] = "This task is not meant to be edited.\n"
