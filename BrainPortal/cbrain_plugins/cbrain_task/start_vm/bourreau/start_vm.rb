@@ -33,25 +33,23 @@ class CbrainTask::StartVM < ClusterTask
   
   def setup 
     #synchronize VM disk image
-
-    disk_image_file_id = params[:disk_image]
-    addlog "Synchronizing file with id #{disk_image_file_id}"
-    disk_image_file = Userfile.find(disk_image_file_id) 
-
-    timestart = Time.now
-    disk_image_file.sync_to_cache  
-    timestop = Time.now
-    difftime = timestop - timestart 
-    self.addlog "Synchronized file #{disk_image_file.name} in #{difftime}s"
-
-    disk_image_filename = disk_image_file.cache_full_path 
-    safe_symlink(disk_image_filename,"image")
-
-    if !File.exists? disk_image_filename
-      raise "File #{disk_image_filename} can't be found after synchronization."
+    if RemoteResource.current_resource.cms_class != "ScirOpenStack"
+      disk_image_file_id = params[:disk_image]
+      addlog "Synchronizing file with id #{disk_image_file_id}"
+      disk_image_file = Userfile.find(disk_image_file_id) 
+      timestart = Time.now
+      disk_image_file.sync_to_cache
+      timestop = Time.now
+      difftime = timestop - timestart
+      self.addlog "Synchronized file #{disk_image_file.name} in #{difftime}s"
+      disk_image_filename = disk_image_file.cache_full_path
+      safe_symlink(disk_image_filename,"image")
+      if !File.exists? disk_image_filename
+        raise "File #{disk_image_filename} can't be found after synchronization."
+      end
+    else
+      addlog "Not synchronizing disk image on OpenStack Bourreau"
     end
-    
- 
   true
   end
 
