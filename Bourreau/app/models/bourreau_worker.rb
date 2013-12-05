@@ -192,7 +192,7 @@ class BourreauWorker < Worker
 
         # Alright, move the task along its lifecycle
         task = user_tasks.pop
-        if ((user_limit || bourreau_limit) and not task.goes_to_vm) then 
+        if ((user_limit || bourreau_limit) and not task.job_template_goes_to_vm?) then 
           worker_log.info "Skipping non VM task #{task.id} due to reached limit."
           break 
         end
