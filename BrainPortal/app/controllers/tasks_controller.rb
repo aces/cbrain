@@ -187,10 +187,10 @@ class TasksController < ApplicationController
       toolconfigs = ToolConfig.where( :bourreau_id => @task.bourreau_id, :tool_id => tool.id )
       toolconfigs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }
       lastest_toolconfig = toolconfigs.last
-      @task.tool_config = lastest_toolconfig if lastest_toolconfig
+      @task.tool_config  = lastest_toolconfig if lastest_toolconfig
     end
 
-    @tool_config = @task.tool_config
+    @tool_config = @task.tool_config # for acces in view
 
     # Filter list of files as provided by the get request
     file_ids = (params[:file_ids] || []) | current_session.persistent_userfile_ids_list
@@ -288,6 +288,8 @@ def create #:nodoc:
     else
       params[:cbrain_task][:tool_config_id] = nil # ZAP value, it's incorrect; will likely cause a validation error later on.
     end
+
+    @tool_config = tool_config # for acces in view
 
     # A brand new task object!
     @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.demodulize
