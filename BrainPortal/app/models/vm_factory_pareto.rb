@@ -232,7 +232,6 @@ class VmFactoryPareto < VmFactory
       log_vm "#{a}"
     end
     
-
     pareto_set = actions.pareto_set
     log_vm " == Pareto set (#{pareto_set.length} elements) == "
     pareto_set.each do |a|
@@ -252,39 +251,21 @@ class VmFactoryPareto < VmFactory
       submit_vm_and_replicate site_indexes
     end
   end
-  
-  #sites = [Site.new(32,11,"A"),Site.new(21,12,"B"),Site.new(1,3,"C"),Site.new(1,30,"D"),Site.new(11,31,"E"),Site.new(21,32,"F")]
-  #alpha = 0.01
-  #lambda = 1
-  
-  # # generate all actions
-  # # http://jeux-et-mathematiques.davalan.org/divers/parties/index.html
-  # actions = Array.new
-  # sites.each do |x|
-  #   n_actions = actions.dup
-  #   actions.each do |a| 
-  #     n_actions << Action.new(a.get_sites + [x],alpha)
-  #   end
-  #   n_actions << Action.new([x],alpha) 
-  #   actions = n_actions
-  # end
 
-  # puts " == All actions == "
-  # actions.each do |a|
-  #   puts "#{a}"
-  # end
+  def get_median_task_durations_of_queued_tasks
+    queued_all =  CbrainTask.where(:status => [ 'New'] ) - CbrainTask.where(:type => "CbrainTask::StartVM") 
+    queued = queued_all.reject{ |x| (not Bourreau.find(x.bourreau_id).is_a? DiskImageBourreau) || (DiskImageBourreau.find(x.bourreau_id).disk_image_file_id != @disk_image_file_id)}    
+    if queued.length == 0 then return 0 end
+    durations = Array.new
+    queued.each { |t| 
+      durations << t.job_walltime_estimate
+    }
+    
+    sorted_durations = durations.sort
+    len = durations.length
+    median_duration = len % 2 == 1 ? sorted_durations[len/2] : (sorted_durations[len/2 - 1] + sorted_durations[len/2]) / 2.0
+    return median_duration
+  end
 
-  # puts " == Pareto set == "
-  # pareto_set = actions.pareto_set
-  # pareto_set.each do |a|
-  #   puts "#{a}"
-  # end
-
-  # puts " == Bi-objective minimization == "
-  # (best_action,best_bo) = pareto_set.bi_objective_min(lambda) 
-  # puts " Best Action is #{best_action} (#{best_bo})"
-
-  #set = [Couple.new(2,4),Couple.new(2,3), Couple.new(1,2), Couple.new(4,1.9)]
-  #set.pareto_set.print
 end
 

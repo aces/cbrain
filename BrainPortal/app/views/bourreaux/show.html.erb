@@ -259,8 +259,13 @@
           <%= text_field_tag "bourreau[open_stack_password]", @bourreau.open_stack_password, :size => 60 %><br/>
           <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div>
         <% end %>  
+
+	<% t.edit_cell(:cost_factor, :header => "Cost factor") do %>
+          <%= text_field_tag "bourreau[cost_factor]", @bourreau.cost_factor, :size => 60 %><br/>
+          <div class="field_explanation">Optional. Used by Pareto VM factory to evaluate site cost. If not set, Pareto VM factory will not submit VMs to this site.</div>
 	<% end %>
 
+	<% end %>
         <% t.edit_cell 'meta[task_limit_user_default]', 
                        :header => "Default maximum number of active tasks for each user", 
                        :content => (@bourreau.meta["task_limit_user_default"].blank? ? "Server's max" : @bourreau.meta["task_limit_user_default"]) do %>
@@ -390,6 +395,7 @@
                     </td>
                   <% else %>
                     <td><%= tc.open_stack_disk_image_id %></td>
+                    <td><%= tc.open_stack_default_flavor %></td>
                     <td><%= link_to "Edit", edit_disk_image_config_path(tc) %></td>
                     <td><%= link_to 'Delete', tc, :confirm => "Are you sure you want to delete this Disk Image Configuration?", :method => :delete %></td>
                   <% end %>

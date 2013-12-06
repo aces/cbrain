@@ -228,6 +228,11 @@
      <p><%= f.label :open_stack_password, "OpenStack password" %><br/> 
      <%= f.text_field :open_stack_password, :size => 60 %><br/> 
      <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div> 
+
+     <p><%= f.label :cost_factor, "Cost factor (for VM factory)" %><br/> 
+     <%= f.text_field :cost_factor, :size => 60 %><br/> 
+     <div class="field_explanation">Optional. Used by Pareto VM factory to evaluate site cost. If not set, Pareto VM factory will not submit VMs to this site.</div> 
+
        
   </fieldset>
 

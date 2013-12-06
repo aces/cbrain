@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131203213213) do
+ActiveRecord::Schema.define(:version => 20131206160400) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -104,6 +104,7 @@ ActiveRecord::Schema.define(:version => 20131203213213) do
     t.datetime "updated_at"
     t.integer  "bourreau_id"
     t.string   "open_stack_disk_image_id"
+    t.string   "open_stack_default_flavor"
   end
 
   create_table "exception_logs", :force => true do |t|
@@ -238,6 +239,7 @@ ActiveRecord::Schema.define(:version => 20131203213213) do
     t.string   "open_stack_auth_url"
     t.string   "open_stack_tenant"
     t.string   "open_stack_password"
+    t.float    "cost_factor"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"

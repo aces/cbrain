@@ -19,27 +19,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
-class String
-  def colorize(color_code)
-    "\e[#{color_code}m#{self}\e[0m"
-  end
-end
 
 
-class VmFactory 
+# An abstract class to start/stop virtual machines based on the system load
+# Derived classes must implement method submit_vm
 
+class VmFactory < ActiveRecord::Base
+
+  # see #5061. Be careful, this list is different from the list in BourreauWorker
   ActiveTasks = [ 'New', 'Setting Up', 'Queued', 'On CPU',  
                   'On Hold', 'Suspended',
                   'Post Processing',
                   'Recovering Setup', 'Recovering Cluster', 'Recovering PostProcess', # The Recovering states, not Recover
                   'Restarting Setup', 'Restarting Cluster', 'Restarting PostProcess', # The Restarting states, not Restart
                 ]
-
-  
-
+ 
   def initialize(disk_image_file_id,tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus)
-
-    
+   
     @disk_image_file_id = disk_image_file_id
 di =  DiskImageBourreau.where(:disk_image_file_id => disk_image_file_id).first#Userfile.find(disk_image_file_id).name
     @disk_image_name = di.blank? ? "Void" : di.name
@@ -53,44 +49,9 @@ di =  DiskImageBourreau.where(:disk_image_file_id => disk_image_file_id).first#U
     @k_plus = k_plus #1 # in number of VMs
     @k_minus = k_minus #1 # in number of VMs
 
-    #initializes round robin
-    @next_site = 0 
-    #initializes bourreaux (should be obtained from DB)
-    @site_names = Array.new 
-    @max_active = Array.new
-    @tool_configs = Array.new
-
-#    @bourreau_ids = [27, 21, 20] #Creatis Nimbus Mammouth
-
-    @bourreau_ids = [27, 21, 19] #Creatis Nimbus Guillimin
-    @site_costs = [10,100,1] # parameters, should be moved to bourreau properties
-
-
-    #  @bourreau_ids = [21, 18,  20, 19] #Nimbus, Colosse, Mammouth, Guillimin
-    # @site_costs = [10,1,5,1] # parameters, should be moved to bourreau properties
-    
-    0.upto(@bourreau_ids.count - 1) do |i|
-      bourreau = Bourreau.find(@bourreau_ids[i])
-      @site_names[i] = bourreau.name 
-      @max_active[i] = bourreau.meta["task_limit_total"].blank? ? Float::INFINITY : bourreau.meta["task_limit_total"].to_i
-      @tool_configs[i] = ToolConfig.where(tool_id: 43, bourreau_id: bourreau.id).first.id
-    end
-  
-
-#    @max_active = [24,200,200,200] # parameters, should be moved to bourreau properties
-
-    @n_sites = @site_names.length
-
-    @site_queues = Array.new
-    @site_booting_times = Array.new
-    @site_performance_factors = Array.new    
-
-    log_vm "Creating new VM factory"
-    
-  end
-
-  def get_costs
-    return @site_costs
+    # initialize StartVM tool id
+    @start_vm_tool_id = Tool.where(:cbrain_task_class => "CbrainTask::StartVM").first.id
+    log_vm "Creating new VM factory"    
   end
 
   def log_vm(object)
@@ -103,12 +64,9 @@ di =  DiskImageBourreau.where(:disk_image_file_id => disk_image_file_id).first#U
     File.open(logfile, 'a') {|f| f.write(out) }
   end
 
-  def get_bourreau_ids
-    return @bourreau_ids
-  end
-
+  # The main loop controlling VM submission and removal
+  # See Algorithm 1 in CCGrid 2014 paper
   def start
-    # TODO (Tristan) monitor all types of disk images separately. 
     while ( true )
       log_vm "Starting VMFactory iteration"
       # check upper bound
@@ -160,7 +118,11 @@ di =  DiskImageBourreau.where(:disk_image_file_id => disk_image_file_id).first#U
 
   def get_active_vms
     vms = CbrainTask.where(:status => ActiveTasks, :type => "CbrainTask::StartVM")
-    vms_with_good_disk_image = vms.reject{ |x| x.params[:disk_image] != @disk_image_file_id}
+    #reject vms of offline bourreaux
+    vms_online = vms.reject{ |x| !Bourreau.find(x.bourreau_id).online }
+    #reject vms with the wrong disk image
+    vms_with_good_disk_image = vms_online.reject{ |x| x.params[:disk_image] != @disk_image_file_id || Bourreau.find(x.bourreau_id).online == false}
+    
     log_vm "There are #{vms_with_good_disk_image.count} active VMs (including replicas)"
     return vms_with_good_disk_image
   end
@@ -190,35 +152,30 @@ di =  DiskImageBourreau.where(:disk_image_file_id => disk_image_file_id).first#U
   end
 
   def get_active_tasks(bourreau_id)
-    #TODO should we consider only VM tasks here?
     return CbrainTask.where(:bourreau_id => bourreau_id,:status => ActiveTasks,:type => "CbrainTask::StartVM").count
   end
 
-  def incr_next_site
-    @next_site = (@next_site + 1) % @n_sites
-  end
-
-  def submit_vm  
-    site_name,bourreau_id,tool_config = self.select_site_round_robin_with_max_active
-    if site_name.blank? then log_vm "Cannot submit VM: all sites have reached their max number of active VMs.".colorize(32) else
-      self.submit_vm_to_site site_name,bourreau_id,tool_config
-    end
+  def submit_vm
+    raise "Abstract method. Must be implemented by child classes."
   end
 
   # method to submit and replicate VMs on a set of sites
-  def submit_vm_and_replicate(site_indexes)
+  def submit_vm_and_replicate(bourreau_ids)
     task_replicas = Array.new
     task_ids = Array.new 
-    site_indexes.each do |i|
-      if get_active_tasks(@bourreau_ids[i]) < @max_active[i] then
-        task = submit_vm_to_site(@site_names[i],@bourreau_ids[i],@tool_configs[i])
+    bourreau_ids.each do |i|
+      bourreau = Bourreau.find(i)
+      if get_active_tasks(i) < bourreau.meta[:task_limit_total].to_i || bourreau.meta[:task_limit_total].to_i == 0 || bourreau.meta[:task_limit_total].to_i.blank? then
+        # will use the first config of StartVM on this bourreau
+        tool_config = ToolConfig.where(tool_id: @start_vm_tool_id, bourreau_id: bourreau.id).first.id
+        task = submit_vm_to_site(bourreau.name,bourreau.id,tool_config)
         if not task.blank? then
           task_replicas << task 
           task_ids << task.id
           task.params[:replicas] = Array.new
         end
       else
-        log_vm "Not submitting VM to site #{@site_names[i]} (max number of active VMs reached)"
+        log_vm "Not submitting VM to site #{bourreau.name} (max number of active VMs reached)"
       end
     end
     log_vm  "Submitted #{task_replicas.length} VMs"
@@ -228,35 +185,32 @@ di =  DiskImageBourreau.where(:disk_image_file_id => disk_image_file_id).first#U
       t.save!
     }
   end
-
-  def select_site_round_robin_with_max_active
-    n_attempts = 1
-    incr_next_site
-    while (get_active_tasks(@bourreau_ids[@next_site]) >= @max_active[@next_site] || !Bourreau.find(@bourreau_ids[@next_site]).online?) && n_attempts <= @n_sites  do
-      incr_next_site 
-      n_attempts += 1
-    end
-    return n_attempts > @n_sites ? nil : [@site_names[@next_site],@bourreau_ids[@next_site],@tool_configs[@next_site]]
-  end
   
-  def submit_vm_to_site(site_name, bourreau_id, tool_config)
-    if not Bourreau.find(bourreau_id).online? then 
-      log_vm  "Not".colorize(33) +" submitting VM to offline #{site_name.colorize(33)}"
+  def submit_vm_to_site(bourreau_id)
+
+    bourreau = Bourreau.find(bourreau_id)    
+    if not bourreau.online? then 
+      log_vm  "Not".colorize(33) +" submitting VM to offline #{bourreau.name.colorize(33)}"
       return nil
     end
-    log_vm "Submitting a new VM to #{site_name.colorize(33)}"
+    
+    log_vm "Submitting a new VM to #{bourreau.name.colorize(33)}"
     task = CbrainTask.const_get("StartVM").new
     task.params = task.class.wrapper_default_launch_args.clone
 
     # will submit with user associated to the first virtual bourreau we find with this disk image
     disk_image = DiskImageBourreau.where(:disk_image_file_id => @disk_image_file_id).first
     task.params[:vm_user] = disk_image.disk_image_user 
-    task.params[:disk_image] = @disk_image_file_id
-
     task.user = User.where(:login => "admin").first
     task.bourreau_id = bourreau_id
-    task.tool_config = ToolConfig.find(tool_config) 
+    task.tool_config = ToolConfig.where(:tool_id => @start_vm_tool_id, :bourreau_id => bourreau.id).first
     task.status = "New" 
+    task.params[:disk_image] = @disk_image_file_id
+    
+    if bourreau.cms_class == "ScirOpenStack" 
+      task.params[:open_stack_image_flavor] = DiskImageConfig.where(:bourreau_id => bourreau.id, :disk_image_bourreau_id => disk_image.id).first.open_stack_default_flavor
+    end
+
     task.save!
     Bourreau.find(task.bourreau_id).send_command_start_workers rescue true
     return task
@@ -266,11 +220,12 @@ di =  DiskImageBourreau.where(:disk_image_file_id => disk_image_file_id).first#U
     return remove_vm_from_site    
   end
 
+  # see Algorithm 2 in CCGrid 2014 paper
   def remove_vm_from_site(bourreau_id = nil)
     if bourreau_id.blank? then log_vm  "Removing a VM (site selection based on VM statuses)" else log_vm  "Removing a VM from site " + "#{Bourreau.find(bourreau_id).name}".colorize(33) end 
     # get queuing VMs # TODO get only VMs queued for this disk image
     queued_all = bourreau_id.blank? ? CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'New','Queued', 'Setting Up'] ) : CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'New','Queued', 'Setting Up'], :bourreau_id => bourreau_id )
-    queued = queued_all.reject{ |x| x.params[:disk_image] != @disk_image_file_id}
+    queued = queued_all.reject{ |x| x.params[:disk_image] != @disk_image_file_id || Bourreau.find(x.bourreau_id).online == false}
     log_vm "There are #{queued.count} queued VMs"
     youngest_queued = nil 
     queued.each do |task|
@@ -284,7 +239,7 @@ di =  DiskImageBourreau.where(:disk_image_file_id => disk_image_file_id).first#U
     else
       # get booting VMs 
       on_cpu_all = bourreau_id.blank? ? CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'On CPU'] ) : CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'On CPU'], :bourreau_id => bourreau_id )
-      on_cpu = on_cpu_all.reject{ |x| x.params[:disk_image] != @disk_image_file_id}
+      on_cpu = on_cpu_all.reject{ |x| x.params[:disk_image] != @disk_image_file_id || Bourreau.find(x.bourreau_id).online == false}
       booting = []
       on_cpu.each do |task| 
         if task.params[:vm_status] == "booting" then booting << task end
@@ -335,10 +290,15 @@ di =  DiskImageBourreau.where(:disk_image_file_id => disk_image_file_id).first#U
     end
   end
 
+  def get_ids_of_target_bourreaux
+    Bourreau.where(:online => true).select(:id).map {|i| i.id } & ToolConfig.where(:tool_id => @start_vm_tool_id).select(:bourreau_id).map {|i| i.bourreau_id}
+  end
+  
+  # See algorithm 2 in CCGrid 2014 paper
   def handle_replicas
     #handle replicas of OnCPU VMs
     on_cpu_all = CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'On CPU'] )
-    on_cpu = on_cpu_all.reject{ |x| x.params[:disk_image] != @disk_image_file_id}
+    on_cpu = on_cpu_all.reject{ |x| x.params[:disk_image] != @disk_image_file_id || Bourreau.find(x.bourreau_id).online == false}
     on_cpu.each do |task|
       # task is now on cpu
       # r_id/r_task is its replicas
@@ -379,49 +339,32 @@ di =  DiskImageBourreau.where(:disk_image_file_id => disk_image_file_id).first#U
         task.params[:replicas] = [ task.id ]
         task.save
       end
-    end
-    
-  end
-  def update_site_queues
-    0.upto(@n_sites-1) do |i|
-      b = Bourreau.find(@bourreau_ids[i])
-      @site_queues[i] = b.meta[:latest_in_queue_delay]
-      log_vm "Updated queuing time of site #{@site_names[i]} to #{@site_queues[i]}"
-    end
+    end    
   end
 
-  def update_site_booting_times
-    0.upto(@n_sites-1) do |i|
-      b = Bourreau.find(@bourreau_ids[i])
-      @site_booting_times[i] = b.meta[:latest_booting_delay]
-      log_vm "Updated booting of site #{@site_names[i]} to #{@site_booting_times[i]}"
-    end
-  end
+  # def update_site_queues
+  #   0.upto(@n_sites-1) do |i|
+  #     b = Bourreau.find(@bourreau_ids[i])
+  #     @site_queues[i] = b.meta[:latest_in_queue_delay]
+  #     log_vm "Updated queuing time of site #{@site_names[i]} to #{@site_queues[i]}"
+  #   end
+  # end
 
-  def update_site_performance_factors
-    0.upto(@n_sites-1) do |i|
-      b = Bourreau.find(@bourreau_ids[i])
-      @site_performance_factors[i] = b.meta[:latest_performance_factor]
-      log_vm "Updated booting of site #{@site_names[i]} to #{@site_booting_times[i]}"
-    end
-  end
+  # def update_site_booting_times
+  #   0.upto(@n_sites-1) do |i|
+  #     b = Bourreau.find(@bourreau_ids[i])
+  #     @site_booting_times[i] = b.meta[:latest_booting_delay]
+  #     log_vm "Updated booting of site #{@site_names[i]} to #{@site_booting_times[i]}"
+  #   end
+  # end
+
+  # def update_site_performance_factors
+  #   0.upto(@n_sites-1) do |i|
+  #     b = Bourreau.find(@bourreau_ids[i])
+  #     @site_performance_factors[i] = b.meta[:latest_performance_factor]
+  #     log_vm "Updated booting of site #{@site_names[i]} to #{@site_booting_times[i]}"
+  #   end
+  # end
   
-  def get_median_task_durations_of_queued_tasks
-    puts "hello"
-    queued_all =  CbrainTask.where(:status => [ 'New'] ) - CbrainTask.where(:type => "CbrainTask::StartVM") 
-    queued = queued_all.reject{ |x| (not Bourreau.find(x.bourreau_id).is_a? DiskImageBourreau) || (DiskImageBourreau.find(x.bourreau_id).disk_image_file_id != @disk_image_file_id)}    
-    if queued.length == 0 then return 0 end
-    durations = Array.new
-    queued.each { |t| 
-      durations << t.job_walltime_estimate
-    }
-    
-    sorted_durations = durations.sort
-    len = durations.length
-    median_duration = len % 2 == 1 ? sorted_durations[len/2] : (sorted_durations[len/2 - 1] + sorted_durations[len/2]) / 2.0
-    return median_duration
-  end
-
-
 end  
 

@@ -101,7 +101,7 @@ class CbrainTask::StartVM < PortalTask
     cb_error "Please don't try to start more than 20 instances at once for now." if params[:number_of_vms].to_i > 20
 
     bourreau = Bourreau.find(ToolConfig.find(self.tool_config_id).bourreau_id)
-    cb_error "Missing number of job slots!" if params[:job_slots].blank? && bourreau.cms_class != "ScirOpenStack"
+    cb_error "Missing number of job slots!" if params[:job_slots].blank? 
     cb_error "Missing number of CPUs !" if params[:vm_cpus].blank? && bourreau.cms_class != "ScirOpenStack"
     cb_error "Missing RAM!" if params[:vm_ram_gb].blank? && bourreau.cms_class != "ScirOpenStack"
     cb_error "Missing OpenStack flavor" if params[:open_stack_image_flavor].blank? && bourreau.cms_class == "ScirOpenStack"

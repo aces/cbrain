@@ -32,6 +32,9 @@
    <%= params[:vm_user] %>
    <%= form.params_hidden_field :vm_user %>
 <br/>
+<strong>VM job slots:</strong>
+   <%= text_field_tag :job_slots.to_la, params[:job_slots], size:3 %>
+<br/>
 <strong>VM boot timeout (s):</strong>
    <%= text_field_tag :vm_boot_timeout.to_la, params[:vm_boot_timeout], size:4 %>
 <br/>
@@ -55,9 +58,6 @@
 
 <strong>VM CPUs:</strong>
    <%= text_field_tag :vm_cpus.to_la, params[:vm_cpus], size:4 %>
-<br/>
-<strong>VM job slots:</strong>
-   <%= text_field_tag :job_slots.to_la, params[:job_slots], size:3 %>
 <br/>
 <strong>VM RAM (GB):</strong>
    <%= text_field_tag :vm_ram_gb.to_la, params[:vm_ram_gb], size:4 %>
