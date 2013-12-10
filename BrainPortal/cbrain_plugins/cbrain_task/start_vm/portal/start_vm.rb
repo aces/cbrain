@@ -58,16 +58,26 @@ class CbrainTask::StartVM < PortalTask
     params[:disk_image]=ids[0]
 
     # Check if disk image is associated to a virtual bourreau
-    virtual_bourreaux = Bourreau::DiskImageBourreau.where(:disk_image_file_id => params[:disk_image])
+    virtual_bourreaux = DiskImageBourreau.where(:disk_image_file_id => params[:disk_image])
     cb_error "File id #{params[:disk_image]} is not associated to any Virtual Bourreau. You cannot start a VM with it." unless virtual_bourreaux.size != 0 
     cb_error "File id #{params[:disk_image]} has more than 1 Virtual Bourreau associated to it. This is not supported yet." unless virtual_bourreaux.size == 1
-
     virtual_bourreau = virtual_bourreaux.first
+
+    
 
     params[:vm_user] = virtual_bourreau.disk_image_user
 
     bourreau = Bourreau.find(ToolConfig.find(self.tool_config_id).bourreau_id)
     if bourreau.cms_class == "ScirOpenStack"
+      configured = false 
+      virtual_bourreaux.each do |vb|
+        if DiskImageConfig.where(:disk_image_bourreau_id => vb.id, :bourreau_id => bourreau.id).size >= 1
+          configured = true
+          break
+        end
+      end
+      cb_error "Execution server #{bourreau.name} is not configured for disk image #{params[:disk_image]}" unless configured == true
+
       username = bourreau.open_stack_user_name
       password = bourreau.open_stack_password
       auth_url = bourreau.open_stack_auth_url
