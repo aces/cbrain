@@ -376,7 +376,7 @@ class Bourreau < RemoteResource
     )
     worker_pool.wake_up_workers
   end
-  
+
   # Stops Bourreau worker processes.
   def self.process_command_stop_workers(command)
     myself = RemoteResource.current_resource
@@ -385,7 +385,7 @@ class Bourreau < RemoteResource
     worker_pool = WorkerPool.find_pool(BourreauWorker)
     worker_pool.stop_workers
   end
-  
+
   # Wakes up Bourreau worker processes.
   def self.process_command_wakeup_workers(command)
     myself = RemoteResource.current_resource
