@@ -23,10 +23,6 @@
 
 class VmFactoryRoundRobin < VmFactory 
 
-  def initialize(disk_image_id,tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus)
-    super(disk_image_id,tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus)
-    #initializes round robin
-  end
   
   def get_next_bourreau_id
     target_bourreau_ids = get_ids_of_target_bourreaux.sort
@@ -36,10 +32,12 @@ class VmFactoryRoundRobin < VmFactory
     n_attempts = 1
 
     @last_bourreau_id ||=  target_bourreau_ids.first
+    @last_bourreau_id = target_bourreau_ids[( target_bourreau_ids.index(@last_bourreau_id) + 1 ) % n_bourreaux ]
+    
     log_vm "next bourreau id is #{@last_bourreau_id}"
     bourreau = Bourreau.find(@last_bourreau_id)
     while (get_active_tasks(bourreau.id) >= bourreau.meta[:task_limit_total].to_i && n_attempts < n_bourreaux)  do
-      @last_bourreau_id += 1
+      @last_bourreau_id = target_bourreau_ids[( target_bourreau_ids.index(@last_bourreau_id) + 1 ) % n_bourreaux ]
       log_vm "next bourreau id is #{@last_bourreau_id}"
       bourreau = Bourreau.find(@last_bourreau_id)
     end

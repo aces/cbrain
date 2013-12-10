@@ -1,0 +1,89 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+-%>
+
+<span id="new_model">
+  <%= button_with_dropdown_menu('Create VM Factory', :open => true) do %>
+    <%= error_messages_for @vm_factory %>
+
+    <%= ajax_form_for @vm_factory, :as => :vm_factory, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+
+      <div class="display_cell">
+	<h3>General</h3>
+        <p><%= f.label :name, "Name" %><br/>
+        <%= f.text_field :name %></p>
+
+        <p><%= f.label :disk_image_file_id, "Disk Image File Id" %><br/>
+        <%= f.text_field :disk_image_file_id %><br>
+        <div class="field_explanation">The file id of the disk image to associate with the factory. There must be one and only one DiskImage bourreau associated to this file id.</div>
+        </p>
+
+	<h3>Auto-scaling Parameters</h3>
+	<p>
+	  The following rules are evaluated every τ second(s):
+	  <ul>
+	    <li>If the load stays above μ+ during ν+ seconds then submit k+ VMs</li>
+	    <li>If the load stays below μ- during ν- seconds then remove k- VMs</li>
+	  </ul>
+	</p> 
+
+        <p><%= f.label :tau, "τ" %><br/>
+        <%= f.text_field :tau %>
+        <div class="field_explanation">The monitoring period in seconds.</div>
+	</p>
+
+        <p><%= f.label :mu_plus, "μ+" %><br/>
+        <%= f.text_field :mu_plus %>
+        <div class="field_explanation">The upper load threshold beyond which VMs will be submitted.</div>
+	</p>
+
+        <p><%= f.label :mu_minus, "μ-" %><br/>
+        <%= f.text_field :mu_minus %>
+        <div class="field_explanation">The lower load threshold under which VMs will be removed.</div>
+	</p>
+
+       <p><%= f.label :nu_plus, "ν+" %><br/>
+        <%= f.text_field :nu_plus %>
+        <div class="field_explanation">The duration in seconds above the upper threshold after which k+ VMs are submitted.</div>
+       </p>
+       
+       <p><%= f.label :nu_minus, "ν-" %><br/>
+        <%= f.text_field :nu_minus %>
+        <div class="field_explanation">The duration in seconds below the lower threshold after which k- VMs are removed.</div>
+       </p>
+
+       <p><%= f.label :k_plus, "k+" %><br/>
+        <%= f.text_field :k_plus %>
+        <div class="field_explanation">The number of VMs to submit when the load stays above μ+ for ν+ seconds.</div>
+       </p>
+       
+	<p><%= f.label :k_minus, "k-" %><br/>
+          <%= f.text_field :k_minus %>
+	<div class="field_explanation">The number of VMs to remove when the load stays below μ- for ν- seconds.</div>
+       </p>
+	<p><%= submit_tag 'Create VM Factory' %></p>
+
+    <% end %>
+  <% end %>
+</span>
+

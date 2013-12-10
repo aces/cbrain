@@ -28,20 +28,16 @@ k_plus = 1
 k_minus = 1
 #
 #   # start basic VM factory
-CBRAIN.spawn_with_active_records("VM factory")  do
-  log "Launching VM factory ("+"Basic".colorize(33)+") for disk image "+"240".colorize(33)
-  begin
-    VmFactoryRoundRobin.new(240, #disk_image_file_id
-                            tau,
-                            mu_plus,
-                            mu_minus,
-                            nu_plus,
-                            nu_minus,
-                            k_plus,
-                            k_minus
-                            ).start 
-  rescue => ex
-    log ex
-  end
-end
+factory = VmFactoryRoundRobin.new
+factory.disk_image_file_id = 240
+factory.tau = tau
+factory.mu_plus = mu_plus
+factory.mu_minus = mu_minus
+factory.nu_plus = nu_plus 
+factory.nu_minus = nu_minus
+factory.k_plus = k_plus
+factory.k_minus = k_minus
+factory.save!
+factory.start
+
 
