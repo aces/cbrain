@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'stringio'
@@ -941,7 +941,7 @@ class ClusterTask < CbrainTask
      self.cluster_stdout = nil
      self.cluster_stderr = nil
      self.script_text    = nil
-     
+
      stdout_lim        ||= 2000
      stdout_lim          = stdout_lim.to_i
      stdout_lim          = 2000 if stdout_lim <= 100 || stdout_lim > 999999
@@ -949,7 +949,7 @@ class ClusterTask < CbrainTask
      stderr_lim        ||= 2000
      stderr_lim          = stderr_lim.to_i
      stderr_lim          = 2000 if stderr_lim <= 100 || stderr_lim > 999999
-     
+
      return if self.new_record? || self.workdir_archived?
      stdoutfile = self.stdout_cluster_filename(run_number)
      stderrfile = self.stderr_cluster_filename(run_number)
@@ -993,7 +993,7 @@ class ClusterTask < CbrainTask
 
     # Keep updated_at value in order to reset it at the end of method
     updated_at_value = self.updated_at
-    
+
     return false if self.share_wd_tid
     return true  if self.workdir_archived?
 
@@ -1090,7 +1090,7 @@ class ClusterTask < CbrainTask
     self.update_column(:updated_at, updated_at_value)
   end
 
-  # This method performs the inverse of 
+  # This method performs the inverse of
   # archive_work_directory() : given a tar file
   # in the root of the work directory, it will
   # extract it then erase the tar file itself.
@@ -1150,7 +1150,7 @@ class ClusterTask < CbrainTask
 
     # Reset update timestamp
     self.update_column(:updated_at, updated_at_value)
-     
+
     true
   rescue => ex
     self.addlog_exception(ex, "Unarchiving process exception:")
@@ -1215,17 +1215,17 @@ class ClusterTask < CbrainTask
     # Keep updated_at value in order to reset it at the end of method.
     updated_at_value = self.updated_at
 
-    # Mark task as archived and remove the work directory. 
-    self.save 
+    # Mark task as archived and remove the work directory.
+    self.save
     self.remove_cluster_workdir
-    
+
     # Reset update timestamp
     self.update_column(:updated_at, updated_at_value)
-      
+
     true
   end
 
-  # This method performs the inverse of 
+  # This method performs the inverse of
   # archive_work_directory_to_userfile() : using
   # the TaskWorkdirArchive file specified in
   # the workdir_archive_userfile_id attribute,
@@ -1252,7 +1252,7 @@ class ClusterTask < CbrainTask
 
     # Keep updated_at value in order to reset it at the end of method.
     updated_at_value = self.updated_at
-    
+
     self.make_cluster_workdir
 
     Dir.chdir(self.full_cluster_workdir) do
@@ -1265,7 +1265,7 @@ class ClusterTask < CbrainTask
     file.cache_erase
 
     self.workdir_archive_userfile_id=nil
-    self.save 
+    self.save
 
     # Reset update timestamp
     self.update_column(:updated_at, updated_at_value)
@@ -1414,9 +1414,9 @@ class ClusterTask < CbrainTask
     bourreau_glob_config = nil if bourreau_glob_config && bourreau_glob_config.is_trivial?
     tool_glob_config     = nil if tool_glob_config     && tool_glob_config.is_trivial?
     tool_config          = nil if tool_config          && tool_config.is_trivial?
-    self.addlog("Bourreau Global Config: ID=#{bourreau_glob_config.id}")                if bourreau_glob_config
-    self.addlog("Tool Global Config: ID=#{tool_glob_config.id}")                        if tool_glob_config
-    self.addlog("Tool Version: ID=#{tool_config.id}, #{tool_config.short_description}") if tool_config
+    self.addlog("Bourreau Global Config: ID=#{bourreau_glob_config.id}")           if bourreau_glob_config
+    self.addlog("Tool Global Config: ID=#{tool_glob_config.id}")                   if tool_glob_config
+    self.addlog("Tool Version: ID=#{tool_config.id}, #{tool_config.version_name}") if tool_config
 
     # Create a bash command script out of the text
     # lines supplied by the subclass

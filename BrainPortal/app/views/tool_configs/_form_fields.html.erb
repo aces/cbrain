@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -31,6 +31,13 @@
   <span title="Project access for this configuration.">
     <p><%= f.label :group_id, "Available to members of project:" %>
     <%= group_select "tool_config[group_id]", @tool_config.group_id %>
+    </p>
+  </span>
+
+  <span title="Version.">
+    <p><%= f.label :version_name, "Version:" %>
+    <%= f.text_field :version_name %><br/>
+    <div class="field_explanation">Must be a simple string that represent a short identifier for the version. First character must be alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'</div>
     </p>
   </span>
 

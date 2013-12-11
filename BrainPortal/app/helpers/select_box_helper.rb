@@ -17,16 +17,16 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #Helper methods for resource select boxes.
 module SelectBoxHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   #Create a standard user select box for selecting a user id for a form.
-  #The +parameter_name+ argument will be the name of the parameter 
+  #The +parameter_name+ argument will be the name of the parameter
   #when the form is submitted and the +select_tag_options+ hash will be sent
   #directly as options to the +select_tag+ helper method called to create the element.
   #The +options+ hash can contain either or both of the following:
@@ -59,9 +59,9 @@ module SelectBoxHelper
 
     select_tag parameter_name, grouped_options, select_tag_options
   end
-  
+
   #Create a standard groups select box for selecting a group id for a form.
-  #The +parameter_name+ argument will be the name of the parameter 
+  #The +parameter_name+ argument will be the name of the parameter
   #when the form is submitted and the +select_tag_options+ hash will be sent
   #directly as options to the +select_tag+ helper method called to create the element.
   #The +options+ hash can contain either or both of the following:
@@ -82,7 +82,7 @@ module SelectBoxHelper
     else
       selected = selector.to_s
     end
-    
+
     # Optimize the labels for UserGroups and SiteGroups, by extracting in a hash
     group_labels = {}
     group_labels.merge!(UserGroup.prepare_pretty_labels(groups))
@@ -137,9 +137,9 @@ module SelectBoxHelper
 
     select_tag parameter_name, grouped_options, select_tag_options
   end
-  
+
   #Create a standard data provider select box for selecting a data provider id for a form.
-  #The +parameter_name+ argument will be the name of the parameter 
+  #The +parameter_name+ argument will be the name of the parameter
   #when the form is submitted and the +select_tag_options+ hash will be sent
   #directly as options to the +select_tag+ helper method called to create the element.
   #The +options+ hash can contain either or both of the following:
@@ -154,7 +154,7 @@ module SelectBoxHelper
       selector = current_user.meta["pref_data_provider_id"]
     end
     data_providers = options[:data_providers] || DataProvider.find_all_accessible_by_user(current_user).all
-  
+
     if selector.respond_to?(:data_provider_id)
       selected = selector.data_provider_id.to_s
     elsif selector.is_a?(DataProvider)
@@ -163,8 +163,8 @@ module SelectBoxHelper
       selected = selector
     else
       selected = selector.to_s
-    end 
-    
+    end
+
     grouped_dps     = data_providers.group_by{ |dp| dp.is_browsable? ? "User Storage" : "CBRAIN Official Storage" }
     grouped_oplists = []
     [ "CBRAIN Official Storage", "User Storage" ].collect do |group_title|
@@ -187,12 +187,12 @@ module SelectBoxHelper
       blank_label = "" if blank_label == true
       grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
     end
-    
+
     select_tag parameter_name, grouped_options, select_tag_options
   end
-  
+
   #Create a standard bourreau select box for selecting a bourreau id for a form.
-  #The +parameter_name+ argument will be the name of the parameter 
+  #The +parameter_name+ argument will be the name of the parameter
   #when the form is submitted and the +select_tag_options+ hash will be sent
   #directly as options to the +select_tag+ helper method called to create the element.
   #The +options+ hash can contain either or both of the following:
@@ -207,7 +207,7 @@ module SelectBoxHelper
       selector = current_user.meta["pref_bourreau_id"]
     end
     bourreaux = options[:bourreaux] || Bourreau.find_all_accessible_by_user(current_user).all
-  
+
     if selector.respond_to?(:bourreau_id)
       selected = selector.bourreau_id.to_s
     elsif selector.is_a?(Bourreau)
@@ -216,7 +216,7 @@ module SelectBoxHelper
       selected = selector
     else
       selected = selector.to_s
-    end 
+    end
 
     return "<strong style=\"color:red\">No Execution Servers Available</strong>".html_safe if bourreaux.blank?
 
@@ -234,12 +234,12 @@ module SelectBoxHelper
       blank_label  = "" if blank_label == true
       options_html = "<option value=\"\">#{h(blank_label)}</option>".html_safe + options_html
     end
-    
+
     select_tag parameter_name, options_html, select_tag_options
   end
 
   #Create a standard tool config select box for selecting a tool config in a form.
-  #The +parameter_name+ argument will be the name of the parameter 
+  #The +parameter_name+ argument will be the name of the parameter
   #when the form is submitted and the +select_tag_options+ hash will be sent
   #directly as options to the +select_tag+ helper method called to create the element.
   #
@@ -278,7 +278,7 @@ module SelectBoxHelper
     tools_by_ids     = Tool.where(    :id => tool_configs.map(&:tool_id).uniq.compact).all.index_by &:id
 
     # Globals for Execution Servers
-    bourreau_globals = tool_configs.select { |tc| tc.tool_id.blank? }
+    bourreau_globals = tool_configs.select { |tc| tc.applies_to_bourreau_only? }
     if bourreau_globals.size > 0
       pairlist = []
       sorted_tcs = bourreau_globals.sort do |tc1,tc2|
@@ -291,7 +291,7 @@ module SelectBoxHelper
     end
 
     # Globals for Tools
-    tool_globals = tool_configs.select { |tc| tc.bourreau_id.blank? }
+    tool_globals = tool_configs.select { |tc| tc.applies_to_tool_only? }
     if tool_globals.size > 0
       pairlist = []
       sorted_tcs = tool_globals.sort do |tc1,tc2|
@@ -304,7 +304,7 @@ module SelectBoxHelper
     end
 
     # Other Tool Configs with both Tool and Bourreau in it
-    spec_tool_configs  = tool_configs.select { |tc| tc.tool_id.present? && tc.bourreau_id.present? }
+    spec_tool_configs  = tool_configs.select { |tc| tc.applies_to_bourreau_and_tool? }
     same_tool          = tool_configs.all?   { |tc| tc.tool_id     == tool_configs[0].tool_id }
     same_bourreau      = tool_configs.all?   { |tc| tc.bourreau_id == tool_configs[0].bourreau_id }
 
@@ -321,12 +321,12 @@ module SelectBoxHelper
         tool_tool_configs = tcs_by_tool_id[tid].sort do |tc1,tc2|
           tc1.created_at <=> tc2.created_at # creation date usually sorts by 'most recent version'
         end
-        
+
         pairlist = []
         tool_tool_configs.each do |tc|
           desc     = tc.short_description
           tc_pair  = !b_is_online ? [ desc, tc.id.to_s, {:disabled => "true"} ] : [ desc, tc.id.to_s ]
-          pairlist << tc_pair 
+          pairlist << tc_pair
         end
         if same_tool && (! same_bourreau || ordered_bourreau_ids.size == 1)
           offline = b_is_online ? "" : " (offline)"
@@ -348,13 +348,13 @@ module SelectBoxHelper
       blank_label = "" if blank_label == true
       grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
     end
-    
+
     select_tag parameter_name, grouped_options, select_tag_options
   end
 
   #------------------
   #Create a standard task by status select box for selecting a task status for a form.
-  #The +parameter_name+ argument will be the name of the parameter 
+  #The +parameter_name+ argument will be the name of the parameter
   #when the form is submitted and the +select_tag_options+ hash will be sent
   #directly as options to the +select_tag+ helper method called to create the element.
   #The +options+ hash can contain either or both of the following:
@@ -382,9 +382,9 @@ module SelectBoxHelper
       elsif restarting.include?(status)
         (status_grouped["Restarting"]     ||= []) << status
       elsif recovering.include?(status)
-        (status_grouped["Recovering"]     ||= []) << status 
+        (status_grouped["Recovering"]     ||= []) << status
       else
-        (status_grouped["Other"]          ||= []) << status 
+        (status_grouped["Other"]          ||= []) << status
       end
     end
 
@@ -396,24 +396,24 @@ module SelectBoxHelper
     end
 
     grouped_options = grouped_options_for_select grouped_by_category, selected
-    
+
     blank_label = select_tag_options.delete(:include_blank) || options[:include_blank]
     if blank_label
       blank_label = "" if blank_label == true
       grouped_options = "<option value=\"\">#{h(blank_label)}</option>".html_safe + grouped_options
     end
-    
+
     select_tag parameter_name, grouped_options, select_tag_options
   end
 
   #Create a standard userfiles type select box for selecting a userfile type for a form.
-  #The +parameter_name+ argument will be the name of the parameter 
+  #The +parameter_name+ argument will be the name of the parameter
   #when the form is submitted and the +select_tag_options+ hash will be sent
   #directly as options to the +select_tag+ helper method called to create the element.
   #The +options+ hash can contain either or both of the following:
   #[selector] used for default selection. This can be a Userfile type.
   #[userfile_types] a list of Userfiles type used to build the select box.
-  #[generate_descendants] a boolean if it's true take the descendant of classes in :userfile_types else only take 
+  #[generate_descendants] a boolean if it's true take the descendant of classes in :userfile_types else only take
   #the classes in :userfile_types
   #[:include_top] a boolean only used when :generate_descendants is true, if it's true
   #keep the top and the descendants, otherwise only takes the descendants.
@@ -427,13 +427,13 @@ module SelectBoxHelper
   end
 
   #Create a standard groups type select box for selecting a group type for a form.
-  #The +parameter_name+ argument will be the name of the parameter 
+  #The +parameter_name+ argument will be the name of the parameter
   #when the form is submitted and the +select_tag_options+ hash will be sent
   #directly as options to the +select_tag+ helper method called to create the element.
   #The +options+ hash can contain either or both of the following:
   #[selector] used for default selection. This can be a Group type.
   #[group_types] a list of Groups type used to build the select box.
-  #[generate_descendants] a boolean if it's true take the descendant of classes in :group_types else only take 
+  #[generate_descendants] a boolean if it's true take the descendant of classes in :group_types else only take
   #the classes in :group_types
   #[:include_top] a boolean only used when :generate_descendants is true, if it's true
   #keep the top and the descendants, otherwise only takes the descendants.
@@ -447,13 +447,13 @@ module SelectBoxHelper
   end
 
   #Create a standard tasks type select box for selecting a task type for a form.
-  #The +parameter_name+ argument will be the name of the parameter 
+  #The +parameter_name+ argument will be the name of the parameter
   #when the form is submitted and the +select_tag_options+ hash will be sent
   #directly as options to the +select_tag+ helper method called to create the element.
   #The +options+ hash can contain either or both of the following:
   #[selector] used for default selection. This can be a Task type.
   #[task_types] a list of Tasks type used to build the select box.
-  #[generate_descendants] a boolean if it's true take the descendant of classes in :task_types else only take 
+  #[generate_descendants] a boolean if it's true take the descendant of classes in :task_types else only take
   #the classes in :task_types
   #[:include_top] a boolean only used when :generate_descendants is true, if it's true
   #keep the top and the descendants, otherwise only takes the descendants.
@@ -468,13 +468,13 @@ module SelectBoxHelper
 
 
   #Create a standard types select box for selecting a types type for a form.
-  #The +parameter_name+ argument will be the name of the parameter 
+  #The +parameter_name+ argument will be the name of the parameter
   #when the form is submitted and the +select_tag_options+ hash will be sent
   #directly as options to the +select_tag+ helper method called to create the element.
   #The +options+ hash can contain either or both of the following:
   #[selector] used for default selection. This can be a type present in types.
   #[types] a list of types used to build the select box.
-  #[generate_descendants] a boolean if it's true take the descendant of classes in :types else only take 
+  #[generate_descendants] a boolean if it's true take the descendant of classes in :types else only take
   #the classes in :types
   #[:include_top] a boolean only used when :generate_descendants is true, if it's true
   #keep the top and the descendants, otherwise only takes the descendants.
@@ -486,7 +486,7 @@ module SelectBoxHelper
     blank_label          = select_tag_options.delete(:include_blank) || options[:include_blank]
     blank_label          = "" if blank_label == true
     selected             = options[:selector]
-    
+
     grouped_options      = ""
     # Create a hierarchical select box with all the type
     types.each do |type|
@@ -497,12 +497,12 @@ module SelectBoxHelper
       end
     end
 
-    # Add blank label 
+    # Add blank label
     if blank_label
       blank_label = "" if blank_label == true
       grouped_options = "<option value=\"\">#{h(blank_label)}</option>" + grouped_options
     end
-    
+
     select_tag parameter_name, grouped_options.html_safe, select_tag_options
   end
 
@@ -535,7 +535,7 @@ module SelectBoxHelper
        entry << { :disabled => "true" } if k.cbrain_abstract_model?
        ordered_type_grouped << entry
     end
-    
+
     options_for_select ordered_type_grouped, selected
   end
 
@@ -544,7 +544,7 @@ module SelectBoxHelper
   def regroup_users_by_lock_status(users) #:nodoc:
     user_by_lock_status_hash = users.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"}
     ordered_by_lock_status   = []
-    
+
     user_by_lock_status_hash.sort.each do |status,users|
       user_name_id = users.sort_by { |u| u.login }.map { |u| ["#{u.login} (#{u.full_name})" , u.id] }
       ordered_by_lock_status << [status, user_name_id]
@@ -552,6 +552,6 @@ module SelectBoxHelper
 
     ordered_by_lock_status
   end
-  
+
 end
 

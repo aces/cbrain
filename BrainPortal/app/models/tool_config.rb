@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This model represents a tool's configuration prefix.
@@ -38,41 +38,39 @@ class ToolConfig < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  serialize      :env_array
+  serialize       :env_array
 
-  belongs_to     :bourreau     # can be nil; it means it applies to all bourreaux
-  belongs_to     :tool         # can be nil; it means it applies to all tools
-  has_many       :cbrain_tasks
-  belongs_to     :group        # can be nil; means 'everyone' in that case.
+  belongs_to      :bourreau     # can be nil; it means it applies to all bourreaux
+  belongs_to      :tool         # can be nil; it means it applies to all tools
+  has_many        :cbrain_tasks
+  belongs_to      :group        # can be nil; means 'everyone' in that case.
 
-  validate       :presence_of_description # only when both tool_id and bourreau_id are defined
+  # first character must be alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'
+  # must be unique per pair [tool, server]
+  validates       :version_name,
+                  :presence   => true,
+                  :format     => { with: /^\w[\w\.\-\_:@]+$/ , message: "must begin with alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'" },
+                  :uniqueness => { :scope => [ :tool_id, :bourreau_id ], message: "must be unique per pair [tool, server]" },
+                  :if         => :applies_to_bourreau_and_tool?
 
-  cb_scope          :global_for_tools     , where( { :bourreau_id => nil } )
-  cb_scope          :global_for_bourreaux , where( { :tool_id => nil } )
-  cb_scope          :specific_versions    , where( "bourreau_id is not null and tool_id is not null" )
+  cb_scope        :global_for_tools     , where( { :bourreau_id => nil } )
+  cb_scope        :global_for_bourreaux , where( { :tool_id => nil } )
+  cb_scope        :specific_versions    , where( "bourreau_id is not null and tool_id is not null" )
 
-  attr_accessible :description, :tool_id, :bourreau_id, :env_array, :script_prologue, :group_id, :ncpus
+  attr_accessible :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue, :group_id, :ncpus
 
   # CBRAIN extension
-  force_text_attribute_encoding 'UTF-8', :description
-
-  # A description is needed only when the tool config describes
-  # a precise version of a tool (for both the tool and the bourreau).
-  # There are more general tool configs that don't need a description.
-  def presence_of_description #:nodoc: validation callback
-    self.errors.add(:description,"cannot be blank.") if self.description.blank? && self.tool_id && self.bourreau_id
-    true
-  end
+  force_text_attribute_encoding 'UTF-8', :description, :version_name
 
   # To make it somewhat compatible with the ResourceAccess module,
   # here's this model's own method for checking if it's visible to a user.
   def can_be_accessed_by?(user)
     return false unless self.group.can_be_accessed_by?(user)
-    return false unless self.bourreau_and_tool_can_be_accessed_by?(user) 
+    return false unless self.bourreau_and_tool_can_be_accessed_by?(user)
     true
   end
 
-  # See ResourceAccess .
+  # See ResourceAccess.
   def self.find_all_accessible_by_user(user)
     if user.has_role?(:admin_user)
       ToolConfig.specific_versions
@@ -91,8 +89,8 @@ class ToolConfig < ActiveRecord::Base
     self.tool     && self.tool.can_be_accessed_by?(user)
   end
 
-  # Returns the first line of the description. This is used
-  # to represent the 'name' of the version.
+  # Returns the verion name or the first line of the description.
+  # This is used to represent the 'name' of the version.
   def short_description
     description = self.description || ""
     raise "Internal error: can't parse description!?!" unless description =~ /^(.+\n?)/ # the . doesn't match \n
@@ -100,10 +98,9 @@ class ToolConfig < ActiveRecord::Base
     header
   end
 
-  # A synonym for short_description, but unlike it, doesn't raise
-  # any exception.
+  # A synonym for version_name.
   def name
-    self.short_description rescue "Tool version ##{self.id}"
+    self.version_name rescue "Tool version ##{self.id}"
   end
 
   # Sets in the current Ruby process all the environment variables
@@ -115,19 +112,19 @@ class ToolConfig < ActiveRecord::Base
     saved = ENV.to_hash
     env.each do |name,val|
       if val =~ /\$/
-        #puts_green "THROUGH BASH: #{name} => #{val}" # debug
+#puts_green "THROUGH BASH: #{name} => #{val}" # debug
         newval = `bash -c 'echo \"#{val.strip}\"'`.strip  # this is quite inefficient, but how else to do it?
-        #puts_green "RESULT:     : #{name} => #{newval}" # debug
+#puts_green "RESULT:     : #{name} => #{newval}" # debug
       else
-        #puts_green "DIRECT      : #{name} => #{val}" # debug
+#puts_green "DIRECT      : #{name} => #{val}" # debug
         newval = val
       end
       ENV[name.to_s]=newval.to_s
     end
     return yield
   ensure
-    #(ENV.keys - saved.keys).each { |spurious| ENV.delete(spurious.to_s); puts_red "SPURIOUS: #{spurious}" } # debug
-    #saved.each { |k,v| puts_cyan "RESTORED: #{ENV[k]=v.to_s}" unless ENV[k] == v } # debug
+#(ENV.keys - saved.keys).each { |spurious| ENV.delete(spurious.to_s); puts_red "SPURIOUS: #{spurious}" } # debug
+#saved.each { |k,v| puts_cyan "RESTORED: #{ENV[k]=v.to_s}" unless ENV[k] == v } # debug
     (ENV.keys - saved.keys).each { |spurious| ENV.delete(spurious.to_s) }
     saved.each { |k,v| ENV[k]=v.to_s unless ENV[k] == v }
   end
@@ -138,6 +135,7 @@ class ToolConfig < ActiveRecord::Base
   #  CBRAIN_GLOBAL_TOOL_CONFIG_ID     : set to self.id if self represents a TOOL's global config
   #  CBRAIN_GLOBAL_BOURREAU_CONFIG_ID : set to self.id if self represents a BOURREAU's global config
   #  CBRAIN_TOOL_CONFIG_ID            : set to self.id
+  #  CBRAIN_TC_VERSION_NAME           : set to self.version_name
   def extended_environment
     env = (self.env_array || []).dup
     if self.id.present?
@@ -145,6 +143,7 @@ class ToolConfig < ActiveRecord::Base
       env << [ "CBRAIN_GLOBAL_BOURREAU_CONFIG_ID", self.id.to_s ] if self.tool_id.blank?
       env << [ "CBRAIN_TOOL_CONFIG_ID",            self.id.to_s ] if ! self.tool_id.blank? && ! self.bourreau_id.blank?
     end
+    env   << [ "CBRAIN_TC_VERSION_NAME",       self.version_name] if self.version_name.present?
     env
   end
 
@@ -159,7 +158,7 @@ class ToolConfig < ActiveRecord::Base
     script = <<-HEADER
 
 #===================================================
-# Configuration: # #{self.id}
+# Configuration: # #{self.id} #{self.version_name}
 # Tool:          #{tool     ? tool.name     : "ALL"}
 # Bourreau:      #{bourreau ? bourreau.name : "ALL"}
 # Group:         #{group    ? group.name    : "everyone"}
@@ -225,6 +224,34 @@ class ToolConfig < ActiveRecord::Base
     text_array = text.split(/\n/).reject { |line| line =~ /^\s*#|^\s*$/ }
     return true if text_array.size == 0
     false
+  end
+
+  # Return true if it's a tool config for bourreau only
+  def applies_to_bourreau_only?
+    self.bourreau_id.present? && !self.tool_id.present?
+  end
+
+  # Return true if it's a tool config for tool only
+  def applies_to_tool_only?
+    !self.bourreau_id.present? && self.tool_id.present?
+  end
+
+  # Return true if it's a tool config for bourreau and tool
+  def applies_to_bourreau_and_tool?
+    self.bourreau_id.present? && self.tool_id.present?
+  end
+
+  # This method calls compare_versions defined
+  # in cbrain_task.
+  # Return true if version_name of the current tool_config
+  # is greater than version or false in other case
+  def is_at_least_version(version)
+     self.cbrain_task_class.compare_versions(self.version_name,version) >= 0
+  end
+
+  # Return the class of cbrain_task
+  def cbrain_task_class
+    self.tool.cbrain_task_class.constantize
   end
 
 end

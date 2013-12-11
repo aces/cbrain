@@ -245,10 +245,9 @@ class Worker
           raise SystemExit.new("Received SIGINT")
         end
 
-        Signal.trap("TERM") do
+        Signal.trap("TERM") do  # 'STOP' signal received from proxy
           self.worker_log.info "Got SIGTERM, scheduling stop."
-          self.stop_received = true
-          self.sleep_mode    = false
+          self.handle_stop_reception
         end
 
         Signal.trap("USR1") do
@@ -258,16 +257,12 @@ class Worker
 
         Signal.trap("XCPU") do
           self.worker_log.info "Got SIGXCPU, scheduling stop."
-          dump_trace() unless self.stop_received # just first time
-          self.stop_received = true
-          self.sleep_mode    = false
+          self.handle_stop_reception :with_trace_dump
         end
 
         Signal.trap("XFSZ") do
           self.worker_log.info "Got SIGXFSZ, scheduling stop."
-          dump_trace() unless self.stop_received # just first time
-          self.stop_received = true
-          self.sleep_mode    = false
+          self.handle_stop_reception :with_trace_dump
         end
 
         Signal.trap("USR2") do
@@ -275,7 +270,7 @@ class Worker
           dump_trace()
         end
 
-        self.worker_log.debug "Registered signal handlers for INT, TERM, USR1, XCPU and XFSZ."
+        self.worker_log.debug "Registered signal handlers for INT, TERM, USR1, USR2, XCPU and XFSZ."
 
         # This sleep is needed unfortunately to give the time for the
         # proxy side to call its own create_pidfile() so that a quick
@@ -342,6 +337,16 @@ class Worker
   end
 
   protected
+
+  def handle_stop_reception(with_dump = nil) #:nodoc:
+    self.validate_I_am_a_worker
+    if ! self.stop_received # just first time
+      dump_trace() if with_dump
+      self.stop_signal_received_callback() rescue nil
+    end
+    self.sleep_mode    = false
+    self.stop_received = true
+  end
 
   # Makes sure that a process runs for this worker-proxy.
   def process_ok? #:nodoc:
@@ -520,6 +525,18 @@ class Worker
   def finalize
     self.validate_I_am_a_worker
     self.worker_log.debug "No finalization needed."
+  end
+
+
+
+  #####################################################################
+  # Worker-side asynchronous callbacks
+  #####################################################################
+
+  # This method can be overrided in a worker to trigger
+  # some code when a STOP signal has been received.
+  def stop_signal_received_callback
+    true
   end
 
 

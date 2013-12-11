@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131209192635) do
+ActiveRecord::Schema.define(:version => 20131211161500) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -317,6 +317,7 @@ ActiveRecord::Schema.define(:version => 20131209192635) do
   add_index "tags_userfiles", ["userfile_id"], :name => "index_tags_userfiles_on_userfile_id"
 
   create_table "tool_configs", :force => true do |t|
+    t.string   "version_name"
     t.text     "description"
     t.integer  "tool_id"
     t.integer  "bourreau_id"
