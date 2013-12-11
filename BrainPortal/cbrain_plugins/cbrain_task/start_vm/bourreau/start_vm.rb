@@ -112,18 +112,22 @@ class CbrainTask::StartVM < ClusterTask
 
     #monitor VM until it's booted
     CBRAIN.spawn_with_active_records("Monitor VM")  do
-      start_time = Time.now
-      #Monitor booting process
-      self.monitor_to_boot
-      self.mount_directories
-      addlog "VM has booted"
-      update_vm_status("booted")
-      self.save!
-      #Update bourreau boot time
-      self.bourreau.meta.reload
-      self.bourreau.meta[:latest_booting_delay] = Time.now - start_time
-      self.bourreau.meta[:time_of_latest_booting_delay] = Time.now
-      self.bourreau.save!
+      begin
+        start_time = Time.now
+        #Monitor booting process
+        self.monitor_to_boot start_time
+        self.mount_directories
+        addlog "VM has booted"
+        update_vm_status("booted")
+        self.save!
+        #Update bourreau boot time
+        self.bourreau.meta.reload
+        self.bourreau.meta[:latest_booting_delay] = Time.now - start_time
+        self.bourreau.meta[:time_of_latest_booting_delay] = Time.now
+        self.bourreau.save!
+      rescue => ex
+	addlog "#{ex.class} #{ex.message}"
+      end	
     end
   end
   
@@ -138,7 +142,7 @@ class CbrainTask::StartVM < ClusterTask
     mount_task_dir
   end
 
-  def monitor_to_boot
+  def monitor_to_boot(start_time)
     while !booted? do
       elapsed = Time.now - start_time
       if elapsed > params[:vm_boot_timeout].to_f
@@ -171,15 +175,17 @@ class CbrainTask::StartVM < ClusterTask
     end
     local_cache_dir = File.basename(full_cache_dir)
     mount_dir full_cache_dir,local_cache_dir
-#  rescue => ex
-#    addlog "#{ex.class} #{ex.message}"
+    rescue => ex
+	addlog "Cannot mount cache directory. Killing task"
+	self.terminate
   end
   
   def mount_task_dir
     bourreau_shared_dir = self.bourreau.cms_shared_dir
     mount_dir bourreau_shared_dir,File.basename(bourreau_shared_dir)
-#  rescue => ex
-#    addlog "#{ex.class} #{ex.message}"
+  rescue => ex
+    addlog "Cannot mount task directory. Killing task"
+    self.terminate
   end
   
   def mount_dir(remote_dir,local_dir)
@@ -188,26 +194,26 @@ class CbrainTask::StartVM < ClusterTask
     sshfs_command = "mkdir #{local_dir} -p ; sshfs -p 2222 -C -o nonempty -o follow_symlinks -o reconnect -o StrictHostKeyChecking=no #{user}@localhost:#{remote_dir} #{local_dir}" #TODO (VM tristan) put this 2222 somewhere in config
     addlog "Mounting dir: #{sshfs_command}"
     addlog scir.run_command(sshfs_command,self) 
-    raise "Couldn't mount local directory #{local_dir} as #{remote_dir} in VM" unless is_mounted? remote_dir, local_dir
-  rescue => ex
-    addlog "#{ex.class} #{ex.message}"
+    raise "Couldn't mount local directory #{local_dir} as #{remote_dir} in VM" unless is_mounted?(remote_dir,local_dir)
   end
 
   def is_mounted?(remote_dir,local_dir)
-    addlog "Checking if local directory #{local_dir} is mounted as #{remote_dir} in VM"
+    scir = ScirVM.new
+    addlog "Checking if local directory #{remote_dir} is mounted as #{local_dir} in VM"
     t = Time.now
     file_name = ".testmount"
-    addlog "Writing timestamp #{t.to_s} in file #{local_dir+"/"+file_name}"
+    addlog "Writing timestamp #{t.to_s} in file #{remote_dir+"/"+file_name}"
     begin
-      file = File.open(local_dir+"/"+file_name, "w")
+      file = File.open(remote_dir+"/"+file_name, "w")
       file.write(t.to_s) 
     rescue IOError => e
       raise e
     ensure
       file.close unless file == nil
     end                  
-    time_read = scir.run_command("cat #{remote_dir}/#{file_name}",self)
-    addlog "Read timestamp #{time_read.to_s} from file  #{remote_dir}/#{file_name}"
-    return false unless t.to_s == time_read.to_s
+    time_read = scir.run_command("cat #{local_dir}/#{file_name}",self)
+    addlog "Read timestamp #{time_read.to_s} from file  #{local_dir}/#{file_name}"
+    result = ( t.to_s == time_read.to_s ) ? true : false
+    return result
   end
 end      
