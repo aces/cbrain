@@ -96,12 +96,12 @@ class WorkerPool
 
   # Wake up all workers in this pool.
   def wake_up_workers
-    @workers.each { |worker| worker.wake_up }
+    @workers.each { |worker| worker.wake_up rescue true }
   end
 
   # Stop all workers in this pool.
   def stop_workers
-    @workers.each { |worker| worker.stop }
+    @workers.each { |worker| worker.stop rescue true }
   end
 
   # Utility method that acts like Array's each(), for each worker
