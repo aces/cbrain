@@ -89,8 +89,13 @@ class CbrainTask::StartVM < ClusterTask
   end
   
   def save_results
-     addlog "No result to save"
-    true
+    addlog "No result to save."
+    # we consider the task successful if the VM booted. 
+    if params[:vm_status] != "booted"
+      addlog "VM is not active and never booted. I don't know why, sorry."
+      return false
+    end
+    return true
   end
   
   #taken from task civet

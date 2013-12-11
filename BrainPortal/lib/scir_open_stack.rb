@@ -39,6 +39,9 @@ class ScirOpenStack < Scir
       os.servers.each do |s|
         # get status
         state = statestring_to_stateconst(os.server(s[:id]).status)
+        if state == "ERROR"
+          os.server(s[:id]).delete!
+        end
         @job_info_cache[s[:id].to_s] = { :drmaa_state => state }
       end
       true
@@ -47,8 +50,8 @@ class ScirOpenStack < Scir
     def statestring_to_stateconst(state)
       return Scir::STATE_RUNNING        if state == "ACTIVE"
       return Scir::STATE_QUEUED_ACTIVE  if state == "BUILD"
+      return Scir::STATE_FAILED         if state == "ERROR"
       return Scir::STATE_UNDETERMINED
-
     end
 
     def hold(jid)
@@ -116,8 +119,6 @@ class ScirOpenStack < Scir
     end
     
     def run(job)
-
-      # TODO (Tristan VM) get instance id and flavor from disk image
       task = CbrainTask.find(job.task_id)
       disk_image_bourreaux = Bourreau.where(:disk_image_file_id => task.params[:disk_image])
       image_id = nil
@@ -125,7 +126,7 @@ class ScirOpenStack < Scir
       	image_id = DiskImageConfig.where(:disk_image_bourreau_id => b.id, :bourreau_id => RemoteResource.current_resource.id).first.open_stack_disk_image_id
       end
       raise "Cannot find Disk Image Bourreau associated with file id #{task.params[:disk_image]} or Disk Image Bourreau has no OpenStack image id for #{RemoteResource.current_resource.name}" unless !image_id.blank?
-      vm = submit_VM("CBRAIN Worker", image_id, task.params[:open_stack_image_flavor]) #"http://204.19.23.16:8774/9dd2bfba6bf040ad83e5140508aa31f0/flavors/9f9703e4-d8f5-496c-9ecd-52677e144578")
+      vm = submit_VM("CBRAIN Worker", image_id, task.params[:open_stack_image_flavor]) 
       return vm.id.to_s
     end
 
@@ -138,8 +139,7 @@ class ScirOpenStack < Scir
   end
   
   # This method seems required
-  class JobTemplate < Scir::JobTemplate #:nodoc:
-    
+  class JobTemplate < Scir::JobTemplate #:nodoc
     # NOTE: We use a custom 'run' method in the Session, instead of Scir's version.
     def qsub_command
       return "blah"
