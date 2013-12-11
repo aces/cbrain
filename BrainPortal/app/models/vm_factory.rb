@@ -100,7 +100,7 @@ class VmFactory < ActiveRecord::Base
       time = time + 1
     end
     if time >= self.nu_plus then (1..self.k_plus).each { |i|
-        log "Submiting VM #{i} of #{self.k_plus}"
+        log_vm "Submiting VM #{i} of #{self.k_plus}"
         submit_vm
       } 
     end
@@ -188,7 +188,7 @@ class VmFactory < ActiveRecord::Base
       bourreau = Bourreau.find(i)
       if get_active_tasks(i) < bourreau.meta[:task_limit_total].to_i || bourreau.meta[:task_limit_total].to_i == 0 || bourreau.meta[:task_limit_total].to_i.blank? then
         # will use the first config of StartVM on this bourreau
-        tool_config = ToolConfig.where(tool_id: self.start_vm_tool_id, bourreau_id: bourreau.id).first.id
+        tool_config = ToolConfig.where(tool_id: @start_vm_tool_id, bourreau_id: bourreau.id).first.id
         task = submit_vm_to_site(bourreau.name,bourreau.id,tool_config)
         if not task.blank? then
           task_replicas << task 
@@ -224,7 +224,7 @@ class VmFactory < ActiveRecord::Base
     task.params[:vm_user] = disk_image.disk_image_user 
     task.user = User.where(:login => "admin").first
     task.bourreau_id = bourreau_id
-    task.tool_config = ToolConfig.where(:tool_id => self.start_vm_tool_id, :bourreau_id => bourreau.id).first
+    task.tool_config = ToolConfig.where(:tool_id => @start_vm_tool_id, :bourreau_id => bourreau.id).first
     task.status = "New" 
     task.params[:disk_image] = self.disk_image_file_id
     
@@ -316,7 +316,7 @@ class VmFactory < ActiveRecord::Base
   end
 
   def get_ids_of_target_bourreaux
-    Bourreau.where(:online => true).select(:id).map {|i| i.id } & ToolConfig.where(:tool_id => self.start_vm_tool_id).select(:bourreau_id).map {|i| i.bourreau_id}
+    Bourreau.where(:online => true).select(:id).map {|i| i.id } & ToolConfig.where(:tool_id => @start_vm_tool_id).select(:bourreau_id).map {|i| i.bourreau_id}
   end
   
   # See algorithm 2 in CCGrid 2014 paper

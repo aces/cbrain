@@ -83,25 +83,15 @@ class BourreauWorker < Worker
     # The list of tasks, here, contains the minimum number of attributes
     # necessary for us to be able to make a decision as to what to do with them.
     # The full objects are reloaded in process_task() later on.
-<<<<<<< HEAD
 
-
-    tasks_todo = CbrainTask.not_archived.where( :status => ReadyTasks, :bourreau_id => @rr_id ).select([:id, :type, :user_id, :bourreau_id, :status, :updated_at]).all
-    worker_log.info "Found #{tasks_todo.size} tasks to handle on bare-metal resources."
-
-    tasks_todo_vms = get_vm_tasks_to_handle
-    worker_log.info "Found #{tasks_todo_vms.size} tasks to handle on my VMs."
-
-    tasks_todo.concat tasks_todo_vms
-
-    worker_log.info "Found #{tasks_todo.size} tasks to handle in total"
-=======
     tasks_todo_rel = CbrainTask.not_archived
        .where( :status => ReadyTasks, :bourreau_id => @rr_id )
        .select([:id, :type, :user_id, :bourreau_id, :status, :updated_at])
     tasks_todo_count = tasks_todo_rel.count
-    worker_log.info "Found #{tasks_todo_count} tasks to handle."
->>>>>>> master
+    worker_log.info "Found #{tasks_todo_count} tasks to handle on bare-metal resources."
+
+    tasks_todo_vms = get_vm_tasks_to_handle
+    worker_log.info "Found #{tasks_todo_vms.size} tasks to handle on my VMs."
 
     # Detects and turns on sleep mode. We enter sleep mode once we
     # find no task to process for three normal scan cycles in a row.
@@ -126,6 +116,10 @@ class BourreauWorker < Worker
 
     # Very recent tasks need to rest a little, so we skip them.
     tasks_todo_rel = tasks_todo_rel.where( [ "updated_at < ?", 20.seconds.ago ] )
+
+    # Add tasks going to VMs
+    tasks_todo_rel.concat tasks_todo_vms
+
     return if ! tasks_todo_rel.exists?
 
     # Fork a subprocess to do the actual task processing

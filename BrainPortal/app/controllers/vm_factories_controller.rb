@@ -50,10 +50,10 @@ class VmFactoriesController < ApplicationController
   end
 
   def start
-    @vm_factory = VmFactory.find(params[:id])
+    @vm_factory = VmFactoryRoundRobin.find(params[:id])
     cb_error "VM Factory #{@vm_factory.id} is already alive" unless !@vm_factory.alive?
     @vm_factory.start
-    cb_notice "VM Factory #{@vm_factory.id} started"
+    cb_notice "VM Factory #{@vm_factory.id} started (round robin)"
   end
 
   def stop
