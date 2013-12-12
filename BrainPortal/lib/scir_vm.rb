@@ -10,8 +10,11 @@ class ScirVM < Scir
 
   def run(job)
     task,vm_task = get_task_and_vm_task job
+
+    check_mounts vm_task
+
     command = qsub_command(job)
-    command.sub!(task.full_cluster_workdir,File.join(File.basename(RemoteResource.current_resource.cms_shared_dir),task.cluster_workdir)) #TODO (VM tristan) fix these awful substitutions
+    command.sub!(task.full_cluster_workdir,File.join(File.basename(RemoteResource.current_resource.cms_shared_dir),task.cluster_workdir)) #TODO (VM tristan) fix these awful substitutions #4769
     command.gsub!(task.full_cluster_workdir,"./")  
     command+=" & echo \$!" #so that the command is backgrounded and its PID is returned
     pid = run_command(command,vm_task).gsub("\n","")  
@@ -22,6 +25,9 @@ class ScirVM < Scir
   def job_ps(jid,caller_updated_at = nil)   
     vm_id,pid = get_vm_id_and_pid jid
     vm_task = get_task vm_id
+
+    check_mounts vm_task
+
     command = "ps -p #{pid} -o pid,state | awk '$1 == \"#{pid}\" {print $2}'"
     status_letter = run_command(command,vm_task).gsub("\n","")
     return Scir::STATE_DONE if status_letter == "" #TODO (VM tristan) find a way to return STATE_FAILED when exit code was not 0
@@ -128,4 +134,11 @@ class ScirVM < Scir
       return command
     end
 
+  def check_mounts vm_task
+    # check if cache and task dirs are still mounted
+    # this will also attempt to re-mount directories if mounts were broken
+    # if directories still cannot be mounted, vm_task will be terminated 
+    raise "Directories of VM #{vm_task.id} cannot be mounted" unless vm_task.mount_cache_dir && vm_task.mount_task_dir
+  end
+  
 end

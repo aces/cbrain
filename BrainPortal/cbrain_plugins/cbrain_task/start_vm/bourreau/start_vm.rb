@@ -180,34 +180,49 @@ class CbrainTask::StartVM < ClusterTask
     end
     local_cache_dir = File.basename(full_cache_dir)
     mount_dir full_cache_dir,local_cache_dir
-    rescue => ex
-	addlog "Cannot mount cache directory. Killing task"
-	self.terminate
+    return true
+  rescue => ex
+    addlog "Cannot mount cache directory (#{ex.message}). Killing VM task."
+    self.terminate
+    return false
   end
   
   def mount_task_dir
     bourreau_shared_dir = self.bourreau.cms_shared_dir
     mount_dir bourreau_shared_dir,File.basename(bourreau_shared_dir)
+    return true
   rescue => ex
-    addlog "Cannot mount task directory. Killing task"
+    addlog "Cannot mount task directory (#{ex.message}). Killing VM task."
     self.terminate
+    return false
   end
   
   def mount_dir(remote_dir,local_dir)
+    return unless !is_mounted? remote_dir,local_dir
     scir = ScirVM.new
     user = ENV['USER'] #quite unix-specific...
-    sshfs_command = "mkdir #{local_dir} -p ; sshfs -p 2222 -C -o nonempty -o follow_symlinks -o reconnect -o StrictHostKeyChecking=no #{user}@localhost:#{remote_dir} #{local_dir}" #TODO (VM tristan) put this 2222 somewhere in config
+    sshfs_command = "mkdir #{local_dir} -p ; umount #{local_dir} ; sshfs -p 2222 -C -o nonempty -o follow_symlinks -o reconnect -o StrictHostKeyChecking=no #{user}@localhost:#{remote_dir} #{local_dir}"
     addlog "Mounting dir: #{sshfs_command}"
     addlog scir.run_command(sshfs_command,self) 
+    # leave time to fuse to mount the dir
+    sleep 5
     raise "Couldn't mount local directory #{local_dir} as #{remote_dir} in VM" unless is_mounted?(remote_dir,local_dir)
   end
 
   def is_mounted?(remote_dir,local_dir)
-    scir = ScirVM.new
-    addlog "Checking if local directory #{remote_dir} is mounted as #{local_dir} in VM"
+    @last_checks = Hash.new unless !@last_checks.blank?
     t = Time.now
-    file_name = ".testmount"
-    addlog "Writing timestamp #{t.to_s} in file #{remote_dir+"/"+file_name}"
+    file_name = ".testmount.#{Process.pid}"
+    if File.exist?(file_name)
+      last_checked = File.mtime(file_name)
+      if (t - last_checked < 5) && !@last_checks[combine(remote_dir,local_dir)].blank?
+        addlog "NOT checking if local directory #{remote_dir} is mounted in #{local_dir} in VM (did it #{t-last_checked}s ago."
+        return @last_checks[combine(remote_dir,local_dir)]
+      end
+    end
+
+    scir = ScirVM.new
+    addlog "Checking if local directory #{remote_dir} is mounted in #{local_dir} in VM"
     begin
       file = File.open(remote_dir+"/"+file_name, "w")
       file.write(t.to_s) 
@@ -217,8 +232,12 @@ class CbrainTask::StartVM < ClusterTask
       file.close unless file == nil
     end                  
     time_read = scir.run_command("cat #{local_dir}/#{file_name}",self)
-    addlog "Read timestamp #{time_read.to_s} from file  #{local_dir}/#{file_name}"
     result = ( t.to_s == time_read.to_s ) ? true : false
+    @last_checks[combine(remote_dir,local_dir)] = result
     return result
+end
+  
+  def combine(a,b)
+    return "#{a};;;#{b}"
   end
 end      
