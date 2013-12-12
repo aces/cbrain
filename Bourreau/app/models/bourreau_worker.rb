@@ -88,10 +88,7 @@ class BourreauWorker < Worker
        .where( :status => ReadyTasks, :bourreau_id => @rr_id )
        .select([:id, :type, :user_id, :bourreau_id, :status, :updated_at])
     tasks_todo_count = tasks_todo_rel.count
-    worker_log.info "Found #{tasks_todo_count} tasks to handle on bare-metal resources."
-
-    tasks_todo_vms = get_vm_tasks_to_handle
-    worker_log.info "Found #{tasks_todo_vms.size} tasks to handle on my VMs."
+    worker_log.info "Found #{tasks_todo_count} tasks to handle."
 
     # Detects and turns on sleep mode. We enter sleep mode once we
     # find no task to process for three normal scan cycles in a row.
@@ -116,9 +113,6 @@ class BourreauWorker < Worker
 
     # Very recent tasks need to rest a little, so we skip them.
     tasks_todo_rel = tasks_todo_rel.where( [ "updated_at < ?", 20.seconds.ago ] )
-
-    # Add tasks going to VMs
-    tasks_todo_rel.concat tasks_todo_vms
 
     return if ! tasks_todo_rel.exists?
 
@@ -172,8 +166,14 @@ class BourreauWorker < Worker
   # of ugly long-term memory leaks that accumulate when ActiveRecord
   # are fetched over and over again.
   def process_task_list(tasks_todo_rel) #:nodoc:
+
     tasks_todo = tasks_todo_rel.all
 
+    # Adding tasks going to VMs
+    tasks_todo_vms = get_vm_tasks_to_handle
+    tasks_todo.concat tasks_todo_vms unless tasks_todo_vms.blank?
+    worker_log.info "Added #{tasks_todo_vms.size} virtual tasks to the list of tasks to process"
+ 
     # Partition tasks into two sets: 'decrease activity' and 'increase activity'.
     # Actually, 'decrease' means 'decrease or stay the same', or in other
     # words, 'not increase'.
@@ -273,6 +273,10 @@ class BourreauWorker < Worker
   #TODO (VM tristan) make this more efficient (use less queries)
   def get_vm_tasks_to_handle
 
+    #gets VMs available to me
+    vms = CbrainTask.not_archived.where(:type => "CbrainTask::StartVM", :bourreau_id => @rr_id, :status => "On CPU")  
+    return nil unless vms.blank? || ( vms.size != 0 )
+
     #gets all tasks going to DiskImage bourreaux
     tasks_for_vms = Array.new
     disk_images = DiskImageBourreau.all
@@ -280,9 +284,6 @@ class BourreauWorker < Worker
       #list tasks going to these bourreaux
       tasks_for_vms.concat CbrainTask.not_archived.where(:bourreau_id => bourreau.id, :status => ReadyTasks) 
     }
-    
-    #gets VMs available to me
-    vms = CbrainTask.not_archived.where(:type => "CbrainTask::StartVM", :bourreau_id => @rr_id, :status => "On CPU")  #TODO (VM tristan) remove this ugly "CbrainTask::StartVM"
     
     #now joins
     tasks = Array.new #will contain the new tasks that I could send to my VMs + the tasks that I need to handle
