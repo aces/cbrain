@@ -63,6 +63,8 @@ class ScirVM < Scir
     vm_task = get_task vm_id
     command = "kill -TERM #{pid}"
     run_command(command,vm_task)
+  rescue => ex
+    raise ex unless ex.message.include? "Cannot establish connection with VM" #if the VM executing this task cannot be reached, then the task should be put in status terminated. Otherwise, if VM shuts down and the task is still in there, it could never be terminated.
   end
 
   def create_job_id(vm_id,pid)
