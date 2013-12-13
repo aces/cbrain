@@ -384,13 +384,17 @@ class BourreauWorker < Worker
       end
 
       # Recored bourreau performance factor for On CPU -> Data ready 
-      if initial_status == 'On CPU' && new_status == 'Data Ready'
+      if initial_status == 'On CPU' && new_status == 'Data Ready' && task.type != "CbrainTask::StartVM"
         # will miss it in case task is too short
         @rr.meta.reload 
         time_on_cpu = Time.now - initial_change_time 
         task.addlog "Task spent #{time_on_cpu} on CPU"
         @rr.meta[:latest_performance_factor] = time_on_cpu.to_f / task.job_walltime_estimate.to_f
-        @rr.meta[:time_of_latest_performance_factor] = Time.now
+	begin
+          @rr.meta[:time_of_latest_performance_factor] = Time.now
+	rescue => ex
+	  task.addlog "Cannot set time of latest peformance factor: #{ex.message}" + ex.backtrace[0..10].join("\n")
+	end
       end
 
     end

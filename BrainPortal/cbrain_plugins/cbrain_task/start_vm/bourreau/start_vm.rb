@@ -28,8 +28,16 @@ class CbrainTask::StartVM < ClusterTask
   
   Revision_info = CbrainFileRevision[__FILE__]
 
-  #to update the status of the VM embedded in the task
+  #to follow the boot process of the VM 
   after_status_transition '*', 'On CPU', :starting
+
+  #to make sure no more task in the VM is active 
+  after_status_transition '*', 'Completed', :clean_up_tasks
+  after_status_transition '*', 'Failed To PostProcess', :clean_up_tasks
+  after_status_transition '*', 'Failed On Cluster', :clean_up_tasks
+  after_status_transition '*', 'Failed PostProcess Prerequisites', :clean_up_tasks
+  after_status_transition '*', 'Terminated', :clean_up_tasks
+
   
   def setup 
     #synchronize VM disk image
@@ -235,9 +243,16 @@ class CbrainTask::StartVM < ClusterTask
     result = ( t.to_s == time_read.to_s ) ? true : false
     @last_checks[combine(remote_dir,local_dir)] = result
     return result
-end
+  end
   
   def combine(a,b)
     return "#{a};;;#{b}"
+  end
+
+  def clean_up_tasks(init_status)
+    CbrainTask.where(:vm_id => self.id).each do |t| 
+      addlog "Terminating task #{t.id} which is still in this shutting-down VM. This is not supposed to happen, you should investigate what happened."
+      t.terminate
+    end
   end
 end      
