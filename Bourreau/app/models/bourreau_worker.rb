@@ -199,7 +199,6 @@ class BourreauWorker < Worker
     worker_log.debug "There are #{tasks_todo.size} ready tasks that will increase activity."
     return if tasks_todo.empty?
 
-
     # Get limits from meta data store
     @rr.meta.reload # reload limits if needed.
     bourreau_max_tasks = @rr.meta[:task_limit_total].to_i # nil or "" or 0 means infinite
@@ -219,10 +218,10 @@ class BourreauWorker < Worker
 
       bourreau_limit = false 
       user_limit = false
-      
+	
       # Loop for each task
       while user_tasks.size > 0
-
+	
         # Bourreau global limit.
         # If exceeded, there's nothing more we can do for this cycle of 'do_regular_work'
         if bourreau_max_tasks > 0 # i.e. 'if there is a limit configured'
@@ -233,7 +232,7 @@ class BourreauWorker < Worker
 #            return # done for this cycle
           end
         end
-
+	
         # User specific limit.
         # If exceeded, there's nothing more we can do for this user, so we go to the next
         if user_max_tasks > 0 # i.e. 'if there is a limit configured'
@@ -244,7 +243,7 @@ class BourreauWorker < Worker
 #            break # go to next user
           end
         end
-
+	
         # Alright, move the task along its lifecycle
         task = user_tasks.pop
         if ((user_limit || bourreau_limit) and not task.job_template_goes_to_vm?) then 
@@ -259,7 +258,7 @@ class BourreauWorker < Worker
         return if stop_signal_received? # stop everything, return control to framework in order to exit
 
       end # each task
-
+	
       return if stop_signal_received? # stop everything, return control to framework in order to exit
 
     end # each user
@@ -284,13 +283,14 @@ class BourreauWorker < Worker
       #list tasks going to these bourreaux
       tasks_for_vms.concat CbrainTask.not_archived.where(:bourreau_id => bourreau.id, :status => ReadyTasks) 
     }
-    
+
     #now joins
     tasks = Array.new #will contain the new tasks that I could send to my VMs + the tasks that I need to handle
 
-    #add the tasks already on my VMs
+    #add the tasks already on my VMs, unless VM is down
     tasks_for_vms.each { |y| 
-      if y.params[:physical_bourreau] == @rr_id
+      if y.params[:physical_bourreau] == @rr_id && 
+	( y.vm_id.blank? || CbrainTask.find(y.vm_id).status == "On CPU" ) #5321
         tasks << y
       end
     }
