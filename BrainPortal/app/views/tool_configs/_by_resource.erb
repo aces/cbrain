@@ -1,0 +1,172 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+# Partial variables needed here:
+#   resource  => a single tool or bourreau object
+#   versus    => a list of bourreaux (when resource is a tool) or tools (when resource is a bourreau)
+#   users     => list of users
+%>
+
+<% for_tool = resource.is_a?(Tool) %>
+
+<fieldset>
+
+  <!-- Generate appropriate legend -->
+  <legend>
+      <% if for_tool %>
+        Tool: <%= link_to resource.name, edit_tool_path(resource) %>
+      <% else %>
+        Execution Server: <%= link_to_bourreau_if_accessible(resource, nil, :path => bourreau_path(resource)) %>
+      <% end %>
+      in project '<%= link_to_group_if_editable(resource.group) %>'
+  </legend>
+
+  <%
+  # Make sure next cycle is 'list-odd'
+  cycle("list-odd", "list-even") if cycle("list-odd", "list-even") == 'list-odd'
+
+  # 2 lists of objects of type 'versus' : one for those without tool_configs, one for those with at least one tool_config
+  versus_without_tcs = for_tool ? versus.select { |v| ToolConfig.where( :tool_id => resource.id, :bourreau_id => v.id).size == 0 }
+                                : versus.select { |v| ToolConfig.where( :tool_id => v.id, :bourreau_id => resource.id).size == 0 }
+  versus_with_tcs    = versus - versus_without_tcs
+
+  # Summarize for 'versus' without tool_configs
+  no_version_summary = ""
+  if versus_without_tcs.present?
+    if for_tool
+      no_version_summary << html_colorize("No versions configured for: ")
+    else
+      no_version_summary <<  html_colorize("No versions configured on: ")
+    end
+
+    versus_without_tcs.each do |vs|
+      if for_tool
+        no_version_summary << link_to_bourreau_if_accessible(vs, nil, :path => bourreau_path(vs))
+      else
+        no_version_summary <<  link_to(vs.name, edit_tool_path(vs))
+      end
+
+      if vs.group.name != "everyone"
+        no_version_summary << " (" << link_to_group_if_editable(vs.group) << ")"
+      end
+
+      no_version_summary << ", "
+    end
+    no_version_summary.gsub!(/,\s$/,".")
+  end
+
+  # resource access precomputing (caching)
+  user_can_access_resource = {}
+  users.each do |user|
+    user_can_access_resource[user] = resource.can_be_accessed_by?(user)
+  end
+  %>
+
+  <table>
+
+    <!-- Summarize for resource with versus having no tool_configs -->
+    <% if no_version_summary.present? %>
+      <%= no_version_summary.html_safe %>
+    <% end %>
+
+    <!-- Create full report for resource with versus having at least one tool_config -->
+    <% if versus_with_tcs.present? %>
+      <tr>
+        <th><%= for_tool ? "Execution Servers" : "Tools" %> </th>
+        <th>Versions Configured</th>
+        <th>Projects In Effect</th>
+        <th>Users with access problem(s)</th>
+      </tr>
+    <% end %>
+
+    <% versus_with_tcs.each do |vs| %>
+
+      <%
+         user_can_access_versus = {}
+         users.each do |user|
+           user_can_access_versus[user] = vs.can_be_accessed_by?(user)
+         end
+      %>
+
+      <%
+      tcs = for_tool ? ToolConfig.where( :tool_id => resource.id, :bourreau_id => vs.id )
+                     : ToolConfig.where( :tool_id => vs.id,       :bourreau_id => resource.id )
+      %>
+      <% tcs.each_with_index do |tc,idx| %>
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+        <% if idx == 0 %>
+          <td rowspan="<%= tcs.size %>" class="left_align no_wrap">
+            <% if for_tool%>
+              <%= link_to_bourreau_if_accessible(vs, nil, :path => bourreau_path(vs)) %>
+            <% else %>
+              <%= link_to vs.name, edit_tool_path(vs) %>
+            <% end %>
+            in project '<%= link_to_group_if_editable(vs.group) %>'
+          </td>
+        <% end %>
+          <td class="left_align no_wrap">
+            <%= link_to tc.version_name, edit_tool_config_path(tc) %>
+            in project '<%= link_to_group_if_editable(tc.group) %>'
+          </td>
+          <td class="left_align no_wrap">
+            <%
+               projs = [ resource.group, vs.group, tc.group ]
+               projs.reject! { |g| g.name == 'everyone' }
+               projs = projs.uniq
+            %>
+            <% if projs.size == 0 %>
+              <%= html_colorize("'everyone'", 'green') %>
+            <% else %>
+              <% links = projs.map { |g| link_to_group_if_editable(g) } %>
+              <%= links.join(" &cap; ").html_safe %>
+            <% end %>
+          </td>
+          <td class="left_align">
+            <%
+              # An array with each user with problem access
+              users_with_access_pb = users.select do |user|
+                !user_can_access_resource[user] || !user_can_access_versus[user] || !tc.can_be_accessed_by?(user)
+              end
+            %>
+            <%= array_to_table(users_with_access_pb, :rows => 1, :table_class => 'simple') do |user,r,c| %>
+              <!-- Add information on the tooltip -->
+              <%= html_tool_tip(user.login) do %>
+                <%= "* Execution Server's project<br/>".html_safe      unless
+                  ( for_tool ? user_can_access_versus[user] : user_can_access_resource[user] ) %>
+                <%= "* Tool's project<br/>".html_safe                  unless
+                  ( for_tool ? user_can_access_resource[user] : user_can_access_versus[user] ) %>
+                <%= "* Version configuration's project<br/>".html_safe unless tc.can_be_accessed_by?(user) %>
+              <% end %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    <% end %>
+
+  </table>
+
+
+</fieldset>
+

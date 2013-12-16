@@ -17,14 +17,14 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #Helper for dynamic, non-ajax interface elements.
 module RichUiHelper
-  
-  Revision_info=CbrainFileRevision[__FILE__] 
-  
+
+  Revision_info=CbrainFileRevision[__FILE__]
+
   include JavascriptOptionSetup
 
   # Takes a +description+ (a string with possibly multiple lines) and shows
@@ -36,16 +36,17 @@ module RichUiHelper
     body   = (description[header.size,999] || "").strip
     cropped_header = crop_text_to(options[:header_width] || 50,header)
     return h(cropped_header) if body.blank? && cropped_header !~ /\.\.\.$/
+    return h(cropped_header) if cropped_header.present? && body.present? && (cropped_header == body)
 
-    link = h(cropped_header) + " " + 
+    link = h(cropped_header) + " " +
       html_tool_tip(link_to("(more)", "#"), :offset_x => 0, :offset_y => 20) do
         pre_body = body.blank? ? "" : "\n<pre>" + h(body) + "</pre>"
         ("<h4>#{h(header)}</h4>#{pre_body}").html_safe
       end
     link.html_safe
   end
-  
-  # Create an element that opens a dropdown when it's 
+
+  # Create an element that opens a dropdown when it's
   # hovered over.
   def hover_dropdown(header, options = {}, &block)
     @hover_dropdown_div_ids ||= 0
@@ -65,7 +66,7 @@ module RichUiHelper
     html << "</span>"
     return html.join.html_safe
   end
-  
+
   #Create tab bars in the interface.
   #Content is provided with a block.
   #[options] A hash of html options for the tab bar structure.
@@ -99,9 +100,9 @@ module RichUiHelper
    end
 
   ############################################################
-  #                                              
-  # Utility class for the build_tabs method (see above).      
-  #                                                                          
+  #
+  # Utility class for the build_tabs method (see above).
+  #
   #############################################################
   class TabBuilder
 
@@ -167,9 +168,9 @@ module RichUiHelper
   end
 
   ############################################################
-  #                                              
-  # Utility class for the build_accordion method (see above).      
-  #                                                                          
+  #
+  # Utility class for the build_accordion method (see above).
+  #
   #############################################################
   class AccordionBuilder
     def section(header, &block)
@@ -182,7 +183,7 @@ module RichUiHelper
       ""
     end
   end
-  
+
   #Create a tooltip that displays html when mouseovered.
   #Text of the icon is provided as an argument.
   #Html to be displayed on mouseover is given as a block.
@@ -222,10 +223,10 @@ module RichUiHelper
 
     result.html_safe
   end
-  
+
   #Create an overlay dialog box with a link as the button.
   #Content is provided through a block.
-  #Options: 
+  #Options:
   # [width] width in pixels of the overlay.
   #
   #All other options will be treated at HTML attributes.
@@ -295,7 +296,7 @@ module RichUiHelper
     safe_concat("</span>")
     ""
   end
-  
+
   #Create an element that will toggle between hiding and showing another element.
   #The appearance/disappearance can also be animated.
   def show_hide_toggle(text, target, options = {})
@@ -323,5 +324,5 @@ module RichUiHelper
     atts = options.to_html_attributes
     return " <#{element_type} #{atts}>#{h(text)}</#{element_type}>".html_safe
   end
-   
+
 end

@@ -53,6 +53,7 @@ class BourreauWorker < Worker
     worker_log.info "#{@rr.class.to_s} code rev. #{@rr.revision_info.svn_id_rev} start rev. #{@rr.info.starttime_revision}"
     @rr_id = @rr.id
     @last_ruby_stuck_check = 20.minutes.ago
+    @process_task_list_pid = nil
   end
 
   # Calls process_task() regularly on any task that is ready.
@@ -82,8 +83,11 @@ class BourreauWorker < Worker
     # The list of tasks, here, contains the minimum number of attributes
     # necessary for us to be able to make a decision as to what to do with them.
     # The full objects are reloaded in process_task() later on.
-    tasks_todo = CbrainTask.not_archived.where( :status => ReadyTasks, :bourreau_id => @rr_id ).select([:id, :type, :user_id, :bourreau_id, :status, :updated_at]).all
-    worker_log.info "Found #{tasks_todo.size} tasks to handle."
+    tasks_todo_rel = CbrainTask.not_archived
+       .where( :status => ReadyTasks, :bourreau_id => @rr_id )
+       .select([:id, :type, :user_id, :bourreau_id, :status, :updated_at])
+    tasks_todo_count = tasks_todo_rel.count
+    worker_log.info "Found #{tasks_todo_count} tasks to handle."
 
     # Detects and turns on sleep mode. We enter sleep mode once we
     # find no task to process for three normal scan cycles in a row.
@@ -96,7 +100,7 @@ class BourreauWorker < Worker
     #
     # After one hour a normal scan is performed again so that there is at least
     # some kind of DB activity; some DB servers close their socket otherwise.
-    if tasks_todo.empty?
+    if tasks_todo_count == 0
       @zero_task_found += 1 # count the normal scan cycles with no tasks
       if @zero_task_found >= 3 # three in a row?
         worker_log.info "No tasks need handling, going to sleep for one hour."
@@ -107,8 +111,60 @@ class BourreauWorker < Worker
     @zero_task_found = 0
 
     # Very recent tasks need to rest a little, so we skip them.
-    tasks_todo.reject! { |task| task.updated_at > 20.seconds.ago }
-    return if tasks_todo.empty?
+    tasks_todo_rel = tasks_todo_rel.where( [ "updated_at < ?", 20.seconds.ago ] )
+    return if ! tasks_todo_rel.exists?
+
+    # Fork a subprocess to do the actual task processing
+    @process_task_list_pid = nil # make sure it's unset in child
+    @process_task_list_pid = Kernel.fork do
+      begin
+        $0=$0.to_s.sub(/(BourreauWorker)?/, "SubWorker") + "\0"
+        @pretty_name = "SubWorker-#{Process.pid}"
+        self.worker_log.prefix = @pretty_name + ": " if self.worker_log.is_a?(LoggerPrefixer)
+
+        worker_log.debug "Invoked for #{tasks_todo_count} tasks."
+        process_task_list(tasks_todo_rel)
+      rescue => ex
+        worker_log.fatal "Exception processing tasklist: #{ex.class.to_s} #{ex.message}\n" + ex.backtrace[0..10].join("\n")
+        Kernel.exit!(99) # exit!(), and not exit() # used by parent to know an exception occured.
+      end
+      worker_log.debug "Exiting properly."
+      Kernel.exit!(0) # exit!(), and not exit()
+    end
+
+    # Wait for subprocess to finish. BLOCKING!
+    worker_log.debug "Waiting for SubWorker-#{@process_task_list_pid}."
+    while Process.wait != @process_task_list_pid # in case we get interrupted, we need to loop around the wait!
+      sleep 1
+    end
+
+    # Check status of subprocess running task list; by convention, 99 is an exception and we must stop
+    task_list_exit_status = $?.exitstatus rescue 0
+    if task_list_exit_status >= 20
+      worker_log.info "Exception raised in SubWorker. Exiting."
+      self.stop_me
+    end
+
+  rescue SystemCallError, Errno::ECHILD # sometimes triggered by Process.wait
+    @process_task_list_pid = nil
+  ensure
+    @process_task_list_pid = nil
+  end
+
+  # Propagate a stop signal to the SubWorker. In the subworker it will do nothing.
+  def stop_signal_received_callback #:nodoc:
+    if @process_task_list_pid
+      worker_log.info "Propagating STOP to subprocess #{@process_task_list_pid}"
+      Process.kill('TERM',@process_task_list_pid) rescue nil
+    end
+  end
+
+  # This method is executed in a subprocess to handle a list
+  # of active tasks. The reason a subproces is needed is because
+  # of ugly long-term memory leaks that accumulate when ActiveRecord
+  # are fetched over and over again.
+  def process_task_list(tasks_todo_rel) #:nodoc:
+    tasks_todo = tasks_todo_rel.all
 
     # Partition tasks into two sets: 'decrease activity' and 'increase activity'.
     # Actually, 'decrease' means 'decrease or stay the same', or in other

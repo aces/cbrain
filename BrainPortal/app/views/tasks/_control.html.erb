@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -30,8 +30,15 @@
 
   <tr>
     <td <%= 'class="error_display"' if @task.status == 'Duplicated' %>>
-      <strong>Server&nbsp;&amp;&nbsp;Version:</strong><br>
-      <%= tool_config_select "cbrain_task[tool_config_id]", :tool_configs => @tool_configs, :selector => @task, :include_blank => "Select Server & Version" %>
+    <strong>Server&nbsp;&amp;&nbsp;Version:</strong><br>
+    <%= tool_config_select "cbrain_task[tool_config_id]", { :tool_configs  => @tool_configs,
+                                                            :selector      => @task,
+                                                          },
+                                                          { :include_blank => "Select Server & Version",
+                                                            :class         => "submit_onchange",
+                                                            "data-commit"  => "refresh",
+                                                          } %>
+
     </td>
 
     <td>
