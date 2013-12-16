@@ -228,7 +228,7 @@ class CbrainTask::StartVM < ClusterTask
         return @last_checks[combine(remote_dir,local_dir)]
       end
     end
-
+    
     scir = ScirVM.new
     addlog "Checking if local directory #{remote_dir} is mounted in #{local_dir} in VM"
     begin
@@ -243,6 +243,8 @@ class CbrainTask::StartVM < ClusterTask
     result = ( t.to_s == time_read.to_s ) ? true : false
     @last_checks[combine(remote_dir,local_dir)] = result
     return result
+  ensure
+    File.delete(remote_dir+"/"+file_name)
   end
   
   def combine(a,b)
