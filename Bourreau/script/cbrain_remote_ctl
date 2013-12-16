@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 
@@ -222,10 +222,17 @@ else # db text is provided to us
   File.open(db_file,"w") { |fh| fh.write(db_yml_text) }
 end
 
+start_success        = false
+# Rename log file if it's too big
+start_log_file       = "#{rails_home}/log/server_start.log"
+environment_log_file = "#{rails_home}/log/#{environment}.log"
+date_extension       = Time.now.strftime("%Y-%m-%d")
+File.rename(start_log_file, start_log_file.sub(/\.log$/,"_#{date_extension}.log")) if
+  File.exists?( start_log_file ) && File.size( start_log_file ) > 1_048_576
+File.rename(environment_log_file, environment_log_file.sub(/\.log$/,"_#{date_extension}.log") ) if
+  File.exists?( environment_log_file ) && File.size( environment_log_file ) > 1_048_576
 # Start the server or the console
-start_success=false
-start_log_file="#{rails_home}/log/server_start.log"
-raw_system_cmd = ""
+raw_system_cmd       = ""
 Dir.chdir(rails_home) do
   rails_cmd_ar = (mode == "start") ?
         [

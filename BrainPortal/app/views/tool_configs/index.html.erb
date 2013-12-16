@@ -24,25 +24,23 @@
 
 <% title 'Access Summary' %>
 
-<% if @view == 'by_bourreau' %>
-  <h1>Tool Access Report, By Execution Server</h1>
-  <% @bourreaux.each do |bourreau| %>
+<% if @view == 'by_tool' || @view == 'by_bourreau' %>
+  <%
+    if @view == 'by_bourreau'
+      resources = @bourreaux
+      versus    = @tools
+    else
+      resources = @tools
+      versus    = @bourreaux
+    end
+  %>
+  <h1>Access Report, By <%= @view == 'by_bourreau' ? "Execution Server" : "Tool" %></h1>
+  <% resources.each do |resource| %>
     <p>
-    <%= render :partial => 'by_bourreau',
-               :locals  => { :bourreau => bourreau,
+    <%= render :partial => 'by_resource',
+               :locals  => { :resource => resource,
+                             :versus   => versus,
                              :users    => @users,
-                             :tools    => @tools,
-                            }
-    %>
-  <% end %>
-<% elsif @view == 'by_tool' %>
-  <h1>Tool Access Report, By Tool</h1>
-  <% @tools.each do |tool| %>
-    <p>
-    <%= render :partial => 'by_tool',
-               :locals  => { :bourreaux => @bourreaux,
-                             :users     => @users,
-                             :tool      => tool,
                             }
     %>
   <% end %>
@@ -63,7 +61,7 @@
 
 <h1>Quick Links To Individual Access Reports</h1>
 
-<h5>By Execution Server (or <%= link_to "all of them", :action => :index, :view => 'by_bourreau' %>)</h5>
+<h5>By Execution Server(or <%= link_to "all of them", :action => :index, :view => 'by_bourreau' %>)</h5>
 <%= array_to_table(Bourreau.all.sort { |a,b| a.name <=> b.name }, :table_class => 'simple', :rows => 1 ) do |bourreau,r,c| %>
   <%= link_to bourreau.name, :action => :index, :bourreau_id => bourreau.id %>
 <% end %>
