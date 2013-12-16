@@ -38,12 +38,9 @@ class CbrainTask::StartVM < ClusterTask
   after_status_transition '*', 'Failed PostProcess Prerequisites', :clean_up_tasks
   after_status_transition '*', 'Terminated', :clean_up_tasks
 
-  
   def setup 
-    
     validate_params # defined in common
     escape_params
-
     #synchronize VM disk image
     if RemoteResource.current_resource.cms_class != "ScirOpenStack"
       disk_image_file_id = params[:disk_image]
@@ -67,8 +64,8 @@ class CbrainTask::StartVM < ClusterTask
 
   def escape_params
     # QEMU params lines may contain spaces
-    params[:qemu_params] = params[:qemu_params].bash_escape(false,false,true)
-    params[:open_stack_image_flavor] = params[:open_stack_image_flavor].bash_escape
+    params[:qemu_params] = params[:qemu_params].bash_escape(false,false,true) unless params[:qemu_params].blank?
+    params[:open_stack_image_flavor] = params[:open_stack_image_flavor].bash_escape unless params[:open_stack_image_flavor].blank?
   end
 
   def job_walltime_estimate
