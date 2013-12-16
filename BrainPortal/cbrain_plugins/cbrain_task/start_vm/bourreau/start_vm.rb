@@ -40,6 +40,10 @@ class CbrainTask::StartVM < ClusterTask
 
   
   def setup 
+    
+    validate_params # defined in common
+    escape_params
+
     #synchronize VM disk image
     if RemoteResource.current_resource.cms_class != "ScirOpenStack"
       disk_image_file_id = params[:disk_image]
@@ -59,6 +63,12 @@ class CbrainTask::StartVM < ClusterTask
       addlog "Not synchronizing disk image on OpenStack Bourreau"
     end
   true
+  end
+
+  def escape_params
+    # QEMU params lines may contain spaces
+    params[:qemu_params] = params[:qemu_params].bash_escape(false,false,true)
+    params[:open_stack_image_flavor] = params[:open_stack_image_flavor].bash_escape
   end
 
   def job_walltime_estimate
