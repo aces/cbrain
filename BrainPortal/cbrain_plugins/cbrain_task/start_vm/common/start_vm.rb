@@ -54,7 +54,7 @@ class CbrainTask::StartVM
 
   end
 
-  def is_integer?(n)
+  def is_integer?(a)
     return true if a.is_a?(Integer)
     return true if a.is_an_integer? # added to class String in utilities
     return false
@@ -62,7 +62,7 @@ class CbrainTask::StartVM
     return false
   end
 
-  def is_float?(n)
+  def is_float?(a)
     return true if a.is_a?(Numeric)
     return true if a.is_a_float? # added to class String in utilities
     return false
