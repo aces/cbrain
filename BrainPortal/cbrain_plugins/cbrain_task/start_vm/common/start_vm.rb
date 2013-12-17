@@ -45,7 +45,7 @@ class CbrainTask::StartVM
       message+= "Number of CPUs has to be an integer! " if !is_integer? params[:vm_cpus]
 
       message+= "Missing RAM! " if params[:vm_ram_gb].blank? 
-      message+= "RAM has to be a numeric value " if !params[:vm_ram_gb].is_a_float?
+      message+= "RAM has to be a numeric value " if !is_float? params[:vm_ram_gb]
     else
       message+= "Missing OpenStack flavor " if params[:open_stack_image_flavor].blank? 
     end
@@ -62,4 +62,11 @@ class CbrainTask::StartVM
     return false
   end
 
+  def is_float?(n)
+    return true if a.is_a?(Numeric)
+    return true if a.is_a_float? # added to class String in utilities
+    return false
+  rescue => ex # reached when a is not a Numeric and it's not a String
+    return false
+  end
 end
