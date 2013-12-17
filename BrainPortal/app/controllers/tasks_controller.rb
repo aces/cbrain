@@ -667,7 +667,7 @@ def create #:nodoc:
               # old tool_config and new tool_config need to concern same tool
               old_tcid_to_tool_id[old_tcid] ||= ToolConfig.find(old_tcid).tool_id
               # (user has access to new tc)                     (new tc is same tool as old tc)                         (new tc has same bourreau as old tc)
-              (user_to_avail_new_tool_config[t_uid] == 0) || (old_tcid_to_tool_id[old_tcid] != tool_config.tool_id) || (old_bid != new_tool_config.bourreau_id)
+              (user_to_avail_new_tool_config[t_uid] == 0) || (old_tcid_to_tool_id[old_tcid] != new_tool_config.tool_id) || (old_bid != new_tool_config.bourreau_id)
             end
             failed_tasks = tasklist - new_tasklist
             failed_list["error when updating tool config"] = failed_tasks if failed_tasks.present?
