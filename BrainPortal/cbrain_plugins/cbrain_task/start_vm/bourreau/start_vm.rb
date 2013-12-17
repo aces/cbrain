@@ -25,8 +25,11 @@
 require 'net/ssh'
 
 class CbrainTask::StartVM < ClusterTask
-  
+
   Revision_info = CbrainFileRevision[__FILE__]
+
+  include RestartableTask
+  include RecoverableTask
 
   #to follow the boot process of the VM 
   after_status_transition '*', 'On CPU', :starting

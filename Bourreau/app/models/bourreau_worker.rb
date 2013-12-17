@@ -290,7 +290,7 @@ class BourreauWorker < Worker
     #add the tasks already on my VMs, unless VM is down
     tasks_for_vms.each { |y| 
       if y.params[:physical_bourreau] == @rr_id && 
-	( y.vm_id.blank? || CbrainTask.find(y.vm_id).status == "On CPU" ) #5321
+	( y.vm_id.blank? || y.status != "On CPU" || CbrainTask.find(y.vm_id).status == "On CPU" ) #5321, #4851
         tasks << y
       end
     }
