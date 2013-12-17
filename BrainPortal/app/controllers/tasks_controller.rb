@@ -781,16 +781,19 @@ def create #:nodoc:
 
       # Tweak tasks to re-route operations to physical bourreaux in case of virtual tasks
       tasks.each { |t|
-        if Bourreau.find(t.bourreau_id).is_a? Bourreau::DiskImageBourreau
+        CbrainTask.transaction do
+          t.lock!
+          if Bourreau.find(t.bourreau_id).is_a? Bourreau::DiskImageBourreau
             if t.params[:physical_bourreau].blank?
               # Task has no physical bourreau. I have to terminate it myself
               # TODO (VM tristan) race condition: a worker could now have taken the task and set a physical bourreau. 
               t.status = "Terminated" 
-              t.save
             else
               t.bourreau_id = t.params[:physical_bourreau] 
             end
           end
+          t.save
+        end
         
       } # TODO (VM tristan) this is dangerous in case the task is saved later on. It doesn't seem to be the case, but this should rather be fixed!
 
