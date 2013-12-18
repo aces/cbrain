@@ -59,7 +59,8 @@ class CbrainTask < ActiveRecord::Base
                         :launch_time, :prerequisites, :share_wd_tid, :run_number, :group_id, :tool_config_id, :level, :rank, 
                         :results_data_provider_id, :cluster_workdir_size, :workdir_archived, :workdir_archive_userfile_id,
                         :vm_id,
-                        :params
+                        :params,
+                        :on_cpu_timestamp, :terminate_timestamp, :data_ready_timestamp                          
 
   # Pseudo Attributes (not saved in DB)
   # These are filled in by calling capture_job_out_err().
@@ -458,6 +459,8 @@ class CbrainTask < ActiveRecord::Base
       self.status = to_state
       self[:queued_timestamp] = Time.now if to_state == "Queued"
       self[:on_cpu_timestamp] = Time.now if to_state == "On CPU"
+      self[:data_ready_timestamp] = Time.now if to_state == "Data Ready"
+      self[:terminate_timestamp] = Time.now if to_state == "Terminated"
       self.save!
     end
     self.invoke_after_status_transition_callbacks(from_state, to_state)
@@ -568,6 +571,15 @@ class CbrainTask < ActiveRecord::Base
     end
   end
 
+  # returns the time spent by the task in status "On CPU"
+  def get_time_on_cpu
+    message = "Information not available"
+    return message unless !self.on_cpu_timestamp.blank? #task hasn't been on CPU
+    return Time.now - self.on_cpu_timestamp unless task.status != "On CPU" #task is still on CPU
+    return self.data_ready_timestamp - self.on_cpu_timestamp unless self.data_ready_timestamp.blank? 
+    return self.terminate_timestamp - self.on_cpu_timestamp unless self.terminate_timestamp.blank?
+    raise message
+  end
 
 
   ##################################################################

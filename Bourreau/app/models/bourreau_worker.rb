@@ -387,7 +387,7 @@ class BourreauWorker < Worker
       if initial_status == 'On CPU' && new_status == 'Data Ready' && task.type != "CbrainTask::StartVM"
         # will miss it in case task is too short
         @rr.meta.reload 
-        time_on_cpu = Time.now - initial_change_time 
+        time_on_cpu = Time.now - task.on_cpu_timestamp # was initial_change_time, which was unreliable
         task.addlog "Task spent #{time_on_cpu} on CPU"
         @rr.meta[:latest_performance_factor] = time_on_cpu.to_f / task.job_walltime_estimate.to_f
 	begin

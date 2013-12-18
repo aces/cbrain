@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131209192635) do
+ActiveRecord::Schema.define(:version => 20131218203116) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -51,6 +51,8 @@ ActiveRecord::Schema.define(:version => 20131209192635) do
     t.integer  "vm_id"
     t.datetime "queued_timestamp"
     t.datetime "on_cpu_timestamp"
+    t.integer  "terminate_timestamp"
+    t.integer  "data_ready_timestamp"
   end
 
   add_index "cbrain_tasks", ["batch_id"], :name => "index_cbrain_tasks_on_batch_id"
