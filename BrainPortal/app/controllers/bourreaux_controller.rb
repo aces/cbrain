@@ -86,7 +86,6 @@ class BourreauxController < ApplicationController
       @bourreau = Bourreau.new( fields )
     else
       @bourreau = DiskImageBourreau.new( fields )
-      #a DiskImage is always online
       @bourreau.online = true
     end
 

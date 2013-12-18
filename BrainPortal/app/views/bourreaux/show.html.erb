@@ -26,7 +26,7 @@
   is_bourreau = @bourreau.is_a?(Bourreau)
   is_portal   = @bourreau.is_a?(BrainPortal) 
   is_disk_image = @bourreau.is_a?(DiskImageBourreau)
-  info = @bourreau.info
+  info = is_disk_image ? nil : @bourreau.info
  %>
 
 <% title is_portal ? 'Portal Info' : 'Execution Server Info' %>
@@ -407,49 +407,51 @@
   <% end %>
 
     <%= show_table(info, :header => "Runtime Information") do |t| %>
-      <% if info.name == "???" %>
-        <% t.row do %>
-          This server is currently <%= html_colorize("DOWN", "red") %>.
-        <% end %>
-      <% else %>
+      <% if !info.blank? %>
+        <% if info.name == "???" %>
+          <% t.row do %>
+            This server is currently <%= html_colorize("DOWN", "red") %>.
+          <% end %>
+        <% else %>
 
-        <% t.cell("Process Start Revision", :show_width => 2) { info.starttime_revision } %>
-        <% t.cell("Process Start Last Change Author", :show_width => 2) { info.lc_author } %>
-        <% t.cell("Process Start Last Change Revision", :show_width => 2) { info.lc_rev } %>
-        <% t.cell("Process Start Last Change Date", :show_width => 2) { info.lc_date } %>
-        <% t.cell("Disk Code Revision", :show_width => 2) { red_if(info.revision != info.starttime_revision, info.revision) } %>
+          <% t.cell("Process Start Revision", :show_width => 2) { info.starttime_revision } %>
+          <% t.cell("Process Start Last Change Author", :show_width => 2) { info.lc_author } %>
+          <% t.cell("Process Start Last Change Revision", :show_width => 2) { info.lc_rev } %>
+          <% t.cell("Process Start Last Change Date", :show_width => 2) { info.lc_date } %>
+          <% t.cell("Disk Code Revision", :show_width => 2) { red_if(info.revision != info.starttime_revision, info.revision) } %>
 
-        <% t.blank_row %>
-
-        <% t.cell("Remote Host Name", :show_width => 2) { info.host_name == (@bourreau.proxied_host.presence || @bourreau.ssh_control_host) ? info.host_name : html_colorize(info.host_name, "red") } %>
-        <% t.cell("Remote Host IP Address", :show_width => 2) { info.host_ip } %>
-        <% t.cell("Remote Host OS Type", :show_width => 2) { info.host_uname } %>
-        <% t.cell("Remote Host Uptime", :show_width => 2) { info.host_uptime } %>
-        <% t.cell("Rails Server uptime", :show_width => 2) do %>
-          Up since: <%= to_localtime(info.uptime.to_i.ago,:datetime) %>
-          (for: <%= pretty_elapsed(info.uptime.to_i) %>)
-        <% end %>
-
-        <% t.blank_row %>
-
-        <% if is_bourreau %>
-          <% t.cell("Worker PIDs") { info.worker_pids } %>
-          <% t.cell("Number of Tasks Running") { info.tasks_tot + " / " + info.tasks_max } %>
-
-          <% t.cell("Workers Last Change Author") { info.worker_lc_author } %>
-          <% t.cell("Cluster Management System Type") { red_if(@bourreau.cms_class != info.bourreau_cms, info.bourreau_cms) } %>
-
-          <% t.cell("Workers Last Change Revision") { info.worker_lc_rev } %>
-          <% t.cell("Cluster Management System Revision") { info.bourreau_cms_rev.svn_id_pretty_rev_author_date } %>
-
-          <% t.cell("Workers Last Change Date") { info.worker_lc_date } %>
-          <% t.empty_cell %>
-        <% end %>
-        <% if @bourreau.id == BrainPortal.current_resource.id %>
           <% t.blank_row %>
 
-          <% t.cell("SSH Public Key", :show_width => 2) do %>
-            <pre class="ssh_key"><%= @bourreau.get_ssh_public_key %></pre>
+          <% t.cell("Remote Host Name", :show_width => 2) { info.host_name == (@bourreau.proxied_host.presence || @bourreau.ssh_control_host) ? info.host_name : html_colorize(info.host_name, "red") } %>
+          <% t.cell("Remote Host IP Address", :show_width => 2) { info.host_ip } %>
+          <% t.cell("Remote Host OS Type", :show_width => 2) { info.host_uname } %>
+          <% t.cell("Remote Host Uptime", :show_width => 2) { info.host_uptime } %>
+          <% t.cell("Rails Server uptime", :show_width => 2) do %>
+            Up since: <%= to_localtime(info.uptime.to_i.ago,:datetime) %>
+            (for: <%= pretty_elapsed(info.uptime.to_i) %>)
+          <% end %>
+
+          <% t.blank_row %>
+
+          <% if is_bourreau %>
+            <% t.cell("Worker PIDs") { info.worker_pids } %>
+            <% t.cell("Number of Tasks Running") { info.tasks_tot + " / " + info.tasks_max } %>
+
+            <% t.cell("Workers Last Change Author") { info.worker_lc_author } %>
+            <% t.cell("Cluster Management System Type") { red_if(@bourreau.cms_class != info.bourreau_cms, info.bourreau_cms) } %>
+
+            <% t.cell("Workers Last Change Revision") { info.worker_lc_rev } %>
+            <% t.cell("Cluster Management System Revision") { info.bourreau_cms_rev.svn_id_pretty_rev_author_date } %>
+
+            <% t.cell("Workers Last Change Date") { info.worker_lc_date } %>
+            <% t.empty_cell %>
+          <% end %>
+          <% if @bourreau.id == BrainPortal.current_resource.id %>
+            <% t.blank_row %>
+
+            <% t.cell("SSH Public Key", :show_width => 2) do %>
+              <pre class="ssh_key"><%= @bourreau.get_ssh_public_key %></pre>
+            <% end %>
           <% end %>
         <% end %>
       <% end %>
