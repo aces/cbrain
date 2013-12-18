@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'spec_helper'
@@ -25,9 +25,12 @@ require 'spec_helper'
 describe DataProvidersController do
   let(:data_provider) {mock_model(DataProvider).as_null_object}
   let(:admin_user) {Factory.create(:admin_user)}
-  
+
   context "with an admin user" do
     before(:each) do
+      controller.stub!(:current_user).and_return(admin_user)
+      admin_user.stub!(:license_agreement_set).and_return([])
+      admin_user.stub!(:unsigned_license_agreements).and_return([])
       session[:user_id] = admin_user.id
     end
 
@@ -37,6 +40,7 @@ describe DataProvidersController do
           DataProvider.stub!(:find_all_accessible_by_user).and_return(double("provider_scope", :includes => "includes"))
           controller.stub!(:base_filtered_scope)
           controller.stub!(:base_sorted_scope).and_return([data_provider])
+
         end
         it "should use the basic filtered scope" do
           controller.should_receive(:base_filtered_scope)
@@ -105,12 +109,12 @@ describe DataProvidersController do
           end
         end
       end
-      
+
       describe "dp_access" do
-        
+
       end
       describe "dp_transfers" do
-        
+
       end
     end
     context "member action" do
@@ -214,7 +218,7 @@ describe DataProvidersController do
           end
         end
       end
-      
+
       describe "is_alive" do
         before(:each) do
           DataProvider.stub!(:find_accessible_by_user).and_return(data_provider)
@@ -236,7 +240,7 @@ describe DataProvidersController do
       end
       describe "browse" do
         let(:file_info_list) {[double("file_info").as_null_object]}
-        
+
         before(:each) do
           DataProvider.stub!(:find_accessible_by_user).and_return(data_provider)
           data_provider.stub!(:is_browsable?).and_return(true)
@@ -283,7 +287,7 @@ describe DataProvidersController do
         end
         it "should do the search if a parameter is given" do
           file_info_list.should_receive(:select).and_return([])
-          get :browse, :id => 1, :search => "hi"
+          get :browse, :id => 1, :name_like => "hi", :update_filter => :browse_hash
         end
         it "should paginate the list" do
           WillPaginate::Collection.should_receive(:create)
@@ -292,11 +296,11 @@ describe DataProvidersController do
         it "should render the browse page" do
           get :browse, :id => 1
           response.should render_template("browse")
-        end    
+        end
       end
       describe "register" do
         let(:registered_file) {mock_model(SingleFile, :save => true).as_null_object.as_new_record}
-        
+
         before(:each) do
           DataProvider.stub!(:find_accessible_by_user).and_return(data_provider)
           data_provider.stub!(:is_browsable?).and_return(true)
@@ -304,12 +308,12 @@ describe DataProvidersController do
           SingleFile.stub!(:new).and_return(registered_file)
           registered_file.stub!(:save).and_return(true)
         end
-        
+
         it "should check if the data_provider is browsable" do
           data_provider.should_receive(:is_browsable?)
           post :register, :id => 1, :basenames => ["a_file"]
         end
-        
+
         context "provider is not browsable" do
           before(:each) do
             data_provider.stub!(:is_browsable?).and_return(false)
@@ -317,13 +321,13 @@ describe DataProvidersController do
           it "should display an error message" do
             post :register, :id => 1, :basenames => ["a_file"]
             flash[:error].should_not be_blank
-          end 
+          end
           it "should redirect to index" do
             post :register, :id => 1, :basenames => ["a_file"]
             response.should redirect_to(:action => :index)
           end
         end
-        
+
         context "register only" do
           it "should set the sizes in a separate process" do
             CBRAIN.should_receive(:spawn_with_active_records)
@@ -362,12 +366,12 @@ describe DataProvidersController do
             post :register, :id => 1, :basenames => ["a_file"], :auto_do => "COPY"
           end
         end
-        
+
       end
     end
   end
-    
- 
+
+
   context "when the user is not logged in" do
     describe "index" do
       it "should redirect the login page" do
@@ -436,6 +440,6 @@ describe DataProvidersController do
       end
     end
   end
-  
+
 end
 
