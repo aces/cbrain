@@ -573,9 +573,9 @@ class CbrainTask < ActiveRecord::Base
 
   # returns the time spent by the task in status "On CPU"
   def get_time_on_cpu
-    message = "Information not available"
-    return message unless !self.on_cpu_timestamp.blank? #task hasn't been on CPU
-    return Time.now - self.on_cpu_timestamp unless task.status != "On CPU" #task is still on CPU
+    message = "Cannot determine how long task #{self.id} has been on CPU."
+    raise message unless !self.on_cpu_timestamp.blank? #task hasn't been on CPU
+    return Time.now - self.on_cpu_timestamp unless self.status != "On CPU" #task is still on CPU
     return self.data_ready_timestamp - self.on_cpu_timestamp unless self.data_ready_timestamp.blank? 
     return self.terminate_timestamp - self.on_cpu_timestamp unless self.terminate_timestamp.blank?
     raise message

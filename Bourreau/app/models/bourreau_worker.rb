@@ -318,20 +318,25 @@ class BourreauWorker < Worker
                 worker_log.info "Task #{y.id} needs image file id #{task_image_file_id.disk_image_file_id}"
                 if task_image_file_id.disk_image_file_id.to_i == x.params[:disk_image].to_i 
                   if y.vm_id.blank? #don't take a task that someone else took
-                    if y.job_walltime_estimate < ( x.job_walltime_estimate - x.get_time_on_cpu ) # don't take tasks that will not fit in the remaining walltime
-                      worker_log.info "Task #{y.id} is estimated to last #{y.job_walltime_estimate}. It can fit in the remaining #{x.job_walltime_estimate - x.get_time_on_cpu}s on VM #{x.id}."
-                      CbrainTask.transaction do
-                        # It's probably nicer to put this update after status transition to "Setting Up" in process_task. But then we'd need to redo VM selection there.
-                        y.lock! # to prevent different workers to send this task concurrently to (different) VMs. All workers of all bourreau may try to get this lock.
-                        worker_log.info "====> VM task #{y.id} may go to VM #{x.id}"
-                        free_slots = free_slots - 1
-                        y.params[:physical_bourreau] = @rr_id 
-                        y.vm_id = x.id #TODO (VM tristan) check if we really want to fix *now* the VM id where this task will be executed. 
-                        tasks << y
-                        y.save!
+		    begin
+		      cpu_vm = x.get_time_on_cpu
+                      if y.job_walltime_estimate < ( x.job_walltime_estimate - cpu_vm ) # don't take tasks that will not fit in the remaining walltime
+                        worker_log.info "Task #{y.id} is estimated to last #{y.job_walltime_estimate}. It can fit in the remaining #{x.job_walltime_estimate - x.get_time_on_cpu}s on VM #{x.id}."
+                        CbrainTask.transaction do
+                          # It's probably nicer to put this update after status transition to "Setting Up" in process_task. But then we'd need to redo VM selection there.
+                          y.lock! # to prevent different workers to send this task concurrently to (different) VMs. All workers of all bourreau may try to get this lock.
+                          worker_log.info "====> VM task #{y.id} may go to VM #{x.id}"
+                          free_slots = free_slots - 1
+                          y.params[:physical_bourreau] = @rr_id 
+                          y.vm_id = x.id #TODO (VM tristan) check if we really want to fix *now* the VM id where this task will be executed. 
+                          tasks << y
+                          y.save!
+                        end
+                      else
+                        worker_log.info "Task #{y.id} is estimated to last #{y.job_walltime_estimate}. It cannot fit in the remaining #{x.job_walltime_estimate - x.get_time_on_cpu}s on VM #{x.id}."
                       end
-                    else
-                      worker_log.info "Task #{y.id} is estimated to last #{y.job_walltime_estimate}. It cannot fit in the remaining #{x.job_walltime_estimate - x.get_time_on_cpu}s on VM #{x.id}."
+                    rescue => ex
+	                worker_log.info "#{ex.message}"
                     end
                   end
                   break unless free_slots > 0
