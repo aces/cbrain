@@ -32,8 +32,9 @@ class VmFactoryRoundRobin < VmFactory
     n_attempts = 1
 
     @last_bourreau_id ||=  target_bourreau_ids.first
-    @last_bourreau_id = target_bourreau_ids[( target_bourreau_ids.index(@last_bourreau_id) + 1 ) % n_bourreaux ]
-    
+    @last_bourreau_id = target_bourreau_ids.index(@last_bourreau_id).blank? ? target_bourreau_ids.first : @last_bourreau_id
+    @last_bourreau_id = target_bourreau_ids[( target_bourreau_ids.index(@last_bourreau_id) + 1 ) % n_bourreaux ] 
+
     bourreau = Bourreau.find(@last_bourreau_id)
     while (get_active_tasks(bourreau.id) >= bourreau.meta[:task_limit_total].to_i && n_attempts < n_bourreaux)  do
       @last_bourreau_id = target_bourreau_ids[( target_bourreau_ids.index(@last_bourreau_id) + 1 ) % n_bourreaux ]
