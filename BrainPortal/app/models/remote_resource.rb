@@ -379,13 +379,6 @@ class RemoteResource < ActiveRecord::Base
     false
   end
 
-  # Returns true if this remote resource has enough info to boot a VM
-  def has_vm_info
-    return !(self.disk_image_file_id.blank? || self.disk_image_user.blank? || self.disk_image_password.blank?)
-  end
-
-
-
   ############################################################################
   # Remote Shell Command methods
   #
@@ -805,7 +798,7 @@ class RemoteResource < ActiveRecord::Base
 
     # Send remote
     Control.site    = self.site
-    Control.timeout = 30
+    Control.timeout = 10
     control = Control.new(command)
     control.save
 
@@ -942,11 +935,6 @@ class RemoteResource < ActiveRecord::Base
   def prepend_source_cbrain_bashrc(shell_command)
     cbrain_bashrc_path = self.ssh_control_rails_dir + "/script/cbrain_bashrc"
     return "source #{cbrain_bashrc_path.to_s.bash_escape}; #{shell_command}"
-  end
-
-  # String used to name the remote resource in the portal. Should be redefined by sub-classes
-  def type_string
-    return "Remote Resource"
   end
 
 end

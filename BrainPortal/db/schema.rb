@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131219195629) do
+ActiveRecord::Schema.define(:version => 20131219210026) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -62,20 +62,6 @@ ActiveRecord::Schema.define(:version => 20131219195629) do
   add_index "cbrain_tasks", ["status"], :name => "index_cbrain_tasks_on_status"
   add_index "cbrain_tasks", ["type"], :name => "index_cbrain_tasks_on_type"
   add_index "cbrain_tasks", ["user_id"], :name => "index_cbrain_tasks_on_user_id"
-
-  create_table "create_vm_factories", :force => true do |t|
-    t.integer  "disk_image_file_id"
-    t.integer  "tau"
-    t.float    "mu_plus"
-    t.float    "mu_minus"
-    t.integer  "nu_plus"
-    t.integer  "nu_minus"
-    t.integer  "k_plus"
-    t.integer  "k_minus"
-    t.datetime "timestamp_of_last_iteration"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
 
   create_table "custom_filters", :force => true do |t|
     t.string   "name"

@@ -752,7 +752,6 @@ def create #:nodoc:
 
     # This block will either run in background or not depending
     # on do_in_spawn
-    message = ""
     CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending #{operation} to tasks") do
 
       tasks = []
@@ -801,7 +800,7 @@ def create #:nodoc:
       grouped_tasks.each do |pair_bid_tasklist|
         bid       = pair_bid_tasklist[0]
         btasklist = pair_bid_tasklist[1]
-        bourreau  = Bourreau.find(bid) 
+        bourreau  = Bourreau.find(bid)
         begin
           if operation == 'delete'
             bourreau.send_command_alter_tasks(btasklist,'Destroy') # TODO parse returned command object?

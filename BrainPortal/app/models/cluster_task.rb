@@ -543,7 +543,6 @@ class ClusterTask < CbrainTask
       self.addlog("Setting Up.")
       self.record_cbraintask_revs
       self.make_cluster_workdir
-
       self.apply_tool_config_environment do
         Dir.chdir(self.full_cluster_workdir) do
           if ! self.setup  # as defined by subclass
@@ -1254,7 +1253,6 @@ class ClusterTask < CbrainTask
     updated_at_value = self.updated_at
 
     self.make_cluster_workdir
-
     Dir.chdir(self.full_cluster_workdir) do
       safe_symlink(file.cache_full_path, tar_file)
     end
@@ -1294,9 +1292,7 @@ class ClusterTask < CbrainTask
   # This is really a property of the whole Rails app,
   # but it's provided here in the model for convenience.  
   def self.scir_session #:nodoc:
-
     @scir_session ||= RemoteResource.current_resource.scir_session
-
     return @scir_session
   end
 
@@ -1352,8 +1348,8 @@ class ClusterTask < CbrainTask
     return status
   rescue => ex
     logger.error("Cannot get cluster status for #{self.scir_session.class} ?!?, exception was: #{ex.class} : #{ex.message} #{e.backtrace}") rescue nil
-#    logger.error("Exception was: #{ex.class} : #{ex.message} #{e.backtrace}" )                   rescue nil
-       nil
+    logger.error("Exception was: #{ex.class} : #{ex.message} #{e.backtrace}" )                   rescue nil
+    nil
   end
   
 

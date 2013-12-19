@@ -60,7 +60,7 @@ class CbrainTask < ActiveRecord::Base
                         :results_data_provider_id, :cluster_workdir_size, :workdir_archived, :workdir_archive_userfile_id,
                         :vm_id,
                         :params,
-                        :on_cpu_timestamp, :terminate_timestamp, :data_ready_timestamp                          
+                        :on_cpu_timestamp, :terminate_timestamp, :data_ready_timestamp, :queued_timestamp                          
 
   # Pseudo Attributes (not saved in DB)
   # These are filled in by calling capture_job_out_err().
@@ -878,7 +878,6 @@ class CbrainTask < ActiveRecord::Base
   rescue
     true
   end
-
 
 end
 

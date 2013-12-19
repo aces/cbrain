@@ -38,8 +38,4 @@ class BrainPortal < RemoteResource
     self.update_attributes!(:portal_locked => false)
   end
 
-  def type_string
-    "Portal"
-  end
-
 end

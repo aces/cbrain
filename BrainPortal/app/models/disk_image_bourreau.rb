@@ -42,8 +42,4 @@ class DiskImageBourreau < Bourreau
   def stop #:nodoc
     raise "Not implemented yet. Will stop all VMs of this bourreau." 
   end
-
-  def type_string
-    return "Disk Image"
-  end
 end

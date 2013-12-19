@@ -83,7 +83,6 @@ class BourreauWorker < Worker
     # The list of tasks, here, contains the minimum number of attributes
     # necessary for us to be able to make a decision as to what to do with them.
     # The full objects are reloaded in process_task() later on.
-
     tasks_todo_rel = CbrainTask.not_archived
        .where( :status => ReadyTasks, :bourreau_id => @rr_id )
        .select([:id, :type, :user_id, :bourreau_id, :status, :updated_at])
@@ -113,7 +112,6 @@ class BourreauWorker < Worker
 
     # Very recent tasks need to rest a little, so we skip them.
     tasks_todo_rel = tasks_todo_rel.where( [ "updated_at < ?", 20.seconds.ago ] )
-
     return if ! tasks_todo_rel.exists?
 
     # Fork a subprocess to do the actual task processing
@@ -166,7 +164,6 @@ class BourreauWorker < Worker
   # of ugly long-term memory leaks that accumulate when ActiveRecord
   # are fetched over and over again.
   def process_task_list(tasks_todo_rel) #:nodoc:
-
     tasks_todo = tasks_todo_rel.all
 
     # Adding tasks going to VMs
@@ -196,8 +193,8 @@ class BourreauWorker < Worker
     # At this point, we process tasks that INCREASE activity, so we'll need
     # to check user and bourreau limits as we proceed.
     tasks_todo = by_activity[:increase] || []
-    worker_log.debug "There are #{tasks_todo.size} ready tasks that will increase activity."
     return if tasks_todo.empty?
+    worker_log.debug "There are #{tasks_todo.size} ready tasks that will increase activity."
 
     # Get limits from meta data store
     @rr.meta.reload # reload limits if needed.
@@ -221,7 +218,7 @@ class BourreauWorker < Worker
 	
       # Loop for each task
       while user_tasks.size > 0
-	
+
         # Bourreau global limit.
         # If exceeded, there's nothing more we can do for this cycle of 'do_regular_work'
         if bourreau_max_tasks > 0 # i.e. 'if there is a limit configured'
@@ -229,7 +226,6 @@ class BourreauWorker < Worker
           if bourreau_active_tasks_cnt >= bourreau_max_tasks
             worker_log.info "Bourreau limit: found #{bourreau_active_tasks_cnt} active tasks, but the limit is #{bourreau_max_tasks}. Will only process VM tasks now."
             bourreau_limit = true
-#            return # done for this cycle
           end
         end
 	
@@ -240,7 +236,6 @@ class BourreauWorker < Worker
           if user_active_tasks_cnt >= user_max_tasks
             worker_log.info "User ##{user_id} limit: found #{user_active_tasks_cnt} active tasks, but the limit is #{user_max_tasks}. Will only process VM tasks now."
             user_limit = true
-#            break # go to next user
           end
         end
 	
