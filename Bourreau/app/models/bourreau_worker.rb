@@ -268,8 +268,8 @@ class BourreauWorker < Worker
   end
 
 
-  #This method returns an array containing tasks that may be handled by this physical bourreau
-  #TODO (VM tristan) make this more efficient (use less queries)
+  # This method returns an array containing tasks that may be handled by this physical bourreau
+  # Make sure you understand it all before trying to optimize (which is required, see #4763)
   def get_vm_tasks_to_handle
 
     #gets VMs available to me
