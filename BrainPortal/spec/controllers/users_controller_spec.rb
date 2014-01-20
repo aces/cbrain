@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'spec_helper'
@@ -28,11 +28,11 @@ describe UsersController do
   let(:site_user) {Factory.create(:normal_user, :site => site_manager.site)}
   let(:user) {Factory.create(:normal_user)}
   let(:mock_user) {mock_model(User).as_null_object}
-  
+
   let(:start_page_path) {controller.send :start_page_path}
-  
+
   context "collection action" do
-    
+
     describe "index" do
       before(:each) do
         1.upto(3) {Factory.create(:normal_user)}
@@ -86,54 +86,54 @@ describe UsersController do
         end
       end
     end
-  
+
     describe "create" do
       before(:each) do
         CbrainMailer.stub!(:deliver_registration_confirmation)
       end
-      
+
       context "with admin user" do
         before(:each) do
           session[:user_id] = admin.id
         end
-        
+
         it "should allow the login to be set" do
           post :create, :user => {:login => "login"}
           assigns[:user].login.should == "login"
         end
-        
+
         it "should allow type to be set to admin" do
           post :create, :user => {:type => "AdminUser"}
           assigns[:user].type.should == "AdminUser"
         end
-        
+
         it "should allow type to be set to site manager" do
           post :create, :user => {:type => "SiteManager"}
           assigns[:user].type.should == "SiteManager"
         end
-        
+
         it "should allow type to be set to user" do
           post :create, :user => {:type => "NormalUser"}
           assigns[:user].type.should == "NormalUser"
         end
-        
+
         it "should allow the site to be set" do
           post :create, :user => {:site_id => user.site_id}
           assigns[:user].site_id.should == user.site_id
         end
-        
+
         context "when save is successful" do
           before(:each) do
             User.stub!(:new).and_return(mock_user)
             mock_user.stub_chain(:errors, :empty?).and_return(true)
           end
-         
+
           it "should send a confirmation email if email is valid" do
             mock_user.stub!(:email).and_return("me@here.com")
             CbrainMailer.should_receive(:registration_confirmation)
             post :create, :user => {}
           end
-          
+
           it "should not send a confirmation email if email is invalid" do
             mock_user.stub!(:email).and_return("invalid_email")
             CbrainMailer.should_not_receive(:registration_confirmation)
@@ -146,11 +146,11 @@ describe UsersController do
 
           it "should render partial failed_create" do
             User.stub!(:new).and_return(mock_user)
-            mock_user.stub_chain(:errors, :empty?).and_return(false)
+            mock_user.stub(:save).and_return(false)
             post :create, :user => {}, :format => :js
             response.should render_template("shared/_failed_create")
           end
-          
+
         end
       end
 
@@ -198,7 +198,7 @@ describe UsersController do
 
       end
     end
-    
+
     describe "send_password" do
       before(:each) do
         CbrainMailer.stub_chain(:forgotten_password, :deliver)
@@ -298,9 +298,9 @@ describe UsersController do
       end
     end
   end
-  
+
   context "member action" do
-    
+
     describe "show" do
       let(:start_path) {controller.send(:start_page_path)}
 
@@ -349,7 +349,7 @@ describe UsersController do
 
       end
     end
-    
+
     describe "change_password" do
       context "with admin user" do
         before(:each) do
@@ -387,7 +387,7 @@ describe UsersController do
         end
       end
     end
-    
+
     describe "update" do
       context "with admin user" do
         before(:each) do
@@ -509,13 +509,13 @@ describe UsersController do
         end
 
       end
-      
+
       context "when the update fails" do
         before(:each) do
           session[:user_id] = admin.id
           User.stub!(:find).and_return(double("updated_user", :save_with_logging => false).as_null_object)
         end
-        
+
         it "should redirect to change_password if password change was attempted" do
           put :update, :id => user.id, :user => {:password => "password"}
           response.should render_template(:change_password)
@@ -525,7 +525,7 @@ describe UsersController do
           response.should render_template(:show)
         end
       end
-      
+
     end
 
     describe "destroy" do
@@ -582,113 +582,113 @@ describe UsersController do
         h.stub!(:clear_data!)
         h
       end
-      
+
       before(:each) do
         controller.stub!(:current_session).and_return(current_session)
       end
-      
+
       context "with admin user" do
         before(:each) do
           session[:user_id] = admin.id
         end
-        
+
         it "should switch the current user" do
           post :switch, :id => user.id
           current_session[:user_id].should == user.id
         end
-        
+
         it "should redirect to the welcome page" do
           post :switch, :id => user.id
           response.should redirect_to("/groups")
         end
       end
-      
+
       context "with site manager" do
         before(:each) do
           session[:user_id] = site_manager.id
         end
-      
+
         it "should allow switching to a user from the site" do
           post :switch, :id => site_user.id
           current_session[:user_id].should == site_user.id
         end
-        
+
         it "should not allow switching to a user not from the site" do
           lambda { post :switch, :id => user.id }.should raise_error(ActiveRecord::RecordNotFound)
           current_session[:user_id].should_not == user.id
         end
       end
-      
+
       context "with regular user" do
         before(:each) do
           session[:user_id] = user.id
         end
-      
+
         it "should return a 401 (unauthorized)" do
           post :create
           response.response_code.should == 401
         end
-     
+
       end
     end
   end
 
   context "when the user is not logged in" do
-    
+
     describe "index" do
-      
+
       it "should redirect the login page" do
         get :index
         response.should redirect_to(:controller => :sessions, :action => :new)
       end
-    
+
     end
-    
+
     describe "show" do
-    
+
       it "should redirect the login page" do
         get :show, :id => 1
         response.should redirect_to(:controller => :sessions, :action => :new)
       end
-    
+
     end
-    
+
     describe "create" do
-    
+
       it "should redirect the login page" do
         post :create
         response.should redirect_to(:controller => :sessions, :action => :new)
       end
-   
+
     end
-    
+
     describe "update" do
-    
+
       it "should redirect the login page" do
         put :update, :id => 1
         response.should redirect_to(:controller => :sessions, :action => :new)
       end
-   
+
     end
-    
+
     describe "destroy" do
-    
+
       it "should redirect the login page" do
         delete :destroy, :id => 1
         response.should redirect_to(:controller => :sessions, :action => :new)
       end
-    
+
     end
-    
+
     describe "switch" do
-    
+
       it "should redirect the login page" do
         post :switch, :id => 1
         response.should redirect_to(:controller => :sessions, :action => :new)
       end
-    
+
     end
   end
-  
+
 end
 
