@@ -885,7 +885,7 @@ class RemoteResource < ActiveRecord::Base
           stat = "notexist"
         elsif ! dp.online?
           stat = "offline"
-        else 
+        else
           alive = dp.is_alive? rescue false
           stat = (alive ? "alive" : "down")
         end
@@ -904,7 +904,7 @@ class RemoteResource < ActiveRecord::Base
     user_ids    = command.user_ids    || 'all'
     before_date = command.before_date
     after_date  = command.after_date
-    
+
     user_id_list = (user_ids =~ /all/) ? nil : user_ids.split(/,/)
 
     CBRAIN.spawn_with_active_records(:admin, "Cache Cleanup") do

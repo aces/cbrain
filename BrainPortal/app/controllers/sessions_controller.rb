@@ -17,20 +17,20 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Sesssions controller for the BrainPortal interface
-# This controller handles the login/logout function of the site.  
+# This controller handles the login/logout function of the site.
 #
 # Original author: restful_authentication plugin
 # Modified by: Tarek Sherif
 class SessionsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   before_filter :no_logged_in_user, :only => [:new, :create]
-  
+
   api_available
 
   def new #:nodoc:
@@ -38,7 +38,7 @@ class SessionsController < ApplicationController
     rawua    = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'
     ua       = HttpUserAgent.new(rawua)
     @browser = ua.browser_name    || "(unknown browser)"
-    
+
     respond_to do |format|
       format.html
       format.xml
@@ -47,7 +47,7 @@ class SessionsController < ApplicationController
     end
   end
 
-  def create #:nodoc:    
+  def create #:nodoc:
     portal = BrainPortal.current_resource
 
     self.current_user = User.authenticate(params[:login], params[:password])
@@ -56,7 +56,7 @@ class SessionsController < ApplicationController
     if ! logged_in?
       flash.now[:error] = 'Invalid user name or password.'
       Kernel.sleep 3 # Annoying, as it blocks the instance for other users too. Sigh.
-      
+
       respond_to do |format|
         format.html { render :action => 'new' }
         format.json { render :nothing => true, :status  => 401 }
@@ -95,7 +95,7 @@ class SessionsController < ApplicationController
     #  current_user.remember_me unless current_user.remember_token?
     #  cookies[:auth_token] = { :value => self.current_user.remember_token , :expires => self.current_user.remember_token_expires_at }
     #end
-    
+
     current_session.load_preferences_for_user(current_user)
 
     # Record the best guess for browser's remote host name
@@ -120,18 +120,22 @@ class SessionsController < ApplicationController
     current_session[:raw_user_agent]     = raw_agent
 
     # Record that the user logged in
-    parsed   = HttpUserAgent.new(raw_agent)
-    browser  = (parsed.browser_name    || 'unknown browser')
-    brow_ver = (parsed.browser_version || '?')
-    os       = (parsed.os_name         || 'unknown OS')
-    pretty   = "#{browser} #{brow_ver} on #{os}"
-    current_user.addlog("Logged in from #{request.remote_ip} using #{pretty}")
-    portal.addlog("User #{current_user.login} logged in from #{request.remote_ip} using #{pretty}")
-    
+    parsed        = HttpUserAgent.new(raw_agent)
+    browser       = (parsed.browser_name    || 'unknown browser')
+    brow_ver      = (parsed.browser_version || '?')
+    os            = (parsed.os_name         || 'unknown OS')
+    pretty_brow   = "#{browser} #{brow_ver} on #{os}"
+    pretty_host   = "#{from_ip}"
+    if (from_host != 'unknown' && from_host != from_ip)
+       pretty_host = "#{from_host} (#{pretty_host})"
+    end
+    current_user.addlog("Logged in from #{pretty_host} using #{pretty_brow}")
+    portal.addlog("User #{current_user.login} logged in from #{pretty_host} using #{pretty_brow}")
+
     if current_user.has_role?(:admin_user)
       current_session[:active_group_id] = "all"
     end
-    
+
     respond_to do |format|
       format.html { redirect_back_or_default(start_page_path) }
       format.json { render :json => {:session_id => request.session_options[:id]}, :status => 200 }
@@ -139,7 +143,7 @@ class SessionsController < ApplicationController
     end
 
   end
-  
+
   def show #:nodoc:
     if current_user
       render :nothing  => true, :status  => 200
@@ -153,7 +157,7 @@ class SessionsController < ApplicationController
       redirect_to new_session_path
       return
     end
-    
+
     portal = BrainPortal.current_resource
     current_session.deactivate if current_session
     current_user.addlog("Logged out") if current_user
@@ -163,7 +167,7 @@ class SessionsController < ApplicationController
     current_session.clear_data!
     #reset_session
     flash[:notice] = "You have been logged out."
-    
+
     respond_to do |format|
       format.html { redirect_to new_session_path }
       format.xml  { render :nothing => true, :status  => 200 }
@@ -171,7 +175,7 @@ class SessionsController < ApplicationController
   end
 
   private
-  
+
   def no_logged_in_user
     if current_user
       redirect_to start_page_path
