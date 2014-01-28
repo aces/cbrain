@@ -17,14 +17,14 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'spec_helper'
 
 describe RemoteResource do
   let(:remote_resource) {Factory.create(:remote_resource)}
-  
+
   describe "#spaced_dp_ignore_patterns" do
     it "should return the ignore patterns as a space-seperated string" do
       remote_resource.spaced_dp_ignore_patterns.should =~ /#{remote_resource.dp_ignore_patterns.join("\\s+")}/
@@ -89,11 +89,15 @@ describe RemoteResource do
     end
     context "on the Portal app" do
       let(:portal_resource) {RemoteResource.current_resource}
-  
+      before(:each) do
+        portal_resource.stub!(:dp_cache_dir).and_return("path")
+      end
+
       it "should be valid if the cache path is valid" do
         DataProvider.stub!(:this_is_a_proper_cache_dir!).and_return(true)
+        portal_resource.stub!(:dp_cache_dir).and_return("/path")
         portal_resource.should be_valid
-      end 
+      end
       it "should be invalid if the cache path is invalid" do
         DataProvider.stub!(:this_is_a_proper_cache_dir!).and_return(false)
         portal_resource.save
@@ -315,7 +319,7 @@ describe RemoteResource do
   end
   describe "#is_alive?" do
     let(:info_object) {double("info_object")}
-    
+
     before(:each) do
       remote_resource.stub!(:remote_resource_info).and_return(info_object)
     end
@@ -367,7 +371,7 @@ describe RemoteResource do
   end
   describe "#site" do
     before(:each) do
-      remote_resource.actres_host = "host" 
+      remote_resource.actres_host = "host"
       remote_resource.actres_port = "port"
       remote_resource.actres_dir  = "dir"
     end

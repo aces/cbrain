@@ -822,9 +822,10 @@ describe UserfilesController do
         CBRAIN.stub!(:spawn_with_active_records).and_yield
       end
 
-      it "should find the userfiles" do
-        Userfile.should_receive(:accessible_for_user).and_return([mock_userfile])
+      it "should display error message if userfiles is not accessible by user" do
+        Userfile.stub_chain(:accessible_for_user, :where).and_return([])
         delete :delete_files, :file_ids => [1]
+        flash[:error].should include_text("not have acces")
       end
 
       it "should destroy the userfiles" do

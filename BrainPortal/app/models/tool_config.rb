@@ -249,6 +249,10 @@ class ToolConfig < ActiveRecord::Base
      self.cbrain_task_class.compare_versions(self.version_name,version) >= 0
   end
 
+  def is_version(version)
+     self.cbrain_task_class.compare_versions(self.version_name,version) == 0
+  end
+
   # Return the class of cbrain_task
   def cbrain_task_class
     self.tool.cbrain_task_class.constantize

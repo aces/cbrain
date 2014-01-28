@@ -17,65 +17,65 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'spec_helper'
 
 describe CbrainSession do
-  
+
   let(:session)    {Hash.new}
   let(:sess_model) {double("sess_model").as_null_object}
   let(:cb_session) {CbrainSession.new(session, {:controller => "userfiles"}, sess_model)}
   let(:current_user) { mock_model(User).as_null_object }
 
-  
+
   describe "#initialize" do
 
     it "should add a hash for contoller with filter_hash and sort_hash if doesn't exist" do
       cb_session[:userfiles]["filter_hash"].should be == {}
       cb_session[:userfiles]["sort_hash"].should be == {}
     end
-    
+
   end
 
   describe "#load_preferences_for_user" do
     let(:meta_data) { double("meta").as_null_object}
-    
+
     it "should get meta data from the db" do
       current_user.should_receive(:meta).and_return({})
       cb_session.load_preferences_for_user(current_user)
     end
-    
+
     it "should get preferences from the meta data" do
       current_user.stub(:meta).and_return(meta_data)
       meta_data.should_receive(:[]).with(:preferences)
       cb_session.load_preferences_for_user(current_user)
     end
-    
+
   end
-  
+
   describe "#save_preferences_for_user" do
     let(:user_preferences) { Hash.new }
-    
+
     before(:each) do
       session[:controller] = {"key" => "value"}
       current_user.stub_chain(:meta, :[], :cb_deep_clone).and_return(user_preferences)
       current_user.stub_chain(:meta, :[]=)
     end
-    
+
     it "should add session preference to db if they are listed" do
       cb_session.save_preferences_for_user(current_user, :controller, :key)
       user_preferences[:controller].keys.should include("key")
     end
-    
+
     it "should add session preference to db if they are listed" do
       cb_session.save_preferences_for_user(current_user, :controller)
       user_preferences[:controller].keys.should_not include("key")
     end
-    
+
   end
-  
+
   describe "#activate" do
 
     before(:each) do
@@ -88,25 +88,25 @@ describe CbrainSession do
       sess_model.should_receive(:save!)
       cb_session.activate
     end
-    
+
   end
 
 
-  
+
   describe "#deactivate" do
-    
+
     it "should reset the 'active' attribute" do
       sess_model.should_receive(:active=).with(false)
       sess_model.should_receive(:save!)
       cb_session.deactivate
     end
-    
+
   end
 
 
-  
+
   describe "self.activate_users" do
-    
+
     it "should call where on session_class and where on User.where" do
       cb_class = ActiveRecord::SessionStore::Session
       cb_scope = double("cb_scope").as_null_object
@@ -116,13 +116,13 @@ describe CbrainSession do
       us_scope.should_receive(:where)
       CbrainSession.active_users
     end
-    
+
   end
 
 
-  
+
   describe "self.count" do
-   
+
     it "should call where on session_class and count on scope" do
       cb_class = ActiveRecord::SessionStore::Session
       scope = double("scope").as_null_object
@@ -130,24 +130,24 @@ describe CbrainSession do
       scope.should_receive(:count)
       CbrainSession.count
     end
-  
+
   end
 
 
-  
+
   describe "self.session_class" do
-    
+
     it "should return ActiveRecord::SessionStore::Session" do
       cb_class = ActiveRecord::SessionStore::Session
       CbrainSession.session_class.should be == cb_class
      end
-      
+
   end
 
 
-  
+
   describe "self.all" do
-    
+
     it "should call all on session_class" do
       cb_class = ActiveRecord::SessionStore::Session
       CbrainSession.should_receive(:session_class).and_return(cb_class)
@@ -158,27 +158,31 @@ describe CbrainSession do
   end
 
 
-  
+
   describe "self.recent_activity" do
-      1.upto(15) do |i|
-        name = "cb_session#{i}"
-        sess = ActiveRecord::SessionStore::Session.create!( :updated_at => (i*10).seconds.ago, :session_id => "xyz#{i}", :data => {}, :user_id => i, :active => true )
-        user = "user#{i}"
-        let!(user.to_sym) {Factory.create(:normal_user, :id => i)} if User.where(:id => i).size == 0
-        let!(name.to_sym) {CbrainSession.new(sess, {:controller => "userfile"}, sess_model)}
-      end
-      
-    it "should return an array containning recent activity (max n)" do
-      n = 9 
-      CbrainSession.recent_activity(n).size.should be == n  
+    1.upto(15) do |i|
+      name = "cb_session#{i}"
+      sess = ActiveRecord::SessionStore::Session.create!( :updated_at => (i*10).seconds.ago, :session_id => "xyz#{i}", :data => {})
+      sess.user_id = i
+      sess.active  = true
+      sess.save
+      user = "user#{i}"
+      let!(:name) { CbrainSession.new(sess, {:controller => "userfile"}, sess_model) }
     end
-    
+
+    it "should return an array containning recent activity (max n)" do
+      CbrainSession.stub!(:clean_sessions).and_return(true)
+      User.stub!(:find_by_id).and_return(current_user)
+      n = 9
+      CbrainSession.recent_activity(n).size.should be == n
+    end
+
   end
 
 
-  
+
   describe "#clear_data!" do
-   
+
     it "should erase all entries in the data section exception of guessed_remote_host and raw_user_agent" do
       cb_session[:guessed_remote_host] = "guessed_remote_host"
       cb_session[:raw_user_agent]      = "raw_user_agent"
@@ -188,11 +192,11 @@ describe CbrainSession do
       cb_session[:raw_user_agent].should      be == "raw_user_agent"
       cb_session[:other].should               be_nil
     end
-    
+
   end
 
 
-  
+
   describe "update" do
 
     it "should add a new hash if attributes of the session doesn't have hash with same name" do
@@ -271,7 +275,7 @@ describe CbrainSession do
   end
 
 
-  
+
   describe "params_for" do
 
     it "should return the params saved for +controller+" do
@@ -283,7 +287,7 @@ describe CbrainSession do
   end
 
 
-  
+
   describe "[]" do
 
     it "should acces to session attributes" do
@@ -291,23 +295,23 @@ describe CbrainSession do
       cb_session[:userfiles] = hash
       cb_session[:userfiles].should be == hash
     end
-    
+
   end
 
 
-  
+
   describe "[]=" do
-    
+
     it "should assign value to session attribute" do
       hash = {"filter_hash"=>{}}
-      cb_session[:userfiles] = hash 
+      cb_session[:userfiles] = hash
       cb_session[:userfiles].should be == hash
     end
-    
+
   end
 
 
-  
+
   describe "method_missing" do
 
     it "should return the params saved for +controller+" do
@@ -315,13 +319,13 @@ describe CbrainSession do
       cb_session[:userfiles] = hash
       cb_session.method_missing("userfiles").should be == hash
     end
-    
+
   end
 
 
-  
+
   describe "persistent_userfile_ids_clear" do
-    
+
     it "should clear persistent_userfile_ids hash" do
       cb_session[:persistent_userfile_ids] = [0,1,2]
       cb_session.persistent_userfile_ids_clear
@@ -331,12 +335,12 @@ describe CbrainSession do
     it "should return size of original persistent_userfile_ids" do
       cb_session[:persistent_userfile_ids] = [0,1,2]
       cb_session.persistent_userfile_ids_clear.should be == 3
-    end 
-    
+    end
+
   end
 
 
-  
+
   describe "persistent_userfile_ids_add" do
 
     it "should add id in id_list only if not already present" do
@@ -344,7 +348,7 @@ describe CbrainSession do
       cb_session.persistent_userfile_ids_add([3,2])
       cb_session[:persistent_userfile_ids].should be =~ {1 => true, 2 => true, 3 => true}
     end
-  
+
     it "should return number of added elem" do
       cb_session[:persistent_userfile_ids] = {1 => true}
       cb_session.persistent_userfile_ids_add([1,2]).should be == 1
@@ -353,9 +357,9 @@ describe CbrainSession do
   end
 
 
-  
+
   describe "persistent_userfile_ids_remove" do
-    
+
     it "should remove id in id_list only if already present" do
       cb_session[:persistent_userfile_ids] = {1 => true, 2 => true, 3 => true}
       cb_session.persistent_userfile_ids_remove([3,2])
@@ -366,32 +370,32 @@ describe CbrainSession do
       cb_session[:persistent_userfile_ids] = {1 => true}
       cb_session.persistent_userfile_ids_remove([2]).should be == 0
     end
-      
+
   end
 
 
-  
+
   describe "persistent_userfile_ids_list" do
-    
-    it "should return array with persistent_userfile_ids_list" do 
+
+    it "should return array with persistent_userfile_ids_list" do
       hash = {1 => true, 2 => true, 3 => true}
       cb_session[:persistent_userfile_ids] = hash
       cb_session.persistent_userfile_ids_list.should be == hash.keys
     end
-    
+
   end
 
 
-  
+
   describe "persistent_userfile_ids" do
 
-   it "should return hash with persistent_userfile_ids_list" do 
+   it "should return hash with persistent_userfile_ids_list" do
       hash = {1 => true, 2 => true, 3 => true}
       cb_session[:persistent_userfile_ids] = hash
       cb_session.persistent_userfile_ids.should be == hash
     end
-    
+
   end
-  
+
 end
 
