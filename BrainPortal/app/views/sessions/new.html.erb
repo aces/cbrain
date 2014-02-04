@@ -23,6 +23,10 @@
 -%>
 
 <% title 'Login' %>
+<br/><br/>
+<script type="text/javascript" src="https://login.persona.org/include.js"></script>
+<%= javascript_include_tag "login-persona.js" %>
+<br/>
 
 <%= form_tag session_path do -%>
 
@@ -45,6 +49,16 @@
     <% end %>
 
     <tr>
+      <td/>
+      <td><a href="#" onclick="loginPersona();"><img src="/images/persona_icon.png"></a><br/><br/></td>
+    </tr>
+
+    <tr>
+      <td/>
+      <td><center>or</center><br/></td>
+    </tr>
+
+    <tr>
       <td><label for="login">Login</label></td>
       <td class="field"><%= text_field_tag 'login' %></td>
     </tr>
@@ -65,4 +79,3 @@
   </table>
   
 <% end -%>
-

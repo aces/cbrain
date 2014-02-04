@@ -1202,7 +1202,7 @@ class UserfilesController < ApplicationController
     if userfiles.blank?
       flash[:notice] = "No file collections selected for archiving or unarchiving."
       redirect_to :action => :index, :format => request.format.to_sym
-      returns
+      return
     end
 
     # Main processing in background

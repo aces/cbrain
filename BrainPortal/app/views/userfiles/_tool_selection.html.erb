@@ -18,14 +18,14 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
 <% tool_list = current_user.available_tools.where("tools.category <> 'background'") %>
 
 <% if tool_list.present? %>
-  
+
   <% grouped_tools = tool_list.group_by(&:category) %>
   <% grouped_tools = grouped_tools.map{ |cat, tools| [cat.pluralize.titleize, tools.sort { |t1,t2| t1.name <=> t2.name }.map { |t| [t.select_menu_text, t.id] }] }.sort_by(&:first) %>
 
@@ -43,17 +43,17 @@
    files to process, you'll be presented with a form where you can customize
    its scientific parameters.
    </p>
-  
+
    <div class="userfiles_tool_selector">
     <%= ajax_onchange_select(
-          "tool_id", 
-          url_for(:controller  => :tools, :action => :tool_config_select), 
+          "tool_id",
+          url_for(:controller  => :tools, :action => :tool_config_select),
           "<option value=\"\">Select a task to launch</option>".html_safe + grouped_options_for_select(grouped_tools),
-          :target  => "#tool_version_selector", 
+          :target  => "#tool_version_selector",
           :loading_message  => "<span class='warning'>Checking availability...</span>"
-      ) 
+      )
     %>
-   </div> 
+   </div>
 
    <br>
 

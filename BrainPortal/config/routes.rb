@@ -25,8 +25,12 @@
 CbrainRailsPortal::Application.routes.draw do
   
   # Session
-  resource  :session
-
+  resource  :session do
+    member do
+      post 'mozilla_persona_auth'
+    end
+  end
+  
   # Control channel
   resources :controls,       :controller => :controls
 

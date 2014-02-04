@@ -17,28 +17,28 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Bourreau controller for the BrainPortal interface
 #
-# RESTful controller for managing the Bourreau (remote execution server) resource. 
+# RESTful controller for managing the Bourreau (remote execution server) resource.
 # All actions except +index+ and +show+ require *admin* privileges.
 class BourreauxController < ApplicationController
 
   include DateRangeRestriction
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   api_available :except  => :row_data
 
   before_filter :login_required
   before_filter :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :rr_access_dp, :update, :start, :stop]
-                                                                
+
 
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "remote_resources.type"
-    @filter_params["sort_hash"]["dir"] ||= "DESC"
+    @filter_params["sort_hash"]["dir"]   ||= "DESC"
     @header_scope = RemoteResource.find_all_accessible_by_user(current_user)
     @filtered_scope = base_filtered_scope @header_scope.includes(:user, :group)
     @bourreaux      = base_sorted_scope @filtered_scope
@@ -46,26 +46,26 @@ class BourreauxController < ApplicationController
     if current_user.has_role? :admin_user
       @filter_params['details'] = 'on' unless @filter_params.has_key?('details')
     end
-    
+
     respond_to do |format|
       format.html
       format.xml  { render :xml => @bourreaux }
       format.js
     end
   end
-  
+
   def show #:nodoc:
     @users    = current_user.available_users
     @bourreau = RemoteResource.find(params[:id])
 
     cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
-    
+
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @bourreau }
     end
   end
-  
+
   def new #:nodoc:
     bourreau_group_id = ( current_project && current_project.id ) || current_user.own_group.id
     @users    = current_user.available_users
@@ -92,7 +92,7 @@ class BourreauxController < ApplicationController
     if @bourreau.save
       @bourreau.addlog_context(self,"Created by #{current_user.login}")
       flash[:notice] = "Execution Server successfully created."
-      
+
       respond_to do |format|
         format.js  { redirect_to :action => :index, :format => :js }
         format.xml { render      :xml    => @bourreau }
@@ -116,7 +116,7 @@ class BourreauxController < ApplicationController
 
     fields    = params[:bourreau]
     fields ||= {}
-    
+
     subtype          = fields.delete(:type)
     old_dp_cache_dir = @bourreau.dp_cache_dir
 
@@ -169,13 +169,13 @@ class BourreauxController < ApplicationController
   def destroy #:nodoc:
     id        = params[:id]
     @bourreau = RemoteResource.find(id)
-    
+
     raise CbrainDeleteRestrictionError.new("Execution Server not accessible by current user.") unless @bourreau.has_owner_access?(current_user)
-    
+
     @bourreau.destroy
-    
+
     flash[:notice] = "Execution Server successfully deleted."
-      
+
     respond_to do |format|
       format.html { redirect_to :action => :index}
       format.js   { redirect_to :action => :index, :format => :js}
@@ -183,22 +183,22 @@ class BourreauxController < ApplicationController
     end
   rescue ActiveRecord::DeleteRestrictionError => e
     flash[:error] = "Execution Server destruction failed: #{e.message.humanize}."
-    
+
     respond_to do |format|
       format.html { redirect_to :action => :index}
       format.js   { redirect_to :action => :index, :format => :js}
       format.xml  { head :conflict }
     end
   end
-  
+
   def row_data #:nodoc:
     @remote_resource = RemoteResource.find_accessible_by_user(params[:id], current_user)
     render :partial => 'bourreau_table_row', :locals  => { :bourreau  => @remote_resource, :row_number => params[:row_number].to_i }
   end
 
   def load_info #:nodoc:
-    
-    if params[:bourreau_id].blank? && params[:tool_config_id].blank? 
+
+    if params[:bourreau_id].blank? && params[:tool_config_id].blank?
       render :text  => ""
       return
     end
@@ -210,7 +210,7 @@ class BourreauxController < ApplicationController
       format.html { render :partial => 'load_info', :locals => { :bourreau => @bourreau } }
       format.xml  { render :xml     => @bourreau   }
     end
-    
+
   rescue => ex
     #render :text  => "#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
     render :text  => '<strong style="color:red">No Information Available</strong>'
@@ -252,23 +252,23 @@ class BourreauxController < ApplicationController
     if alive_ok
       flash[:notice] = "Execution Server '#{@bourreau.name}' started."
     elsif started_ok
-      flash[:error] = "Execution Server '#{@bourreau.name}' was started but did not reply to first inquiry:\n" +
+      flash[:error]  = "Execution Server '#{@bourreau.name}' was started but did not reply to first inquiry:\n" +
                       @bourreau.operation_messages
     else
-      flash[:error] = "Execution Server '#{@bourreau.name}' could not be started. Diagnostics:\n" +
+      flash[:error]  = "Execution Server '#{@bourreau.name}' could not be started. Diagnostics:\n" +
                       @bourreau.operation_messages
     end
 
     if workers_ok
       flash[:notice] += "\nWorkers on Execution Server '#{@bourreau.name}' started."
     elsif alive_ok
-      flash[:error] += "However, we couldn't start the workers."
+      flash[:error]  += "However, we couldn't start the workers."
     end
-    
+
     respond_to do |format|
       format.html { redirect_to :action => :index }
       format.xml  { head workers_ok ? :ok : :internal_server_error  }  # TODO change internal_server_error ?
-    end  
+    end
 
   end
 
@@ -291,8 +291,8 @@ class BourreauxController < ApplicationController
     end
 
     @bourreau.online = true # to trick layers below into doing the 'stop' operation
-    boustop = @bourreau.stop
-    tunstop = @bourreau.stop_tunnels
+    boustop          = @bourreau.stop
+    tunstop          = @bourreau.stop_tunnels
     @bourreau.online = false
     @bourreau.save
 
@@ -304,7 +304,7 @@ class BourreauxController < ApplicationController
     else
       flash[:error]  += "\nFailed to stop Rails application for '#{@bourreau.name}'."
     end
-    flash[:error]  += "\nFailed to stop Control SSH connection." if ! tunstop
+    flash[:error]    += "\nFailed to stop Control SSH connection." if ! tunstop
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
@@ -315,11 +315,11 @@ class BourreauxController < ApplicationController
     flash[:error] = e.message
     respond_to do |format|
       format.html { redirect_to :action => :index }
-      format.xml { render :xml  => { :message  => e.message }, :status  => 500 }
+      format.xml  { render :xml  => { :message  => e.message }, :status  => 500 }
     end
   end
 
-  # Define disk usage of remote ressource, 
+  # Define disk usage of remote ressource,
   # with date filtration if wanted.
   def rr_disk_usage
     @providers = DataProvider.find_all_accessible_by_user(current_user).all
@@ -356,7 +356,7 @@ class BourreauxController < ApplicationController
                       :accessed_before  => accessed_before,
                       :accessed_after   => accessed_after
                     }
-                    
+
     @report_stats    = ModelsReport.rr_usage_statistics(stats_options)
 
     # Keys and arrays into statistics tables, for HTML output
@@ -376,7 +376,7 @@ class BourreauxController < ApplicationController
   # Provides the interface to trigger cache cleanup operations
   def cleanup_caches
     flash[:notice] ||= ""
-    
+
     # First param is cleanup_older, which is the number
     # of second before NOW at which point files OLDER than
     # that become eligible for elimination
@@ -448,11 +448,11 @@ class BourreauxController < ApplicationController
     date_filtration                              = {}
     date_filtration["relative_from"]             = cleanup_younger
     date_filtration["relative_to"]               = cleanup_older
-    
+
     redirect_to :action => :rr_disk_usage, :date_range => date_filtration
-    
+
   end
-  
+
   # Define remote ressource and users accessible/available by
   # the current user.
   def rr_access
@@ -501,9 +501,9 @@ class BourreauxController < ApplicationController
 
   end
 
-  
+
   private
-  
+
   # Adds sensible default values to some field for
   # new objects, or existing ones being edited.
   def sensible_defaults(portal_or_bourreau)

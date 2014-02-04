@@ -17,11 +17,11 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 user_factory = Proc.new do |user|
-  user.sequence(:full_name)  { |n| "Bob #{n}" }           
+  user.sequence(:full_name)  { |n| "Bob #{n}" }
   user.sequence(:email)      { |n| "user#{n}@example.com" }
   user.password              "Password!"
   user.password_confirmation "Password!"
@@ -51,31 +51,31 @@ end
 
 Factory.sequence(:group_name)  { |n| "group_#{n}" }
 
-Factory.define :group do |group| 
+Factory.define :group do |group|
   group.name { Factory.next :group_name }
 end
 
-Factory.define :work_group do |work_group| 
+Factory.define :work_group do |work_group|
   work_group.name { Factory.next :group_name }
 end
 
-Factory.define :system_group do |system_group| 
+Factory.define :system_group do |system_group|
   system_group.name { Factory.next :group_name }
 end
 
-Factory.define :everyone_group do |everyone_group| 
+Factory.define :everyone_group do |everyone_group|
   everyone_group.name { Factory.next :group_name }
 end
 
-Factory.define :site_group do |site_group| 
+Factory.define :site_group do |site_group|
   site_group.name { Factory.next :group_name }
 end
 
-Factory.define :user_group do |user_group| 
+Factory.define :user_group do |user_group|
   user_group.name { Factory.next :group_name }
 end
 
-Factory.define :invisible_group, :parent => :work_group do |invisible_group| 
+Factory.define :invisible_group, :parent => :work_group do |invisible_group|
   invisible_group.invisible true
 end
 
@@ -117,11 +117,11 @@ end
 
 Factory.define :vault_local_data_provider do |vault_local_data_provider|
   data_provider_factory.call(vault_local_data_provider)
-end                
+end
 
 Factory.define :local_data_provider do |local_data_provider|
  data_provider_factory.call(local_data_provider)
-end             
+end
 
 Factory.define :en_cbrain_smart_data_provider do |en_cbrain_smart_data_provider|
   data_provider_factory.call(en_cbrain_smart_data_provider)
@@ -129,11 +129,11 @@ end
 
 Factory.define :en_cbrain_ssh_data_provider do |en_cbrain_ssh_data_provider|
   data_provider_factory.call(en_cbrain_ssh_data_provider)
-end 
+end
 
 Factory.define :en_cbrain_local_data_provider do |en_cbrain_local_data_provider|
   data_provider_factory.call(en_cbrain_local_data_provider)
-end     
+end
 
 Factory.define :cbrain_local_data_provider do |cbrain_local_data_provider|
   data_provider_factory.call(cbrain_local_data_provider)
@@ -142,7 +142,7 @@ end
 Factory.define :incoming_vault_ssh_data_provider do |incoming_vault_ssh_data_provider|
   data_provider_factory.call(incoming_vault_ssh_data_provider)
 end
-                             
+
 
 Factory.define :tool do |tool|
   tool.sequence(:name) { |n| "tool_#{n}" }
@@ -150,7 +150,7 @@ Factory.define :tool do |tool|
   tool.association       :group
   tool.category          "scientific tool"
   tool.cbrain_task_class { |n| "CbrainTask::Snoozer#{n}"}
-end                   
+end
 
 Factory.define :userfile do |userfile|
     userfile.sequence(:name) { |n| "file_#{n}" }
@@ -202,7 +202,7 @@ Factory.define :brain_portal do |brain_portal|
   brain_portal.sequence(:name) { |n| "bp_#{n}"}
   brain_portal.association :user
   brain_portal.group  Group.everyone
-  brain_portal.online true 
+  brain_portal.online true
 end
 
 Factory.define :feedback do |feedback|
@@ -234,10 +234,11 @@ Factory.define :bourreau do |bourreau|
 end
 
 Factory.define :tool_config do |tool_config|
-  tool_config.description "desc1"
-  tool_config.association :bourreau
-  tool_config.association :tool
-  tool_config.association :group
+  tool_config.description  "desc1"
+  tool_config.version_name "1.1.12"
+  tool_config.association  :bourreau
+  tool_config.association  :tool
+  tool_config.association  :group
 end
 
 Factory.define :cbrain_task do |cbrain_task|
@@ -283,6 +284,6 @@ Factory.define :cluster_task do |cluster_task|
 end
 
 Factory.define :message do |message|
-  message.association :user  
+  message.association :user
 end
 

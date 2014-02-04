@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'socket'
@@ -75,7 +75,7 @@ class RemoteResource < ActiveRecord::Base
                           :uniqueness => true,
                           :presence => true,
                           :name_format => true
-                          
+
   validates_presence_of   :user_id, :group_id
 
   validate                :proper_dp_ignore_patterns
@@ -114,12 +114,12 @@ class RemoteResource < ActiveRecord::Base
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
 
-  attr_accessible  :name, :user_id, :group_id, :actres_user, :actres_host, :actres_port, 
-                   :actres_dir, :online, :read_only, :description, :ssh_control_user, :ssh_control_host, 
-                   :ssh_control_port, :ssh_control_rails_dir, :tunnel_mysql_port, :tunnel_actres_port, 
+  attr_accessible  :name, :user_id, :group_id, :actres_user, :actres_host, :actres_port,
+                   :actres_dir, :online, :read_only, :description, :ssh_control_user, :ssh_control_host,
+                   :ssh_control_port, :ssh_control_rails_dir, :tunnel_mysql_port, :tunnel_actres_port,
                    :cache_md5, :portal_locked, :cache_trust_expire, :time_of_death,
-                   :time_zone, :site_url_prefix, :dp_cache_dir, :dp_ignore_patterns, :cms_class, 
-                   :cms_default_queue, :cms_extra_qsub_args, :cms_shared_dir, :workers_instances, 
+                   :time_zone, :site_url_prefix, :dp_cache_dir, :dp_ignore_patterns, :cms_class,
+                   :cms_default_queue, :cms_extra_qsub_args, :cms_shared_dir, :workers_instances,
                    :workers_chk_time, :workers_log_to, :workers_verbose, :help_url, :rr_timeout, :proxied_host,
                    :spaced_dp_ignore_patterns, :license_agreements, :support_email, :system_from_email, :external_status_page_url,
                    :disk_image_file_id, :disk_image_user, :disk_image_password,
@@ -288,7 +288,7 @@ class RemoteResource < ActiveRecord::Base
   #                        The Rails application over there will tunnel its requests to it
   #                        using a port number of (3090 + the ID of the remote resource).
   def start_tunnels
-    
+
     return false if self.id == CBRAIN::SelfRemoteResourceId
     return false unless self.online?
     return false unless self.has_ssh_control_info?
@@ -416,7 +416,7 @@ class RemoteResource < ActiveRecord::Base
   # if a block is provided.
   # Appending to output files can be enabled by giving a true value
   # to the options :stdout_append and :stderr_append.
-  def write_to_remote_shell_command(shell_command, options={}, &block)    
+  def write_to_remote_shell_command(shell_command, options={}, &block)
     cb_error "No proper SSH control info provided for RemoteResource." unless self.has_ssh_control_info?
     master = self.ssh_master
     cb_error "No SSH master connection yet established for RemoteResource." unless master.is_alive?
@@ -458,7 +458,7 @@ class RemoteResource < ActiveRecord::Base
   def is_alive?(what = :ping)
     what = what.presence.try(:to_sym) || :ping
     self.reload
-    return false if self.online == false 
+    return false if self.online == false
     info_struct = self.remote_resource_info(what) # what is 'info' or 'ping'
     @info = info_struct if what == :info
     @ping = info_struct if what == :ping
@@ -529,7 +529,7 @@ class RemoteResource < ActiveRecord::Base
       @git_date   = "#{head_rev.date} #{head_rev.time}"
     end
 
-    # @git_tag will be the most recent tag in GIT, appended with 
+    # @git_tag will be the most recent tag in GIT, appended with
     # "-num" for the number of commits that follows until HEAD.
     # The value is live, to highlight when the files are not the
     # same as when the Rails app started.
@@ -799,7 +799,7 @@ class RemoteResource < ActiveRecord::Base
     # Send remote
     Control.site    = self.site
     Control.timeout = 10
-    control = Control.new(command)
+    control         = Control.new(command)
     control.save
 
     returned_command = RemoteCommand.new(control.attributes)
@@ -828,7 +828,7 @@ class RemoteResource < ActiveRecord::Base
       )
       return
     end
-    
+
     # Check that the sender is legitimate
     sender_token   = command.sender_token || "-nope-"
     sender = RemoteResource.valid_token?(sender_token)
@@ -846,7 +846,7 @@ class RemoteResource < ActiveRecord::Base
     self.send("process_command_#{command.command}", command)
 
   end
-  
+
   #Treat process_command_xxx calls as bad commands,
   #otherwise as NoMethodErrors
   def self.method_missing(method, *args)
@@ -889,7 +889,7 @@ class RemoteResource < ActiveRecord::Base
           stat = "notexist"
         elsif ! dp.online?
           stat = "offline"
-        else 
+        else
           alive = dp.is_alive? rescue false
           stat = (alive ? "alive" : "down")
         end
@@ -908,7 +908,7 @@ class RemoteResource < ActiveRecord::Base
     user_ids    = command.user_ids    || 'all'
     before_date = command.before_date
     after_date  = command.after_date
-    
+
     user_id_list = (user_ids =~ /all/) ? nil : user_ids.split(/,/)
 
     CBRAIN.spawn_with_active_records(:admin, "Cache Cleanup") do
