@@ -174,6 +174,86 @@ class SessionsController < ApplicationController
     end
   end
 
+  def mozilla_persona_auth
+    assertion = params[:assertion]
+    data = verify_assertion(assertion)
+    if data["status"] = "okay"
+      auth_success(data["email"])
+    else
+      auth_failed
+    end
+    return
+  end
+
+  def verify_assertion(assertion)
+
+    # TODO put this in config file?
+    url = "https://verifier.login.persona.org/verify"
+    audience = "#{request.protocol}#{request.host_with_port}#{request.fullpath}"
+    uri = URI.parse(url)
+    
+    # adapted from https://github.com/chilts/browserid-verify-ruby
+    
+    # make a new request
+    request = Net::HTTP::Post.new(uri.path) 
+    request.set_form_data({"audience" => audience, "assertion" => assertion})
+    
+    # send the request
+    https = Net::HTTP.new(uri.host,uri.port)
+    https.use_ssl = true 
+    response = https.request(request)
+    
+    # if we have a non-200 response
+    if ! response.kind_of? Net::HTTPSuccess
+      return {
+        "status" => "failure",
+        "reason" => "Cannot verify request",
+        "body" => response.body
+      }
+    end
+    
+    # process the response
+    data = JSON.parse(response.body) || nil
+    if data.nil?
+      # JSON parsing error
+      return  {"status" => "failure", "reason" => "Received invalid JSON from the remote verifier"}
+    end
+    
+    return data
+  end
+
+  def auth_success(email)
+    user = User.where(:email => email, :type => "NormalUser").first
+    if user.blank? 
+      inexistent_user
+    else
+      self.current_user = user
+      current_session.activate
+      respond_to do |format|
+        format.html { redirect_back_or_default(start_page_path) }
+        format.json { render :json => {:session_id => request.session_options[:id]}, :status => 200 }
+        format.xml  { render :nothing => true, :status  => 200 }
+      end
+    end
+  end
+
+
+  def auth_failed
+    respond_to do |format|
+      format.html { render :action => 'new' }
+      format.json { render :nothing => true, :status  => 401 }
+      format.xml  { render :nothing => true, :status  => 401 }
+    end
+  end
+  
+  def inexistent_user
+    respond_to do |format|
+      format.html { render :nothing => true, :status  => 500 }
+      format.json { render :nothing => true, :status  => 500 }
+      format.xml  { render :nothing => true, :status  => 500 }
+    end
+  end
+  
   private
 
   def no_logged_in_user
