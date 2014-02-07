@@ -325,4 +325,38 @@ module RichUiHelper
     return " <#{element_type} #{atts}>#{h(text)}</#{element_type}>".html_safe
   end
 
+
+  #Create an checkbox that will toggle between hiding and showing another element.
+  #The appearance/disappearance can also be animated.
+  def show_hide_checkbox(target, options = {})
+    options["data-target"] = target
+    
+    checked = options.delete(:checked)
+    if checked
+      options["CHECKED"] = true
+    end
+
+    invert = options.delete(:invert)
+    if invert
+      options["data-invert"] = true
+    end
+
+    slide_effect = options.delete(:slide_effect)
+    if slide_effect
+      options["data-slide-effect"] = true
+    end
+    
+    slide_duration = options.delete(:slide_duration)
+    if slide_duration
+      options["data-slide-duration"] = slide_duration
+    end
+
+    options[:class] ||= ""
+    options[:class] +=  " show_toggle_checkbox"
+
+    atts = options.to_html_attributes
+    return "<input type=\"checkbox\" #{atts} />".html_safe
+  end
+
+
 end
