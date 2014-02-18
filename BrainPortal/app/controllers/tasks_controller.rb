@@ -815,7 +815,7 @@ def create #:nodoc:
           end
           if oktasks.size > 0
             bourreau.send_command_alter_tasks(oktasks, new_status, new_bourreau_id, archive_dp_id) # TODO parse returned command object?
-            succes_list << oktasks
+            success_list << oktasks
           end
           skippedtasks = btasklist - oktasks
           skipped_list["you are not allowed to #{operation} for"] = skippedtasks if skippedtasks.present?

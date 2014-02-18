@@ -28,11 +28,6 @@
   Copyright (C) F. Permadi
   See licence details in the files.
 
-- o3d library
-  Copyright 2009, Google Inc.
-  All rights reserved.
-  See licence details in the files.
-
 - tablesorter.js 2.0.5
   Christan Bach
   http://tablesorter.com/docs/index.html

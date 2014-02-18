@@ -174,7 +174,14 @@ class SessionsController < ApplicationController
     end
   end
 
-  def mozilla_persona_auth
+  ###############################################
+  #
+  # Mozilla Persona authentication
+  #
+  ###############################################
+
+  # This method handles the Mozilla Persona assertion posted by the JavaScript login function
+  def mozilla_persona_auth #:nodoc:
     assertion = params[:assertion]
     data = verify_assertion(assertion)
     if data["status"] = "okay"
@@ -185,14 +192,16 @@ class SessionsController < ApplicationController
     return
   end
 
-  def verify_assertion(assertion)
+  # Mozilla currently recommend to use their remote validation service
+  # Ultimately this should be built in the code
+  # Do NOT send the assertion on a non HTTP*S* connection 
+  # Adapted the code of this method from https://github.com/chilts/browserid-verify-ruby
+  def verify_assertion(assertion) #:nodoc:
 
-    # TODO put this in config file?
+    # TODO put this in config file
     url = "https://verifier.login.persona.org/verify"
     audience = "#{request.protocol}#{request.host_with_port}#{request.fullpath}"
     uri = URI.parse(url)
-    
-    # adapted from https://github.com/chilts/browserid-verify-ruby
     
     # make a new request
     request = Net::HTTP::Post.new(uri.path) 
@@ -222,7 +231,10 @@ class SessionsController < ApplicationController
     return data
   end
 
-  def auth_success(email)
+  # We could authenticate the email
+  # Now, let's check if there is a user associated to it
+  # Be careful NOT to grant admin access based on Mozilla Persona. 
+  def auth_success(email) #:nodoc:
     user = User.where(:email => email, :type => "NormalUser").first
     if user.blank? 
       inexistent_user
@@ -237,8 +249,8 @@ class SessionsController < ApplicationController
     end
   end
 
-
-  def auth_failed
+  # Send a proper HTTP error code
+  def auth_failed #:nodoc:
     respond_to do |format|
       format.html { render :action => 'new' }
       format.json { render :nothing => true, :status  => 401 }
@@ -246,17 +258,24 @@ class SessionsController < ApplicationController
     end
   end
   
-  def inexistent_user
+  # Send a proper HTTP error code
+  def inexistent_user #:nodoc:
     respond_to do |format|
       format.html { render :nothing => true, :status  => 500 }
       format.json { render :nothing => true, :status  => 500 }
       format.xml  { render :nothing => true, :status  => 500 }
     end
   end
+
+  ###############################################
+  #
+  # Private methods
+  #
+  ###############################################
   
   private
 
-  def no_logged_in_user
+  def no_logged_in_user #:nodoc:
     if current_user
       redirect_to start_page_path
     end

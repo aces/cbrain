@@ -1036,7 +1036,7 @@ class UserfilesController < ApplicationController
 
     unless params[:file_names] && params[:file_names].size > 0
       flash[:notice] = "No files selected for extraction"
-      redirect_to :action  => :edit
+      redirect_to :action  => :show
       return
     end
 
