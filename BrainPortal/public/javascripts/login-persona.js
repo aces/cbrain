@@ -27,10 +27,7 @@ function simpleXhrSentinel(xhr) {
                 // reload page to reflect new login state
                 window.location.reload();
             }
-            else {
-		// we should put that in the CBRAIN config. When auth fails, the server could return the redirection URL.
-		window.location.replace("https://portal.cbrain.mcgill.ca:444");
-            } 
+	    // else do nothing, the server should print a message
         } 
     } 
 }
