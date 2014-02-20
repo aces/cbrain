@@ -19,6 +19,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
+
+# For Bourreaux with ScirOpenStack type of cluster.
+# This class associates a Disk Image Bourreau to an OpenStack disk image id and flavor. 
+
 class DiskImageConfig < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:

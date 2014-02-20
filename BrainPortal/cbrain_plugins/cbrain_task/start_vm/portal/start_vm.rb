@@ -1,3 +1,4 @@
+
 #
 # CBRAIN Project
 #
@@ -19,19 +20,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-# A task to start a virtual machine 
-
 require 'openstack'
 
+# A task starting a VM from a disk image.
 class CbrainTask::StartVM < PortalTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
-  def self.properties
+  def self.properties #:nodoc:
     { :use_parallelizer => false }
   end  
 
-  def self.default_launch_args
+  def self.default_launch_args #:nodoc:
     {
       :disk_image => 240, #centos disk image in test portal
       :qemu_params => "-boot d -net nic -net user -localtime",
@@ -49,7 +49,7 @@ class CbrainTask::StartVM < PortalTask
     @_ppn ||= {}
   end
 
-  def before_form
+  def before_form #:nodoc:
     params = self.params
     ids    = params[:interface_userfile_ids]
 
@@ -62,8 +62,6 @@ class CbrainTask::StartVM < PortalTask
     cb_error "File id #{params[:disk_image]} is not associated to any Virtual Bourreau. You cannot start a VM with it." unless virtual_bourreaux.size != 0 
     cb_error "File id #{params[:disk_image]} has more than 1 Virtual Bourreau associated to it. This is not supported yet." unless virtual_bourreaux.size == 1
     virtual_bourreau = virtual_bourreaux.first
-
-    
 
     params[:vm_user] = virtual_bourreau.disk_image_user
 
@@ -92,7 +90,7 @@ class CbrainTask::StartVM < PortalTask
     ""
   end
 
-  def final_task_list
+  def final_task_list #:nodoc:
     task_list = [ ]
     params[:number_of_vms].to_i.times{
       task_list << self.dup

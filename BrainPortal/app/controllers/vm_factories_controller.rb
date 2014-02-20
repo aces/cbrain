@@ -20,7 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-#RESTful controller for the VMFactory resource.
+# A controller for VMFactories.
+
 class VmFactoriesController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -49,6 +50,7 @@ class VmFactoriesController < ApplicationController
     end
   end
 
+  # Starts the VM factory. 
   def start
     @vm_factory = VmFactoryRoundRobin.find(params[:id])
     cb_error "VM Factory #{@vm_factory.id} is already alive" unless !@vm_factory.alive?
@@ -56,13 +58,13 @@ class VmFactoriesController < ApplicationController
     cb_notice "VM Factory #{@vm_factory.id} started (round robin)"
   end
 
+  # Stops the VM factory.
   def stop
     @vm_factory = VmFactory.find(params[:id])
     cb_error "VM Factory #{@vm_factory.id} is not alive" unless @vm_factory.alive?
     @vm_factory.stop
     cb_notice "VM Factory #{@vm_factory.id} stoped"
   end
-
 
   def new #:nodoc:
     @vm_factory = VmFactory.new

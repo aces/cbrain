@@ -20,12 +20,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-# Controller for managing DiskImageConfig objects.
+# A controller for DiskImageConfig objects.
 class DiskImageConfigsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
   
-  def new
+  def new #:nodoc:
     disk_image_bourreau_id = params[:disk_image_bourreau_id]
     bourreau_id = params[:bourreau_id]
     cb_error "Need one disk image bourreau ID and one bourreau ID." unless disk_image_bourreau_id || bourreau_id

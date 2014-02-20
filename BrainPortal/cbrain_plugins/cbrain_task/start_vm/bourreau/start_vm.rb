@@ -20,8 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-#a task starting a VM from a disk image 
-
+# A task starting a VM from a disk image.
 require 'net/ssh'
 
 class CbrainTask::StartVM < ClusterTask
@@ -41,7 +40,7 @@ class CbrainTask::StartVM < ClusterTask
   after_status_transition '*', 'Failed PostProcess Prerequisites', :clean_up_tasks
   after_status_transition '*', 'Terminated', :clean_up_tasks
 
-  def setup 
+  def setup #:nodoc:
     validate_params # defined in common
     escape_params
     #synchronize VM disk image
@@ -64,18 +63,18 @@ class CbrainTask::StartVM < ClusterTask
     end
   true
   end
-
-  def escape_params
-    # QEMU params lines may contain spaces
+  
+  def escape_params #:nodoc:
+    # QEMU params lines may contain any character
     params[:qemu_params] = params[:qemu_params].bash_escape(false,false,true) unless params[:qemu_params].blank?
     params[:open_stack_image_flavor] = params[:open_stack_image_flavor].bash_escape unless params[:open_stack_image_flavor].blank?
   end
 
-  def job_walltime_estimate
+  def job_walltime_estimate #:nodoc:
     24.hours
   end
 
-  def cluster_commands
+  def cluster_commands #:nodoc:
     params = self.params
     snapshot_name = "image-snapshot-#{self.id}"
     snapshot_creation = "qemu-img create -f qcow2 -b image #{snapshot_name}"
@@ -106,7 +105,7 @@ class CbrainTask::StartVM < ClusterTask
     return  commands
   end
   
-  def save_results
+  def save_results #:nodoc:
     addlog "No result to save."
     # we consider the task successful if the VM booted. 
     if params[:vm_status] != "booted"
@@ -116,15 +115,17 @@ class CbrainTask::StartVM < ClusterTask
     return true
   end
   
-  #taken from task civet
+  # Taken from Civet task.
   def mybool(value) #:nodoc:
       return false if value.blank?
       return false if value.is_a?(String)  and value == "0"
       return false if value.is_a?(Numeric) and value == 0
       return true
   end
-  
-  def starting(init_status)
+
+  # Hook called when the VM task gets on CPU. 
+  # Monitors the VM until it boots. Then mounts shared directories with sshfs. 
+  def starting(init_status) #:nodoc:
     addlog "VM task #{self.id} is on CPU"
     params = self.params
 
@@ -154,18 +155,20 @@ class CbrainTask::StartVM < ClusterTask
     end
   end
   
-  def update_vm_status(new_status)
+  def update_vm_status(new_status) #:nodoc:
     params[:vm_status] = new_status
     params[:vm_status_time] = Time.now
   end
   
-  def mount_directories
+  # Mounts cache and task directories.
+  def mount_directories 
     addlog "Mounting shared directories"
     mount_cache_dir
     mount_task_dir
   end
 
-  def monitor_to_boot(start_time)
+  # Monitors the VM until booted. 
+  def monitor_to_boot(start_time) #:nodoc:
     while !booted? do
       elapsed = Time.now - start_time
       if elapsed > params[:vm_boot_timeout].to_f
@@ -180,7 +183,8 @@ class CbrainTask::StartVM < ClusterTask
     end
   end
   
-  def booted?
+  # Checks if the VM has booted. 
+  def booted? 
     addlog "Trying to ssh -p #{params[:ssh_port]} #{params[:vm_user]}@#{params[:vm_local_ip]}"
     s = ScirVM.new
     master = s.get_ssh_master self
@@ -190,6 +194,7 @@ class CbrainTask::StartVM < ClusterTask
     return false
   end
   
+  # Mounts the cache directory in the VM.
   def mount_cache_dir
     full_cache_dir = RemoteResource.current_resource.dp_cache_dir
     if full_cache_dir.blank? 
@@ -205,6 +210,7 @@ class CbrainTask::StartVM < ClusterTask
     return false
   end
   
+  # Mounts the task directory in the VM. 
   def mount_task_dir
     bourreau_shared_dir = self.bourreau.cms_shared_dir
     mount_dir bourreau_shared_dir,File.basename(bourreau_shared_dir)
@@ -215,6 +221,9 @@ class CbrainTask::StartVM < ClusterTask
     return false
   end
   
+  # Mounts a directory in the VM.
+  # local_dir is the VM directory.
+  # remote_dir is the directory on the Bourreau machine.
   def mount_dir(remote_dir,local_dir)
     return unless !is_mounted? remote_dir,local_dir
     scir = ScirVM.new
@@ -227,6 +236,7 @@ class CbrainTask::StartVM < ClusterTask
     raise "Couldn't mount local directory #{local_dir} as #{remote_dir} in VM" unless is_mounted?(remote_dir,local_dir)
   end
 
+  # Checks if a directory is mounted in the VM.
   def is_mounted?(remote_dir,local_dir)
     @last_checks = Hash.new unless !@last_checks.blank?
     t = Time.now
@@ -257,10 +267,14 @@ class CbrainTask::StartVM < ClusterTask
     File.delete(remote_dir+"/"+file_name)
   end
   
-  def combine(a,b)
+  # Returns a key unique to a combination of directories.
+  # Uses ; because this char is not supposed to be included in a directory name. 
+  def combine(a,b) #:nodoc:
     return "#{a};;;#{b}"
   end
 
+  # Hook method called whenever the VM enters a final status.
+  # Makes sure that tasks executed by this VM are terminated. 
   def clean_up_tasks(init_status)
     CbrainTask.where(:vm_id => self.id).each do |t| 
       addlog "Terminating task #{t.id} which is still in this shutting-down VM. This is not supposed to happen, you should investigate what happened."

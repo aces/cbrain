@@ -21,37 +21,40 @@
 #
 
 class String
+  # Colorizes a string.
   def colorize(color_code)
     "\e[#{color_code}m#{self}\e[0m"
   end
 end
 
 
-# An abstract class to start/stop virtual machines based on the system load
-# Derived classes must implement method submit_vm
+# An abstract class to start/stop virtual machines based on the system load.
+# Derived classes *must* implement method submit_vm.
 
 class VmFactory < ActiveRecord::Base
 
-  # see #5061. Be careful, this list is different from the list in BourreauWorker
+  # See #5061. Be careful, this list is different from the list in BourreauWorker.
   ActiveTasks = [ 'New', 'Setting Up', 'Queued', 'On CPU',  
                   'On Hold', 'Suspended',
                   'Post Processing',
                   'Recovering Setup', 'Recovering Cluster', 'Recovering PostProcess', # The Recovering states, not Recover
                   'Restarting Setup', 'Restarting Cluster', 'Restarting PostProcess', # The Restarting states, not Restart
-                ]
+                ] #:nodoc:
 
   attr_accessible  :disk_image_file_id, :tau, :mu_plus, :mu_minus, :nu_plus, :nu_minus, :k_plus, :k_minus, :pid, :name
   
   after_save :my_initialize
   after_find :my_initialize
 
-  def my_initialize
+  def my_initialize #:nodoc:
     di =  DiskImageBourreau.where(:disk_image_file_id => disk_image_file_id).first
     @disk_image_name = di.blank? ? "Void" : di.name
     # initialize StartVM tool id
     @start_vm_tool_id = Tool.where(:cbrain_task_class => "CbrainTask::StartVM").first.id
   end
 
+  # Logs colorized messages in log/factory.log.
+  # Object may be exceptions (printed in red) or just strings. 
   def log_vm(object)
     t = Time.new
     logfile = "log/factory.log"
@@ -62,13 +65,15 @@ class VmFactory < ActiveRecord::Base
     File.open(logfile, 'a') {|f| f.write(out) }
   end
 
+  # Stops the VM factory.
   def stop
     log_vm "Killing pid #{self.pid}, bye!"
     Process.kill("KILL",self.pid)
   end
 
-  # The main loop controlling VM submission and removal
-  # See Algorithm 1 in CCGrid 2014 paper
+  # Starts the main loop controlling VM submission and removal.
+  # This loops will run in background until stopped. 
+  # See Algorithm 1 in CCGrid 2014 paper.
   def start
     id = self.id
     CBRAIN.spawn_with_active_records("VM factory")  do
@@ -87,7 +92,7 @@ class VmFactory < ActiveRecord::Base
     end
   end
   
-  def factory_iteration
+  def factory_iteration #:nodoc:
     log_vm "Starting VMFactory iteration"
     self.timestamp_of_last_iteration = Time.now
     # check upper bound
@@ -119,7 +124,7 @@ class VmFactory < ActiveRecord::Base
 
   end
 
-  def get_active_vms_without_replicas
+  def get_active_vms_without_replicas #:nodoc:
     # get only 1 VM from every set of replicas
     vms = get_active_vms
     replica_ids = Array.new
@@ -137,7 +142,7 @@ class VmFactory < ActiveRecord::Base
     return result
   end
 
-  def get_active_vms
+  def get_active_vms #:nodoc:
     vms = CbrainTask.where(:status => ActiveTasks, :type => "CbrainTask::StartVM")
     #reject vms of offline bourreaux
     vms_online = vms.reject{ |x| !Bourreau.find(x.bourreau_id).online }
@@ -148,7 +153,7 @@ class VmFactory < ActiveRecord::Base
     return vms_with_good_disk_image
   end
 
-  def measure_load vms
+  def measure_load vms #:nodoc:
     disk_images = DiskImageBourreau.where(:disk_image_file_id => self.disk_image_file_id)
     tasks = 0
     disk_images.each do |b|
@@ -172,15 +177,18 @@ class VmFactory < ActiveRecord::Base
     return load
   end
 
-  def get_active_tasks(bourreau_id)
+  def get_active_tasks(bourreau_id) #:nodoc:
     return CbrainTask.where(:bourreau_id => bourreau_id,:status => ActiveTasks,:type => "CbrainTask::StartVM").count
   end
 
+  # Abstract method to submit a VM. 
+  # Has to determine where to submit and possibly replicate VMs.
   def submit_vm
     raise "Abstract method. Must be implemented by child classes."
   end
 
-  # method to submit and replicate VMs on a set of sites
+  # Helper method to submit and replicate VMs on a set of sites.
+  # May be used by derived classes.
   def submit_vm_and_replicate(bourreau_ids)
     task_replicas = Array.new
     task_ids = Array.new 
@@ -206,9 +214,10 @@ class VmFactory < ActiveRecord::Base
       t.save!
     }
   end
-  
-  def submit_vm_to_site(bourreau_id)
 
+  # Helper method to submit a VM to a particular Bourreau.
+  # May be used by derived classes. 
+  def submit_vm_to_site(bourreau_id)
     bourreau = Bourreau.find(bourreau_id)    
     if not bourreau.online? then 
       log_vm  "Not".colorize(33) +" submitting VM to offline #{bourreau.name.colorize(33)}"
@@ -237,16 +246,19 @@ class VmFactory < ActiveRecord::Base
     return task
   end
 
+  # Checks if VM factory is still alive. 
   def alive?
     self.timestamp_of_last_iteration.blank? ? false : (Time.now - self.timestamp_of_last_iteration < 3*self.tau)
   end
 
+  # Selects and terminates a VM. 
+  # See Algorithm 2 in CCGrid 2014 paper.
   def remove_vm
     return remove_vm_from_site    
   end
-
-  # see Algorithm 2 in CCGrid 2014 paper
-  def remove_vm_from_site(bourreau_id = nil)
+  
+  # See Algorithm 2 in CCGrid 2014 paper.
+  def remove_vm_from_site(bourreau_id = nil) #:nodoc:
     if bourreau_id.blank? then log_vm  "Removing a VM (site selection based on VM statuses)" else log_vm  "Removing a VM from site " + "#{Bourreau.find(bourreau_id).name}".colorize(33) end 
     # get queuing VMs # TODO get only VMs queued for this disk image
     queued_all = bourreau_id.blank? ? CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'New','Queued', 'Setting Up'] ) : CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'New','Queued', 'Setting Up'], :bourreau_id => bourreau_id )
@@ -304,6 +316,7 @@ class VmFactory < ActiveRecord::Base
     return nil 
   end
 
+  # Terminates a VM.
   def terminate_vm(id)
     task = CbrainTask.where(:id => id).first
     begin
@@ -315,13 +328,16 @@ class VmFactory < ActiveRecord::Base
     end
   end
 
-  def get_ids_of_target_bourreaux
+
+  def get_ids_of_target_bourreaux #:nodoc:
+    # Returns the candidate bourreau ids for VM submission.
     Bourreau.where(:online => true).select(:id).map {|i| i.id } & ToolConfig.where(:tool_id => @start_vm_tool_id).select(:bourreau_id).map {|i| i.bourreau_id}
   end
   
-  # See algorithm 2 in CCGrid 2014 paper
-  def handle_replicas
-    #handle replicas of OnCPU VMs
+
+  def handle_replicas #:nodoc:
+    # Handles replicas of OnCPU VMs
+    # See algorithm 2 in CCGrid 2014 paper
     on_cpu_all = CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'On CPU'] )
     on_cpu = on_cpu_all.reject{ |x| x.params[:disk_image] != self.disk_image_file_id || Bourreau.find(x.bourreau_id).online == false}
     on_cpu.each do |task|

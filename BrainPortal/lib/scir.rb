@@ -144,10 +144,12 @@ class Scir
       @cache_last_updated = (100*@job_ps_cache_delay).seconds.ago
     end
 
+    # Checks if this job goes to a VM.
     def job_id_goes_to_vm?(jobid)
       return jobid.start_with? "VM:"
     end
     
+    # VM-specific implementation of job_ps.
     def vm_job_ps(jid,caller_updated_at = nil)
       s = ScirVM.new
       status = s.job_ps(jid,caller_updated_at = nil)

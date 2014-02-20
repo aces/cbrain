@@ -152,8 +152,8 @@ module CBRAINExtensions #:nodoc:
         final.join
       end
 
-      # Check if a String contains the textual representation of an integer
-      # Useful for form validation
+      # Check if a String contains the textual representation of an integer.
+      # Useful for form validation.
       def is_an_integer?
         Integer(self)
         return true 
@@ -161,8 +161,8 @@ module CBRAINExtensions #:nodoc:
         return false
       end
 
-      # Check if a String contains the textual representation of a float
-      # Useful for form validation
+      # Check if a String contains the textual representation of a float.
+      # Useful for form validation.
       def is_a_float?
         Float(self)
         return true 

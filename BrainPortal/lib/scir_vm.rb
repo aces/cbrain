@@ -1,14 +1,15 @@
-# Scir class to handle tasks running inside VMs
-# Didn't use the concept of session which is unclear to me. 
-# This scir is only used as a "hijack" of the physical bourreau 
-# The relevance of inheriting Scir is to be questioned
-# Original author: Tristan Glatard
+# A Scir class to handle tasks running inside VMs.
+# Uses ssh to connect to VMs. 
 
 class ScirVM < Scir
 
+  # Didn't use the concept of session which is unclear to me. 
+  # This scir is only used as a "hijack" of the physical bourreau.
+  # The relevance of inheriting Scir is to be questioned.
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  def run(job)
+  def run(job) #:nodoc:
     task,vm_task = get_task_and_vm_task job
 
     check_mounts vm_task
@@ -22,7 +23,7 @@ class ScirVM < Scir
     return create_job_id(vm_task.id,pid)
   end
 
-  def job_ps(jid,caller_updated_at = nil)   
+  def job_ps(jid,caller_updated_at = nil) #:nodoc:
     vm_id,pid = get_vm_id_and_pid jid
     vm_task = get_task vm_id
 
@@ -36,29 +37,29 @@ class ScirVM < Scir
     return Scir::STATE_UNDETERMINED
   end
 
-  def hold(jid)
+  def hold(jid) #:nodoc:
     true
   end
 
-  def release(jid)
+  def release(jid) #:nodoc:
     true
   end
   
-  def suspend(jid)
+  def suspend(jid) #:nodoc:
     vm_id,pid = get_vm_id_and_pid jid
     vm_task = get_task vm_id
     command = "kill -STOP #{pid}"
     run_command(command,vm_task)
   end
 
-  def resume(jid)
+  def resume(jid) #:nodoc:
     vm_id,pid = get_vm_id_and_pid jid
     vm_task = get_task vm_id
     command = "kill -CONT #{pid}"
     run_command(command,vm_task)
   end
 
-  def terminate(jid)
+  def terminate(jid) #:nodoc:
     vm_id,pid = get_vm_id_and_pid jid
     vm_task = get_task vm_id
     command = "kill -TERM #{pid}"
@@ -67,27 +68,27 @@ class ScirVM < Scir
     raise ex unless ex.message.include? "Cannot establish connection with VM" #if the VM executing this task cannot be reached, then the task should be put in status terminated. Otherwise, if VM shuts down and the task is still in there, it could never be terminated.
   end
 
-  def create_job_id(vm_id,pid)
+  def create_job_id(vm_id,pid) #:nodoc:
     return "VM:#{vm_id}:#{pid}"
   end
 
-  def is_valid_jobid?(job_id)
+  def is_valid_jobid?(job_id) #:nodoc:
     return job_id.start_with?("VM:")
   end
 
-  def get_vm_id_and_pid(jid)
+  def get_vm_id_and_pid(jid) #:nodoc:
     s = jid.split(":")
     raise "#{jid} doesn't look like a VM job id" unless ( s[0] == "VM" && s.size == 3 )
     return [s[1],s[2]]
   end
 
-  def run_command(command,vm_task)
+  def run_command(command,vm_task) #:nodoc:
     master = get_ssh_master vm_task
     result = master.remote_shell_command_reader(command) {|io| io.read}
     return result 
   end
   
-  def get_ssh_master(vm_task)
+  def get_ssh_master(vm_task) #:nodoc:
     user = vm_task.params[:vm_user]
     ip = vm_task.params[:vm_local_ip]
     port = vm_task.params[:ssh_port]
@@ -100,11 +101,11 @@ class ScirVM < Scir
     return master
   end
   
-  def get_task(vm_id)
+  def get_task(vm_id) #:nodoc:
     CbrainTask.where(:id => vm_id).first
   end
 
-  def get_task_and_vm_task(job)
+  def get_task_and_vm_task(job) #:nodoc:
     task = get_task job.task_id
     vm_id = task.vm_id
     vm_task = get_task vm_id
@@ -115,7 +116,8 @@ class ScirVM < Scir
     "'" + s.gsub(/'/,"'\\\\''") + "'"
   end
     
-  def qsub_command(job) #adapted from scir_unix
+  def qsub_command(job) #:nodoc:
+    # adapted from scir_unix
     raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless
       job.command == "/bin/bash" && job.arg.size == 1
     raise "Error: stdin not supported" if job.stdin
@@ -136,7 +138,7 @@ class ScirVM < Scir
       return command
     end
 
-  def check_mounts vm_task
+  def check_mounts vm_task #:nodoc:
     # check if cache and task dirs are still mounted
     # this will also attempt to re-mount directories if mounts were broken
     # if directories still cannot be mounted, vm_task will be terminated 

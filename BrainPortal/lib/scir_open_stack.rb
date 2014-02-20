@@ -23,9 +23,12 @@
 # This is a replacement for the drmaa.rb library; this particular subclass
 # of class Scir implements a dummy cluster interface that still runs
 # jobs locally as standard unix subprocesses.
-#
-# Original author: Tristan Glatard
+
+
 require 'openstack'
+
+# A Scir class to handle VMs on OpenStack clouds (see https://www.openstack.org).
+# This class can only handle tasks of type CBRAIN::StartVM.
 
 class ScirOpenStack < Scir
 
@@ -33,7 +36,7 @@ class ScirOpenStack < Scir
 
   class Session < Scir::Session #:nodoc:
 
-    def update_job_info_cache
+    def update_job_info_cache #:nodoc:
       @job_info_cache = {}
       os = get_open_stack_connection()
       os.servers.each do |s|
@@ -47,7 +50,7 @@ class ScirOpenStack < Scir
       true
     end
 
-    def statestring_to_stateconst(state)
+    def statestring_to_stateconst(state) #:nodoc:
       return Scir::STATE_RUNNING        if state == "ACTIVE"
       return Scir::STATE_QUEUED_ACTIVE  if state == "BUILD"
       return Scir::STATE_FAILED         if state == "ERROR"

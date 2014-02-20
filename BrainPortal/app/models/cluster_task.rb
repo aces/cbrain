@@ -1591,7 +1591,7 @@ class ClusterTask < CbrainTask
     return nil
   end
 
-  # Re-route run method of scir_class to use ScirVM instead of default scir for jobs going to VMs
+  # Re-routes methods of Scir class to use ScirVM rather than default Scir class for jobs going to VMs.
   def modify_scir_class_for_vm
     scir_class = self.scir_session
     if scir_class.respond_to?("modified") then return end 
@@ -1661,6 +1661,7 @@ class ClusterTask < CbrainTask
     }
   end
   
+  # Tweak file paths in commands for execution in a VM.
   def tweak_commands commands
     mybourreau = Bourreau.where(:id => self.params[:physical_bourreau]).first
     cache_dir = mybourreau.dp_cache_dir

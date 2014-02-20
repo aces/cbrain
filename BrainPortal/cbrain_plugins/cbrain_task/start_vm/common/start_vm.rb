@@ -1,3 +1,4 @@
+
 #
 # CBRAIN Project
 #
@@ -19,11 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-class CbrainTask::StartVM
+class CbrainTask::StartVM #:nodoc:
   
-
-  # will raise an exception in case parameters are not valid
-  def validate_params
+  def validate_params #:nodoc:
     message = ""
     message += "Missing disk image file! "  if params[:disk_image].blank?
 
@@ -54,7 +53,7 @@ class CbrainTask::StartVM
 
   end
 
-  def is_integer?(a)
+  def is_integer?(a) #:nodoc:
     return true if a.is_a?(Integer)
     return true if a.is_an_integer? # added to class String in utilities
     return false
@@ -62,7 +61,7 @@ class CbrainTask::StartVM
     return false
   end
 
-  def is_float?(a)
+  def is_float?(a) #:nodoc:
     return true if a.is_a?(Numeric)
     return true if a.is_a_float? # added to class String in utilities
     return false

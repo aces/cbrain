@@ -265,7 +265,7 @@ class BourreauWorker < Worker
 
   # This method returns an array containing tasks that may be handled by this physical bourreau
   # Make sure you understand it all before trying to optimize (which is required, see #4763)
-  def get_vm_tasks_to_handle
+  def get_vm_tasks_to_handle #:nodoc:
 
     #gets VMs available to me
     vms = CbrainTask.not_archived.where(:type => "CbrainTask::StartVM", :bourreau_id => @rr_id, :status => "On CPU")  

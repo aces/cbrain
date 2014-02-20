@@ -19,15 +19,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-
+# A VM Factory implementing the Pareto algorithm described in our CCGrid 2014 paper
+# This class currently needs refactoring to be usable by the portal
+# See redmine issue #5294 and #5173
 class VmFactoryPareto < VmFactory
   
-  def initialize(disk_image_id,tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus,lambda)
+  def initialize(disk_image_id,tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus,lambda) #:nodoc:
     super(disk_image_id,tau,mu_plus,mu_minus,nu_plus,nu_minus,k_plus,k_minus)
     @lambda = lambda
   end
 
-  # the only method called on objects of this class
+  # See parent class
   def submit_vm
     update_site_queues
     update_site_booting_times
@@ -98,21 +100,29 @@ class VmFactoryPareto < VmFactory
   end
 
 
-  # A generic class to represent 2-uples
+  # A class to represent {performance,cost} 2-uples
   class PerformanceCostCouple
-    def initialize(performance,cost)
+    def initialize(performance,cost) #:nodoc:
       @q=performance
       @c=cost
     end
+
+    # Getter for performance
     def get_performance
       return @q
     end
+
+    # Getter for cost
     def get_cost
       return @c
     end
+
+    # Pretty print
     def to_s
       return "(#{@q},#{@c})" 
     end
+
+    # Domination operator
     def dominates?(x)
       if @q == x.get_performance and @c == x.get_cost then return false end
       if @q <= x.get_performance and @c <= x.get_cost then return true end
@@ -120,30 +130,40 @@ class VmFactoryPareto < VmFactory
     end
   end
 
+  # A class representing the performance and cost of a particular site
   class Site < PerformanceCostCouple
-    def initialize(performance,cost,cost_overhead,expected_task_duration,name)
+    def initialize(performance,cost,cost_overhead,expected_task_duration,name) #:nodoc:
       @name = name
       @cost_overhead = cost_overhead
       @expected_task_duration = expected_task_duration
       super(performance,cost)
     end
+
+    # Getter for the site name
     def get_name
       return @name
     end
+
+    # Getter for the site cost overhead
     def get_cost_overhead
       return @cost_overhead
     end
+
+    # Getter for the expected task duration on this site
     def get_expected_task_duration
       return @expected_task_duration
     end
+
+    # Pretty print
     def to_s
       "#{@name} ; #{self.get_performance} ; #{self.get_cost}"
     end
   end
 
   # An action is a VM submission decision. 
+  # It has an array of sites where the VM will be replicated
   class Action < PerformanceCostCouple
-    def initialize(sites)
+    def initialize(sites) #:nodoc:
       @name = ""
       @sites = sites.dup
       if sites.size == 0 then 
@@ -178,15 +198,19 @@ class VmFactoryPareto < VmFactory
       q_and_b = (q_and_b_min/2.0)*(Math.exp(1-sum)+1)    
       super(q_and_b+cpu_of_min_q_and_b,cost_of_min_q_and_b)
     end
+
+    # Pretty print of the action
     def to_s
       return "* #{@name} ; C=#{get_cost} ; P=#{get_performance}"
     end
+
+    # Returns the sites associated to this action
     def get_sites
       return @sites
     end
   end
   
-  def get_median_task_durations_of_queued_tasks
+  def get_median_task_durations_of_queued_tasks #:nodoc:
     queued_all =  CbrainTask.where(:status => [ 'New'] ) - CbrainTask.where(:type => "CbrainTask::StartVM") 
     queued = queued_all.reject{ |x| (not Bourreau.find(x.bourreau_id).is_a? DiskImageBourreau) || (DiskImageBourreau.find(x.bourreau_id).disk_image_file_id != @disk_image_file_id)}    
     if queued.length == 0 then return 0 end
@@ -204,8 +228,10 @@ class VmFactoryPareto < VmFactory
 end
 
 
-# Some methods to handle Pareto optimization in class Array
+# Some methods to handle Pareto optimization in class Array, assuming that array elements respond to get_performance and get_cost
 class Array 
+
+  # Prints array elements
   def to_s
     s = "[ "
     each do |x| 
@@ -215,6 +241,7 @@ class Array
     return s
   end
 
+  # Returns the Pareto set of this array
   def pareto_set
     pareto_set = Array.new
     n = length
@@ -224,7 +251,7 @@ class Array
     return pareto_set
   end
 
-  def add_to_pareto_set(a)
+  def add_to_pareto_set(a) #:nodoc:
     q = Array.new
     q << a
     each  do |x|
@@ -238,6 +265,8 @@ class Array
     end
     return q
   end
+
+  # Performs bi-objective minimization in the array, weighting objectives with lambda (cost) and 1-lambda (performance)
 
   def bi_objective_min(lambda)
     pmin = self[0].get_performance
@@ -264,7 +293,7 @@ class Array
     return best_element,best_bi_objective
   end
 
-  def bi_objective(x,lambda,pmin,pmax,cmin,cmax)
+  def bi_objective(x,lambda,pmin,pmax,cmin,cmax) #:nodoc:
     perf_term = pmin==pmax ? lambda : lambda*(x.get_performance-pmin)/(pmax-pmin+0.0)
     cost_term = cmin==cmax ? 1-lambda : (1-lambda)*(x.get_cost-cmin)/(cmax-cmin+0.0)
     bio = perf_term + cost_term

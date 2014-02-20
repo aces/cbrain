@@ -571,7 +571,7 @@ class CbrainTask < ActiveRecord::Base
     end
   end
 
-  # returns the time spent by the task in status "On CPU"
+  # Returns the time spent by the task in status "On CPU".
   def get_time_on_cpu
     message = "Cannot determine how long task #{self.id} has been on CPU."
     raise message unless !self.on_cpu_timestamp.blank? #task hasn't been on CPU
@@ -837,7 +837,7 @@ class CbrainTask < ActiveRecord::Base
     return :workdir
   end
 
-  #returns true if the task is supposed to be executed by a VM
+  # Returns true if the task will be executed by a VM.
   def job_template_goes_to_vm? 
     retval =  Bourreau.find(self.bourreau_id).type == "DiskImageBourreau"
     return retval

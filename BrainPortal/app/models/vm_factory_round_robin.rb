@@ -19,12 +19,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-# VM submission done in round robin. 
+# A VM factory submitting VMs with no replication, in a round-robin way on available Bourreaux. 
 
 class VmFactoryRoundRobin < VmFactory 
 
   
-  def get_next_bourreau_id
+  def get_next_bourreau_id #:nodoc:
     target_bourreau_ids = get_ids_of_target_bourreaux.sort
     return nil unless target_bourreau_ids.length >= 1
 
@@ -43,6 +43,7 @@ class VmFactoryRoundRobin < VmFactory
     return @last_bourreau_id
   end
 
+  # Implements the round-robin.
   def submit_vm  
     next_bourreau_id = get_next_bourreau_id 
     if next_bourreau_id.blank? then log_vm "Cannot find a bourreau where to submit VM.".colorize(32) else
