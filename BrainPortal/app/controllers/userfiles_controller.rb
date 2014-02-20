@@ -58,6 +58,7 @@ class UserfilesController < ApplicationController
     # Sorting scope
     #------------------------------
 
+    @filter_params["sort_hash"]["order"] ||= 'userfiles.name'
     sorted_scope          = base_sorted_scope @filtered_scope
     tags_and_total_counts = @header_scope.select("tags.name as tag_name, tags.id as tag_id, COUNT(tags.name) as tag_count").joins(:tags).group("tags.name")
     filt_tag_counts       = @filtered_scope.joins(:tags).group("tags.name").count
@@ -65,7 +66,6 @@ class UserfilesController < ApplicationController
 
     # Identify and add necessary table joins
     joins                                  = []
-    @filter_params["sort_hash"]["order"] ||= 'userfiles.name'
     sort_table                             = @filter_params["sort_hash"]["order"].split(".")[0]
     if sort_table == "users" || current_user.has_role?(:site_manager)
       joins << :user
@@ -1036,7 +1036,7 @@ class UserfilesController < ApplicationController
 
     unless params[:file_names] && params[:file_names].size > 0
       flash[:notice] = "No files selected for extraction"
-      redirect_to :action  => :edit
+      redirect_to :action  => :show
       return
     end
 

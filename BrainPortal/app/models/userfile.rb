@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'set'
@@ -47,12 +47,12 @@ class Userfile < ActiveRecord::Base
 
   after_save              :update_format_group
   before_destroy          :erase_or_unregister, :format_tree_update, :nullify_children
-  
+
   validates               :name,
                           :presence => true,
                           :uniqueness =>  { :scope => [ :user_id, :data_provider_id ] },
                           :filename_format => true
-                                                  
+
   validates_presence_of   :user_id
   validates_presence_of   :data_provider_id
   validates_presence_of   :group_id
@@ -68,7 +68,7 @@ class Userfile < ActiveRecord::Base
   belongs_to              :parent,
                           :class_name   => "Userfile",
                           :foreign_key  => "parent_id"
-                          
+
   has_and_belongs_to_many :tags
   has_many                :sync_status
   has_many                :formats,
@@ -77,15 +77,15 @@ class Userfile < ActiveRecord::Base
   has_many                :children,
                           :class_name   => "Userfile",
                           :foreign_key  => "parent_id"
-                                                    
+
   # For tree sorting algorithm
   attr_accessor           :level
   attr_accessor           :tree_children
   attr_accessor           :rank_order
-  
-  attr_accessible         :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable, 
+
+  attr_accessible         :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable,
                           :num_files, :format_source_id, :tag_ids, :hidden, :immutable
-  
+
   cb_scope                :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
   cb_scope                :file_format, lambda { |f|
                                        format_filter = Userfile.descendants.map(&:to_s).find{ |c| c == f }
@@ -101,7 +101,7 @@ class Userfile < ActiveRecord::Base
 
   class Viewer
     attr_reader :name, :partial
-    
+
     def initialize(viewer)
       atts = viewer
       unless atts.is_a? Hash
@@ -109,12 +109,12 @@ class Userfile < ActiveRecord::Base
       end
       initialize_from_hash(atts)
     end
-    
+
     def initialize_from_hash(atts = {})
       unless atts.has_key?(:name) || atts.has_key?(:partial)
         cb_error("Viewer must have either name or partial defined.")
       end
-      
+
       name       = atts.delete(:name)
       partial    = atts.delete(:partial)
       att_if     = atts.delete(:if)      || []
@@ -122,19 +122,19 @@ class Userfile < ActiveRecord::Base
 
       @conditions = []
       @name       = name      || partial.to_s.classify.gsub(/(.+)([A-Z])/, '\1 \2')
-      @partial    = partial   || name.to_s.gsub(/\s+/, "").underscore 
+      @partial    = partial   || name.to_s.gsub(/\s+/, "").underscore
       att_if = [ att_if ] unless att_if.is_a?(Array)
       att_if.each do |method|
         cb_error "Invalid :if condition '#{method}' in model." unless method.respond_to?(:to_proc)
         @conditions << method.to_proc
       end
     end
-    
+
     def valid_for?(userfile)
       return true if @conditions.empty?
       @conditions.all? { |condition| condition.call(userfile) }
     end
-    
+
     def ==(other)
       return false unless other.is_a? Viewer
       self.name == other.name
@@ -142,8 +142,8 @@ class Userfile < ActiveRecord::Base
   end
 
   # Class representing the way in which the content
-  # of a userfile can be transferred to a client. 
-  # Created by using the #has_content directive 
+  # of a userfile can be transferred to a client.
+  # Created by using the #has_content directive
   # in a Userfile subclass.
   # ContentLoaders are defined by two parameters:
   # [method] an instance method defined for the
@@ -155,7 +155,7 @@ class Userfile < ActiveRecord::Base
   #          call in the controller. One special
   #          is :send_file, which the controller
   #          will take as indicating that the
-  #          ContentLoader method will return 
+  #          ContentLoader method will return
   #          the path of a file to be sent directly.
   # For example, if one wished to send the content
   # as xml, one would first define the content loader
@@ -165,13 +165,13 @@ class Userfile < ActiveRecord::Base
   #  end
   # And then register the loader using #has_content:
   #  has_content :method => generate_xml, :type => :xml
-  # The #has_content directive can also take a single 
+  # The #has_content directive can also take a single
   # symbol or string, which it will assume is the
   # name of the content loader method, and setting
   # the type to :send_file.
   class ContentLoader
     attr_reader :method, :type
-    
+
     def initialize(content_loader)
       atts = content_loader
       unless atts.is_a? Hash
@@ -179,13 +179,13 @@ class Userfile < ActiveRecord::Base
       end
       initialize_from_hash(atts)
     end
-    
+
     def initialize_from_hash(options = {})
       cb_error "Content loader must have method defined." if options[:method].blank?
       @method = options[:method].to_sym
       @type   = (options[:type]  || :send_file).to_sym
     end
-    
+
     def ==(other)
       return false unless other.is_a? ContentLoader
       self.method == other.method
@@ -195,20 +195,20 @@ class Userfile < ActiveRecord::Base
   #List of viewers for this model
   def viewers
     class_viewers = self.class.class_viewers
-    
+
     @viewers = class_viewers.select { |v| v.valid_for?(self) }
   end
-  
+
   #Find a viewer for this model
   def find_viewer(name)
     self.viewers.find{ |v| v.name == name}
   end
-  
+
   #List of content loaders for this model
   def content_loaders
     self.class.content_loaders
   end
-  
+
   #Find a content loader for this model. Priority is given
   #to finding a matching method name. If none is found, then
   #an attempt is made to match on the type. There may be several
@@ -216,17 +216,17 @@ class Userfile < ActiveRecord::Base
   def find_content_loader(meth)
     self.class.find_content_loader(meth)
   end
-  
+
   #The site with which this userfile is associated.
   def site
     @site ||= self.user.site
   end
-  
+
   # Define sort orders that don't refer to actual columns in the table.
   def self.pseudo_sort_columns
     ["tree_sort"]
   end
-  
+
   #File extension for this file (helps sometimes in building urls).
   def file_extension
     self.class.file_extension(self.name)
@@ -243,8 +243,8 @@ class Userfile < ActiveRecord::Base
   def self.valid_file_classes
     @valid_file_classes ||= Userfile.descendants
   end
-  
-  # Valid classes for conversion as strings 
+
+  # Valid classes for conversion as strings
   # (used by SingleTableInheritance module).
   def self.valid_sti_types
     @valid_sti_types ||= valid_file_classes.map(&:to_s)
@@ -254,25 +254,25 @@ class Userfile < ActiveRecord::Base
   def valid_file_classes
     self.class.valid_file_classes
   end
-  
+
   #Names of classes this type of file can be converted to.
   #Essentially distinguishes between SingleFile subtypes and FileCollection subtypes.
   def self.valid_file_types
     return @valid_file_types if @valid_file_types
-    
+
     @valid_file_types = self.valid_file_classes.map(&:name)
   end
-  
+
   #Instance version of the class method.
   def valid_file_types
     self.class.valid_file_types
   end
-  
+
   #Checks validity according to valid_file_types.
   def is_valid_file_type?(type)
     self.valid_file_types.include? type
   end
-  
+
   def suggested_file_type
     @suggested_file_type ||= self.valid_file_classes.find{|ft| self.name =~ ft.file_name_pattern}
   end
@@ -282,8 +282,8 @@ class Userfile < ActiveRecord::Base
   def self.suggested_file_type(name)
     self.valid_file_classes.find {|ft| name =~ ft.file_name_pattern }
   end
-  
-  #Updates the class (type attribute) of this file if +type+ is 
+
+  #Updates the class (type attribute) of this file if +type+ is
   #valid according to valid_file_types.
   def update_file_type(type, by_user = nil)
     if self.is_valid_file_type?(type)
@@ -293,24 +293,24 @@ class Userfile < ActiveRecord::Base
       false
     end
   end
-  
+
   # Add a format to this userfile.
   def add_format(userfile)
     source_file = self.format_source || self
     source_file.formats << userfile
   end
-  
+
   # The format name (for display) of this userfile.
   def format_name
     nil
   end
-  
+
   # List of the names of the formats available for the userfile.
   def format_names
     source_file = self.format_source || self
-    @format_names ||= source_file.formats.map(&:format_name).push(self.format_name).compact 
+    @format_names ||= source_file.formats.map(&:format_name).push(self.format_name).compact
   end
-  
+
   # Return true if the given format exists for the calling userfile
   def has_format?(f)
     if self.get_format(f)
@@ -319,12 +319,12 @@ class Userfile < ActiveRecord::Base
       false
     end
   end
-  
-  # Find the userfile representing the given format for the calling 
+
+  # Find the userfile representing the given format for the calling
   # userfile, if it exists.
   def get_format(f)
     return self if self.format_name.to_s.downcase == f.to_s.downcase || self.class.name == f
-    
+
     self.formats.all.find { |fmt| fmt.format_name.to_s.downcase == f.to_s.downcase || fmt.class.name == f }
   end
 
@@ -343,14 +343,14 @@ class Userfile < ActiveRecord::Base
 
     tags ||= []
     tags = [tags] unless tags.is_a? Array
-     
+
     non_user_tags = self.tags.all(:conditions  => ["tags.user_id<>? AND tags.group_id NOT IN (?)", user.id, user.group_ids]).map(&:id)
     new_tag_set = tags + non_user_tags
 
     self.tag_ids = new_tag_set
   end
 
-  # Return the level of the calling userfile in 
+  # Return the level of the calling userfile in
   # the parentage tree.
   def level
     @level ||= 0
@@ -396,10 +396,10 @@ class Userfile < ActiveRecord::Base
   def self.accessible_for_user(user, options)
     access_options = {}
     access_options[:access_requested] = options.delete :access_requested
-    
+
     scope = self.scoped(options)
-    scope = Userfile.restrict_access_on_query(user, scope, access_options)      
-    
+    scope = Userfile.restrict_access_on_query(user, scope, access_options)
+
     scope
   end
 
@@ -432,11 +432,11 @@ class Userfile < ActiveRecord::Base
   #on file ownership or group access.
   def self.restrict_access_on_query(user, scope, options = {})
     return scope if user.has_role? :admin_user
-    
+
     access_requested = options[:access_requested] || :write
-    
+
     data_provider_ids = DataProvider.find_all_accessible_by_user(user).all.map(&:id)
-    
+
     query_user_string = "userfiles.user_id = ?"
     query_group_string = "userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)"
     if access_requested.to_sym != :read
@@ -449,9 +449,9 @@ class Userfile < ActiveRecord::Base
       query_string += "OR (users.site_id = ?)"
       query_array  << user.site_id
     end
-    
+
     scope = scope.where( [query_string] + query_array)
-    
+
     scope
   end
 
@@ -469,19 +469,19 @@ class Userfile < ActiveRecord::Base
   #FileCollection).
   def list_files(*args)
     @file_list ||= {}
-   
+
     @file_list[args.dup] ||= if self.is_locally_cached?
                                self.cache_collection_index(*args)
                              else
                                self.provider_collection_index(*args)
                              end
   end
-  
+
   # Calculates and sets the size attribute unless
   # it's already set.
   def set_size
     self.set_size! if self.size.blank?
-  end 
+  end
 
   # Calculates and sets.
   # (Abstract: should be redefined in subclass).
@@ -498,6 +498,7 @@ class Userfile < ActiveRecord::Base
   #Human-readable version of a userfile class name. Can be overridden
   #if necessary in subclasses.
   def self.pretty_type
+    puts_yellow "+#{@pretty_type_name}+"
     @pretty_type_name ||= self.name.gsub(/(.+)([A-Z])/, '\1 \2')
   end
 
@@ -513,12 +514,12 @@ class Userfile < ActiveRecord::Base
   # Make the calling userfile a child of the argument.
   def move_to_child_of(userfile)
     if self.id == userfile.id || self.descendants.include?(userfile)
-      raise ActiveRecord::ActiveRecordError, "A userfile cannot become the child of one of its own descendants." 
+      raise ActiveRecord::ActiveRecordError, "A userfile cannot become the child of one of its own descendants."
     end
-    
+
     self.parent_id = userfile.id
     self.save!
-        
+
     true
   end
 
@@ -546,7 +547,7 @@ class Userfile < ActiveRecord::Base
   ##############################################
   # Sequential traversal methods.
   ##############################################
-  
+
   # Find the next file (by id) available to the given user.
   def next_available_file(user, options = {})
     Userfile.accessible_for_user(user, options).order('userfiles.id').where( ["userfiles.id > ?", self.id] ).first
@@ -556,7 +557,7 @@ class Userfile < ActiveRecord::Base
   def previous_available_file(user, options = {})
     Userfile.accessible_for_user(user, options).order('userfiles.id').where( ["userfiles.id < ?", self.id] ).last
   end
-  
+
   ##############################################
   # Synchronization Status Access Methods
   ##############################################
@@ -611,7 +612,7 @@ class Userfile < ActiveRecord::Base
     return true if syncstat && syncstat.status == 'InSync'
     false
   end
-  
+
   # Returns whether this userfile's contents
   # is present in the local cache and valid.
   #
@@ -621,7 +622,7 @@ class Userfile < ActiveRecord::Base
   # (and thus are not officially "In Sync").
   def is_locally_cached?
     return true if is_locally_synced?
-    
+
     syncstat = self.local_sync_status
     syncstat && syncstat.status == 'CacheNewer'
   end
@@ -633,7 +634,7 @@ class Userfile < ActiveRecord::Base
   # Can this file have its owner changed?
   def allow_file_owner_change?
     self.data_provider.allow_file_owner_change?
-  end 
+  end
 
   # See the description in class DataProvider
   def sync_to_cache
@@ -681,7 +682,7 @@ class Userfile < ActiveRecord::Base
     self.save!
     self.data_provider.cache_copy_to_local_file(self, filename)
   end
-  
+
   # See the description in class DataProvider
   def cache_erase
     self.data_provider.cache_erase(self)
@@ -695,7 +696,7 @@ class Userfile < ActiveRecord::Base
   def cache_collection_index(directory = :all, allowed_types = :regular)
     self.data_provider.cache_collection_index(self, directory, allowed_types)
   end
-  
+
   # See the description in class DataProvider
   def provider_erase
     self.data_provider.provider_erase(self)
@@ -710,7 +711,7 @@ class Userfile < ActiveRecord::Base
   def provider_move_to_otherprovider(otherprovider, options = {})
     self.data_provider.provider_move_to_otherprovider(self, otherprovider, options)
   end
-  
+
   # See the description in class DataProvider
   def provider_copy_to_otherprovider(otherprovider, options = {})
     self.data_provider.provider_copy_to_otherprovider(self, otherprovider, options)
@@ -738,7 +739,7 @@ class Userfile < ActiveRecord::Base
   end
 
   private
-  
+
   # Add a viewer to the calling class.
   # Arguments can be one or several hashes,
   # strings or symbols used as arguments to
@@ -747,29 +748,29 @@ class Userfile < ActiveRecord::Base
     new_viewers.map!{ |v| Viewer.new(v) }
     new_viewers.each{ |v| add_viewer(v) }
   end
-  
+
   # Synonym for #has_viewers.
   def self.has_viewers(*new_viewers)
     self.has_viewer(*new_viewers)
   end
-  
+
   # Remove all previously defined viewers
   # for the calling class.
   def self.reset_viewers
     @ancestor_viewers = []
     @class_viewers    = []
   end
-  
+
   # Add a viewer to the calling class. Unlike #has_viewer
   # the argument is a single Viewer object.
   def self.add_viewer(viewer)
     if self.class_viewers.include?(viewer)
       cb_error "Redefinition of viewer in class #{self.name}."
     end
-    
+
     @class_viewers << viewer
   end
-  
+
   # List viewers for the calling class.
   def self.class_viewers
     unless @ancestor_viewers
@@ -781,17 +782,17 @@ class Userfile < ActiveRecord::Base
     @class_viewers    ||= []
     @class_viewers + @ancestor_viewers
   end
-  
+
   # Add a content loader to the calling class.
   def self.has_content(options = {})
     new_content = ContentLoader.new(options)
     @class_loaders ||= []
-    if @class_loaders.include?(new_content) 
+    if @class_loaders.include?(new_content)
       cb_error "Redefinition of content loader in class #{self.name}."
-    end 
+    end
     @class_loaders << new_content
   end
-  
+
   # List content loaders for the calling class.
   def self.content_loaders
     unless @ancestor_loaders
@@ -803,7 +804,7 @@ class Userfile < ActiveRecord::Base
     @class_loaders    ||= []
     @class_loaders + @ancestor_loaders
   end
-  
+
   #Find a content loader for this model. Priority is given
   #to finding a matching method name. If none is found, then
   #an attempt is made to match on the type. There may be several
@@ -811,10 +812,10 @@ class Userfile < ActiveRecord::Base
   def self.find_content_loader(meth)
     return nil if meth.blank?
     method = meth.to_sym
-    self.content_loaders.find { |cl| cl.method == method } || 
+    self.content_loaders.find { |cl| cl.method == method } ||
     self.content_loaders.find { |cl| cl.type == method }
   end
-  
+
   def validate_associations
     unless DataProvider.where( :id => self.data_provider_id ).first
       errors.add(:data_provider, "does not exist.")
@@ -826,7 +827,7 @@ class Userfile < ActiveRecord::Base
       errors.add(:group, "does not exist.")
     end
   end
-  
+
   def erase_or_unregister
     unless self.data_provider.is_browsable? && self.data_provider.meta[:must_erase].blank?
       self.provider_erase
@@ -834,32 +835,32 @@ class Userfile < ActiveRecord::Base
     self.cache_erase
     true
   end
-  
+
   def format_tree_update
     return true if self.format_source
-    
+
     format_children = self.formats
     return true if format_children.empty?
-    
+
     new_source = format_children.shift
     new_source.update_attributes!(:format_source_id  => nil)
     format_children.each do |fmt|
       fmt.update_attributes!(:format_source_id  => new_source.id)
     end
   end
-  
+
   def nullify_children
     self.children.each &:remove_parent
   end
-  
+
   def validate_group_update
-    if self.format_source_id && self.changed.include?("group_id") && self.format_source 
+    if self.format_source_id && self.changed.include?("group_id") && self.format_source
       unless self.group_id == self.format_source.group_id
         errors.add(:group_id, "cannot be modified for a format file.")
       end
     end
   end
-  
+
   def update_format_group
     unless self.format_source_id
       self.formats.each do |f|
@@ -868,6 +869,6 @@ class Userfile < ActiveRecord::Base
     end
     true
   end
-  
+
 end
 
