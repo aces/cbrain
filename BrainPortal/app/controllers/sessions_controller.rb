@@ -184,7 +184,7 @@ class SessionsController < ApplicationController
   def mozilla_persona_auth #:nodoc:
     assertion = params[:assertion]
     data = verify_assertion(assertion)
-    if data["status"] = "okay"
+    if data["status"] == "okay"
       auth_success(data["email"])
     else
       auth_failed
@@ -227,7 +227,7 @@ class SessionsController < ApplicationController
       # JSON parsing error
       return  {"status" => "failure", "reason" => "Received invalid JSON from the remote verifier"}
     end
-    
+
     return data
   end
 
@@ -237,6 +237,7 @@ class SessionsController < ApplicationController
   def auth_success(email) #:nodoc:
     user = User.where(:email => email, :type => "NormalUser").first
     if user.blank? 
+      flash[:error] = 'Cannot find CBRAIN user associated to this email address.'
       inexistent_user
     else
       self.current_user = user
@@ -251,19 +252,20 @@ class SessionsController < ApplicationController
 
   # Send a proper HTTP error code
   def auth_failed #:nodoc:
+    flash[:error] = 'Authentication failed.'
     respond_to do |format|
-      format.html { render :action => 'new' }
-      format.json { render :nothing => true, :status  => 401 }
-      format.xml  { render :nothing => true, :status  => 401 }
+      format.html { render :action => 'new', :status  => 200 }
+      format.json { render :nothing => true, :status  => 200 }
+      format.xml  { render :nothing => true, :status  => 200 }
     end
   end
   
   # Send a proper HTTP error code
   def inexistent_user #:nodoc:
     respond_to do |format|
-      format.html { render :nothing => true, :status  => 500 }
-      format.json { render :nothing => true, :status  => 500 }
-      format.xml  { render :nothing => true, :status  => 500 }
+      format.html { render :action => 'new', :status  => 200 }
+      format.json { render :nothing => true, :status  => 200 }
+      format.xml  { render :nothing => true, :status  => 200 }
     end
   end
 
