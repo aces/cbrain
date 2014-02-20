@@ -510,7 +510,7 @@ class UserfilesController < ApplicationController
     system("cp #{rack_tempfile_path.to_s.bash_escape} #{tmpcontentfile.to_s.bash_escape}") # fast, hopefully; maybe 'mv' would work?
     CBRAIN.spawn_with_active_records(current_user,"Archive extraction") do
       begin
-        extract_from_archive(tmpcontentfile, file_type, attributes) # generates its own Messages
+        extract_from_archive(tmpcontentfile, params[:file_type].presence, attributes) # generates its own Messages
       ensure
         File.delete(tmpcontentfile) rescue true
       end
@@ -1272,9 +1272,9 @@ class UserfilesController < ApplicationController
   #+archive_file_name+ is a path to an archive file (tar or zip).
   #+attributes+ is a hash of attributes for all the files,
   #they must contain at least user_id and data_provider_id
-  def extract_from_archive(archive_file_name, file_type = SingleFile, attributes = {}) #:nodoc:
+  def extract_from_archive(archive_file_name, file_type = nil, attributes = {}) #:nodoc:
 
-    file_type = SingleFile unless file_type <= SingleFile
+    file_type = SingleFile if file_type && ! file_type <= SingleFile # just protect from classes outside of Userfile
     escaped_archivefile = archive_file_name.to_s.bash_escape # bash escaping
 
     # Check for required attributes
@@ -1340,7 +1340,8 @@ class UserfilesController < ApplicationController
 
     Dir.chdir(workdir) do
       successful_files.each do |file|
-        u = file_type.new(attributes)
+        local_file_type = file_type || Userfile.suggested_file_type(file.name)
+        u = local_file_type.new(attributes)
         u.name = file
         if u.save
           u.cache_copy_from_local_file(file)
