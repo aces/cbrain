@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #RESTful controller for the User resource.
@@ -27,16 +27,16 @@ class UsersController < ApplicationController
 
   api_available :only => [ :index, :create, :show, :destroy ]
 
-  before_filter :login_required,        :except => [:request_password, :send_password]  
-  before_filter :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password]  
-  
+  before_filter :login_required,        :except => [:request_password, :send_password]
+  before_filter :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password]
+
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= 'users.full_name'
 
     sort_order = "#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}"
-    
+
     @header_scope = current_user.available_users
-    
+
     @filtered_scope = base_filtered_scope @header_scope.includes( [:groups, :site] ).order( sort_order )
     @users          = base_sorted_scope @filtered_scope
 
@@ -48,19 +48,19 @@ class UsersController < ApplicationController
     unless [:html, :js].include?(request.format.to_sym)
       @per_page = 999_999_999
     end
-    
+
     # Turn the array ordered_real into the final paginated collection
     @users = @users.paginate(:page => @current_page, :per_page => @per_page)
-    
+
     current_session.save_preferences_for_user(current_user, :users, :per_page)
-    
+
     respond_to do |format|
       format.html # index.html.erb
       format.js
       format.xml  { render :xml => @users }
     end
   end
-  
+
   # GET /user/1
   # GET /user/1.xml
   def show #:nodoc:
@@ -69,7 +69,7 @@ class UsersController < ApplicationController
     cb_error "You don't have permission to view this page.", :redirect  => start_page_path unless edit_permission?(@user)
 
     @default_data_provider  = DataProvider.find_by_id(@user.meta["pref_data_provider_id"])
-    @default_bourreau       = Bourreau.find_by_id(@user.meta["pref_bourreau_id"]) 
+    @default_bourreau       = Bourreau.find_by_id(@user.meta["pref_bourreau_id"])
     @log                    = @user.getlog()
 
     respond_to do |format|
@@ -85,14 +85,14 @@ class UsersController < ApplicationController
 
   def create #:nodoc:
     cookies.delete :auth_token
-    # protects against session fixation attacks, wreaks havoc with 
+    # protects against session fixation attacks, wreaks havoc with
     # request forgery protection.
     # uncomment at your own risk
     # reset_session
     params[:user] ||= {}
 
     no_password_reset_needed = params[:no_password_reset_needed] == "1"
- 
+
     if current_user.has_role? :site_manager
       if params[:user][:type] == 'SiteManager'
         params[:user][:type] = 'SiteManager'
@@ -100,13 +100,13 @@ class UsersController < ApplicationController
         params[:user][:type] = 'NormalUser'
       end
     end
-     
+
     @user = User.new
 
     @user.make_all_accessible! if current_user.has_role?(:admin_user)
     if current_user.has_role?(:site_manager)
       @user.make_accessible!(:login, :type, :group_ids, :account_locked)
-      @user.site = current_user.site  
+      @user.site = current_user.site
     end
 
     @user.attributes = params[:user]
@@ -114,7 +114,7 @@ class UsersController < ApplicationController
     @user = @user.class_update
 
     @user.password_reset = no_password_reset_needed ? false : true
-    
+
     if @user.save
       flash[:notice] = "User successfully created."
       current_user.addlog_context(self,"Created account for user '#{@user.login}'")
@@ -130,7 +130,7 @@ class UsersController < ApplicationController
         format.xml { render :xml => @user }
       end
     else
-      respond_to do |format|                                                                  
+      respond_to do |format|
         format.js  { render :partial  => 'shared/failed_create', :locals  => { :model_name  => 'user' } }
         format.xml { render :xml => @user.errors, :status => :unprocessable_entity }
       end
@@ -148,16 +148,15 @@ class UsersController < ApplicationController
     @user = User.find(params[:id], :include => :groups)
     params[:user] ||= {}
     cb_error "You don't have permission to view this page.", :redirect => start_page_path unless edit_permission?(@user)
-  
+
     if params[:user][:group_ids]
       system_group_scope = SystemGroup.scoped
       params[:user][:group_ids]  |= system_group_scope.joins(:users).where( "users.id" => @user.id ).raw_first_column("groups.id").map &:to_s
-      
       unless current_user.has_role?(:admin_user)
         params[:user][:group_ids]  |= WorkGroup.where(invisible: true).raw_first_column("groups.id").map &:to_s
       end
     end
-  
+
     if params[:user][:password].present?
       if current_user.id == @user.id
         @user.password_reset = false
@@ -168,14 +167,14 @@ class UsersController < ApplicationController
       params[:user].delete(:password)
       params[:user].delete(:password_confirmation)
     end
-  
+
     if params[:user].has_key?(:time_zone) && (params[:user][:time_zone].blank? || !ActiveSupport::TimeZone[params[:user][:time_zone]])
       params[:user][:time_zone] = nil # change "" to nil
     end
-  
+
     # For logging
-    original_group_ids = @user.group_ids    
-  
+    original_group_ids = @user.group_ids
+
     @user.make_all_accessible! if current_user.has_role?(:admin_user)
     if current_user.has_role? :site_manager
       @user.make_accessible!(:group_ids, :type, :account_locked)
@@ -185,10 +184,10 @@ class UsersController < ApplicationController
         params[:user][:type] = 'NormalUser'
       end
       @user.site = current_user.site
-    end 
-    
+    end
+
     @user.attributes = params[:user]
-    
+
     @user = @user.class_update
 
     respond_to do |format|
@@ -219,10 +218,10 @@ class UsersController < ApplicationController
     elsif current_user.has_role? :site_manager
       @user = current_user.site.users.find(params[:id])
     end
-    
-    @user.destroy 
-    
-    flash[:notice] = "User '#{@user.login}' destroyed" 
+
+    @user.destroy
+
+    flash[:notice] = "User '#{@user.login}' destroyed"
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
@@ -231,7 +230,7 @@ class UsersController < ApplicationController
     end
   rescue ActiveRecord::DeleteRestrictionError => e
     flash[:error]  = "User not destroyed: #{e.message}"
-    
+
     respond_to do |format|
       format.html { redirect_to :action => :index }
       format.js   { redirect_to :action => :index, :format => :js}
@@ -253,13 +252,13 @@ class UsersController < ApplicationController
     current_session.clear_data!
     self.current_user = @user
     current_session[:user_id] = @user.id
-    
+
     redirect_to start_page_path
   end
-  
+
   def request_password #:nodoc:
   end
-  
+
   def send_password #:nodoc:
     @user = User.where( :login  => params[:login], :email  => params[:email] ).first
 
