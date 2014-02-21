@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'fileutils'
@@ -65,7 +65,7 @@ require 'digest/md5'
 #
 #    u = SingleFile.new( :user_id => 2, :data_provider_id => 3, :name => "filename" )
 #    u.cache_writehandle do |fh|
-#      fh.write("ABC")   
+#      fh.write("ABC")
 #    done
 #    u.save
 #
@@ -97,13 +97,13 @@ require 'digest/md5'
 # The cache_readhandle() and cache_writehandle() methods can be used
 # to access FileCollections, as long as a second argument is provided
 # indicating the relative path of the file to be read from/written to.
-# There is also a provider_readhandle() method to read from files on the 
-# provider side, though its use is not recommended except in cases where 
-# syncing to the cache is unfeasible (e.g. with particularly large 
+# There is also a provider_readhandle() method to read from files on the
+# provider side, though its use is not recommended except in cases where
+# syncing to the cache is unfeasible (e.g. with particularly large
 # datasets).
 #
-# The methods cache_copy_to_local_file() and cache_copy_from_local_file() 
-# will work perfectly well, assuming that the +localfile+ they are given 
+# The methods cache_copy_to_local_file() and cache_copy_from_local_file()
+# will work perfectly well, assuming that the +localfile+ they are given
 # in argument is itself a local subdirectory.
 #
 # When creating new FileCollections, the cache_prepare() method should be
@@ -195,7 +195,7 @@ require 'digest/md5'
 # [*online*] A boolean value set to whether or not the provider is online.
 # [*read_only*] A boolean value set to whether or not the provider is read only.
 # [*description*] Text with a description of the data provider.
-# 
+#
 # = Associations:
 # *Belongs* *to*:
 # * User
@@ -207,21 +207,21 @@ class DataProvider < ActiveRecord::Base
   include ResourceAccess
   include LicenseAgreements
   include NumericalSubdirTree
-  
+
   cbrain_abstract_model! # objects of this class are not to be instantiated
-  
+
   validates               :name,
                           :uniqueness => true,
                           :presence => true,
                           :name_format => true
-                          
+
   validates               :type,
                           subclass: { allow_blank: true },
                           presence: true
-                          
+
   validates_presence_of   :user_id, :group_id
   validates_inclusion_of  :read_only, :in => [true, false]
-                                 
+
   validates_format_of     :remote_user, :with => /^\w[\w\-\.]*$/,
     :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
     :allow_blank => true
@@ -237,9 +237,9 @@ class DataProvider < ActiveRecord::Base
   belongs_to  :user
   belongs_to  :group
   has_many    :userfiles, :dependent => :restrict
-  
-  attr_accessible :name, :user_id, :group_id, :remote_user, :remote_host, :remote_port, :remote_dir, :online, 
-                  :read_only, :description, :time_of_death, :not_syncable, :time_zone, :cloud_storage_client_identifier, 
+
+  attr_accessible :name, :user_id, :group_id, :remote_user, :remote_host, :remote_port, :remote_dir, :online,
+                  :read_only, :description, :time_of_death, :not_syncable, :time_zone, :cloud_storage_client_identifier,
                   :cloud_storage_client_token, :license_agreements
 
   # CBRAIN extension
@@ -252,7 +252,7 @@ class DataProvider < ActiveRecord::Base
     attr_accessor :name, :symbolic_type, :size, :permissions,
                   :uid, :gid, :owner, :group,
                   :atime, :mtime, :ctime
-    
+
     def depth #:nodoc:
       return @depth if @depth
       cb_error "File doesn't have a name." if self.name.blank?
@@ -261,27 +261,38 @@ class DataProvider < ActiveRecord::Base
       @depth = count
       @depth
     end
-    
+
     def to_xml(options = {})
       require 'builder' unless defined?(Builder)
-    
+
       options = options.dup
       options[:indent] ||= 2
       options.reverse_merge!({ :builder => Builder::XmlMarkup.new(:indent => options[:indent]),
                                :root => self.class.name.underscore.dasherize.tr('/', '-') })
       options[:builder].instruct! unless options.delete(:skip_instruct)
       root = options[:root].to_s
-    
+
       options[:builder].__send__(:method_missing, root) do
         self.instance_variables.each do |key_sym|
           key = key_sym.to_s.sub "@", ""   # changes '@name' or :@name to 'name'
           value = self.__send__(key)
           options[:builder].tag!(key, value)
         end
-        
+
         yield options[:builder] if block_given?
       end
     end
+
+    def to_json
+      myhash = {};
+      self.instance_variables.each do |key_sym|
+          key = key_sym.to_s.sub "@", ""   # changes '@name' or :@name to 'name'
+          value = self.__send__(key)
+          options[:builder].tag!(key, value)
+        end
+      my_hash.to_json
+    end
+
   end
 
   # This value is used to trigger DP cache wipes
@@ -307,7 +318,7 @@ class DataProvider < ActiveRecord::Base
   #      Official DataProvider API methods
   #      - Provider query/access methods -
   #################################################################
-  
+
   # This method must not block, and must respond quickly.
   # Returns +true+ or +false+.
   def is_alive?
@@ -328,7 +339,7 @@ class DataProvider < ActiveRecord::Base
   def is_browsable?(by_user = nil)
     false
   end
-  
+
   # This predicate returns whether syncing from the current provider
   # is considered a negligeable operation. e.g. if the provider is local to the portal.
   #
@@ -337,7 +348,7 @@ class DataProvider < ActiveRecord::Base
   def is_fast_syncing?
     false
   end
-  
+
   # This predicate returns true if the structure of the files
   # on the data provider side allow us to assign and reassign
   # the CBRAIN ownership of the registered files without problem.
@@ -360,7 +371,7 @@ class DataProvider < ActiveRecord::Base
   # Official Data API methods (work on userfiles)
   #            - Synchronization -
   #################################################################
-  
+
   # Synchronizes the content of +userfile+ as stored
   # on the provider into the local cache.
   def sync_to_cache(userfile)
@@ -391,7 +402,7 @@ class DataProvider < ActiveRecord::Base
   # Official Data API methods (work on userfiles)
   #            - Cache Side Methods -
   #################################################################
-  
+
   # Makes sure the local cache is properly configured
   # to receive the content for +userfile+; usually
   # this method is called before writing the content
@@ -415,7 +426,7 @@ class DataProvider < ActiveRecord::Base
   def cache_full_path(userfile)
     cache_full_pathname(userfile)
   end
-  
+
   # Executes a block on a filehandle open in +read+ mode for the
   # cached copy of the content of +userfile+; note
   # that this method automatically calls the synchronization
@@ -579,10 +590,10 @@ class DataProvider < ActiveRecord::Base
     end
     true
   end
-  
+
   # Provides information about the files associated with a Userfile entry
   # that has been synced to the cache. Returns an Array of FileInfo objects
-  # representing the individual files. 
+  # representing the individual files.
   #
   # Though this method will function on SingleFile objects, it is primarily meant
   # to be used on FileCollections to gather information about the individual files
@@ -592,16 +603,16 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: userfile #{userfile.name} with ID #{userfile.id} is not cached." unless
         userfile.is_locally_cached?
     list = []
-    
+
     if allowed_types.is_a? Array
       types = allowed_types.dup
     else
       types = [allowed_types]
     end
-    
+
     types.map!(&:to_sym)
     types << :file if types.delete(:regular)
-    
+
     Dir.chdir(cache_full_path(userfile).parent) do
       if userfile.is_a? FileCollection
         if directory == :all
@@ -615,7 +626,7 @@ class DataProvider < ActiveRecord::Base
         end
       else
         entries = [userfile.name]
-      end 
+      end
       attlist = [ 'symbolic_type', 'size', 'permissions',
                   'uid',  'gid',  'owner', 'group',
                   'atime', 'ctime', 'mtime' ]
@@ -634,7 +645,7 @@ class DataProvider < ActiveRecord::Base
             if meth == 'symbolic_type'
               fileinfo.symbolic_type = entry.ftype.to_sym
               fileinfo.symbolic_type = :regular if fileinfo.symbolic_type == :file
-            else  
+            else
               val = entry.send(meth)
               fileinfo.send("#{meth}=", val)
             end
@@ -725,7 +736,7 @@ class DataProvider < ActiveRecord::Base
     return false unless Userfile.is_legal_filename?(new_name)
     return false unless userfile.id # must be a fully saved file
 
-    # Find existing destination, if any    
+    # Find existing destination, if any
     target_exists = Userfile.where(
                       :name             => new_name,
                       :data_provider_id => otherprovider.id,
@@ -902,7 +913,7 @@ class DataProvider < ActiveRecord::Base
 
   # Provides information about the files associated with a Userfile entry
   # whose actual contents are still only located on a DataProvider (i.e. it has not
-  # been synced to the local cache yet). 
+  # been synced to the local cache yet).
   # Though this method will function on SingleFile objects, it is primarily meant
   # to be used on FileCollections to gather information about the individual files
   # in the collection.
@@ -910,7 +921,7 @@ class DataProvider < ActiveRecord::Base
   # *NOTE*: this method should gather its information WITHOUT doing a local sync.
   #
   # When called, the method accesses the provider's side
-  # and returns an array of FileInfo objects. 
+  # and returns an array of FileInfo objects.
   def provider_collection_index(userfile, directory = :all, allowed_types = :regular)
     cb_error "Error: provider #{self.name} is offline." unless self.online?
     rr_allowed_syncing!("fetch file content list from")
@@ -1179,7 +1190,7 @@ class DataProvider < ActiveRecord::Base
       return uids2path.values
     end
   end
-  
+
 
 
   #################################################################
@@ -1252,11 +1263,11 @@ class DataProvider < ActiveRecord::Base
   def impl_provider_list_all(user=nil) #:nodoc:
     raise "Error: method not yet implemented in subclass."
   end
-  
+
   def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
     raise "Error: method not yet implemented in subclass."
   end
-  
+
   def impl_provider_readhandle(userfile, *args) #:nodoc:
     raise "Error: method not yet implemented in subclass."
   end
@@ -1344,7 +1355,7 @@ class DataProvider < ActiveRecord::Base
     basename = userfile.name
     cache_full_dirname(userfile) + basename
   end
-  
+
 
 
   #################################################################
