@@ -498,7 +498,6 @@ class Userfile < ActiveRecord::Base
   #Human-readable version of a userfile class name. Can be overridden
   #if necessary in subclasses.
   def self.pretty_type
-    puts_yellow "+#{@pretty_type_name}+"
     @pretty_type_name ||= self.name.gsub(/(.+)([A-Z])/, '\1 \2')
   end
 
