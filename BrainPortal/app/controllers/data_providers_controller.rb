@@ -301,6 +301,10 @@ class DataProvidersController < ApplicationController
         @fileinfolist.each { |fil| fil.instance_eval {remove_instance_variable :@userfile} }
         render :xml  => @fileinfolist
       end
+      format.json do
+        @fileinfolist.each { |fil| fil.instance_eval {remove_instance_variable :@userfile} }
+        render :json  => @fileinfolist
+      end
       format.js
     end
 

@@ -257,7 +257,8 @@ class CbrainSession
   def []=(key, value)
     return unless @session_model
     if key == :user_id
-      @session_model.update_attributes!(:user_id => value)
+      @session_model.user_id = value
+      @session_model.save
     end
     @session[key] = value
   end

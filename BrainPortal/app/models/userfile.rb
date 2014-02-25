@@ -435,7 +435,7 @@ class Userfile < ActiveRecord::Base
 
     access_requested = options[:access_requested] || :write
 
-    data_provider_ids = DataProvider.find_all_accessible_by_user(user).all.map(&:id)
+    data_provider_ids = DataProvider.find_all_accessible_by_user(user).raw_first_column("#{DataProvider.table_name}.id")
 
     query_user_string = "userfiles.user_id = ?"
     query_group_string = "userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)"
@@ -498,7 +498,6 @@ class Userfile < ActiveRecord::Base
   #Human-readable version of a userfile class name. Can be overridden
   #if necessary in subclasses.
   def self.pretty_type
-    puts_yellow "+#{@pretty_type_name}+"
     @pretty_type_name ||= self.name.gsub(/(.+)([A-Z])/, '\1 \2')
   end
 

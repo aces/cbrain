@@ -170,7 +170,8 @@ class UserfilesController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.xml  { render :xml => @userfiles }
+      format.xml  { render :xml  => @userfiles.to_xml(:methods => :type) }
+      format.json { render :json => @userfiles.to_json(:methods => :type) }
       format.csv
     end
   end
