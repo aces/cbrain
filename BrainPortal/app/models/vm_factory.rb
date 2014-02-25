@@ -144,13 +144,10 @@ class VmFactory < ActiveRecord::Base
 
   def get_active_vms #:nodoc:
     vms = CbrainTask.where(:status => ActiveTasks, :type => "CbrainTask::StartVM")
-    #reject vms of offline bourreaux
-    vms_online = vms.reject{ |x| !Bourreau.find(x.bourreau_id).online }
-    #reject vms with the wrong disk image
-    vms_with_good_disk_image = vms_online.reject{ |x| x.params[:disk_image] != self.disk_image_file_id || Bourreau.find(x.bourreau_id).online == false}
-    
-    log_vm "There are #{vms_with_good_disk_image.count} active VMs (including replicas)"
-    return vms_with_good_disk_image
+    #reject vms of offline bourreaux and with wrong disk images
+    alive_vms_with_good_disk_image = vms.reject{ |x| !Bourreau.find(x.bourreau_id).is_alive? || (x.params[:disk_image] != self.disk_image_file_id)}
+    log_vm "There are #{alive_vms_with_good_disk_image.count} active VMs (including replicas)"
+    return alive_vms_with_good_disk_image
   end
 
   def measure_load vms #:nodoc:
@@ -219,8 +216,8 @@ class VmFactory < ActiveRecord::Base
   # May be used by derived classes. 
   def submit_vm_to_site(bourreau_id)
     bourreau = Bourreau.find(bourreau_id)    
-    if not bourreau.online? then 
-      log_vm  "Not".colorize(33) +" submitting VM to offline #{bourreau.name.colorize(33)}"
+    if not bourreau.is_alive? then 
+      log_vm  "Refusing".colorize(33) +" to submit VM to #{bourreau.name.colorize(33)} which is not alive" # just in case, this shouldn't happen.
       return nil
     end
     
@@ -262,7 +259,7 @@ class VmFactory < ActiveRecord::Base
     if bourreau_id.blank? then log_vm  "Removing a VM (site selection based on VM statuses)" else log_vm  "Removing a VM from site " + "#{Bourreau.find(bourreau_id).name}".colorize(33) end 
     # get queuing VMs # TODO get only VMs queued for this disk image
     queued_all = bourreau_id.blank? ? CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'New','Queued', 'Setting Up'] ) : CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'New','Queued', 'Setting Up'], :bourreau_id => bourreau_id )
-    queued = queued_all.reject{ |x| x.params[:disk_image] != self.disk_image_file_id || Bourreau.find(x.bourreau_id).online == false}
+    queued = queued_all.reject{ |x| x.params[:disk_image] != self.disk_image_file_id || !Bourreau.find(x.bourreau_id).is_alive?}
     log_vm "There are #{queued.count} queued VMs"
     youngest_queued = nil 
     queued.each do |task|
@@ -276,7 +273,7 @@ class VmFactory < ActiveRecord::Base
     else
       # get booting VMs 
       on_cpu_all = bourreau_id.blank? ? CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'On CPU'] ) : CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'On CPU'], :bourreau_id => bourreau_id )
-      on_cpu = on_cpu_all.reject{ |x| x.params[:disk_image] != self.disk_image_file_id || Bourreau.find(x.bourreau_id).online == false}
+      on_cpu = on_cpu_all.reject{ |x| x.params[:disk_image] != self.disk_image_file_id || !Bourreau.find(x.bourreau_id).is_alive?}
       booting = []
       on_cpu.each do |task| 
         if task.params[:vm_status] == "booting" then booting << task end
@@ -328,18 +325,16 @@ class VmFactory < ActiveRecord::Base
     end
   end
 
-
   def get_ids_of_target_bourreaux #:nodoc:
     # Returns the candidate bourreau ids for VM submission.
-    Bourreau.where(:online => true).select(:id).map {|i| i.id } & ToolConfig.where(:tool_id => @start_vm_tool_id).select(:bourreau_id).map {|i| i.bourreau_id}
+    Bourreau.where(:online => true).reject{|x| !x.is_alive?}.map {|i| i.id } & ToolConfig.where(:tool_id => @start_vm_tool_id).select(:bourreau_id).map {|i| i.bourreau_id}
   end
   
-
   def handle_replicas #:nodoc:
     # Handles replicas of OnCPU VMs
     # See algorithm 2 in CCGrid 2014 paper
     on_cpu_all = CbrainTask.where(:type => "CbrainTask::StartVM", :status => [ 'On CPU'] )
-    on_cpu = on_cpu_all.reject{ |x| x.params[:disk_image] != self.disk_image_file_id || Bourreau.find(x.bourreau_id).online == false}
+    on_cpu = on_cpu_all.reject{ |x| x.params[:disk_image] != self.disk_image_file_id || !Bourreau.find(x.bourreau_id).is_alive?}
     on_cpu.each do |task|
       # task is now on cpu
       # r_id/r_task is its replicas
@@ -382,30 +377,5 @@ class VmFactory < ActiveRecord::Base
       end
     end    
   end
-
-  # def update_site_queues
-  #   0.upto(@n_sites-1) do |i|
-  #     b = Bourreau.find(@bourreau_ids[i])
-  #     @site_queues[i] = b.meta[:latest_in_queue_delay]
-  #     log_vm "Updated queuing time of site #{@site_names[i]} to #{@site_queues[i]}"
-  #   end
-  # end
-
-  # def update_site_booting_times
-  #   0.upto(@n_sites-1) do |i|
-  #     b = Bourreau.find(@bourreau_ids[i])
-  #     @site_booting_times[i] = b.meta[:latest_booting_delay]
-  #     log_vm "Updated booting of site #{@site_names[i]} to #{@site_booting_times[i]}"
-  #   end
-  # end
-
-  # def update_site_performance_factors
-  #   0.upto(@n_sites-1) do |i|
-  #     b = Bourreau.find(@bourreau_ids[i])
-  #     @site_performance_factors[i] = b.meta[:latest_performance_factor]
-  #     log_vm "Updated booting of site #{@site_names[i]} to #{@site_booting_times[i]}"
-  #   end
-  # end
-  
 end  
 

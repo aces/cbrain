@@ -53,17 +53,17 @@ class VmFactoriesController < ApplicationController
   # Starts the VM factory. 
   def start
     @vm_factory = VmFactoryRoundRobin.find(params[:id])
-    cb_error "VM Factory #{@vm_factory.id} is already alive" unless !@vm_factory.alive?
+    cb_error "VM Factory #{@vm_factory.id} is already alive." unless !@vm_factory.alive?
     @vm_factory.start
-    cb_notice "VM Factory #{@vm_factory.id} started (round robin)"
+    cb_notice "VM Factory #{@vm_factory.id} started (round robin)."
   end
 
   # Stops the VM factory.
   def stop
     @vm_factory = VmFactory.find(params[:id])
-    cb_error "VM Factory #{@vm_factory.id} is not alive" unless @vm_factory.alive?
+    cb_error "VM Factory #{@vm_factory.id} is not alive." unless @vm_factory.alive?
     @vm_factory.stop
-    cb_notice "VM Factory #{@vm_factory.id} stoped"
+    cb_notice "VM Factory #{@vm_factory.id} stopped."
   end
 
   def new #:nodoc:
@@ -82,7 +82,7 @@ class VmFactoriesController < ApplicationController
     flash[:notice] = "#{fields}"
     if @vm_factory.save
       flash[:notice] = "VM Factory successfully created #{fields}."
-      @vm_factory.addlog_context(self,"VM Factory created by '#{current_user.login}'")
+      @vm_factory.addlog_context(self,"VM Factory created by '#{current_user.login}'.")
       respond_to do |format|
         format.js  { redirect_to :action => :index, :format => :js }
         format.xml { render :xml => @vm_factory }
@@ -124,7 +124,7 @@ class VmFactoriesController < ApplicationController
     
     @vm_factory.destroy 
     
-    flash[:notice] = "VM Factory '#{@vm_factory.name}' (id: #{@vm_factory.id}) destroyed" 
+    flash[:notice] = "VM Factory '#{@vm_factory.name}' (id: #{@vm_factory.id}) destroyed." 
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
@@ -132,7 +132,7 @@ class VmFactoriesController < ApplicationController
       format.xml  { head :ok }
     end
   rescue ActiveRecord::DeleteRestrictionError => e
-    flash[:error]  = "VM Factory not destroyed: #{e.message}"
+    flash[:error]  = "VM Factory not destroyed: #{e.message}."
     
     respond_to do |format|
       format.html { redirect_to :action => :index }

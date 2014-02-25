@@ -44,4 +44,9 @@ class DiskImageBourreau < Bourreau
     # Could be implemented to stop all the VMs associated to this Disk Image Bourreau.
     raise "Disk Images are not supposed to be stopped."
   end
+
+  # Returns true if and only if the Bourreau is online.
+  def is_alive?(what = :ping)
+    return self.online?
+  end
 end
