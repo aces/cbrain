@@ -71,6 +71,11 @@ class VmFactory < ActiveRecord::Base
     Process.kill("KILL",self.pid)
   end
 
+  # Stops all VM factories.
+  def self.stop_all
+    VmFactory.all.each{ |x| x.stop unless !x.alive? }
+  end
+
   # Starts the main loop controlling VM submission and removal.
   # This loops will run in background until stopped. 
   # See Algorithm 1 in CCGrid 2014 paper.
