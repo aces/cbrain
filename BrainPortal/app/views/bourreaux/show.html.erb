@@ -369,6 +369,9 @@
       <% t.edit_cell(:disk_image_user, :header => "Disk Image User") do %>
         <%= text_field_tag "bourreau[disk_image_user]", @bourreau.disk_image_user, :size => 60 %>
       <% end %>
+      <% t.edit_cell(:ssh_tunnel_port, :header => "SSH tunnel port") do %>
+        <%= text_field_tag "bourreau[ssh_tunnel_port]", @bourreau.ssh_tunnel_port, :size => 60 %>
+      <% end %>
     <% end %>
       Corresponding image IDs on OpenStack execution servers:<br/> 
       <table>

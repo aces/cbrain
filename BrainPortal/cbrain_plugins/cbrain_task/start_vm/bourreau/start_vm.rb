@@ -221,6 +221,11 @@ class CbrainTask::StartVM < ClusterTask
     return false
   end
   
+  # Returns the port binding the VM to the host's ssh daemon. 
+  def get_VM_to_host_ssh_tunnel_port
+    return DiskImageBourreau.where(:disk_image_file_id => params[:disk_image]).first.ssh_tunnel_port
+  end
+
   # Mounts a directory in the VM.
   # local_dir is the VM directory.
   # remote_dir is the directory on the Bourreau machine.
@@ -228,7 +233,10 @@ class CbrainTask::StartVM < ClusterTask
     return unless !is_mounted? remote_dir,local_dir
     scir = ScirVM.new
     user = ENV['USER'] #quite unix-specific...
-    sshfs_command = "mkdir #{local_dir} -p ; umount #{local_dir} ; sshfs -p 2222 -C -o nonempty -o follow_symlinks -o reconnect -o StrictHostKeyChecking=no #{user}@localhost:#{remote_dir} #{local_dir}"
+    
+    # Port 2222 of localhost is bound to the ssh port of the host.  
+    # See ScirVM.get_ssh_master
+    sshfs_command = "mkdir #{local_dir} -p ; umount #{local_dir} ; sshfs -p #{get_VM_to_host_ssh_tunnel_port} -C -o nonempty -o follow_symlinks -o reconnect -o StrictHostKeyChecking=no #{user}@localhost:#{remote_dir} #{local_dir}"
     addlog "Mounting dir: #{sshfs_command}"
     addlog scir.run_command(sshfs_command,self) 
     # leave time to fuse to mount the dir

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131219210026) do
+ActiveRecord::Schema.define(:version => 20140226225222) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -242,6 +242,7 @@ ActiveRecord::Schema.define(:version => 20131219210026) do
     t.string   "open_stack_tenant"
     t.string   "open_stack_password"
     t.float    "cost_factor"
+    t.integer  "ssh_tunnel_port"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"

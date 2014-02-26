@@ -88,6 +88,10 @@
       <div class="field_explanation">This file is used to deploy the disk image on clusters.</div>
       <p><%= f.label :disk_image_user, "Disk Image User" %><br/>
       <%= f.text_field :disk_image_user %></p>
+      <div class="field_explanation">The user account where the portal's public key is installed.</div>
+      <p><%= f.label :ssh_tunnel_port, "SSH tunnel port" %><br/>
+      <%= f.text_field :ssh_tunnel_port %></p>
+      <div class="field_explanation">This port is used to tunnel SSH from the VM to its host. No process should be bound to this port in the VM.</div>
   </fieldset>
 
   <fieldset class="groupentry">
