@@ -23,7 +23,7 @@
 -%>
 
 <strong>Disk image: </strong>
-  <%= h(Userfile.find(params[:interface_userfile_ids][0]).name) %>
+  <%= h(Userfile.find(params[:disk_image]).name) %>
 <br/>
 <strong>VM username:</strong>
    <%= params[:vm_user] %>
