@@ -43,7 +43,8 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml { render :xml  => @data_providers }
+      format.xml  { render :xml  => @data_providers }
+      format.json { render :json => @data_providers }
       format.js
     end
   end
@@ -58,7 +59,8 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html # show.html.erb
-      format.xml { render :xml => @provider }
+      format.xml  { render :xml  => @provider }
+      format.json { render :json => @provider }
     end
   end
 
