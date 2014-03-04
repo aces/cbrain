@@ -57,7 +57,8 @@ class UsersController < ApplicationController
     respond_to do |format|
       format.html # index.html.erb
       format.js
-      format.xml  { render :xml => @users }
+      format.xml  { render :xml  => @users }
+      format.json { render :json => @users }
     end
   end
 
@@ -127,13 +128,15 @@ class UsersController < ApplicationController
         CbrainMailer.registration_confirmation(@user,params[:user][:password],no_password_reset_needed).deliver rescue nil
       end
       respond_to do |format|
-        format.js  { redirect_to :action => :index, :format => :js }
-        format.xml { render :xml => @user }
+        format.js   { redirect_to :action => :index, :format => :js }
+        format.xml  { render :xml  => @user }
+        format.json { render :json => @user }
       end
     else
       respond_to do |format|
-        format.js  { render :partial  => 'shared/failed_create', :locals  => { :model_name  => 'user' } }
-        format.xml { render :xml => @user.errors, :status => :unprocessable_entity }
+        format.js   { render :partial  => 'shared/failed_create', :locals  => { :model_name  => 'user' } }
+        format.xml  { render :xml  => @user.errors, :status => :unprocessable_entity }
+        format.json { render :json => @user.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -228,6 +231,7 @@ class UsersController < ApplicationController
       format.html { redirect_to :action => :index }
       format.js   { redirect_to :action => :index, :format => :js}
       format.xml  { head :ok }
+      format.json { head :ok }
     end
   rescue ActiveRecord::DeleteRestrictionError => e
     flash[:error]  = "User not destroyed: #{e.message}"
@@ -236,6 +240,7 @@ class UsersController < ApplicationController
       format.html { redirect_to :action => :index }
       format.js   { redirect_to :action => :index, :format => :js}
       format.xml  { head :conflict }
+      format.json { head :conflict}
     end
   end
 

@@ -287,7 +287,8 @@ class UserfilesController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml  { render :xml => @userfile }
+      format.xml  { render :xml  => @userfile }
+      format.json { render :json => @userfile }
     end
   end
 

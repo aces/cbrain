@@ -223,7 +223,8 @@ class DataProvidersController < ApplicationController
       Message.send_internal_error_message(User.find_by_login('admin'), "Browse DP exception, YAML=#{YAML.inspect}", e, params) rescue nil
       respond_to do |format|
         format.html { redirect_to :action => :index }
-        format.xml { render :xml  => { :error  =>  flash[:error] }, :status  => :unprocessable_entity}
+        format.xml  { render :xml   => flash[:error], :status  => :unprocessable_entity}
+        format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
       end
       return
     end
