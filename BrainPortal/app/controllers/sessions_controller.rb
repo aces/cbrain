@@ -138,7 +138,7 @@ class SessionsController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_back_or_default(start_page_path) }
-      format.json { render :json => {:session_id => request.session_options[:id]}, :status => 200 }
+      format.json { render :json => {:session_id => request.session_options[:id], :user_id => current_user.id}, :status => 200 }
       format.xml  { render :nothing => true, :status  => 200 }
     end
 
@@ -146,7 +146,11 @@ class SessionsController < ApplicationController
 
   def show #:nodoc:
     if current_user
-      render :nothing  => true, :status  => 200
+      respond_to do |format|
+        format.html { render :nothing => true, :status => 200 }
+        format.xml  { render :xml  => {:user_id => current_user.id}, :status => 200 }
+        format.json { render :json => {:user_id => current_user.id}, :status => 200 }
+      end
     else
       render :nothing  => true, :status  => 401
     end
