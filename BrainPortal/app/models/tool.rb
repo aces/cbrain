@@ -17,10 +17,10 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#Model representing CBrain tools. 
+#Model representing CBrain tools.
 #The purpose of the tools model is to create an inventory of the tools for each bourreau.
 #
 #=Attributes:
@@ -38,18 +38,18 @@
 class Tool < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   include ResourceAccess
   include LicenseAgreements
-  
+
   Categories = ["scientific tool", "conversion tool", "background"]
-  
+
   before_validation :set_default_attributes
-  
+
   validates_uniqueness_of :name, :select_menu_text, :cbrain_task_class
   validates_presence_of   :name, :cbrain_task_class, :user_id, :group_id, :category, :select_menu_text, :description
   validates_inclusion_of  :category, :in => Categories
-  
+
   belongs_to              :user
   belongs_to              :group
   has_many                :tool_configs, :dependent => :destroy
@@ -57,6 +57,9 @@ class Tool < ActiveRecord::Base
 
   attr_accessible         :name, :user_id, :group_id, :category, :license_agreements,
                           :cbrain_task_class, :select_menu_text, :description
+
+  # License agreement is a pseudo attributes and cannot be accessed if the object is not saved.
+  after_save              :register_license_agreements
 
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
@@ -79,7 +82,7 @@ class Tool < ActiveRecord::Base
   end
 
   private
-  
+
   def set_default_attributes #:nodoc:
     self.select_menu_text ||= "Launch #{self.name}"
     self.description ||= "#{self.name}"

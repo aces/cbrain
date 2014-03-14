@@ -69,55 +69,58 @@ class RemoteResource < ActiveRecord::Base
 
   cbrain_abstract_model! # objects of this class are not to be instanciated
 
-  serialize               :dp_ignore_patterns
+  serialize             :dp_ignore_patterns
 
-  validates               :name,
-                          :uniqueness => true,
-                          :presence => true,
-                          :name_format => true
+  validates             :name,
+                        :uniqueness => true,
+                        :presence => true,
+                        :name_format => true
 
-  validates_presence_of   :user_id, :group_id
+  validates_presence_of :user_id, :group_id
 
-  validate                :proper_dp_ignore_patterns
-  validate                :dp_cache_path_valid
+  validate              :proper_dp_ignore_patterns
+  validate              :dp_cache_path_valid
 
-  validates_format_of     :cms_shared_dir, :with => /^[\w\-\.\=\+\/]*$/,
-    :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
-    :allow_blank => true
+  validates_format_of   :cms_shared_dir, :with => /^[\w\-\.\=\+\/]*$/,
+                        :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
+                        :allow_blank => true
 
-  validates_format_of     :dp_cache_dir, :with => /^[\w\-\.\=\+\/]*$/,
-    :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
-    :allow_blank => true
+  validates_format_of   :dp_cache_dir, :with => /^[\w\-\.\=\+\/]*$/,
+                        :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
+                        :allow_blank => true
 
-  validates_format_of     :ssh_control_user, :with => /^\w[\w\-\.]*$/,
-    :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
-    :allow_blank => true
+  validates_format_of   :ssh_control_user, :with => /^\w[\w\-\.]*$/,
+                        :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
+                        :allow_blank => true
 
-  validates_format_of     :ssh_control_host, :with => /^\w[\w\-\.]*$/,
-    :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
-    :allow_blank => true
+  validates_format_of   :ssh_control_host, :with => /^\w[\w\-\.]*$/,
+                        :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
+                        :allow_blank => true
 
-  validates_format_of     :ssh_control_rails_dir, :with => /^[\w\-\.\=\+\/]*$/,
-    :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
-    :allow_blank => true
+  validates_format_of   :ssh_control_rails_dir, :with => /^[\w\-\.\=\+\/]*$/,
+                        :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
+                        :allow_blank => true
 
-  belongs_to  :user
-  belongs_to  :group
-  has_many    :sync_status
+  belongs_to            :user
+  belongs_to            :group
+  has_many              :sync_status
 
-  after_destroy :after_destroy_clean_sync_status
+  after_destroy         :after_destroy_clean_sync_status
+
+  # License agreement is a pseudo attributes and cannot be accessed if the object is not saved.
+  after_save            :register_license_agreements
 
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
 
-  attr_accessible  :name, :user_id, :group_id, :actres_user, :actres_host, :actres_port,
-                   :actres_dir, :online, :read_only, :description, :ssh_control_user, :ssh_control_host,
-                   :ssh_control_port, :ssh_control_rails_dir, :tunnel_mysql_port, :tunnel_actres_port,
-                   :cache_md5, :portal_locked, :cache_trust_expire, :time_of_death,
-                   :time_zone, :site_url_prefix, :dp_cache_dir, :dp_ignore_patterns, :cms_class,
-                   :cms_default_queue, :cms_extra_qsub_args, :cms_shared_dir, :workers_instances,
-                   :workers_chk_time, :workers_log_to, :workers_verbose, :help_url, :rr_timeout, :proxied_host,
-                   :spaced_dp_ignore_patterns, :license_agreements, :support_email, :system_from_email, :external_status_page_url
+  attr_accessible       :name, :user_id, :group_id, :actres_user, :actres_host, :actres_port,
+                        :actres_dir, :online, :read_only, :description, :ssh_control_user, :ssh_control_host,
+                        :ssh_control_port, :ssh_control_rails_dir, :tunnel_mysql_port, :tunnel_actres_port,
+                        :cache_md5, :portal_locked, :cache_trust_expire, :time_of_death,
+                        :time_zone, :site_url_prefix, :dp_cache_dir, :dp_ignore_patterns, :cms_class,
+                        :cms_default_queue, :cms_extra_qsub_args, :cms_shared_dir, :workers_instances,
+                        :workers_chk_time, :workers_log_to, :workers_verbose, :help_url, :rr_timeout, :proxied_host,
+                        :spaced_dp_ignore_patterns, :license_agreements, :support_email, :system_from_email, :external_status_page_url
 
 
 

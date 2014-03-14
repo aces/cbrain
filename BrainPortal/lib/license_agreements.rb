@@ -27,15 +27,19 @@ module LicenseAgreements
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def license_agreements
-    self.meta[:license_agreements] || []
+    self.meta[:license_agreements].presence || []
   end
 
   def license_agreements=(agreements)
     agrs = agreements
     unless agrs.is_a? Array
-      agrs = agrs.to_s.split(/[,\s]+/).map { |a| a.sub(/\.html$/, "").gsub(/[^\w-]+/, "") }.uniq
+      agrs = agrs.to_s.split(/[,\s]+/).map { |a| a.sub(/\.html$/, "").gsub(/[^\w-]+/, "") }.uniq.sort
     end
-    self.meta[:license_agreements]  = agrs
+    @license_agreements = agrs
+  end
+
+  def register_license_agreements
+    self.meta[:license_agreements] = @license_agreements.presence
 
     # Unset all licenses signed when a new license is added
     User.all.each do |u|

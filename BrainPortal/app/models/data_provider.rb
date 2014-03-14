@@ -223,24 +223,27 @@ class DataProvider < ActiveRecord::Base
   validates_inclusion_of  :read_only, :in => [true, false]
 
   validates_format_of     :remote_user, :with => /^\w[\w\-\.]*$/,
-    :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
-    :allow_blank => true
+                          :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
+                          :allow_blank => true
 
   validates_format_of     :remote_host, :with => /^\w[\w\-\.]*$/,
-    :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
-    :allow_blank => true
+                          :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
+                          :allow_blank => true
 
   validates_format_of     :remote_dir, :with => /^[\w\-\.\=\+\/]*$/,
-    :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
-    :allow_blank => true
+                          :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
+                          :allow_blank => true
 
-  belongs_to  :user
-  belongs_to  :group
-  has_many    :userfiles, :dependent => :restrict
+  belongs_to              :user
+  belongs_to              :group
+  has_many                :userfiles, :dependent => :restrict
 
-  attr_accessible :name, :user_id, :group_id, :remote_user, :remote_host, :remote_port, :remote_dir, :online,
-                  :read_only, :description, :time_of_death, :not_syncable, :time_zone, :cloud_storage_client_identifier,
-                  :cloud_storage_client_token, :license_agreements
+  attr_accessible         :name, :user_id, :group_id, :remote_user, :remote_host, :remote_port, :remote_dir, :online,
+                          :read_only, :description, :time_of_death, :not_syncable, :time_zone, :cloud_storage_client_identifier,
+                          :cloud_storage_client_token, :license_agreements
+
+  # License agreement is a pseudo attributes and cannot be accessed if the object is not saved.
+  after_save              :register_license_agreements
 
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description

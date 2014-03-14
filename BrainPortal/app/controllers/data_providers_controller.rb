@@ -44,7 +44,7 @@ class DataProvidersController < ApplicationController
     respond_to do |format|
       format.html
       format.xml  { render :xml  => @data_providers }
-      format.json { render :json => @data_providers }
+      format.json { render :json => @data_providers.to_json(methods: [:type, :is_browsable?, :is_fast_syncing?, :allow_file_owner_change?]) }
       format.js
     end
   end
