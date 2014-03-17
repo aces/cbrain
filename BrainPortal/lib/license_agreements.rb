@@ -26,6 +26,18 @@ module LicenseAgreements
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # Check that the the class this module is being included into is a valid one.
+  def self.included(includer) #:nodoc:
+    unless includer <= ActiveRecord::Base
+      raise "#{includer} is not an ActiveRecord model. The LicenseAgreements module cannot be used with it."
+    end
+
+    includer.class_eval do
+      # License agreement is a pseudo attributes and cannot be accessed if the object is not saved.
+      after_save :register_license_agreements
+    end
+  end
+
   def license_agreements
     self.meta[:license_agreements].presence || []
   end
@@ -40,7 +52,6 @@ module LicenseAgreements
 
   def register_license_agreements
     self.meta[:license_agreements] = @license_agreements.presence
-
     # Unset all licenses signed when a new license is added
     User.all.each do |u|
       u.all_licenses_signed = nil

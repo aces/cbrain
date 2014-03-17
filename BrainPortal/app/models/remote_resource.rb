@@ -107,9 +107,6 @@ class RemoteResource < ActiveRecord::Base
 
   after_destroy         :after_destroy_clean_sync_status
 
-  # License agreement is a pseudo attributes and cannot be accessed if the object is not saved.
-  after_save            :register_license_agreements
-
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
 

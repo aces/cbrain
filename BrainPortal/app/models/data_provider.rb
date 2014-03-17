@@ -242,9 +242,6 @@ class DataProvider < ActiveRecord::Base
                           :read_only, :description, :time_of_death, :not_syncable, :time_zone, :cloud_storage_client_identifier,
                           :cloud_storage_client_token, :license_agreements
 
-  # License agreement is a pseudo attributes and cannot be accessed if the object is not saved.
-  after_save              :register_license_agreements
-
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
 

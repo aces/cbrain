@@ -58,9 +58,6 @@ class Tool < ActiveRecord::Base
   attr_accessible         :name, :user_id, :group_id, :category, :license_agreements,
                           :cbrain_task_class, :select_menu_text, :description
 
-  # License agreement is a pseudo attributes and cannot be accessed if the object is not saved.
-  after_save              :register_license_agreements
-
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
 
