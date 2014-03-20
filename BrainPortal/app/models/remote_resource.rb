@@ -69,37 +69,37 @@ class RemoteResource < ActiveRecord::Base
 
   cbrain_abstract_model! # objects of this class are not to be instanciated
 
-  serialize               :dp_ignore_patterns
+  serialize             :dp_ignore_patterns
 
-  validates               :name,
-                          :uniqueness => true,
-                          :presence => true,
-                          :name_format => true
+  validates             :name,
+                        :uniqueness => true,
+                        :presence => true,
+                        :name_format => true
 
-  validates_presence_of   :user_id, :group_id
+  validates_presence_of :user_id, :group_id
 
-  validate                :proper_dp_ignore_patterns
-  validate                :dp_cache_path_valid
+  validate              :proper_dp_ignore_patterns
+  validate              :dp_cache_path_valid
 
-  validates_format_of     :cms_shared_dir, :with => /^[\w\-\.\=\+\/]*$/,
-    :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
-    :allow_blank => true
+  validates_format_of   :cms_shared_dir, :with => /^[\w\-\.\=\+\/]*$/,
+                        :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
+                        :allow_blank => true
 
-  validates_format_of     :dp_cache_dir, :with => /^[\w\-\.\=\+\/]*$/,
-    :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
-    :allow_blank => true
+  validates_format_of   :dp_cache_dir, :with => /^[\w\-\.\=\+\/]*$/,
+                        :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
+                        :allow_blank => true
 
-  validates_format_of     :ssh_control_user, :with => /^\w[\w\-\.]*$/,
-    :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
-    :allow_blank => true
+  validates_format_of   :ssh_control_user, :with => /^\w[\w\-\.]*$/,
+                        :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
+                        :allow_blank => true
 
-  validates_format_of     :ssh_control_host, :with => /^\w[\w\-\.]*$/,
-    :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
-    :allow_blank => true
+  validates_format_of   :ssh_control_host, :with => /^\w[\w\-\.]*$/,
+                        :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
+                        :allow_blank => true
 
-  validates_format_of     :ssh_control_rails_dir, :with => /^[\w\-\.\=\+\/]*$/,
-    :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
-    :allow_blank => true
+  validates_format_of   :ssh_control_rails_dir, :with => /^[\w\-\.\=\+\/]*$/,
+                        :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
+                        :allow_blank => true
 
   validates_format_of     :disk_image_file_id, :with => /^[0-9]*$/, 
     :message => 'should be an integer',
@@ -109,7 +109,7 @@ class RemoteResource < ActiveRecord::Base
   belongs_to  :group
   has_many    :sync_status
 
-  after_destroy :after_destroy_clean_sync_status
+  after_destroy         :after_destroy_clean_sync_status
 
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
@@ -126,7 +126,6 @@ class RemoteResource < ActiveRecord::Base
                    :open_stack_user_name, :open_stack_auth_url, :open_stack_tenant, :open_stack_password,
                    :cost_factor
   
-
   ############################################################################
   # Pseudo-attributes Access
   ############################################################################

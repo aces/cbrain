@@ -44,7 +44,7 @@ class DataProvidersController < ApplicationController
     respond_to do |format|
       format.html
       format.xml  { render :xml  => @data_providers }
-      format.json { render :json => @data_providers }
+      format.json { render :json => @data_providers.to_json(methods: [:type, :is_browsable?, :is_fast_syncing?, :allow_file_owner_change?]) }
       format.js
     end
   end
@@ -203,7 +203,8 @@ class DataProvidersController < ApplicationController
       flash[:error] += "It is currently marked as 'offline'." if ! @provider.online
       respond_to do |format|
         format.html { redirect_to :action => :index }
-        format.xml  { render :xml  => { :error  =>  flash[:error] }, :status => :forbidden }
+        format.xml  { render :xml  => { :error => flash[:error] }, :status => :forbidden }
+        format.json { render :json => { :error => flash[:error] }, :status => :forbidden }
       end
       return
     end
@@ -223,7 +224,8 @@ class DataProvidersController < ApplicationController
       Message.send_internal_error_message(User.find_by_login('admin'), "Browse DP exception, YAML=#{YAML.inspect}", e, params) rescue nil
       respond_to do |format|
         format.html { redirect_to :action => :index }
-        format.xml { render :xml  => { :error  =>  flash[:error] }, :status  => :unprocessable_entity}
+        format.xml  { render :xml   => flash[:error], :status  => :unprocessable_entity}
+        format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
       end
       return
     end
@@ -287,7 +289,7 @@ class DataProvidersController < ApplicationController
     end
 
     @file_count   = @fileinfolist.count
-    unless request.format.to_sym == :xml
+    unless request.format.to_sym == :xml || request.format.to_sym == :json
       @fileinfolist = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
         pager.replace(@fileinfolist[(@current_page-1)*@per_page, @per_page] || [])
         pager.total_entries = @file_count
@@ -326,7 +328,8 @@ class DataProvidersController < ApplicationController
       flash[:error] = "You cannot register files from this provider."
       respond_to do |format|
         format.html { redirect_to :action => :index }
-        format.xml  { render :xml  => { :error  =>  flash[:error] }, :status  => :forbidden }
+        format.xml  { render :xml   => { :error  =>  flash[:error] }, :status  => :forbidden }
+        format.json { render :json  => { :error  =>  flash[:error] }, :status  => :forbidden }
       end
       return
     end
@@ -491,14 +494,22 @@ class DataProvidersController < ApplicationController
       end
       respond_to do |format|
         format.html { redirect_to :action => :browse }
-        format.xml { render :xml =>
-                      { :notice => flash[:notice],
-                        :error  => flash[:error],
-                        :newly_registered_userfiles => newly_registered_userfiles,
+        format.xml  { render :xml =>
+                      { :notice                          => flash[:notice],
+                        :error                           => flash[:error],
+                        :newly_registered_userfiles      => newly_registered_userfiles,
                         :previously_registered_userfiles => previously_registered_userfiles,
-                        :userfiles_in_transit => []
+                        :userfiles_in_transit            => []
                       }
-                   }
+                    }
+        format.json { render :json =>
+                      { :notice                          => flash[:notice],
+                        :error                           => flash[:error],
+                        :newly_registered_userfiles      => newly_registered_userfiles,
+                        :previously_registered_userfiles => previously_registered_userfiles,
+                        :userfiles_in_transit            => []
+                      }
+                    }
       end
       return
     end
@@ -552,14 +563,22 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :action => :browse }
-      format.xml { render :xml =>
-                    { :notice => flash[:notice],
-                      :error  => flash[:error],
-                      :newly_registered_userfiles => newly_registered_userfiles,
+      format.xml  { render :xml =>
+                    { :notice                          => flash[:notice],
+                      :error                           => flash[:error],
+                      :newly_registered_userfiles      => newly_registered_userfiles,
                       :previously_registered_userfiles => previously_registered_userfiles,
-                      :userfiles_in_transit => to_operate
+                      :userfiles_in_transit            => to_operate
                     }
-                 }
+                  }
+      format.json { render :json =>
+                    { :notice                          => flash[:notice],
+                      :error                           => flash[:error],
+                      :newly_registered_userfiles      => newly_registered_userfiles,
+                      :previously_registered_userfiles => previously_registered_userfiles,
+                      :userfiles_in_transit            => to_operate
+                    }
+                  }
     end
 
   end

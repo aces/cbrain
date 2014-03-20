@@ -140,7 +140,13 @@ class ApplicationController < ActionController::Base
     return unless current_user
     return if params[:controller] == "sessions"
 
-    #Check if license agreement have been signed
+    check_license_agreements()
+
+    check_password()
+  end
+
+  def check_license_agreements #:nodoc:
+
     if current_user.all_licenses_signed.blank?
       unsigned_agreements = current_user.unsigned_license_agreements
       unless unsigned_agreements.empty?
@@ -150,14 +156,17 @@ class ApplicationController < ActionController::Base
         if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
           redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first, :status => 303
         elsif current_user.has_role?(:admin_user)
-          flash[:error] =  "License agreement '#{unsigned_agreements.first}' doesn't seem to exist.\n"
-          flash[:error] += "Please place the license file in /public/licenses or remove it from below."
-          redirect_to bourreau_path(RemoteResource.current_resource), :status => 303
+            flash[:error] ||= ""
+            flash[:error] +=  "License agreement '#{unsigned_agreements.first}' doesn't seem to exist.\nPlease place the license file in /public/licenses or unconfigure it.\n"
         end
         return
       end
       current_user.all_licenses_signed = "yes"
     end
+
+  end
+
+  def check_password #:nodoc:
 
     #Check if passwords been reset.
     if current_user.password_reset
@@ -166,6 +175,7 @@ class ApplicationController < ActionController::Base
         redirect_to change_password_user_path(current_user)
       end
     end
+
   end
 
   # 'After' callback: logs in the Rails logger information about the user who

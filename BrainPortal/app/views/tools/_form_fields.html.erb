@@ -54,7 +54,7 @@
 
 <p>
   <%= f.label :license_agreements, "License agreements:" %><br>
-  <%= f.text_area :license_agreements, :value => @tool.license_agreements.join("\n"), :rows => 5, :cols => 40 %>
+  <%= f.text_area :license_agreements, :value => @tool.new_record? ? "" : @tool.license_agreements.join("\n") , :rows => 5, :cols => 40 %>
   <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
 </p>
 

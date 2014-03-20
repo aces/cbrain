@@ -349,7 +349,8 @@ def create #:nodoc:
       initialize_common_form_values
       respond_to do |format|
         format.html { render :action => 'new' }
-        format.xml  { render :xml => @task.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @task.errors, :status => :unprocessable_entity }
+        format.json { render :json => @task.errors, :status => :unprocessable_entity }
       end
       return
     end
@@ -459,7 +460,8 @@ def create #:nodoc:
 
     respond_to do |format|
       format.html { redirect_to :controller => :tasks, :action => :index }
-      format.xml  { render :xml => tasklist }
+      format.xml  { render :xml  => tasklist }
+      format.json { render :json => tasklist }
     end
   end
 
