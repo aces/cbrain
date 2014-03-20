@@ -203,7 +203,8 @@ class DataProvidersController < ApplicationController
       flash[:error] += "It is currently marked as 'offline'." if ! @provider.online
       respond_to do |format|
         format.html { redirect_to :action => :index }
-        format.xml  { render :xml  => { :error  =>  flash[:error] }, :status => :forbidden }
+        format.xml  { render :xml  => { :error => flash[:error] }, :status => :forbidden }
+        format.json { render :json => { :error => flash[:error] }, :status => :forbidden }
       end
       return
     end
@@ -288,7 +289,7 @@ class DataProvidersController < ApplicationController
     end
 
     @file_count   = @fileinfolist.count
-    unless request.format.to_sym == :xml
+    unless request.format.to_sym == :xml || request.format.to_sym == :json
       @fileinfolist = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
         pager.replace(@fileinfolist[(@current_page-1)*@per_page, @per_page] || [])
         pager.total_entries = @file_count
