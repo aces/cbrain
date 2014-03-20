@@ -171,6 +171,7 @@ class SessionsController < ApplicationController
     respond_to do |format|
       format.html { redirect_to new_session_path }
       format.xml  { render :nothing => true, :status  => 200 }
+      format.json { render :nothing => true, :status  => 200 }
     end
   end
 
@@ -194,7 +195,7 @@ class SessionsController < ApplicationController
 
   # Mozilla currently recommend to use their remote validation service
   # Ultimately this should be built in the code
-  # Do NOT send the assertion on a non HTTP*S* connection 
+  # Do NOT send the assertion on a non HTTP*S* connection
   # Adapted the code of this method from https://github.com/chilts/browserid-verify-ruby
   def verify_assertion(assertion) #:nodoc:
 
@@ -202,16 +203,16 @@ class SessionsController < ApplicationController
     url = "https://verifier.login.persona.org/verify"
     audience = "#{request.protocol}#{request.host_with_port}#{request.fullpath}"
     uri = URI.parse(url)
-    
+
     # make a new request
-    request = Net::HTTP::Post.new(uri.path) 
+    request = Net::HTTP::Post.new(uri.path)
     request.set_form_data({"audience" => audience, "assertion" => assertion})
-    
+
     # send the request
     https = Net::HTTP.new(uri.host,uri.port)
-    https.use_ssl = true 
+    https.use_ssl = true
     response = https.request(request)
-    
+
     # if we have a non-200 response
     if ! response.kind_of? Net::HTTPSuccess
       return {
@@ -220,7 +221,7 @@ class SessionsController < ApplicationController
         "body" => response.body
       }
     end
-    
+
     # process the response
     data = JSON.parse(response.body) || nil
     if data.nil?
@@ -233,10 +234,10 @@ class SessionsController < ApplicationController
 
   # We could authenticate the email
   # Now, let's check if there is a user associated to it
-  # Be careful NOT to grant admin access based on Mozilla Persona. 
+  # Be careful NOT to grant admin access based on Mozilla Persona.
   def auth_success(email) #:nodoc:
     user = User.where(:email => email, :type => "NormalUser").first
-    if user.blank? 
+    if user.blank?
       flash[:error] = 'Cannot find CBRAIN user associated to this email address.'
       inexistent_user
     else
@@ -259,7 +260,7 @@ class SessionsController < ApplicationController
       format.xml  { render :nothing => true, :status  => 200 }
     end
   end
-  
+
   # Send a proper HTTP error code
   def inexistent_user #:nodoc:
     respond_to do |format|
@@ -274,7 +275,7 @@ class SessionsController < ApplicationController
   # Private methods
   #
   ###############################################
-  
+
   private
 
   def no_logged_in_user #:nodoc:
