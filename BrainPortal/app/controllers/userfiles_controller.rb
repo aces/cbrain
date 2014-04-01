@@ -1342,7 +1342,7 @@ class UserfilesController < ApplicationController
 
     Dir.chdir(workdir) do
       successful_files.each do |file|
-        local_file_type = file_type || Userfile.suggested_file_type(file.name)
+        local_file_type = file_type || Userfile.suggested_file_type(file)
         u = local_file_type.new(attributes)
         u.name = file
         if u.save
