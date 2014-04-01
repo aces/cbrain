@@ -39,7 +39,7 @@ class BourreauxController < ApplicationController
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "remote_resources.type"
     @filter_params["sort_hash"]["dir"]   ||= "DESC"
-    @header_scope = RemoteResource.find_all_accessible_by_user(current_user)
+    @header_scope   = RemoteResource.find_all_accessible_by_user(current_user)
     @filtered_scope = base_filtered_scope @header_scope.includes(:user, :group)
     @bourreaux      = base_sorted_scope @filtered_scope
 
@@ -49,7 +49,8 @@ class BourreauxController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml  { render :xml => @bourreaux }
+      format.xml  { render :xml  => @bourreaux }
+      format.json { render :json => @bourreaux }
       format.js
     end
   end
@@ -62,7 +63,8 @@ class BourreauxController < ApplicationController
 
     respond_to do |format|
       format.html # show.html.erb
-      format.xml  { render :xml => @bourreau }
+      format.xml  { render :xml  => @bourreau }
+      format.json { render :json => @bourreau }
     end
   end
 
