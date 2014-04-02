@@ -831,14 +831,17 @@ class UserfilesController < ApplicationController
     new_provider    = DataProvider.find_all_accessible_by_user(current_user).where( :id => data_provider_id, :online => true, :read_only => false ).first
     unless new_provider
       flash[:error] = "Data provider #{data_provider_id} not accessible.\n"
-      redirect_to :action => :index, :format => request.format.to_sym
+      respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.json { render :json => { :error => flash[:error]}, :status => :forbidden }
+      end
       return
     end
 
     # Spawn subprocess to perform the move operations
-    CBRAIN.spawn_with_active_records(current_user,"#{word_move.capitalize} To Other Data Provider") do
-      success_list  = []
-      failed_list   = {}
+    success_list  = []
+    failed_list   = {}
+    CBRAIN.spawn_with_active_records_if(request.format.to_sym != :json, current_user, "#{word_move.capitalize} To Other Data Provider") do
       filelist.each_with_index do |id,count|
         $0 = "#{word_move.capitalize} ID=#{id} #{count+1}/#{filelist.size} To #{new_provider.name}\0"
         begin
@@ -876,11 +879,15 @@ class UserfilesController < ApplicationController
       if failed_list.present?
         error_message_sender("Some files could not be #{word_moved} to #{new_provider.name}",failed_list)
       end
-
     end # spawn
 
     flash[:notice] = "Your files are being #{word_moved} in the background.\n"
-    redirect_to :action => :index, :format => request.format.to_sym
+    #redirect_to :action => :index, :format => request.format.to_sym
+
+    respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.json { render :json => { :success_list => success_list, :failed_list => failed_list } }
+    end
   end
 
   # Adds the selected userfile IDs to the session's persistent list
