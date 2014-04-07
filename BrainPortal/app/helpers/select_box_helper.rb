@@ -70,8 +70,8 @@ module SelectBoxHelper
   #[groups] the array of Group objects used to build the select box. Defaults to +current_user.available_groups+.
   def group_select(parameter_name = "group_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
-    selector = options[:selector] || current_project
-    groups   = options[:groups]   || current_user.available_groups
+    selector = options.has_key?(:selector) ? (options[:selector].presence || "") : current_project
+    groups   = options.has_key?(:groups)   ? (options[:groups].presence   || []) : current_user.available_groups
 
     if selector.respond_to?(:group_id)
       selected = selector.group_id.to_s
@@ -149,8 +149,8 @@ module SelectBoxHelper
   #                 accessible by the current_user.
   def data_provider_select(parameter_name = "data_provider_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
-    selector = options[:selector]
-    if selector.nil?
+    selector = options[:selector].presence
+    if ! options.has_key?(:selector)
       selector = current_user.meta["pref_data_provider_id"]
     end
     data_providers = options[:data_providers] || DataProvider.find_all_accessible_by_user(current_user).all
@@ -202,9 +202,9 @@ module SelectBoxHelper
   #            accessible by the current_user.
   def bourreau_select(parameter_name = "bourreau_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
-    selector = options[:selector]
-    if selector.nil?
-      selector = current_user.meta["pref_bourreau_id"]
+    selector = options[:selector].presence
+    if ! options.has_key?(:selector)
+      selector = current_user.meta["pref_bourreau_id"].presence
     end
     bourreaux = options[:bourreaux] || Bourreau.find_all_accessible_by_user(current_user).all
 
