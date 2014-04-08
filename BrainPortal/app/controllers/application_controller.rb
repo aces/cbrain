@@ -155,9 +155,9 @@ class ApplicationController < ActionController::Base
 
         if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
           redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first, :status => 303
-        elsif current_user.has_role?(:admin_user)
-            flash[:error] ||= ""
-            flash[:error] +=  "License agreement '#{unsigned_agreements.first}' doesn't seem to exist.\nPlease place the license file in /public/licenses or unconfigure it.\n"
+        #elsif current_user.has_role?(:admin_user)
+        #  flash[:error] ||= ""
+        #  flash[:error] +=  "License agreement '#{unsigned_agreements.first}' doesn't seem to exist.\nPlease place the license file in /public/licenses or unconfigure it.\n"
         end
         return
       end

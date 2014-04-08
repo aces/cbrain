@@ -34,12 +34,14 @@ module LicenseAgreements
 
     includer.class_eval do
       # License agreement is a pseudo attributes and cannot be accessed if the object is not saved.
+      after_find :load_license_agreements
+      validate   :valid_license_agreements?
       after_save :register_license_agreements
     end
   end
 
   def license_agreements
-    self.meta[:license_agreements].presence || []
+    @license_agreements ||= []
   end
 
   def license_agreements=(agreements)
@@ -50,8 +52,29 @@ module LicenseAgreements
     @license_agreements = agrs
   end
 
+  protected
+
+  def load_license_agreements
+    @license_agreements = self.meta[:license_agreements].presence || []
+    true
+  end
+
+  def valid_license_agreements?
+    invalid_licenses = license_agreements.select do |license|
+      ! File.exists?(Rails.root + "public/licenses/#{license}.html")
+    end
+
+    if invalid_licenses.presence
+      invalid_licenses_list = invalid_licenses.join(", ")
+      self.errors.add(:base, "Some licence agreement files do not exist: #{invalid_licenses_list}\nPlease place the license file(s) in /public/licenses or unconfigure it.\n")
+      return false
+    end
+    return true
+  end
+
   def register_license_agreements
-    self.meta[:license_agreements] = @license_agreements.presence
+    # To keep pre_register licenses agreement, usefull when the console is used to save the object
+    self.meta[:license_agreements] = license_agreements
     # Unset all licenses signed when a new license is added
     User.all.each do |u|
       u.all_licenses_signed = nil
