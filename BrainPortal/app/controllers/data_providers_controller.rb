@@ -470,6 +470,7 @@ class DataProvidersController < ApplicationController
     end
 
     if newly_registered_userfiles.size > 0
+      clear_browse_provider_local_cache_file(@as_user, @provider)
       flash[:notice] += "Registered #{newly_registered_userfiles.size} files.\n"
       if @as_user != current_user
         flash[:notice] += "Important note! Since you were browsing as user '#{@as_user.login}', the files were registered as belonging to that user instead of you!\n"
@@ -492,6 +493,7 @@ class DataProvidersController < ApplicationController
           end
         end
       end
+
       respond_to do |format|
         format.html { redirect_to :action => :browse }
         format.xml  { render :xml =>
@@ -505,9 +507,11 @@ class DataProvidersController < ApplicationController
         format.json { render :json =>
                       { :notice                          => flash[:notice],
                         :error                           => flash[:error],
-                        :newly_registered_userfiles      => newly_registered_userfiles,
-                        :previously_registered_userfiles => previously_registered_userfiles,
-                        :userfiles_in_transit            => []
+                        :newly_registered_userfiles      => newly_registered_userfiles.map(&:id),
+                        :previously_registered_userfiles => previously_registered_userfiles.map(&:id),
+                        :userfiles_in_transit            => [],
+                        :num_unregistered                => num_unregistered,
+                        :num_erased                      => num_erased
                       }
                     }
       end
