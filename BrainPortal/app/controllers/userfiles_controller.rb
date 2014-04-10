@@ -886,7 +886,7 @@ class UserfilesController < ApplicationController
 
     respond_to do |format|
         format.html { redirect_to :action => :index }
-        format.json { render :json => { :success_list => success_list, :failed_list => failed_list } }
+        format.json { render :json => { :success_list => success_list.map(&:id), :failed_list => failed_list.map(&:id) } }
     end
   end
 
