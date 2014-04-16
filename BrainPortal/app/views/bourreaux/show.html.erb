@@ -18,28 +18,28 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<% 
+<%
   is_bourreau = @bourreau.is_a?(Bourreau)
-  is_portal   = @bourreau.is_a?(BrainPortal) 
-  info = @bourreau.info
+  is_portal   = @bourreau.is_a?(BrainPortal)
+  @info       = @bourreau.info
  %>
 
 <% title is_portal ? 'Portal Info' : 'Execution Server Info' %>
-   
+
 <% if check_role(:admin_user) || @bourreau.user_id == current_user.id %>
   <div class="menu_bar">
-    <% if is_bourreau %>    
+    <% if is_bourreau %>
 
       <%= link_to 'Task Statistics By Status', report_path(:table_name => :cbrain_tasks, :bourreau_id => @bourreau.id, :row_type => :user_id , :col_type => :status, :generate => "ok" ), :class => "button" %>
 
       <%= link_to 'Task Statistics By Type', report_path(:table_name => :cbrain_tasks, :bourreau_id => @bourreau.id, :row_type => :user_id , :col_type => :type, :generate => "ok" ), :class => "button" %>
-    
+
     <%end%>
-    
+
     <%= link_to 'Delete', bourreau_path(@bourreau), { :confirm => "Are you sure you want to delete '#{@bourreau.name}' ?", :method => :delete, :class => "button" } %>
   </div>
 <% end %>
@@ -86,22 +86,22 @@
     <% t.cell("Revision Info (Client Side)") { Bourreau.revision_info.svn_id_pretty_rev_author_date } %>
 
     <% t.cell("Site") { link_to_site_if_accessible(@bourreau.site_affiliation) } %>
-    
+
     <% licenses = @bourreau.license_agreements.count == 0 ? "(None)": @bourreau.license_agreements.join("\n") %>
     <% t.edit_cell(:license_agreements, :content => licenses) do %>
       <%= text_area_tag "bourreau[license_agreements]", @bourreau.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
       <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
-    <% end %>       
-    
+    <% end %>
+
     <% if is_bourreau %>
-      <% external_status_page_url = @bourreau.external_status_page_url.nil? ? 
+      <% external_status_page_url = @bourreau.external_status_page_url.nil? ?
                                       "(None)" : link_to(@bourreau.external_status_page_url, @bourreau.external_status_page_url, :class => "action_link", :target => "_blank") %>
       <% t.edit_cell(:external_status_page_url, :header => "External status page URL", :content => external_status_page_url ) do %>
         <%= text_field_tag "bourreau[external_status_page_url]", @bourreau.external_status_page_url, :size => 60 %><br>
         <div class="field_explanation">Link to external status page for the server.</div>
       <% end %>
     <% end %>
-      
+
     <% if is_portal %>
 
       <% t.edit_cell(:help_url, :header => "User Manual URL") do %>
@@ -237,8 +237,8 @@
           <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
         <% end %>
 
-        <% t.edit_cell 'meta[task_limit_user_default]', 
-                       :header => "Default maximum number of active tasks for each user", 
+        <% t.edit_cell 'meta[task_limit_user_default]',
+                       :header => "Default maximum number of active tasks for each user",
                        :content => (@bourreau.meta["task_limit_user_default"].blank? ? "Server's max" : @bourreau.meta["task_limit_user_default"]) do %>
           <%= select_tag 'meta[task_limit_user_default]',
               options_for_select( [ [ "Server's max", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
@@ -267,8 +267,8 @@
           <% end %>
         <% end %>
 
-        <% t.edit_cell 'meta[task_limit_user_default]', 
-                       :header => "Maximum number of active tasks per user", 
+        <% t.edit_cell 'meta[task_limit_user_default]',
+                       :header => "Maximum number of active tasks per user",
                        :content => content, :show_width => 2 do %>
           <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'simple', :td_class => 'right', :cols => 4, :fill_by_columns => true) do |user,r,c| %>
             <% metkey = "task_limit_user_#{user.id}".to_sym %>
@@ -330,56 +330,8 @@
       <% end %>
     <% end %>
 
+    <%= render :partial => 'runtime_info' %>
 
-
-    <%= show_table(info, :header => "Runtime Information") do |t| %>
-      <% if info.name == "???" %>
-        <% t.row do %>
-          This server is currently <%= html_colorize("DOWN", "red") %>.
-        <% end %>
-      <% else %>
-
-        <% t.cell("Process Start Revision", :show_width => 2) { info.starttime_revision } %>
-        <% t.cell("Process Start Last Change Author", :show_width => 2) { info.lc_author } %>
-        <% t.cell("Process Start Last Change Revision", :show_width => 2) { info.lc_rev } %>
-        <% t.cell("Process Start Last Change Date", :show_width => 2) { info.lc_date } %>
-        <% t.cell("Disk Code Revision", :show_width => 2) { red_if(info.revision != info.starttime_revision, info.revision) } %>
-
-        <% t.blank_row %>
-
-        <% t.cell("Remote Host Name", :show_width => 2) { info.host_name == (@bourreau.proxied_host.presence || @bourreau.ssh_control_host) ? info.host_name : html_colorize(info.host_name, "red") } %>
-        <% t.cell("Remote Host IP Address", :show_width => 2) { info.host_ip } %>
-        <% t.cell("Remote Host OS Type", :show_width => 2) { info.host_uname } %>
-        <% t.cell("Remote Host Uptime", :show_width => 2) { info.host_uptime } %>
-        <% t.cell("Rails Server uptime", :show_width => 2) do %>
-          Up since: <%= to_localtime(info.uptime.to_i.ago,:datetime) %>
-          (for: <%= pretty_elapsed(info.uptime.to_i) %>)
-        <% end %>
-
-        <% t.blank_row %>
-
-        <% if is_bourreau %>
-          <% t.cell("Worker PIDs") { info.worker_pids } %>
-          <% t.cell("Number of Tasks Running") { info.tasks_tot + " / " + info.tasks_max } %>
-
-          <% t.cell("Workers Last Change Author") { info.worker_lc_author } %>
-          <% t.cell("Cluster Management System Type") { red_if(@bourreau.cms_class != info.bourreau_cms, info.bourreau_cms) } %>
-
-          <% t.cell("Workers Last Change Revision") { info.worker_lc_rev } %>
-          <% t.cell("Cluster Management System Revision") { info.bourreau_cms_rev.svn_id_pretty_rev_author_date } %>
-
-          <% t.cell("Workers Last Change Date") { info.worker_lc_date } %>
-          <% t.empty_cell %>
-        <% end %>
-        <% if @bourreau.id == BrainPortal.current_resource.id %>
-          <% t.blank_row %>
-
-          <% t.cell("SSH Public Key", :show_width => 2) do %>
-            <pre class="ssh_key"><%= @bourreau.get_ssh_public_key %></pre>
-          <% end %>
-        <% end %>
-      <% end %>
-    <% end %>
   <% end %>
 
 </div>

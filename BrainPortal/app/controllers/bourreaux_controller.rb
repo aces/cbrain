@@ -68,6 +68,20 @@ class BourreauxController < ApplicationController
     end
   end
 
+  def info #:nodoc:
+    @bourreau = RemoteResource.find(params[:id])
+
+    cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+
+    @info     = @bourreau.info
+    respond_to do |format|
+      format.html { render :partial => "runtime_info" }
+      format.xml  { render :xml  => @info }
+      format.json { render :json => @info }
+    end
+
+  end
+
   def new #:nodoc:
     bourreau_group_id = ( current_project && current_project.id ) || current_user.own_group.id
     @users    = current_user.available_users
@@ -158,7 +172,7 @@ class BourreauxController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :action => :show }
-      format.js { render :partial => "shared/flash_update"}
+      format.js   { render :partial => "shared/flash_update"}
       format.xml  { head        :ok }
     end
   end

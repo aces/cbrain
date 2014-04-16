@@ -475,17 +475,17 @@ def create #:nodoc:
     flash.now[:notice] = ""
     flash.now[:error]  = ""
 
-    id = params[:id]
+    id    = params[:id]
     @task = current_user.available_tasks.find(id)
     @task.add_new_params_defaults # auto-adjust params with new defaults if needed
 
     # Save old params and update the current task to reflect
     # the form's content.
-    old_params   = @task.params.clone
-    new_att      = params[:cbrain_task] || {} # not the TASK's params[], the REQUEST's params[]
-    new_att      = new_att.reject { |k,v| k =~ /^(cluster_jobid|cluster_workdir|status|batch_id|launch_time|prerequisites|share_wd_tid|run_number|level|rank|cluster_workdir_size|workdir_archived|workdir_archive_userfile_id)$/ } # some attributes cannot be changed through the controller
-    old_tool_config = @task.tool_config
-    old_bourreau    = @task.bourreau
+    old_params       = @task.params.clone
+    new_att          = params[:cbrain_task] || {} # not the TASK's params[], the REQUEST's params[]
+    new_att          = new_att.reject { |k,v| k =~ /^(cluster_jobid|cluster_workdir|status|batch_id|launch_time|prerequisites|share_wd_tid|run_number|level|rank|cluster_workdir_size|workdir_archived|workdir_archive_userfile_id)$/ } # some attributes cannot be changed through the controller
+    old_tool_config  = @task.tool_config
+    old_bourreau     = @task.bourreau
     @task.attributes = new_att # just updates without saving
     @task.restore_untouchable_attributes(old_params)
 
