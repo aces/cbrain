@@ -166,10 +166,12 @@ class User < ActiveRecord::Base
   end
 
   def all_licenses_signed #:nodoc:
+    self.meta.reload
     self.meta[:all_licenses_signed]
   end
 
   def all_licenses_signed=(x) #:nodoc:
+    self.meta.reload
     self.meta[:all_licenses_signed] = x
   end
 
@@ -406,7 +408,9 @@ class User < ActiveRecord::Base
   # "before save" callback, destroy sessions of
   # user if account_locked
   def destroy_sessions_if_locked #:nodoc:
-    if self.changed_attributes.has_key?("account_locked") && self.changed_attributes["account_locked"] == false
+    if self.account_locked &&  # the account is set to be locked ...
+       self.changed_attributes.has_key?("account_locked") &&
+       self.changed_attributes["account_locked"].blank?   # ... and wasn't locked before the update
       destroy_user_sessions rescue true
     end
     true

@@ -736,65 +736,77 @@ class DataProvider < ActiveRecord::Base
     return false unless Userfile.is_legal_filename?(new_name)
     return false unless userfile.id # must be a fully saved file
 
-    # Find existing destination, if any
-    target_exists = Userfile.where(
-                      :name             => new_name,
-                      :data_provider_id => otherprovider.id,
-                      :user_id          => new_user_id
-                    ).first
+    # We start a single large transaction with locking to
+    # prevent other processes from attempting to modify the file
+    # while we copy the data.
+    userfile.transaction do
+      userfile.lock!
+      # check in case another parallel 'move' op has beaten us to the punch
+      return true if userfile.data_provider_id == otherprovider.id
 
-    if target_exists
-      return true  if target_exists.id == userfile.id  # Same !?! I feel like this is impossible.
-      return false if ! crush
-      return false if target_exists.class != userfile.class # must be of same class
-      target_exists.destroy # ok, we destroy the destination
-    end
+      # Find existing destination, if any
+      target_exists = Userfile.where(
+                        :name             => new_name,
+                        :data_provider_id => otherprovider.id,
+                        :user_id          => new_user_id
+                      ).first
 
-    # Because of all the back and forth assignments below,
-    # we need a full copy of the source userfile's attributes
-    orig_file = userfile.dup # not .clone, as of Rails 3.1.10
+      if target_exists
+        return true  if target_exists.id == userfile.id  # Same !?! I feel like this is impossible.
+        return false if ! crush
+        return false if target_exists.class != userfile.class # must be of same class
+        target_exists.destroy # ok, we destroy the destination
+      end
 
-    # Get path to cached copy on current provider
-    sync_to_cache(userfile)
-    currentcache = userfile.cache_full_path
+      # Because of all the back and forth assignments below,
+      # we need a full copy of the source userfile's attributes
+      orig_file = userfile.dup # not .clone, as of Rails 3.1.10
 
-    # Copy content to other provider
-    begin
+      # Get path to cached copy on current provider
+      sync_to_cache(userfile)
+      currentcache = userfile.cache_full_path
+
+      # Copy content to other provider
+      begin
+        userfile.data_provider_id = otherprovider.id
+        userfile.name             = new_name
+        userfile.user_id          = new_user_id
+        userfile.group_id         = new_group_id
+        userfile.save!
+        otherprovider.cache_copy_from_local_file(userfile,currentcache)
+      ensure # make sure we return its definition to the original so we can erase it
+        userfile.data_provider_id = self.id            # temporarily set it all back
+        userfile.name             = orig_file.name
+        userfile.user_id          = orig_file.user_id
+        userfile.group_id         = orig_file.group_id
+        userfile.save!
+      end
+
+      # Erase on current provider (thus the 'ensure' above)
+      provider_erase(userfile) rescue true # ignore errors
+
+      # Register properly all the userfile info on new provider
       userfile.data_provider_id = otherprovider.id
       userfile.name             = new_name
       userfile.user_id          = new_user_id
       userfile.group_id         = new_group_id
       userfile.save!
-      otherprovider.cache_copy_from_local_file(userfile,currentcache)
-    ensure # make sure we return its definition to the original so we can erase it
-      userfile.data_provider_id = self.id            # temporarily set it all back
-      userfile.name             = orig_file.name
-      userfile.user_id          = orig_file.user_id
-      userfile.group_id         = orig_file.group_id
-      userfile.save!
-    end
 
-    # Erase on current provider (thus the 'ensure' above)
-    provider_erase(userfile) rescue true # ignore errors
+      # Log the operation
+      userfile.addlog("Moved from DataProvider '#{self.name}' to DataProvider '#{otherprovider.name}'.")
+      userfile.addlog("Renamed from '#{orig_file.name}' to '#{userfile.name}'.")                      if orig_file.name != new_name
+      userfile.addlog("Reassigned from owner '#{orig_file.user.login}' to '#{userfile.user.login}'.") if orig_file.user_id != new_user_id
+      userfile.addlog("Reassigned from group '#{orig_file.group.name}' to '#{userfile.group.name}'.") if orig_file.group_id != new_group_id
+      userfile.addlog("Crushed existing file '#{target_exists.name}' (ID #{target_exists.id}).") if target_exists
 
-    # Register properly all the userfile info on new provider
-    userfile.data_provider_id = otherprovider.id
-    userfile.name             = new_name
-    userfile.user_id          = new_user_id
-    userfile.group_id         = new_group_id
-    userfile.save!
+      # Record InSync on new provider.
+      SyncStatus.ready_to_modify_cache(userfile, 'InSync') do
+        true # dummy as it's already in cache, but adjusts the SyncStatus
+      end
 
-    # Log the operation
-    userfile.addlog("Moved from DataProvider '#{self.name}' to DataProvider '#{otherprovider.name}'.")
-    userfile.addlog("Renamed from '#{orig_file.name}' to '#{userfile.name}'.")                      if orig_file.name != new_name
-    userfile.addlog("Reassigned from owner '#{orig_file.user.login}' to '#{userfile.user.login}'.") if orig_file.user_id != new_user_id
-    userfile.addlog("Reassigned from group '#{orig_file.group.name}' to '#{userfile.group.name}'.") if orig_file.group_id != new_group_id
-    userfile.addlog("Crushed existing file '#{target_exists.name}' (ID #{target_exists.id}).") if target_exists
+    end # end of locking block
 
-    # Record InSync on new provider.
-    SyncStatus.ready_to_modify_cache(userfile, 'InSync') do
-      true # dummy as it's already in cache, but adjusts the SyncStatus
-    end
+    true
   end
 
   # Copy a +userfile+ from the current provider to +otherprovider+.
@@ -820,53 +832,60 @@ class DataProvider < ActiveRecord::Base
     return false unless Userfile.is_legal_filename?(new_name)
     return false unless userfile.id # must be a fully saved file
 
-    # Find existing destination, if any
-    target_exists = Userfile.where(
-                      :name             => new_name,
-                      :data_provider_id => otherprovider.id,
-                      :user_id          => new_user_id
-                    ).first
+    # We start a single large transaction with locking to
+    # prevent other processes from attempting to modify the file
+    # while we copy the data.
+    userfile.transaction do
+      userfile.lock!
 
-    return true  if target_exists && target_exists.id == userfile.id  # Same !
-    return false if target_exists && ! crush
-    return false if target_exists && (target_exists.class != userfile.class) # must be of same class
+      # Find existing destination, if any
+      target_exists = Userfile.where(
+                        :name             => new_name,
+                        :data_provider_id => otherprovider.id,
+                        :user_id          => new_user_id
+                      ).first
 
-    # Prepare destination
-    newfile = target_exists || userfile.dup # not .clone, as of Rails 3.1.10
-    newfile.data_provider_id = otherprovider.id
-    newfile.name             = new_name
-    newfile.user_id          = new_user_id
-    newfile.group_id         = new_group_id
-    newfile.created_at       = Time.now unless target_exists
-    newfile.updated_at       = Time.now
-    newfile.immutable        = false
-    newfile.save
+      return true  if target_exists && target_exists.id == userfile.id  # Same !
+      return false if target_exists && ! crush
+      return false if target_exists && (target_exists.class != userfile.class) # must be of same class
 
-    # Get path to cached copy on current provider
-    sync_to_cache(userfile)
-    currentcache = userfile.cache_full_path
+      # Prepare destination
+      newfile = target_exists || userfile.dup # not .clone, as of Rails 3.1.10
+      newfile.data_provider_id = otherprovider.id
+      newfile.name             = new_name
+      newfile.user_id          = new_user_id
+      newfile.group_id         = new_group_id
+      newfile.created_at       = Time.now unless target_exists
+      newfile.updated_at       = Time.now
+      newfile.immutable        = false
+      newfile.save
 
-    # Copy content to other provider
-    begin
-      otherprovider.cache_copy_from_local_file(newfile,currentcache)
-    rescue => ex
-      #todo add log information?
-      raise ex
-      #return false
-    end
+      # Get path to cached copy on current provider
+      sync_to_cache(userfile)
+      currentcache = userfile.cache_full_path
 
-    # Copy log
-    old_log = target_exists ? "" : userfile.getlog
-    action  = target_exists ? 'crushed' : 'copied'
-    userfile.addlog("Content #{action} to '#{newfile.name}' (ID #{newfile.id}) on DataProvider '#{otherprovider.name}'.")
-    newfile.addlog("Content #{action} from '#{userfile.name}' (ID #{userfile.id}) of DataProvider '#{self.name}'.")
-    unless old_log.blank?
-      newfile.addlog("---- Original log follows: ----")
-      newfile.raw_append_log(old_log)
-      newfile.addlog("---- Original log ends here ----")
-    end
+      # Copy content to other provider
+      begin
+        otherprovider.cache_copy_from_local_file(newfile,currentcache)
+      rescue => ex
+        #todo add log information?
+        raise ex
+        #return false
+      end
 
-    newfile
+      # Copy log
+      old_log = target_exists ? "" : userfile.getlog
+      action  = target_exists ? 'crushed' : 'copied'
+      userfile.addlog("Content #{action} to '#{newfile.name}' (ID #{newfile.id}) on DataProvider '#{otherprovider.name}'.")
+      newfile.addlog("Content #{action} from '#{userfile.name}' (ID #{userfile.id}) of DataProvider '#{self.name}'.")
+      unless old_log.blank?
+        newfile.addlog("---- Original log follows: ----")
+        newfile.raw_append_log(old_log)
+        newfile.addlog("---- Original log ends here ----")
+      end
+
+      return newfile
+    end # end of locking block
   end
 
   # This method provides a way for a client of the provider

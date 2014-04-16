@@ -202,6 +202,7 @@ class UsersController < ApplicationController
         flash[:notice] = "User #{@user.login} was successfully updated."
         format.html { redirect_to :action => :show }
         format.xml { head :ok }
+        format.json  { render :json => @user }
       else
         @user.reload
         format.html do
@@ -211,7 +212,8 @@ class UsersController < ApplicationController
             render action: "show"
           end
         end
-        format.xml { render :xml => @user.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml => @user.errors, :status => :unprocessable_entity }
+        format.json { render :json => @user.errors, :status => :unprocessable_entity }
       end
     end
   end

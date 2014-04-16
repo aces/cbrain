@@ -39,7 +39,7 @@ class BourreauxController < ApplicationController
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "remote_resources.type"
     @filter_params["sort_hash"]["dir"]   ||= "DESC"
-    @header_scope = RemoteResource.find_all_accessible_by_user(current_user)
+    @header_scope   = RemoteResource.find_all_accessible_by_user(current_user)
     @filtered_scope = base_filtered_scope @header_scope.includes(:user, :group)
     @bourreaux      = base_sorted_scope @filtered_scope
 
@@ -49,7 +49,8 @@ class BourreauxController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml  { render :xml => @bourreaux }
+      format.xml  { render :xml  => @bourreaux }
+      format.json { render :json => @bourreaux }
       format.js
     end
   end
@@ -62,8 +63,23 @@ class BourreauxController < ApplicationController
 
     respond_to do |format|
       format.html # show.html.erb
-      format.xml  { render :xml => @bourreau }
+      format.xml  { render :xml  => @bourreau }
+      format.json { render :json => @bourreau }
     end
+  end
+
+  def info #:nodoc:
+    @bourreau = RemoteResource.find(params[:id])
+
+    cb_notice "Execution Server not accessible by current user." unless @bourreau.can_be_accessed_by?(current_user)
+
+    @info     = @bourreau.info
+    respond_to do |format|
+      format.html { render :partial => "runtime_info" }
+      format.xml  { render :xml  => @info }
+      format.json { render :json => @info }
+    end
+
   end
 
   def new #:nodoc:
@@ -161,7 +177,7 @@ class BourreauxController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :action => :show }
-      format.js { render :partial => "shared/flash_update"}
+      format.js   { render :partial => "shared/flash_update"}
       format.xml  { head        :ok }
     end
   end

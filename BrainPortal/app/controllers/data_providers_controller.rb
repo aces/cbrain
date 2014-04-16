@@ -79,21 +79,24 @@ class DataProvidersController < ApplicationController
 
   def create #:nodoc:
     @provider = DataProvider.sti_new(params[:data_provider])
-    @provider.user_id ||= current_user.id # disabled field in form DOES NOT send value!
+    @provider.user_id  ||= current_user.id # disabled field in form DOES NOT send value!
+    @provider.group_id ||= (( current_project && current_project.id ) || current_user.own_group.id)
 
     if @provider.save
       add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers, :browse_gid])
       @provider.addlog_context(self,"Created by #{current_user.login}")
       flash[:notice] = "Provider successfully created."
       respond_to do |format|
-        format.js  { redirect_to :action => :index, :format => :js  }
-        format.xml { render :xml  => @provider }
+        format.js   { redirect_to :action => :index, :format => :js  }
+        format.xml  { render :xml   => @provider }
+        format.json { render :json  => @provider }
       end
     else
       @typelist = get_type_list
       respond_to do |format|
-        format.js  { render :partial  => "shared/failed_create", :locals => {:model_name => "data_provider"} }
-        format.xml { render :xml  => @provider.errors, :status  => :unprocessable_entity }
+        format.js   { render :partial  => "shared/failed_create", :locals => {:model_name => "data_provider"} }
+        format.xml  { render :xml      => @provider.errors, :status  => :unprocessable_entity }
+        format.json { render :json     => @provider.errors, :status  => :unprocessable_entity }
       end
     end
   end
@@ -108,6 +111,7 @@ class DataProvidersController < ApplicationController
        respond_to do |format|
         format.html { redirect_to :action => :show }
         format.xml  { head :forbidden }
+        format.json { head :forbidden }
        end
        return
     end
@@ -126,13 +130,15 @@ class DataProvidersController < ApplicationController
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
         format.html { redirect_to :action => :show }
-        format.xml  { render :xml  => @provider }
+        format.xml  { render :xml   => @provider }
+        format.json { render :json  => @provider }
       end
     else
       @provider.reload
       respond_to do |format|
         format.html { render :action => 'show' }
-        format.xml  { render :xml  => @provider.errors, :status  => :unprocessable_entity }
+        format.xml  { render :xml    => @provider.errors, :status  => :unprocessable_entity }
+        format.json { render :json   => @provider.errors, :status  => :unprocessable_entity }
       end
     end
   end
@@ -152,6 +158,7 @@ class DataProvidersController < ApplicationController
       format.html { redirect_to :action => :index }
       format.js   { redirect_to :action => :index, :format => :js } # no longer used?
       format.xml  { head :ok }
+      format.json { head :ok }
     end
   rescue ActiveRecord::DeleteRestrictionError => e
     flash[:error]  = "Provider not destroyed: #{e.message}"
@@ -160,6 +167,7 @@ class DataProvidersController < ApplicationController
       format.html { redirect_to :action => :index }
       format.js   { redirect_to :action => :index, :format => :js } # no longer used?
       format.xml  { head :conflict }
+      format.json { head :conflict }
     end
   end
 
@@ -470,6 +478,7 @@ class DataProvidersController < ApplicationController
     end
 
     if newly_registered_userfiles.size > 0
+      clear_browse_provider_local_cache_file(@as_user, @provider)
       flash[:notice] += "Registered #{newly_registered_userfiles.size} files.\n"
       if @as_user != current_user
         flash[:notice] += "Important note! Since you were browsing as user '#{@as_user.login}', the files were registered as belonging to that user instead of you!\n"
@@ -492,6 +501,7 @@ class DataProvidersController < ApplicationController
           end
         end
       end
+
       respond_to do |format|
         format.html { redirect_to :action => :browse }
         format.xml  { render :xml =>
@@ -505,9 +515,11 @@ class DataProvidersController < ApplicationController
         format.json { render :json =>
                       { :notice                          => flash[:notice],
                         :error                           => flash[:error],
-                        :newly_registered_userfiles      => newly_registered_userfiles,
-                        :previously_registered_userfiles => previously_registered_userfiles,
-                        :userfiles_in_transit            => []
+                        :newly_registered_userfiles      => newly_registered_userfiles.map(&:id),
+                        :previously_registered_userfiles => previously_registered_userfiles.map(&:id),
+                        :userfiles_in_transit            => [],
+                        :num_unregistered                => num_unregistered,
+                        :num_erased                      => num_erased
                       }
                     }
       end

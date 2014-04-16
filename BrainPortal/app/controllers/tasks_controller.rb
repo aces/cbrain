@@ -29,12 +29,12 @@ class TasksController < ApplicationController
   before_filter :login_required
 
   def index #:nodoc:
-    bourreaux = Bourreau.find_all_accessible_by_user(current_user).all
+    bourreaux    = Bourreau.find_all_accessible_by_user(current_user).all
     bourreau_ids = bourreaux.map &:id
 
     scope = filter_variable_setup current_user.available_tasks.real_tasks.where( :bourreau_id => bourreau_ids )
 
-    if request.format.to_sym == :xml
+    if request.format.to_sym == :xml || request.format.to_sym == :json
       @filter_params["sort_hash"]["order"] ||= "cbrain_tasks.updated_at"
       @filter_params["sort_hash"]["dir"]   ||= "DESC"
     else
@@ -68,7 +68,7 @@ class TasksController < ApplicationController
     # For Pagination
     offset = (@current_page - 1) * @per_page
 
-    if @filter_params["sort_hash"]["order"] == "cbrain_tasks.batch" && !@filter_params["filter_hash"]["batch_id"] && request.format.to_sym != :xml
+    if @filter_params["sort_hash"]["order"] == "cbrain_tasks.batch" && !@filter_params["filter_hash"]["batch_id"] && request.format.to_sym != :xml  && request.format.to_sym != :json
       batch_ids                 = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).raw_first_column("distinct(cbrain_tasks.batch_id)")
       task_counts_in_batch      = scope.where(:batch_id => batch_ids).group(:batch_id).count
       full_batch_ids            = scope.raw_first_column("distinct(cbrain_tasks.batch_id)")
@@ -108,7 +108,8 @@ class TasksController < ApplicationController
     bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online? }
     respond_to do |format|
       format.html
-      format.xml  { render :xml => @tasks }
+      format.xml   { render :xml  => @tasks }
+      format.json  { render :json => task_list }
       format.js
     end
   end
@@ -154,7 +155,8 @@ class TasksController < ApplicationController
 
     respond_to do |format|
       format.html # show.html.erb
-      format.xml  { render :xml => @task }
+      format.xml   { render :xml  => @task }
+      format.json  { render :json => @task }
     end
   end
 
@@ -387,7 +389,7 @@ def create #:nodoc:
     end
 
     # Spawn a background process to launch the tasks.
-    CBRAIN.spawn_with_active_records_if(request.format.to_sym != :xml, :admin, "Spawn Tasks") do
+    CBRAIN.spawn_with_active_records_if(request.format.to_sym != :xml && request.format.to_sym != :json, :admin, "Spawn Tasks") do
 
       spawn_messages = ""
 
@@ -472,17 +474,17 @@ def create #:nodoc:
     flash.now[:notice] = ""
     flash.now[:error]  = ""
 
-    id = params[:id]
+    id    = params[:id]
     @task = current_user.available_tasks.find(id)
     @task.add_new_params_defaults # auto-adjust params with new defaults if needed
 
     # Save old params and update the current task to reflect
     # the form's content.
-    old_params   = @task.params.clone
-    new_att      = params[:cbrain_task] || {} # not the TASK's params[], the REQUEST's params[]
-    new_att      = new_att.reject { |k,v| k =~ /^(cluster_jobid|cluster_workdir|status|batch_id|launch_time|prerequisites|share_wd_tid|run_number|level|rank|cluster_workdir_size|workdir_archived|workdir_archive_userfile_id)$/ } # some attributes cannot be changed through the controller
-    old_tool_config = @task.tool_config
-    old_bourreau    = @task.bourreau
+    old_params       = @task.params.clone
+    new_att          = params[:cbrain_task] || {} # not the TASK's params[], the REQUEST's params[]
+    new_att          = new_att.reject { |k,v| k =~ /^(cluster_jobid|cluster_workdir|status|batch_id|launch_time|prerequisites|share_wd_tid|run_number|level|rank|cluster_workdir_size|workdir_archived|workdir_archive_userfile_id)$/ } # some attributes cannot be changed through the controller
+    old_tool_config  = @task.tool_config
+    old_bourreau     = @task.bourreau
     @task.attributes = new_att # just updates without saving
     @task.restore_untouchable_attributes(old_params)
 

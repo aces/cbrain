@@ -141,8 +141,7 @@ class ApplicationController < ActionController::Base
     return if params[:controller] == "sessions"
 
     check_license_agreements()
-
-    check_password()
+    check_password() if current_user.all_licenses_signed == "yes"
   end
 
   def check_license_agreements #:nodoc:
@@ -151,13 +150,13 @@ class ApplicationController < ActionController::Base
       unsigned_agreements = current_user.unsigned_license_agreements
       unless unsigned_agreements.empty?
         return if params[:controller] == "portal" && params[:action] =~ /license$/
-        return if current_user.has_role?(:admin_user) && params[:controller] == "bourreaux"
+        #return if current_user.has_role?(:admin_user) && params[:controller] == "bourreaux"
 
         if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
           redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first, :status => 303
-        elsif current_user.has_role?(:admin_user)
-            flash[:error] ||= ""
-            flash[:error] +=  "License agreement '#{unsigned_agreements.first}' doesn't seem to exist.\nPlease place the license file in /public/licenses or unconfigure it.\n"
+        #elsif current_user.has_role?(:admin_user)
+        #  flash[:error] ||= ""
+        #  flash[:error] +=  "License agreement '#{unsigned_agreements.first}' doesn't seem to exist.\nPlease place the license file in /public/licenses or unconfigure it.\n"
         end
         return
       end

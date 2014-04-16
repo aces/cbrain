@@ -87,6 +87,7 @@ CbrainRailsPortal::Application.routes.draw do
       post 'start'
       post 'stop'
       get  'row_data'
+      get  'info'
     end
     collection do
       get  'load_info'

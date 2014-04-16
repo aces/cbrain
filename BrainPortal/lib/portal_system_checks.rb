@@ -79,11 +79,11 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
     unless agent
       begin
         agent = SshAgent.create('portal', "#{Rails.root}/tmp/sockets/ssh-agent.portal.sock")
-       #agent = SshAgent.create('portal', "/tmp/ssh-agent.portal.sock")
         message = 'Created new agent'
-      rescue
+      rescue => ex
         sleep 1
         agent = SshAgent.find_by_name('portal').try(:aliveness) # in case of race condition
+        raise ex unless agent
       end
       raise "Error: cannot create SSH agent named 'portal'." unless agent
     end
