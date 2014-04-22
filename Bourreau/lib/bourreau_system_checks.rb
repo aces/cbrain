@@ -252,13 +252,16 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     # 3    false,             id,                                 size,   # If waui and cws: verify existance of waui if it exist turn cws to nil and turn workdir_archived to true
     # 4    true,              id,                                 size,   # If waui and cws: verify existance of waui if it exist turn cws to nil
 
+    # Other cases:
+    # 5 workdir_archived == true but the task have no workdir_archive.    # workdir_archived? should be turned false
+
     myself      = RemoteResource.current_resource
     local_tasks = CbrainTask.where(:bourreau_id => myself.id)
 
     # CASE 1
     case1_tasks = local_tasks.where(:workdir_archived => true, :workdir_archive_userfile_id => nil, :cluster_workdir_size => nil)
     case1_count = case1_tasks.count
-    puts "C> \t- Processing #{case1_count} CbrainTasks that seem to be archived but missing their archiving information." if case1_tasks.exists?
+    puts "C> \t- Processing #{case1_count} CbrainTasks that seem to be archived but missing their archiving information." if case1_count > 0
     case1_tasks.all.each do |t|
       t.addlog("INCONSISTENCY REPAIR: This task was marked as archived but the archiving information was lost")
       t.workdir_archived = false # turn to CASE A
@@ -268,7 +271,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     # CASE 2
     case2_tasks = local_tasks.where(:workdir_archived => false, :cluster_workdir_size => nil).where("workdir_archive_userfile_id IS NOT null")
     case2_count = case2_tasks.count
-    puts "C> \t- Processing #{case2_count} CbrainTasks that seem to be archived as a file but are not marked as archived." if case2_tasks.exists?
+    puts "C> \t- Processing #{case2_count} CbrainTasks that seem to be archived as a file but are not marked as archived." if case2_count > 0
     case2_tasks.all.each do |t|
       userfile_id = t.workdir_archive_userfile_id
       if TaskWorkdirArchive.where(:id => userfile_id).exists? # turn CASE D
@@ -284,7 +287,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     # CASE 3 and CASE 4
     case3_and_case4_tasks = local_tasks.where("workdir_archive_userfile_id IS NOT null").where("cluster_workdir_size IS NOT null")
     case3_and_case4_count = case3_and_case4_tasks.count
-    puts "C> \t- Processing #{case3_and_case4_count} CbrainTasks that seem to be archived both as a file and on cluster." if case3_and_case4_tasks.exists?
+    puts "C> \t- Processing #{case3_and_case4_count} CbrainTasks that seem to be archived both as a file and on cluster." if case3_and_case4_count > 0
     case3_and_case4_tasks.all.each do |t|
       userfile_id = t.workdir_archive_userfile_id
       if TaskWorkdirArchive.where(:id => userfile_id).exists? # turn to case D
@@ -298,7 +301,22 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
        t.save
     end
 
-    total_count = case1_count + case2_count + case3_and_case4_count
+    # CASE 5
+    tasks_archived_as_file = local_tasks.archived_as_file
+    valid_tasks_ids        = tasks_archived_as_file.joins(:workdir_archive).raw_first_column("cbrain_tasks.id").compact
+    all_tasks_ids          = tasks_archived_as_file.raw_first_column("cbrain_tasks.id")
+    case5_tasks            = CbrainTask.find(all_tasks_ids - valid_tasks_ids)
+    case5_count            = case5_tasks.size
+    puts "C> \t- Processing #{case5_count} CbrainTasks that seem to be archived but that haven't workdir_archive." if case5_count > 0
+    case5_tasks.each do |t|
+      t.addlog("INCONSISTENCY REPAIR: This task was marked as archived but doesn't have a corresponding archive file.")
+      t.workdir_archived            = false # turn to CASE A
+      t.workdir_archive_userfile_id = nil
+      t.save
+    end
+
+
+    total_count = case1_count + case2_count + case3_and_case4_count + case5_count
     puts "C> \t- No tasks need to be updated." if total_count == 0
 
   end
