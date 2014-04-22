@@ -208,23 +208,37 @@ class BourreauxController < ApplicationController
   end
 
   def load_info #:nodoc:
-
-    if params[:bourreau_id].blank? && params[:tool_config_id].blank?
-      render :text  => ""
-      return
-    end
+    raise "Bad params" if params[:bourreau_id].blank? && params[:tool_config_id].blank?
 
     bourreau_id = params[:bourreau_id] || ToolConfig.find(params[:tool_config_id]).bourreau_id
-    @bourreau   = Bourreau.find(bourreau_id)
+    bourreau    = Bourreau.find(bourreau_id)
+
+    @latest_in_queue_delay    = bourreau.meta[:latest_in_queue_delay]
+    @time_of_last_queue_delay = bourreau.meta[:time_of_latest_in_queue_delay]
+    @num_active               = CbrainTask.status(:active).where(:bourreau_id => bourreau.id).count
+    @num_queued               = CbrainTask.status(:queued).where(:bourreau_id => bourreau.id).count
+    @num_processing           = CbrainTask.status(:processing).where(:bourreau_id => bourreau.id).count
+
+    info = { :latest_in_queue_delay    => @time_of_latest_in_queue_delay,
+             :time_of_last_queue_delay => @time_of_last_queue_delay,
+             :num_active               => @num_active,
+             :num_queued               => @num_queued,
+             :num_processing           => @num_processing
+           }
+
 
     respond_to do |format|
-      format.html { render :partial => 'load_info', :locals => { :bourreau => @bourreau } }
-      format.xml  { render :xml     => @bourreau   }
+      format.html { render :partial => 'load_info' }
+      format.xml  { render :xml     => info   }
+      format.json { render :json    => info   }
     end
 
   rescue => ex
-    #render :text  => "#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
-    render :text  => '<strong style="color:red">No Information Available</strong>'
+    respond_to do |format|
+      format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
+      format.xml  { head :unprocessable_entity }
+      format.json { head :unprocessable_entity }
+    end
   end
 
   def start #:nodoc:
@@ -356,13 +370,13 @@ class BourreauxController < ApplicationController
     @cache_older   = Time.now.to_i - accessed_before.to_i # partial will adjust to closest value in selection box
 
     # Users in statistics table
-    userlist         = current_user.available_users.all
+    userlist       = current_user.available_users.all
 
     # Remote resources in statistics table
-    rrlist           = RemoteResource.find_all_accessible_by_user(current_user).all
+    rrlist          = RemoteResource.find_all_accessible_by_user(current_user).all
 
     # Create disk usage statistics table
-    stats_options = { :users            => userlist,
+    stats_options  = { :users            => userlist,
                       :remote_resources => rrlist,
                       :accessed_before  => accessed_before,
                       :accessed_after   => accessed_after
