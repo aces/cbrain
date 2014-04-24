@@ -137,44 +137,44 @@ class ApplicationController < ActionController::Base
   # Check if the user needs to change their password
   # or sign license agreements.
   def check_account_validity
-    return unless current_user
-    return if params[:controller] == "sessions"
+    return false unless current_user
+    return true if params[:controller] == "sessions"
 
     check_license_agreements()
-    check_password() if current_user.all_licenses_signed == "yes"
+    check_password_reset() if current_user.all_licenses_signed == "yes"
+
+    return true
   end
 
   def check_license_agreements #:nodoc:
 
-    if current_user.all_licenses_signed.blank?
-      unsigned_agreements = current_user.unsigned_license_agreements
-      unless unsigned_agreements.empty?
-        return if params[:controller] == "portal" && params[:action] =~ /license$/
-        #return if current_user.has_role?(:admin_user) && params[:controller] == "bourreaux"
+    current_user.meta.reload
+    return true if current_user.all_licenses_signed.present?
+    return true if params[:controller] == "portal" && params[:action] =~ /license$/
 
-        if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
-          redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first, :status => 303
-        #elsif current_user.has_role?(:admin_user)
-        #  flash[:error] ||= ""
-        #  flash[:error] +=  "License agreement '#{unsigned_agreements.first}' doesn't seem to exist.\nPlease place the license file in /public/licenses or unconfigure it.\n"
-        end
-        return
+    unsigned_agreements = current_user.unsigned_license_agreements
+    unless unsigned_agreements.empty?
+      if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
+        redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first, :status => 303
+        return false
       end
-      current_user.all_licenses_signed = "yes"
     end
 
+    current_user.all_licenses_signed = "yes"
+    return true
   end
 
-  def check_password #:nodoc:
+  def check_password_reset #:nodoc:
 
     #Check if passwords been reset.
     if current_user.password_reset
       unless params[:controller] == "users" && (params[:action] == "change_password" || params[:action] == "update")
         flash[:error] = "Please reset your password."
         redirect_to change_password_user_path(current_user)
+        return false
       end
     end
-
+    return true
   end
 
   # 'After' callback: logs in the Rails logger information about the user who
