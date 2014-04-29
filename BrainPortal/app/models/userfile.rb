@@ -89,15 +89,25 @@ class Userfile < ActiveRecord::Base
   cb_scope                :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
   cb_scope                :file_format, lambda { |f|
                                        format_filter = Userfile.descendants.map(&:to_s).find{ |c| c == f }
-                                       format_ids = Userfile.connection.select_values("select format_source_id from userfiles where format_source_id IS NOT NULL AND type='#{format_filter}'").join(",")
-                                       format_ids = " OR userfiles.id IN (#{format_ids})" unless format_ids.blank?
+                                       format_ids    = Userfile.connection.select_values("select format_source_id from userfiles where format_source_id IS NOT NULL AND type='#{format_filter}'").join(",")
+                                       format_ids    = " OR userfiles.id IN (#{format_ids})" unless format_ids.blank?
                                        where("userfiles.type='#{format_filter}'#{format_ids}")
                                      }
   cb_scope                :has_no_parent, :conditions => {:parent_id => nil}
   cb_scope                :has_no_child,  lambda { |ignored|
-                                            all_parents = Userfile.connection.select_values("SELECT DISTINCT parent_id FROM userfiles WHERE parent_id IS NOT NULL").join(",")
-                                            where("userfiles.id NOT IN (#{all_parents})")
+                                            parents_ids = Userfile.connection.select_values("SELECT DISTINCT parent_id FROM userfiles WHERE parent_id IS NOT NULL").join(",")
+                                            where("userfiles.id NOT IN (#{parents_ids})")
                                           }
+  cb_scope                :parent_name_like, lambda { |n|
+                                            matching_parents_ids = Userfile.where("name like ?", "%#{n}%").raw_first_column(:id).uniq
+                                            where(:parent_id => matching_parents_ids)
+                                          }
+
+  cb_scope                :child_name_like, lambda { |n|
+                                             matching_children_ids = Userfile.where("name like ?", "%#{n}%").where("parent_id IS NOT NULL").raw_first_column(:id).uniq
+                                             matching_parents_ids  = Userfile.where(:id => matching_children_ids).raw_first_column(:parent_id).uniq
+                                             where(:id => matching_parents_ids)
+                                            }
 
   class Viewer
     attr_reader :name, :partial
