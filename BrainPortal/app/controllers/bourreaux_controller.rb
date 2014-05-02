@@ -347,7 +347,6 @@ class BourreauxController < ApplicationController
   # Define disk usage of remote ressource,
   # with date filtration if wanted.
   def rr_disk_usage
-    @providers = DataProvider.find_all_accessible_by_user(current_user).all
     date_filtration = params[:date_range] || {}
 
     # Time:     Present ............................................................ Past
@@ -373,13 +372,13 @@ class BourreauxController < ApplicationController
     userlist       = current_user.available_users.all
 
     # Remote resources in statistics table
-    rrlist          = RemoteResource.find_all_accessible_by_user(current_user).all
+    rrlist         = RemoteResource.find_all_accessible_by_user(current_user).all
 
     # Create disk usage statistics table
     stats_options  = { :users            => userlist,
-                      :remote_resources => rrlist,
-                      :accessed_before  => accessed_before,
-                      :accessed_after   => accessed_after
+                       :remote_resources => rrlist,
+                       :accessed_before  => accessed_before,
+                       :accessed_after   => accessed_after
                     }
 
     @report_stats    = ModelsReport.rr_usage_statistics(stats_options)
@@ -396,6 +395,57 @@ class BourreauxController < ApplicationController
     @report_rrs.reject! { |rr| ! (@report_users_all.any? { |u| @report_stats[u] && @report_stats[u][rr] }) }
 
     true
+  end
+
+
+  def cache_disk_usage
+    bourreau_id = params[:id]       || ""
+    user_ids    = params[:user_ids] || nil
+
+    available_users = current_user.available_users
+    user_ids        = user_ids ? available_users.where(:id => user_ids).raw_first_column(:id) :
+                                 available_users.raw_first_column(:id)
+
+    raise "Bad params"              if bourreau_id.blank? || user_ids.blank?
+    bourreau    = Bourreau.find(bourreau_id.to_i)
+    raise "Bad params"              if !bourreau.can_be_accessed_by?(current_user)
+    raise "Not an Execution Server" if !bourreau.is_a?(Bourreau)
+
+    base_relation = SyncStatus.joins(:userfile).where(:remote_resource_id => bourreau_id)
+
+    # Create a hash table with information grouped by user.
+    info_by_user = {}
+    user_ids.each do |user_id|
+      user_relation   = base_relation.where("userfiles.user_id" => user_id)
+
+      number_entries  = user_relation.count
+      total_size      = user_relation.sum(:size)
+      number_files    = user_relation.sum(:num_files)
+      number_unknown  = user_relation.where("size is null").count
+
+      # If we want to filter empty entries
+      # next if number_entries == 0 && total_size == 0 && number_files == 0 && number_unknown == 0
+
+      info_by_user[user_id] = {}
+      info_by_user[user_id][:number_entries]  =  number_entries.to_i
+      info_by_user[user_id][:total_size]      =  total_size.to_i
+      info_by_user[user_id][:number_files]    =  number_files.to_i
+      info_by_user[user_id][:number_unknown]  =  number_unknown.to_i
+    end
+
+    respond_to do |format|
+      format.html { render :text => info_by_user.inspect }
+      format.xml  { render :xml  => info_by_user }
+      format.json { render :json => info_by_user }
+    end
+
+  rescue => ex
+    respond_to do |format|
+      format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
+      format.xml  { head :unprocessable_entity }
+      format.json { head :unprocessable_entity }
+    end
+
   end
 
   # Provides the interface to trigger cache cleanup operations

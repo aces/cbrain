@@ -17,20 +17,20 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # CBRAIN Routing Table
 
 CbrainRailsPortal::Application.routes.draw do
-  
+
   # Session
   resource  :session do
     member do
       post 'mozilla_persona_auth'
     end
   end
-  
+
   # Control channel
   resources :controls,       :controller => :controls
 
@@ -43,7 +43,7 @@ CbrainRailsPortal::Application.routes.draw do
   # Standard CRUD resources, with extra methods
 
   resources :feedbacks
-  
+
   resources :messages do
     collection do
       delete 'delete_messages'
@@ -68,7 +68,7 @@ CbrainRailsPortal::Application.routes.draw do
       post 'switch'
     end
   end
-  
+
   resources :invitations, :only => [:new, :create, :update, :destroy]
 
   resources :bourreaux do
@@ -77,6 +77,7 @@ CbrainRailsPortal::Application.routes.draw do
       post 'stop'
       get  'row_data'
       get  'info'
+      get  'cache_disk_usage'
     end
     collection do
       get  'load_info'
@@ -163,7 +164,7 @@ CbrainRailsPortal::Application.routes.draw do
   # Licence handling
   match '/show_license/:license', :controller => :portal, :action => :show_license
   match '/sign_license/:license', :controller => :portal, :action => :sign_license, :via => :post
-  
+
   # Portal log
   match '/portal_log', :controller => :portal, :action => :portal_log
 
