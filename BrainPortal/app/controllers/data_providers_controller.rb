@@ -174,9 +174,11 @@ class DataProvidersController < ApplicationController
   def is_alive #:nodoc:
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
     is_alive =  @provider.is_alive?
+
     respond_to do |format|
-      format.html { render :text  => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }
-      format.xml { render :xml  => { :is_alive  => is_alive }  }
+      format.html { render :text => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }
+      format.xml  { render :xml  => { :is_alive => is_alive } }
+      format.json { render :json => { :is_alive => is_alive } }
     end
   end
 
