@@ -93,6 +93,7 @@ CbrainRailsPortal::Application.routes.draw do
       get  'browse'
       post 'register'
       get  'is_alive'
+      get  'disk_usage'
     end
     collection do
       get  'dp_access'

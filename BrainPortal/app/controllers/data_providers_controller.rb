@@ -182,6 +182,55 @@ class DataProvidersController < ApplicationController
     end
   end
 
+  def disk_usage #:nodoc:
+    dataprovider_id = params[:id]       || ""
+    user_ids        = params[:user_ids] || nil
+
+    available_users = current_user.available_users
+    user_ids        = user_ids ? available_users.where(:id => user_ids).raw_first_column(:id) :
+                                 available_users.raw_first_column(:id)
+
+    raise "Bad params"              if dataprovider_id.blank? || user_ids.blank?
+    dataprovider    = DataProvider.find(dataprovider_id.to_i)
+    raise "Bad params"              if !dataprovider.can_be_accessed_by?(current_user)
+
+    base_relation = Userfile.where(:user_id => user_ids).where(:data_provider_id => dataprovider_id)
+
+    # Create a hash table with information grouped by user.
+    info_by_user = {}
+    user_ids.each do |user_id|
+      user_relation   = base_relation.where(:user_id => user_id)
+
+      number_entries  = user_relation.count
+      total_size      = user_relation.sum(:size)
+      number_files    = user_relation.sum(:num_files)
+      number_unknown  = user_relation.where("size is null").count
+
+      # If we want to filter empty entries
+      # next if number_entries == 0 && total_size == 0 && number_files == 0 && number_unknown == 0
+
+      info_by_user[user_id] = {}
+      info_by_user[user_id][:number_entries]  =  number_entries.to_i
+      info_by_user[user_id][:total_size]      =  total_size.to_i
+      info_by_user[user_id][:number_files]    =  number_files.to_i
+      info_by_user[user_id][:number_unknown]  =  number_unknown.to_i
+    end
+
+    respond_to do |format|
+      format.html { render :text => info_by_user.inspect }
+      format.xml  { render :xml  => info_by_user }
+      format.json { render :json => info_by_user }
+    end
+
+  rescue => ex
+    respond_to do |format|
+      format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
+      format.xml  { head :unprocessable_entity }
+      format.json { head :unprocessable_entity }
+    end
+
+  end
+
   def dp_access #:nodoc:
     @providers = DataProvider.find_all_accessible_by_user(current_user).all.sort do |a,b|
                    (b.online?.to_s       <=> a.online?.to_s).nonzero?       ||
