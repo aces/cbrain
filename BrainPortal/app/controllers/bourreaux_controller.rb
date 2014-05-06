@@ -398,7 +398,7 @@ class BourreauxController < ApplicationController
   end
 
 
-  def cache_disk_usage
+  def cache_disk_usage #:nodoc:
     bourreau_id = params[:id]       || ""
     user_ids    = params[:user_ids] || nil
 
