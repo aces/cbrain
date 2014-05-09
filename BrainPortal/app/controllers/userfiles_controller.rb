@@ -368,13 +368,16 @@ class UserfilesController < ApplicationController
     # Get the upload stream object
     upload_stream = params[:upload_file]   # an object encoding the file data stream
     if upload_stream.blank?
-      redirect_to redirect_path
+      respond_to do |format|
+        format.html  { redirect_to redirect_path }
+        format.json  { head :unprocessable_entity }
+      end
       return
     end
 
     # Save raw content of the file; we don't know yet
     # whether it's an archive or not, or if we'll extract it etc.
-    basename               = File.basename(upload_stream.original_filename)
+    basename    = File.basename(upload_stream.original_filename)
 
     # Identify the file type
     file_type   = params[:file_type].presence.try(:constantize) rescue nil
@@ -386,7 +389,7 @@ class UserfilesController < ApplicationController
     rack_tempfile_size = upload_stream.tempfile.size
 
     # Get the data provider for the destination files.
-    data_provider_id = params[:data_provider_id]
+    data_provider_id   = params[:data_provider_id]
 
     # Where we'll keep a copy in the spawn() below
     tmpcontentfile     = "/tmp/#{Process.pid}-#{rand(10000).to_s}-#{basename}" # basename's extension is used later on
@@ -409,7 +412,10 @@ class UserfilesController < ApplicationController
         userfile.errors.each do |field, error|
           flash[:error] += "#{field.to_s.capitalize} #{error}.\n"
         end
-        redirect_to redirect_path
+        respond_to do |format|
+          format.html { redirect_to redirect_path }
+          format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
+        end
         return
       end
 
@@ -423,8 +429,8 @@ class UserfilesController < ApplicationController
           userfile.save
           userfile.addlog_context(self, "Uploaded by #{current_user.login}")
           Message.send_message(current_user,
-                               :message_type  => 'notice',
-                               :header  => "File Uploaded",
+                               :message_type   => 'notice',
+                               :header         => "File Uploaded",
                                :variable_text  => "#{userfile.pretty_type} [[#{userfile.name}][/userfiles/#{userfile.id}]]"
                                )
         ensure
@@ -432,17 +438,21 @@ class UserfilesController < ApplicationController
         end
       end # spawn
 
-      redirect_to redirect_path
+      respond_to do |format|
+        format.html { redirect_to redirect_path }
+        format.json { render :json => {:notice => "File Uploaded"} }
+      end
       return
     end # save
-
-
 
     # We will be processing some archive file.
     # First, check for supported extensions
     if basename !~ /(\.tar|\.tgz|\.tar.gz|\.zip)$/i
       flash[:error] += "Error: file #{basename} does not have one of the supported extensions: .tar, .tar.gz, .tgz or .zip.\n"
-      redirect_to redirect_path
+      respond_to do |format|
+        format.html { redirect_to redirect_path }
+        format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
+      end
       return
     end
 
@@ -452,7 +462,10 @@ class UserfilesController < ApplicationController
       collection_name = basename.split('.')[0]  # "abc"
       if current_user.userfiles.exists?(:name => collection_name, :data_provider_id => data_provider_id)
         flash[:error] = "Collection '#{collection_name}' already exists.\n"
-        redirect_to redirect_path
+        respond_to do |format|
+          format.html { redirect_to redirect_path }
+          format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
+        end
         return
       end
 
@@ -470,12 +483,12 @@ class UserfilesController < ApplicationController
 
       if collection.save
         system("cp #{rack_tempfile_path.to_s.bash_escape} #{tmpcontentfile.to_s.bash_escape}") # fast, hopefully; maybe 'mv' would work?
-        CBRAIN.spawn_with_active_records(current_user,"FileCollection Extraction") do
+        CBRAIN.spawn_with_active_records(current_user, "FileCollection Extraction") do
           begin
             collection.extract_collection_from_archive_file(tmpcontentfile)
             Message.send_message(current_user,
-                                  :message_type  => 'notice',
-                                  :header  => "Collection Uploaded",
+                                  :message_type   => 'notice',
+                                  :header         => "Collection Uploaded",
                                   :variable_text  => "#{collection.pretty_type} [[#{collection.name}][/userfiles/#{collection.id}]]"
                                   )
           ensure
@@ -485,18 +498,22 @@ class UserfilesController < ApplicationController
 
         flash[:notice] = "Collection '#{collection_name}' created."
         current_user.addlog_context(self,"Uploaded #{collection.class} '#{collection_name}'")
-        redirect_to redirect_path
+        respond_to do |format|
+          format.html { redirect_to redirect_path }
+          format.json { render :json => {:notice => "Collection Uploaded" } }
+        end
       else
         flash[:error] = "Collection '#{collection_name}' could not be created.\n"
         collection.errors.each do |field, error|
           flash[:error] += field.to_s.capitalize + " " + error + ".\n"
         end
-        redirect_to redirect_path
+        respond_to do |format|
+          format.html { redirect_to redirect_path }
+          format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
+        end
       end # save collection
       return
     end
-
-
 
     # At this point, create a bunch of userfiles from the archive
     cb_error "Unknown action #{params[:archive]}" if params[:archive] != 'extract'
@@ -519,7 +536,10 @@ class UserfilesController < ApplicationController
     end # spawn
 
     flash[:notice] += "Your files are being extracted and added in background."
-    redirect_to redirect_path
+    respond_to do |format|
+      format.html { redirect_to redirect_path }
+      format.json { render :json => {:notice => "Archive Uploaded" } }
+    end
   end
 
   # PUT /userfiles/1
