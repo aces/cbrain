@@ -278,12 +278,23 @@ class UserfilesController < ApplicationController
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
     # This allows the user to manually trigger the syncing to the Portal's cache
-    @sync_status = 'ProvNewer' # same terminology as in SyncStatus
-    state = @userfile.local_sync_status
-    @sync_status = state.status if state
-    @default_viewer = @userfile.viewers.first
+    @sync_status        = 'ProvNewer' # same terminology as in SyncStatus
+    state               = @userfile.local_sync_status
+    @sync_status        = state.status if state
+    @default_viewer     = @userfile.viewers.first
 
-    @log  = @userfile.getlog rescue nil
+    @log                = @userfile.getlog        rescue nil
+
+    # Add some information for json
+    if request.format =~ "json"
+      rr_ids_accessible   = RemoteResource.find_all_accessible_by_user(current_user).map &:id
+      @remote_sync_status = SyncStatus.where(:userfile_id => @userfile.id, :remote_resource_id => rr_ids_accessible)
+      @children_ids       = @userfile.children_ids  rescue []
+
+      @userfile[:log]                = @log
+      @userfile[:remote_sync_status] = @remote_sync_status
+      @userfile[:children_ids]       = @children_ids
+    end
 
     respond_to do |format|
       format.html
