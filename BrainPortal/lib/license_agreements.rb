@@ -40,25 +40,34 @@ module LicenseAgreements
     end
   end
 
+  # Returns the list of license agreements that exists for this object.
   def license_agreements
     @license_agreements ||= []
   end
 
+  # Sets the list of license agreements that exists for this object.
+  # Can be provided with an array of license names, or a single string with
+  # a space-or-comma-separated list of license names.
   def license_agreements=(agreements)
     agrs = agreements
     unless agrs.is_a? Array
-      agrs = agrs.to_s.split(/[,\s]+/).map { |a| a.sub(/\.html$/, "").gsub(/[^\w-]+/, "") }.uniq.sort
+      agrs = agrs.to_s.split(/[,\s]+/)
     end
+    agrs = agrs.map { |a| a.sub(/\.html$/, "").gsub(/[^\w-]+/, "") }.uniq.sort
     @license_agreements = agrs
   end
 
   protected
 
+  # 'after_load' callback. Loads the licenses from the meta data store.
   def load_license_agreements
-    @license_agreements = self.meta[:license_agreements].presence || []
+    @license_agreements           = self.meta[:license_agreements].presence || []
+    @_license_agreements_original = @license_agreements.dup # to determine if anything changed when saving
     true
   end
 
+  # Returns true if the set of licenses are identifiers that
+  # properly match files on the filesystem, in public/licenses/{name}.html
   def valid_license_agreements?
     invalid_licenses = license_agreements.select do |license|
       ! File.exists?(Rails.root + "public/licenses/#{license}.html")
@@ -72,13 +81,20 @@ module LicenseAgreements
     return true
   end
 
+  # 'after_save' callback to write back the license agreements array
+  # to the meta data store whenever the object is being saved.
   def register_license_agreements
     # To keep pre_register licenses agreement, usefull when the console is used to save the object
+    new_agreements  = license_agreements.sort
+    orig_agreements = @_license_agreements_original.sort
+    return true if new_agreements == orig_agreements
     self.meta[:license_agreements] = license_agreements
+    @_license_agreements_original = license_agreements
     # Unset all licenses signed when a new license is added
     User.all.each do |u|
       u.all_licenses_signed = nil
     end
+    true
   end
 
 end
