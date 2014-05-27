@@ -207,7 +207,7 @@ class UserfilesController < ApplicationController
   end
 
   #####################################################
-  # Tranfer contents of a file.
+  # Transfer contents of a file.
   # If no relevant parameters are given, the controller
   # will simply attempt to send the entire file.
   # Otherwise, it will modify it's response according
@@ -222,8 +222,8 @@ class UserfilesController < ApplicationController
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
     content_loader = @userfile.find_content_loader(params[:content_loader])
-    argument_list = params[:arguments] || []
-    argument_list = [argument_list] unless argument_list.is_a?(Array)
+    argument_list  = params[:arguments] || []
+    argument_list  = [argument_list] unless argument_list.is_a?(Array)
 
     if content_loader
       response_content = @userfile.send(content_loader.method, *argument_list)
@@ -240,7 +240,11 @@ class UserfilesController < ApplicationController
       send_file @userfile.cache_full_path, :stream => true, :filename => @userfile.name
     end
   rescue
-    render :file => "public/404.html", :status => 404
+    respond_to do |format|
+       format.html { render :file    => "public/404.html", :status => 404 }
+       format.xml  { render :nothing => true,              :status => 404 }
+       format.json { render :nothing => true,              :status => 404 }
+    end
   end
 
   def display
