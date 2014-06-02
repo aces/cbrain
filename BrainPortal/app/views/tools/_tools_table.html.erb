@@ -45,14 +45,20 @@
     else
       t.sort_column("Tool Name", Tool, :name, &:name)
     end
+
     t.sort_column("Description", Tool, :description) { |tool|  overlay_description(tool.description) } 
+
     t.sort_column("Category", Tool, :category, :filters => basic_filters_for(@filtered_scope, @header_scope, Tool, :category), &:category)
+
     t.sort_column("Owner", User, :login, :filters => association_filters_for(@filtered_scope, @header_scope, Tool, :user, :name_method => :login)) { |tool| link_to_user_with_tooltip(tool.user) }
+
     t.sort_column("Project", Group, :name, :filters => association_filters_for(@filtered_scope, @header_scope, Tool, :group)) { |tool| link_to_group_if_accessible(tool.group) }
+
     t.describe_column("Execution & Versions") do |col|
       col.cell(:class => "left") do |tool|
         result = ""
-        tool.bourreaux.sort{|a, b| a.name.casecmp(b.name)}.each do |b|
+        bourreaux = tool.bourreaux.reject { |b| ! b.can_be_accessed_by?(current_user) }
+        bourreaux.sort{|a, b| a.name.casecmp(b.name)}.each do |b|
           tcs = ToolConfig.where( :bourreau_id => b.id, :tool_id => tool.id )
           tcs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }
           result += link_to_bourreau_if_accessible(b)
@@ -64,9 +70,11 @@
         result.html_safe
       end
     end
+
     if current_user.has_role?(:admin_user)
       t.column("Access?") { |tool| link_to 'Access?', { :controller => :tool_configs, :action => :index, :tool_id => tool.id }, :class => "action_link" }
     end
+
     t.describe_column("Help/Info") do |col|
       col.cell do |tool|
         tool_plain_name = tool.cbrain_task_class.demodulize.underscore

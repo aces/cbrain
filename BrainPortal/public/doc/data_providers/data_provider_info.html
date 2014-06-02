@@ -23,10 +23,26 @@
 -->
 
 <h1>How to Register Files on CBRAIN</h1>
-<p>A Data Provider is a data storage center that CBRAIN is aware of.  A user has access to MainStore and MindStore data providers as well as an "incoming data provider". The "incoming data provider" is a provider set up by the network administrator that could be under another name.  Please contact your network administrator for additional details.</p>
-<p>    
-Data files can be uploaded to CBRAIN using SFTP (Secure File Transfer Protocol). You may connect using any SFTP client for UNIX, Mac or Windows on host mindstorm.cbrain.mcgill.ca using the port number 7500.  Your username and password are those of the CBRAIN website.  
-</p> 
+
+A Data Provider is a data storage area that CBRAIN is aware of.
+A typical user has access to two data providers named MainStore and
+MindStore as well as two "incoming data providers". An "incoming
+data provider" is a provider set up by the network administrator
+that can be accessed through another protocol outside of the CBRAIN
+framework. The two "incoming data providers" currently set up are
+named "SFTP-Incoming" and "SFTP-Brainstorm", and are accessed using SFTP
+(Secure File Transfer Protocol).
+
+<p>
+Data files can be uploaded to CBRAIN using SFTP client programs on your computer.
+You may connect using any SFTP client for UNIX, Mac or
+Windows on host mindstorm.cbrain.mcgill.ca or brainstorm.cbrain.mcgill.ca
+using the port number 7500. Your username and password are those
+of the CBRAIN website. Files uploaded to <em>mindstorm</em> will appear in CBRAIN with
+the "browse" button of the "SFTP-Incoming" Data Provider, while files
+uploaded to <em>brainstorm</em> will appear in the "SFTP-Brainstorm" Data Provider.
+
+<p>
 
 <b>Recommended SFTP Clients:</b>
 <br>

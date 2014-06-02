@@ -859,7 +859,7 @@ class Userfile < ActiveRecord::Base
   end
 
   def nullify_children
-    self.children.each &:remove_parent
+    self.children.each(&:remove_parent)
   end
 
   def validate_group_update
