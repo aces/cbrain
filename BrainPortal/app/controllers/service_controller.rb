@@ -26,6 +26,8 @@ class ServiceController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  api_available
+
   # Return basic identification and provenance
   # information about the platform
   def info
@@ -51,12 +53,8 @@ class ServiceController < ApplicationController
 
   # Return information about the usage of the platform.
   def stats
-    @stats = { :perl_logins  => 0,
-               :ruby_logins  => 0,
-               :perl_actions => 0,
-               :ruby_actions => 0,
-               :lastReset    => Time.at(0).utc.iso8601,
-             }
+    @stats      = RemoteResource.current_resource.meta[:stats]
+    @last_reset = (RemoteResource.current_resource.meta.md_for_key(:stats).created_at || Time.at(0)).utc.iso8601
 
     respond_to do |format|
       format.html

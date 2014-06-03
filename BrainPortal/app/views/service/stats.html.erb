@@ -25,12 +25,70 @@
 <% title 'Service Stats' %>
 
   <h1>CBRAIN Web Service Statistics</h1>
-  <dl>
-    <dt>Number of Perl logins</dt><dd><%= @stats[:perl_logins] %></dd>
-    <dt>Number of Perl actions</dt><dd><%= @stats[:perl_actions] %></dd>
-    <dt>Number of Ruby logins</dt><dd><%= @stats[:ruby_logins] %></dd>
-    <dt>Number of Ruby actions</dt><dd><%= @stats[:ruby_actions] %></dd>
-    <dt>Last Reset</dt><dd><%= @stats[:lastReset] %></dd>
-  </dl>
+
+      <table class="report">
+        <!-- header -->
+        <tr>
+          <th colspan="6" class="supertitle">Number of actions triggered</th>
+        </tr>
+        <tr>
+          <th>Client Type</th>
+          <th>User ID</th>
+          <th>Controller</th>
+          <th>Action</th>
+          <th>Successes</th>
+          <th>Failures</th>
+        </tr>
+        <!-- each row -->
+        <% @stats.keys.sort.each do |client| %>
+          <% by_user = @stats[client] %>
+          <% next if client == "StatusCodes" || client == "GlobalCount"%>
+          <% by_user.keys.sort.each do |user| %>
+            <% by_controller = by_user[user] %>
+            <% by_controller.keys.sort.each do |controller| %>
+              <% by_action = by_controller[controller] %>
+              <% by_action.keys.sort.each do |action| %>
+                <% count = by_action[action]%>
+                <tr>
+                  <td><%= client %></td>
+                  <% user_id = Regexp.last_match[1] if user =~ /(\d+$)/ %>
+                  <td><%= (user_id.blank? || user_id.to_i.zero?) ? "Unknown" : user_id %></td>
+                  <td><%= controller %></td>
+                  <td><%= action %></td>
+                  <td><%= count[0] %></td>
+                  <td><%= count[1] %></td>
+                </tr>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </table>
+
+      <p>
+
+      <table class="report">
+        <!-- header -->
+        <tr>
+          <th colspan="2" class="supertitle">Counts of HTTP Status Codes</th>
+        </tr>
+        <tr>
+          <th>Status code</th>
+          <th>Count</th>
+        </tr>
+        <!-- each row -->
+        <% @stats.each do |k, by_status| %>
+          <% next unless k == "StatusCodes"%>
+          <% by_status.each do |code, count| %>
+            <tr>
+              <td><%= code %></td>
+              <td><%= count %></td>
+            </tr>
+          <% end %>
+        <% end %>
+      </table>
+
+    <p>
+
+    <strong>Counters Last Reset:</strong> <%= @last_reset %>
 
 
