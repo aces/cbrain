@@ -138,9 +138,9 @@ class CbrainSession
         :user           => user,
         :active         => sess.active?,
         :last_access    => sess.updated_at,
-        :remote_ip      => sessdata["guessed_remote_ip"],    # can be nil, must be fecthed with string not symbol
-        :remote_host    => sessdata["guessed_remote_host"],  # can be nil, must be fecthed with string not symbol
-        :raw_user_agent => sessdata["raw_user_agent"],       # can be nil, must be fecthed with string not symbol
+        :remote_ip      => sessdata["guessed_remote_ip"],    # can be nil, must be fetched with string not symbol
+        :remote_host    => sessdata["guessed_remote_host"],  # can be nil, must be fetched with string not symbol
+        :raw_user_agent => sessdata["raw_user_agent"],       # can be nil, must be fetched with string not symbol
       }
     end
 
@@ -166,7 +166,7 @@ class CbrainSession
   # :guessed_remote_host and the :raw_user_agent
   def clear_data!
     @session.each do |k,v|
-      next if k.to_s =~ /guessed_remote_ip|guessed_remote_host|raw_user_agent/
+      next if k.to_s =~ /guessed_remote_ip|guessed_remote_host|raw_user_agent|client_type/
       @session.delete(k)
     end
   end

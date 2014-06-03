@@ -17,12 +17,12 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #Helpers for the CBRAIN web service API.
 module ApiHelpers
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.included(includer) #:nodoc:
@@ -31,20 +31,20 @@ module ApiHelpers
       extend ClassMethods
     end
   end
-  
+
   #Before filter that blocks certain actions
   #from the API
   def api_validity_check
-    if request.format && request.format.to_sym == :xml
+    if request.format && (request.format.to_sym == :xml || request.format.to_sym == :json)
       valid_actions = self.class.api_actions || []
       current_action = params[:action].to_sym
 
       unless valid_actions.include? current_action
-        render :xml => {:error  => "Action '#{current_action}' not available to API. Available actions are #{valid_actions.inspect}"}, :status  => :bad_request 
+        render :xml => {:error  => "Action '#{current_action}' not available to API. Available actions are #{valid_actions.inspect}"}, :status  => :bad_request
       end
     end
   end
-  
+
   module ClassMethods
     #Directive to be used in controllers to make
     #actions available to the API
