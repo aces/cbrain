@@ -57,10 +57,21 @@ class DataProvidersController < ApplicationController
 
     cb_notice "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
 
+
     respond_to do |format|
       format.html # show.html.erb
-      format.xml  { render :xml  => @provider }
-      format.json { render :json => @provider }
+      format.xml  {
+          unless (@provider.has_owner_access?(current_user)) {
+            [ :cloud_storage_client_identifier, :cloud_storage_client_token ].each { |att| @provider[att] = "N/A" }
+          }
+          render :xml  => @provider }
+      }
+      format.json {
+          unless (@provider.has_owner_access?(current_user)) {
+            [ :cloud_storage_client_identifier, :cloud_storage_client_token ].each { |att| @provider[att] = "N/A" }
+          }
+          render :json => @provider
+      }
     end
   end
 
