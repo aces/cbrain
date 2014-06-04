@@ -49,6 +49,7 @@ class ApplicationController < ActionController::Base
   before_filter :prepare_messages
   before_filter :adjust_system_time_zone
   around_filter :activate_user_time_zone
+  after_filter  :action_counter # depends on log_user_info to compute client_type in session
   after_filter  :log_user_info
   before_filter :login_required, :only => :filter_proxy
 
@@ -197,7 +198,8 @@ class ApplicationController < ActionController::Base
     # Pretty user agent string
     rawua = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'
     ua    = HttpUserAgent.new(rawua)
-    brow  = ua.browser_name    || "(unknown browser)"
+    brow  = ua.browser_name           || "(UnknownClient)"
+    current_session["client_type"]     = brow  # used by action_counter() below
     b_ver = ua.browser_version
 
     # Find out the instance name
@@ -207,9 +209,54 @@ class ApplicationController < ActionController::Base
     from  = (host.presence && host != ip) ? "#{host} (#{ip})" : ip
     mess  = "User: #{login} on instance #{instname} from #{from} using #{brow} #{b_ver.presence}"
     Rails.logger.info mess
+    true
   rescue
     true
   end
+
+  # 'After' callback: store a hash in the metadata of the session, in order
+  # to keep the count of each action by controller and by clien_type.
+  def action_counter
+    # Extract information about controller and action
+    client_type            = current_session["client_type"] # this is set in log_user_info() above.
+    return true if client_type.blank?
+
+    cu_id                  = current_user.try(:id).to_s.presence || "0"
+    controller             = params[:controller].to_s.presence   || "UnknownController"
+    action                 = params[:action].to_s.presence       || "UnknownAction"
+    success                = response.code.to_s =~ /^[123]\d\d$/
+
+    # Fetch the stats structure from meta data
+    current_resource       = RemoteResource.current_resource
+    cr_meta                = current_resource.meta
+    cr_meta.reload
+    stats                  = cr_meta[:stats] || {}
+
+    # Fill the stats structure, initializing the levels as we go.
+    stats[client_type]          ||= {}
+    user2contr                    = stats[client_type]
+    user2contr["user_#{cu_id}"] ||= {}
+    contr2action                  = user2contr["user_#{cu_id}"]
+    contr2action[controller]    ||= {}
+    action2count                  = contr2action[controller]
+    action2count[action]        ||= [0,0]
+    action2count[action][success ? 0 : 1] += 1
+
+    # Global counts, by response codes
+    stats["GlobalCount"]                     ||= 0
+    stats["GlobalCount"]                      += 1     # Important to change at least ONE entry at top level, so meta data saves...
+    stats["StatusCodes"]                     ||= {}
+    stats["StatusCodes"]["status_#{response.code.to_s}"] ||= 0
+    stats["StatusCodes"]["status_#{response.code.to_s}"]  += 1
+
+    # Save back the structure
+    cr_meta[:stats] = stats   # ... here.
+    true
+  rescue => ex
+    puts_red "Ex: #{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
+    true
+  end
+
 
   ########################################################################
   # CBRAIN Messaging System Filters

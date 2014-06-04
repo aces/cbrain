@@ -1,5 +1,5 @@
-3.1.13 -#- 2014-06-03 15:51:33 -0400 -#- CBRAIN Team -#- __CBRAIN_TAG__
-6668c92cfd3ac0ec8fb1f8fcd8d03bcf348a4669 -#- 2014-06-02 13:58:41 -0400 -#- Pierre Rioux -#- __CBRAIN_HEAD__
+3.1.13-2 -#- 2014-06-03 16:03:59 -0400 -#- CBRAIN Team -#- __CBRAIN_TAG__
+1b17d5f4aead26ef6b6a69474cf7f4a16bfd090d -#- 2014-06-03 15:48:59 -0400 -#- Pierre Rioux -#- __CBRAIN_HEAD__
 0fa5ead8dfb50d4081043b2865f7211d2f1be84e -#- 2010-12-15 12:21:34 +0000 -#- tsherif -#- APIs/java/compile_api
 68a908c9a41cadda76caf50ed351c883ebedbd78 -#- 2011-10-05 15:34:33 -0400 -#- Tarek Sherif -#- APIs/java/lib/CBRAIN-API.jar
 68a908c9a41cadda76caf50ed351c883ebedbd78 -#- 2011-10-05 15:34:33 -0400 -#- Tarek Sherif -#- APIs/java/lib/cbrainapi/CBRAINSession.class
@@ -206,11 +206,11 @@ f40933ae1aa95e5c0ecad259ab2a592933d2517f -#- 2013-07-14 23:14:05 -0400 -#- Natac
 f40933ae1aa95e5c0ecad259ab2a592933d2517f -#- 2013-07-14 23:14:05 -0400 -#- Natacha Beck -#- BrainPortal/Gemfile.lock
 dd4c196cb6dbaa6311ec32cda022e12659b56070 -#- 2011-06-09 13:08:52 -0400 -#- Pierre Rioux -#- BrainPortal/README
 32fb3a584d46276bed1e6fad0626e5656f1510d4 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/Rakefile
-1deb01c5f5fd9bcc49363f8047219d291505b04e -#- 2014-04-24 12:02:21 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/application_controller.rb
+c200cdd52b948f4a5618c763b59cfdd100e9cd68 -#- 2014-06-03 15:42:51 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/application_controller.rb
 2807bab5f02f74a6001537af8dc24014b85e11e8 -#- 2014-05-06 11:42:56 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/bourreaux_controller.rb
 7eff43820eaef785b189dc0cac9e1e9269e2dbc5 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/app/controllers/controls_controller.rb
 7eff43820eaef785b189dc0cac9e1e9269e2dbc5 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/app/controllers/custom_filters_controller.rb
-2807bab5f02f74a6001537af8dc24014b85e11e8 -#- 2014-05-06 11:42:56 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/data_providers_controller.rb
+c200cdd52b948f4a5618c763b59cfdd100e9cd68 -#- 2014-06-03 15:42:51 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/data_providers_controller.rb
 19eaf3461063c504f5821db24b87b61f3dd03076 -#- 2012-08-30 16:31:00 -0400 -#- Tarek Sherif -#- BrainPortal/app/controllers/exception_logs_controller.rb
 7eff43820eaef785b189dc0cac9e1e9269e2dbc5 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/app/controllers/feedbacks_controller.rb
 7288ff8d0c61f877005b849fda947e5a89b7257e -#- 2014-02-18 14:23:51 -0500 -#- Natacha Beck -#- BrainPortal/app/controllers/groups_controller.rb
@@ -218,7 +218,7 @@ bba981b00850fe70d715337d4c7292af5e627da5 -#- 2013-09-11 16:49:25 -0400 -#- Natac
 7eff43820eaef785b189dc0cac9e1e9269e2dbc5 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/app/controllers/jiv_controller.rb
 19eaf3461063c504f5821db24b87b61f3dd03076 -#- 2012-08-30 16:31:00 -0400 -#- Tarek Sherif -#- BrainPortal/app/controllers/messages_controller.rb
 3d880b4e1216e1ff116ba76d2b97ef92f7a2d8c3 -#- 2013-01-14 17:03:51 -0500 -#- Tarek Sherif -#- BrainPortal/app/controllers/portal_controller.rb
-e65b58ad3acce71002d1a5e51fa04aeb3e600dda -#- 2014-05-30 14:31:18 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/service_controller.rb
+c200cdd52b948f4a5618c763b59cfdd100e9cd68 -#- 2014-06-03 15:42:51 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/service_controller.rb
 24b904d2529438957d2db0108d5fa4ff699e9361 -#- 2014-03-05 16:36:55 -0500 -#- Natacha Beck -#- BrainPortal/app/controllers/sessions_controller.rb
 bba981b00850fe70d715337d4c7292af5e627da5 -#- 2013-09-11 16:49:25 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/sites_controller.rb
 0edc9e1fbb8f5515f91c77816d335e35fc5d1a7d -#- 2012-08-07 14:59:21 -0400 -#- Tarek Sherif -#- BrainPortal/app/controllers/tags_controller.rb
@@ -226,7 +226,7 @@ d7a3c09c58229febfd84a0d7ba818bb52aa895e4 -#- 2014-04-16 15:32:29 -0400 -#- Natac
 600004bfc5e13c4769749fda852866b587f99c03 -#- 2013-12-03 12:24:17 -0500 -#- Natacha Beck -#- BrainPortal/app/controllers/tool_configs_controller.rb
 bba981b00850fe70d715337d4c7292af5e627da5 -#- 2013-09-11 16:49:25 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/tools_controller.rb
 bf45d5b88da7fe1e10f23fdc042137933d7c30cb -#- 2014-05-27 16:37:39 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/userfiles_controller.rb
-aec613a87a5e1f9061531efd30adab2321f84e40 -#- 2014-04-15 13:23:10 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/users_controller.rb
+c200cdd52b948f4a5618c763b59cfdd100e9cd68 -#- 2014-06-03 15:42:51 -0400 -#- Natacha Beck -#- BrainPortal/app/controllers/users_controller.rb
 0e394ea975912ab35b5b9a99085048ced1d1a868 -#- 2013-08-28 13:52:22 -0400 -#- Natacha Beck -#- BrainPortal/app/helpers/access_report_helper.rb
 7eff43820eaef785b189dc0cac9e1e9269e2dbc5 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/app/helpers/ajax_widget_helper.rb
 058ddb213dfcedde4b550cb53c62485f6e2f5dae -#- 2013-10-18 11:02:24 -0400 -#- Natacha Beck -#- BrainPortal/app/helpers/basic_helper.rb
@@ -251,7 +251,7 @@ ab0b30391732a0746763531e7ac9598477aa0f82 -#- 2013-10-18 11:43:50 -0400 -#- Natac
 1483e028f7bc330e1b1cc2d4608c0b4bf8be8df6 -#- 2013-12-10 17:11:42 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/bourreau.rb
 e5709a60a47735a25de041c199f368a2eefd1898 -#- 2013-08-26 17:53:15 -0400 -#- Natacha Beck -#- BrainPortal/app/models/brain_portal.rb
 7eff43820eaef785b189dc0cac9e1e9269e2dbc5 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/app/models/cbrain_local_data_provider.rb
-194c74bfd5f06631118f0abee2d1b320e0d08b3f -#- 2014-02-21 14:24:26 -0500 -#- Pierre Rioux -#- BrainPortal/app/models/cbrain_session.rb
+c200cdd52b948f4a5618c763b59cfdd100e9cd68 -#- 2014-06-03 15:42:51 -0400 -#- Natacha Beck -#- BrainPortal/app/models/cbrain_session.rb
 7eff43820eaef785b189dc0cac9e1e9269e2dbc5 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/app/models/cbrain_smart_data_provider.rb
 117f503ca620d0c3e13991f6c6afb857b61f757a -#- 2013-05-31 16:30:56 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/cbrain_ssh_data_provider.rb
 1f9e526d0930200bd6228ea3d22c9f2c68b93c64 -#- 2013-09-07 17:13:49 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/cbrain_task.rb
@@ -296,7 +296,7 @@ df43d52141c0e87a404c274820ab2403d86d2686 -#- 2013-04-22 16:35:31 -0400 -#- Pierr
 4d5b994c45581a612f7c30afeb6d016152d8b649 -#- 2014-01-28 15:45:34 -0500 -#- Natacha Beck -#- BrainPortal/app/models/tool_config.rb
 44aa902e92b4f4a2ad2b1b856851e88d0e809408 -#- 2014-03-20 17:33:25 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/user.rb
 7eff43820eaef785b189dc0cac9e1e9269e2dbc5 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/app/models/user_group.rb
-6668c92cfd3ac0ec8fb1f8fcd8d03bcf348a4669 -#- 2014-06-02 13:58:41 -0400 -#- Pierre Rioux -#- BrainPortal/app/models/userfile.rb
+c16bdcb55f6cd5c420d9bfe89e78bc41e676104a -#- 2014-04-29 12:14:43 -0400 -#- Natacha Beck -#- BrainPortal/app/models/userfile.rb
 c16bdcb55f6cd5c420d9bfe89e78bc41e676104a -#- 2014-04-29 12:14:43 -0400 -#- Natacha Beck -#- BrainPortal/app/models/userfile_custom_filter.rb
 7eff43820eaef785b189dc0cac9e1e9269e2dbc5 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/app/models/userfiles/adhd200_fmri_study.rb
 7eff43820eaef785b189dc0cac9e1e9269e2dbc5 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/app/models/userfiles/audio_file.rb
@@ -448,7 +448,7 @@ fb60450a225509a0c0ee17f7b21da7801ef7356d -#- 2012-12-18 13:57:30 -0500 -#- Pierr
 cb441a1887b62a0379346fb4eed49cb77b308a29 -#- 2013-11-18 15:28:38 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/portal/welcome.html.erb
 e65b58ad3acce71002d1a5e51fa04aeb3e600dda -#- 2014-05-30 14:31:18 -0400 -#- Natacha Beck -#- BrainPortal/app/views/service/doc.html.erb
 e65b58ad3acce71002d1a5e51fa04aeb3e600dda -#- 2014-05-30 14:31:18 -0400 -#- Natacha Beck -#- BrainPortal/app/views/service/info.html.erb
-e65b58ad3acce71002d1a5e51fa04aeb3e600dda -#- 2014-05-30 14:31:18 -0400 -#- Natacha Beck -#- BrainPortal/app/views/service/stats.html.erb
+c200cdd52b948f4a5618c763b59cfdd100e9cd68 -#- 2014-06-03 15:42:51 -0400 -#- Natacha Beck -#- BrainPortal/app/views/service/stats.html.erb
 e65b58ad3acce71002d1a5e51fa04aeb3e600dda -#- 2014-05-30 14:31:18 -0400 -#- Natacha Beck -#- BrainPortal/app/views/service/support.html.erb
 236dda431832fc58f49676187265cf3528f1a6ca -#- 2014-02-04 14:15:12 -0500 -#- Tristan Glatard -#- BrainPortal/app/views/sessions/new.html.erb
 a8c5e60fc9cf760784feceb959674c35143222ff -#- 2011-09-14 13:23:54 -0400 -#- Tarek Sherif -#- BrainPortal/app/views/sessions/new.txt.erb
@@ -491,7 +491,7 @@ b41ab9845ddfe361c8174c350f87450efbf2c6ea -#- 2012-05-04 15:23:46 -0400 -#- Pierr
 32fb3a584d46276bed1e6fad0626e5656f1510d4 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/tasks/index.js.erb
 6f9423aa9d973cd95478ab58256874a64f63c77a -#- 2013-08-20 16:20:44 -0400 -#- Natacha Beck -#- BrainPortal/app/views/tasks/new.html.erb
 600004bfc5e13c4769749fda852866b587f99c03 -#- 2013-12-03 12:24:17 -0500 -#- Natacha Beck -#- BrainPortal/app/views/tasks/show.html.erb
-6668c92cfd3ac0ec8fb1f8fcd8d03bcf348a4669 -#- 2014-06-02 13:58:41 -0400 -#- Pierre Rioux -#- BrainPortal/app/views/tool_configs/_by_resource.erb
+afff14878cdf6987cace01670ee94aa12d823dec -#- 2013-12-11 16:53:54 -0500 -#- Natacha Beck -#- BrainPortal/app/views/tool_configs/_by_resource.erb
 600004bfc5e13c4769749fda852866b587f99c03 -#- 2013-12-03 12:24:17 -0500 -#- Natacha Beck -#- BrainPortal/app/views/tool_configs/_by_user.html.erb
 f6738d6bc35e285815be27ec02e6f3a3849beca9 -#- 2013-03-06 12:16:02 -0500 -#- Pierre Rioux -#- BrainPortal/app/views/tool_configs/_env_key_value_pair.erb
 600004bfc5e13c4769749fda852866b587f99c03 -#- 2013-12-03 12:24:17 -0500 -#- Natacha Beck -#- BrainPortal/app/views/tool_configs/_form_fields.html.erb
@@ -585,7 +585,7 @@ b8726092eafdce80d6f2d042ca3f4c78592070a5 -#- 2012-08-01 13:31:12 -0400 -#- Pierr
 32fb3a584d46276bed1e6fad0626e5656f1510d4 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain_task/cb_serializer/views/_task_params.html.erb
 32fb3a584d46276bed1e6fad0626e5656f1510d4 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain_task/cbrain_task_class_loader.rb
 2d25a0e1a381464fef52110798486cefcdb38471 -#- 2011-04-26 22:21:12 +0000 -#- prioux -#- BrainPortal/cbrain_plugins/cbrain_task/civet.rb
-32bc8ac0090e2069103ba2ab5a9eaa7a050d74ad -#- 2014-03-10 13:52:12 -0400 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain_task/civet/bourreau/civet.rb
+c200cdd52b948f4a5618c763b59cfdd100e9cd68 -#- 2014-06-03 15:42:51 -0400 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain_task/civet/bourreau/civet.rb
 d21aa413e67a2debfee9c2e187e14aac440fd7dd -#- 2014-03-10 15:39:51 -0400 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain_task/civet/common/civet.rb
 d21aa413e67a2debfee9c2e187e14aac440fd7dd -#- 2014-03-10 15:39:51 -0400 -#- Natacha Beck -#- BrainPortal/cbrain_plugins/cbrain_task/civet/portal/civet.rb
 d5d79c9cd7a627f7d94f297503f37e66c3bb9908 -#- 2013-02-28 16:21:59 -0500 -#- Pierre Rioux -#- BrainPortal/cbrain_plugins/cbrain_task/civet/views/_civet_file_from_col.html.erb
@@ -1009,8 +1009,8 @@ bb8cae5b5a8a679357bf9a9ce59aaf9e84fcaecb -#- 2010-01-27 20:07:19 +0000 -#- nkass
 bb8cae5b5a8a679357bf9a9ce59aaf9e84fcaecb -#- 2010-01-27 20:07:19 +0000 -#- nkassis -#- BrainPortal/features/support/env.rb
 d9ce8bdeb0703b74e24a9b78232ec0152dac5b86 -#- 2010-01-13 21:15:18 +0000 -#- nkassis -#- BrainPortal/features/support/paths.rb
 7eff43820eaef785b189dc0cac9e1e9269e2dbc5 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/lib/act_rec_log.rb
-a0315e41d163ca931863989ee8e0787cfee6e309 -#- 2012-08-07 18:41:36 -0400 -#- Pierre Rioux -#- BrainPortal/lib/act_rec_meta_data.rb
-7eff43820eaef785b189dc0cac9e1e9269e2dbc5 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/lib/api_helpers.rb
+c200cdd52b948f4a5618c763b59cfdd100e9cd68 -#- 2014-06-03 15:42:51 -0400 -#- Natacha Beck -#- BrainPortal/lib/act_rec_meta_data.rb
+c200cdd52b948f4a5618c763b59cfdd100e9cd68 -#- 2014-06-03 15:42:51 -0400 -#- Natacha Beck -#- BrainPortal/lib/api_helpers.rb
 7eff43820eaef785b189dc0cac9e1e9269e2dbc5 -#- 2012-08-07 14:58:59 -0400 -#- Tarek Sherif -#- BrainPortal/lib/authenticated_system.rb
 9c1e6935a6230573cae2ebdb077b87858db6dd80 -#- 2014-04-22 12:58:37 -0400 -#- Natacha Beck -#- BrainPortal/lib/basic_filter_helpers.rb
 3d880b4e1216e1ff116ba76d2b97ef92f7a2d8c3 -#- 2013-01-14 17:03:51 -0500 -#- Tarek Sherif -#- BrainPortal/lib/cbrain_checker.rb
@@ -1090,7 +1090,7 @@ a30b164fbea59a19dc4db14cb8efcdd57afc0fea -#- 2011-07-05 16:00:45 -0400 -#- Pierr
 4a3463715869dcf71ef25de79eb01dbed70e5f36 -#- 2013-12-16 16:26:45 -0500 -#- Tarek Sherif -#- BrainPortal/public/color_maps/gray_scale.txt
 4a3463715869dcf71ef25de79eb01dbed70e5f36 -#- 2013-12-16 16:26:45 -0500 -#- Tarek Sherif -#- BrainPortal/public/color_maps/spectral-brainview.txt
 4a3463715869dcf71ef25de79eb01dbed70e5f36 -#- 2013-12-16 16:26:45 -0500 -#- Tarek Sherif -#- BrainPortal/public/color_maps/spectral_spectrum.txt
-6668c92cfd3ac0ec8fb1f8fcd8d03bcf348a4669 -#- 2014-06-02 13:58:41 -0400 -#- Pierre Rioux -#- BrainPortal/public/doc/data_providers/data_provider_info.html
+32fb3a584d46276bed1e6fad0626e5656f1510d4 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/public/doc/data_providers/data_provider_info.html
 32fb3a584d46276bed1e6fad0626e5656f1510d4 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/public/doc/feedback/feedback.html
 3ad6bdeefe56724fa1241eb7afbd798868c82837 -#- 2010-09-01 17:34:31 +0000 -#- angela -#- BrainPortal/public/doc/feedback/feedback.png
 32fb3a584d46276bed1e6fad0626e5656f1510d4 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- BrainPortal/public/doc/groups/groups_info.html

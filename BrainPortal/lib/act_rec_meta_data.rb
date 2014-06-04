@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # CBRAIN extensions for storing metadata information to ANY
@@ -145,7 +145,7 @@ module ActRecMetaData
     # will be used to store equivalent metadata
     # on the current ActiveRecord object.
     def attributes=(myhash)
-      myhash.each do |k,v| 
+      myhash.each do |k,v|
         self[k]=v
       end
     end
@@ -311,7 +311,7 @@ module ActRecMetaData
   # +meta_keys+ can be provided to limit the set of keys to
   # be updated; the default is the keyword :all which means all
   # keys in +meta_params+ .
-  # 
+  #
   # An explicit value of nil for a key will delete the meta
   # data entry, just like an assignement to nil does in
   # the meta data store.

@@ -25,7 +25,7 @@ class DataProvidersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :except => [:disk_usage, :cleanup]
+  api_available :except => [:cleanup]
 
   before_filter :login_required
   before_filter :manager_role_required, :only => [:new, :create]
