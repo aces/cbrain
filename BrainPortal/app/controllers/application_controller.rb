@@ -246,8 +246,8 @@ class ApplicationController < ActionController::Base
     stats["GlobalCount"]                     ||= 0
     stats["GlobalCount"]                      += 1     # Important to change at least ONE entry at top level, so meta data saves...
     stats["StatusCodes"]                     ||= {}
-    stats["StatusCodes"][response.code.to_s] ||= 0
-    stats["StatusCodes"][response.code.to_s]  += 1
+    stats["StatusCodes"]["status_#{response.code.to_s}"] ||= 0
+    stats["StatusCodes"]["status_#{response.code.to_s}"]  += 1
 
     # Save back the structure
     cr_meta[:stats] = stats   # ... here.
