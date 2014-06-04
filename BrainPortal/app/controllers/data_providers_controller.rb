@@ -30,6 +30,8 @@ class DataProvidersController < ApplicationController
   before_filter :login_required
   before_filter :manager_role_required, :only => [:new, :create]
 
+  API_HIDDEN_ATTRIBUTES = [ :cloud_storage_client_identifier, :cloud_storage_client_token ]
+
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "data_providers.name"
 
@@ -43,8 +45,14 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml  { render :xml  => @data_providers }
-      format.json { render :json => @data_providers.to_json(methods: [:type, :is_browsable?, :is_fast_syncing?, :allow_file_owner_change?]) }
+      format.xml  do
+        @data_providers.each { |dp| dp.hide_attributes(API_HIDDEN_ATTRIBUTES) }
+        render :xml  => @data_providers
+      end
+      format.json do
+        @data_providers.each { |dp| dp.hide_attributes(API_HIDDEN_ATTRIBUTES) }
+        render :json => @data_providers.to_json(methods: [:type, :is_browsable?, :is_fast_syncing?, :allow_file_owner_change?])
+      end
       format.js
     end
   end
@@ -61,15 +69,11 @@ class DataProvidersController < ApplicationController
     respond_to do |format|
       format.html # show.html.erb
       format.xml  {
-          unless (@provider.has_owner_access?(current_user)) {
-            [ :cloud_storage_client_identifier, :cloud_storage_client_token ].each { |att| @provider[att] = "N/A" }
-          }
-          render :xml  => @provider }
+          @provider.hide_attributes(API_HIDDEN_ATTRIBUTES)
+          render :xml  => @provider
       }
       format.json {
-          unless (@provider.has_owner_access?(current_user)) {
-            [ :cloud_storage_client_identifier, :cloud_storage_client_token ].each { |att| @provider[att] = "N/A" }
-          }
+          @provider.hide_attributes(API_HIDDEN_ATTRIBUTES)
           render :json => @provider
       }
     end
