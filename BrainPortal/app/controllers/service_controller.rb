@@ -32,7 +32,7 @@ class ServiceController < ApplicationController
   # information about the platform
   def info
     @info = { :name            => "CBRAIN Data Service",
-              :synopsis        => "Focus on data movement using the CBRAIN",
+              :synopsis        => "Focus on data movement using the CBRAIN platform",
               :version         => CbrainFileRevision.cbrain_head_tag,
               :institution     => "McGill University",
               :releaseTime     => Time.parse(CbrainFileRevision.cbrain_head_revinfo.time).utc.iso8601,
@@ -80,7 +80,13 @@ class ServiceController < ApplicationController
   # Return release note describing the current version
   # of the platform.
   def releasenotes
-    render :text => "Coming soon; will point to GitHub's release notes."
+    respond_to do |format|
+      text = "Coming soon; will point to GitHub's release notes."
+      format.html { render :text => text }
+      format.xml  { render :xml  => { :text => text } }
+      format.json { render :json => { :text => text } }
+    end
+
   end
 
   # Provides information on how to get support
