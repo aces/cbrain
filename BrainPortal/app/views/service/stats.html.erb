@@ -78,8 +78,9 @@
         <!-- each row -->
         <% @stats.each do |k, by_status| %>
           <% next unless k == "StatusCodes"%>
-          <% by_status.each do |code, count| %>
+          <% by_status.each do |status_code, count| %>
             <tr>
+              <% code = Regexp.last_match[1] if status_code =~ /(\d+$)/ %>
               <td><%= code %></td>
               <td><%= count %></td>
             </tr>
