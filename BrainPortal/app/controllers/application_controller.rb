@@ -221,7 +221,6 @@ class ApplicationController < ActionController::Base
     client_type            = current_session["client_type"] # this is set in log_user_info() above.
     return true if client_type.blank?
 
-    cu_id                  = current_user.try(:id).to_s.presence || "0"
     controller             = params[:controller].to_s.presence   || "UnknownController"
     action                 = params[:action].to_s.presence       || "UnknownAction"
     success                = response.code.to_s =~ /^[123]\d\d$/
@@ -234,9 +233,7 @@ class ApplicationController < ActionController::Base
 
     # Fill the stats structure, initializing the levels as we go.
     stats[client_type]          ||= {}
-    user2contr                    = stats[client_type]
-    user2contr["user_#{cu_id}"] ||= {}
-    contr2action                  = user2contr["user_#{cu_id}"]
+    contr2action                  = stats[client_type]
     contr2action[controller]    ||= {}
     action2count                  = contr2action[controller]
     action2count[action]        ||= [0,0]
