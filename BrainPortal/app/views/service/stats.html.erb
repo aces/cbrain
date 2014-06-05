@@ -43,10 +43,11 @@
       <% total_count_by_client = {} %>
       <% @stats.keys.sort.each do |client| # CLIENT LOOP %>
         <% by_user = @stats[client] %>
-        <% next if client == "StatusCodes" || client == "GlobalCount"%>
+        <% next unless by_user.is_a?(Hash) %>
         <% total_count_by_client[client] = [0,0] %>
         <% by_user.keys.sort.each do |user|  # USER LOOP %>
           <% by_controller = by_user[user] %>
+          <% next unless by_controller.is_a?(Hash) %>
           <% by_controller.keys.sort.each do |controller|  # CONTROLLER LOOP %>
             <% by_action = by_controller[controller] %>
             <% by_action.keys.sort.each do |action|  # ACTION LOOP %>

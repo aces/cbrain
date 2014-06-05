@@ -53,8 +53,9 @@ class ServiceController < ApplicationController
 
   # Return information about the usage of the platform.
   def stats
-    @stats      = RemoteResource.current_resource.meta[:stats]
+    @stats      = RemoteResource.current_resource.meta[:stats] || {}
     @last_reset = (RemoteResource.current_resource.meta.md_for_key(:stats).created_at || Time.at(0)).utc.iso8601
+    @stats[:lastReset] = @last_reset
 
     respond_to do |format|
       format.html
