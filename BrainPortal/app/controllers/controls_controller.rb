@@ -119,6 +119,7 @@ class ControlsController < ApplicationController
     respond_to do |format|
       format.html { head :method_not_allowed }
       format.xml  { head :method_not_allowed }
+      format.json { head :method_not_allowed }
     end
   end
 

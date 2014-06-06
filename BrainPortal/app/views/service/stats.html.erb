@@ -26,6 +26,7 @@
 
   <h1>CBRAIN Web Service Statistics</h1>
 
+  <div class="generalbox">
     <table class="report">
       <!-- header -->
       <tr>
@@ -39,7 +40,8 @@
         <th>Failures</th>
       </tr>
       <!-- each row -->
-      <% total_count_by_client = {} %>
+      <% total_count_by_client       = {} %>
+      <% total_count_by_contr_action = {} %>
       <% @stats.keys.sort.each do |client| # CLIENT LOOP %>
         <% by_controller = @stats[client] %>
         <% next unless by_controller.is_a?(Hash) %>
@@ -57,14 +59,20 @@
               <% total_count_by_client[client]   ||= [0,0] %>
               <% total_count_by_client[client][0] += counts[0] %>
               <% total_count_by_client[client][1] += counts[1] %>
+              <% contr_action = "#{controller},#{action}" %>
+              <% total_count_by_contr_action[contr_action]   ||= [0,0] %>
+              <% total_count_by_contr_action[contr_action][0] += counts[0] %>
+              <% total_count_by_contr_action[contr_action][1] += counts[1] %>
             </tr>
           <% end %>
         <% end %>
       <% end %>
     </table>
+  </div>
 
-    <p>
+  <div class="box_spacer"></div>
 
+  <div class="generalbox">
     <table>
       <!-- header -->
       <tr>
@@ -85,9 +93,39 @@
         </tr>
       <% end %>
     </table>
+  </div>
 
-    <p>
+  <div class="box_spacer"></div>
 
+  <div class="generalbox">
+    <table>
+      <!-- header -->
+      <tr>
+        <th colspan="4" class="supertitle">Totals by Controller/Action</th>
+      </tr>
+      <tr>
+        <th>Controller</th>
+        <th>Action</th>
+        <th>Successes</th>
+        <th>Failures</th>
+      </tr>
+      <!-- each row -->
+      <% total_count_by_contr_action.keys.sort.each do |contr_action| %>
+        <% counts            = total_count_by_contr_action[contr_action] %>
+        <% controller,action = contr_action.split(",") %>
+        <tr>
+          <td><%= controller %></td>
+          <td><%= action %></td>
+          <td><%= counts[0] %></td>
+          <td><%= counts[1] %></td>
+        </tr>
+      <% end %>
+    </table>
+  </div>
+
+  <div class="box_spacer"></div>
+
+  <div class="generalbox">
     <table class="report">
       <!-- header -->
       <tr>
@@ -109,9 +147,10 @@
         <% end %>
       <% end %>
     </table>
+  </div>
 
-    <p>
+  <p>
 
-    <strong>Counters Last Reset:</strong> <%= @last_reset %>
+  <strong>Counters Last Reset:</strong> <%= @last_reset %>
 
 
