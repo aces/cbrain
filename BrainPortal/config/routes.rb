@@ -170,15 +170,16 @@ CbrainRailsPortal::Application.routes.draw do
   match '/portal_log', :controller => :portal, :action => :portal_log
 
   # Service
-  match '/service/info',         :controller => :service, :action => :info
-  match '/service/stats',        :controller => :service, :action => :stats
-  match '/service/doc',          :controller => :service, :action => :doc
-  match '/service/releasenotes', :controller => :service, :action => :releasenotes
-  match '/service/support',      :controller => :service, :action => :support
-  match '/service/source',       :controller => :service, :action => :source
-  match '/service/tryme',        :controller => :service, :action => :tryme
-  match '/service/licence',      :controller => :service, :action => :licence
-  match '/service/provenance',   :controller => :service, :action => :provenance
+  match '/service/info',          :controller => :service, :action => :info
+  match '/service/stats',         :controller => :service, :action => :stats
+  match '/service/details_stats', :controller => :service, :action => :details_stats
+  match '/service/doc',           :controller => :service, :action => :doc
+  match '/service/releasenotes',  :controller => :service, :action => :releasenotes
+  match '/service/support',       :controller => :service, :action => :support
+  match '/service/source',        :controller => :service, :action => :source
+  match '/service/tryme',         :controller => :service, :action => :tryme
+  match '/service/licence',       :controller => :service, :action => :licence
+  match '/service/provenance',    :controller => :service, :action => :provenance
 
 end
 
