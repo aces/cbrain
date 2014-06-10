@@ -53,14 +53,17 @@ class ServiceController < ApplicationController
 
   # Return information about the usage of the platform.
   def stats
-    @stats      = RemoteResource.current_resource.meta[:stats] || {}
-    @last_reset = (RemoteResource.current_resource.meta.md_for_key(:stats).created_at || Time.at(0)).utc.iso8601
-    @stats[:lastReset] = @last_reset
+    stats             = RemoteResource.current_resource.meta[:stats] || {}
+    (stats_by_client,stats_by_contr_action) = compile_total_stats(stats) # stats_by_contr_action is not used
+
+    @summary_stats              = Hash[stats_by_client.collect { |client, counts| [ client , counts.sum ] } ]
+    @last_reset                 = (RemoteResource.current_resource.meta.md_for_key(:stats).created_at || Time.at(0)).utc.iso8601
+    @summary_stats["lastReset"] = @last_reset
 
     respond_to do |format|
       format.html
-      format.xml  { render :xml  => @stats }
-      format.json { render :json => @stats }
+      format.xml  { render :xml  => @summary_stats }
+      format.json { render :json => @summary_stats }
     end
   end
 
@@ -137,6 +140,49 @@ class ServiceController < ApplicationController
       format.xml   { render :nothing => true, :status => 406 }
       format.json  { render :nothing => true, :status => 406 }
     end
+  end
+
+
+  # Return information about the usage of the platform.
+  def details_stats
+    @stats             = RemoteResource.current_resource.meta[:stats] || {}
+    (@stats_by_client,@stats_by_contr_action) = compile_total_stats(@stats)
+    @last_reset        = (RemoteResource.current_resource.meta.md_for_key(:stats).created_at || Time.at(0)).utc.iso8601
+    @stats[:lastReset] = @last_reset
+
+    respond_to do |format|
+      format.html
+      format.xml  { render :xml  => @stats }
+      format.json { render :json => @stats }
+    end
+  end
+
+  private
+
+  def compile_total_stats(stats={})
+    stats_by_client       = {}
+    stats_by_contr_action = {}
+
+    stats.each do |client, by_controller|
+      next unless by_controller.is_a?(Hash)
+      by_controller.each do |controller, by_action|
+        next unless by_action.is_a?(Hash)
+        by_action.each do |action, counts|
+          next unless counts.is_a?(Array)
+          # By client
+          stats_by_client[client]    ||= [0,0]
+          stats_by_client[client][0]  += counts[0]
+          stats_by_client[client][1]  += counts[1]
+          # By controller and action
+          contr_action = "#{controller},#{action}"
+          stats_by_contr_action[contr_action]      ||= [0,0]
+          stats_by_contr_action[contr_action][0] += counts[0]
+          stats_by_contr_action[contr_action][1] += counts[1]
+        end
+      end
+    end
+
+    return stats_by_client,stats_by_contr_action
   end
 
 end
