@@ -85,8 +85,8 @@ module LicenseAgreements
   # to the meta data store whenever the object is being saved.
   def register_license_agreements
     # To keep pre_register licenses agreement, usefull when the console is used to save the object
-    new_agreements  = license_agreements.sort
-    orig_agreements = @_license_agreements_original.sort
+    new_agreements  = (license_agreements || []).sort
+    orig_agreements = (@_license_agreements_original || []).sort
     return true if new_agreements == orig_agreements
     self.meta[:license_agreements] = license_agreements
     @_license_agreements_original = license_agreements
