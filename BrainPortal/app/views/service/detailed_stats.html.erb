@@ -30,7 +30,7 @@
     <table class="report">
       <!-- header -->
       <tr>
-        <th colspan="5" class="supertitle">Number of actions triggered</th>
+        <th colspan="5" class="supertitle">Number of Rails actions triggered</th>
       </tr>
       <tr>
         <th>Client Type</th>
@@ -92,7 +92,7 @@
     <table>
       <!-- header -->
       <tr>
-        <th colspan="4" class="supertitle">Totals by Controller/Action</th>
+        <th colspan="4" class="supertitle">Totals by controller &amp; action</th>
       </tr>
       <tr>
         <th>Controller</th>
@@ -120,28 +120,27 @@
     <table class="report">
       <!-- header -->
       <tr>
-        <th colspan="2" class="supertitle">Counts of HTTP status codes</th>
+        <th colspan="2" class="supertitle">Totals by HTTP status codes</th>
       </tr>
       <tr>
         <th>Status code</th>
         <th>Count</th>
       </tr>
       <!-- each row -->
-      <% @stats.each do |k, by_status| %>
-        <% next unless k == "StatusCodes"%>
-        <% by_status.each do |status_code, count| %>
-          <tr>
-            <% code = Regexp.last_match[1] if status_code =~ /(\d+$)/ %>
-            <td><%= code %></td>
-            <td><%= count %></td>
-          </tr>
-        <% end %>
+      <% bystatus = @stats['StatusCodes'] || {} %>
+      <% bystatus.keys.sort.each do |status_code| %>
+        <% code  = status_code =~ /(\d+)$/ ? Regexp.last_match[1] : status_code %>
+        <% count = bystatus[status_code] || "(Unknown)" %>
+        <tr>
+          <td><%= code %></td>
+          <td><%= count %></td>
+        </tr>
       <% end %>
     </table>
   </div>
 
   <p>
 
-  <strong>Counters Last Reset:</strong> <%= @last_reset %>
+  <strong>Counters last reset:</strong> <%= @last_reset %>
 
 
