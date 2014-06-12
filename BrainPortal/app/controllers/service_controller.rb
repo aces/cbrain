@@ -54,11 +54,13 @@ class ServiceController < ApplicationController
   # Return information about the usage of the platform.
   def stats
     stats             = RemoteResource.current_resource.meta[:stats] || {}
-    (stats_by_client,stats_by_contr_action) = compile_total_stats(stats) # stats_by_contr_action is not used
+    (stats_by_client,stats_by_contr_action) = compile_total_stats(stats)
 
-    @summary_stats              = Hash[stats_by_client.collect { |client, counts| [ client , counts.sum ] } ]
-    @last_reset                 = (RemoteResource.current_resource.meta.md_for_key(:stats).created_at || Time.at(0)).utc.iso8601
-    @summary_stats["lastReset"] = @last_reset
+    @summary_stats                 = Hash[stats_by_client.collect { |client, counts| [ client , counts.sum ] } ]
+    @last_reset                    = (RemoteResource.current_resource.meta.md_for_key(:stats).created_at || Time.at(0)).utc.iso8601
+    authenticated_actions          = count_authenticated_actions(stats_by_contr_action)
+    @summary_stats["TotalActions"] = authenticated_actions
+    @summary_stats["lastReset"]    = @last_reset
 
     respond_to do |format|
       format.html
@@ -69,9 +71,16 @@ class ServiceController < ApplicationController
 
   # Return the online documentation.
   def doc
-    @doc = { :description => "TODO",                # must be text
-             :perl_doc    => "/service/doc#TODO",   # must be a URL
-             :ruby_doc    => "/service/doc#TODO"    # must be a URL
+    @doc = { :description => <<-DESCRIPTION,
+
+             The CBRAIN Framework is a sophisticated piece of software
+             that provides numerous layers for storing data sets,
+             moving them about, launching tasks on supercomputers clusters
+             and managing all of that through a Web interface or external APIs.
+
+             DESCRIPTION
+             :perl_doc    => "/doc/APIs/perl/CbrainPerlAPI.txt",    # must be a URL
+             :ruby_doc    => "/doc/APIs/ruby/CbrainRubyAPI.html"    # must be a URL
            }
 
     respond_to do |format|
@@ -144,7 +153,7 @@ class ServiceController < ApplicationController
 
 
   # Return information about the usage of the platform.
-  def details_stats
+  def detailed_stats
     @stats             = RemoteResource.current_resource.meta[:stats] || {}
     (@stats_by_client,@stats_by_contr_action) = compile_total_stats(@stats)
     @last_reset        = (RemoteResource.current_resource.meta.md_for_key(:stats).created_at || Time.at(0)).utc.iso8601
@@ -159,7 +168,11 @@ class ServiceController < ApplicationController
 
   private
 
-  def compile_total_stats(stats={})
+  # From the raw stats accumulated for all clients,
+  # controllers and actions, compile two other
+  # secondary stats: the sums by clients, and
+  # the sums by pair "controller,service".
+  def compile_total_stats(stats={}) #:nodoc:
     stats_by_client       = {}
     stats_by_contr_action = {}
 
@@ -183,6 +196,29 @@ class ServiceController < ApplicationController
     end
 
     return stats_by_client,stats_by_contr_action
+  end
+
+  # Returns a count of all actions that require
+  # being authenticated; there is a built-in
+  # exception list to ignore actions that can
+  # be invoked externally without authentication
+  # (for instance, /service/* or /portal/welcome)
+  # Returns the sum of successful and unsuccesful
+  # actions.
+  def count_authenticated_actions(stats_by_contr_action = {}) #:nodoc:
+    tot = 0;
+    stats_by_contr_action.keys.sort.each do |contr_action|
+      counts            = stats_by_contr_action[contr_action] || [0,0]
+      next if contr_action == 'portal,welcome'
+      next if contr_action == 'portal,credits'
+      next if contr_action == 'portal,about_us'
+      controller,action = contr_action.split(",")
+      next if controller   == 'service'  # all of them
+      next if controller   == 'controls' # show
+      next if controller   == 'sessions' # new, show, destroy, create
+      tot += counts[0] + counts[1] # OK + FAIL
+    end
+    tot
   end
 
 end

@@ -7,3 +7,4 @@ coverage/
 vendor/cache
 vendor/plugins
 seeds_dev_support_dir
+public/doc/APIs
