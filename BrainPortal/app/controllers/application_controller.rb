@@ -139,11 +139,9 @@ class ApplicationController < ActionController::Base
   # or sign license agreements.
   def check_account_validity
     return false unless current_user
-    return true if params[:controller] == "sessions"
-
-    check_license_agreements()
-    check_password_reset() if current_user.all_licenses_signed == "yes"
-
+    return true  if     params[:controller] == "sessions"
+    return false unless check_license_agreements()
+    return false unless check_password_reset()
     return true
   end
 
@@ -156,7 +154,11 @@ class ApplicationController < ActionController::Base
     unsigned_agreements = current_user.unsigned_license_agreements
     unless unsigned_agreements.empty?
       if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
-        redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first, :status => 303
+        respond_to do |format|
+          format.html { redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first }
+          format.json { render :status => 403, :text => "Some license agreements are not signed." }
+          format.xml  { render :status => 403, :text => "Some license agreements are not signed." }
+        end
         return false
       end
     end
