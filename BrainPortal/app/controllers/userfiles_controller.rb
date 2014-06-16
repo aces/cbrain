@@ -917,7 +917,6 @@ class UserfilesController < ApplicationController
     end # spawn
 
     flash[:notice] = "Your files are being #{word_moved} in the background.\n"
-    #redirect_to :action => :index, :format => request.format.to_sym
 
     respond_to do |format|
         format.html { redirect_to :action => :index }
@@ -984,10 +983,10 @@ class UserfilesController < ApplicationController
     flash[:error] = "You do not have access to #{not_accessible_count} of #{filelist.size} file(s)." if not_accessible_count > 0
 
     # Delete in background
-    CBRAIN.spawn_with_active_records(current_user, "Delete files") do
-      deleted_success_list      = []
-      unregistered_success_list = []
-      failed_list               = {}
+    deleted_success_list      = []
+    unregistered_success_list = []
+    failed_list               = {}
+    CBRAIN.spawn_with_active_records_if(request.format.to_sym != :json, current_user, "Delete files") do
       to_delete.each_with_index do |userfile,count|
         $0 = "Delete ID=#{userfile.id} #{count+1}/#{to_delete.size}\0"
         begin
@@ -1015,7 +1014,23 @@ class UserfilesController < ApplicationController
     end # spawn
 
     flash[:notice] = "Your files are being deleted in background."
-    redirect_to :action => :index, :format => request.format.to_sym
+
+    if request.format.to_sym == :json
+      json_failed_list = {}
+      failed_list.each do |error_message, userfiles|
+        json_failed_list[error_message] = userfiles.map(&:id)
+      end
+    end
+
+    respond_to do |format|
+      format.html { redirect_to :action => :index }
+      format.json { render :json => { :unregistered_list => unregistered_success_list.map(&:id),
+                                      :deleted_list      => deleted_success_list.map(&:id),
+                                      :failed_list       => json_failed_list,
+                                      :error             => flash[:error]
+                                    }
+                  }
+    end
   end
 
 
@@ -1030,7 +1045,10 @@ class UserfilesController < ApplicationController
       specified_filename.sub!(/(\.tar)?(\.g?z)?$/i,"")
       if ! Userfile.is_legal_filename?(specified_filename)
           flash[:error] = "Error: filename '#{specified_filename}' is not acceptable (illegal characters?)."
-          redirect_to :action => :index, :format =>  request.format.to_sym
+          respond_to do |format|
+            format.html { redirect_to :action => :index, :format =>  request.format.to_sym }
+            format.json { render :json => { :error => flash[:error] } }
+          end
           return
       end
     else
@@ -1049,7 +1067,10 @@ class UserfilesController < ApplicationController
     if tot_size > MAX_DOWNLOAD_MEGABYTES.megabytes
       flash[:error] = "You cannot download data that exceeds #{MAX_DOWNLOAD_MEGABYTES} megabytes using a browser.\n" +
                       "Consider using an externally accessible Data Provider (ask the admins for more info).\n"
-      redirect_to :action => :index, :format =>  request.format.to_sym
+      respond_to do |format|
+          format.html { redirect_to :action => :index, :format =>  request.format.to_sym }
+          format.json { render :json => { :error => flash[:error] } }
+      end
       return
     end
 
@@ -1065,8 +1086,9 @@ class UserfilesController < ApplicationController
     end
 
     # When several files are to be sent, create and send a .tar.gz file
-    tarfile = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login)
-    send_file tarfile, :stream  => true, :filename => "#{specified_filename}.tar.gz"
+    tarfile      = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login)
+    tarfile_name = "#{specified_filename}.tar.gz"
+    send_file tarfile, :stream  => true, :filename => tarfile_name
     CBRAIN.spawn_fully_independent("DL clean #{current_user.login}") do
       sleep 3000
       File.unlink(tarfile)

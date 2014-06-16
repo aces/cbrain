@@ -36,13 +36,12 @@ module CBRAINExtensions #:nodoc:
       # to raise an exception ActiveRecord::RecordNotSaved
       def hide_attributes(attr_list, options={})
         newvalue = options.has_key?(:replacement) ? options[:replacement] : "N/A"
-        attr_list.each { |attr| puts "HIDING #{attr}" ; self[attr] = newvalue }
-        define_singleton_method :save, (lambda do |*attr|
+        attr_list.each { |attr| self[attr] = newvalue }
+        raise_not_saved = lambda do |*attr|
            raise ActiveRecord::RecordNotSaved.new("This object has hidden attributes and cannot be saved")
-        end)
-        define_singleton_method :save!, (lambda do |*attr|
-           raise ActiveRecord::RecordNotSaved.new("This object has hidden attributes and cannot be saved")
-        end)
+        end
+        define_singleton_method :save,  raise_not_saved
+        define_singleton_method :save!, raise_not_saved
         true
       end
 
