@@ -1045,7 +1045,10 @@ class UserfilesController < ApplicationController
       specified_filename.sub!(/(\.tar)?(\.g?z)?$/i,"")
       if ! Userfile.is_legal_filename?(specified_filename)
           flash[:error] = "Error: filename '#{specified_filename}' is not acceptable (illegal characters?)."
-          redirect_to :action => :index, :format =>  request.format.to_sym
+          respond_to do |format|
+            format.html { redirect_to :action => :index, :format =>  request.format.to_sym }
+            format.json { render :json => { :error => flash[:error] } }
+          end
           return
       end
     else
@@ -1064,7 +1067,10 @@ class UserfilesController < ApplicationController
     if tot_size > MAX_DOWNLOAD_MEGABYTES.megabytes
       flash[:error] = "You cannot download data that exceeds #{MAX_DOWNLOAD_MEGABYTES} megabytes using a browser.\n" +
                       "Consider using an externally accessible Data Provider (ask the admins for more info).\n"
-      redirect_to :action => :index, :format =>  request.format.to_sym
+      respond_to do |format|
+          format.html { redirect_to :action => :index, :format =>  request.format.to_sym }
+          format.json { render :json => { :error => flash[:error] } }
+      end
       return
     end
 
@@ -1080,8 +1086,9 @@ class UserfilesController < ApplicationController
     end
 
     # When several files are to be sent, create and send a .tar.gz file
-    tarfile = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login)
-    send_file tarfile, :stream  => true, :filename => "#{specified_filename}.tar.gz"
+    tarfile      = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login)
+    tarfile_name = "#{specified_filename}.tar.gz"
+    send_file tarfile, :stream  => true, :filename => tarfile_name
     CBRAIN.spawn_fully_independent("DL clean #{current_user.login}") do
       sleep 3000
       File.unlink(tarfile)
