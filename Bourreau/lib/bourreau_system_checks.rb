@@ -417,7 +417,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
     message = spurious_ids.collect { |id| "rm -rf #{uids2path[id]}" }.join("\n");
     Message.send_message(User.admin,
-      :type          => :error,
+      :type          => :system,
       :header        => "Spurious task work directories found on '#{myself.name}'",
       :description   => "Some spurious task work directories were found.\n" +
                         "These correspond to tasks that no longer exist in the database.",

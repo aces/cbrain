@@ -694,10 +694,11 @@ class DataProvidersController < ApplicationController
     fileinfolist = @provider.provider_list_all(as_user)
 
     # Write a new cached copy
-    File.open(cache_file + ".tmp","w") do |fh|
+    tmpcachefile = cache_file + ".#{Process.pid}.tmp";
+    File.open(tmpcachefile,"w") do |fh|
        fh.write(YAML.dump(fileinfolist))
     end
-    File.rename(cache_file + ".tmp",cache_file)  # crush it
+    File.rename(tmpcachefile,cache_file) rescue true  # crush it
 
     # Return it
     fileinfolist

@@ -81,7 +81,7 @@ class PortalAgentLocker < Worker
     end
 
     log.split(/\n/).each do |l|
-      worker_log.info "Unlocked by: #{l}"
+      worker_log.debug "Unlocked by: #{l}"
     end
     if log.blank? && @time_unlocked.blank?
       worker_log.warn "No reason found for unlocked agent!"
