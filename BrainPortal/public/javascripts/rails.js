@@ -74,7 +74,7 @@
 
     // Make sure that every Ajax request sends the CSRF token
     CSRFProtection: function(xhr) {
-      var token = $('meta[name="csrf-token"]').attr('content');
+      var token = document.getElementById('csrf-token').content;
       if (token) xhr.setRequestHeader('X-CSRF-Token', token);
     },
 
@@ -117,11 +117,11 @@
           method = element.data('method');
           url = element.data('url');
 					data = element.serialize();
-					if (element.data('params')) data = data + "&" + element.data('params'); 
+					if (element.data('params')) data = data + "&" + element.data('params');
         } else {
            method = element.data('method');
            url = element.attr('href');
-           data = element.data('params') || null; 
+           data = element.data('params') || null;
         }
 
         options = {
@@ -155,8 +155,8 @@
     handleMethod: function(link) {
       var href = link.attr('href'),
         method = link.data('method'),
-        csrf_token = $('meta[name=csrf-token]').attr('content'),
-        csrf_param = $('meta[name=csrf-param]').attr('content'),
+        csrf_token = document.getElementById('csrf-token').content,
+        csrf_param = document.getElementById('csrf-param').content,
         form = $('<form method="post" action="' + href + '"></form>'),
         metadata_input = '<input name="_method" value="' + method + '" type="hidden" />';
 
@@ -281,7 +281,7 @@
 
     rails.handleRemote(link);
     return false;
-  });	
+  });
 
   $(rails.formSubmitSelector).live('submit.rails', function(e) {
     var form = $(this),

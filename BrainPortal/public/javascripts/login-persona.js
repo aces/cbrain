@@ -28,8 +28,8 @@ function simpleXhrSentinel(xhr) {
                 window.location.reload();
             }
 	    // else do nothing, the server should print a message
-        } 
-    } 
+        }
+    }
 }
 
 // Posts a Mozilla Persona assertion to the session controller
@@ -38,9 +38,10 @@ function verifyAssertion(assertion) {
     xhr.open("POST", "/session/mozilla_persona_auth", true);
     // see http://www.openjs.com/articles/ajax_xmlhttp_using_post.php
     var param = "assertion="+assertion;
+    xhr.setRequestHeader('X-CSRF-Token', document.getElementById('csrf-token').content);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhr.send(param); // for verification by your backend    
-    xhr.onreadystatechange = simpleXhrSentinel(xhr); 
+    xhr.send(param); // for verification by your backend
+    xhr.onreadystatechange = simpleXhrSentinel(xhr);
 }
 
 // Function called by button "Sign-in with your email" on the login page
