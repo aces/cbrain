@@ -47,7 +47,7 @@ class SessionsController < ApplicationController
     end
   end
 
-  def create
+  def create #:nodoc:
     create_from_user(User.authenticate(params[:login], params[:password]))
   end
 
@@ -99,6 +99,7 @@ class SessionsController < ApplicationController
     if data["status"] == "okay"
       auth_success(data["email"])
     else
+      flash[:error] = 'Authentication failed.'
       auth_failed
     end
     return
@@ -147,52 +148,21 @@ class SessionsController < ApplicationController
   # Now, let's check if there is a user associated to it
   # Be careful NOT to grant admin access based on Mozilla Persona.
   def auth_success(email) #:nodoc:
-    user = User.where(:email => email, :type => "NormalUser").first
+    user = NormalUser.where(:email => email).first
     if user.blank?
       flash[:error] = 'Cannot find CBRAIN user associated to this email address.'
-      inexistent_user
+      auth_failed
     else
-      self.current_user = user
-      # Check if the user or the portal is locked
-      portal = BrainPortal.current_resource
-      locked_message = account_or_portal_locked?(portal)
-      if !locked_message.blank?
-        flash[:error] = locked_message
-        respond_to do |format|
-          format.html { render :action => 'new' }
-          format.json { render :nothing => true, :status  => 401 }
-          format.xml  { render :nothing => true, :status  => 401 }
-        end
-        return
-      end
-
-      # Everything OK
-      user_tracking(portal)
-
-      respond_to do |format|
-        format.html { redirect_back_or_default(start_page_path) }
-        format.json { render :json => {:session_id => request.session_options[:id]}, :status => 200 }
-        format.xml  { render :nothing => true, :status  => 200 }
-      end
+      create_from_user(user)
     end
   end
 
   # Send a proper HTTP error code
   def auth_failed #:nodoc:
-    flash[:error] = 'Authentication failed.'
     respond_to do |format|
-      format.html { render :action  => 'new', :status  => 200 }
-      format.json { render :nothing => true,  :status  => 200 }
-      format.xml  { render :nothing => true,  :status  => 200 }
-    end
-  end
-
-  # Send a proper HTTP error code
-  def inexistent_user #:nodoc:
-    respond_to do |format|
-      format.html { render :action  => 'new', :status  => 200 }
-      format.json { render :nothing => true,  :status  => 200 }
-      format.xml  { render :nothing => true,  :status  => 200 }
+      format.html { render :action => 'new' }
+      format.json { render :nothing => true, :status  => 401 }
+      format.xml  { render :nothing => true, :status  => 401 }
     end
   end
 
@@ -210,33 +180,25 @@ class SessionsController < ApplicationController
     end
   end
 
-  def create_from_user(user)
+  def create_from_user(user) #:nodoc:
     portal = BrainPortal.current_resource
 
     self.current_user = user
 
     # Bad login/password?
-    if ! logged_in?
+    if !logged_in?
       flash.now[:error] = 'Invalid user name or password.'
       Kernel.sleep 3 # Annoying, as it blocks the instance for other users too. Sigh.
 
-      respond_to do |format|
-        format.html { render :action => 'new' }
-        format.json { render :nothing => true, :status  => 401 }
-        format.xml  { render :nothing => true, :status  => 401 }
-      end
+      auth_failed
       return
     end
 
     # Check if the user or the portal is locked
-    locked_message  = account_or_portal_locked?(portal)
+    locked_message  = portal_or_account_locked?(portal)
     if !locked_message.blank?
       flash[:error] = locked_message
-      respond_to do |format|
-        format.html { render :action => 'new' }
-        format.json { render :nothing => true, :status  => 401 }
-        format.xml  { render :nothing => true, :status  => 401 }
-      end
+      auth_failed
       return
     end
 
@@ -251,18 +213,18 @@ class SessionsController < ApplicationController
 
   end
 
-  def account_or_portal_locked?(portal) #:nodoc:
-
-    # Account locked?
-    if self.current_user.account_locked?
-      self.current_user = nil
-      return "This account is locked, please write to #{User.admin.email || "the support staff"} to get this account unlocked."
-    end
+  def portal_or_account_locked?(portal) #:nodoc:
 
     # Portal locked?
     if portal.portal_locked? && !current_user.has_role?(:admin_user)
       self.current_user = nil
       return "The system is currently locked. Please try again later."
+    end
+
+    # Account locked?
+    if self.current_user.account_locked?
+      self.current_user = nil
+      return "This account is locked, please write to #{User.admin.email || "the support staff"} to get this account unlocked."
     end
 
     return ""
