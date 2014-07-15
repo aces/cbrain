@@ -48,100 +48,7 @@ class SessionsController < ApplicationController
   end
 
   def create #:nodoc:
-    portal = BrainPortal.current_resource
-
-    self.current_user = User.authenticate(params[:login], params[:password])
-
-    # Bad login/password?
-    if ! logged_in?
-      flash.now[:error] = 'Invalid user name or password.'
-      Kernel.sleep 3 # Annoying, as it blocks the instance for other users too. Sigh.
-
-      respond_to do |format|
-        format.html { render :action => 'new' }
-        format.json { render :nothing => true, :status  => 401 }
-        format.xml  { render :nothing => true, :status  => 401 }
-      end
-      return
-    end
-
-    # Account locked?
-    if self.current_user.account_locked?
-      self.current_user = nil
-      flash.now[:error] = "This account is locked, please write to #{User.admin.email || "the support staff"} to get this account unlocked."
-      respond_to do |format|
-        format.html { render :action => 'new' }
-        format.json { render :nothing => true, :status  => 401 }
-        format.xml  { render :nothing => true, :status  => 401 }
-      end
-      return
-    end
-
-    # Portal locked?
-    if portal.portal_locked? && !current_user.has_role?(:admin_user)
-      self.current_user = nil
-      flash.now[:error] = 'The system is currently locked. Please try again later.'
-      respond_to do |format|
-        format.html { render :action => 'new' }
-        format.json { render :nothing => true, :status  => 401 }
-        format.xml  { render :nothing => true, :status  => 401 }
-      end
-      return
-    end
-
-    # Everything OK
-    current_session.activate
-    #if params[:remember_me] == "1"
-    #  current_user.remember_me unless current_user.remember_token?
-    #  cookies[:auth_token] = { :value => self.current_user.remember_token , :expires => self.current_user.remember_token_expires_at }
-    #end
-
-    current_session.load_preferences_for_user(current_user)
-
-    # Record the best guess for browser's remote host name
-    reqenv = request.env
-    from_ip = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
-    if from_ip
-      if from_ip =~ /^[\d\.]+$/
-        addrinfo = Socket.gethostbyaddr(from_ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ from_ip ]
-        from_host = addrinfo[0]
-      else
-        from_host = from_ip # already got name?!?
-      end
-    else
-       from_ip   = '0.0.0.0'
-       from_host = 'unknown'
-    end
-    current_session[:guessed_remote_ip]   = from_ip
-    current_session[:guessed_remote_host] = from_host
-
-    # Record the user agent
-    raw_agent = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'
-    current_session[:raw_user_agent]     = raw_agent
-
-    # Record that the user logged in
-    parsed        = HttpUserAgent.new(raw_agent)
-    browser       = (parsed.browser_name    || 'unknown browser')
-    brow_ver      = (parsed.browser_version || '?')
-    os            = (parsed.os_name         || 'unknown OS')
-    pretty_brow   = "#{browser} #{brow_ver} on #{os}"
-    pretty_host   = "#{from_ip}"
-    if (from_host != 'unknown' && from_host != from_ip)
-       pretty_host = "#{from_host} (#{pretty_host})"
-    end
-    current_user.addlog("Logged in from #{pretty_host} using #{pretty_brow}")
-    portal.addlog("User #{current_user.login} logged in from #{pretty_host} using #{pretty_brow}")
-
-    if current_user.has_role?(:admin_user)
-      current_session[:active_group_id] = "all"
-    end
-
-    respond_to do |format|
-      format.html { redirect_back_or_default(start_page_path) }
-      format.json { render :json => {:session_id => request.session_options[:id], :user_id => current_user.id}, :status => 200 }
-      format.xml  { render :nothing => true, :status  => 200 }
-    end
-
+    create_from_user(User.authenticate(params[:login], params[:password]))
   end
 
   def show #:nodoc:
@@ -192,6 +99,7 @@ class SessionsController < ApplicationController
     if data["status"] == "okay"
       auth_success(data["email"])
     else
+      flash[:error] = 'Authentication failed.'
       auth_failed
     end
     return
@@ -204,25 +112,25 @@ class SessionsController < ApplicationController
   def verify_assertion(assertion) #:nodoc:
 
     # TODO put this in config file
-    url = "https://verifier.login.persona.org/verify"
+    url      = "https://verifier.login.persona.org/verify"
     audience = "#{request.protocol}#{request.host_with_port}#{request.fullpath}"
-    uri = URI.parse(url)
+    uri      = URI.parse(url)
 
     # make a new request
     request = Net::HTTP::Post.new(uri.path)
     request.set_form_data({"audience" => audience, "assertion" => assertion})
 
     # send the request
-    https = Net::HTTP.new(uri.host,uri.port)
+    https         = Net::HTTP.new(uri.host,uri.port)
     https.use_ssl = true
-    response = https.request(request)
+    response      = https.request(request)
 
     # if we have a non-200 response
     if ! response.kind_of? Net::HTTPSuccess
       return {
         "status" => "failure",
         "reason" => "Cannot verify request",
-        "body" => response.body
+        "body"   => response.body
       }
     end
 
@@ -240,37 +148,21 @@ class SessionsController < ApplicationController
   # Now, let's check if there is a user associated to it
   # Be careful NOT to grant admin access based on Mozilla Persona.
   def auth_success(email) #:nodoc:
-    user = User.where(:email => email, :type => "NormalUser").first
+    user = NormalUser.where(:email => email).first
     if user.blank?
       flash[:error] = 'Cannot find CBRAIN user associated to this email address.'
-      inexistent_user
+      auth_failed
     else
-      self.current_user = user
-      current_session.activate
-      respond_to do |format|
-        format.html { redirect_back_or_default(start_page_path) }
-        format.json { render :json => {:session_id => request.session_options[:id]}, :status => 200 }
-        format.xml  { render :nothing => true, :status  => 200 }
-      end
+      create_from_user(user)
     end
   end
 
   # Send a proper HTTP error code
   def auth_failed #:nodoc:
-    flash[:error] = 'Authentication failed.'
     respond_to do |format|
-      format.html { render :action => 'new', :status  => 200 }
-      format.json { render :nothing => true, :status  => 200 }
-      format.xml  { render :nothing => true, :status  => 200 }
-    end
-  end
-
-  # Send a proper HTTP error code
-  def inexistent_user #:nodoc:
-    respond_to do |format|
-      format.html { render :action => 'new', :status  => 200 }
-      format.json { render :nothing => true, :status  => 200 }
-      format.xml  { render :nothing => true, :status  => 200 }
+      format.html { render :action => 'new' }
+      format.json { render :nothing => true, :status  => 401 }
+      format.xml  { render :nothing => true, :status  => 401 }
     end
   end
 
@@ -285,6 +177,104 @@ class SessionsController < ApplicationController
   def no_logged_in_user #:nodoc:
     if current_user
       redirect_to start_page_path
+    end
+  end
+
+  def create_from_user(user) #:nodoc:
+    portal = BrainPortal.current_resource
+
+    self.current_user = user
+
+    # Bad login/password?
+    if !logged_in?
+      flash.now[:error] = 'Invalid user name or password.'
+      Kernel.sleep 3 # Annoying, as it blocks the instance for other users too. Sigh.
+
+      auth_failed
+      return
+    end
+
+    # Check if the user or the portal is locked
+    locked_message  = portal_or_account_locked?(portal)
+    if !locked_message.blank?
+      flash[:error] = locked_message
+      auth_failed
+      return
+    end
+
+    # Everything OK
+    user_tracking(portal)
+
+    respond_to do |format|
+      format.html { redirect_back_or_default(start_page_path) }
+      format.json { render :json => {:session_id => request.session_options[:id], :user_id => current_user.id}, :status => 200 }
+      format.xml  { render :nothing => true, :status  => 200 }
+    end
+
+  end
+
+  def portal_or_account_locked?(portal) #:nodoc:
+
+    # Portal locked?
+    if portal.portal_locked? && !current_user.has_role?(:admin_user)
+      self.current_user = nil
+      return "The system is currently locked. Please try again later."
+    end
+
+    # Account locked?
+    if self.current_user.account_locked?
+      self.current_user = nil
+      return "This account is locked, please write to #{User.admin.email || "the support staff"} to get this account unlocked."
+    end
+
+    return ""
+  end
+
+  def user_tracking(portal) #:nodoc:
+    current_session.activate
+    #if params[:remember_me] == "1"
+    #  current_user.remember_me unless current_user.remember_token?
+    #  cookies[:auth_token] = { :value => self.current_user.remember_token , :expires => self.current_user.remember_token_expires_at }
+    #end
+
+    current_session.load_preferences_for_user(current_user)
+
+    # Record the best guess for browser's remote host name
+    reqenv  = request.env
+    from_ip = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
+    if from_ip
+      if from_ip  =~ /^[\d\.]+$/
+        addrinfo  = Socket.gethostbyaddr(from_ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ from_ip ]
+        from_host = addrinfo[0]
+      else
+        from_host = from_ip # already got name?!?
+      end
+    else
+       from_ip   = '0.0.0.0'
+       from_host = 'unknown'
+    end
+    current_session[:guessed_remote_ip]   = from_ip
+    current_session[:guessed_remote_host] = from_host
+
+    # Record the user agent
+    raw_agent = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'
+    current_session[:raw_user_agent]      = raw_agent
+
+    # Record that the user logged in
+    parsed         = HttpUserAgent.new(raw_agent)
+    browser        = (parsed.browser_name    || 'unknown browser')
+    brow_ver       = (parsed.browser_version || '?')
+    os             = (parsed.os_name         || 'unknown OS')
+    pretty_brow    = "#{browser} #{brow_ver} on #{os}"
+    pretty_host    = "#{from_ip}"
+    if (from_host != 'unknown' && from_host != from_ip)
+       pretty_host = "#{from_host} (#{pretty_host})"
+    end
+    current_user.addlog("Logged in from #{pretty_host} using #{pretty_brow}")
+    portal.addlog("User #{current_user.login} logged in from #{pretty_host} using #{pretty_brow}")
+
+    if current_user.has_role?(:admin_user)
+      current_session[:active_group_id] = "all"
     end
   end
 

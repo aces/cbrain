@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Helpers to handle session
@@ -36,20 +36,20 @@ module SessionHelpers
   def current_session
     @cbrain_session ||= CbrainSession.new(session, params, request.env['rack.session.record'] )
   end
-  
+
   #Returns currently active project.
   def current_project
     return nil unless current_session[:active_group_id]
     return nil if current_session[:active_group_id] == "all"
-    
+
     if !@current_project || @current_project.id.to_i != current_session[:active_group_id].to_i
       @current_project = Group.find_by_id(current_session[:active_group_id])
       current_session[:active_group_id] = nil if @current_project.nil?
     end
-    
+
     @current_project
   end
-  
+
   def always_activate_session #:nodoc:
     session[:cbrain_toggle] = (1 - (session[:cbrain_toggle] || 0))
     true

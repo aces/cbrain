@@ -10,7 +10,7 @@ module AuthenticatedSystem #:nodoc:
       !!current_user
     end
 
-    # Accesses the current user from the session. 
+    # Accesses the current user from the session.
     # Future calls avoid the database because nil is not equal to false.
     def current_user
       @current_user ||= (login_from_session || login_from_basic_auth || login_from_cookie) unless @current_user == false
@@ -55,7 +55,7 @@ module AuthenticatedSystem #:nodoc:
     def login_required
       authorized? || access_denied
     end
-    
+
     ##########################################################
     #NEXT TWO ADDED BY TAREK
     ##########################################################
@@ -69,7 +69,7 @@ module AuthenticatedSystem #:nodoc:
     def manager_role_required
       current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user) || access_error(401)
     end
-    
+
     ##########################################################
     ##########################################################
 
@@ -126,7 +126,7 @@ module AuthenticatedSystem #:nodoc:
       end
     end
 
-    # Called from #current_user.  Finaly, attempt to login by an expiring token in the cookie.
+    # Called from #current_user. Finaly, attempt to login by an expiring token in the cookie.
     def login_from_cookie
       user = cookies[:auth_token] && User.find_by_remember_token(cookies[:auth_token])
       if user && user.remember_token?
