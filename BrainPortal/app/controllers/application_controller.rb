@@ -140,8 +140,8 @@ class ApplicationController < ActionController::Base
   def check_account_validity
     return false unless current_user
     return true  if     params[:controller] == "sessions"
-    return false unless check_license_agreements()
     return false unless check_password_reset()
+    return false unless check_license_agreements()
     return true
   end
 
@@ -150,6 +150,7 @@ class ApplicationController < ActionController::Base
     current_user.meta.reload
     return true if current_user.all_licenses_signed.present?
     return true if params[:controller] == "portal" && params[:action] =~ /license$/
+    return true if params[:controller] == "users"  && (params[:action] == "change_password" || params[:action] == "update")
 
     unsigned_agreements = current_user.unsigned_license_agreements
     unless unsigned_agreements.empty?
@@ -167,9 +168,8 @@ class ApplicationController < ActionController::Base
     return true
   end
 
+  # Check if password need to be reset.
   def check_password_reset #:nodoc:
-
-    #Check if passwords been reset.
     if current_user.password_reset
       unless params[:controller] == "users" && (params[:action] == "change_password" || params[:action] == "update")
         flash[:error] = "Please reset your password."
