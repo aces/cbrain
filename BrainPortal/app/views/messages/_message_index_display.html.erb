@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -29,7 +29,7 @@
   <%= button_with_dropdown_menu("Filters") do %>
     <%= render :partial => 'messages/filters' %>
   <% end %>
-  <span id="view_option_button"> 
+  <span id="view_option_button">
     <%= render :partial => "messages/view_option_button" %>
   </span>
   <%= overlay_ajax_link "Help", "/doc/messages/message_info.html", :class  => "button" %>
@@ -37,11 +37,9 @@
   <%= external_submit_button "Delete Checked Messages", "message_form", :class  => "button", :confirm  => "Are you sure you want to delete the selected messages?"  %>
 </div>
 
-<div class="active_status">
-  <span class="active_status_left_side">
-    <%= render :partial => 'shared/active_filters', :locals => {:model => :message} %>
-  <span>
-</div>
+
+<%= render :partial => 'shared/active_filters', :locals => {:model => :message} %>
+
 
 <div class="pagination">
   <span class="page_links">
@@ -62,7 +60,7 @@
         t.reverse_sort_column("Last Updated", Message, :last_sent)
         t.column("Operations", :colspan => "3")
         t.row_override { |m| render :partial => 'message_table_row', :locals  => { :mess  => m, :render_for => :index } }
-      %>  
+      %>
     <% end %>
 <% end %>
 

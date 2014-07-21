@@ -982,10 +982,6 @@ pre {
     color: white;
 }
 
-.active_label {
-  font-weight: bold;
-}
-
 #active_project_div {
   white-space: nowrap;
 }
@@ -1376,16 +1372,13 @@ pre {
 
 
 /* % ######################################################### */
-/* % Userfiles Index File Manager */
+/* % Active Filters Bar */
 /* % ######################################################### */
 
 .active_status {
-  padding: 0;
-  width: 100%;
   display: table;
-  margin-right: 0;
-  margin-left: 0;
   margin-top: 0.8em;
+  width: 100%;
 }
 
 .active_status_left_side {
@@ -1396,6 +1389,7 @@ pre {
   float: left;
 }
 
+/* not used */
 .active_status_right_side {
   display: inline;
   text-align: right;
@@ -1403,6 +1397,16 @@ pre {
   padding-left: 2em;
   float: right;
 }
+
+.active_label {
+  font-weight: bold;
+}
+
+
+
+/* % ######################################################### */
+/* % Pagination Bar */
+/* % ######################################################### */
 
 .pagination {
   width: 100%;
@@ -1414,7 +1418,7 @@ pre {
 }
 
 .pagination_left_side {
-  width: 33.33%;
+  width: 1%;
   display: table-cell;
   text-align: left;
   font-weight: bold;
@@ -1423,10 +1427,11 @@ pre {
 }
 
 .pagination_right_side {
-  width: 33.33%
+  width: 1%;
   display: table-cell;
   text-align: right;
   font-weight: bold;
+  white-space: nowrap;
   padding-left: 2em;
 }
 
@@ -1434,8 +1439,15 @@ pre {
   display: table-cell;
   text-align: center;
   white-space: nowrap;
-  padding: 0 1em;
+  clear: both;
+  /* padding: 0 1em; */
 }
+
+
+
+/* % ######################################################### */
+/* % Userfiles Index File Manager */
+/* % ######################################################### */
 
 .userfiles_tool_selector {
     padding: 0 1em;

@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -30,35 +30,33 @@
               bourreaux_path(:bourreaux  => {:details  => set_toggle(@filter_params["details"])}),
               :datatype  => 'script', :class  => "button"
   %>
-  
+
   <%= link_to "User Access Report", rr_access_bourreaux_path,
               :datatype  => 'script', :class  => "button"
-  %>   
-  
+  %>
+
   <%= link_to "Disk Cache Report", rr_disk_usage_bourreaux_path,
               :datatype  => 'script', :class  => "button"
   %>
-  
+
   <%= link_to "Task Workdir Size Report", report_path(
-                :table_name => "cbrain_tasks.combined_task_rep", 
+                :table_name => "cbrain_tasks.combined_task_rep",
                 :row_type   => :user_id,
                 :col_type   => :bourreau_id,
                 :generate   => "ok"
               ), :class  => "button"
   %>
-  
+
   <%= link_to "Access to Data Providers", rr_access_dp_bourreaux_path,
               :datatype  => 'script', :class  => "button"
   %>
-  
+
   <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>
 </div>
 
-<div class="active_status">
-  <span class="active_status_left_side">
-    <%= render :partial => 'shared/active_filters', :locals => {:model => :bourreau} %>
-  <span>
-</div>
+
+<%= render :partial => 'shared/active_filters', :locals => {:model => :bourreau} %>
+
 
 <% operations_width_colspan = 3 %>
 <%= index_table(@bourreaux, :id => "bourreau_table", :class => "resource_list") do |t| %>
@@ -90,16 +88,16 @@
     if @filter_params["details"] == 'on'
       t.sort_column("Description", RemoteResource, :description)
     end
-    t.column("Status page URL")    
+    t.column("Status page URL")
     t.column("Operations", :colspan => operations_width_colspan)
   %>
-  
+
   <% row_number = 0 %>
   <% t.row_override do |rr| %>
     <% row_number += 1 %>
     <% full_width_colspan = t.num_cells + operations_width_colspan - 1 %>
     <% if rr.is_a?(Bourreau) && rr.online? && !rr.info_cached?(:ping)  %>
-      <%= staggered_loading "tr", url_for(:action  => :row_data, :id => rr.id, :row_number => row_number), 
+      <%= staggered_loading "tr", url_for(:action  => :row_data, :id => rr.id, :row_number => row_number),
                            :id             => "bourreau_#{rr.id}",
                            :class          => "row_highlight #{row_number % 2 == 0 ? "list-even" : "list-odd"}",
                            :replace        => true,
@@ -110,7 +108,7 @@
       <%= render :partial => 'bourreau_table_row', :locals  => {  :render_mode => :active_check, :bourreau  => rr, :row_number => row_number } %>
     <% end %>
   <% end %>
-  
+
 <% end %>
 
 
