@@ -62,10 +62,16 @@ class ServiceController < ApplicationController
     @summary_stats["TotalActions"] = authenticated_actions
     @summary_stats["lastReset"]    = @last_reset
 
+    # CANARIE only wants TWO fields. :-(
+    @json_stats = {
+        "Total Actions" => authenticated_actions,
+        "lastReset"     => @last_reset,
+    }
+
     respond_to do |format|
       format.html
       format.xml  { render :xml  => @summary_stats }
-      format.json { render :json => @summary_stats }
+      format.json { render :json => @json_stats }
     end
   end
 
