@@ -32,7 +32,11 @@ class ServiceController < ApplicationController
   # information about the platform
   def info
     @info = { :name            => "CBRAIN Data Service",
-              :synopsis        => "Focus on data movement using the CBRAIN platform",
+              :synopsis        => "A service that leverages the previously-funded
+                                   \"Canadian Brain Research And Informatics Network\"
+                                   platform to provide the research community with
+                                   web-based access to powerful supercomputers across
+                                   Canada and around the world.",
               :version         => CbrainFileRevision.cbrain_head_tag,
               :institution     => "McGill University",
               :releaseTime     => Time.parse(CbrainFileRevision.cbrain_head_revinfo.time).utc.iso8601,
