@@ -28,7 +28,7 @@
        <%= table_header_sort_link "Switch to Batch View", 'CbrainTask', 'batch' %>
        <br>
      <% end %>
-    Number of files per page <small>(between 25 and 1000)</small>:
+    Number of tasks per page <small>(between 25 and 1000)</small>:
     <%= ajax_search_box( :per_page , tasks_path(:update_filter => true), :default => @per_page, :datatype => "script", :size => 4) %>
 
   </div>
