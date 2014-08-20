@@ -13,7 +13,7 @@ module AuthenticatedSystem #:nodoc:
     # Accesses the current user from the session.
     # Future calls avoid the database because nil is not equal to false.
     def current_user
-      @current_user ||= (login_from_session || login_from_basic_auth || login_from_cookie) unless @current_user == false
+      @current_user ||= login_from_session unless @current_user == false
     end
 
     # Store the given user id in the session.
@@ -119,20 +119,5 @@ module AuthenticatedSystem #:nodoc:
       self.current_user = User.find_by_id(session[:user_id]) if session[:user_id]
     end
 
-    # Called from #current_user.  Now, attempt to login by basic authentication information.
-    def login_from_basic_auth
-      authenticate_with_http_basic do |username, password|
-        self.current_user = User.authenticate(username, password)
-      end
-    end
-
-    # Called from #current_user. Finaly, attempt to login by an expiring token in the cookie.
-    def login_from_cookie
-      user = cookies[:auth_token] && User.find_by_remember_token(cookies[:auth_token])
-      if user && user.remember_token?
-        cookies[:auth_token] = { :value => user.remember_token, :expires => user.remember_token_expires_at }
-        self.current_user = user
-      end
-    end
 end
 

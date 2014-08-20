@@ -175,31 +175,6 @@ class User < ActiveRecord::Base
     self.meta[:all_licenses_signed] = x
   end
 
-  def remember_token? #:nodoc:
-    remember_token_expires_at && Time.now.utc < remember_token_expires_at
-  end
-
-  # These create and unset the fields required for remembering users between browser closes.
-  def remember_me #:nodoc:
-    remember_me_for 2.weeks
-  end
-
-  def remember_me_for(time) #:nodoc:
-    remember_me_until time.from_now.utc
-  end
-
-  def remember_me_until(time) #:nodoc:
-    self.remember_token_expires_at = time
-    self.remember_token            = encrypt_in_sha1("#{email}--#{remember_token_expires_at}")
-    save(:validate => false)
-  end
-
-  def forget_me #:nodoc:
-    self.remember_token_expires_at = nil
-    self.remember_token            = nil
-    save(:validate => false)
-  end
-
   ###############################################
   #
   # Password and login gestion
