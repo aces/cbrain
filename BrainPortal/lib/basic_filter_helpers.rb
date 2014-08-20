@@ -188,8 +188,8 @@ module BasicFilterHelpers
     # Validate per_page
     @per_page     ||= @filter_params["per_page"]
     @per_page       = @per_page.to_i
-    @per_page       = 25  if @per_page < 25
-    @per_page       = 500 if @per_page > 500
+    @per_page       = 25   if @per_page < 25
+    @per_page       = 1000 if @per_page > 1000
 
     # Validate page
     @current_page ||= params[:page]

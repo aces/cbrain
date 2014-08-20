@@ -18,37 +18,38 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
 <%= button_with_dropdown_menu("View Options") do %>
   <div class="view_options">
-    <%= 
+    <%=
       filter_add_link (@filter_params["details"] == 'off' ? "Show Details" : "Hide Details"),
-                      :parameter => :details, 
+                      :parameter => :details,
                       :value     => set_toggle(@filter_params["details"])
     %>
     <br>
-    <%= 
-        filter_add_link (@filter_params["tree_sort"] == "off" ? "Enable Tree View" : "Disable Tree View"), 
-                        :parameter => :tree_sort,  
+    <%=
+        filter_add_link (@filter_params["tree_sort"] == "off" ? "Enable Tree View" : "Disable Tree View"),
+                        :parameter => :tree_sort,
                         :value     => set_toggle(@filter_params["tree_sort"])
     %>
     <br>
-    <%= filter_add_link @filter_params["view_all"] == 'on' ? "Show only your own files": "Show all available files", 
+    <%= filter_add_link @filter_params["view_all"] == 'on' ? "Show only your own files": "Show all available files",
                         :parameter => :view_all,
-                        :value     => set_toggle(@filter_params["view_all"]) 
+                        :value     => set_toggle(@filter_params["view_all"])
     %>
     <br>
-    <%= filter_add_link @filter_params["view_hidden"] == 'on' ? "Do not show hidden files": "Show hidden files", 
+    <%= filter_add_link @filter_params["view_hidden"] == 'on' ? "Do not show hidden files": "Show hidden files",
                         :parameter => :view_hidden,
-                        :value     => set_toggle(@filter_params["view_hidden"]) 
+                        :value     => set_toggle(@filter_params["view_hidden"])
     %>
     (<%= hidden_icon %>)
     <br>
-    Number of files per page:
-    <%= ajax_onchange_select( :per_page, userfiles_path(:update_filter => true), options_for_select( [25, 50, 100, 200, 500 ], @per_page ), :datatype => "script") %>
+    Number of files per page <small>(between 25 and 1000)</small>:
+    <%= ajax_search_box( :per_page , userfiles_path(:update_filter => true), :default => @per_page, :datatype => "script", :size => 4) %>
+
   </div>
 <% end %>
 
