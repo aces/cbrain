@@ -73,8 +73,6 @@ class SessionsController < ApplicationController
     current_session.deactivate if current_session
     current_user.addlog("Logged out") if current_user
     portal.addlog("User #{current_user.login} logged out") if current_user
-    self.current_user.forget_me if logged_in?
-    cookies.delete :auth_token
     current_session.clear_data!
     #reset_session
     flash[:notice] = "You have been logged out."
@@ -232,10 +230,6 @@ class SessionsController < ApplicationController
 
   def user_tracking(portal) #:nodoc:
     current_session.activate
-    #if params[:remember_me] == "1"
-    #  current_user.remember_me unless current_user.remember_token?
-    #  cookies[:auth_token] = { :value => self.current_user.remember_token , :expires => self.current_user.remember_token_expires_at }
-    #end
 
     current_session.load_preferences_for_user(current_user)
 
