@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -26,7 +26,7 @@
   <p><%= f.label :name, "Name" %><br/>
   <%= f.text_field :name %></p>
 </span>
-         
+
 <span title="Brief description of the data provider.">
   <p><%= f.label :description, "Description" %><br/>
   <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
@@ -36,7 +36,7 @@
 
 <span title="Time zone where this data provider is located.">
   <p><%= f.label :time_zone, "Time Zone" %><br/>
-  <%= f.time_zone_select :time_zone, 
+  <%= f.time_zone_select :time_zone,
       ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
       { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
         :include_blank => true }
@@ -69,41 +69,6 @@
     attribute. The file "hello" is this stored in a path like this:
     <pre>    /remote_dir/hello</pre>
 
-    <p>
-
-    <strong>CbrainSshDataProvider:</strong> This class provides an implementation for a data provider
-    where the remote files are accessed through ssh and rsync.
-    The provider's files are stored in the 'CBRAIN enhanced
-    directory tree'; such a tree stores the file "hello"
-    of user "myuser" into a relative path like this:
-    <pre>    /remote_dir/myuser/01/23/hello</pre>
-    where the components "01" and "23" are computed based on the "hello" string.
-    <p>
-
-    <strong>CbrainLocalDataProvider:</strong> This class provides an implementation for a data provider
-    where the remote files are not even remote, they are local
-    to the currently running rails application. The provider's
-    files are stored in the 'cbrain enhanced
-    directory tree'; such a tree stores the file "hello"
-    of user "myuser" into a relative path like this:
-    <pre>    /root_dir/myuser/01/23/hello</pre>
-    where root_dir is the data provider's remote_dir (a local
-    directory) and the components "01" and "23" are computed based
-    on the hello string.
-    <p>
-    This data provider does not cache anything! The 'remote' files
-    are in fact all local, and accesing the 'cached' files mean
-    accessing the real provider's files. All methods are adjusted
-    so that their behavior is sensible.
-    <p>
-
-    <strong>CbrainSmartDataProvider:</strong> This class implements a 'wrapper' data provider that
-    acts either as a CbrainLocalDataProvider or a CbrainSshDataProvider
-    depending on whether or not the current hostname matches
-    the value of the attribute remote_host.
-    This means that in the case where the current Rails application
-    runs on the same machine as the data provider, the faster
-    and more efficient CbrainLocalDataProvider will be used.
     <p>
 
     <strong>EnCbrain*DataProvider:</strong> These three providers are <strong>en</strong>hanced variations
@@ -181,12 +146,12 @@
 <span title="Project ownership of this data provider. Project members will have access to the provider, but will not be able configure it.">
   <p><%= f.label :group_id, "Project" %><br/>
     <%= group_select("data_provider[group_id]", :selector => @provider) %>
-  </p>  
+  </p>
 </span>
 
 <span title="Is this data provider currently available for use?">
   <p><%= f.label :online, "Status" %><br/>
-  <%= f.select :online, { "Online" => true, "Offline" => false } %></p>  
+  <%= f.select :online, { "Online" => true, "Offline" => false } %></p>
 </span>
 
 <span title="Is this data provider writable or read-only?">
@@ -204,17 +169,17 @@
 <fieldset class="groupentry">
   <legend>SSH parameters for remote Data Providers</legend>
 
-  <span title="Name of the remote machine on which the data provider is located (not required for CbrainLocalDataProvider or VaultLocalDataProvider).">
+  <span title="Name of the remote machine on which the data provider is located (not required for VaultLocalDataProvider).">
     <p><%= f.label :remote_host, "Remote Hostname" %><br/>
     <%= f.text_field :remote_host %></p>
   </span>
 
-  <span title="Username on the remote machine where the data provider is located (not required for CbrainLocalDataProvider or VaultLocalDataProvider).">
+  <span title="Username on the remote machine where the data provider is located (not required for VaultLocalDataProvider).">
     <p><%= f.label :remote_user, "Remote Username" %><br/>
     <%= f.text_field :remote_user %></p>
   </span>
 
-  <span title="Port number used to access remote machine on which the data provider is located (not required for CbrainLocalDataProvider or VaultLocalDataProvider).">
+  <span title="Port number used to access remote machine on which the data provider is located (not required for VaultLocalDataProvider).">
     <p><%= f.label :remote_port, "Remote Port Number" %><br/>
     <%= f.text_field :remote_port, :size => 6 %></p>
   </span>
@@ -258,10 +223,10 @@
 
   <p><label for='meta_erase'>Files will always be erased upon de-registration (browsable DPs only):</label>
   <%= check_box_tag 'meta[must_erase]', "on", @provider.new_record? ? false : !@provider.meta[:must_erase].blank? %>
-  
+
   <p><label for='meta_browse_gid'>Files can be browsed only by members of this project (browsable DPs only):</label>
   <%= group_select 'meta[browse_gid]', { :selector => (@provider.new_record? ? nil : @provider.meta[:browse_gid]) }, { :include_blank => "(Any Users)" } %>
-  
+
   <p><label for='meta_no_uploads'>Cannot be used for uploading files in the file manager:</label>
   <%= check_box_tag 'meta[no_uploads]', "on", @provider.new_record? ? false : !@provider.meta[:no_uploads].blank? %>
 

@@ -668,7 +668,6 @@ class DataProvidersController < ApplicationController
     if check_role(:site_manager) || check_role(:admin_user)
       typelist += %w{
                       EnCbrainSshDataProvider EnCbrainLocalDataProvider EnCbrainSmartDataProvider
-                      CbrainSshDataProvider CbrainLocalDataProvider CbrainSmartDataProvider
                       VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider
                       IncomingVaultSshDataProvider
                       S3DataProvider
