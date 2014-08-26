@@ -49,7 +49,7 @@ class SessionsController < ApplicationController
 
   def create #:nodoc:
     user = User.authenticate(params[:login], params[:password]) # can be nil if it fails
-    user[:authentication_mechanism] = "password" if user.is_a?(User)
+    user[:authentication_mechanism] = "password" if user.is_a?(User) # not a real attribute
     create_from_user(user)
   end
 
