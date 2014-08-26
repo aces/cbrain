@@ -17,18 +17,18 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'spec_helper'
 
 describe DataProvider do
-  
+
   let(:provider)        { Factory.create(:data_provider, :online => true, :read_only => false) }
   let(:userfile)        { mock_model(Userfile, :name => "userfile_mock", :user_id => 1).as_null_object }
   let(:singlefile)      { mock_model(SingleFile, :name => "singlefile_mock", :user_id => 1).as_null_object }
   let(:filecollection)  { mock_model(FileCollection, :name => "filecollection_mock", :user_id => 1).as_null_object }
-  
+
   describe "validations" do
     it "should create a new instance given valid attributes" do
       provider.valid?.should be(true)
@@ -44,7 +44,7 @@ describe DataProvider do
       provider.valid?.should be(false)
     end
 
-    it "should not save with no group" do 
+    it "should not save with no group" do
       provider.group =nil
       provider.valid?.should be(false)
     end
@@ -59,23 +59,23 @@ describe DataProvider do
       provider.valid?.should be true
     end
 
-    it "should accept read_only being true" do 
+    it "should accept read_only being true" do
       provider.read_only = true
       provider.valid?.should be true
     end
 
-    it "should not accept a name with invalid chars" do 
+    it "should not accept a name with invalid chars" do
       provider.name = "*@$%"
       provider.valid?.should be(false)
     end
 
-    it "should not accept a remote_host with invalid chars" do 
+    it "should not accept a remote_host with invalid chars" do
       provider.remote_host = "*@$%"
       provider.valid?.should be(false)
     end
 
 
-    it "should not accept a remote_user with invalid chars" do 
+    it "should not accept a remote_user with invalid chars" do
       provider.remote_user = "*@$%"
       provider.valid?.should be(false)
     end
@@ -86,56 +86,56 @@ describe DataProvider do
       provider.valid?.should be(false)
     end
   end
-  
+
   describe DataProvider::FileInfo do
     let(:file_info) {DataProvider::FileInfo.new}
-    
+
     describe "#depth" do
       it "should calculate the depth of the userfile" do
         file_info.name = "/x/y/z"
         file_info.depth.should == 3
-      end  
+      end
       it "should raise an exception if no name is given" do
         file_info.name = ""
         lambda{file_info.depth}.should raise_error(CbrainError, "File doesn't have a name.")
       end
     end
   end
-  
+
   describe "#is_alive?" do
      it "should return false when is_alive? is called on offline provider" do
        provider.online = false
        provider.is_alive?.should be(false)
     end
-     
-    it "should raise an exception if called but not implemented in a subclass" do 
+
+    it "should raise an exception if called but not implemented in a subclass" do
       lambda{provider.is_alive?}.should raise_error("Error: method not yet implemented in subclass.")
     end
-   
+
     it "should return false if impl_is_alive? returns false" do
       provider.stub!(:impl_is_alive?).and_return(false)
       provider.online = true
       provider.is_alive?.should be(false)
     end
-   
+
     it "should raise and exception when is_alive! is called with an offline provider" do
       provider.online = false
       lambda{provider.is_alive!}.should raise_error(CbrainError, "Error: provider #{provider.name} is not accessible right now.")
     end
   end
-  
+
   describe "#is_browsable" do
     specify { provider.is_browsable?.should be_false}
   end
-  
+
   describe "#is_fast_syncing?" do
     specify { provider.is_fast_syncing?.should be_false}
   end
-   
+
   describe "#allow_file_owner_change?" do
     specify { provider.allow_file_owner_change?.should be_false}
   end
-   
+
   describe "#sync_to_cache" do
     it "should raise an exception if not online" do
       provider.online = false
@@ -149,7 +149,7 @@ describe DataProvider do
       lambda{provider.sync_to_cache(userfile)}.should raise_error("Error: method not yet implemented in subclass.")
     end
   end
-  
+
   describe "#sync_to_provider" do
     before(:each) do
       userfile.stub!(:immutable?).and_return(false)
@@ -174,10 +174,10 @@ describe DataProvider do
       lambda{provider.sync_to_provider(userfile)}.should raise_error(CbrainError, /immutable/)
     end
   end
-  
+
   describe "#cache_prepare" do
     it "should raise an exception if not online" do
-      provider.online = false 
+      provider.online = false
       lambda{provider.cache_prepare(userfile)}.should raise_error(CbrainError, "Error: provider #{provider.name} is offline.")
     end
     it "should raise an exception if read only" do
@@ -209,7 +209,7 @@ describe DataProvider do
       end
     end
   end
-  
+
   describe "#cache_full_path" do
     it "should raise an exception if called with a string argument" do
       lambda{provider.cache_full_path("userfile")}.should raise_error
@@ -234,7 +234,7 @@ describe DataProvider do
       end
     end
   end
-  
+
   describe "#cache_readhandle" do
     before(:each) do
       userfile.stub!(:immutable?).and_return(false)
@@ -271,7 +271,7 @@ describe DataProvider do
       end
     end
   end
-  
+
   describe "#cache_writehandle" do
     it "should raise an exception when offline" do
       provider.online = false
@@ -321,7 +321,7 @@ describe DataProvider do
       end
     end
   end
-  
+
   describe "#cache_copy_from_local_file" do
     before(:each) do
       userfile.stub!(:immutable?).and_return(false)
@@ -355,7 +355,7 @@ describe DataProvider do
         singlefile.stub!(:immutable?).and_return(false)
         lambda{provider.cache_copy_from_local_file(singlefile, "localpath")}.should raise_error(CbrainError, /^Error: incompatible directory .+ given for a SingleFile./)
       end
-      it "should raise an exception if file given as local path for a file collection" do    
+      it "should raise an exception if file given as local path for a file collection" do
         File.stub!(:file?).and_return(true)
         filecollection.stub!(:immutable?).and_return(false)
         lambda{provider.cache_copy_from_local_file(filecollection, "localpath")}.should raise_error(CbrainError, /^Error: incompatible normal file .+ given for a FileCollection./)
@@ -402,7 +402,7 @@ describe DataProvider do
       end
     end
   end
-  
+
   describe "#cache_copy_to_local_file" do
     it "should raise an exception when offline" do
       provider.online = false
@@ -446,7 +446,7 @@ describe DataProvider do
       end
     end
   end
-  
+
   describe "#cache_erase" do
     before(:each) do
       DataProvider.stub!(:cache_rootdir).and_return("cache")
@@ -465,7 +465,7 @@ describe DataProvider do
       provider.cache_erase(userfile)
     end
   end
-  
+
   describe "#cache_collection_index" do
     it "should raise an exception when offline" do
       provider.online = false
@@ -478,7 +478,7 @@ describe DataProvider do
     context "producing a list of files" do
       let(:file_collection) {Factory.build(:file_collection)}
       let(:file_entry) {double("file_entry", :name => "file", :ftype => :file).as_null_object}
-      
+
       before(:each) do
         provider.stub!(:cache_full_path).and_return(Pathname.new("cache_path"))
         userfile.stub!(:is_locally_cached?).and_return(true)
@@ -505,7 +505,7 @@ describe DataProvider do
       end
     end
   end
-  
+
   describe "#provider_erase" do
     before(:each) do
       userfile.stub!(:immutable?).and_return(false)
@@ -532,7 +532,7 @@ describe DataProvider do
       lambda{provider.provider_erase(userfile)}.should raise_error("Error: method not yet implemented in subclass.")
     end
   end
-  
+
   describe "#provider_rename"  do
     before(:each) do
       userfile.stub!(:immutable?).and_return(false)
@@ -581,10 +581,11 @@ describe DataProvider do
       end
     end
   end
-  
+
   describe "#provider_move_to_otherprovider" do
     let(:other_provider) { Factory.create(:data_provider, :online => true, :read_only => false) }
     before(:each) do
+      userfile.stub!(:transaction).and_yield
       userfile.stub!(:immutable?).and_return(false)
     end
     it "should raise an exception if offline"do
@@ -626,7 +627,7 @@ describe DataProvider do
       end
       describe "if a target file already exists" do
         let(:target_file) { double("target_file", :name => "target_file", :id => 321) }
-        
+
         before(:each) do
           Userfile.stub_chain(:where, :first).and_return(target_file)
         end
@@ -667,9 +668,12 @@ describe DataProvider do
       end
     end
   end
-  
+
   describe "#provider_copy_to_otherprovider" do
     let(:other_provider) { Factory.create(:data_provider, :online => true, :read_only => false) }
+    before(:each) do
+      userfile.stub!(:transaction).and_yield
+    end
     it "should raise an exception if offline" do
       provider.online = false
       lambda{provider.provider_copy_to_otherprovider(userfile, other_provider)}.should raise_error(CbrainError, "Error: provider #{provider.name} is offline.")
@@ -698,7 +702,7 @@ describe DataProvider do
       end
       describe "if a target file already exists" do
         let(:target_file) { double("target_file", :name => "target_file", :id => 321) }
-        
+
         before(:each) do
           Userfile.stub_chain(:where, :first).and_return(target_file)
         end
@@ -729,7 +733,7 @@ describe DataProvider do
       end
     end
   end
-  
+
   describe "#provider_list_all" do
     it "should raise an exception if offline" do
       provider.online = false
@@ -743,7 +747,7 @@ describe DataProvider do
       lambda{provider.provider_list_all}.should raise_error("Error: method not yet implemented in subclass.")
     end
   end
-  
+
   describe "#provider_collection_index" do
     it "should raise an exception if offline" do
       provider.online = false
@@ -753,7 +757,7 @@ describe DataProvider do
       lambda{provider.provider_collection_index(userfile)}.should raise_error("Error: method not yet implemented in subclass.")
     end
   end
-  
+
   describe "#provider_readhandle" do
     it "should raise an exception if offline" do
       provider.online = false
@@ -769,36 +773,36 @@ describe DataProvider do
       lambda{provider.provider_readhandle(userfile)}.should raise_error("Error: method not yet implemented in subclass.")
     end
   end
-  
+
   describe "#site" do
     it "should return the associated site" do
       provider.site.should == provider.user.site
     end
   end
-  
+
   describe "#validate_destroy" do
     it "should prevent desctruction if associated userfiles still exist" do
       destroyed_provider = Factory.create(:data_provider, :userfiles => [Factory.create(:userfile)])
-      lambda{ destroyed_provider.destroy }.should raise_error    
+      lambda{ destroyed_provider.destroy }.should raise_error
     end
     it "should allow desctruction if no associated userfiles still exist" do
       destroyed_provider = Factory.create(:data_provider)
       lambda { destroyed_provider.destroy }.should change{ DataProvider.count }.by(-1)
     end
   end
-  
+
   describe "#cache_md5" do
     before(:each) do
       DataProvider.stub!(:cache_rootdir).and_return("cache")
       DataProvider.class_variable_set("@@key", nil)
     end
-    
+
     it "should get md5 from file, if it exists" do
       File.stub!(:exist?).and_return(true)
       File.should_receive(:read).and_return("XYZ")
       DataProvider.cache_md5.should == "XYZ"
     end
-    
+
     it "should create the md5 file, if it does not exist" do
       File.stub!(:exist?).and_return(false)
       IO.stub!(:sysopen)
@@ -806,7 +810,7 @@ describe DataProvider do
       IO.should_receive(:open).and_return(fh)
       DataProvider.cache_md5
     end
-    
+
     context "when creating the file fails" do
       before(:each) do
         IO.stub!(:sysopen).and_raise(StandardError)
@@ -833,7 +837,7 @@ describe DataProvider do
       end
     end
   end
-  
+
   describe "#cache_revision_of_last_init" do
     let(:cache_rev)       { "1234-12-12" }
     before(:each) do
@@ -906,7 +910,7 @@ describe DataProvider do
       end
     end
   end
-  
+
   describe "#this_is_a_proper_cache_dir!" do
     let(:cache_root) { "/cache_root" }
     before(:each) do
@@ -954,7 +958,7 @@ describe DataProvider do
       lambda {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.should raise_error
     end
   end
-  
+
   describe "#cache_rootdir" do
     before(:each) do
       @old_cache_rootdir = DataProvider.instance_eval { @cache_rootdir}
@@ -978,7 +982,7 @@ describe DataProvider do
       lambda {DataProvider.cache_rootdir}.should raise_error
     end
   end
-  
+
   describe "#rsync_ignore_patterns" do
     it "should return the app's rsync ignore patterns" do
       current_resource = double("current_ressource")
