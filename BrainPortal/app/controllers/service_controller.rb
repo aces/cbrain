@@ -36,7 +36,7 @@ class ServiceController < ApplicationController
                                    \"Canadian Brain Research And Informatics Network\"
                                    platform to provide the research community with
                                    web-based access to powerful supercomputers across
-                                   Canada and around the world.",
+                                   Canada and around the world.".gsub(/\s\s+/, " "),  # the ugly gsub is because of CANARIE
               :version         => CbrainFileRevision.cbrain_head_tag,
               :institution     => "McGill University",
               :releaseTime     => Time.parse(CbrainFileRevision.cbrain_head_revinfo.time).utc.iso8601,
