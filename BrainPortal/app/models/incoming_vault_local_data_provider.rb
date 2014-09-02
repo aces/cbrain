@@ -21,11 +21,11 @@
 #
 
 #
-# This class is exactly like VaultSshDataProvider, but
+# This class is exactly like VaultLocalDataProvider, but
 # it also has the ability to browse a subdirectory named
 # after a user when calling provider_list_all(user).
 #
-class IncomingVaultSshDataProvider < VaultSshDataProvider
+class IncomingVaultLocalDataProvider < VaultLocalDataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
@@ -48,15 +48,14 @@ class IncomingVaultSshDataProvider < VaultSshDataProvider
     tried_mkdir = false
     begin
       super(user)
-    rescue Net::SFTP::StatusException
+    # in case we try to browse for a user who has not yet a directory for his files
+    rescue Errno::ENOENT
       raise if tried_mkdir
       tried_mkdir = true
       dir         = self.browse_remote_dir(user)
-      mkdir_command = "mkdir #{dir.to_s.bash_escape} >/dev/null 2>&1"
-      remote_bash_this(mkdir_command)
+      Dir.mkdir(dir)
       retry
     end
   end
 
 end
-

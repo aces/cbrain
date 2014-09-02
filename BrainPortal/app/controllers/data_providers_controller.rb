@@ -284,10 +284,10 @@ class DataProvidersController < ApplicationController
     end
 
     @filter_params["browse_hash"] ||= {}
-    @per_page = @filter_params["browse_hash"]["per_page"]
+    @per_page  = @filter_params["browse_hash"]["per_page"]
     validate_pagination_values # validates @per_page and @current_page
     as_user_id = params[:as_user_id].presence || @filter_params["browse_hash"]["as_user_id"].presence || current_user.id
-    @as_user = current_user.available_users.where(:id => as_user_id).first || current_user
+    @as_user   = current_user.available_users.where(:id => as_user_id).first || current_user
     @filter_params["browse_hash"]["as_user_id"] = @as_user.id.to_s
 
     begin
@@ -664,17 +664,10 @@ class DataProvidersController < ApplicationController
   private
 
   def get_type_list #:nodoc:
-    typelist = %w{ SshDataProvider }
-    if check_role(:site_manager) || check_role(:admin_user)
-      typelist += %w{
-                      EnCbrainSshDataProvider EnCbrainLocalDataProvider EnCbrainSmartDataProvider
-                      VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider
-                      IncomingVaultSshDataProvider
-                      S3DataProvider
-                      LorisAssemblyNativeSshDataProvider
-                    }
-    end
-    typelist
+    # This list may contain 'LocalDataProvider' which is useless in any environments
+    # where there are distributed resources. It would only work in a CBRAIN environment
+    # where all portals and bourreaux are on the same machine.
+    (check_role(:site_manager) || check_role(:admin_user)) ? DataProvider.descendants.map(&:name) : %w{ SshDataProvider }
   end
 
   def get_recent_provider_list_all(refresh = false, as_user = current_user) #:nodoc:
