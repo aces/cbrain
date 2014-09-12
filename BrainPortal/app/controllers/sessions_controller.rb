@@ -48,7 +48,9 @@ class SessionsController < ApplicationController
   end
 
   def create #:nodoc:
-    create_from_user(User.authenticate(params[:login], params[:password]))
+    user = User.authenticate(params[:login], params[:password]) # can be nil if it fails
+    user[:authentication_mechanism] = "password" if user.is_a?(User) # not a real attribute
+    create_from_user(user)
   end
 
   def show #:nodoc:
@@ -73,8 +75,6 @@ class SessionsController < ApplicationController
     current_session.deactivate if current_session
     current_user.addlog("Logged out") if current_user
     portal.addlog("User #{current_user.login} logged out") if current_user
-    self.current_user.forget_me if logged_in?
-    cookies.delete :auth_token
     current_session.clear_data!
     #reset_session
     flash[:notice] = "You have been logged out."
@@ -153,6 +153,7 @@ class SessionsController < ApplicationController
       flash[:error] = 'Cannot find CBRAIN user associated to this email address.'
       auth_failed
     else
+      user[:authentication_mechanism] = "Persona" # not a real attribute
       create_from_user(user)
     end
   end
@@ -181,9 +182,8 @@ class SessionsController < ApplicationController
   end
 
   def create_from_user(user) #:nodoc:
-    portal = BrainPortal.current_resource
-
     self.current_user = user
+    portal = BrainPortal.current_resource
 
     # Bad login/password?
     if !logged_in?
@@ -232,12 +232,9 @@ class SessionsController < ApplicationController
 
   def user_tracking(portal) #:nodoc:
     current_session.activate
-    #if params[:remember_me] == "1"
-    #  current_user.remember_me unless current_user.remember_token?
-    #  cookies[:auth_token] = { :value => self.current_user.remember_token , :expires => self.current_user.remember_token_expires_at }
-    #end
+    user   = current_user
 
-    current_session.load_preferences_for_user(current_user)
+    current_session.load_preferences_for_user(user)
 
     # Record the best guess for browser's remote host name
     reqenv  = request.env
@@ -270,10 +267,15 @@ class SessionsController < ApplicationController
     if (from_host != 'unknown' && from_host != from_ip)
        pretty_host = "#{from_host} (#{pretty_host})"
     end
-    current_user.addlog("Logged in from #{pretty_host} using #{pretty_brow}")
-    portal.addlog("User #{current_user.login} logged in from #{pretty_host} using #{pretty_brow}")
 
-    if current_user.has_role?(:admin_user)
+    # The authentication_mechanism is a string stored temporarily in the current_user object as a pseudo attribute;
+    # it's supposed to describe which mechanism was used by the user to log in.
+    authentication_mechanism = user[:authentication_mechanism] || "(Unknown)" # should be 'password' || 'Persona'
+    user.addlog("Logged in with #{authentication_mechanism} from #{pretty_host} using #{pretty_brow}")
+    portal.addlog("User #{user.login} logged in with #{authentication_mechanism} from #{pretty_host} using #{pretty_brow}")
+
+    # Admin users start with some differences in behavior
+    if user.has_role?(:admin_user)
       current_session[:active_group_id] = "all"
     end
   end

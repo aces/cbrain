@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'spec_helper'
@@ -150,7 +150,7 @@ describe SshAgent do
   describe ".create" do
 
     it "should raise an exception if the named agent already exists" do
-      SshAgent.stub!(:find_by_name).and_return SshAgent.new('test')
+      SshAgent.stub_chain(:find_by_name,:try).and_return SshAgent.new('test')
       lambda { SshAgent.create('test') }.should raise_error(RuntimeError)
     end
 

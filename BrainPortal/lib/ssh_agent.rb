@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This class provides the functionality necessary to create,
@@ -177,7 +177,7 @@ class SshAgent
   def self.create(name, socketpath=nil)
     exists = self.find_by_name(name).try(:aliveness)
     raise "Agent named '#{name}' already exists." if exists
-    raise "Socket or file '#{socketpath}' already exists." if File.exists?(socketpath)
+    raise "Socket or file '#{socketpath}' already exists." if socketpath.present? && File.exists?(socketpath)
     dash_a     = socketpath.present? ? "-a #{socketpath.bash_escape}" : ""
     agent_out  = IO.popen("#{CONFIG[:exec_ssh_agent]} -s #{dash_a}","r") { |fh| fh.read }
     socket,pid = parse_agent_config_file(agent_out)

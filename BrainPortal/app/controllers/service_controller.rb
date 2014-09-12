@@ -62,10 +62,16 @@ class ServiceController < ApplicationController
     @summary_stats["TotalActions"] = authenticated_actions
     @summary_stats["lastReset"]    = @last_reset
 
+    # CANARIE only wants TWO fields. :-(
+    @json_stats = {
+        "Total Actions" => authenticated_actions,
+        "lastReset"     => @last_reset,
+    }
+
     respond_to do |format|
       format.html
       format.xml  { render :xml  => @summary_stats }
-      format.json { render :json => @summary_stats }
+      format.json { render :json => @json_stats }
     end
   end
 
@@ -79,8 +85,9 @@ class ServiceController < ApplicationController
              and managing all of that through a Web interface or external APIs.
 
              DESCRIPTION
-             :perl_doc    => "/doc/APIs/perl/CbrainPerlAPI.txt",    # must be a URL
-             :ruby_doc    => "/doc/APIs/ruby/CbrainRubyAPI.html"    # must be a URL
+             :perl_doc_text   => "/doc/APIs/perl/CbrainPerlAPI.txt",    # must be a URL
+             :perl_doc_html   => "/doc/APIs/perl/CbrainPerlAPI.html",   # must be a URL
+             :ruby_doc_html   => "/doc/APIs/ruby/CbrainRubyAPI.html"    # must be a URL
            }
 
     respond_to do |format|

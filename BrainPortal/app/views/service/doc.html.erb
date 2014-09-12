@@ -25,10 +25,18 @@
 <% title 'Service Doc' %>
 
   <h1>CBRAIN Web Service Documentation</h1>
+
   <dl>
     <dt>Description</dt><dd><%= @doc[:description] %></dd>
-    <dt>Perl API documentation</dt><dd><%= link_to 'Plain Text documentation', @doc[:perl_doc] %></dd>
-    <dt>Ruby API documentation</dt><dd><%= link_to 'HTML documentation', @doc[:ruby_doc] %></dd>
+    <dt>Perl API documentation</dt>
+      <dd>
+        <%= link_to 'Plain Text documentation', @doc[:perl_doc_text] %>
+        <br>
+        <%= link_to 'HTML documentation', @doc[:perl_doc_html] %>
+      </dd>
+    <dt>Ruby API documentation</dt>
+      <dd>
+        <%= link_to 'HTML documentation', @doc[:ruby_doc_html] %>
+      </dd>
   </dl>
-
 

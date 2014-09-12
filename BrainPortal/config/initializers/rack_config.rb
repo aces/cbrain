@@ -20,19 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-require 'spec_helper'
+# Special configuration / adjustments
 
-describe CbrainSmartDataProvider do
-  let(:cbrain_smart_data_provider) {Factory.create(:cbrain_smart_data_provider)}
-  
-  describe "#after_initialize_select_provider" do
-    
-    it "should receive select_local_or_network_provider" do
-      cbrain_smart_data_provider.should_receive(:select_local_or_network_provider)
-      cbrain_smart_data_provider.after_initialize_select_provider
-    end
-    
-  end
-  
+if Rack::Utils.respond_to?("key_space_limit=")
+  Rack::Utils.key_space_limit = 512.kilobytes # the default is 64.kilobytes
 end
-

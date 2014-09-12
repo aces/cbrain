@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'rubygems'
@@ -52,10 +52,10 @@ class SshDataProvider < DataProvider
   # browsable resets this value to false.
   def is_browsable?(by_user = nil) #:nodoc:
     return true if by_user.blank? || self.meta[:browse_gid].blank?
-    return true if by_user.is_a?(AdminUser) || by_user.id == self.id
+    return true if by_user.is_a?(AdminUser) || by_user.id == self.user_id
     by_user.is_member_of_group(self.meta[:browse_gid].to_i)
   end
-  
+
   def allow_file_owner_change? #:nodoc:
     true
   end
@@ -75,7 +75,7 @@ class SshDataProvider < DataProvider
     # It's IMPORTANT that the source be specified with a bare ':' in front.
     text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} :#{remote_shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
-    cb_error "Error syncing userfile to local cache: rsync returned:\n#{text}" unless text.blank?
+    cb_error "Error syncing userfile to local cache, rsync returned:\n#{text}" unless text.blank?
     unless File.exist?(localfull)
       cb_error "Error syncing userfile to local cache: no destination file found after rsync?\n" +
                "Make sure you are running rsync 3.0.6 or greater!"
@@ -93,7 +93,7 @@ class SshDataProvider < DataProvider
     # It's IMPORTANT that the destination be specified with a bare ':' in front.
     text = bash_this("#{rsync} -a -l --delete #{self.rsync_excludes} #{shell_escape(localfull)}#{sourceslash} :#{remote_shell_escape(remotefull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
-    cb_error "Error syncing userfile to data provider: rsync returned:\n#{text}" unless text.blank?
+    cb_error "Error syncing userfile to data provider, rsync returned:\n#{text}" unless text.blank?
     unless self.provider_file_exists?(userfile).to_s =~ /file|dir/
       cb_error "Error syncing userfile to data provider: no destination file found after rsync?\n" +
                "Make sure you are running rsync 3.0.6 or greater!\n"
@@ -152,7 +152,7 @@ class SshDataProvider < DataProvider
     end
     false
   end
-  
+
   def impl_provider_readhandle(userfile, rel_path = ".", &block) #:nodoc:
     full_path = provider_full_path(userfile) + rel_path
     cb_error "Error: read handle cannot be provided for non-file." unless userfile.is_a?(SingleFile)
@@ -162,7 +162,7 @@ class SshDataProvider < DataProvider
   end
 
   def impl_provider_list_all(user=nil) #:nodoc:
-    list = []
+    list    = []
     attlist = [ 'symbolic_type', 'size', 'permissions',
                 'uid',  'gid',  'owner', 'group',
                 'atime', 'ctime', 'mtime' ]
@@ -193,6 +193,7 @@ class SshDataProvider < DataProvider
         list << fileinfo
       end
     end
+
     list.sort! { |a,b| a.name <=> b.name }
     list
   end
@@ -201,18 +202,18 @@ class SshDataProvider < DataProvider
   def browse_remote_dir(user=nil) #:nodoc:
     self.remote_dir
   end
-  
+
   def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
     list = []
-    
+
     if allowed_types.is_a? Array
       types = allowed_types.dup
     else
       types = [allowed_types]
     end
-      
+
     types.map!(&:to_sym)
-    
+
     self.master # triggers unlocking the agent
     Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
       entries = []
@@ -250,7 +251,7 @@ class SshDataProvider < DataProvider
           fileinfo.name          = entry.name
         else
           fileinfo.name          = "#{userfile.name}#{base_dir}#{entry.name}"
-        end 
+        end
 
         bad_attributes = []
         attlist.each do |meth|
@@ -279,7 +280,7 @@ class SshDataProvider < DataProvider
     basename = userfile.name
     Pathname.new(remote_dir) + basename
   end
-  
+
   protected
 
   # Builds a prefix for a +rsync+ command, such as

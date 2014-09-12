@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This class provides an implementation for a data provider
@@ -62,6 +62,11 @@ class VaultLocalDataProvider < LocalDataProvider
     SyncStatus.ready_to_modify_cache(userfile,:destroy) do
       true
     end
+  end
+
+  def impl_provider_list_all(user=nil) #:nodoc:
+    cb_error "This data provider cannot be browsed." unless self.is_browsable?(user)
+    super(user)
   end
 
   def impl_provider_erase(userfile) #:nodoc:

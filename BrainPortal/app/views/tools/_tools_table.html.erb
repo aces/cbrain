@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -30,23 +30,21 @@
   <% end %>
 
   <%= overlay_ajax_link "Help", "/doc/tool/tool_info.html", :class  => "button menu_button" %>
-</div> 
-
-<div class="active_status">
-  <span class="active_status_left_side">
-    <%= render :partial => 'shared/active_filters', :locals => {:model => :tool} %>
-  </span>
 </div>
 
+
+<%= render :partial => 'shared/active_filters', :locals => {:model => :tool} %>
+
+
 <%= index_table(@tools, :class => "resource_list") do |t| %>
-  <% 
+  <%
     if current_user.has_role?(:admin_user)
       t.sort_column("Tool Name", Tool, :name) { |tool| link_to tool.name, { :action => :edit, :id => tool.id }}
     else
       t.sort_column("Tool Name", Tool, :name, &:name)
     end
 
-    t.sort_column("Description", Tool, :description) { |tool|  overlay_description(tool.description) } 
+    t.sort_column("Description", Tool, :description) { |tool|  overlay_description(tool.description) }
 
     t.sort_column("Category", Tool, :category, :filters => basic_filters_for(@filtered_scope, @header_scope, Tool, :category), &:category)
 

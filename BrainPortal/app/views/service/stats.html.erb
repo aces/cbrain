@@ -22,11 +22,36 @@
 #
 -%>
 
+<% title 'Service Stats' %>
+
   <h1>CBRAIN Web Service Stats</h1>
-  <dl>
-    <% @summary_stats.keys.sort.each do |client| %>
-      <% next if client == "lastReset" %>
-      <dt><%=client%></dt><dd><%= @summary_stats[client] %></dd>
-    <% end %>
-    <dt>Last reset</dt><dd><%= @summary_stats["lastReset"] %></dd>
-  </dl>
+
+  <div class="generalbox">
+    <table>
+      <!-- header -->
+      <tr>
+        <th colspan="2" class="supertitle">Totals by client type</th>
+      </tr>
+      <tr>
+        <th>Client Type</th>
+        <th>Requests</th>
+      </tr>
+      <!-- each row -->
+      <% @summary_stats.keys.sort.each do |client| %>
+        <% next if client == "TotalActions" || client == "lastReset" %>
+        <% count = @summary_stats[client] %>
+        <tr>
+          <td><%= client %></td>
+          <td><%= count %></td>
+        </tr>
+      <% end %>
+    </table>
+  </div>
+
+  <p>
+
+  <strong>Counters last reset:</strong> <%= @last_reset %>
+
+  <p>
+
+  For a more detailed report, see the <%= link_to "Detailed Service Stats", :action => :detailed_stats %> page.
