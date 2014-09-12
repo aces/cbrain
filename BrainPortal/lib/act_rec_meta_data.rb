@@ -380,14 +380,8 @@ module ActRecMetaData
       conditions[:meta_value] = myval.to_yaml unless myval.nil?  # temp patch, because Rails doesn't serialize
       #conditions[:meta_value] = myval         unless myval.nil?  # proper code once Rails developers fix bug
       matched = MetaDataStore.where(conditions)
-      objects = matched.map do |md|
-        md_ar_id         = md.ar_id
-        md_ar_table_name = md.ar_table_name
-        found_class      = md_ar_table_name.classify.constantize
-        obj = found_class.where(options[:conditions] || {}).find(md_ar_id) rescue nil
-        obj
-      end
-      objects.compact!
+      matched_ids = matched.raw_first_column(:ar_id)
+      objects = self.where(:id => matched_ids).where(options[:conditions] || {}).all
       return objects
     end
 

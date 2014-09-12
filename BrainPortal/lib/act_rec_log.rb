@@ -324,9 +324,15 @@ module ActRecLog
     by_user_mess = by_user.present? ? " by #{by_user.login}" : ""
     self.changed_attributes.each do |att,old|
       next unless ext_white_list.any? { |v| v.to_s == att.to_s }
+      att_type = self.class.columns_hash[att.to_s].type rescue :string # ActiveRecord type, e.g. :boolean, or :string
+      new = self.read_attribute(att)
+      new = !(new.blank? || new.to_s == "false" || new.to_s == "0") if att_type == :boolean # prettier, since we can write "" to a boolean field
       old = old.to_s
-      new = self.read_attribute(att).to_s
-      if self.class.serialized_attributes[att]
+      new = new.to_s
+      next if new == old # well, it seems it's the same anyway; happens when writing "" to replace a 'false'
+      if att_type == :boolean
+        message = "is now #{new}"
+      elsif self.class.serialized_attributes[att]
         message = "(serialized) size(#{old.size} -> #{new.size})"
       elsif old.size > 60 || new.size > 60
         message = ": size(#{old.size} -> #{new.size})"
