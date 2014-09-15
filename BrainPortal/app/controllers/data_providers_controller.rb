@@ -544,13 +544,13 @@ class DataProvidersController < ApplicationController
     end
 
     if newly_registered_userfiles.size > 0
-      clear_browse_provider_local_cache_file(@as_user, @provider)
+      clear_browse_provider_local_cache_file(@as_user, @provider) unless request.format.to_sym == :xml || request.format.to_sym == :json
       flash[:notice] += "Registered #{newly_registered_userfiles.size} files.\n"
       if @as_user != current_user
         flash[:notice] += "Important note! Since you were browsing as user '#{@as_user.login}', the files were registered as belonging to that user instead of you!\n"
       end
     elsif num_erased > 0
-      clear_browse_provider_local_cache_file(@as_user, @provider)
+      clear_browse_provider_local_cache_file(@as_user, @provider) unless request.format.to_sym == :xml || request.format.to_sym == :json
       flash[:notice] += "Erased #{num_erased} files.\n"
     elsif num_unregistered > 0
       flash[:notice] += "Unregistered #{num_unregistered} files.\n"
