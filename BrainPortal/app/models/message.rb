@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This class provides a asynchronous communication mechanism
@@ -39,9 +39,9 @@ class Message < ActiveRecord::Base
   force_text_attribute_encoding 'UTF-8', :description, :variable_text
 
   attr_accessor :send_email
-  
+
   attr_accessible :header, :description, :variable_text, :message_type, :read, :user_id, :expiry, :last_sent, :critical, :display, :send_email, :group_id, :sender_id
-  
+
   cb_scope :time_interval, lambda { |s, e|
                                     bef = s.to_i
                                     aft = e.to_i
@@ -50,7 +50,7 @@ class Message < ActiveRecord::Base
                                     aft = aft.ago
                                     { :conditions => [ "messages.last_sent < TIMESTAMP(?) AND messages.last_sent > TIMESTAMP(?)", bef, aft ] }
                                   }
-  
+
   # Send a new message to a user, the users of a group, or a site.
   #
   # The +destination+ argument can be a User, a Group, a Site,
@@ -111,8 +111,8 @@ class Message < ActiveRecord::Base
                :header       => header,
                :description  => description,
                :read         => false,
-               :critical     => critical 
-             ).first || 
+               :critical     => critical
+             ).first ||
              self.new(
                :user_id      => user.id,
                :message_type => type,
@@ -122,9 +122,9 @@ class Message < ActiveRecord::Base
                :read         => false,
                :critical     => critical,
                :group_id     => group_id,
-               :sender_id    => sender_id 
+               :sender_id    => sender_id
              )
-      
+
       # If the message is a pure repeat of an existing message,
       # do nothing. Question: do we mark it as unread?
       if var_text.blank? && ! mess.new_record?
@@ -132,7 +132,7 @@ class Message < ActiveRecord::Base
         #mess.read = false; mess.save
         next
       end
-        
+
       # Prepare new variable text
       unless var_text.blank?
         mess.prepend_variable_text(var_text)
@@ -145,7 +145,7 @@ class Message < ActiveRecord::Base
 
       messages_sent << mess
     end
-    
+
     if send_email
       begin
         CbrainMailer.cbrain_message(allusers,
@@ -159,14 +159,14 @@ class Message < ActiveRecord::Base
 
     messages_sent
   end
-  
+
   #Instance method version of send_message.
   #Allows one to create an object and set its attributes,
   #then send it to +destination+.
   def send_me_to(destination)
     self.class.send_message(destination, self.attributes.merge({:send_email  => self.send_email}))
   end
-  
+
   # Define sort orders that don't refer to actual columns in the table.
   def self.pseudo_sort_columns
     ["sender"]
@@ -180,7 +180,7 @@ class Message < ActiveRecord::Base
     # Try to send message to everyone; by setting the var_text to nil,
     # we won't change messages already sent, but we will create
     # new message for new users with a variable_text that is blank.
-    found        = self.class.send_message(destination, 
+    found        = self.class.send_message(destination,
                                     :message_type => self.message_type,
                                     :header       => self.header,
                                     :description  => self.description)
@@ -213,20 +213,20 @@ class Message < ActiveRecord::Base
         :description  => "An internal error occured inside the CBRAIN code.\n"     +
                          "The CBRAIN admins have been alerted are working\n"       +
                          "towards solving the problem.\n",
-                       
+
         :send_email   => false
-      ) 
+      )
     end
-    
-    
+
+
     error_description = "An internal error occured inside the CBRAIN code.\n" +
-                        "The last 30 caller entries are in attachment.\n"                   
+                        "The last 30 caller entries are in attachment.\n"
     if options[:exception_log]
       error_description += "[[View Exception Log][/exception_logs/#{options[:exception_log].id}]]\n"
     end
-    
+
     admin_list = WorkGroup.find_by_id(RemoteResource.current_resource.meta[:error_message_mailing_list]) || User.all_admins
-    
+
     # Message for developers/admin
     Message.send_message(admin_list,
       :message_type  => :error,
@@ -238,13 +238,13 @@ class Message < ActiveRecord::Base
                         "Users: #{find_users_for_destination(destination).map(&:login).join(", ")}\n" +
                         "Hostname: #{Socket.gethostname}\n" +
                         "Process ID: #{Process.pid}\n" +
-                        "Process Name: #{$0}\n" +
+                        "Process Name: #{$0.sub(/[\s\0]+$/,"")}\n" +
                         "Params: #{request_params.hide_filtered.inspect}\n" +
                         "Exception: #{exception.class.to_s}: #{exception.message}\n" +
                         "\n" +
                         exception.backtrace[0..30].join("\n") +
                         "\n",
-                       
+
       :send_email    => true
     )
   rescue => ex
