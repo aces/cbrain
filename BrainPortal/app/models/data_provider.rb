@@ -249,9 +249,16 @@ class DataProvider < ActiveRecord::Base
   # Most of the attributes here are compatible with
   #   Net::SFTP::Protocol::V01::Attributes
   class FileInfo
-    attr_accessor :name, :symbolic_type, :size, :permissions,
+    AttrList = [
+                  :name, :symbolic_type, :size, :permissions,
                   :uid, :gid, :owner, :group,
-                  :atime, :mtime, :ctime
+                  :atime, :mtime, :ctime,
+               ]
+    attr_accessor *AttrList
+
+    def initialize(attributes = {})
+       (attributes.keys.collect(&:to_sym) & AttrList).each { |name| self.send("#{name}=",attributes[name]) }
+    end
 
     def depth #:nodoc:
       return @depth if @depth
