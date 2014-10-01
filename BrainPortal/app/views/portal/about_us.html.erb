@@ -98,6 +98,12 @@ after the NEP program is completed.</p>
     <div id="platform_panel" style="display: none">
       <%= Rails::Info.to_html.html_safe %>
     </div>
+    <h3>Environment Variables
+    <%= show_hide_toggle "(Show)", "#env_panel", :class  => 'action_link' %>
+    </h3>
+    <div id="env_panel" style="display: none">
+      <%= array_to_table(ENV.to_a.sort { |a,b| a[0] <=> b[0] }.flatten, :cols => 2, :td_class => 'left') %>
+    </div>
   <% end %>
 </div>
 
