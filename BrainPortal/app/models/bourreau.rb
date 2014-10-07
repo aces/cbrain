@@ -239,17 +239,23 @@ class Bourreau < RemoteResource
     worker_lc_author  = worker_revinfo.author
     worker_lc_date    = worker_revinfo.datetime
 
+    num_cbrain_tasks  = myself.cbrain_tasks.count        # total number of tasks on this Bourreau
+    num_cbrain_tasks  = myself.cbrain_tasks.active.count # number of active tasks on this Bourreau
+
     info.merge!(
       # Bourreau info
-      :bourreau_cms       => myself.cms_class || "Unconfigured",
-      :bourreau_cms_rev   => (myself.scir_session.revision_info rescue Object.revision_info),
-      :tasks_max          => queue_tasks_max,
-      :tasks_tot          => queue_tasks_tot,
+      :bourreau_cms            => myself.cms_class || "Unconfigured",
+      :bourreau_cms_rev        => (myself.scir_session.revision_info rescue Object.revision_info),
+      :tasks_max               => queue_tasks_max,
+      :tasks_tot               => queue_tasks_tot,
 
-      :worker_pids        => worker_pids,
-      :worker_lc_rev      => worker_lc_rev,
-      :worker_lc_author   => worker_lc_author,
-      :worker_lc_date     => worker_lc_date
+      :worker_pids             => worker_pids,
+      :worker_lc_rev           => worker_lc_rev,
+      :worker_lc_author        => worker_lc_author,
+      :worker_lc_date          => worker_lc_date,
+
+      :num_cbrain_tasks        => num_cbrain_tasks,
+      :num_active_cbrain_tasks => num_active_cbrain_tasks,
     )
 
     return info

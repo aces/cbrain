@@ -51,15 +51,20 @@ class RemoteResourceInfo < RestrictedHash
      :rails_time_zone,      # Time zone name as configured in config/environment.rb
 
      # Svn info (Rails app)
-     :revision,             # From 'svn info' on disk AT QUERYTIME
-     :lc_author,            # From 'svn info' on disk AT QUERYTIME
-     :lc_rev,               # From 'svn info' on disk AT QUERYTIME
-     :lc_date,              # From 'svn info' on disk AT QUERYTIME
-     :starttime_revision,   # From 'svn info' on disk AT STARTTIME
+     :revision,             # Latest GIT tag           on disk AT QUERYTIME, e.g. "3.1.13-121"
+     :lc_author,            # Latest GIT commit author on disk AT QUERYTIME
+     :lc_rev,               # Latest GIT commit ID     on disk AT QUERYTIME
+     :lc_date,              # Latest GIT commit date   on disk AT QUERYTIME
+     :starttime_revision,   # GIT tag AT STARTTIME, e.g. "3.1.13-121"
+
+     # Statistics
+     :num_cbrain_userfiles,    # Total number of userfiles in system; only filled when querying a CbrainPortal
+     :num_cbrain_tasks,        # Number of CBRAIN tasks; grand total if querying a CbrainPortal, or subset when querying a Bourreau
+     :num_active_cbrain_tasks, # Subset of num_cbrain_trasks that are ACTIVE_STATUS (see cbrain_tasks.rb)
 
      # Bourreau-specific fields
      :bourreau_cms, :bourreau_cms_rev,
-     :tasks_max,    :tasks_tot,
+     :tasks_max,    :tasks_tot,  # jobs on compute clusters
 
      # Bourreau Worker Svn info
      :worker_pids,

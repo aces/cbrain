@@ -25,7 +25,26 @@ class BrainPortal < RemoteResource
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  
+  # Returns the same RemoteResourceInfo record has the RemoteResource
+  # class, but with some more added information specific to a BrainPortal
+  def self.remote_resource_info
+    info = super
+    info[:num_cbrain_userfiles]    = Userfile.count
+    info[:num_cbrain_tasks]        = CbrainTask.count                  # total number of tasks
+    info[:num_active_cbrain_tasks] = CbrainTask.where({}).active.count # number of active tasks
+    info
+  end
+
+  # Returns the same RemoteResourceInfo record has the RemoteResource
+  # class, but with some more added information specific to a BrainPortal
+  def self.remote_resource_ping
+    info = super
+    info[:num_cbrain_userfiles]    = Userfile.count
+    info[:num_cbrain_tasks]        = CbrainTask.count                  # total number of tasks
+    info[:num_active_cbrain_tasks] = CbrainTask.where({}).active.count # number of active tasks
+    info
+  end
+
   def self.pretty_type #:nodoc:
     "Portal"
   end
@@ -33,7 +52,7 @@ class BrainPortal < RemoteResource
   def lock! #:nodoc:
     self.update_attributes!(:portal_locked => true)
   end
-  
+
   def unlock! #:nodoc:
     self.update_attributes!(:portal_locked => false)
   end
