@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This model encapsulates a record with a precise list
@@ -58,9 +58,10 @@ class RemoteResourceInfo < RestrictedHash
      :starttime_revision,   # GIT tag AT STARTTIME, e.g. "3.1.13-121"
 
      # Statistics
-     :num_cbrain_userfiles,    # Total number of userfiles in system; only filled when querying a CbrainPortal
-     :num_cbrain_tasks,        # Number of CBRAIN tasks; grand total if querying a CbrainPortal, or subset when querying a Bourreau
-     :num_active_cbrain_tasks, # Subset of num_cbrain_trasks that are ACTIVE_STATUS (see cbrain_tasks.rb)
+     :num_cbrain_userfiles,      # Total number of userfiles in system; only filled when querying a CbrainPortal
+     :num_sync_cbrain_userfiles, # Number of userfiles synced locally
+     :num_cbrain_tasks,          # Number of CBRAIN tasks; grand total if querying a CbrainPortal, or subset when querying a Bourreau
+     :num_active_cbrain_tasks,   # Subset of num_cbrain_trasks that are ACTIVE_STATUS (see cbrain_tasks.rb)
 
      # Bourreau-specific fields
      :bourreau_cms, :bourreau_cms_rev,
@@ -79,21 +80,21 @@ class RemoteResourceInfo < RestrictedHash
    def self.dummy_record
      mock_record("???")
    end
-   
+
    def self.mock_record(field_value)
      mock = self.new()
-     
+
      mock = self.new()
      self.allowed_keys.each do |field|
        mock[field] = field_value
      end
-     
+
      mock.id               = 0
-     mock.bourreau_cms_rev = Object.revision_info # means 'unknown'
+     mock.bourreau_cms_rev = Object.revision_info.to_s # means 'unknown'
 
      mock
    end
-   
+
    # Returns a default value of '???' for any attributes
    # not set.
    def [](key)

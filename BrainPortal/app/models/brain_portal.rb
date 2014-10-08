@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This model represents a BrainPortal RAILS app.
@@ -28,20 +28,24 @@ class BrainPortal < RemoteResource
   # Returns the same RemoteResourceInfo record has the RemoteResource
   # class, but with some more added information specific to a BrainPortal
   def self.remote_resource_info
+    myself = RemoteResource.current_resource
     info = super
-    info[:num_cbrain_userfiles]    = Userfile.count
-    info[:num_cbrain_tasks]        = CbrainTask.count                  # total number of tasks
-    info[:num_active_cbrain_tasks] = CbrainTask.where({}).active.count # number of active tasks
+    info[:num_cbrain_userfiles]      = Userfile.count
+    info[:num_sync_cbrain_userfiles] = myself.sync_status.count          # number of files currently synchornized locally
+    info[:num_cbrain_tasks]          = CbrainTask.count                  # total number of tasks
+    info[:num_active_cbrain_tasks]   = CbrainTask.where({}).active.count # number of active tasks
     info
   end
 
   # Returns the same RemoteResourceInfo record has the RemoteResource
   # class, but with some more added information specific to a BrainPortal
   def self.remote_resource_ping
+    myself = RemoteResource.current_resource
     info = super
-    info[:num_cbrain_userfiles]    = Userfile.count
-    info[:num_cbrain_tasks]        = CbrainTask.count                  # total number of tasks
-    info[:num_active_cbrain_tasks] = CbrainTask.where({}).active.count # number of active tasks
+    info[:num_cbrain_userfiles]      = Userfile.count
+    info[:num_sync_cbrain_userfiles] = myself.sync_status.count          # number of files currently synchornized locally
+    info[:num_cbrain_tasks]          = CbrainTask.count                  # total number of tasks
+    info[:num_active_cbrain_tasks]   = CbrainTask.where({}).active.count # number of active tasks
     info
   end
 
