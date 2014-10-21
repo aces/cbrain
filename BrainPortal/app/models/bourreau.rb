@@ -239,9 +239,10 @@ class Bourreau < RemoteResource
     worker_lc_author  = worker_revinfo.author
     worker_lc_date    = worker_revinfo.datetime
 
-    num_sync_userfiles = myself.sync_status.count         # number of files locally synchronized
-    num_tasks          = myself.cbrain_tasks.count        # total number of tasks on this Bourreau
-    num_active_tasks   = myself.cbrain_tasks.active.count # number of active tasks on this Bourreau
+    num_sync_userfiles  = myself.sync_status.count         # number of files locally synchronized
+    size_sync_userfiles = myself.sync_status.joins(:userfile).sum("userfiles.size") # tot sizes of these files
+    num_tasks           = myself.cbrain_tasks.count        # total number of tasks on this Bourreau
+    num_active_tasks    = myself.cbrain_tasks.active.count # number of active tasks on this Bourreau
 
     info.merge!(
       # Bourreau info
@@ -257,9 +258,10 @@ class Bourreau < RemoteResource
       :worker_lc_date            => worker_lc_date,
 
       # Stats
-      :num_sync_cbrain_userfiles => num_sync_userfiles,
-      :num_cbrain_tasks          => num_tasks,
-      :num_active_cbrain_tasks   => num_active_tasks,
+      :num_sync_cbrain_userfiles  => num_sync_userfiles,
+      :size_sync_cbrain_userfiles => size_sync_userfiles,
+      :num_cbrain_tasks           => num_tasks,
+      :num_active_cbrain_tasks    => num_active_tasks,
     )
 
     return info
@@ -279,15 +281,17 @@ class Bourreau < RemoteResource
     worker_pids        = workers.map(&:pid).join(",") rescue '???'
 
     # Stats
-    num_sync_userfiles = myself.sync_status.count         # number of files locally synchronized
-    num_tasks          = myself.cbrain_tasks.count        # total number of tasks on this Bourreau
-    num_active_tasks   = myself.cbrain_tasks.active.count # number of active tasks on this Bourreau
+    num_sync_userfiles  = myself.sync_status.count         # number of files locally synchronized
+    size_sync_userfiles = myself.sync_status.joins(:userfile).sum("userfiles.size") # tot sizes of these files
+    num_tasks           = myself.cbrain_tasks.count        # total number of tasks on this Bourreau
+    num_active_tasks    = myself.cbrain_tasks.active.count # number of active tasks on this Bourreau
 
     info = super
-    info[:worker_pids]               = worker_pids
-    info[:num_sync_cbrain_userfiles] = num_sync_userfiles
-    info[:num_cbrain_tasks]          = num_tasks
-    info[:num_active_cbrain_tasks]   = num_active_tasks
+    info[:worker_pids]                = worker_pids
+    info[:num_sync_cbrain_userfiles]  = num_sync_userfiles
+    info[:size_sync_cbrain_userfiles] = size_sync_userfiles
+    info[:num_cbrain_tasks]           = num_tasks
+    info[:num_active_cbrain_tasks]    = num_active_tasks
     info
   end
 

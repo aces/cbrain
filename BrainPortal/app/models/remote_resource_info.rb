@@ -58,10 +58,11 @@ class RemoteResourceInfo < RestrictedHash
      :starttime_revision,   # GIT tag AT STARTTIME, e.g. "3.1.13-121"
 
      # Statistics
-     :num_cbrain_userfiles,      # Total number of userfiles in system; only filled when querying a CbrainPortal
-     :num_sync_cbrain_userfiles, # Number of userfiles synced locally
-     :num_cbrain_tasks,          # Number of CBRAIN tasks; grand total if querying a CbrainPortal, or subset when querying a Bourreau
-     :num_active_cbrain_tasks,   # Subset of num_cbrain_trasks that are ACTIVE_STATUS (see cbrain_tasks.rb)
+     :num_cbrain_userfiles,       # Total number of userfiles in system; only filled when querying a CbrainPortal
+     :num_sync_cbrain_userfiles,  # Number of userfiles synced locally
+     :size_sync_cbrain_userfiles, # Total size for the synced userfiles
+     :num_cbrain_tasks,           # Number of CBRAIN tasks; grand total if querying a CbrainPortal, or subset when querying a Bourreau
+     :num_active_cbrain_tasks,    # Subset of num_cbrain_trasks that are ACTIVE_STATUS (see cbrain_tasks.rb)
 
      # Bourreau-specific fields
      :bourreau_cms, :bourreau_cms_rev,

@@ -30,10 +30,11 @@ class BrainPortal < RemoteResource
   def self.remote_resource_info
     myself = RemoteResource.current_resource
     info = super
-    info[:num_cbrain_userfiles]      = Userfile.count
-    info[:num_sync_cbrain_userfiles] = myself.sync_status.count          # number of files currently synchornized locally
-    info[:num_cbrain_tasks]          = CbrainTask.count                  # total number of tasks
-    info[:num_active_cbrain_tasks]   = CbrainTask.where({}).active.count # number of active tasks
+    info[:num_cbrain_userfiles]       = Userfile.count
+    info[:num_sync_cbrain_userfiles]  = myself.sync_status.count          # number of files currently synchornized locally
+    info[:size_sync_cbrain_userfiles] = myself.sync_status.joins(:userfile).sum("userfiles.size")  # their tot size
+    info[:num_cbrain_tasks]           = CbrainTask.count                  # total number of tasks
+    info[:num_active_cbrain_tasks]    = CbrainTask.where({}).active.count # number of active tasks
     info
   end
 
@@ -42,10 +43,11 @@ class BrainPortal < RemoteResource
   def self.remote_resource_ping
     myself = RemoteResource.current_resource
     info = super
-    info[:num_cbrain_userfiles]      = Userfile.count
-    info[:num_sync_cbrain_userfiles] = myself.sync_status.count          # number of files currently synchornized locally
-    info[:num_cbrain_tasks]          = CbrainTask.count                  # total number of tasks
-    info[:num_active_cbrain_tasks]   = CbrainTask.where({}).active.count # number of active tasks
+    info[:num_cbrain_userfiles]       = Userfile.count
+    info[:num_sync_cbrain_userfiles]  = myself.sync_status.count          # number of files currently synchornized locally
+    info[:size_sync_cbrain_userfiles] = myself.sync_status.joins(:userfile).sum("userfiles.size")  # their tot size
+    info[:num_cbrain_tasks]           = CbrainTask.count                  # total number of tasks
+    info[:num_active_cbrain_tasks]    = CbrainTask.where({}).active.count # number of active tasks
     info
   end
 
