@@ -390,7 +390,7 @@ class CbrainTask::Diagnostics < ClusterTask
     if File.exists?(cur_out)
       system("cp",cur_out,self.stdout_cluster_filename(self.run_number + 1))
     end
-    if File.exists?(err)
+    if File.exists?(cur_err)
       system("cp",cur_err,self.stderr_cluster_filename(self.run_number + 1))
     end
     true
