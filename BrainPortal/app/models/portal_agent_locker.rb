@@ -39,9 +39,12 @@ class PortalAgentLocker < Worker
     @passphrase    = admin.meta[:global_ssh_agent_lock_passphrase] ||= admin.send(:random_string)
     @passphrase_md = admin.meta.md_for_key(:global_ssh_agent_lock_passphrase)
 
-    log            = admin.meta[:ssh_agent_unlock_history] ||= ""
+    # @log_md is only used if the environment variable CBRAIN_DEBUG_TRACES is set
+    # Again, see CBRAIN.with_unlocked_agent for more info.
+                     admin.meta[:ssh_agent_unlock_history] ||= ""
     @log_md        = admin.meta.md_for_key(:ssh_agent_unlock_history)
 
+    # Who am I within CBRAIN?
     rr = RemoteResource.current_resource
     worker_log.info "#{rr.class.to_s} code rev. #{rr.revision_info.svn_id_rev} start rev. #{rr.info.starttime_revision}"
 
@@ -71,20 +74,25 @@ class PortalAgentLocker < Worker
       return 
     end
 
-    log = ""
-    MetaDataStore.transaction do
-      @log_md.reload
-      @log_md.lock!
-      log = @log_md.meta_value || ""
-      @log_md.meta_value = ""
-      @log_md.save
-    end
+    # There is a mechanism to inform the AgentLocker about which part
+    # of CBRAIN unlocked it, if CBRAIN_DEBUG_TRACES is set. The
+    # stack trace is sent to the @log_md record in the DB. Costly!
+    if ENV['CBRAIN_DEBUG_TRACES'].present?
+      log = ""
+      MetaDataStore.transaction do
+        @log_md.reload
+        @log_md.lock!
+        log = @log_md.meta_value || ""
+        @log_md.meta_value = ""
+        @log_md.save
+      end
 
-    log.split(/\n/).each do |l|
-      worker_log.debug "Unlocked by: #{l}"
-    end
-    if log.blank? && @time_unlocked.blank?
-      worker_log.warn "No reason found for unlocked agent!"
+      log.split(/\n/).each do |l|
+        worker_log.debug "Unlocked by: #{l}"
+      end
+      if log.blank? && @time_unlocked.blank?
+        worker_log.warn "No reason found for unlocked agent!"
+      end
     end
 
     contrib = @time_unlocked.blank? ? @half_int : @interval # seconds unlocked contributed by latest cycle

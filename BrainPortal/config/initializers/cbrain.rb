@@ -131,7 +131,7 @@ class CBRAIN
           yield
 
         # Background untrapped exception handling
-        rescue ActiveRecord::StatementInvalid, Mysql::Error => e
+        rescue ActiveRecord::StatementInvalid, Mysql::Error
           puts "#{taskname} PID #{Process.pid}: Oh oh. The DB connection was closed! Nothing to do but exit!"
         rescue Exception => itswrong
           destination = User.find_by_login('admin') if destination.blank? || destination == :admin
@@ -261,15 +261,19 @@ class CBRAIN
 
       # Log info about what unlocked the agent
       if pretty_context.present?
-        puts_red "Unlocking agent: #{pretty_context}" if ENV['CBRAIN_DEBUG_TRACES'].present?
-        if @_log_md.blank?
-          admin.meta[:ssh_agent_unlock_history] ||= "" # done only once, to trigger creation of record
-          @_log_md = admin.meta.md_for_key(:ssh_agent_unlock_history) # find record only once
-        end
-        MetaDataStore.transaction do
-          @_log_md.lock!
-          @_log_md.meta_value += "#{pretty_context}\n"
-          @_log_md.save
+        if ENV['CBRAIN_DEBUG_TRACES'].present?
+          puts_red "Unlocking agent: #{pretty_context}"
+          if @_log_md.blank?
+            admin.meta[:ssh_agent_unlock_history] ||= "" # done only once, to trigger creation of record
+            @_log_md = admin.meta.md_for_key(:ssh_agent_unlock_history) # find record only once
+          end
+          MetaDataStore.transaction do
+            @_log_md.lock!
+            @_log_md.meta_value += "#{pretty_context}\n"
+            @_log_md.save
+          end
+        else # simpler case, generally in production
+          Rails.logger.info(pretty_context) rescue true
         end
       end
 
