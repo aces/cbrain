@@ -49,6 +49,7 @@ class ApplicationController < ActionController::Base
   before_filter :prepare_messages
   before_filter :adjust_system_time_zone
   around_filter :activate_user_time_zone
+  after_filter  :action_counter # depends on log_user_info to compute client_type in session
   after_filter  :log_user_info
   before_filter :login_required, :only => :filter_proxy
 
@@ -137,44 +138,46 @@ class ApplicationController < ActionController::Base
   # Check if the user needs to change their password
   # or sign license agreements.
   def check_account_validity
-    return unless current_user
-    return if params[:controller] == "sessions"
-
-    check_license_agreements()
-    check_password() if current_user.all_licenses_signed == "yes"
+    return false unless current_user
+    return true  if     params[:controller] == "sessions"
+    return false unless check_password_reset()
+    return false unless check_license_agreements()
+    return true
   end
 
   def check_license_agreements #:nodoc:
 
-    if current_user.all_licenses_signed.blank?
-      unsigned_agreements = current_user.unsigned_license_agreements
-      unless unsigned_agreements.empty?
-        return if params[:controller] == "portal" && params[:action] =~ /license$/
-        #return if current_user.has_role?(:admin_user) && params[:controller] == "bourreaux"
+    current_user.meta.reload
+    return true if current_user.all_licenses_signed.present?
+    return true if params[:controller] == "portal" && params[:action] =~ /license$/
+    return true if params[:controller] == "users"  && (params[:action] == "change_password" || params[:action] == "update")
 
-        if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
-          redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first, :status => 303
-        #elsif current_user.has_role?(:admin_user)
-        #  flash[:error] ||= ""
-        #  flash[:error] +=  "License agreement '#{unsigned_agreements.first}' doesn't seem to exist.\nPlease place the license file in /public/licenses or unconfigure it.\n"
+    unsigned_agreements = current_user.unsigned_license_agreements
+    unless unsigned_agreements.empty?
+      if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
+        respond_to do |format|
+          format.html { redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first }
+          format.json { render :status => 403, :text => "Some license agreements are not signed." }
+          format.xml  { render :status => 403, :text => "Some license agreements are not signed." }
         end
-        return
+        return false
       end
-      current_user.all_licenses_signed = "yes"
     end
 
+    current_user.all_licenses_signed = "yes"
+    return true
   end
 
-  def check_password #:nodoc:
-
-    #Check if passwords been reset.
+  # Check if password need to be reset.
+  def check_password_reset #:nodoc:
     if current_user.password_reset
       unless params[:controller] == "users" && (params[:action] == "change_password" || params[:action] == "update")
         flash[:error] = "Please reset your password."
         redirect_to change_password_user_path(current_user)
+        return false
       end
     end
-
+    return true
   end
 
   # 'After' callback: logs in the Rails logger information about the user who
@@ -197,7 +200,8 @@ class ApplicationController < ActionController::Base
     # Pretty user agent string
     rawua = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'
     ua    = HttpUserAgent.new(rawua)
-    brow  = ua.browser_name    || "(unknown browser)"
+    brow  = ua.browser_name           || "(UnknownClient)"
+    current_session["client_type"]     = brow  # used by action_counter() below
     b_ver = ua.browser_version
 
     # Find out the instance name
@@ -207,9 +211,51 @@ class ApplicationController < ActionController::Base
     from  = (host.presence && host != ip) ? "#{host} (#{ip})" : ip
     mess  = "User: #{login} on instance #{instname} from #{from} using #{brow} #{b_ver.presence}"
     Rails.logger.info mess
+    true
   rescue
     true
   end
+
+  # 'After' callback: store a hash in the metadata of the session, in order
+  # to keep the count of each action by controller and by clien_type.
+  def action_counter
+    # Extract information about controller and action
+    client_type            = current_session["client_type"] # this is set in log_user_info() above.
+    return true if client_type.blank?
+
+    controller             = params[:controller].to_s.presence   || "UnknownController"
+    action                 = params[:action].to_s.presence       || "UnknownAction"
+    success                = response.code.to_s =~ /^[123]\d\d$/
+
+    # Fetch the stats structure from meta data
+    current_resource       = RemoteResource.current_resource
+    cr_meta                = current_resource.meta
+    cr_meta.reload
+    stats                  = cr_meta[:stats] || {}
+
+    # Fill the stats structure, initializing the levels as we go.
+    stats[client_type]          ||= {}
+    contr2action                  = stats[client_type]
+    contr2action[controller]    ||= {}
+    action2count                  = contr2action[controller]
+    action2count[action]        ||= [0,0]
+    action2count[action][success ? 0 : 1] += 1
+
+    # Global counts, by response codes
+    stats["GlobalCount"]                     ||= 0
+    stats["GlobalCount"]                      += 1     # Important to change at least ONE entry at top level, so meta data saves...
+    stats["StatusCodes"]                     ||= {}
+    stats["StatusCodes"]["status_#{response.code.to_s}"] ||= 0
+    stats["StatusCodes"]["status_#{response.code.to_s}"]  += 1
+
+    # Save back the structure
+    cr_meta[:stats] = stats   # ... here.
+    true
+  rescue => ex
+    puts_red "Ex: #{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
+    true
+  end
+
 
   ########################################################################
   # CBRAIN Messaging System Filters

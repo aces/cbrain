@@ -25,10 +25,12 @@ class DataProvidersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :except => [:disk_usage, :cleanup]
+  api_available :except => [:cleanup]
 
   before_filter :login_required
   before_filter :manager_role_required, :only => [:new, :create]
+
+  API_HIDDEN_ATTRIBUTES = [ :cloud_storage_client_identifier, :cloud_storage_client_token ]
 
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "data_providers.name"
@@ -43,8 +45,14 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml  { render :xml  => @data_providers }
-      format.json { render :json => @data_providers.to_json(methods: [:type, :is_browsable?, :is_fast_syncing?, :allow_file_owner_change?]) }
+      format.xml  do
+        @data_providers.each { |dp| dp.hide_attributes(API_HIDDEN_ATTRIBUTES) }
+        render :xml  => @data_providers
+      end
+      format.json do
+        @data_providers.each { |dp| dp.hide_attributes(API_HIDDEN_ATTRIBUTES) }
+        render :json => @data_providers.to_json(methods: [:type, :is_browsable?, :is_fast_syncing?, :allow_file_owner_change?])
+      end
       format.js
     end
   end
@@ -57,10 +65,17 @@ class DataProvidersController < ApplicationController
 
     cb_notice "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
 
+
     respond_to do |format|
       format.html # show.html.erb
-      format.xml  { render :xml  => @provider }
-      format.json { render :json => @provider }
+      format.xml  {
+          @provider.hide_attributes(API_HIDDEN_ATTRIBUTES)
+          render :xml  => @provider
+      }
+      format.json {
+          @provider.hide_attributes(API_HIDDEN_ATTRIBUTES)
+          render :json => @provider
+      }
     end
   end
 
@@ -174,10 +189,61 @@ class DataProvidersController < ApplicationController
   def is_alive #:nodoc:
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
     is_alive =  @provider.is_alive?
+
     respond_to do |format|
-      format.html { render :text  => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }
-      format.xml { render :xml  => { :is_alive  => is_alive }  }
+      format.html { render :text => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }
+      format.xml  { render :xml  => { :is_alive => is_alive } }
+      format.json { render :json => { :is_alive => is_alive } }
     end
+  end
+
+  def disk_usage #:nodoc:
+    dataprovider_id = params[:id]       || ""
+    user_ids        = params[:user_ids] || nil
+
+    available_users = current_user.available_users
+    user_ids        = user_ids ? available_users.where(:id => user_ids).raw_first_column(:id) :
+                                 available_users.raw_first_column(:id)
+
+    raise "Bad params"              if dataprovider_id.blank? || user_ids.blank?
+    dataprovider    = DataProvider.find(dataprovider_id.to_i)
+    raise "Bad params"              if !dataprovider.can_be_accessed_by?(current_user)
+
+    base_relation = Userfile.where(:user_id => user_ids).where(:data_provider_id => dataprovider_id)
+
+    # Create a hash table with information grouped by user.
+    info_by_user = {}
+    user_ids.each do |user_id|
+      user_relation   = base_relation.where(:user_id => user_id)
+
+      number_entries  = user_relation.count
+      total_size      = user_relation.sum(:size)
+      number_files    = user_relation.sum(:num_files)
+      number_unknown  = user_relation.where("size is null").count
+
+      # If we want to filter empty entries
+      # next if number_entries == 0 && total_size == 0 && number_files == 0 && number_unknown == 0
+
+      info_by_user[user_id] = {}
+      info_by_user[user_id][:number_entries]  =  number_entries.to_i
+      info_by_user[user_id][:total_size]      =  total_size.to_i
+      info_by_user[user_id][:number_files]    =  number_files.to_i
+      info_by_user[user_id][:number_unknown]  =  number_unknown.to_i
+    end
+
+    respond_to do |format|
+      format.html { render :text => info_by_user.inspect }
+      format.xml  { render :xml  => info_by_user }
+      format.json { render :json => info_by_user }
+    end
+
+  rescue => ex
+    respond_to do |format|
+      format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
+      format.xml  { head :unprocessable_entity }
+      format.json { head :unprocessable_entity }
+    end
+
   end
 
   def dp_access #:nodoc:
@@ -218,15 +284,15 @@ class DataProvidersController < ApplicationController
     end
 
     @filter_params["browse_hash"] ||= {}
-    @per_page = @filter_params["browse_hash"]["per_page"]
+    @per_page  = @filter_params["browse_hash"]["per_page"]
     validate_pagination_values # validates @per_page and @current_page
     as_user_id = params[:as_user_id].presence || @filter_params["browse_hash"]["as_user_id"].presence || current_user.id
-    @as_user = current_user.available_users.where(:id => as_user_id).first || current_user
+    @as_user   = current_user.available_users.where(:id => as_user_id).first || current_user
     @filter_params["browse_hash"]["as_user_id"] = @as_user.id.to_s
 
     begin
       # [ base, size, type, mtime ]
-      @fileinfolist = get_recent_provider_list_all(params[:refresh], @as_user)
+      @fileinfolist = get_recent_provider_list_all(@provider, @as_user, params[:refresh])
     rescue => e
       flash[:error] = 'Cannot get list of files. Maybe the remote directory doesn\'t exist or is locked?' #emacs fails to parse this properly so I switched to single quotes.
       Message.send_internal_error_message(User.find_by_login('admin'), "Browse DP exception, YAML=#{YAML.inspect}", e, params) rescue nil
@@ -322,8 +388,10 @@ class DataProvidersController < ApplicationController
 
   end
 
-  #Register a list of files into the system.
-  #The files' meta data will be saved as Userfile resources.
+  # Register a list of files into the system.
+  # The files' meta data will be saved as Userfile resources.
+  # This method is (unfortunately) also used to unregister files, and delete them (on the browsable side)
+  # TODO: refactor completely!
   def register
     @provider  = DataProvider.find_accessible_by_user(params[:id], current_user)
 
@@ -346,6 +414,8 @@ class DataProvidersController < ApplicationController
     filetypes = params[:filetypes] || []
     basenames = [basenames] unless basenames.is_a? Array
     filetypes = [filetypes] unless filetypes.is_a? Array
+
+    # Find out what we'll do with all these files
     do_unreg  = params.has_key?(:unregister)
     do_erase  = params.has_key?(:delete)
 
@@ -360,11 +430,7 @@ class DataProvidersController < ApplicationController
       return
     end
 
-    @fileinfolist = get_recent_provider_list_all(params[:refresh].presence, @as_user)
-
-    base2info = {}
-    @fileinfolist.each { |fi| base2info[fi.name] = fi }
-
+    # Create an association { basename => type } as provided by the form
     base2type = {}
     filetypes.select { |typebase| ! typebase.empty? }.each do |typebase|
       next unless typebase.match(/^(\w+)-(\S+)$/)
@@ -373,6 +439,7 @@ class DataProvidersController < ApplicationController
       base2type[base] = type
     end
 
+    # Counters and stats
     newly_registered_userfiles      = []
     previously_registered_userfiles = []
     num_unregistered = 0
@@ -413,9 +480,7 @@ class DataProvidersController < ApplicationController
       # Erase unregistered files
 
       if do_erase
-        fileinfo      = base2info[basename] rescue nil
-        next unless fileinfo
-        temp_class    = fileinfo.symbolic_type == :directory ? FileCollection : SingleFile
+        temp_class    = FileCollection   # erasing should work whether or not target really is a directory or not; if not change this
         temp_userfile = temp_class.new(
            :name          => basename,
            :data_provider => @provider,
@@ -434,7 +499,6 @@ class DataProvidersController < ApplicationController
       # Register new files
 
       subtype = "SingleFile"
-      fileinfo = base2info[basename] rescue nil
       if base2type.has_key?(basename)
         subtype = base2type[basename]
         if subtype == "Unset" || ( ! legal_subtypes[subtype] )
@@ -444,18 +508,12 @@ class DataProvidersController < ApplicationController
         end
       end
 
-      size = 0
-      if SingleFile.valid_file_types.include?(subtype) # TODO what if it's a directory?
-        size = fileinfo.size rescue 0
-      end
-
       file_group_id   = params[:other_group_id].to_i unless params[:other_group_id].blank?
       file_group_id ||= current_project.try(:id) || current_user.own_group.id
       file_group_id   = current_user.own_group.id unless current_user.available_groups.map(&:id).include?(file_group_id)
 
       subclass = Class.const_get(subtype)
       userfile = subclass.new( :name             => basename,
-                               :size             => size,
                                :user_id          => @as_user.id, # cannot use current_user, since it might be a vault_ssh dp
                                :group_id         => file_group_id,
                                :data_provider_id => @provider.id )
@@ -478,13 +536,13 @@ class DataProvidersController < ApplicationController
     end
 
     if newly_registered_userfiles.size > 0
-      clear_browse_provider_local_cache_file(@as_user, @provider)
+      clear_browse_provider_local_cache_file(@as_user, @provider) unless request.format.to_sym == :xml || request.format.to_sym == :json
       flash[:notice] += "Registered #{newly_registered_userfiles.size} files.\n"
       if @as_user != current_user
         flash[:notice] += "Important note! Since you were browsing as user '#{@as_user.login}', the files were registered as belonging to that user instead of you!\n"
       end
     elsif num_erased > 0
-      clear_browse_provider_local_cache_file(@as_user, @provider)
+      clear_browse_provider_local_cache_file(@as_user, @provider) unless request.format.to_sym == :xml || request.format.to_sym == :json
       flash[:notice] += "Erased #{num_erased} files.\n"
     elsif num_unregistered > 0
       flash[:notice] += "Unregistered #{num_unregistered} files.\n"
@@ -502,26 +560,19 @@ class DataProvidersController < ApplicationController
         end
       end
 
+      api_response = {  :notice                                => flash[:notice],
+                        :error                                 => flash[:error],
+                        :newly_registered_userfiles            => newly_registered_userfiles,
+                        :previously_registered_userfiles       => previously_registered_userfiles,
+                        :userfiles_in_transit                  => [],
+                        :num_unregistered                      => num_unregistered,
+                        :num_erased                            => num_erased,
+                      } if request.format.to_s =~ /xml|json/i
+
       respond_to do |format|
         format.html { redirect_to :action => :browse }
-        format.xml  { render :xml =>
-                      { :notice                          => flash[:notice],
-                        :error                           => flash[:error],
-                        :newly_registered_userfiles      => newly_registered_userfiles,
-                        :previously_registered_userfiles => previously_registered_userfiles,
-                        :userfiles_in_transit            => []
-                      }
-                    }
-        format.json { render :json =>
-                      { :notice                          => flash[:notice],
-                        :error                           => flash[:error],
-                        :newly_registered_userfiles      => newly_registered_userfiles.map(&:id),
-                        :previously_registered_userfiles => previously_registered_userfiles.map(&:id),
-                        :userfiles_in_transit            => [],
-                        :num_unregistered                => num_unregistered,
-                        :num_erased                      => num_erased
-                      }
-                    }
+        format.xml  { render      :xml    => api_response }
+        format.json { render      :json   => api_response }
       end
       return
     end
@@ -573,24 +624,19 @@ class DataProvidersController < ApplicationController
       end # spawn
     end # if move or copy
 
+    api_response = {  :notice                                => flash[:notice],
+                      :error                                 => flash[:error],
+                      :newly_registered_userfiles            => newly_registered_userfiles,
+                      :previously_registered_userfiles       => previously_registered_userfiles,
+                      :userfiles_in_transit                  => to_operate,
+                      :num_unregistered                      => num_unregistered,
+                      :num_erased                            => num_erased,
+                    } if request.format.to_s =~ /xml|json/i
+
     respond_to do |format|
       format.html { redirect_to :action => :browse }
-      format.xml  { render :xml =>
-                    { :notice                          => flash[:notice],
-                      :error                           => flash[:error],
-                      :newly_registered_userfiles      => newly_registered_userfiles,
-                      :previously_registered_userfiles => previously_registered_userfiles,
-                      :userfiles_in_transit            => to_operate
-                    }
-                  }
-      format.json { render :json =>
-                    { :notice                          => flash[:notice],
-                      :error                           => flash[:error],
-                      :newly_registered_userfiles      => newly_registered_userfiles,
-                      :previously_registered_userfiles => previously_registered_userfiles,
-                      :userfiles_in_transit            => to_operate
-                    }
-                  }
+      format.xml  { render      :xml    => api_response }
+      format.json { render      :json   => api_response }
     end
 
   end
@@ -598,26 +644,25 @@ class DataProvidersController < ApplicationController
   private
 
   def get_type_list #:nodoc:
-    typelist = %w{ SshDataProvider }
-    if check_role(:site_manager) || check_role(:admin_user)
-      typelist += %w{
-                      EnCbrainSshDataProvider EnCbrainLocalDataProvider EnCbrainSmartDataProvider
-                      CbrainSshDataProvider CbrainLocalDataProvider CbrainSmartDataProvider
-                      VaultLocalDataProvider VaultSshDataProvider VaultSmartDataProvider
-                      IncomingVaultSshDataProvider
-                      S3DataProvider
-                      LorisAssemblyNativeSshDataProvider
-                    }
-    end
-    typelist
+    # This list may contain 'LocalDataProvider' which is useless in any environments
+    # where there are distributed resources. It would only work in a CBRAIN environment
+    # where all portals and bourreaux are on the same machine.
+    (check_role(:site_manager) || check_role(:admin_user)) ? DataProvider.descendants.map(&:name) : %w{ SshDataProvider }
   end
 
-  def get_recent_provider_list_all(refresh = false, as_user = current_user) #:nodoc:
+  # Note: the following methods should all be part of one of the subclasses of DataProvider, probably.
+
+  def browse_provider_local_cache_file(user, provider) #:nodoc:
+    cache_file = "/tmp/dp_cache_list_all_#{user.id}.#{provider.id}"
+    cache_file
+  end
+
+  def get_recent_provider_list_all(provider, as_user = current_user, refresh = false) #:nodoc:
 
     refresh = false if refresh.blank? || refresh.to_s == 'false'
 
     # Check to see if we can simply reload the cached copy
-    cache_file = browse_provider_local_cache_file(as_user, @provider)
+    cache_file = browse_provider_local_cache_file(as_user, provider)
     if ! refresh && File.exist?(cache_file) && File.mtime(cache_file) > 60.seconds.ago
        filelisttext = File.read(cache_file)
        fileinfolist = YAML.load(filelisttext)
@@ -625,21 +670,22 @@ class DataProvidersController < ApplicationController
     end
 
     # Get info from provider
-    fileinfolist = @provider.provider_list_all(as_user)
+    fileinfolist = provider.provider_list_all(as_user)
 
     # Write a new cached copy
-    File.open(cache_file + ".tmp","w") do |fh|
-       fh.write(YAML.dump(fileinfolist))
-    end
-    File.rename(cache_file + ".tmp",cache_file)  # crush it
+    save_browse_provider_local_cache_file(as_user, provider, fileinfolist)
 
     # Return it
     fileinfolist
   end
 
-  def browse_provider_local_cache_file(user, provider) #:nodoc:
-    cache_file = "/tmp/dp_cache_list_all_#{user.id}.#{provider.id}"
-    cache_file
+  def save_browse_provider_local_cache_file(user, provider, fileinfolist) #:nodoc:
+    cache_file = browse_provider_local_cache_file(user, provider)
+    tmpcachefile = cache_file + ".#{Process.pid}.tmp";
+    File.open(tmpcachefile,"w") do |fh|
+       fh.write(YAML.dump(fileinfolist))
+    end
+    File.rename(tmpcachefile,cache_file) rescue true  # crush it
   end
 
   def clear_browse_provider_local_cache_file(user, provider) #:nodoc:

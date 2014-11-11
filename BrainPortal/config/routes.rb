@@ -17,20 +17,20 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # CBRAIN Routing Table
 
 CbrainRailsPortal::Application.routes.draw do
-  
+
   # Session
   resource  :session do
     member do
       post 'mozilla_persona_auth'
     end
   end
-  
+
   # Control channel
   resources :controls,       :controller => :controls
 
@@ -45,7 +45,7 @@ CbrainRailsPortal::Application.routes.draw do
   # Standard CRUD resources, with extra methods
 
   resources :feedbacks
-  
+
   resources :messages do
     collection do
       delete 'delete_messages'
@@ -70,7 +70,7 @@ CbrainRailsPortal::Application.routes.draw do
       post 'switch'
     end
   end
-  
+
   resources :invitations, :only => [:new, :create, :update, :destroy]
 
   resources :vm_factories do
@@ -88,6 +88,7 @@ CbrainRailsPortal::Application.routes.draw do
       post 'stop'
       get  'row_data'
       get  'info'
+      get  'cache_disk_usage'
     end
     collection do
       get  'load_info'
@@ -103,6 +104,7 @@ CbrainRailsPortal::Application.routes.draw do
       get  'browse'
       post 'register'
       get  'is_alive'
+      get  'disk_usage'
     end
     collection do
       get  'dp_access'
@@ -174,9 +176,21 @@ CbrainRailsPortal::Application.routes.draw do
   # Licence handling
   match '/show_license/:license', :controller => :portal, :action => :show_license
   match '/sign_license/:license', :controller => :portal, :action => :sign_license, :via => :post
-  
+
   # Portal log
   match '/portal_log', :controller => :portal, :action => :portal_log
+
+  # Service
+  match '/service/info',           :controller => :service, :action => :info
+  match '/service/stats',          :controller => :service, :action => :stats
+  match '/service/detailed_stats', :controller => :service, :action => :detailed_stats
+  match '/service/doc',            :controller => :service, :action => :doc
+  match '/service/releasenotes',   :controller => :service, :action => :releasenotes
+  match '/service/support',        :controller => :service, :action => :support
+  match '/service/source',         :controller => :service, :action => :source
+  match '/service/tryme',          :controller => :service, :action => :tryme
+  match '/service/licence',        :controller => :service, :action => :licence
+  match '/service/provenance',     :controller => :service, :action => :provenance
 
 end
 

@@ -17,13 +17,13 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #
 # This this is an abstract class which represents data providers
 # where the remote files are not even remote, they are local
-# to the currently running rails application. 
+# to the currently running rails application.
 #
 # Subclasses are not meant to cache anything! The 'remote' files
 # are in fact all local, and accessing the 'cached' files means
@@ -61,9 +61,53 @@ class LocalDataProvider < DataProvider
   end
 
   def impl_provider_list_all(user=nil) #:nodoc:
-    cb_error "This data provider cannot be browsed."
+    list         = []
+
+    uid_to_owner = {}
+    gid_to_group = {}
+    Dir.foreach(self.browse_remote_dir(user)) do |name|
+      next if name == "." || name == ".."
+      next if is_excluded?(name) # in DataProvider
+
+      # Extract information about the entry
+      full_path = "#{self.browse_remote_dir(user)}/#{name}"
+      stat = File.stat(full_path) rescue nil
+      next unless stat # In case the file has been deleted
+
+      # Adjust type
+      type =  type = stat.ftype.to_sym
+      type = :regular if type == :file
+      next if type != :regular && type != :directory && type != :symlink
+
+      # Look up user name from uid
+      uid        = stat.uid
+      owner_name = (uid_to_owner[uid] ||= Etc.getpwuid(uid).name)
+
+      # Lookup group name from gid
+      gid        = stat.gid
+      group_name = (gid_to_group[gid] ||= Etc.getgrgid(gid).name)
+
+      # Create a FileInfo
+      fileinfo               = FileInfo.new
+      fileinfo.name          = name
+      fileinfo.symbolic_type = type
+      fileinfo.size          = stat.size
+      fileinfo.permissions   = stat.mode
+      fileinfo.atime         = stat.atime
+      fileinfo.ctime         = stat.ctime
+      fileinfo.mtime         = stat.mtime
+      fileinfo.uid           = uid
+      fileinfo.owner         = owner_name
+      fileinfo.gid           = gid
+      fileinfo.group         = group_name
+
+      list << fileinfo
+    end
+
+    list.sort! { |a,b| a.name <=> b.name }
+    list
   end
-  
+
   # Redirects the call to cache_readhandle()
   def provider_readhandle(userfile, *args, &block) #:nodoc:
     self.cache_readhandle(userfile, *args, &block)

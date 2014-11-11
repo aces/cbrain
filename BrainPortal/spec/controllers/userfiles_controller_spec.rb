@@ -842,7 +842,7 @@ describe UserfilesController do
 
       it "should redirect to the index" do
         delete :delete_files, :file_ids => [1]
-        response.should redirect_to(:action => :index, :format => :html)
+        response.should redirect_to(:action => :index)
       end
     end
 
@@ -1261,7 +1261,7 @@ describe UserfilesController do
 
         it "should redirect to the edit page" do
           post :extract_from_collection, :id => 1
-          response.should redirect_to(:action => :edit)
+          response.should redirect_to(:action => :show, :id => 1)
         end
       end
 

@@ -18,23 +18,19 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<div class="active_status">
 
-  <span class="active_status_left_side">
-    <%= render :partial => 'shared/active_filters', :locals => {:model => :cbrain_task} %>
-  </span>
+<%= render :partial => 'shared/active_filters', :locals => {:model => :cbrain_task} %>
 
-</div>
 
 <div class="pagination">
   <%= render :partial => "pagination" %>
 </div>
 
-<%= 
+<%=
   index_table(@paginated_list, :class => "resource_list", :id => "tasks_table") do |t|
     t.column(select_all_checkbox "task_checkbox")
     t.sort_column("Task Type", 'CbrainTask', 'type', :filters => basic_filters_for(@filtered_scope, @header_scope, CbrainTask, :type)) { |t| t.pretty_name }
@@ -53,10 +49,10 @@ t.sort_column("Virtual Machine", 'CbrainTask', 'vm_id', :filters => basic_filter
     t.row_override do |batch_id|
       render :partial => 'tasks/batch_view', :locals => {:batch_id => batch_id}
     end
-  end 
+  end
 %>
 
-<%= center_legend("Workdir archiving status symbols:", [ 
+<%= center_legend("Workdir archiving status symbols:", [
       [ colored_archived_status(:workdir),  "On Cluster"  ],
       [ colored_archived_status(:userfile), "As File"     ],
     ])

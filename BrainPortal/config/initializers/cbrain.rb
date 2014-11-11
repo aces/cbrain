@@ -131,7 +131,7 @@ class CBRAIN
           yield
 
         # Background untrapped exception handling
-        rescue ActiveRecord::StatementInvalid, Mysql::Error => e
+        rescue ActiveRecord::StatementInvalid, Mysql::Error
           puts "#{taskname} PID #{Process.pid}: Oh oh. The DB connection was closed! Nothing to do but exit!"
         rescue Exception => itswrong
           destination = User.find_by_login('admin') if destination.blank? || destination == :admin
@@ -246,31 +246,37 @@ class CBRAIN
       agent.unlock(passphrase)
       passphrase_md.touch
 
-      # Prepare info line about the unlocking event
-      pretty_context = ""
-      mytraces = caller.reject { |l| (l !~ /\/(BrainPortal|Bourreau)\//) || (l =~ /block in/) }
-      mytrace  = mytraces[options[:caller_level] || 0]
-      if mytrace.blank? # two alternative logging messages possible in this IF statement
-        mytrace = caller[0] 
-        #pretty_context = sprintf("%s : Unlocking happened outside of CBRAIN codebase.",@_rr_name)
-      end
-      if pretty_context.blank? && mytrace.present? && mytrace =~ /\/([^\/]+):(\d+):in \`(\S+)\'/
-        basename,linenum,method = Regexp.last_match[1,3]
-        pretty_context = sprintf("%s : %s() in file %s at line %d",@_rr_name, method, basename, linenum)
-      end
+      # Log info about what unlocked the agent, if traces are turned on.
+      if ENV['CBRAIN_DEBUG_TRACES'].present?
 
-      # Log info about what unlocked the agent
-      if pretty_context.present?
-        puts_red "Unlocking agent: #{pretty_context}" if ENV['CBRAIN_DEBUG_TRACES'].present?
-        if @_log_md.blank?
-          admin.meta[:ssh_agent_unlock_history] ||= "" # done only once, to trigger creation of record
-          @_log_md = admin.meta.md_for_key(:ssh_agent_unlock_history) # find record only once
+        # Prepare info line about the unlocking event
+        pretty_context = ""
+        mytraces = caller.reject { |l| (l !~ /\/(BrainPortal|Bourreau)\//) || (l =~ /block in/) }
+        mytrace  = mytraces[options[:caller_level] || 0]
+        if mytrace.blank? # two alternative logging messages possible in this IF statement
+          mytrace = caller[0] 
+          #pretty_context = sprintf("%s : Unlocking happened outside of CBRAIN codebase.",@_rr_name)
         end
-        MetaDataStore.transaction do
-          @_log_md.lock!
-          @_log_md.meta_value += "#{pretty_context}\n"
-          @_log_md.save
+        if pretty_context.blank? && mytrace.present? && mytrace =~ /\/([^\/]+):(\d+):in \`(\S+)\'/
+          basename,linenum,method = Regexp.last_match[1,3]
+          pretty_context = sprintf("%s : %s() in file %s at line %d",@_rr_name, method, basename, linenum)
         end
+
+        # We have an info line, send it out
+        if pretty_context.present?
+          puts_red "Unlocking agent: #{pretty_context}"
+          @_log_md ||= admin.meta.md_for_key(:ssh_agent_unlock_history) # find record only once
+          if @_log_md.blank?
+            admin.meta[:ssh_agent_unlock_history] ||= "" # done only once, to trigger creation of record
+            @_log_md = admin.meta.md_for_key(:ssh_agent_unlock_history)
+          end
+          MetaDataStore.transaction do
+            @_log_md.lock!
+            @_log_md.meta_value += "#{pretty_context}\n"
+            @_log_md.save
+          end
+        end
+
       end
 
     end

@@ -716,15 +716,16 @@ def create #:nodoc:
   def operation #:nodoc:
     operation   = params[:operation]
     tasklist    = params[:tasklist]  || []
-    tasklist    = [ tasklist ] unless tasklist.is_a?(Array)
+    tasklist    = [ tasklist ]  unless tasklist.is_a?(Array)
     batch_ids   = params[:batch_ids] || []
     batch_ids   = [ batch_ids ] unless batch_ids.is_a?(Array)
+
     if batch_ids.delete "nil"
       tasklist += filter_variable_setup(CbrainTask.where( :batch_id => nil )).select("id").raw_first_column
     end
-    tasklist += filter_variable_setup(CbrainTask.where( :batch_id => batch_ids )).select("id").raw_first_column
 
-    tasklist = tasklist.map(&:to_i).uniq
+    tasklist   += filter_variable_setup(CbrainTask.where( :batch_id => batch_ids )).select("id").raw_first_column
+    tasklist    = tasklist.map(&:to_i).uniq
 
     flash[:error]  ||= ""
     flash[:notice] ||= ""
@@ -808,7 +809,7 @@ def create #:nodoc:
         begin
           if operation == 'delete'
             bourreau.send_command_alter_tasks(btasklist,'Destroy') # TODO parse returned command object?
-            success_list << btasklist
+            success_list += btasklist
             next
           end
           new_status  = PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
@@ -819,12 +820,13 @@ def create #:nodoc:
           end
           if oktasks.size > 0
             bourreau.send_command_alter_tasks(oktasks, new_status, new_bourreau_id, archive_dp_id) # TODO parse returned command object?
-            success_list << oktasks
+            success_list += oktasks
           end
           skippedtasks = btasklist - oktasks
           skipped_list["you are not allowed to #{operation} for"] = skippedtasks if skippedtasks.present?
         rescue => e
-          (failed_list[e.message] ||= []) << btasklist
+          failed_list[e.message] ||= []
+          failed_list[e.message]  += btasklist
         end
       end # foreach bourreaux' tasklist
 
@@ -845,11 +847,11 @@ def create #:nodoc:
     if do_in_spawn
       flash[:notice] += "The tasks are being notified in background."
     else
-      failure_count  = 0
-      failed_list.each_value { |v| failure_count += v.size }
-      skipped_count  = 0
-      skipped_list.each_value { |v| skipped_count += v.size }
-      flash[:notice] += "Number of tasks notified: #{success_list.count} OK, #{skipped_count} skipped, #{failure_count} failed.\n"
+      failure_size  = 0
+      failed_list.each_value  { |v| failure_size += v.size }
+      skipped_size  = 0
+      skipped_list.each_value { |v| skipped_size += v.size }
+      flash[:notice] += "Number of tasks notified: #{success_list.size} OK, #{skipped_size} skipped, #{failure_size} failed.\n"
     end
 
     #current_user.addlog_context(self,"Sent '#{operation}' to #{tasklist.size} tasks.")

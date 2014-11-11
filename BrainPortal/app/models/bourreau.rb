@@ -239,17 +239,29 @@ class Bourreau < RemoteResource
     worker_lc_author  = worker_revinfo.author
     worker_lc_date    = worker_revinfo.datetime
 
+    num_sync_userfiles  = myself.sync_status.count         # number of files locally synchronized
+    size_sync_userfiles = myself.sync_status.joins(:userfile).sum("userfiles.size") # tot sizes of these files
+    num_tasks           = myself.cbrain_tasks.count        # total number of tasks on this Bourreau
+    num_active_tasks    = myself.cbrain_tasks.active.count # number of active tasks on this Bourreau
+
     info.merge!(
       # Bourreau info
-      :bourreau_cms       => myself.cms_class || "Unconfigured",
-      :bourreau_cms_rev   => (myself.scir_session.revision_info rescue Object.revision_info),
-      :tasks_max          => queue_tasks_max,
-      :tasks_tot          => queue_tasks_tot,
+      :bourreau_cms              => myself.cms_class || "Unconfigured",
+      :bourreau_cms_rev          => (myself.scir_session.revision_info.to_s rescue Object.revision_info.to_s),
+      :tasks_max                 => queue_tasks_max,
+      :tasks_tot                 => queue_tasks_tot,
 
-      :worker_pids        => worker_pids,
-      :worker_lc_rev      => worker_lc_rev,
-      :worker_lc_author   => worker_lc_author,
-      :worker_lc_date     => worker_lc_date
+      # Worker info
+      :worker_pids               => worker_pids,
+      :worker_lc_rev             => worker_lc_rev,
+      :worker_lc_author          => worker_lc_author,
+      :worker_lc_date            => worker_lc_date,
+
+      # Stats
+      :num_sync_cbrain_userfiles  => num_sync_userfiles,
+      :size_sync_cbrain_userfiles => size_sync_userfiles,
+      :num_cbrain_tasks           => num_tasks,
+      :num_active_cbrain_tasks    => num_active_tasks,
     )
 
     return info
@@ -261,11 +273,25 @@ class Bourreau < RemoteResource
   # RemoteResource.ping_remote_resource_info, plus the PIDs
   # of the Bourreau's workers.
   def self.remote_resource_ping
-    worker_pool      = WorkerPool.find_pool(BourreauWorker) rescue nil
-    workers          = worker_pool.workers rescue nil
-    worker_pids      = workers.map(&:pid).join(",") rescue '???'
-    info             = super
-    info.worker_pids = worker_pids
+    myself             = RemoteResource.current_resource
+
+    # Worker info
+    worker_pool        = WorkerPool.find_pool(BourreauWorker) rescue nil
+    workers            = worker_pool.workers rescue nil
+    worker_pids        = workers.map(&:pid).join(",") rescue '???'
+
+    # Stats
+    num_sync_userfiles  = myself.sync_status.count         # number of files locally synchronized
+    size_sync_userfiles = myself.sync_status.joins(:userfile).sum("userfiles.size") # tot sizes of these files
+    num_tasks           = myself.cbrain_tasks.count        # total number of tasks on this Bourreau
+    num_active_tasks    = myself.cbrain_tasks.active.count # number of active tasks on this Bourreau
+
+    info = super
+    info[:worker_pids]                = worker_pids
+    info[:num_sync_cbrain_userfiles]  = num_sync_userfiles
+    info[:size_sync_cbrain_userfiles] = size_sync_userfiles
+    info[:num_cbrain_tasks]           = num_tasks
+    info[:num_active_cbrain_tasks]    = num_active_tasks
     info
   end
 

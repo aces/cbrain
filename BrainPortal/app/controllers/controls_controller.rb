@@ -35,9 +35,8 @@ class ControlsController < ApplicationController
 
   api_available
 
-  # The 'show' action responds to only a single ID, 'info',
-  # and returns a RemoteResourceInfo record encapsulated
-  # into a Control object.
+  # The 'show' action responds to only a single ID,
+  # either 'info' or 'ping', and returns a RemoteResourceInfo record.
   def show
     keyword = params[:id]
 
@@ -119,6 +118,7 @@ class ControlsController < ApplicationController
     respond_to do |format|
       format.html { head :method_not_allowed }
       format.xml  { head :method_not_allowed }
+      format.json { head :method_not_allowed }
     end
   end
 

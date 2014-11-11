@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -26,7 +26,7 @@
   filter_links = []
   controller = params[:controller].to_sym || :unknown
   (@filter_params["filter_hash"].presence || []).each do |att, val|
-    filter = 
+    filter =
     if att == "time_interval"
       s = val[0].to_i
       e = val[1].to_i
@@ -71,7 +71,13 @@
 %>
 
 <% if filter_links.size > 0 %>
-  <span class="active_label">Active Filters</span> (<%= filter_clear_link 'clear', :class  => "action_link" %>):  
-  <span id="current_filters"><%= filter_links.join(", ").html_safe %></span>
+
+<div class="active_status">
+  <span class="active_status_left_side">
+    <span class="active_label">Active Filters</span> (<%= filter_clear_link 'clear', :class  => "action_link" %>):
+    <span id="current_filters"><%= filter_links.join(", ").html_safe %></span>
+  </span>
+</div>
+
 <% end %>
 

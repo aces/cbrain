@@ -128,7 +128,7 @@ module SmartDataProviderInterface
   def cache_full_path(userfile) #:nodoc:
     @provider.cache_full_path(userfile)
   end
-  
+
   def provider_readhandle(userfile, *args, &block) #:nodoc:
     @provider.provider_readhandle(userfile, *args, &block)
   end
@@ -179,6 +179,11 @@ module SmartDataProviderInterface
 
   def provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
     @provider.provider_collection_index(userfile, directory, allowed_types)
+  end
+
+  # This method is specific to SSH data providers subclasses and not part of the official API
+  def browse_remote_dir(user=nil) #:nodoc:
+    @provider.browse_remote_dir(user)
   end
 
   # This method is a utility method allowing access to

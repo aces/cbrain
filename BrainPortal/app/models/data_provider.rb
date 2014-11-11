@@ -249,9 +249,16 @@ class DataProvider < ActiveRecord::Base
   # Most of the attributes here are compatible with
   #   Net::SFTP::Protocol::V01::Attributes
   class FileInfo
-    attr_accessor :name, :symbolic_type, :size, :permissions,
+    AttrList = [
+                  :name, :symbolic_type, :size, :permissions,
                   :uid, :gid, :owner, :group,
-                  :atime, :mtime, :ctime
+                  :atime, :mtime, :ctime,
+               ]
+    attr_accessor *AttrList
+
+    def initialize(attributes = {})
+       (attributes.keys.collect(&:to_sym) & AttrList).each { |name| self.send("#{name}=",attributes[name]) }
+    end
 
     def depth #:nodoc:
       return @depth if @depth
@@ -1159,7 +1166,7 @@ class DataProvider < ActiveRecord::Base
   # are/were superfluous, each like "01/23/45".
   # This whole process can take some time, and is mostly used
   # only once, at boot time.
-  def self.cleanup_leftover_cache_files(do_it=false)
+  def self.cleanup_leftover_cache_files(do_it=false, options={})
     rr_id = RemoteResource.current_resource.id
     Dir.chdir(self.cache_rootdir) do
       dirlist = []
@@ -1198,7 +1205,9 @@ class DataProvider < ActiveRecord::Base
       # Erase entries on disk!
       if do_it
         maybe_spurious_parents={}
-        uids2path.each do |id,path| # 12345, "01/23/45"
+        uids2path.keys.sort.each_with_index do |id,i|  # 12345
+          path = uids2path[id]                         # "01/23/45"
+          $0="Cache Spurious PATH=#{path} #{i+1}/#{uids2path.size}\0" if options[:update_dollar_zero]
           system("chmod","-R","u+rwX",path)   # uppercase X affects only directories
           FileUtils.remove_entry(path, true) rescue true
           maybe_spurious_parents[path.sub(/\/\d+$/,"")]      = 1  # "01/23"

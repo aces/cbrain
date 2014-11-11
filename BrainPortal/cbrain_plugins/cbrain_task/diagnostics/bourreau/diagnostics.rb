@@ -140,7 +140,7 @@ class CbrainTask::Diagnostics < ClusterTask
     file_ids      = params[:interface_userfile_ids] || []
 
     # Note: 'commands' is an ARRAY of strings.
-    commands = <<-"_DIAGNOSTIC_COMMANDS_".split(/\n/).map &:strip
+    commands = <<-"_DIAGNOSTIC_COMMANDS_".split(/\n/).map(&:strip)
 
       echo "===================================================================="
       echo "STDOUT Diagnostics Bash Script Starting `date`"
@@ -382,6 +382,16 @@ class CbrainTask::Diagnostics < ClusterTask
     return false unless mybool(params[:restart_postpro])
     unless params[:restart_postpro_delay].blank? 
       sleep params[:restart_postpro_delay].to_i
+    end
+
+    # We simply copy the out and err of the previous run when we restart at post-pro.
+    cur_out = self.stdout_cluster_filename
+    cur_err = self.stderr_cluster_filename
+    if File.exists?(cur_out)
+      system("cp",cur_out,self.stdout_cluster_filename(self.run_number + 1))
+    end
+    if File.exists?(cur_err)
+      system("cp",cur_err,self.stderr_cluster_filename(self.run_number + 1))
     end
     true
   end

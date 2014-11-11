@@ -17,61 +17,61 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'                             
+require 'spec_helper'
 
 describe User do
 
   let(:normal_user) { Factory.create(:normal_user) }
-  
 
-  describe "#validate" do 
-    
+
+  describe "#validate" do
+
     it "should save with valid attributes" do
       normal_user.save
     end
-  
+
     it "should not save without a login" do
       normal_user.login = nil
       normal_user.save.should == false
     end
-  
+
     it "should not save without a full_name" do
       normal_user.full_name = nil
       normal_user.save.should == false
     end
-  
+
     it "should not save without a password_confirmation" do
-      normal_user.password_confirmation = nil 
+      normal_user.password_confirmation = nil
       normal_user.save.should == false
     end
-    
-  end
-  
 
-  
+  end
+
+
+
   describe "password verification" do
-  
+
     it "should not save without a password and password_confirmation that match" do
       normal_user.password = "aksdhflaksjhdfl"
       normal_user.password_confirmation = "ajsdfkl;ajsdflkja9j"
       normal_user.save.should == false
     end
-  
+
     it "should not accept a password shorter than 4 char" do
       normal_user.password = "abc"
       normal_user.password_confirmation = "abc"
       normal_user.save.should == false
     end
-    
+
   end
 
-  
-  
+
+
   describe "login verification" do
-    
+
     it "should not accept a login shorter than 3 char" do
       normal_user.login = "ab"
       normal_user.save.should == false
@@ -82,7 +82,7 @@ describe User do
       bad_login=Factory.build(:user, :login => "Abcdef")
       bad_login.save.should be(false)
     end
-  
+
     it "should check that login is unique even case wise" do
       Factory.create(:normal_user, :login => "Abcdef")
       bad_login=Factory.build(:user, :login => "abcdef")
@@ -99,79 +99,79 @@ describe User do
       normal_user.login = "my_name_is_group"
       normal_user.should_not be_valid
     end
-  
+
     it "should prevent me from changing my login name" do
       normal_user.save
       normal_user.login = "not_my_orginal_login"
       normal_user.save.should  be(false)
     end
-    
+
   end
 
 
-  
+
   describe "email verification" do
-    
+
     it "should not accept a email address shorter than 3 char" do
       normal_user.email = "a@"
       normal_user.save.should be(false)
     end
-    
+
   end
 
-  
-  
+
+
   describe "#self.admin" do
-    
+
     it "should return user with login admin" do
       User.admin.should be == User.where(:login => "admin").first
     end
-    
+
   end
 
 
-  
+
   describe "#self.all_admins" do
     let!(:admin) {Factory.create(:admin_user, :login => "admin_user2")}
     let!(:admin_user) {Factory.create(:admin_user, :login => "admin_user")}
-    
+
     it "should return all users with role admin" do
       User.all_admins(true).should be == AdminUser.all
     end
-    
+
   end
 
 
-  
+
   describe "#self.authenticate" do
-    
-    it "should return nil if user is not authenticates" do 
-      User.authenticate(normal_user.login, normal_user.password + "other").should be_nil 
+
+    it "should return nil if user is not authenticates" do
+      User.authenticate(normal_user.login, normal_user.password + "other").should be_nil
     end
 
     it "should return user if user can be found with login and password" do
-      User.authenticate(normal_user.login, normal_user.password).should be == normal_user 
+      User.authenticate(normal_user.login, normal_user.password).should be == normal_user
     end
-  
+
   end
 
 
-  
+
   describe "#name" do
-    
-    it "should return user login" do 
-      normal_user.login.should be == normal_user.login    
+
+    it "should return user login" do
+      normal_user.login.should be == normal_user.login
     end
-    
+
   end
 
 
-  
+
   describe "#signed_license_agreements" do
     before (:each) do
       RemoteResource.stub_chain(:current_resource, :license_agreements).and_return(["license"])
     end
-    
+
     it "should return an empty array if meta[:signed_license_agreements] not defined" do
       normal_user.signed_license_agreements.should be == []
     end
@@ -180,16 +180,16 @@ describe User do
       normal_user.meta[:signed_license_agreements] = ["license"]
       normal_user.signed_license_agreements.should be == ["license"]
     end
-    
+
   end
 
 
-  
+
   describe "#unsigned_license_agreements" do
     before (:each) do
       RemoteResource.stub_chain(:current_resource, :license_agreements).and_return(["license1","license2"])
     end
-      
+
     it "should return an empty array if user signed all agreements" do
       normal_user.meta[:signed_license_agreements] = ["license1","license2"]
       normal_user.unsigned_license_agreements.should be == []
@@ -199,26 +199,26 @@ describe User do
       normal_user.meta[:signed_license_agreements] = ["license1"]
       normal_user.unsigned_license_agreements.should be == ["license2"]
     end
-    
+
   end
 
 
-  
+
   describe "#set_random_password" do
 
     it "should not save user with an unsafe password" do
       normal_user.password = "unsafe"
-      normal_user.save.should be(false) 
+      normal_user.save.should be(false)
     end
 
     it "should save user when set_random_password used" do
       normal_user.set_random_password
       normal_user.save.should be(true)
     end
-    
+
   end
 
-  
+
   # Old encrypt method
   describe "#self.encrypt" do
 
@@ -226,166 +226,152 @@ describe User do
       User.should_receive(:encrypt_in_pbkdf2).at_least(:once)
       User.encrypt(normal_user.password,normal_user.salt)
     end
-   
-    	
+
+
   end
 
 
-  
+
   describe "#encrypt" do
 
     it "should call class method" do
       User.should_receive(:encrypt).at_least(:once)
       normal_user.encrypt(normal_user.password)
     end
-    
+
   end
-  
-  
+
+
   # Encrypt methods in sha1
-  describe "#self.encrypt_in_sha1" do 
-  
+  describe "#self.encrypt_in_sha1" do
+
     it "should return a sha1 string with 40 chars" do
       User.encrypt_in_sha1(normal_user.password,normal_user.salt).size.should be == 40
     end
- 
+
   end
 
 
-  
-  describe "#encrypt_in_sha1" do 
-  
+
+  describe "#encrypt_in_sha1" do
+
     it "should call class method" do
       User.should_receive(:encrypt_in_sha1).at_least(:once)
       normal_user.encrypt_in_sha1(normal_user.password)
     end
- 
+
   end
 
-  
+
   # Encrypt method in PBKDF2
   describe "#self.encrypt_in_pbkdf2" do
-  
+
     it "should return a pbkdf2 string with 64 chars" do
       User.encrypt_in_pbkdf2(normal_user.password,normal_user.salt).size.should be == 64
     end
- 
+
   end
-  
-  
-  
-  describe "encrypt_in_pbkdf2" do 
-   
+
+
+
+  describe "encrypt_in_pbkdf2" do
+
     it "should call class method" do
       User.should_receive(:encrypt_in_pbkdf2).at_least(:once)
       normal_user.encrypt_in_pbkdf2(normal_user.password)
     end
- 
+
   end
 
-  
+
   # Encrypt method in PBKDF2_SHA1
   describe "#self.encrypt_in_pbkdf2_sha1" do
-  
+
     it "should return a pbkdf2_sha1 string with 64 chars" do
       User.encrypt_in_pbkdf2_sha1(normal_user.password,normal_user.salt).size.should be == 64
     end
- 
+
   end
-  
-  
-  
-  describe "encrypt_in_pbkdf2_sha1" do 
-   
+
+
+
+  describe "encrypt_in_pbkdf2_sha1" do
+
     it "should call class method" do
       User.should_receive(:encrypt_in_pbkdf2_sha1).at_least(:once).and_return("pwd")
       normal_user.encrypt_in_pbkdf2_sha1(normal_user.password)
     end
- 
+
   end
 
 
-  
+
   describe "#autheticated?" do
-    
-    it "should changed the password encryption if crypted_password is in SHA1" do 
+
+    it "should changed the password encryption if crypted_password is in SHA1" do
         normal_user.crypted_password = User.encrypt_in_sha1(normal_user.password,normal_user.salt)
         normal_user.authenticated?(normal_user.password)
         normal_user.crypted_password.should match /^pbkdf2_sha1:\w+/
     end
 
-    it "should changed the password encryption if crypted_password is in PBKDF2" do 
+    it "should changed the password encryption if crypted_password is in PBKDF2" do
         normal_user.crypted_password = User.encrypt_in_pbkdf2(normal_user.password,normal_user.salt)
         normal_user.authenticated?(normal_user.password)
         normal_user.crypted_password.should match /^pbkdf2_sha1:\w+/
     end
-    
+
     it "should return true if crypted_password is equal to encrypt(password) and encryption is in PBKDF2_SHA1" do
-      normal_user.stub!(:password_type).and_return(:pbkdf2_sha1)                            
+      normal_user.stub!(:password_type).and_return(:pbkdf2_sha1)
       plain_crypted_password = normal_user.crypted_password.sub(/^\w+:/,"")
       normal_user.stub!(:encrypt_in_pbkdf2_sha1).and_return(plain_crypted_password)
-      normal_user.authenticated?(normal_user.password).should be(true) 
+      normal_user.authenticated?(normal_user.password).should be(true)
     end
 
     it "should return false if crypted_password isn't equal to encrypt(password) and encryption is in PBKDF2_SHA1" do
       normal_user.stub!(:password_type).and_return(:pbkdf2_sha1)
       normal_user.stub!(:encrypt_in_pbkdf2_sha1).and_return(:other)
-      normal_user.authenticated?(normal_user.password).should be(false) 
+      normal_user.authenticated?(normal_user.password).should be(false)
     end
-    
+
      it "should return false if encryption method is unknown" do
       normal_user.stub!(:password_type).and_return(:other)
-      normal_user.authenticated?(normal_user.password).should be(false) 
+      normal_user.authenticated?(normal_user.password).should be(false)
     end
-    
+
   end
 
-  
-  
+
+
   describe "#password_type" do
 
-    it "should return :pbkdf2_sha1 if crypted_password size start with 'pbkdf2_sha1'" do 
+    it "should return :pbkdf2_sha1 if crypted_password size start with 'pbkdf2_sha1'" do
       normal_user.crypted_password = "pbkdf2_sha1:1"
       normal_user.password_type(normal_user.crypted_password).should be == :pbkdf2_sha1
     end
-    
-    it "should return :sha1 if crypted_password size is 40" do 
+
+    it "should return :sha1 if crypted_password size is 40" do
       normal_user.crypted_password = "a"*40
       normal_user.password_type(normal_user.crypted_password).should be == :sha1
     end
-    
-    it "should return :sha1 if crypted_password size is 64" do 
+
+    it "should return :sha1 if crypted_password size is 64" do
       normal_user.crypted_password = "a"*64
       normal_user.password_type(normal_user.crypted_password).should be == :pbkdf2
     end
-    
-    it "should return nil otherwise" do 
+
+    it "should return nil otherwise" do
       normal_user.crypted_password = "a"
       normal_user.password_type(normal_user.crypted_password).should be == nil
     end
-  
-  
-  
+
+
+
   end
 
-  
-  
-  describe "#remenber_token?" do
 
-    it "should return true if remember_token_expires_at is before now" do
-      normal_user.remember_token_expires_at = Time.now + 2.weeks
-      normal_user.remember_token?.should be(true)   
-    end
-
-    it "should return false if remember_token_expires_at is after now" do
-      normal_user.remember_token_expires_at = Time.now - 2.weeks
-      normal_user.remember_token?.should be(false)   
-    end
-  
-  end
 
   describe "has_role?" do
-    
+
     it "should return true if role is equal self.type" do
       normal_user.has_role?(normal_user.type).should be(true)
     end
@@ -397,12 +383,12 @@ describe User do
   end
 
 
-  
+
   describe "#availability" do
     let!(:admin)        {Factory.create(:admin_user)}
     let!(:group)        {Factory.create(:group) }
     let!(:site_manager) {Factory.create(:site_manager, :group_ids => [group.id])}
-    
+
     describe "#tool" do
       let!(:tool1)        {Factory.create(:tool, :group_id => group.id)}
       let!(:tool2)        {Factory.create(:tool, :category => "conversion tool")}
@@ -415,7 +401,7 @@ describe User do
         end
 
         it "should return all tools available for site_manager" do
-          site_manager.available_tools.should be =~ [tool1] 
+          site_manager.available_tools.should be =~ [tool1]
         end
 
         it "should return a tool if one of the user of the site have acces to the tool" do
@@ -428,18 +414,18 @@ describe User do
           tool_id = tool2.id
           normal_user.tool_ids = [tool_id]
           normal_user.save
-          normal_user.available_tools.should be == [tool2] 
-        end 
-        
-      end
-      
-    end
-  
+          normal_user.available_tools.should be == [tool2]
+        end
 
-  
+      end
+
+    end
+
+
+
     describe "#available_groups" do
       let!(:invisible_group) {Factory.create(:invisible_group)}
-      
+
       it "should return all groups if called with an admin" do
         admin.available_groups.should be =~ Group.all
       end
@@ -447,48 +433,48 @@ describe User do
       it "should not return invisible group for site_manager" do
         invisible_group.user_ids = [site_manager.id]
         invisible_group.save
-        site_manager.available_groups.should_not include(invisible_group) 
+        site_manager.available_groups.should_not include(invisible_group)
       end
 
       it "should not include everyone group for site_manager" do
-        site_manager.available_groups.should_not include(Group.where(:name => "everyone").first) 
+        site_manager.available_groups.should_not include(Group.where(:name => "everyone").first)
       end
 
       it "should not return invisible group for standard user" do
         invisible_group.user_ids = [normal_user.id]
         invisible_group.save
-        normal_user.available_groups.should_not include(invisible_group) 
+        normal_user.available_groups.should_not include(invisible_group)
       end
 
       it "should not include everyone group for standard user" do
-        normal_user.available_groups.should_not include(Group.where(:name => "everyone")) 
+        normal_user.available_groups.should_not include(Group.where(:name => "everyone"))
       end
 
-      
+
     end
 
 
-  
+
     describe "#available_tags" do
       let!(:my_tag)     {Factory.create(:tag,  :user_id => normal_user.id, :group_id => group.id )}
       let!(:other_user) {Factory.create(:normal_user, :group_ids => [group.id])}
-      
+
       it "should return tag if it's mine" do
-        normal_user.available_tags.should include(my_tag) 
+        normal_user.available_tags.should include(my_tag)
       end
 
       it "should return tag if tag is in a group I can access" do
-        other_user.available_tags.should include(my_tag) 
+        other_user.available_tags.should include(my_tag)
       end
-      
+
     end
 
-  
+
 
     describe "#available_tasks" do
       let!(:my_task)      {Factory.create(:cbrain_task, :user_id => normal_user.id)}
       let!(:user_of_site) {Factory.create(:normal_user, :site => site_manager.site)}
-      
+
       it "should return all tasks if called with an admin" do
         CbrainTask.should_receive(:scoped).with(no_args)
         admin.available_tasks
@@ -498,22 +484,22 @@ describe User do
         site            = site_manager.site
         site.user_ids   = [user_of_site.id]
         site.save
-        my_task.user_id = user_of_site.id 
+        my_task.user_id = user_of_site.id
         my_task.save
         site_manager.available_tasks.should include(my_task)
       end
 
       it "should return my task if I'm a standard user" do
-        normal_user.available_tasks.should include(my_task) 
+        normal_user.available_tasks.should include(my_task)
       end
-      
+
     end
 
-  
-  
+
+
     describe "#available_users" do
       let!(:user_of_site) {Factory.create(:normal_user, :site => site_manager.site)}
-      
+
       it "should return all tasks if called with an admin" do
         admin.available_users.should be =~ User.all
       end
@@ -528,14 +514,14 @@ describe User do
       it "should only acces to him" do
         normal_user.available_users.should be =~ [normal_user]
       end
-      
+
     end
 
 
-  
+
     describe "#can_be_accessed_by?" do
       let!(:user_of_site) {Factory.create(:normal_user, :site => site_manager.site)}
-      
+
       it "should always return true if admin" do
         normal_user.can_be_accessed_by?(admin).should be_true
       end
@@ -544,44 +530,44 @@ describe User do
         site            = site_manager.site
         site.user_ids   = [user_of_site.id,normal_user.id]
         site.save
-        user_of_site.can_be_accessed_by?(site_manager).should be_true  
+        user_of_site.can_be_accessed_by?(site_manager).should be_true
       end
 
       it "should user can't be accessible by a site manager if not in same site" do
         site            = site_manager.site
         site.user_ids   = [user_of_site.id]
         site.save
-        normal_user.can_be_accessed_by?(site_manager).should be_false  
+        normal_user.can_be_accessed_by?(site_manager).should be_false
       end
 
       it "should only have access to him (for standard user)" do
-        normal_user.can_be_accessed_by?(normal_user).should be_true 
+        normal_user.can_be_accessed_by?(normal_user).should be_true
       end
 
       it "should not access to an other user (for standard user)" do
         normal_user.can_be_accessed_by?(user_of_site).should be_false
       end
-      
+
     end
-    
+
   end
 
 
-  
+
   describe "#system_group" do
-    
+
     it "should return the system group of user" do
-      normal_user.system_group.should be == UserGroup.where( :name => normal_user.login ).first 
+      normal_user.system_group.should be == UserGroup.where( :name => normal_user.login ).first
     end
-    
+
   end
 
 
-  
+
   describe "#is_member_of_group" do
     let!(:group) {Factory.create(:group)}
     let!(:user_of_group_2) {Factory.create(:normal_user, :group_ids => [group.id])}
-    
+
     it "should returns true if the user belongs to the +group_id+" do
       user_of_group_2.is_member_of_group(group).should be_true
     end
@@ -589,16 +575,16 @@ describe User do
     it "should returns false if the user not belongs to the +group_id+" do
       normal_user.is_member_of_group(group.id).should be_false
     end
-    
+
   end
 
 
-  
+
   describe "#destroy_user_sessions" do
     let!(:session)    {{:user_id => normal_user.id}}
     let!(:sess_model) {double("sess_model").as_null_object}
     let!(:cb_session) {mock_model(ActiveRecord::SessionStore::Session).as_null_object}
-    
+
     it "should return true if user have no id" do
       normal_user.id = nil
       normal_user.destroy_user_sessions.should be_true
@@ -609,40 +595,40 @@ describe User do
       cb_session.should_receive(:destroy)
       normal_user.destroy_user_sessions
     end
-    
+
   end
 
 
-  
+
   describe "#immutable_login" do
-    
+
     it "should not change login name of user" do
       normal_user.login = "new_pseudo"
       normal_user.save.should be(false)
     end
-    
+
   end
 
 
-  
+
   describe "#admin_check" do
-    
+
     it "should raise error if when try to destroy admin" do
       admin = User.admin
       lambda{ admin.destroy }.should raise_error
     end
-    
+
   end
 
 
-  
+
   describe "#system_group_site_update" do
     let!(:site1) {Factory.create(:site)}
-    
+
     it "should add user to new site" do
       normal_user.site = site1
       normal_user.save
-      site1.own_group.users.should include(normal_user) 
+      site1.own_group.users.should include(normal_user)
     end
 
     it "should remove user to old site" do
@@ -654,31 +640,31 @@ describe User do
   end
 
 
-  
+
   describe "#site_manager_check" do
-    
+
     it "should not save a site manager without a site_id" do
       normal_user.type    = "SiteManager"
       normal_user.site_id = nil
       no_site_manager =  normal_user.class_update
       no_site_manager.save.should be_false
     end
-    
+
   end
 
 
-  
+
   describe "#destroy_system_group" do
-    
+
     it "should destroy system group of user if user destroyed" do
       user_login = normal_user.login
       normal_user.destroy
-      SystemGroup.where(:name => user_login).should be_empty  
+      SystemGroup.where(:name => user_login).should be_empty
     end
   end
 
 
-  
+
   describe "#add_system_groups" do
     before(:each) do
       UserGroup.stub!(:new).and_return(mock_model(UserGroup).as_null_object)
@@ -686,16 +672,16 @@ describe User do
       SiteGroup.stub!(:find_by_name).and_return(mock_model(SiteGroup).as_null_object)
       NormalUser.any_instance.stub(:group_ids=)
     end
-    
+
 
     it "User should be part of is own group everyone group and these sites" do
       user_sites_group = SiteGroup.joins(:users).where("users.id" => [normal_user.id]).map &:id
       user_group       = SystemGroup.where(:name => normal_user.login).map &:id
       everyone_group   = Group.where(:name => "everyone").map &:id
       all_user_group   = user_sites_group + user_group + everyone_group
-      normal_user.group_ids.should be =~ all_user_group 
+      normal_user.group_ids.should be =~ all_user_group
     end
-    
+
     it "should create a new UserGroup with my login on create" do
        login = "login"
        UserGroup.should_receive(:new).with(hash_including(:name => login)).and_return(mock_model(UserGroup).as_null_object)
@@ -703,7 +689,7 @@ describe User do
      end
 
   end
-  
+
   describe "#system_group_site_update" do
     it "should add me to the site group" do
       normal_user.site = Factory.create(:site, :name => "I_should_be_part_of_this_site_group")
@@ -715,6 +701,6 @@ describe User do
       normal_user.save!
     end
   end
-  
+
 end
 

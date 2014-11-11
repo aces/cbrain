@@ -22,15 +22,12 @@
 #
 -%>
 
-<%= button_with_dropdown_menu("View Options") do %>
-  <div class="view_options">
-    <% unless @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' %>
-       <%= table_header_sort_link "Switch to Batch View", 'CbrainTask', 'batch' %>
-       <br>
-     <% end %>
-    Number of tasks per page <small>(between 25 and 1000)</small>:
-    <%= ajax_search_box( :per_page , tasks_path(:update_filter => true), :default => @per_page, :datatype => "script", :size => 4) %>
+<% title 'Service Support' %>
 
-  </div>
-<% end %>
+  <h1>CBRAIN Web Service Support</h1>
+  <dl>
+    <dt>Email</dt><dd><%= @support[:supportEmail] %></dd>
+    <dt>About us</dt><dd><%= link_to 'About_us', @support[:aboutUs] %></dd>
+  </dl>
+
 

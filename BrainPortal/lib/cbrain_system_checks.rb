@@ -231,7 +231,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       puts "C> \t- Wiping old files in Data Provider cache (in background)."
 
       CBRAIN.spawn_with_active_records(User.admin, "CacheCleanup") do
-        wiped = DataProvider.cleanup_leftover_cache_files("Yeah, Do it!") rescue []
+        wiped = DataProvider.cleanup_leftover_cache_files("Yeah, Do it!", :update_dollar_zero => true) rescue []
         unless wiped.empty?
           Rails.logger.info "Wiped #{wiped.size} old files in DP cache."
           Message.send_message(User.admin,

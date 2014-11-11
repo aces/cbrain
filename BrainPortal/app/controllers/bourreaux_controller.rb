@@ -35,6 +35,7 @@ class BourreauxController < ApplicationController
   before_filter :login_required
   before_filter :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :rr_access_dp, :update, :start, :stop]
 
+  API_HIDDEN_ATTRIBUTES = [ :cache_md5 ]  # these are hidden back when APIs calls returns objects
 
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "remote_resources.type"
@@ -49,9 +50,15 @@ class BourreauxController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml  { render :xml  => @bourreaux }
-      format.json { render :json => @bourreaux }
       format.js
+      format.xml  do
+        @bourreaux.each { |b| b.hide_attributes(API_HIDDEN_ATTRIBUTES) }
+        render :xml  => @bourreaux
+      end
+      format.json do
+        @bourreaux.each { |b| b.hide_attributes(API_HIDDEN_ATTRIBUTES) }
+        render :json => @bourreaux
+      end
     end
   end
 
@@ -63,8 +70,14 @@ class BourreauxController < ApplicationController
 
     respond_to do |format|
       format.html # show.html.erb
-      format.xml  { render :xml  => @bourreau }
-      format.json { render :json => @bourreau }
+      format.xml  do
+        @bourreau.hide_attributes(API_HIDDEN_ATTRIBUTES)
+        render :xml  => @bourreau
+      end
+      format.json do
+        @bourreau.hide_attributes( [:cache_md5] )
+        render :json => @bourreau
+      end
     end
   end
 
@@ -213,23 +226,37 @@ class BourreauxController < ApplicationController
   end
 
   def load_info #:nodoc:
-
-    if params[:bourreau_id].blank? && params[:tool_config_id].blank?
-      render :text  => ""
-      return
-    end
+    raise "Bad params" if params[:bourreau_id].blank? && params[:tool_config_id].blank?
 
     bourreau_id = params[:bourreau_id] || ToolConfig.find(params[:tool_config_id]).bourreau_id
-    @bourreau   = Bourreau.find(bourreau_id)
+    bourreau    = Bourreau.find(bourreau_id)
+
+    @latest_in_queue_delay    = bourreau.meta[:latest_in_queue_delay]
+    @time_of_last_queue_delay = bourreau.meta[:time_of_latest_in_queue_delay]
+    @num_active               = CbrainTask.status(:active).where(:bourreau_id => bourreau.id).count
+    @num_queued               = CbrainTask.status(:queued).where(:bourreau_id => bourreau.id).count
+    @num_processing           = CbrainTask.status(:processing).where(:bourreau_id => bourreau.id).count
+
+    info = { :latest_in_queue_delay    => @time_of_latest_in_queue_delay,
+             :time_of_last_queue_delay => @time_of_last_queue_delay,
+             :num_active               => @num_active,
+             :num_queued               => @num_queued,
+             :num_processing           => @num_processing
+           }
+
 
     respond_to do |format|
-      format.html { render :partial => 'load_info', :locals => { :bourreau => @bourreau } }
-      format.xml  { render :xml     => @bourreau   }
+      format.html { render :partial => 'load_info' }
+      format.xml  { render :xml     => info   }
+      format.json { render :json    => info   }
     end
 
   rescue => ex
-    #render :text  => "#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
-    render :text  => '<strong style="color:red">No Information Available</strong>'
+    respond_to do |format|
+      format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
+      format.xml  { head :unprocessable_entity }
+      format.json { head :unprocessable_entity }
+    end
   end
 
   def start #:nodoc:
@@ -338,7 +365,6 @@ class BourreauxController < ApplicationController
   # Define disk usage of remote ressource,
   # with date filtration if wanted.
   def rr_disk_usage
-    @providers = DataProvider.find_all_accessible_by_user(current_user).all
     date_filtration = params[:date_range] || {}
 
     # Time:     Present ............................................................ Past
@@ -361,16 +387,16 @@ class BourreauxController < ApplicationController
     @cache_older   = Time.now.to_i - accessed_before.to_i # partial will adjust to closest value in selection box
 
     # Users in statistics table
-    userlist         = current_user.available_users.all
+    userlist       = current_user.available_users.all
 
     # Remote resources in statistics table
-    rrlist           = RemoteResource.find_all_accessible_by_user(current_user).all
+    rrlist         = RemoteResource.find_all_accessible_by_user(current_user).all
 
     # Create disk usage statistics table
-    stats_options = { :users            => userlist,
-                      :remote_resources => rrlist,
-                      :accessed_before  => accessed_before,
-                      :accessed_after   => accessed_after
+    stats_options  = { :users            => userlist,
+                       :remote_resources => rrlist,
+                       :accessed_before  => accessed_before,
+                       :accessed_after   => accessed_after
                     }
 
     @report_stats    = ModelsReport.rr_usage_statistics(stats_options)
@@ -387,6 +413,57 @@ class BourreauxController < ApplicationController
     @report_rrs.reject! { |rr| ! (@report_users_all.any? { |u| @report_stats[u] && @report_stats[u][rr] }) }
 
     true
+  end
+
+
+  def cache_disk_usage #:nodoc:
+    bourreau_id = params[:id]       || ""
+    user_ids    = params[:user_ids] || nil
+
+    available_users = current_user.available_users
+    user_ids        = user_ids ? available_users.where(:id => user_ids).raw_first_column(:id) :
+                                 available_users.raw_first_column(:id)
+
+    raise "Bad params"              if bourreau_id.blank? || user_ids.blank?
+    bourreau    = Bourreau.find(bourreau_id.to_i)
+    raise "Bad params"              if !bourreau.can_be_accessed_by?(current_user)
+    raise "Not an Execution Server" if !bourreau.is_a?(Bourreau)
+
+    base_relation = SyncStatus.joins(:userfile).where(:remote_resource_id => bourreau_id)
+
+    # Create a hash table with information grouped by user.
+    info_by_user = {}
+    user_ids.each do |user_id|
+      user_relation   = base_relation.where("userfiles.user_id" => user_id)
+
+      number_entries  = user_relation.count
+      total_size      = user_relation.sum(:size)
+      number_files    = user_relation.sum(:num_files)
+      number_unknown  = user_relation.where("size is null").count
+
+      # If we want to filter empty entries
+      # next if number_entries == 0 && total_size == 0 && number_files == 0 && number_unknown == 0
+
+      info_by_user[user_id] = {}
+      info_by_user[user_id][:number_entries]  =  number_entries.to_i
+      info_by_user[user_id][:total_size]      =  total_size.to_i
+      info_by_user[user_id][:number_files]    =  number_files.to_i
+      info_by_user[user_id][:number_unknown]  =  number_unknown.to_i
+    end
+
+    respond_to do |format|
+      format.html { render :text => info_by_user.inspect }
+      format.xml  { render :xml  => info_by_user }
+      format.json { render :json => info_by_user }
+    end
+
+  rescue => ex
+    respond_to do |format|
+      format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
+      format.xml  { head :unprocessable_entity }
+      format.json { head :unprocessable_entity }
+    end
+
   end
 
   # Provides the interface to trigger cache cleanup operations

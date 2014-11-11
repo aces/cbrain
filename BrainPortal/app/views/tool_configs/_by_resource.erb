@@ -48,17 +48,17 @@
   cycle("list-odd", "list-even") if cycle("list-odd", "list-even") == 'list-odd'
 
   # 2 lists of objects of type 'versus' : one for those without tool_configs, one for those with at least one tool_config
-  versus_without_tcs = for_tool ? versus.select { |v| ToolConfig.where( :tool_id => resource.id, :bourreau_id => v.id).size == 0 }
-                                : versus.select { |v| ToolConfig.where( :tool_id => v.id, :bourreau_id => resource.id).size == 0 }
+  versus_without_tcs = for_tool ? versus.select { |v| ToolConfig.where( :tool_id => resource.id, :bourreau_id => v.id).count == 0 }
+                                : versus.select { |v| ToolConfig.where( :tool_id => v.id,        :bourreau_id => resource.id).count == 0 }
   versus_with_tcs    = versus - versus_without_tcs
 
   # Summarize for 'versus' without tool_configs
   no_version_summary = ""
   if versus_without_tcs.present?
     if for_tool
-      no_version_summary << html_colorize("No versions configured for: ")
+      no_version_summary << html_colorize("No versions configured for these tools: ")
     else
-      no_version_summary <<  html_colorize("No versions configured on: ")
+      no_version_summary << html_colorize("No versions configured for these servers: ")
     end
 
     versus_without_tcs.each do |vs|
@@ -69,7 +69,7 @@
       end
 
       if vs.group.name != "everyone"
-        no_version_summary << " (" << link_to_group_if_editable(vs.group) << ")"
+        no_version_summary << " (in project " << link_to_group_if_editable(vs.group) << ")"
       end
 
       no_version_summary << ", "

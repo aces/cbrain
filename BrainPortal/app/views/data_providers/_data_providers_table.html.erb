@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -31,7 +31,7 @@
 
   <% if check_role(:site_manager) || check_role(:admin_user) %>
     <%= new_model_button "Create New Data Provider", new_data_provider_path %>
-  <% end %> 
+  <% end %>
 
   <%= ajax_link (@filter_params["details"] == 'on' ? "Hide Details" : "Show Details" ),
               {:controller  => :data_providers, :action  => :index, :data_providers  => {:details  => set_toggle(@filter_params["details"])}},
@@ -41,36 +41,34 @@
   <%= link_to "User Access Report",
              {:controller  => :data_providers, :action  => :dp_access},
               :datatype  => 'script', :class  => "button"
-  %>   
-  
+  %>
+
   <%= link_to "Transfer Restrictions Report",
              {:controller  => :data_providers, :action  => :dp_transfers},
               :datatype  => 'script', :class  => "button"
   %>
-  
+
   <%= link_to "Disk Usage Report", report_path(
-                :table_name => "userfiles.combined_file_rep", 
+                :table_name => "userfiles.combined_file_rep",
                 :row_type   => :user_id,
                 :col_type   => :data_provider_id,
                 :generate   => "ok"
               ), :class  => "button"
-  %>  
-  
-  <%= overlay_ajax_link "Help", "/doc/data_providers/data_provider_info.html", :class  => "button" %>    
+  %>
+
+  <%= overlay_ajax_link "Help", "/doc/data_providers/data_provider_info.html", :class  => "button" %>
 </div>
 
-<div class="active_status">
-  <span class="active_status_left_side">
-    <%= render :partial => 'shared/active_filters', :locals => {:model => :data_provider} %>
-  </span>
-</div>
+
+<%= render :partial => 'shared/active_filters', :locals => {:model => :data_provider} %>
+
 
 <fieldset>
 <legend>Official Data Storage</legend>
   <%= render :partial => 'one_data_provider_table', :locals => { :data_providers => official_storage, :id => 'official' } %>
 </fieldset>
 
-<P>                 
+<P>
 
 <fieldset>
 <legend>User or Site Storage</legend>

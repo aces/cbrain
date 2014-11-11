@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140226225222) do
+ActiveRecord::Schema.define(:version => 20140819161232) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -371,17 +371,15 @@ ActiveRecord::Schema.define(:version => 20140226225222) do
     t.string   "type"
     t.string   "crypted_password"
     t.string   "salt"
-    t.string   "remember_token"
-    t.datetime "remember_token_expires_at"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "site_id"
-    t.boolean  "password_reset",            :default => false, :null => false
+    t.boolean  "password_reset",    :default => false, :null => false
     t.string   "time_zone"
     t.string   "city"
     t.string   "country"
     t.datetime "last_connected_at"
-    t.boolean  "account_locked",            :default => false, :null => false
+    t.boolean  "account_locked",    :default => false, :null => false
   end
 
   add_index "users", ["login"], :name => "index_users_on_login"

@@ -1,5 +1,4 @@
 
-<%-
 #
 # CBRAIN Project
 #
@@ -18,19 +17,11 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
--%>
 
-<%= button_with_dropdown_menu("View Options") do %>
-  <div class="view_options">
-    <% unless @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' %>
-       <%= table_header_sort_link "Switch to Batch View", 'CbrainTask', 'batch' %>
-       <br>
-     <% end %>
-    Number of tasks per page <small>(between 25 and 1000)</small>:
-    <%= ajax_search_box( :per_page , tasks_path(:update_filter => true), :default => @per_page, :datatype => "script", :size => 4) %>
+# Special configuration / adjustments
 
-  </div>
-<% end %>
-
+if Rack::Utils.respond_to?("key_space_limit=")
+  Rack::Utils.key_space_limit = 512.kilobytes # the default is 64.kilobytes
+end

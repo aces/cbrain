@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -34,13 +34,13 @@
 
     <% if @browser =~ /msie/i %>
       <tr>
-        <td colspan="2">
+        <td colspan="4">
           <div class="exception_report centered" style="color: black">
-            The CBRAIN interface does not support <strong>Microsoft</br>       
+            The CBRAIN interface does not support <strong>Microsoft</br>
             Internet Explorer</strong>. You may still proceed, but we recommend</br>
-            using <%= link_to "Chrome", "https://www.google.com/chrome" %>, 
+            using <%= link_to "Chrome", "https://www.google.com/chrome" %>,
             <%= link_to "Firefox", "http://www.mozilla.org/en-US/firefox/fx/"%>,
-            <%= link_to "Opera", "http://www.opera.com/browser/download/" %>, or 
+            <%= link_to "Opera", "http://www.opera.com/browser/download/" %>, or
             <%= link_to "Safari", "http://www.apple.com/safari/download/" %>.
           </div>
           <p>
@@ -49,33 +49,30 @@
     <% end %>
 
     <tr>
-      <td/>
-      <td><a href="#" onclick="loginPersona();"><img src="/images/persona_icon.png"></a><br/><br/></td>
-    </tr>
-
-    <tr>
-      <td/>
-      <td><center>or</center><br/></td>
-    </tr>
-
-    <tr>
       <td><label for="login">Login</label></td>
       <td class="field"><%= text_field_tag 'login' %></td>
+      <td rowspan="2"><center>or</center></td>
+      <td rowspan="2"><center><a href="#" onclick="loginPersona();"><img src="/images/persona_icon.png"></a></center></td>
     </tr>
 
-    <tr>  
+    <tr>
       <td><label for="password">Password</label></td>
       <td class="field"><%= password_field_tag 'password' %></td>
     </tr>
 
     <tr>
-      <td><td class="field"><br><%= submit_tag 'Log in' %></td></td>
+      <td></td>
+      <td class="field"><%= submit_tag 'Sign in' %></td>
+      <td colspan="2"></td>
     </tr>
 
     <tr>
-      <td><td class="field"><br><%= link_to "Forgot your password?", request_password_users_path, :class  => "action_link" %></td></td>
+      <td></td>
+      <td class="field"><%= link_to "Forgot your password?", request_password_users_path, :class  => "action_link" %></td>
+      <td colspan="2"></td>
     </tr>
 
   </table>
-  
+
 <% end -%>
+

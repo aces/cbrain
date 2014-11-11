@@ -502,7 +502,7 @@ class SshMaster
                       " -o KbdInteractiveAuthentication=no"   +
                       " -o KbdInteractiveDevices=none"        +
     (@nomaster ?      "" : 
-                      " -o ServerAliveInterval=10"            +
+                      " -o ServerAliveInterval=30"            +
                       " -o ServerAliveCountMax=5"             +
                       " -o ControlMaster=#{control_master}"   +
                       " -o ControlPath=#{socket}"             

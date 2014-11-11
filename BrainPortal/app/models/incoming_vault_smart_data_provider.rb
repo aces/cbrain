@@ -17,18 +17,18 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This class implements a 'wrapper' data provider that
-# acts either as a CbrainLocalDataProvider or a CbrainSshDataProvider
+# acts either as a IncomingVaultLocalDataProvider or a IncomingVaultSshDataProvider
 # depending on whether or not the current hostname matches
 # the value of the attribute remote_host.
 #
 # This means that in the case where the current Rails application
 # runs on the same machine as the data provider, the faster
-# and more efficient CbrainLocalDataProvider will be used.
-class CbrainSmartDataProvider < DataProvider
+# and more efficient VaultLocalDataProvider will be used.
+class IncomingVaultSmartDataProvider < DataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
@@ -37,7 +37,7 @@ class CbrainSmartDataProvider < DataProvider
   after_initialize :after_initialize_select_provider
 
   def after_initialize_select_provider #:nodoc:
-    self.select_local_or_network_provider(CbrainLocalDataProvider,CbrainSshDataProvider)
+    self.select_local_or_network_provider(IncomingVaultLocalDataProvider,IncomingVaultSshDataProvider)
   end
 
 end

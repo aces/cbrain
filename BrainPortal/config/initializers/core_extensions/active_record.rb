@@ -58,13 +58,12 @@ module ActiveRecord #:nodoc:
     ###################################################################
 
     include CBRAINExtensions::ActiveRecordExtensions::AbstractModelMethods
-    
+
     ###################################################################
     # Helpers to manage mass-assignable attributes.
     ###################################################################
 
     include CBRAINExtensions::ActiveRecordExtensions::MassAssignmentAuthorization
-
 
     ###################################################################
     # ActiveRecord Added Behavior For Data Typing
@@ -72,28 +71,32 @@ module ActiveRecord #:nodoc:
 
     include CBRAINExtensions::ActiveRecordExtensions::ForceEncoding
 
-
     ###################################################################
     # ActiveRecord Added Behavior For Serialization
     ###################################################################
 
     include CBRAINExtensions::ActiveRecordExtensions::Serialization
-    
-    
+
     ###################################################################
     # ActiveRecord Added Behavior For Core Models
     ###################################################################
 
     include CBRAINExtensions::ActiveRecordExtensions::CoreModels
-    
+
+    ###################################################################
+    # ActiveRecord Added Behavior For Hiding Attributes
+    ###################################################################
+
+    include CBRAINExtensions::ActiveRecordExtensions::HiddenAttributes
+
     ###################################################################
     # +scopes+ method behaviour lost in Rails 3.1.
     ###################################################################
 
     include CBRAINExtensions::ActiveRecordExtensions::CbrainScopes
-    
+
   end # class Base of ActiveRecord
-  
+
 
 
   # CBRAIN ActiveRecord::Relation extensions
@@ -104,13 +107,13 @@ module ActiveRecord #:nodoc:
     #####################################################################
 
     include CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::RawData
-    
+
     #####################################################################
     # ActiveRecord::Relation Added Behavior For To Undo Conditions
     #####################################################################
 
     include CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::UndoWhere
-    
+
   end
 
   # CBRAIN ActiveRecord::Associations::CollectionProxy extensions

@@ -18,11 +18,11 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<% 
+<%
   if params[:content_loader] == "collection_file" && params[:arguments]
     argument_list = params[:arguments]
     argument_list = [argument_list] unless argument_list.is_a?(Array)
@@ -34,10 +34,10 @@
 
 <% if @userfile.is_locally_synced? %>
 
-  <% if params[:content_viewer] == "off" || @userfile.size < 1000 %>
+  <% if params[:content_viewer] == "off" || (@userfile.size || 999_999) < 1000 %>
     <% content = File.read(path) rescue nil %>
-    <% content = content.text_file_content_to_utf8 if content %>                    
-    <% if content %> 
+    <% content = content.text_file_content_to_utf8 if content %>
+    <% if content %>
       <PRE><%= content %></PRE>
     <% else %>
       <%= html_colorize("Could not load file contents.") %>
@@ -46,5 +46,5 @@
   <% else %>
     <%= link_to h("Show Displayable Content"), url_for(:controller  => :userfiles, :id  => @userfile.id, :action  => :display, :viewer => "text_file", :content_viewer => "off"), :target => "_blank"%>
   <% end %>
-  
+
 <% end%>

@@ -1,4 +1,5 @@
 
+<%-
 #
 # CBRAIN Project
 #
@@ -17,22 +18,25 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+-%>
 
-require 'spec_helper'
+<% title 'Service Doc' %>
 
-describe CbrainSmartDataProvider do
-  let(:cbrain_smart_data_provider) {Factory.create(:cbrain_smart_data_provider)}
-  
-  describe "#after_initialize_select_provider" do
-    
-    it "should receive select_local_or_network_provider" do
-      cbrain_smart_data_provider.should_receive(:select_local_or_network_provider)
-      cbrain_smart_data_provider.after_initialize_select_provider
-    end
-    
-  end
-  
-end
+  <h1>CBRAIN Web Service Documentation</h1>
+
+  <dl>
+    <dt>Description</dt><dd><%= @doc[:description] %></dd>
+    <dt>Perl API documentation</dt>
+      <dd>
+        <%= link_to 'Plain Text documentation', @doc[:perl_doc_text] %>
+        <br>
+        <%= link_to 'HTML documentation', @doc[:perl_doc_html] %>
+      </dd>
+    <dt>Ruby API documentation</dt>
+      <dd>
+        <%= link_to 'HTML documentation', @doc[:ruby_doc_html] %>
+      </dd>
+  </dl>
 

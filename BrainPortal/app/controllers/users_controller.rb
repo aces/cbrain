@@ -25,10 +25,12 @@ class UsersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :only => [ :index, :create, :show, :destroy ]
+  api_available :only => [ :index, :create, :show, :destroy , :update]
 
   before_filter :login_required,        :except => [:request_password, :send_password]
   before_filter :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password]
+
+  API_HIDDEN_ATTRIBUTES = [ :salt, :crypted_password ]
 
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= 'users.full_name'
@@ -57,8 +59,14 @@ class UsersController < ApplicationController
     respond_to do |format|
       format.html # index.html.erb
       format.js
-      format.xml  { render :xml  => @users }
-      format.json { render :json => @users }
+      format.xml  do
+        @users.each { |u| u.hide_attributes(API_HIDDEN_ATTRIBUTES) }
+        render :xml  => @users
+      end
+      format.json do
+        @users.each { |u| u.hide_attributes(API_HIDDEN_ATTRIBUTES) }
+        render :json => @users
+      end
     end
   end
 
@@ -75,8 +83,14 @@ class UsersController < ApplicationController
 
     respond_to do |format|
       format.html # show.html.erb
-      format.xml  { render :xml  => @user }
-      format.json { render :json => @user }
+      format.xml  do
+        @user.hide_attributes(API_HIDDEN_ATTRIBUTES)
+        render :xml  => @user
+      end
+      format.json do
+        @user.hide_attributes(API_HIDDEN_ATTRIBUTES)
+        render :json => @user
+      end
     end
   end
 
@@ -155,9 +169,9 @@ class UsersController < ApplicationController
 
     if params[:user][:group_ids]
       system_group_scope = SystemGroup.scoped
-      params[:user][:group_ids]  |= system_group_scope.joins(:users).where( "users.id" => @user.id ).raw_first_column("groups.id").map &:to_s
+      params[:user][:group_ids]  |= system_group_scope.joins(:users).where( "users.id" => @user.id ).raw_first_column("groups.id").map(&:to_s)
       unless current_user.has_role?(:admin_user)
-        params[:user][:group_ids]  |= WorkGroup.where(invisible: true).raw_first_column("groups.id").map &:to_s
+        params[:user][:group_ids]  |= WorkGroup.where(invisible: true).raw_first_column("groups.id").map(&:to_s)
       end
     end
 

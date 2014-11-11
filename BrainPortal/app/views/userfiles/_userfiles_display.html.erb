@@ -22,13 +22,9 @@
 #
 -%>
 
-<div class="active_status">
 
-  <span class="active_status_left_side">
-    <%= render :partial => 'shared/active_filters', :locals => {:model => :userfile} %>
-  </span>
+<%= render :partial => 'shared/active_filters', :locals => {:model => :userfile} %>
 
-</div>
 
 <div class="pagination">
   <%= render :partial => 'userfiles/pagination' %>

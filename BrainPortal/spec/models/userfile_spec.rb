@@ -507,7 +507,7 @@ describe Userfile do
 
     it "should return file of all user and file where userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)" do
       scope = Userfile.scoped({})
-      DataProvider.stub_chain(:find_all_accessible_by_user, :all, :map).and_return([userfile3.data_provider_id])
+      DataProvider.stub_chain(:find_all_accessible_by_user, :raw_first_column).and_return([userfile3.data_provider_id])
       Userfile.restrict_access_on_query(user,scope, {:access_requested => "read"}).all.should be =~ [userfile1,userfile2,userfile3]
     end
 
