@@ -619,6 +619,8 @@ Step 7: ToolConfigs
 
 STEP
 
+version_name = 10
+
 tc_main = ToolConfig.seed_record!(
   {
     :tool_id     => nil,
@@ -629,7 +631,8 @@ tc_main = ToolConfig.seed_record!(
     :description => 'All Tools On Main',
     :env_array   => [ [ "MAIN_TOOL_CONFIG", "Main-tc-ok" ] ],
     :script_prologue => "\n# Prologue for tool config\necho $MAIN_TOOL_CONFIG\n",
-    :ncpus       => 1
+    :ncpus       => 1,
+    :version_name     => "#{version_name += 1}"
   },
   { :info_name_method => :description }
 )
@@ -644,7 +647,8 @@ tc_diag = ToolConfig.seed_record!(
     :description => 'Diag On All Bourreaux',
     :env_array   => [ [ "DIAG_TOOL_CONFIG", "Diag-tc-ok" ] ],
     :script_prologue => "\n# Prologue for tool config\necho $DIAG_TOOL_CONFIG\n",
-    :ncpus       => 1
+    :ncpus       => 1,
+    :version_name     => "#{version_name += 1}"
   },
   { :info_name_method => :description }
 )
@@ -661,7 +665,8 @@ para_diag = ToolConfig.seed_record!(
     :group_id    => Group.everyone.id,
     :env_array   => [ ],
     :script_prologue => "",
-    :ncpus       => 1
+    :ncpus       => 1,
+    :version_name     => "#{version_name += 1}"
   },
   { :info_name_method => :description }
 )
@@ -676,7 +681,8 @@ seri_diag = ToolConfig.seed_record!(
     :group_id    => Group.everyone.id,
     :env_array   => [ ],
     :script_prologue => "",
-    :ncpus       => 1
+    :ncpus       => 1,
+    :version_name     => "#{version_name += 1}"
   },
   { :info_name_method => :description }
 )
@@ -696,7 +702,8 @@ diag_all_tcs = []
         :group_id    => Group.everyone.id,
         :env_array   => [ [ "DIAG_ON_BOURREAU_TOOL_CONFIG", "Version-#{version}" ] ],
         :script_prologue => "\n# Prologue for tool config\necho $DIAG_ON_BOURREAU_TOOL_CONFIG\n",
-        :ncpus       => version
+        :ncpus       => version,
+        :version_name     => "#{version_name += 1}"
       },
       { :info_name_method => :description }
     )
@@ -716,7 +723,8 @@ end
           :description => "For #{group.name} only",
           :env_array   => [ [ "USER_LIST", "#{group.users.map(&:login).join(",")}" ] ],
           :script_prologue => "\n# Prologue for tool config\necho USER_LIST=$USER_LIST\n",
-          :ncpus       => 1
+          :ncpus       => 1,
+          :version_name     => "#{version_name += 1}"
         },
         { :info_name_method => :description }
       )
