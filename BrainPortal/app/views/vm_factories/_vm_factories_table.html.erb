@@ -38,7 +38,7 @@ t.sort_column("ν-", "VMFactory", "nu_minus"){ |t| t.nu_minus }
 t.sort_column("k+", "VMFactory", "k_plus"){ |t| t.k_plus }
 t.sort_column("k-", "VMFactory", "k_minus"){ |t| t.k_minus }
 t.sort_column("Last iteration", "VMFactory", "timestamp_of_last_iteration"){ |t| timestamp = t.timestamp_of_last_iteration ; timestamp.blank? ? Time.new(0) : timestamp}
-t.column("Up?"){ |t| t.timestamp_of_last_iteration.blank? ? "false" : ( (Time.now - t.timestamp_of_last_iteration) < 3*t.tau ? "true" : "false")} 
+t.column("Up?"){ |t| t.timestamp_of_last_iteration.blank? ? "false" : ( t.alive? ? "true" : "false")} 
 t.column("Operations") { |t| 
     links = link_to 'Start', start_vm_factory_path(t.id)
     links += "  "

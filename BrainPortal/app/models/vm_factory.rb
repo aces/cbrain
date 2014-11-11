@@ -250,7 +250,13 @@ class VmFactory < ActiveRecord::Base
 
   # Checks if VM factory is still alive. 
   def alive?
-    self.timestamp_of_last_iteration.blank? ? false : (Time.now - self.timestamp_of_last_iteration < 3*self.tau)
+    return false if self.timestamp_of_last_iteration.blank?
+    begin
+      Process.kill 0, self.pid
+      return true
+    rescue => ex
+      return false
+    end
   end
 
   # Selects and terminates a VM. 
