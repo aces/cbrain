@@ -40,6 +40,11 @@ GEM
       builder
       mime-types
       xml-simple
+    aws-sdk (1.58.0)
+      aws-sdk-v1 (= 1.58.0)
+    aws-sdk-v1 (1.58.0)
+      json (~> 1.4)
+      nokogiri (>= 1.4.4)
     builder (3.0.4)
     daemons (1.1.9)
     erubis (2.7.0)
@@ -55,11 +60,14 @@ GEM
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
     mime-types (1.19)
+    mini_portile (0.6.1)
     multi_json (1.2.0)
     mysql2 (0.3.11)
     net-sftp (2.0.5)
       net-ssh (>= 2.0.9)
     net-ssh (2.6.3)
+    nokogiri (1.6.4.1)
+      mini_portile (~> 0.6.0)
     openstack (1.1.1)
       json
     pbkdf2 (0.1.0)
@@ -114,6 +122,7 @@ PLATFORMS
 
 DEPENDENCIES
   aws-s3
+  aws-sdk
   hirb
   log4r
   looksee
