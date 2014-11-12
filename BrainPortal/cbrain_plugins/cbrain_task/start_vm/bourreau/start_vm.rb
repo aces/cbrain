@@ -67,7 +67,7 @@ class CbrainTask::StartVM < ClusterTask
   def escape_params #:nodoc:
     # QEMU params lines may contain any character
     params[:qemu_params] = params[:qemu_params].bash_escape(false,false,true) unless params[:qemu_params].blank?
-    params[:cloud_image_type] = params[:cloud_image_type].bash_escape unless params[:cloud_image_type].blank?
+    params[:instance_type] = params[:instance_type].bash_escape unless params[:instance_type].blank?
   end
 
   def job_walltime_estimate #:nodoc:

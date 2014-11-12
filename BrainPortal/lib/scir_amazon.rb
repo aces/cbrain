@@ -81,7 +81,7 @@ class ScirAmazon < ScirCloud
     end
     
     def get_local_ip(jid)
-      return get_instance(jid).private_ip_address
+      return get_instance_from_cbrain_job_id(jid).private_ip_address
     end
 
     def queue_tasks_tot_max
@@ -143,10 +143,14 @@ class ScirAmazon < ScirCloud
 
     private
     
-    def get_instance(jid)
-      ec2 = get_amazon_ec2_connection()
+    def get_instance_from_cbrain_job_id(jid)
       cluster_jobid = CbrainTask.where(:id => jid).first.cluster_jobid
-      instance = ec2.instances.detect { |x| x.id == cluster_jobid }
+      return get_instance(cluster_jobid)
+    end
+
+    def get_instance(id)
+      ec2 = get_amazon_ec2_connection()
+      instance = ec2.instances.detect { |x| x.id == id }
       return instance
     end
 
