@@ -155,10 +155,6 @@ CbrainRailsPortal::Application.routes.draw do
   match '/logout'                 => 'sessions#destroy'
   match '/filter_proxy'           => 'application#filter_proxy'
 
-  # JIV java applet ; TODO remove and make part of a multi-file viewer framework (TBI)
-  match '/jiv'                    => 'jiv#index'
-  match '/jiv/show'               => 'jiv#show'
-
   # Report Maker
   match "/report",                :controller => :portal, :action => :report
 

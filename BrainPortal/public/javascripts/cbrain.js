@@ -986,32 +986,6 @@
       return false;
     });
 
-    //Only used for jiv. Used to submit parameters and create an overlay with the response.
-    $(document).delegate("#jiv_submit", "click", function() {
-      var data_type = $(this).attr("data-type");
-      
-      $(this).closest("form").ajaxSubmit({
-        url: "/jiv",
-        type: "GET",
-        resetForm: false,
-        success: function(data) {
-          $("<div id='jiv_option_div'></div>").html(data).appendTo($("body")).dialog({
-            position: 'center',
-            close: function() {
-              $(this).remove();
-            }
-          });
-        },
-        beforeSend: function() {
-          loading_image.show();
-        },
-        complete: function() {
-          loading_image.hide();
-        }
-      });
-      return false;
-    });
-
     //For loading content into an element after it is clicked.
     //See on_click_ajax_replace() in application_helper.rb
     function ajax_onclick_show(event) {
