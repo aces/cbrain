@@ -30,7 +30,7 @@ require 'aws-sdk'
 # A Scir class to handle VMs on Amazon EC2
 # This class can only handle tasks of type CBRAIN::StartVM.
 
-class ScirAmazon < Scir
+class ScirAmazon < ScirCloud
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

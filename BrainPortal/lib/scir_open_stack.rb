@@ -30,7 +30,7 @@ require 'openstack'
 # A Scir class to handle VMs on OpenStack clouds (see https://www.openstack.org).
 # This class can only handle tasks of type CBRAIN::StartVM.
 
-class ScirOpenStack < Scir
+class ScirOpenStack < ScirCloud
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
