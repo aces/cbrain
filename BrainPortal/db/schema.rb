@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140819161232) do
+ActiveRecord::Schema.define(:version => 20141112184102) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -202,8 +202,8 @@ ActiveRecord::Schema.define(:version => 20140819161232) do
     t.string   "actres_host"
     t.integer  "actres_port"
     t.string   "actres_dir"
-    t.boolean  "online",                   :default => false, :null => false
-    t.boolean  "read_only",                :default => false, :null => false
+    t.boolean  "online",                       :default => false, :null => false
+    t.boolean  "read_only",                    :default => false, :null => false
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -214,8 +214,8 @@ ActiveRecord::Schema.define(:version => 20140819161232) do
     t.integer  "tunnel_mysql_port"
     t.integer  "tunnel_actres_port"
     t.string   "cache_md5"
-    t.boolean  "portal_locked",            :default => false, :null => false
-    t.integer  "cache_trust_expire",       :default => 0
+    t.boolean  "portal_locked",                :default => false, :null => false
+    t.integer  "cache_trust_expire",           :default => 0
     t.datetime "time_of_death"
     t.string   "time_zone"
     t.string   "site_url_prefix"
@@ -243,6 +243,11 @@ ActiveRecord::Schema.define(:version => 20140819161232) do
     t.string   "open_stack_password"
     t.float    "cost_factor"
     t.integer  "ssh_tunnel_port"
+    t.string   "amazon_ec2_region"
+    t.string   "amazon_ec2_access_key_id"
+    t.string   "amazon_ec2_secret_access_key"
+    t.string   "amazon_ec2_key_pair"
+    t.string   "amazon_ec2_instance_type"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"

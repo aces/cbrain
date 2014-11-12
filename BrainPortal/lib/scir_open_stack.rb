@@ -34,6 +34,15 @@ class ScirOpenStack < ScirCloud
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  def get_available_instance_types 
+    os = get_open_stack_connection   
+    instance_types =  Array.new
+    os.list_flavors.each do |flavor|
+      instance_types << [ flavor[:name].to_s , flavor[:id].to_s]
+    end
+  end
+
+  # Inner Session class 
   class Session < Scir::Session #:nodoc:
 
     def update_job_info_cache #:nodoc:

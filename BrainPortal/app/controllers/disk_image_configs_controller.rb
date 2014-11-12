@@ -66,11 +66,11 @@ class DiskImageConfigsController < ApplicationController
     form_disk_image_config.bourreau_id = @disk_image_config.bourreau_id
 
     # Update everything else
-    @disk_image_config[:open_stack_disk_image_id] = form_disk_image_config[:open_stack_disk_image_id]
-    @disk_image_config[:open_stack_default_flavor] = form_disk_image_config[:open_stack_default_flavor]
+    @disk_image_config[:disk_image_id] = form_disk_image_config[:disk_image_id]
+    @disk_image_config[:default_image_type] = form_disk_image_config[:default_image_type]
     
     respond_to do |format|
-      if @disk_image_config.save_with_logging(current_user, %w( open_stack_disk_image_id open_stack_default_flavor ))
+      if @disk_image_config.save_with_logging(current_user, %w( disk_image_id default_image_type ))
         flash[:notice] = "Disk Image configuration was successfully updated."
         format.html {
                     if @disk_image_config.disk_image_bourreau_id

@@ -33,12 +33,18 @@ require 'aws-sdk'
 class ScirAmazon < ScirCloud
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+  
+  def get_available_instance_types 
+    # no, there's no method in the API to return such an array!
+    return [ "t2.micro", "t2.small", "t2.medium", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "g2.2xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "hs1.8xlarge" ]
+  end
+
 
   class Session < Scir::Session #:nodoc:
 
     def update_job_info_cache #:nodoc:
       @job_info_cache = {}
-      ec2 = get_ec2_connection()
+      ec2 = get_amazon_ec2_connection()
       ec2.instances.each do |s|
         # get status
         state = statestring_to_stateconst(s.status)
@@ -100,23 +106,23 @@ class ScirAmazon < ScirCloud
       [ "exception", "exception" ]
     end
 
-    def get_ec2_connection()
+    def get_amazon_ec2_connection()
       # connection parameters, defined in the portal
-      access_key_id = Scir.cbrain_config[:ec2_access_key_id]
-      secret_access_key = Scir.cbrain_config[:ec2_secret_access_key]
-      ec2_region = Scir.cbrain_config[:ec2_region]
+      access_key_id = Scir.cbrain_config[:amazon_ec2_access_key_id]
+      secret_access_key = Scir.cbrain_config[:amazon_ec2_secret_access_key]
+      amazon_ec2_region = Scir.cbrain_config[:amazon_ec2_region]
      
       # get connection
       ec2 = AWS::EC2.new(access_key_id,secret_access_key)
-      region = ec2.regions[ec2_region]
+      region = ec2.regions[amazon_ec2_region]
       raise "Region #{region} does not exist" unless region.exists?
       ec2 = region
       return ec2
     end
 
     def submit_VM(vm_name,image_id,instance_type)
-      key_pair = Scir.cbrain_config[:ec2_key_pair]
-      ec2 = get_ec2_connection()
+      key_pair = Scir.cbrain_config[:amazon_ec2_key_pair]
+      ec2 = get_amazon_ec2_connection()
       ec2.instances.create(:image_id => image_id, :instance_type => instance_type, :key_pair => ec2.key_pairs[key_pair] )
       #TODO instance name is not used
     end
@@ -126,17 +132,17 @@ class ScirAmazon < ScirCloud
       disk_image_bourreaux = Bourreau.where(:disk_image_file_id => task.params[:disk_image])
       image_id = nil
       disk_image_bourreaux.each do |b|
-      	image_id = DiskImageConfig.where(:disk_image_bourreau_id => b.id, :bourreau_id => RemoteResource.current_resource.id).first.ec2_image_id
+      	image_id = DiskImageConfig.where(:disk_image_bourreau_id => b.id, :bourreau_id => RemoteResource.current_resource.id).first.disk_image_id
       end
       raise "Cannot find Disk Image Bourreau associated with file id #{task.params[:disk_image]} or Disk Image Bourreau has no EC2 image id for #{RemoteResource.current_resource.name}" unless !image_id.blank?
-      vm = submit_VM("CBRAIN Worker", image_id, task.params[:ec2_instance_type]) 
+      vm = submit_VM("CBRAIN Worker", image_id, task.params[:amazon_ec2_instance_type]) 
       return vm.id.to_s
     end
 
     private
     
     def get_instance(jid)
-      ec2 = get_ec2_connection()
+      ec2 = get_amazon_ec2_connection()
       instance = ec2.instances.detect { |x| x.id == jid }
       return instance
     end

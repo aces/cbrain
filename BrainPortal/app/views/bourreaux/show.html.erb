@@ -218,7 +218,8 @@
                   [ "MOAB",            "ScirMoab" ],
                   [ "Sharcnet custom", "ScirSharcnet" ],
                   [ "UNIX processes",  "ScirUnix" ],
-	          [ "OpenStack (StartVM tasks only)",  "ScirOpenStack" ]
+	          [ "OpenStack (StartVM tasks only)",  "ScirOpenStack" ],
+	          [ "Amazon EC2 (StartVM tasks only)",  "ScirAmazon" ]
               ], :selected => @bourreau.cms_class)
           %>
         <% end %>
@@ -236,37 +237,65 @@
         <% end %>
 
         <% t.edit_cell(:cms_extra_qsub_args, :header => "Extra 'qsub' options") do %>
-          <%= text_field_tag "bourreau[cms_extra_qsub_args]", @bourreau.cms_extra_qsub_args, :size => 60 %><br/>
-          <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
-        <% end %>
+            <%= text_field_tag "bourreau[cms_extra_qsub_args]", @bourreau.cms_extra_qsub_args, :size => 60 %><br/>
+            <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
+       <% end %>
 
 	<% if @bourreau.cms_class == "ScirOpenStack" %>
-	<% t.edit_cell(:open_stack_auth_url, :header => "OpenStack Authentication URL") do %>
-          <%= text_field_tag "bourreau[open_stack_auth_url]", @bourreau.open_stack_auth_url, :size => 60 %><br/>
-          <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div>
-        <% end %>
+	  <% t.edit_cell(:open_stack_auth_url, :header => "OpenStack Authentication URL") do %>
+            <%= text_field_tag "bourreau[open_stack_auth_url]", @bourreau.open_stack_auth_url, :size => 60 %><br/>
+            <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div>
+          <% end %>
 
-	<% t.edit_cell(:open_stack_tenant, :header => "OpenStack Tenant") do %>
-          <%= text_field_tag "bourreau[open_stack_tenant]", @bourreau.open_stack_tenant, :size => 60 %><br/>
-          <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div>
-        <% end %>
+	  <% t.edit_cell(:open_stack_tenant, :header => "OpenStack Tenant") do %>
+            <%= text_field_tag "bourreau[open_stack_tenant]", @bourreau.open_stack_tenant, :size => 60 %><br/>
+            <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div>
+          <% end %>
 
-	<% t.edit_cell(:open_stack_user_name, :header => "OpenStack User Name") do %>
-          <%= text_field_tag "bourreau[open_stack_user_name]", @bourreau.open_stack_user_name, :size => 60 %><br/>
-          <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div>
-        <% end %>
+	  <% t.edit_cell(:open_stack_user_name, :header => "OpenStack User Name") do %>
+            <%= text_field_tag "bourreau[open_stack_user_name]", @bourreau.open_stack_user_name, :size => 60 %><br/>
+            <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div>
+          <% end %>
 
-	<% t.edit_cell(:open_stack_password, :header => "OpenStack Password") do %>
-          <%= text_field_tag "bourreau[open_stack_password]", @bourreau.open_stack_password, :size => 60 %><br/>
-          <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div>
-        <% end %>  
+	  <% t.edit_cell(:open_stack_password, :header => "OpenStack Password") do %>
+            <%= text_field_tag "bourreau[open_stack_password]", @bourreau.open_stack_password, :size => 60 %><br/>
+            <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div>
+          <% end %>  
 
-	<% t.edit_cell(:cost_factor, :header => "Cost factor") do %>
-          <%= text_field_tag "bourreau[cost_factor]", @bourreau.cost_factor, :size => 60 %><br/>
-          <div class="field_explanation">Optional. Used by Pareto VM factory to evaluate site cost. If not set, Pareto VM factory will not submit VMs to this site.</div>
+	  <% t.edit_cell(:cost_factor, :header => "Cost factor") do %>
+            <%= text_field_tag "bourreau[cost_factor]", @bourreau.cost_factor, :size => 60 %><br/>
+            <div class="field_explanation">Optional. Used by Pareto VM factory to evaluate site cost. If not set, Pareto VM factory will not submit VMs to this site.</div>
+	  <% end %>
+
+	<% end %>
+	<% if @bourreau.cms_class == "ScirAmazon" %>
+	  <% t.edit_cell(:amazon_ec2_access_key_id, :header => "Amazon EC2 Access Key Id") do %>
+            <%= text_field_tag "bourreau[amazon_ec2_access_key_id]", @bourreau.amazon_ec2_access_key_id, :size => 60 %><br/>
+            <div class="field_explanation">See <a href="http://docs.aws.amazon.com/AWSSdkDocsRuby/latest/DeveloperGuide/ruby-dg-setup.html">Amazon SDK documentation</a>.</div>
+          <% end %>
+
+	  <% t.edit_cell(:amazon_ec2_secret_access_key, :header => "Amazon EC2 Secret Access Key") do %>
+            <%= text_field_tag "bourreau[amazon_ec2_secret_access_key]", @bourreau.amazon_ec2_secret_access_key, :size => 60 %><br/>
+            <div class="field_explanation">See <a href="http://docs.aws.amazon.com/AWSSdkDocsRuby/latest/DeveloperGuide/ruby-dg-setup.html">Amazon SDK documentation</a>.</div>
+          <% end %>
+
+	  <% t.edit_cell(:amazon_ec2_region, :header => "Amazon EC2 Region") do %>
+            <%= text_field_tag "bourreau[amazon_ec2_region]", @bourreau.amazon_ec2_region, :size => 60 %><br/>
+            <div class="field_explanation">One of eu-central-1, sa-east-1, ap-northeast-1, eu-west-1, us-east-1, us-west-1, us-west-2, ap-southeast-2, ap-southeast-1.</div>
+          <% end %>
+	  
+	  <% t.edit_cell(:amazon_ec2_key_pair, :header => "Amazon EC2 Key Pair") do %>
+            <%= text_field_tag "bourreau[amazon_ec2_key_pair]", @bourreau.amazon_ec2_key_pair, :size => 60 %><br/>
+            <div class="field_explanation">The key pair used in VM instances started by this bourreau.</div>
+          <% end %>
+
+	  <% t.edit_cell(:cost_factor, :header => "Cost factor") do %>
+            <%= text_field_tag "bourreau[cost_factor]", @bourreau.cost_factor, :size => 60 %><br/>
+            <div class="field_explanation">Optional. Used by Pareto VM factory to evaluate site cost. If not set, Pareto VM factory will not submit VMs to this site.</div>
+	  <% end %>
+
 	<% end %>
 
-	<% end %>
         <% t.edit_cell 'meta[task_limit_user_default]', 
                        :header => "Default maximum number of active tasks for each user", 
                        :content => (@bourreau.meta["task_limit_user_default"].blank? ? "Server's max" : @bourreau.meta["task_limit_user_default"]) do %>

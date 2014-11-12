@@ -239,8 +239,8 @@ class VmFactory < ActiveRecord::Base
     task.status = "New" 
     task.params[:disk_image] = self.disk_image_file_id
     
-    if bourreau.cms_class == "ScirOpenStack" 
-      task.params[:open_stack_image_flavor] = DiskImageConfig.where(:bourreau_id => bourreau.id, :disk_image_bourreau_id => disk_image.id).first.open_stack_default_flavor
+    if bourreau.cms_class.new.is_a? ScirCloud
+      task.params[:cloud_image_type] = DiskImageConfig.where(:bourreau_id => bourreau.id, :disk_image_bourreau_id => disk_image.id).first.default_image_type 
     end
 
     task.save!

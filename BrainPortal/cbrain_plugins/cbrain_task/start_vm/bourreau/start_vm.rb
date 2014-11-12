@@ -44,7 +44,7 @@ class CbrainTask::StartVM < ClusterTask
     validate_params # defined in common
     escape_params
     #synchronize VM disk image
-    if RemoteResource.current_resource.cms_class != "ScirOpenStack"
+    if !RemoteResource.current_resource.cms_class.new.is_a? ScirCloud
       disk_image_file_id = params[:disk_image]
       addlog "Synchronizing file with id #{disk_image_file_id}"
       disk_image_file = Userfile.find(disk_image_file_id) 
@@ -59,7 +59,7 @@ class CbrainTask::StartVM < ClusterTask
         raise "File #{disk_image_filename} can't be found after synchronization."
       end
     else
-      addlog "Not synchronizing disk image on OpenStack Bourreau"
+      addlog "Not synchronizing disk image on cloud Bourreau"
     end
   true
   end
@@ -67,7 +67,7 @@ class CbrainTask::StartVM < ClusterTask
   def escape_params #:nodoc:
     # QEMU params lines may contain any character
     params[:qemu_params] = params[:qemu_params].bash_escape(false,false,true) unless params[:qemu_params].blank?
-    params[:open_stack_image_flavor] = params[:open_stack_image_flavor].bash_escape unless params[:open_stack_image_flavor].blank?
+    params[:cloud_image_type] = params[:cloud_image_type].bash_escape unless params[:cloud_image_type].blank?
   end
 
   def job_walltime_estimate #:nodoc:
@@ -79,7 +79,7 @@ class CbrainTask::StartVM < ClusterTask
     snapshot_name = "image-snapshot-#{self.id}"
     snapshot_creation = "qemu-img create -f qcow2 -b image #{snapshot_name}"
 
-    if Bourreau.find(self.bourreau_id).scir_class.to_s == "ScirOpenStack"
+    if Bourreau.find(self.bourreau_id).scir_class.new.is_a? ScirCloud
     	self.params[:ssh_port] = 22
     else	
       #TODO (VM tristan) may fail in case someone (not us) already uses this port on the host
