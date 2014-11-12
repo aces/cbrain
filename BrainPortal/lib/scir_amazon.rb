@@ -53,10 +53,10 @@ class ScirAmazon < ScirCloud
     end
 
     def statestring_to_stateconst(state) #:nodoc:
-      return Scir::STATE_RUNNING        if state == "running"
-      return Scir::STATE_DONE           if state == "stopped"
-      return Scir::STATE_QUEUED_ACTIVE  if state == "pending"
-      return Scir::STATE_FAILED         if state == "terminated"
+      return Scir::STATE_RUNNING        if state == :running
+      return Scir::STATE_DONE           if state == :stopped
+      return Scir::STATE_QUEUED_ACTIVE  if state == :pending
+      return Scir::STATE_FAILED         if state == :terminated
       return Scir::STATE_UNDETERMINED
     end
 
@@ -81,7 +81,7 @@ class ScirAmazon < ScirCloud
     end
     
     def get_local_ip(jid)
-      return get_instance(jid).ip_address
+      return get_instance(jid).private_ip_address
     end
 
     def queue_tasks_tot_max
@@ -112,7 +112,7 @@ class ScirAmazon < ScirCloud
       amazon_ec2_region = Scir.cbrain_config[:amazon_ec2_region]
      
       # get connection
-      ec2 = AWS::EC2.new(access_key_id,secret_access_key)
+      ec2 = AWS::EC2.new(:access_key_id => access_key_id, :secret_access_key => secret_access_key)
       region = ec2.regions[amazon_ec2_region]
       raise "Region #{region} does not exist" unless region.exists?
       ec2 = region
@@ -122,7 +122,10 @@ class ScirAmazon < ScirCloud
     def submit_VM(vm_name,image_id,instance_type)
       key_pair = Scir.cbrain_config[:amazon_ec2_key_pair]
       ec2 = get_amazon_ec2_connection()
-      ec2.instances.create(:image_id => image_id, :instance_type => instance_type, :key_pair => ec2.key_pairs[key_pair] )
+      security_group = ec2.security_groups.create("cbrain worker "+Time.now.to_i.to_s)
+      ip_addresses=['0.0.0.0/0']
+      security_group.authorize_ingress :tcp, 22, *ip_addresses
+      ec2.instances.create(:image_id => image_id, :instance_type => instance_type, :key_pair => ec2.key_pairs[key_pair], :security_groups => [security_group])
       #TODO instance name is not used
     end
     
@@ -142,7 +145,8 @@ class ScirAmazon < ScirCloud
     
     def get_instance(jid)
       ec2 = get_amazon_ec2_connection()
-      instance = ec2.instances.detect { |x| x.id == jid }
+      cluster_jobid = CbrainTask.where(:id => jid).first.cluster_jobid
+      instance = ec2.instances.detect { |x| x.id == cluster_jobid }
       return instance
     end
 

@@ -233,11 +233,9 @@ class Scir
     end
 
     def self.new_jobtemplate(params = {})
-      #subclassname = Scir.jobtemplate_subclass
-      #subclass     = Class.const_get(subclassname)
-      returning self.new(params) do |job|
-        job.queue = Scir.cbrain_config[:default_queue] if ( ! Scir.cbrain_config[:default_queue].blank? ) && ( job.queue.blank? )
-      end
+      job_template = self.new(params)
+      job_template.queue = Scir.cbrain_config[:default_queue] if ( ! Scir.cbrain_config[:default_queue].blank? ) && ( job_template.queue.blank? )
+      return job_template
     end
 
     def initialize(params = {})
