@@ -44,7 +44,7 @@ class CbrainTask::StartVM < ClusterTask
     validate_params # defined in common
     escape_params
     #synchronize VM disk image
-    if !RemoteResource.current_resource.cms_class.new.is_a? ScirCloud
+    if !RemoteResource.current_resource.scir_class.new.is_a? ScirCloud
       disk_image_file_id = params[:disk_image]
       addlog "Synchronizing file with id #{disk_image_file_id}"
       disk_image_file = Userfile.find(disk_image_file_id) 
