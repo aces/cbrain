@@ -22,12 +22,6 @@
   some CSS stylesheet rules. CBRAIN's issue tracking
   was also provided by a Redmine server.
 
-- tableH.js
-  F. Permadi 2005.
-  Highlights table row
-  Copyright (C) F. Permadi
-  See licence details in the files.
-
 - tablesorter.js 2.0.5
   Christan Bach
   http://tablesorter.com/docs/index.html
