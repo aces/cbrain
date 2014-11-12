@@ -239,7 +239,7 @@ class VmFactory < ActiveRecord::Base
     task.status = "New" 
     task.params[:disk_image] = self.disk_image_file_id
     
-    if bourreau.cms_class.new.is_a? ScirCloud
+    if bourreau.scir_class.new.is_a? ScirCloud
       task.params[:instance_type] = DiskImageConfig.where(:bourreau_id => bourreau.id, :disk_image_bourreau_id => disk_image.id).first.default_image_type 
     end
 
