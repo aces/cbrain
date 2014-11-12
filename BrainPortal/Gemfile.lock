@@ -45,6 +45,11 @@ GEM
       builder
       mime-types
       xml-simple
+    aws-sdk (1.58.0)
+      aws-sdk-v1 (= 1.58.0)
+    aws-sdk-v1 (1.58.0)
+      json (~> 1.4)
+      nokogiri (>= 1.4.4)
     builder (3.0.4)
     daemons (1.1.9)
     diff-lcs (1.1.3)
@@ -147,6 +152,7 @@ DEPENDENCIES
   autotest
   autotest-rails
   aws-s3
+  aws-sdk
   factory_girl (= 1.3.3)
   hirb
   log4r

@@ -39,7 +39,7 @@ class CbrainTask::StartVM < PortalTask
       :vm_cpus => 2,
       :vm_ram_gb => 4,
       :job_slots => 2,
-      :cloud_image_type => "",
+      :instance_type => "",
     }
   end
   
