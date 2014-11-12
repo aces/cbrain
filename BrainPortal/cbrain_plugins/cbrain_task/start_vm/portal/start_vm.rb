@@ -64,7 +64,7 @@ class CbrainTask::StartVM < PortalTask
     params[:vm_user] = virtual_bourreau.disk_image_user
 
     bourreau = Bourreau.find(ToolConfig.find(self.tool_config_id).bourreau_id)
-    if bourreau.cms_class.new.is_a? ScirCloud
+    if bourreau.scir_class.new.is_a? ScirCloud
       configured = false 
       virtual_bourreaux.each do |vb|
         if DiskImageConfig.where(:disk_image_bourreau_id => vb.id, :bourreau_id => bourreau.id).size >= 1
@@ -74,7 +74,7 @@ class CbrainTask::StartVM < PortalTask
       end
       cb_error "Execution server #{bourreau.name} is not configured for disk image #{params[:disk_image]}" unless configured == true
 
-      params[:available_types] = bourreau.scir_class.get_available_instance_types
+      params[:available_types] = bourreau.scir_class.new.get_available_instance_types
 
     end
     ""

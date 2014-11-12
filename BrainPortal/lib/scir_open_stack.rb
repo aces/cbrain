@@ -138,7 +138,7 @@ class ScirOpenStack < ScirCloud
       	image_id = DiskImageConfig.where(:disk_image_bourreau_id => b.id, :bourreau_id => RemoteResource.current_resource.id).first.open_stack_disk_image_id
       end
       raise "Cannot find Disk Image Bourreau associated with file id #{task.params[:disk_image]} or Disk Image Bourreau has no OpenStack image id for #{RemoteResource.current_resource.name}" unless !image_id.blank?
-      vm = submit_VM("CBRAIN Worker", image_id, task.params[:open_stack_image_flavor]) 
+      vm = submit_VM("CBRAIN Worker", image_id, task.params[:instance_type]) 
       return vm.id.to_s
     end
 

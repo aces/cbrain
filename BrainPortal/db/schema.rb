@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20141112184102) do
+ActiveRecord::Schema.define(:version => 20141112190453) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -105,8 +105,8 @@ ActiveRecord::Schema.define(:version => 20141112184102) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "bourreau_id"
-    t.string   "open_stack_disk_image_id"
-    t.string   "open_stack_default_flavor"
+    t.string   "disk_image_id"
+    t.string   "default_image_type"
   end
 
   create_table "exception_logs", :force => true do |t|

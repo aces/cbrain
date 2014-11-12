@@ -403,10 +403,10 @@
         <%= text_field_tag "bourreau[ssh_tunnel_port]", @bourreau.ssh_tunnel_port, :size => 60 %>
       <% end %>
     <% end %>
-      Corresponding image IDs on OpenStack execution servers:<br/> 
+      Corresponding image IDs on cloud execution servers (OpenStack and Amazon EC2):<br/> 
       <table>
 	<% for bourreau in Bourreau.find_all_accessible_by_user(current_user).all %>
-	  <% if bourreau.cms_class == "ScirOpenStack" %>
+	  <% if bourreau.cms_class == "ScirOpenStack" || bourreau.cms_class == "ScirAmazon" %>
 	   <tr>
             <th colspan="6" class="centered">
               <%= link_to_bourreau_if_accessible(bourreau) %>
@@ -421,14 +421,14 @@
 	  	    <td colspan="6">
 	  	    <center>
 		    <% if rows <= 1 %>
-	  	      <%= html_colorize("(No associated OpenStack image).") %>
+	  	      <%= html_colorize("(No associated image).") %>
 		      <%= link_to "Add new", new_disk_image_config_path( :disk_image_bourreau_id => @bourreau.id, :bourreau_id => bourreau.id ) %>
 	            <% end %>
                     </center>
                     </td>
                   <% else %>
-                    <td><%= tc.open_stack_disk_image_id %></td>
-                    <td><%= tc.open_stack_default_flavor %></td>
+                    <td><%= tc.disk_image_id %></td>
+                    <td><%= tc.default_image_type %></td>
                     <td><%= link_to "Edit", edit_disk_image_config_path(tc) %></td>
                     <td><%= link_to 'Delete', tc, :confirm => "Are you sure you want to delete this Disk Image Configuration?", :method => :delete %></td>
                   <% end %>

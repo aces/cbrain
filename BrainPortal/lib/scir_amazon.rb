@@ -39,7 +39,6 @@ class ScirAmazon < ScirCloud
     return [ "t2.micro", "t2.small", "t2.medium", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "g2.2xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "hs1.8xlarge" ]
   end
 
-
   class Session < Scir::Session #:nodoc:
 
     def update_job_info_cache #:nodoc:
@@ -135,7 +134,7 @@ class ScirAmazon < ScirCloud
       	image_id = DiskImageConfig.where(:disk_image_bourreau_id => b.id, :bourreau_id => RemoteResource.current_resource.id).first.disk_image_id
       end
       raise "Cannot find Disk Image Bourreau associated with file id #{task.params[:disk_image]} or Disk Image Bourreau has no EC2 image id for #{RemoteResource.current_resource.name}" unless !image_id.blank?
-      vm = submit_VM("CBRAIN Worker", image_id, task.params[:amazon_ec2_instance_type]) 
+      vm = submit_VM("CBRAIN Worker", image_id, task.params[:instance_type]) 
       return vm.id.to_s
     end
 

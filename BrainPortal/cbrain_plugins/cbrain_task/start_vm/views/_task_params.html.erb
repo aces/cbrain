@@ -42,14 +42,14 @@
    <%= text_field_tag :number_of_vms.to_la, params[:number_of_vms], size:5 %>
 <br/>
 
-<% if Bourreau.find(ToolConfig.find(@task.tool_config_id).bourreau_id).cms_class == "ScirOpenStack" %>
+<% if Bourreau.find(ToolConfig.find(@task.tool_config_id).bourreau_id).scir_class.new.is_a? ScirCloud %>
 
-<h3>OpenStack</h3>
+<h3>Cloud</h3>
 
-<strong>Image Flavor:</strong>
+<strong>Image Type:</strong>
 
-<% if !params[:available_flavors].blank? %>
-<%=  select_tag :open_stack_image_flavor.to_la, options_for_select(params[:available_flavors], params[:open_stack_image_flavor]) %>
+<% if !params[:available_types].blank? %>
+<%=  select_tag :instance_type.to_la, options_for_select(params[:available_types], params[:instance_type]) %>
 <% end %>
 
 <% else %>

@@ -24,13 +24,13 @@
 
 <div class="groupentry">
 
-  <%= hidden_field_tag "disk_image_config[disk_image_bourreau_id]",     @disk_image_config.disk_image_bourreau_id %>
+  <%= hidden_field_tag "disk_image_config[disk_image_bourreau_id]", @disk_image_config.disk_image_bourreau_id %>
   <%= hidden_field_tag "disk_image_config[bourreau_id]", @disk_image_config.bourreau_id %>
 
   <% if @disk_image_config.disk_image_bourreau_id && @disk_image_config.bourreau_id %>
 
-  <span title="Image id to use on OpenStack bourreau #{@disk_image_config.bourreau.name}">
-    <p><label>Image to use on OpenStack bourreau <%= @disk_image_config.bourreau.name  %>:</label><br/>
+  <span title="Image id to use on cloud bourreau #{@disk_image_config.bourreau.name}">
+    <p><label>Image to use on cloud bourreau <%= @disk_image_config.bourreau.name  %>:</label><br/>
       <%=    
 	 bourreau = Bourreau.find(@disk_image_config.bourreau.id)
 	 images = Array.new
@@ -42,31 +42,37 @@
 	   os = OpenStack::Connection.create({:username => username, :api_key=> password, :auth_method=>"password", :auth_url => auth_url, :authtenant_name =>tenant_name, :service_type=>"compute"})
            os.list_images.each do |image|
               images << [image[:name].to_s, image[:id]]
+
            end
           else
-             return "Bourreau #{bourreau.name} is not an OpenStack Bourreau!"
+	     if bourreau.cms_class == "ScirAmazon"
+	       ec2 = AWS::EC2.new(:access_key_id => bourreau.amazon_ec2_access_key_id, :secret_access_key => bourreau.amazon_ec2_secret_access_key)
+	       region = ec2.regions[bourreau.amazon_ec2_region]
+               return "Invalid region: #{bourreau.amazon_ec2_region}" unless !region.blank?	
+	       ec2 = region
+	       region.images.with_owner(:self).each { |image| images << [image.name,image.id] }
+             else
+               return "Bourreau #{bourreau.name} is not a cloud Bourreau!"
+             end
           end
-      
-       f.select :open_stack_disk_image_id, images %>
+         f.select :disk_image_id, images %>
+
 
     </p>
-    <p><label>Flavor used by VM factory on OpenStack bourreau <%= @disk_image_config.bourreau.name  %>:</label><br/>
+    <p><label>Image type used by VM factory on cloud bourreau <%= @disk_image_config.bourreau.name  %>:</label><br/>
       <%=    
 	 bourreau = Bourreau.find(@disk_image_config.bourreau.id)
-	 flavors = Array.new
+	 instance_types = Array.new
 	 if bourreau.cms_class == "ScirOpenStack"
-	   username = bourreau.open_stack_user_name
-	   password = bourreau.open_stack_password
-	   auth_url = bourreau.open_stack_auth_url
-	   tenant_name = bourreau.open_stack_tenant
-	   os = OpenStack::Connection.create({:username => username, :api_key=> password, :auth_method=>"password", :auth_url => auth_url, :authtenant_name =>tenant_name, :service_type=>"compute"})
-           os.list_flavors.each do |flavor|
-              flavors << [flavor[:name].to_s, flavor[:id]]
-           end
+             instance_types << ScirOpenStack.new.get_available_instance_types
           else
-             return "Bourreau #{bourreau.name} is not an OpenStack Bourreau!"
+	  if bourreau.cms_class == "ScirAmazon"
+	     instance_types << ScirAmazon.new.get_available_instance_types
+	  else
+             return "Bourreau #{bourreau.name} is not an cloud Bourreau!"
           end
-       f.select :open_stack_default_flavor, flavors %>
+       end
+       f.select :default_image_type, instance_types.flatten %>
     </p>
   </span>
   <% end %>
