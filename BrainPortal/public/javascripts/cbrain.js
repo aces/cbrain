@@ -703,13 +703,16 @@
       return false;
     });
 
-    //Highlighting on ressource list tables.
-    $(document).delegate("table.resource_list", "mouseout", function() {
-      highlightTableRowVersionA(0); 
+    //Highlighting on resource list tables.
+    $(document).delegate(".row_highlight", "mouseenter", function() {
+      var element = $(this);
+      element.data("original-color", element.css("background-color"));
+      element.css("background-color", "#FFFFE5");
     });
-    
-    $(document).delegate(".row_highlight", "hover", function() {
-      highlightTableRowVersionA(this, '#FFFFE5');
+
+    $(document).delegate(".row_highlight", "mouseleave", function() {
+      var element = $(this);
+      element.css("background-color", element.data("original-color"));
     });
 
     $(document).delegate(".ajax_link", "ajax:success", function(event, data, status, xhr) {
