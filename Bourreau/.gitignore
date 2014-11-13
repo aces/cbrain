@@ -4,4 +4,3 @@ config/initializers/config_bourreau.rb
 *~
 vendor/cache
 vendor/plugins
-tmp/
