@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -40,12 +40,12 @@
 
 <h2>Disk Usage Statistics for Server's Data Provider Caches</h2>
 
-<span class="display_cell">  
+<span class="display_cell">
   <%= form_tag(:action  => :cleanup_caches) do %>
     <P>
 
     <table>
-  
+
       <% if @report_rrs.size > 0 %>
         <tr>
           <th class="blank"></th>
@@ -65,9 +65,9 @@
           <% end %>
         </tr>
       <% end %>
-      
+
       <% @report_users_all.each do |user| %>
-        <tr> 
+        <tr>
           <td>
             <% if user.is_a?(User) %>
               <%= link_to_user_with_tooltip(user) %>
@@ -78,16 +78,16 @@
               <%= user.capitalize %>
             <% end %>
           </td>
-           
+
           <% @report_rrs.each do |rr| %>
-           
+
             <% cell = @report_stats[user] ? @report_stats[user][rr] : nil %>
-    
+
             <% if ! cell %>
               <td></td>
               <% next %>
             <% end %>
-    
+
             <td>
               <%= disk_space_info_display(cell[:size] || 0) do %>
                 <%= pretty_size(cell[:size]) %></br>
@@ -95,12 +95,12 @@
                 <% if cell[:unknowns] > 0 %>
                   </br><%= pluralize(cell[:unknowns],"unknown").gsub(/ / ,"&nbsp;").html_safe %>
                 <% end %>
-                    
+
                 <% if @report_rrs.include?(rr) && @report_users.include?(user) %>
                   </br><%= check_box_tag('clean_cache[]', "#{user.id},#{rr.id}", false, :class => "clean_cache_users_#{user.id} clean_cache_rrs_#{rr.id}" ) %>
                   <% if user.is_a?(User) && rr.is_a?(Bourreau) # && @cache_older <= 6.days.to_i %>
                     <%  active_cnt = active_counts_by_uid_bid[[user.id, rr.id]] || 0 %>
-                    <%= red_if(active_cnt > 0, "", "(" + pluralize(active_cnt,"active task") + "!)") %>
+                    <%= red_if(active_cnt > 0, "", "(Danger! " + pluralize(active_cnt,"active task") + "!)") %>
                   <% end %>
                 <% elsif @report_users_all[-1] == user && ! @report_users.include?(user) %>
                   <br/>
@@ -108,15 +108,15 @@
                      <strong>All on <%= rr.name %>: </strong>
                   <% end %>
                   <%= select_all_checkbox( "clean_cache_rrs_#{rr.id}" ) %>
-                <% end %>  
-              
+                <% end %>
+
               <% end %>
             </td>
-    
+
           <% end %>    <%# end column iteration %>
         </tr>
       <% end %>    <%# end row iteration %>
-  
+
       <tr>
         <% if @report_rrs.size == 0 && @report_users.size == 0 %>
           <th>(There are no entries in this report)</th>
@@ -127,12 +127,12 @@
         <% end %>
       </tr>
     </table>
-    
+
     <p/><%= disk_usage_legend %>
-    
+
     <%= hidden_field_tag "cleanup_older",    @cache_older %>
     <%= hidden_field_tag "cleanup_younger",  @cache_younger %>
-    
+
     <% end %> <!-- form -->
   </span>
 

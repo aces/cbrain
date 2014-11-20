@@ -133,6 +133,7 @@ class ApplicationController < ActionController::Base
     response.headers["Pragma"] = "no-cache"
     # HTTP 1.1 'pre-check=0, post-check=0' (IE specific)
     response.headers["Cache-Control"] = 'no-store, no-cache, must-revalidate, max-age=0, pre-check=0, post-check=0'
+    response.headers["X-CBRAIN-Instance-Name" ] = CBRAIN::Instance_Name
   end
 
   # Check if the user needs to change their password
@@ -217,7 +218,7 @@ class ApplicationController < ActionController::Base
   end
 
   # 'After' callback: store a hash in the metadata of the session, in order
-  # to keep the count of each action by controller and by clien_type.
+  # to keep the count of each action by controller and by client_type.
   def action_counter
     # Extract information about controller and action
     client_type            = current_session["client_type"] # this is set in log_user_info() above.
@@ -296,7 +297,7 @@ class ApplicationController < ActionController::Base
   # be ignored.
   #
   # Example: let's say that when posting to update object @myobj,
-  # the also form sent this to the controller:
+  # the form also sent this to the controller:
   #
   #   params = { :meta => { :abc => "2", :def => 'z', :xyz => 'A', :spa => "" } ... }
   #

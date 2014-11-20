@@ -32,7 +32,7 @@
       $('.flash_error').remove();
       var message = "<div class=\"flash_error\">Error sending background request."; 
       message += "<BR> Status: " + req.status + " " + req.statusText;
-      message += "<BR>The CBRAIN adminstrators have been alerted about this problem.</div>";
+      message += "<BR>The CBRAIN administrators have been alerted about this problem.</div>";
       $("#main").prepend(message);
     }
 
