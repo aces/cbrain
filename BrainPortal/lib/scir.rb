@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This is a replacement for the drmaa.rb library; it's more or less compatible
@@ -209,11 +209,9 @@ class Scir
     end
 
     def self.new_jobtemplate(params = {})
-      #subclassname = Scir.jobtemplate_subclass
-      #subclass     = Class.const_get(subclassname)
-      returning self.new(params) do |job|
-        job.queue = Scir.cbrain_config[:default_queue] if ( ! Scir.cbrain_config[:default_queue].blank? ) && ( job.queue.blank? )
-      end
+      job_template = self.new(params)
+      job_template.queue = Scir.cbrain_config[:default_queue] if ( ! Scir.cbrain_config[:default_queue].blank? ) && ( job_template.queue.blank? )
+      return job_template
     end
 
     def initialize(params = {})
