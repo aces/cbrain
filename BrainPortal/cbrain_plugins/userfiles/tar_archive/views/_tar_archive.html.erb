@@ -22,7 +22,24 @@
 #
 -%>
 
-<div class="display_userfile">
-  <%= render :file  => @viewer.partial_path %>
-</div>
+<% if @userfile.is_locally_synced? %>
+
+  <%
+    tar_list_io = IO.popen("tar -tvzf #{@userfile.cache_full_path.to_s.bash_escape}","r") rescue nil
+    tar_list    = tar_list_io.read rescue nil
+    tar_list_io.close rescue nil
+  %>
+
+  <% if tar_list.present? %>
+    List of files in archive:
+    <pre class="standard_out script_preview"><%= tar_list %></pre>
+  <% else %>
+    (Cannot get archive content list)
+  <% end %>
+
+<% else %>
+
+  File not synchronized, content cannot be listed for the moment.
+
+<% end %>
 

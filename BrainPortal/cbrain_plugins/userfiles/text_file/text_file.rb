@@ -1,5 +1,4 @@
 
-<%-
 #
 # CBRAIN Project
 #
@@ -20,9 +19,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<div class="display_userfile">
-  <%= render :file  => @viewer.partial_path %>
-</div>
+# Generic model for text files.
+class TextFile < SingleFile
 
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  has_viewer :name => 'Text File', :partial  => :text_file, :if  => :is_locally_synced?
+
+  def self.file_name_pattern #:nodoc:
+    /\.txt$/i
+  end
+
+end

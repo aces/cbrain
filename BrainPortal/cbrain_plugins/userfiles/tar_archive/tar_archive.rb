@@ -1,5 +1,4 @@
 
-<%-
 #
 # CBRAIN Project
 #
@@ -20,9 +19,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<div class="display_userfile">
-  <%= render :file  => @viewer.partial_path %>
-</div>
+# Model for archive files in .tar format.
+class TarArchive < SingleFile
 
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  has_viewer :name => 'TAR Archive', :partial => :tar_archive
+
+  def self.file_name_pattern #:nodoc:
+    /\.tar(\.gz)?$|\.tgz$/i
+  end
+
+  def self.pretty_type #:nodoc:
+    "Tar Archive"
+  end
+
+end

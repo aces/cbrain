@@ -1,5 +1,4 @@
 
-<%-
 #
 # CBRAIN Project
 #
@@ -20,9 +19,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<div class="display_userfile">
-  <%= render :file  => @viewer.partial_path %>
-</div>
+# Model for MP3 audio files.
+class Mp3AudioFile < AudioFile
+
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  has_viewer :name => 'MP3 Audio', :partial => :html5_mp3_audio, :if => :is_locally_synced?
+
+  def self.pretty_type #:nodoc:
+    "MP3 Audio File"
+  end
+
+  def self.file_name_pattern #:nodoc:
+    /\.mp3$/i
+  end
+
+end
 

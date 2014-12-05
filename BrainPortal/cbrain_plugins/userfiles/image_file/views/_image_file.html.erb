@@ -1,0 +1,44 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+  if params[:content_loader] == "collection_file" && params[:arguments]
+    collection_file = params[:arguments]
+    collection_file = collection_file.first if collection_file.is_a?(Array)
+    collection_file = @userfile.list_files.find { |f| f.name == collection_file }.name
+    extension  = Userfile.file_extension(collection_file)
+    parameters = "?content_loader=collection_file&arguments=#{collection_file}"
+  else
+    extension = @userfile.file_extension
+  end
+%>
+
+<% if params[:content_viewer] == "off" %>
+  <%= image_tag "/userfiles/#{@userfile.id}/content#{extension}#{parameters}" %>
+<% else %>
+  <%= overlay_content_link "Show Displayable Content", :class => "action_link" do %>
+    <%= image_tag "/userfiles/#{@userfile.id}/content#{extension}#{parameters}" %>
+  <% end %>
+<% end %>
+

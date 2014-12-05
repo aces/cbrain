@@ -1,5 +1,4 @@
 
-<%-
 #
 # CBRAIN Project
 #
@@ -20,9 +19,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<div class="display_userfile">
-  <%= render :file  => @viewer.partial_path %>
-</div>
+# Model for MP4 video files.
+class Mp4VideoFile < VideoFile
+
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  has_viewer :name => 'MP4 Video', :partial => :html5_mp4_video, :if => :is_locally_synced?
+
+  def self.pretty_type #:nodoc:
+    "MP4 Video File"
+  end
+
+  def self.file_name_pattern #:nodoc:
+    /\.mp4$/i
+  end
+
+end
 

@@ -378,14 +378,6 @@ begin
       require_dependency "#{model}.rb" unless Object.const_defined? model.classify
     end
   end
-
-  #Load userfile file types
-  Dir.chdir(File.join(Rails.root.to_s, "app", "models", "userfiles")) do
-    Dir.glob("*.rb").each do |model|
-      model.sub!(/.rb$/,"")
-      require_dependency "#{model}.rb" unless Object.const_defined? model.classify
-    end
-  end
 rescue => error
   if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
     puts "Skipping model load:\n\t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."

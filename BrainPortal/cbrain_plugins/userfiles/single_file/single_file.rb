@@ -1,5 +1,4 @@
 
-<%-
 #
 # CBRAIN Project
 #
@@ -20,9 +19,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<div class="display_userfile">
-  <%= render :file  => @viewer.partial_path %>
-</div>
+require 'fileutils'
 
+# Represents a single file uploaded to the system (as opposed to a FileCollection).
+class SingleFile < Userfile
+
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  validates :type, :subclass => { :root_class => SingleFile }
+
+  before_create :set_num_files_to_one
+
+  def self.valid_file_classes #:nodoc:
+    @valid_file_classes ||= [SingleFile] + SingleFile.descendants
+  end
+
+  # Forces calculation and setting of the size attribute.
+  def set_size!
+    self.size = self.list_files.inject(0){ |total, file_entry|  total += file_entry.size }
+    self.save!
+
+    true
+  end
+
+  def set_num_files_to_one #:nodoc:
+    self.num_files ||= 1
+  end
+
+end
