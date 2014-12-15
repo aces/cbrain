@@ -56,7 +56,7 @@ gem "net-ssh",  :require => 'net/ssh'
 gem "net-sftp", :require => 'net/sftp'
 gem "will_paginate"
 gem "log4r"
-gem "nokogiri"
+#gem "nokogiri"
 #gem "mysql"
 gem "mysql2"
 gem "sys-proctable", :git => 'git://github.com/djberg96/sys-proctable.git'
