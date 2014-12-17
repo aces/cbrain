@@ -475,13 +475,13 @@ def create #:nodoc:
     flash.now[:notice] = ""
     flash.now[:error]  = ""
 
-    id    = params[:id]
-    @task = current_user.available_tasks.find(id)
+    id         = params[:id]
+    @task      = current_user.available_tasks.find(id)
+    old_params = @task.params.clone
     @task.add_new_params_defaults # auto-adjust params with new defaults if needed
 
     # Save old params and update the current task to reflect
     # the form's content.
-    old_params       = @task.params.clone
     new_att          = params[:cbrain_task] || {} # not the TASK's params[], the REQUEST's params[]
     new_att          = new_att.reject { |k,v| k =~ /^(cluster_jobid|cluster_workdir|status|batch_id|launch_time|prerequisites|share_wd_tid|run_number|level|rank|cluster_workdir_size|workdir_archived|workdir_archive_userfile_id)$/ } # some attributes cannot be changed through the controller
     old_tool_config  = @task.tool_config
@@ -496,8 +496,8 @@ def create #:nodoc:
     end
 
     # Security checks
-    @task.user     = @task.changed_attributes['user_id']  || @task.user_id   unless current_user.available_users.map(&:id).include?(@task.user_id)
-    @task.group    = @task.changed_attributes['group_id'] || @task.group_id  unless current_user.available_groups.map(&:id).include?(@task.group_id)
+    @task.user_id  = @task.changed_attributes['user_id']  || @task.user_id   unless current_user.available_users.map(&:id).include?(@task.user_id)
+    @task.group_id = @task.changed_attributes['group_id'] || @task.group_id  unless current_user.available_groups.map(&:id).include?(@task.group_id)
 
     # Give a task the ability to do a refresh of its form
     commit_name = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ], :whatever)
