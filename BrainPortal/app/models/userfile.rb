@@ -750,6 +750,11 @@ class Userfile < ActiveRecord::Base
      self.class.view_path(partial_name)
   end
 
+  # See the class method of the same name.
+  def public_path(public_file=nil)
+     self.class.public_path(public_file)
+  end
+
   private # Viewer methods
 
   # Returns the directory where the custom view code of the current model
@@ -767,9 +772,34 @@ class Userfile < ActiveRecord::Base
   def self.view_path(partial_name=nil)
     base = Pathname.new(CBRAIN::UserfilesPlugins_Dir) + self.to_s.underscore + "views"
     return base if partial_name.blank?
-    partial_name = Pathname.new(partial_name).cleanpath
-    raise "Path outside of userfile plugin." if partial_name.absolute? || partial_name.to_s =~ /^\.\./
-    base = base + partial_name.to_s.sub(/([^\/]+)$/,'_\1') if partial_name.present?
+    partial_name = Pathname.new(partial_name.to_s).cleanpath
+    raise "View partial path outside of userfile plugin." if partial_name.absolute? || partial_name.to_s =~ /^\.\./
+    base = base + partial_name.to_s.sub(/([^\/]+)$/,'_\1')
+    base
+  end
+
+  # Returns the directory where some public assets (files) for the current model
+  # can be found, as served from the webserver. For a model such as TextFile,
+  # it would map to this relative path:
+  #
+  #   "/cbrain_plugins/userfiles/text_file"
+  #
+  # This relative path, as seen from the "public" directory of the Rails app,
+  # is a symbolic link to the "views/public" subdirectory where the userfile plugin
+  # was installed.
+  #
+  # When given an argument 'public_file', the path returned will be extended
+  # to point to a sub file of that directory. E.g. with "abc/def.csv" :
+  #
+  #   "/cbrain_plugins/userfiles/text_file/abc/def.csv"
+  #
+  # Returns a Pathname object.
+  def self.public_path(public_file=nil)
+    base = Pathname.new("/cbrain_plugins/userfiles") + self.to_s.underscore
+    return base if public_file.blank?
+    public_file = Pathname.new(public_file.to_s).cleanpath
+    raise "Public file path outside of userfile plugin." if public_file.absolute? || public_file.to_s =~ /^\.\./
+    base = base + public_file
     base
   end
 

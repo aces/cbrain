@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Model representing a job request made to an remote execution server (Bourreau) on a cluster.
@@ -54,9 +54,9 @@ class CbrainTask < ActiveRecord::Base
   belongs_to            :batch_master_task,     :class_name => 'CbrainTask',   :foreign_key => :batch_id
 
   belongs_to            :workdir_archive, :class_name => 'Userfile', :foreign_key => :workdir_archive_userfile_id
-  
-  attr_accessible       :type, :batch_id, :cluster_jobid, :cluster_workdir, :status, :user_id, :bourreau_id, :description, 
-                        :launch_time, :prerequisites, :share_wd_tid, :run_number, :group_id, :tool_config_id, :level, :rank, 
+
+  attr_accessible       :type, :batch_id, :cluster_jobid, :cluster_workdir, :status, :user_id, :bourreau_id, :description,
+                        :launch_time, :prerequisites, :share_wd_tid, :run_number, :group_id, :tool_config_id, :level, :rank,
                         :results_data_provider_id, :cluster_workdir_size, :workdir_archived, :workdir_archive_userfile_id,
                         :params
 
@@ -72,8 +72,8 @@ class CbrainTask < ActiveRecord::Base
 
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
-  
-  cb_scope :status, lambda { |s|  
+
+  cb_scope :status, lambda { |s|
                          case s.to_sym
                          when :completed
                            value = CbrainTask::COMPLETED_STATUS
@@ -90,22 +90,22 @@ class CbrainTask < ActiveRecord::Base
                          else
                            value = s
                          end
-                         # { :conditions => { :status => value } }    
+                         # { :conditions => { :status => value } }
                          where(:status => value)
                        }
 
   cb_scope :active, lambda { status( :active ) }
 
-  cb_scope :real_tasks,          
+  cb_scope :real_tasks,
         where( "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
 
-  cb_scope :not_archived,        
+  cb_scope :not_archived,
         where( "cbrain_tasks.workdir_archived = 0 OR cbrain_tasks.workdir_archived IS NULL" )
 
-  cb_scope :archived_on_cluster, 
+  cb_scope :archived_on_cluster,
         where( "cbrain_tasks.workdir_archived" => true, "cbrain_tasks.workdir_archive_userfile_id" => nil )
 
-  cb_scope :archived_as_file,    
+  cb_scope :archived_as_file,
         where( "cbrain_tasks.workdir_archived" => true ).where( "cbrain_tasks.workdir_archive_userfile_id IS NOT NULL" )
 
   cb_scope :shared_wd,
@@ -281,12 +281,12 @@ class CbrainTask < ActiveRecord::Base
   def tool
     @tool_cache ||= self.class.tool
   end
-  
+
   # Define sort orders that don't refer to actual columns in the table.
   def self.pseudo_sort_columns
     ["batch"]
   end
-  
+
   # This method returns the full path of the task's work directory.
   # The old convention was to store the full path in the
   # :cluster_workdir.
@@ -510,7 +510,7 @@ class CbrainTask < ActiveRecord::Base
     true
   end
 
-  # Internal, used by status_transition() and status_transition!() after 
+  # Internal, used by status_transition() and status_transition!() after
   # a successful transition.
   def invoke_after_status_transition_callbacks(from_state, to_state) #:nodoc:
     return true if from_state == to_state
@@ -571,7 +571,7 @@ class CbrainTask < ActiveRecord::Base
   # List of prerequisites states and the set of states that
   # fulfill them.
   PREREQS_STATES_COVERED_BY = {
- 
+
     'Queued' => { # Task must be AT LEAST 'Queued', but can be further along.
                   'Queued'                           => :go,
                   'On Hold'                          => :go,
@@ -686,7 +686,7 @@ class CbrainTask < ActiveRecord::Base
         }
     )
   end
-   
+
 
   # This method adds a prerequisite entry in the task's object;
   # the prerequisite will indicate that in order for the task to
@@ -808,8 +808,8 @@ class CbrainTask < ActiveRecord::Base
     self.addlog("#{rr.class} rev. #{rr_rev} #{message}", :caller_level => 1 )
     true
   end
-  
-  
+
+
 
   ##################################################################
   # Archiving Support Methods
@@ -846,7 +846,7 @@ class CbrainTask < ActiveRecord::Base
         errors.add(:base, "user_id does not point to an existing user.")
         return false
       end
-    
+
       self.group_id = owner.own_group.id
     end
   end
