@@ -766,6 +766,9 @@ class Userfile < ActiveRecord::Base
   # Returns a Pathname object.
   def self.view_path(partial_name=nil)
     base = Pathname.new(CBRAIN::UserfilesPlugins_Dir) + self.to_s.underscore + "views"
+    return base if partial_name.blank?
+    partial_name = Pathname.new(partial_name).cleanpath
+    raise "Path outside of userfile plugin." if partial_name.absolute? || partial_name.to_s =~ /^\.\./
     base = base + partial_name.to_s.sub(/([^\/]+)$/,'_\1') if partial_name.present?
     base
   end

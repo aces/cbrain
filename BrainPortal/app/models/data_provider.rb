@@ -982,9 +982,9 @@ class DataProvider < ActiveRecord::Base
   # where the file is actually stored on the data
   # provider. If there is no such 'path', the
   # provider could return any string representation
-  # it feels helpful. Subclasses can invoke there
-  # version of this method internally while implementing
-  # other methods.
+  # it feels helpful. Remember, some provider don't
+  # even store data in a "path" at all (e.g. Amazon S3).
+  # So this string is often purely for informational purposes.
   def provider_full_path(userfile) #:nodoc:
     raise "Error: method not yet implemented in subclass."
   end
