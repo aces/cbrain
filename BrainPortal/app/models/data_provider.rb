@@ -254,7 +254,7 @@ class DataProvider < ActiveRecord::Base
                   :uid, :gid, :owner, :group,
                   :atime, :mtime, :ctime,
                ]
-    attr_accessor *AttrList
+    attr_accessor(*AttrList)
 
     def initialize(attributes = {})
        (attributes.keys.collect(&:to_sym) & AttrList).each { |name| self.send("#{name}=",attributes[name]) }
@@ -450,6 +450,8 @@ class DataProvider < ActiveRecord::Base
     sync_to_cache(userfile)
     full_path = cache_full_path(userfile)
     if userfile.is_a?(FileCollection) && rel_path
+      rel_path = Pathname.new(rel_path).cleanpath.to_s if rel_path.is_a?(String) || rel_path.is_a?(Pathname)
+      cb_error "Unacceptable path going outside data model." if rel_path.present? && rel_path =~ /^\.\.|^\//
       full_path += rel_path
     end
     cb_error "Error: read handle cannot be provided for non-file."         unless File.file? full_path
@@ -490,6 +492,8 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider #{self.name} is read_only."                  if     self.read_only?
     cb_error "Error: file #{userfile.name} is immutable."                  if     userfile.immutable?
     cb_error "Error: cannot use relative path argument with a SingleFile." if     userfile.is_a?(SingleFile) && rel_path
+    rel_path = Pathname.new(rel_path).cleanpath.to_s if rel_path.is_a?(String) || rel_path.is_a?(Pathname)
+    cb_error "Unacceptable path going outside data model." if rel_path.present? && rel_path =~ /^\.\.|^\//
     cache_prepare(userfile)
     localpath = cache_full_path(userfile)
     SyncStatus.ready_to_modify_cache(userfile) do
@@ -611,6 +615,9 @@ class DataProvider < ActiveRecord::Base
         userfile.is_locally_cached?
     list = []
 
+    directory = Pathname.new(directory).cleanpath.to_s if directory.is_a?(String) || directory.is_a?(Pathname)
+    cb_error "Unacceptable path going outside data model." if directory =~ /^\.\.|^\//
+
     if allowed_types.is_a? Array
       types = allowed_types.dup
     else
@@ -626,10 +633,8 @@ class DataProvider < ActiveRecord::Base
           entries = Dir.glob(userfile.name + "/**/*")
         else
           directory = "." if directory == :top
-          base_dir = "/" + directory + "/"
-          base_dir.gsub!(/\/\/+/, "/")
-          base_dir.gsub!(/\/\.\//, "/")
-          entries = Dir.entries(userfile.name + base_dir ).reject{ |e| e =~ /^\./ }.inject([]){ |result, e| result << userfile.name + base_dir + e }
+          base_dir = Pathname.new(userfile.name) + directory
+          entries  = Dir.entries(base_dir.to_s).reject { |e| e =~ /^\./ }.map { |e| (base_dir + e).to_s }
         end
       else
         entries = [userfile.name]
@@ -951,6 +956,8 @@ class DataProvider < ActiveRecord::Base
   def provider_collection_index(userfile, directory = :all, allowed_types = :regular)
     cb_error "Error: provider #{self.name} is offline." unless self.online?
     rr_allowed_syncing!("fetch file content list from")
+    directory = Pathname.new(directory).cleanpath.to_s if directory.is_a?(String) || directory.is_a?(Pathname)
+    cb_error "Unacceptable path going outside data model." if directory =~ /^\.\.|^\//
     impl_provider_collection_index(userfile, directory, allowed_types)
   end
 
@@ -975,9 +982,9 @@ class DataProvider < ActiveRecord::Base
   # where the file is actually stored on the data
   # provider. If there is no such 'path', the
   # provider could return any string representation
-  # it feels helpful. Subclasses can invoke there
-  # version of this method internally while implementing
-  # other methods.
+  # it feels helpful. Remember, some provider don't
+  # even store data in a "path" at all (e.g. Amazon S3).
+  # So this string is often purely for informational purposes.
   def provider_full_path(userfile) #:nodoc:
     raise "Error: method not yet implemented in subclass."
   end

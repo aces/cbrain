@@ -1,1 +1,0 @@
-../../../BrainPortal/app/models/file_collection.rb

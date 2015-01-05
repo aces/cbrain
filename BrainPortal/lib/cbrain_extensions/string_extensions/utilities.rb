@@ -17,17 +17,17 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 module CBRAINExtensions #:nodoc:
   module StringExtensions #:nodoc:
-    
-    # CBRAIN string utilties.
+
+    # CBRAIN string utilities.
     module Utilities
-      
+
       Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-    
+
       # This utility method escapes properly any string such that
       # it becomes a literal in a bash command; the string returned
       # will include some surrounding single quotes if necessary.
@@ -68,7 +68,7 @@ module CBRAINExtensions #:nodoc:
 
       # Used by views for CbrainTasks to transform strings such as these:
       #
-      #    "abc", "abc[def]", 
+      #    "abc", "abc[def]",
       #
       # into paths to a variables inside the params[] hash, as in:
       #
@@ -178,3 +178,4 @@ module CBRAINExtensions #:nodoc:
     end
   end
 end
+

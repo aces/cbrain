@@ -17,15 +17,15 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 module CBRAINExtensions #:nodoc:
   module SymbolExtensions #:nodoc:
-    
-    # CBRAIN string utilties.
+
+    # CBRAIN string utilities.
     module Utilities
-      
+
       # Used by views for CbrainTasks to transform a
       # symbol such as :abc into a path to a variable
       # inside the params[] hash, like this:
@@ -59,7 +59,7 @@ module CBRAINExtensions #:nodoc:
       def to_la_id
         self.to_s.to_la_id
       end
-  
+
     end
   end
 end

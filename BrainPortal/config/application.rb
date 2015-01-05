@@ -37,8 +37,15 @@ module CbrainRailsPortal
     # Custom directories with classes and modules you want to be autoloadable.
     # config.autoload_paths += %W(#{config.root}/extras)
     config.autoload_paths += Dir["#{config.root}/lib"]
-    config.autoload_paths += Dir["#{config.root}/app/models/userfiles"]
-    config.autoload_paths += Dir["#{config.root}/cbrain_plugins"]
+
+    # CBRAIN Plugins load paths: add directory for the CbrainTask models
+    # This directory contains symbolic links to a special loader code
+    # which will properly fetch the code in portal/xyz.rb or bourreau/xyz.rb
+    # depending on the rails app currently executing.
+    config.autoload_paths += Dir["#{config.root}/cbrain_plugins/cbrain_task"]
+
+    # CBRAIN Plugins load paths: add directories for each Userfile model
+    config.autoload_paths += Dir[ * Dir.glob("#{config.root}/cbrain_plugins/userfiles/*") ]
 
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.

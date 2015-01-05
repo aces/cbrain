@@ -221,7 +221,7 @@ class CbrainTask < ActiveRecord::Base
     options[:except]  ||= []
     options[:except]  << :params
     options[:procs]   ||= []
-    options[:procs]   << Proc.new { |options| options[:builder].tag!('params', yaml_params) }
+    options[:procs]   << Proc.new { |opts| opts[:builder].tag!('params', yaml_params) }
     super(options)
   end
 
@@ -802,13 +802,18 @@ class CbrainTask < ActiveRecord::Base
   # but also in subclasses, in the Bourreau controller and in
   # the BourreauWorkers, so it's worth having this utility.
   # The method can also be called by CbrainTask programmers.
+  #
+  # If the exception is a CbrainException, no stack trace is logged,
+  # only the message ends up in the log. It is assumed that the message
+  # will be clear enough to identify what happened. A stack trace is logged
+  # in other cases so a programmer can investigate the problem.
   def addlog_exception(exception,message="Exception raised:",backtrace_lines=15)
     message = "Exception raised:" if message.blank?
     message.sub!(/[\s:]*$/,":")
     self.addlog("#{message} #{exception.class}: #{exception.message}", :caller_level => 1)
-    if backtrace_lines > 0
+    if backtrace_lines > 0 && ! exception.is_a?(CbrainException)
       backtrace_lines = exception.backtrace.size if backtrace_lines >= exception.backtrace.size
-      exception.backtrace[0..backtrace_lines-1].each { |m| self.addlog(m, :no_caller => true) }
+      exception.cbrain_backtrace[0..backtrace_lines-1].each { |m| self.addlog(m, :no_caller => true) }
     end
     true
   end

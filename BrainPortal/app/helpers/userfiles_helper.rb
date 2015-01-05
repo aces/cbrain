@@ -17,15 +17,15 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #Helper methods for Userfile views.
 module UserfilesHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
-  # For display of userfile names, including: 
+
+  # For display of userfile names, including:
   # type icon (collection or file), parentage icon,
   # link to show page, sync status and formats.
   def filename_listing(userfile, link_options={})
@@ -48,14 +48,14 @@ module UserfilesHelper
       html << immutable_icon
     end
 
-    userfile.sync_status.each do |syncstat| 
+    userfile.sync_status.each do |syncstat|
       html << render(:partial => 'userfiles/syncstatus', :locals => { :syncstat => syncstat })
-    end 
-    if userfile.formats.size > 0 
+    end
+    if userfile.formats.size > 0
       html << "<br>"
       html << ("&nbsp;" * ((userfile.level || 0) * 5))
       html << show_hide_toggle("Formats ", ".format_#{userfile.id}", :class  => "action_link")
-      html << userfile.formats.map do |u| 
+      html << userfile.formats.map do |u|
                 if u.available?
                   cb = check_box_tag("file_ids[]", u.id.to_s, false)
                 else
@@ -67,67 +67,67 @@ module UserfilesHelper
     end
     html.join.html_safe
   end
-  
+
   def shift_file_link(userfile, dir, same_type, options = {})
     if dir.to_s.downcase == "previous"
       direction = "previous"
     else
       direction = "next"
     end
-    
+
     link_options = options.delete(:html)
     options[:conditions] ||= {}
-    
+
     if current_project && !(options[:conditions].has_key?(:group_id) || options[:conditions].has_key?("userfiles.group_id"))
       options[:conditions]["userfiles.group_id"] = current_project.id
     end
-    
+
     if same_type
       options[:conditions]["userfiles.type"] = userfile.class.name
       text = "#{direction.capitalize} #{userfile.class.name}"
     else
       text = "#{direction.capitalize} File"
     end
-    
+
     if direction == "previous"
       text = "<< " + text
     else
       text += " >>"
     end
-    
+
     file = userfile.send("#{direction}_available_file", current_user, options)
-    
+
     action = params[:action] #Should be show or edit.
-    
-    
+
+
     if file
       link_to text, {:action  => action, :id  => file.id}, link_options
     else
       ""
-    end  
+    end
   end
-  
+
   def next_file_link(userfile, options = {})
     shift_file_link(userfile, :next, false, options)
   end
-  
+
   def previous_file_link(userfile, options = {})
     shift_file_link(userfile, :previous, false, options)
   end
-  
+
   def next_typed_file_link(userfile, options = {})
     shift_file_link(userfile, :next, true, options)
   end
-  
+
   def previous_typed_file_link(userfile, options = {})
     shift_file_link(userfile, :previous, true, options)
   end
-  
+
   def file_link_table(userfile, options = {})
     (
     "<div class=\"display_table\" style=\"width:100%\">" +
       "<div class=\"display_row\">" +
-        "<div class=\"display_cell\">#{previous_file_link(@userfile, options.clone)}</div><div class=\"display_cell\" style=\"text-align:right\">#{next_file_link(@userfile, options.clone)}</div>" + 
+        "<div class=\"display_cell\">#{previous_file_link(@userfile, options.clone)}</div><div class=\"display_cell\" style=\"text-align:right\">#{next_file_link(@userfile, options.clone)}</div>" +
       "</div>" +
       "<div class=\"display_row\">" +
         "<div class=\"display_cell\">#{previous_typed_file_link(@userfile, options.clone)}</div><div class=\"display_cell\" style=\"text-align:right\">#{next_typed_file_link(@userfile, options.clone)}</div>" +
@@ -135,25 +135,39 @@ module UserfilesHelper
     "</div>"
     ).html_safe
   end
-  
+
   def data_link(file_name, userfile)
-    display_name = Pathname.new(file_name).basename.to_s
-    matched_class = SingleFile.descendants.unshift(SingleFile).find{ |c| file_name =~ c.file_name_pattern }
-    if matched_class && userfile.is_locally_synced?
-      if matched_class <= TextFile
-        link_to h(display_name), url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :display, :content_loader => :collection_file, :arguments => file_name, :viewer => "text_file", :content_viewer => "off"),
-                                 :target => "_blank"
-      elsif matched_class <= ImageFile
-        link_to h(display_name), url_for(:controller  => :userfiles, :id  => userfile.id, :action  => :display, :content_loader => :collection_file, :arguments => file_name, :viewer => "image_file", :content_viewer => "off"),
-                                 :target => "_blank"
-      else
-         h(display_name)
-      end
+    display_name  = Pathname.new(file_name).basename.to_s
+    return h(display_name) unless userfile.is_locally_synced?
+
+    matched_class = SingleFile.descendants.unshift(SingleFile).find { |c| file_name =~ c.file_name_pattern }
+    return h(display_name) unless matched_class
+
+    if matched_class <= TextFile
+      link_to h(display_name),
+              display_userfile_path(userfile,
+                :content_loader        => :collection_file,
+                :arguments             => file_name,
+                :viewer                => :text_file,
+                :viewer_userfile_class => :TextFile,
+                :content_viewer        => "off",
+              ),
+              :target => "_blank"
+    elsif matched_class <= ImageFile
+      link_to h(display_name),
+              display_userfile_path(userfile,
+                :content_loader        => :collection_file,
+                :arguments             => file_name,
+                :viewer                => :image_file,
+                :viewer_userfile_class => :ImageFile,
+                :content_viewer        => "off",
+              ),
+              :target => "_blank"
     else
-      h(display_name)
+       h(display_name)
     end
   end
-  
+
   # Return the HTML code that represent a symbol
   # for +statkeyword+, which is a SyncStatus 'status'
   # keyword. E.g. for "InSync", the
@@ -178,7 +192,7 @@ module UserfilesHelper
     end
     html.html_safe
   end
-  
+
   #Create a collapsable "Content" box for userfiles show page.
   def content_viewer(&block)
     safe_concat('<div id="userfile_contents_display">')
@@ -201,5 +215,5 @@ module UserfilesHelper
     size += " (#{userfile.num_files.presence || '?'} files)" if userfile.is_a?(FileCollection)
     size.html_safe
   end
-  
+
 end

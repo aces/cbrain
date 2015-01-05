@@ -249,27 +249,36 @@ class UserfilesController < ApplicationController
 
   def display
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
-    viewer_name = params[:viewer]
-    viewer      = @userfile.find_viewer(viewer_name)
-    if viewer
-      @partial = viewer.partial
-    elsif viewer_name =~ /[\w\/]+/
-      viewer_path = viewer_name.split("/")
-      viewer_name = viewer_path.pop
-      if File.exists?(Rails.root.to_s + "/app/views/userfiles/viewers/#{viewer_path.join("/")}/_#{viewer_name}.#{request.format.to_sym}.erb")
-        @partial = viewer_path.push(viewer_name).join("/")
+
+    viewer_name           = params[:viewer]
+    viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
+
+    # Try to find out viewer aming those registered in the classes
+    @viewer      = viewer_userfile_class.find_viewer(viewer_name)
+    @viewer    ||= (viewer_name.camelcase.constantize rescue nil).try(:find_viewer, viewer_name) rescue nil
+
+    # If no viewer object is found but the argument "viewer_name" correspond to a partial
+    # on disk, then let's create a transient viewer object representing that file.
+    # Not an officially registered viewer, but it will work for the current rendering.
+    if @viewer.blank? && viewer_name =~ /^\w+$/
+      partial_filename_base = (viewer_userfile_class.view_path + "_#{viewer_name}.#{request.format.to_sym}").to_s
+      if File.exists?(partial_filename_base) || File.exists?(partial_filename_base + ".erb")
+        @viewer = Userfile::Viewer.new(viewer_userfile_class, :partial => viewer_name)
       end
     end
 
+    # Ok, some viewers are invalid for some specific userfiles, so reject it if it's the case.
+    @viewer      = nil if @viewer && ! @viewer.valid_for?(@userfile)
+
     begin
-      if @partial
+      if @viewer
         if params[:apply_div] == "false"
-          render :partial  => "userfiles/viewers/#{@partial}"
+          render :file   => @viewer.partial_path.to_s, :layout => false
         else
-          render :action  => :display, :layout  => false
+          render :action => :display,                  :layout => false
         end
       else
-        render :text => "<div class=\"warning\">Could not find viewer #{params[:viewer]}.</div>", :status  => "404"
+        render :text => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>", :status  => "404"
       end
     rescue => exception
       raise unless Rails.env == 'production'
@@ -285,13 +294,13 @@ class UserfilesController < ApplicationController
     @sync_status        = 'ProvNewer' # same terminology as in SyncStatus
     state               = @userfile.local_sync_status
     @sync_status        = state.status if state
-    @default_viewer     = @userfile.viewers.first
+    @viewer             = @userfile.viewers.first
 
     @log                = @userfile.getlog        rescue nil
 
     # Add some information for json
     if request.format =~ "json"
-      rr_ids_accessible   = RemoteResource.find_all_accessible_by_user(current_user).map &:id
+      rr_ids_accessible   = RemoteResource.find_all_accessible_by_user(current_user).map(&:id)
       @remote_sync_status = SyncStatus.where(:userfile_id => @userfile.id, :remote_resource_id => rr_ids_accessible)
       @children_ids       = @userfile.children_ids  rescue []
 
@@ -636,12 +645,13 @@ class UserfilesController < ApplicationController
           ["update_attributes_with_logging", {:immutable => params[:userfile][:immutable]}, current_user, [ 'immutable' ] ]
         else
           nil
-      end
-      if unable_to_update.present? || operation.blank?
-        flash[:error]   = "You do not have access to this #{unable_to_update}." if unable_to_update.present?
-        flash[:error]   = "Unknown operation requested for updating the files." if operation.blank?
-        redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
-        redirect_to redirect_action
+      end # case statement
+
+    if unable_to_update.present? || operation.blank?
+      flash[:error]   = "You do not have access to this #{unable_to_update}." if unable_to_update.present?
+      flash[:error]   = "Unknown operation requested for updating the files." if operation.blank?
+      redirect_action = params[:redirect_action] || {:action => :index, :format => request.format.to_sym}
+      redirect_to redirect_action
       return
     end
 
@@ -990,7 +1000,6 @@ class UserfilesController < ApplicationController
       to_delete.each_with_index do |userfile,count|
         $0 = "Delete ID=#{userfile.id} #{count+1}/#{to_delete.size}\0"
         begin
-          basename = userfile.name
           if userfile.data_provider.is_browsable? && userfile.data_provider.meta[:must_erase].blank?
             unregistered_success_list << userfile
           else
@@ -1326,7 +1335,7 @@ class UserfilesController < ApplicationController
     end
 
     yield
-  rescue ActiveRecord::RecordNotFound => e
+  rescue ActiveRecord::RecordNotFound
     flash[:error] += "\n" unless flash[:error].blank?
     flash[:error] ||= ""
     flash[:error] += "You don't have appropriate permissions to apply the selected action to this set of files."

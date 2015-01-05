@@ -219,17 +219,19 @@
         <% end %>
 
         <% if @userfile.viewers.size > 1 %>
-          <%= ajax_form_tag display_userfile_path(@userfile), :method  => :get, :target  => "#userfile_viewer", :reset_form  => false do %>
-            <%= select_tag "viewer", options_for_select(@userfile.viewers.map{ |v| [v.name, v.name] }, @userfile.class.name.underscore) %>
-            <%= submit_tag "Change View" %>
-          <% end %>
+            Change view:
+            <%= select_tag "viewer", options_for_select(@userfile.viewers.map { |v| [v.name, v.name] }, @userfile.class.name.underscore),
+                           :class        => :request_on_change,
+                           "data-target" => "#userfile_viewer",
+                           "data-url"    => display_userfile_path(@userfile)
+            %>
           <br>
         <% end  %>
 
         <div id="userfile_viewer">
           <div class="display_userfile">
-            <% if @default_viewer %>
-               <%= render :partial  => "userfiles/viewers/#{@default_viewer.partial}" %>
+            <% if @viewer %>
+               <%= render :file  => @viewer.partial_path %>
             <% end %>
           </div>
         </div>

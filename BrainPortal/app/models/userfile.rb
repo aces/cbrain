@@ -109,123 +109,9 @@ class Userfile < ActiveRecord::Base
                                              where(:id => matching_parents_ids)
                                             }
 
-  class Viewer
-    attr_reader :name, :partial
-
-    def initialize(viewer)
-      atts = viewer
-      unless atts.is_a? Hash
-        atts = { :name  => viewer.to_s.classify.gsub(/(.+)([A-Z])/, '\1 \2'), :partial => viewer.to_s.underscore }
-      end
-      initialize_from_hash(atts)
-    end
-
-    def initialize_from_hash(atts = {})
-      unless atts.has_key?(:name) || atts.has_key?(:partial)
-        cb_error("Viewer must have either name or partial defined.")
-      end
-
-      name       = atts.delete(:name)
-      partial    = atts.delete(:partial)
-      att_if     = atts.delete(:if)      || []
-      cb_error "Unknown viewer option: '#{atts.keys.first}'." unless atts.empty?
-
-      @conditions = []
-      @name       = name      || partial.to_s.classify.gsub(/(.+)([A-Z])/, '\1 \2')
-      @partial    = partial   || name.to_s.gsub(/\s+/, "").underscore
-      att_if = [ att_if ] unless att_if.is_a?(Array)
-      att_if.each do |method|
-        cb_error "Invalid :if condition '#{method}' in model." unless method.respond_to?(:to_proc)
-        @conditions << method.to_proc
-      end
-    end
-
-    def valid_for?(userfile)
-      return true if @conditions.empty?
-      @conditions.all? { |condition| condition.call(userfile) }
-    end
-
-    def ==(other)
-      return false unless other.is_a? Viewer
-      self.name == other.name
-    end
-  end
-
-  # Class representing the way in which the content
-  # of a userfile can be transferred to a client.
-  # Created by using the #has_content directive
-  # in a Userfile subclass.
-  # ContentLoaders are defined by two parameters:
-  # [method] an instance method defined for the
-  #          class that will prepare the data for
-  #          transfer.
-  # [type]   the type of data being transfered.
-  #          Generally, this is the the key to be
-  #          used in the hash given to a render
-  #          call in the controller. One special
-  #          is :send_file, which the controller
-  #          will take as indicating that the
-  #          ContentLoader method will return
-  #          the path of a file to be sent directly.
-  # For example, if one wished to send the content
-  # as xml, one would first define the content loader
-  # method:
-  #  def generate_xml
-  #     ... # make the xml
-  #  end
-  # And then register the loader using #has_content:
-  #  has_content :method => generate_xml, :type => :xml
-  # The #has_content directive can also take a single
-  # symbol or string, which it will assume is the
-  # name of the content loader method, and setting
-  # the type to :send_file.
-  class ContentLoader
-    attr_reader :method, :type
-
-    def initialize(content_loader)
-      atts = content_loader
-      unless atts.is_a? Hash
-        atts = {:method => atts}
-      end
-      initialize_from_hash(atts)
-    end
-
-    def initialize_from_hash(options = {})
-      cb_error "Content loader must have method defined." if options[:method].blank?
-      @method = options[:method].to_sym
-      @type   = (options[:type]  || :send_file).to_sym
-    end
-
-    def ==(other)
-      return false unless other.is_a? ContentLoader
-      self.method == other.method
-    end
-  end
-
-  #List of viewers for this model
-  def viewers
-    class_viewers = self.class.class_viewers
-
-    @viewers = class_viewers.select { |v| v.valid_for?(self) }
-  end
-
-  #Find a viewer for this model
-  def find_viewer(name)
-    self.viewers.find{ |v| v.name == name}
-  end
-
-  #List of content loaders for this model
-  def content_loaders
-    self.class.content_loaders
-  end
-
-  #Find a content loader for this model. Priority is given
-  #to finding a matching method name. If none is found, then
-  #an attempt is made to match on the type. There may be several
-  #type matches so the first is returned.
-  def find_content_loader(meth)
-    self.class.find_content_loader(meth)
-  end
+  ##############################################
+  # Miscelleneous methods
+  ##############################################
 
   #The site with which this userfile is associated.
   def site
@@ -247,6 +133,70 @@ class Userfile < ActiveRecord::Base
   def self.file_extension(name)
     name.scan(/\.[^\.]+$/).last
   end
+
+  # Return the level of the calling userfile in
+  # the parentage tree.
+  def level
+    @level ||= 0
+  end
+
+  # This method returns true if the string +basename+ is an
+  # acceptable name for a userfile. We restrict the filenames
+  # to contain printable characters only, with no slashes
+  # or ASCII nulls, and they must start with a letter or digit.
+  def self.is_legal_filename?(basename)
+    return true if basename && basename.match(/^[a-zA-Z0-9][\w\~\!\@\#\%\^\&\*\(\)\-\+\=\:\[\]\{\}\|\<\>\,\.\?]*$/)
+    false
+  end
+
+  #Returns the name of the Userfile in an array (only here to
+  #maintain compatibility with the overridden method in
+  #FileCollection).
+  def list_files(*args)
+    @file_list ||= {}
+
+    @file_list[args.dup] ||= if self.is_locally_cached?
+                               self.cache_collection_index(*args)
+                             else
+                               self.provider_collection_index(*args)
+                             end
+  end
+
+  # Calculates and sets the size attribute unless
+  # it's already set.
+  def set_size
+    self.set_size! if self.size.blank?
+  end
+
+  # Calculates and sets.
+  # (Abstract: should be redefined in subclass).
+  def set_size!
+    raise "set_size! called on Userfile. Should only be called in a subclass."
+  end
+
+  #Should return a regex pattern to identify filenames that match a given
+  #userfile subclass
+  def self.file_name_pattern
+    nil
+  end
+
+  #Human-readable version of a userfile class name. Can be overridden
+  #if necessary in subclasses.
+  def self.pretty_type
+    @pretty_type_name ||= self.name.gsub(/(.+)([A-Z])/, '\1 \2')
+  end
+
+  # Convenience instance method that calls the class method.
+  def pretty_type
+    self.class.pretty_type
+  end
+
+
+
+
+  ##############################################
+  # Class Polymorphism Methods
+  ##############################################
 
   # Classes this type of file can be converted to.
   # Essentially distinguishes between SingleFile subtypes and FileCollection subtypes.
@@ -304,6 +254,12 @@ class Userfile < ActiveRecord::Base
     end
   end
 
+
+
+  ##############################################
+  # Format Methods
+  ##############################################
+
   # Add a format to this userfile.
   def add_format(userfile)
     source_file = self.format_source || self
@@ -338,6 +294,12 @@ class Userfile < ActiveRecord::Base
     self.formats.all.find { |fmt| fmt.format_name.to_s.downcase == f.to_s.downcase || fmt.class.name == f }
   end
 
+
+
+  ##############################################
+  # Taging Subsystem
+  ##############################################
+
   #Return an array of the tags associated with this file
   #by +user+.
   def get_tags_for_user(user)
@@ -360,11 +322,16 @@ class Userfile < ActiveRecord::Base
     self.tag_ids = new_tag_set
   end
 
-  # Return the level of the calling userfile in
-  # the parentage tree.
-  def level
-    @level ||= 0
-  end
+
+
+  ##############################################
+  # Access restriction methods
+  #
+  # Note: many of these methods corresponds to
+  # the names of methods in the module ResourceAccess,
+  # but their local implementation is customized
+  # due to peculiarities in the Userfile model.
+  ##############################################
 
   #Returns whether or not +user+ has access to this
   #userfile.
@@ -465,56 +432,8 @@ class Userfile < ActiveRecord::Base
     scope
   end
 
-  # This method returns true if the string +basename+ is an
-  # acceptable name for a userfile. We restrict the filenames
-  # to contain printable characters only, with no slashes
-  # or ASCII nulls, and they must start with a letter or digit.
-  def self.is_legal_filename?(basename)
-    return true if basename && basename.match(/^[a-zA-Z0-9][\w\~\!\@\#\%\^\&\*\(\)\-\+\=\:\[\]\{\}\|\<\>\,\.\?]*$/)
-    false
-  end
 
-  #Returns the name of the Userfile in an array (only here to
-  #maintain compatibility with the overridden method in
-  #FileCollection).
-  def list_files(*args)
-    @file_list ||= {}
 
-    @file_list[args.dup] ||= if self.is_locally_cached?
-                               self.cache_collection_index(*args)
-                             else
-                               self.provider_collection_index(*args)
-                             end
-  end
-
-  # Calculates and sets the size attribute unless
-  # it's already set.
-  def set_size
-    self.set_size! if self.size.blank?
-  end
-
-  # Calculates and sets.
-  # (Abstract: should be redefined in subclass).
-  def set_size!
-    raise "set_size! called on Userfile. Should only be called in a subclass."
-  end
-
-  #Should return a regex pattern to identify filenames that match a given
-  #userfile subclass
-  def self.file_name_pattern
-    nil
-  end
-
-  #Human-readable version of a userfile class name. Can be overridden
-  #if necessary in subclasses.
-  def self.pretty_type
-    @pretty_type_name ||= self.name.gsub(/(.+)([A-Z])/, '\1 \2')
-  end
-
-  # Convenience instance method that calls the class method.
-  def pretty_type
-    self.class.pretty_type
-  end
 
   ##############################################
   # Tree Traversal Methods
@@ -566,6 +485,8 @@ class Userfile < ActiveRecord::Base
   def previous_available_file(user, options = {})
     Userfile.accessible_for_user(user, options).order('userfiles.id').where( ["userfiles.id < ?", self.id] ).last
   end
+
+
 
   ##############################################
   # Synchronization Status Access Methods
@@ -635,6 +556,8 @@ class Userfile < ActiveRecord::Base
     syncstat = self.local_sync_status
     syncstat && syncstat.status == 'CacheNewer'
   end
+
+
 
   ##############################################
   # Data Provider easy access methods
@@ -747,15 +670,117 @@ class Userfile < ActiveRecord::Base
     self.data_provider.online?
   end
 
-  private
+
+
+  ##############################################
+  # Viewer Methods
+  ##############################################
+
+  public
+
+  class Viewer
+    attr_reader :userfile_class, :name, :partial
+
+    def initialize(userfile_class, viewer)
+      atts = viewer
+      unless atts.is_a? Hash
+        atts = { :userfile_class => userfile_class, :name  => viewer.to_s.classify.gsub(/(.+)([A-Z])/, '\1 \2'), :partial => viewer.to_s.underscore }
+      end
+      initialize_from_hash(atts.merge(:userfile_class => userfile_class))
+    end
+
+    def initialize_from_hash(atts = {})
+      userfile_class = atts.delete(:userfile_class) # e.g. TextFile (the class)
+      unless userfile_class.present? && userfile_class.is_a?(Class) && userfile_class < Userfile
+        cb_error("Viewer =#{userfile_class}= must be associated with a Userfile class.")
+      end
+
+      unless atts.has_key?(:name) || atts.has_key?(:partial)
+        cb_error("Viewer must have either name or partial defined.")
+      end
+
+      name           = atts.delete(:name)
+      partial        = atts.delete(:partial)
+      att_if         = atts.delete(:if)      || []
+      cb_error "Unknown viewer option: '#{atts.keys.first}'." unless atts.empty?
+
+      @userfile_class = userfile_class
+      @name           = name      || partial.to_s.classify.gsub(/([a-z])([A-Z])/, '\1 \2')
+      @partial        = partial   || name.to_s.gsub(/\s+/, "").underscore
+
+      @conditions     = []
+      att_if = [ att_if ] unless att_if.is_a?(Array)
+      att_if.each do |method|
+        cb_error "Invalid :if condition '#{method}' in model." unless method.respond_to?(:to_proc)
+        @conditions << method.to_proc
+      end
+    end
+
+    def valid_for?(userfile)
+      return true if @conditions.empty?
+      @conditions.all? { |condition| condition.call(userfile) }
+    end
+
+    def ==(other)
+      return false unless other.is_a? Viewer
+      self.name == other.name
+    end
+
+    def partial_path(alternate_partial=nil)
+      @userfile_class.view_path(alternate_partial.presence || @partial)
+    end
+  end
+
+  # List of viewers for this model
+  # Unlike the class method, this methods returns
+  # just the subset of viewers that are valid for
+  # this particular userfile, if conditions apply.
+  def viewers
+    class_viewers = self.class.class_viewers
+    @viewers = class_viewers.select { |v| v.valid_for?(self) }
+  end
+
+  # Find a viewer by name or partial for this model
+  def find_viewer(name)
+    self.viewers.find { |v| v.name == name || v.partial.to_s == name.to_s }
+  end
+
+  # See the class method of the same name.
+  def view_path(partial_name=nil)
+     self.class.view_path(partial_name)
+  end
+
+  private # Viewer methods
+
+  # Returns the directory where the custom view code of the current model
+  # can be found, typically under the CBRAIN plugins directory. For a
+  # model such as TextFile, it would map to a single directory:
+  #
+  #   "/path/to/cbrain_plugins/userfiles/text_file/views"
+  #
+  # If given a basename or relative path for a partial (without the leading
+  # underscore), will return the path to that partial. E.g. with "abc/def"
+  #
+  #   "/path/to/cbrain_plugins/userfiles/text_file/views/abc/_def"
+  #
+  # Returns a Pathname object.
+  def self.view_path(partial_name=nil)
+    base = Pathname.new(CBRAIN::UserfilesPlugins_Dir) + self.to_s.underscore + "views"
+    return base if partial_name.blank?
+    partial_name = Pathname.new(partial_name).cleanpath
+    raise "Path outside of userfile plugin." if partial_name.absolute? || partial_name.to_s =~ /^\.\./
+    base = base + partial_name.to_s.sub(/([^\/]+)$/,'_\1') if partial_name.present?
+    base
+  end
 
   # Add a viewer to the calling class.
   # Arguments can be one or several hashes,
   # strings or symbols used as arguments to
   # create Viewer objects.
   def self.has_viewer(*new_viewers)
-    new_viewers.map!{ |v| Viewer.new(v) }
-    new_viewers.each{ |v| add_viewer(v) }
+    viewers = new_viewers.map { |hash_or_name| hash_or_name.is_a?(Viewer) ? hash_or_name : Viewer.new(self,hash_or_name) }
+    viewers.each              { |v|            add_viewer(v) }
+    viewers
   end
 
   # Synonym for #has_viewers.
@@ -767,7 +792,7 @@ class Userfile < ActiveRecord::Base
   # for the calling class.
   def self.reset_viewers
     @ancestor_viewers = []
-    @class_viewers    = []
+    @local_viewers    = []
   end
 
   # Add a viewer to the calling class. Unlike #has_viewer
@@ -776,8 +801,7 @@ class Userfile < ActiveRecord::Base
     if self.class_viewers.include?(viewer)
       cb_error "Redefinition of viewer in class #{self.name}."
     end
-
-    @class_viewers << viewer
+    @local_viewers << viewer
   end
 
   # List viewers for the calling class.
@@ -788,9 +812,90 @@ class Userfile < ActiveRecord::Base
       end
     end
     @ancestor_viewers ||= []
-    @class_viewers    ||= []
-    @class_viewers + @ancestor_viewers
+    @local_viewers    ||= []
+    @local_viewers + @ancestor_viewers
   end
+
+  # Find viewer by name or partial; unlike the instance
+  # method of the same name, no filtering is performed:
+  # all viewers are examined to find a match and the first
+  # one is returned.
+  def self.find_viewer(name)
+    class_viewers.find { |v| v.name == name || v.partial.to_s == name.to_s }
+  end
+
+
+  ##############################################
+  # Content Methods
+  ##############################################
+
+  public
+
+  # Class representing the way in which the content
+  # of a userfile can be transferred to a client.
+  # Created by using the #has_content directive
+  # in a Userfile subclass.
+  # ContentLoaders are defined by two parameters:
+  # [method] an instance method defined for the
+  #          class that will prepare the data for
+  #          transfer.
+  # [type]   the type of data being transfered.
+  #          Generally, this is the the key to be
+  #          used in the hash given to a render
+  #          call in the controller. One special
+  #          is :send_file, which the controller
+  #          will take as indicating that the
+  #          ContentLoader method will return
+  #          the path of a file to be sent directly.
+  # For example, if one wished to send the content
+  # as xml, one would first define the content loader
+  # method:
+  #  def generate_xml
+  #     ... # make the xml
+  #  end
+  # And then register the loader using #has_content:
+  #  has_content :method => generate_xml, :type => :xml
+  # The #has_content directive can also take a single
+  # symbol or string, which it will assume is the
+  # name of the content loader method, and setting
+  # the type to :send_file.
+  class ContentLoader
+    attr_reader :method, :type
+
+    def initialize(content_loader)
+      atts = content_loader
+      unless atts.is_a? Hash
+        atts = {:method => atts}
+      end
+      initialize_from_hash(atts)
+    end
+
+    def initialize_from_hash(options = {})
+      cb_error "Content loader must have method defined." if options[:method].blank?
+      @method = options[:method].to_sym
+      @type   = (options[:type]  || :send_file).to_sym
+    end
+
+    def ==(other)
+      return false unless other.is_a? ContentLoader
+      self.method == other.method
+    end
+  end
+
+  #List of content loaders for this model
+  def content_loaders
+    self.class.content_loaders
+  end
+
+  #Find a content loader for this model. Priority is given
+  #to finding a matching method name. If none is found, then
+  #an attempt is made to match on the type. There may be several
+  #type matches so the first is returned.
+  def find_content_loader(meth)
+    self.class.find_content_loader(meth)
+  end
+
+  private # Content methods
 
   # Add a content loader to the calling class.
   def self.has_content(options = {})
@@ -824,6 +929,14 @@ class Userfile < ActiveRecord::Base
     self.content_loaders.find { |cl| cl.method == method } ||
     self.content_loaders.find { |cl| cl.type == method }
   end
+
+
+
+  ##############################################
+  # ActiveRecord Callbacks
+  ##############################################
+
+  private
 
   def validate_associations
     unless DataProvider.where( :id => self.data_provider_id ).first
@@ -879,5 +992,18 @@ class Userfile < ActiveRecord::Base
     true
   end
 
+end
+
+
+# Patch: pre-load all model files for the subclasses
+Dir.chdir(CBRAIN::UserfilesPlugins_Dir) do
+  Dir.glob("*").select { |dir| File.directory?(dir) }.each do |model_dir|
+    model_file = "#{model_dir}/#{model_dir}.rb"  # e.g.  "mp3_file/mp3_file.rb" for class Mp3File
+    next unless File.file?(model_file)
+    model = model_dir.classify
+    next if Object.const_defined? model # already loaded? Skip.
+    #puts_blue "Loading Userfile subclass #{model} from #{model_file} ..."
+    require_dependency "#{CBRAIN::UserfilesPlugins_Dir}/#{model_file}"
+  end
 end
 

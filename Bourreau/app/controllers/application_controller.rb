@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Filters added to this controller apply to all controllers in the application.
@@ -27,7 +27,7 @@ class ApplicationController < ActionController::Base #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  helper :all # include all helpers, all the time  
+  helper :all # include all helpers, all the time
 
   # Patch
   def self.api_available #:nodoc:
@@ -37,22 +37,15 @@ class ApplicationController < ActionController::Base #:nodoc:
   # See ActionController::RequestForgeryProtection for details
   # Uncomment the :secret if you're not using the cookie session store
   #protect_from_forgery # :secret => '1ffec2733b8e6fe4baef5e8b84db95b8'
-  
-  # See ActionController::Base for details 
+
+  # See ActionController::Base for details
   # Uncomment this to filter the contents of submitted sensitive data parameters
-  # from your application log (in this case, all fields with names like "password"). 
+  # from your application log (in this case, all fields with names like "password").
   # filter_parameter_logging :password
-  
+
   #Patch: Load all models so single-table inheritance works properly.
   begin
     Dir.chdir(File.join(Rails.root.to_s, "app", "models")) do
-      Dir.glob("*.rb").each do |model|
-        model.sub!(/.rb$/,"")
-        require_dependency "#{model}.rb" unless Object.const_defined? model.classify
-      end
-    end
-    #Load userfile file types
-    Dir.chdir(File.join(Rails.root.to_s, "app", "models", "userfiles")) do
       Dir.glob("*.rb").each do |model|
         model.sub!(/.rb$/,"")
         require_dependency "#{model}.rb" unless Object.const_defined? model.classify
