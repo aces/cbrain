@@ -119,13 +119,15 @@ class ScirAmazon < ScirCloud
       return ec2
     end
 
-    def submit_VM(vm_name,image_id,instance_type)
+    def submit_VM(vm_name,image_id,instance_type,tag_value)
       key_pair = Scir.cbrain_config[:amazon_ec2_key_pair]
       ec2 = get_amazon_ec2_connection()
       security_group = ec2.security_groups.create("cbrain worker "+Time.now.to_i.to_s)
       ip_addresses=['0.0.0.0/0']
       security_group.authorize_ingress :tcp, 22, *ip_addresses
-      ec2.instances.create(:image_id => image_id, :instance_type => instance_type, :key_pair => ec2.key_pairs[key_pair], :security_groups => [security_group])
+      instance = ec2.instances.create(:image_id => image_id, :instance_type => instance_type, :key_pair => ec2.key_pairs[key_pair], :security_groups => [security_group])
+      instance.tag('Service', :value => tag_value)
+      return instance
       #TODO instance name is not used
     end
     
@@ -133,11 +135,13 @@ class ScirAmazon < ScirCloud
       task = CbrainTask.find(job.task_id)
       disk_image_bourreaux = Bourreau.where(:disk_image_file_id => task.params[:disk_image])
       image_id = nil
+      tag_value = nil
       disk_image_bourreaux.each do |b|
+        tag_value = b.name
       	image_id = DiskImageConfig.where(:disk_image_bourreau_id => b.id, :bourreau_id => RemoteResource.current_resource.id).first.disk_image_id
       end
       raise "Cannot find Disk Image Bourreau associated with file id #{task.params[:disk_image]} or Disk Image Bourreau has no EC2 image id for #{RemoteResource.current_resource.name}" unless !image_id.blank?
-      vm = submit_VM("CBRAIN Worker", image_id, task.params[:instance_type]) 
+      vm = submit_VM("CBRAIN Worker", image_id, task.params[:instance_type], tag_value) 
       return vm.id.to_s
     end
 
