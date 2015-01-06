@@ -126,7 +126,18 @@ class ScirAmazon < ScirCloud
       ip_addresses=['0.0.0.0/0']
       security_group.authorize_ingress :tcp, 22, *ip_addresses
       instance = ec2.instances.create(:image_id => image_id, :instance_type => instance_type, :key_pair => ec2.key_pairs[key_pair], :security_groups => [security_group])
-      instance.tag('Service', :value => tag_value)
+      (1..30).each do |i| # poor man's timer
+        puts "Tagging instance"
+        begin
+          # may raise an exception
+          instance.tag('Service', :value => tag_value)
+          puts "Instance tagged"
+          break
+        rescue => e
+          puts e.message
+        end
+        sleep 1
+      end
       return instance
       #TODO instance name is not used
     end
