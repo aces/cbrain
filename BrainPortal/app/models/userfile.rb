@@ -301,10 +301,10 @@ class Userfile < ActiveRecord::Base
   ##############################################
 
   #Return an array of the tags associated with this file
-  #by +user+.
+  #by +user+. Actually returns a ActiveRecord::Relation.
   def get_tags_for_user(user)
     user = User.find(user) unless user.is_a?(User)
-    self.tags.all(:conditions => ["tags.user_id=? OR tags.group_id IN (?)", user.id, user.cached_group_ids])
+    self.tags.where(["tags.user_id=? OR tags.group_id IN (?)", user.id, user.cached_group_ids])
   end
 
   #Set the tags associated with this file to those

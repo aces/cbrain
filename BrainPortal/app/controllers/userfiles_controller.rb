@@ -761,12 +761,10 @@ class UserfilesController < ApplicationController
       @current_index += 1
     end
 
-    @userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
-    partial_base = "userfiles/quality_control/"
-    if File.exists?(Rails.root.to_s + "/app/views/#{partial_base}_#{@userfile.class.name.underscore}.#{request.format.to_sym}.erb")
-      @partial = partial_base + @userfile.class.name.underscore
-    else
-      @partial = partial_base + "default"
+    @userfile     = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
+    @qc_view_file = @userfile.view_path("qc_panel.html.erb").to_s # model-specific view partial, in its plugin directory
+    if ! File.exists?(@qc_view_file)
+      @qc_view_file = "userfiles/_default_qc_panel.html.erb" # default provided by cbrain
     end
 
     render :partial => "quality_control_panel"
