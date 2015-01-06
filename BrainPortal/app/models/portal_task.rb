@@ -662,13 +662,15 @@ class PortalTask < CbrainTask
   #
   #   "/cbrain_plugins/cbrain_tasks/unix_wc/abc/def.csv"
   #
-  # Returns a Pathname object.
+  # Returns nil if no file exists that match the argument 'public_file'.
+  # Otherwise, returns a Pathname object.
   def self.public_path(public_file=nil)
     base = Pathname.new("/cbrain_plugins/cbrain_tasks") + self.to_s.demodulize.underscore
     return base if public_file.blank?
     public_file = Pathname.new(public_file.to_s).cleanpath
     raise "Public file path outside of task plugin." if public_file.absolute? || public_file.to_s =~ /^\.\./
     base = base + public_file
+    return nil unless File.exists?((Rails.root + "public").to_s + base.to_s)
     base
   end
 

@@ -793,13 +793,15 @@ class Userfile < ActiveRecord::Base
   #
   #   "/cbrain_plugins/userfiles/text_file/abc/def.csv"
   #
-  # Returns a Pathname object.
+  # Returns nil if no file exists that match the argument 'public_file'.
+  # Otherwise, returns a Pathname object.
   def self.public_path(public_file=nil)
     base = Pathname.new("/cbrain_plugins/userfiles") + self.to_s.underscore
     return base if public_file.blank?
     public_file = Pathname.new(public_file.to_s).cleanpath
     raise "Public file path outside of userfile plugin." if public_file.absolute? || public_file.to_s =~ /^\.\./
     base = base + public_file
+    return nil unless File.exists?((Rails.root + "public").to_s + base.to_s)
     base
   end
 
