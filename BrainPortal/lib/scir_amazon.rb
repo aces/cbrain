@@ -119,12 +119,25 @@ class ScirAmazon < ScirCloud
       return ec2
     end
 
+    def get_security_group(security_groups,security_group_name)
+      security_groups.each do |g|
+        return g if g.name == security_group_name
+      end
+      return false
+    end
+
     def submit_VM(vm_name,image_id,instance_type,tag_value)
       key_pair = Scir.cbrain_config[:amazon_ec2_key_pair]
       ec2 = get_amazon_ec2_connection()
-      security_group = ec2.security_groups.create("cbrain worker "+Time.now.to_i.to_s)
-      ip_addresses=['0.0.0.0/0']
-      security_group.authorize_ingress :tcp, 22, *ip_addresses
+      security_groups=ec2.security_groups
+      security_group_name="cbrain worker"
+      if ec2.security_groups.map{ |c| c.name }.include? security_group_name
+        security_group = get_security_group security_groups,security_group_name
+      else
+        security_group = ec2.security_groups.create(security_group_name) 
+        ip_addresses=['0.0.0.0/0']
+        security_group.authorize_ingress :tcp, 22, *ip_addresses
+      end
       instance = ec2.instances.create(:image_id => image_id, :instance_type => instance_type, :key_pair => ec2.key_pairs[key_pair], :security_groups => [security_group])
       (1..30).each do |i| # poor man's timer
         puts "Tagging instance"
