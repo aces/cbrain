@@ -131,6 +131,12 @@ class CbrainTask::StartVM < ClusterTask
 
     #update VM params
     params[:vm_local_ip] = self.scir_session.get_local_ip(self.id)
+    if params[:vm_local_ip].blank? 
+	addlog "Cannot get VM local IP. Terminate VM task (id = #{self.id})."
+        update_vm_status("unreachable")
+        self.save!
+        self.terminate
+    end
     self.update_vm_status "booting" 
     self.save! #will launch an exception if save fails   
 
