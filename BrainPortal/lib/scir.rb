@@ -120,6 +120,8 @@ class Scir
 
   class Session #:nodoc:
 
+    @state_if_missing = Scir::STATE_UNDETERMINED
+
     public
 
     def revision_info #:nodoc:
@@ -171,7 +173,7 @@ class Scir
         end
         jinfo = @job_info_cache[jid.to_s]
         return jinfo[:drmaa_state] if jinfo
-        Scir::STATE_UNDETERMINED
+        @state_if_missing
       end
     end
     

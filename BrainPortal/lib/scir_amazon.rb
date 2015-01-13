@@ -31,15 +31,17 @@ require 'aws-sdk'
 # This class can only handle tasks of type CBRAIN::StartVM.
 
 class ScirAmazon < ScirCloud
-
+ 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+ 
   def get_available_instance_types 
     # no, there's no method in the API to return such an array!
     return [ "t2.micro", "t2.small", "t2.medium", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "g2.2xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "hs1.8xlarge" ]
   end
 
   class Session < Scir::Session #:nodoc:
+
+    @state_if_missing = Scir::STATE_RUNNING
 
     def update_job_info_cache #:nodoc:
       @job_info_cache = {}
@@ -54,7 +56,7 @@ class ScirAmazon < ScirCloud
 
     def statestring_to_stateconst(state) #:nodoc:
       return Scir::STATE_RUNNING        if state == :running
-      return Scir::STATE_DONE           if state == :stopped
+      return Scir::STATE_DONE           if state == :stopped 
       return Scir::STATE_QUEUED_ACTIVE  if state == :pending
       return Scir::STATE_FAILED         if state == :terminated
       return Scir::STATE_UNDETERMINED
