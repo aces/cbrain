@@ -33,7 +33,7 @@ gem "mysql2"
 gem "sys-proctable", :git => 'git://github.com/djberg96/sys-proctable.git'
 gem "thin"
 gem "rails_autolink"
-gem "pbkdf2"
+gem "pbkdf2-ruby"
 
 group :development do
   gem "wirble"
