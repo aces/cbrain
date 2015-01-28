@@ -23,7 +23,7 @@
 source 'http://rubygems.org'
 
 # In the :default group
-gem 'rails', '3.1.10'
+gem 'rails', '3.2.21'
 gem 'aws-s3',   :require => 'aws/s3' # Client library for Amazon's Simple Storage Service's REST API
 gem "net-ssh",  :require => 'net/ssh'
 gem "net-sftp", :require => 'net/sftp' 
@@ -32,8 +32,9 @@ gem "log4r"
 gem "mysql2"
 gem "sys-proctable", :git => 'git://github.com/djberg96/sys-proctable.git'
 gem "thin"
-gem "rails_autolink" 
-gem "pbkdf2"
+gem "rails_autolink"
+gem "pbkdf2-ruby"
+gem "test-unit"
 
 group :development do
   gem "wirble"
@@ -42,14 +43,14 @@ group :development do
 end
 
 group :test do
- gem "rspec", "> 3.0.0"
- gem "rspec-rails"
- gem "factory_girl", "1.3.3"
- gem "simplecov"
- gem "rspec-mocks"
- gem 'rspec-activemodel-mocks'
- gem 'rspec-collection_matchers'
- gem "sqlite3" # this is not normally needed outside of CBRAIN's nightly test website
- gem "syntax"  # this is not normally needed outside of CBRAIN's nightly test website
+  gem "rspec", "> 3.0.0"
+  gem "rspec-rails"
+  gem "factory_girl", "1.3.3"
+  gem "simplecov"
+  gem "rspec-mocks"
+  gem 'rspec-activemodel-mocks'
+  gem 'rspec-collection_matchers'
+  gem "sqlite3" # this is not normally needed outside of CBRAIN's nightly test website
+  gem "syntax"  # this is not normally needed outside of CBRAIN's nightly test website
 end
 

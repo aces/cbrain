@@ -20,12 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-# I don't know why I have to force it to psych here...
-# On brainstorm, it defaults to syck...
-require 'yaml'
-require 'psych'
-YAML::ENGINE.yamler = 'psych'
-
 # CBRAIN constants and some global utility methods.
 class CBRAIN
 

@@ -51,7 +51,7 @@ module UserfilesHelper
     userfile.sync_status.each do |syncstat|
       html << render(:partial => 'userfiles/syncstatus', :locals => { :syncstat => syncstat })
     end
-    if userfile.formats.size > 0
+    if userfile.formats.count > 0
       html << "<br>"
       html << ("&nbsp;" * ((userfile.level || 0) * 5))
       html << show_hide_toggle("Formats ", ".format_#{userfile.id}", :class  => "action_link")

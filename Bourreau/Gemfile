@@ -23,15 +23,15 @@
 source 'http://rubygems.org'
 
 # In the :default group
-gem 'rails', '3.1.10'
+gem 'rails', '3.2.21'
 gem 'aws-s3',   :require => 'aws/s3' # Client library for Amazon's Simple Storage Service's REST API
 gem "net-ssh",  :require => 'net/ssh'
 gem "net-sftp", :require => 'net/sftp'
 gem "log4r"
 gem "mysql2"
-gem "sys-proctable", :git => 'https://github.com/djberg96/sys-proctable.git'
+gem "sys-proctable", :git => 'git://github.com/djberg96/sys-proctable.git'
 gem "thin"
-gem "pbkdf2"
+gem "pbkdf2-ruby"
 
 group :development, :test do
   gem "wirble"
