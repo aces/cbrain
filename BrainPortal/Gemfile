@@ -22,6 +22,7 @@
 
 source 'http://rubygems.org'
 
+# In the :default group
 gem 'rails', '3.1.10'
 gem 'aws-s3',   :require => 'aws/s3' # Client library for Amazon's Simple Storage Service's REST API
 gem "net-ssh",  :require => 'net/ssh'
@@ -41,16 +42,14 @@ group :development do
 end
 
 group :test do
- gem "rspec"
+ gem "rspec", "> 3.0.0"
  gem "rspec-rails"
  gem "factory_girl", "1.3.3"
  gem "simplecov"
  gem "rspec-mocks"
  gem 'rspec-activemodel-mocks'
  gem 'rspec-collection_matchers'
-#  gem "autotest"
-#  gem "autotest-rails"
-#  gem "sqlite3" # this is not normally needed outside of CBRAIN's nightly test website
-#  gem "syntax"  # this is not normally needed outside of CBRAIN's nightly test website
+ gem "sqlite3" # this is not normally needed outside of CBRAIN's nightly test website
+ gem "syntax"  # this is not normally needed outside of CBRAIN's nightly test website
 end
 
