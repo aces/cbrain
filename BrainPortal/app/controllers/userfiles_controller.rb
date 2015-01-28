@@ -166,7 +166,6 @@ class UserfilesController < ApplicationController
     @immutable_total = @filtered_scope.where(:immutable => true).count
 
     current_session.save_preferences_for_user(current_user, :userfiles, :view_hidden, :tree_sort, :view_all, :details, :per_page)
-
     respond_to do |format|
       format.html
       format.js
@@ -584,10 +583,10 @@ class UserfilesController < ApplicationController
       new_name = attributes.delete(:name) || old_name
 
       @userfile.attributes = attributes
-      @userfile.type     = type         if type
-      @userfile.user_id  = new_user_id  if current_user.available_users.where(:id => new_user_id).first
-      @userfile.group_id = new_group_id if current_user.available_groups.where(:id => new_group_id).first
-      @userfile = @userfile.class_update
+      @userfile.type       = type         if type
+      @userfile.user_id    = new_user_id  if current_user.available_users.where(:id => new_user_id).first
+      @userfile.group_id   = new_group_id if current_user.available_groups.where(:id => new_group_id).first
+      @userfile            = @userfile.class_update
 
       if @userfile.save_with_logging(current_user, %w( group_writable num_files format_source_id parent_id hidden ) )
         if new_name != old_name
@@ -1083,9 +1082,8 @@ class UserfilesController < ApplicationController
 
     # Sync all files
     userfiles_list.each { |u| u.sync_to_cache rescue true }
-
     # When sending a single file, just throw it at the browser.
-    if filelist.size == 1 && userfiles_list[0].is_a?(SingleFile)
+    if userfiles_list.size == 1 && userfiles_list[0].is_a?(SingleFile)
       userfile = userfiles_list[0]
       fullpath = userfile.cache_full_path
       send_file fullpath, :stream => true, :filename => is_blank ? fullpath.basename : specified_filename

@@ -94,6 +94,7 @@ class Userfile < ActiveRecord::Base
                                        where("userfiles.type='#{format_filter}'#{format_ids}")
                                      }
   cb_scope                :has_no_parent, :conditions => {:parent_id => nil}
+  # TODO fix has_no_child invalid mysql if no file with parents
   cb_scope                :has_no_child,  lambda { |ignored|
                                             parents_ids = Userfile.connection.select_values("SELECT DISTINCT parent_id FROM userfiles WHERE parent_id IS NOT NULL").join(",")
                                             where("userfiles.id NOT IN (#{parents_ids})")
@@ -409,12 +410,11 @@ class Userfile < ActiveRecord::Base
   #on file ownership or group access.
   def self.restrict_access_on_query(user, scope, options = {})
     return scope if user.has_role? :admin_user
+    access_requested    = options[:access_requested] || :write
 
-    access_requested = options[:access_requested] || :write
+    data_provider_ids   = DataProvider.find_all_accessible_by_user(user).raw_first_column("#{DataProvider.table_name}.id")
 
-    data_provider_ids = DataProvider.find_all_accessible_by_user(user).raw_first_column("#{DataProvider.table_name}.id")
-
-    query_user_string = "userfiles.user_id = ?"
+    query_user_string  = "userfiles.user_id = ?"
     query_group_string = "userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)"
     if access_requested.to_sym != :read
       query_group_string += " AND userfiles.group_writable = 1"

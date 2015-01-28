@@ -28,15 +28,15 @@ describe Group do
   
   describe "#everyone" do
     it "should provide me with access to 'everyone' group" do
-      Group.everyone.name.should == "everyone"
-      Group.everyone.should be_a SystemGroup
+      expect(Group.everyone.name).to eq("everyone")
+      expect(Group.everyone).to be_a SystemGroup
     end
   end
   
   describe "#pretty_category_name" do    
     it "should convert the suffix 'Group' of a class name to 'Project'" do
-      group.stub!(:class).and_return(SystemGroup)
-      group.pretty_category_name(user).should == "System Project"
+      allow(group).to receive(:class).and_return(SystemGroup)
+      expect(group.pretty_category_name(user)).to eq("System Project")
     end
   end
   
@@ -46,19 +46,19 @@ describe Group do
       user = tag.user
       group.destroy
       tag.reload
-      tag.group.should == user.own_group
+      expect(tag.group).to eq(user.own_group)
     end
   end
   
   describe "#own_group" do
     it "should return itself as own group" do
-      group.own_group.should == group
+      expect(group.own_group).to eq(group)
     end
   end
   
   describe "#can_be_edited_by?" do
     it "should not allow edit access" do
-      group.can_be_edited_by?(user).should be_false
+      expect(group.can_be_edited_by?(user)).to be_falsey
     end
   end
   
@@ -67,17 +67,17 @@ describe Group do
     
     it "should allow admin access to any group" do
       admin_user = User.admin
-      group.can_be_accessed_by?(admin_user).should be_true
+      expect(group.can_be_accessed_by?(admin_user)).to be_truthy
     end
     
     it "should not allow non-admin access to a group to which the user does not belong" do
-      group.can_be_accessed_by?(current_user).should be_false
+      expect(group.can_be_accessed_by?(current_user)).to be_falsey
     end
     
     it "should allow non-admin access to a group to which the user does belong" do
       group.users << current_user
       current_user.reload
-      group.can_be_accessed_by?(current_user).should be_true
+      expect(group.can_be_accessed_by?(current_user)).to be_truthy
     end
   end
   
@@ -85,12 +85,12 @@ describe Group do
     it "should set creator to admin id if not set" do
       admin_user_id = User.find_by_login("admin").id
       new_group = Factory.create(:group, :creator_id => nil)
-      new_group.creator_id.should == admin_user_id
+      expect(new_group.creator_id).to eq(admin_user_id)
     end
     it "should not set creator if already set" do
       new_user_id = Factory.create(:normal_user).id
       new_group = Factory.create(:group, :creator_id => new_user_id)
-      new_group.creator_id.should == new_user_id
+      expect(new_group.creator_id).to eq(new_user_id)
     end
   end
 end

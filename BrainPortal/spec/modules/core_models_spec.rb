@@ -29,21 +29,21 @@ describe "CoreModels" do
   
   describe "#core_model!" do
     it "should not allow model to be destroyed if called" do
-      lambda { core_model.destroy }.should raise_error
+      expect { core_model.destroy }.to raise_error
     end
     
     it "should allow model to be destroyed if not called" do
-      lambda { non_core_model.destroy }.should_not raise_error
+      expect { non_core_model.destroy }.not_to raise_error
     end
   end
   
   describe "#core_model?" do
     it "should return true for a core model" do
-      core_model.core_model?.should be_true
+      expect(core_model.core_model?).to be_truthy
     end
     
     it "should return false if not a core model" do
-      non_core_model.core_model?.should be_false
+      expect(non_core_model.core_model?).to be_falsey
     end
   end
 end

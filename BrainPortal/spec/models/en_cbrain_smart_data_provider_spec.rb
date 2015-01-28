@@ -28,7 +28,7 @@ describe EnCbrainSmartDataProvider do
   describe "#after_initialize_select_provider" do
     
     it "should receive select_local_or_network_provider" do
-      en_cbrain_smart_data_provider.should_receive(:select_local_or_network_provider)
+      expect(en_cbrain_smart_data_provider).to receive(:select_local_or_network_provider)
       en_cbrain_smart_data_provider.after_initialize_select_provider
     end
     

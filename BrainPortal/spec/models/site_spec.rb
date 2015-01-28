@@ -31,23 +31,23 @@ describe Site do
   end
   
   it "should save with valid attributes" do
-    @site.save.should be(true)
+    expect(@site.save).to be(true)
   end
   
   it "should not save without a name" do
     @site.name = nil
-    @site.save.should  be(false)
+    expect(@site.save).to  be(false)
   end
   
   it "should return the array of managers whened asked" do
-    @site.managers.should == [@site_manager]
+    expect(@site.managers).to eq([@site_manager])
   end
   
   it "should set new managers on save" do
     @site_user.type = "SiteManager"
     @site_user.save
     @site.reload
-    @site.managers.map(&:id).should include(@site_user.id)
+    expect(@site.managers.map(&:id)).to include(@site_user.id)
   end
     
 end

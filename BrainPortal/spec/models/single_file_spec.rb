@@ -27,7 +27,7 @@ describe SingleFile do
   let(:file_entry)  { double("file_entry", :size => 1024).as_null_object}
         
   before(:each) do
-    single_file.stub!(:list_files).and_return([file_entry])
+    allow(single_file).to receive(:list_files).and_return([file_entry])
   end
   
   describe "#set_size!" do
@@ -35,7 +35,7 @@ describe SingleFile do
     it "should set size to addition of file_entry.size" do
       single_file.set_size
       single_file.reload
-      single_file.size.should == 1024
+      expect(single_file.size).to eq(1024)
     end
   end
   

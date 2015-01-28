@@ -26,7 +26,7 @@ source 'http://rubygems.org'
 gem 'rails', '3.2.21'
 gem 'aws-s3',   :require => 'aws/s3' # Client library for Amazon's Simple Storage Service's REST API
 gem "net-ssh",  :require => 'net/ssh'
-gem "net-sftp", :require => 'net/sftp'
+gem "net-sftp", :require => 'net/sftp' 
 gem "will_paginate"
 gem "log4r"
 gem "mysql2"
@@ -43,13 +43,14 @@ group :development do
 end
 
 group :test do
- gem "rspec", "> 3.0.0"
- gem "rspec-rails"
- gem "factory_girl"
- gem "simplecov"
- gem "rspec-mocks"
- gem 'rspec-activemodel-mocks'
- gem "sqlite3" # this is not normally needed outside of CBRAIN's nightly test website
- gem "syntax"  # this is not normally needed outside of CBRAIN's nightly test website
+  gem "rspec", "> 3.0.0"
+  gem "rspec-rails"
+  gem "factory_girl", "1.3.3"
+  gem "simplecov"
+  gem "rspec-mocks"
+  gem 'rspec-activemodel-mocks'
+  gem 'rspec-collection_matchers'
+  gem "sqlite3" # this is not normally needed outside of CBRAIN's nightly test website
+  gem "syntax"  # this is not normally needed outside of CBRAIN's nightly test website
 end
 
