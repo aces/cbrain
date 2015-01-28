@@ -160,9 +160,9 @@ Factory.define :userfile do |userfile|
     userfile.association     :data_provider
 end
 
-Factory.define :niak_fmri_study do |userfile|
+Factory.define :text_file do |userfile|
     userfile.sequence(:name) { |n| "file_#{n}" }
-    userfile.type            "NiakFmriStudy"
+    userfile.type            "TextFile"
     userfile.association     :user
     userfile.association     :group
     userfile.association     :data_provider
@@ -260,15 +260,6 @@ end
 Factory.define "cbrain_task/diagnostics" do |cbrain_task|
   cbrain_task.status      "New"
   cbrain_task.add_attribute( :type, "CbrainTask::Diagnostics")
-  cbrain_task.association :bourreau
-  cbrain_task.association :user
-  cbrain_task.association :group
-  cbrain_task.association :tool_config
-end
-
-Factory.define "cbrain_task/civet" do |cbrain_task|
-  cbrain_task.status      "New"
-  cbrain_task.add_attribute( :type,"CbrainTask::Civet")
   cbrain_task.association :bourreau
   cbrain_task.association :user
   cbrain_task.association :group

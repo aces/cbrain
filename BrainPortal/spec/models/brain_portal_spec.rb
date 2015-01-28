@@ -29,7 +29,7 @@ describe BrainPortal do
     it "should be locked after lock was called" do
       current_bp.portal_locked = false
       current_bp.lock!
-      current_bp.portal_locked.should be true
+      expect(current_bp.portal_locked).to be true
     end
   end
 
@@ -37,7 +37,7 @@ describe BrainPortal do
     it "should be unlocked after unlock was called" do
       current_bp.portal_locked = true
       current_bp.unlock!
-      current_bp.portal_locked.should be false
+      expect(current_bp.portal_locked).to be false
     end
   end
   
