@@ -17,33 +17,33 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Controller for managing Tool objects.
 class ToolsController < ApplicationController
- 
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
- 
+
   before_filter :login_required
   before_filter :admin_role_required, :except  => [:index, :tool_config_select]
- 
+
   # GET /tools
   # GET /tools.xml
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= 'tools.name'
-    
+
     @header_scope   = current_user.available_tools
     @filtered_scope = base_filtered_scope(@header_scope.includes(:user, :group))
     @tools          = base_sorted_scope @filtered_scope
-    
+
     respond_to do |format|
       format.js
       format.html # index.html.erb
       format.xml  { render :xml => @tools }
     end
   end
-  
+
    def tool_config_select #:nodoc:
     if params[:tool_id].blank?
       render :text  => ""
@@ -65,14 +65,14 @@ class ToolsController < ApplicationController
 
     # Select a specific tool_config
     selected_by_default = current_user.meta["pref_bourreau_id"]
-    @tool_config = bourreaux_ids.include?(selected_by_default) && @bourreaux.detect? { |b| b.id == selected_by_default && b.online? } ? 
+    @tool_config = bourreaux_ids.include?(selected_by_default) && @bourreaux.detect? { |b| b.id == selected_by_default && b.online? } ?
                         @tool_configs.where(:bourreau_id => selected_by_default).last : nil
 
     respond_to do |format|
       format.html { render :partial => 'tools/tool_config_select' }
       format.xml  { render :xml     => @tool_configs }
     end
-    
+
   rescue => ex
     #render :text  => "#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
     render :text  => '<strong style="color:red">No Execution Servers Available</strong>'
@@ -134,23 +134,23 @@ class ToolsController < ApplicationController
       end
     end
   end
-  
-  
-  # DELETE /tools/1                                 
-    # DELETE /tools/1.xml                           
-  def destroy #:nodoc:                              
-      @tool = current_user.available_tools.find(params[:id])  
-      @tool.destroy                                           
-                                                              
+
+
+  # DELETE /tools/1
+    # DELETE /tools/1.xml
+  def destroy #:nodoc:
+      @tool = current_user.available_tools.find(params[:id])
+      @tool.destroy
+
       respond_to do |format|
         format.html { redirect_to :action => :index }
-        format.js   { redirect_to :action => :index, :format => :js }                                          
-        format.xml  { head :ok }                              
-      end                                                     
+        format.js   { redirect_to :action => :index, :format => :js }
+        format.xml  { head :ok }
+      end
   end
-      
+
   private
-  
+
   def autoload_all_tools #:nodoc:
 
     successes = []
@@ -161,9 +161,9 @@ class ToolsController < ApplicationController
       @tool = Tool.new(
                   :name               => tool.demodulize,
                   :cbrain_task_class  => tool,
-                  :user_id            => User.find_by_login("admin").id,
-                  :group_id           => Group.everyone.id,
-                  :category           => "scientific tool" 
+                  :user_id            => User.admin.id,
+                  :group_id           => User.admin.own_group.id,
+                  :category           => "scientific tool"
                 )
       success = @tool.save
       if success
