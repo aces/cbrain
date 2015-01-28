@@ -761,12 +761,12 @@ class Userfile < ActiveRecord::Base
   # can be found, typically under the CBRAIN plugins directory. For a
   # model such as TextFile, it would map to a single directory:
   #
-  #   "/path/to/cbrain_plugins/userfiles/text_file/views"
+  #   "/path/to/cbrain_plugins/installed-plugins/userfiles/text_file/views"
   #
   # If given a basename or relative path for a partial (without the leading
   # underscore), will return the path to that partial. E.g. with "abc/def"
   #
-  #   "/path/to/cbrain_plugins/userfiles/text_file/views/abc/_def"
+  #   "/path/to/cbrain_plugins/installed-plugins/userfiles/text_file/views/abc/_def"
   #
   # Returns a Pathname object.
   def self.view_path(partial_name=nil)
