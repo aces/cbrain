@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require File.expand_path('../boot', __FILE__)
@@ -42,10 +42,13 @@ module CbrainRailsPortal
     # This directory contains symbolic links to a special loader code
     # which will properly fetch the code in portal/xyz.rb or bourreau/xyz.rb
     # depending on the rails app currently executing.
-    config.autoload_paths += Dir["#{config.root}/cbrain_plugins/cbrain_task"]
+    #
+    # A rake task, cbrain:plugins:install:all, will create symlinks in there and
+    # properly set up all tasks installed from plugins (and the defaults tasks).
+    config.autoload_paths += Dir["#{config.root}/cbrain_plugins/installed-plugins/cbrain_task"]
 
     # CBRAIN Plugins load paths: add directories for each Userfile model
-    config.autoload_paths += Dir[ * Dir.glob("#{config.root}/cbrain_plugins/userfiles/*") ]
+    config.autoload_paths += Dir[ * Dir.glob("#{config.root}/cbrain_plugins/installed-plugins/userfiles/*") ]
 
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.

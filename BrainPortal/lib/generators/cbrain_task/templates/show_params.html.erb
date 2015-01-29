@@ -15,7 +15,7 @@
 #    params -  A shortend to task.params
 #
 # The default template belows shows links to
-# the userfiles IDs listed in :interface_usefile_ids,
+# the userfiles IDs listed in :interface_userfile_ids,
 # which is the default place where the framework
 # stores the IDs selected in the userfile index page.
 # If your task actually stores IDs in other
@@ -29,11 +29,22 @@
 <STRONG>Input:</STRONG>
 <P>
 <UL>
-<%% params[:interface_userfile_ids].each do |id| %>
+<%% (params[:interface_userfile_ids].presence || []).each do |id| %>
   <LI>Userfile: <%%= link_to_userfile_if_accessible id %></LI>
 <%% end %>
 </UL>
-Other option? <%%= params[:something].blank? ? "No" : "Yes" %>
+
+<P>
+Some Other option? <%%= params[:something].blank? ? "No" : "Yes" %>
+
+<%%
+# The code below assumes :outfile_id is created by the post
+# processing step of the task, storing the ID of the file containing
+# the results; make sure then that :outfile_id is also returned by
+# the untouchable_params_attributes() method on the portal side,
+# otherwise it is going to be lost if the user edits the task.
+-%>
+
 <BR>
 <STRONG>Output:</STRONG>
 <P>
