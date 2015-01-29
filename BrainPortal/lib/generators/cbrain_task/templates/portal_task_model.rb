@@ -10,18 +10,22 @@ class <%= "CbrainTask::#{class_name}" %> < PortalTask
 
   ################################################################
   # For full documentation on how to write CbrainTasks,
-  # read the file doc/CbrainTask.txt in the subversion trunk.
+  # read the CbrainTask Developer Manual.
   #
   # The basic API consists in three methods that you need to
   # override:
-  #   self.default_launch_args(), before_form() and after_form().
+  #
+  #   self.default_launch_args()
+  #   before_form()
+  #   after_form()
   #
   # The advanced API consists in four more methods, needed only
   # for more complex cases:
   #
-  # self.properties(), final_task_list(),
-  # after_final_task_list_saved(tasklist)
-  # and untouchable_params_attributes().
+  #   self.properties()
+  #   final_task_list()
+  #   after_final_task_list_saved(tasklist)
+  #   untouchable_params_attributes()
 <% unless options[:advanced] -%>
   #
   # The advanced API is not included in this template since
@@ -49,7 +53,7 @@ class <%= "CbrainTask::#{class_name}" %> < PortalTask
   ################################################################
   # This method will be called before the form for your task is
   # rendered. It should return a hash table. This hash table will
-  # be copied as-is into the task's params hash table.
+  # be copied as-is into the task's "params" hash table.
   ################################################################
 
   # RDOC comments here, if you want, although the method
@@ -58,17 +62,17 @@ class <%= "CbrainTask::#{class_name}" %> < PortalTask
     # Example: { :my_counter => 1, :output_file => "ABC.#{Time.now.to_i}" }
     {}
   end
-  
+
 
 
   ################################################################
   # METHOD: before_form()
   ################################################################
   # This method will be called before the form for your task is
-  # rendered. For new tasks, the task object's params hash table
+  # rendered. For new tasks, the task object's "params" hash table
   # will contain the list of IDs selected in the userfile manager:
   #
-  #   params[:interface_userfile_ids]
+  #   params[:interface_userfile_ids] = [ id1, id2...]
   #
   # You can filter and validate the IDs here.
   # You're free to add as much supplemental information as
@@ -87,7 +91,7 @@ class <%= "CbrainTask::#{class_name}" %> < PortalTask
   # task object will not be new (it will return false for
   # the method new_record()).
   ################################################################
-  
+
   # RDOC comments here, if you want, although the method
   # is created with #:nodoc: in this template.
   def before_form #:nodoc:
@@ -103,12 +107,12 @@ class <%= "CbrainTask::#{class_name}" %> < PortalTask
   # METHOD: after_form()
   ################################################################
   # This method will be called after the form for your task has
-  # been sunbmitted. The content of the task's attributes
+  # been submitted by the user. The content of the task's attributes
   # (like :bourreau_id, :description, etc) will be filled in
   # by selection box already provided by the form. The params
   # hash table will contain the values of input tags contained
   # in the view (provided their variable names are properly
-  # created with the to_la() methods). Note that any other
+  # created with cbrain task form helpers). Note that any other
   # pieces of information stored in params() during before_form()
   # will be lost unless such input tags are present to preserve
   # them.
@@ -125,13 +129,11 @@ class <%= "CbrainTask::#{class_name}" %> < PortalTask
   # the method new_record()).
   #
   # It's possible to design simple tasks where this method
-  # is not necessary at all:
-  #   - when there is no validation needed
-  #   - the Bourreau side uses params[:interface_userfile_ids]
-  #   - other options and values are stored in params by
-  #     the view's input tags.
+  # is not necessary at all, for instance if none of the values
+  # supplied using the form need any form of validation (but still,
+  # be careful of injection attacks!).
   ################################################################
-  
+
   # RDOC comments here, if you want, although the method
   # is created with #:nodoc: in this template.
   def after_form #:nodoc:
@@ -156,7 +158,9 @@ class <%= "CbrainTask::#{class_name}" %> < PortalTask
   # It returns a hash table of properties that
   # describe your task; these are used by the framework to
   # override some basic assumptions about your task's behavior.
-  # The default values are given here.
+  # The default values are given here, which should correspond
+  # to the the default hash returned in the class Cbrain::PortalTask,
+  # but you can double-check in case this template is not up to date.
   ################################################################
 
   # RDOC comments here, if you want, although the method
@@ -166,9 +170,11 @@ class <%= "CbrainTask::#{class_name}" %> < PortalTask
        :no_submit_button                   => false, # view will not automatically have a submit button
        :i_save_my_task_in_after_form       => false, # used by validation code for detecting coding errors
        :i_save_my_tasks_in_final_task_list => false, # used by validation code for detecting coding errors
+       :no_presets                         => false, # view will not contain the preset load/save panel
+       :use_parallelizer                   => false  # true or fixnum: turns on parallelization
     }
   end
-  
+
 
 
   ################################################################
@@ -180,36 +186,31 @@ class <%= "CbrainTask::#{class_name}" %> < PortalTask
   # be launched. This instance method allows the programmer
   # to generate the list of task objects and return it to the
   # framework. The usual mechanism for that is to iteratively
-  # invoke the clone() method on the current task object
+  # invoke the dup() method on the current task object
   # and make the appropriate changes to each of the cloned
   # objects.
   #
-  # The method should return an array of the cloned task
+  # The method should return an array of the duped task
   # objects that the framework should finally save, or
   # raise an exception for any fatal errors. The
-  # default behavior is tu return an array containing
+  # default behavior is to return an array containing
   # the single element +self+, which means the current
   # task object IS the only object to save (as described
   # in the behavior of the basic API).
   #
   # You must not save the current task object, nor the
-  # list of cloned task objects here.
-  #
-  # This method is also called when editing an existing task's
-  # parameters; you can detect when this happens because the
-  # task object will not be new (it will return false for
-  # the method new_record()).
+  # list of duped task objects here.
   ################################################################
-  
+
   # RDOC comments here, if you want, although the method
   # is created with #:nodoc: in this template.
   def final_task_list #:nodoc:
     return [ self ] # default behavior
-    # Example: launch ten tasks that differs in params[:cnt]
+    # An example: launch ten tasks that differs in params[:count]
     mytasklist = []
-    10.times do |cnt|
+    10.times do |count|
       task=self.dup # not .clone, as of Rails 3.1.10
-      task.params[:cnt] = cnt
+      task.params[:count] = count
       mytasklist << task
     end
     mytasklist
@@ -227,11 +228,17 @@ class <%= "CbrainTask::#{class_name}" %> < PortalTask
   # At this point, the tasks in it will have been saved
   # to the DB.
   #
+  # This method gives the task programmer an opportunity to
+  # examine the tasks that are now launched, or do some more
+  # work about them (like launch new tasks to monitor them,
+  # or depend on them etc, though without the front end Rails
+  # framework available).
+  #
   # The method should return a string to inform the user of any
   # changes or notifications, and raise an exception for any
   # fatal errors.
   ################################################################
-  
+
   # RDOC comments here, if you want, although the method
   # is created with #:nodoc: in this template.
   def after_final_task_list_saved(tasklist) #:nodoc:
@@ -249,9 +256,17 @@ class <%= "CbrainTask::#{class_name}" %> < PortalTask
   # so that attributes that encode fixed data objects that
   # are created by after_form() or final_task_list() but not
   # present in the task's form are not lost when the user edits
-  # the task.
+  # the task. It is the only way to make some keys of "params"
+  # persistent without having to explicitely insert a HIDDEN
+  # input tag in a form, because otherwise any keys in params
+  # not in the form is deleted when editing a task.
+  #
+  # This is often used to whitelist a key created by the
+  # post processing step on the Bourreau side, which stores
+  # (for instance) the ID of the userfile where the results were
+  # saved, and so can be shown in the _show_params.html.erb page.
   ################################################################
-  
+
   # RDOC comments here, if you want, although the method
   # is created with #:nodoc: in this template.
   def untouchable_params_attributes #:nodoc:
