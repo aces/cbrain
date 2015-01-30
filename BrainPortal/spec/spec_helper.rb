@@ -26,7 +26,7 @@ Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
 
 RSpec.configure do |config|
   # For deprecation warning
-#  config.raise_errors_for_deprecations!
+  config.raise_errors_for_deprecations!
 
   # == Mock Framework
   config.mock_with :rspec

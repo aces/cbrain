@@ -23,7 +23,7 @@
 source 'http://rubygems.org'
 
 # In the :default group
-gem 'rails', '3.2.21'
+gem 'rails', :git => 'git@github.com:rails/rails.git', :branch => "3-2-stable"
 gem 'aws-s3',   :require => 'aws/s3' # Client library for Amazon's Simple Storage Service's REST API
 gem "net-ssh",  :require => 'net/ssh'
 gem "net-sftp", :require => 'net/sftp' 
