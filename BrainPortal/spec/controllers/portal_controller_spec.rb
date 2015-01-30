@@ -25,8 +25,8 @@ require 'spec_helper'
 RSpec.describe PortalController, :type => :controller do
   let(:current_user) {Factory.create(:normal_user)}
   let(:site_manager) {Factory.create(:site_manager)}
-  let(:admin_user) {Factory.create(:admin_user)}
-  let(:start_path) {controller.send(:start_page_path)}
+  let(:admin_user)   {Factory.create(:admin_user)}
+  let(:start_path)   {controller.send(:start_page_path)}
 
   context "with a logged in normal user" do
 
@@ -35,13 +35,13 @@ RSpec.describe PortalController, :type => :controller do
     end
 
     describe "welcome" do
-      it "should redirect the login page" do
+      it "should redirect to the login page" do
         get :welcome
         expect(response.status).to redirect_to(start_path)
       end
     end
     describe "portal_log" do
-      it "should redirect the login page" do
+      it "should refuse a normal user" do
         get :portal_log
         expect(response.status).to eq(401)
       end

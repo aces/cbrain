@@ -363,16 +363,16 @@ describe DataProvider do
     end
     context "copying from local file" do
       before(:each) do
-        allow(provider).to receive(:cache_prepare)
-        allow(provider).to receive(:cache_full_path).and_return("cache_path")
-        allow(provider).to receive(:sync_to_provider)
-        allow(provider).to receive(:bash_this)
+        allow(provider).to   receive(:cache_prepare)
+        allow(provider).to   receive(:cache_full_path).and_return("cache_path")
+        allow(provider).to   receive(:sync_to_provider)
+        allow(provider).to   receive(:bash_this)
         allow(SyncStatus).to receive(:ready_to_modify_cache)
-        allow(FileUtils).to receive(:remove_entry)
-        allow(Dir).to receive(:mkdir)
-        allow(File).to receive(:file?).and_return(true)
-        allow(File).to receive(:directory?).and_return(false)
-        allow(File).to receive(:exists?).and_return(true)
+        allow(FileUtils).to  receive(:remove_entry)
+        allow(Dir).to        receive(:mkdir)
+        allow(File).to       receive(:file?).and_return(true)
+        allow(File).to       receive(:directory?).and_return(false)
+        allow(File).to       receive(:exists?).and_return(true)
       end
       it "should determine the path in the cache" do
         expect(provider).to receive(:cache_full_path)
@@ -783,7 +783,7 @@ describe DataProvider do
   describe "#validate_destroy" do
     it "should prevent desctruction if associated userfiles still exist" do
       destroyed_provider = Factory.create(:data_provider, :userfiles => [Factory.create(:userfile)])
-      expect{ destroyed_provider.destroy }.to raise_error
+      expect{ destroyed_provider.destroy }.to raise_error(ActiveRecord::DeleteRestrictionError)
     end
     it "should allow desctruction if no associated userfiles still exist" do
       destroyed_provider = Factory.create(:data_provider)
@@ -844,8 +844,8 @@ describe DataProvider do
       allow(DataProvider).to receive(:cache_rootdir).and_return("cache")
       allow(DataProvider).to receive(:class_variable_defined?).and_return(false)
       allow(DataProvider).to receive(:this_is_a_proper_cache_dir!)
-      allow(File).to receive(:exist?).and_return(true)
-      allow(File).to receive(:read).and_return(cache_rev)
+      allow(File).to         receive(:exist?).and_return(true)
+      allow(File).to         receive(:read).and_return(cache_rev)
     end
     it "should check if the cache revision variable is already defined" do
       DataProvider.class_variable_set("@@cache_rev", Time.now.to_s)

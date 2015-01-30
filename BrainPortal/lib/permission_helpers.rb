@@ -17,12 +17,12 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Controller helpers for handling authentication and permissions.
 module PermissionHelpers
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.included(includer) #:nodoc:
@@ -31,18 +31,18 @@ module PermissionHelpers
       before_filter :check_if_locked
     end
   end
-  
+
   #Checks that the current user's has at least the rights associated
   #with +role+.
   def check_role(role)
     current_user && current_user.has_role?(role)
   end
-  
+
   #Checks that the current user is not the default *admin* user.
   def not_admin_user(user)
     user && user.login != 'admin'
   end
-  
+
   #Checks that the current user is the same as +user+. Used to ensure permission
   #for changing account information.
   def edit_permission?(user)
@@ -53,15 +53,15 @@ module PermissionHelpers
     current_user && user && user != User.admin && current_user != user &&
     (current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)) && current_user.available_users.include?(user)
   end
-  
+
   #Helper method to render and error page. Will render public/<+status+>.html
   def access_error(status)
     respond_to do |format|
-      format.html { render(:file => (Rails.root.to_s + '/public/' + status.to_s + '.html'), :status  => status, :layout => false ) }
+      format.html { render(:file => (Rails.root.to_s + '/public/' + status.to_s), :status  => status, :layout => false ) }
       format.xml  { head status }
-    end 
+    end
   end
-  
+
   # Redirect normal users to the login page if the portal is locked.
   def check_if_locked
     if BrainPortal.current_resource.portal_locked?
