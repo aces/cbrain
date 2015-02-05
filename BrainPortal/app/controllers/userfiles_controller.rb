@@ -106,7 +106,7 @@ class UserfilesController < ApplicationController
       @filtered_scope  = @filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
       # use 'distinct userfiles.id' on count in order to remove duplicate entry
       # due to the presence of file with multiple status
-      @userfiles_total = @filtered_scope.count("distinct userfiles.id")
+      @userfiles_total      = @filtered_scope.count("distinct userfiles.id")
       ordered_real     = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
     # ---- WITH tree sort ----
     else
@@ -141,6 +141,8 @@ class UserfilesController < ApplicationController
       end
 
     end
+
+    @userfiles_total_size = @filtered_scope.sum(:size)
 
 
 

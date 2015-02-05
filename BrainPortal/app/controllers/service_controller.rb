@@ -39,7 +39,7 @@ class ServiceController < ApplicationController
                                    Canada and around the world.".gsub(/\s\s+/, " "),  # the ugly gsub is because of CANARIE
               :version         => CbrainFileRevision.cbrain_head_tag,
               :institution     => "McGill University",
-              :releaseTime     => Time.parse(CbrainFileRevision.cbrain_head_revinfo.time).utc.iso8601,
+              :releaseTime     => Time.parse(CbrainFileRevision.cbrain_head_revinfo.datetime).utc.iso8601,
               :researchSubject => "Multi-discipline",
               :supportEmail    => RemoteResource.current_resource.support_email,
               :category        => "Data Manipulation",
