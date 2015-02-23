@@ -11,11 +11,11 @@ module RSpec::Rails
         end
       end
 
-      failure_message_for_should do
+      failure_message do
         "expected '#{@actual_text}' to contain '#{expected_text}'"
       end
 
-      failure_message_for_should_not do
+      failure_message_when_negated do
         "expected #{@actual_text} to not contain '#{expected_text}'"
       end
     end

@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -44,20 +44,10 @@
 <% end %>
 
 
-<h2>Task Parameters
-  <% help_doc = "/doc/tasks/#{@task.name.underscore}_options.html" %>
-  <% if File.exists?( Rails.root.to_s + "/public" + help_doc ) %>
-    <%= overlay_ajax_link "(Help)", help_doc, :class  => "task_help_link" %>
-  <% end %>
-  :
-</h2>
 
-<div class="generalbox">
-<%= error_messages_for(@task) %>
-<%= render :partial => task_partial('task_params'),
-           :locals  => { :params  => @task.params, :form => form }
- %>
-</div>
+<%= render :partial => "tasks/params",
+           :locals  => { :form => form }
+%>
 
 
 

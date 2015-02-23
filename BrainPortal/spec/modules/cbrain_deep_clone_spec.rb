@@ -30,7 +30,7 @@ describe "CbrainDeepClone" do
     it "should make a deep clone of the object" do
       h1 = hash.cb_deep_clone
       h1[:a][:b] = 2
-      hash[:a][:b].should == 1
+      expect(hash[:a][:b]).to eq(1)
     end
  
   end

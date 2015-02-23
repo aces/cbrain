@@ -28,15 +28,15 @@ describe CbrainMailer do
   describe "#registration_confirmation" do
     
     it "should return if user is not an User" do
-      user.stub(:is_a?).and_return(false)
+      allow(user).to receive(:is_a?).and_return(false)
       @email = CbrainMailer.registration_confirmation(user,"pwd").deliver
-      @email.to.should be_nil
+      expect(@email).to be_nil
     end
 
     it "should call mail with :to => user.email" do
-      user.stub(:is_a?).and_return(true)
+      allow(user).to receive(:is_a?).and_return(true)
       @email = CbrainMailer.registration_confirmation(user,"pwd").deliver
-      @email.to.should include(user.email)
+      expect(@email.to).to include(user.email)
     end
 
   end
@@ -44,15 +44,15 @@ describe CbrainMailer do
   describe "#forgotten_password" do
 
     it "should return if user is not an User" do
-      user.stub(:is_a?).and_return(false)
+      allow(user).to receive(:is_a?).and_return(false)
       @email = CbrainMailer.forgotten_password(user).deliver
-      @email.to.should be_nil
+      expect(@email).to be_nil
     end
 
     it "should call mail with :to => user.email" do
-      user.stub(:is_a?).and_return(true)
+      allow(user).to receive(:is_a?).and_return(true)
       @email = CbrainMailer.forgotten_password(user).deliver
-      @email.to.should include(user.email)
+      expect(@email.to).to include(user.email)
     end
 
   end
@@ -61,12 +61,12 @@ describe CbrainMailer do
 
     it "should return true if user is blank" do
     @email = CbrainMailer.cbrain_message([]).deliver
-    @email.to.should be_nil
+    expect(@email).to be_nil
     end
 
     it "should call mail with :to => [user].map(&:email)" do
       @email = CbrainMailer.cbrain_message([user]).deliver
-      @email.to.to_a.should =~ [user].map(&:email)
+      expect(@email.to.to_a).to match_array([user].map(&:email))
     end
     
   end

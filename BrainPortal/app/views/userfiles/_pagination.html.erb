@@ -33,7 +33,8 @@
   <%= will_paginate @userfiles, :inner_window => 5, :outer_window => 4, :container => false, :params => { :file_ids => nil } %>
 
   (
-  <%= pluralize(@userfiles_total," files") %>
+  <%= pluralize(@userfiles_total," entry") %> , <%= colored_pretty_size(@userfiles_total_size) %>
+
   <%=
   if @hidden_total.present? && (@hidden_total.is_a?(String) || @hidden_total > 0)
     (", #{@hidden_total} hidden " + hidden_icon).html_safe

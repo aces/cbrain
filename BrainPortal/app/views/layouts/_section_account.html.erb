@@ -49,7 +49,11 @@
       <% end %>
       <% support_email = RemoteResource.current_resource.support_email %>
       <% if support_email.present? %>
-        <%= mail_to support_email, "Email Support" %>
+        <%= html_tool_tip(mail_to(support_email, "Email Support"), :offset_x => 0, :offset_y => 20) do %>
+          For email support about this platform, including help<br>
+          about failed tasks and file transfer please click here<br>
+          or write to: <%= support_email %>
+        <% end %>
       <% end %>
     <% end %>
     Rev:&nbsp;<%= $CBRAIN_StartTime_Revision %>

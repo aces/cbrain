@@ -72,48 +72,6 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  # This method creates, if needed, symbolic links in the portal's
-  # "public" directory to point to each "public" directory in
-  # the CBRAIN Plugins (for both userfiles and tasks). This allow
-  # new userfiles or tasks to make available static assets.
-  def self.b000_ensure_public_symlinks_for_plugins_are_setup
-
-    public_root      = Pathname.new(Rails.root) + "public"
-    public_tasks     = public_root + "cbrain_plugins/cbrain_tasks"
-    public_userfiles = public_root + "cbrain_plugins/userfiles"
-
-    #----------------------------------------------------------------------------
-    puts "C> Updating symbolic links to \"public\" assets of cbrain_tasks..."
-    #----------------------------------------------------------------------------
-
-    Dir.chdir(public_tasks) do
-      Dir.glob(Pathname.new(CBRAIN::TasksPlugins_Dir) + "*/views/public").each do |fullpath| # "/a/b/rails/cbrain_plugins/cbrain_tasks/diagnostics/views/public"
-        relpath  = Pathname.new(fullpath).relative_path_from(public_tasks) # ../(...)/cbrain_plugins/cbrain_tasks/diagnostics/views/plugins
-        taskname = relpath.parent.parent.basename # "diagnostics"
-        next if File.exists?(taskname)
-        puts "C> \t- Creating symbolic link for task '#{taskname}'."
-        File.symlink(relpath,taskname)  # "diagnostics" -> "../(...)/cbrain_plugins/cbrain_tasks/diagnostics/views/plugins"
-      end
-    end
-
-    #----------------------------------------------------------------------------
-    puts "C> Updating symbolic links to \"public\" assets of userfiles..."
-    #----------------------------------------------------------------------------
-
-    Dir.chdir(public_userfiles) do
-      Dir.glob(Pathname.new(CBRAIN::UserfilesPlugins_Dir) + "*/views/public").each do |fullpath| # "/a/b/rails/cbrain_plugins/userfiles/text_file/views/public"
-        relpath  = Pathname.new(fullpath).relative_path_from(public_tasks) # ../(...)/cbrain_plugins/userfiles/text_file/views/plugins
-        filename = relpath.parent.parent.basename # "text_file"
-        next if File.exists?(filename)
-        puts "C> \t- Creating symbolic link for userfile '#{filename}'."
-        File.symlink(relpath,filename)  # "text_file" -> "../(...)/cbrain_plugins/userfiles/text_file/views/plugins"
-      end
-    end
-
-  end
-
-
-
   def self.z000_ensure_we_have_a_local_ssh_agent
 
     #----------------------------------------------------------------------------

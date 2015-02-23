@@ -106,7 +106,7 @@ class UserfilesController < ApplicationController
       @filtered_scope  = @filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
       # use 'distinct userfiles.id' on count in order to remove duplicate entry
       # due to the presence of file with multiple status
-      @userfiles_total = @filtered_scope.count("distinct userfiles.id")
+      @userfiles_total      = @filtered_scope.count("distinct userfiles.id")
       ordered_real     = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
     # ---- WITH tree sort ----
     else
@@ -142,6 +142,8 @@ class UserfilesController < ApplicationController
 
     end
 
+    @userfiles_total_size = @filtered_scope.sum(:size)
+
 
 
     #------------------------------
@@ -166,7 +168,6 @@ class UserfilesController < ApplicationController
     @immutable_total = @filtered_scope.where(:immutable => true).count
 
     current_session.save_preferences_for_user(current_user, :userfiles, :view_hidden, :tree_sort, :view_all, :details, :per_page)
-
     respond_to do |format|
       format.html
       format.js
@@ -584,10 +585,10 @@ class UserfilesController < ApplicationController
       new_name = attributes.delete(:name) || old_name
 
       @userfile.attributes = attributes
-      @userfile.type     = type         if type
-      @userfile.user_id  = new_user_id  if current_user.available_users.where(:id => new_user_id).first
-      @userfile.group_id = new_group_id if current_user.available_groups.where(:id => new_group_id).first
-      @userfile = @userfile.class_update
+      @userfile.type       = type         if type
+      @userfile.user_id    = new_user_id  if current_user.available_users.where(:id => new_user_id).first
+      @userfile.group_id   = new_group_id if current_user.available_groups.where(:id => new_group_id).first
+      @userfile            = @userfile.class_update
 
       if @userfile.save_with_logging(current_user, %w( group_writable num_files format_source_id parent_id hidden ) )
         if new_name != old_name
@@ -761,12 +762,10 @@ class UserfilesController < ApplicationController
       @current_index += 1
     end
 
-    @userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
-    partial_base = "userfiles/quality_control/"
-    if File.exists?(Rails.root.to_s + "/app/views/#{partial_base}_#{@userfile.class.name.underscore}.#{request.format.to_sym}.erb")
-      @partial = partial_base + @userfile.class.name.underscore
-    else
-      @partial = partial_base + "default"
+    @userfile     = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
+    @qc_view_file = @userfile.view_path("qc_panel.html.erb").to_s # model-specific view partial, in its plugin directory
+    if ! File.exists?(@qc_view_file)
+      @qc_view_file = "userfiles/_default_qc_panel.html.erb" # default provided by cbrain
     end
 
     render :partial => "quality_control_panel"
@@ -1085,9 +1084,8 @@ class UserfilesController < ApplicationController
 
     # Sync all files
     userfiles_list.each { |u| u.sync_to_cache rescue true }
-
     # When sending a single file, just throw it at the browser.
-    if filelist.size == 1 && userfiles_list[0].is_a?(SingleFile)
+    if userfiles_list.size == 1 && userfiles_list[0].is_a?(SingleFile)
       userfile = userfiles_list[0]
       fullpath = userfile.cache_full_path
       send_file fullpath, :stream => true, :filename => is_blank ? fullpath.basename : specified_filename

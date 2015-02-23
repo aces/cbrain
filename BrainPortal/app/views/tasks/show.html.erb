@@ -99,10 +99,13 @@
 
     <% t.blank_row %>
 
-    <% t.attribute_cell(:cluster_jobid, :header => "Cluster Job's ID") %>
-    <% t.empty_cell %>
+    <% if current_user.has_role?(:admin_user) %>
 
-    <% t.cell("Cluster Job's Work Directory", :show_width => 2) { @task.full_cluster_workdir || "(Not yet created or erased)" } %>
+      <% t.attribute_cell(:cluster_jobid, :header => "Cluster Job's ID") %>
+      <% t.empty_cell %>
+
+      <% t.cell("Cluster Job's Work Directory", :show_width => 2) { @task.full_cluster_workdir || "(Not yet created or erased)" } %>
+    <% end %>
 
     <% t.cell("Size of Work Directory") do %>
       <% if @task.share_wd_tid %>

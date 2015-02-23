@@ -94,6 +94,7 @@ class Userfile < ActiveRecord::Base
                                        where("userfiles.type='#{format_filter}'#{format_ids}")
                                      }
   cb_scope                :has_no_parent, :conditions => {:parent_id => nil}
+  # TODO fix has_no_child invalid mysql if no file with parents
   cb_scope                :has_no_child,  lambda { |ignored|
                                             parents_ids = Userfile.connection.select_values("SELECT DISTINCT parent_id FROM userfiles WHERE parent_id IS NOT NULL").join(",")
                                             where("userfiles.id NOT IN (#{parents_ids})")
@@ -301,10 +302,10 @@ class Userfile < ActiveRecord::Base
   ##############################################
 
   #Return an array of the tags associated with this file
-  #by +user+.
+  #by +user+. Actually returns a ActiveRecord::Relation.
   def get_tags_for_user(user)
     user = User.find(user) unless user.is_a?(User)
-    self.tags.all(:conditions => ["tags.user_id=? OR tags.group_id IN (?)", user.id, user.cached_group_ids])
+    self.tags.where(["tags.user_id=? OR tags.group_id IN (?)", user.id, user.cached_group_ids])
   end
 
   #Set the tags associated with this file to those
@@ -409,12 +410,11 @@ class Userfile < ActiveRecord::Base
   #on file ownership or group access.
   def self.restrict_access_on_query(user, scope, options = {})
     return scope if user.has_role? :admin_user
+    access_requested    = options[:access_requested] || :write
 
-    access_requested = options[:access_requested] || :write
+    data_provider_ids   = DataProvider.find_all_accessible_by_user(user).raw_first_column("#{DataProvider.table_name}.id")
 
-    data_provider_ids = DataProvider.find_all_accessible_by_user(user).raw_first_column("#{DataProvider.table_name}.id")
-
-    query_user_string = "userfiles.user_id = ?"
+    query_user_string  = "userfiles.user_id = ?"
     query_group_string = "userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)"
     if access_requested.to_sym != :read
       query_group_string += " AND userfiles.group_writable = 1"
@@ -761,12 +761,12 @@ class Userfile < ActiveRecord::Base
   # can be found, typically under the CBRAIN plugins directory. For a
   # model such as TextFile, it would map to a single directory:
   #
-  #   "/path/to/cbrain_plugins/userfiles/text_file/views"
+  #   "/path/to/cbrain_plugins/installed-plugins/userfiles/text_file/views"
   #
   # If given a basename or relative path for a partial (without the leading
   # underscore), will return the path to that partial. E.g. with "abc/def"
   #
-  #   "/path/to/cbrain_plugins/userfiles/text_file/views/abc/_def"
+  #   "/path/to/cbrain_plugins/installed-plugins/userfiles/text_file/views/abc/_def"
   #
   # Returns a Pathname object.
   def self.view_path(partial_name=nil)
@@ -793,13 +793,15 @@ class Userfile < ActiveRecord::Base
   #
   #   "/cbrain_plugins/userfiles/text_file/abc/def.csv"
   #
-  # Returns a Pathname object.
+  # Returns nil if no file exists that match the argument 'public_file'.
+  # Otherwise, returns a Pathname object.
   def self.public_path(public_file=nil)
     base = Pathname.new("/cbrain_plugins/userfiles") + self.to_s.underscore
     return base if public_file.blank?
     public_file = Pathname.new(public_file.to_s).cleanpath
     raise "Public file path outside of userfile plugin." if public_file.absolute? || public_file.to_s =~ /^\.\./
     base = base + public_file
+    return nil unless File.exists?((Rails.root + "public").to_s + base.to_s)
     base
   end
 

@@ -20,12 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-# I don't know why I have to force it to psych here...
-# On brainstorm, it defaults to syck...
-require 'yaml'
-require 'psych'
-YAML::ENGINE.yamler = 'psych'
-
 # CBRAIN constants and some global utility methods.
 class CBRAIN
 
@@ -50,15 +44,15 @@ class CBRAIN
 
   # CBRAIN plugins locations
   Plugins_Dir          = "#{Rails.root.to_s}/cbrain_plugins"
-  TasksPlugins_Dir     = "#{Plugins_Dir}/cbrain_task" # singular; historical
-  UserfilesPlugins_Dir = "#{Plugins_Dir}/userfiles"
+  TasksPlugins_Dir     = "#{Plugins_Dir}/installed-plugins/cbrain_task" # singular; historical
+  UserfilesPlugins_Dir = "#{Plugins_Dir}/installed-plugins/userfiles"
 
   $CBRAIN_StartTime_Revision = "???"  # Will be filled in by validation script
 
   # Some environment variables MUST be set for some subsystems to work.
   # In deployment at McGill, we run the rails application under control
   # of 'monit' which clears the environment of almost everything!
-  ENV['HOME'] = Rails_UserHome        # Most notably, ssh and Net::SFTP needs this
+  ENV['HOME'] = Rails_UserHome        # Most notably, ssh and Net::SFTP need this
 
   # File creation umask
   File.umask(0077)  # octal literal
