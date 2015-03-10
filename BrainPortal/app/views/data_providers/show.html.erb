@@ -18,18 +18,18 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
 <% title 'Data Provider Info' %>
 
 <div class="menu_bar">
-  
+
     <% if @provider.is_browsable?(current_user) && @provider.online? %>
       <%= link_to 'Browse', browse_data_provider_path(@provider), :class => "button" %>
     <% end %>
-    
+
     <%= link_to 'File Registration Statistics', report_path(
                   :table_name       => 'userfiles.combined_file_rep',
                   :data_provider_id => @provider.id,
@@ -48,7 +48,7 @@
 
 <%= error_messages_for @provider, :header_message => "Provider could not be updated." %>
 
-<div class="display_inline_block" style="min-width: 50%"> 
+<div class="display_inline_block" style="min-width: 50%">
 
   <%= show_table(@provider, :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
 
@@ -93,12 +93,12 @@
     <% else %>
       <% t.empty_cell %>
     <% end %>
-    
+
     <% licenses = @provider.license_agreements.count == 0 ? "(None)": @provider.license_agreements.join("\n") %>
     <% t.edit_cell(:license_agreements, :content => licenses) do %>
       <%= text_area_tag "data_provider[license_agreements]", @provider.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
       <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
-    <% end %>       
+    <% end %>
 
     <% t.edit_cell(:time_zone, :content => (@provider.time_zone || "(Unset)") ) do %>
       <%= select_tag "data_provider[time_zone]", time_zone_options_for_select(@provider.time_zone, /canada/i), :include_blank => true %>
@@ -153,9 +153,7 @@
 
       <% t.boolean_edit_cell("meta[must_move]", @provider.meta["must_move"], "on", "", :header => "Files must be copied/moved upon registration") %>
 
-      <% t.boolean_edit_cell("meta[must_erase]", @provider.meta["must_erase"], "on", "", :header => "Files will always be erased upon de-registration") %>
-
-      <% t.edit_cell("meta[browse_gid]", 
+      <% t.edit_cell("meta[browse_gid]",
            :header  => "Files can be browsed only by members of this project",
            :content => @provider.meta[:browse_gid].present? ? link_to_group_if_accessible(@provider.meta[:browse_gid]) : '(Any Users)',
            :show_width => 2

@@ -242,7 +242,7 @@ class FileCollection < Userfile
     "" # everything OK
   rescue => ex
     File.unlink(temp_tar_file) rescue true
-    return "Archiving process exception: #{ex.class}"
+    return "Archiving process exception: #{ex.class} #{ex.message}"
   ensure
     File.unlink(tar_capture)   rescue true
     File.unlink(temp_tar_file) rescue true

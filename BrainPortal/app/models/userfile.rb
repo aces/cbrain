@@ -46,7 +46,7 @@ class Userfile < ActiveRecord::Base
   cbrain_abstract_model! # objects of this class are not to be instanciated
 
   after_save              :update_format_group
-  before_destroy          :erase_or_unregister, :format_tree_update, :nullify_children
+  before_destroy          :erase_data_provider_content_and_cache, :format_tree_update, :nullify_children
 
   validates               :name,
                           :presence => true,
@@ -970,7 +970,7 @@ class Userfile < ActiveRecord::Base
 
   private
 
-  def validate_associations
+  def validate_associations #:nodoc:
     unless DataProvider.where( :id => self.data_provider_id ).first
       errors.add(:data_provider, "does not exist.")
     end
@@ -982,15 +982,13 @@ class Userfile < ActiveRecord::Base
     end
   end
 
-  def erase_or_unregister
-    unless self.data_provider.is_browsable? && self.data_provider.meta[:must_erase].blank?
-      self.provider_erase
-    end
-    self.cache_erase
+  def erase_data_provider_content_and_cache #:nodoc:
+    self.cache_erase rescue true
+    self.provider_erase
     true
   end
 
-  def format_tree_update
+  def format_tree_update #:nodoc:
     return true if self.format_source
 
     format_children = self.formats
@@ -1003,11 +1001,11 @@ class Userfile < ActiveRecord::Base
     end
   end
 
-  def nullify_children
+  def nullify_children #:nodoc:
     self.children.each(&:remove_parent)
   end
 
-  def validate_group_update
+  def validate_group_update #:nodoc:
     if self.format_source_id && self.changed.include?("group_id") && self.format_source
       unless self.group_id == self.format_source.group_id
         errors.add(:group_id, "cannot be modified for a format file.")
@@ -1015,7 +1013,7 @@ class Userfile < ActiveRecord::Base
     end
   end
 
-  def update_format_group
+  def update_format_group #:nodoc:
     unless self.format_source_id
       self.formats.each do |f|
         f.update_attributes!(:group_id => self.group_id)

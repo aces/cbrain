@@ -927,7 +927,7 @@ class ClusterTask < CbrainTask
   # store (part of) their contents in the task's object;
   # this is called explicitely only in the case when the
   # portal performs a 'show' request on a single task
-  # otherise it's too expensive to do it every time. The
+  # otherwise it's too expensive to do it every time. The
   # pseudo attributes :cluster_stdout and :cluster_stderr
   # are not really part of the task's ActiveRecord model.
   def capture_job_out_err(run_number=nil,stdout_lim=2000,stderr_lim=2000)
@@ -949,16 +949,16 @@ class ClusterTask < CbrainTask
      scriptfile = Pathname.new(self.full_cluster_workdir) + self.qsub_script_basename(run_number) rescue nil
      if stdoutfile && File.exist?(stdoutfile)
        io = IO.popen("tail -#{stdout_lim} #{stdoutfile.to_s.bash_escape}","r")
-        self.cluster_stdout = io.read
-        io.close
+       self.cluster_stdout = io.read
+       io.close
      end
      if stderrfile && File.exist?(stderrfile)
        io = IO.popen("tail -#{stderr_lim} #{stderrfile.to_s.bash_escape}","r")
-        self.cluster_stderr = io.read
-        io.close
+       self.cluster_stderr = io.read
+       io.close
      end
      if scriptfile && File.exist?(scriptfile.to_s)
-        self.script_text = File.read(scriptfile.to_s) rescue ""
+       self.script_text = File.read(scriptfile.to_s) rescue ""
      end
      true
   end

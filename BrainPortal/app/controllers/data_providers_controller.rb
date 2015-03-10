@@ -98,7 +98,7 @@ class DataProvidersController < ApplicationController
     @provider.group_id ||= (( current_project && current_project.id ) || current_user.own_group.id)
 
     if @provider.save
-      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers, :browse_gid])
+      add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid])
       @provider.addlog_context(self,"Created by #{current_user.login}")
       flash[:notice] = "Provider successfully created."
       respond_to do |format|
@@ -141,7 +141,7 @@ class DataProvidersController < ApplicationController
          )
       )
       meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/^dp_no_copy_\d+$|^rr_no_sync_\d+$/)
-      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers, :browse_gid] + meta_flags_for_restrictions)
+      add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid] + meta_flags_for_restrictions)
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
         format.html { redirect_to :action => :show }

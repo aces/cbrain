@@ -999,12 +999,8 @@ class UserfilesController < ApplicationController
       to_delete.each_with_index do |userfile,count|
         $0 = "Delete ID=#{userfile.id} #{count+1}/#{to_delete.size}\0"
         begin
-          if userfile.data_provider.is_browsable? && userfile.data_provider.meta[:must_erase].blank?
-            unregistered_success_list << userfile
-          else
-            deleted_success_list << userfile
-          end
           userfile.destroy
+          deleted_success_list << userfile
         rescue => e
           (failed_list[e.message] ||= []) << userfile
         end

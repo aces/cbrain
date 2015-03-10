@@ -176,7 +176,7 @@ class TasksController < ApplicationController
     # Our new task object needs some initializing
     @task.params         = @task.class.wrapper_default_launch_args.clone
     @task.bourreau_id    = params[:bourreau_id]     # Just for compatibility with old code
-    @task.tool_config_id = params[:tool_config_id]  # Normaly send by interface but it's optionnal
+    @task.tool_config_id = params[:tool_config_id]  # Normaly sent by interface but it's optional
     @task.user           = current_user
     @task.group_id       = current_project.try(:id) || current_user.own_group.id
     @task.status         = "New"

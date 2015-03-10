@@ -18,24 +18,24 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
 <div class="menu_bar">
-    <%= link_to "Upload File",{:action  => :new}, :class  => "button menu_button"%>   
+    <%= link_to "Upload File",{:action  => :new}, :class  => "button menu_button"%>
     <%= button_with_dropdown_menu("Launch Task")  do %>
       <%= render :partial => 'userfiles/tool_selection' %>
     <% end %>
     <%= button_with_dropdown_menu("File Management") do %>
-      
+
       <h4>Download</h4>
       Specify Download File Name (optional):
       <%= text_field_tag :specified_filename %>
       <%= hijacker_submit_button("Download Files", :url  => url_for(:controller => 'userfiles', :action => 'download'), :ajax_submit  => false, :class => "button", :method  => :get) %>
       <hr>
-      
-      
+
+
       <% writable_dps = DataProvider.find_all_accessible_by_user(current_user).all.select { |dp| ! dp.read_only? } %>
       <h4>Move/Copy</h4>
       To Data Provider:
@@ -46,87 +46,87 @@
       <%= hijacker_submit_button("Move Files", :name => :move, :url  => url_for(:action  => :change_provider), :class => "button", :method  => :post) %>
       <%= hijacker_submit_button("Copy Files", :name => :copy, :url  => url_for(:action  => :change_provider), :class => "button", :method  => :post) %>
       <hr>
-      
+
       <h4>Create collection</h4>
-      Name for the collection (optionnal):
+      Name for the collection (optional):
       <%= text_field_tag :collection_name %>
       To Data Provider:
       <%= data_provider_select(:data_provider_id_for_collection, { :data_providers => writable_dps }, :include_blank => "(Select Destination)") %>
       <%= hijacker_submit_button("Create Collection", :url    => url_for(:action  => :create_collection),
-                                                      :class  => "button", 
+                                                      :class  => "button",
                                                       :method => :post)
       %>
       <hr>
-      
+
       <h4>Compression, archiving and deletion</h4>
       For file(s):
       <%= hijacker_submit_button("(Un)compress",  :url     => url_for(:action  => :compress ),
                                                   :confirm => "Are you sure you want to compress or uncompress the selected files?",
-                                                  :class   => "button", 
-                                                  :method  => :post) 
+                                                  :class   => "button",
+                                                  :method  => :post)
       %>
-      
-      For collection(s): 
+
+      For collection(s):
       <%= hijacker_submit_button("(Un)archive",   :url     => url_for(:action  => :archive_management ),
                                                   :confirm => "Are you sure you want to archive or unarchive the selected files collection?",
-                                                  :class   => "button", 
-                                                  :method  => :post) 
+                                                  :class   => "button",
+                                                  :method  => :post)
       %>
-      
+
       For any type:
       <%= hijacker_submit_button("Delete", :url     => url_for(:action  => :delete_files),
                                            :confirm => "Are you sure you want to delete the selected files?",
-                                           :class     => "button", 
-                                           :method  => :delete) 
+                                           :class     => "button",
+                                           :method  => :delete)
       %>
-      
+
     <% end %>
-    
+
     <%= button_with_dropdown_menu("Update Attributes") do %>
         <h4>Tags</h4>
         <%= render :partial => 'userfiles/tag_table' %>
         <hr>
         <h4>Projects</h4>
-        Change Project: 
+        Change Project:
         <%= group_select('userfile[group_id]', {}, { :include_blank => "(select another project)" } ) %>
         <%= hijacker_submit_button("Update", :name => :update_projects, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
         <P>
-        Project Permission Update: 
+        Project Permission Update:
         <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
-        <%= hijacker_submit_button("Update", :name => :update_permissions, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
+        <%= hijacker_submit_button("Update", :name => :update_permissions, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
         <% if !current_user.has_role?(:normal_user) %>
           <hr>
           Change Owner:
           <%= user_select('userfile[user_id]', {}, { :include_blank => "(select another owner)" } ) %>
-          <%= hijacker_submit_button("Update", :name => :update_owner, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>   
+          <%= hijacker_submit_button("Update", :name => :update_owner, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
         <% end %>
         <hr>
         Mark Or Unmark As Hidden (<%= hidden_icon %>):
         <%= select(:userfile, :hidden, [['Not Hidden', false],['Mark as Hidden', true]]) %>
-        <%= hijacker_submit_button("Update", :name => :update_hidden, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
+        <%= hijacker_submit_button("Update", :name => :update_hidden, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
         <hr>
         Mark Or Unmark As Immutable (<%= immutable_icon %>):
         <%= select(:userfile, :immutable, [['Not Immutable', false],['Mark as Immutable', true]]) %>
-        <%= hijacker_submit_button("Update", :name => :update_immutable, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
+        <%= hijacker_submit_button("Update", :name => :update_immutable, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
         <hr>
         Update Parent-Child Relationships:
         <%= hijacker_submit_button("Update",  :url  => url_for(:action  => :new_parent_child ),
                                                      :datatype => 'html',
                                                      :overlay => true,
-                                                     :class => "button", 
-                                                     :method  => :get) 
+                                                     :class => "button",
+                                                     :method  => :get)
         %>
         <hr>
         Update File Type:
         <%= userfile_type_select(:file_type, {}, { :include_blank => "(select another file type)" } ) %>
-        <%= hijacker_submit_button("Update", :name => :update_file_type, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %> 
+        <%= hijacker_submit_button("Update", :name => :update_file_type, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
         <hr>
-        Start QC: <%= 
-                      hijacker_submit_button("Start", :url  => url_for(:controller => 'userfiles', :action => 'quality_control'), 
+        Start QC: <%=
+                      hijacker_submit_button("Start", :url  => url_for(:controller => 'userfiles', :action => 'quality_control'),
                                                       :confirm  => "Please note that files must be synchronized locally for QC. \n\nContinue?",
                                                       :ajax_submit  => false,
-                                                      :class => "button",  
-                                                      :method  => :post) 
+                                                      :class => "button",
+                                                      :method  => :post)
                   %>
         <hr>
         Cache Operations:<br/>
@@ -155,9 +155,9 @@
         <%= hijacker_submit_button(label,
               :url => url_for(:action  => :manage_persistent, :operation => label),
               :method => :post,
-              :class => "button", 
+              :class => "button",
               :ajax_submit => false
-            ) 
+            )
         %>
       <% end %>
       </p>
@@ -174,7 +174,7 @@
         <li><%= filter_add_link "Has No Children", :filters => {:has_no_child  => true} %></li>
       </ul>
     <% end %>
-    <span id="view_option_button"> 
+    <span id="view_option_button">
       <%= render :partial => "userfiles/view_option_button" %>
     </span>
 </div>

@@ -384,8 +384,10 @@ class BourreauWorker < Worker
           task.addlog("Task work directory invalid or does not exist.") unless workdir_ok
           if ! workdir_ok
             canrecover = (fromwhat == 'Setup' ? true : false)
+            task.addlog("But since this was a setup failure, we will simply assume we can move on to 'New'.") if canrecover
           else
             canrecover = Dir.chdir(workdir) do
+              task.addlog("Triggering recovery method '#{recover_method}()'.")
               task.send(recover_method)  # custom recovery method written by task programmer
             end
           end
