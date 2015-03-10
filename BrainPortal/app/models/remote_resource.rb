@@ -257,7 +257,9 @@ class RemoteResource < ActiveRecord::Base
   # for this RemoteResource. The method does not start it, if
   # it's created.
   def ssh_master
-    category = "#{self.class}"
+    # category: we add the UNIX userid so as not to conflict
+    # with any other user on the system when creating out socket in /tmp
+    category = "#{self.class}_#{Process.uid}"
     uniq     = "#{self.id}"
     master   = SshMaster.find_or_create(self.ssh_control_user,self.ssh_control_host,self.ssh_control_port || 22,
                :category => category, :uniq => uniq)
