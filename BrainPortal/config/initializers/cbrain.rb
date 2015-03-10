@@ -237,8 +237,8 @@ class CBRAIN
       passphrase    = admin.meta[:global_ssh_agent_lock_passphrase] ||= admin.send(:random_string)
       passphrase_md = admin.meta.md_for_key(:global_ssh_agent_lock_passphrase)
 
-      agent.unlock(passphrase)
-      passphrase_md.touch
+      passphrase_md.touch      # this tells the SshAgentLocker process to NOT lock for at least 30 secs
+      agent.unlock(passphrase) # unlock the SshAgent; it will be relocked by the SshAgentLocker background process started on the Portal side.
 
       # Log info about what unlocked the agent, if traces are turned on.
       if ENV['CBRAIN_DEBUG_TRACES'].present?

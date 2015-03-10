@@ -148,7 +148,7 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
       al_logger.level = Log4r::DEBUG if ENV['CBRAIN_DEBUG_TRACES'].present?
 
       WorkerPool.create_or_find_pool(PortalAgentLocker, 1,
-        { :check_interval => 20,
+        { :check_interval => 60,
           :worker_log     => al_logger,
           :name           => 'AgentLocker',
         }

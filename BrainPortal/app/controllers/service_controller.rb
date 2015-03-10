@@ -104,13 +104,7 @@ class ServiceController < ApplicationController
   # Return release note describing the current version
   # of the platform.
   def releasenotes
-    respond_to do |format|
-      text = "Coming soon; will point to GitHub's release notes."
-      format.html { render :text => text }
-      format.xml  { render :xml  => { :text => text } }
-      format.json { render :json => { :text => text } }
-    end
-
+    redirect_to 'https://github.com/aces/cbrain-apis'
   end
 
   # Provides information on how to get support
@@ -128,10 +122,9 @@ class ServiceController < ApplicationController
     end
   end
 
-  # Return link to the code source of the platform.
+  # Return link to the source code of the APIs for the platform
   def source
-    # TODO Eventually, redirect to GitHub
-    render :nothing => true, :status => 204
+    redirect_to 'https://github.com/aces/cbrain-apis'
   end
 
   # Redirects to the main login page.

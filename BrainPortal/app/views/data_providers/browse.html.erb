@@ -39,15 +39,3 @@
 
 <% end %>
 
-<p class="medium_paragraphs">
-<strong>Important note about the behavior of this Data Provider:</strong>
-<% if @provider.meta[:must_erase].present? %>
-  Files registered on this Data Provider will be <strong>deleted completely</strong>
-  if the <strong>Delete</strong> button of the file manager is used.
-<% else %>
-  Files registered on the Data Provider will only be <strong>unregistered</strong>
-  if the <strong>Delete</strong> button of the file manager is used. Please use
-  the <strong>Delete Files</strong> panel above to remove them completely.
-<% end %>
-</p>
-
