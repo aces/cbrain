@@ -148,6 +148,7 @@ CbrainRailsPortal::Application.routes.draw do
   # Special named routes
   root  :to                       => 'portal#welcome'
   get   '/home'                   => 'portal#welcome'
+  post  '/home'                   => 'portal#welcome' # lock/unlock service
   get   '/credits'                => 'portal#credits'
   get   '/about_us'               => 'portal#about_us'
   get   '/login'                  => 'sessions#new'
