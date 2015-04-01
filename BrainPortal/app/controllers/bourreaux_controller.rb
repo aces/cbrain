@@ -139,9 +139,9 @@ class BourreauxController < ApplicationController
     @groups   = current_user.available_groups
 
     fields    = params[:bourreau]
-    fields ||= {}
+    fields  ||= {}
 
-    subtype          = fields.delete(:type)
+    fields.delete(:type)
     old_dp_cache_dir = @bourreau.dp_cache_dir
 
     if ! @bourreau.update_attributes_with_logging(fields, current_user,
@@ -503,8 +503,8 @@ class BourreauxController < ApplicationController
     rrlist           = RemoteResource.find_all_accessible_by_user(current_user).all
 
     # Index of acceptable users and remote_resources
-    userlist_index   = userlist.index_by &:id
-    rrlist_index     = rrlist.index_by &:id
+    userlist_index   = userlist.index_by(&:id)
+    rrlist_index     = rrlist.index_by(&:id)
 
     # Extract what caches are asked to be cleaned up
     rrid_to_userids = {}  # rr_id => { uid => true , uid => true , uid => true ...}
@@ -572,7 +572,7 @@ class BourreauxController < ApplicationController
     sent_refresh = [] # for flash message
     refresh_bs.each do |b|
       if b.online? && b.has_owner_access?(current_user) && (! b.meta[:data_provider_statuses_last_update] || b.meta[:data_provider_statuses_last_update] < 1.minute.ago)
-        b.send_command_check_data_providers(@dps.map &:id) rescue true
+        b.send_command_check_data_providers(@dps.map(&:id)) rescue true
         sent_refresh << b.name
       end
     end

@@ -83,21 +83,21 @@ module RichUiHelper
   #
   #
   def build_tabs(options = {}, &block)
-     bar = TabBuilder.new
+    bar = TabBuilder.new
 
-     options[:class] ||= ""
-     options[:class] +=  " tabs"
+    options[:class] ||= ""
+    options[:class] +=  " tabs"
 
-     atts = options.to_html_attributes
+    atts = options.to_html_attributes
 
-     capture(bar,&block)  #Load content into bar object
+    capture(bar,&block)  #Load content into bar object
 
-     safe_concat("<div #{atts}>")
-     safe_concat(bar.tab_titles)
-     safe_concat(bar.tab_divs)
-     safe_concat("</div>")
-     ""
-   end
+    safe_concat("<div #{atts}>")
+    safe_concat(bar.tab_titles)
+    safe_concat(bar.tab_divs)
+    safe_concat("</div>")
+    ""
+  end
 
   ############################################################
   #
@@ -330,7 +330,7 @@ module RichUiHelper
   #The appearance/disappearance can also be animated.
   def show_hide_checkbox(target, options = {})
     options["data-target"] = target
-    
+
     checked = options.delete(:checked)
     if checked
       options["CHECKED"] = true
@@ -345,7 +345,7 @@ module RichUiHelper
     if slide_effect
       options["data-slide-effect"] = true
     end
-    
+
     slide_duration = options.delete(:slide_duration)
     if slide_duration
       options["data-slide-duration"] = slide_duration

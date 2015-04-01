@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #
@@ -178,7 +178,7 @@ admin.own_group.update_attributes!(:creator_id => admin.id)
 everyone.update_attributes!(:creator_id => admin.id)
 
 # Create portal object
-portal = BrainPortal.seed_record!(
+BrainPortal.seed_record!(
   {
     :user_id          => admin.id,
     :group_id         => everyone.id,

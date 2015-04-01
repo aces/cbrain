@@ -269,12 +269,9 @@ module ActRecLog
   # where you call addlog_context() itself).
   def addlog_context(context, message=nil, caller_level=0)
     return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
-    prev_level     = caller[caller_level]
-
     class_name     = context.class.to_s
     class_name     = context.to_s if class_name == "Class"
     rev_info       = context.revision_info
-    #pretty_info    = rev_info.svn_id_pretty_rev_author_date
     pretty_info    = rev_info.svn_id_rev
 
     full_message   = "#{class_name} rev. #{pretty_info}"

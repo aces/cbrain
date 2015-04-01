@@ -200,15 +200,15 @@ class RemoteResource < ActiveRecord::Base
     all_ok = true
 
     ig_pat.each do |pattern|
-       if (! pattern.is_a?(String)) ||
-          pattern.blank? ||
-          pattern == "*" ||
-          ! pattern.is_a?(String) ||
-          pattern =~ /\*\*/ ||
-          pattern =~ /\// ||
-          pattern !~ /^[\w\-\.\+\=\@\%\&\:\,\~\*\?]+$/ # very strict! other special characters can cause shell side-effects!
-          errors.add(:spaced_dp_ignore_patterns, "has unacceptable pattern: '#{pattern}'." )
-          all_ok = false
+      if (! pattern.is_a?(String)) ||
+        pattern.blank? ||
+        pattern == "*" ||
+        ! pattern.is_a?(String) ||
+        pattern =~ /\*\*/ ||
+        pattern =~ /\// ||
+        pattern !~ /^[\w\-\.\+\=\@\%\&\:\,\~\*\?]+$/ # very strict! other special characters can cause shell side-effects!
+        errors.add(:spaced_dp_ignore_patterns, "has unacceptable pattern: '#{pattern}'." )
+        all_ok = false
       end
     end
 

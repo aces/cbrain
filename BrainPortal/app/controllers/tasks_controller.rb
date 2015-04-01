@@ -31,7 +31,7 @@ class TasksController < ApplicationController
 
   def index #:nodoc:
     bourreaux    = Bourreau.find_all_accessible_by_user(current_user).all
-    bourreau_ids = bourreaux.map &:id
+    bourreau_ids = bourreaux.map(&:id)
 
     scope = filter_variable_setup current_user.available_tasks.real_tasks.where( :bourreau_id => bourreau_ids )
 
@@ -203,7 +203,7 @@ class TasksController < ApplicationController
       return
     end
 
-    @task.params[:interface_userfile_ids] = @files.map &:id
+    @task.params[:interface_userfile_ids] = @files.map(&:id)
 
     # Other common instance variables, such as @data_providers and @bourreaux
     initialize_common_form_values
@@ -269,7 +269,7 @@ class TasksController < ApplicationController
 
   end
 
-def create #:nodoc:
+  def create #:nodoc:
     flash[:notice]     = ""
     flash[:error]      = ""
     flash.now[:notice] = ""
@@ -437,7 +437,7 @@ def create #:nodoc:
       end
 
       # Send a start worker command to each affected bourreau
-      bourreau_ids = tasklist.map &:bourreau_id
+      bourreau_ids = tasklist.map(&:bourreau_id)
       bourreau_ids.uniq.each do |bourreau_id|
         Bourreau.find(bourreau_id).send_command_start_workers rescue true
       end
@@ -613,7 +613,6 @@ def create #:nodoc:
     end
 
     do_in_spawn   = task_ids.size > 5
-    success_count = 0
     success_list  = []
     failed_list   = {}
 
@@ -732,10 +731,10 @@ def create #:nodoc:
     flash[:notice] ||= ""
 
     if operation.nil? || operation.empty?
-       flash[:notice] += "Task list has been refreshed.\n"
-       redirect_to :action => :index
-       return
-     end
+      flash[:notice] += "Task list has been refreshed.\n"
+      redirect_to :action => :index
+      return
+    end
 
     if tasklist.empty?
       flash[:error] += "No task selected? Selection cleared.\n"
@@ -744,10 +743,6 @@ def create #:nodoc:
     end
 
     # Prepare counters for how many tasks affected.
-    sent_ok      = 0
-    sent_failed  = 0
-    sent_skipped = 0
-
     skipped_list = {}
     success_list = []
     failed_list  = {}
@@ -785,7 +780,7 @@ def create #:nodoc:
       archive_dp_id   = nil unless archive_dp_id   && DataProvider.find_all_accessible_by_user(current_user).where(:id => archive_dp_id).exists?
 
       # Go through tasks, grouped by bourreau
-      grouped_tasks = tasks.group_by &:bourreau_id
+      grouped_tasks = tasks.group_by(&:bourreau_id)
       grouped_tasks.each do |pair_bid_tasklist|
         bid       = pair_bid_tasklist[0]
         btasklist = pair_bid_tasklist[1]
@@ -856,14 +851,14 @@ def create #:nodoc:
 
     # Find the list of Bourreaux that are both available and support the tool
     tool         = @task.tool
-    bourreau_ids = tool.bourreaux.map &:id
+    bourreau_ids = tool.bourreaux.map(&:id)
     bourreaux    = Bourreau.find_all_accessible_by_user(current_user).where( :online => true, :id => bourreau_ids ).all
 
     # Presets
     unless @task.class.properties[:no_presets]
       site_preset_tasks = []
       unless current_user.site.blank?
-        manager_ids = current_user.site.managers.map &:id
+        manager_ids = current_user.site.managers.map(&:id)
         site_preset_tasks = CbrainTask.where( :status => 'SitePreset', :user_id => manager_ids )
       end
       own_preset_tasks = current_user.cbrain_tasks.where( :type => @task.class.to_s, :status => 'Preset' )
@@ -873,12 +868,10 @@ def create #:nodoc:
       @all_presets << [ "Site Presets",     @site_presets ] if @site_presets.size > 0
       @all_presets << [ "Personal Presets", @own_presets  ] if @own_presets.size > 0
       @offer_site_preset = current_user.has_role? :site_manager
-      #@own_presets = [ [ "Personal1", "1" ], [ "Personal2", "2" ] ]
-      #@all_presets = [ [ "Site Presets", [ [ "Dummy1", "1" ], [ "Dummy2", "2" ] ] ], [ "Personal Presets", @own_presets ] ]
     end
 
     # Tool Configurations
-    valid_bourreau_ids = bourreaux.index_by &:id
+    valid_bourreau_ids = bourreaux.index_by(&:id)
     valid_bourreau_ids = { @task.bourreau_id => @task.bourreau } if ! @task.new_record? # existing tasks have more limited choices.
     @tool_configs      = tool.tool_configs # all of them, too much actually
     @tool_configs.reject! do |tc|

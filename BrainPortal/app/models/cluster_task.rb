@@ -1035,7 +1035,7 @@ class ClusterTask < CbrainTask
       end
 
       system("chmod","-R","u+rwX",".") # uppercase X mode affects only directories
-      ret = system("tar -czf '#{temp_tar_file}' --exclude '*#{temp_tar_file}' . </dev/null >'#{tar_capture}' 2>&1")
+      system("tar -czf '#{temp_tar_file}' --exclude '*#{temp_tar_file}' . </dev/null >'#{tar_capture}' 2>&1")
       out = File.read(tar_capture) rescue ""
 
       # Remove some common warnings
@@ -1153,10 +1153,9 @@ class ClusterTask < CbrainTask
   rescue => ex
     self.addlog_exception(ex, "Unarchiving process exception:")
     return false
-
   ensure
     File.unlink(tar_capture)   rescue true
-   end
+  end
 
   # This method performs the same steps as
   # archive_work_directory, with the added
@@ -1382,7 +1381,6 @@ class ClusterTask < CbrainTask
   def submit_cluster_job
     self.addlog("Launching job on cluster.")
 
-    name     = self.name
     commands = self.cluster_commands  # Supplied by subclass; can use self.params
     workdir  = self.full_cluster_workdir
 

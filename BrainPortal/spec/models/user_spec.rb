@@ -311,13 +311,13 @@ describe User do
     it "should changed the password encryption if crypted_password is in SHA1" do
         normal_user.crypted_password = User.encrypt_in_sha1(normal_user.password,normal_user.salt)
         normal_user.authenticated?(normal_user.password)
-        expect(normal_user.crypted_password).to match /^pbkdf2_sha1:\w+/
+        expect(normal_user.crypted_password).to match(/^pbkdf2_sha1:\w+/)
     end
 
     it "should changed the password encryption if crypted_password is in PBKDF2" do
         normal_user.crypted_password = User.encrypt_in_pbkdf2(normal_user.password,normal_user.salt)
         normal_user.authenticated?(normal_user.password)
-        expect(normal_user.crypted_password).to match /^pbkdf2_sha1:\w+/
+        expect(normal_user.crypted_password).to match(/^pbkdf2_sha1:\w+/)
     end
 
     it "should return true if crypted_password is equal to encrypt(password) and encryption is in PBKDF2_SHA1" do
@@ -675,7 +675,7 @@ describe User do
 
 
     it "User should be part of is own group everyone group and these sites" do
-      Factory.create(:normal_user, :login => "abc", :site => mock_model(Site).as_null_object) 
+      Factory.create(:normal_user, :login => "abc", :site => mock_model(Site).as_null_object)
       expect(normal_user.group_ids).to include(group.id,site_group.id)
     end
 

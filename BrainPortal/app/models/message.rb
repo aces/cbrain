@@ -299,7 +299,7 @@ class Message < ActiveRecord::Base
                 [ destination.own_group ]
               when Array
                 begin
-                  (destination.map &:own_group) | []
+                  (destination.map(&:own_group)) | []
                 rescue NoMethodError
                   [] #cb_error "Destination not acceptable for send_message."
                 end

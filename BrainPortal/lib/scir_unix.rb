@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This is a replacement for the drmaa.rb library; this particular subclass
@@ -46,7 +46,7 @@ class ScirUnix < Scir
       psout.split(/\s*\n\s*/).each do |line|
         next unless line =~ /^\s*(\d+)\s+(\d+)\s+(\S+)/
         pid       = Regexp.last_match[1]
-        uid       = Regexp.last_match[2]  # not used
+      # uid       = Regexp.last_match[2]
         statechar = Regexp.last_match[3]
         state     = statestring_to_stateconst(statechar)
         @job_info_cache[pid.to_s] = { :drmaa_state => state }

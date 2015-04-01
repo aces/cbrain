@@ -17,12 +17,12 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #
 # Seed for CBRAIN developers
-# 
+#
 # Create lots and lots of records:
 #
 # * Sample Sites
@@ -284,23 +284,25 @@ Step 3: Projects
 STEP
 
 wisegroup           = WorkGroup.seed_record!({ :name => 'wise people' })
-wisegroup.user_ids  = User.where( :login => [ 'ebennet', 'jbennet', 'mrdarcy', 'gedarcy', 'chbingley', 'mrgardiner' ] ).map &:id
+wisegroup.user_ids  = User.where( :login => [ 'ebennet', 'jbennet', 'mrdarcy', 'gedarcy', 'chbingley', 'mrgardiner' ] ).map(&:id)
 wisegroup.save!
 
 dancers             = WorkGroup.seed_record!({ :name => 'dancers' })
-dancers.user_ids    = User.where( :login => [ 'mbennet', 'lbennet', 'cbennet' ]).map &:id
+dancers.user_ids    = User.where( :login => [ 'mbennet', 'lbennet', 'cbennet' ]).map(&:id)
 dancers.save!
 
 gentlemen           = WorkGroup.seed_record!({ :name => 'gentlemen', :invisible => true })
-gentlemen.user_ids  = User.where( :login => [ 'mrbennet', 'mrdarcy', 'chbingley', 'mrgardiner' ] ).map &:id
+gentlemen.user_ids  = User.where( :login => [ 'mrbennet', 'mrdarcy', 'chbingley', 'mrgardiner' ] ).map(&:id)
 gentlemen.save!
 
 ladies              = WorkGroup.seed_record!({ :name => 'ladies', :invisible => true })
-ladies.user_ids     = User.where( :login => [ 'jbennet', 'ebennet', 'cabingley', 'gedarcy', 'chlucas' ] ).map &:id
+ladies.user_ids     = User.where( :login => [ 'jbennet', 'ebennet', 'cabingley', 'gedarcy', 'chlucas' ] ).map(&:id)
 ladies.save!
 
-lydia_hats  = WorkGroup.seed_record!({ :name => 'myhats'  }) { |g| g.user_ids = [ User.find_by_login('lbennet').id ] }
-mary_sheets = WorkGroup.seed_record!({ :name => 'mymusic' }) { |g| g.user_ids = [ User.find_by_login('mbennet').id ] }
+# lydia_hats
+WorkGroup.seed_record!({ :name => 'myhats'  }) { |g| g.user_ids = [ User.find_by_login('lbennet').id ] }
+# mary_sheets
+WorkGroup.seed_record!({ :name => 'mymusic' }) { |g| g.user_ids = [ User.find_by_login('mbennet').id ] }
 
 
 
@@ -331,7 +333,8 @@ end
 
 #---------------------------------------------------
 en_dp_dir = "#{seeds_dev_support_dir}/dp_official"
-en_dp = EnCbrainSmartDataProvider.seed_record!({
+# en_dp
+EnCbrainSmartDataProvider.seed_record!({
     :remote_dir => en_dp_dir
   },
   {
@@ -345,7 +348,8 @@ Dir.mkdir(en_dp_dir) unless Dir.exists?(en_dp_dir)
 
 #---------------------------------------------------
 ssh_dp_dir = "#{seeds_dev_support_dir}/dp_browsable"
-ssh_dp = SshDataProvider.seed_record!({
+# ssh_dp
+SshDataProvider.seed_record!({
     :remote_dir => ssh_dp_dir
   },
   {
@@ -359,7 +363,8 @@ Dir.mkdir(ssh_dp_dir) unless Dir.exists?(ssh_dp_dir)
 
 #---------------------------------------------------
 lb_dp_dir = "#{seeds_dev_support_dir}/dp_lb_browsable"
-lb_dp = SshDataProvider.seed_record!({
+# lb_dp
+SshDataProvider.seed_record!({
     :remote_dir => lb_dp_dir
   },
   {
@@ -373,7 +378,8 @@ Dir.mkdir(lb_dp_dir) unless Dir.exists?(lb_dp_dir)
 
 #---------------------------------------------------
 nether_dp_dir = "#{seeds_dev_support_dir}/dp_nether_official"
-nether_dp = EnCbrainSmartDataProvider.seed_record!({
+# nether_dp
+EnCbrainSmartDataProvider.seed_record!({
     :remote_dir => nether_dp_dir
   },
   {
@@ -387,7 +393,8 @@ Dir.mkdir(nether_dp_dir) unless Dir.exists?(nether_dp_dir)
 
 #---------------------------------------------------
 pember_dp_dir = "#{seeds_dev_support_dir}/dp_pember_official"
-pember_dp = EnCbrainSmartDataProvider.seed_record!({
+# pember_dp
+EnCbrainSmartDataProvider.seed_record!({
     :remote_dir => pember_dp_dir
   },
   {
@@ -401,7 +408,8 @@ Dir.mkdir(pember_dp_dir) unless Dir.exists?(pember_dp_dir)
 
 #---------------------------------------------------
 collins_dp_dir = "#{seeds_dev_support_dir}/dp_collins_browsable"
-collins_dp = SshDataProvider.seed_record!({
+# collins_dp
+SshDataProvider.seed_record!({
     :remote_dir => collins_dp_dir
   },
   {
@@ -545,65 +553,65 @@ Step 6: Tools
 STEP
 
 diag_tool = Tool.seed_record!(
-  { 
+  {
     :cbrain_task_class => 'CbrainTask::Diagnostics'
   },
   {
     :name => 'Diagnostics',
     :user_id => User.admin.id, :group_id => Group.everyone.id,
-    :category => 'scientific tool', 
+    :category => 'scientific tool',
     :select_menu_text => 'Launch Cluster Diagnostics',
     :description => "Cluster Diagnostics\n\nAvailable to everyone."
   }
 )
 
 para_tool = Tool.seed_record!(
-  { 
+  {
     :cbrain_task_class => 'CbrainTask::Parallelizer'
   },
   {
     :name => 'Parallelizer',
     :user_id => User.admin.id, :group_id => Group.everyone.id,
-    :category => 'background', 
+    :category => 'background',
     :select_menu_text => 'N/A : Launch Parallelizer',
     :description => "Standard CBRAIN Task Parallelizer"
   }
 )
 
 seri_tool = Tool.seed_record!(
-  { 
+  {
     :cbrain_task_class => 'CbrainTask::CbSerializer'
   },
   {
     :name => 'Serializer',
     :user_id => User.admin.id, :group_id => Group.everyone.id,
-    :category => 'background', 
+    :category => 'background',
     :select_menu_text => 'N/A : Launch Serializer',
     :description => "Standard CBRAIN Task Serializer"
   }
 )
 
 sleeper_tool = Tool.seed_record!(
-  { 
+  {
     :cbrain_task_class => 'CbrainTask::Sleeper'
   },
   {
     :name => 'Sleeper',
     :user_id => User.find_by_login('mrbennet').id, :group_id => long_site.own_group.id,
-    :category => 'scientific tool', 
+    :category => 'scientific tool',
     :select_menu_text => 'Launch Sleeper',
     :description => "Longbourne people only"
   }
 )
 
 snoozer_tool = Tool.seed_record!(
-  { 
+  {
     :cbrain_task_class => 'CbrainTask::Snoozer'
   },
   {
     :name => 'Snoozer',
     :user_id => User.admin.id, :group_id => gentlemen.id,
-    :category => 'conversion tool', 
+    :category => 'conversion tool',
     :select_menu_text => 'Launch Snoozer',
     :description => "Only for gentlemen"
   }
@@ -621,7 +629,8 @@ STEP
 
 version_name = 10
 
-tc_main = ToolConfig.seed_record!(
+# tc_main
+ToolConfig.seed_record!(
   {
     :tool_id     => nil,
     :bourreau_id => main_bourreau.id
@@ -637,7 +646,8 @@ tc_main = ToolConfig.seed_record!(
   { :info_name_method => :description }
 )
 
-tc_diag = ToolConfig.seed_record!(
+# tc_diag
+ToolConfig.seed_record!(
   {
     :tool_id     => diag_tool.id,
     :bourreau_id => nil
@@ -655,7 +665,8 @@ tc_diag = ToolConfig.seed_record!(
 
 Bourreau.all.each do |bourreau|
 
-para_diag = ToolConfig.seed_record!(
+# para_diag
+ToolConfig.seed_record!(
   {
     :tool_id     => para_tool.id,
     :description => 'Latest CBRAIN Parallelizer',
@@ -671,7 +682,8 @@ para_diag = ToolConfig.seed_record!(
   { :info_name_method => :description }
 )
 
-seri_diag = ToolConfig.seed_record!(
+# seri_diag
+ToolConfig.seed_record!(
   {
     :tool_id     => seri_tool.id,
     :description => 'Latest CBRAIN Serializer',
@@ -847,7 +859,7 @@ User.all.each do |user|
         tc = ToolConfig.find_by_tool_id_and_bourreau_id(tool.id, bourreau.id)
         next unless tc.can_be_accessed_by?(user)
         taskclass = tool.cbrain_task_class.demodulize
-        task = CbrainTask.const_get(taskclass).seed_record!(
+        CbrainTask.const_get(taskclass).seed_record!(
           { :user_id                  => user.id,
             :group_id                 => group.id,
             :status                   => 'Terminated',

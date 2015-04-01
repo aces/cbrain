@@ -17,10 +17,10 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Helpers to send generic notice message and error message 
+# Helpers to send generic notice message and error message
 module MessageHelpers
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -34,11 +34,11 @@ module MessageHelpers
     Message.send_message(receiver,
       :message_type  => :notice,
       :header        => header,
-      :variable_text => "For #{view_pluralize(success_list.count,type)}"  
+      :variable_text => "For #{view_pluralize(success_list.count,type)}"
     )
   end
 
-  # Send a generic error message. 
+  # Send a generic error message.
   # Each error message is displayed with the number of objects that
   # triggered the error and list it.
   def error_message_sender(header,failed_list,receiver=current_user)
@@ -46,12 +46,12 @@ module MessageHelpers
     # Return the first object of failed_list
   	object = failed_list.first.last.first
     type   = generic_human_type(object)
-    # Define path 
+    # Define path
     path   = object.class.sti_root_class.to_s.underscore.pluralize
     if object.is_a?(RemoteResource)
-    	path = "bourreaux"
+      path = "bourreaux"
     elsif object.is_a?(CbrainTask)
-    	path = "tasks"
+      path = "tasks"
 		end
 
 	  report      = ""
@@ -59,25 +59,25 @@ module MessageHelpers
       report     += "For #{view_pluralize(objects.size,type)}, #{message}:\n"
       report     += objects.sort_by(&:name).map { |o| "[[#{o.name}][/#{path}/#{o.id}]]\n" }.join("")
     end
-    
+
     Message.send_message(receiver,
       :message_type  => :error,
       :header        => header,
-      :variable_text => report  
+      :variable_text => report
     )
   end
 
   private
 
   def generic_human_type(object) #:nodoc:
-  	type = object.class.pretty_type 
-  
+  	type = object.class.pretty_type
+
   	if object.is_a?(Userfile)
   		type = "file"
   	elsif object.is_a?(CbrainTask)
   		type = "task"
   	end
-  
+
   	return type
   end
 

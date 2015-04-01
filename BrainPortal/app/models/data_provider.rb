@@ -291,7 +291,6 @@ class DataProvider < ActiveRecord::Base
     end
 
     def to_json
-      myhash = {};
       self.instance_variables.each do |key_sym|
           key = key_sym.to_s.sub "@", ""   # changes '@name' or :@name to 'name'
           value = self.__send__(key)
@@ -573,8 +572,6 @@ class DataProvider < ActiveRecord::Base
   # Deletes the cached copy of the content of +userfile+;
   # does not affect the real file on the provider side.
   def cache_erase(userfile)
-    uid = userfile.id
-    cache_root = self.class.cache_rootdir
     SyncStatus.ready_to_modify_cache(userfile,:destroy) do
       # The cache contains three more levels, try to clean them:
       #   "/CbrainCacheDir/01/23/45/basename"
