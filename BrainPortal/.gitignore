@@ -1,10 +1,5 @@
-config/database.yml
-config/initializers/config_portal.rb
 \#*\#
 *~
 *.DS_Store
-coverage/
-vendor/cache
-vendor/plugins
+coverage
 seeds_dev_support_dir
-public/doc/APIs
