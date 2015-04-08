@@ -34,10 +34,11 @@ class SessionsController < ApplicationController
   api_available
 
   def new #:nodoc:
-    reqenv   = request.env
-    rawua    = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'
-    ua       = HttpUserAgent.new(rawua)
-    @browser = ua.browser_name    || "(unknown browser)"
+    reqenv           = request.env
+    rawua            = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'
+    ua               = HttpUserAgent.new(rawua)
+    @browser_name    = ua.browser_name    || "(unknown browser name)"
+    @browser_version = ua.browser_version || "(unknown browser version)"
 
     respond_to do |format|
       format.html
