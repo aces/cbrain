@@ -168,9 +168,10 @@ class ToolConfigsController < ApplicationController
        other_tc = ToolConfig.find_by_id(params[:merge_from_tc_id] || 0)
        if other_tc
          if @tool_config.tool_id &&  @tool_config.bourreau_id
-           @tool_config.description = "#{@tool_config.description}\n#{other_tc.description}".strip
-           @tool_config.group       = other_tc.group
-           @tool_config.ncpus       = other_tc.ncpus
+           @tool_config.description  = "#{@tool_config.description}\n#{other_tc.description}".strip
+           @tool_config.version_name = other_tc.version_name
+           @tool_config.group        = other_tc.group
+           @tool_config.ncpus        = other_tc.ncpus
          end
          @tool_config.env_array       += (other_tc.env_array || [])
          @tool_config.script_prologue  = "#{@tool_config.script_prologue}\n#{other_tc.script_prologue}"
