@@ -22,6 +22,9 @@
 
 # Controller for the Service.
 # Implement actions as defined by the CANARIE Web Service Monitoring API.
+#
+# By default, all these actions are commented out in the route.rb file,
+# so for most installations this controller is NOT USED at all.
 class ServiceController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -102,9 +105,9 @@ class ServiceController < ApplicationController
   end
 
   # Return release note describing the current version
-  # of the platform.
+  # of the platform APIs.
   def releasenotes
-    redirect_to 'https://github.com/aces/cbrain-apis'
+    redirect_to 'https://github.com/aces/cbrain-apis/blob/master/Release-Notes.md'
   end
 
   # Provides information on how to get support
@@ -129,11 +132,7 @@ class ServiceController < ApplicationController
 
   # Redirects to the main login page.
   def tryme
-    respond_to do |format|
-      format.html  { redirect_to login_path }
-      format.xml   { render :nothing => true, :status => 406 }
-      format.json  { render :nothing => true, :status => 406 }
-    end
+    redirect_to 'https://github.com/aces/cbrain-apis/blob/master/demonstration.pdf'
   end
 
   # Allows users to view platform's
