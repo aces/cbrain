@@ -32,7 +32,7 @@
 
     <table class="logintable">
 
-    <% if @browser =~ /msie/i %>
+    <% if @browser_name =~ /msie/i && @browser_version.to_i < 10 %>
       <tr>
         <td colspan="4">
           <div class="exception_report centered" style="color: black">

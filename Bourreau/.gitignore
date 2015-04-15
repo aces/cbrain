@@ -1,6 +1,2 @@
-config/database.yml
-config/initializers/config_bourreau.rb
 \#*\#
 *~
-vendor/cache
-vendor/plugins
