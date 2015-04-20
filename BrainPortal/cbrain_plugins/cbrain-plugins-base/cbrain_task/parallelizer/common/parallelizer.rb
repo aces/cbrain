@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Automatic Parallelizer Task
@@ -44,7 +44,7 @@ class CbrainTask::Parallelizer
       end
     end
     task_ids.compact!
-    CbrainTask.where(:id => task_ids)
+    return CbrainTask.where(:id => task_ids)
   end
 
   # Creates and launch a set of Parallelizers for a set of other
@@ -71,7 +71,7 @@ class CbrainTask::Parallelizer
   # Parallelizer with, in its two arguments, the Parallelizer and
   # an array of its subtasks.
   def self.create_from_task_list(tasklist = [], options = {}) #:nodoc:
- 
+
     return [ "", [], [] ] if tasklist.empty?
 
     options = { :group_size => options } if options.is_a?(Fixnum) # old API
@@ -205,7 +205,7 @@ class CbrainTask::Parallelizer
       end
     end
 
-    [ messages, parallelizer_tasks, normal_tasks ]
+    return [ messages, parallelizer_tasks, normal_tasks ]
   end
 
 end

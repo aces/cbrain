@@ -17,13 +17,13 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This class contains utility methods for generating some
 # reports; it is slowly being phased out.
 class ModelsReport
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Creates and returns a table with statistics for Remote Resource caches.
@@ -46,7 +46,7 @@ class ModelsReport
     accessed_after   = options[:accessed_after]
 
     # Internal constants
-    all_users_label  = all_dps_label = "TOTAL" # used as a key in the table's hash
+    all_users_label = "TOTAL" # used as a key in the table's hash
 
     # Which users to gather stats for
     userlist = if users
@@ -78,8 +78,8 @@ class ModelsReport
 
     # Arrays and hashes used to record the names of the
     # rows and columns of the report
-    users_index = userlist.index_by &:id
-    rr_index    = rrlist.index_by   &:id
+    users_index = userlist.index_by(&:id)
+    rr_index    = rrlist.index_by(&:id)
 
     # Stats structure. It represents a two-dimensional table
     # where rows are users and columns are data providers.

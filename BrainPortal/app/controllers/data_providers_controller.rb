@@ -237,7 +237,7 @@ class DataProvidersController < ApplicationController
       format.json { render :json => info_by_user }
     end
 
-  rescue => ex
+  rescue
     respond_to do |format|
       format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
       format.xml  { head :unprocessable_entity }
@@ -321,9 +321,7 @@ class DataProvidersController < ApplicationController
 
     @fileinfolist.each do |fi|
       fi_name  = fi.name
-      fi_size  = fi.size
       fi_type  = fi.symbolic_type
-      fi_mtime = fi.mtime
 
       fi.userfile = nil
       fi.message  = ""
@@ -597,7 +595,6 @@ class DataProvidersController < ApplicationController
       failed_list   = {}
       CBRAIN.spawn_with_active_records(:admin, "#{move_or_copy} Registered Files") do
         to_operate.each do |u|
-          orig_name = u.name
           begin
             if move_or_copy == "MOVE"
               u.provider_move_to_otherprovider(new_dp)

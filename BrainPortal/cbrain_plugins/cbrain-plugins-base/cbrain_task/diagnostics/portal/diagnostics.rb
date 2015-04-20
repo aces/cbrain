@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # A subclass of PortalTask to launch diagnostics.
@@ -28,79 +28,80 @@ class CbrainTask::Diagnostics < PortalTask
   validate :validate_input_fields
 
   def self.properties #:nodoc:
-    { :use_parallelizer => true }
+    {
+      :use_parallelizer => true
+    }
   end
 
   def self.default_launch_args #:nodoc:
     {
-    :setup_delay           => 0,
-    :cluster_delay         => 0,
-    :postpro_delay         => 0,
+      :setup_delay           => 0,
+      :cluster_delay         => 0,
+      :postpro_delay         => 0,
 
-    :setup_crash           => false,
-    :cluster_crash         => false,
-    :postpro_crash         => false,
+      :setup_crash           => false,
+      :cluster_crash         => false,
+      :postpro_crash         => false,
 
-    :recover_setup         => true,
-    :recover_cluster       => true,
-    :recover_postpro       => true,
-    :recover_setup_delay   => 10,
-    :recover_cluster_delay => 10,
-    :recover_postpro_delay => 10,
+      :recover_setup         => true,
+      :recover_cluster       => true,
+      :recover_postpro       => true,
+      :recover_setup_delay   => 10,
+      :recover_cluster_delay => 10,
+      :recover_postpro_delay => 10,
 
-    :restart_setup         => true,
-    :restart_cluster       => true,
-    :restart_postpro       => true,
-    :restart_setup_delay   => 10,
-    :restart_cluster_delay => 10,
-    :restart_postpro_delay => 10,
+      :restart_setup         => true,
+      :restart_cluster       => true,
+      :restart_postpro       => true,
+      :restart_setup_delay   => 10,
+      :restart_cluster_delay => 10,
+      :restart_postpro_delay => 10,
 
-    :num_copies            => 1,
-    :crash_will_reset      => true,
+      :num_copies            => 1,
+      :crash_will_reset      => true,
 
-    :dp_check_ids          => [],
+      :dp_check_ids          => [],
 
-    :after_form_action     => 'return',
-    :after_form_message    => '',
+      :after_form_action     => 'return',
+      :after_form_message    => '',
 
-    :refresh_count         => 0,
+      :refresh_count         => 0,
 
-    :do_validations          => 'Yes',
-    :inptest_text_odd_number => "1",
-    :inptest_checkbox_1      => "1",
-    :inptest_checkbox_2      => "0",
-    :inptest_checkbox_3      => "1",
-    :inptest_checkbox_4      => "0",
-    :inptest_hidden_field    => 'XyZ',
-    :inptest_password_field  => '',
-    :inptest_radio           => 'first',
-    :inptest_textarea        => 'My name is XyZ Jones.',
+      :do_validations          => 'Yes',
+      :inptest_text_odd_number => "1",
+      :inptest_checkbox_1      => "1",
+      :inptest_checkbox_2      => "0",
+      :inptest_checkbox_3      => "1",
+      :inptest_checkbox_4      => "0",
+      :inptest_hidden_field    => 'XyZ',
+      :inptest_password_field  => '',
+      :inptest_radio           => 'first',
+      :inptest_textarea        => 'My name is XyZ Jones.',
 
-    :inptest                 => { :deep => 'So deep.' },
+      :inptest                 => { :deep => 'So deep.' },
 
-    :inptest_select          => '3',
+      :inptest_select          => '3',
 
-    :no_cluster_job          => '0',
-    :erase_report            => '0',
-    
+      :no_cluster_job          => '0',
+      :erase_report            => '0',
     }
   end
 
   def self.pretty_params_names #:nodoc:
     {
-    :inptest_text_odd_number => 'Odd number field',
-    :inptest_checkbox_1      => 'Checkboxes',
-    :inptest_checkbox_2      => 'Checkboxes',
-    :inptest_checkbox_3      => 'Checkboxes',
-    :inptest_checkbox_4      => 'Checkboxes',
-    :inptest_hidden_field    => 'Hidden field',
-    :inptest_password_field  => 'Password field',
-    :inptest_radio           => 'WKRP Radio',
-    :inptest_textarea        => 'Text area',
+      :inptest_text_odd_number => 'Odd number field',
+      :inptest_checkbox_1      => 'Checkboxes',
+      :inptest_checkbox_2      => 'Checkboxes',
+      :inptest_checkbox_3      => 'Checkboxes',
+      :inptest_checkbox_4      => 'Checkboxes',
+      :inptest_hidden_field    => 'Hidden field',
+      :inptest_password_field  => 'Password field',
+      :inptest_radio           => 'WKRP Radio',
+      :inptest_textarea        => 'Text area',
 
-    'inptest[deep]'          => 'Deep',
+      'inptest[deep]'          => 'Deep',
 
-    :inptest_select          => 'Odd selection box'
+      :inptest_select          => 'Odd selection box'
     }
   end
 
@@ -109,7 +110,7 @@ class CbrainTask::Diagnostics < PortalTask
     ref        = (params[:refresh_count] || 0).to_i
     ref += 1
     params[:refresh_count] = ref.to_s
-    "Refresh count increased to #{ref}."
+    return "Refresh count increased to #{ref}."
   end
 
   def after_form #:nodoc:
@@ -157,11 +158,14 @@ class CbrainTask::Diagnostics < PortalTask
       task_list << task
     end
 
-    task_list
+    return task_list
   end
 
   def untouchable_params_attributes #:nodoc:
-    { :copy_number => true, :report_id => true }
+    {
+      :copy_number => true,
+      :report_id   => true
+    }
   end
 
   def validate_input_fields #:nodoc:
@@ -208,7 +212,7 @@ class CbrainTask::Diagnostics < PortalTask
     if sel.to_i % 2 == 0
       params_errors.add(:inptest_select, "is not odd!")
     end
-    errors.empty?
+    return errors.empty?
   end
 
   private

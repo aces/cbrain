@@ -48,7 +48,7 @@ describe UserfileCustomFilter do
 
     it "should remove all non 'data['type']' userfile" do
       u1 = Factory.create(:text_file)
-      u2 = Factory.create(:userfile)
+           Factory.create(:userfile)
       filter.data = { "type" => u1.class.to_s }
       expect(filter.filter_scope(Userfile.scoped({}))).to match_array([u1])
     end

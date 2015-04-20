@@ -274,8 +274,8 @@ module SelectBoxHelper
 
     tool_config_options = []   # [ [ grouplabel, [ [pair], [pair] ] ], [ grouplabel, [ [pair], [pair] ] ] ]
 
-    bourreaux_by_ids = Bourreau.where(:id => tool_configs.map(&:bourreau_id).uniq.compact).all.index_by &:id
-    tools_by_ids     = Tool.where(    :id => tool_configs.map(&:tool_id).uniq.compact).all.index_by &:id
+    bourreaux_by_ids = Bourreau.where(:id => tool_configs.map(&:bourreau_id).uniq.compact).all.index_by(&:id)
+    tools_by_ids     = Tool.where(    :id => tool_configs.map(&:tool_id).uniq.compact).all.index_by(&:id)
 
     # Globals for Execution Servers
     bourreau_globals = tool_configs.select { |tc| tc.applies_to_bourreau_only? }
@@ -545,8 +545,8 @@ module SelectBoxHelper
     user_by_lock_status_hash = users.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"}
     ordered_by_lock_status   = []
 
-    user_by_lock_status_hash.sort.each do |status,users|
-      user_name_id = users.sort_by { |u| u.login }.map { |u| ["#{u.login} (#{u.full_name})" , u.id] }
+    user_by_lock_status_hash.sort.each do |status,users_by_status|
+      user_name_id = users_by_status.sort_by { |u| u.login }.map { |u| ["#{u.login} (#{u.full_name})" , u.id] }
       ordered_by_lock_status << [status, user_name_id]
     end
 

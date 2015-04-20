@@ -22,8 +22,6 @@
 
 # This subclass of CbrainTask provides the methods and developer API
 # for deploying CbrainTasks on the BrainPortal side.
-#
-# See the documentation in CbrainTask.txt for more information.
 class PortalTask < CbrainTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:

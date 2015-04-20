@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #
@@ -41,7 +41,7 @@ class EnCbrainSshDataProvider < SshDataProvider
   def is_browsable?(by_user = nil) #:nodoc:
     false
   end
-  
+
   def allow_file_owner_change? #:nodoc:
     true
   end
@@ -58,7 +58,6 @@ class EnCbrainSshDataProvider < SshDataProvider
   end
 
   def impl_provider_erase(userfile) #:nodoc:
-    basename = userfile.name
     threelevels = cache_subdirs_from_id(userfile.id)
     userdir = Pathname.new(remote_dir)
     level1  = userdir                  + threelevels[0]

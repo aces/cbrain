@@ -17,40 +17,40 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Helper for building standard index tables with sorting and basic 
-# filtering. Essentially the developer will define the tables columns, 
-# and the column definitions will be used to create rows, one each, 
+# Helper for building standard index tables with sorting and basic
+# filtering. Essentially the developer will define the tables columns,
+# and the column definitions will be used to create rows, one each,
 # for a collection of objects provided.
 #
-# The primary method used to build tables is +index_table+ which is given 
-# a collection objects and a block. This block will be passed a 
+# The primary method used to build tables is +index_table+ which is given
+# a collection objects and a block. This block will be passed a
 # TableBuilder object to be used to describe the table:
-#   <%= 
+#   <%=
 #     index_table(@feedbacks, :id => "feedback_table", :class => "resource_list") do |t|
 #       ...
 #     end
 #   %>
-# 
+#
 # Here, @feedbacks is the list of object defining rows in the table. The second argument
 # is just a hash table defining HTML attributes on the table.
 #
 # Columns are defined by one of four methods:
-# [column] Define a basic column (no sorting). 
+# [column] Define a basic column (no sorting).
 # [sort_column] Define a basic sorting column.
 # [describe_column] Describe a more complex, non-sorting column.
 # [describe_sort_column] Describe a more complex sorting column.
 #
-# #column and #sort_column both take a block to define the 
+# #column and #sort_column both take a block to define the
 # data of their table sells. These blocks will be passed an
 # element from the collection passed to #index_table (e.g.
-# #feedbacks above). 
+# #feedbacks above).
 #
 # For example, to describe a column for the feedback summary attribute:
 #
-#   <%= 
+#   <%=
 #     index_table(@feedbacks, :id => "feedback_table", :class => "resource_list") do |t|
 #       t.column("Summary") { |fb| fb.summary }
 #     end
@@ -58,7 +58,7 @@
 #
 # To make the column sortable:
 #
-#   <%= 
+#   <%=
 #     index_table(@feedbacks, :id => "feedback_table", :class => "resource_list") do |t|
 #       t.sort_column("Summary", 'Feedback', 'summary') { |fb| fb.summary }
 #     end
@@ -80,7 +80,7 @@
 # on the current user's permissions. The condition is set by the :if option to the #cell
 # method:
 #
-#   <%= 
+#   <%=
 #     index_table(@feedbacks, :id => "feedback_table", :class => "resource_list") do |t|
 #       ...
 #       t.describe_column("Operations") do |col|
@@ -93,68 +93,68 @@
 # Note that there are wrapper methods for some common operations, such as edit and
 # delete links, so the previous code could be written as the following:
 #
-#   <%= 
+#   <%=
 #     index_table(@feedbacks, :id => "feedback_table", :class => "resource_list") do |t|
 #       ...
 #       t.describe_column("Operations") do |col|
-#         col.edit_link(:if => Proc.new { |fb| current_user.has_role?(:admin_user) || current_user.id == fb.user_id })    
+#         col.edit_link(:if => Proc.new { |fb| current_user.has_role?(:admin_user) || current_user.id == fb.user_id })
 #         col.delete_link(:if => Proc.new { |fb| current_user.has_role?(:admin_user) || current_user.id == fb.user_id })
 #       end
 #     end
 #   %>
 #
 # Note also that if the :if condition fails, empty table cells will still be displayed,
-# so the table will remain balanced. 
+# so the table will remain balanced.
 #
-# Finally, to add filter links to a column, simply set the :filters option on any one of the 
+# Finally, to add filter links to a column, simply set the :filters option on any one of the
 # four column methods. The list of filters will be an array of array pairs. Each pair will
-# have the text to display as its first element, and a hash representing the filteration 
+# have the text to display as its first element, and a hash representing the filteration
 # to be done as its second. For example, a filter list for the Country column in the
 # users table might look like the following:
 #  [["Canada", :country => "Canada"]["USA", :country => "USA"]["Egypt", :country => "Egypt"]["Bolivia", :country => "Bolivia"]]
 #
-# Note that some helper methods, #basic_filters_for and #association_filters_for have been defined 
-# (see lib/basic_filter_helpers.rb for details) to construct these types of lists for basic 
+# Note that some helper methods, #basic_filters_for and #association_filters_for have been defined
+# (see lib/basic_filter_helpers.rb for details) to construct these types of lists for basic
 # attribute or association filtering.
 
 module IndexTableHelper
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   #Class that actually builds the table.
   class TableBuilder
-    
+
     attr_reader :columns
-    
-    
+
+
     ##############################
     # Inner class Column
     ##############################
-    
+
     #Class representing a single column in the table.
-    #A column is essentialy one header with one or 
+    #A column is essentialy one header with one or
     #several cells per row (the header will automatically
     #be expanded to fit over all cells).
     class Column
-      
+
       attr_reader :cells
-      
+
       def initialize(table, template) #:nodoc:
         @table = table
         @template = template
         @cells = []
       end
-      
+
       # Describe a basic header (this shouldn't usually be
-      # done manually. See TableBuilder#column or 
+      # done manually. See TableBuilder#column or
       # TableBuilder#describe_column)
       def header(text, options = {})
         @header_text    = text
         @header_options = options
       end
-      
+
       # Describe a sorting header (this shouldn't usually be
-      # done manually. See TableBuilder#sort_column or 
+      # done manually. See TableBuilder#sort_column or
       # TableBuilder#describe_sort_column)
       def sort_header(text, klass, attribute, options = {})
         default_sort_dir = options.delete :default_sort_dir
@@ -168,18 +168,18 @@ module IndexTableHelper
         condition = options.delete(:if)
         @cells << [block, options, condition]
       end
-      
+
       # Shortcut for creating a cell with a link to the object's edit page.
       def edit_link(options = {})
         self.cell(options) { |object|  @template.instance_eval { link_to 'Edit', { :action => :edit, :id => object.id }, :class  => 'action_link' } }
       end
-      
+
       # Shortcut for creating a cell with  a ajax delete link for the object.
       def delete_link(options = {})
         confirm_proc = options[:confirm] || Proc.new { |o| "Are you sure you want to delete '#{o.name}'?" }
         self.cell(options) do |object|
           num_cells = @table.num_cells
-          @template.instance_eval { delete_button 'Delete', {:action => :destroy, :id => object.id}, 
+          @template.instance_eval { delete_button 'Delete', {:action => :destroy, :id => object.id},
                                                              :class  => "action_link",
                                                              :confirm  => confirm_proc.call(object),
                                                              :target  => "##{object.class.name.underscore}_#{object.id}",
@@ -187,11 +187,11 @@ module IndexTableHelper
           }
         end
       end
-            
+
       def header_html #:nodoc:
         @header_options[:colspan] ||= @cells.size
         filters = @header_options.delete :filters
-        
+
         atts = @header_options.to_html_attributes
         html = [ "<th #{atts}>" ]
         unless filters.blank?
@@ -214,60 +214,60 @@ module IndexTableHelper
           html << "</div>"
         end
         html << "</th>\n"
-        
+
         html.join
       end
-      
-      def cell_html(object) #:nodoc:        
+
+      def cell_html(object) #:nodoc:
         html = []
         @cells.each do |cell|
-          cell      = [cell] unless cell.is_a? Array 
+          cell      = [cell] unless cell.is_a? Array
           proc      = cell[0]
           options   = cell[1] || {}
           condition = cell[2]
           content   = proc ? @template.cb_capture(object, &proc) : "" if condition.blank? || condition.call(object)
-          
+
           atts = options.to_html_attributes
           html << "<td #{atts}>#{content}</td>\n"
         end
         html.join
-      end      
+      end
 
     end #End class column
-    
+
     ####################################
     #TableBuilder methods
     ####################################
-    
+
     def initialize(template) #:nodoc:
       @template = template
       @columns = []
     end
-    
+
     # Describe a simple non-sorting column
     def column(header_text = "", options = {}, &block)
       build_column do |col|
         col.header header_text, options
-        col.cell   &block
+        col.cell(&block)
       end
     end
-    
+
     # Describe a simple sorting column
     def sort_column(header_text, klass, attribute, options = {}, &block)
       build_column do |col|
         col.sort_header header_text, klass, attribute, options
-        col.cell        &block
+        col.cell(&block)
       end
     end
-    
+
     # Describe a simple sorting column that starts with DESC
     def reverse_sort_column(header_text, klass, attribute, options = {}, &block)
       build_column do |col|
         col.sort_header header_text, klass, attribute, options.reverse_merge(:default_sort_dir => "DESC")
-        col.cell        &block
+        col.cell(&block)
       end
     end
-    
+
     # Describe a more complex non-sorting column
     def describe_column(header_text = "", options = {})
       build_column do |col|
@@ -275,7 +275,7 @@ module IndexTableHelper
         yield(col)
       end
     end
-    
+
     # Describe a more complex sorting column
     def describe_sort_column(header_text, klass, attribute, options = {})
       build_column do |col|
@@ -283,79 +283,79 @@ module IndexTableHelper
         yield(col)
       end
     end
-    
+
     # Set text for a table header (across all columns).
     def header(text)
       @table_header = text
     end
-    
+
     def header_html #:nodoc:
       return "" unless @table_header
       "<tr><th colspan=\"#{self.num_cells}\">#{@table_header}</th></tr>\n"
     end
-    
-    # Define the attributes for each row in the table. 
+
+    # Define the attributes for each row in the table.
     # Can be given as an options hash (if all rows are the same)
     # or as a block which will be passed the row's object and return
     # a hash.
     def row_attributes(options = {}, &block)
       @header_attributes = block || Proc.new { |obj| options }
     end
-    
+
     def row_attribute_html(object)  #:nodoc:
       return "class=\"#{@template.cycle('list-odd', 'list-even')} row_highlight\" id=\"#{object.class.name.underscore}_#{object.id}\"" unless @header_attributes
-      
+
       options = @header_attributes.call(object)
-      
+
       atts = options.to_html_attributes
       atts
     end
-    
+
     # Explicitly set the row code to be used to render the table.
     # If used, column definition will only be used for the headers.
     def row_override(options={},&block)
       @row_override_options = options
       @row_override         = block
     end
-    
+
     def row_override?(object) #:nodoc:
       cond = @row_override_options ? @row_override_options[:if] : nil
       return false if cond && ! cond.call(object)
       @row_override ? true : false
     end
-    
+
     def row_override_html(object) #:nodoc:
       return "" unless @row_override
-      
+
       @template.cb_capture(object, &@row_override)
     end
-    
+
     # Manually set text to be displayed in an empty row.
     def empty(text)
       @empty_text = text
     end
-    
+
     #Produce 'empty' row for an empty table.
     def empty_table_html
       empty_text = @empty_text || "There are no entries in this table."
       "<tr><td colspan=\"#{self.num_cells}\">#{empty_text}</td></tr>\n"
     end
-    
+
     # Number of cells per row.
     def num_cells
       @columns.inject(0) { |total, c| total + c.cells.size }
     end
-    
+
     private
-    
+
     def build_column
       col = Column.new(self, @template)
       yield(col)
       @columns << col
     end
-    
+
   end #End class TableBuilder
-  
+
   #Sort links meant specifically for sorting tables.
   #Controller and action for the request can be defined in the options hash, or
   #they default to the current page.
@@ -365,7 +365,7 @@ module IndexTableHelper
     header = text.html_safe + set_order_icon(sort_order, @filter_params["sort_hash"]["order"], @filter_params["sort_hash"]["dir"])
     sort_link(header, sort_table, sort_column, options)
   end
-  
+
   def sort_link(name, sort_table, sort_column, options = {})
     sort_order = sort_table.to_s.strip.tableize + "." + sort_column.to_s.strip
     default_sort_dir = options.delete(:default_sort_dir)
@@ -375,7 +375,7 @@ module IndexTableHelper
     ajax_request = true
     if options.has_key?(:ajax) && !options.delete(:ajax)
       ajax_request = false
-    end  
+    end
 
     url_params = options.delete(:url_params) || {}
     url = { :controller  => controller, :action  => action, controller  => {:sort_hash  => {:order  => sort_order, :dir  => sort_dir}} }.merge(url_params)
@@ -390,12 +390,12 @@ module IndexTableHelper
   def set_toggle(old_value)
    old_value == 'on' ? 'off' : 'on'
   end
-  
+
   # Renders an 'down-and-right' arrow with an indentation proportional to +level+
   def tree_view_icon(level = 0)
     ('&nbsp' * 4 * (level.presence || 0) + '&#x21b3;').html_safe
   end
-  
+
   #Set direction for resource list sorting
   def set_dir(current_order, sort_params, options = {})
     return  options[:default_sort_dir] unless sort_params
@@ -406,7 +406,7 @@ module IndexTableHelper
     if(current_order.to_s == prev_order.to_s)
       current_dir = prev_dir.to_s.upcase == 'DESC' ? '' : 'DESC'
     end
-    
+
     current_dir
   end
 
@@ -423,27 +423,27 @@ module IndexTableHelper
                        :ajax         => false,
                        :clear_params => options[:clear_params]
   end
-  
+
   #Set arrow icon for ordering of userfiles. I.e. display a red arrow
   #next to the header of a given column in the Userfile index table *if*
   #that column is the one currently determining the order of the file.
   #
-  #Toggles the direction of the arrow depending on whether the order is 
+  #Toggles the direction of the arrow depending on whether the order is
   #ascending or descending.
   def set_order_icon(loc, current_order, current_dir = nil)
-    return "" if current_order == nil    
-    
+    return "" if current_order == nil
+
     table_name, table_col = loc.strip.split(".")
     table_name = table_name.tableize
     location = table_name + "." + table_col
-    
+
     return "" unless location == current_order
-    
+
     icon = (current_dir == 'DESC') ? '&#x25B2;' : '&#x25BC;'  # triangle, UP and DOWN
-    
+
     "&nbsp;<span class=\"order_icon\">#{icon}</span>".html_safe
   end
-  
+
   def cb_capture(*args)
     value = nil
     buffer = with_output_buffer { value = yield(*args) }
@@ -451,15 +451,15 @@ module IndexTableHelper
       ERB::Util.html_escape string.to_s
     end
   end
-  
-  
+
+
   # Build an index table.
   def index_table(collection, options = {})
     table_builder = TableBuilder.new(self)
     atts = options.to_html_attributes
-    
+
     yield(table_builder)
-    
+
     html = []
 
     html << "<table #{atts}>\n<tr>\n"
@@ -485,7 +485,7 @@ module IndexTableHelper
       end
     end
     html << "</table>\n"
-        
+
     html.join.html_safe
   end
 end

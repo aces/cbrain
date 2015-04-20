@@ -200,15 +200,15 @@ class RemoteResource < ActiveRecord::Base
     all_ok = true
 
     ig_pat.each do |pattern|
-       if (! pattern.is_a?(String)) ||
-          pattern.blank? ||
-          pattern == "*" ||
-          ! pattern.is_a?(String) ||
-          pattern =~ /\*\*/ ||
-          pattern =~ /\// ||
-          pattern !~ /^[\w\-\.\+\=\@\%\&\:\,\~\*\?]+$/ # very strict! other special characters can cause shell side-effects!
-          errors.add(:spaced_dp_ignore_patterns, "has unacceptable pattern: '#{pattern}'." )
-          all_ok = false
+      if (! pattern.is_a?(String)) ||
+        pattern.blank? ||
+        pattern == "*" ||
+        ! pattern.is_a?(String) ||
+        pattern =~ /\*\*/ ||
+        pattern =~ /\// ||
+        pattern !~ /^[\w\-\.\+\=\@\%\&\:\,\~\*\?]+$/ # very strict! other special characters can cause shell side-effects!
+        errors.add(:spaced_dp_ignore_patterns, "has unacceptable pattern: '#{pattern}'." )
+        all_ok = false
       end
     end
 
@@ -619,10 +619,10 @@ class RemoteResource < ActiveRecord::Base
         control_info = Control.find(what) # asks for controls/info.xml or controls/ping.xml
         info = RemoteResourceInfo.new(control_info.attributes)
       end
-    rescue => ex
+    rescue
       # Oops, it's dead
-      #puts "Control connection to remote_resource '#{self.name}' (#{self.id}) failed:"
-      #puts "Exception=#{ex.to_s}\n#{ex.backtrace.join("\n")}"
+      # puts "Control connection to remote_resource '#{self.name}' (#{self.id}) failed:"
+      # puts "Exception=#{ex.to_s}\n#{ex.backtrace.join("\n")}"
     end
 
     # If we can't find the info, we return a
