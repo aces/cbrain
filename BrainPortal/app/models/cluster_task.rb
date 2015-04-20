@@ -27,8 +27,6 @@ require 'fileutils'
 #Abstract model representing a job running on a cluster. This is the core class for
 #launching GridEngine/PBS/MOAB/UNIX jobs (etc) using Scir.
 #
-#See the document CbrainTask.txt for a complete introduction.
-#
 #=Attributes:
 #[<b>user_id</b>] The id of the user who requested this task.
 #[<b>bourreau_id</b>] The id of the Bourreau on which the task is running.

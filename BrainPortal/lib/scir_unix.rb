@@ -97,7 +97,7 @@ class ScirUnix < Scir
       else
         [ "unknown", "unknown" ]
       end
-    rescue => e
+    rescue
       [ "exception", "exception" ]
     end
 

@@ -44,6 +44,8 @@ module CBRAINExtensions #:nodoc:
         attlist.each do |att|
           the_hash = read_attribute(att) # value of serialized attribute, as reconstructed by ActiveRecord
           if the_hash.is_a?(Hash) && ! the_hash.is_a?(HashWithIndifferentAccess)
+            #puts_blue "Oh oh, must fix #{self.class.name}-#{self.id} -> #{att}"
+            #new_hash = HashWithIndifferentAccess.new_from_hash_copying_default(the_hash)
             new_hash = the_hash.with_indifferent_access
             to_update[att] = new_hash
           end

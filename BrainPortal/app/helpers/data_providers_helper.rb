@@ -52,17 +52,17 @@ module DataProvidersHelper
   def data_providers_descriptions(data_providers = nil)
     data_providers ||= DataProvider.find_all_accessible_by_user(current_user).all
     paragraphs = data_providers.collect do |dp|
-      one_description = <<-"HTML"
+      <<-"HTML"
         <strong>#{h(dp.name)}</strong>
         <br/>
         <pre class="medium_paragraphs">#{dp.description.blank? ? "(No description)" : h(dp.description.strip)}</pre>
-        HTML
+      HTML
     end
     all_descriptions = <<-"HTML"
       <h4>Data Providers Descriptions</h4>
       #{paragraphs.join("")}
     HTML
-    all_descriptions.html_safe
+    return all_descriptions.html_safe
   end
 
   def class_param_for_name(name, klass=Userfile) #:nodoc:

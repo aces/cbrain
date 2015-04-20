@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # A simple monitoring task that doesn't do anything at all.
@@ -29,22 +29,16 @@ class CbrainTask::SimpleMonitor < ClusterTask
   include RestartableTask
   include RecoverableTask
 
-  # See CbrainTask.txt
   def setup #:nodoc:
-    params       = self.params
-    true
+    return true
   end
 
-  # See CbrainTask.txt
   def cluster_commands #:nodoc:
-    params       = self.params
-    nil # NO cluster commands
+    return nil # NO cluster commands
   end
-  
-  # See CbrainTask.txt
+
   def save_results #:nodoc:
-    params       = self.params
-    true
+    return true
   end
 
 end

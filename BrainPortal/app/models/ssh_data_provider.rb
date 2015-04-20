@@ -183,7 +183,7 @@ class SshDataProvider < DataProvider
           begin
             val = attributes.send(meth)
             fileinfo.send("#{meth}=", val)
-          rescue => e
+          rescue
             #puts "Method #{meth} not supported: #{e.message}"
             bad_attributes << meth
           end
@@ -258,8 +258,8 @@ class SshDataProvider < DataProvider
           begin
             val = attributes.send(meth)
             fileinfo.send("#{meth}=", val)
-          rescue => e
-            #puts "Method #{meth} not supported: #{e.message}"
+          rescue
+            # puts "Method #{meth} not supported: #{e.message}"
             bad_attributes << meth
           end
         end

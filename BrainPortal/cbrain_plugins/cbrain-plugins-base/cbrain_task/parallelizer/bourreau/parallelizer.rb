@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Automatic Parallelizer Task
@@ -31,7 +31,7 @@ class CbrainTask::Parallelizer < ClusterTask
   after_status_transition '*', 'Failed Setup Prerequisites', :trigger_cascade_prepreq_failures
 
   def setup #:nodoc:
-    true
+    return true
   end
 
   def job_walltime_estimate #:nodoc:
@@ -40,12 +40,11 @@ class CbrainTask::Parallelizer < ClusterTask
       wt = otask.job_walltime_estimate || 1.minute
       max = wt if wt > max
     end
-    max + (0.1 * max)
+    walltime = max + (0.1 * max)
+    return walltime
   end
 
   def cluster_commands #:nodoc:
-    params   = self.params || {}
-
     subtasks = self.enabled_subtasks
 
     commands = [
@@ -101,12 +100,11 @@ class CbrainTask::Parallelizer < ClusterTask
       "echo All tasks completed after $SECONDS seconds, at `date`",
       ""
     ]
-    
-    commands
+
+    return commands
   end
 
   def save_results #:nodoc:
-    params   = self.params || {}
     self.addlog("Marking all tasks as ready.")
     self.enabled_subtasks.each do |otask|
       otask.status_transition!("Configured", "Data Ready")
@@ -124,14 +122,14 @@ class CbrainTask::Parallelizer < ClusterTask
   def all_subtasks_are?(states = /Completed|Failed|Terminated/) #:nodoc:
     return true if self.enabled_subtasks.all? { |otask| otask.status =~ states }
     self.addlog("Cannot proceed, as subtasks are not in states matching #{states.inspect}.")
-    false
+    return false
   end
 
   # Since the 'setup' of a parallelizer does nothing (see above in setup()),
   # a failure to setup is rather unlikely! It if happens, it's some sort of system
   # problem, so we just allow 'recovery' by retrying the whole thing.
   def recover_from_setup_failure #:nodoc:
-    true
+    return true
   end
 
   def restart_at_setup #:nodoc:
@@ -155,14 +153,14 @@ class CbrainTask::Parallelizer < ClusterTask
       end
       otask.save!
     end
-    true
+    return true
   end
 
   def restart_at_cluster #:nodoc:
     self.addlog("This task cannot be restarted at the Cluster stage.")
     self.addlog("It can be restarted at Setup if subtasks are all either Completed, Failed or Terminated.")
     self.addlog("It can be restarted at Post Processing if all subtasks are Completed.")
-    false
+    return false
   end
 
   def restart_at_post_processing #:nodoc:
@@ -178,7 +176,7 @@ class CbrainTask::Parallelizer < ClusterTask
     end
     self.addlog("This parallelizer doesn't need to restart its own post processing.")
     self.addlog("Its subtasks, however, were properly notified to do so.")
-    false
+    return false
   end
 
   # If a parallelizer fails its setup prerequisites, then we need
@@ -188,7 +186,7 @@ class CbrainTask::Parallelizer < ClusterTask
       otask.addlog("#{self.fullname} indicates setup prereq failure.")
       otask.status_transition(otask.status, 'Failed Setup Prerequisites') rescue true
     end
-    true
+    return true
   end
 
 end

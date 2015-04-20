@@ -242,8 +242,8 @@ module ActRecLog
       else
         arl.update_attributes( { :log => log } )
       end
-    rescue => ex
-      #puts_green "EX: #{ex.class}: #{ex.message}\n#{ex.backtrace.join("\n")}"
+    rescue
+      # puts_green "EX: #{ex.class}: #{ex.message}\n#{ex.backtrace.join("\n")}"
       false
     end
   end
@@ -275,7 +275,7 @@ module ActRecLog
     pretty_info    = rev_info.svn_id_rev
 
     full_message   = "#{class_name} rev. #{pretty_info}"
-    full_message   += " #{message}" unless message.blank?
+    full_message  += " #{message}" unless message.blank?
     self.addlog(full_message, :caller_level => caller_level + 1)
   end
 

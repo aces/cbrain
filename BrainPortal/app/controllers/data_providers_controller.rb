@@ -237,7 +237,7 @@ class DataProvidersController < ApplicationController
       format.json { render :json => info_by_user }
     end
 
-  rescue => ex
+  rescue
     respond_to do |format|
       format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
       format.xml  { head :unprocessable_entity }

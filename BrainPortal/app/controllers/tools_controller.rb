@@ -73,8 +73,8 @@ class ToolsController < ApplicationController
       format.xml  { render :xml     => @tool_configs }
     end
 
-  rescue => ex
-    #render :text  => "#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
+  rescue
+    # render :text  => "#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
     render :text  => '<strong style="color:red">No Execution Servers Available</strong>'
   end
 

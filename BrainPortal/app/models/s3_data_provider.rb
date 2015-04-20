@@ -52,8 +52,8 @@ class S3DataProvider < DataProvider
   end
 
   def filename_from_s3_filename(s3_filename) #:nodoc:
-    userfile_id,filename = s3_filename.split('_', 2)
-    return (userfile_id,filename)
+    userfile_id,filename=s3_filename.split('_', 2)
+    return [ userfile_id,filename ]
   end
 
   def create_base_bucket #:nodoc:
@@ -145,12 +145,12 @@ class S3DataProvider < DataProvider
     raise "Disabled"
   #  init_connection
   #  s3_connection.bucket.find(bucket_name).objects.map do |object|
-  #    file = DataProvider::FileInfo.new()
-  #    filename = filename_from_s3_filename(object.key)[1]
-  #    file.name = filename
+  #    file               = DataProvider::FileInfo.new()
+  #    filename           = filename_from_s3_filename(object.key)[1]
+  #    file.name          = filename
   #    file.symbolic_type = :regular
-  #    file.mtime = Time.parse(object.about()["date"]).to_i
-  #    file.size = 0
+  #    file.mtime         = Time.parse(object.about()["date"]).to_i
+  #    file.size          = 0
   #    file
   #  end
   end

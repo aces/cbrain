@@ -619,10 +619,10 @@ class RemoteResource < ActiveRecord::Base
         control_info = Control.find(what) # asks for controls/info.xml or controls/ping.xml
         info = RemoteResourceInfo.new(control_info.attributes)
       end
-    rescue => ex
+    rescue
       # Oops, it's dead
-      #puts "Control connection to remote_resource '#{self.name}' (#{self.id}) failed:"
-      #puts "Exception=#{ex.to_s}\n#{ex.backtrace.join("\n")}"
+      # puts "Control connection to remote_resource '#{self.name}' (#{self.id}) failed:"
+      # puts "Exception=#{ex.to_s}\n#{ex.backtrace.join("\n")}"
     end
 
     # If we can't find the info, we return a

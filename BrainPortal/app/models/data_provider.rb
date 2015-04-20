@@ -591,7 +591,7 @@ class DataProvider < ActiveRecord::Base
         # 4- Remove the top level of the cache, "01", if possible
         level0 = level1.parent
         Dir.rmdir(level0)
-      rescue Errno::ENOENT, Errno::ENOTEMPTY => ex
+      rescue Errno::ENOENT, Errno::ENOTEMPTY
         # Nothing to do if we fail, as we are just trying to clean
         # up the cache structure from bottom to top
       end
@@ -658,7 +658,7 @@ class DataProvider < ActiveRecord::Base
               val = entry.send(meth)
               fileinfo.send("#{meth}=", val)
             end
-          rescue => e
+          rescue
             bad_attributes << meth
           end
         end
@@ -1098,7 +1098,7 @@ class DataProvider < ActiveRecord::Base
       fh.syswrite(@@cache_rev + "\n")
       fh.close
       return "Unknown" # String to indicate it WAS unknown.
-    rescue => ex # Oh? Open write failed? Some other process has created it underneath us.
+    rescue # Oh? Open write failed? Some other process has created it underneath us.
       if ! File.exist?(rev_file)
         raise "Error: could not create a proper Data Provider Cache Revision DateTime in file '#{rev_file}' !"
       end

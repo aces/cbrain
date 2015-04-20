@@ -246,7 +246,7 @@ class BourreauxController < ApplicationController
       format.json { render :json    => info   }
     end
 
-  rescue => ex
+  rescue
     respond_to do |format|
       format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
       format.xml  { head :unprocessable_entity }
@@ -452,7 +452,7 @@ class BourreauxController < ApplicationController
       format.json { render :json => info_by_user }
     end
 
-  rescue => ex
+  rescue
     respond_to do |format|
       format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
       format.xml  { head :unprocessable_entity }
@@ -528,7 +528,7 @@ class BourreauxController < ApplicationController
       begin
         remote_resource.send_command_clean_cache(userids,cleanup_older.ago,cleanup_younger.ago)
         flash[:notice] += "Sending cleanup command to #{remote_resource.name}."
-      rescue => e
+      rescue
         flash[:notice] += "Could not contact #{remote_resource.name}."
       end
     end

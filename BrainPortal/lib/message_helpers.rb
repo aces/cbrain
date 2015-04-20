@@ -30,7 +30,7 @@ module MessageHelpers
 
     type   = generic_human_type(success_list.first)
 
-		# Send message
+    # Send message
     Message.send_message(receiver,
       :message_type  => :notice,
       :header        => header,
@@ -44,7 +44,7 @@ module MessageHelpers
   def error_message_sender(header,failed_list,receiver=current_user)
 
     # Return the first object of failed_list
-  	object = failed_list.first.last.first
+    object = failed_list.first.last.first
     type   = generic_human_type(object)
     # Define path
     path   = object.class.sti_root_class.to_s.underscore.pluralize
@@ -52,10 +52,10 @@ module MessageHelpers
       path = "bourreaux"
     elsif object.is_a?(CbrainTask)
       path = "tasks"
-		end
+    end
 
-	  report      = ""
-		failed_list.each do |message,objects|
+    report      = ""
+    failed_list.each do |message,objects|
       report     += "For #{view_pluralize(objects.size,type)}, #{message}:\n"
       report     += objects.sort_by(&:name).map { |o| "[[#{o.name}][/#{path}/#{o.id}]]\n" }.join("")
     end
@@ -70,15 +70,15 @@ module MessageHelpers
   private
 
   def generic_human_type(object) #:nodoc:
-  	type = object.class.pretty_type
+    type = object.class.pretty_type
 
-  	if object.is_a?(Userfile)
-  		type = "file"
-  	elsif object.is_a?(CbrainTask)
-  		type = "task"
-  	end
+    if object.is_a?(Userfile)
+      type = "file"
+    elsif object.is_a?(CbrainTask)
+      type = "task"
+    end
 
-  	return type
+    return type
   end
 
 end
