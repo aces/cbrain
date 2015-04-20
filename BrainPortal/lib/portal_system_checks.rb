@@ -155,6 +155,8 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
       )
     end
 
+    SshAgentUnlockingEvent.where(["created_at < ?",1.day.ago]).delete_all # just to be clean in case they accumulate
+
   end
 
 end
