@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # CBRAIN Internal Task Serializer
@@ -28,22 +28,20 @@ class CbrainTask::CbSerializer < ClusterTask
   after_status_transition '*', 'Failed Setup Prerequisites', :trigger_cascade_prepreq_failures
 
   def setup #:nodoc:
-    true
+    return true
   end
 
   def job_walltime_estimate #:nodoc:
-    tot = 0.seconds
+    walltime = 0.seconds
     self.enabled_subtasks.each do |otask|
       wt = otask.job_walltime_estimate || 1.minute
-      tot += wt
+      walltime += wt
     end
-    tot = 1.minute if tot < 1.minute
-    tot
+    walltime = 1.minute if walltime < 1.minute
+    return walltime
   end
 
   def cluster_commands #:nodoc:
-    params   = self.params || {}
-
     subtasks = self.enabled_subtasks
 
     commands = [
@@ -81,12 +79,11 @@ class CbrainTask::CbSerializer < ClusterTask
       "echo All tasks completed after $SECONDS seconds, at `date`.",
       ""
     ]
-    
-    commands
+
+    return commands
   end
 
   def save_results #:nodoc:
-    params   = self.params || {}
     self.addlog("Marking all tasks as ready.")
     self.enabled_subtasks.each do |otask|
       otask.addlog("#{self.fullname} marking me as \"Data Ready\".")
@@ -104,14 +101,14 @@ class CbrainTask::CbSerializer < ClusterTask
   def all_subtasks_are?(states = /Completed|Failed|Terminated/) #:nodoc:
     return true if self.enabled_subtasks.all? { |otask| otask.status =~ states }
     self.addlog("Cannot proceed, as subtasks are not in states matching #{states.inspect}.")
-    false
+    return false
   end
 
   # Since the 'setup' of a serializer does nothing (see above in setup()),
   # a failure to setup is rather unlikely! It if happens, it's some sort of system
   # problem, so we just allow 'recovery' by retrying the whole thing.
   def recover_from_setup_failure #:nodoc:
-    true
+    return true
   end
 
   def restart_at_setup #:nodoc:
@@ -135,14 +132,14 @@ class CbrainTask::CbSerializer < ClusterTask
       end
       otask.save!
     end
-    true
+    return true
   end
 
   def restart_at_cluster #:nodoc:
     self.addlog("This task cannot be restarted at the Cluster stage.")
     self.addlog("It can be restarted at Setup if subtasks are all either Completed, Failed or Terminated.")
     self.addlog("It can be restarted at Post Processing if all subtasks are Completed.")
-    false
+    return false
   end
 
   def restart_at_post_processing #:nodoc:
@@ -158,7 +155,7 @@ class CbrainTask::CbSerializer < ClusterTask
     end
     self.addlog("This CbSerializer doesn't need to restart its own post processing.")
     self.addlog("Its subtasks, however, were properly notified to do so.")
-    false
+    return false
   end
 
   # If a serializer fails its setup prerequisites, then we need
@@ -168,7 +165,7 @@ class CbrainTask::CbSerializer < ClusterTask
       otask.addlog("#{self.fullname} indicates setup prereq failure.")
       otask.status_transition(otask.status, 'Failed Setup Prerequisites') rescue true
     end
-    true
+    return true
   end
 
 end

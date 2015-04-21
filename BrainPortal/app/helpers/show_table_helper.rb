@@ -17,23 +17,23 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Helper for generating standard CBRAIN show tables. The developer
 # describes the attributes and headers for cells in the table and
-# the helper then produces the necessary HTML to arrange them on a 
+# the helper then produces the necessary HTML to arrange them on a
 # page.
 #
-# The primary method used is +show_table+ which will be passed the 
+# The primary method used is +show_table+ which will be passed the
 # object being described and a block. The block will be passed a
 # TableBuilder object to be used to describe the table.
-#   <%= 
+#   <%=
 #     show_table(@feedbacks, :id => "feedback_table", :class => "resource_list") do |t|
 #       ...
 #     end
 #   %>
-# 
+#
 # Here, @feedbacks is the list of object defining rows in the table. The second argument
 # is just a hash table defining HTML attributes on the table.
 #
@@ -44,7 +44,7 @@ module ShowTableHelper
 
   class TableBuilder
     attr_accessor :cells, :width
-    
+
     def initialize(object, template, options = {})
       @object          = object
       @template        = template
@@ -54,30 +54,30 @@ module ShowTableHelper
       @cells           = []
       @edit_cell_count = 0
     end
-    
+
     def editable?
       !@edit_disabled && @edit_cell_count > 0
     end
-    
+
     def cell(header = "", options = {}, &block)
       build_cell(ERB::Util.html_escape(header), @template.capture(&block), options)
     end
-    
+
     def row(options = {}, &block)
       pad_row_with_blank_cells(options)
       build_cell("", @template.capture(&block), options.dup.merge( { :no_header => true, :show_width => @width } ) )
     end
-    
+
     def attribute_cell(field, options = {})
       header = options[:header] || field.to_s.humanize
       build_cell(ERB::Util.html_escape(header), ERB::Util.html_escape(@object.send(field)), options)
     end
-    
+
     def edit_cell(field, options = {}, &block)
       header    = options.delete(:header) || field.to_s.humanize
       object    = @object
       options[:disabled] ||= @edit_disabled
-      @edit_cell_count += 1 unless options[:disabled] 
+      @edit_cell_count += 1 unless options[:disabled]
       build_cell(ERB::Util.html_escape(header), @template.instance_eval{ inline_edit_field(object, field, options, &block) }, options)
     end
 
@@ -89,11 +89,11 @@ module ShowTableHelper
         edit_cell(field, options) { @template.hidden_field_tag(field, unchecked_value) + @template.check_box_tag(field, checked_value, cur_value == checked_value) }
       end
     end
-    
+
     def empty_cell(n = 1, options = {})
       n.times { build_cell("","",options) }
     end
-    
+
     def empty_cells(n, options = {})
       empty_cell(n, options)
     end
@@ -107,9 +107,9 @@ module ShowTableHelper
       in_current_row = (@cells.inject(0) { |tot,c| tot += c[1]; tot } ) % @width  # c[1] is the show_width of each cell
       empty_cell(@width - in_current_row, options) if in_current_row > 0
     end
-    
+
     private
-    
+
     def build_cell(head = "", content = "", options = {})
       no_header      = options.delete(:no_header)
       header_options = options.delete(:th_options) || {}
@@ -129,49 +129,49 @@ module ShowTableHelper
       @cells << [ html.join("\n").html_safe, show_width ]
     end
   end
-  
+
   def inline_edit_field(object, attribute, options = {}, &block)
-     default_text = h(options.delete(:content) || object.send(attribute))
-     return default_text if options.delete(:disabled)
-     if object.errors.include?(attribute)
-       default_text = "<span class=\"show_table_error\">#{default_text}</span>"
-     end
-     html = []
-     html << "<span class=\"inline_edit_field_default_text\">"
-     html << default_text
-     html << "</span>"
-     html << "<span class=\"inline_edit_field_input\" style=\"display:none\">"
-     html << capture(&block)
-     html << "</span>"
-     html.join("\n").html_safe
-   end
-  
+    default_text = h(options.delete(:content) || object.send(attribute))
+    return default_text if options.delete(:disabled)
+    if object.errors.include?(attribute)
+      default_text = "<span class=\"show_table_error\">#{default_text}</span>"
+    end
+    html = []
+    html << "<span class=\"inline_edit_field_default_text\">"
+    html << default_text
+    html << "</span>"
+    html << "<span class=\"inline_edit_field_input\" style=\"display:none\">"
+    html << capture(&block)
+    html << "</span>"
+    html.join("\n").html_safe
+  end
+
   def inline_edit_form(object, attribute, url, options = {}, &block)
-     default_text = h(options.delete(:content) || object.send(attribute))
-     return default_text if options.delete(:disabled)
-     method = options.delete(:method) || :put
-     if object.errors.include?(attribute)
-       default_text = "<span style=\"color:red\">#{default_text}</span>"
-     end
-     html = []
-     html << "<span class=\"inline_edit_form_default_text\">"
-     html << default_text
-     html <<    "<a href=\"#\" class=\"inline_edit_form_link action_link\">(edit)</a>"
-     html << "</span>"
-     html << "<span class=\"inline_edit_form\" style=\"display:none\">"
-     html << form_tag(url, :method => method, :style => "display:inline", &block)
-     html << "</span>"
-     html.join("\n").html_safe
-   end
-  
+    default_text = h(options.delete(:content) || object.send(attribute))
+    return default_text if options.delete(:disabled)
+    method = options.delete(:method) || :put
+    if object.errors.include?(attribute)
+      default_text = "<span style=\"color:red\">#{default_text}</span>"
+    end
+    html = []
+    html << "<span class=\"inline_edit_form_default_text\">"
+    html << default_text
+    html <<    "<a href=\"#\" class=\"inline_edit_form_link action_link\">(edit)</a>"
+    html << "</span>"
+    html << "<span class=\"inline_edit_form\" style=\"display:none\">"
+    html << form_tag(url, :method => method, :style => "display:inline", &block)
+    html << "</span>"
+    html.join("\n").html_safe
+  end
+
   def show_table(object, options = {})
     header = options.delete(:header) || "Info"
     url    = options.delete :url
     method = options.delete :method
-    
+
     tb = TableBuilder.new(object, self, options)
     yield(tb)
-    
+
     if tb.editable? && object.is_a?(ActiveRecord::Base)
       unless url
         url = {:controller  => params[:controller]}
@@ -188,15 +188,15 @@ module ShowTableHelper
         method = object.new_record? ? "post" : "put"
       end
     end
-    
-    
+
+
     html = []
     html << "<div class=\"inline_edit_field_group\">"
     if tb.editable?
       html << form_tag(url, :method => method)
     end
     html << "<fieldset>"
-    html << "<legend>#{header}" 
+    html << "<legend>#{header}"
     if tb.editable?
       html << "<span class=\"show_table_edit\">(#{link_to "Edit", "#", :class => "show_table_edit_link inline_edit_field_link"})<span>"
     end
@@ -206,7 +206,7 @@ module ShowTableHelper
     tb.cells.each do |cell|
       if col_count == 0
         html << "<tr>"
-      end 
+      end
       html      << cell[0] # content
       col_count += cell[1] # show_width of cell (1, 2, 3 etc)
       if col_count >= tb.width
@@ -216,7 +216,7 @@ module ShowTableHelper
     end
 
     html << "</table>"
-   
+
     if tb.editable?
       html << "<div class=\"inline_edit_field_input\" style=\"display:none\">"
       html << "<BR>"
@@ -231,7 +231,7 @@ module ShowTableHelper
     else
       html << "</fieldset>"
     end
-    
+
     html << "</div>"
     html.join("\n").html_safe
   end

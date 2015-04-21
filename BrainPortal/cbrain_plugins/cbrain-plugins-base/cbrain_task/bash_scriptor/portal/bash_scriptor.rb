@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # PortalTask model BashScriptor
@@ -25,28 +25,26 @@ class CbrainTask::BashScriptor < PortalTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # RDOC comments here, if you want, although the method
-  # is created with #:nodoc: in this template.
   def self.default_launch_args #:nodoc:
-    # Example: { :my_counter => 1, :output_file => "ABC.#{Time.now.to_i}" }
-    { 
-      :num_files_per_task     => 1, # only used for internal serializing on portal side
+    {
+      :num_files_per_task     => 1,   # only used for internal serializing on portal side
       :time_estimate_per_file => 60,  # in seconds
       :share_all_wds          => "0", # false
     }
   end
 
   def self.properties #:nodoc:
-    { :no_presets => true, :use_parallelizer => true }
+    {
+      :no_presets       => true,
+      :use_parallelizer => true
+    }
   end
 
   # RDOC comments here, if you want, although the method
   # is created with #:nodoc: in this template.
   def before_form #:nodoc:
-    params   = self.params
-    ids      = params[:interface_userfile_ids]
     cb_error "This task can ONLY be launched by the administrator.\n" unless self.user.has_role? :admin_user
-    ""
+    return ""
   end
 
   # RDOC comments here, if you want, although the method
@@ -58,7 +56,7 @@ class CbrainTask::BashScriptor < PortalTask
     if self.new_record? && (params[:num_files_per_task].blank? || params[:num_files_per_task].to_i < 1)
       params_errors.add(:num_files_per_task, "must be a number greater than 1.")
     end
-    ""
+    return ""
   end
 
   def final_task_list #:nodoc:
@@ -68,7 +66,7 @@ class CbrainTask::BashScriptor < PortalTask
     share_wds  = ((params[:share_all_wds].presence || "0").to_s == "1")
     tot_files  = file_ids.size
 
-    task_list = []
+    task_list  = []
 
     offset_cnt = 0
     while file_ids.size > 0
@@ -91,11 +89,13 @@ class CbrainTask::BashScriptor < PortalTask
       offset_cnt += ser_factor
     end
 
-    task_list
+    return task_list
   end
 
   def untouchable_params_attributes #:nodoc:
-    { :output_userfile_ids => true }
+    {
+      :output_userfile_ids => true
+    }
   end
 
 end

@@ -49,7 +49,7 @@ class ToolConfig < ActiveRecord::Base
   # must be unique per pair [tool, server]
   validates       :version_name,
                   :presence   => true,
-                  :format     => { with: /^\w[\w\.\-\_:@]+$/ , message: "must begin with alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'" },
+                  :format     => { with: /^\w[\w\.\-\:\@]+$/ , message: "must begin with alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'" },
                   :uniqueness => { :scope => [ :tool_id, :bourreau_id ], message: "must be unique per pair [tool, server]" },
                   :if         => :applies_to_bourreau_and_tool?
 

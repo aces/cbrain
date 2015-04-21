@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # A subclass of ClusterTask to run diagnostics.
@@ -114,13 +114,14 @@ class CbrainTask::Diagnostics < ClusterTask
       cb_error "This program crashed on purpose, as ordered."
     end
 
-    true
+    return true
   end
 
   def job_walltime_estimate #:nodoc:
     params        = self.params || {}
     cluster_delay = params[:cluster_delay] ? params[:cluster_delay].to_i : 0
-    2.minutes + cluster_delay.seconds
+    walltime = 2.minutes + cluster_delay.seconds
+    return walltime
   end
 
   # Creates a series of bash commands that will be run on the cluster.
@@ -228,9 +229,9 @@ class CbrainTask::Diagnostics < ClusterTask
     commands << "echo Diagnostics Script Ending\n" # we check for this sentence in save_results()
     commands << "\n"
 
-    commands
+    return commands
   end
-  
+
   # Creates a report about the diagnostics generated and saves it
   # back to the CBRAIN DB. The report is mostly a concatenation
   # of the cluster job's STDOUT and STDERR.
@@ -323,7 +324,7 @@ class CbrainTask::Diagnostics < ClusterTask
       cb_error "This program crashed on purpose, as ordered."
     end
 
-    true
+    return true
   end
 
 
@@ -335,52 +336,52 @@ class CbrainTask::Diagnostics < ClusterTask
   def recover_from_setup_failure #:nodoc:
     params = self.params
     return false unless mybool(params[:recover_setup])
-    unless params[:recover_setup_delay].blank? 
+    unless params[:recover_setup_delay].blank?
       sleep params[:recover_setup_delay].to_i
     end
-    true
+    return true
   end
 
   def recover_from_cluster_failure #:nodoc:
     params = self.params
     return false unless mybool(params[:recover_cluster])
-    unless params[:recover_cluster_delay].blank? 
+    unless params[:recover_cluster_delay].blank?
       sleep params[:recover_cluster_delay].to_i
     end
-    true
+    return true
   end
 
   def recover_from_post_processing_failure #:nodoc:
     params = self.params
     return false unless mybool(params[:recover_postpro])
-    unless params[:recover_postpro_delay].blank? 
+    unless params[:recover_postpro_delay].blank?
       sleep params[:recover_postpro_delay].to_i
     end
-    true
+    return true
   end
 
   def restart_at_setup #:nodoc:
     params = self.params
     return false unless mybool(params[:restart_setup])
-    unless params[:restart_setup_delay].blank? 
+    unless params[:restart_setup_delay].blank?
       sleep params[:restart_setup_delay].to_i
     end
-    true
+    return true
   end
 
   def restart_at_cluster #:nodoc:
     params = self.params
     return false unless mybool(params[:restart_cluster])
-    unless params[:restart_cluster_delay].blank? 
+    unless params[:restart_cluster_delay].blank?
       sleep params[:restart_cluster_delay].to_i
     end
-    true
+    return true
   end
 
   def restart_at_post_processing #:nodoc:
     params = self.params
     return false unless mybool(params[:restart_postpro])
-    unless params[:restart_postpro_delay].blank? 
+    unless params[:restart_postpro_delay].blank?
       sleep params[:restart_postpro_delay].to_i
     end
 
@@ -393,7 +394,7 @@ class CbrainTask::Diagnostics < ClusterTask
     if File.exists?(cur_err)
       system("cp",cur_err,self.stderr_cluster_filename(self.run_number + 1))
     end
-    true
+    return true
   end
 
   # My old convention was '1' for true, "" for false;

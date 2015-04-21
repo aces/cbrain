@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'fileutils'
@@ -90,7 +90,7 @@ class EnCbrainLocalDataProvider < LocalDataProvider
       FileUtils.remove_entry(parent1.to_s, true)
       Dir.rmdir(parent2.to_s)
       Dir.rmdir(parent3.to_s)
-    rescue Errno::ENOENT, Errno::ENOTEMPTY => ex
+    rescue Errno::ENOENT, Errno::ENOTEMPTY
       # It's OK if any of the rmdir fails, and we simply ignore that.
     end
     true

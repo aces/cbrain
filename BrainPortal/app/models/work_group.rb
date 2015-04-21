@@ -17,25 +17,25 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #This model represents an group created for the purpose of assigning collective permission
-#to resources (as opposed to SystemGroup). 
+#to resources (as opposed to SystemGroup).
 class WorkGroup < Group
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-    
+
   validates_uniqueness_of :name, :scope => :creator_id
 
-  # This method optimizes the DB lookups necessary to 
+  # This method optimizes the DB lookups necessary to
   # create the pretty_category_name of a set of WorkGroups
   def self.prepare_pretty_category_names(groups = [], as_user = nil)
     wgs     = Array(groups).select { |g| g.is_a?(WorkGroup) && !g.invisible? }
-    wg_ids  = wgs.map &:id
+    wg_ids  = wgs.map(&:id)
 
     wg_ucnt = WorkGroup.joins("LEFT JOIN groups_users ON groups_users.group_id=groups.id LEFT JOIN users ON users.id=groups_users.user_id").where('groups.id' => wg_ids).group('groups.id').count('users.login') # how many users per workgroup
-    by_one_or_many = wgs.hashed_partition do |wg| 
+    by_one_or_many = wgs.hashed_partition do |wg|
       ucnt = wg_ucnt[wg.id]
       case ucnt
       when 0
@@ -62,7 +62,7 @@ class WorkGroup < Group
     wg_names_cache = Proc.new do
       @_wg_names ||= WorkGroup.joins(:users).where(
                      'groups.id' => by_one_or_many[:one].map(&:id)).select(
-                     [ 'groups.id', 'users.full_name', 'users.login' ]).all.index_by &:id # first user of each group
+                     [ 'groups.id', 'users.full_name', 'users.login' ]).all.index_by(&:id) # first user of each group
     end
 
     # Process workgroups with a single user
@@ -76,7 +76,7 @@ class WorkGroup < Group
 
     wgs
   end
-    
+
   def pretty_category_name(as_user)
     return @_pretty_category_name if @_pretty_category_name
     if self.invisible?
@@ -92,7 +92,7 @@ class WorkGroup < Group
     end
     @_pretty_category_name
   end
-    
+
   def short_pretty_type
     if self.users.count > 1
       return "Shared"
@@ -100,17 +100,17 @@ class WorkGroup < Group
       return ""
     end
   end
-  
+
   def can_be_edited_by?(user)
     if user.has_role? :admin_user
       return true
-    elsif !self.invisible? 
+    elsif !self.invisible?
       if user.has_role?(:site_manager) && self.site_id == user.site.id
         return true
       end
       return self.creator_id == user.id
     end
-    
+
     false
   end
 

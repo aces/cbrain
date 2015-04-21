@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # A subclass of PortalTask to serialize other tasks.
@@ -26,7 +26,9 @@ class CbrainTask::CbSerializer < PortalTask
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.properties #:nodoc:
-    { :no_presets => true }
+    {
+      :no_presets => true
+    }
   end
 
   # Disabled, not necessary, and costly a little.

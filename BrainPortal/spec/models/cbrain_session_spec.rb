@@ -24,9 +24,9 @@ require 'spec_helper'
 
 describe CbrainSession do
 
-  let(:session)    {Hash.new}
-  let(:sess_model) {double("sess_model").as_null_object}
-  let(:cb_session) {CbrainSession.new(session, {:controller => "userfiles"}, sess_model)}
+  let(:session)      { Hash.new }
+  let(:sess_model)   { double("sess_model").as_null_object }
+  let(:cb_session)   { CbrainSession.new(session, {:controller => "userfiles"}, sess_model) }
   let(:current_user) { mock_model(User).as_null_object }
 
 
@@ -161,12 +161,10 @@ describe CbrainSession do
 
   describe "self.recent_activity" do
     1.upto(15) do |i|
-      name = "cb_session#{i}"
       sess = ActiveRecord::SessionStore::Session.create!( :updated_at => (i*10).seconds.ago, :session_id => "xyz#{i}", :data => {})
       sess.user_id = i
       sess.active  = true
       sess.save
-      user = "user#{i}"
       let!(:name) { CbrainSession.new(sess, {:controller => "userfile"}, sess_model) }
     end
 

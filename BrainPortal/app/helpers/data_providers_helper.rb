@@ -17,14 +17,14 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Helpers for DataProvider views.
 module DataProvidersHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   # This method reformats a long SSH key text so that it
   # is folded on several lines.
   def pretty_ssh_key(ssh_key)
@@ -37,7 +37,7 @@ module DataProvidersHelper
      #end
      #pretty
   end
-  
+
   # Creates a link called "(info)" that presents as an overlay
   # the set of descriptions for the data providers given in argument.
   def overlay_data_providers_descriptions(data_providers = nil)
@@ -52,7 +52,7 @@ module DataProvidersHelper
   def data_providers_descriptions(data_providers = nil)
     data_providers ||= DataProvider.find_all_accessible_by_user(current_user).all
     paragraphs = data_providers.collect do |dp|
-      one_description = <<-"HTML"
+      <<-"HTML"
         <strong>#{h(dp.name)}</strong>
         <br/>
         <pre class="medium_paragraphs">#{dp.description.blank? ? "(No description)" : h(dp.description.strip)}</pre>
@@ -62,12 +62,12 @@ module DataProvidersHelper
       <h4>Data Providers Descriptions</h4>
       #{paragraphs.join("")}
     HTML
-    all_descriptions.html_safe
+    return all_descriptions.html_safe
   end
-  
+
   def class_param_for_name(name, klass=Userfile) #:nodoc:
     matched_class = klass.descendants.unshift(klass).find{ |c| name =~ c.file_name_pattern }
-    
+
     if matched_class
       "#{matched_class.name}-#{name}"
     else

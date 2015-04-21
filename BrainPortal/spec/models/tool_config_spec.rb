@@ -26,11 +26,11 @@ describe ToolConfig do
   let(:tool_config) {Factory.create(:tool_config)}
 
   describe "#can_be_accessed_by?" do
-    let(:user)              {Factory.create(:admin_user)}
-    let(:group)             {Factory.create(:group, :users => [user])}
-    let(:group_tool_config) {Factory.create(:tool_config, :group => group)}
-    let(:no_b_tool_config)  {Factory.create(:tool_config, :bourreau => nil)}
-    let(:no_t_tool_config)  {Factory.create(:tool_config, :tool => nil)}
+    let(:user)              { Factory.create(:admin_user) }
+    let(:group)             { Factory.create(:group, :users => [user]) }
+    let(:group_tool_config) { Factory.create(:tool_config, :group => group) }
+    let(:no_b_tool_config)  { Factory.create(:tool_config, :bourreau => nil) }
+    let(:no_t_tool_config)  { Factory.create(:tool_config, :tool => nil) }
 
 
     it "should allow admin user to access a tool config even if they don't belong to its group" do
@@ -111,7 +111,7 @@ describe ToolConfig do
     end
 
     it "should add extended_environment to ENV if use_extend is true" do
-      increase = tool_config.extended_environment ? tool_config.extended_environment.size : 0
+      tool_config.extended_environment ? tool_config.extended_environment.size : 0
       tool_config.apply_environment(true) { expect(ENV.keys).to include(tool_config.extended_environment.first.first)}
     end
   end
