@@ -138,7 +138,7 @@ class PortalTask < CbrainTask
   end
 
   # Backwards compatibility auto adaptation:
-  # if a task's code is extended to incldue new parameters,
+  # if a task's code is extended to include new parameters,
   # then this will re-insert their default values
   # into the params[] hash.
   #
