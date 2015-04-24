@@ -122,8 +122,8 @@ class CbrainTask::Diagnostics < PortalTask
     params[:num_copies] = num_copies
 
     # Lifecycle checks
-    action  = params[:after_form_action]  || ""
-    message = params[:after_form_message] || ""
+    action  = params[:after_form_action].presence  || ""
+    message = params[:after_form_message].presence || ""
 
     add_errors_to_check_field(message) if action=~ /field/
     return "" if action == "field"

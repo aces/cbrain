@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # A subclass of ClusterTask to run diagnostics.
@@ -230,7 +230,7 @@ class CbrainTask::Diagnostics < ClusterTask
 
     commands
   end
-  
+
   # Creates a report about the diagnostics generated and saves it
   # back to the CBRAIN DB. The report is mostly a concatenation
   # of the cluster job's STDOUT and STDERR.
@@ -335,7 +335,7 @@ class CbrainTask::Diagnostics < ClusterTask
   def recover_from_setup_failure #:nodoc:
     params = self.params
     return false unless mybool(params[:recover_setup])
-    unless params[:recover_setup_delay].blank? 
+    unless params[:recover_setup_delay].blank?
       sleep params[:recover_setup_delay].to_i
     end
     true
@@ -344,7 +344,7 @@ class CbrainTask::Diagnostics < ClusterTask
   def recover_from_cluster_failure #:nodoc:
     params = self.params
     return false unless mybool(params[:recover_cluster])
-    unless params[:recover_cluster_delay].blank? 
+    unless params[:recover_cluster_delay].blank?
       sleep params[:recover_cluster_delay].to_i
     end
     true
@@ -353,7 +353,7 @@ class CbrainTask::Diagnostics < ClusterTask
   def recover_from_post_processing_failure #:nodoc:
     params = self.params
     return false unless mybool(params[:recover_postpro])
-    unless params[:recover_postpro_delay].blank? 
+    unless params[:recover_postpro_delay].blank?
       sleep params[:recover_postpro_delay].to_i
     end
     true
@@ -362,7 +362,7 @@ class CbrainTask::Diagnostics < ClusterTask
   def restart_at_setup #:nodoc:
     params = self.params
     return false unless mybool(params[:restart_setup])
-    unless params[:restart_setup_delay].blank? 
+    unless params[:restart_setup_delay].blank?
       sleep params[:restart_setup_delay].to_i
     end
     true
@@ -371,7 +371,7 @@ class CbrainTask::Diagnostics < ClusterTask
   def restart_at_cluster #:nodoc:
     params = self.params
     return false unless mybool(params[:restart_cluster])
-    unless params[:restart_cluster_delay].blank? 
+    unless params[:restart_cluster_delay].blank?
       sleep params[:restart_cluster_delay].to_i
     end
     true
@@ -380,7 +380,7 @@ class CbrainTask::Diagnostics < ClusterTask
   def restart_at_post_processing #:nodoc:
     params = self.params
     return false unless mybool(params[:restart_postpro])
-    unless params[:restart_postpro_delay].blank? 
+    unless params[:restart_postpro_delay].blank?
       sleep params[:restart_postpro_delay].to_i
     end
 
