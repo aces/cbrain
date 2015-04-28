@@ -266,7 +266,7 @@ class ApplicationController < ActionController::Base
   def prepare_messages
     return unless current_user
     return if     current_user.all_licenses_signed.blank?
-    return if     request.format.blank?
+    return if     request.format.blank? || request.xhr?
     return unless request.format.to_sym == :html || params[:controller] == 'messages'
 
     @display_messages = []
