@@ -58,13 +58,12 @@ module RichUiHelper
     dropdown_class += options.delete(:dropdown_class).to_s
     options_setup("hover_open", options)
     atts = options.to_html_attributes
-    html = ["<span #{atts}>\n"]
-    html << link_to(h(header), "#")
-    html << "<div id=#{target_id} class=\"#{dropdown_class}\" style=\"display:none\">\n"
-    html << capture(&block)
-    html << "</div>"
-    html << "</span>"
-    return html.join.html_safe
+    html = "<span #{atts}>\n".html_safe +
+           link_to(h(header), "#") +
+            "<div id=#{target_id} class=\"#{dropdown_class}\" style=\"display:none\">\n".html_safe +
+            capture(&block) +
+            "</div></span>".html_safe
+    return html
   end
 
   #Create tab bars in the interface.
@@ -92,11 +91,13 @@ module RichUiHelper
 
      capture(bar,&block)  #Load content into bar object
 
-     safe_concat("<div #{atts}>")
-     safe_concat(bar.tab_titles)
-     safe_concat(bar.tab_divs)
-     safe_concat("</div>")
-     ""
+     html =
+       "<div #{atts}>".html_safe +
+       bar.tab_titles +
+       bar.tab_divs +
+       "</div>".html_safe
+
+     return html
    end
 
   ############################################################
@@ -107,8 +108,8 @@ module RichUiHelper
   class TabBuilder
 
     def initialize
-      @tab_titles = ""
-      @tab_divs   = ""
+      @tab_titles = "".html_safe
+      @tab_divs   = "".html_safe
     end
 
     def tab_titles
@@ -121,8 +122,9 @@ module RichUiHelper
 
     #This creates an individual tab, it either takes a block and/or a partial as an option (:partial => "partial")
     def tab(name, &block)
-      capture = eval("method(:capture)", block.binding)
-      @tab_titles += "<li><a href='##{name.gsub(/\s+/,'_')}'>#{name}</a></li>"
+      capture   = eval("method(:capture)", block.binding)
+      random_id = rand(1000000).to_s
+      @tab_titles += "<li><a href=\"#tb_#{random_id}\">#{name}</a></li>".html_safe
 
 
       #########################################
@@ -130,10 +132,10 @@ module RichUiHelper
       #                                       #
       #This can be either a partial or a block#
       #########################################
-      @tab_divs += "<div id=#{name.gsub(/\s+/,'_')}>\n"
-      @tab_divs += capture.call(&block)
-      @tab_divs += "</div>\n"
-      ""
+      @tab_divs += "<div id=\"tb_#{random_id}\">\n".html_safe +
+                   capture.call(&block) +
+                   "</div>\n".html_safe
+      return "" # in case invoked with <%= instead <% 
     end
   end
 
@@ -161,10 +163,10 @@ module RichUiHelper
 
     content = capture(AccordionBuilder.new, &block)
 
-    safe_concat("<div #{atts}>")
-    safe_concat(content)
-    safe_concat("</div>")
-    ""
+    html = "<div #{atts}>".html_safe +
+           content +
+           "</div>".html_safe
+    return html
   end
 
   ############################################################
@@ -174,13 +176,12 @@ module RichUiHelper
   #############################################################
   class AccordionBuilder
     def section(header, &block)
-      capture     = eval("method(:capture)",     block.binding)
-      safe_concat = eval("method(:safe_concat)", block.binding)
-      head = "<h3><a href=\"#\">#{header}</a></h3>"
-      body = "<div style=\"display: none\">#{capture.call(&block)}</div>"
-      safe_concat.call(head)
-      safe_concat.call(body)
-      ""
+      capture     = eval("method(:capture)", block.binding)
+      head = "<h3><a href=\"#\">#{header}</a></h3>".html_safe
+      body = "<div style=\"display: none\">".html_safe +
+             capture.call(&block) +
+             "</div>".html_safe
+      return head + body
     end
   end
 
@@ -279,7 +280,7 @@ module RichUiHelper
       display_style = "style=\"display: none\" "
     end
 
-    content=""
+    content = "".html_safe
     if block_given?
       content += capture(&block)
     end
@@ -288,13 +289,15 @@ module RichUiHelper
     end
 
     atts = options.to_html_attributes
-    safe_concat("<span #{atts}>")
-    safe_concat("<a #{button_id} class=\"button_menu\">#{title}</a>")
-    safe_concat("<div #{content_id} #{display_style} class=\"drop_down_menu\">")
-    safe_concat(content)
-    safe_concat("</div>")
-    safe_concat("</span>")
-    ""
+
+    html  = "<span #{atts}>" +
+            "<a #{button_id} class=\"button_menu\">#{title}</a>" +
+            "<div #{content_id} #{display_style} class=\"drop_down_menu\">"
+    html  = html.html_safe
+    html += content
+    html += "</div></span>".html_safe
+
+    return html
   end
 
   #Create an element that will toggle between hiding and showing another element.

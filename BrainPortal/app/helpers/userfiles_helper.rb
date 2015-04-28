@@ -193,17 +193,6 @@ module UserfilesHelper
     html.html_safe
   end
 
-  #Create a collapsable "Content" box for userfiles show page.
-  def content_viewer(&block)
-    safe_concat('<div id="userfile_contents_display">')
-    safe_concat(show_hide_toggle '<strong>Displayable Contents</strong>', "#userfile_contents_display_toggle")
-    safe_concat('<div id="userfile_contents_display_toggle" style="display:none"><BR><BR>')
-    safe_concat(capture(&block))
-    safe_concat('</div>')
-    safe_concat('</div>')
-    ""
-  end
-
   # Returned a colorized size for the userfile ; if the
   # userfile is a FileCollection, appends the number of
   # files in the collection.
