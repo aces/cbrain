@@ -88,16 +88,13 @@ class Userfile < ActiveRecord::Base
 
   cb_scope                :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
   cb_scope                :file_format, lambda { |f|
-                                       format_filter = Userfile.descendants.map(&:to_s).find{ |c| c == f }
-                                       format_ids    = Userfile.connection.select_values("select format_source_id from userfiles where format_source_id IS NOT NULL AND type='#{format_filter}'").join(",")
-                                       format_ids    = " OR userfiles.id IN (#{format_ids})" unless format_ids.blank?
-                                       where("userfiles.type='#{format_filter}'#{format_ids}")
+                                       return where("1 = 0") unless Userfile.descendants.map(&:to_s).include? f
+                                       joins("LEFT JOIN userfiles AS userfiles_source ON userfiles.format_source_id = userfiles_source.id").where("userfiles.type = ? OR userfiles_source.type = ?", f)
                                      }
   cb_scope                :has_no_parent, :conditions => {:parent_id => nil}
-  # TODO fix has_no_child invalid mysql if no file with parents
   cb_scope                :has_no_child,  lambda { |ignored|
-                                            parents_ids = Userfile.connection.select_values("SELECT DISTINCT parent_id FROM userfiles WHERE parent_id IS NOT NULL").join(",")
-                                            where("userfiles.id NOT IN (#{parents_ids})")
+                                            parents_ids = Userfile.where("parent_id IS NOT NULL").raw_first_column(:parent_id).uniq
+                                            parents_ids.blank? ? where({}) : where("userfiles.id NOT IN (?)", parents_ids)
                                           }
   cb_scope                :parent_name_like, lambda { |n|
                                             matching_parents_ids = Userfile.where("name like ?", "%#{n}%").raw_first_column(:id).uniq
