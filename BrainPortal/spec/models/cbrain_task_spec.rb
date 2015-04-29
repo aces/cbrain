@@ -20,10 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe CbrainTask do
-  let!(:cb_diagnostic) { Factory.create("cbrain_task/diagnostics") }
+  let!(:cb_diagnostic) { create("cbrain_task/diagnostics") }
   let(:cb_tool)        { double("tool", :name => "Tool!") }
 
   context "Utility Methods" do
@@ -345,7 +345,7 @@ describe CbrainTask do
 
 
   describe "add_prerequisites" do
-    let!(:cb_diagnostic_other) { Factory.create("cbrain_task/diagnostics") }
+    let!(:cb_diagnostic_other) { create("cbrain_task/diagnostics") }
 
     it "should return an error if 'for_what' isn't ':for_setup' or ':for_post_processing'" do
       expect{cb_diagnostic.add_prerequisites("for_what", cb_diagnostic_other)}.to raise_error("Prerequisite argument 'for_what' must be :for_setup or :for_post_processing")

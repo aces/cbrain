@@ -20,11 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe VaultSshDataProvider, :type => :model do
-  let(:vault_ssh_data_provider) { Factory.create(:vault_ssh_data_provider) }
-  let(:userfile)                { Factory.create(:userfile, :data_provider => vault_ssh_data_provider) }
+  let(:vault_ssh_data_provider) { create(:vault_ssh_data_provider) }
+  let(:userfile)                { create(:userfile, :data_provider => vault_ssh_data_provider) }
   let(:user)                    { mock_model(NormalUser) }
 
   describe "#is_browsable?" do

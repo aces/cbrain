@@ -20,11 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe DataProvidersController, :type => :controller do
-  let(:data_provider) {mock_model(DataProvider).as_null_object}
-  let(:admin_user) {Factory.create(:admin_user)}
+  let(:data_provider) { mock_model(DataProvider).as_null_object }
+  let(:admin_user)    { create(:admin_user) }
 
   context "with an admin user" do
     before(:each) do
@@ -38,8 +38,8 @@ RSpec.describe DataProvidersController, :type => :controller do
       describe "index" do
         before(:each) do
           allow(DataProvider).to receive(:find_all_accessible_by_user).and_return(double("provider_scope", :includes => "includes"))
-          allow(controller).to receive(:base_filtered_scope)
-          allow(controller).to receive(:base_sorted_scope).and_return([data_provider])
+          allow(controller).to   receive(:base_filtered_scope)
+          allow(controller).to   receive(:base_sorted_scope).and_return([data_provider])
 
         end
         it "should use the basic filtered scope" do
@@ -85,7 +85,7 @@ RSpec.describe DataProvidersController, :type => :controller do
 
           it "should display a flash message" do
             post :create, :format => :js
-            expect(flash[:notice]).to include_text("created")
+            expect(flash[:notice]).to match("created")
           end
 
           it "should redirect to index" do
@@ -141,7 +141,7 @@ RSpec.describe DataProvidersController, :type => :controller do
           expect(data_provider).to receive(:has_owner_access?)
           put :update, :id => 1
         end
-        it "should update attrubutes" do
+        it "should update attributes" do
           expect(data_provider).to receive(:update_attributes_with_logging)
           put :update, :id => 1
         end
@@ -165,7 +165,7 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
           it "should display success message" do
             put :update, :id => 1
-            expect(flash[:notice]).to include_text("success")
+            expect(flash[:notice]).to match("success")
           end
           it "should redirect to index" do
             put :update, :id => 1
@@ -210,7 +210,7 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
           it "should display an error message" do
             delete :destroy, :id => 1
-            expect(flash[:error]).to include_text("Not Destroyed!!!")
+            expect(flash[:error]).to match("Not Destroyed!!!")
           end
           it "should redirect to index" do
             delete :destroy, :id => 1
@@ -230,12 +230,12 @@ RSpec.describe DataProvidersController, :type => :controller do
         it "should return yes if provider is alive" do
           allow(data_provider).to receive(:is_alive?).and_return(true)
           get :is_alive, :id => 1
-          expect(response.body).to include_text(/yes/i)
+          expect(response.body).to match(/yes/i)
         end
         it "should return no if provider is not alive" do
           allow(data_provider).to receive(:is_alive?).and_return(false)
           get :is_alive, :id => 1
-          expect(response.body).to include_text(/no/i)
+          expect(response.body).to match(/no/i)
         end
       end
       describe "browse" do
@@ -335,7 +335,7 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
           it "should display that registration was a success" do
             post :register, :id => 1, :basenames => ["a_file"]
-            expect(flash[:notice]).to include_text(/\bregistered\b/i)
+            expect(flash[:notice]).to match(/\bregistered\b/i)
           end
           it "should redirect to browse" do
             post :register, :id => 1, :basenames => ["a_file"]

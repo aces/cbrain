@@ -20,11 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe ActiveRecordLog, :type => :model do
 
-  let(:ar_object) { Factory.create(:tag) }
+  let(:ar_object) { create(:tag) }
 
   describe "#active_record_object" do
     it "should return nil if the class given is invalid" do

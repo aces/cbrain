@@ -20,11 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe SessionsController, :type => :controller do
   let(:current_session) { double("session").as_null_object }
-  let(:portal) { double("portal", :portal_locked? => false).as_null_object }
+  let(:portal)          { double("portal", :portal_locked? => false).as_null_object }
 
   before(:each) do
     allow(BrainPortal).to receive(:current_resource).and_return(portal)
@@ -114,7 +114,7 @@ RSpec.describe SessionsController, :type => :controller do
 
   describe "show" do
     it "should return success status if the user is logged in" do
-      allow(controller).to receive(:current_user).and_return(Factory.create(:normal_user))
+      allow(controller).to receive(:current_user).and_return(create(:normal_user))
       get :show
       expect(response.status).to eq(200)
     end
@@ -126,7 +126,7 @@ RSpec.describe SessionsController, :type => :controller do
   end
 
   describe "destroy" do
-    let(:current_user) { Factory.create(:normal_user) }
+    let(:current_user) { create(:normal_user) }
 
     before(:each) do
       allow(controller).to receive(:current_user).and_return(current_user)

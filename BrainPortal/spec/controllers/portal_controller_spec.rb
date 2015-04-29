@@ -20,13 +20,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe PortalController, :type => :controller do
-  let(:current_user) {Factory.create(:normal_user)}
-  let(:site_manager) {Factory.create(:site_manager)}
-  let(:admin_user)   {Factory.create(:admin_user)}
-  let(:start_path)   {controller.send(:start_page_path)}
+  let(:current_user) { create(:normal_user) }
+  let(:site_manager) { create(:site_manager) }
+  let(:admin_user)   { create(:admin_user) }
+  let(:start_path)   { controller.send(:start_page_path) }
 
   context "with a logged in normal user" do
 
@@ -138,7 +138,7 @@ RSpec.describe PortalController, :type => :controller do
       it "should render the empty message is there's nothing in the log" do
         allow(IO).to receive(:popen).and_return("")
         get :portal_log
-        expect(assigns[:portal_log]).to include_text(/No logs entries found/)
+        expect(assigns[:portal_log]).to match(/No logs entries found/)
       end
     end
     describe "show_license" do

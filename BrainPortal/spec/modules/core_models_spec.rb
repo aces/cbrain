@@ -17,31 +17,31 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe "CoreModels" do
-  
-  let(:core_model) { Factory.create(:everyone_group) }
-  let(:non_core_model) { Factory.create(:work_group) }
-  
+
+  let(:core_model)     { create(:everyone_group) }
+  let(:non_core_model) { create(:work_group) }
+
   describe "#core_model!" do
     it "should not allow model to be destroyed if called" do
       expect { core_model.destroy }.to raise_error
     end
-    
+
     it "should allow model to be destroyed if not called" do
       expect { non_core_model.destroy }.not_to raise_error
     end
   end
-  
+
   describe "#core_model?" do
     it "should return true for a core model" do
       expect(core_model.core_model?).to be_truthy
     end
-    
+
     it "should return false if not a core model" do
       expect(non_core_model.core_model?).to be_falsey
     end

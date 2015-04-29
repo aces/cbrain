@@ -20,11 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe TagsController, :type => :controller do
-  let(:tag) {mock_model(Tag).as_null_object}
-  let(:current_user) {Factory.create(:normal_user)}
+  let(:tag)          { mock_model(Tag).as_null_object }
+  let(:current_user) { create(:normal_user) }
 
   context "with a logged in user" do
     before(:each) do
@@ -47,7 +47,7 @@ RSpec.describe TagsController, :type => :controller do
     end
 
     describe "edit" do
-      let(:real_tag) {Factory.create(:tag, :user_id => current_user.id)}
+      let(:real_tag) {create(:tag, :user_id => current_user.id)}
 
       it "should find the requested tag" do
         get :edit, :id => real_tag.id
@@ -109,7 +109,7 @@ RSpec.describe TagsController, :type => :controller do
     end
 
     describe "update" do
-      let(:real_tag) {Factory.create(:tag, :name => "name", :user_id => current_user.id)}
+      let(:real_tag) { create(:tag, :name => "name", :user_id => current_user.id) }
 
       it "should find the requested tag" do
         put :update, :id => real_tag.id
@@ -133,14 +133,14 @@ RSpec.describe TagsController, :type => :controller do
 
       context "when update fails" do
         it "should render the edit page" do
-          put :update, :id => real_tag.id.to_s,:tag => {"name" => '#'}
+          put :update, :id => real_tag.id.to_s,:tag => {"name" => '#' }
           expect(response).to render_template("edit")
         end
       end
     end
 
     describe "destroy" do
-      let(:real_tag) {Factory.create(:tag, :user_id => current_user.id)}
+      let(:real_tag) { create(:tag, :user_id => current_user.id)}
       before(:each) do
         session[:userfiles] ||= {}
       end

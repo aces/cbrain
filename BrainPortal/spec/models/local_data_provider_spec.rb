@@ -17,20 +17,20 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe LocalDataProvider do
-  let(:local_data_provider) {Factory.create(:local_data_provider)}
-  let(:userfile) {Factory.create(:userfile, :data_provider => local_data_provider)}
+  let(:local_data_provider) {create(:local_data_provider)}
+  let(:userfile) {create(:userfile, :data_provider => local_data_provider)}
 
   describe "#is_fast_syncing?" do
-    
+
     it "should return true local data providers are considered fast syncing" do
       expect(local_data_provider.is_fast_syncing?).to be_truthy
-    end  
+    end
   end
 
   describe "#provider_full_path" do
@@ -42,7 +42,7 @@ describe LocalDataProvider do
   end
 
   describe "#impl_is_alive?" do
-    
+
     it "should return true if remote_dir is a directory" do
       allow(File).to receive(:directory?).and_return(true)
       expect(local_data_provider.impl_is_alive?).to be_truthy
@@ -55,15 +55,15 @@ describe LocalDataProvider do
   end
 
   describe "#impl_sync_to_cache" do
-    
+
     it "should return true if all works correctly" do
       expect(local_data_provider).to be_truthy
     end
   end
 
   describe "#impl_sync_to_provider" do
-    
-    it "should return true if all works correctly" do                   
+
+    it "should return true if all works correctly" do
       expect(local_data_provider).to be_truthy
     end
   end
@@ -77,7 +77,7 @@ describe LocalDataProvider do
 
   describe "#provider_readhandle" do
 
-    it "should call cache_readhandle" do 
+    it "should call cache_readhandle" do
       expect(local_data_provider).to receive(:cache_readhandle).once
       local_data_provider.provider_readhandle(userfile)
     end
@@ -85,7 +85,7 @@ describe LocalDataProvider do
 
   describe "#impl_provider_collection_index" do
 
-    it "should call cache_collection_index" do 
+    it "should call cache_collection_index" do
       expect(local_data_provider).to receive(:cache_collection_index).once
       local_data_provider.impl_provider_collection_index(userfile)
     end

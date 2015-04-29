@@ -20,10 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe Group do
-  let(:group) { Factory.create(:group) }
+  let(:group) { create(:group) }
   let(:user)  { mock_model(User) }
 
   describe "#everyone" do
@@ -42,7 +42,7 @@ describe Group do
 
   describe "#reassign_models_to_owner_group" do
     it "should reassign associated resources when destroyed" do
-      tag = Factory.create(:tag, :group => group)
+      tag  = create(:tag, :group => group)
       user = tag.user
       group.destroy
       tag.reload
@@ -63,7 +63,7 @@ describe Group do
   end
 
   describe "#can_be_accessed_by?" do
-    let(:current_user) { Factory.create(:normal_user) }
+    let(:current_user) { create(:normal_user) }
 
     it "should allow admin access to any group" do
       admin_user = User.admin
@@ -84,12 +84,12 @@ describe Group do
   describe "#default_creator" do
     it "should set creator to admin id if not set" do
       admin_user_id = User.find_by_login("admin").id
-      new_group = Factory.create(:group, :creator_id => nil)
+      new_group = create(:group, :creator_id => nil)
       expect(new_group.creator_id).to eq(admin_user_id)
     end
     it "should not set creator if already set" do
-      new_user_id = Factory.create(:normal_user).id
-      new_group = Factory.create(:group, :creator_id => new_user_id)
+      new_user_id = create(:normal_user).id
+      new_group = create(:group, :creator_id => new_user_id)
       expect(new_group.creator_id).to eq(new_user_id)
     end
   end
