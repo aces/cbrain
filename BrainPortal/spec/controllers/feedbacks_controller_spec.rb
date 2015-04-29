@@ -20,11 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe FeedbacksController, :type => :controller do
-  let(:feedback) {mock_model(Feedback).as_null_object}
-  let(:current_user) {Factory.create(:normal_user)}
+  let(:feedback)     { mock_model(Feedback).as_null_object }
+  let(:current_user) { create(:normal_user) }
 
   context "with a logged in user" do
     before(:each) do

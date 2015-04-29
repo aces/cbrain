@@ -20,14 +20,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe UserfileCustomFilter do
-  let(:filter)     { Factory.create(:userfile_custom_filter) }
+  let(:filter)     { create(:userfile_custom_filter) }
   let(:task_scope) { double("task_scope").as_null_object }
 
-  let(:userfile1)  { Factory.create(:userfile, :name => "file_1", :created_at => "2011-04-04", :updated_at => "2011-05-04", :size => 1779) }
-  let(:userfile2)  { Factory.create(:userfile, :name => "file_2", :created_at => "2011-04-29", :updated_at => "2011-05-29", :size => 2558) }
+  let(:userfile1)  { create(:userfile, :name => "file_1", :created_at => "2011-04-04", :updated_at => "2011-05-04", :size => 1779) }
+  let(:userfile2)  { create(:userfile, :name => "file_2", :created_at => "2011-04-29", :updated_at => "2011-05-29", :size => 2558) }
 
   describe "#filter_scope" do
 
@@ -47,8 +47,8 @@ describe UserfileCustomFilter do
     end
 
     it "should remove all non 'data['type']' userfile" do
-      u1 = Factory.create(:text_file)
-           Factory.create(:userfile)
+      u1 = create(:text_file)
+           create(:userfile)
       filter.data = { "type" => u1.class.to_s }
       expect(filter.filter_scope(Userfile.scoped({}))).to match_array([u1])
     end
@@ -131,8 +131,8 @@ describe UserfileCustomFilter do
   end
 
   context "tag management" do
-    let(:tag1) {Factory.create(:tag)}
-    let(:tag2) {Factory.create(:tag)}
+    let(:tag1) {create(:tag)}
+    let(:tag2) {create(:tag)}
 
     describe "#tag_ids=" do
       it "should assign tags to the data hash" do

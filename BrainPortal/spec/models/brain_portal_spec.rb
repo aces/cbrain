@@ -17,13 +17,13 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe BrainPortal do
-  let(:current_bp) {Factory.create(:brain_portal)}
+  let(:current_bp) {create(:brain_portal)}
 
   describe "#lock" do
     it "should be locked after lock was called" do
@@ -33,13 +33,13 @@ describe BrainPortal do
     end
   end
 
-  describe "#unlock" do 
+  describe "#unlock" do
     it "should be unlocked after unlock was called" do
       current_bp.portal_locked = true
       current_bp.unlock!
       expect(current_bp.portal_locked).to be false
     end
   end
-  
+
 end
 

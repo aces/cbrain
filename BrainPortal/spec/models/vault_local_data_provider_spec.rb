@@ -17,32 +17,32 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe VaultLocalDataProvider do
-  let(:vault_local_data_provider) {Factory.create(:vault_local_data_provider, :remote_dir => "remote")}
-  let(:userfile) {Factory.create(:userfile, :data_provider => vault_local_data_provider)}
-  
+  let(:vault_local_data_provider) {create(:vault_local_data_provider, :remote_dir => "remote")}
+  let(:userfile) {create(:userfile, :data_provider => vault_local_data_provider)}
+
   describe "#cache_prepare" do
-    
+
     before(:each) do
-      allow(SyncStatus).to receive(:ready_to_modify_cache).and_yield      
+      allow(SyncStatus).to receive(:ready_to_modify_cache).and_yield
     end
-    
+
     it "should return true if all works correctly" do
       allow(Dir).to receive(:mkdir)
       expect(vault_local_data_provider.cache_prepare(userfile)).to be_truthy
     end
-    
+
     it "should call mkdir if new userdir not already a directory" do
       allow(File).to receive(:directory?).and_return(false)
       expect(Dir).to receive(:mkdir).once
       vault_local_data_provider.cache_prepare(userfile)
     end
-    
+
     it "should not call mkdir if new userdir is already a directory" do
       allow(File).to receive(:directory?).and_return(true)
       expect(Dir).not_to receive(:mkdir)
@@ -64,20 +64,20 @@ describe VaultLocalDataProvider do
       expect(SyncStatus).to receive(:ready_to_modify_cache).once
       vault_local_data_provider.cache_erase(userfile)
     end
-    
+
     it "should return true if all works correctly" do
-      allow(SyncStatus).to receive(:ready_to_modify_cache).and_yield      
+      allow(SyncStatus).to receive(:ready_to_modify_cache).and_yield
       expect(vault_local_data_provider.cache_erase(userfile)).to be_truthy
-    end 
+    end
   end
 
   describe "#impl_provider_erase" do
-    
+
     it "should call FileUtils.remove_entry" do
       expect(FileUtils).to receive(:remove_entry).once
       vault_local_data_provider.impl_provider_erase(userfile)
     end
-    
+
     it "should return true if all works correctly" do
       allow(FileUtils).to receive(:remove_entry)
       expect(vault_local_data_provider.impl_provider_erase(userfile)).to be_truthy
@@ -85,21 +85,21 @@ describe VaultLocalDataProvider do
   end
 
   describe "#impl_provider_rename" do
-    
+
     it "should call FileUtils.mv" do
       expect(FileUtils).to receive(:mv).once
       vault_local_data_provider.impl_provider_rename(userfile,"new_name")
-    end 
-    
+    end
+
     it "should return true if all works correctly" do
       allow(FileUtils).to receive(:mv)
       expect(vault_local_data_provider.impl_provider_rename(userfile,"new_name")).to be_truthy
-    end 
-    
+    end
+
     it "should return false if go in rescue" do
       allow(FileUtils).to receive(:mv).and_raise(ZeroDivisionError.new)
       expect(vault_local_data_provider.impl_provider_rename(userfile,"new_name")).to be_falsey
-    end 
+    end
   end
 end
 

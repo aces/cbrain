@@ -20,13 +20,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe Userfile do
-  let(:userfile)     { Factory.create(:text_file) }
-  let(:user)         { Factory.create(:normal_user) }
-  let(:site_manager) { Factory.create(:site_manager) }
-  let(:admin)        { Factory.create(:admin_user) }
+  let(:userfile)     { create(:text_file) }
+  let(:user)         { create(:normal_user) }
+  let(:site_manager) { create(:site_manager) }
+  let(:admin)        { create(:admin_user) }
 
   it "should be valid with valid attributes" do
     expect(userfile.valid?).to be true
@@ -50,7 +50,7 @@ describe Userfile do
   it "should require that the user has no other files with the same name in the same data_provider" do
     userfile.name = "abc"
     userfile.save
-    bad_file= Factory.build( :userfile, :name => "abc",
+    bad_file= build( :userfile, :name => "abc",
                                        :user => userfile.user,
                                        :data_provider => userfile.data_provider )
     expect(bad_file.valid?).to be false
@@ -91,7 +91,6 @@ describe Userfile do
       let(:viewer_with_condition) {Userfile::Viewer.new(userfile.class, {:name => "name", :partial => "partial", :if => lambda {|u| u.name == "userfile_name"}})}
 
       it "should return true if @conditions is empty" do
-        allow(Array).to receive(:empty?).and_return(true)
         expect(viewer.valid_for?(userfile)).to be_truthy
       end
 
@@ -259,8 +258,8 @@ describe Userfile do
   end
 
    describe "#add_format" do
-     let(:userfile1) {Factory.create(:userfile)}
-     let(:userfile2) {Factory.create(:userfile)}
+     let(:userfile1) {create(:userfile)}
+     let(:userfile2) {create(:userfile)}
 
      it "should return an array containing all format_source" do
        userfile.add_format(userfile).inspect
@@ -334,28 +333,28 @@ describe Userfile do
     end
 
     it "should return it's tags crossed with the user when get_tags_for_user(user) is called and the file has tags" do
-      test_tag = Factory.create(:tag, :name => "test_tag", :user => userfile.user)
+      test_tag = create(:tag, :name => "test_tag", :user => userfile.user)
       userfile.tags << test_tag
       expect(userfile.get_tags_for_user(userfile.user).include?(test_tag)).to be true
     end
 
     it "should return no tags if the user has no tags in common with the userfile tags" do
-       test_tag = Factory.create(:tag, :name => "test_tag")
+       test_tag = create(:tag, :name => "test_tag")
        userfile.tags << test_tag
        expect(userfile.get_tags_for_user(userfile.user).include?(test_tag)).to be false
      end
 
      it "should set new tags when I call set_tags_for_user with new tags" do
-       test_tag = Factory.create(:tag, :user => userfile.user)
+       test_tag = create(:tag, :user => userfile.user)
        userfile.set_tags_for_user(userfile.user, [test_tag.id])
        expect(userfile.get_tags_for_user(userfile.user).include?(test_tag)).to be true
      end
    end
 
   describe "#set_tags_for_user" do
-    let(:tag1) {Factory.create(:tag, :name => "tag_1")}
-    let(:tag2) {Factory.create(:tag, :name => "tag_2")}
-    let(:tag3) {Factory.create(:tag, :name => "tag_3")}
+    let(:tag1) {create(:tag, :name => "tag_1")}
+    let(:tag2) {create(:tag, :name => "tag_2")}
+    let(:tag3) {create(:tag, :name => "tag_3")}
 
     it "should accept a nil for set_tags_for_user so no addition in tag_ids" do
       userfile.set_tags_for_user(userfile.user, nil)
@@ -484,11 +483,11 @@ describe Userfile do
   end
 
   describe "#self.restrict_access_on_query" do
-    let!(:user1)     { Factory.create(:normal_user, :site_id => user.site_id) }
-    let!(:group)     { Factory.create(:group)}
-    let!(:userfile1) { Factory.create(:single_file, :user_id => site_manager.id, :group_id => group.id, :group_writable => true) }
-    let!(:userfile2) { Factory.create(:single_file, :user_id => user.id,         :group_id => group.id, :data_provider_id => userfile1.data_provider_id, :group_writable => false) }
-    let!(:userfile3) { Factory.create(:single_file, :user_id => user1.id,        :group_id => group.id, :data_provider_id => userfile1.data_provider_id) }
+    let!(:user1)     { create(:normal_user, :site_id => user.site_id) }
+    let!(:group)     { create(:group)}
+    let!(:userfile1) { create(:single_file, :user_id => site_manager.id, :group_id => group.id, :group_writable => true) }
+    let!(:userfile2) { create(:single_file, :user_id => user.id,         :group_id => group.id, :data_provider_id => userfile1.data_provider_id, :group_writable => false) }
+    let!(:userfile3) { create(:single_file, :user_id => user1.id,        :group_id => group.id, :data_provider_id => userfile1.data_provider_id) }
 
     before(:each) do
       allow(DataProvider).to receive_message_chain(:find_all_accessible_by_user, :raw_first_column).and_return([userfile1.data_provider_id])
@@ -541,7 +540,7 @@ describe Userfile do
   end
 
   describe "list_files" do
-    let(:data_provider) {Factory.create(:data_provider, :online => true, :read_only => false)}
+    let(:data_provider) {create(:data_provider, :online => true, :read_only => false)}
 
     it "should call cache_collection_index if is_locally_cached? is true" do
       allow(userfile).to receive(:is_locally_cached?).and_return(true)
@@ -612,7 +611,7 @@ describe Userfile do
   end
 
   describe "#move_to_child_of" do
-    let(:userfile1) {Factory.create(:userfile)}
+    let(:userfile1) {create(:userfile)}
 
     it "should raise error if self.id == userfile.id" do
       expect{userfile.move_to_child_of(userfile)}.to raise_error
@@ -653,9 +652,9 @@ describe Userfile do
   end
 
   describe "#next_available_file" do
-    let(:user) {Factory.create(:normal_user)}
-    let(:userfile1) {Factory.create(:userfile, :user_id => user.id, :id => (userfile.id + 1).to_i)}
-    let(:userfile2) {Factory.create(:userfile, :user_id => user.id, :id => (userfile.id + 2).to_i)}
+    let(:user) {create(:normal_user)}
+    let(:userfile1) {create(:userfile, :user_id => user.id, :id => (userfile.id + 1).to_i)}
+    let(:userfile2) {create(:userfile, :user_id => user.id, :id => (userfile.id + 2).to_i)}
 
     it "should return next available file" do
       userfile.user_id = user.id
@@ -775,7 +774,7 @@ describe Userfile do
 
   context "data provider easy acces methods" do
 
-    let(:data_provider) {Factory.create(:data_provider, :online => true, :read_only => false)}
+    let(:data_provider) {create(:data_provider, :online => true, :read_only => false)}
 
     describe "#sync_to_cache" do
 
@@ -806,7 +805,7 @@ describe Userfile do
     end
 
     describe "#cache_prepare" do
-      let(:userfile1) {Factory.build(:userfile)}
+      let(:userfile1) {build(:userfile)}
 
       it "should call save if self.id.blank?" do
         expect(userfile1).to receive(:save!)
@@ -850,7 +849,7 @@ describe Userfile do
 
     describe "#provider_move_to_otherprovider" do
 
-      let(:data_provider_other) {Factory.create(:data_provider, :online => true, :read_only => false)}
+      let(:data_provider_other) {create(:data_provider, :online => true, :read_only => false)}
 
       it "should call data_provider.provider_move_to_otherprovider" do
         expect(userfile).to receive(:data_provider).and_return(data_provider)
@@ -861,7 +860,7 @@ describe Userfile do
 
     describe "#provider_copy_to_otherprovider" do
 
-      let(:data_provider_other) {Factory.create(:data_provider, :online => true, :read_only => false)}
+      let(:data_provider_other) {create(:data_provider, :online => true, :read_only => false)}
 
       it "should call data_provider.provider_copy_to_otherprovider" do
         expect(userfile).to receive(:data_provider).and_return(data_provider)

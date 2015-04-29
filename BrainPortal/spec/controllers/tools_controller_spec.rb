@@ -20,14 +20,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe ToolsController, :type => :controller do
-  let(:tool) {mock_model(Tool).as_null_object}
+  let(:tool) { mock_model(Tool).as_null_object }
 
   context "with a logged in user" do
     context "user is an admin" do
-      let(:current_user) {Factory.create(:admin_user)}
+      let(:current_user) {  create(:admin_user) }
       before(:each) do
         session[:user_id] = current_user.id
       end
@@ -49,7 +49,7 @@ RSpec.describe ToolsController, :type => :controller do
       end
 
       describe "bourreau_select" do
-        let(:real_tool) {Factory.create(:tool, :user_id => current_user.id )}
+        let(:real_tool) { create(:tool, :user_id => current_user.id ) }
 
         it "should render empty text if tool_id is empty" do
           get(:tool_config_select, {'tool_id' => ""})
@@ -111,7 +111,7 @@ RSpec.describe ToolsController, :type => :controller do
       end
 
       describe "update" do
-        let(:real_tool) {Factory.create(:tool, :user_id => current_user.id )}
+        let(:real_tool) { create(:tool, :user_id => current_user.id ) }
 
         it "should find available tools" do
           put :update, :id => real_tool.id
@@ -136,7 +136,7 @@ RSpec.describe ToolsController, :type => :controller do
       end
 
       describe "destroy" do
-        let(:real_tool) {Factory.create(:tool, :user_id => current_user.id )}
+        let(:real_tool) { create(:tool, :user_id => current_user.id ) }
 
         it "should find the requested tag" do
           delete :destroy, :id => real_tool.id
@@ -155,7 +155,7 @@ RSpec.describe ToolsController, :type => :controller do
     end
 
     context "user is a standard user" do
-      let(:current_user) {Factory.create(:normal_user)}
+      let(:current_user) { create(:normal_user) }
       before(:each) do
         session[:user_id] = current_user.id
       end
@@ -177,7 +177,7 @@ RSpec.describe ToolsController, :type => :controller do
       end
 
       describe "tool_config_select" do
-        let(:real_tool) {Factory.create(:tool, :user_id => current_user.id )}
+        let(:real_tool) { create(:tool, :user_id => current_user.id ) }
 
         it "should render empty text if tool_id is empty" do
           get(:tool_config_select, {'tool_id' => ""})
@@ -231,7 +231,7 @@ RSpec.describe ToolsController, :type => :controller do
     end
 
     context "user is a site_manager" do
-      let(:current_user) {Factory.create(:site_manager)}
+      let(:current_user) { create(:site_manager) }
       before(:each) do
         session[:user_id] = current_user.id
       end
@@ -253,7 +253,7 @@ RSpec.describe ToolsController, :type => :controller do
       end
 
       describe "tool_config_select" do
-        let(:real_tool) {Factory.create(:tool, :user_id => current_user.id )}
+        let(:real_tool) { create(:tool, :user_id => current_user.id ) }
 
         it "should render empty text if tool_id is empty" do
           get(:tool_config_select, {'tool_id' => ""})

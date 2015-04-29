@@ -17,45 +17,45 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe Feedback do
-  before(:each) do 
+  before(:each) do
     #objects required in tests below
-    @feedback = Factory.build(:feedback)
+    @feedback = build(:feedback)
     @feedback.save
   end
 
   it "should create a new instance given valid attributes" do
     expect(@feedback.valid?).to be(true)
   end
-  
+
   it "should be associate with user" do
     expect(Feedback.reflect_on_association(:user)).not_to be_nil
   end
-  
+
   it "should not save without a summary" do
     @feedback.summary = nil
-    expect(@feedback.save).to be(false) 
+    expect(@feedback.save).to be(false)
   end
-  
+
   it "should not save without a details" do
     @feedback.details = nil
-    expect(@feedback.save).to be(false) 
+    expect(@feedback.save).to be(false)
   end
 
   it "should not save without a blank summary" do
     @feedback.summary = ""
-    expect(@feedback.save).to be(false) 
+    expect(@feedback.save).to be(false)
   end
-  
+
   it "should not save without a blank details" do
     @feedback.details = ""
-    expect(@feedback.save).to be(false) 
+    expect(@feedback.save).to be(false)
   end
-  
+
 end
 
