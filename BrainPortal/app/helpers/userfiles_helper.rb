@@ -95,7 +95,7 @@ module UserfilesHelper
       text += " >>"
     end
 
-    file = userfile.send("#{direction}_available_file", current_user, options)
+    file = userfile.send("#{direction}_available_file", current_user, options, :name)
 
     action = params[:action] #Should be show or edit.
 
