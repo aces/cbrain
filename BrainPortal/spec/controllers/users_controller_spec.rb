@@ -20,14 +20,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe UsersController, :type => :controller do
-  let(:admin) {Factory.create(:normal_user, :type => "AdminUser")}
-  let(:site_manager) {Factory.create(:normal_user, :type => "SiteManager")}
-  let(:site_user) {Factory.create(:normal_user, :site => site_manager.site)}
-  let(:user) {Factory.create(:normal_user)}
-  let(:mock_user) {mock_model(User).as_null_object}
+  let(:admin)        { create(:admin_user) }
+  let(:site_manager) { create(:site_manager) }
+  let(:site_user)    { create(:normal_user, :site => site_manager.site) }
+  let(:user)         { create(:normal_user) }
+  let(:mock_user)    { mock_model(User).as_null_object }
 
   let(:start_page_path) {controller.send :start_page_path}
 
@@ -35,7 +35,7 @@ RSpec.describe UsersController, :type => :controller do
 
     describe "index" do
       before(:each) do
-        1.upto(3) {Factory.create(:normal_user)}
+        1.upto(3) { create(:normal_user)}
       end
       context "with admin user" do
         before(:each) do
@@ -69,7 +69,7 @@ RSpec.describe UsersController, :type => :controller do
       context "with site manager" do
         before(:each) do
           session[:user_id] = site_manager.id
-          1.upto(3) { Factory.create(:normal_user, :site => site_manager.site) }
+          1.upto(3) {  create(:normal_user, :site => site_manager.site) }
         end
         it "should only show users from site" do
           get :index
@@ -89,7 +89,7 @@ RSpec.describe UsersController, :type => :controller do
 
     describe "create" do
       before(:each) do
-        allow(CbrainMailer).to receive(:deliver_registration_confirmation)
+        allow(CbrainMailer).to receive(:registration_confirmation)
       end
 
       context "with admin user" do
@@ -400,7 +400,7 @@ RSpec.describe UsersController, :type => :controller do
         end
 
         it "should allow type to be set to site manager" do
-          put :update, :id => user.id, :user => {:type => "SiteManager"}
+          put :update, :id => user.id, :user => {:type => "SiteManager", :site_id => site_manager.site.id}
           expect(assigns[:user].type).to eq("SiteManager")
         end
 
@@ -415,14 +415,14 @@ RSpec.describe UsersController, :type => :controller do
         end
 
         it "should allow me to add groups" do
-          new_group = Factory.create(:work_group)
+          new_group =  create(:work_group)
           put :update, :id => user.id, :user => {:group_ids => [new_group.id]}
           user.reload
           expect(user.group_ids).to include(new_group.id)
         end
 
         it "should allow me to reset groups" do
-          new_group = Factory.create(:work_group, :user_ids => [user.id])
+          new_group =  create(:work_group, :user_ids => [user.id])
           put :update, :id => user.id, :user => {:group_ids => []}
           user.reload
           expect(user.group_ids).not_to include(new_group.id)
@@ -466,14 +466,14 @@ RSpec.describe UsersController, :type => :controller do
         end
 
         it "should allow site manager to add groups" do
-          new_group = Factory.create(:work_group)
+          new_group =  create(:work_group)
           put :update, :id => site_user.id, :user => {:group_ids => [new_group.id]}
           site_user.reload
           expect(site_user.group_ids).to include(new_group.id)
         end
 
         it "should allow site manager to reset groups" do
-          new_group = Factory.create(:work_group, :user_ids => [site_user.id])
+          new_group =  create(:work_group, :user_ids => [site_user.id])
           put :update, :id => site_user.id, :user => {:group_ids => []}
           site_user.reload
           expect(site_user.group_ids).not_to include(new_group.id)
@@ -502,7 +502,7 @@ RSpec.describe UsersController, :type => :controller do
         end
 
         it "should not allow groups to be modified" do
-          new_group = Factory.create(:work_group)
+          new_group =  create(:work_group)
           put :update, :id => user.id, :user => {:group_ids => [new_group.id]}
           user.reload
           expect(user.group_ids).not_to include(new_group.id)
@@ -576,12 +576,12 @@ RSpec.describe UsersController, :type => :controller do
     end
 
     describe "switch" do
-      let(:current_session) do
-        h = Hash.new
-        allow(h).to receive(:params_for).and_return({})
-        allow(h).to receive(:clear_data!)
-        h
-      end
+       let(:current_session) do
+         h = CbrainSession.new(session, {:controller => :users}, ActiveRecord::SessionStore::Session.new )
+         allow(h).to receive(:params_for).and_return({})
+         allow(h).to receive(:clear_data!)
+         h
+       end
 
       before(:each) do
         allow(controller).to receive(:current_session).and_return(current_session)

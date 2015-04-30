@@ -17,21 +17,21 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe "CbrainDeepClone" do
-  
+
   let(:hash) { {:a => {:b => 1}} }
-  
+
   describe "#cb_deep_clone" do
     it "should make a deep clone of the object" do
       h1 = hash.cb_deep_clone
       h1[:a][:b] = 2
       expect(hash[:a][:b]).to eq(1)
     end
- 
+
   end
 end

@@ -17,13 +17,13 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe RestrictedHash do
-  
+
   let(:restricted_hash) do
     RestrictedHash(:key1, :key2).merge(
       :key1 => "value1",
@@ -31,7 +31,7 @@ describe RestrictedHash do
     )
   end
   let(:restricted_hash_class) {restricted_hash.class}
-  
+
   describe "Class Methods" do
     describe "#allowed_keys" do
       it "should list valid keys" do
@@ -56,19 +56,19 @@ describe RestrictedHash do
         expect(restricted_hash_class.key_is_allowed?(:key3)).to be_nil
       end
     end
-    
+
   end
-  
+
   describe "#[]" do
     it "should allow me to access a valid key" do
       expect(restricted_hash[:key1]).to eq("value1")
     end
-    
+
     it "should raise an exception if I try to access an invalid key" do
       expect{restricted_hash[:key3]}.to raise_error(CbrainError, "Illegal attribute '#{:key3}'.")
     end
   end
- 
+
   describe "#[]=" do
     it "should allow me to assign to a valid key" do
       restricted_hash[:key1] = "value1a"
@@ -79,13 +79,13 @@ describe RestrictedHash do
       expect{restricted_hash[:key3] = "value3"}.to raise_error(CbrainError, "Illegal attribute '#{:key3}'.")
     end
   end
-  
+
   describe "#allowed_keys" do
     it "should list valid keys" do
       expect(restricted_hash.allowed_keys).to match_array([:key1, :key2])
     end
   end
-  
+
   describe "#key_is_allowed?" do
     it "should return true for an allowed key" do
       expect(restricted_hash.key_is_allowed?(:key1)).to be_truthy
@@ -94,29 +94,29 @@ describe RestrictedHash do
       expect(restricted_hash.key_is_allowed?(:key3)).to be_nil
     end
   end
-  
+
   describe "#merge" do
     it "should merge with a hash with valid keys" do
       new_hash = restricted_hash.merge(:key1 => "value1a")
       expect(new_hash[:key1]).to eq("value1a")
     end
-  
+
     it "should not merge with a hash with invalid keys" do
-      expect { restricted_hash.merge(:key3 => "value3") }.to raise_error(CbrainError, "Illegal attribute '#{:key3}'.") 
+      expect { restricted_hash.merge(:key3 => "value3") }.to raise_error(CbrainError, "Illegal attribute '#{:key3}'.")
     end
   end
-  
+
   describe "#merge!" do
     it "should merge with a hash with valid keys" do
       restricted_hash.merge!(:key1 => "value1a")
       expect(restricted_hash[:key1]).to eq("value1a")
     end
-  
+
     it "should not merge with a hash with invalid keys" do
-      expect { restricted_hash.merge!(:key3 => "value3") }.to raise_error(CbrainError, "Illegal attribute '#{:key3}'.") 
+      expect { restricted_hash.merge!(:key3 => "value3") }.to raise_error(CbrainError, "Illegal attribute '#{:key3}'.")
     end
   end
-  
+
   describe "method-style access" do
     it "should allow me to access a valid key" do
       expect(restricted_hash.key1).to eq("value1")
@@ -133,6 +133,6 @@ describe RestrictedHash do
       expect{restricted_hash.key3 = "value3"}.to raise_error(CbrainError, "Illegal attribute '#{:key3}'.")
     end
   end
-  
+
 end
 

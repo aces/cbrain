@@ -20,10 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe Tool do
-  let(:tool) { Factory.build(:tool) }
+  let(:tool) { build(:tool) }
 
   it "should keep description if present" do
    tool.description = "keep this"
@@ -44,18 +44,18 @@ describe Tool do
 
   describe "#bourreaux" do
     it "should return the list of bourreaux where this tool is installed" do
-      tool_config = Factory.create(:tool_config, :tool => tool)
+      tool_config = create(:tool_config, :tool => tool)
       expect(tool.bourreaux).to match_array([tool_config.bourreau])
     end
   end
 
   describe "#global_tool_config" do
     it "should return the single ToolConfig that describes the configuration for this tool for all Bourreaux" do
-      tool_config1 = Factory.create(:tool_config, :tool_id => tool.id, :bourreau_id => nil)
+      tool_config1 = create(:tool_config, :tool_id => tool.id, :bourreau_id => nil)
       expect(tool.global_tool_config).to eq(tool_config1)
     end
     it "should return nil if no single ToolConfig exist for this tool" do
-      Factory.create(:tool_config, :tool_id => tool.id)
+      create(:tool_config, :tool_id => tool.id)
       expect(tool.global_tool_config).to eq(nil)
     end
   end

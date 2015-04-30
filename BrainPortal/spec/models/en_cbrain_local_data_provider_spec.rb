@@ -17,15 +17,15 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe EnCbrainLocalDataProvider do
-  let(:en_cbrain_local_data_provider) {Factory.create(:en_cbrain_local_data_provider, :remote_dir => "remote")}
-  let(:userfile) {Factory.create(:userfile, :data_provider => en_cbrain_local_data_provider)}
-  
+  let(:en_cbrain_local_data_provider) {create(:en_cbrain_local_data_provider, :remote_dir => "remote")}
+  let(:userfile) {create(:userfile, :data_provider => en_cbrain_local_data_provider)}
+
 
   describe "#allow_file_owner_change?" do
     it "should always return true" do
@@ -42,7 +42,7 @@ describe EnCbrainLocalDataProvider do
       allow(Dir).to receive(:mkdir)
       expect(en_cbrain_local_data_provider.cache_prepare(userfile)).to be_truthy
     end
-    
+
     it "should call mkdir if new userdir not already a directory" do
       allow(File).to receive(:directory?).and_return(false)
       expect(Dir).to receive(:mkdir).at_least(4)
@@ -59,7 +59,7 @@ describe EnCbrainLocalDataProvider do
   describe "#cache_full_path" do
 
     it "should return a Pathname containing full path" do
-      cache_subdirs_from_name_values = ["146","22","92"] 
+      cache_subdirs_from_name_values = ["146","22","92"]
       allow(en_cbrain_local_data_provider).to receive(:cache_subdirs_from_id).and_return(cache_subdirs_from_name_values)
       cache_full_path = Pathname.new("#{en_cbrain_local_data_provider.remote_dir}/#{cache_subdirs_from_name_values[0]}/#{cache_subdirs_from_name_values[1]}/#{cache_subdirs_from_name_values[2]}/#{userfile.name}")
       expect(en_cbrain_local_data_provider.cache_full_path(userfile)).to eq(cache_full_path)
@@ -67,16 +67,16 @@ describe EnCbrainLocalDataProvider do
   end
 
   describe "#cache_erase" do
-    
+
     it "should call SyncStatus.ready_to_modify_cache" do
       expect(SyncStatus).to receive(:ready_to_modify_cache).once
       en_cbrain_local_data_provider.cache_erase(userfile)
     end
-    
+
     it "should return true if all works correctly" do
-      allow(SyncStatus).to receive(:ready_to_modify_cache).and_yield      
+      allow(SyncStatus).to receive(:ready_to_modify_cache).and_yield
       expect(en_cbrain_local_data_provider.cache_erase(userfile)).to be_truthy
-    end 
+    end
   end
 
   describe "#impl_provider_erase" do
@@ -85,7 +85,7 @@ describe EnCbrainLocalDataProvider do
       expect(FileUtils).to receive(:remove_entry).once
       en_cbrain_local_data_provider.impl_provider_erase(userfile)
     end
-    
+
     it "should return true if all works correctly" do
       allow(FileUtils).to receive(:remove_entry)
       expect(en_cbrain_local_data_provider.impl_provider_erase(userfile)).to be_truthy
@@ -98,18 +98,18 @@ describe EnCbrainLocalDataProvider do
       allow(userfile).to receive(:cache_full_path)
       allow(FileUtils).to receive(:move).and_return(true)
     end
-    
+
     it "should return true if all works correctly" do
       allow(FileUtils).to receive(:remove_entry)
       expect(en_cbrain_local_data_provider.impl_provider_rename(userfile,"new_name")).to be_truthy
-    end 
-    
+    end
+
     it "should return false if FileUtils.move failed" do
       allow(FileUtils).to receive(:move).and_return(false)
       expect(en_cbrain_local_data_provider.impl_provider_rename(userfile,"new_name")).to be_falsey
     end
 
   end
-  
+
 end
 

@@ -17,13 +17,13 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe Message do
-  let(:user)  {Factory.create(:normal_user)}
+  let(:user)  { create(:normal_user) }
 
   describe "#send_message" do
 
@@ -35,18 +35,18 @@ describe Message do
                                     :description => "desc", :read => false, :critical => false}).inspect
       end.to change{ Message.count }.by(0)
     end
-    
+
     it "should send a new message if Message is empty" do
       expect do
         Message.send_message(user, {:message_type => "notice", :header => "Task completed", :variable_text => "var1",
                                     :description => "desc", :read => false, :critical => false}).inspect
       end.to change{ Message.count }.by(1)
     end
-    
+
     it "should not send a new message if same message already exist and var_text is not empty (just concat variable_text)" do
       Message.send_message(user, {:message_type => "notice", :header => "Task completed", :variable_text => "var2",
                                   :description => "desc", :read => false, :critical => false}).inspect
-      expect do 
+      expect do
         Message.send_message(user, {:message_type => "notice", :header => "Task completed", :variable_text => "var3",
                                     :description => "desc", :read => false, :critical => false}).inspect
       end.to change{ Message.count }.by(0)
@@ -55,38 +55,38 @@ describe Message do
     it "should create a new message if we add a new_record" do
       Message.send_message(user, {:message_type => "notice", :header => "Task completed", :variable_text => "var2",
                                   :description => "desc", :read => false, :critical => false}).inspect
-      expect do 
+      expect do
         Message.send_message(user, {:message_type => "notice", :header => "New task completed", :variable_text => "var3",
                                     :description => "desc", :read => false, :critical => false}).inspect
       end.to change{ Message.count }.by(1)
     end
-    
+
   end
 
   describe "#send_me_to" do
 
     it "should send a message starting with an object" do
-      mess1 = Factory.create(:message)
-      expect do 
+      mess1 = create(:message)
+      expect do
         mess1.send_me_to(user)
       end.to change{ Message.count }.by(1)
     end
   end
 
   describe "#forward_to_group" do
-    let(:user2) {Factory.create(:normal_user)}
-    let(:mess1) {Factory.create(:message)}
+    let(:user2) {create(:normal_user)}
+    let(:mess1) {create(:message)}
 
     it "should not send message if destination user already have the message" do
       mess1.send_me_to(user)
-      expect do 
+      expect do
          mess1.forward_to_group(user)
       end.to change{ Message.count }.by(0)
     end
-      
+
     it "should send message if destination user doesn't have this message" do
       mess1.send_me_to(user)
-      expect do 
+      expect do
          mess1.forward_to_group(user2)
       end.to change{ Message.count }.by(1)
     end
@@ -97,7 +97,7 @@ describe Message do
 
     it "send a message to all users and admin (only admin)" do
       expect do
-        exception = Exception.new("error") 
+        exception = Exception.new("error")
         allow(exception).to receive(:backtrace).and_return([""])
         Message.send_internal_error_message("","head", exception)
       end.to change { Message.count }.by(User.all_admins.map(&:own_group).compact.count)
@@ -106,16 +106,16 @@ describe Message do
     it "send a message to all users and admin (admin + normal user)" do
       users  = [user]
       expect do
-        exception = Exception.new("error") 
+        exception = Exception.new("error")
         allow(exception).to receive(:backtrace).and_return([""])
         Message.send_internal_error_message(users,"head", exception)
       end.to change { Message.count }.by(User.all_admins.map(&:own_group).compact.count + users.size)
     end
-  
+
   end
 
   describe "#append_variable_text" do
-    let(:mess1) {Factory.create(:message, :variable_text => "var1")}
+    let(:mess1) {create(:message, :variable_text => "var1")}
     it "should format the text_var prefixing with timestamp" do
       expect(mess1.send_me_to(user)[0].variable_text).to match(
         /^\[\d{4}\-\d{2}\-\d{2}\s+\d{2}\:\d{2}\:\d{2}\s+UTC\]\s+#{mess1.variable_text}\n$/
