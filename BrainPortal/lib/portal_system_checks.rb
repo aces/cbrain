@@ -136,6 +136,13 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
       puts "C> \t- Found locker already running: '#{worker.pretty_name}'."
     end
 
+    begin
+      Kernel.open("#{Rails.root}/tmp/AgentLocker.lock", File::WRONLY|File::CREAT|File::EXCL).close
+    rescue Errno::EEXIST
+      puts "C> \t- Locker already being created. (#{Rails.root}/tmp/AgentLocker.lock)"
+      return
+    end
+
     if allworkers.size == 0
       puts "C> \t- No locker processes found. Creating one."
 
