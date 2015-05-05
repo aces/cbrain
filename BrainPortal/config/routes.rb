@@ -166,17 +166,20 @@ CbrainRailsPortal::Application.routes.draw do
   # Portal log
   get   '/portal_log', :controller => :portal, :action => :portal_log
 
-  # Service
-  get   '/service/info',           :controller => :service, :action => :info
-  get   '/service/stats',          :controller => :service, :action => :stats
-  get   '/service/detailed_stats', :controller => :service, :action => :detailed_stats
-  get   '/service/doc',            :controller => :service, :action => :doc
-  get   '/service/releasenotes',   :controller => :service, :action => :releasenotes
-  get   '/service/support',        :controller => :service, :action => :support
-  get   '/service/source',         :controller => :service, :action => :source
-  get   '/service/tryme',          :controller => :service, :action => :tryme
-  get   '/service/licence',        :controller => :service, :action => :licence
-  get   '/service/provenance',     :controller => :service, :action => :provenance
+  # Service; most of these actions are only needed
+  # for the CANARIE monitoring system, and are therefore
+  # shipped disabled by default, because it's not needed
+  # anywhere else.
+  #get   '/service/info',           :controller => :service, :action => :info
+  #get   '/service/stats',          :controller => :service, :action => :stats
+  #get   '/service/detailed_stats', :controller => :service, :action => :detailed_stats
+  #get   '/service/doc',            :controller => :service, :action => :doc
+  #get   '/service/releasenotes',   :controller => :service, :action => :releasenotes
+  #get   '/service/support',        :controller => :service, :action => :support
+  #get   '/service/source',         :controller => :service, :action => :source
+  #get   '/service/tryme',          :controller => :service, :action => :tryme
+  #get   '/service/licence',        :controller => :service, :action => :licence
+  #get   '/service/provenance',     :controller => :service, :action => :provenance
 
 end
 
