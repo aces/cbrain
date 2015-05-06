@@ -69,13 +69,14 @@ class EnCbrainLocalDataProvider < LocalDataProvider
   end
 
   # Returns the real path on the DP, since there is no caching here.
-  def cache_full_path(userfile) #:nodoc:
+  def cache_full_path(userfile)
     basename  = userfile.name
     threelevels = cache_subdirs_from_id(userfile.id)
     Pathname.new(remote_dir) + threelevels[0] + threelevels[1] + threelevels[2] + basename
   end
 
-  def cache_erase(userfile) #:nodoc:
+  # Will actually not do anything except record that all is 'fine' with the SyncStatus entry of the file.
+  def cache_erase(userfile)
     SyncStatus.ready_to_modify_cache(userfile,:destroy) do
       true
     end

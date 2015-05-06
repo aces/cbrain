@@ -32,8 +32,8 @@ module ApiHelpers
     end
   end
 
-  #Before filter that blocks certain actions
-  #from the API
+  # Before filter that blocks certain actions
+  # from the API
   def api_validity_check
     if request.format && (request.format.to_sym == :xml || request.format.to_sym == :json)
       valid_actions = self.class.api_actions || []
@@ -46,8 +46,8 @@ module ApiHelpers
   end
 
   module ClassMethods
-    #Directive to be used in controllers to make
-    #actions available to the API
+    # Directive to be used in controllers to make
+    # actions available to the API
     def api_available(actions = :all)
       @api_action_code = actions
     end

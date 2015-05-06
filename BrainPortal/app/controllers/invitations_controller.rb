@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #RESTful controller for the Group resource.
@@ -27,10 +27,10 @@ class InvitationsController < ApplicationController
 
   before_filter :login_required
 
-  #Create an invitation
+  # Create an invitation
   def new #:nodoc:
     @group = Group.find(params[:group_id])
-        
+
     unless @group.can_be_edited_by?(current_user)
        flash[:error] = "You don't have permission send invitations for this project."
        respond_to do |format|
@@ -39,13 +39,13 @@ class InvitationsController < ApplicationController
        end
        return
     end
-    
+
     already_sent_to = Invitation.where(sender_id: current_user.id, active: true, group_id: @group.id).all.map(&:user_id)
     @users = current_user.visible_users.where("users.id NOT IN (?)", @group.users.map(&:id) | already_sent_to)
     render :partial => "new"
   end
-  
-  #Send an invitation
+
+  # Send an invitation
   def create #:nodoc:
     @group          = Group.find(params[:group_id])
     user_ids        = params[:user_ids].map(&:to_i)
@@ -54,9 +54,9 @@ class InvitationsController < ApplicationController
     if rejected_ids.present?
       flash_message = "\n#{User.find(rejected_ids).map(&:login).join(", ")} already invited."
     end
-    
+
     @users = User.find((user_ids - already_sent_to) & current_user.visible_users.map(&:id))
-    
+
     unless @group.can_be_edited_by?(current_user) && @users.present?
       flash[:error]  = "Could not send the requested invitations."
       flash[:error] += flash_message if rejected_ids.present?
@@ -73,19 +73,19 @@ class InvitationsController < ApplicationController
     else
       flash[:notice] = "No new users were found to invite."
     end
-    
+
     flash[:notice] += flash_message if rejected_ids.present?
-    
+
     respond_to do |format|
      format.html { redirect_to group_path(@group) }
      format.xml  { head :ok }
-    end  
+    end
   end
-  
-  #Accept an invitation
+
+  # Accept an invitation
   def update #:nodoc:
     @invitation = Invitation.where(user_id: current_user.id).find(params[:id])
-    
+
     unless @invitation.try(:active?)
       flash[:error] = "This invitation has already been used.\nPlease contact the project owner if you wish to be invited again."
       respond_to do |format|
@@ -94,36 +94,36 @@ class InvitationsController < ApplicationController
       end
       return
     end
-    
+
     @group = @invitation.group
-    
+
     unless @group.users.include?(current_user)
       @group.users << current_user
     end
-    
+
     @invitation.active = false
     @invitation.save
-    
+
     flash[:notice] = "You have been added to project #{@group.name}."
     respond_to do |format|
       format.html { redirect_to groups_path }
       format.xml  { head :ok }
      end
   end
-  
+
   def destroy #:nodoc:
     @invitation = Invitation.where(sender_id: current_user.id, active: true).find(params[:id])
     @user  = @invitation.user
     @group = @invitation.group
-    
+
     @invitation.destroy
-    
+
     flash[:notice] = "Invitation to #{@user.login} has been canceled."
     respond_to do |format|
       format.html { redirect_to group_path(@group) }
       format.xml  { head :ok }
      end
   end
-  
+
 
 end

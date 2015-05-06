@@ -30,7 +30,7 @@ class CbrainTaskGenerator < Rails::Generators::Base
   class_option :advanced,      :type => :boolean, :default => false
   class_option :license,       :type => :string,  :required => false, :default => ""
 
-  def create_task
+  def create_task #:nodoc:
     license = options[:license]
     @_license_text = ""
     if license.present?
@@ -53,11 +53,11 @@ class CbrainTaskGenerator < Rails::Generators::Base
     template "tool_info.html.erb",        "#{task_dir}/views/public/tool_info.html"
   end
 
-  def file_name
+  def file_name #:nodoc:
     @_file_name ||= file_or_class.underscore
   end
 
-  def class_name
+  def class_name #:nodoc:
     @_class_name ||= file_or_class.classify
   end
 

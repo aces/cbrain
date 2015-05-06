@@ -116,12 +116,11 @@
 # Note that some helper methods, #basic_filters_for and #association_filters_for have been defined
 # (see lib/basic_filter_helpers.rb for details) to construct these types of lists for basic
 # attribute or association filtering.
-
 module IndexTableHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  #Class that actually builds the table.
+  # Class that actually builds the table.
   class TableBuilder
 
     attr_reader :columns
@@ -131,10 +130,10 @@ module IndexTableHelper
     # Inner class Column
     ##############################
 
-    #Class representing a single column in the table.
-    #A column is essentialy one header with one or
-    #several cells per row (the header will automatically
-    #be expanded to fit over all cells).
+    # Class representing a single column in the table.
+    # A column is essentialy one header with one or
+    # several cells per row (the header will automatically
+    # be expanded to fit over all cells).
     class Column
 
       attr_reader :cells
@@ -188,7 +187,8 @@ module IndexTableHelper
         end
       end
 
-      def header_html #:nodoc:
+      # Header for one column
+      def column_header_html
         @header_options[:colspan] ||= @cells.size
         filters = @header_options.delete :filters
 
@@ -218,7 +218,8 @@ module IndexTableHelper
         html.join
       end
 
-      def cell_html(object) #:nodoc:
+      # HTML content for one cell
+      def cell_html(object)
         html = []
         @cells.each do |cell|
           cell      = [cell] unless cell.is_a? Array
@@ -289,7 +290,8 @@ module IndexTableHelper
       @table_header = text
     end
 
-    def header_html #:nodoc:
+    # Main header of the table, spanning the full width
+    def full_header_html
       return "" unless @table_header
       "<tr><th colspan=\"#{self.num_cells}\">#{@table_header}</th></tr>\n"
     end
@@ -302,7 +304,8 @@ module IndexTableHelper
       @header_attributes = block || Proc.new { |obj| options }
     end
 
-    def row_attribute_html(object)  #:nodoc:
+    # Generates the HTML attributes of the row
+    def row_attribute_html(object)
       return "class=\"#{@template.cycle('list-odd', 'list-even')} row_highlight\" id=\"#{object.class.name.underscore}_#{object.id}\"" unless @header_attributes
 
       options = @header_attributes.call(object)
@@ -318,13 +321,15 @@ module IndexTableHelper
       @row_override         = block
     end
 
-    def row_override?(object) #:nodoc:
+    # Returns true if the row can be overriden
+    def row_override?(object)
       cond = @row_override_options ? @row_override_options[:if] : nil
       return false if cond && ! cond.call(object)
       @row_override ? true : false
     end
 
-    def row_override_html(object) #:nodoc:
+    # Captures a block to generate a row
+    def row_override_html(object)
       return "" unless @row_override
 
       @template.cb_capture(object, &@row_override)
@@ -335,7 +340,7 @@ module IndexTableHelper
       @empty_text = text
     end
 
-    #Produce 'empty' row for an empty table.
+    # Produce 'empty' row for an empty table.
     def empty_table_html
       empty_text = @empty_text || "There are no entries in this table."
       "<tr><td colspan=\"#{self.num_cells}\">#{empty_text}</td></tr>\n"
@@ -348,7 +353,7 @@ module IndexTableHelper
 
     private
 
-    def build_column
+    def build_column #:nodoc:
       col = Column.new(self, @template)
       yield(col)
       @columns << col
@@ -356,9 +361,9 @@ module IndexTableHelper
 
   end #End class TableBuilder
 
-  #Sort links meant specifically for sorting tables.
-  #Controller and action for the request can be defined in the options hash, or
-  #they default to the current page.
+  # Sort links meant specifically for sorting tables.
+  # Controller and action for the request can be defined in the options hash, or
+  # they default to the current page.
   def table_header_sort_link(name, sort_table, sort_column, options = {})
     sort_order = sort_table.to_s.strip.tableize + "." + sort_column.to_s.strip
     text = "<span class=\"sort_header\">" + h(name) + "</span>"
@@ -366,13 +371,17 @@ module IndexTableHelper
     sort_link(header, sort_table, sort_column, options)
   end
 
+  # Generates a link to a table index page with specific sorting options.
   def sort_link(name, sort_table, sort_column, options = {})
-    sort_order = sort_table.to_s.strip.tableize + "." + sort_column.to_s.strip
+    sort_order       = sort_table.to_s.strip.tableize + "." + sort_column.to_s.strip
     default_sort_dir = options.delete(:default_sort_dir)
-    sort_dir = options.delete(:dir) || set_dir(sort_order, @filter_params["sort_hash"], :default_sort_dir => default_sort_dir)
-    controller = options.delete(:controller) || params[:controller]
-    action = options.delete(:action) || params[:actions]
-    ajax_request = true
+    sort_dir         = options.delete(:dir)        ||
+                       set_dir(sort_order, @filter_params["sort_hash"], :default_sort_dir => default_sort_dir)
+    controller       = options.delete(:controller) ||
+                       params[:controller]
+    action           = options.delete(:action)     ||
+                       params[:actions]
+    ajax_request     = true
     if options.has_key?(:ajax) && !options.delete(:ajax)
       ajax_request = false
     end
@@ -386,7 +395,7 @@ module IndexTableHelper
     end
   end
 
-  #Alternate toggle for session attributes that switch between values 'on' and 'off'.
+  # Alternate toggle for session attributes that switch between values 'on' and 'off'.
   def set_toggle(old_value)
    old_value == 'on' ? 'off' : 'on'
   end
@@ -396,7 +405,7 @@ module IndexTableHelper
     ('&nbsp' * 4 * (level.presence || 0) + '&#x21b3;').html_safe
   end
 
-  #Set direction for resource list sorting
+  # Set direction for resource list sorting
   def set_dir(current_order, sort_params, options = {})
     return  options[:default_sort_dir] unless sort_params
     prev_order = sort_params["order"]
@@ -410,7 +419,7 @@ module IndexTableHelper
     current_dir
   end
 
-  #Show count of an association and link to association's page.
+  # Show count of an association and link to association's page.
   def index_count_filter(count, controller, filters, options={})
      count = count.to_i
      return ""  if count == 0 && ! ( options[:show_zeros] || options[:link_zeros] )
@@ -424,12 +433,12 @@ module IndexTableHelper
                        :clear_params => options[:clear_params]
   end
 
-  #Set arrow icon for ordering of userfiles. I.e. display a red arrow
-  #next to the header of a given column in the Userfile index table *if*
-  #that column is the one currently determining the order of the file.
+  # Set arrow icon for ordering of userfiles. I.e. display a red arrow
+  # next to the header of a given column in the Userfile index table *if*
+  # that column is the one currently determining the order of the file.
   #
-  #Toggles the direction of the arrow depending on whether the order is
-  #ascending or descending.
+  # Toggles the direction of the arrow depending on whether the order is
+  # ascending or descending.
   def set_order_icon(loc, current_order, current_dir = nil)
     return "" if current_order == nil
 
@@ -444,7 +453,7 @@ module IndexTableHelper
     "&nbsp;<span class=\"order_icon\">#{icon}</span>".html_safe
   end
 
-  def cb_capture(*args)
+  def cb_capture(*args) #:nodoc:
     value = nil
     buffer = with_output_buffer { value = yield(*args) }
     if string = buffer.presence || value
@@ -463,9 +472,9 @@ module IndexTableHelper
     html = []
 
     html << "<table #{atts}>\n<tr>\n"
-    html << table_builder.header_html
+    html << table_builder.full_header_html
     table_builder.columns.each do |col|
-      html << col.header_html + "\n"
+      html << col.column_header_html + "\n"
     end
     html << "</tr>\n"
 

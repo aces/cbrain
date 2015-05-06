@@ -114,7 +114,7 @@ class Userfile < ActiveRecord::Base
   # Miscelleneous methods
   ##############################################
 
-  #The site with which this userfile is associated.
+  # The site with which this userfile is associated.
   def site
     @site ||= self.user.site
   end
@@ -124,7 +124,7 @@ class Userfile < ActiveRecord::Base
     ["tree_sort"]
   end
 
-  #File extension for this file (helps sometimes in building urls).
+  # File extension for this file (helps sometimes in building urls).
   def file_extension
     self.class.file_extension(self.name)
   end
@@ -150,9 +150,9 @@ class Userfile < ActiveRecord::Base
     false
   end
 
-  #Returns the name of the Userfile in an array (only here to
-  #maintain compatibility with the overridden method in
-  #FileCollection).
+  # Returns the name of the Userfile in an array (only here to
+  # maintain compatibility with the overridden method in
+  # FileCollection).
   def list_files(*args)
     @file_list ||= {}
 
@@ -175,14 +175,14 @@ class Userfile < ActiveRecord::Base
     raise "set_size! called on Userfile. Should only be called in a subclass."
   end
 
-  #Should return a regex pattern to identify filenames that match a given
-  #userfile subclass
+  # Should return a regex pattern to identify filenames that match a given
+  # userfile subclass
   def self.file_name_pattern
     nil
   end
 
-  #Human-readable version of a userfile class name. Can be overridden
-  #if necessary in subclasses.
+  # Human-readable version of a userfile class name. Can be overridden
+  # if necessary in subclasses.
   def self.pretty_type
     @pretty_type_name ||= self.name.gsub(/(.+)([A-Z])/, '\1 \2')
   end
@@ -216,20 +216,20 @@ class Userfile < ActiveRecord::Base
     self.class.valid_file_classes
   end
 
-  #Names of classes this type of file can be converted to.
-  #Essentially distinguishes between SingleFile subtypes and FileCollection subtypes.
+  # Names of classes this type of file can be converted to.
+  # Essentially distinguishes between SingleFile subtypes and FileCollection subtypes.
   def self.valid_file_types
     return @valid_file_types if @valid_file_types
 
     @valid_file_types = self.valid_file_classes.map(&:name)
   end
 
-  #Instance version of the class method.
+  # Instance version of the class method.
   def valid_file_types
     self.class.valid_file_types
   end
 
-  #Checks validity according to valid_file_types.
+  # Checks validity according to valid_file_types.
   def is_valid_file_type?(type)
     self.valid_file_types.include? type
   end
@@ -244,8 +244,8 @@ class Userfile < ActiveRecord::Base
     self.valid_file_classes.find {|ft| name =~ ft.file_name_pattern }
   end
 
-  #Updates the class (type attribute) of this file if +type+ is
-  #valid according to valid_file_types.
+  # Updates the class (type attribute) of this file if +type+ is
+  # valid according to valid_file_types.
   def update_file_type(type, by_user = nil)
     if self.is_valid_file_type?(type)
       self.type = type
@@ -301,16 +301,16 @@ class Userfile < ActiveRecord::Base
   # Taging Subsystem
   ##############################################
 
-  #Return an array of the tags associated with this file
-  #by +user+. Actually returns a ActiveRecord::Relation.
+  # Return an array of the tags associated with this file
+  # by +user+. Actually returns a ActiveRecord::Relation.
   def get_tags_for_user(user)
     user = User.find(user) unless user.is_a?(User)
     self.tags.where(["tags.user_id=? OR tags.group_id IN (?)", user.id, user.cached_group_ids])
   end
 
-  #Set the tags associated with this file to those
-  #in the +tags+ array (represented by Tag objects
-  #or ids).
+  # Set the tags associated with this file to those
+  # in the +tags+ array (represented by Tag objects
+  # or ids).
   def set_tags_for_user(user, tags)
     user = User.find(user) unless user.is_a?(User)
 
@@ -334,8 +334,8 @@ class Userfile < ActiveRecord::Base
   # due to peculiarities in the Userfile model.
   ##############################################
 
-  #Returns whether or not +user+ has access to this
-  #userfile.
+  # Returns whether or not +user+ has access to this
+  # userfile.
   def can_be_accessed_by?(user, requested_access = :write)
     if user.has_role? :admin_user
       return true
@@ -353,8 +353,8 @@ class Userfile < ActiveRecord::Base
     false
   end
 
-  #Returns whether or not +user+ has owner access to this
-  #userfile.
+  # Returns whether or not +user+ has owner access to this
+  # userfile.
   def has_owner_access?(user)
     if user.has_role? :admin_user
       return true
@@ -369,8 +369,8 @@ class Userfile < ActiveRecord::Base
     false
   end
 
-  #Returns a scope representing the set of files accessible to the
-  #given user.
+  # Returns a scope representing the set of files accessible to the
+  # given user.
   def self.accessible_for_user(user, options)
     access_options = {}
     access_options[:access_requested] = options.delete :access_requested
@@ -381,33 +381,33 @@ class Userfile < ActiveRecord::Base
     scope
   end
 
-  #Find userfile identified by +id+ accessible by +user+.
+  # Find userfile identified by +id+ accessible by +user+.
   #
-  #*Accessible* files are:
-  #[For *admin* users:] any file on the system.
-  #[For <b>site managers </b>] any file that belongs to a user of their site,
-  #                            or assigned to a group to which the user belongs.
-  #[For regular users:] all files that belong to the user all
-  #                     files assigned to a group to which the user belongs.
+  # *Accessible* files are:
+  # [For *admin* users:] any file on the system.
+  # [For <b>site managers </b>] any file that belongs to a user of their site,
+  #                             or assigned to a group to which the user belongs.
+  # [For regular users:] all files that belong to the user all
+  #                      files assigned to a group to which the user belongs.
   def self.find_accessible_by_user(id, user, options = {})
     self.accessible_for_user(user, options).find(id)
   end
 
-  #Find all userfiles accessible by +user+.
+  # Find all userfiles accessible by +user+.
   #
-  #*Accessible* files are:
-  #[For *admin* users:] any file on the system.
-  #[For <b>site managers </b>] any file that belongs to a user of their site,
-  #                            or assigned to a group to which the user belongs.
-  #[For regular users:] all files that belong to the user all
-  #                     files assigned to a group to which the user belongs.
+  # *Accessible* files are:
+  # [For *admin* users:] any file on the system.
+  # [For <b>site managers </b>] any file that belongs to a user of their site,
+  #                             or assigned to a group to which the user belongs.
+  # [For regular users:] all files that belong to the user all
+  #                      files assigned to a group to which the user belongs.
   def self.find_all_accessible_by_user(user, options = {})
     self.accessible_for_user(user, options)
   end
 
-  #This method takes in an array to be used as the :+conditions+
-  #parameter for Userfile.where and modifies it to restrict based
-  #on file ownership or group access.
+  # This method takes in an array to be used as the :+conditions+
+  # parameter for Userfile.where and modifies it to restrict based
+  # on file ownership or group access.
   def self.restrict_access_on_query(user, scope, options = {})
     return scope if user.has_role? :admin_user
     access_requested    = options[:access_requested] || :write
@@ -681,7 +681,7 @@ class Userfile < ActiveRecord::Base
   class Viewer
     attr_reader :userfile_class, :name, :partial
 
-    def initialize(userfile_class, viewer)
+    def initialize(userfile_class, viewer) #:nodoc:
       atts = viewer
       unless atts.is_a? Hash
         atts = { :userfile_class => userfile_class, :name  => viewer.to_s.classify.gsub(/(.+)([A-Z])/, '\1 \2'), :partial => viewer.to_s.underscore }
@@ -837,6 +837,9 @@ class Userfile < ActiveRecord::Base
   end
 
   # List viewers for the calling class.
+  # Returns an array containing, first, the viewers
+  # registered in this class, followed by the viewers
+  # registered in superclasses (if any).
   def self.class_viewers
     unless @ancestor_viewers
       if self.superclass.respond_to? :class_viewers
@@ -894,7 +897,7 @@ class Userfile < ActiveRecord::Base
   class ContentLoader
     attr_reader :method, :type
 
-    def initialize(content_loader)
+    def initialize(content_loader) #:nodoc:
       atts = content_loader
       unless atts.is_a? Hash
         atts = {:method => atts}
@@ -902,27 +905,27 @@ class Userfile < ActiveRecord::Base
       initialize_from_hash(atts)
     end
 
-    def initialize_from_hash(options = {})
+    def initialize_from_hash(options = {}) #:nodoc:
       cb_error "Content loader must have method defined." if options[:method].blank?
       @method = options[:method].to_sym
       @type   = (options[:type]  || :send_file).to_sym
     end
 
-    def ==(other)
+    def ==(other) #:nodoc:
       return false unless other.is_a? ContentLoader
       self.method == other.method
     end
   end
 
-  #List of content loaders for this model
+  # List of content loaders for this model
   def content_loaders
     self.class.content_loaders
   end
 
-  #Find a content loader for this model. Priority is given
-  #to finding a matching method name. If none is found, then
-  #an attempt is made to match on the type. There may be several
-  #type matches so the first is returned.
+  # Find a content loader for this model. Priority is given
+  # to finding a matching method name. If none is found, then
+  # an attempt is made to match on the type. There may be several
+  # type matches so the first is returned.
   def find_content_loader(meth)
     self.class.find_content_loader(meth)
   end
@@ -930,6 +933,9 @@ class Userfile < ActiveRecord::Base
   private # Content methods
 
   # Add a content loader to the calling class.
+  # Returns an array containing, first, the viewers
+  # registered in this class, followed by the viewers
+  # registered in superclasses (if any).
   def self.has_content(options = {})
     new_content = ContentLoader.new(options)
     @class_loaders ||= []
@@ -951,10 +957,10 @@ class Userfile < ActiveRecord::Base
     @class_loaders + @ancestor_loaders
   end
 
-  #Find a content loader for this model. Priority is given
-  #to finding a matching method name. If none is found, then
-  #an attempt is made to match on the type. There may be several
-  #type matches so the first is returned.
+  # Find a content loader for this model. Priority is given
+  # to finding a matching method name. If none is found, then
+  # an attempt is made to match on the type. There may be several
+  # type matches so the first is returned.
   def self.find_content_loader(meth)
     return nil if meth.blank?
     method = meth.to_sym

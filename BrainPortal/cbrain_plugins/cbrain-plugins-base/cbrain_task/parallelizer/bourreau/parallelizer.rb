@@ -20,11 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Automatic Parallelizer Task
-# The CBRAIN framework uses this to automatically
-# parallelize other tasks. It can also be used
-# by tasks to parallelize their own subtasks.
-class CbrainTask::Parallelizer < ClusterTask
+class CbrainTask::Parallelizer < ClusterTask #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

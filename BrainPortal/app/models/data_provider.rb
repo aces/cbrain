@@ -256,10 +256,14 @@ class DataProvider < ActiveRecord::Base
                ]
     attr_accessor(*AttrList)
 
-    def initialize(attributes = {})
+    def initialize(attributes = {}) #:nodoc:
        (attributes.keys.collect(&:to_sym) & AttrList).each { |name| self.send("#{name}=",attributes[name]) }
     end
 
+    # Return the depth of the file,
+    # For example for file located at the following place:
+    #   /first_dir/second_dir/file
+    # it will return 3
     def depth #:nodoc:
       return @depth if @depth
       cb_error "File doesn't have a name." if self.name.blank?
@@ -269,7 +273,7 @@ class DataProvider < ActiveRecord::Base
       @depth
     end
 
-    def to_xml(options = {})
+    def to_xml(options = {}) #:nodoc:
       require 'builder' unless defined?(Builder)
 
       options = options.dup
@@ -290,7 +294,7 @@ class DataProvider < ActiveRecord::Base
       end
     end
 
-    def to_json
+    def to_json #:nodoc:
       self.instance_variables.each do |key_sym|
           key = key_sym.to_s.sub "@", ""   # changes '@name' or :@name to 'name'
           value = self.__send__(key)
@@ -982,7 +986,7 @@ class DataProvider < ActiveRecord::Base
   # it feels helpful. Remember, some provider don't
   # even store data in a "path" at all (e.g. Amazon S3).
   # So this string is often purely for informational purposes.
-  def provider_full_path(userfile) #:nodoc:
+  def provider_full_path(userfile)
     raise "Error: method not yet implemented in subclass."
   end
 
@@ -1149,10 +1153,10 @@ class DataProvider < ActiveRecord::Base
     return true
   end
 
-  # Root directory for ALL DataProviders caches:
+  # Root directory for the DataProvider cache system of the current Rails app.
   #     "/CbrainCacheDir"
-  # This is a class method.
-  def self.cache_rootdir #:nodoc:
+  # Will raise an exception if this has not been configured by the admin.
+  def self.cache_rootdir
     @cache_rootdir = RemoteResource.current_resource.dp_cache_dir if @cache_rootdir.blank?
     cb_error "No cache directory for Data Providers configured!"  if @cache_rootdir.blank? || ! ( @cache_rootdir.is_a?(String) || @cache_rootdir.is_a?(Pathname) )
     @cache_rootdir = Pathname.new(@cache_rootdir)
@@ -1232,7 +1236,7 @@ class DataProvider < ActiveRecord::Base
   # Returns true if RemoteResource +rr+ is allowed to access DataProvider +check_dp+
   # (which defaults to self). The information for this restriction is maintained
   # as a blacklist in the meta data store.
-  def rr_allowed_syncing?(rr = RemoteResource.current_resource, check_dp = self) #:nodoc:
+  def rr_allowed_syncing?(rr = RemoteResource.current_resource, check_dp = self)
     rr ||= RemoteResource.current_resource
     meta_key_disabled = "rr_no_sync_#{rr.id}"
     self.meta[meta_key_disabled].blank?
@@ -1241,7 +1245,7 @@ class DataProvider < ActiveRecord::Base
   # Works like rr_allowed_syncing? but raise an exception when the
   # sync operation is not allowed. The exception message can be
   # customized with the first argument.
-  def rr_allowed_syncing!(server_does_what = "access the files of", rr = RemoteResource.current_resource, check_dp = self) #:nodoc:
+  def rr_allowed_syncing!(server_does_what = "access the files of", rr = RemoteResource.current_resource, check_dp = self)
     rr ||= RemoteResource.current_resource
     cb_error "Error: server #{rr.name} cannot #{server_does_what} provider #{check_dp.name}." unless
       self.rr_allowed_syncing?(rr, check_dp)
@@ -1251,14 +1255,14 @@ class DataProvider < ActiveRecord::Base
   # other DataProvider +other_dp+ .
   # The information for this restriction is maintained
   # as a blacklist in the meta data store.
-  def dp_allows_copy?(other_dp) #:nodoc:
+  def dp_allows_copy?(other_dp)
     meta_key_disabled = "dp_no_copy_#{other_dp.id}"
     self.meta[meta_key_disabled].blank?
   end
 
   # Works like dp_allows_copy? but raises an exception of the
   # copy or move operation is not allowed.
-  def dp_allows_copy!(other_dp) #:nodoc:
+  def dp_allows_copy!(other_dp)
     cb_error "Error: provider #{self.name} is not allowed to send data to provider #{other_dp.name}." unless
       self.dp_allows_copy?(other_dp)
   end
@@ -1430,7 +1434,7 @@ class DataProvider < ActiveRecord::Base
   # returns
   #
   #   'Mike O'\''Connor'
-  def shell_escape(s)
+  def shell_escape(s) #:nodoc:
     s.to_s.bash_escape(true)  # in config/initializers/core_extentions/string.rb
   end
 
@@ -1458,7 +1462,7 @@ class DataProvider < ActiveRecord::Base
   # and returns it. The user of this method is expected to have already
   # properly escaped any special characters in the arguments to the
   # command.
-  def bash_this(command)
+  def bash_this(command) #:nodoc:
     fh = IO.popen(command,"r")
     output = fh.read
     fh.close

@@ -22,7 +22,7 @@
 
 require 'fileutils'
 
-#RESTful controller for the Userfile resource.
+# RESTful controller for the Userfile resource.
 class UserfilesController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -207,7 +207,6 @@ class UserfilesController < ApplicationController
     redirect_to :action => :index
   end
 
-  #####################################################
   # Transfer contents of a file.
   # If no relevant parameters are given, the controller
   # will simply attempt to send the entire file.
@@ -217,8 +216,8 @@ class UserfilesController < ApplicationController
   #                   userfile.
   # [:arguments]      arguments to pass to the content
   #                   loader method.
-  #####################################################
-  #GET /userfiles/1/content?option1=....optionN=...
+  #
+  # GET /userfiles/1/content?option1=....optionN=...
   def content
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
@@ -248,6 +247,11 @@ class UserfilesController < ApplicationController
     end
   end
 
+  # Renders a partial within the 'show' page by invoking
+  # some custom viewer code registered by a Userfile subclass.
+  # The main parameter is :viewer ; an optional :viewer_userfile_class
+  # can be provided to override which class to search for the viewer code
+  # (by default, the class of +userfile+)
   def display
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 

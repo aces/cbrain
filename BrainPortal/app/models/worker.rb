@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'log4r'
@@ -449,7 +449,7 @@ class Worker
     self.worker_log.debug "Entering sleep mode for #{self.sleep_interval} seconds."
     while self.sleep_mode && ! self.stop_received
       sleep 1
-      break if Time.now >= time_to_wake_up	
+      break if Time.now >= time_to_wake_up
     end
     self.sleep_mode = false # sleep mode is a one shot mode.
     if Time.now >= time_to_wake_up
@@ -467,7 +467,7 @@ class Worker
     self.worker_log.debug "Waiting for next check."
     while ! self.stop_received
       sleep 1
-      break if Time.now >= time_to_wake_up	
+      break if Time.now >= time_to_wake_up
     end
     self.worker_log.debug "Ready for next check."
   end

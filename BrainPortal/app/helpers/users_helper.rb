@@ -17,23 +17,23 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #Helper methods for User views
 module UsersHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
-  #View helper to create a valid array for a role selection box on the
-  #user create and edit pages.
+
+  # View helper to create a valid array for a role selection box on the
+  # user create and edit pages.
   def roles_for_user(user)
     roles = [["Normal User", "NormalUser"],["Site Manager","SiteManager"]]
-    
+
     if user.has_role? :admin_user
       roles << ["Admin User","AdminUser"]
     end
-    
+
     roles
   end
 

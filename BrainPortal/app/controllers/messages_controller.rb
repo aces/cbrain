@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # RESTful controller for managing Messages.
@@ -33,7 +33,7 @@ class MessagesController < ApplicationController
   def index #:nodoc:
     @filter_params["sort_hash"]["order"] ||= "messages.last_sent"
     @filter_params["sort_hash"]["dir"]   ||= "DESC"
-    
+
     scope = base_filtered_scope
     if @filter_params["sort_hash"]["order"] == "messages.sender"
       scope = scope.joins("LEFT JOIN users as senders ON senders.id = messages.sender_id").
@@ -44,12 +44,12 @@ class MessagesController < ApplicationController
     scope = scope.includes(:user)
     unless current_user.has_role?(:admin_user)
       scope = scope.where(:user_id => current_user.available_users.map(&:id))
-    end                             
-   
+    end
+
     @messages = scope.paginate(:page => @current_page, :per_page => @per_page)
-    
+
     current_session.save_preferences_for_user(current_user, :messages, :per_page)
-    
+
     respond_to do |format|
       format.html # index.html.erb
       format.js
@@ -67,17 +67,17 @@ class MessagesController < ApplicationController
   # POST /messages.xml
   def create #:nodoc:
     @message = Message.new(params[:message])
-    
+
     date = params[:expiry_date] || ""
     hour = params[:expiry_hour] || "00"
     min  = params[:expiry_min]  || "00"
-    date = Date.today if date.blank? && (hour != "00" || min != "00") 
+    date = Date.today if date.blank? && (hour != "00" || min != "00")
     unless date.blank?
       string_time = "#{date} #{hour}:#{min} #{Time.now.in_time_zone.formatted_offset}"
       full_date = DateTime.parse(string_time)
       @message.expiry = full_date
     end
-      
+
     if @message.header.blank?
       @message.errors.add(:header, "cannot be left blank.")
     end
@@ -94,7 +94,7 @@ class MessagesController < ApplicationController
       end
     end
     prepare_messages
-    
+
     respond_to do |format|
       if @message.errors.empty?
         flash.now[:notice] = 'Message was successfully sent.'
@@ -130,7 +130,7 @@ class MessagesController < ApplicationController
   end
 
   # Delete multiple messages.
-  def delete_messages #:nodoc:
+  def delete_messages
     id_list = params[:message_ids] || []
     if current_user.has_role?(:admin_user)
       message_list = Message.find(id_list)
@@ -138,13 +138,13 @@ class MessagesController < ApplicationController
       message_list = current_user.messages.find(id_list)
     end
     deleted_count = 0
-    
+
     message_list.each do |message_item|
       deleted_count += 1
       message_item.destroy
     end
-    
-    flash[:notice] = "#{view_pluralize(deleted_count, "item")} deleted.\n" 
+
+    flash[:notice] = "#{view_pluralize(deleted_count, "item")} deleted.\n"
     redirect_to :action => :index
   end
 
@@ -159,7 +159,7 @@ class MessagesController < ApplicationController
     unless @message.destroy
       flash.now[:error] = "Could not delete message."
     end
-    
+
     head :ok
   end
 

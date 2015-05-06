@@ -110,7 +110,7 @@ module FilterHelper
     end
   end
 
-  #Will check for associations to display them properly.
+  # Will check for associations to display them properly.
   def display_filter(model, key, value, methods = {})
     exceptions = {
       "group" => "project",

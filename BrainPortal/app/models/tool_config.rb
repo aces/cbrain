@@ -24,16 +24,15 @@
 # Unlike other models, the set of ToolConfigs is not
 # arbitrary. They fit in three categories:
 #
-#   * A single tool config object represents the initialization
-#     needed by a particular tool on all bourreaux; it
-#     has a tool_id and no bourreau_id
-#   * A single tool config object represents the initialization
-#     needed by a particular bourreau for all tools; it
-#     has a bourreau_id and no tool_id
-#   * A set of 'versioning' tool config objects have both
-#     a tool_id and a bourreau_id; they represent all
-#     available versions of a tool on a particular bourreau.
-#
+# * A single tool config object represents the initialization
+#   needed by a particular tool on all bourreaux; it
+#   has a tool_id and no bourreau_id
+# * A single tool config object represents the initialization
+#   needed by a particular bourreau for all tools; it
+#   has a bourreau_id and no tool_id
+# * A set of 'versioning' tool config objects have both
+#   a tool_id and a bourreau_id; they represent all
+#   available versions of a tool on a particular bourreau.
 class ToolConfig < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -71,7 +70,7 @@ class ToolConfig < ActiveRecord::Base
   end
 
   # See ResourceAccess.
-  def self.find_all_accessible_by_user(user)
+  def self.find_all_accessible_by_user(user) #:nodoc
     if user.has_role?(:admin_user)
       ToolConfig.specific_versions
     else
@@ -226,34 +225,37 @@ class ToolConfig < ActiveRecord::Base
     false
   end
 
-  # Return true if it's a tool config for bourreau only
+  # Returns true if it's a tool config for bourreau only
   def applies_to_bourreau_only?
     self.bourreau_id.present? && !self.tool_id.present?
   end
 
-  # Return true if it's a tool config for tool only
+  # Returns true if it's a tool config for tool only
   def applies_to_tool_only?
     !self.bourreau_id.present? && self.tool_id.present?
   end
 
-  # Return true if it's a tool config for bourreau and tool
+  # Returns true if it's a tool config for bourreau and tool
   def applies_to_bourreau_and_tool?
     self.bourreau_id.present? && self.tool_id.present?
   end
 
   # This method calls compare_versions defined
   # in cbrain_task.
-  # Return true if version_name of the current tool_config
+  # Returns true if version_name of the current tool_config
   # is greater than version or false in other case
   def is_at_least_version(version)
      self.cbrain_task_class.compare_versions(self.version_name,version) >= 0
   end
 
+  # This method calls compare_versions defined in cbrain_task.
+  # Returns true if version_name of the current tool_config
+  # is equal to +version+.
   def is_version(version)
      self.cbrain_task_class.compare_versions(self.version_name,version) == 0
   end
 
-  # Return the class of cbrain_task
+  # Returns the class of cbrain_task
   def cbrain_task_class
     self.tool.cbrain_task_class.constantize
   end

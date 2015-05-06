@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This module contains utility methods in order to set a date restriction.
@@ -25,20 +25,20 @@ module DateRangeRestriction
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  #Checks consistence of values for filtration by date.
-  #The values in argument usually come from values posted by the partial 'shared/_date_range_panel.html.erb'.
-  #For exemple if filtration by absolute_date_from will be process 
-  #then the absolute date 'from' is required. 
-  #Returns an empty string if everything is good, 
-  #else returns an explicit message in order to know what's wrong.
-  #Can be used with partial shared/date_range
+  # Checks consistence of values for filtration by date.
+  # The values in argument usually come from values posted by the partial 'shared/_date_range_panel.html.erb'.
+  # For exemple if filtration by absolute_date_from will be process
+  # then the absolute date 'from' is required.
+  # Returns an empty string if everything is good,
+  # else returns an explicit message in order to know what's wrong.
+  # Can be used with partial shared/date_range
   def check_filter_date(date_attribute,absolute_or_relative_from,absolute_or_relative_to,absolute_from,absolute_to,relative_from,relative_to)
     return "" if date_attribute.blank?
-    
+
     if (absolute_or_relative_from == "absolute") && absolute_from.blank?
       return "You should enter an absolute 'from' date or de-select the radio button"
     end
-	  
+
     if (absolute_or_relative_to == "absolute") && absolute_to.blank?
       return "You should enter an absolute 'to' date or de-select the radio button"
     end
@@ -49,34 +49,34 @@ module DateRangeRestriction
 
     return ""
   end
-  
-  #Add date range to scope.
-  #We need an initial scope, name of table, 2 booleans
-  #(one to know if 'date_from' is an absolute date (mode_is_absolute_from),
-  #one to know if 'date_to' is an absolute date    (mode_is_absolute_to)),
-  #absolute date from and absolute date to (format is dd/mm/yyyy),
-  #relative date from and relative date to (in second), 
-  #and finally a string 'updated_at' or 'created_at' to know
-  #if filtration need to be perform on created_at or updated_at
+
+  # Add date range to scope.
+  # We need an initial scope, name of table, 2 booleans
+  # (one to know if 'date_from' is an absolute date (mode_is_absolute_from),
+  # one to know if 'date_to' is an absolute date    (mode_is_absolute_to)),
+  # absolute date from and absolute date to (format is dd/mm/yyyy),
+  # relative date from and relative date to (in second),
+  # and finally a string 'updated_at' or 'created_at' to know
+  # if filtration need to be perform on created_at or updated_at
   def add_time_condition_to_scope(scope, table_name, mode_is_absolute_from, mode_is_absolute_to, absolute_from, absolute_to, relative_from, relative_to, date_attribute)
-    
+
     return scope if date_attribute.blank?
     raise "You can't filter on #{date_attribute}, is not a datetime attribute." if scope.model_name.constantize.columns_hash[date_attribute.to_s].type != :datetime
-    
+
     (start_time,end_time) = determine_date_range_start_end(mode_is_absolute_from, mode_is_absolute_to, absolute_from, absolute_to, relative_from, relative_to)
 
     scope = scope.scoped(:conditions  => ["#{table_name}.#{date_attribute} >= ?", start_time])
     scope = scope.scoped(:conditions  => ["#{table_name}.#{date_attribute} <= ?", end_time])
-    
+
     scope
 
   end
 
-  #Define start time and end time for futur filtration
+  # Define start time and end time for futur filtration
   def determine_date_range_start_end(mode_is_absolute_from, mode_is_absolute_to, absolute_from, absolute_to, relative_from, relative_to)
-    
+
     utc_offset = Time.now.in_time_zone.utc_offset.seconds
-    
+
     if mode_is_absolute_from.present?
       user_start = DateTime.parse(absolute_from) - utc_offset
     else
@@ -96,6 +96,6 @@ module DateRangeRestriction
     return [user_start, user_end]
   end
 
-  
+
 end
 

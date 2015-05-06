@@ -189,7 +189,7 @@ class RemoteResource < ActiveRecord::Base
   end
 
   # Verify that the ignore patterns are correct.
-  def proper_dp_ignore_patterns #:nodoc:
+  def proper_dp_ignore_patterns
 
     ig_pat = self.dp_ignore_patterns || [] # nil and [] are ok
     unless ig_pat.is_a?(Array)
@@ -219,7 +219,7 @@ class RemoteResource < ActiveRecord::Base
   # what we can see. It's possibel to edit the path of an
   # external RemoteResource, so we can't check that the dir
   # exist over there.
-  def dp_cache_path_valid #:nodoc:
+  def dp_cache_path_valid
     path = self.dp_cache_dir
 
     return true if path.blank?  # We allow this even if it won't work, until the admin sets it.
@@ -363,14 +363,14 @@ class RemoteResource < ActiveRecord::Base
 
   # Returns true if this remote resource is configued
   # for DB tunnelling
-  def has_db_tunnelling_info? #:nodoc:
+  def has_db_tunnelling_info?
     return true if self.has_ssh_control_info? && ( ! self.tunnel_mysql_port.blank? )
     false
   end
 
   # Returns true if this remote resource is configued
   # for ActiveResource tunnelling
-  def has_actres_tunnelling_info? #:nodoc:
+  def has_actres_tunnelling_info?
     return true if self.has_ssh_control_info? && ( ! self.tunnel_actres_port.blank? )
     false
   end
@@ -688,7 +688,8 @@ class RemoteResource < ActiveRecord::Base
     nil
   end
 
-  def zap_info_cache(what = :info) #:nodoc:
+  # Zaps the cache in DB
+  def zap_info_cache(what = :info)
     @info = nil if what == :info
     @ping = nil if what == :ping
     info_key = "#{what}_cache".to_sym
@@ -845,8 +846,8 @@ class RemoteResource < ActiveRecord::Base
 
   end
 
-  #Treat process_command_xxx calls as bad commands,
-  #otherwise as NoMethodErrors
+  # Treat process_command_xxx calls as bad commands,
+  # otherwise as NoMethodErrors
   def self.method_missing(method, *args)
     if method.to_s =~ /^process_command_(.+)/
       cb_error "Unknown command #{Regexp.last_match[1]}"

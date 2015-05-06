@@ -667,7 +667,7 @@ class ClusterTask < CbrainTask
   # (hold, suspend, terminate, etc etc)
   ##################################################################
 
-  #Terminate the task (if it's currently in an appropriate state.)
+  # Terminate the task (if it's currently in an appropriate state.)
   def terminate
     cur_status = self.status
     return false if self.workdir_archived?
