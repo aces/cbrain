@@ -81,7 +81,6 @@ class GroupsController < ApplicationController
       @group_id_2_userfile_counts[nil] = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read).count
       @group_id_2_task_counts[nil]     = current_user.available_tasks.count
     else
-      @group_id_2_user_counts          = User.joins(:groups).group("group_id").count.convert_keys!(&:to_i) # .joins make keys as string
       @group_id_2_tool_counts          = Tool.group("group_id").count
       @group_id_2_data_provider_counts = DataProvider.group("group_id").count
       @group_id_2_bourreau_counts      = Bourreau.group("group_id").count
