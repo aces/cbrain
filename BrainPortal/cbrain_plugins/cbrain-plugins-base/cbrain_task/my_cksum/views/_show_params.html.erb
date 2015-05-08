@@ -1,0 +1,32 @@
+
+<%
+# Use this template to create the content of the tab
+# that shows the parameters for your task.
+# This partial has access to the following variables:
+#
+#    task  -  Your current task object
+#
+#    params -  A shortend to task.params
+#
+# The default template belows shows links to
+# the userfiles IDs listed in :interface_userfile_ids,
+# which is the default place where the framework
+# stores the IDs selected in the userfile index page.
+# If your task actually stores IDs in other
+# keys, adjust accordingly.
+#
+# Note that this is NOT a form, it should simply provide
+# a nice friendly summary of the active parameters
+# for this task.
+-%>
+
+Input: <%= link_to_userfile_if_accessible params[:interface_userfile_ids][0] %><br>
+Output prefix: <%= params[:output_file_prefix] %><br>
+<% if @tool_config.is_at_least_version('2.0.0') %>
+  Odd number: <%= params[:an_odd_number] %><br>
+<% end %>
+Day: <%= params[:struct_with_day_and_month][:day] %><br>
+Month: <%= params[:struct_with_day_and_month][:month] %><br>
+<p>
+Output: <%= link_to_userfile_if_accessible params[:report_id] %>
+

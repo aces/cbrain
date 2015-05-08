@@ -154,6 +154,11 @@ class TasksController < ApplicationController
       end
     end
 
+    # This variable can be used by the task's _show_params partial
+    # to selectively display pieces of information based on the
+    # current version of the tool, using things like @tool_config.is_at_least_version('2.0.0).
+    @tool_config = @task.tool_config
+
     respond_to do |format|
       format.html # show.html.erb
       format.xml   { render :xml  => @task }
