@@ -317,8 +317,11 @@ def create #:nodoc:
     @task.addlog_context(self,"Created by #{current_user.login}")
 
     # Give a task the ability to do a refresh of its form
-    commit_name = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ])
-    commit_name = :refresh if params[:commit] =~ /refresh/i
+    refresh_regex   = @task.refresh_form_regex if @task.respond_to?(:refresh_form_regex)
+    refresh_regex ||= /refresh/i
+
+    commit_name     = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ])
+    commit_name     = :refresh if params[:commit] =~ refresh_regex
     if commit_name == :refresh
       initialize_common_form_values
       flash.now[:notice] += @task.wrapper_refresh_form
