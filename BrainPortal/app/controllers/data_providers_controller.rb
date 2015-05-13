@@ -644,7 +644,21 @@ class DataProvidersController < ApplicationController
     # This list may contain 'LocalDataProvider' which is useless in any environments
     # where there are distributed resources. It would only work in a CBRAIN environment
     # where all portals and bourreaux are on the same machine.
-    (check_role(:site_manager) || check_role(:admin_user)) ? DataProvider.descendants.map(&:name) : %w{ SshDataProvider }
+    
+    # The above comment is not entirely accurate. Somethin about file systems being shared between two machines.
+    # Ask Tristan
+    
+    # to remove 'LocalDataProvider', we're adding conditional statement so if either of the two
+    # situations mentioned above arise, we can show the correct types. For now we remove 'LocalDataProvider' 
+    
+    if true
+      (check_role(:site_manager) || check_role(:admin_user)) ? DataProvider.descendants.map(&:name).delete_if {|elem| elem == "LocalDataProvider" }.sort_by {|elem| elem.downcase} : %w{ SshDataProvider }
+    else 
+      # this is the condition where all portals and bourreaux are on the same machine. check for this.
+      # It was suggested to ask the user if all portal and bourreaux are on the same machine and check that condition
+      (check_role(:site_manager) || check_role(:admin_user)) ? DataProvider.descendants.map(&:name) : %w{ SshDataProvider }     
+    end
+    
   end
 
   # Note: the following methods should all be part of one of the subclasses of DataProvider, probably.
