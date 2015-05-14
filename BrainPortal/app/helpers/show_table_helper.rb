@@ -146,24 +146,6 @@ module ShowTableHelper
      html.join("\n").html_safe
    end
   
-  def inline_edit_form(object, attribute, url, options = {}, &block)
-     default_text = h(options.delete(:content) || object.send(attribute))
-     return default_text if options.delete(:disabled)
-     method = options.delete(:method) || :put
-     if object.errors.include?(attribute)
-       default_text = "<span style=\"color:red\">#{default_text}</span>"
-     end
-     html = []
-     html << "<span class=\"inline_edit_form_default_text\">"
-     html << default_text
-     html <<    "<a href=\"#\" class=\"inline_edit_form_link action_link\">(edit)</a>"
-     html << "</span>"
-     html << "<span class=\"inline_edit_form\" style=\"display:none\">"
-     html << form_tag(url, :method => method, :style => "display:inline", &block)
-     html << "</span>"
-     html.join("\n").html_safe
-   end
-  
   def show_table(object, options = {})
     header = options.delete(:header) || "Info"
     url    = options.delete :url

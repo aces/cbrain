@@ -669,15 +669,6 @@
       return false;  
     });
 
-    $(document).delegate(".inline_edit_form_link", "click", function() {
-      var link = $(this);
-      var default_text = link.closest(".inline_edit_form_default_text");
-      var form = default_text.siblings(".inline_edit_form");
-      
-      default_text.hide();
-      form.show();
-    });
-    
     $(document).delegate(".inline_edit_field_link", "click", function() {
       var link = $(this);
       var visible = link.data("visible");
