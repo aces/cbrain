@@ -652,12 +652,25 @@ class DataProvidersController < ApplicationController
     # situations mentioned above arise, we can show the correct types. For now we remove 'LocalDataProvider' 
     
     if true
-      (check_role(:site_manager) || check_role(:admin_user)) ? DataProvider.descendants.map(&:name).delete_if {|elem| elem == "LocalDataProvider" }.sort_by {|elem| elem.downcase} : %w{ SshDataProvider }
+      list = (check_role(:site_manager) || check_role(:admin_user)) ? DataProvider.descendants.map(&:name).delete_if {|elem| elem == "LocalDataProvider" }.sort_by {|elem| elem.downcase} : %w{ SshDataProvider }
     else 
       # this is the condition where all portals and bourreaux are on the same machine. check for this.
       # It was suggested to ask the user if all portal and bourreaux are on the same machine and check that condition
       (check_role(:site_manager) || check_role(:admin_user)) ? DataProvider.descendants.map(&:name) : %w{ SshDataProvider }     
     end
+    
+    grouped_options = [
+     ['Enhanced CBRAIN Types',
+       list.slice(0,3)],
+     ['Incoming Vault Types',
+       list.slice(3,3)],
+     ['Vault Types',
+       list.slice(8,3)],
+     ['Single Level Types',
+       list.slice(7,1)],
+     ['Other Types',
+       list.slice(6,1)]
+    ]
     
   end
 
