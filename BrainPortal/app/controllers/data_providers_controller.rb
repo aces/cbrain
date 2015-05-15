@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#Restful controller for the DataProvider resource.
+# RESTful controller for the DataProvider resource.
 class DataProvidersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -186,7 +186,8 @@ class DataProvidersController < ApplicationController
     end
   end
 
-  def is_alive #:nodoc:
+  # Returns information about the aliveness of +dataprovider+.
+  def is_alive
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
     is_alive =  @provider.is_alive?
 
@@ -197,7 +198,8 @@ class DataProvidersController < ApplicationController
     end
   end
 
-  def disk_usage #:nodoc:
+  # Returns a report about the +dataprovider+ disk usage by users.
+  def disk_usage
     dataprovider_id = params[:id]       || ""
     user_ids        = params[:user_ids] || nil
 
@@ -246,7 +248,9 @@ class DataProvidersController < ApplicationController
 
   end
 
-  def dp_access #:nodoc:
+  # Generates list of providers accessible by the current user.
+  # Generates list of users available by the current user.
+  def dp_access
     @providers = DataProvider.find_all_accessible_by_user(current_user).all.sort do |a,b|
                    (b.online?.to_s       <=> a.online?.to_s).nonzero?       ||
                    (a.is_browsable?.to_s <=> b.is_browsable?.to_s).nonzero? ||
@@ -258,7 +262,8 @@ class DataProvidersController < ApplicationController
                  end
   end
 
-  def dp_transfers #:nodoc:
+  # Generates list of providers accessible by the current user.
+  def dp_transfers
     @providers = DataProvider.find_all_accessible_by_user(current_user).all.sort do |a,b|
                    (b.online?.to_s       <=> a.online?.to_s).nonzero?       ||
                    (a.is_browsable?.to_s <=> b.is_browsable?.to_s).nonzero? ||
@@ -266,9 +271,9 @@ class DataProvidersController < ApplicationController
                  end
   end
 
-  #Browse the files of a data provider.
-  #This action is only available for data providers that are browsable.
-  #Both registered and unregistered files will appear in the list.
+  # Browse the files of a data provider.
+  # This action is only available for data providers that are browsable.
+  # Both registered and unregistered files will appear in the list.
   def browse
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
 
@@ -389,8 +394,8 @@ class DataProvidersController < ApplicationController
   # Register a list of files into the system.
   # The files' meta data will be saved as Userfile resources.
   # This method is (unfortunately) also used to unregister files, and delete them (on the browsable side)
-  # TODO: refactor completely!
   def register
+    # TODO: refactor completely!
     @provider  = DataProvider.find_accessible_by_user(params[:id], current_user)
 
     @filter_params["browse_hash"] ||= {}

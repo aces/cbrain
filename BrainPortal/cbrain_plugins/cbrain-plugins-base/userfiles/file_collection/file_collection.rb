@@ -132,9 +132,9 @@ class FileCollection < Userfile
   end
 
 
-  #mathieu desrosiers
-  #Returns an array of the relative paths to first level subdirectories contained in this collection.
-  #this function only for usage in spmbatch, feel free to contact me if you would like to remove it.
+  # Mathieu Desrosiers
+  # Returns an array of the relative paths to first level subdirectories contained in this collection.
+  # this function only for usage in spmbatch, feel free to contact me if you would like to remove it.
   def list_first_level_dirs
     return @dir_list if @dir_list
     Dir.chdir(self.cache_full_path.parent) do
@@ -145,9 +145,9 @@ class FileCollection < Userfile
     end
   end
 
-  #Mathieu Desrosiers
-  #remove unwanted .DS_Store file and "._" files from a packages if there is some
-  #this function may be harmfull and only matter if the archive came from a MACOSX archive
+  # Mathieu Desrosiers
+  # remove unwanted .DS_Store file and "._" files from a packages if there is some
+  # this function may be harmfull and only matter if the archive came from a MACOSX archive
   def remove_unwanted_files
     dir_name = self.cache_full_path
     Dir.chdir(dir_name) do

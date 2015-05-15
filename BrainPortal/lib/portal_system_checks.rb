@@ -34,8 +34,8 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  #Checks for pending migrations, stops the boot if it detects a problem. Must be run first
-  def self.a010_check_if_pending_database_migrations
+  # Checks for pending migrations, stops the boot if it detects a problem. Must be run first
+  def self.a010_check_if_pending_database_migrations #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Checking for pending migrations..."
@@ -57,7 +57,7 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.a020_check_database_sanity
+  def self.a020_check_database_sanity #:nodoc:
 
     #----------------------------------------------------------------------------
     puts "C> Checking if the BrainPortal database needs a sanity check..."
@@ -72,7 +72,7 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.z000_ensure_we_have_a_local_ssh_agent
+  def self.z000_ensure_we_have_a_local_ssh_agent #:nodoc:
 
     #----------------------------------------------------------------------------
     puts "C> Making sure we have a SSH agent to provide our credentials..."
@@ -124,7 +124,7 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.z010_ensure_we_have_a_ssh_agent_locker
+  def self.z010_ensure_we_have_a_ssh_agent_locker #:nodoc:
 
     #----------------------------------------------------------------------------
     puts "C> Starting automatic Agent Locker in background..."

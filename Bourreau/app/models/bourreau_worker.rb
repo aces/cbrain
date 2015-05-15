@@ -151,7 +151,8 @@ class BourreauWorker < Worker
     @process_task_list_pid = nil
   end
 
-  # Propagate a stop signal to the SubWorker. In the subworker it will do nothing.
+  # Propagate a stop signal to the SubWorker.
+  # In the subworker it will do nothing.
   def stop_signal_received_callback #:nodoc:
     if @process_task_list_pid
       worker_log.info "Propagating STOP to subprocess #{@process_task_list_pid}"

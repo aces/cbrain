@@ -197,6 +197,7 @@ class GroupsController < ApplicationController
     end
   end
 
+  # Used in order to remove a user from a group.
   def unregister
     @group = current_user.available_groups.where( :type => "WorkGroup" ).find(params[:id])
 
@@ -207,7 +208,7 @@ class GroupsController < ApplicationController
         format.xml  { head :unprocessable_entity }
       else
         original_user_ids = @group.user_ids
-        @group.user_ids = @group.user_ids - [current_user.id]
+        @group.user_ids   = @group.user_ids - [current_user.id]
         @group.addlog_object_list_updated("Users", User, original_user_ids, @group.user_ids, current_user, :login)
 
         flash[:notice] = "You have been unregistered from project #{@group.name}."
@@ -231,7 +232,7 @@ class GroupsController < ApplicationController
   end
 
   def switch_panel #:nodoc:
-    @all_projects = current_user.available_groups.partition {|p| p.class.to_s == "WorkGroup" }.map{ |set| set.sort_by(&:name)  }.flatten
+    @all_projects        = current_user.available_groups.partition { |p| p.class.to_s == "WorkGroup" }.map{ |set| set.sort_by(&:name)  }.flatten
     @redirect_controller = params[:redirect_controller] || :groups
     render :partial => 'switch_panel'
   end

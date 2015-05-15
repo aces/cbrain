@@ -38,12 +38,12 @@ require 'socket'
 #
 # The is a rake task to run these sanity checks called rake db:sanity:check
 # This rake task should be run before starting cbrain for the first time.
-class PortalSanityChecks < CbrainChecker
+class PortalSanityChecks < CbrainChecker #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  #Checks to see if the validation was run since last change
-  def self.done?
+  # Checks to see if the validation was run since last change
+  def self.done? #:nodoc:
     if SanityCheck.find_by_revision_info(Revision_info.to_s)
       true
     else
@@ -51,8 +51,8 @@ class PortalSanityChecks < CbrainChecker
     end
   end
 
-  #validates the model. Used in lib/task/cbrain_model_validation.rake
-  def self.check(checks_to_run)
+  # validates the model. Used in lib/task/cbrain_model_validation.rake
+  def self.check(checks_to_run) #:nodoc:
 
     #Run sanity checks if it has never has been run
     #-----------------------------------------------------------------------------
@@ -103,8 +103,8 @@ class PortalSanityChecks < CbrainChecker
   #                                                  #
   ####################################################
 
-  #Creates the everyone group and adds the admin user if it does not exist
-  def self.ensure_001_group_and_users_have_been_created
+  # Creates the everyone group and adds the admin user if it does not exist
+  def self.ensure_001_group_and_users_have_been_created #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that required groups and users have been created..."
@@ -126,8 +126,8 @@ class PortalSanityChecks < CbrainChecker
 
 
 
-  #adds everyone to the everyone group
-  def self.ensure_002_users_belongs_to_everyone_group
+  # adds everyone to the everyone group
+  def self.ensure_002_users_belongs_to_everyone_group #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that all users have their own group and belong to 'everyone'..."
@@ -164,8 +164,8 @@ class PortalSanityChecks < CbrainChecker
 
 
 
-  #Makes sure that all sites belong to a group and that users of that site belong to it
-  def self.ensure_that_all_sites_have_a_group_and_that_all_their_users_belong_to_it
+  # Makes sure that all sites belong to a group and that users of that site belong to it
+  def self.ensure_that_all_sites_have_a_group_and_that_all_their_users_belong_to_it #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that all sites have a group and that all their users belong to it..."
@@ -197,8 +197,8 @@ class PortalSanityChecks < CbrainChecker
 
 
 
-  #Groups must have a type like WorkGroup, SystemGroup...
-  def self.ensure_that_all_groups_have_a_type
+  # Groups must have a type like WorkGroup, SystemGroup...
+  def self.ensure_that_all_groups_have_a_type #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that all groups have a type..."
@@ -215,8 +215,8 @@ class PortalSanityChecks < CbrainChecker
 
 
 
-  #Userfiles must belong to a group or everyone
-  def self.ensure_that_all_userfiles_have_a_group
+  # Userfiles must belong to a group or everyone
+  def self.ensure_that_all_userfiles_have_a_group #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that userfiles all have a group..."
@@ -238,7 +238,7 @@ class PortalSanityChecks < CbrainChecker
 
 
   # ToolConfigs must belong to a group or everyone
-  def self.ensure_that_all_toolconfigs_have_a_group
+  def self.ensure_that_all_toolconfigs_have_a_group #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that toolconfigs all gave a group..."
@@ -255,8 +255,8 @@ class PortalSanityChecks < CbrainChecker
 
 
 
-  #Makes sure that the portal is registered as a remote ressource or adds it
-  def self.ensure_that_rails_app_is_a_remote_resource
+  # Makes sure that the portal is registered as a remote ressource or adds it
+  def self.ensure_that_rails_app_is_a_remote_resource #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that this RAILS app is registered as a RemoteResource..."
@@ -282,8 +282,8 @@ class PortalSanityChecks < CbrainChecker
 
 
 
-  #Custom filters must have a type or be of type UserfileCustomFilter
-  def self.ensure_custom_filters_have_a_type
+  # Custom filters must have a type or be of type UserfileCustomFilter
+  def self.ensure_custom_filters_have_a_type #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring custom filters have a type..."
@@ -300,7 +300,7 @@ class PortalSanityChecks < CbrainChecker
     end
   end
 
-  def self.ensure_format_groups_match_source_groups
+  def self.ensure_format_groups_match_source_groups #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring formats have the same group as source file..."
@@ -315,7 +315,8 @@ class PortalSanityChecks < CbrainChecker
     end
   end
 
-  def self.ensure_tags_have_a_group_id
+  # Each tags should have a group
+  def self.ensure_tags_have_a_group_id #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring tags have a group..."
@@ -329,7 +330,8 @@ class PortalSanityChecks < CbrainChecker
     end
   end
 
-  def self.ensure_groups_have_creator_id
+  # Each groups should have a creator
+  def self.ensure_groups_have_creator_id #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring groups have a creator_id..."

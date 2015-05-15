@@ -17,28 +17,28 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Exception logging class
 class ExceptionLog < ActiveRecord::Base
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   belongs_to :user
-  
-  serialize :backtrace 
+
+  serialize :backtrace
   serialize :request
   serialize :request_headers
   serialize :session
-  
-  
-  #Create an exception record based on exception, user, current request.
+
+
+  # Create an exception record based on exception, user, current request.
   def self.log_exception(exception, user, request)
     params  = request.params.hide_filtered
     session = request.session
     hdrs    = request.headers.select { |k| k =~ /^[A-Z]/ }
-    
+
     e                    = self.new
     e.exception_class    = exception.class.to_s
     e.request_controller = params[:controller]
@@ -50,7 +50,7 @@ class ExceptionLog < ActiveRecord::Base
     e.backtrace          = exception.backtrace
     e.request            = {
                           :url         => "#{request.protocol}#{request.env["HTTP_HOST"]}#{request.fullpath}",
-                          :parameters  => params.inspect, 
+                          :parameters  => params.inspect,
                           :format      => request.format.to_s
                           }
     e.session            = session
@@ -58,8 +58,8 @@ class ExceptionLog < ActiveRecord::Base
     e.instance_name      = CBRAIN::Instance_Name rescue "(?)"
     e.revision_no        = $CBRAIN_StartTime_Revision
     e.save
-    
+
     e
   end
-  
+
 end

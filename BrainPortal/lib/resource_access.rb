@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Module containing common methods for the models representing
@@ -29,24 +29,24 @@
 module ResourceAccess
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
-  #Check that the the class this module is being included into is a valid one.
+
+  # Check that the the class this module is being included into is a valid one.
   def self.included(includer) #:nodoc:
     return unless includer.table_exists?
-    
+
     unless includer < ActiveRecord::Base
       raise "#{includer} is not an ActiveRecord model. The ResourceAccess module cannot be used with it."
     end
-    
+
     unless includer.column_names.include?("user_id") && includer.column_names.include?("group_id")
       raise "The ResourceAccess module requires 'user_id' and 'group_id' attributes to function. #{includer} does not contain them."
     end
-    
+
     includer.class_eval do
       extend ClassMethods
     end
   end
-  
+
   # Returns true if +user+ can access this resource.
   # The +access_requested+ params is not used right now (reserved for future extension).
   def can_be_accessed_by?(user, access_requested = :read)
@@ -55,8 +55,8 @@ module ResourceAccess
     user.is_member_of_group(group_id)
   end
 
-  #Returns whether or not +user+ has owner access to this
-  #resource.
+  # Returns whether or not +user+ has owner access to this
+  # resource.
   def has_owner_access?(user)
     if user.has_role? :admin_user
       return true
@@ -67,50 +67,50 @@ module ResourceAccess
     if user.id == self.user_id
       return true
     end
-  
+
     false
   end
 
   module ClassMethods
-    #Find resource identified by +id+ accessible by +user+.
+    # Find resource identified by +id+ accessible by +user+.
     #
-    #*Accessible* resources  are:
-    #[For *admin* users:] any resource on the system.
-    #[For regular users:] all resources that belong to a group to which the user belongs.
+    # *Accessible* resources  are:
+    # [For *admin* users:] any resource on the system.
+    # [For regular users:] all resources that belong to a group to which the user belongs.
     def find_accessible_by_user(id, user, options = {})
       scope = self.scoped(options)
-    
+
       unless user.has_role? :admin_user
         scope = scope.scoped(:joins  => :user, :readonly  => false)
-      
+
         if user.has_role? :site_manager
           scope = scope.scoped(:conditions  => ["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?)) OR (users.site_id = ?)", user.id, user.group_ids, user.site_id])
         else
           scope = scope.scoped(:conditions  => ["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?))", user.id, user.group_ids])
         end
       end
-    
+
       scope.find(id)
     end
-  
-    #Find all resources accessible by +user+.
+
+    # Find all resources accessible by +user+.
     #
-    #*Accessible* resources  are:
-    #[For *admin* users:] any resource on the system.
-    #[For regular users:] all resources that belong to a group to which the user belongs.
+    # *Accessible* resources  are:
+    # [For *admin* users:] any resource on the system.
+    # [For regular users:] all resources that belong to a group to which the user belongs.
     def find_all_accessible_by_user(user, options = {})
       scope = self.scoped(options)
-    
+
       unless user.has_role? :admin_user
         scope = scope.scoped(:joins  => :user, :readonly  => false)
-      
+
         if user.has_role? :site_manager
           scope = scope.scoped(:conditions  => ["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?)) OR (users.site_id = ?)", user.id, user.group_ids, user.site_id])
         else
           scope = scope.scoped(:conditions  => ["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?))", user.id, user.group_ids])
         end
       end
-    
+
       scope
     end
   end

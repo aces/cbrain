@@ -32,31 +32,38 @@ class S3DataProvider < DataProvider
 
   attr_accessor :s3_connection
 
-  def init_connection #:nodoc:
+  # Connects to the S3 service using :cloud_storage_client_identifier and :cloud_storage_client_token;
+  # the connection is maintained in a instance variable!
+  def init_connection
     @s3_connection = S3Connection.new(self.cloud_storage_client_identifier, self.cloud_storage_client_token)
   end
 
-  def bucket_name #:nodoc:
+  # Hardcoded bucket name is "gbrain_{self.name}"
+  def bucket_name
     "gbrain_#{self.name}"
   end
 
-  def s3_filename(userfile,newname=nil) #:nodoc:
+  # Mapping between a userfile's name and the name
+  # of the S3 file
+  def s3_filename(userfile,newname=nil)
     namekey = newname.presence || userfile.name
     ext = userfile.is_a?(FileCollection) ? ".TGZ" : ""
     "#{userfile.id}_#{namekey}#{ext}"
   end
 
-
-  def provider_full_path(userfile) #:nodoc:
+  # Informational: "bucket/s3_filename"
+  def provider_full_path(userfile)
     "#{bucket_name}/#{s3_filename(userfile)}"
   end
 
-  def filename_from_s3_filename(s3_filename) #:nodoc:
+  # Mapping between S3 filename and CBRAIN's userfile ID and filename.
+  def filename_from_s3_filename(s3_filename)
     userfile_id,filename=s3_filename.split('_', 2)
     return [ userfile_id,filename ]
   end
 
-  def create_base_bucket #:nodoc:
+  # Create the bucket on S3
+  def create_base_bucket
     init_connection
     @s3_connection.create_bucket(bucket_name)
   end
@@ -100,7 +107,9 @@ class S3DataProvider < DataProvider
     dest_fh.close rescue true
   end
 
-  def impl_sync_to_provider(userfile) #:nodoc:
+  # Note: storing FileCollections on S3 is very innefficient:
+  # we .tar.gz the entire collection and save it as a single S3 file... :-(
+  def impl_sync_to_provider(userfile)
     init_connection  # s3 connection
     create_base_bucket unless @s3_connection.bucket_exists?(bucket_name)
 

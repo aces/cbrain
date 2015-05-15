@@ -17,30 +17,30 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Basic view helpers. Mainly text manipulation and icons.
 module BasicHelper
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
-  #Sets the text to be displayed in the title bar when a given view is rendered.
+
+  # Sets the text to be displayed in the title bar when a given view is rendered.
   def title(page_title)
     content_for(:title)  { ' - ' + page_title }
   end
-  
-  #Replacement for old rails helper.
+
+  # Replacement for old rails helper.
   def error_messages_for(object, options = {})
     return "" unless object.present?
     options[:object] = object
     render :partial => "shared/error_messages", :locals => options
   end
-  
+
   # Add a tooltip to a block of html
   def add_tool_tip(message, element='span', &block)
     content = capture(&block)
-    
+
     if message.blank?
       safe_concat(content)
       return
@@ -49,7 +49,7 @@ module BasicHelper
     safe_concat(content)
     safe_concat("</#{element}>")
   end
- 
+
   # Return +content+ only if condition evaluates to true.
   def string_if(condition, content)
     if condition
@@ -58,11 +58,11 @@ module BasicHelper
       ""
     end
   end
-  
-  # Sets which of the menu tabs at the top of the page is 
+
+  # Sets which of the menu tabs at the top of the page is
   # selected.
   def set_selected(param_controller, current_item)
-    if(current_item == :user_site_show && 
+    if(current_item == :user_site_show &&
       params[:controller].to_s == 'sites' &&
       params[:action].to_s == 'show' &&
       params[:id].to_s == current_user.site_id.to_s)
@@ -74,7 +74,7 @@ module BasicHelper
     end
   end
 
-  #Reduces a string to the length specified by +length+.
+  # Reduces a string to the length specified by +length+.
   def crop_text_to(length, string)
     return ""     if string.blank?
     return h(string) if string.length <= length
@@ -91,6 +91,6 @@ module BasicHelper
   def archived_icon(color="purple")
     "<span style=\"color:#{color}\" class=\"bold_icon\">A</span>".html_safe
   end
-  
+
 end
 

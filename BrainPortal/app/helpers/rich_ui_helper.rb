@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#Helper for dynamic, non-ajax interface elements.
+# Helper for dynamic, non-ajax interface elements.
 module RichUiHelper
 
   Revision_info=CbrainFileRevision[__FILE__]
@@ -67,20 +67,19 @@ module RichUiHelper
     return html.join.html_safe
   end
 
-  #Create tab bars in the interface.
-  #Content is provided with a block.
-  #[options] A hash of html options for the tab bar structure.
-  #Usage:
-  # <% build_tabs do |tb| %>
-  #   <% tb.tab "First Tab" do %>
-  #      <h1>First tab contents</h1>
-  #      More contents.
-  #   <% end %>
-  #   <% tb.tab "Second Tab" do %>
-  #      Wow! Even more contents!
-  #   <% end %>
-  # <% end %>
-  #
+  # Create tab bars in the interface.
+  # Content is provided with a block.
+  # [options] A hash of html options for the tab bar structure.
+  # Usage:
+  #  <% build_tabs do |tb| %>
+  #    <% tb.tab "First Tab" do %>
+  #       <h1>First tab contents</h1>
+  #       More contents.
+  #    <% end %>
+  #    <% tb.tab "Second Tab" do %>
+  #       Wow! Even more contents!
+  #    <% end %>
+  #  <% end %>
   #
   def build_tabs(options = {}, &block)
     bar = TabBuilder.new
@@ -106,12 +105,12 @@ module RichUiHelper
   #############################################################
   class TabBuilder
 
-    def initialize
+    def initialize #:nodoc:
       @tab_titles = ""
       @tab_divs   = ""
     end
 
-    def tab_titles
+    def tab_titles #:nodoc:
       ("<ul>\n" + @tab_titles + "\n</ul>\n").html_safe
     end
 
@@ -119,17 +118,17 @@ module RichUiHelper
 
     attr_reader :tab_divs
 
-    #This creates an individual tab, it either takes a block and/or a partial as an option (:partial => "partial")
+    # This creates an individual tab, it either takes a block and/or a partial as an option (:partial => "partial")
     def tab(name, &block)
       capture = eval("method(:capture)", block.binding)
       @tab_titles += "<li><a href='##{name.gsub(/\s+/,'_')}'>#{name}</a></li>"
 
 
-      #########################################
-      #tab content div.                       #
-      #                                       #
-      #This can be either a partial or a block#
-      #########################################
+      ###########################################
+      # tab content div.                        #
+      #                                         #
+      # This can be either a partial or a block #
+      ###########################################
       @tab_divs += "<div id=#{name.gsub(/\s+/,'_')}>\n"
       @tab_divs += capture.call(&block)
       @tab_divs += "</div>\n"
@@ -138,20 +137,19 @@ module RichUiHelper
   end
 
 
-  #Create accordion menus in the interface.
-  #Content is provided with a block.
-  #[options] A hash of html options for the accordion structure.
-  #Usage:
-  # <% build_accordion do |acc| %>
-  #   <% acc.section "Section Header" do %>
-  #      <h1>First section contents</h1>
-  #      More contents.
-  #   <% end %>
-  #   <% acc.section "Section Two" do %>
-  #      Wow! Even more contents!
-  #   <% end %>
-  # <% end %>
-  #
+  # Create accordion menus in the interface.
+  # Content is provided with a block.
+  # [options] A hash of html options for the accordion structure.
+  # Usage:
+  #  <% build_accordion do |acc| %>
+  #    <% acc.section "Section Header" do %>
+  #       <h1>First section contents</h1>
+  #       More contents.
+  #    <% end %>
+  #    <% acc.section "Section Two" do %>
+  #       Wow! Even more contents!
+  #    <% end %>
+  #  <% end %>
   #
   def build_accordion(options = {}, &block)
     options[:class] ||= ""
@@ -184,9 +182,9 @@ module RichUiHelper
     end
   end
 
-  #Create a tooltip that displays html when mouseovered.
-  #Text of the icon is provided as an argument.
-  #Html to be displayed on mouseover is given as a block.
+  # Create a tooltip that displays html when mouseovered.
+  # Text of the icon is provided as an argument.
+  # Html to be displayed on mouseover is given as a block.
   def html_tool_tip(text = "<span class=\"action_link\">?</span>".html_safe, options = {}, &block)
     @html_tool_tip_id ||= 0
     @html_tool_tip_id += 1
@@ -224,17 +222,17 @@ module RichUiHelper
     result.html_safe
   end
 
-  #Create an overlay dialog box with a link as the button.
-  #Content is provided through a block.
-  #Options:
-  # [width] width in pixels of the overlay.
+  # Create an overlay dialog box with a link as the button.
+  # Content is provided through a block.
+  # Options:
+  #  [width] width in pixels of the overlay.
   #
-  #All other options will be treated at HTML attributes.
+  # All other options will be treated at HTML attributes.
   #
-  #Usage:
-  # <% overlay_content "Click me" do %>
-  #   This content will be in the overlay
-  # <% end %>
+  # Usage:
+  #  <% overlay_content "Click me" do %>
+  #    This content will be in the overlay
+  #  <% end %>
   #
   def overlay_content_link(name, options = {}, &block)
     options_setup("overlay_content_link", options)
@@ -256,14 +254,14 @@ module RichUiHelper
     html.html_safe
   end
 
-  #Create a button with a drop down menu
+  # Create a button with a drop down menu
   #
-  #Options:
-  #[:partial] a partial to render as the content of the menu.
-  #[:content_id] id of the menu section of the structure.
-  #[:button_id] id of the button itself.
-  #All other options are treated as HTML attributes on the
-  #enclosing span.
+  # Options:
+  # [:partial] a partial to render as the content of the menu.
+  # [:content_id] id of the menu section of the structure.
+  # [:button_id] id of the button itself.
+  # All other options are treated as HTML attributes on the
+  # enclosing span.
   def button_with_dropdown_menu(title, options={}, &block)
     partial    = options.delete :partial
     content_id = options.delete :content_id
@@ -297,8 +295,8 @@ module RichUiHelper
     ""
   end
 
-  #Create an element that will toggle between hiding and showing another element.
-  #The appearance/disappearance can also be animated.
+  # Create an element that will toggle between hiding and showing another element.
+  # The appearance/disappearance can also be animated.
   def show_hide_toggle(text, target, options = {})
     element_type = options.delete(:element_type) || "a"
     if element_type.downcase == "a"
@@ -326,8 +324,8 @@ module RichUiHelper
   end
 
 
-  #Create an checkbox that will toggle between hiding and showing another element.
-  #The appearance/disappearance can also be animated.
+  # Create an checkbox that will toggle between hiding and showing another element.
+  # The appearance/disappearance can also be animated.
   def show_hide_checkbox(target, options = {})
     options["data-target"] = target
 
