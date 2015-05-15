@@ -42,7 +42,7 @@ purposes:
 <h4>Input Files:</h4>
 <p>
 
-This is an aribitrary list of one or more files that
+This is an arbitrary list of one or more files that
 were selected by the user; this task will simply synchronize them, and either
 run the UNIX <em>du</em> command when the files are directories, or <em>wc</em>
 if they are simple files. This will test that the Bourreau server is actually
@@ -54,7 +54,7 @@ capable of running a bash script as a job on the local cluster.
 <h4>Do not actually submit job script on cluster:</h4>
 <p>
 
-When set, no job will be sumitted on the cluster; the rest of the task's life cycle
+When set, no job will be submitted on the cluster; the rest of the task's life cycle
 will be performed normally, however (<em>Setup</em> and <em>Post Processing</em> for instance).
 
 
@@ -80,7 +80,7 @@ stages represented in this table:
 <p>
 
 In each case, it is possible to force the task to wait for a certain
-number of seconds, and then to <em>crash</em>. I the case of Ruby
+number of seconds, and then to <em>crash</em>. In the case of Ruby
 code, crashing will mean explicitely raising a Ruby exception. In
 the case of on <strong>Cluster</strong>, it means the post_process()
 method will pretend that the bash script has not performed succesfully
@@ -98,7 +98,7 @@ to make them wait a certain number of seconds too.
 <h4>Crashes will reset to false after they are first triggered</h4>
 <p>
 
-It's possible to make the synthetic crashes configured in the previosu table
+It's possible to make the synthetic crashes configured in the previous table
 happen only once. This can test a scenario where an error occurs, then
 recovery is attempted and then everything returns to normal.
 
@@ -166,8 +166,9 @@ the diagnostics task.
 <h3>See also</h3>
 
 This task is maintained by the CBRAIN development team. See
-the Wiki for the platform for more information about the
-CbrainTask life cycles and other programming concepts.
+the <A HREF="https://github.com/aces/cbrain/wiki">Wiki</A>
+for the platform for more information about the CbrainTask life
+cycles and other programming concepts.
 
 <p>
 

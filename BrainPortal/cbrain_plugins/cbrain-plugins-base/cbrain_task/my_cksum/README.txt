@@ -1,5 +1,5 @@
 
-This 'task' was created by reproducing exatcly all the steps
+This 'task' was created by reproducing exactly all the steps
 of the New Task Tutorial, as available on the CBRAIN Wiki,
 at this address: https://github.com/aces/cbrain/wiki/New-Task-Tutorial
 
