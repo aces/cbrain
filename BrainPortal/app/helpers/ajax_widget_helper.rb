@@ -44,31 +44,6 @@ module AjaxWidgetHelper
     html.html_safe
   end
 
-  # Create an inline edit field.
-  def inline_text_field(p_name, url, options = {}, &block)
-    name = p_name
-    initial_text = capture(&block)
-    initial_value = options.delete(:initial_value) || initial_text
-    field_label = options.delete(:label)
-    field_label += ":  " unless field_label.blank?
-    method = options.delete(:method) || "post"
-    method = method.to_s.downcase
-
-    options_setup("inline_text_field", options)
-    options["data-trigger"] = options.delete(:trigger) || ".current_text"
-
-    atts = options.to_html_attributes
-
-    safe_concat("<div #{atts}>")
-    safe_concat("<span class=\"current_text\">#{initial_text}</span>")
-    safe_concat(form_tag_html(:action  => url_for(url), :class  => "inline_text_form", :method => method))
-    safe_concat("#{field_label}")
-    safe_concat(text_field_tag(name, initial_value, :class => "inline_text_input"))
-    safe_concat("</form>")
-    safe_concat("</div>")
-    ""
-  end
-
   ###############################################################
   # Creates an html element which will have its content updated
   # with an ajax call to the url specified in the options hash
@@ -219,10 +194,11 @@ module AjaxWidgetHelper
 
     initial_content=capture(&block)+((render partial unless !partial) || "")
 
-    safe_concat("<#{element} data-url=\"#{url}\" #{atts}>")
-    safe_concat(initial_content)
-    safe_concat("</#{element}>")
-    ""
+    html = "<#{element} data-url=\"#{url}\" #{atts}>".html_safe +
+            initial_content +
+           "</#{element}>".html_safe
+
+    return html
   end
 
   # Creates a text field that will sends an ajax

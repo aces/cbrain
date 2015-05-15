@@ -137,44 +137,44 @@ module ShowTableHelper
       html << "<td #{cell_atts} #{shared_atts}>#{ERB::Util.html_escape(content.to_s)}</td>"
       @cells << [ html.join("\n").html_safe, show_width ]
     end
-  end # End of TableBuilder
+  end # class TableBuilder
 
-  # Shows the content of an attribute of an object
-  # and provides an arbitrary input field to edit it (captured)
   def inline_edit_field(object, attribute, options = {}, &block)
-    default_text = h(options.delete(:content) || object.send(attribute))
-    return default_text if options.delete(:disabled)
-    if object.errors.include?(attribute)
-      default_text = "<span class=\"show_table_error\">#{default_text}</span>"
-    end
-    html = []
-    html << "<span class=\"inline_edit_field_default_text\">"
-    html << default_text
-    html << "</span>"
-    html << "<span class=\"inline_edit_field_input\" style=\"display:none\">"
-    html << capture(&block)
-    html << "</span>"
-    html.join("\n").html_safe
-  end
+     default_text = h(options.delete(:content) || object.send(attribute))
+     return default_text if options.delete(:disabled)
+     if object.errors.include?(attribute)
+       default_text = "<span class=\"show_table_error\">#{default_text}</span>"
+     end
 
-  # Not used right now?
-  def inline_edit_form(object, attribute, url, options = {}, &block) #:nodoc:
-    default_text = h(options.delete(:content) || object.send(attribute))
-    return default_text if options.delete(:disabled)
-    method = options.delete(:method) || :put
-    if object.errors.include?(attribute)
-      default_text = "<span style=\"color:red\">#{default_text}</span>"
-    end
-    html = []
-    html << "<span class=\"inline_edit_form_default_text\">"
-    html << default_text
-    html <<    "<a href=\"#\" class=\"inline_edit_form_link action_link\">(edit)</a>"
-    html << "</span>"
-    html << "<span class=\"inline_edit_form\" style=\"display:none\">"
-    html << form_tag(url, :method => method, :style => "display:inline", &block)
-    html << "</span>"
-    html.join("\n").html_safe
-  end
+     html = <<-HTML.html_safe
+       <span class="inline_edit_field_default_text">
+       #{default_text}
+       </span>
+       <span class="inline_edit_field_input" style="display:none">
+     HTML
+     html += capture(&block) +
+             "</span>".html_safe
+     return html
+   end
+
+  def inline_edit_form(object, attribute, url, options = {}, &block)
+     default_text = h(options.delete(:content) || object.send(attribute))
+     return default_text if options.delete(:disabled)
+     method = options.delete(:method) || :put
+     if object.errors.include?(attribute)
+       default_text = "<span style=\"color:red\">#{default_text}</span>"
+     end
+     html = <<-HTML.html_safe
+       <span class="inline_edit_form_default_text">
+       #{default_text}
+       "<a href="#" class="inline_edit_form_link action_link">(edit)</a>
+       </span>"
+       <span class="inline_edit_form" style="display:none">
+     HTML
+     html += form_tag(url, :method => method, :style => "display:inline", &block)
+     html += "</span>".html_safe
+     return html
+   end
 
   def show_table(object, options = {})
     header = options.delete(:header) || "Info"
@@ -248,3 +248,4 @@ module ShowTableHelper
     html.join("\n").html_safe
   end
 end
+

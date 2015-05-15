@@ -240,22 +240,23 @@ class ToolConfig < ActiveRecord::Base
     self.bourreau_id.present? && self.tool_id.present?
   end
 
-  # This method calls compare_versions defined
-  # in cbrain_task.
-  # Returns true if version_name of the current tool_config
-  # is greater than version or false in other case
+  # This method calls any custom compare_versions() method defined
+  # in the CbrainTask subclass for the tool of the current tool_config.
+  # Returns true if the version_name of the current tool_config
+  # is 'greater than' +version+ (as far as compare_versions() thinks).
   def is_at_least_version(version)
      self.cbrain_task_class.compare_versions(self.version_name,version) >= 0
   end
 
-  # This method calls compare_versions defined in cbrain_task.
-  # Returns true if version_name of the current tool_config
-  # is equal to +version+.
+  # This method calls any custom compare_versions() method defined
+  # in the CbrainTask subclass for the tool of the current tool_config.
+  # Returns true if the version_name of the current tool_config
+  # is 'the same as' +version+ (as far as compare_versions() thinks).
   def is_version(version)
      self.cbrain_task_class.compare_versions(self.version_name,version) == 0
   end
 
-  # Returns the class of cbrain_task
+  # Return the Ruby class associated with the tool associated with this tool_config.
   def cbrain_task_class
     self.tool.cbrain_task_class.constantize
   end

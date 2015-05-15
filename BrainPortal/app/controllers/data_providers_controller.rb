@@ -300,7 +300,7 @@ class DataProvidersController < ApplicationController
       @fileinfolist = get_recent_provider_list_all(@provider, @as_user, params[:refresh])
     rescue => e
       flash[:error] = 'Cannot get list of files. Maybe the remote directory doesn\'t exist or is locked?' #emacs fails to parse this properly so I switched to single quotes.
-      Message.send_internal_error_message(User.find_by_login('admin'), "Browse DP exception, YAML=#{YAML.inspect}", e, params) rescue nil
+      Message.send_internal_error_message(User.find_by_login('admin'), "Browse DP exception", e, params) rescue nil
       respond_to do |format|
         format.html { redirect_to :action => :index }
         format.xml  { render :xml   => flash[:error], :status  => :unprocessable_entity}

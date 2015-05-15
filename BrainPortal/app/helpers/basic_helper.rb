@@ -37,19 +37,6 @@ module BasicHelper
     render :partial => "shared/error_messages", :locals => options
   end
 
-  # Add a tooltip to a block of html
-  def add_tool_tip(message, element='span', &block)
-    content = capture(&block)
-
-    if message.blank?
-      safe_concat(content)
-      return
-    end
-    safe_concat("<#{element} title='#{message}'>")
-    safe_concat(content)
-    safe_concat("</#{element}>")
-  end
-
   # Return +content+ only if condition evaluates to true.
   def string_if(condition, content)
     if condition
