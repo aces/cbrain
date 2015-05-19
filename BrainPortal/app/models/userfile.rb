@@ -88,8 +88,8 @@ class Userfile < ActiveRecord::Base
 
   cb_scope                :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
   cb_scope                :file_format, lambda { |f|
-                                       return where("1 = 0") unless Userfile.descendants.map(&:to_s).include? f
-                                       joins("LEFT JOIN userfiles AS userfiles_source ON userfiles.format_source_id = userfiles_source.id").where("userfiles.type = ? OR userfiles_source.type = ?", f)
+                                       return where("1 = 0") unless (f.constantize <= Userfile rescue false)
+                                       joins("LEFT JOIN userfiles AS userfiles_source ON userfiles.format_source_id = userfiles_source.id").where("userfiles.type = ? OR userfiles_source.type = ?", f, f)
                                      }
   cb_scope                :has_no_parent, :conditions => {:parent_id => nil}
   cb_scope                :has_no_child,  lambda { |ignored|
