@@ -240,12 +240,17 @@ class ToolConfig < ActiveRecord::Base
     self.bourreau_id.present? && self.tool_id.present?
   end
 
-  # This method calls any custom compare_versions() method defined
-  # in the CbrainTask subclass for the tool of the current tool_config.
-  # Returns true if the version_name of the current tool_config
-  # is 'greater than' +version+ (as far as compare_versions() thinks).
+  # These methods call compare_versions defined
+  # in cbrain_task, defaulting to this class' compare_versions
+  # if cbrain_task doesn't have one.
+  # Return true if version_name of the current tool_config
+  # is greater than version or false in other case
   def is_at_least_version(version)
-     self.cbrain_task_class.compare_versions(self.version_name,version) >= 0
+     if self.cbrain_task_class.respond_to? :compare_tool_config_versions
+       self.cbrain_task_class.compare_tool_config_versions(self.version_name,version) >= 0
+     else
+       self.class.compare_versions(self.version_name,version) >= 0
+     end
   end
 
   # This method calls any custom compare_versions() method defined
@@ -253,7 +258,27 @@ class ToolConfig < ActiveRecord::Base
   # Returns true if the version_name of the current tool_config
   # is 'the same as' +version+ (as far as compare_versions() thinks).
   def is_version(version)
-     self.cbrain_task_class.compare_versions(self.version_name,version) == 0
+     if self.cbrain_task_class.respond_to? :compare_tool_config_versions
+       self.cbrain_task_class.compare_tool_config_versions(self.version_name,version) == 0
+     else
+       self.class.compare_versions(self.version_name,version) == 0
+     end
+  end
+
+  # Compare two tool versions in X.X.X.X format
+  # Return -1 if v1 <  v2, for example if v1 = "1.0.2" and v2 = "1.1"
+  # Return  0 if v1 == v2, for example if v1 = "2.0.4" and v2 = "2.0.4.0"
+  # Return  1 if v1 >  v2, for example if v1 = "0.3"   and v2 = "0.2.4"
+  def self.compare_versions(v1, v2)
+     v1 = /\d+(\.\d+)*/.match(v1).to_s.split('.').map(&:to_i)
+     v2 = /\d+(\.\d+)*/.match(v2).to_s.split('.').map(&:to_i)
+     raise ArgumentError, "Could not extract version" if v1.blank? || v2.blank?
+
+     while (v1.size < v2.size) do v1.push(0) end
+     while (v2.size < v1.size) do v2.push(0) end
+
+     0.upto(v1.size - 1) { |i| return v1[i] <=> v2[i] unless v1[i] == v2[i] }
+     return 0
   end
 
   # Return the Ruby class associated with the tool associated with this tool_config.

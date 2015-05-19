@@ -258,7 +258,109 @@ namespace :cbrain do
 
 
 
+    ##########################################################################
+    desc "Remove leftover (orphan) tasks and userfiles from removed CBRAIN plugins"
+    ##########################################################################
+    task :orphans => :environment do
+
+      # We'll need all available userfile and task models
+      Rails.application.eager_load!
+
+      # Available userfile and task types
+      userfile_classes = Userfile.descendants.map(&:name)
+      task_classes     = CbrainTask.descendants.map(&:name)
+
+      raise "Error: cannot find any userfile subclasses?!?" if userfile_classes.blank?
+      raise "Error: cannot find any task subclasses?!?"     if task_classes.blank?
+
+      # NOTE: direct SQL is used here to avoid ActiveRecord throwing a SubclassNotFound exception on
+      # objects that would only wound up deleted.
+      puts "Removing orphan userfiles..."
+      deleted_userfiles = Userfile.connection.delete("
+        DELETE FROM userfiles
+        WHERE type NOT IN ('#{userfile_classes.join("','")}')
+      ") || 0
+
+      puts "Removing orphan tasks..."
+      deleted_tasks     = CbrainTask.connection.delete("
+        DELETE FROM cbrain_tasks
+        WHERE type NOT IN ('#{task_classes.join("','")}')
+      ") || 0
+
+      if deleted_userfiles == 0 && deleted_tasks == 0
+        puts "No orphans (userfile or task) found."
+      else
+        deleted = deleted_userfiles + deleted_tasks
+        puts "#{deleted} orphan(s) (#{deleted_userfiles} userfile(s) and #{deleted_tasks} task(s)) removed."
+      end
+
+    end
+
     end # namespace clean
+
+
+
+
+    #====================
+    namespace :check do
+    #====================
+
+
+
+    ##########################################################################
+    desc "Check for leftover (orphan) tasks or userfiles from removed CBRAIN plugins"
+    ##########################################################################
+    task :orphans => :environment do
+
+      # We'll need all available userfile and task models
+      Rails.application.eager_load!
+
+      # Available userfile and task types
+      userfile_classes = Userfile.descendants.map(&:name)
+      task_classes     = CbrainTask.descendants.map(&:name)
+
+      raise "Error: cannot find any userfile subclasses?!?" if userfile_classes.blank?
+      raise "Error: cannot find any task subclasses?!?"     if task_classes.blank?
+
+      # NOTE: direct SQL is used here to avoid ActiveRecord throwing a SubclassNotFound exception on
+      # every orphan.
+      puts "Checking for orphan userfiles..."
+      orphan_userfiles = Userfile.connection.execute("
+        SELECT id, type
+        FROM userfiles
+        WHERE type NOT IN ('#{userfile_classes.join("','")}')
+      ").to_a
+      unless orphan_userfiles.empty?
+        puts "#{orphan_userfiles.size} orphan userfile(s) found:"
+        orphan_userfiles.each do |orphan|
+          puts "-> id: #{orphan[0]}, type: #{orphan[1]}"
+        end
+      end
+
+      puts "Checking for orphan tasks..."
+      orphan_tasks = CbrainTask.connection.execute("
+        SELECT id, type
+        FROM cbrain_tasks
+        WHERE type NOT IN ('#{task_classes.join("','")}')
+      ").to_a
+      unless orphan_tasks.empty?
+        puts "#{orphan_tasks.size} orphan task(s) found:"
+        orphan_tasks.each do |orphan|
+          puts "-> id: #{orphan[0]}, type: #{orphan[1]}"
+        end
+      end
+
+      if orphan_userfiles.empty? && orphan_tasks.empty?
+        puts "No orphans (userfile or task) found."
+      else
+        puts "Please run 'rake cbrain:plugins:clean:orphans' to remove orphan tasks and userfiles."
+      end
+    end
+
+
+
+
+    end # namespace check
   end # namespace plugins
 end # namespace cbrain
 

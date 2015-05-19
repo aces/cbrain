@@ -200,10 +200,11 @@ module ResourceLinkHelper
       return "(Deleted/Non-existing)" if model_obj.blank?
     end
     model_name_method = options[:name_method] if options[:name_method]  # allows overriding
+    query_params      = options[:query_params] || {}
     name = options[:name] || model_obj.send(model_name_method)
     path = options[:path]
-    path ||= send("#{model_class.to_s.underscore}_path",model_obj.id)     rescue nil
-    path ||= send("#{model_obj.class.to_s.underscore}_path",model_obj.id) rescue nil
+    path ||= send("#{model_class.to_s.underscore}_path",model_obj.id,query_params)     rescue nil
+    path ||= send("#{model_obj.class.to_s.underscore}_path",model_obj.id,query_params) rescue nil
     if !path # other special cases
       path = task_path(model_obj.id)     if model_class <= CbrainTask
       path = bourreau_path(model_obj.id) if model_class <= BrainPortal

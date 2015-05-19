@@ -156,10 +156,7 @@
 
   <br>
 
-  <%=
-    file_link_table(@userfile, :joins => :data_provider, :conditions => {"data_providers.online" => true}, :access_requested  => :read,
-                               :html  => {:class  => "action_link"})
-  %>
+  <%= file_link_table(@previous_userfile, @next_userfile, @sort_index, :html  => {:class  => "action_link"}) %>
 
   <br>
 

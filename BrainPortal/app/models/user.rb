@@ -209,7 +209,7 @@ class User < ActiveRecord::Base
 
   # Create a random password (to be sent for resets).
   def set_random_password
-    s = random_string
+    s = self.class.random_string
     self.password = s
     self.password_confirmation = s
   end
@@ -398,10 +398,8 @@ class User < ActiveRecord::Base
     crypted_password.blank? || !password.blank?
   end
 
-  private
-
   # Create a random string (currently for passwords).
-  def random_string
+  def self.random_string
     length = rand(5) + 4
     s = ""
     length.times do
@@ -415,6 +413,8 @@ class User < ActiveRecord::Base
     s += ["!", "@", "#", "$", "%", "^", "&", "*"][rand(8)]
     s
   end
+
+  private
 
   def prevent_group_collision #:nodoc:
     if self.login && SystemGroup.find_by_name(self.login)

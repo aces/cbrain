@@ -98,8 +98,8 @@ class PortalController < ApplicationController
     remove_egrep << "^Started "       if params[:hide_started].presence    == "1"
     remove_egrep << "^ *Processing "  if params[:hide_processing].presence == "1"
     remove_egrep << "^ *Parameters: " if params[:hide_parameters].presence == "1"
-    remove_egrep << "^Rendered"       if params[:hide_rendered].presence   == "1"
-    remove_egrep << "^Redirected"     if params[:hide_redirected].presence == "1"
+    remove_egrep << "^ *Rendered"     if params[:hide_rendered].presence   == "1"
+    remove_egrep << "^ *Redirected"   if params[:hide_redirected].presence == "1"
     remove_egrep << "^User:"          if params[:hide_user].presence       == "1"
     remove_egrep << "^Completed"      if params[:hide_completed].presence  == "1"
     # Note that in production, 'SQL', 'CACHE', 'AREL' and 'LOAD' are never shown.
@@ -128,6 +128,7 @@ class PortalController < ApplicationController
 
     # Slurp it all
     log = IO.popen(command, "r") { |io| io.read }
+    log.gsub!(/^(Started)/, "\n\\1")
 
     @user_counts = Hash.new(0) # For select box.
 
@@ -142,24 +143,27 @@ class PortalController < ApplicationController
       found_ms   = 0
 
       (log.split("\n",num_lines+10) + [ "\n" ]).each do |line|
+        next unless line
+        next unless line =~ /^Started (\S+) "\/(\w*)/ || ! paragraph.empty?
+
+        found_meth, found_ctrl = Regexp.last_match[1,2] if Regexp.last_match
+        paragraph << '' if paragraph.empty?
         paragraph << line
-        if line == ""
+
+        if line =~ /^User: (\S+)/
+          found_user = Regexp.last_match[1]
+          @user_counts[found_user] += 1
+          if line =~ /on instance (\S+)/
+            found_inst = Regexp.last_match[1]
+          end
+        elsif line =~ /^Completed.*in (\d+(?:.\d+)?)ms/
+          found_ms = Regexp.last_match[1].to_i
           filtlogs += paragraph if (!user_name || found_user == user_name) &&
                                    (!inst_name || found_inst == inst_name) &&
                                    (!meth_name || found_meth == meth_name) &&
                                    (!ctrl_name || found_ctrl == ctrl_name) &&
                                    (!ms_min    || found_ms   >= ms_min)
           paragraph = []
-        elsif line =~ /^User: (\S+)/
-          found_user = Regexp.last_match[1]
-          @user_counts[found_user] += 1
-          if line =~ /on instance (\S+)/
-            found_inst = Regexp.last_match[1]
-          end
-        elsif line =~ /^Started (\S+) "\/(\w*)/
-          found_meth, found_ctrl = Regexp.last_match[1,2]
-        elsif line =~ /^Completed.*in (\d+)ms/
-          found_ms = Regexp.last_match[1].to_i
         end
       end
       log = filtlogs.join("\n")

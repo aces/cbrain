@@ -68,82 +68,27 @@ module UserfilesHelper
     html.join.html_safe
   end
 
-  # Returns HTML links for Previous or Next file
-  # present in +userfile+ show page.
-  def shift_file_link(userfile, dir, same_type, options = {})
-    if dir.to_s.downcase == "previous"
-      direction = "previous"
+  def neighbor_file_link(neighbor, index, dir, options = {})
+    return "" unless neighbor
+
+    if dir == :previous
+      text   = "<< " + neighbor.name
     else
-      direction = "next"
+      text   = neighbor.name + " >>"
     end
 
+    action       = params[:action] #Should be show or edit.
     link_options = options.delete(:html)
-    options[:conditions] ||= {}
 
-    if current_project && !(options[:conditions].has_key?(:group_id) || options[:conditions].has_key?("userfiles.group_id"))
-      options[:conditions]["userfiles.group_id"] = current_project.id
-    end
-
-    if same_type
-      options[:conditions]["userfiles.type"] = userfile.class.name
-      text = "#{direction.capitalize} #{userfile.class.name}"
-    else
-      text = "#{direction.capitalize} File"
-    end
-
-    if direction == "previous"
-      text = "<< " + text
-    else
-      text += " >>"
-    end
-
-    file = userfile.send("#{direction}_available_file", current_user, options)
-
-    action = params[:action] #Should be show or edit.
-
-
-    if file
-      link_to text, {:action  => action, :id  => file.id}, link_options
-    else
-      ""
-    end
+    link_to text, {:action  => action, :id  => neighbor.id, :sort_index => index}, link_options
   end
 
-  # Returns HTML for the Next link in
-  # +userfile+ show page
-  def next_file_link(userfile, options = {})
-    shift_file_link(userfile, :next, false, options)
-  end
-
-  # Returns HTML for the Previous link in
-  # +userfile+ show page
-  def previous_file_link(userfile, options = {})
-    shift_file_link(userfile, :previous, false, options)
-  end
-
-  # Returns HTML for the Next link by type in
-  # +userfile+ show  page
-  def next_typed_file_link(userfile, options = {})
-    shift_file_link(userfile, :next, true, options)
-  end
-
-  # Returns HTML for the Previous link by type in
-  # +userfile+ show page
-  def previous_typed_file_link(userfile, options = {})
-    shift_file_link(userfile, :previous, true, options)
-  end
-
-  # Returns HTML table that contains four links:
-  #   Previous File                Next File
-  #   Previous FileType            Netx FileType
-  def file_link_table(userfile, options = {})
+  def file_link_table(previous_userfile, next_userfile, sort_index, options = {})
     (
     "<div class=\"display_table\" style=\"width:100%\">" +
       "<div class=\"display_row\">" +
-        "<div class=\"display_cell\">#{previous_file_link(@userfile, options.clone)}</div><div class=\"display_cell\" style=\"text-align:right\">#{next_file_link(@userfile, options.clone)}</div>" +
-      "</div>" +
-      "<div class=\"display_row\">" +
-        "<div class=\"display_cell\">#{previous_typed_file_link(@userfile, options.clone)}</div><div class=\"display_cell\" style=\"text-align:right\">#{next_typed_file_link(@userfile, options.clone)}</div>" +
+        "<div class=\"display_cell\">#{neighbor_file_link(previous_userfile, [0, sort_index - 1].max, :previous, options.clone)}</div>" +
+        "<div class=\"display_cell\" style=\"text-align:right\">#{neighbor_file_link(next_userfile, sort_index + 1, :next, options.clone)}</div>" +
       "</div>" +
     "</div>"
     ).html_safe

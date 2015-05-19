@@ -473,14 +473,16 @@ class Userfile < ActiveRecord::Base
   # Sequential traversal methods.
   ##############################################
 
-  # Find the next file (by id) available to the given user.
-  def next_available_file(user, options = {})
-    Userfile.accessible_for_user(user, options).order('userfiles.id').where( ["userfiles.id > ?", self.id] ).first
+  # Find the next file available to the given user.
+  def next_available_file(user, options = {}, order = :id)
+    raise "Cannot order userfiles using attribute '#{order}'" unless self.has_attribute? order
+    Userfile.accessible_for_user(user, options).order(order).where( ["userfiles.#{order} > ?", self.send(order)] ).first
   end
 
-  # Find the previous file (by id) available to the given user.
-  def previous_available_file(user, options = {})
-    Userfile.accessible_for_user(user, options).order('userfiles.id').where( ["userfiles.id < ?", self.id] ).last
+  # Find the previous file available to the given user.
+  def previous_available_file(user, options = {}, order = :id)
+    raise "Cannot order userfiles using attribute '#{order}'" unless self.has_attribute? order
+    Userfile.accessible_for_user(user, options).order(order).where( ["userfiles.#{order} < ?", self.send(order)] ).last
   end
 
 

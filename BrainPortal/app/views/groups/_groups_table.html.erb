@@ -58,19 +58,13 @@
     %>
   <% end %>
   <div>
-    <%=
-      center_legend(nil, [
-                           ["<span style=\"color:blue;font-weight:bold\">&bull;</span>", "Personal Project"],
-                           ["<span style=\"color:green;font-weight:bold\">&bull;</span>", "Shared Project"],
-                           ["<span style=\"color:red;font-weight:bold\">&bull;</span>", "System Project"]
-                         ]
-                    )
-    %>
+    <%= group_legend(@groups) %>
   </div>
   <div>
+    <% css_small = "small" if @filter_params["small_buttons"] == 'on' %>
     <% @groups.each do |g| %>
       <% if g == "ALL" %>
-        <div style="color:black" data-href="<%= url_for(:action => :switch, :id => "all") %>" data-method="post" class="project_button">
+        <div style="color:black" data-href="<%= url_for(:action => :switch, :id => "all") %>" data-method="post" class="project_button <%= css_small %>">
           <h4 style="color:black">All</h4>
           <hr>
           Files: <%= @group_id_2_userfile_counts[nil] || "(None)" %><br>
@@ -78,13 +72,8 @@
         </div>
       <% else %>
         <%
-          if g.is_a?(SystemGroup)
-            css_project_type = "system"
-          elsif g.short_pretty_type == "Shared"
-            css_project_type = "shared"
-          else
-            css_project_type = "personal"
-          end
+          user_count = @group_id_2_user_counts[g.id].to_i
+          css_type   = css_group_type(g, user_count)
           desc_first = nil
           desc_rest  = nil
           if g.description.present?
@@ -93,12 +82,17 @@
             desc_rest  = desc_lines.join.presence
           end
          %>
-        <div data-href="<%= url_for(:action => :switch, :id => g.id) %>" data-method="post" class="project_button <%= css_project_type %>_project">
+        <div data-href="<%= url_for(:action => :switch, :id => g.id) %>" data-method="post" class="project_button <%= css_small %> <%= css_type %>_project">
           <h4><%= h crop_text_to(25, g.name) %></h4>
           <hr>
-          <% if css_project_type != "personal" %>
-            Users: <%= @group_id_2_user_counts[g.id].to_i %>&nbsp;&nbsp;
-          <% end %>
+          <span class="project_user_count">
+            <% if user_count > 1 %>
+              Users: <%= user_count %>
+            <% elsif css_type != "user" && user_count == 1 %>
+              <% # FIXME can be rather slow, as it forces a query for each group with just one user %>
+              User: <%= g.users.first.name %>
+            <% end %>
+          </span>&nbsp;&nbsp;
           Files: <%= @group_id_2_userfile_counts[g.id].to_i %>&nbsp;&nbsp;
           Tasks: <%= @group_id_2_task_counts[g.id].to_i %>
           <% if desc_first %>

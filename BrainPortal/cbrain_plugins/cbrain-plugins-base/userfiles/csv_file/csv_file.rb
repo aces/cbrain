@@ -40,9 +40,10 @@ class CSVFile < TextFile
   #A guesser for CSV file, try to define the quote character
   #and the seperator character
   def guess_csv_quote_sep
-    quote_char_list  = ["\"","'"]
+    quote_char_list  = ["\"","'","\x00"]
     col_sep_list     = [",",";",":","#","\t"," "]
     poss_combination = {}
+    invalid_encoding = false
 
     cache_path        = self.cache_full_path.to_s
     escape_cache_path = cache_path.bash_escape
@@ -77,7 +78,7 @@ class CSVFile < TextFile
             need_to_quit = false
             row.each do |field|
               # Two '' or ""
-              if field.index(double_qc)
+              if field && field.index(double_qc)
                 poss_combination.delete(combinaison_key)
                 need_to_quit = true
                 break
@@ -86,8 +87,15 @@ class CSVFile < TextFile
             break if need_to_quit
             poss_combination[combinaison_key] << row.size
           end
-        rescue
-          poss_combination.delete(combinaison_key)
+        rescue => exception
+          if exception.is_a?(ArgumentError) && exception.message =~ /invalid byte sequence in/
+            csv_content.encode!('UTF-16le', invalid: :replace, replace: '')
+            csv_content.encode!('UTF-8')
+            invalid_encoding = true
+            retry
+          else
+            poss_combination.delete(combinaison_key)
+          end
         end
       end
     end
@@ -111,7 +119,8 @@ class CSVFile < TextFile
       end
     end
 
-    solution = sorted_sols[0]
+    solution  = sorted_sols[0]
+    solution << invalid_encoding if solution
 
     return solution
   end
@@ -120,8 +129,10 @@ class CSVFile < TextFile
   def create_csv_array(quote,separator)
     cache_path = self.cache_full_path
     file       = File.read(cache_path)
-    array_of_array = CSV.parse(file, :quote_char => quote, :col_sep => separator, :row_sep =>:auto)
-    return array_of_array
+    file.encode!('UTF-16le', invalid: :replace, replace: '')
+    file.encode!('UTF-8')
+
+    return CSV.parse(file, :quote_char => quote, :col_sep => separator, :row_sep => :auto)
   end
 
 end
