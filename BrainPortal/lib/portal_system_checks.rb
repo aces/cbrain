@@ -130,11 +130,8 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
     puts "C> Starting automatic Agent Locker in background..."
     #----------------------------------------------------------------------------
 
-    allworkers = WorkerPool.find_pool(PortalAgentLocker)
-
-    allworkers.each do |worker|
-      puts "C> \t- Found locker already running: '#{worker.pretty_name}'."
-    end
+    worker = WorkerPool.find_pool(PortalAgentLocker).workers.first
+    return puts "C> \t- Found locker already running: '#{worker.pretty_name}'." if worker
 
     begin
       Kernel.open("#{Rails.root}/tmp/AgentLocker.lock", File::WRONLY|File::CREAT|File::EXCL).close
@@ -143,25 +140,22 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
       return
     end
 
-    if allworkers.size == 0
-      puts "C> \t- No locker processes found. Creating one."
+    puts "C> \t- No locker processes found. Creating one."
 
-      al_logger = Log4r::Logger.new('AgentLocker')
-      al_logger.add(Log4r::RollingFileOutputter.new('agent_locker_outputter',
-                      :filename  => "#{Rails.root}/log/AgentLocker..log",
-                      :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
-                      :maxsize   => 1000000, :trunc => 600000))
-      al_logger.level = Log4r::INFO # Log4r::INFO or Log4r::DEBUG or other levels...
-      al_logger.level = Log4r::DEBUG if ENV['CBRAIN_DEBUG_TRACES'].present?
+    al_logger = Log4r::Logger.new('AgentLocker')
+    al_logger.add(Log4r::RollingFileOutputter.new('agent_locker_outputter',
+                    :filename  => "#{Rails.root}/log/AgentLocker..log",
+                    :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
+                    :maxsize   => 1000000, :trunc => 600000))
+    al_logger.level = Log4r::INFO # Log4r::INFO or Log4r::DEBUG or other levels...
+    al_logger.level = Log4r::DEBUG if ENV['CBRAIN_DEBUG_TRACES'].present?
 
-      WorkerPool.create_or_find_pool(PortalAgentLocker, 1,
-        { :check_interval => 60,
-          :worker_log     => al_logger,
-          :name           => 'AgentLocker',
-        }
-      )
-    end
-
+    WorkerPool.create_or_find_pool(PortalAgentLocker, 1,
+      { :check_interval => 60,
+        :worker_log     => al_logger,
+        :name           => 'AgentLocker',
+      }
+    )
   end
 
 end

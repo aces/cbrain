@@ -1025,7 +1025,6 @@ pre {
   right: 5px;
 }
 
-/* Gradients done using: http://www.colorzilla.com/gradient-editor/ */
 .system_project_point     { color:      #c51700; }
 .system_project           { background: #c51700; }
 .system_project:active    { background: #c51700; }
