@@ -34,6 +34,9 @@ CbrainRailsPortal::Application.routes.draw do
   # Control channel
   resources :controls,       :controller => :controls
 
+  # Documentation
+  resources :docs,           :controller => :help_documents
+
   # Standard CRUD resources
   resources :sites
   resources :custom_filters
