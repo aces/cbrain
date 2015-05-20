@@ -1,5 +1,11 @@
 ## CBRAIN Release Notes
 
+#### Version 4.0.1 Released 2015-05-19
+
+This release contains several bug fixes and tidying of loose ends
+from the 4.0.0 public release. Most of the fixes are descrived
+under the milestone "Post Public Release" in the GitHub issue tracker.
+
 #### Version 4.0.0 Released 2015-03-27
 
 This is the first publicly released version of the CBRAIN platform.
