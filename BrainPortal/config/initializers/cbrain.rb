@@ -235,43 +235,23 @@ class CBRAIN
       @_rr_name   ||= RemoteResource.current_resource.name rescue "UnknownServer"
       admin         = User.admin
       passphrase    = admin.meta[:global_ssh_agent_lock_passphrase] ||= admin.send(:random_string)
-      passphrase_md = admin.meta.md_for_key(:global_ssh_agent_lock_passphrase)
 
-      passphrase_md.touch      # this tells the SshAgentLocker process to NOT lock for at least 30 secs
-      agent.unlock(passphrase) # unlock the SshAgent; it will be relocked by the SshAgentLocker background process started on the Portal side.
-
-      # Log info about what unlocked the agent, if traces are turned on.
-      if ENV['CBRAIN_DEBUG_TRACES'].present?
-
-        # Prepare info line about the unlocking event
-        pretty_context = ""
-        mytraces = caller.reject { |l| (l !~ /\/(BrainPortal|Bourreau)\//) || (l =~ /block in/) }
-        mytrace  = mytraces[options[:caller_level] || 0]
-        if mytrace.blank? # two alternative logging messages possible in this IF statement
-          mytrace = caller[0] 
-          #pretty_context = sprintf("%s : Unlocking happened outside of CBRAIN codebase.",@_rr_name)
-        end
-        if pretty_context.blank? && mytrace.present? && mytrace =~ /\/([^\/]+):(\d+):in \`(\S+)\'/
-          basename,linenum,method = Regexp.last_match[1,3]
-          pretty_context = sprintf("%s : %s() in file %s at line %d",@_rr_name, method, basename, linenum)
-        end
-
-        # We have an info line, send it out
-        if pretty_context.present?
-          puts_red "Unlocking agent: #{pretty_context}"
-          @_log_md ||= admin.meta.md_for_key(:ssh_agent_unlock_history) # find record only once
-          if @_log_md.blank?
-            admin.meta[:ssh_agent_unlock_history] ||= "" # done only once, to trigger creation of record
-            @_log_md = admin.meta.md_for_key(:ssh_agent_unlock_history)
-          end
-          MetaDataStore.transaction do
-            @_log_md.lock!
-            @_log_md.meta_value += "#{pretty_context}\n"
-            @_log_md.save
-          end
-        end
-
+      # Prepare info line about the unlocking event
+      pretty_context = ""
+      mytraces = caller.reject { |l| (l !~ /\/(BrainPortal|Bourreau)\//) || (l =~ /block in/) }
+      mytrace  = mytraces[options[:caller_level] || 0]
+      if mytrace.blank? # two alternative logging messages possible in this IF statement
+        mytrace = mytraces[0].presence || caller[0]
+        #pretty_context = sprintf("%s : Unlocking happened outside of CBRAIN codebase.",@_rr_name)
       end
+      if pretty_context.blank? && mytrace.present? && mytrace =~ /([^\/]+):(\d+):in \`(\S+)\'/
+        basename,linenum,method = Regexp.last_match[1,3] # means 1, 2 and 3
+        pretty_context = sprintf("%s : %s() in file %s at line %d",@_rr_name, method, basename, linenum)
+      end
+      pretty_context = sprintf("%s : No known location",@_rr_name) if pretty_context.blank?
+
+      SshAgentUnlockingEvent.create(:message => pretty_context)  # new record with message and timestamp
+      agent.unlock(passphrase) # unlock the SshAgent; it will be relocked by the SshAgentLocker background process started on the Portal side.
 
     end
 

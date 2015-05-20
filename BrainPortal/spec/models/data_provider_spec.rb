@@ -20,11 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe DataProvider do
 
-  let(:provider)        { Factory.create(:data_provider, :online => true, :read_only => false) }
+  let(:provider)        { create(:data_provider, :online => true, :read_only => false) }
   let(:userfile)        { mock_model(Userfile, :name => "userfile_mock", :user_id => 1).as_null_object }
   let(:singlefile)      { mock_model(SingleFile, :name => "singlefile_mock", :user_id => 1).as_null_object }
   let(:filecollection)  { mock_model(FileCollection, :name => "filecollection_mock", :user_id => 1).as_null_object }
@@ -476,7 +476,7 @@ describe DataProvider do
       expect{provider.cache_collection_index(userfile)}.to raise_error(CbrainError, "Error: userfile #{userfile.name} with ID #{userfile.id} is not cached.")
     end
     context "producing a list of files" do
-      let(:file_collection) {Factory.build(:file_collection)}
+      let(:file_collection) {build(:file_collection)}
       let(:file_entry) {double("file_entry", :name => "file", :ftype => :file).as_null_object}
 
       before(:each) do
@@ -552,7 +552,7 @@ describe DataProvider do
       expect(provider.provider_rename(userfile, "&*!@^#%*")).to be_falsey
     end
     it "should return false if the name is already used by another userfile" do
-      conflict_file = Factory.create(:userfile, :name => "abc", :data_provider => provider)
+      conflict_file = create(:userfile, :name => "abc", :data_provider => provider)
       allow(userfile).to receive(:user_id).and_return(conflict_file.user_id)
       expect(provider.provider_rename(userfile, "abc")).to be_falsey
     end
@@ -583,7 +583,7 @@ describe DataProvider do
   end
 
   describe "#provider_move_to_otherprovider" do
-    let(:other_provider) { Factory.create(:data_provider, :online => true, :read_only => false) }
+    let(:other_provider) { create(:data_provider, :online => true, :read_only => false) }
     before(:each) do
       allow(userfile).to receive(:transaction).and_yield
       allow(userfile).to receive(:immutable?).and_return(false)
@@ -670,7 +670,7 @@ describe DataProvider do
   end
 
   describe "#provider_copy_to_otherprovider" do
-    let(:other_provider) { Factory.create(:data_provider, :online => true, :read_only => false) }
+    let(:other_provider) { create(:data_provider, :online => true, :read_only => false) }
     before(:each) do
       allow(userfile).to receive(:transaction).and_yield
     end
@@ -782,11 +782,11 @@ describe DataProvider do
 
   describe "#validate_destroy" do
     it "should prevent desctruction if associated userfiles still exist" do
-      destroyed_provider = Factory.create(:data_provider, :userfiles => [Factory.create(:userfile)])
+      destroyed_provider = create(:data_provider, :userfiles => [create(:userfile)])
       expect{ destroyed_provider.destroy }.to raise_error(ActiveRecord::DeleteRestrictionError)
     end
     it "should allow desctruction if no associated userfiles still exist" do
-      destroyed_provider = Factory.create(:data_provider)
+      destroyed_provider = create(:data_provider)
       expect { destroyed_provider.destroy }.to change{ DataProvider.count }.by(-1)
     end
   end

@@ -16,7 +16,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Rails console initialization code.
@@ -48,10 +48,12 @@ IRB.conf[:PROMPT_MODE] = :CUSTOM
 # Bourreau.console(id_or_name_or_regex) # finds a bourreau and connects
 Bourreau.nil? # does nothing but loads the class
 class Bourreau
-  def console
+
+  def console #:nodoc:
     start_remote_console
   end
-  def self.console(id)
+
+  def self.console(id) #:nodoc:
     b   = self.find(id)         rescue nil
     b ||= self.find_by_name(id) rescue nil
     b ||= self.all.detect { |x| x.name =~ id } if id.is_a?(Regexp)
@@ -257,11 +259,11 @@ end
 # Current User / Current Project Utility Methods
 #####################################################
 
-def current_user
+def current_user #:nodoc:
   $_current_user
 end
 
-def current_project
+def current_project #:nodoc:
   $_current_project
 end
 

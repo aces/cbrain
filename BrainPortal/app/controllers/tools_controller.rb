@@ -44,7 +44,7 @@ class ToolsController < ApplicationController
     end
   end
 
-   def tool_config_select #:nodoc:
+  def tool_config_select #:nodoc:
     if params[:tool_id].blank?
       render :text  => ""
       return
@@ -54,10 +54,10 @@ class ToolsController < ApplicationController
     @tool            = current_user.available_tools.find(tool_id)
 
     # All accessible bourreaux for this tool
-    bourreau_ids  = @tool.bourreaux.map &:id
+    bourreau_ids  = @tool.bourreaux.map(&:id)
     @bourreaux    = Bourreau.find_all_accessible_by_user(current_user).where( :id => bourreau_ids)
     # All accessible tc for this tool on accessible bourreaux
-    bourreaux_ids = @bourreaux.map &:id
+    bourreaux_ids = @bourreaux.map(&:id)
     @tool_configs = ToolConfig.find_all_accessible_by_user(current_user).where(:tool_id => tool_id, :bourreau_id => bourreau_ids)
     # Reduce list of bourreaux, bourreaux need at least one config available
     bourreaux_ids = @tool_configs.map(&:bourreau_id)
@@ -73,8 +73,8 @@ class ToolsController < ApplicationController
       format.xml  { render :xml     => @tool_configs }
     end
 
-  rescue => ex
-    #render :text  => "#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
+  rescue
+    # render :text  => "#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
     render :text  => '<strong style="color:red">No Execution Servers Available</strong>'
   end
 
@@ -137,7 +137,7 @@ class ToolsController < ApplicationController
 
 
   # DELETE /tools/1
-    # DELETE /tools/1.xml
+  # DELETE /tools/1.xml
   def destroy #:nodoc:
       @tool = current_user.available_tools.find(params[:id])
       @tool.destroy

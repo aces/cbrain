@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 def mock_upload_file_param(name = "dummy_file")
   file_name = "cbrain_test_file_#{name}"
@@ -31,16 +31,16 @@ def mock_upload_file_param(name = "dummy_file")
 end
 
 RSpec.describe UserfilesController, :type => :controller do
-  let(:admin)                 {Factory.create(:admin_user, :login => "admin_user" )}
-  let(:site_manager)          {Factory.create(:site_manager)}
-  let(:user)                  {Factory.create(:normal_user, :site => site_manager.site)}
-  let(:admin_userfile)        {Factory.create(:single_file, :user => admin)}
-  let(:site_manager_userfile) {Factory.create(:single_file, :user => site_manager)}
-  let(:user_userfile)         {Factory.create(:single_file, :user => user)}
-  let(:child_userfile)        {Factory.create(:single_file, :user => admin, :parent_id => admin_userfile.id)}
-  let(:group_userfile)        {Factory.create(:single_file, :group_id => user.group_ids.last, :data_provider => data_provider)}
-  let(:mock_userfile)         {mock_model(TextFile, :id => 1).as_null_object}
-  let(:data_provider)         {Factory.create(:data_provider, :user => user, :online => true, :read_only => false)}
+  let(:admin)                 { create(:admin_user, :login => "admin_user" ) }
+  let(:site_manager)          { create(:site_manager) }
+  let(:user)                  { create(:normal_user, :site => site_manager.site) }
+  let(:admin_userfile)        { create(:single_file, :user => admin) }
+  let(:site_manager_userfile) { create(:single_file, :user => site_manager) }
+  let(:user_userfile)         { create(:single_file, :user => user) }
+  let(:child_userfile)        { create(:single_file, :user => admin, :parent_id => admin_userfile.id) }
+  let(:group_userfile)        { create(:single_file, :group_id => user.group_ids.last, :data_provider => data_provider) }
+  let(:mock_userfile)         { mock_model(TextFile, :id => 1).as_null_object }
+  let(:data_provider)         { create(:data_provider, :user => user, :online => true, :read_only => false) }
 
   after(:all) do
     FileUtils.rm(Dir.glob("spec/fixtures/cbrain_test_file_*"))
@@ -69,7 +69,7 @@ RSpec.describe UserfilesController, :type => :controller do
         end
 
         it "should not tree sort if tree sort not set" do
-          expect(Userfile).not_to receive(:tree_sort)
+          expect(controller).not_to receive(:tree_sort_by_pairs)
           get :index, "userfiles" => { "tree_sort" => "off" }
         end
 
@@ -87,13 +87,13 @@ RSpec.describe UserfilesController, :type => :controller do
           end
 
           it "should filter by type" do
-            file_collection = Factory.create(:file_collection)
+            file_collection = create(:file_collection)
             get :index, "userfiles" => { "filter_hash" => {"type" => "FileCollection"} }
             expect(assigns[:userfiles].to_a).to match_array([file_collection])
           end
 
           it "should filter by tag" do
-            tag = Factory.create(:tag, :userfiles => [admin_userfile], :user => admin)
+            tag = create(:tag, :userfiles => [admin_userfile], :user => admin)
             get :index, "userfiles" => { "filter_tags_array" => tag.id.to_s }
             expect(assigns[:userfiles].to_a).to match_array([admin_userfile])
           end
@@ -213,15 +213,15 @@ RSpec.describe UserfilesController, :type => :controller do
         session[:user_id] = admin.id
       end
 
-      it "should render error message of no files are selected" do
+      it "should render error message if no files are selected" do
         get :new_parent_child
-        expect(response).to include_text(/warning/)
+        expect(response.body).to match(/warning/)
       end
 
-      it "should render the parent-child selection template" do
-        get :new_parent_child, "file_ids" => [admin_userfile.id.to_s, user_userfile.id.to_s]
-        expect(response).to render_template("new_parent_child")
-      end
+       it "should render the parent-child selection template" do
+         get :new_parent_child, "file_ids" => [admin_userfile.id.to_s, user_userfile.id.to_s]
+         expect(response).to render_template("new_parent_child")
+       end
     end
 
 
@@ -233,7 +233,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
       it "should render an error message if no files selected" do
         post :create_parent_child, :parent_id => admin_userfile.id.to_s
-        expect(flash[:error]).to include_text(/selected for this operation/)
+        expect(flash[:error]).to match(/selected for this operation/)
       end
 
       it "should add children to parent" do
@@ -317,7 +317,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
           it "should display an error message" do
             post :create, :upload_file => mock_upload_stream, :archive => "save"
-            expect(flash[:error]).to include_text(/File .+ could not be added./)
+            expect(flash[:error]).to match(/File .+ could not be added./)
           end
         end
 
@@ -331,7 +331,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
           it "should display a flash message" do
             post :create, :upload_file => mock_upload_stream, :archive => "save"
-            expect(flash[:notice]).to include_text(/File .+ being added in background./)
+            expect(flash[:notice]).to match(/File .+ being added in background./)
           end
 
 
@@ -391,7 +391,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
           it "should display an error message" do
             post :create, :upload_file => mock_upload_stream, :archive => "file_collection"
-            expect(flash[:error]).to include_text(/Error: file .+ does not have one of the supported extensions:/)
+            expect(flash[:error]).to match(/Error: file .+ does not have one of the supported extensions:/)
           end
         end
 
@@ -400,7 +400,7 @@ RSpec.describe UserfilesController, :type => :controller do
         context "to create a collection" do
 
           context "when there is a collision" do
-            let(:collision_file) {Factory.create(:userfile, :name => mock_upload_stream.original_filename.split('.')[0], :user => admin )}
+            let(:collision_file) {create(:userfile, :name => mock_upload_stream.original_filename.split('.')[0], :user => admin )}
 
             it "should redirect to index" do
               post :create, :upload_file => mock_upload_stream, :archive => "file_collection", :data_provider_id => collision_file.data_provider_id
@@ -409,7 +409,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
             it "should display an error message" do
               post :create, :upload_file => mock_upload_stream, :archive => "file_collection", :data_provider_id => collision_file.data_provider_id
-              expect(flash[:error]).to include_text(/Collection '.+' already exists/)
+              expect(flash[:error]).to match(/Collection '.+' already exists/)
             end
           end
 
@@ -443,7 +443,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
             it "should display a flash message" do
               post :create, :upload_file => mock_upload_stream, :archive => "file_collection"
-              expect(flash[:notice]).to include_text(/Collection '.+' created/)
+              expect(flash[:notice]).to match(/Collection '.+' created/)
             end
 
             it "should redirect to index" do
@@ -461,7 +461,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
             it "should display and error message" do
               post :create, :upload_file => mock_upload_stream, :archive => "file_collection"
-              expect(flash[:error]).to include_text(/Collection '.+' could not be created/)
+              expect(flash[:error]).to match(/Collection '.+' could not be created/)
             end
 
             it "should redirect to index" do
@@ -473,7 +473,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should display an error message if the archive parameters has an invalid value" do
           post :create, :upload_file => mock_upload_stream, :archive => "invalid_parameter"
-          expect(flash[:error]).to include_text(/Unknown action/)
+          expect(flash[:error]).to match(/Unknown action/)
         end
 
 
@@ -496,7 +496,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
           it "should display a flash message" do
             post :create, :upload_file => mock_upload_stream, :archive => "extract"
-            expect(flash[:notice]).to include_text(/Your files are being extracted/)
+            expect(flash[:notice]).to match(/Your files are being extracted/)
           end
 
           it "should redirect to the index" do
@@ -519,7 +519,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should display an error message" do
           post :update_multiple, :file_ids => [1]
-          expect(flash[:error]).to include_text("Unknown operation")
+          expect(flash[:error]).to match("Unknown operation")
         end
 
         it "should redirect to the index" do
@@ -536,7 +536,7 @@ RSpec.describe UserfilesController, :type => :controller do
       it "should fail to update project when user does not have access" do
         group_id_hash = {:group_id => 4}
         post :update_multiple, :file_ids => [1], :update_projects => true, :userfile => group_id_hash
-        expect(flash[:error]).to include_text(/project/)
+        expect(flash[:error]).to match(/project/)
       end
 
       it "should update permissions when requested" do
@@ -553,13 +553,13 @@ RSpec.describe UserfilesController, :type => :controller do
       it "should display the number of succesful updates" do
         allow(mock_userfile).to receive(:send).and_return(true)
         post :update_multiple, :file_ids => [1], :update_tags => true
-        expect(flash[:notice]).to include_text(" successful ")
+        expect(flash[:notice]).to match(" successful ")
       end
 
       it "should display the number of failed updates" do
         allow(mock_userfile).to receive(:send).and_return(false)
         post :update_multiple, :file_ids => [1], :update_tags => true
-        expect(flash[:error]).to include_text(" unsuccessful ")
+        expect(flash[:error]).to match(" unsuccessful ")
       end
 
       it "should redirect to the index" do
@@ -621,13 +621,13 @@ RSpec.describe UserfilesController, :type => :controller do
       it "should use the userfile's partial if available" do
         allow(File).to receive(:exists?).and_return(true)
         post :quality_control_panel
-        expect(assigns[:qc_view_file]).not_to include_text("_default")
+        expect(assigns[:qc_view_file]).not_to match("_default")
       end
 
       it "should use the default partial if no userfile-specific partial available" do
         allow(File).to receive(:exists?).and_return(false)
         post :quality_control_panel
-        expect(assigns[:qc_view_file]).to include_text("_default")
+        expect(assigns[:qc_view_file]).to match("_default")
       end
 
       it "should render the quality control panel partial" do
@@ -679,7 +679,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
       it "should display a flash message" do
         post :create_collection, :file_ids => [1], :data_provider_id_for_collection => data_provider.id
-        expect(flash[:notice]).to include_text(/Collection .+ is being created in background/)
+        expect(flash[:notice]).to match(/Collection .+ is being created in background/)
       end
 
       it "should redirect to the index" do
@@ -709,7 +709,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should display an error message" do
           post :change_provider, :file_ids => [1], :data_provider_id_for_mv_cp => data_provider.id
-          expect(flash[:error]).to include_text(/Data provider .* not accessible/)
+          expect(flash[:error]).to match(/Data provider .* not accessible/)
         end
 
         it "should redirect to the index" do
@@ -757,7 +757,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
       it "should display a flash message" do
         post :change_provider, :file_ids => [1], :data_provider_id_for_mv_cp => data_provider.id
-        expect(flash[:notice]).to include_text(/Your files are being .+ in the background/)
+        expect(flash[:notice]).to match(/Your files are being .+ in the background/)
       end
 
       it "should redirect to the index" do
@@ -800,13 +800,13 @@ RSpec.describe UserfilesController, :type => :controller do
       it "should display a report if the persistent file ids changed" do
         allow(current_session).to receive(:persistent_userfile_ids_list).and_return([1])
         post :manage_persistent, :file_ids => [1], :operation => "remove"
-        expect(flash[:notice]).to include_text(/Total of .* now in the persistent list of files/)
+        expect(flash[:notice]).to match(/Total of .* now in the persistent list of files/)
       end
 
       it "should display a message saying no file ids were changed if that is the case" do
         allow(current_session).to receive(:persistent_userfile_ids_remove).and_return(0)
         post :manage_persistent, :file_ids => [1], :operation => "remove"
-        expect(flash[:notice]).to include_text("No changes made to the persistent list of userfiles")
+        expect(flash[:notice]).to match("No changes made to the persistent list of userfiles")
       end
 
       it "should redirect to the index" do
@@ -828,7 +828,7 @@ RSpec.describe UserfilesController, :type => :controller do
       it "should display error message if userfiles is not accessible by user" do
         allow(Userfile).to receive_message_chain(:accessible_for_user, :where).and_return([])
         delete :delete_files, :file_ids => [1]
-        expect(flash[:error]).to include_text("not have acces")
+        expect(flash[:error]).to match("not have acces")
       end
 
       it "should destroy the userfiles" do
@@ -840,7 +840,7 @@ RSpec.describe UserfilesController, :type => :controller do
         allow(mock_userfile).to receive_message_chain(:data_provider, :is_browsable?).and_return(false)
         allow(mock_userfile).to receive_message_chain(:data_provider, :meta, :[], :blank?).and_return(false)
         delete :delete_files, :file_ids => [1]
-        expect(flash[:notice]).to include_text("deleted in background")
+        expect(flash[:notice]).to match("deleted in background")
       end
 
       it "should redirect to the index" do
@@ -869,7 +869,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should display an error message" do
           get :download, :file_ids => [1], :specified_filename => "not_valid"
-          expect(flash[:error]).to include_text(/filename '.+' is not acceptable/)
+          expect(flash[:error]).to match(/filename '.+' is not acceptable/)
         end
 
         it "should redirect to the index" do
@@ -892,7 +892,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should display an error message" do
           get :download, :file_ids => [1]
-          expect(flash[:error]).to include_text("You cannot download data that exceeds")
+          expect(flash[:error]).to match("You cannot download data that exceeds")
         end
 
         it "should redirect to the index" do
@@ -948,19 +948,19 @@ RSpec.describe UserfilesController, :type => :controller do
       it "should display an error message if the file is not a SingleFile" do
         allow(Userfile).to receive(:find_accessible_by_user).and_return([mock_model(FileCollection).as_null_object])
         post :compress, :file_ids => [1]
-        expect(flash[:error]).to include_text("Not a SingleFile")
+        expect(flash[:error]).to match("Not a SingleFile")
       end
 
       it "should display an error message if the data provider is not writable" do
         allow(mock_singlefile).to receive_message_chain(:data_provider, :read_only?).and_return(true)
         post :compress, :file_ids => [1]
-        expect(flash[:error]).to include_text("Data Provider not writable")
+        expect(flash[:error]).to match("Data Provider not writable")
       end
 
       it "should display an error message file name already exists" do
         allow(Userfile).to receive_message_chain(:where, :exists?).and_return(true)
         post :compress, :file_ids => [1]
-        expect(flash[:error]).to include_text("Filename collision")
+        expect(flash[:error]).to match("Filename collision")
       end
 
 
@@ -1075,7 +1075,7 @@ RSpec.describe UserfilesController, :type => :controller do
       it "should send the userfile itself if no content given" do
         allow(mock_userfile).to receive(:find_content_loader).and_return(nil)
         allow(mock_userfile).to receive(:cache_full_path).and_return("path")
-        expect(controller).to receive(:send_file).with("path", anything)
+        expect(controller).to   receive(:send_file).with("path", anything)
         get :content, :id => 1
       end
     end
@@ -1087,8 +1087,8 @@ RSpec.describe UserfilesController, :type => :controller do
 
       before(:each) do
         allow(mock_userfile).to receive(:find_viewer).and_return(mock_viewer)
-        allow(Userfile).to receive(:find_accessible_by_user).and_return(mock_userfile)
-        allow(File).to receive(:exists).and_return(true)
+        allow(Userfile).to      receive(:find_accessible_by_user).and_return(mock_userfile)
+        allow(File).to          receive(:exists?).and_return(true)
       end
 
       it "should render :file if viewer exist" do
@@ -1110,7 +1110,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
       it "should render a warning if no viewer partial is found" do
         get :display, :id => 1, :viewer => "Unknown viewer"
-        expect(response).to include_text(/Could not find viewer/)
+        expect(response.body).to match(/Could not find viewer/)
       end
     end
 
@@ -1177,10 +1177,10 @@ RSpec.describe UserfilesController, :type => :controller do
       end
 
       it "it should display an error message when attempting to update to an invalid type" do
-        text_file = Factory.create(:text_file)
+        text_file = create(:text_file)
         allow(Userfile).to receive_message_chain(:find_all_accessible_by_user, :where, :all).and_return([text_file])
         put :update_multiple, :update_file_type => true, :file_ids => [text_file.id], :file_type => "InvalidType"
-        expect(flash[:error]).to include_text("unsuccessful for 1")
+        expect(flash[:error]).to match("unsuccessful for 1")
       end
 
       it "should set tags" do
@@ -1220,7 +1220,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should display a flash message" do
           put :update, :id => 1
-          expect(flash[:notice]).to include_text("successfully updated")
+          expect(flash[:notice]).to match("successfully updated")
         end
 
         it "should redirect to the show page" do
@@ -1257,7 +1257,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should display a flash message" do
           post :extract_from_collection, :id => 1
-          expect(flash[:notice]).to include_text("No files selected for extraction")
+          expect(flash[:notice]).to match("No files selected for extraction")
         end
 
         it "should redirect to the edit page" do
@@ -1295,7 +1295,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should display a flash message" do
           post :extract_from_collection, :id => 1, :file_names => ["file_name"]
-          expect(flash[:notice]).to include_text("successfuly extracted")
+          expect(flash[:notice]).to match("successfuly extracted")
         end
       end
 
@@ -1313,7 +1313,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should display an error message" do
           post :extract_from_collection, :id => 1, :file_names => ["file_name"]
-          expect(flash[:error]).to include_text("could not be extracted")
+          expect(flash[:error]).to match("could not be extracted")
         end
       end
 

@@ -20,11 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe User do
 
-  let(:normal_user) { Factory.create(:normal_user) }
+  let(:normal_user) { create(:normal_user) }
 
 
   describe "#validate" do
@@ -78,14 +78,14 @@ describe User do
     end
 
     it "should check that login is unique" do
-      Factory.create(:normal_user, :login => "Abcdef")
-      bad_login=Factory.build(:user, :login => "Abcdef")
+      create(:normal_user, :login => "Abcdef")
+      bad_login=build(:user, :login => "Abcdef")
       expect(bad_login.save).to be(false)
     end
 
     it "should check that login is unique even case wise" do
-      Factory.create(:normal_user, :login => "Abcdef")
-      bad_login=Factory.build(:user, :login => "abcdef")
+      create(:normal_user, :login => "Abcdef")
+      bad_login=build(:user, :login => "abcdef")
       expect(bad_login.save).to be(false)
     end
 
@@ -95,7 +95,7 @@ describe User do
     end
 
     it "should prevent me from using another system group name as login name" do
-      Factory.create(:system_group, :name => "my_name_is_group")
+      create(:system_group, :name => "my_name_is_group")
       normal_user.login = "my_name_is_group"
       expect(normal_user).not_to be_valid
     end
@@ -132,8 +132,8 @@ describe User do
 
 
   describe "#self.all_admins" do
-    let!(:admin) {Factory.create(:admin_user, :login => "admin_user2")}
-    let!(:admin_user) {Factory.create(:admin_user, :login => "admin_user")}
+    let!(:admin) {create(:admin_user, :login => "admin_user2")}
+    let!(:admin_user) {create(:admin_user, :login => "admin_user")}
 
     it "should return all users with role admin" do
       expect(User.all_admins(true)).to eq(AdminUser.all)
@@ -311,13 +311,13 @@ describe User do
     it "should changed the password encryption if crypted_password is in SHA1" do
         normal_user.crypted_password = User.encrypt_in_sha1(normal_user.password,normal_user.salt)
         normal_user.authenticated?(normal_user.password)
-        expect(normal_user.crypted_password).to match /^pbkdf2_sha1:\w+/
+        expect(normal_user.crypted_password).to match(/^pbkdf2_sha1:\w+/)
     end
 
     it "should changed the password encryption if crypted_password is in PBKDF2" do
         normal_user.crypted_password = User.encrypt_in_pbkdf2(normal_user.password,normal_user.salt)
         normal_user.authenticated?(normal_user.password)
-        expect(normal_user.crypted_password).to match /^pbkdf2_sha1:\w+/
+        expect(normal_user.crypted_password).to match(/^pbkdf2_sha1:\w+/)
     end
 
     it "should return true if crypted_password is equal to encrypt(password) and encryption is in PBKDF2_SHA1" do
@@ -385,13 +385,13 @@ describe User do
 
 
   describe "#availability" do
-    let!(:admin)        { Factory.create(:admin_user) }
-    let!(:group)        { Factory.create(:group) }
-    let!(:site_manager) { Factory.create(:site_manager, :group_ids => [group.id] ) }
+    let!(:admin)        { create(:admin_user) }
+    let!(:group)        { create(:group) }
+    let!(:site_manager) { create(:site_manager, :group_ids => [group.id] ) }
 
     describe "#tool" do
-      let!(:tool1)        { Factory.create(:tool, :group_id => group.id) }
-      let!(:tool2)        { Factory.create(:tool, :category => "conversion tool") }
+      let!(:tool1)        { create(:tool, :group_id => group.id) }
+      let!(:tool2)        { create(:tool, :category => "conversion tool") }
 
       describe "#available_tools" do
 
@@ -424,7 +424,7 @@ describe User do
 
 
     describe "#available_groups" do
-      let!(:invisible_group) {Factory.create(:invisible_group)}
+      let!(:invisible_group) {create(:invisible_group)}
 
       it "should return all groups if called with an admin" do
         expect(admin.available_groups).to match(Group.all)
@@ -456,8 +456,8 @@ describe User do
 
 
     describe "#available_tags" do
-      let!(:my_tag)     {Factory.create(:tag,  :user_id => normal_user.id, :group_id => group.id )}
-      let!(:other_user) {Factory.create(:normal_user, :group_ids => [group.id])}
+      let!(:my_tag)     {create(:tag,  :user_id => normal_user.id, :group_id => group.id )}
+      let!(:other_user) {create(:normal_user, :group_ids => [group.id])}
 
       it "should return tag if it's mine" do
         expect(normal_user.available_tags).to include(my_tag)
@@ -472,8 +472,8 @@ describe User do
 
 
     describe "#available_tasks" do
-      let!(:my_task)      {Factory.create(:cbrain_task, :user_id => normal_user.id)}
-      let!(:user_of_site) {Factory.create(:normal_user, :site => site_manager.site)}
+      let!(:my_task)      {create(:cbrain_task, :user_id => normal_user.id)}
+      let!(:user_of_site) {create(:normal_user, :site => site_manager.site)}
 
       it "should return all tasks if called with an admin" do
         expect(CbrainTask).to receive(:scoped).with(no_args)
@@ -498,7 +498,7 @@ describe User do
 
 
     describe "#available_users" do
-      let!(:user_of_site) { Factory.create(:normal_user, :site_id => site_manager.site.id) }
+      let!(:user_of_site) { create(:normal_user, :site_id => site_manager.site.id) }
 
       it "should return all tasks if called with an admin" do
         expect(admin.available_users).to match(User.all)
@@ -519,13 +519,13 @@ describe User do
 
 
     describe "#can_be_accessed_by?" do
-      let!(:user_of_site) {Factory.create(:normal_user, :site => site_manager.site)}
+      let!(:user_of_site) {create(:normal_user, :site => site_manager.site)}
 
       it "should always return true if admin" do
         expect(normal_user.can_be_accessed_by?(admin)).to be_truthy
       end
 
-      it "shoulda user can be accessible by a site manager if in same site" do
+      it "should user can be accessible by a site manager if in same site" do
         site            = site_manager.site
         site.user_ids   = [user_of_site.id,normal_user.id]
         site.save
@@ -564,8 +564,8 @@ describe User do
 
 
   describe "#is_member_of_group" do
-    let!(:group) {Factory.create(:group)}
-    let!(:user_of_group_2) {Factory.create(:normal_user, :group_ids => [group.id])}
+    let!(:group) {create(:group)}
+    let!(:user_of_group_2) {create(:normal_user, :group_ids => [group.id])}
 
     it "should returns true if the user belongs to the +group_id+" do
       expect(user_of_group_2.is_member_of_group(group)).to be_truthy
@@ -580,9 +580,9 @@ describe User do
 
 
   describe "#destroy_user_sessions" do
-    let!(:session)    {{:user_id => normal_user.id}}
-    let!(:sess_model) {double("sess_model").as_null_object}
-    let!(:cb_session) {mock_model(ActiveRecord::SessionStore::Session).as_null_object}
+    let!(:session)    { {:user_id => normal_user.id} }
+    let!(:sess_model) { double("sess_model").as_null_object }
+    let!(:cb_session) { mock_model(ActiveRecord::SessionStore::Session).as_null_object }
 
     it "should return true if user have no id" do
       normal_user.id = nil
@@ -622,7 +622,7 @@ describe User do
 
 
   describe "#system_group_site_update" do
-    let!(:site1) { Factory.create(:site) }
+    let!(:site1) { create(:site) }
 
     it "should add user to new site" do
       normal_user.site = site1
@@ -631,7 +631,7 @@ describe User do
     end
 
     it "should remove user to old site" do
-      start_site = normal_user.site
+      start_site = normal_user.site = create(:site)
       normal_user.site = site1
       normal_user.save
       expect(start_site.own_group.users).not_to include(normal_user)
@@ -664,33 +664,29 @@ describe User do
 
 
 
-  describe "#add_system_groups" do
-    let(:group) {Factory.create(:everyone_group)}
-    let(:site_group) {Factory.create(:site_group)}
+  describe "#create_user" do
+    let(:site) { create(:site) }
 
-    before(:each) do
-      allow(Group).to     receive(:everyone).and_return(group)
-      allow(SiteGroup).to receive_message_chain(:find_by_name).and_return(site_group)
-    end
-
-
-    it "User should be part of is own group everyone group and these sites" do
-      Factory.create(:normal_user, :login => "abc", :site => mock_model(Site).as_null_object) 
-      expect(normal_user.group_ids).to include(group.id,site_group.id)
+    it "User should be part of his own group, everyone group, and his site" do
+      new_user = create(:normal_user, :site => site)
+      everyone_group_id = Group.everyone.id
+      site_group_id     = site.own_group.id
+      user_group_id     = new_user.own_group.id
+      expect(new_user.group_ids).to include(user_group_id, site_group_id,everyone_group_id)
     end
 
     it "should create a new UserGroup with my login on create" do
        login = "login"
        allow_any_instance_of(NormalUser).to receive(:group_ids=)
        expect(UserGroup).to receive(:new).with(hash_including(:name => login)).and_return(mock_model(UserGroup).as_null_object)
-       Factory.create(:normal_user, :login => login)
+       create(:normal_user, :login => login)
      end
 
   end
 
   describe "#system_group_site_update" do
     it "should add me to the site group" do
-      normal_user.site = Factory.create(:site, :name => "I_should_be_part_of_this_site_group")
+      normal_user.site = create(:site, :name => "I_should_be_part_of_this_site_group")
       site             = double("site").as_null_object
       site_users       = double("site_users").as_null_object
       allow(site).to receive_message_chain(:own_group, :users).and_return(site_users)

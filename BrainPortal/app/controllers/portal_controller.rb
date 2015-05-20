@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#Controller for the entry point into the system.
+# Controller for the entry point into the system.
 class PortalController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -30,7 +30,7 @@ class PortalController < ApplicationController
   before_filter :login_required, :except => [ :credits, :about_us, :welcome ]  # welcome is here so that the redirect to the login page doesn't show the error message
   before_filter :admin_role_required, :only => :portal_log
 
-  #Display a user's home page with information about their account.
+  # Display a user's home page with information about their account.
   def welcome #:nodoc:
     unless current_user
       redirect_to login_path
@@ -189,11 +189,11 @@ class PortalController < ApplicationController
     @portal_log = log.html_safe
   end
 
-  def show_license
+  def show_license #:nodoc:
     @license = params[:license].gsub(/[^\w-]+/, "")
   end
 
-  def sign_license
+  def sign_license #:nodoc:
     @license = params[:license]
     unless params.has_key?(:agree)
       flash[:error] = "CBRAIN cannot be used without signing the End User Licence Agreement."
@@ -216,12 +216,12 @@ class PortalController < ApplicationController
     redirect_to start_page_path
   end
 
-  #Display general information about the CBRAIN project.
+  # Display general information about the CBRAIN project.
   def credits #:nodoc:
     # Nothing to do, just let the view show itself.
   end
 
-  #Displays more detailed info about the CBRAIN project.
+  # Displays more detailed info about the CBRAIN project.
   def about_us #:nodoc:
     myself = RemoteResource.current_resource
     info   = myself.info
@@ -376,7 +376,7 @@ class PortalController < ApplicationController
     merged_report
   end
 
-  def colorize_logs(data)
+  def colorize_logs(data) #:nodoc:
     data = ERB::Util.html_escape(data)
 
     # data.gsub!(/\e\[[\d;]+m/, "") # now done when fetching the raw log, with perl (see above)

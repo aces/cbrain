@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe SshAgent do
 
@@ -472,13 +472,13 @@ describe SshAgent do
 
     it "should return a nil socket path if the file content doesn't have it" do
       content = "ZZZZZZZZZZZZZ=/tmp/abcd\nSSH_AGENT_PID=1234\n"
-      s,p = SshAgent.send(:parse_agent_config_file, content)
+      s = SshAgent.send(:parse_agent_config_file, content).first
       expect(s).to be_nil
     end
 
     it "should return a null PID if the file content doesn't have it" do
       content = "SSH_AUTH_SOCK=/tmp/abcd\nZZZZZZZZZZZZZ=1234\n"
-      s,p = SshAgent.send(:parse_agent_config_file, content)
+      p = SshAgent.send(:parse_agent_config_file, content).last
       expect(p).to be_nil
     end
 

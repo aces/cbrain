@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
 # CBRAIN Project
@@ -40,22 +40,20 @@ class CbrainTask::BashScriptor < ClusterTask
 
     total = (file_ids.size + 1) * est_per_id.to_i
     total = 60 if total < 60
-    total
+    return total
   end
 
-  # See CbrainTask.txt
   def setup #:nodoc:
     params       = self.params
-    file_ids      = params[:interface_userfile_ids] || []
+    file_ids = params[:interface_userfile_ids] || []
     file_ids.each do |id|
       file = Userfile.find(id)
       self.results_data_provider_id ||= file.data_provider_id
       file.sync_to_cache
     end
-    true
+    return true
   end
 
-  # See CbrainTask.txt
   def cluster_commands #:nodoc:
     params       = self.params
     file_ids     = params[:interface_userfile_ids] || []
@@ -102,14 +100,12 @@ class CbrainTask::BashScriptor < ClusterTask
       final_script << "\n\n"
     end
 
-    final_script
+    return final_script
   end
-  
-  # See CbrainTask.txt
+
   def save_results #:nodoc:
     params       = self.params
     stdout       = File.read(self.stdout_cluster_filename) rescue ""
-
     out_ids      = []
 
     # Check conventional 'touch' files that mean 'completed on cluster'
@@ -173,12 +169,12 @@ class CbrainTask::BashScriptor < ClusterTask
       else
         self.addlog_to_userfiles_created( out_userfile )
       end
-      
+
     end
 
     params[:output_userfile_ids] = out_ids
 
-    true
+    return true
   end
 
 end

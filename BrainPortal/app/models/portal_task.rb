@@ -22,8 +22,6 @@
 
 # This subclass of CbrainTask provides the methods and developer API
 # for deploying CbrainTasks on the BrainPortal side.
-#
-# See the documentation in CbrainTask.txt for more information.
 class PortalTask < CbrainTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -138,7 +136,7 @@ class PortalTask < CbrainTask
   end
 
   # Backwards compatibility auto adaptation:
-  # if a task's code is extended to incldue new parameters,
+  # if a task's code is extended to include new parameters,
   # then this will re-insert their default values
   # into the params[] hash.
   #

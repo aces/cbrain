@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#Helper methods for Userfile views.
+# Helper methods for Userfile views.
 module UserfilesHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -94,6 +94,9 @@ module UserfilesHelper
     ).html_safe
   end
 
+  # Generates links to pretty file content for userfiles
+  # of type TextFile or ImageFile; this method is going to
+  # be replaced by a proper generic framework in 4.2.0 !
   def data_link(file_name, userfile)
     display_name  = Pathname.new(file_name).basename.to_s
     return h(display_name) unless userfile.is_locally_synced?
@@ -126,7 +129,7 @@ module UserfilesHelper
     end
   end
 
-  # Return the HTML code that represent a symbol
+  # Returns the HTML code that represent a symbol
   # for +statkeyword+, which is a SyncStatus 'status'
   # keyword. E.g. for "InSync", the
   # HTML returned is a green checkmark, and for
@@ -149,17 +152,6 @@ module UserfilesHelper
         '<font color="red">?</font>'
     end
     html.html_safe
-  end
-
-  #Create a collapsable "Content" box for userfiles show page.
-  def content_viewer(&block)
-    safe_concat('<div id="userfile_contents_display">')
-    safe_concat(show_hide_toggle '<strong>Displayable Contents</strong>', "#userfile_contents_display_toggle")
-    safe_concat('<div id="userfile_contents_display_toggle" style="display:none"><BR><BR>')
-    safe_concat(capture(&block))
-    safe_concat('</div>')
-    safe_concat('</div>')
-    ""
   end
 
   # Returned a colorized size for the userfile ; if the

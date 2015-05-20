@@ -110,7 +110,7 @@ class SessionsController < ApplicationController
   # Ultimately this should be built in the code
   # Do NOT send the assertion on a non HTTP*S* connection
   # Adapted the code of this method from https://github.com/chilts/browserid-verify-ruby
-  def verify_assertion(assertion) #:nodoc:
+  def verify_assertion(assertion)
 
     # TODO put this in config file
     url      = "https://verifier.login.persona.org/verify"
@@ -148,7 +148,7 @@ class SessionsController < ApplicationController
   # We could authenticate the email
   # Now, let's check if there is a user associated to it
   # Be careful NOT to grant admin access based on Mozilla Persona.
-  def auth_success(email) #:nodoc:
+  def auth_success(email)
     user = NormalUser.where(:email => email).first
     if user.blank?
       flash[:error] = 'Cannot find CBRAIN user associated to this email address.'
@@ -160,7 +160,7 @@ class SessionsController < ApplicationController
   end
 
   # Send a proper HTTP error code
-  def auth_failed #:nodoc:
+  def auth_failed
     respond_to do |format|
       format.html { render :action => 'new' }
       format.json { render :nothing => true, :status  => 401 }

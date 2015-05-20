@@ -132,7 +132,6 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     # Adjust the tasks
     adj_success = 0 ; adj_fail = 0 ; adj_same = 0 ; adj_zap = 0
     local_old_tasks.each_with_index do |task,idx|
-      tid          = task.id
       old_workdir  = task.cluster_workdir
       last_updated = task.updated_at || Time.now
       #puts_red "OLD=#{old_workdir}"
@@ -294,11 +293,11 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
         t.addlog("INCONSISTENCY REPAIR: This task was marked archived both as a file and on cluster (cluster archive was invalid)")
         t.workdir_archived     = true
         t.cluster_workdir_size = nil
-       else # turn to case C
+      else # turn to case C
         t.addlog("INCONSISTENCY REPAIR: This task was marked archived both as a file and on cluster (file archive was invalid)")
         t.workdir_archive_userfile_id = nil
-       end
-       t.save
+      end
+      t.save
     end
 
     # CASE 5

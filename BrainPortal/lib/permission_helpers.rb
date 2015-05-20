@@ -32,29 +32,30 @@ module PermissionHelpers
     end
   end
 
-  #Checks that the current user's has at least the rights associated
-  #with +role+.
+  # Checks that the current user's has at least the rights associated
+  # with +role+.
   def check_role(role)
     current_user && current_user.has_role?(role)
   end
 
-  #Checks that the current user is not the default *admin* user.
+  # Checks that the current user is not the default *admin* user.
   def not_admin_user(user)
     user && user.login != 'admin'
   end
 
-  #Checks that the current user is the same as +user+. Used to ensure permission
-  #for changing account information.
+  # Checks that the current user is the same as +user+. Used to ensure permission
+  # for changing account information.
   def edit_permission?(user)
     current_user && user && (current_user == user || current_user.has_role?(:admin_user) || (current_user.has_role?(:site_manager) && current_user.site == user.site))
   end
 
+  # Used to ensure that +user+ has the permissions to delete the current object.
   def delete_permission?(user)
     current_user && user && user != User.admin && current_user != user &&
     (current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)) && current_user.available_users.include?(user)
   end
 
-  #Helper method to render and error page. Will render public/<+status+>.html
+  # Helper method to render and error page. Will render public/<+status+>.html
   def access_error(status)
     respond_to do |format|
       format.html { render(:file => (Rails.root.to_s + '/public/' + status.to_s), :status  => status, :layout => false ) }

@@ -17,23 +17,23 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#RESTful controller for the CustomFilter resource.
+# RESTful controller for the CustomFilter resource.
 class CustomFiltersController < ApplicationController
-  
+
   before_filter :login_required
   layout false
   api_available
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   def new #:nodoc:
     filter_param = "#{params[:filter_class]}".classify
     unless CustomFilter.descendants.map(&:name).include?(filter_param)
       cb_error "Filter class required", :status  => :unprocessable_entity
-    end    
+    end
     filter_class  = Class.const_get(filter_param)
     @custom_filter = filter_class.new
   end
@@ -50,11 +50,11 @@ class CustomFiltersController < ApplicationController
       cb_error "Filter class required", :status  => :unprocessable_entity
     end
     params[:data] ||= {}
-    
+
     filter_class  = Class.const_get(filter_param)
     @custom_filter = filter_class.new(params[:custom_filter])
     @custom_filter.data.merge! params[:data]
-    
+
     @custom_filter.user_id = current_user.id
 
     @custom_filter.save
@@ -69,10 +69,10 @@ class CustomFiltersController < ApplicationController
   # PUT /custom_filters/1.xml
   def update #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])
-    
+
     params[:custom_filter] ||= {}
     params[:data] ||= {}
-    
+
     params[:custom_filter].each{|k,v| @custom_filter.send("#{k}=", v)}
     @custom_filter.data.merge! params[:data]
 
@@ -82,8 +82,8 @@ class CustomFiltersController < ApplicationController
       flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
       return
     end
-    
-    
+
+
     respond_to do |format|
       format.xml  { render :xml => @custom_filter.errors, :status => :unprocessable_entity }
       format.js
@@ -94,7 +94,7 @@ class CustomFiltersController < ApplicationController
   # DELETE /custom_filters/1.xml
   def destroy #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])
-    if @custom_filter.filtered_class_controller == "userfiles"    
+    if @custom_filter.filtered_class_controller == "userfiles"
       current_session[@custom_filter.filtered_class_controller.to_sym]["filter_custom_filters_array"].delete @custom_filter.id.to_s
     else
       current_session[@custom_filter.filtered_class_controller.to_sym]["filter_hash"].delete "custom_filter"

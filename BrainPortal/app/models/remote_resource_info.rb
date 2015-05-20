@@ -82,7 +82,7 @@ class RemoteResourceInfo < RestrictedHash
      mock_record("???")
    end
 
-   def self.mock_record(field_value)
+   def self.mock_record(field_value) #:nodoc:
      mock = self.new()
 
      mock = self.new()

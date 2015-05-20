@@ -17,20 +17,22 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 class SubclassValidator < ActiveModel::EachValidator #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  def validate_each(object, attribute, value)    
-    superklass = object.class.sti_root_class 
+  # Iterator for making sure an object's class can
+  # be changed to another class.
+  def validate_each(object, attribute, value)
+    superklass = object.class.sti_root_class
     root_class = superklass
-    
+
     model_class = value.constantize rescue nil
     valid_types = []
-    
+
     if model_class
       if options[:root_class] && Class.const_defined?(options[:root_class].to_s)
         option_root_class = options[:root_class].to_s.constantize
@@ -39,12 +41,12 @@ class SubclassValidator < ActiveModel::EachValidator #:nodoc:
       valid_types  = root_class.descendants
       valid_types << root_class
       unless options[:include_abstract_models]
-        valid_types  = valid_types.reject(&:cbrain_abstract_model?).map &:to_s
+        valid_types  = valid_types.reject(&:cbrain_abstract_model?).map(&:to_s)
       end
     end
 
     unless valid_types.include?(value)
-      object.errors[attribute] << (options[:message] || " '#{value}' is not a valid subtype of #{root_class}") 
+      object.errors[attribute] << (options[:message] || " '#{value}' is not a valid subtype of #{root_class}")
     end
   end
 

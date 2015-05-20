@@ -17,16 +17,16 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe CbrainMailer do
-  let(:user) {Factory.create(:normal_user)}
+  let(:user) { create(:normal_user) }
 
   describe "#registration_confirmation" do
-    
+
     it "should return if user is not an User" do
       allow(user).to receive(:is_a?).and_return(false)
       @email = CbrainMailer.registration_confirmation(user,"pwd").deliver
@@ -68,8 +68,8 @@ describe CbrainMailer do
       @email = CbrainMailer.cbrain_message([user]).deliver
       expect(@email.to.to_a).to match_array([user].map(&:email))
     end
-    
+
   end
-  
+
 end
 

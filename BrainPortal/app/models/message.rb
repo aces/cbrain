@@ -160,9 +160,9 @@ class Message < ActiveRecord::Base
     messages_sent
   end
 
-  #Instance method version of send_message.
-  #Allows one to create an object and set its attributes,
-  #then send it to +destination+.
+  # Instance method version of send_message.
+  # Allows one to create an object and set its attributes,
+  # then send it to +destination+.
   def send_me_to(destination)
     self.class.send_message(destination, self.attributes.merge({:send_email  => self.send_email}))
   end
@@ -299,7 +299,7 @@ class Message < ActiveRecord::Base
                 [ destination.own_group ]
               when Array
                 begin
-                  (destination.map &:own_group) | []
+                  (destination.map(&:own_group)) | []
                 rescue NoMethodError
                   [] #cb_error "Destination not acceptable for send_message."
                 end
@@ -326,7 +326,7 @@ class Message < ActiveRecord::Base
   #    "abcde [[name][/my/path]] def"
   # will return
   #    "abcde <a href="/my/path" class="action_link">name</a>"
-  def self.parse_markup(string)
+  def self.parse_markup(string) #:nodoc:
     arr = ERB::Util.html_escape(string).split(/(\[\[.*?\]\])/)
     arr.each_with_index do |str,i|
       next if i % 2 == 0 # nothing to do to outside context

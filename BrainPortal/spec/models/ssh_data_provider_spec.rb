@@ -20,10 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe SshDataProvider do
-  let(:provider)        { Factory.create(:ssh_data_provider) }
+  let(:provider)        { create(:ssh_data_provider) }
   let(:ssh_master)      { double("master").as_null_object }
   let(:single_file)     { mock_model(SingleFile, :name => "single_file").as_null_object }
   let(:file_collection) { mock_model(FileCollection, :name => "file_collection").as_null_object }

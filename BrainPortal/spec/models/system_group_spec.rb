@@ -17,24 +17,24 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe Group do
-  let(:group) {Factory.create(:system_group)}
+  let(:group) {create(:system_group)}
 
   describe "#default_creator" do
     it "should set creator to admin if not set" do
       admin_user_id = User.admin.id
-      new_group = Factory.create(:system_group, :creator_id => nil)
+      new_group = create(:system_group, :creator_id => nil)
       expect(new_group.creator_id).to eq(admin_user_id)
     end
     it "should  set creator to admin even if already set" do
       admin_user_id = User.admin.id
-      new_user_id = Factory.create(:normal_user).id
-      new_group = Factory.create(:system_group, :creator_id => new_user_id)
+      new_user_id = create(:normal_user).id
+      new_group = create(:system_group, :creator_id => new_user_id)
       expect(new_group.creator_id).to eq(admin_user_id)
     end
   end

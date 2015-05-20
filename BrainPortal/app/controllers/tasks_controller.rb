@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#Restful controller for the CbrainTask resource.
+# RESTful controller for the CbrainTask resource.
 class TasksController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -31,7 +31,7 @@ class TasksController < ApplicationController
 
   def index #:nodoc:
     bourreaux    = Bourreau.find_all_accessible_by_user(current_user).all
-    bourreau_ids = bourreaux.map &:id
+    bourreau_ids = bourreaux.map(&:id)
 
     scope = filter_variable_setup current_user.available_tasks.real_tasks.where( :bourreau_id => bourreau_ids )
 
@@ -115,9 +115,9 @@ class TasksController < ApplicationController
     end
   end
 
-  def batch_list #:nodoc:
+  # Renders a set of tasks associated with a batch.
+  def batch_list
     scope = filter_variable_setup current_user.available_tasks.real_tasks.where(:batch_id => params[:batch_id] )
-
     scope = scope.includes( [:bourreau, :user, :group] ).order( "cbrain_tasks.rank, cbrain_tasks.level, cbrain_tasks.id" ).readonly(false)
 
     @tasks = scope
@@ -153,6 +153,11 @@ class TasksController < ApplicationController
         @task.script_text    = nil
       end
     end
+
+    # This variable can be used by the task's _show_params partial
+    # to selectively display pieces of information based on the
+    # current version of the tool, using things like @tool_config.is_at_least_version('2.0.0).
+    @tool_config = @task.tool_config
 
     respond_to do |format|
       format.html # show.html.erb
@@ -203,7 +208,7 @@ class TasksController < ApplicationController
       return
     end
 
-    @task.params[:interface_userfile_ids] = @files.map &:id
+    @task.params[:interface_userfile_ids] = @files.map(&:id)
 
     # Other common instance variables, such as @data_providers and @bourreaux
     initialize_common_form_values
@@ -269,7 +274,7 @@ class TasksController < ApplicationController
 
   end
 
-def create #:nodoc:
+  def create #:nodoc:
     flash[:notice]     = ""
     flash[:error]      = ""
     flash.now[:notice] = ""
@@ -437,7 +442,7 @@ def create #:nodoc:
       end
 
       # Send a start worker command to each affected bourreau
-      bourreau_ids = tasklist.map &:bourreau_id
+      bourreau_ids = tasklist.map(&:bourreau_id)
       bourreau_ids.uniq.each do |bourreau_id|
         Bourreau.find(bourreau_id).send_command_start_workers rescue true
       end
@@ -551,7 +556,8 @@ def create #:nodoc:
     redirect_to :action => :show, :id => @task.id
   end
 
-  def update_multiple #:nodoc:
+  # Allows user to update attributes of multiple tasks.
+  def update_multiple
 
     # Construct task_ids and batch_ids
     task_ids    = Array(params[:tasklist]  || [])
@@ -613,7 +619,6 @@ def create #:nodoc:
     end
 
     do_in_spawn   = task_ids.size > 5
-    success_count = 0
     success_list  = []
     failed_list   = {}
 
@@ -706,15 +711,15 @@ def create #:nodoc:
     redirect_to :action => :index, :format  => request.format.to_sym
   end
 
-  #This action handles requests to modify the status of a given task.
-  #Potential operations are:
-  #[*Hold*] Put the task on hold (while it is queued).
-  #[*Release*] Release task from <tt>On Hold</tt> status (i.e. put it back in the queue).
-  #[*Suspend*] Stop processing of the task (while it is on cpu).
-  #[*Resume*] Release task from <tt>Suspended</tt> status (i.e. continue processing).
-  #[*Terminate*] Kill the task, while maintaining its temporary files and its entry in the database.
-  #[*Delete*] Kill the task, delete the temporary files and remove its entry in the database.
-  def operation #:nodoc:
+  # This action handles requests to modify the status of a given task.
+  # Potential operations are:
+  # [*Hold*] Put the task on hold (while it is queued).
+  # [*Release*] Release task from <tt>On Hold</tt> status (i.e. put it back in the queue).
+  # [*Suspend*] Stop processing of the task (while it is on cpu).
+  # [*Resume*] Release task from <tt>Suspended</tt> status (i.e. continue processing).
+  # [*Terminate*] Kill the task, while maintaining its temporary files and its entry in the database.
+  # [*Delete*] Kill the task, delete the temporary files and remove its entry in the database.
+  def operation
     operation   = params[:operation]
     tasklist    = params[:tasklist]  || []
     tasklist    = [ tasklist ]  unless tasklist.is_a?(Array)
@@ -732,10 +737,10 @@ def create #:nodoc:
     flash[:notice] ||= ""
 
     if operation.nil? || operation.empty?
-       flash[:notice] += "Task list has been refreshed.\n"
-       redirect_to :action => :index
-       return
-     end
+      flash[:notice] += "Task list has been refreshed.\n"
+      redirect_to :action => :index
+      return
+    end
 
     if tasklist.empty?
       flash[:error] += "No task selected? Selection cleared.\n"
@@ -744,10 +749,6 @@ def create #:nodoc:
     end
 
     # Prepare counters for how many tasks affected.
-    sent_ok      = 0
-    sent_failed  = 0
-    sent_skipped = 0
-
     skipped_list = {}
     success_list = []
     failed_list  = {}
@@ -785,7 +786,7 @@ def create #:nodoc:
       archive_dp_id   = nil unless archive_dp_id   && DataProvider.find_all_accessible_by_user(current_user).where(:id => archive_dp_id).exists?
 
       # Go through tasks, grouped by bourreau
-      grouped_tasks = tasks.group_by &:bourreau_id
+      grouped_tasks = tasks.group_by(&:bourreau_id)
       grouped_tasks.each do |pair_bid_tasklist|
         bid       = pair_bid_tasklist[0]
         btasklist = pair_bid_tasklist[1]
@@ -856,14 +857,14 @@ def create #:nodoc:
 
     # Find the list of Bourreaux that are both available and support the tool
     tool         = @task.tool
-    bourreau_ids = tool.bourreaux.map &:id
+    bourreau_ids = tool.bourreaux.map(&:id)
     bourreaux    = Bourreau.find_all_accessible_by_user(current_user).where( :online => true, :id => bourreau_ids ).all
 
     # Presets
     unless @task.class.properties[:no_presets]
       site_preset_tasks = []
       unless current_user.site.blank?
-        manager_ids = current_user.site.managers.map &:id
+        manager_ids = current_user.site.managers.map(&:id)
         site_preset_tasks = CbrainTask.where( :status => 'SitePreset', :user_id => manager_ids )
       end
       own_preset_tasks = current_user.cbrain_tasks.where( :type => @task.class.to_s, :status => 'Preset' )
@@ -873,12 +874,10 @@ def create #:nodoc:
       @all_presets << [ "Site Presets",     @site_presets ] if @site_presets.size > 0
       @all_presets << [ "Personal Presets", @own_presets  ] if @own_presets.size > 0
       @offer_site_preset = current_user.has_role? :site_manager
-      #@own_presets = [ [ "Personal1", "1" ], [ "Personal2", "2" ] ]
-      #@all_presets = [ [ "Site Presets", [ [ "Dummy1", "1" ], [ "Dummy2", "2" ] ] ], [ "Personal Presets", @own_presets ] ]
     end
 
     # Tool Configurations
-    valid_bourreau_ids = bourreaux.index_by &:id
+    valid_bourreau_ids = bourreaux.index_by(&:id)
     valid_bourreau_ids = { @task.bourreau_id => @task.bourreau } if ! @task.new_record? # existing tasks have more limited choices.
     @tool_configs      = tool.tool_configs # all of them, too much actually
     @tool_configs.reject! do |tc|
@@ -972,7 +971,7 @@ def create #:nodoc:
     CbrainTask
   end
 
-  def filter_variable_setup(starting_scope)
+  def filter_variable_setup(starting_scope) #:nodoc:
     @header_scope = starting_scope
     @header_scope = @header_scope.where( :group_id => current_project.id ) if current_project
 

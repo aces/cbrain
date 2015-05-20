@@ -215,7 +215,7 @@ class ServiceController < ApplicationController
       next if contr_action == 'portal,welcome'
       next if contr_action == 'portal,credits'
       next if contr_action == 'portal,about_us'
-      controller,action = contr_action.split(",")
+      controller        = contr_action.split(",").first
       next if controller   == 'service'  # all of them
       next if controller   == 'controls' # show
       next if controller   == 'sessions' # new, show, destroy, create

@@ -17,13 +17,13 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe ActRecMetaData do
-  let(:current_user) {Factory.create(:normal_user)}
+  let(:current_user) { create(:normal_user) }
   before(:each) do
     current_user.meta.attributes = {"key1" => "val1", "key2" => "val2"}
   end
@@ -39,8 +39,8 @@ describe ActRecMetaData do
       expect(current_user.meta.attributes).to eq({"key1"=> "val1", "key2"=> "val2"})
     end
   end
- 
-  describe "#attributes=" do 
+
+  describe "#attributes=" do
     it "should add a key and value to the metadata store" do
       add_hash = {"key3" => "val3"}
       current_user.meta.attributes = add_hash
@@ -57,7 +57,7 @@ describe ActRecMetaData do
       expect(current_user.meta.attributes).to eq({"key1"=> "new_val1", "key2"=> "val2", "key3" => "val3"})
     end
   end
- 
+
   describe "#[]=" do
     it "should set the value of the metadata key to my val if value not nil" do
       current_user.meta["key2"]="new_val2"
@@ -92,14 +92,14 @@ describe ActRecMetaData do
       expect(current_user.meta.attributes).to eq({"key1" => "val1" , "key2" => "val2"})
     end
   end
- 
+
   describe "#all" do
     it "should return all the MetaDataStore objects associated with the current ActiveRecord object" do
       expect(current_user.meta.all.size).to eq(2)
-      expect(current_user.meta.all.all? { |md| md.is_a?(MetaDataStore) && md.ar_id == current_user.id}).to be_truthy    
+      expect(current_user.meta.all.all? { |md| md.is_a?(MetaDataStore) && md.ar_id == current_user.id}).to be_truthy
     end
   end
- 
+
   describe "#reload" do
     it "should not update cache if not called" do
       copied_user = User.find(current_user)
@@ -115,16 +115,16 @@ describe ActRecMetaData do
       expect(copied_user.meta.attributes).to eq({"key1"=> "val1", "key2"=> "new_val2"})
     end
   end
- 
+
   describe "#destroy_all_meta_data" do
     it "should destry all meta data" do
       current_user.destroy_all_meta_data
       expect(current_user.meta.attributes).to be_empty
-    end  
+    end
   end
 
-  describe "#find_all_by_meta_data" do # possible de le tester en faisant appel a la methode 
-    let(:other_user) {Factory.create(:normal_user)}
+  describe "#find_all_by_meta_data" do # possible de le tester en faisant appel a la methode
+    let(:other_user) { create(:normal_user) }
       before(:each) do
         other_user.meta.attributes = {"key1" => "new_val1"}
     end
@@ -133,8 +133,8 @@ describe ActRecMetaData do
     end
     it "should find all models by metadata key and value" do
       expect(User.find_all_by_meta_data("key1","val1")).to match_array([current_user])
-    end  
+    end
   end
-    
+
 end
 

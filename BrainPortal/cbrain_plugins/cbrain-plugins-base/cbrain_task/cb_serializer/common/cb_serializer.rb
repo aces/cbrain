@@ -17,14 +17,14 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # CBRAIN Internal Task Serializer
 class CbrainTask::CbSerializer
 
   def self.pretty_type #:nodoc:
-    "CBRAIN Serializer"
+    return "CBRAIN Serializer"
   end
 
   # Returns the list of tasks parallelized;
@@ -47,7 +47,7 @@ class CbrainTask::CbSerializer
     task_ids.compact!
     #CbrainTask.where(:id => task_ids)  # wrong! order must be preserved!
     ordered_tasks = task_ids.map { |id| CbrainTask.find(id) }
-    ordered_tasks
+    return ordered_tasks
   end
 
   # Creates and launch a set of Serializers for a set of other
@@ -74,7 +74,7 @@ class CbrainTask::CbSerializer
   # serializer with, in its two arguments, the CbSerializer and
   # an array of its subtasks.
   def self.create_from_task_list(tasklist = [], options = {}) #:nodoc:
- 
+
     return [ "", [], [] ] if tasklist.empty?
 
     options = { :group_size => options } if options.is_a?(Fixnum) # old API
@@ -209,7 +209,7 @@ class CbrainTask::CbSerializer
       end
     end
 
-    [ messages, serializer_tasks, normal_tasks ]
+    return [ messages, serializer_tasks, normal_tasks ]
   end
 
 end

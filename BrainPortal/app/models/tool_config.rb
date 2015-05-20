@@ -24,16 +24,15 @@
 # Unlike other models, the set of ToolConfigs is not
 # arbitrary. They fit in three categories:
 #
-#   * A single tool config object represents the initialization
-#     needed by a particular tool on all bourreaux; it
-#     has a tool_id and no bourreau_id
-#   * A single tool config object represents the initialization
-#     needed by a particular bourreau for all tools; it
-#     has a bourreau_id and no tool_id
-#   * A set of 'versioning' tool config objects have both
-#     a tool_id and a bourreau_id; they represent all
-#     available versions of a tool on a particular bourreau.
-#
+# * A single tool config object represents the initialization
+#   needed by a particular tool on all bourreaux; it
+#   has a tool_id and no bourreau_id
+# * A single tool config object represents the initialization
+#   needed by a particular bourreau for all tools; it
+#   has a bourreau_id and no tool_id
+# * A set of 'versioning' tool config objects have both
+#   a tool_id and a bourreau_id; they represent all
+#   available versions of a tool on a particular bourreau.
 class ToolConfig < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -49,7 +48,7 @@ class ToolConfig < ActiveRecord::Base
   # must be unique per pair [tool, server]
   validates       :version_name,
                   :presence   => true,
-                  :format     => { with: /^\w[\w\.\-\_:@]+$/ , message: "must begin with alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'" },
+                  :format     => { with: /^\w[\w\.\-\:\@]+$/ , message: "must begin with alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'" },
                   :uniqueness => { :scope => [ :tool_id, :bourreau_id ], message: "must be unique per pair [tool, server]" },
                   :if         => :applies_to_bourreau_and_tool?
 
@@ -71,7 +70,7 @@ class ToolConfig < ActiveRecord::Base
   end
 
   # See ResourceAccess.
-  def self.find_all_accessible_by_user(user)
+  def self.find_all_accessible_by_user(user) #:nodoc
     if user.has_role?(:admin_user)
       ToolConfig.specific_versions
     else
@@ -226,17 +225,17 @@ class ToolConfig < ActiveRecord::Base
     false
   end
 
-  # Return true if it's a tool config for bourreau only
+  # Returns true if it's a tool config for bourreau only
   def applies_to_bourreau_only?
     self.bourreau_id.present? && !self.tool_id.present?
   end
 
-  # Return true if it's a tool config for tool only
+  # Returns true if it's a tool config for tool only
   def applies_to_tool_only?
     !self.bourreau_id.present? && self.tool_id.present?
   end
 
-  # Return true if it's a tool config for bourreau and tool
+  # Returns true if it's a tool config for bourreau and tool
   def applies_to_bourreau_and_tool?
     self.bourreau_id.present? && self.tool_id.present?
   end
@@ -254,7 +253,10 @@ class ToolConfig < ActiveRecord::Base
      end
   end
 
-  # Return true if the current version_name matches version
+  # This method calls any custom compare_versions() method defined
+  # in the CbrainTask subclass for the tool of the current tool_config.
+  # Returns true if the version_name of the current tool_config
+  # is 'the same as' +version+ (as far as compare_versions() thinks).
   def is_version(version)
      if self.cbrain_task_class.respond_to? :compare_tool_config_versions
        self.cbrain_task_class.compare_tool_config_versions(self.version_name,version) == 0
@@ -272,14 +274,14 @@ class ToolConfig < ActiveRecord::Base
      v2 = /\d+(\.\d+)*/.match(v2).to_s.split('.').map(&:to_i)
      raise ArgumentError, "Could not extract version" if v1.blank? || v2.blank?
 
-     while (v1.size < v2.size) do v1.push(0) end 
-     while (v2.size < v1.size) do v2.push(0) end 
+     while (v1.size < v2.size) do v1.push(0) end
+     while (v2.size < v1.size) do v2.push(0) end
 
      0.upto(v1.size - 1) { |i| return v1[i] <=> v2[i] unless v1[i] == v2[i] }
      return 0
   end
 
-  # Return the class of cbrain_task
+  # Return the Ruby class associated with the tool associated with this tool_config.
   def cbrain_task_class
     self.tool.cbrain_task_class.constantize
   end

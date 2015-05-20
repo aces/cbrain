@@ -138,7 +138,7 @@ class SshDataProvider < DataProvider
     self.master # triggers unlocking the agent
     Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
       begin
-        att = sftp.lstat!(newpath)
+        sftp.lstat!(newpath)
         return false # means file exists already
       rescue => ex
         # Nothing to do! An exception means everything is OK, so just go on.
@@ -183,7 +183,7 @@ class SshDataProvider < DataProvider
           begin
             val = attributes.send(meth)
             fileinfo.send("#{meth}=", val)
-          rescue => e
+          rescue
             #puts "Method #{meth} not supported: #{e.message}"
             bad_attributes << meth
           end
@@ -258,8 +258,8 @@ class SshDataProvider < DataProvider
           begin
             val = attributes.send(meth)
             fileinfo.send("#{meth}=", val)
-          rescue => e
-            #puts "Method #{meth} not supported: #{e.message}"
+          rescue
+            # puts "Method #{meth} not supported: #{e.message}"
             bad_attributes << meth
           end
         end

@@ -20,10 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe RemoteResource do
-  let(:remote_resource) {Factory.create(:remote_resource)}
+  let(:remote_resource) {create(:remote_resource)}
 
   describe "#spaced_dp_ignore_patterns" do
     it "should return the ignore patterns as a space-seperated string" do
@@ -389,7 +389,7 @@ describe RemoteResource do
       allow(Kernel).to receive(:`)
       allow(Socket).to receive(:gethostname)
       allow(Socket).to receive(:gethostbyname).and_raise(StandardError)
-      allow(IO).to receive(:popen)
+      allow(IO).to     receive(:popen)
     end
     it "should get the host name" do
       expect(Socket).to receive(:gethostname)
@@ -402,7 +402,7 @@ describe RemoteResource do
   end
   describe "#remote_resource_info (instance method)" do
     before(:each) do
-      allow(remote_resource).to receive(:ssh_master).and_return(true)
+      #allow(remote_resource).to receive(:ssh_master).and_return(true)
       allow(remote_resource).to receive_message_chain(:ssh_master, :is_alive?).and_return(true)
       allow(remote_resource).to receive(:site).and_return("site")
     end

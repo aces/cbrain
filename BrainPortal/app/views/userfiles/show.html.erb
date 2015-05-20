@@ -227,9 +227,15 @@
 
         <div id="userfile_viewer">
           <div class="display_userfile">
-            <% if @viewer %>
-               <%= render :file  => @viewer.partial_path %>
-            <% end %>
+            <% begin %>
+              <% if @viewer %>
+                <%= render :file  => @viewer.partial_path %>
+              <% end %>
+            <%
+              rescue ActionView::Template::Error => e
+                raise CbrainPluginRenderError.new(e.original_exception)
+              end
+            %>
           </div>
         </div>
       <% end %>

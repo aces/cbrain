@@ -20,17 +20,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe ToolConfig do
-  let(:tool_config) {Factory.create(:tool_config)}
+  let(:tool_config) {create(:tool_config)}
 
   describe "#can_be_accessed_by?" do
-    let(:user)              {Factory.create(:admin_user)}
-    let(:group)             {Factory.create(:group, :users => [user])}
-    let(:group_tool_config) {Factory.create(:tool_config, :group => group)}
-    let(:no_b_tool_config)  {Factory.create(:tool_config, :bourreau => nil)}
-    let(:no_t_tool_config)  {Factory.create(:tool_config, :tool => nil)}
+    let(:user)              { create(:admin_user) }
+    let(:group)             { create(:group, :users => [user]) }
+    let(:group_tool_config) { create(:tool_config, :group => group) }
+    let(:no_b_tool_config)  { create(:tool_config, :bourreau => nil) }
+    let(:no_t_tool_config)  { create(:tool_config, :tool => nil) }
 
 
     it "should allow admin user to access a tool config even if they don't belong to its group" do
@@ -38,7 +38,7 @@ describe ToolConfig do
     end
 
     it "should not allow non-admin user to access a tool config if they don't belong to its group" do
-      expect(tool_config.can_be_accessed_by?(Factory.create(:normal_user))).to be_falsey
+      expect(tool_config.can_be_accessed_by?(create(:normal_user))).to be_falsey
     end
 
     it "should not allow user to access a tool config if the bourreau is not set" do
@@ -111,7 +111,7 @@ describe ToolConfig do
     end
 
     it "should add extended_environment to ENV if use_extend is true" do
-      increase = tool_config.extended_environment ? tool_config.extended_environment.size : 0
+      tool_config.extended_environment ? tool_config.extended_environment.size : 0
       tool_config.apply_environment(true) { expect(ENV.keys).to include(tool_config.extended_environment.first.first)}
     end
   end
@@ -155,7 +155,7 @@ describe ToolConfig do
 
   describe "#to_bash_prologue" do
 
-   let(:tool) {Factory.create(:tool, :cbrain_task_class => "CbrainTask::Civet")}
+   let(:tool) {create(:tool, :cbrain_task_class => "CbrainTask::Civet")}
 
    context "fill HEADER" do
       it "should print 'Configuration: tool_config.id'" do

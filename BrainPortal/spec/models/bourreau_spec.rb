@@ -17,22 +17,23 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe Bourreau do
-  let(:bourreau) {Factory.create(:bourreau)}
+  let(:bourreau) { create(:bourreau) }
+
   describe "#tools" do
     it "should return the tools associated with this bourreaux" do
-      tool = Factory.create(:tool, :tool_configs => [Factory.create(:tool_config, :tool => nil, :bourreau_id => bourreau.id)])
+      tool = create(:tool, :tool_configs => [create(:tool_config, :tool => nil, :bourreau_id => bourreau.id)])
       expect(bourreau.tools).to match_array([tool])
     end
   end
   describe "#global_tool_config" do
     it "should return the global tool config" do
-      tool_config = Factory.create(:tool_config, :bourreau_id => bourreau.id, :tool_id => nil)
+      tool_config = create(:tool_config, :bourreau_id => bourreau.id, :tool_id => nil)
       expect(bourreau.global_tool_config).to eq(tool_config)
     end
   end

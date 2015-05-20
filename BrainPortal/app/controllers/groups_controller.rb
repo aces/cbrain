@@ -196,6 +196,7 @@ class GroupsController < ApplicationController
     end
   end
 
+  # Used in order to remove a user from a group.
   def unregister
     @group = current_user.available_groups.where( :type => "WorkGroup" ).find(params[:id])
 
@@ -206,7 +207,7 @@ class GroupsController < ApplicationController
         format.xml  { head :unprocessable_entity }
       else
         original_user_ids = @group.user_ids
-        @group.user_ids = @group.user_ids - [current_user.id]
+        @group.user_ids   = @group.user_ids - [current_user.id]
         @group.addlog_object_list_updated("Users", User, original_user_ids, @group.user_ids, current_user, :login)
 
         flash[:notice] = "You have been unregistered from project #{@group.name}."

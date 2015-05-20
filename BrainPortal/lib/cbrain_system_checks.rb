@@ -17,12 +17,12 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Runtime system checks common to both Portal and Bourreau
 class CbrainSystemChecks < CbrainChecker #:nodoc:
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.puts(*args) #:nodoc:
@@ -87,7 +87,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     #-----------------------------------------------------------------------------
     puts "C> Setting time zone for application..."
     #-----------------------------------------------------------------------------
-    
+
     myself = RemoteResource.current_resource
     my_time_zone = myself.time_zone
 
@@ -108,7 +108,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     Time.zone = my_time_zone
 
   end
-  
+
 
 
   def self.a040_ensure_file_revision_system_is_active
@@ -116,7 +116,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     #-----------------------------------------------------------------------------
     puts "C> Making sure we can track file revision numbers."
     #-----------------------------------------------------------------------------
-    
+
     rev = DataProvider.revision_info.self_update
     # Invalid rev dates are 0000-00-00 or before 1971
     if (rev.date !~ /(\d\d\d\d)/ || Regexp.last_match[1].to_i < 1971)
@@ -125,12 +125,12 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       puts "C> \t  the list of revision numbers for CbrainFileRevision is missing."
       Kernel.exit(10)
     end
-    
+
   end
 
 
 
-  # Cleans up old syncstatus that are left in the database 
+  # Cleans up old syncstatus that are left in the database
   def self.a045_ensure_syncstatus_is_clean
 
     #-----------------------------------------------------------------------------
@@ -226,7 +226,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       DataProvider.cache_revision_of_last_init(:force)
 
     # Just crud removal needed.
-    else 
+    else
 
       puts "C> \t- Wiping old files in Data Provider cache (in background)."
 
@@ -282,5 +282,5 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     puts "C> \t  #{portals.size > 1 ? "one of these names." : "this name."}"
   end
 
-end 
+end
 

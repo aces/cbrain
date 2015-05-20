@@ -17,28 +17,28 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe TaskCustomFilter do
-  let(:filter)  {Factory.create(:task_custom_filter)}
+  let(:filter)  {create(:task_custom_filter)}
   let(:task_scope) { double("task_scope").as_null_object }
-  
+
   let(:cbrain_task1) {
-    Factory.create(:cbrain_task, :description => "desc1", :user_id => 1, :bourreau_id => 1,
+    create(:cbrain_task, :description => "desc1", :user_id => 1, :bourreau_id => 1,
                     :created_at => "2011-04-04", :status => "New",
                     :updated_at => "2011-05-04")
   }
-  
+
   let(:cbrain_task2) {
-    Factory.create(:cbrain_task, :description => "desc2", :user_id => 2, :bourreau_id => 2,
+    create(:cbrain_task, :description => "desc2", :user_id => 2, :bourreau_id => 2,
                     :created_at => "2011-04-29", :status => "Completed",
                     :updated_at => "2011-05-29")
   }
-  
-  describe "#filter_scope" do 
+
+  describe "#filter_scope" do
     it "should scope type if type filter given" do
       filter.data = { "type" => "CbrainTask::Diagnostics" }
       expect(filter).to receive(:scope_type).and_return(task_scope)
@@ -49,29 +49,29 @@ describe TaskCustomFilter do
       expect(filter).not_to receive(:scope_type)
       filter.filter_scope(task_scope)
     end
-    
+
     it "should remove all task without 'data['user_id']'" do
       filter.data = { "user_id" => cbrain_task1.user_id }
       expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
     end
-    
+
     it "should remove all task without 'data['bourreau_id']'" do
       filter.data = { "bourreau_id" => cbrain_task1.bourreau_id }
       expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
     end
-    
+
     it "should remove all task without 'data['status']'" do
       filter.data = { "status" => cbrain_task1.status }
       expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
     end
 
     context "with date" do
-      
+
       it "should only keep task created between 'data['absolute_from'] and 'data['absolute_to']'" do
         filter.data = { "date_attribute" => "created_at", "absolute_or_relative_from"=>"absolute", "absolute_or_relative_to"=>"absolute", "absolute_from" => "04/04/2011", "absolute_to" => "04/04/2011" }
         expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
       end
-      
+
       it "should only keep task updates between 'data['absolute_from'] and 'data['absolute_to']'" do
         filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"absolute", "absolute_or_relative_to"=>"absolute", "absolute_from" => "04/05/2011", "absolute_to" => "04/05/2011" }
         expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
@@ -93,7 +93,7 @@ describe TaskCustomFilter do
         cbrain_task1.save!
         expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
       end
-      
+
     end
 
     context "with description scope" do
@@ -101,12 +101,12 @@ describe TaskCustomFilter do
         filter.data = { "description_type" => "match", "description_term" => cbrain_task1.description }
         expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
       end
-    
+
       it "should remove all task doesn't begin with 'data['description_term']'" do
         filter.data = { "description_type" => "begin", "description_term" => cbrain_task1.description[0..2] }
         expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1,cbrain_task2])
       end
-      
+
       it "should remove all task doesn't end with 'data['description_term']'" do
         filter.data = { "description_type" => "end", "description_term" => cbrain_task1.description[-1].chr }
         expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
@@ -119,12 +119,12 @@ describe TaskCustomFilter do
     end
   end
 
-  describe "#created_date_term" do                      
+  describe "#created_date_term" do
     it "should return nil if date_term is not defined" do
       expect(filter.created_date_term).to be nil
     end
   end
-  
+
   describe "#date_term=" do
     it "should assign the date_term in the data hash" do
       date = {"date_term(1i)"=>"2011", "date_term(2i)"=>"05", "date_term(3i)"=>"24"}
@@ -133,5 +133,5 @@ describe TaskCustomFilter do
     end
   end
 
-end  
+end
 

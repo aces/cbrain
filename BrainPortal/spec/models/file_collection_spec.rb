@@ -20,25 +20,25 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe FileCollection do
-  let(:provider) {Factory.create(:ssh_data_provider, :online => true, :read_only => false)}
-  let(:file_collection) {Factory.create(:file_collection, :data_provider => provider) }
+  let(:provider)        { create(:ssh_data_provider, :online => true, :read_only => false) }
+  let(:file_collection) { create(:file_collection, :data_provider => provider) }
   cache_full_path = Pathname.new("base_path/path")
 
   before(:each) do
-    allow(File).to receive(:exist?).and_return(true)
+    allow(File).to            receive(:exist?).and_return(true)
     allow(file_collection).to receive(:cache_full_path).and_return(cache_full_path)
-    allow(provider).to receive(:cache_prepare).and_return(true)
+    allow(provider).to        receive(:cache_prepare).and_return(true)
   end
 
   describe "#collection_file" do
     before(:each) do
       allow(file_collection).to receive_message_chain(:list_files, :find).and_return(true)
-      allow(File).to receive(:readable?).and_return(true)
-      allow(File).to receive(:directory?).and_return(false)
-      allow(File).to receive(:symlink?).and_return(false)
+      allow(File).to            receive(:readable?).and_return(true)
+      allow(File).to            receive(:directory?).and_return(false)
+      allow(File).to            receive(:symlink?).and_return(false)
     end
 
     it "should return nil if collection file not in the collection's list of files" do
@@ -73,9 +73,9 @@ describe FileCollection do
 
   describe "#extract_collection_from_archive_file" do
     before(:each) do
-      allow(FileCollection).to receive(:cache_prepare).and_return(true)
-      allow(File).to receive(:directory?).and_return(true)
-      allow(Dir).to receive(:chdir).and_yield
+      allow(File).to            receive(:directory?).and_return(true)
+      allow(Dir).to             receive(:chdir).and_yield
+      allow(file_collection).to receive(:cache_prepare).and_return(true)
       allow(file_collection).to receive(:remove_unwanted_files)
       allow(file_collection).to receive(:sync_to_provider)
       allow(file_collection).to receive(:set_size!)

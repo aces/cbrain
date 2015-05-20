@@ -22,7 +22,7 @@
 
 require 'fileutils'
 
-#RESTful controller for the Userfile resource.
+# RESTful controller for the Userfile resource.
 class UserfilesController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -192,7 +192,6 @@ class UserfilesController < ApplicationController
     redirect_to :action => :index
   end
 
-  #####################################################
   # Transfer contents of a file.
   # If no relevant parameters are given, the controller
   # will simply attempt to send the entire file.
@@ -202,8 +201,8 @@ class UserfilesController < ApplicationController
   #                   userfile.
   # [:arguments]      arguments to pass to the content
   #                   loader method.
-  #####################################################
-  #GET /userfiles/1/content?option1=....optionN=...
+  #
+  # GET /userfiles/1/content?option1=....optionN=...
   def content
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
@@ -233,6 +232,11 @@ class UserfilesController < ApplicationController
     end
   end
 
+  # Renders a partial within the 'show' page by invoking
+  # some custom viewer code registered by a Userfile subclass.
+  # The main parameter is :viewer ; an optional :viewer_userfile_class
+  # can be provided to override which class to search for the viewer code
+  # (by default, the class of +userfile+)
   def display
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
@@ -266,9 +270,17 @@ class UserfilesController < ApplicationController
       else
         render :text => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>", :status  => "404"
       end
-    rescue => exception
-      raise unless Rails.env == 'production'
+    rescue ActionView::Template::Error => e
+      exception = e.original_exception
+
+      raise exception unless Rails.env == 'production'
       ExceptionLog.log_exception(exception, current_user, request)
+      Message.send_message(current_user,
+        :message_type => 'error',
+        :header => "Could not view #{@userfile.name}",
+        :description => "An internal error occured when trying to display the contents of #{@userfile.name}."
+      )
+
       render :text => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>", :status => "500"
     end
   end
@@ -310,11 +322,27 @@ class UserfilesController < ApplicationController
       @previous_userfile, @next_userfile = neighbors
     end
 
-    respond_to do |format|
-      format.html
-      format.xml  { render :xml  => @userfile }
-      format.json { render :json => @userfile }
-    end
+    begin
+      respond_to do |format|
+        format.html
+        format.xml  { render :xml  => @userfile }
+        format.json { render :json => @userfile }
+      end
+    rescue ActionView::Template::Error => e
+      e = e.original_exception
+      raise e unless e.is_a?(CbrainPluginRenderError)
+      exception = e.original_exception
+
+      raise exception unless Rails.env == 'production'
+      ExceptionLog.log_exception(exception, current_user, request)
+      Message.send_message(current_user,
+        :message_type => 'error',
+        :header => "Could not show #{@userfile.name}",
+        :description => "An internal error occured when trying to show #{@userfile.name}."
+      )
+
+      redirect_to :action => :index
+   end
   end
 
   def new #:nodoc:
