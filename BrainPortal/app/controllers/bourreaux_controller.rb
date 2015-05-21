@@ -159,6 +159,9 @@ class BourreauxController < ApplicationController
     syms_limit_users = @users.map { |u| "task_limit_user_#{u.id}".to_sym }
     add_meta_data_from_form(@bourreau, [ :task_limit_total, :task_limit_user_default, :error_message_mailing_list ] + syms_limit_users )
 
+    # File upload size limit (portal only)
+    add_meta_data_from_form(@bourreau, [ :upload_size_limit ])
+
     if old_dp_cache_dir != @bourreau.dp_cache_dir
       old_ss = SyncStatus.where( :remote_resource_id => @bourreau.id )
       old_ss.each do |ss|
