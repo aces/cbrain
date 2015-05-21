@@ -17,16 +17,17 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 class NameFormatValidator < ActiveModel::EachValidator #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  def validate_each(object, attribute, value)
+  # Iterator that validates name.
+  def validate_each(object, attribute, value) #:nodoc:
     unless value.blank? || value =~ /^[a-zA-Z0-9][ \w\~\!\@\#\%\^\*\-\+\=\:\;\,\.\?]*$/
-      object.errors[attribute] << (options[:message] || "contains invalid characters") 
+      object.errors[attribute] << (options[:message] || "contains invalid characters")
     end
   end
 

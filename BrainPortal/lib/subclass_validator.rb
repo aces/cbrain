@@ -24,6 +24,8 @@ class SubclassValidator < ActiveModel::EachValidator #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # Iterator for making sure an object's class can
+  # be changed to another class.
   def validate_each(object, attribute, value)
     superklass = object.class.sti_root_class
     root_class = superklass

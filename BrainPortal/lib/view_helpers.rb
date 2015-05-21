@@ -17,23 +17,23 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #Controller helpers related specifically to the views.
 module ViewHelpers
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.included(includer) #:nodoc:
     includer.send(:helper_method, *self.instance_methods)
   end
-  
+
   #################################################################################
   # Date/Time Helpers
   #################################################################################
-  
-  #Converts any time string or object to the format 'yyyy-mm-dd hh:mm:ss'.
+
+  # Converts any time string or object to the format 'yyyy-mm-dd hh:mm:ss'.
   def to_localtime(stringtime, what = :date)
      loctime = stringtime.is_a?(Time) ? stringtime : Time.parse(stringtime.to_s)
      loctime = loctime.in_time_zone # uses the user's time zone, or the system if not set. See activate_user_time_zone()
@@ -64,13 +64,13 @@ module ViewHelpers
   def pretty_elapsed(numseconds,options = {})
     remain    = numseconds.to_i
     is_short  = options[:short]
-    
-    
+
+
     return "0 seconds" if remain <= 0
 
     numyears = remain / 1.year.to_i
     remain   = remain - ( numyears * 1.year.to_i   )
-    
+
     nummos   = remain / 1.month
     remain   = remain - ( nummos * 1.month   )
 
@@ -98,11 +98,11 @@ module ViewHelpers
       [numsecs,  is_short ? "s" : "second"]
     ]
 
-    
+
    components = components.select { |c| c[0] > 0 }
-   components.pop   while components.size > 0 && components[-1] == 0 
-   components.shift while components.size > 0 && components[0]  == 0 
-   
+   components.pop   while components.size > 0 && components[-1] == 0
+   components.shift while components.size > 0 && components[0]  == 0
+
     if options[:num_components]
       while components.size > options[:num_components]
         components.pop
@@ -143,7 +143,7 @@ module ViewHelpers
     elapsed = pretty_elapsed(Time.now - loctime)
     "#{locdate} (#{elapsed} ago)"
   end
-  
+
   # Format a byte size for display in the view.
   # Returns the size as one format of
   #
@@ -172,7 +172,7 @@ module ViewHelpers
       sprintf("%6.1f Kb", size/            1_000.0).strip
     else
       sprintf("%d bytes", size).strip
-    end 
+    end
   end
 
   # This method returns the same thing as pretty_size,
@@ -235,7 +235,7 @@ module ViewHelpers
   def view_pluralize(*args) #:nodoc:
     ApplicationController.helpers.pluralize(*args)
   end
-  
+
   HTML_FOR_JS_ESCAPE_MAP = {
   #  '"'     => '\\"',    # wrong, we leave it as is
   #  '</'    => '<\/',    # wrong too
@@ -245,7 +245,7 @@ module ViewHelpers
     "\r"    => '\n',
     "'"     => "\\'"
   }
-  
+
   # Escape a string containing HTML code so that it is a valid
   # javascript constant string; the string will be quoted
   # with single quotes (') on each end.

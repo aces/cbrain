@@ -61,7 +61,7 @@ class Tool < ActiveRecord::Base
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
 
-  #Find a random bourreau on which this tool is available and to which +user+ has access.
+  # Find a random bourreau on which this tool is available and to which +user+ has access.
   def select_random_bourreau_for(user)
     available_group_ids = user.group_ids
     bourreau_list = Bourreau.where( :group_id => available_group_ids, :online => true ).select(&:is_alive?)

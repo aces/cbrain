@@ -40,15 +40,11 @@ class CbrainTask::BashScriptor < PortalTask
     }
   end
 
-  # RDOC comments here, if you want, although the method
-  # is created with #:nodoc: in this template.
   def before_form #:nodoc:
     cb_error "This task can ONLY be launched by the administrator.\n" unless self.user.has_role? :admin_user
     return ""
   end
 
-  # RDOC comments here, if you want, although the method
-  # is created with #:nodoc: in this template.
   def after_form #:nodoc:
     params = self.params
     #cb_error "Some error occurred."

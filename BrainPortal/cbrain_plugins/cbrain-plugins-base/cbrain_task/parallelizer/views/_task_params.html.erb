@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -29,7 +29,6 @@
   <% task_ids_enabled = @task.params[:task_ids_enabled] || {} %>
   <% task_ids_enabled.keys.sort { |a,b| a.to_i <=> b.to_i }.each do |tid| %>
   <%   next if tid.blank? %>
-  <%   enabled = task_ids_enabled[tid].blank? ? nil : "1" %>
   <%   subtask = CbrainTask.find_by_id(tid) %>
     <li>
       <% if subtask %>

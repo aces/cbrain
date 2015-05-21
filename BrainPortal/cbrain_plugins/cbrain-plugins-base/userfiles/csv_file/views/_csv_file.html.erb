@@ -27,10 +27,10 @@
 <%= javascript_include_tag 'jquery.metadata' %>
 
 <% if @userfile.is_locally_synced? %>
-  <% quote,separator = @userfile.guess_csv_quote_sep %>
+  <% quote, separator, invalid_encoding = @userfile.guess_csv_quote_sep %>
 
   <% if ! (quote && separator) %>
-      Can't identified CSV quote character and separator character.
+      Can't identify CSV quote character and separator character.
   <% else %>
     <%
       csv_array     = @userfile.create_csv_array(quote,separator)
@@ -48,6 +48,12 @@
         pager
       end
     %>
+
+    <% if invalid_encoding %>
+      <span class="warning">
+        Warning: Invalid UTF-8 characters found. Some characters may not display correctly.
+      </span>
+    <% end %>
 
     <%= form_tag userfile_path(@userfile), :method => :get do %>
       <span class="no_wrap">

@@ -34,8 +34,8 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  #Checks for pending migrations, stops the boot if it detects a problem. Must be run first
-  def self.a010_check_if_pending_database_migrations
+  # Checks for pending migrations, stops the boot if it detects a problem. Must be run first
+  def self.a010_check_if_pending_database_migrations #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Checking for pending migrations..."
@@ -57,7 +57,7 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.a020_check_database_sanity
+  def self.a020_check_database_sanity #:nodoc:
 
     #----------------------------------------------------------------------------
     puts "C> Checking if the BrainPortal database needs a sanity check..."
@@ -72,7 +72,7 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.z000_ensure_we_have_a_local_ssh_agent
+  def self.z000_ensure_we_have_a_local_ssh_agent #:nodoc:
 
     #----------------------------------------------------------------------------
     puts "C> Making sure we have a SSH agent to provide our credentials..."
@@ -124,39 +124,43 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.z010_ensure_we_have_a_ssh_agent_locker
+  def self.z010_ensure_we_have_a_ssh_agent_locker #:nodoc:
 
     #----------------------------------------------------------------------------
     puts "C> Starting automatic Agent Locker in background..."
     #----------------------------------------------------------------------------
 
-    allworkers = WorkerPool.find_pool(PortalAgentLocker)
-
-    allworkers.each do |worker|
-      puts "C> \t- Found locker already running: '#{worker.pretty_name}'."
-    end
-
-    if allworkers.size == 0
-      puts "C> \t- No locker processes found. Creating one."
-
-      al_logger = Log4r::Logger.new('AgentLocker')
-      al_logger.add(Log4r::RollingFileOutputter.new('agent_locker_outputter',
-                      :filename  => "#{Rails.root}/log/AgentLocker..log",
-                      :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
-                      :maxsize   => 1000000, :trunc => 600000))
-      al_logger.level = Log4r::INFO # Log4r::INFO or Log4r::DEBUG or other levels...
-      al_logger.level = Log4r::DEBUG if ENV['CBRAIN_DEBUG_TRACES'].present?
-
-      WorkerPool.create_or_find_pool(PortalAgentLocker, 1,
-        { :check_interval => 60,
-          :worker_log     => al_logger,
-          :name           => 'AgentLocker',
-        }
-      )
-    end
-
     SshAgentUnlockingEvent.where(["created_at < ?",1.day.ago]).delete_all # just to be clean in case they accumulate
 
+    worker = WorkerPool.find_pool(PortalAgentLocker).workers.first
+    if worker
+      puts "C> \t- Found locker already running: '#{worker.pretty_name}'."
+      return
+    end
+
+    begin
+      Kernel.open("#{Rails.root}/tmp/AgentLocker.lock", File::WRONLY|File::CREAT|File::EXCL).close
+    rescue Errno::EEXIST
+      puts "C> \t- Locker already being created. (#{Rails.root}/tmp/AgentLocker.lock)"
+      return
+    end
+
+    puts "C> \t- No locker processes found. Creating one."
+
+    al_logger = Log4r::Logger.new('AgentLocker')
+    al_logger.add(Log4r::RollingFileOutputter.new('agent_locker_outputter',
+                    :filename  => "#{Rails.root}/log/AgentLocker..log",
+                    :formatter => Log4r::PatternFormatter.new(:pattern => "%d %l %m"),
+                    :maxsize   => 1000000, :trunc => 600000))
+    al_logger.level = Log4r::INFO # Log4r::INFO or Log4r::DEBUG or other levels...
+    al_logger.level = Log4r::DEBUG if ENV['CBRAIN_DEBUG_TRACES'].present?
+
+    WorkerPool.create_or_find_pool(PortalAgentLocker, 1,
+      { :check_interval => 60,
+        :worker_log     => al_logger,
+        :name           => 'AgentLocker',
+      }
+    )
   end
 
 end

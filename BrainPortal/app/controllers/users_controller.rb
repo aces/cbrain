@@ -155,7 +155,7 @@ class UsersController < ApplicationController
     end
   end
 
-  def change_password
+  def change_password #:nodoc:
     @user = User.find(params[:id])
     cb_error "You don't have permission to view this page.", :redirect => start_page_path unless edit_permission?(@user)
   end

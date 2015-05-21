@@ -137,7 +137,7 @@ class ToolsController < ApplicationController
 
 
   # DELETE /tools/1
-    # DELETE /tools/1.xml
+  # DELETE /tools/1.xml
   def destroy #:nodoc:
       @tool = current_user.available_tools.find(params[:id])
       @tool.destroy

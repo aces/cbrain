@@ -20,8 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#= Portal Agent Locker Worker
-#
 # This class implements a worker that constantly relocks the
 # SSH Agent for the CBRAIN system N seconds (default: 60) after any other part
 # of the system has unlocked it. A single instance of this worker

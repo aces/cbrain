@@ -17,37 +17,37 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 module CBRAINExtensions #:nodoc:
   module ActiveRecordExtensions #:nodoc:
-    
+
     # Restore +scopes+ method behaviour that was lost in Rails 3.1
     module CbrainScopes
-      
+
       Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-      
+
       def self.included(includer) #:nodoc:
         includer.class_eval do
           extend ClassMethods
         end
       end
 
-      
+
       module ClassMethods
-        def cb_scopes
+        def cb_scopes #:nodoc:
           @cb_scopes ||= defined?(super) ? super.cb_deep_clone : {}
         end
-        
+
         private
-        
-        def cb_scope(scope_name, *args)
+
+        def cb_scope(scope_name, *args) #:nodoc:
           cb_scopes[scope_name] = args
           scope(scope_name, *args)
         end
       end
-      
+
     end
   end
 end

@@ -136,7 +136,7 @@ class PortalTask < CbrainTask
   end
 
   # Backwards compatibility auto adaptation:
-  # if a task's code is extended to incldue new parameters,
+  # if a task's code is extended to include new parameters,
   # then this will re-insert their default values
   # into the params[] hash.
   #
@@ -228,13 +228,21 @@ class PortalTask < CbrainTask
   end
 
   # This method will be called if the user clicks
-  # on a button labelled /Refresh/ when creating
-  # a new task or editing an existing one. It
+  # on a button matching refresh_form_regex (/refresh/ by default)
+  # when creating a new task or editing an existing one. It
   # doesn't have to do anything, but usually it's
   # convenient when we want to dynamicallty adjust
   # some of the form elements.
   def refresh_form
     ""
+  end
+
+  # This method is called to check if a task form submission
+  # corresponds to a refresh action. If the button the user clicked
+  # matches this, refresh_form is called.
+  # Defaults to /refresh/
+  def refresh_form_regex
+    /refresh/i
   end
 
   # This method is called after the user has clicked

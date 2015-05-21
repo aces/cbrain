@@ -122,7 +122,7 @@ class SshMaster
     ssh_masters[key]
   end
 
-  def self.ssh_master_cache #:nodoc
+  def self.ssh_master_cache #:nodoc:
     #@@ssh_masters ||= {}
     #@@ssh_masters
     $cbrain_ssh_masters ||= {}  # rails reload the class every time so can't use @@ssh_masters

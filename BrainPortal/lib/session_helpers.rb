@@ -32,12 +32,12 @@ module SessionHelpers
     end
   end
 
-  #Returns the current session as a CbrainSession object.
+  # Returns the current session as a CbrainSession object.
   def current_session
     @cbrain_session ||= CbrainSession.new(session, params, request.env['rack.session.record'] )
   end
 
-  #Returns currently active project.
+  # Returns currently active project.
   def current_project
     return nil unless current_session[:active_group_id]
     return nil if current_session[:active_group_id] == "all"

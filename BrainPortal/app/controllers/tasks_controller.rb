@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#Restful controller for the CbrainTask resource.
+# RESTful controller for the CbrainTask resource.
 class TasksController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -115,9 +115,9 @@ class TasksController < ApplicationController
     end
   end
 
-  def batch_list #:nodoc:
+  # Renders a set of tasks associated with a batch.
+  def batch_list
     scope = filter_variable_setup current_user.available_tasks.real_tasks.where(:batch_id => params[:batch_id] )
-
     scope = scope.includes( [:bourreau, :user, :group] ).order( "cbrain_tasks.rank, cbrain_tasks.level, cbrain_tasks.id" ).readonly(false)
 
     @tasks = scope
@@ -153,6 +153,11 @@ class TasksController < ApplicationController
         @task.script_text    = nil
       end
     end
+
+    # This variable can be used by the task's _show_params partial
+    # to selectively display pieces of information based on the
+    # current version of the tool, using things like @tool_config.is_at_least_version('2.0.0).
+    @tool_config = @task.tool_config
 
     respond_to do |format|
       format.html # show.html.erb
@@ -317,8 +322,8 @@ class TasksController < ApplicationController
     @task.addlog_context(self,"Created by #{current_user.login}")
 
     # Give a task the ability to do a refresh of its form
-    commit_name = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ])
-    commit_name = :refresh if params[:commit] =~ /refresh/i
+    commit_name     = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ])
+    commit_name     = :refresh if params[:commit] =~ @task.refresh_form_regex
     if commit_name == :refresh
       initialize_common_form_values
       flash.now[:notice] += @task.wrapper_refresh_form
@@ -551,7 +556,8 @@ class TasksController < ApplicationController
     redirect_to :action => :show, :id => @task.id
   end
 
-  def update_multiple #:nodoc:
+  # Allows user to update attributes of multiple tasks.
+  def update_multiple
 
     # Construct task_ids and batch_ids
     task_ids    = Array(params[:tasklist]  || [])
@@ -705,15 +711,15 @@ class TasksController < ApplicationController
     redirect_to :action => :index, :format  => request.format.to_sym
   end
 
-  #This action handles requests to modify the status of a given task.
-  #Potential operations are:
-  #[*Hold*] Put the task on hold (while it is queued).
-  #[*Release*] Release task from <tt>On Hold</tt> status (i.e. put it back in the queue).
-  #[*Suspend*] Stop processing of the task (while it is on cpu).
-  #[*Resume*] Release task from <tt>Suspended</tt> status (i.e. continue processing).
-  #[*Terminate*] Kill the task, while maintaining its temporary files and its entry in the database.
-  #[*Delete*] Kill the task, delete the temporary files and remove its entry in the database.
-  def operation #:nodoc:
+  # This action handles requests to modify the status of a given task.
+  # Potential operations are:
+  # [*Hold*] Put the task on hold (while it is queued).
+  # [*Release*] Release task from <tt>On Hold</tt> status (i.e. put it back in the queue).
+  # [*Suspend*] Stop processing of the task (while it is on cpu).
+  # [*Resume*] Release task from <tt>Suspended</tt> status (i.e. continue processing).
+  # [*Terminate*] Kill the task, while maintaining its temporary files and its entry in the database.
+  # [*Delete*] Kill the task, delete the temporary files and remove its entry in the database.
+  def operation
     operation   = params[:operation]
     tasklist    = params[:tasklist]  || []
     tasklist    = [ tasklist ]  unless tasklist.is_a?(Array)
@@ -965,7 +971,7 @@ class TasksController < ApplicationController
     CbrainTask
   end
 
-  def filter_variable_setup(starting_scope)
+  def filter_variable_setup(starting_scope) #:nodoc:
     @header_scope = starting_scope
     @header_scope = @header_scope.where( :group_id => current_project.id ) if current_project
 

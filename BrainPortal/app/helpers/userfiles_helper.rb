@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#Helper methods for Userfile views.
+# Helper methods for Userfile views.
 module UserfilesHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -68,74 +68,35 @@ module UserfilesHelper
     html.join.html_safe
   end
 
-  def shift_file_link(userfile, dir, same_type, options = {})
-    if dir.to_s.downcase == "previous"
-      direction = "previous"
+  def neighbor_file_link(neighbor, index, dir, options = {})
+    return "" unless neighbor
+
+    if dir == :previous
+      text   = "<< " + neighbor.name
     else
-      direction = "next"
+      text   = neighbor.name + " >>"
     end
 
+    action       = params[:action] #Should be show or edit.
     link_options = options.delete(:html)
-    options[:conditions] ||= {}
 
-    if current_project && !(options[:conditions].has_key?(:group_id) || options[:conditions].has_key?("userfiles.group_id"))
-      options[:conditions]["userfiles.group_id"] = current_project.id
-    end
-
-    if same_type
-      options[:conditions]["userfiles.type"] = userfile.class.name
-      text = "#{direction.capitalize} #{userfile.class.name}"
-    else
-      text = "#{direction.capitalize} File"
-    end
-
-    if direction == "previous"
-      text = "<< " + text
-    else
-      text += " >>"
-    end
-
-    file = userfile.send("#{direction}_available_file", current_user, options)
-
-    action = params[:action] #Should be show or edit.
-
-
-    if file
-      link_to text, {:action  => action, :id  => file.id}, link_options
-    else
-      ""
-    end
+    link_to text, {:action  => action, :id  => neighbor.id, :sort_index => index}, link_options
   end
 
-  def next_file_link(userfile, options = {})
-    shift_file_link(userfile, :next, false, options)
-  end
-
-  def previous_file_link(userfile, options = {})
-    shift_file_link(userfile, :previous, false, options)
-  end
-
-  def next_typed_file_link(userfile, options = {})
-    shift_file_link(userfile, :next, true, options)
-  end
-
-  def previous_typed_file_link(userfile, options = {})
-    shift_file_link(userfile, :previous, true, options)
-  end
-
-  def file_link_table(userfile, options = {})
+  def file_link_table(previous_userfile, next_userfile, sort_index, options = {})
     (
     "<div class=\"display_table\" style=\"width:100%\">" +
       "<div class=\"display_row\">" +
-        "<div class=\"display_cell\">#{previous_file_link(@userfile, options.clone)}</div><div class=\"display_cell\" style=\"text-align:right\">#{next_file_link(@userfile, options.clone)}</div>" +
-      "</div>" +
-      "<div class=\"display_row\">" +
-        "<div class=\"display_cell\">#{previous_typed_file_link(@userfile, options.clone)}</div><div class=\"display_cell\" style=\"text-align:right\">#{next_typed_file_link(@userfile, options.clone)}</div>" +
+        "<div class=\"display_cell\">#{neighbor_file_link(previous_userfile, [0, sort_index - 1].max, :previous, options.clone)}</div>" +
+        "<div class=\"display_cell\" style=\"text-align:right\">#{neighbor_file_link(next_userfile, sort_index + 1, :next, options.clone)}</div>" +
       "</div>" +
     "</div>"
     ).html_safe
   end
 
+  # Generates links to pretty file content for userfiles
+  # of type TextFile or ImageFile; this method is going to
+  # be replaced by a proper generic framework in 4.2.0 !
   def data_link(file_name, userfile)
     display_name  = Pathname.new(file_name).basename.to_s
     return h(display_name) unless userfile.is_locally_synced?
@@ -168,7 +129,7 @@ module UserfilesHelper
     end
   end
 
-  # Return the HTML code that represent a symbol
+  # Returns the HTML code that represent a symbol
   # for +statkeyword+, which is a SyncStatus 'status'
   # keyword. E.g. for "InSync", the
   # HTML returned is a green checkmark, and for
@@ -191,17 +152,6 @@ module UserfilesHelper
         '<font color="red">?</font>'
     end
     html.html_safe
-  end
-
-  #Create a collapsable "Content" box for userfiles show page.
-  def content_viewer(&block)
-    safe_concat('<div id="userfile_contents_display">')
-    safe_concat(show_hide_toggle '<strong>Displayable Contents</strong>', "#userfile_contents_display_toggle")
-    safe_concat('<div id="userfile_contents_display_toggle" style="display:none"><BR><BR>')
-    safe_concat(capture(&block))
-    safe_concat('</div>')
-    safe_concat('</div>')
-    ""
   end
 
   # Returned a colorized size for the userfile ; if the

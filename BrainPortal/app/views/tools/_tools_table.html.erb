@@ -76,7 +76,7 @@
     t.describe_column("Help/Info") do |col|
 
       col.cell do |tool|
-        task_class = tool.cbrain_task_class.classify.constantize rescue nil
+        task_class = tool.cbrain_task_class.constantize rescue nil
         next unless task_class
         help_path = task_class.public_path("edit_params_help.html")
         if help_path
@@ -85,7 +85,7 @@
       end
 
       col.cell do |tool|
-        task_class = tool.cbrain_task_class.classify.constantize rescue nil
+        task_class = tool.cbrain_task_class.constantize rescue nil
         next unless task_class
         info_path = task_class.public_path("tool_info.html")
         if info_path

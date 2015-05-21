@@ -49,6 +49,7 @@ module DataProvidersHelper
     link.html_safe
   end
 
+  # Returns a description of each DP
   def data_providers_descriptions(data_providers = nil)
     data_providers ||= DataProvider.find_all_accessible_by_user(current_user).all
     paragraphs = data_providers.collect do |dp|

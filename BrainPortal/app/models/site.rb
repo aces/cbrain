@@ -61,61 +61,61 @@ class Site < ActiveRecord::Base
   attr_accessible :name, :description, :user_ids, :manager_ids, :group_ids
 
 
-  #Returns users that have manager access to this site (site managers or admins).
+  # Returns users that have manager access to this site (site managers or admins).
   def managers
     self.users.where(:type => "SiteManager")
   end
 
-  #Find all userfiles that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
+  # Find all userfiles that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
   def userfiles_find_all(options = {})
     scope = Userfile.where(options)
     scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
     scope
   end
 
-  #Find all remote resources that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
+  # Find all remote resources that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
   def remote_resources_find_all(options = {})
     scope = RemoteResource.where(options)
     scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
     scope
   end
 
-  #Find all data providers that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
+  # Find all data providers that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
   def data_providers_find_all(options = {})
     scope = DataProvider.where(options)
     scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
     scope
   end
 
-  #Find all tools that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
+  # Find all tools that belong to users associated with this site, subject to +options+ (ActiveRecord where options).
   def tools_find_all(options = {})
     scope = Tool.where(options)
     scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
     scope
   end
 
-  #Find the userfile with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
+  # Find the userfile with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
   def userfiles_find_id(id, options = {})
     scope = Userfile.where(options)
     scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
     scope.find(id)
   end
 
-  #Find the remote resource with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
+  # Find the remote resource with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
   def remote_resources_find_id(id, options = {})
     scope = RemoteResource.where(options)
     scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
     scope.find(id)
   end
 
-  #Find the data provider with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
+  # Find the data provider with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
   def data_providers_find_id(id, options = {})
     scope = DataProvider.where(options)
     scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
     scope.find(id)
   end
 
-  #Find the tool with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
+  # Find the tool with the given +id+ that belong to a user associated with this site, subject to +options+ (ActiveRecord where options).
   def tools_find_id(id, options = {})
     scope = Tool.where(options)
     scope = scope.joins(:user).where( ["users.site_id = ?", self.id] ).readonly(false)
@@ -131,6 +131,8 @@ class Site < ActiveRecord::Base
   # An alias for system_group()
   alias own_group system_group
 
+  # Temporary remove managers; needed in some special update
+  # situations. The original list of managers is kept internally.
   def unset_managers #:nodoc:
     @old_managers = []
     self.managers.each do |user|
@@ -141,7 +143,8 @@ class Site < ActiveRecord::Base
     end
   end
 
-  def restore_managers #:nodoc:
+  # Undoes unset_managers()
+  def restore_managers #:nodoc
     @old_managers ||= []
     @old_managers.each do |user|
       user.update_attribute(:type, "SiteManager")

@@ -76,15 +76,16 @@ class Group < ActiveRecord::Base
     self
   end
 
-  def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
+  # Can this group be accessed by +user+?
+  def can_be_accessed_by?(user, access_requested = :read)
     @can_be_accessed_cache       ||= {}
     @can_be_accessed_cache[user] ||= (user.has_role?(:admin_user) || user.is_member_of_group(self))
   end
 
-  #Can this group be edited by +user+?
+  # Can this group be edited by +user+?
   #
-  #Returns false in general. Should be overidden in subclasses
-  #in cases where editing is possible.
+  # Returns false in general. Should be overidden in subclasses
+  # in cases where editing is possible.
   def can_be_edited_by?(user)
     false
   end
@@ -113,7 +114,7 @@ class Group < ActiveRecord::Base
 
   private
 
-  #Set creator id if it's not set.
+  # Set creator id if it's not set.
   def set_default_creator #:nodoc:
     admin_user = User.admin
     if self.creator_id.nil? && admin_user #if admin doesn't exist it should mean that it's a new system.

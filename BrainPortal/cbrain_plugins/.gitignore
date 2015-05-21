@@ -2,3 +2,5 @@
 !.gitignore
 !installed-plugins
 !cbrain-plugins-base
+!installed-plugins/**
+!cbrain-plugins-base/**

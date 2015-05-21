@@ -77,7 +77,7 @@ class WorkGroup < Group
     wgs
   end
 
-  def pretty_category_name(as_user)
+  def pretty_category_name(as_user) #:nodoc:
     return @_pretty_category_name if @_pretty_category_name
     if self.invisible?
       @_pretty_category_name = 'Invisible Project'
@@ -93,7 +93,7 @@ class WorkGroup < Group
     @_pretty_category_name
   end
 
-  def short_pretty_type
+  def short_pretty_type #:nodoc:
     if self.users.count > 1
       return "Shared"
     else
@@ -101,7 +101,7 @@ class WorkGroup < Group
     end
   end
 
-  def can_be_edited_by?(user)
+  def can_be_edited_by?(user) #:nodoc:
     if user.has_role? :admin_user
       return true
     elsif !self.invisible?
