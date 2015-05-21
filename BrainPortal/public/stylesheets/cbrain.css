@@ -843,6 +843,31 @@ pre {
 
 
 /* % ######################################################### */
+/* % File upload progress dialog */
+/* % ######################################################### */
+
+.no_close .ui-dialog-titlebar-close {
+  display: none;
+}
+
+.progress_dialog {
+  min-height: 100% !important;
+}
+
+.progress_dialog .bar {
+  position: relative;
+  text-align: center;
+}
+
+.progress_dialog .label {
+  position: absolute;
+  top: 4px;
+  width: 100%;
+}
+
+
+
+/* % ######################################################### */
 /* % Account Section of Application Layout */
 /* % ######################################################### */
 
