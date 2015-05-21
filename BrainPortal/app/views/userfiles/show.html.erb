@@ -152,6 +152,10 @@
       <% end %>
     <% end %>
 
+    <% t.edit_cell(:description, :content => simple_format(@userfile.description, :sanitize => true), :show_width => 2) do %>
+      <%= text_area_tag "userfile[description]", @userfile.description, :rows => 10, :cols => 80 %>
+    <% end %>
+
   <% end %>
 
   <br>
