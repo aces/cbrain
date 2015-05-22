@@ -28,6 +28,10 @@
 <!-- CELL #1 : The two menu button lines, the pagination, and the userfiles table -->
 <!-- **************************************************************************** -->
 
+<% content_for :head do %>
+  <%= javascript_tag (render :partial => "launch_task.js.erb", :formats => [:js]).to_s %>
+<% end %>
+
 <div id="userfiles_menus_and_filelist">
 
   <%= multi_form_tag(:method => :post, "data-type"  => "script") do %>

@@ -843,6 +843,31 @@ pre {
 
 
 /* % ######################################################### */
+/* % Tool launch bar (userfiles index) */
+/* % ######################################################### */
+
+.launch_bar {
+  border: 2px solid #0471B4;
+  margin: 5px;
+  padding: 5px;
+  position: relative;
+  text-align: right;
+}
+
+.launch_bar span {
+  display: inline-block;
+  margin: 0px 5px;
+}
+
+.launch_bar span.info {
+  display: block;
+  float: left;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+
+/* % ######################################################### */
 /* % File upload progress dialog */
 /* % ######################################################### */
 
