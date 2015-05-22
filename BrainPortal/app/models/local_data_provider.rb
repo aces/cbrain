@@ -38,6 +38,11 @@ class LocalDataProvider < DataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # this returns the category of the data provider -- used in view for admins
+  def self.pretty_category_name
+    nil
+  end
+  
   # Returns true: local data providers are considered fast syncing.
   def is_fast_syncing?
     true

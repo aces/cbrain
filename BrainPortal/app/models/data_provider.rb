@@ -999,6 +999,12 @@ class DataProvider < ActiveRecord::Base
   def self.pretty_type #:nodoc:
     self.to_s
   end
+  
+  # this is a method that will return category type for this data_provider
+  # in the case of this class it will not be invoked
+  def self.pretty_category_name
+    ""
+  end
 
   # Returns the site this data provider belongs to.
   def site
