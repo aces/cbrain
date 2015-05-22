@@ -1000,10 +1000,11 @@ class DataProvider < ActiveRecord::Base
     self.to_s
   end
   
-  # this is a method that will return category type for this data_provider
-  # in the case of this class it will not be invoked
+  # This is a method that will return category type for this data_provider
+  # in the case of this class (abstract) it will not be invoked.
+  # Returning a nil is the convention that we'll use to HIDE a data provider class from the interface.
   def self.pretty_category_name
-    ""
+    nil
   end
 
   # Returns the site this data provider belongs to.
