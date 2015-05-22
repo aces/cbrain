@@ -33,18 +33,19 @@ $(document).delegate('div#tool_version_selector > div', 'new_content', function 
       launch_form         = menu_button.closest('form'),
       url                 = menu_button.attr('data-url'),
       method              = menu_button.attr('data-method'),
-      tool_name           = launch_form.find('select#tool_id option:selected').text().replace("Launch ", "");
+      tool_name           = launch_form.find('select#tool_id option:selected').text().replace("Launch ", ""),
+      persistent          = /persistent/.test($('.pagination blink span').text());
 
   /* If theres URL & method attributes on menu_button, use them instead of the form's */
   if (url)    launch_form.attr('action', url);
   if (method) launch_form.attr('method', method);
 
   menu_button
-    .button('option', 'label', userfile_checkboxes.is(':checked') ? "Launch Tool" : "Prepare Tool")
+    .button('option', 'label', (persistent || userfile_checkboxes.is(':checked')) ? "Launch Tool" : "Prepare Tool")
     .unbind('click')
     .bind('click', function (event) {
       /* If we have userfiles selected, we can launch the task right away! */
-      if (userfile_checkboxes.is(':checked')) return;
+      if (persistent || userfile_checkboxes.is(':checked')) return;
 
       event.preventDefault();
 

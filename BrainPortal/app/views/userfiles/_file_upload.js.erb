@@ -23,6 +23,8 @@
 -%>
 
 $(document).delegate('form#file_upload', 'submit', function (event) {
+  "use strict";
+
   /* Make sure the browser supports it */
   var xhr = new XMLHttpRequest();
   if (!('upload' in xhr) || !('onprogress' in xhr)) return;

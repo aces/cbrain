@@ -80,7 +80,7 @@
   </div>
   </p>
 
-  <% content_for :head do %>
+  <% content_for :scripts do %>
     <%= javascript_tag (render :partial => "file_upload.js.erb", :formats => [:js]).to_s %>
   <% end %>
 
