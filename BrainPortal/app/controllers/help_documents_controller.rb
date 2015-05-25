@@ -35,7 +35,6 @@ class HelpDocumentsController < ApplicationController
     @docs = HelpDocument.order(:key)
 
     respond_to do |format|
-      format.html # index.html.erb
       format.xml  { render :xml  => @docs }
       format.json { render :json => @docs }
     end
