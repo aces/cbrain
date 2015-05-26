@@ -123,6 +123,10 @@
       <% t.edit_cell(:remote_host)  do %>
         <%= text_field_tag "data_provider[remote_host]", @provider.remote_host %>
       <% end %>
+      <% t.edit_cell(:alternate_host, :header => "Alternate hostname(s)")  do %>
+        <%= text_field_tag "data_provider[alternate_host]", @provider.alternate_host, :size => 60 %><br />
+        <div class="field_explanation">Comma-separated list of alternate hostnames; hostname1,hostname2,hostname3,...</div>
+      <% end %>
       <% t.edit_cell(:remote_port) do %>
         <%= text_field_tag "data_provider[remote_port]", @provider.remote_port, :size => 6 %>
       <% end %>

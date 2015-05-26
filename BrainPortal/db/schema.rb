@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150515134547) do
+ActiveRecord::Schema.define(:version => 20150526144742) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -88,6 +88,7 @@ ActiveRecord::Schema.define(:version => 20150515134547) do
     t.string   "time_zone"
     t.string   "cloud_storage_client_identifier"
     t.string   "cloud_storage_client_token"
+    t.string   "alternate_host"
   end
 
   add_index "data_providers", ["group_id"], :name => "index_data_providers_on_group_id"
@@ -346,6 +347,7 @@ ActiveRecord::Schema.define(:version => 20150515134547) do
     t.boolean  "hidden",                                          :default => false
     t.boolean  "immutable",                                       :default => false
     t.boolean  "archived",                                        :default => false
+    t.text     "description"
   end
 
   add_index "userfiles", ["data_provider_id"], :name => "index_userfiles_on_data_provider_id"

@@ -238,7 +238,7 @@ class DataProvider < ActiveRecord::Base
   belongs_to              :group
   has_many                :userfiles, :dependent => :restrict
 
-  attr_accessible         :name, :user_id, :group_id, :remote_user, :remote_host, :remote_port, :remote_dir, :online,
+  attr_accessible         :name, :user_id, :group_id, :remote_user, :remote_host, :alternate_host, :remote_port, :remote_dir, :online,
                           :read_only, :description, :time_of_death, :not_syncable, :time_zone, :cloud_storage_client_identifier,
                           :cloud_storage_client_token, :license_agreements
 
