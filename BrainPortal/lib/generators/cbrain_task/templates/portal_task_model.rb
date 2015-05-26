@@ -10,7 +10,7 @@ class <%= "CbrainTask::#{class_name}" %> < PortalTask
 
   ################################################################
   # For full documentation on how to write CbrainTasks,
-  # read the CbrainTask Developer Manual.
+  # read the CbrainTask Progammer Guide (CBRAIN Wiki).
   #
   # The basic API consists in three methods that you need to
   # override:

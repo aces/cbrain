@@ -12,7 +12,7 @@ class CbrainTask::MyCksum < PortalTask
 
   ################################################################
   # For full documentation on how to write CbrainTasks,
-  # read the CbrainTask Developer Manual.
+  # read the CbrainTask Programmer Guide.
   #
   # The basic API consists in three methods that you need to
   # override:

@@ -6,7 +6,7 @@ class CbrainTask::MyCksum < ClusterTask
 
   ################################################################
   # For full documentation on how to write CbrainTasks,
-  # read the CBRAIN CbrainTask Developer's Manual.
+  # read the CBRAIN CbrainTask Programmer's Guide (CBRAIN Wiki).
   #
   # There are typically three methods that need to be completed:
   #
@@ -55,7 +55,7 @@ class CbrainTask::MyCksum < ClusterTask
   # The run_number attribute of the task will stay the same for
   # the recover_* operations, while it will be increased by 1
   # for the restart_* operations (after the restart method is called
-  # and has returned true). See also the Developer Manual.
+  # and has returned true). See also the Programmer Guides (CBRAIN Wiki).
   #
   # In addition, all tasks have always the ability to recover from
   # failures in prerequisites, and all tasks can be restarted from
@@ -78,7 +78,7 @@ class CbrainTask::MyCksum < ClusterTask
   #include RestartableTask
   #include RecoverableTask
 
-  # See the CbrainTask Developer Manual
+  # See the CbrainTask Programmer Guide
   def setup #:nodoc:
     # on the portal side, we replace this array by another one containing a single ID
     # in the method final_task_list()
@@ -96,7 +96,7 @@ class CbrainTask::MyCksum < ClusterTask
     true # must return true if all OK
   end
 
-  # See the CbrainTask Developer Manual
+  # See the CbrainTask Programmer Guide
   def cluster_commands #:nodoc:
     id      = params[:interface_userfile_ids][0]
     file    = SingleFile.find(id)
@@ -112,7 +112,7 @@ class CbrainTask::MyCksum < ClusterTask
     ]
   end
 
-  # See the CbrainTask Developer Manual
+  # See the CbrainTask Programmer Guide
   def save_results #:nodoc:
     id      = params[:interface_userfile_ids][0]
     infile  = SingleFile.find(id)
@@ -136,7 +136,7 @@ class CbrainTask::MyCksum < ClusterTask
   # methods described in the documentation if you want your
   # task to have such capabilities. See the methods
   # recover_from_setup_failure(), restart_at_setup() and
-  # friends, described in the CbrainTask Developer Manual.
+  # friends, described in the CbrainTask Programmer Guide.
 
 end
 
