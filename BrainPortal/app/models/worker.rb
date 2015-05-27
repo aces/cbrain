@@ -237,37 +237,47 @@ class Worker
         self.stop_received  = false
         self.sleep_mode     = false
         self.sleep_interval = self.check_interval * 10 if self.sleep_interval.blank?
+        @trap_log           = []
+        @trap_lock          = Mutex.new
 
         # Register signal handlers
         Signal.trap("INT") do
-          self.worker_log.info "Got SIGINT, exiting worker!"
-          dump_trace()
+          @trap_log << [:info, "Got SIGINT, exiting worker!"]
+          dump_trace :within_trap
+          self.clear_trap_log
+
+          sleep 3 # FIXME give some time for clear_trap_log to output the logs
           raise SystemExit.new("Received SIGINT")
         end
 
         Signal.trap("TERM") do  # 'STOP' signal received from proxy
-          self.worker_log.info "Got SIGTERM, scheduling stop."
-          self.handle_stop_reception
+          @trap_log << [:info,  "Got SIGTERM, scheduling stop."]
+          self.handle_stop_reception nil, :within_trap
+          self.clear_trap_log
         end
 
         Signal.trap("USR1") do
-          self.worker_log.debug "Got SIGUSR1, waking up worker if asleep."
+          @trap_log << [:debug, "Got SIGUSR1, waking up worker if asleep."]
           self.sleep_mode    = false
+          self.clear_trap_log
         end
 
         Signal.trap("XCPU") do
-          self.worker_log.info "Got SIGXCPU, scheduling stop."
-          self.handle_stop_reception :with_trace_dump
+          @trap_log << [:info,  "Got SIGXCPU, scheduling stop."]
+          self.handle_stop_reception :with_trace_dump, :within_trap
+          self.clear_trap_log
         end
 
         Signal.trap("XFSZ") do
-          self.worker_log.info "Got SIGXFSZ, scheduling stop."
-          self.handle_stop_reception :with_trace_dump
+          @trap_log << [:info,  "Got SIGXFSZ, scheduling stop."]
+          self.handle_stop_reception :with_trace_dump, :within_trap
+          self.clear_trap_log
         end
 
         Signal.trap("USR2") do
-          self.worker_log.info "Got SIGUSR2, dumping trace."
-          dump_trace()
+          @trap_log << [:info,  "Got SIGUSR2, dumping trace."]
+          dump_trace :within_trap
+          self.clear_trap_log
         end
 
         self.worker_log.debug "Registered signal handlers for INT, TERM, USR1, USR2, XCPU and XFSZ."
@@ -338,10 +348,10 @@ class Worker
 
   protected
 
-  def handle_stop_reception(with_dump = nil) #:nodoc:
+  def handle_stop_reception(with_dump = nil, trap_context = nil) #:nodoc:
     self.validate_I_am_a_worker
     if ! self.stop_received # just first time
-      dump_trace() if with_dump
+      dump_trace(trap_context) if with_dump
       self.stop_signal_received_callback() rescue nil
     end
     self.sleep_mode    = false
@@ -482,18 +492,38 @@ class Worker
     self.worker_log      = prefixer
   end
 
-  # Dump trace to logger at 'info' level
-  def dump_trace #:nodoc:
-    self.worker_log.info "-------- Start of trace dump."
+  # Dump trace to logger at 'info' level or to trap_log if within a trap
+  # handler (+trap_context+ is specified)
+  def dump_trace(trap_context = nil) #:nodoc:
+    trace  = []
+
+    trace << [:info, "-------- Start of trace dump."]
     mystack = caller
     mystack.each do |traceline|  # e.g. /homeb/inm1/prioux/CBRAIN/Bourreau/app/models/cluster_task.rb:1443:in `mkdir'
-      self.worker_log.info traceline.to_s
+      trace << [:info, traceline.to_s]
     end
-    self.worker_log.info "-------- End of trace dump."
+    trace << [:info,  "-------- End of trace dump."]
+
+    if trap_context
+      @trap_log += trace
+    else
+      trace.each { |l| self.worker_log.send(*l) }
+    end
   rescue
     nil
   end
 
+  # Pass the log lines collected during a trap handler's execution to the logger.
+  # This function is thread-safe and safe to call within a trap handler.
+  def clear_trap_log
+    Thread.new do
+      @trap_lock.synchronize do
+        self.worker_log.send(*@trap_log.shift) while ! @trap_log.empty?
+      end
+    end
+  rescue
+    nil
+  end
 
 
   #####################################################################
