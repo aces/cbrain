@@ -104,6 +104,11 @@ class EnCbrainLocalDataProvider < LocalDataProvider
     return false unless FileUtils.move(oldpath.to_s,newpath.to_s)
     true
   end
+  
+  # this returns the category of the data provider -- used in view for admins
+  def self.pretty_category_name
+    "Enhanced CBRAIN Types"
+  end
 
 end
 

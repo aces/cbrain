@@ -102,6 +102,11 @@ class EnCbrainSshDataProvider < SshDataProvider
     subdirs  = cache_subdirs_from_id(userfile.id)
     Pathname.new(remote_dir) + subdirs[0] + subdirs[1] + subdirs[2] + basename
   end
+  
+  # this returns the category of the data provider -- used in view for admins
+  def self.pretty_category_name
+    "Enhanced CBRAIN Types"
+  end
 
 end
 

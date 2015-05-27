@@ -39,6 +39,12 @@ class SshDataProvider < DataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  
+  # this returns the category of the data provider -- used in view for admins
+  def self.pretty_category_name
+    "Single Level Types"
+  end
+  
   def impl_is_alive? #:nodoc:
     return false unless self.master.is_alive?
     remote_cmd = "test -d #{self.remote_dir.bash_escape} && echo OK-Dir 2>&1"

@@ -64,6 +64,11 @@ class VaultSshDataProvider < SshDataProvider
     username = userfile.user.login
     Pathname.new(remote_dir) + username + basename
   end
+  
+  # this returns the category of the data provider -- used in view for admins
+  def self.pretty_category_name
+    "Vault Types"
+  end
 
 end
 

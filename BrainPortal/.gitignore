@@ -1,5 +1,6 @@
 \#*\#
 *~
 *.DS_Store
+Gemfile.lock
 coverage
 seeds_dev_support_dir

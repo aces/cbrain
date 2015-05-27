@@ -150,6 +150,14 @@ class Site < ActiveRecord::Base
       user.update_attribute(:type, "SiteManager")
     end
   end
+  
+  # Returns true if +user+ can access this resource.
+  # The +access_requested+ params is not used right now (reserved for future extension).
+  def can_be_accessed_by?(user, access_requested = :read)
+    return true if user.has_role?(:admin_user)
+    return true if user.has_role?(:site_manager) && user.site_id == self.id
+    user.is_member_of_group(self.own_group)
+  end
 
   private
 
