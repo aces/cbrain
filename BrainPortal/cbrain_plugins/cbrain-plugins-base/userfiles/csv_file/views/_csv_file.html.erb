@@ -67,7 +67,10 @@
 
     <div class="no_ajax_pagination">
       <span class="page_links">
-        <%= will_paginate csv_array, :container => false %>
+        <%= will_paginate csv_array,
+          :params => { :controller => :userfiles, :action => :show },
+          :container => false
+        %>
         (<%= pluralize nb_row, "rows" %>)
       </span>
     </div>
