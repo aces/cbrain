@@ -931,7 +931,7 @@ describe DataProvider do
     end
     it "should return true if told not to check the file system, even if cache root doesn't exist" do
       allow(File).to receive(:directory?).and_return(false)
-      expect(DataProvider.this_is_a_proper_cache_dir!(cache_root, false)).to be_truthy
+      expect(DataProvider.this_is_a_proper_cache_dir!(cache_root, :local => false)).to be_truthy
     end
     it "should raise an exception if the cache root doesn't exist" do
       allow(File).to receive(:directory?).and_return(false)

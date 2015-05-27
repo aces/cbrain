@@ -1121,14 +1121,43 @@ class DataProvider < ActiveRecord::Base
   # (meaning it seems to have been used as a cache
   # directory in the past) or if the directory is empty
   # and writable. An exception is raised otherwise.
-  def self.this_is_a_proper_cache_dir!(cache_root,check_local_filesystem = true)
-
-    cache_root      = cache_root.to_s
+  # +options+ can be used to specify extra checks to be made.
+  # Available options are:
+  #  [*local*] Check against the local filesystem, active by default.
+  #  [*key*]   MD5 key to match if a DP_CACHE_MD5_FILE exists
+  #            in +cache_root+. Only applied if checking the
+  #            local filesystem.
+  #  [*host*]  Host machine the check is made against. Allows
+  #            checking for path conflicts with data providers.
+  #            Defaults to the current machine's hostname if
+  #            checking the local filesystem.
+  def self.this_is_a_proper_cache_dir!(cache_root,options = {})
+    cache_root    = cache_root.to_s
+    check_local   = options.has_key?(:local) ? options.delete(:local) : true
+    check_key     = options.delete(:key)
+    cache_host    = options.delete(:host)
+    cache_host  ||= Socket.gethostname if check_local
 
     cb_error "Invalid blank DP cache directory configured." if cache_root.blank?
     cb_error "DP cache directory configured cannot be a system temp dir: '#{cache_root}'" if
       cache_root.to_s =~ /^(\/tmp|\/(var|usr|private|opt|net|lib|mnt|sys)\/tmp)/i
-    return true unless check_local_filesystem
+
+    if cache_host
+      bad_dp = self.all
+        .select do |dp|
+          dp.remote_dir == cache_root ||
+          Regexp.new("^#{Regexp.quote(dp.remote_dir)}/?").match(cache_root) ||
+          Regexp.new("^#{Regexp.quote(cache_root)}/?").match(dp.remote_dir)
+        end
+        .find do |dp|
+          hosts  = (dp.alternate_host || "").split(',')
+          hosts <<  dp.remote_host
+          hosts.include? cache_host
+        end
+      cb_error "DP cache directory already in use by data provider '#{bad_dp.name}'" if bad_dp
+    end
+
+    return true unless check_local
 
     cb_error "DP cache directory doesn't exist: '#{cache_root}'" unless
       File.directory?(cache_root)
@@ -1137,6 +1166,11 @@ class DataProvider < ActiveRecord::Base
 
     cache_root_path = Pathname.new(cache_root)
     rev_file        = (cache_root_path + DP_CACHE_ID_FILE).to_s
+    key_file        = (cache_root_path + DP_CACHE_MD5_FILE).to_s
+
+    cb_error "DP cache directory already in use by another server" if
+      check_key && File.exist?(key_file) && File.read(key_file).gsub(/\W+/,"") != check_key
+
     return true if File.exist?(rev_file)
 
     entries = Dir.entries(cache_root.to_s) rescue nil
