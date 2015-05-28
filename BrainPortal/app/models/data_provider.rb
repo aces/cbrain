@@ -322,7 +322,7 @@ class DataProvider < ActiveRecord::Base
   # Basenames for special files in caching system
   DP_CACHE_ID_FILE  = "DP_Cache_Rev.id"
   DP_CACHE_MD5_FILE = "DP_Cache_Key.md5"
-
+  DP_CACHE_SYML     = "DP_Cache" # Name for the symlinks pointing to the DP cache
 
   #################################################################
   #      Official DataProvider API methods

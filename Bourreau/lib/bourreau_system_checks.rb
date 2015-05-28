@@ -431,6 +431,30 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
 
 
+  def self.a100_ensure_dp_cache_symlink_exists
+
+    myself        = RemoteResource.current_resource
+    gridshare_dir = myself.cms_shared_dir
+    cache_dir     = myself.dp_cache_dir
+
+    return unless Dir.exists?(gridshare_dir) && Dir.exists?(cache_dir)
+
+    #----------------------------------------------------------------------------
+    puts "C> Making sure the grid share directory has a symlink to the data provider cache..."
+    #----------------------------------------------------------------------------
+
+    sym_path = "#{gridshare_dir}/#{DataProvider::DP_CACHE_SYML}"
+    return if File.symlink?(sym_path) && File.realpath(sym_path) == File.realpath(cache_dir)
+
+    File.unlink(sym_path) if File.exists?(sym_path)
+    File.symlink(cache_dir, sym_path)
+
+    puts "C> \t- '#{sym_path}' -> '#{cache_dir}'"
+
+  end
+
+
+
   def self.z000_ensure_we_have_a_forwarded_ssh_agent
 
     #----------------------------------------------------------------------------
