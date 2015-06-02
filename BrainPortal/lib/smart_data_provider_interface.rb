@@ -182,6 +182,14 @@ module SmartDataProviderInterface
     @provider.provider_collection_index(userfile, directory, allowed_types)
   end
 
+  def provider_report(force_reload=nil)
+    @provider.provider_report(force_reload)
+  end
+
+  def provider_repair(issue)
+    @provider.provider_repair(issue)
+  end
+
   # This method is specific to SSH data providers subclasses and not part of the official API
   def browse_remote_dir(user=nil) #:nodoc:
     @provider.browse_remote_dir(user)

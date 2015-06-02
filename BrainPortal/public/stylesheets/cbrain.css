@@ -1657,6 +1657,48 @@ img {
 
 
 /* % ######################################################### */
+/* % Styles for Data Provider Report page */
+/* % ######################################################### */
+
+#data_provider_issues {
+  width: 100%;
+  margin-top: 10px;
+  border: 0;
+}
+
+#data_provider_issues td {
+  border: 1px solid gray;
+  border-width: 1px 0 0 0;
+}
+
+#data_provider_issues td.shrinkable {
+  display: table;
+  overflow: hidden;
+  table-layout: fixed;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+#data_provider_issues tr.severity-trivial {
+  background-color: #c9f3f3;
+}
+
+#data_provider_issues tr.severity-minor {
+  background-color: #cef9ce;
+}
+
+#data_provider_issues tr.severity-major {
+  background-color: #fff1e6;
+}
+
+#data_provider_issues tr.severity-critical {
+  background-color: #ffd3d3;
+}
+
+
+
+/* % ######################################################### */
 /* % Styles for Filtering Columns Headers */
 /* % Used in Task Index or Data Provider Browser */
 /* % ######################################################### */

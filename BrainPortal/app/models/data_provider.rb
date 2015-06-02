@@ -207,6 +207,7 @@ class DataProvider < ActiveRecord::Base
   include ResourceAccess
   include LicenseAgreements
   include NumericalSubdirTree
+  include ConsistencyChecks
 
   cbrain_abstract_model! # objects of this class are not to be instantiated
 

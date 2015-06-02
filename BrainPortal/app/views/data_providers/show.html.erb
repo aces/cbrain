@@ -30,6 +30,10 @@
       <%= link_to 'Browse', browse_data_provider_path(@provider), :class => "button" %>
     <% end %>
 
+    <% if current_user.has_role?(:core_admin) && @provider.method(:impl_provider_report).owner != DataProvider %>
+      <%= link_to 'Inconsistency Report', report_data_provider_path(@provider), :class => "button" %>
+    <% end %>
+
     <%= link_to 'File Registration Statistics', report_path(
                   :table_name       => 'userfiles.combined_file_rep',
                   :data_provider_id => @provider.id,

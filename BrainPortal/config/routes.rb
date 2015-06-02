@@ -97,6 +97,8 @@ CbrainRailsPortal::Application.routes.draw do
       post 'register'
       get  'is_alive'
       get  'disk_usage'
+      get  'report'
+      post 'repair'
     end
     collection do
       get  'dp_access'

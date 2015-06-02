@@ -57,6 +57,59 @@ class VaultSshDataProvider < SshDataProvider
     super(user)
   end
 
+  def impl_provider_report #:nodoc:
+    issues    = []
+    base_path = Pathname.new(remote_dir)
+    users     = User.where(:id => self.userfiles.group(:user_id).raw_rows(:user_id).flatten)
+    user_dirs = users.raw_rows(:login).flatten
+
+    # Look for files outside user directories
+    self.remote_dir_entries(remote_dir).map(&:name).reject { |f| user_dirs.include? f }.each do |out|
+      issues << {
+        :type     => :outside,
+        :message  => "Unknown file '#{out}' outside user directories",
+        :severity => :minor
+      }
+    end
+
+    users.each do |user|
+      remote_files = self.remote_dir_entries((base_path + user.login).to_s).map(&:name)
+      registered   = self.userfiles.where(:user_id => user).raw_rows(:id, :name)
+
+      # Make sure all registered files exist
+      registered.reject { |i,n| remote_files.include? n }.each do |id,name|
+        issues << {
+          :type        => :vault_missing,
+          :message     => "Missing userfile '#{name}'",
+          :severity    => :major,
+          :action      => :destroy,
+          :userfile_id => id
+        }
+      end
+
+      # Look for unregistered files in user directories
+      registered.map! { |i,n| n }
+      remote_files.reject { |f| registered.include?(f) }.each do |unreg|
+        issues << {
+          :type      => :vault_unregistered,
+          :message   => "Unregisted file '#{unreg}' for user '#{user.login}'",
+          :severity  => :trivial,
+          :action    => :register,
+          :user_id   => user.id,
+          :file_name => unreg
+        }
+      end
+    end
+
+    issues
+  end
+
+  def impl_provider_repair(issue) #:nodoc:
+    raise "No automatic repair possible. Move or delete the file manually." if issue[:type] == :outside
+
+    super(issue)
+  end
+
   # This method overrides the method in the immediate
   # superclass SshDataProvider
   def provider_full_path(userfile) #:nodoc:
