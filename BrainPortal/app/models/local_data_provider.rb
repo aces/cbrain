@@ -38,6 +38,13 @@ class LocalDataProvider < DataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # this returns the category of the data provider -- used in view for admins
+  # Returning a nil is the convention that we'll use to HIDE a data provider class from the interface.
+  # So we'll return nil if the data_provider class is not appriopriate for the users to view
+  def self.pretty_category_name
+    nil
+  end
+  
   # Returns true: local data providers are considered fast syncing.
   def is_fast_syncing?
     true

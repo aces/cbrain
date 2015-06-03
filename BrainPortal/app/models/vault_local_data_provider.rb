@@ -85,6 +85,11 @@ class VaultLocalDataProvider < LocalDataProvider
       return false
     end
   end
+  
+  # this returns the category of the data provider -- used in view for admins
+  def self.pretty_category_name
+    "Vault Types"
+  end
 
   def impl_provider_report #:nodoc:
     issues    = []

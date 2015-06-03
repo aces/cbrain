@@ -21,6 +21,8 @@
 #
 
 # RESTful controller for the DataProvider resource.
+
+
 class DataProvidersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -710,10 +712,10 @@ class DataProvidersController < ApplicationController
   private
 
   def get_type_list #:nodoc:
-    # This list may contain 'LocalDataProvider' which is useless in any environments
-    # where there are distributed resources. It would only work in a CBRAIN environment
-    # where all portals and bourreaux are on the same machine.
-    (check_role(:site_manager) || check_role(:admin_user)) ? DataProvider.descendants.map(&:name) : %w{ SshDataProvider }
+    data_provider_list = (check_role(:site_manager) || check_role(:admin_user)) ? DataProvider.descendants.map(&:name).sort : %w{ SshDataProvider }     
+    grouped_options = data_provider_list.hashed_partitions { |name| name.constantize.pretty_category_name }
+    grouped_options.delete(nil) # data providers that can not be on this list return a category name of nil, so we remove them
+    grouped_options.to_a
   end
 
   # Note: the following methods should all be part of one of the subclasses of DataProvider, probably.

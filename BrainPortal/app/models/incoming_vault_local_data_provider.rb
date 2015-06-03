@@ -57,5 +57,10 @@ class IncomingVaultLocalDataProvider < VaultLocalDataProvider
       retry
     end
   end
+  
+  # this returns the category of the data provider -- used in view for admins
+  def self.pretty_category_name
+    "Incoming Vault Types"
+  end
 
 end
