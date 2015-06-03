@@ -322,27 +322,11 @@ class UserfilesController < ApplicationController
       @previous_userfile, @next_userfile = neighbors
     end
 
-    begin
-      respond_to do |format|
-        format.html
-        format.xml  { render :xml  => @userfile }
-        format.json { render :json => @userfile }
-      end
-    rescue ActionView::Template::Error => e
-      e = e.original_exception
-      raise e unless e.is_a?(CbrainPluginRenderError)
-      exception = e.original_exception
-
-      raise exception unless Rails.env == 'production'
-      ExceptionLog.log_exception(exception, current_user, request)
-      Message.send_message(current_user,
-        :message_type => 'error',
-        :header => "Could not show #{@userfile.name}",
-        :description => "An internal error occured when trying to show #{@userfile.name}."
-      )
-
-      redirect_to :action => :index
-   end
+    respond_to do |format|
+      format.html
+      format.xml  { render :xml  => @userfile }
+      format.json { render :json => @userfile }
+    end
   end
 
   def new #:nodoc:

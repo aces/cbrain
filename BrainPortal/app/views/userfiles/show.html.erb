@@ -235,11 +235,13 @@
               <% if @viewer %>
                 <%= render :file  => @viewer.partial_path %>
               <% end %>
-            <%
-              rescue ActionView::Template::Error => e
-                raise CbrainPluginRenderError.new(e.original_exception)
-              end
-            %>
+            <% rescue ActionView::Template::Error => e %>
+              <span class="warning">
+                An error occured when loading the viewer plugin.
+              </span>
+              <% raise e.original_exception unless Rails.env == 'production' %>
+              <% ExceptionLog.log_exception(e.original_exception, current_user, request) %>
+            <% end %>
           </div>
         </div>
       <% end %>
