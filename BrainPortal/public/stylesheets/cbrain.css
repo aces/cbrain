@@ -828,6 +828,71 @@ pre {
 
 
 /* % ######################################################### */
+/* % Documentation popups */
+/* % ######################################################### */
+
+.help_document_popup > div {
+  width: 100%;
+  height: 100%;
+}
+
+.help_document_popup > button {
+  margin-bottom: 10px;
+}
+
+
+
+/* % ######################################################### */
+/* % Tool launch bar (userfiles index) */
+/* % ######################################################### */
+
+.launch_bar {
+  border: 2px solid #0471B4;
+  margin: 5px;
+  padding: 5px;
+  position: relative;
+  text-align: right;
+}
+
+.launch_bar span {
+  display: inline-block;
+  margin: 0px 5px;
+}
+
+.launch_bar span.info {
+  display: block;
+  float: left;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+
+/* % ######################################################### */
+/* % File upload progress dialog */
+/* % ######################################################### */
+
+.no_close .ui-dialog-titlebar-close {
+  display: none;
+}
+
+.progress_dialog {
+  min-height: 100% !important;
+}
+
+.progress_dialog .bar {
+  position: relative;
+  text-align: center;
+}
+
+.progress_dialog .label {
+  position: absolute;
+  top: 4px;
+  width: 100%;
+}
+
+
+
+/* % ######################################################### */
 /* % Account Section of Application Layout */
 /* % ######################################################### */
 
@@ -1592,6 +1657,48 @@ img {
 
 
 /* % ######################################################### */
+/* % Styles for Data Provider Report page */
+/* % ######################################################### */
+
+#data_provider_issues {
+  width: 100%;
+  margin-top: 10px;
+  border: 0;
+}
+
+#data_provider_issues td {
+  border: 1px solid gray;
+  border-width: 1px 0 0 0;
+}
+
+#data_provider_issues td.shrinkable {
+  display: table;
+  overflow: hidden;
+  table-layout: fixed;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+#data_provider_issues tr.severity-trivial {
+  background-color: #c9f3f3;
+}
+
+#data_provider_issues tr.severity-minor {
+  background-color: #cef9ce;
+}
+
+#data_provider_issues tr.severity-major {
+  background-color: #fff1e6;
+}
+
+#data_provider_issues tr.severity-critical {
+  background-color: #ffd3d3;
+}
+
+
+
+/* % ######################################################### */
 /* % Styles for Filtering Columns Headers */
 /* % Used in Task Index or Data Provider Browser */
 /* % ######################################################### */
@@ -1790,6 +1897,14 @@ td.middle {
   background-color: white;
 }
 
+/* % ######################################################### */
+/* % Extra Toolkit element styling */
+/* % ######################################################### */
+
+.button.grayed-out {
+  opacity: 0.6;
+  filter: alpha(opacity=60);
+}
 
 /* % ######################################################### */
 /* % Z Toolkit element styling */

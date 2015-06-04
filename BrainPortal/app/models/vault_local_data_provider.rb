@@ -91,5 +91,43 @@ class VaultLocalDataProvider < LocalDataProvider
     "Vault Types"
   end
 
+  def impl_provider_report #:nodoc:
+    issues    = []
+    base_path = Pathname.new(remote_dir)
+    users     = User.where(:id => self.userfiles.group(:user_id).raw_rows(:user_id))
+    user_dirs = users.raw_rows(:login).flatten
+
+    # Look for files outside user directories
+    Dir.foreach(base_path).reject { |f| f.start_with?('.') || user_dirs.include?(f) }.each do |out|
+      issues << {
+        :type     => :outside,
+        :message  => "Unknown file '#{out}' outside user directories",
+        :severity => :minor
+      }
+    end
+
+    # Look for unregistered files in user directories
+    users.each do |user|
+      registered = self.userfiles.where(:user_id => user).raw_rows(:name).flatten
+      Dir.foreach(base_path + user.login).reject { |f| f.start_with?('.') || registered.include?(f) }.each do |unreg|
+        issues << {
+          :type      => :vault_unregistered,
+          :message   => "Unregisted file '#{unreg}' for user '#{user.login}'",
+          :severity  => :trivial,
+          :action    => :register,
+          :user_id   => user.id,
+          :file_name => unreg
+        }
+      end
+    end
+
+    issues + super
+  end
+
+  def impl_provider_repair(issue) #:nodoc:
+    raise "No automatic repair possible. Move or delete the file manually." if issue[:type] == :outside
+
+    super(issue)
+  end
 end
 

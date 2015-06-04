@@ -273,19 +273,21 @@ namespace :cbrain do
       raise "Error: cannot find any userfile subclasses?!?" if userfile_classes.blank?
       raise "Error: cannot find any task subclasses?!?"     if task_classes.blank?
 
-      # NOTE: direct SQL is used here to avoid ActiveRecord throwing a SubclassNotFound exception on
-      # objects that would only wound up deleted.
       puts "Removing orphan userfiles..."
-      deleted_userfiles = Userfile.connection.delete("
-        DELETE FROM userfiles
-        WHERE type NOT IN ('#{userfile_classes.join("','")}')
-      ") || 0
+      Userfile
+        .where("type NOT IN ('#{userfile_classes.join("','")}')")
+        .update_all(:type => "Userfile")
+      deleted_userfiles = Userfile
+        .destroy_all(:type => "Userfile")
+        .count
 
       puts "Removing orphan tasks..."
-      deleted_tasks     = CbrainTask.connection.delete("
-        DELETE FROM cbrain_tasks
-        WHERE type NOT IN ('#{task_classes.join("','")}')
-      ") || 0
+      CbrainTask
+        .where("type NOT IN ('#{task_classes.join("','")}')")
+        .update_all(:type => "CbrainTask")
+      deleted_tasks = CbrainTask
+        .destroy_all(:type => "CbrainTask")
+        .count
 
       if deleted_userfiles == 0 && deleted_tasks == 0
         puts "No orphans (userfile or task) found."
@@ -322,14 +324,11 @@ namespace :cbrain do
       raise "Error: cannot find any userfile subclasses?!?" if userfile_classes.blank?
       raise "Error: cannot find any task subclasses?!?"     if task_classes.blank?
 
-      # NOTE: direct SQL is used here to avoid ActiveRecord throwing a SubclassNotFound exception on
-      # every orphan.
       puts "Checking for orphan userfiles..."
-      orphan_userfiles = Userfile.connection.execute("
-        SELECT id, type
-        FROM userfiles
-        WHERE type NOT IN ('#{userfile_classes.join("','")}')
-      ").to_a
+      orphan_userfiles = Userfile
+        .where("type NOT IN ('#{userfile_classes.join("','")}')")
+        .raw_rows([:id, :type])
+        .to_a
       unless orphan_userfiles.empty?
         puts "#{orphan_userfiles.size} orphan userfile(s) found:"
         orphan_userfiles.each do |orphan|
@@ -338,11 +337,10 @@ namespace :cbrain do
       end
 
       puts "Checking for orphan tasks..."
-      orphan_tasks = CbrainTask.connection.execute("
-        SELECT id, type
-        FROM cbrain_tasks
-        WHERE type NOT IN ('#{task_classes.join("','")}')
-      ").to_a
+      orphan_tasks = CbrainTask
+        .where("type NOT IN ('#{task_classes.join("','")}')")
+        .raw_rows([:id, :type])
+        .to_a
       unless orphan_tasks.empty?
         puts "#{orphan_tasks.size} orphan task(s) found:"
         orphan_tasks.each do |orphan|

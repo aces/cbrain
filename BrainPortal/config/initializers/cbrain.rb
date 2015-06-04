@@ -234,7 +234,7 @@ class CBRAIN
     if agent
       @_rr_name   ||= RemoteResource.current_resource.name rescue "UnknownServer"
       admin         = User.admin
-      passphrase    = admin.meta[:global_ssh_agent_lock_passphrase] ||= admin.send(:random_string)
+      passphrase    = admin.meta[:global_ssh_agent_lock_passphrase] ||= User.random_string
 
       # Prepare info line about the unlocking event
       pretty_context = ""

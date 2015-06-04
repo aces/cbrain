@@ -108,5 +108,55 @@ class EnCbrainSshDataProvider < SshDataProvider
     "Enhanced CBRAIN Types"
   end
 
+  def impl_provider_report #:nodoc:
+    issues         = []
+    userfile_paths = self.userfiles.map { |u| [u, self.provider_full_path(u).to_s] }
+    all_paths      = remote_bash_this("( find #{remote_dir.bash_escape} -empty -type d; find #{remote_dir.bash_escape} -type f )").split("\n")
+
+    # Make sure all registered files exist
+    userfile_paths.reject { |u,p| all_paths.include?(p) }.each do |miss,p|
+      issues << {
+        :type        => :missing,
+        :message     => "Missing userfile '#{miss.name}'",
+        :severity    => :major,
+        :action      => :destroy,
+        :userfile_id => miss.id
+      }
+    end
+
+    # Search the provider's root directory for unknown directories and/or files
+    base_regex     = Regexp.new('^' + Regexp.quote(remote_dir) + '/?')
+    (all_paths - userfile_paths.map { |u,p| p }).each do |unk|
+      issues << {
+        :type      => :unknown,
+        :message   => "Unknown file or directory '#{unk.sub(base_regex, '')}'",
+        :severity  => :major,
+        :action    => :delete,
+        :file_path => unk
+      }
+    end
+
+    issues
+  end
+
+  def impl_provider_repair(issue) #:nodoc:
+    return super(issue) unless issue[:action] == :delete
+
+    # Remove the file/directory itself
+    path = issue[:file_path]
+    remote_bash_this("unlink #{path.bash_escape}")
+    path = File.dirname(path)
+
+    # List parent all directories up to remote_dir
+    dirs = []
+    while path != remote_dir
+      dirs << path
+      path  = File.dirname(path)
+    end
+
+    # Remove them with one command
+    remote_bash_this("( #{dirs.map { |d| "rmdir #{d.bash_escape}" }.join("; ")} ) >/dev/null 2>&1")
+  end
+
 end
 

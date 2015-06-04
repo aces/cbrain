@@ -216,7 +216,7 @@ class RemoteResource < ActiveRecord::Base
   end
 
   # Verify that the dp_cache_dir is correct, at least from
-  # what we can see. It's possibel to edit the path of an
+  # what we can see. It's possible to edit the path of an
   # external RemoteResource, so we can't check that the dir
   # exist over there.
   def dp_cache_path_valid
@@ -229,19 +229,19 @@ class RemoteResource < ActiveRecord::Base
       return false
     end
 
-    if self.id && self.id == CBRAIN::SelfRemoteResourceId
-      is_ok = false
-      mess  = ""
-      begin
-        is_ok = DataProvider.this_is_a_proper_cache_dir!(path, self.id == CBRAIN::SelfRemoteResourceId)
-      rescue => ex
-        is_ok = false
-        mess  = ex.message
-      end
-      unless is_ok
-        errors.add(:dp_cache_dir," does not exist, is unaccessible, contains data or is a system directory: #{mess}")
+    begin
+      is_local = self.id && self.id == CBRAIN::SelfRemoteResourceId
+      valid = DataProvider.this_is_a_proper_cache_dir! path,
+        :local => is_local,
+        :key   => self.cache_md5,
+        :host  => is_local ? Socket.gethostname : self.ssh_control_host
+      unless valid
+        errors.add(:dp_cache_dir," is invalid (does not exist, is unaccessible, contains data or is a system directory).")
         return false
       end
+    rescue => ex
+      errors.add(:dp_cache_dir," is invalid: #{ex.message}")
+      return false
     end
 
     true

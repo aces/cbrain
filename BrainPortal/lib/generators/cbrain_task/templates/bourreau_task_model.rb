@@ -10,7 +10,7 @@ class <%= "CbrainTask::#{class_name}" %> < ClusterTask
 
   ################################################################
   # For full documentation on how to write CbrainTasks,
-  # read the CBRAIN CbrainTask Developer's Manual.
+  # read the CBRAIN CbrainTask Programmer Guide (CBRAIN Wiki).
   #
   # There are typically three methods that need to be completed:
   #
@@ -59,7 +59,7 @@ class <%= "CbrainTask::#{class_name}" %> < ClusterTask
   # The run_number attribute of the task will stay the same for
   # the recover_* operations, while it will be increased by 1
   # for the restart_* operations (after the restart method is called
-  # and has returned true). See also the Developer Manual.
+  # and has returned true). See also the Programmer Guides (CBRAIN Wiki).
   #
   # In addition, all tasks have always the ability to recover from
   # failures in prerequisites, and all tasks can be restarted from
@@ -82,13 +82,13 @@ class <%= "CbrainTask::#{class_name}" %> < ClusterTask
   #include RestartableTask
   #include RecoverableTask
 
-  # See the CbrainTask Developer Manual
+  # See the CbrainTask Programmer Guide
   def setup #:nodoc:
     params       = self.params
     true
   end
 
-  # See the CbrainTask Developer Manual
+  # See the CbrainTask Programmer Guide
   def cluster_commands #:nodoc:
     params       = self.params
     [
@@ -98,7 +98,7 @@ class <%= "CbrainTask::#{class_name}" %> < ClusterTask
     ]
   end
 
-  # See the CbrainTask Developer Manual
+  # See the CbrainTask Programmer Guide
   def save_results #:nodoc:
     params       = self.params
     true
@@ -108,7 +108,7 @@ class <%= "CbrainTask::#{class_name}" %> < ClusterTask
   # methods described in the documentation if you want your
   # task to have such capabilities. See the methods
   # recover_from_setup_failure(), restart_at_setup() and
-  # friends, described in the CbrainTask Developer Manual.
+  # friends, described in the CbrainTask Programmer Guide.
 
 end
 

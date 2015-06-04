@@ -34,6 +34,9 @@ CbrainRailsPortal::Application.routes.draw do
   # Control channel
   resources :controls,       :controller => :controls
 
+  # Documentation
+  resources :docs,           :controller => :help_documents
+
   # Standard CRUD resources
   resources :sites
   resources :custom_filters
@@ -94,6 +97,8 @@ CbrainRailsPortal::Application.routes.draw do
       post 'register'
       get  'is_alive'
       get  'disk_usage'
+      get  'report'
+      post 'repair'
     end
     collection do
       get  'dp_access'

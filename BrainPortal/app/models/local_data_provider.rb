@@ -124,6 +124,23 @@ class LocalDataProvider < DataProvider
     self.cache_collection_index(userfile, directory, allowed_types)
   end
 
+  def impl_provider_report #:nodoc:
+    issues = []
+
+    # Make sure all registered files exist
+    self.userfiles.all.select { |u| ! File.exists?(self.provider_full_path(u)) }.each do |miss|
+      issues << {
+        :type        => :missing,
+        :message     => "Missing userfile '#{miss.name}'",
+        :severity    => :major,
+        :action      => :destroy,
+        :userfile_id => miss.id
+      }
+    end
+
+    issues
+  end
+
   protected
 
   # This method intercepts any attempts to use the protected

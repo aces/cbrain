@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150408193713) do
+ActiveRecord::Schema.define(:version => 20150526144742) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -88,6 +88,7 @@ ActiveRecord::Schema.define(:version => 20150408193713) do
     t.string   "time_zone"
     t.string   "cloud_storage_client_identifier"
     t.string   "cloud_storage_client_token"
+    t.string   "alternate_host"
   end
 
   add_index "data_providers", ["group_id"], :name => "index_data_providers_on_group_id"
@@ -142,6 +143,15 @@ ActiveRecord::Schema.define(:version => 20150408193713) do
 
   add_index "groups_users", ["group_id"], :name => "index_groups_users_on_group_id"
   add_index "groups_users", ["user_id"], :name => "index_groups_users_on_user_id"
+
+  create_table "help_documents", :force => true do |t|
+    t.string   "key",        :null => false
+    t.string   "path",       :null => false
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "help_documents", ["key"], :name => "index_help_documents_on_key", :unique => true
 
   create_table "messages", :force => true do |t|
     t.string   "header"
@@ -337,6 +347,7 @@ ActiveRecord::Schema.define(:version => 20150408193713) do
     t.boolean  "hidden",                                          :default => false
     t.boolean  "immutable",                                       :default => false
     t.boolean  "archived",                                        :default => false
+    t.text     "description"
   end
 
   add_index "userfiles", ["data_provider_id"], :name => "index_userfiles_on_data_provider_id"

@@ -322,27 +322,11 @@ class UserfilesController < ApplicationController
       @previous_userfile, @next_userfile = neighbors
     end
 
-    begin
-      respond_to do |format|
-        format.html
-        format.xml  { render :xml  => @userfile }
-        format.json { render :json => @userfile }
-      end
-    rescue ActionView::Template::Error => e
-      e = e.original_exception
-      raise e unless e.is_a?(CbrainPluginRenderError)
-      exception = e.original_exception
-
-      raise exception unless Rails.env == 'production'
-      ExceptionLog.log_exception(exception, current_user, request)
-      Message.send_message(current_user,
-        :message_type => 'error',
-        :header => "Could not show #{@userfile.name}",
-        :description => "An internal error occured when trying to show #{@userfile.name}."
-      )
-
-      redirect_to :action => :index
-   end
+    respond_to do |format|
+      format.html
+      format.xml  { render :xml  => @userfile }
+      format.json { render :json => @userfile }
+    end
   end
 
   def new #:nodoc:
@@ -1107,7 +1091,23 @@ class UserfilesController < ApplicationController
     end
 
     # Sync all files
-    userfiles_list.each { |u| u.sync_to_cache rescue true }
+    failed_list = {}
+    userfiles_list.each do |userfile|
+      begin
+        userfile.sync_to_cache
+      rescue => e
+        (failed_list[e.message] ||= []) << userfile
+      end
+    end
+    if failed_list.present?
+      error_message_sender("Error when syncing file(s)", failed_list);
+      respond_to do |format|
+          format.html { redirect_to :action => :index, :format =>  request.format.to_sym }
+          format.json { render :json => { :error => flash[:error] } }
+      end
+      return
+    end
+
     # When sending a single file, just throw it at the browser.
     if userfiles_list.size == 1 && userfiles_list[0].is_a?(SingleFile)
       userfile = userfiles_list[0]

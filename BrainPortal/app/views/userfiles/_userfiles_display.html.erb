@@ -89,5 +89,10 @@
        t.sort_column("Provider", 'DataProvider', 'name', :filters => association_filters_for(@filtered_scope, @header_scope, Userfile, :data_provider)) { |u| link_to_data_provider_if_accessible(u.data_provider) }
      end
   %>
+  <% t.column("Description") do |u| %>
+    <%= html_tool_tip(crop_text_to(40, u.description), :offset_x => 0, :offset_y => 20) do %>
+      <% simple_format(u.description, :sanitize => true) %>
+    <% end if u.description.present? %>
+  <% end %>
 <% end %>
 

@@ -20,18 +20,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-# Use to wrap exceptions thrown when trying to render external elements coming
-# from plugins
-class CbrainPluginRenderError < RuntimeError
-
-  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-
-  # Original exception thrown by the external render element
-  attr_reader :original_exception
-
-  def initialize(original_exception) #:nodoc:
-    @original_exception = original_exception
+class AddAlternateHostToDataProviders < ActiveRecord::Migration
+  def self.up
+    add_column :data_providers, :alternate_host, :string
   end
 
+  def self.down
+    remove_column :data_providers, :alternate_host
+  end
 end
-

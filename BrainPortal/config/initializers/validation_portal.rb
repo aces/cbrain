@@ -72,13 +72,10 @@ elsif program_name == "rake"
   #
   # Rake Exceptions By First Argument
   #
-  if first_arg == "db:sanity:check" 
+  skip_validations_for = [ /^db:/, /^cbrain:plugins/ ]
+  if skip_validations_for.any? { |p| first_arg =~ p }
     #------------------------------------------------------------------------------
-    puts "C> \t- No more validations needed for sanity checks. Skipping."
-    #------------------------------------------------------------------------------
-  elsif first_arg =~ /^db:/
-    #------------------------------------------------------------------------------
-    puts "C> \t- No validations needed for DB schema operations. Skipping."
+    puts "C> \t- No validations needed. Skipping."
     #------------------------------------------------------------------------------
   elsif ! first_arg.nil? && first_arg.include?("spec") #if running the test suite, make model sane and run the validation
     PortalSanityChecks.check(:all)

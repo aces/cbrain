@@ -36,7 +36,7 @@ class PortalAgentLocker < Worker
 
     # See CBRAIN.with_unlocked_agent for more info
     admin          = User.admin
-    @passphrase    = admin.meta[:global_ssh_agent_lock_passphrase] ||= admin.send(:random_string)
+    @passphrase    = admin.meta[:global_ssh_agent_lock_passphrase] ||= User.random_string
 
     # Who am I within CBRAIN?
     rr = RemoteResource.current_resource

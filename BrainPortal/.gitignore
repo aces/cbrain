@@ -4,3 +4,5 @@
 Gemfile.lock
 coverage
 seeds_dev_support_dir
+
+/tmp/*.lock

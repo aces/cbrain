@@ -37,9 +37,10 @@ module SmartDataProviderInterface
   def select_local_or_network_provider(localclass,networkclass)
 
     # Check for crucial attributes needed for proper initializaton
-    dp_hostname   = self.remote_host rescue nil
     dp_remote_dir = self.remote_dir  rescue nil
-    if dp_hostname.blank? || dp_remote_dir.blank? # special case : usually when doing special select() on DPs with missing columns
+    dp_hostnames  = self.alternate_host.split(',').select { |host| host && ! host.blank? } rescue []
+    dp_hostnames << self.remote_host rescue nil
+    if dp_hostnames.empty? || dp_remote_dir.blank? # special case : usually when doing special select() on DPs with missing columns
       @provider = @local_provider = @network_provider = nil
       return @provider
     end
@@ -68,7 +69,7 @@ module SmartDataProviderInterface
     end
 
     # Now select the real provider for all intercepts defined below.
-    if Socket.gethostname == dp_hostname && File.directory?(dp_remote_dir)
+    if dp_hostnames.include?(Socket.gethostname) && File.directory?(dp_remote_dir)
       @provider = @local_provider
     else
       @provider = @network_provider
@@ -179,6 +180,14 @@ module SmartDataProviderInterface
 
   def provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
     @provider.provider_collection_index(userfile, directory, allowed_types)
+  end
+
+  def provider_report(force_reload=nil)
+    @provider.provider_report(force_reload)
+  end
+
+  def provider_repair(issue)
+    @provider.provider_repair(issue)
   end
 
   # This method is specific to SSH data providers subclasses and not part of the official API

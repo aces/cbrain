@@ -30,6 +30,10 @@
       <%= link_to 'Browse', browse_data_provider_path(@provider), :class => "button" %>
     <% end %>
 
+    <% if current_user.has_role?(:core_admin) && @provider.method(:impl_provider_report).owner != DataProvider %>
+      <%= link_to 'Inconsistency Report', report_data_provider_path(@provider), :class => "button" %>
+    <% end %>
+
     <%= link_to 'File Registration Statistics', report_path(
                   :table_name       => 'userfiles.combined_file_rep',
                   :data_provider_id => @provider.id,
@@ -122,6 +126,10 @@
     <%= show_table(@provider, :header => "SSH parameters for remote Data Providers") do |t| %>
       <% t.edit_cell(:remote_host)  do %>
         <%= text_field_tag "data_provider[remote_host]", @provider.remote_host %>
+      <% end %>
+      <% t.edit_cell(:alternate_host, :header => "Alternate hostname(s)")  do %>
+        <%= text_field_tag "data_provider[alternate_host]", @provider.alternate_host, :size => 60 %><br />
+        <div class="field_explanation">Comma-separated list of alternate hostnames; hostname1,hostname2,hostname3,...</div>
       <% end %>
       <% t.edit_cell(:remote_port) do %>
         <%= text_field_tag "data_provider[remote_port]", @provider.remote_port, :size => 6 %>

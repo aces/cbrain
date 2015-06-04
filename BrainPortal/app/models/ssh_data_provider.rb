@@ -168,40 +168,7 @@ class SshDataProvider < DataProvider
   end
 
   def impl_provider_list_all(user=nil) #:nodoc:
-    list    = []
-    attlist = [ 'symbolic_type', 'size', 'permissions',
-                'uid',  'gid',  'owner', 'group',
-                'atime', 'ctime', 'mtime' ]
-    self.master # triggers unlocking the agent
-    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
-      sftp.dir.foreach(self.browse_remote_dir(user)) do |entry|
-        attributes = entry.attributes
-        type = attributes.symbolic_type
-        next if type != :regular && type != :directory && type != :symlink
-        next if entry.name == "." || entry.name == ".."
-        next if is_excluded?(entry.name) # in DataProvider
-
-        fileinfo               = FileInfo.new
-        fileinfo.name          = entry.name
-
-        bad_attributes = []
-        attlist.each do |meth|
-          begin
-            val = attributes.send(meth)
-            fileinfo.send("#{meth}=", val)
-          rescue
-            #puts "Method #{meth} not supported: #{e.message}"
-            bad_attributes << meth
-          end
-        end
-        attlist -= bad_attributes unless bad_attributes.empty?
-
-        list << fileinfo
-      end
-    end
-
-    list.sort! { |a,b| a.name <=> b.name }
-    list
+    self.remote_dir_entries(self.browse_remote_dir(user))
   end
 
   # Allows us to browse a remote directory that changes based on the user.
@@ -287,6 +254,39 @@ class SshDataProvider < DataProvider
     Pathname.new(remote_dir) + basename
   end
 
+  def impl_provider_report #:nodoc:
+    issues       = []
+    remote_files = self.remote_dir_entries(self.remote_dir).map(&:name)
+
+    # Make sure all registered files exist
+    self.userfiles.where("name NOT IN (?)", remote_files.empty? ? [''] : remote_files).each do |miss|
+      issues << {
+        :type        => :missing,
+        :message     => "Missing userfile '#{miss.name}'",
+        :severity    => :major,
+        :action      => :destroy,
+        :userfile_id => miss.id,
+      }
+    end
+
+    # Look for unregistered files
+    remote_files.select { |u| ! self.userfiles.where(:name => u).exists? }.each do |unreg|
+      issues << {
+        :type     => :unregistered,
+        :message  => "Unregisted file '#{unreg}'",
+        :severity => :trivial
+      }
+    end
+
+    issues
+  end
+
+  def impl_provider_repair(issue) #:nodoc
+    raise "No automatic repair possible. Register or delete the file manually." if issue[:type] == :unregistered
+
+    super(issue)
+  end
+
   protected
 
   # Builds a prefix for a +rsync+ command, such as
@@ -340,6 +340,45 @@ class SshDataProvider < DataProvider
       text = fh.read
     end
     text
+  end
+
+  # Returns a list of all files in remote directory +dirname+, with all their
+  # associated metadata; size, permissions, access times, owner, group, etc.
+  def remote_dir_entries(dirname)
+    list    = []
+    attlist = [ 'symbolic_type', 'size', 'permissions',
+                'uid',  'gid',  'owner', 'group',
+                'atime', 'ctime', 'mtime' ]
+    self.master # triggers unlocking the agent
+    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
+      sftp.dir.foreach(dirname) do |entry|
+        attributes = entry.attributes
+        type = attributes.symbolic_type
+        next if type != :regular && type != :directory && type != :symlink
+        next if entry.name == "." || entry.name == ".."
+        next if is_excluded?(entry.name) # in DataProvider
+
+        fileinfo               = FileInfo.new
+        fileinfo.name          = entry.name
+
+        bad_attributes = []
+        attlist.each do |meth|
+          begin
+            val = attributes.send(meth)
+            fileinfo.send("#{meth}=", val)
+          rescue
+            #puts "Method #{meth} not supported: #{e.message}"
+            bad_attributes << meth
+          end
+        end
+        attlist -= bad_attributes unless bad_attributes.empty?
+
+        list << fileinfo
+      end
+    end
+
+    list.sort! { |a,b| a.name <=> b.name }
+    list
   end
 
 end

@@ -70,6 +70,11 @@ module AuthenticatedSystem #:nodoc:
       current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user) || access_error(401)
     end
 
+    #Before filter to ensure that logged in User is the core admin.
+    def core_admin_role_required
+      current_user.has_role?(:core_admin) || access_error(401)
+    end
+
     ##########################################################
     ##########################################################
 

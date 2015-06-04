@@ -113,7 +113,7 @@
     <strong>VaultSmartDataProvider:</strong> This class implements a 'wrapper' data provider that
     acts either as a VaultLocalDataProvider or a VaultSshDataProvider
     depending on whether or not the current hostname matches
-    the value of the attribute remote_host.
+    the value of the attribute remote_host or is in the alternate_host list.
     This means that in the case where the current Rails application
     runs on the same machine as the data provider, the faster
     and more efficient VaultLocalDataProvider will be used.
@@ -172,6 +172,11 @@
   <span title="Name of the remote machine on which the data provider is located (not required for VaultLocalDataProvider).">
     <p><%= f.label :remote_host, "Remote Hostname" %><br/>
     <%= f.text_field :remote_host %></p>
+  </span>
+
+  <span title="Alternate name(s) (comma-separated) of the remote machine on which the data provider is located (required only for Smart data providers).">
+    <p><%= f.label :alternate_host, "Alternate Hostname(s)" %><br/>
+    <%= f.text_field :alternate_host %></p>
   </span>
 
   <span title="Username on the remote machine where the data provider is located (not required for VaultLocalDataProvider).">
