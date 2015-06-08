@@ -242,17 +242,6 @@ class Userfile < ActiveRecord::Base
   end
 
 
-
-  ##############################################
-  # Format Methods
-  ##############################################
-
-
-  # The format name (for display) of this userfile.
-  def format_name
-    nil
-  end
-
   ##############################################
   # Taging Subsystem
   ##############################################
