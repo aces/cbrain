@@ -45,8 +45,7 @@ class Userfile < ActiveRecord::Base
 
   cbrain_abstract_model! # objects of this class are not to be instanciated
 
-  after_save              :update_format_group
-  before_destroy          :erase_data_provider_content_and_cache, :format_tree_update, :nullify_children
+  before_destroy          :erase_data_provider_content_and_cache, :nullify_children
 
   validates               :name,
                           :presence => true,
@@ -57,23 +56,16 @@ class Userfile < ActiveRecord::Base
   validates_presence_of   :data_provider_id
   validates_presence_of   :group_id
   validate                :validate_associations
-  validate                :validate_group_update
 
   belongs_to              :user
   belongs_to              :data_provider
   belongs_to              :group
-  belongs_to              :format_source,
-                          :class_name   => "Userfile",
-                          :foreign_key  => "format_source_id"
   belongs_to              :parent,
                           :class_name   => "Userfile",
                           :foreign_key  => "parent_id"
 
   has_and_belongs_to_many :tags
   has_many                :sync_status
-  has_many                :formats,
-                          :class_name   => "Userfile",
-                          :foreign_key  => "format_source_id"
   has_many                :children,
                           :class_name   => "Userfile",
                           :foreign_key  => "parent_id"
@@ -84,13 +76,10 @@ class Userfile < ActiveRecord::Base
   attr_accessor           :rank_order
 
   attr_accessible         :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable,
-                          :num_files, :format_source_id, :tag_ids, :hidden, :immutable, :description
+                          :num_files, :tag_ids, :hidden, :immutable, :description
 
   cb_scope                :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
-  cb_scope                :file_format, lambda { |f|
-                                       return where("1 = 0") unless (f.constantize <= Userfile rescue false)
-                                       joins("LEFT JOIN userfiles AS userfiles_source ON userfiles.format_source_id = userfiles_source.id").where("userfiles.type = ? OR userfiles_source.type = ?", f, f)
-                                     }
+
   cb_scope                :has_no_parent, :conditions => {:parent_id => nil}
   cb_scope                :has_no_child,  lambda { |ignored|
                                             parents_ids = Userfile.where("parent_id IS NOT NULL").raw_first_column(:parent_id).uniq
@@ -258,41 +247,11 @@ class Userfile < ActiveRecord::Base
   # Format Methods
   ##############################################
 
-  # Add a format to this userfile.
-  def add_format(userfile)
-    source_file = self.format_source || self
-    source_file.formats << userfile
-  end
 
   # The format name (for display) of this userfile.
   def format_name
     nil
   end
-
-  # List of the names of the formats available for the userfile.
-  def format_names
-    source_file = self.format_source || self
-    @format_names ||= source_file.formats.map(&:format_name).push(self.format_name).compact
-  end
-
-  # Return true if the given format exists for the calling userfile
-  def has_format?(f)
-    if self.get_format(f)
-      true
-    else
-      false
-    end
-  end
-
-  # Find the userfile representing the given format for the calling
-  # userfile, if it exists.
-  def get_format(f)
-    return self if self.format_name.to_s.downcase == f.to_s.downcase || self.class.name == f
-
-    self.formats.all.find { |fmt| fmt.format_name.to_s.downcase == f.to_s.downcase || fmt.class.name == f }
-  end
-
-
 
   ##############################################
   # Taging Subsystem
@@ -993,38 +952,8 @@ class Userfile < ActiveRecord::Base
     true
   end
 
-  def format_tree_update #:nodoc:
-    return true if self.format_source
-
-    format_children = self.formats
-    return true if format_children.empty?
-
-    new_source = format_children.shift
-    new_source.update_attributes!(:format_source_id  => nil)
-    format_children.each do |fmt|
-      fmt.update_attributes!(:format_source_id  => new_source.id)
-    end
-  end
-
   def nullify_children #:nodoc:
     self.children.each(&:remove_parent)
-  end
-
-  def validate_group_update #:nodoc:
-    if self.format_source_id && self.changed.include?("group_id") && self.format_source
-      unless self.group_id == self.format_source.group_id
-        errors.add(:group_id, "cannot be modified for a format file.")
-      end
-    end
-  end
-
-  def update_format_group #:nodoc:
-    unless self.format_source_id
-      self.formats.each do |f|
-        f.update_attributes!(:group_id => self.group_id)
-      end
-    end
-    true
   end
 
 end

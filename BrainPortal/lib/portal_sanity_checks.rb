@@ -300,21 +300,6 @@ class PortalSanityChecks < CbrainChecker #:nodoc:
     end
   end
 
-  def self.ensure_format_groups_match_source_groups #:nodoc:
-
-    #-----------------------------------------------------------------------------
-    puts "C> Ensuring formats have the same group as source file..."
-    #-----------------------------------------------------------------------------
-
-    format_files = Userfile.all(:conditions  => "format_source_id IS NOT NULL")
-    format_files.each do |f|
-      if f.format_source && f.group_id != f.format_source.group_id
-        f.group_id = f.format_source.group_id
-        f.save!
-      end
-    end
-  end
-
   # Each tags should have a group
   def self.ensure_tags_have_a_group_id #:nodoc:
 

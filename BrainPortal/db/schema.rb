@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150608151559) do
+ActiveRecord::Schema.define(:version => 20150608190254) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -343,7 +343,6 @@ ActiveRecord::Schema.define(:version => 20150608151559) do
     t.integer  "data_provider_id"
     t.boolean  "group_writable",                                  :default => false, :null => false
     t.integer  "num_files"
-    t.integer  "format_source_id"
     t.boolean  "hidden",                                          :default => false
     t.boolean  "immutable",                                       :default => false
     t.boolean  "archived",                                        :default => false
@@ -352,13 +351,9 @@ ActiveRecord::Schema.define(:version => 20150608151559) do
 
   add_index "userfiles", ["archived", "id"], :name => "index_userfiles_on_archived_and_id"
   add_index "userfiles", ["data_provider_id"], :name => "index_userfiles_on_data_provider_id"
-  add_index "userfiles", ["format_source_id", "data_provider_id"], :name => "index_userfiles_on_format_source_id_and_data_provider_id"
-  add_index "userfiles", ["format_source_id", "group_id"], :name => "index_userfiles_on_format_source_id_and_group_id"
-  add_index "userfiles", ["format_source_id", "id"], :name => "index_userfiles_on_format_source_id_and_id"
-  add_index "userfiles", ["format_source_id", "type"], :name => "index_userfiles_on_format_source_id_and_type"
-  add_index "userfiles", ["format_source_id", "user_id"], :name => "index_userfiles_on_format_source_id_and_user_id"
   add_index "userfiles", ["group_id"], :name => "index_userfiles_on_group_id"
   add_index "userfiles", ["hidden", "id"], :name => "index_userfiles_on_hidden_and_id"
+  add_index "userfiles", ["id"], :name => "index_userfiles_on_format_source_id_and_id"
   add_index "userfiles", ["immutable", "id"], :name => "index_userfiles_on_immutable_and_id"
   add_index "userfiles", ["name"], :name => "index_userfiles_on_name"
   add_index "userfiles", ["type"], :name => "index_userfiles_on_type"
