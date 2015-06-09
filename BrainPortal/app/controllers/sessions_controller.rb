@@ -242,7 +242,9 @@ class SessionsController < ApplicationController
     from_ip = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
     if from_ip
       if from_ip  =~ /^[\d\.]+$/
-        addrinfo  = Socket.gethostbyaddr(from_ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ from_ip ]
+        addrinfo  = Rails.cache.fetch("host_addr/#{from_ip}") do
+          Socket.gethostbyaddr(from_ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ from_ip ]
+        end
         from_host = addrinfo[0]
       else
         from_host = from_ip # already got name?!?
