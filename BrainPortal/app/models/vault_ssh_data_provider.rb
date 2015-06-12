@@ -60,8 +60,8 @@ class VaultSshDataProvider < SshDataProvider
   def impl_provider_report #:nodoc:
     issues    = []
     base_path = Pathname.new(remote_dir)
-    users     = User.where(:id => self.userfiles.group(:user_id).raw_rows(:user_id).flatten)
-    user_dirs = User.where({}).raw_rows(:login).flatten
+    users     = User.where({})
+    user_dirs = users.raw_rows(:login).flatten
 
     # Look for files outside user directories
     self.remote_dir_entries(remote_dir).map(&:name).reject { |f| user_dirs.include? f }.each do |out|
@@ -73,7 +73,7 @@ class VaultSshDataProvider < SshDataProvider
     end
 
     users.each do |user|
-      remote_files = self.remote_dir_entries((base_path + user.login).to_s).map(&:name)
+      remote_files = self.remote_dir_entries((base_path + user.login).to_s).map(&:name) rescue []
       registered   = self.userfiles.where(:user_id => user).raw_rows(:id, :name)
 
       # Make sure all registered files exist
