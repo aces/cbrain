@@ -59,6 +59,11 @@ module AuthenticatedSystem #:nodoc:
     ##########################################################
     #NEXT TWO ADDED BY TAREK
     ##########################################################
+    
+    def site_membership_required (id)
+      (!current_user.site.nil? || access_error(401)) if current_user.type == "NormalUser"
+    end
+      
 
     # Before filter to ensure that logged in User is an admin user.
     def admin_role_required

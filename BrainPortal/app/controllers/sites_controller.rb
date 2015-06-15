@@ -27,6 +27,7 @@ class SitesController < ApplicationController
   
   before_filter :login_required 
   before_filter :admin_role_required, :except  => :show
+  before_filter(:only => [:show]) { |c| c.site_membership_required params[:id] }
   
   # GET /sites
   # GET /sites.xml
