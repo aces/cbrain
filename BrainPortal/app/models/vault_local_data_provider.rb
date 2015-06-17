@@ -94,8 +94,8 @@ class VaultLocalDataProvider < LocalDataProvider
   def impl_provider_report #:nodoc:
     issues    = []
     base_path = Pathname.new(remote_dir)
-    users     = User.where(:id => self.userfiles.group(:user_id).raw_rows(:user_id))
-    user_dirs = users.raw_rows(:login).flatten
+    users     = User.where(:id => self.userfiles.group(:user_id).raw_rows(:user_id).flatten)
+    user_dirs = User.where({}).raw_rows(:login).flatten
 
     # Look for files outside user directories
     Dir.foreach(base_path).reject { |f| f.start_with?('.') || user_dirs.include?(f) }.each do |out|

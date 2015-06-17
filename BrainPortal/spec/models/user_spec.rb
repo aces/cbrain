@@ -24,7 +24,7 @@ require 'rails_helper'
 
 describe User do
 
-  let(:normal_user) { create(:normal_user) }
+  let(:normal_user) { create(:normal_user, :encrypted_password) }
 
 
   describe "#validate" do

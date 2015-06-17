@@ -194,7 +194,9 @@ class ApplicationController < ActionController::Base
     # Compute the info from the request (when not logged in)
     ip   ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
     if host.blank? && ip =~ /^[\d\.]+$/
-      addrinfo = Socket.gethostbyaddr(ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ ip ]
+      addrinfo = Rails.cache.fetch("host_addr/#{ip}") do
+        Socket.gethostbyaddr(ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ ip ]
+      end
       host = addrinfo[0]
     end
 

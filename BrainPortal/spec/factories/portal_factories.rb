@@ -32,6 +32,16 @@ FactoryGirl.define do
     sequence(:email)      { |n| "user#{n}@example.com" }
     password              "Password!"
     password_confirmation "Password!"
+
+    after(:build) do |user|
+      user.define_singleton_method(:encrypt_password) { true }
+    end
+
+    trait :encrypted_password do
+      after(:build) do |user|
+        user.define_singleton_method(:encrypt_password) { user.class.instance_method(:encrypt_password).bind(user).call }
+      end
+    end
   end
 
   factory :normal_user, parent: :user, class: NormalUser do

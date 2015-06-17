@@ -602,7 +602,7 @@ class UserfilesController < ApplicationController
       @userfile.group_id   = new_group_id if current_user.available_groups.where(:id => new_group_id).first
       @userfile            = @userfile.class_update
 
-      if @userfile.save_with_logging(current_user, %w( group_writable num_files format_source_id parent_id hidden ) )
+      if @userfile.save_with_logging(current_user, %w( group_writable num_files parent_id hidden ) )
         if new_name != old_name
           @userfile.provider_rename(new_name)
           @userfile.addlog("Renamed by #{current_user.login}: #{old_name} -> #{new_name}")
@@ -1621,9 +1621,6 @@ class UserfilesController < ApplicationController
     unless filters["view_hidden"] == 'on'
       header_scope = header_scope.where( :hidden => false ) # show only the non-hidden files
     end
-
-    # The userfile index only show and count the main files, not their subformats.
-    header_scope = header_scope.where( :format_source_id => nil )
 
     header_scope
   end
