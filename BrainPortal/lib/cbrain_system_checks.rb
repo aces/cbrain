@@ -1,17 +1,3 @@
-Skip to content
-This repository  
-Pull requests
-Issues
-Gist
- @eafkhami
- Watch 7
-  Star 5
- Fork 5aces/cbrain
- branch: master  cbrain/BrainPortal/lib/cbrain_system_checks.rb
-@remibernardremibernard 21 days ago Issue 689 [redmine] - Add validation of DP cache root configuration
-3 contributors @prioux @remibernard @natacha-beck
-RawBlameHistory     305 lines (244 sloc)  12.741 kB
-
 #
 # CBRAIN Project
 #
@@ -314,6 +300,3 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
   end
 
 end
-
-Status API Training Shop Blog About Help
-© 2015 GitHub, Inc. Terms Privacy Security Contact
