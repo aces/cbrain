@@ -1482,7 +1482,7 @@ cat << DOCKERJOB > .dockerjob.sh
 #{commands_joined}\n
 DOCKERJOB\n
 chmod 755 ./.dockerjob.sh\n
-docker run -v $PWD:/cbrain-script -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w /cbrain-script #{self.tool_config.docker_image} /cbrain-script/.dockerjob.sh \n
+docker run --rm -v $PWD:/cbrain-script -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w /cbrain-script #{self.tool_config.docker_image} /cbrain-script/.dockerjob.sh \n
 " 
 : "#{commands_joined}"
 }
