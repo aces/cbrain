@@ -1630,13 +1630,11 @@ class ClusterTask < CbrainTask
   end
 
   def use_docker?
-     
     return (self.tool_config.docker_image and self.tool_config.docker_image != "")
   end
   
   # Returns the command line(s) associated with the task, wrapped in a Docker call if a Docker image has to be used.
   def docker_commands
-
     commands = self.cluster_commands  
     commands_joined=commands.join("\n");
 
