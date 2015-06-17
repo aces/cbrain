@@ -175,8 +175,9 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       return
     end
 
-    md5 = DataProvider.cache_md5 rescue nil
-    if md5 && myself.cache_md5 != md5
+    md5 = DataProvider.cache_md5 rescue nil if
+      File.exists?((cache_root + DataProvider::DP_CACHE_MD5_FILE).to_s)
+    if myself.cache_md5 && md5 && myself.cache_md5 != md5
       puts "C> \t- Error: Cache root directory (#{cache_root}) already in use by another server!"
       puts "C> \t  To force this server to use that directory as cache root, remove the files"
       puts "C> \t  '#{DataProvider::DP_CACHE_ID_FILE}' and '#{DataProvider::DP_CACHE_MD5_FILE}' from it."

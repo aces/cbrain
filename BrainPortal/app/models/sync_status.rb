@@ -178,18 +178,22 @@ class SyncStatus < ActiveRecord::Base
     end
 
     # Now, perform the sync_to_cache operation.
-    begin
-      puts "SYNC: ToCache: #{state.pretty} YIELD" if DebugMessages
-      implstatus = yield
-      state.update_attributes( :status => "InSync", :accessed_at => Time.now, :synced_at => Time.now )
-      puts "SYNC: ToCache: #{state.pretty} Finish" if DebugMessages
-      return implstatus
-    rescue => implerror
-      state.update_attributes( :status => "ProvNewer" ) # cache is no good
-      puts "SYNC: ToCache: #{state.pretty} Except" if DebugMessages
-      raise implerror
-    end
+    self.wrap_block(
+      lambda do
+        puts "SYNC: ToCache: #{state.pretty} YIELD" if DebugMessages
+      end,
 
+      lambda do |implstatus|
+        state.update_attributes( :status => "InSync", :accessed_at => Time.now, :synced_at => Time.now )
+        puts "SYNC: ToCache: #{state.pretty} Finish" if DebugMessages
+        implstatus
+      end,
+
+      lambda do |implerror|
+        state.update_attributes( :status => "ProvNewer" ) # cache is no good
+        puts "SYNC: ToCache: #{state.pretty} Except" if DebugMessages
+      end
+    ) { yield }
   end
 
 
@@ -257,27 +261,31 @@ class SyncStatus < ActiveRecord::Base
     end
 
     # Now, perform the ToProvider operation.
-    begin
-      # Let's tell every other clients that their cache is now
-      # obsolete.
-      puts "SYNC: ToProv: #{state.pretty} Others => ProvNewer" if DebugMessages
-      others = self.get_status_of_other_caches(userfile_id)
-      others.each { |o| o.update_attributes( :status => "ProvNewer" ) }
-      # Call the provider's implementation of the sync operation.
-      puts "SYNC: ToProv: #{state.pretty} YIELD" if DebugMessages
-      implstatus = yield
-      state.update_attributes( :status => "InSync", :accessed_at => Time.now, :synced_at => Time.now )
-      puts "SYNC: ToProv: #{state.pretty} Finish" if DebugMessages
-      return implstatus
-    rescue => implerror
-      # Provider side is no good as far as we know
-      others = self.get_status_of_other_caches(userfile_id) rescue []
-      others.each { |o| o.update_attributes( :status => "Corrupted" ) rescue nil }
-      state.update_attributes( :status => "Corrupted" )
-      puts "SYNC: ToProv: #{state.pretty} Except" if DebugMessages
-      raise implerror
-    end
+    self.wrap_block(
+      lambda do
+        # Let's tell every other clients that their cache is now
+        # obsolete.
+        puts "SYNC: ToProv: #{state.pretty} Others => ProvNewer" if DebugMessages
+        others = self.get_status_of_other_caches(userfile_id)
+        others.each { |o| o.update_attributes( :status => "ProvNewer" ) }
+        # Call the provider's implementation of the sync operation.
+        puts "SYNC: ToProv: #{state.pretty} YIELD" if DebugMessages
+      end,
 
+      lambda do |implstatus|
+        state.update_attributes( :status => "InSync", :accessed_at => Time.now, :synced_at => Time.now )
+        puts "SYNC: ToProv: #{state.pretty} Finish" if DebugMessages
+        implstatus
+      end,
+
+      lambda do |implerror|
+        # Provider side is no good as far as we know
+        others = self.get_status_of_other_caches(userfile_id) rescue []
+        others.each { |o| o.update_attributes( :status => "Corrupted" ) rescue nil }
+        state.update_attributes( :status => "Corrupted" )
+        puts "SYNC: ToProv: #{state.pretty} Except" if DebugMessages
+      end
+    ) { yield }
   end
 
 
@@ -327,22 +335,26 @@ class SyncStatus < ActiveRecord::Base
     puts "SYNC: ModCache: #{state.pretty} Update" if DebugMessages
 
     # Now, perform the ModifyCache operation
-    begin
-      puts "SYNC: ModCache: #{state.pretty} YIELD" if DebugMessages
-      implstatus = yield
-      if final_status == :destroy
-        state.destroy
-      else
-        state.update_attributes( :status => final_status )
-      end
-      puts "SYNC: ModCache: #{state.pretty} Finish" if DebugMessages
-      return implstatus
-    rescue => implerror
-      state.update_attributes( :status => "ProvNewer" ) # cache is no longer good
-      puts "SYNC: ModCache: #{state.pretty} Except" if DebugMessages
-      raise implerror
-    end
+    self.wrap_block(
+      lambda do
+        puts "SYNC: ModCache: #{state.pretty} YIELD" if DebugMessages
+      end,
 
+      lambda do |implstatus|
+        if final_status == :destroy
+          state.destroy
+        else
+          state.update_attributes( :status => final_status )
+        end
+        puts "SYNC: ModCache: #{state.pretty} Finish" if DebugMessages
+        implstatus
+      end,
+
+      lambda do |implerror|
+        state.update_attributes( :status => "ProvNewer" ) # cache is no longer good
+        puts "SYNC: ModCache: #{state.pretty} Except" if DebugMessages
+      end
+    ) { yield }
   end
 
 
@@ -406,19 +418,24 @@ class SyncStatus < ActiveRecord::Base
     end
 
     # Now, perform the ModifyProvider operation.
-    begin
-      puts "SYNC: ModProv: #{state.pretty} YIELD" if DebugMessages
-      implstatus = yield
-      others = self.get_status_of_other_caches(userfile_id)
-      others.each { |o| o.update_attributes( :status => "ProvNewer" ) } # Mark all other status fields...
-      state.update_attributes( :status => "ProvNewer" )                 # ... then mark ours.
-      puts "SYNC: ModProv: ProvNewer ALL" if DebugMessages
-      return implstatus
-    rescue => implerror
-      state.update_attributes( :status => "Corrupted" ) # dp is no longer good
-      puts "SYNC: ModProv: #{state.pretty} Except" if DebugMessages
-      raise implerror
-    end
+    self.wrap_block(
+      lambda do
+        puts "SYNC: ModProv: #{state.pretty} YIELD" if DebugMessages
+      end,
+
+      lambda do |implstatus|
+        others = self.get_status_of_other_caches(userfile_id)
+        others.each { |o| o.update_attributes( :status => "ProvNewer" ) } # Mark all other status fields...
+        state.update_attributes( :status => "ProvNewer" )                 # ... then mark ours.
+        puts "SYNC: ModProv: ProvNewer ALL" if DebugMessages
+        implstatus
+      end,
+
+      lambda do |implerror|
+        state.update_attributes( :status => "Corrupted" ) # dp is no longer good
+        puts "SYNC: ModProv: #{state.pretty} Except" if DebugMessages
+      end
+    ) { yield }
   end
 
 
@@ -559,4 +576,27 @@ class SyncStatus < ActiveRecord::Base
     true
   end
 
+  # Wraps a code block to ensure execution of before and after callbacks even
+  # if the block throws an exception or returns. Preserves the block's call
+  # stack if it returns. +before+, +after+ and +except+ are expected to
+  # be lambdas (or callable objects) to be executed respectively before,
+  # after and in event of an exception.
+  #
+  # +before+ will not be given any argument, while +after+ will be given the
+  # return value of the block, if available, and +except+ naturally gets
+  # the raised exception.
+  #
+  # Returns the return value of +after+, if applicable.
+  def self.wrap_block(before = nil, after = nil, except = nil)
+    before.call if before
+    returned = true
+    value    = yield
+    returned = false
+  rescue => ex
+    except.call(ex) if except
+    raise ex
+  ensure
+    value = after.call(value) if after && ! ex
+    return value unless returned
+  end
 end

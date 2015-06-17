@@ -52,13 +52,11 @@ module CBRAINExtensions #:nodoc:
       #
       #   'colspan="3" style="color: blue" x="&lt;&gt;"'
       def to_html_attributes
-        self.inject("") do |result,attpair|
-          attname   = attpair[0]
-          attvalue  = attpair[1]
-          result   += " " if result.present?
-          result   += "#{attname}=\"#{ERB::Util.html_escape(attvalue)}\""
-          result
-        end
+        self.map do |key, value|
+          value = value.join(' ') if value.is_a?(Enumerable)
+          next if value.blank? || key.blank?
+          "#{key}=\"#{ERB::Util.html_escape(value)}\""
+        end.join(' ')
       end
 
       if defined?(Rails)

@@ -50,19 +50,19 @@
 
     <tr>
       <td><label for="login">Login</label></td>
-      <td class="field"><%= text_field_tag 'login' %></td>
+      <td class="field"><%= text_field_tag 'login', nil, tabindex: 1 %></td>
       <td rowspan="2"><center>or</center></td>
-      <td rowspan="2"><center><a href="#" onclick="loginPersona();"><img src="/images/persona_icon.png"></a></center></td>
+      <td rowspan="2"><center><a tabindex="4" href="#" onclick="loginPersona();"><img src="/images/persona_icon.png"></a></center></td>
     </tr>
 
     <tr>
       <td><label for="password">Password</label></td>
-      <td class="field"><%= password_field_tag 'password' %></td>
+      <td class="field"><%= password_field_tag 'password', nil, tabindex: 2 %></td>
     </tr>
 
     <tr>
       <td></td>
-      <td class="field"><%= submit_tag 'Sign in' %></td>
+      <td class="field"><%= submit_tag 'Sign in', tabindex: 3 %></td>
       <td colspan="2"></td>
     </tr>
 
