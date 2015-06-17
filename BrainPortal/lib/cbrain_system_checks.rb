@@ -1,3 +1,16 @@
+Skip to content
+This repository  
+Pull requests
+Issues
+Gist
+ @eafkhami
+ Watch 7
+  Star 5
+ Fork 5aces/cbrain
+ branch: master  cbrain/BrainPortal/lib/cbrain_system_checks.rb
+@remibernardremibernard 21 days ago Issue 689 [redmine] - Add validation of DP cache root configuration
+3 contributors @prioux @remibernard @natacha-beck
+RawBlameHistory     305 lines (244 sloc)  12.741 kB
 
 #
 # CBRAIN Project
@@ -164,7 +177,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
   def self.a050_check_data_provider_cache_wipe
 
     #-----------------------------------------------------------------------------
-    puts "C> Checking to see if Data Provider cache needs cleaning up..."
+    puts "C> Checking to see if Data Provider cache is valid..."
     #-----------------------------------------------------------------------------
 
     myself = RemoteResource.current_resource
@@ -172,6 +185,26 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     cache_root     = DataProvider.cache_rootdir rescue nil
     if cache_root.blank?
       puts "C> \t- SKIPPING! No cache root directory yet configured!"
+      return
+    end
+
+    md5 = DataProvider.cache_md5 rescue nil
+    if md5 && myself.cache_md5 != md5
+      puts "C> \t- Error: Cache root directory (#{cache_root}) already in use by another server!"
+      puts "C> \t  To force this server to use that directory as cache root, remove the files"
+      puts "C> \t  '#{DataProvider::DP_CACHE_ID_FILE}' and '#{DataProvider::DP_CACHE_MD5_FILE}' from it."
+      Kernel.exit(10)
+    end
+
+    begin
+      DataProvider.this_is_a_proper_cache_dir! cache_root,
+        :local => true,
+        :key   => md5,
+        :host  => Socket.gethostname
+    rescue => ex
+      puts "C> \t- SKIPPING! Invalid cache root directory '#{cache_root}'!:"
+      puts "C> \t  #{ex.message}"
+      puts "C> \t  Fix with the interface, please."
       return
     end
 
@@ -197,6 +230,10 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       puts "C> \t- WARNING! Cache root directory '#{cache_root}' has invalid permissions #{sprintf("%4.4o",cache_dir_mode & 0777)}. Fixing to 0700."
       File.chmod(0700,cache_root)
     end
+
+    #-----------------------------------------------------------------------------
+    puts "C> Checking to see if Data Provider cache needs cleaning up..."
+    #-----------------------------------------------------------------------------
 
     # TOTAL wipe needed ?
     if ( ! dp_disk_rev.is_a?(DateTime) ) || dp_disk_rev < dp_need_rev # Before Pierre's upgrade
@@ -247,12 +284,6 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       end
 
     end
-
-    md5 = DataProvider.cache_md5 rescue nil
-    if md5 && myself.cache_md5 != md5
-      puts "C> \t- Re-recording DataProvider MD5 ID in database."
-      myself.update_attributes( :cache_md5 => md5 )
-    end
   end
 
 
@@ -284,3 +315,5 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
 end
 
+Status API Training Shop Blog About Help
+© 2015 GitHub, Inc. Terms Privacy Security Contact
