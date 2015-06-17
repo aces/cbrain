@@ -30,7 +30,7 @@
       <%= link_to 'Browse', browse_data_provider_path(@provider), :class => "button" %>
     <% end %>
 
-    <% if current_user.has_role?(:core_admin) && @provider.method(:impl_provider_report).owner != DataProvider %>
+    <% if current_user.has_role?(:admin_user) && @provider.method(:impl_provider_report).owner != DataProvider %>
       <%= link_to 'Inconsistency Report', report_data_provider_path(@provider), :class => "button" %>
     <% end %>
 
