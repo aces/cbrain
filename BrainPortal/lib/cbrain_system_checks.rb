@@ -175,24 +175,36 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       return
     end
 
-    md5 = DataProvider.cache_md5 rescue nil
-    if md5 && myself.cache_md5 != md5
-      puts "C> \t- Error: Cache root directory (#{cache_root}) already in use by another server!"
+    # Case 1: DIR contains an ID, which differ from what we have for ourself
+    # We consider this always bad, even when our own ID is still nil.
+    md5 = DataProvider.cache_md5 # just reads the file if it exists
+    if md5 && myself.cache_md5 != md5 # we do want to compare with a nil value for myself.cache_md5
+      puts "C> \t- Error: Cache root directory (#{cache_root}) seems already in use by another server!"
       puts "C> \t  To force this server to use that directory as cache root, remove the files"
       puts "C> \t  '#{DataProvider::DP_CACHE_ID_FILE}' and '#{DataProvider::DP_CACHE_MD5_FILE}' from it."
       Kernel.exit(10)
     end
 
+    # Check all sort of other properties: path conflicts, presence of dir, permissions etc
     begin
       DataProvider.this_is_a_proper_cache_dir! cache_root,
         :local => true,
-        :key   => md5,
+        :key   => myself.cache_md5, # could be nil, in that case it won't cross-check
         :host  => Socket.gethostname
     rescue => ex
-      puts "C> \t- SKIPPING! Invalid cache root directory '#{cache_root}'!:"
+      puts "C> \t- SKIPPING! Invalid cache root directory '#{cache_root}' :"
       puts "C> \t  #{ex.message}"
       puts "C> \t  Fix with the interface, please."
+      puts "C> \t  (Change the path or clean it up, and make sure it's not used for anything else)"
       return
+    end
+
+    # Case 2: Path is OK but DIR has yet no ID so we create one and record it.
+    # We crush whatever ID we already had.
+    if md5.blank?
+      puts "C> \t- Recording new DataProvider MD5 ID in database."
+      md5 = DataProvider.create_cache_md5
+      myself.update_attributes( :cache_md5 => md5 )
     end
 
     DataProvider.revision_info.self_update # just to make sure we have it
