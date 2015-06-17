@@ -1470,7 +1470,23 @@ class ClusterTask < CbrainTask
 
 # CbrainTask '#{self.name}' commands section
 
-#{commands.join("\n")}
+#{
+commands_joined=commands.join("\n");
+
+cache_dir=RemoteResource.current_resource.dp_cache_dir;
+task_dir=self.bourreau.cms_shared_dir;
+
+(self.tool_config.docker_image and self.tool_config.docker_image != "") ? "
+cat << DOCKERJOB > .dockerjob.sh
+#!/bin/bash\n
+#{commands_joined}\n
+DOCKERJOB\n
+chmod 755 ./.dockerjob.sh\n
+docker run -v $PWD:/cbrain-script -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w /cbrain-script #{self.tool_config.docker_image} /cbrain-script/.dockerjob.sh \n
+" 
+: "#{commands_joined}"
+}
+
 
     QSUB_SCRIPT
     qsubfile = self.qsub_script_basename
