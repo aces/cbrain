@@ -1,4 +1,3 @@
-
 #
 # CBRAIN Project
 #
@@ -313,4 +312,3 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
   end
 
 end
-

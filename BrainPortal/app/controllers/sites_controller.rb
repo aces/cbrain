@@ -27,6 +27,7 @@ class SitesController < ApplicationController
   
   before_filter :login_required 
   before_filter :admin_role_required, :except  => :show
+  before_filter :site_membership_required, :only => :show
   
   # GET /sites
   # GET /sites.xml
