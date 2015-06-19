@@ -56,12 +56,12 @@
 # and filters options to +dynamic_table+ and +column+ for more details.
 #
 # Dynamic table public API methods:
-# * +dynamic_table+            Create a dynamic table
-# * +dynamic_index_table+      Create a index-specific dynamic table
-# * +DynamicTable::column+     Add a column
-# * +DynamicTable::row+        Set row attributes
-# * +DynamicTable::selectable+ Make rows selectable
-# * +DynamicTable::pagination+ Add pagination
+# * +dynamic_table+              Create a dynamic table
+# * +dynamic_index_table+        Create a index-specific dynamic table
+# * +DynamicTable+::+column+     Add a column
+# * +DynamicTable+::+row+        Set row attributes
+# * +DynamicTable+::+selectable+ Make rows selectable
+# * +DynamicTable+::+pagination+ Add pagination
 module DynamicTableHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -86,6 +86,11 @@ module DynamicTableHelper
     # Internal field; add UI components using their respective methods.
     # This property is mainly used to render the components themselves.
     attr_accessor :components
+    # Template from the templating engine (usually ERB) used to render the table
+    # and to access request parameters.
+    # Internal field; this attribute is automatically set to the currently
+    # evaluated template when calling +dynamic_table+.
+    attr_accessor :template
     # HTML attributes for the table. Unlike row and cell attributes,
     # the table's attributes cannot be specified using a callback and are
     # thus defined at table creation.
@@ -94,16 +99,19 @@ module DynamicTableHelper
     attr_accessor :attributes
 
     # Create a new DynamicTable for +collection+ with HTML attributes
-    # +attributes+ and default request targets +targets+
+    # +attributes+ and default request targets +targets+ using the template
+    # +template+ for rendering.
     # Internal method; see +dynamic_table+ for information on how to
     # create a dynamic table.
-    def initialize(collection, attributes = {}, targets = {})
+    def initialize(collection, template, attributes = {}, targets = {})
+      @rows       = collection.map { |o| Row.new(o, {}) }
+      @columns    = []
+      @collection = collection
+      @template   = template
+      @components = {}
+
       @attributes = attributes || {}
       @targets    = targets    || {}
-
-      @rows       = collection.map { |o| Row.new(o, {}) }
-      @collection = collection
-      @components = {}
     end
 
     # Add a new column uniquely named +name+, with a header labelled +label+,
@@ -260,13 +268,14 @@ module DynamicTableHelper
       end if options[:filters]
 
       # Default formatting procedure
+      index  = @columns.length
       format = block || Proc.new do |obj|
         if obj.respond_to?(field_name)
           obj.send(field_name)
         elsif obj.respond_to?(:[]) && obj[field_name]
           obj[field_name]
         elsif obj.is_a?(Enumerable)
-          obj.to_a[@columns.length]
+          obj.to_a[index]
         else
           raise "Cannot fetch field #{field_name} from #{obj}"
         end
@@ -283,7 +292,7 @@ module DynamicTableHelper
         [:filterable, :filter_target, :filters].any? { |k| options[k] }
 
       # Add the column
-      (@columns ||= []) << Column.new(name, header, cell,
+      @columns << Column.new(name, header, cell,
         :pretty_name => pretty_name,
         :hidden      => hidden,
         :sort        => sort,
@@ -302,6 +311,14 @@ module DynamicTableHelper
     # [html]
     #  Hash of HTML attributes to add to the row tag. See +column+'s html option
     #  for an example.
+    #
+    # [id]
+    #  Set the HTML id attribute of row.
+    #  Shorthand for :html => { :id => <value> }
+    #
+    # [class]
+    #  Add the given CSS classes to row.
+    #  Shorthand for :html => { :class => <value> }
     #
     # [selectable]
     #  Whether or not this row can be selected. If specified, the table will
@@ -337,8 +354,10 @@ module DynamicTableHelper
         opts = options.clone
         opts.merge!(block.call(row.object) || {}) if block
 
-        row.override = opts[:override]     if opts.has_key?(:override)
-        row.attributes.merge!(opts[:html]) if opts[:html]
+        row.override = opts[:override] if opts.has_key?(:override)
+        (row.attributes ||= {}).merge!(opts[:html]) if opts[:html]
+        row.attributes[:id]    = opts[:id]    if opts[:id]
+        row.attributes[:class] = opts[:class] if opts[:class]
         row.attributes[:class] = DynamicTable.parse_css_classes(row.attributes[:class])
 
         if [:selectable, :select_value, :select_param].any? { |k| opts[k] }
@@ -358,11 +377,11 @@ module DynamicTableHelper
     # and select_param row options, with +value+ corresponding to select_value
     # and +param+ to select_param. See the corresponding +row+ method options for
     # further information.
-    def selectable(value = nil, param = nil)
+    def selectable(param = nil, value = nil)
       self.row(
         :selectable   => true,
-        :select_value => value,
-        :select_param => param
+        :select_param => param,
+        :select_value => value
       )
     end
 
@@ -401,11 +420,21 @@ module DynamicTableHelper
     #  All other options to this method are passed directly to
     #  the will_paginate method of the will_paginate gem. See
     #  will_paginate's documentation for further information.
+    #
+    # Note that the page, per_page and total_entries options are ignored if the
+    # table's collection is already paginated (already a WillPaginate::Collection)
     def pagination(location = nil, options = {})
       # If options are given without a location...
       if ! options && ! [:top, :bottom, :both].include?(location)
         options  = location
         location = nil
+      end
+
+      collection = @collection
+      @template.instance_eval do
+        options[:page]          ||= params[:page]     || 1
+        options[:per_page]      ||= params[:per_page] || 25
+        options[:total_entries] ||= collection.length
       end
 
       @components[:pagination] = Pagination.new(
@@ -587,34 +616,38 @@ module DynamicTableHelper
         total_entries = options.delete(:total_entries)
         @input_html   = options.delete(:input_html) || {}
 
-        # Make sure we have a WillPaginate::Collection with the proper options
-        if collection.is_a?(WillPaginate::Collection)
-          @collection = collection
-          @collection.page          = page          if page
-          @collection.per_page      = per_page      if per_page
-          @collection.total_entries = total_entries if total_entries
-        else
-          @collection = collection.to_a.paginate(
-            :page          => page     || params[:page]     || 1,
-            :per_page      => per_page || params[:per_page] || 25,
-            :total_entries => total_entries || collection.length
+        # Make sure we have a paginated collection.
+        unless collection.is_a?(WillPaginate::Collection) || (
+          # Paginated ActiveRecord relations will hopefully have a current_page
+          # attribute set.
+          collection.is_a?(ActiveRecord::Relation) &&
+          collection.respond_to?(:current_page) &&
+          collection.current_page
+        )
+          collection = collection.to_a.paginate(
+            :page          => page,
+            :per_page      => per_page,
+            :total_entries => total_entries
           )
         end
 
-        @location = location
-        @options  = options
+        @collection = collection
+        @location   = location
+        @options    = options
       end
     end
 
-    # Create a dynamic table for +collection+ with +options+. Expects a block
-    # taking a single argument, an instance of this class, to add the table's
-    # columns and alter the table's properties.
+    # Create a dynamic table for +collection+ with +options+ using +template+.
+    # Expects a block taking a single argument, an instance of this class,
+    # to add the table's columns and alter the table's properties.
     # This method is the class-side implementation (minus render) of
-    # +dynamic_table+'s interface and thus has the exact same parameters
-    # (+collection+ and +options+) as +dynamic_table+.
+    # +dynamic_table+'s interface and thus has almost the same parameters;
+    # +collection+ and +options+ are identical to +dynamic_table+'s.
+    # They only differ in the +template+ parameter, which corresponds to
+    # the templating engine's template (usually +self+ in +dynamic_table+).
     # Internal method; use +dynamic_table+ (which invokes this) to create and
     # render dynamic tables.
-    def self.create(collection, options = {})
+    def self.create(collection, template, options = {})
       attributes         = options[:html] || {}
       attributes[:id]    = options[:id]    if options[:id]
       attributes[:class] = options[:class] if options[:class]
@@ -623,25 +656,25 @@ module DynamicTableHelper
       attributes[:'data-selection-mode'] = options[:selection_mode] || :multiple
       attributes[:'data-request-type']   = options[:request_type]   || :html_link
 
+      request_url     = template.instance_eval { request.path }
       sort_target     = options[:sort_target]
-      sort_target   ||= request.path
+      sort_target   ||= request_url
       filter_target   = options[:filter_target]
-      filter_target ||= request.path
+      filter_target ||= request_url
       targets         = { :sort => sort_target, :filter => filter_target }
 
-      table = self.new(collection, attributes, targets)
+      table = self.new(collection, template, attributes, targets)
       yield table
 
       table
     end
 
-    # Render the dynamic table to HTML using the shared/+dynamic_table+ partial
-    # within +template+.
+    # Render the dynamic table to HTML using the shared/dynamic_table partial.
     # Internal method; the +dynamic_table+ module method will automatically
     # render the table once created.
-    def render(template)
+    def render
       table = self
-      template.instance_eval do
+      @template.instance_eval do
         render :partial => "shared/dynamic_table", :locals => { :table => table }
       end
     end
@@ -727,7 +760,7 @@ module DynamicTableHelper
   #                  if the user clicked a regular link.
   #  Defaults to :html_link
   def dynamic_table(collection, options = {}, &block)
-    DynamicTable.create(collection, options, &block).render(self)
+    DynamicTable.create(collection, self, options, &block).render
   end
 
   # This method is a simple variation of +dynamic_table+ (and DynamicTable)
@@ -754,7 +787,7 @@ module DynamicTableHelper
   # * fetching the sorting order and column (@filter_params)
   # * converting filters to DynamicTable's format ([<value>, <label>, <indicator>])
   # * sending how many rows per page should be displayed (per_page)
-  def dynamic_index_table(collection, options = {})
+  def dynamic_index_table(collection, options = {}, &block)
     sort_map   = options[:sort_map]   || {}
     filter_map = options[:filter_map] || {}
 
@@ -780,19 +813,20 @@ module DynamicTableHelper
     end
 
     table = (@@index_table_class ||= Class.new(DynamicTable) do
-      attr_accessor :filter_params #:nodoc:
-      attr_accessor :ppage_html #:nodoc:
+      attr_accessor :sort_map
+      attr_accessor :filter_map
 
       define_method(:column) do |label, name = nil, options = {}, &block| #:nodoc:
         # If the column is sortable and its order set as :auto, use
         # filter_params' order value rather than the
         # params[<column>][:sort_order] default.
-        sortable = [:sortable, :sort_target, :sort_order].any? { |k| options[k] }
-        is_auto  = ! options[:sort_order] || options[:sort_order] == :auto
+        filter_params = @template.instance_eval { @filter_params }
+        sortable      = [:sortable, :sort_target, :sort_order].any? { |k| options[k] }
+        is_auto       = ! options[:sort_order] || options[:sort_order] == :auto
         if sortable && is_auto
           name    = (name || label.to_s.underscore).to_sym
-          order   = :none unless @filter_params['sort_hash']['order'] == sort_map[name]
-          order ||= @filter_params['sort_hash']['dir'].downcase.to_sym rescue :asc
+          order   = :none unless filter_params['sort_hash']['order'] == @sort_map[name]
+          order ||= filter_params['sort_hash']['dir'].downcase.to_sym rescue :asc
           options[:sort_order] = order
         end
 
@@ -809,7 +843,14 @@ module DynamicTableHelper
 
       define_method(:pagination) do |location = nil, options = {}| #:nodoc:
         # Pre-set some HTML attributes for the per-page input
-        (options[:input_html] ||= {}).merge!(@ppage_html) { |key,old,new| old }
+        (options[:input_html] ||= {}).merge!({
+          :name        => 'per_page',
+          :class       => 'search_box',
+          :'data-type' => 'script',
+          :'data-url'  =>  @template.instance_eval do
+            url_for(:controller => params[:controller], :update_filter => true)
+          end
+        }) { |key,old,new| old }
 
         super(location, options)
       end
@@ -817,19 +858,13 @@ module DynamicTableHelper
       alias_method :paginated, :pagination
       alias_method :paginate,  :pagination
 
-    end).create(collection, options) do |table|
-      # Make sure the DynamicTable subclass can access filter params and
-      # per-page HTML options
-      table.filter_params = @filter_params || {}
-      table.ppage_html  = {
-        :name        => 'per_page',
-        :'data-url'  => url_for(:controller => params[:controller], :update_filter => true),
-        :'data-type' => 'script',
-        :class       => 'search_box'
-      }
+    end).create(collection, self, options) do |table|
+      # Make the table aware of the sorting and filtering mappings
+      table.sort_map   = sort_map
+      table.filter_map = filter_map
 
-      yield table
-    end.render(self)
+      block.call(table)
+    end.render
   end
 
 end

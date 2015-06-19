@@ -23,9 +23,10 @@
 -%>
 
 <%
-  has_select = table.rows.any?    { |row|    row.selectable?    }
+  has_select = table.rows.any? { |row| row.selectable? }
   pagination = table.components[:pagination]
 
+  # Add dynamic table specific header attributes
   table.columns.each do |column|
     header = column.header
     cls    = (header.attributes[:class] ||= [])
@@ -36,6 +37,7 @@
     header.attributes['data-column'] ||= column.name.to_s
   end
 
+  # Add dynamic table specific cell attributes
   table.columns.each do |column|
     cell  = column.cell
     cls   = (cell.attributes[:class] ||= [])
@@ -45,6 +47,7 @@
   end
 %>
 
+<%# Function (lambda) to display pagination %>
 <% paginate = lambda do %>
   <%
     input_attr           = pagination.input_html
@@ -63,7 +66,10 @@
   </div>
 <% end %>
 
-<% (table.attributes[:class] ||= []) << "dynamic-table" %>
+<%
+  table.attributes[:id] ||= table.generate_id
+  (table.attributes[:class] ||= []) << "dynamic-table"
+%>
 <div <%= table.attributes.to_html_attributes.html_safe %>>
   <% paginate.call if pagination && table.components[:pagination].location != :bottom %>
   <table class="dt-table">
@@ -185,7 +191,7 @@
             <% table.columns.each do |column| %>
               <% cell = column.cell %>
               <td <%= cell.attributes.to_html_attributes.html_safe %>>
-                <%= cell.format.call(row.object) || '' %>
+                <%= capture(row.object, &cell.format) || '' %>
               </td>
             <% end %>
           <% end %>
@@ -198,11 +204,14 @@
             span  = table.columns.length rescue 0
             span += 1 if has_select
           %>
-          <td class="dt-table-empty" colspan="<%= span %>"> No records found </td>
+          <td class="dt-table-empty dt-table-wide" colspan="<%= span %>"> No records found </td>
           <td class="dt-col-csp"> ... </td>
         </tr>
       <% end %>
     </tbody>
   </table>
   <% paginate.call if pagination && table.components[:pagination].location != :top %>
+  <script type="application/javascript">
+    $('#<%= j table.attributes[:id] %>').trigger('bind.dyn-tbl');
+  </script>
 </div>

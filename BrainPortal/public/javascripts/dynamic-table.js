@@ -34,8 +34,13 @@
     };
   }
 
-  $(function bind() {
-    var container      = $('.dynamic-table'),
+  $(document).delegate('.dynamic-table', 'bind.dyn-tbl', function () {
+
+    /* make sure the bindings are only applied once */
+    if ($(this).data('bound')) return;
+    $(this).data('bound', true)
+
+    var container      = $(this),
         table          = container.find('.dt-table'),
         request_type   = container.data('request-type'),
         selection_mode = container.data('selection-mode'),
@@ -47,68 +52,74 @@
 
     /* Requests */
 
+    /* trigger a sorting request when the header of a sortable column is clicked */
+    table.find('.dt-sort > .dt-hdr')
+      .bind('click.dyn-tbl', function () {
+        $(this)
+          .siblings('.dt-sort-btn')
+          .first()
+          .click();
+      });
+
     /* sorting and filtering requests */
-    table.find('.dt-sort-btn, .dt-fpop-txt:not(.dt-zero)').click(function () {
-      var url = $(this).data('url');
-      if (!url || !request_type) return;
+    table.find('.dt-sort-btn, .dt-fpop-txt:not(.dt-zero)')
+      .bind('click.dyn-tbl', function () {
+        var url = $(this).data('url');
+        if (!url || !request_type) return;
 
-      if (request_type == 'html_link')
-        window.location.href = url;
-      else
-        $.get(url, function (data) {
-          container.replaceWith(data);
-          bind();
-        });
-    });
-
-    /* re-bind when the table is reloaded (new_content event) */
-    container.parent()
-      .unbind('new_content', bind)
-      .bind('new_content', bind);
+        if (request_type == 'html_link')
+          window.location.href = url;
+        else
+          $.get(url, function (data) {
+            container.replaceWith(data);
+          });
+      });
 
     /* UI */
 
     /* show/hide popups on filter/columns display button clicks */
     var popup_buttons = table.find('.dt-filter-btn, .dt-col-btn');
-    popup_buttons.click(function () {
-      popup_buttons
-        .not(this)
-        .removeClass('dt-shown')
-        .siblings('.dt-popup')
-        .hide();
+    popup_buttons
+      .bind('click.dyn-tbl', function () {
+        popup_buttons
+          .not(this)
+          .removeClass('dt-shown')
+          .siblings('.dt-popup')
+          .hide();
 
-      var popup = $(this)
-        .siblings('.dt-popup')
-        .toggle();
+        var popup = $(this)
+          .siblings('.dt-popup')
+          .toggle();
 
-      $(this).toggleClass('dt-shown');
+        $(this).toggleClass('dt-shown');
 
-      popup.trigger(popup.is(':visible') ? 'show' : 'hide');
-    });
+        popup.trigger(popup.is(':visible') ? 'show.dyn-tbl' : 'hide.dyn-tbl');
+      });
 
     /* hide popups when their close buttons are clicked */
-    table.find('.dt-pop-close-btn').click(function () {
-      var popup = $(this)
-        .parent()
-        .hide();
+    table.find('.dt-pop-close-btn')
+      .bind('click.dyn-tbl', function () {
+        var popup = $(this)
+          .parent()
+          .hide();
 
-      popup
-        .siblings('.dt-filter-btn, .dt-col-btn')
-        .removeClass('dt-shown');
+        popup
+          .siblings('.dt-filter-btn, .dt-col-btn')
+          .removeClass('dt-shown');
 
-      popup.trigger('hide');
-    });
+        popup.trigger('hide');
+      });
 
     /* stick the columns display popup in place when shown */
     table.find('.dt-col-csp > .dt-popup')
-      .bind('show', function () {
+      .bind('show.dyn-tbl', function () {
         var popup    = $(this),
             position = popup.offset();
 
         popup.parent().css({ position: 'static' });
         popup.offset(position);
       })
-      .bind('hide', function () {
+      .bind('hide.dyn-tbl', function () {
         $(this)
           .css({ left: '', top: '' })
           .parent()
@@ -117,33 +128,35 @@
 
     /* show rows as selected if their respective checkbox is checked */
     var checkboxes = table.find('td.dt-sel > .dt-sel-check');
-    checkboxes.change(function () {
-      $(this)
-        .closest('tr')
-        .toggleClass('dt-selected', $(this).prop('checked'));
-
-      if (selection_mode != 'single') return;
-
-      /* in single select mode, when a checkbox is checked, the last one gets unchecked */
-      if (selected && selected != this)
-        $(selected)
-          .prop('checked', false)
+    checkboxes
+      .bind('change.dyn-tbl', function () {
+        $(this)
           .closest('tr')
-          .removeClass('dt-selected');
+          .toggleClass('dt-selected', $(this).prop('checked'));
 
-      selected = (selected == this ? undefined : this);
-    });
+        if (selection_mode != 'single') return;
+
+        /* in single select mode, when a checkbox is checked, the last one gets unchecked */
+        if (selected && selected != this)
+          $(selected)
+            .prop('checked', false)
+            .closest('tr')
+            .removeClass('dt-selected');
+
+        selected = (selected == this ? undefined : this);
+      });
 
     /* trigger selection checkboxes when the row is clicked */
-    table.find('.dt-body > .dt-sel-row').click(function () {
-      var checkbox = $(this)
-        .find('.dt-sel-check')
-        .first();
+    table.find('.dt-body > .dt-sel-row')
+      .bind('click.dyn-tbl', function () {
+        var checkbox = $(this)
+          .find('.dt-sel-check')
+          .first();
 
-      checkbox
-        .prop('checked', !checkbox.prop('checked'))
-        .trigger('change');
-    });
+        checkbox
+          .prop('checked', !checkbox.prop('checked'))
+          .trigger('change.dyn-tbl');
+      });
 
     /* in single select mode, there is no need for a header checkbox */
     if (selection_mode == 'single')
@@ -151,54 +164,57 @@
         .css({ visibility: 'hidden' });
 
     /* toggle all checkboxes when the header checkbox is clicked */
-    table.find('th.dt-sel > .dt-sel-check').change(function () {
-      var checked = $(this).prop('checked');
+    table.find('th.dt-sel > .dt-sel-check')
+      .bind('change.dyn-tbl', function () {
+        var checked = $(this).prop('checked');
 
-      checkboxes
-        .prop('checked', checked)
-        .closest('tr')
-        .toggleClass('dt-selected', checked);
-    });
+        checkboxes
+          .prop('checked', checked)
+          .closest('tr')
+          .toggleClass('dt-selected', checked);
+      });
 
     /* toggle columns when the column is clicked in the column display popup */
-    table.find('.dt-cpop-col').click(function () {
-      $(this)
-        .find('.dt-cpop-icon')
-        .toggleClass(icons.column_show)
-        .toggleClass(icons.column_hide);
+    table.find('.dt-cpop-col')
+      .bind('click.dyn-tbl', function () {
+        $(this)
+          .find('.dt-cpop-icon')
+          .toggleClass(icons.column_show)
+          .toggleClass(icons.column_hide);
 
-      var column = $(this).data('column');
-      if (!column) return;
+        var column = $(this).data('column');
+        if (!column) return;
 
-      table
-        .find(['td.' + column, 'th.' + column].join(','))
-        .toggleClass('dt-hidden');
+        table
+          .find(['td.' + column, 'th.' + column].join(','))
+          .toggleClass('dt-hidden');
 
-      adjust_empty();
-    });
+        adjust_empty();
+      });
 
     /* filter out filter options if they dont begin with the search input */
-    table.find('.dt-fpop-find > input').bind('input', function () {
-      var key = $.trim($(this).val()).toLowerCase();
+    table.find('.dt-fpop-find > input')
+      .bind('input.dyn-tbl', function () {
+        var key = $.trim($(this).val()).toLowerCase();
 
-      $(this)
-        .closest('table')
-        .find('tbody > tr')
-        .each(function () {
-          var text = $.trim(
-            $(this)
-              .find('.dt-fpop-txt')
-              .first()
-              .text()
-          ).toLowerCase();
+        $(this)
+          .closest('table')
+          .find('tbody > tr')
+          .each(function () {
+            var text = $.trim(
+              $(this)
+                .find('.dt-fpop-txt')
+                .first()
+                .text()
+            ).toLowerCase();
 
-          $(this).toggle(text.startsWith(key));
-        });
-    });
+            $(this).toggle(text.startsWith(key));
+          });
+      });
 
-    /* adjust the width of the empty-table cell, if the table is empty */
+    /* adjust the width of table-wide cells */
     function adjust_empty() {
-      var empty = table.find('.dt-body > tr > .dt-table-empty');
+      var empty = table.find('.dt-body > tr > .dt-table-wide');
       if (!empty.length) return;
 
       empty.attr('colspan',
@@ -209,5 +225,9 @@
     };
 
     adjust_empty();
+
   });
+
+  /* bind at initial page load */
+  $('.dynamic-table').trigger('bind.dyn-tbl');
 })();
