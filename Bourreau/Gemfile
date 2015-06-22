@@ -39,3 +39,6 @@ group :development, :test do
   gem "hirb"
 end
 
+gem 'openstack'
+gem 'rb-readline', '~> 0.4.2'
+gem 'aws-sdk'

@@ -23,7 +23,7 @@
 
 <%= show_table(@info, :header => "Runtime Information") do |t| %>
 
-  <% if @info.name == "???" %>
+  <% if @info.blank? || @info.name == "???" %>
     <% t.row do %>
       This server is currently <%= html_colorize("DOWN", "red") %>.
     <% end %>

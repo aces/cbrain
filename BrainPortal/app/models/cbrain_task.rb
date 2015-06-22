@@ -58,7 +58,9 @@ class CbrainTask < ActiveRecord::Base
   attr_accessible       :type, :batch_id, :cluster_jobid, :cluster_workdir, :status, :user_id, :bourreau_id, :description,
                         :launch_time, :prerequisites, :share_wd_tid, :run_number, :group_id, :tool_config_id, :level, :rank,
                         :results_data_provider_id, :cluster_workdir_size, :workdir_archived, :workdir_archive_userfile_id,
-                        :params
+                        :vm_id,
+                        :params,
+                        :on_cpu_timestamp, :terminate_timestamp, :data_ready_timestamp, :queued_timestamp                          
 
   # Pseudo Attributes (not saved in DB)
   # These are filled in by calling capture_job_out_err().
@@ -335,6 +337,9 @@ class CbrainTask < ActiveRecord::Base
   # not defined!
   def cluster_shared_dir
     mybourreau = self.bourreau
+    if self.job_template_goes_to_vm?
+      mybourreau = Bourreau.where(:id => self.params[:physical_bourreau]).first
+    end
     cb_error "No Bourreau associated with this task." unless mybourreau
     shared_dir = mybourreau.cms_shared_dir
     cb_error "Cluster shared work directory not defined for Bourreau '#{self.bourreau.name}'." if shared_dir.blank?
@@ -452,6 +457,10 @@ class CbrainTask < ActiveRecord::Base
       return false if self.status != from_state
       return true  if from_state == to_state # NOOP
       self.status = to_state
+      self[:queued_timestamp] = Time.now if to_state == "Queued"
+      self[:on_cpu_timestamp] = Time.now if to_state == "On CPU"
+      self[:data_ready_timestamp] = Time.now if to_state == "Data Ready"
+      self[:terminate_timestamp] = Time.now if to_state == "Terminated"
       self.save!
     end
     self.invoke_after_status_transition_callbacks(from_state, to_state)
@@ -562,6 +571,15 @@ class CbrainTask < ActiveRecord::Base
     end
   end
 
+  # Returns the time spent by the task in status "On CPU".
+  def get_time_on_cpu
+    message = "Cannot determine how long task #{self.id} has been on CPU."
+    raise message unless !self.on_cpu_timestamp.blank? #task hasn't been on CPU
+    return Time.now - self.on_cpu_timestamp unless self.status != "On CPU" #task is still on CPU
+    return self.data_ready_timestamp - self.on_cpu_timestamp unless self.data_ready_timestamp.blank? 
+    return self.terminate_timestamp - self.on_cpu_timestamp unless self.terminate_timestamp.blank?
+    raise message
+  end
 
 
   ##################################################################
@@ -822,6 +840,12 @@ class CbrainTask < ActiveRecord::Base
     return nil       unless self.workdir_archived?
     return :userfile if     self.workdir_archive_userfile_id.present?
     return :workdir
+  end
+
+  # Returns true if the task will be executed by a VM.
+  def job_template_goes_to_vm? 
+    retval =  Bourreau.find(self.bourreau_id).type == "DiskImageBourreau"
+    return retval
   end
 
 

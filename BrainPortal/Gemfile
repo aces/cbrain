@@ -42,6 +42,9 @@ group :development do
   gem "hirb"
 end
 
+gem 'openstack'
+gem 'aws-sdk'
+
 group :test do
   gem "rspec", "> 3.0.0"
   gem "rspec-rails"

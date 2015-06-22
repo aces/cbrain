@@ -37,31 +37,39 @@
    # Control variables
    is_a_placeholder = render_mode == :placeholder       ? true : false
    show_details     = @filter_params["details"] == 'on' ? true : false
+   is_a_disk_image = bourreau.is_a?(DiskImageBourreau)
 
    # Extract information about the RemoteResource or create a dummy_record
-   info = !is_a_placeholder ? bourreau.info(:ping) : RemoteResourceInfo.dummy_record
-   if is_a_placeholder
+   info = is_a_disk_image ? nil : (!is_a_placeholder ? bourreau.info(:ping) : RemoteResourceInfo.dummy_record)
+   if is_a_placeholder && ! is_a_disk_image
      b_alive      = false
      rev_info     = html_colorize("(...)", "magenta")
      uptime_info  = html_colorize("(...)", "magenta")
      workers_info = html_colorize("(...)", "magenta")
    else
-     b_alive      = info.name != "???"
+     if is_a_disk_image 
+       b_alive      = false
+       rev_info     = "-"
+       uptime_info  = "-"
+       workers_info = "-"
+     else
+       b_alive      = info.name != "???"
 
-     # Revision info
-     runrev       = info.starttime_revision
-     rev_info     = red_if(runrev  != '???' && runrev  != $CBRAIN_StartTime_Revision, runrev, nil, :color2 => 'red')
+       # Revision info
+       runrev       = info.starttime_revision
+       rev_info     = red_if(runrev  != '???' && runrev  != $CBRAIN_StartTime_Revision, runrev, nil, :color2 => 'red')
 
-     # Uptime
-     uptime_info  = ! b_alive ? red_if( bourreau.online? , "-", "Down!" ) : pretty_elapsed(info.uptime.to_i, :num_components => 2, :short => true)
+       # Uptime
+       uptime_info  = ! b_alive ? red_if( bourreau.online? , "-", "Down!" ) : pretty_elapsed(info.uptime.to_i, :num_components => 2, :short => true)
 
-     # Worker status
-     worker_pids  = info.worker_pids
-     worker_pids  = nil if worker_pids == "???"
-     num_workers  = worker_pids ? worker_pids.count(',')+1 : 0
-     workers_info = worker_pids.blank? ? html_colorize("Stopped", "red") :
+       # Worker status
+       worker_pids  = info.worker_pids
+       worker_pids  = nil if worker_pids == "???"
+       num_workers  = worker_pids ? worker_pids.count(',')+1 : 0
+       workers_info = worker_pids.blank? ? html_colorize("Stopped", "red") :
                                          red_if(num_workers != bourreau.workers_instances, "Running (x #{num_workers})", nil, :color2 => "orange")
    end
+end
 
    isbourreau       = bourreau.is_a?(Bourreau).presence # make sure it's 'nil ' if false so substition -> empty string
    num_running      = isbourreau ? CbrainTask.status(:active).where( :bourreau_id => bourreau.id ).count : 0
@@ -73,8 +81,8 @@
   <tr class="row_highlight <%= row_number % 2 == 0 ? "list-even" : "list-odd" %>" id="bourreau_<%= bourreau.id %>">
 <% end %>
 
-  <td class="left_align"><%= isbourreau ? "Execution" : "Portal" %></td>
-  <td class="left_align"><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => { :class => (b_alive || is_a_placeholder) ? nil : 'error_link' } ) %></td>
+  <td class="left_align"><%= isbourreau ? (is_a_disk_image ? "Disk Image" : "Execution") : "Portal" %></td>
+  <td class="left_align"><%= link_to_bourreau_if_accessible(bourreau, current_user, :html_options => { :class => (b_alive || is_a_placeholder || is_a_disk_image) ? nil : 'error_link' } ) %></td>
 
   <% if show_details %>
     <td><%= rev_info %></td>
@@ -88,7 +96,7 @@
     <td><%= bourreau.time_zone || "(Unset)" %></td>
   <% end %>
 
-  <td><%= red_if( ! bourreau.online, "Yes", "Offline" ) %></td>
+  <td><%= red_if( ! bourreau.online , "Yes", "Offline" ) %></td>
   <td>
     <% if ! b_alive %>
       <%= uptime_info %>
@@ -101,7 +109,7 @@
   </td>
 
   <td>
-    <% if (! isbourreau) || (! bourreau.online?) %>
+    <% if (! isbourreau) || (! bourreau.online?) || is_a_disk_image %>
       -
     <% else %>
       <%= workers_info %>
@@ -145,16 +153,21 @@
   <% if bourreau.has_owner_access?(current_user) %>
     <% if ! isbourreau %>
       <td colspan="2"></td>
-    <% elsif ! bourreau.has_remote_control_info? %>
-      <td colspan="2"><%= html_colorize("(Missing SSH control info)") %></td>
-    <% elsif ! bourreau.has_actres_tunnelling_info? %>
-      <td colspan="2"><%= html_colorize("(Missing ActiveResource SSH tunnel info)") %></td>
-    <% elsif ! bourreau.has_db_tunnelling_info? %>
-      <td colspan="2"><%= html_colorize("(Missing database SSH tunnel info)") %></td>
+    <% elsif ! is_a_disk_image %>
+      <% if ! bourreau.has_remote_control_info? %>
+        <td colspan="2"><%= html_colorize("(Missing SSH control info)") %></td>
+      <% elsif ! bourreau.has_actres_tunnelling_info? %>
+        <td colspan="2"><%= html_colorize("(Missing ActiveResource SSH tunnel info)") %></td>
+      <% elsif ! bourreau.has_db_tunnelling_info? %>
+        <td colspan="2"><%= html_colorize("(Missing database SSH tunnel info)") %></td>
+      <% else %>
+        <td><%= link_to 'Start', start_bourreau_path(bourreau), :class => 'action_link', :method  => :post %></td>
+        <td><%= link_to 'Stop',  stop_bourreau_path(bourreau),  :class => 'action_link', :method  => :post %></td>
+      <% end %>
     <% else %>
-      <td><%= link_to 'Start', start_bourreau_path(bourreau), :class => 'action_link', :method  => :post %></td>
-      <td><%= link_to 'Stop',  stop_bourreau_path(bourreau),  :class => 'action_link', :method  => :post %></td>
-    <% end %>
+    <!-- disk image actions -->
+      <td colspan="2"> - </td>
+     <% end %> 
 
     <% if isbourreau && current_user.has_role?(:admin_user)%>
       <td><%= link_to 'Access?', { :controller => :tool_configs, :action => :index, :bourreau_id => bourreau.id }, :class => 'action_link' %></td>

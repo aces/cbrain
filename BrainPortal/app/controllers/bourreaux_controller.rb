@@ -111,7 +111,12 @@ class BourreauxController < ApplicationController
   def create #:nodoc:
     fields    = params[:bourreau]
 
-    @bourreau = Bourreau.new( fields )
+    if fields[:disk_image_file_id].empty?
+      @bourreau = Bourreau.new( fields )
+    else
+      @bourreau = DiskImageBourreau.new( fields )
+      @bourreau.online = true
+    end
 
     if @bourreau.save
       @bourreau.addlog_context(self,"Created by #{current_user.login}")

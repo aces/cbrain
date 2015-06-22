@@ -41,6 +41,8 @@ CbrainRailsPortal::Application.routes.draw do
   resources :sites
   resources :custom_filters
   resources :tool_configs
+  resources :disk_image_configs
+  resources :vm_factories
   resources :tags
 
   # Standard CRUD resources, with extra methods
@@ -73,6 +75,15 @@ CbrainRailsPortal::Application.routes.draw do
   end
 
   resources :invitations, :only => [:new, :create, :update, :destroy]
+
+  resources :vm_factories do
+    member do
+      post 'start'
+      get 'start'
+      post 'stop'
+      get 'stop'
+    end
+  end	
 
   resources :bourreaux do
     member do

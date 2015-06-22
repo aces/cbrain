@@ -79,6 +79,10 @@ class ScirUnix < Scir
     def terminate(jid)
       Process.kill("-TERM",Process.getpgid(jid.to_i)) rescue true  # A negative signal name kills a GROUP
     end
+    
+    def get_local_ip(jid)
+      return "127.0.0.1"
+    end
 
     def queue_tasks_tot_max
       loadav = `uptime`.strip

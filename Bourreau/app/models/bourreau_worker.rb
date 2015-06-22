@@ -167,6 +167,11 @@ class BourreauWorker < Worker
   def process_task_list(tasks_todo_rel) #:nodoc:
     tasks_todo = tasks_todo_rel.all
 
+    # Adding tasks going to VMs
+    tasks_todo_vms = get_vm_tasks_to_handle
+    tasks_todo.concat tasks_todo_vms unless tasks_todo_vms.blank?
+    worker_log.info "Added #{tasks_todo_vms.size} virtual tasks to the list of tasks to process"
+ 
     # Partition tasks into two sets: 'decrease activity' and 'increase activity'.
     # Actually, 'decrease' means 'decrease or stay the same', or in other
     # words, 'not increase'.
@@ -209,6 +214,9 @@ class BourreauWorker < Worker
       user_max_tasks = user_max_tasks.to_i # nil, "" and "0" means unlimited
       user_tasks     = by_user[user_id].shuffle # go through tasks in random order
 
+      bourreau_limit = false 
+      user_limit = false
+	
       # Loop for each task
       while user_tasks.size > 0
 
@@ -217,23 +225,27 @@ class BourreauWorker < Worker
         if bourreau_max_tasks > 0 # i.e. 'if there is a limit configured'
           bourreau_active_tasks_cnt = bourreau_active_tasks.count
           if bourreau_active_tasks_cnt >= bourreau_max_tasks
-            worker_log.info "Bourreau limit: found #{bourreau_active_tasks_cnt} active tasks, but the limit is #{bourreau_max_tasks}. Skipping."
-            return # done for this cycle
+            worker_log.info "Bourreau limit: found #{bourreau_active_tasks_cnt} active tasks, but the limit is #{bourreau_max_tasks}. Will only process VM tasks now."
+            bourreau_limit = true
           end
         end
-
+	
         # User specific limit.
         # If exceeded, there's nothing more we can do for this user, so we go to the next
         if user_max_tasks > 0 # i.e. 'if there is a limit configured'
           user_active_tasks_cnt = bourreau_active_tasks.where( :user_id => user_id ).count
           if user_active_tasks_cnt >= user_max_tasks
-            worker_log.info "User ##{user_id} limit: found #{user_active_tasks_cnt} active tasks, but the limit is #{user_max_tasks}. Skipping."
-            break # go to next user
+            worker_log.info "User ##{user_id} limit: found #{user_active_tasks_cnt} active tasks, but the limit is #{user_max_tasks}. Will only process VM tasks now."
+            user_limit = true
           end
         end
-
+	
         # Alright, move the task along its lifecycle
         task = user_tasks.pop
+        if ((user_limit || bourreau_limit) and not task.job_template_goes_to_vm?) then 
+          worker_log.info "Skipping non VM task #{task.id} due to reached limit."
+          break 
+        end
         timezone = ActiveSupport::TimeZone[task.user.time_zone] rescue Time.zone
         Time.use_zone(timezone) do
           process_task(task) # this can take a long time...
@@ -242,13 +254,99 @@ class BourreauWorker < Worker
         return if stop_signal_received? # stop everything, return control to framework in order to exit
 
       end # each task
-
+	
       return if stop_signal_received? # stop everything, return control to framework in order to exit
 
     end # each user
 
     # This ends this cycle of do_regular_work.
 
+  end
+
+
+  # This method returns an array containing tasks that may be handled by this physical bourreau
+  # Make sure you understand it all before trying to optimize (which is required, see #4763)
+  def get_vm_tasks_to_handle #:nodoc:
+
+    #gets VMs available to me
+    vms = CbrainTask.not_archived.where(:type => "CbrainTask::StartVM", :bourreau_id => @rr_id, :status => "On CPU")  
+    return nil unless vms.blank? || ( vms.size != 0 )
+
+    #gets all tasks going to DiskImage bourreaux
+    tasks_for_vms = Array.new
+    disk_images = DiskImageBourreau.all
+    disk_images.each { |bourreau|
+      #list tasks going to these bourreaux
+      tasks_for_vms.concat CbrainTask.not_archived.where(:bourreau_id => bourreau.id, :status => ReadyTasks) 
+    }
+
+    #now joins
+    tasks = Array.new #will contain the new tasks that I could send to my VMs + the tasks that I need to handle
+
+    #add the tasks already on my VMs, unless VM is down
+    tasks_for_vms.each { |y| 
+      if y.params[:physical_bourreau] == @rr_id && 
+	( y.vm_id.blank? || y.status != "On CPU" || CbrainTask.find(y.vm_id).status == "On CPU" ) #5321, #4851
+        tasks << y
+      end
+    }
+
+    # now determines which pending tasks could be taken by my VMs
+    vms.each { |x| 
+      if x.params[:vm_status] == "booted"
+        worker_log.info "=== Found a booted VM: task id = #{x.id}, vm file id = #{x.params[:disk_image]}" 
+        job_slots = x.params[:job_slots].to_i 
+        worker_log.info "VM #{x.id} has #{job_slots} job slots"
+        allTasks = ActiveTasks.dup
+        allTasks.concat(ReadyTasks)
+        CbrainTask.transaction do
+          x.lock! # to prevent different workers to concurrently send tasks to the same VM, potentially more jobs than job slots on the VM. Only the workers of this bourreau will attempt to take this lock
+          active_jobs = CbrainTask.where(:vm_id => x.id,:status => allTasks).count
+          worker_log.info "VM #{x.id} has #{active_jobs} active jobs"
+          free_slots = job_slots - active_jobs
+          worker_log.info "VM #{x.id} has #{free_slots} free job slots"
+          #add new tasks if free job slots available
+          if free_slots > 0 
+            #check if a task could go to this booted VM
+            tasks_for_vms.each { |y| 
+              if y.status == 'New'
+                task_image_file_id = DiskImageBourreau.where(:id => y.bourreau_id).first #this should be a find
+                worker_log.info "Task #{y.id} needs image file id #{task_image_file_id.disk_image_file_id}"
+                if task_image_file_id.disk_image_file_id.to_i == x.params[:disk_image].to_i 
+                  if y.vm_id.blank? #don't take a task that someone else took
+		    begin
+		      cpu_vm = x.get_time_on_cpu
+                      if y.job_walltime_estimate < ( x.job_walltime_estimate - cpu_vm ) # don't take tasks that will not fit in the remaining walltime
+                        worker_log.info "Task #{y.id} is estimated to last #{y.job_walltime_estimate}. It can fit in the remaining #{x.job_walltime_estimate - x.get_time_on_cpu}s on VM #{x.id}."
+                        CbrainTask.transaction do
+                          # It's probably nicer to put this update after status transition to "Setting Up" in process_task. But then we'd need to redo VM selection there.
+                          y.lock! # to prevent different workers to send this task concurrently to (different) VMs. All workers of all bourreau may try to get this lock.
+                          worker_log.info "====> VM task #{y.id} may go to VM #{x.id}"
+                          free_slots = free_slots - 1
+                          y.params[:physical_bourreau] = @rr_id 
+                          y.vm_id = x.id #TODO (VM tristan) check if we really want to fix *now* the VM id where this task will be executed. 
+                          tasks << y
+                          y.save!
+                        end
+                      else
+                        worker_log.info "Task #{y.id} is estimated to last #{y.job_walltime_estimate}. It cannot fit in the remaining #{x.job_walltime_estimate - x.get_time_on_cpu}s on VM #{x.id}."
+                      end
+                    rescue => ex
+	                worker_log.info "#{ex.message}"
+                    end
+                  end
+                  break unless free_slots > 0
+                else
+                  worker_log.info "====> VM task #{y.id} may not go to VM #{x.id} (VM disk file id is #{x.params[:disk_image]})"
+                end
+              end
+            }
+          end
+          x.save
+        end
+      end          
+    }
+    return tasks
   end
 
   # This is the worker method that executes the necessary
@@ -271,7 +369,7 @@ class BourreauWorker < Worker
     worker_log.debug "--- Got #{task.bname_tid} in state #{initial_status}"
 
     unless task.status =~ /^(Recover|Restart)/
-      task.update_status
+      task.update_status 
       new_status = task.status
 
       worker_log.debug "Updated #{task.bname_tid} to state #{new_status}"
@@ -289,6 +387,21 @@ class BourreauWorker < Worker
         @rr.meta[:latest_in_queue_delay]         = n2q.to_i + q2r.to_i
         @rr.meta[:time_of_latest_in_queue_delay] = Time.now
       end
+
+      # Recored bourreau performance factor for On CPU -> Data ready 
+      if initial_status == 'On CPU' && new_status == 'Data Ready' && task.type != "CbrainTask::StartVM"
+        # will miss it in case task is too short
+        @rr.meta.reload 
+        time_on_cpu = Time.now - task.on_cpu_timestamp # was initial_change_time, which was unreliable
+        task.addlog "Task spent #{time_on_cpu} on CPU"
+        @rr.meta[:latest_performance_factor] = time_on_cpu.to_f / task.job_walltime_estimate.to_f
+	begin
+          @rr.meta[:time_of_latest_performance_factor] = Time.now
+	rescue => ex
+	  task.addlog "Cannot set time of latest peformance factor: #{ex.message}" + ex.backtrace[0..10].join("\n")
+	end
+      end
+
     end
 
     case task.status

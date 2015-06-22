@@ -77,9 +77,22 @@
     %>
   </span>
 
-<% if is_bourreau %>
 
+  <% if is_bourreau %>
   <p>
+    <fieldset class="groupentry">
+      <legend>Disk Image Configuration</legend>
+      <div class="field_explanation">Disk image must have sshd up and sshfs available. CBRAIN's public key must be installed in disk image user's account.</div>
+      <p><%= f.label :disk_image_file_id, "Disk Image File Id" %><br/>
+      <%= f.text_field :disk_image_file_id %></p>
+      <div class="field_explanation">This file is used to deploy the disk image on clusters.</div>
+      <p><%= f.label :disk_image_user, "Disk Image User" %><br/>
+      <%= f.text_field :disk_image_user %></p>
+      <div class="field_explanation">The user account where the portal's public key is installed.</div>
+      <p><%= f.label :ssh_tunnel_port, "SSH tunnel port" %><br/>
+      <%= f.text_field :ssh_tunnel_port %></p>
+      <div class="field_explanation">This port is used to tunnel SSH from the VM to its host. No process should be bound to this port in the VM.</div>
+  </fieldset>
 
   <fieldset class="groupentry">
   <legend>SSH Remote Control Configuration</legend>
@@ -101,7 +114,6 @@
       <div class="field_explanation">This is an experimental field for advanced and non-standard setups
              where the remote hostname, above, is actually just a login node and
              the real host where we run the server is one step further.</div>
-
   </fieldset>
 
   <p>
@@ -187,7 +199,9 @@
             [ "PBS",             "ScirPbs" ],
             [ "MOAB",            "ScirMoab" ],
             [ "Sharcnet custom", "ScirSharcnet" ],
-            [ "UNIX processes",  "ScirUnix" ]
+            [ "UNIX processes",  "ScirUnix" ],
+	    [ "OpenStack (StartVM tasks only)",  "ScirOpenStack" ],
+	    [ "Amazon EC2 (StartVM tasks only)",  "ScirAmazon" ]
         ]
     %>
 
@@ -204,6 +218,27 @@
     <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
     <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
 
+     <p><%= f.label :open_stack_auth_url, "OpenStack Authentication URL" %><br/> 
+     <%= f.text_field :open_stack_auth_url, :size => 60 %><br/> 
+     <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div> 
+
+     <p><%= f.label :open_stack_tenant, "OpenStack tenant" %><br/> 
+     <%= f.text_field :open_stack_tenant, :size => 60 %><br/> 
+     <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div> 
+
+     <p><%= f.label :open_stack_user_name, "OpenStack user name" %><br/> 
+     <%= f.text_field :open_stack_user_name, :size => 60 %><br/> 
+     <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div> 
+
+     <p><%= f.label :open_stack_password, "OpenStack password" %><br/> 
+     <%= f.text_field :open_stack_password, :size => 60 %><br/> 
+     <div class="field_explanation">Optional. Only for OpenStack Bourreaux.</div> 
+
+     <p><%= f.label :cost_factor, "Cost factor (for VM factory)" %><br/> 
+     <%= f.text_field :cost_factor, :size => 60 %><br/> 
+     <div class="field_explanation">Optional. Used by Pareto VM factory to evaluate site cost. If not set, Pareto VM factory will not submit VMs to this site.</div> 
+
+       
   </fieldset>
 
   <p>

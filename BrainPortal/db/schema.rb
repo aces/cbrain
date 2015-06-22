@@ -47,6 +47,12 @@ ActiveRecord::Schema.define(:version => 20150608195413) do
     t.decimal  "cluster_workdir_size",        :precision => 24, :scale => 0
     t.boolean  "workdir_archived",                                           :default => false, :null => false
     t.integer  "workdir_archive_userfile_id"
+    t.string   "ip"
+    t.integer  "vm_id"
+    t.datetime "queued_timestamp"
+    t.datetime "on_cpu_timestamp"
+    t.datetime "terminate_timestamp"
+    t.datetime "data_ready_timestamp"
   end
 
   add_index "cbrain_tasks", ["batch_id"], :name => "index_cbrain_tasks_on_batch_id"
@@ -94,6 +100,15 @@ ActiveRecord::Schema.define(:version => 20150608195413) do
   add_index "data_providers", ["group_id"], :name => "index_data_providers_on_group_id"
   add_index "data_providers", ["type"], :name => "index_data_providers_on_type"
   add_index "data_providers", ["user_id"], :name => "index_data_providers_on_user_id"
+
+  create_table "disk_image_configs", :force => true do |t|
+    t.integer  "disk_image_bourreau_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "bourreau_id"
+    t.string   "disk_image_id"
+    t.string   "default_image_type"
+  end
 
   create_table "exception_logs", :force => true do |t|
     t.string   "exception_class"
@@ -197,8 +212,8 @@ ActiveRecord::Schema.define(:version => 20150608195413) do
     t.string   "actres_host"
     t.integer  "actres_port"
     t.string   "actres_dir"
-    t.boolean  "online",                   :default => false, :null => false
-    t.boolean  "read_only",                :default => false, :null => false
+    t.boolean  "online",                       :default => false, :null => false
+    t.boolean  "read_only",                    :default => false, :null => false
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -209,8 +224,8 @@ ActiveRecord::Schema.define(:version => 20150608195413) do
     t.integer  "tunnel_mysql_port"
     t.integer  "tunnel_actres_port"
     t.string   "cache_md5"
-    t.boolean  "portal_locked",            :default => false, :null => false
-    t.integer  "cache_trust_expire",       :default => 0
+    t.boolean  "portal_locked",                :default => false, :null => false
+    t.integer  "cache_trust_expire",           :default => 0
     t.datetime "time_of_death"
     t.string   "time_zone"
     t.string   "site_url_prefix"
@@ -230,6 +245,19 @@ ActiveRecord::Schema.define(:version => 20150608195413) do
     t.string   "support_email"
     t.string   "system_from_email"
     t.string   "external_status_page_url"
+    t.integer  "disk_image_file_id"
+    t.string   "disk_image_user"
+    t.string   "open_stack_user_name"
+    t.string   "open_stack_auth_url"
+    t.string   "open_stack_tenant"
+    t.string   "open_stack_password"
+    t.float    "cost_factor"
+    t.integer  "ssh_tunnel_port"
+    t.string   "amazon_ec2_region"
+    t.string   "amazon_ec2_access_key_id"
+    t.string   "amazon_ec2_secret_access_key"
+    t.string   "amazon_ec2_key_pair"
+    t.string   "amazon_ec2_instance_type"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
@@ -378,5 +406,21 @@ ActiveRecord::Schema.define(:version => 20150608195413) do
 
   add_index "users", ["login"], :name => "index_users_on_login"
   add_index "users", ["type"], :name => "index_users_on_type"
+
+  create_table "vm_factories", :force => true do |t|
+    t.integer  "disk_image_file_id"
+    t.integer  "tau"
+    t.float    "mu_plus"
+    t.float    "mu_minus"
+    t.integer  "nu_plus"
+    t.integer  "nu_minus"
+    t.integer  "k_plus"
+    t.integer  "k_minus"
+    t.datetime "timestamp_of_last_iteration"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "pid"
+    t.string   "name"
+  end
 
 end

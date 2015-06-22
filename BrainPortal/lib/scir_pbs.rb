@@ -91,6 +91,18 @@ class ScirPbs < Scir
       end
     end
 
+    def get_local_ip(jid)
+      cluster_jobid = CbrainTask.where(:id => jid).first.cluster_jobid
+      command = "qstat -f #{cluster_jobid}  | awk '$1==\"exec_host\" {print $3}' | awk -F '/' '{print $1}'"
+      IO.popen(command) do |i|
+        p = i.read
+        return p.gsub("\n","") unless p == nil
+      end
+      raise "Cannot get VM local IP with command #{command}"
+    rescue => ex
+      raise "Cannot get VM local IP with command #{command}: #{ex.message}"
+    end
+
     def queue_tasks_tot_max
       queue = Scir.cbrain_config[:default_queue]
       queue = "default" if queue.blank?

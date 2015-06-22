@@ -105,6 +105,23 @@ class ScirMoab < Scir
       end
     end
 
+    def get_local_ip(jid)
+      cluster_jobid = CbrainTask.where(:id => jid).first.cluster_jobid
+      command = "for i in `mshow -j #{cluster_jobid}`; do if [[ \\\"$i\\\" =~ \\\"AllocNodeList=.*\\\" ]]; then echo $i | awk -F '\\\"' '{print $2}' | awk -F ':' '{print $1}'; fi; done"
+      IO.popen(command) do |i|
+        p = i.read
+        id =  p.gsub("\n","") unless p == nil
+	if id == "" then 
+	  raise "Empty VM id" 
+	else 
+	  return id
+	end
+      end
+      raise "Cannot get VM local IP with command #{command}"
+    rescue => ex
+      raise "Cannot get VM local IP with command #{command}: #{ex.message}"
+    end
+    
     def queue_tasks_tot_max
       job_ps("!dummy!") # trigger refresh if necessary
       moab_cluster_info = @job_info_cache["!moab_cluster_info!"]

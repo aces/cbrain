@@ -73,6 +73,15 @@ class Scir
     @config = {
       :extra_qsub_args => rr.cms_extra_qsub_args || "",
       :default_queue   => rr.cms_default_queue   || "",
+      :open_stack_auth_url => rr.open_stack_auth_url || "",
+      :open_stack_tenant => rr.open_stack_tenant || "",
+      :open_stack_user_name => rr.open_stack_user_name || "",
+      :open_stack_password => rr.open_stack_password || "",
+      :amazon_ec2_region => rr.amazon_ec2_region || "",
+      :amazon_ec2_access_key_id => rr.amazon_ec2_access_key_id || "",
+      :amazon_ec2_secret_access_key => rr.amazon_ec2_secret_access_key || "",
+      :amazon_ec2_key_pair => rr.amazon_ec2_key_pair || "",
+      :amazon_ec2_instance_type => rr.amazon_ec2_instance_type || "",
     }
   end
 
@@ -111,6 +120,8 @@ class Scir
 
   class Session #:nodoc:
 
+    @state_if_missing = Scir::STATE_UNDETERMINED
+
     public
 
     def revision_info #:nodoc:
@@ -140,17 +151,32 @@ class Scir
       @cache_last_updated = (100*@job_ps_cache_delay).seconds.ago
     end
 
-    def job_ps(jid,caller_updated_at = nil)
-      caller_updated_at ||= (5*@job_ps_cache_delay).seconds.ago
-      if @job_info_cache.nil? || @cache_last_updated < @job_ps_cache_delay.ago || caller_updated_at > @job_ps_cache_delay.ago
-        update_job_info_cache
-        @cache_last_updated = Time.now
-      end
-      jinfo = @job_info_cache[jid.to_s]
-      return jinfo[:drmaa_state] if jinfo
-      Scir::STATE_UNDETERMINED
+    # Checks if this job goes to a VM.
+    def job_id_goes_to_vm?(jobid)
+      return jobid.start_with? "VM:"
     end
-
+    
+    # VM-specific implementation of job_ps.
+    def vm_job_ps(jid,caller_updated_at = nil)
+      s = ScirVM.new
+      status = s.job_ps(jid,caller_updated_at = nil)
+    end
+    
+    def job_ps(jid,caller_updated_at = nil)
+      if job_id_goes_to_vm? jid
+        vm_job_ps(jid,caller_updated_at)
+      else
+        caller_updated_at ||= (5*@job_ps_cache_delay).seconds.ago
+        if @job_info_cache.nil? || @cache_last_updated < @job_ps_cache_delay.ago || caller_updated_at > @job_ps_cache_delay.ago
+          update_job_info_cache
+          @cache_last_updated = Time.now
+        end
+        jinfo = @job_info_cache[jid.to_s]
+        return jinfo[:drmaa_state] if jinfo
+        @state_if_missing
+      end
+    end
+    
     def hold(jid)
       raise "This method must be provided in a subclass"
     end
@@ -202,7 +228,7 @@ class Scir
   class JobTemplate #:nodoc:
 
     # We only support a subset of DRMAA's job template
-    attr_accessor :name, :command, :arg, :wd, :stdin, :stdout, :stderr, :join, :queue, :walltime
+    attr_accessor :name, :command, :arg, :wd, :stdin, :stdout, :stderr, :join, :queue, :walltime, :goes_to_vm, :task_id
 
     def revision_info #:nodoc:
       Class.const_get(self.class.to_s.sub(/::JobTemplate/,"")).revision_info

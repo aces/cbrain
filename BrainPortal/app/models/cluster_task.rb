@@ -721,6 +721,7 @@ class ClusterTask < CbrainTask
   # Terminate the task (if it's currently in an appropriate state.)
   def terminate
     cur_status = self.status
+    self.modify_scir_class_for_vm if self.job_template_goes_to_vm?
     return false if self.workdir_archived?
 
     # Cluster job termination
@@ -742,12 +743,14 @@ class ClusterTask < CbrainTask
 
     # Otherwise, we don't do nothin'
     return false
-  rescue
+  rescue => ex
+    self.addlog "Cannot terminate task: #{ex.message}"
     false
   end
 
   # Suspend the task (if it's currently in an appropriate state.)
   def suspend
+    self.modify_scir_class_for_vm if self.job_template_goes_to_vm?
     return false unless self.status == "On CPU"
     return false if self.workdir_archived?
     begin
@@ -760,6 +763,7 @@ class ClusterTask < CbrainTask
 
   # Resume processing the task if it was suspended.
   def resume
+    self.modify_scir_class_for_vm if self.job_template_goes_to_vm?
     return false if self.workdir_archived?
     begin
       return false unless self.status == "Suspended"
@@ -772,6 +776,7 @@ class ClusterTask < CbrainTask
 
   # Put the task on hold if it is currently queued.
   def hold
+    self.modify_scir_class_for_vm if self.job_template_goes_to_vm?
     return false unless self.status == "Queued"
     return false if self.workdir_archived?
     begin
@@ -784,6 +789,7 @@ class ClusterTask < CbrainTask
 
   # Release the task from state On Hold.
   def release
+    self.modify_scir_class_for_vm if self.job_template_goes_to_vm?
     return false if self.workdir_archived?
     begin
       return false unless self.status == "On Hold"
@@ -1337,9 +1343,10 @@ class ClusterTask < CbrainTask
   # Returns the object which implements this
   # Bourreau's cluster management system's session.
   # This is really a property of the whole Rails app,
-  # but it's provided here in the model for convenience.
+  # but it's provided here in the model for convenience.  
   def self.scir_session #:nodoc:
     @scir_session ||= RemoteResource.current_resource.scir_session
+    return @scir_session
   end
 
   # Returns the class name which implements this
@@ -1393,12 +1400,11 @@ class ClusterTask < CbrainTask
     status = @@Cluster_States_To_Status[state] || "Does Not Exist"
     return status
   rescue => ex
-    logger.error("Cannot get cluster status for #{self.scir_session.class} ?!?") rescue nil
-    logger.error("Exception was: #{ex.class} : #{ex.message}")                   rescue nil
+    logger.error("Cannot get cluster status for #{self.scir_session.class} ?!?, exception was: #{ex.class} : #{ex.message} #{e.backtrace}") rescue nil
+    logger.error("Exception was: #{ex.class} : #{ex.message} #{e.backtrace}" )                   rescue nil
     nil
   end
-
-
+  
 
   ##################################################################
   # Cluster Task Creation Methods
@@ -1432,6 +1438,12 @@ class ClusterTask < CbrainTask
     self.addlog("Launching job on cluster.")
 
     commands = self.cluster_commands  # Supplied by subclass; can use self.params
+   
+    # Tweak tasks going to VMs
+    if self.job_template_goes_to_vm?
+      self.modify_scir_class_for_vm 
+      self.tweak_commands commands
+    end
     workdir  = self.full_cluster_workdir
 
     # Special case of RUBY-only jobs (jobs that have no cluster-side).
@@ -1475,6 +1487,7 @@ class ClusterTask < CbrainTask
 
     QSUB_SCRIPT
     qsubfile = self.qsub_script_basename
+
     File.open(qsubfile,"w") do |io|
       io.write( script )
     end
@@ -1491,6 +1504,8 @@ class ClusterTask < CbrainTask
     job.wd       = workdir
     job.name     = self.tname_tid  # "#{self.name}-#{self.id}" # some clusters want all names to be different!
     job.walltime = self.job_walltime_estimate
+    job.goes_to_vm = self.job_template_goes_to_vm?
+    job.task_id = self.id
 
     # Log version of Scir lib
     drm     = scir_class.drm_system
@@ -1525,6 +1540,7 @@ class ClusterTask < CbrainTask
       self.cluster_jobid = jobid
       self.status_transition(self.status, "Queued")
       self.addlog("Queued as job ID '#{jobid}'.")
+      self[:queued_timestamp] = Time.now
     end
     self.save
 
@@ -1629,6 +1645,7 @@ class ClusterTask < CbrainTask
     return nil
   end
 
+<<<<<<< HEAD
   def use_docker?
     return self.tool_config.docker_image.present?
   end
@@ -1651,6 +1668,89 @@ docker run --rm -v $PWD:/cbrain-script -v #{cache_dir}:#{cache_dir} -v #{task_di
   end
   
 
+=======
+  # Re-routes methods of Scir class to use ScirVM rather than default Scir class for jobs going to VMs.
+  def modify_scir_class_for_vm
+    scir_class = self.scir_session
+    if scir_class.respond_to?("modified") then return end 
+    self.addlog "Modifying class #{scir_class} for VMs"
+    scir_class.class_eval{
+      def modified 		
+	return
+      end
+      alias :init_run :run
+      def run(job)
+        #TODO (VM tristan) fix this: use a "static" method? 
+        if job.goes_to_vm then
+          #self.addlog "Job is going to VM, using ScirVM class"
+          s = ScirVM.new
+          s.run(job)
+        else
+          #self.addlog "Job is not going to VM, using native Scir class"
+          init_run job
+        end
+      end
+      alias :init_hold :hold
+      def hold(jid)
+        s = ScirVM.new
+        if s.is_valid_jobid? jid then
+          s.hold(jid)
+        else
+          init_hold jid
+        end
+      end
+      alias :init_release :release
+      def release(jid)
+        s = ScirVM.new
+        if s.is_valid_jobid? jid then
+          s.release(jid)
+        else
+          init_release jid
+        end
+      end
+      alias :init_suspend :suspend
+      def suspend(jid)
+        s = ScirVM.new
+        if s.is_valid_jobid? jid then
+          s.suspend(jid)
+        else
+          init_suspend jid
+        end
+      end
+      alias :init_resume :resume
+      def resume(jid)
+        s = ScirVM.new
+        if s.is_valid_jobid? jid then
+          s.resume(jid)
+        else
+          init_resume jid
+        end
+      end
+      alias :init_terminate :terminate
+      def terminate(jid)
+        s = ScirVM.new
+        if s.is_valid_jobid? jid then
+          s.terminate(jid)
+        else
+          init_terminate jid
+        end
+      end
+      
+    }
+  end
+  
+  # Tweak file paths in commands for execution in a VM.
+  def tweak_commands commands
+    mybourreau = Bourreau.where(:id => self.params[:physical_bourreau]).first
+    cache_dir = mybourreau.dp_cache_dir
+    tasks_dir = mybourreau.cms_shared_dir
+    commands.each {|x| 
+      x.gsub!(cache_dir,File.join("$HOME",File.basename(cache_dir)))  #TODO (VM tristan) fix these awful substitutions
+      x.gsub!(tasks_dir,File.join("$HOME",File.basename(tasks_dir)))  #TODO (VM tristan) fix these awful substitutions
+    } 
+  end
+  
+>>>>>>> 1e2ee79e8dabc2171d87bfdaa528a485e2b5cc94
   ##################################################################
   # Lifecycle hooks
   ##################################################################

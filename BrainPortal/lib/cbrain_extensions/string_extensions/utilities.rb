@@ -32,15 +32,16 @@ module CBRAINExtensions #:nodoc:
       # it becomes a literal in a bash command; the string returned
       # will include some surrounding single quotes if necessary.
       #
-      #   puts "".bash_escape                     => ''
-      #   puts "abcd".bash_escape                 => abcd
-      #   puts "Mike O'Connor".bash_escape        => 'Mike O'\'Connor
-      #   puts "abcd".bash_escape(true)           => 'abcd'
-      #   puts "Mike O'Connor".bash_escape(true)  => 'Mike O'\''Connor'
-      #
-      def bash_escape(always_quote = false, no_empty = false)
+      #   puts "".bash_escape                               => ''
+      #   puts "abcd".bash_escape                           => abcd
+      #   puts "Mike O'Connor".bash_escape                  => 'Mike O'\'Connor
+      #   puts "abcd".bash_escape(true)                     => 'abcd'
+      #   puts "Mike O'Connor".bash_escape(true)            => 'Mike O'\''Connor'
+      #   puts "hello, world".bash_escape                   => 'hello, world'
+      #   puts "hello, world".bash_escape(false,false,true) => hello, world
+      def bash_escape(always_quote = false, no_empty = false, allow_space = false)
         return (no_empty ? "" : "''") if     self == ''
-        return self                   if     !always_quote && self =~ %r{\A[0-9a-zA-Z_.,:/=@+-]+\z}
+        return self                   if     !always_quote && ( self =~ %r{\A[0-9a-zA-Z_.,:/=@+-]+\z} || ( allow_space && self =~ %r{\A[0-9a-zA-Z_.,:/=@+-/\s/]+\z}))
         return "'#{self}'"            unless self.index("'")
         comps = self.split(/('+)/)
         comps.each_with_index do |comp,idx|
@@ -151,6 +152,29 @@ module CBRAINExtensions #:nodoc:
         final.join
       end
 
+      # Check if a String contains the textual representation of an integer.
+      # Useful for form validation.
+      def is_an_integer?
+        Integer(self)
+        return true 
+      rescue => ex
+        return false
+      end
+
+      # Check if a String contains the textual representation of a float.
+      # Useful for form validation.
+      def is_a_float?
+        Float(self)
+        return true 
+      rescue => ex
+        return false
+      end
+
+      # A utility method to colorize logs
+      def colorize(color_code)
+        "\e[#{color_code}m#{self}\e[0m"
+      end
+    
     end
   end
 end

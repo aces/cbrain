@@ -71,6 +71,7 @@
       <td><%= link_to_group_if_accessible(first_task.group) if batch_id %></td>
     <% end %>
     <td><%= link_to_bourreau_if_accessible(first_task.bourreau) if batch_id %></td>
+    <td/>
     <td colspan="2" class="left_align">
       <% statuses         = {} %>
       <% batch_scope.group(:status).count.each { |stat,cnt| stat = 'Failed' if stat =~ /Fail/i; statuses[stat] ||= 0; statuses[stat] += cnt } %>

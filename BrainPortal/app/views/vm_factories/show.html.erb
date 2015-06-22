@@ -1,0 +1,44 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+-%>
+
+<% title "VM Factory" %>
+
+<div class="menu_bar">
+      <%= link_to 'Delete', vm_factory_path(@vm_factory), { :confirm => "Are you sure you want to delete VM Factory '#{@vm_factory.name}' (id: #{@vm_factory.id}) ?", :method => :delete, :class => "button" } %>
+</div>
+
+<div class="display_inline_block" style="min-width: 50%">
+  <%= show_table(@vm_factory, :edit_condition => edit_permission?(@vm_factory)) do |t| %>
+    <% t.edit_cell(:name) { text_field_tag "vm_factory[name]", @vm_factory.name } %>
+    <% t.edit_cell(:disk_image_file_id) { text_field_tag "vm_factory[disk_image_file_id]", @vm_factory.disk_image_file_id } %>
+    <% t.edit_cell(:tau) { text_field_tag "vm_factory[tau]", @vm_factory.tau } %>
+    <% t.edit_cell(:mu_plus) { text_field_tag "vm_factory[mu_plus]", @vm_factory.mu_plus } %>
+    <% t.edit_cell(:mu_minus) { text_field_tag "vm_factory[mu_minus]", @vm_factory.mu_minus } %>
+    <% t.edit_cell(:nu_plus) { text_field_tag "vm_factory[nu_plus]", @vm_factory.nu_plus } %>
+    <% t.edit_cell(:nu_minus) { text_field_tag "vm_factory[nu_minus]", @vm_factory.nu_minus } %>
+    <% t.edit_cell(:k_plus) { text_field_tag "vm_factory[k_plus]", @vm_factory.k_plus } %>
+    <% t.edit_cell(:k_minus) { text_field_tag "vm_factory[k_minus]", @vm_factory.k_minus } %>
+
+  <% end %>
+</div>

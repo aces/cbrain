@@ -1,4 +1,3 @@
-
 #
 # CBRAIN Project
 #
@@ -784,6 +783,23 @@ class TasksController < ApplicationController
       archive_dp_id   = params[:archive_dp_id].presence
       new_bourreau_id = nil unless new_bourreau_id && Bourreau.find_all_accessible_by_user(current_user).where(:id => new_bourreau_id).exists?
       archive_dp_id   = nil unless archive_dp_id   && DataProvider.find_all_accessible_by_user(current_user).where(:id => archive_dp_id).exists?
+
+      # Tweak tasks to re-route operations to physical bourreaux in case of virtual tasks
+      tasks.each { |t|
+        CbrainTask.transaction do
+          if Bourreau.find(t.bourreau_id).is_a? Bourreau::DiskImageBourreau
+            t.lock!
+            if t.params[:physical_bourreau].blank?
+              # Task has no physical bourreau. I have to terminate it myself
+              t.status = "Terminated" 
+              t.save
+            else
+              t.bourreau_id = t.params[:physical_bourreau] 
+              # don't save this task or it will change bourreu for real! TODO (VM tristan) this is dangerous in case the task is saved later on. It doesn't seem to be the case, but this should rather be fixed!
+            end
+          end
+        end
+      }
 
       # Go through tasks, grouped by bourreau
       grouped_tasks = tasks.group_by(&:bourreau_id)

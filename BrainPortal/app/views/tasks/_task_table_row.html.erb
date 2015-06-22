@@ -45,7 +45,13 @@
       <td><%= link_to_group_if_accessible(task.group) %></td>
     <% end %>
     <td><%= link_to_bourreau_if_accessible(task.bourreau) %></td>
-    <td><%= colored_status(task.status) %></td>
+    <td><%= task.vm_id.blank? ? "-" : link_to_task_if_accessible(task.vm_id)+" (#{task.vm_id})" %></td>
+    <td><%= stat = colored_status(task.status) 
+	    if task.type == "CbrainTask::StartVM" && task.status == "On CPU"
+	     stat+=" (VM #{task.params[:vm_status]})"
+	    end
+	    stat
+	    %></td>
     <td><%= task.run_number %></td>
     <td>
        <% if task.share_wd_tid %>

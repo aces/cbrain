@@ -497,6 +497,7 @@ class SshMaster
                       " -A"                                   +
                       " -o ConnectTimeout=10"                 +
                       " -o StrictHostKeyChecking=no"          +
+		      " -o GlobalKnownHostsFile=.known_hosts" +
                       " -o PasswordAuthentication=no"         +
                       " -o KbdInteractiveAuthentication=no"   +
                       " -o KbdInteractiveDevices=none"        +
@@ -557,8 +558,8 @@ class SshMaster
     shared_opts = self.ssh_shared_options
     command     = shell_escape(shell_command)
     stdin       = bash_redirection(options,0,"<",:stdin)
-    stdout      = bash_redirection(options,1,">",:stdout)
-    stderr      = bash_redirection(options,2,">",:stderr)
+    stdout      = bash_redirection(options,1,">>",:stdout)
+    stderr      = bash_redirection(options,2,">>",:stderr)
 
     no_stdin       = options[:stdin] == '/dev/null'       ? "-n" : ""
     use_pseudo_tty = options[:force_pseudo_ttys].present? ? "-t" : ""
