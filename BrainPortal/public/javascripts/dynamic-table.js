@@ -34,11 +34,11 @@
     };
   }
 
-  $(document).delegate('.dynamic-table', 'bind.dyn-tbl', function () {
+  $(document).delegate('.dynamic-table', 'init.dyn-tbl', function () {
 
-    /* make sure the bindings are only applied once */
-    if ($(this).data('bound')) return;
-    $(this).data('bound', true)
+    /* make sure the table is only initialized once */
+    if ($(this).data('initialized')) return;
+    $(this).data('initialized', true)
 
     var container      = $(this),
         dyntbl_id      = container.attr('id'),
@@ -286,8 +286,14 @@
     };
 
     adjust_empty();
+
   });
 
-  /* bind at initial page load */
-  $('.dynamic-table').trigger('bind.dyn-tbl');
+  /* initialize the tables at initial page load */
+  $('.dynamic-table').trigger('init.dyn-tbl');
+
+  /* and when new content is loaded */
+  $(document).bind('new_content', function () {
+    $('.dynamic-table').trigger('init.dyn-tbl');
+  });
 })();
