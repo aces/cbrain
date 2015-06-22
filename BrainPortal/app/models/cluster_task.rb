@@ -1645,7 +1645,6 @@ class ClusterTask < CbrainTask
     return nil
   end
 
-<<<<<<< HEAD
   def use_docker?
     return self.tool_config.docker_image.present?
   end
@@ -1667,8 +1666,6 @@ docker run --rm -v $PWD:/cbrain-script -v #{cache_dir}:#{cache_dir} -v #{task_di
     return docker_commands
   end
   
-
-=======
   # Re-routes methods of Scir class to use ScirVM rather than default Scir class for jobs going to VMs.
   def modify_scir_class_for_vm
     scir_class = self.scir_session
@@ -1750,7 +1747,6 @@ docker run --rm -v $PWD:/cbrain-script -v #{cache_dir}:#{cache_dir} -v #{task_di
     } 
   end
   
->>>>>>> 1e2ee79e8dabc2171d87bfdaa528a485e2b5cc94
   ##################################################################
   # Lifecycle hooks
   ##################################################################
