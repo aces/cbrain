@@ -152,7 +152,7 @@
 
         checkbox
           .prop('checked', !checkbox.prop('checked'))
-          .trigger('change.dyn-tbl');
+          .trigger('change');
       });
 
     /* in single select mode, there is no need for a header checkbox */
@@ -167,8 +167,7 @@
 
         checkboxes
           .prop('checked', checked)
-          .closest('tr')
-          .toggleClass('dt-selected', checked);
+          .trigger('change');
       });
 
     /* localStorage hidden columns module */

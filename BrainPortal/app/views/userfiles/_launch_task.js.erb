@@ -28,7 +28,7 @@ $(document).delegate('div#tool_version_selector > div', 'new_content', function 
   /* Only trigger when the main div is loaded */
   if (event.target != this) return;
 
-  var userfile_checkboxes = $('input#file_ids_'),
+  var userfile_checkboxes = $("input[name='file_ids[]']"),
       menu_button         = $(this).find('input.launch_tool'),
       launch_form         = menu_button.closest('form'),
       url                 = menu_button.attr('data-url'),
@@ -41,9 +41,12 @@ $(document).delegate('div#tool_version_selector > div', 'new_content', function 
   if (method) launch_form.attr('method', method);
 
   menu_button
-    .button('option', 'label', (persistent || userfile_checkboxes.is(':checked')) ? "Launch Tool" : "Prepare Tool")
-    .unbind('click')
-    .bind('click', function (event) {
+    .button('option', 'label',
+      ((persistent || userfile_checkboxes.is(':checked')) ? "Launch " : "Prepare ") +
+      tool_name
+    )
+    .unbind('click.launch_task')
+    .bind('click.launch_task', function (event) {
       /* If we have userfiles selected, we can launch the task right away! */
       if (persistent || userfile_checkboxes.is(':checked')) return;
 
@@ -52,14 +55,15 @@ $(document).delegate('div#tool_version_selector > div', 'new_content', function 
       /* Otherwise, hide the menu and show a nice bar to let the user pick files */
       $(this).closest('.drop_down_menu').hide();
 
-      if ($('.launch_bar').length) return;
+      /* Remove old launch bars from previous selections */
+      $('.launch_bar').remove();
 
       $('.menu_bar').after(
         $('<div class="launch_bar">')
           .append($('<span class="info">Select some files to launch ' + tool_name + '</span>'))
           .append($('<span class="file_status">No files selected</span>'))
           .append(
-            $('<button>Launch Tool</button>')
+            $('<button>Launch</button>')
               .button({ disabled: true })
               .click(function () { launch_form.submit() })
           )
@@ -67,12 +71,12 @@ $(document).delegate('div#tool_version_selector > div', 'new_content', function 
     });
 
   userfile_checkboxes
-    .unbind('change')
-    .bind('change', function () {
+    .unbind('change.launch_task')
+    .bind('change.launch_task', function () {
       var checked = userfile_checkboxes.filter(':checked').length;
 
       /* Update the button in the menu */
-      menu_button.button('option', 'label', checked ? "Launch Tool" : "Prepare Tool");
+      menu_button.button('option', 'label', (checked ? "Launch " : "Prepare ") + tool_name);
 
       /* And the launch_bar, if it exists */
       $('.launch_bar span.file_status').text(checked ? "Launch with " + checked + " file(s)" : "No files selected");

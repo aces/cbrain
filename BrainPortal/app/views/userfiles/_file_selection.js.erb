@@ -31,8 +31,8 @@
 
   $(document)
     .ready(restore)
-    .delegate('#userfiles_display', 'new_content', restore)
-    .delegate('input#file_ids_',    'change',      save);
+    .delegate('#userfiles_display',       'new_content.file_select', restore)
+    .delegate("input[name='file_ids[]']", 'change.file_select',      save);
 
   $(window)
     .unload(save);
@@ -41,7 +41,7 @@
   function restore() {
     var selection = (localStorage.getItem('userfiles_selection') || "").split(',');
 
-    $('input#file_ids_').each(function () {
+    $("input[name='file_ids[]']").each(function () {
       this.checked = selection.indexOf(this.value) != -1;
     });
 
@@ -51,7 +51,7 @@
   /* Save current userfile selection */
   function save() {
     var selection = [];
-    $('input#file_ids_').each(function () {
+    $("input[name='file_ids[]']").each(function () {
       if (this.checked) selection.push(this.value);
     });
 
