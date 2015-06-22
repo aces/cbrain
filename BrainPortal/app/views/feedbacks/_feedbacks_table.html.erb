@@ -31,6 +31,7 @@
 
 <%=
   dynamic_index_table(@feedbacks,
+    :id         => 'feedbacks_table',
     :class      => [ :resource_list ],
     :sort_map   => {
       :summary    => 'feedbacks.summary',

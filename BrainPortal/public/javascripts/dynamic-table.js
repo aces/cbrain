@@ -41,6 +41,7 @@
     $(this).data('bound', true)
 
     var container      = $(this),
+        dyntbl_id      = container.attr('id'),
         table          = container.find('.dt-table'),
         request_type   = container.data('request-type'),
         selection_mode = container.data('selection-mode'),
@@ -49,8 +50,6 @@
           column_show: "ui-icon-radio-off",
           column_hide: "ui-icon-radio-on"
         };
-
-    /* Requests */
 
     /* trigger a sorting request when the header of a sortable column is clicked */
     table.find('.dt-sort > .dt-hdr')
@@ -74,8 +73,6 @@
             container.replaceWith(data);
           });
       });
-
-    /* UI */
 
     /* show/hide popups on filter/columns display button clicks */
     var popup_buttons = table.find('.dt-filter-btn, .dt-col-btn');
@@ -174,6 +171,61 @@
           .toggleClass('dt-selected', checked);
       });
 
+    /* localStorage hidden columns module */
+    var hidden = undefined;
+    if (typeof localStorage !== 'undefined') {
+      hidden = {
+        /* currently hidden columns for this table */
+        columns: {},
+
+        /* hidden columns for all tables */
+        all: undefined,
+
+        /* save hidden columns to localStorage */
+        save: function () {
+          if (!this.all) this.load();
+
+          this.all[dyntbl_id] = this.columns;
+          localStorage.setItem('dyntbl_hidden_columns', JSON.stringify(this.all));
+        },
+
+        /* load hidden columns from localStorage */
+        load: function () {
+          if (!this.all) {
+            try {
+              this.all = JSON.parse(localStorage.getItem('dyntbl_hidden_columns') || '{}');
+
+            } catch (exception) {
+              console.log(exception);
+
+              localStorage.removeItem('dyntbl_hidden_columns');
+              this.all = {};
+            }
+          }
+
+          if (!this.columns || $.isEmptyObject(this.columns))
+            this.columns = this.all[dyntbl_id] || {};
+
+          return this.columns;
+        }
+      };
+
+      /* restore previously hidden columns */
+      hidden.load();
+
+      $.each(hidden.columns, function (column) {
+        table.find(".dt-cpop-col[data-column='" + column + "'] > .dt-cpop-icon")
+          .removeClass(icons.column_show)
+          .addClass(icons.column_hide);
+
+        table
+          .find(['td.' + column, 'th.' + column].join(','))
+          .addClass('dt-hidden');
+
+        adjust_empty();
+      });
+    }
+
     /* toggle columns when the column is clicked in the column display popup */
     table.find('.dt-cpop-col')
       .bind('click.dyn-tbl', function () {
@@ -190,6 +242,16 @@
           .toggleClass('dt-hidden');
 
         adjust_empty();
+
+        /* add/remove it from the currently hidden columns */
+        if (hidden) {
+          if (table.find('th.' + column).is(':visible'))
+            delete hidden.columns[column];
+          else
+            hidden.columns[column] = true;
+
+          hidden.save();
+        }
       });
 
     /* filter out filter options if they dont begin with the search input */
@@ -225,7 +287,6 @@
     };
 
     adjust_empty();
-
   });
 
   /* bind at initial page load */

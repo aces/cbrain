@@ -47,6 +47,7 @@
   <% unless current_user.has_role?(:normal_user) %>
     <%=
       dynamic_index_table([],
+        :id         => "project_button_table",
         :class      => "project_button_header",
         :sort_map   => { :name => 'groups.name', :site => 'sites.name' },
         :filter_map => { :site => 'site_id' }
@@ -114,6 +115,7 @@
 <% else %>
   <%=
     dynamic_index_table(@groups,
+      :id         => 'groups_table',
       :class      => [ :resource_list ],
       :sort_map   => {
         :name        => 'groups.name',

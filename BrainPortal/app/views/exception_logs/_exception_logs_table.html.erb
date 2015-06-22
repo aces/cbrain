@@ -46,6 +46,7 @@
 <%= ajax_form_tag(url_for(:action => :destroy), :method => :delete, :datatype => :script, :id => "exception_form") do %>
   <%=
     dynamic_index_table(@exception_logs,
+      :id         => 'exception_logs_table',
       :class      => [ :resource_list ],
       :sort_map   => {
         :exception_class    => 'exception_logs.exception_class',

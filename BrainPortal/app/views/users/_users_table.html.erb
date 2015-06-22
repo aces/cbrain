@@ -40,6 +40,7 @@
 
 <%=
   dynamic_index_table(@users,
+    :id         => 'users_table',
     :class      => [ :resource_list ],
     :sort_map   => {
       :login           => 'users.login',

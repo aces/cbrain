@@ -33,6 +33,7 @@
 
 <%=
   dynamic_index_table(@sites,
+    :id       => 'sites_table',
     :class    => [ :resource_list ],
     :sort_map => {
       :name        => 'sites.name',
