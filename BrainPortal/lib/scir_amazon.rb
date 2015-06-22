@@ -25,7 +25,7 @@
 # jobs locally as standard unix subprocesses.
 
 
-require 'aws-sdk'
+require 'aws-sdk-v1'
 
 # A Scir class to handle VMs on Amazon EC2
 # This class can only handle tasks of type CBRAIN::StartVM.

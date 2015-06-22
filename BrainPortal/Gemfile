@@ -43,7 +43,7 @@ group :development do
 end
 
 gem 'openstack'
-gem 'aws-sdk'
+gem 'aws-sdk-v1'
 
 group :test do
   gem "rspec", "> 3.0.0"
