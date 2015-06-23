@@ -189,7 +189,8 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       DataProvider.this_is_a_proper_cache_dir! cache_root,
         :local => true,
         :key   => myself.cache_md5, # could be nil, in that case it won't cross-check
-        :host  => Socket.gethostname
+        :host  => Socket.gethostname,
+        :for_remote_resource_id => myself.id
     rescue => ex
       puts "C> \t- SKIPPING! Invalid cache root directory '#{cache_root}' :"
       puts "C> \t  #{ex.message}"
