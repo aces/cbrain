@@ -1,0 +1,73 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+-%>
+
+<h3>General</h3>
+
+<strong>Disk image: </strong>
+  <%= h(Userfile.find(params[:interface_userfile_ids][0]).name) %>
+  <%= form.params_hidden_field :disk_image %>
+<br/>
+<strong>VM username:</strong>
+   <%= params[:vm_user] %>
+   <%= form.params_hidden_field :vm_user %>
+<br/>
+<strong>VM job slots:</strong>
+   <%= text_field_tag :job_slots.to_la, params[:job_slots], size:3 %>
+<br/>
+<strong>VM boot timeout (s):</strong>
+   <%= text_field_tag :vm_boot_timeout.to_la, params[:vm_boot_timeout], size:4 %>
+<br/>
+<strong>Number of instances to start (&le;20):</strong>
+   <%= text_field_tag :number_of_vms.to_la, params[:number_of_vms], size:5 %>
+<br/>
+
+<% if Bourreau.find(ToolConfig.find(@task.tool_config_id).bourreau_id).scir_class.new.is_a? ScirCloud %>
+
+<h3>Cloud</h3>
+
+<strong>Image Type:</strong>
+
+<% if !params[:available_types].blank? %>
+<%=  select_tag :instance_type.to_la, options_for_select(params[:available_types], params[:instance_type]) %>
+<% end %>
+
+<% else %>
+
+<h3>Cluster System</h3>
+
+<strong>VM CPUs:</strong>
+   <%= text_field_tag :vm_cpus.to_la, params[:vm_cpus], size:4 %>
+<br/>
+<strong>VM RAM (GB):</strong>
+   <%= text_field_tag :vm_ram_gb.to_la, params[:vm_ram_gb], size:4 %>
+<br/>
+<strong>QEMU options:</strong>
+   <%= text_field_tag :qemu_params.to_la, params[:qemu_params], size:65 %>
+<br/>
+<strong>Use emulation</strong>
+  <%= form.params_check_box :emulation %>
+<br/>
+<% end %> 
+
+
