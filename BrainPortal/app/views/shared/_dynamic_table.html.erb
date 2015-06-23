@@ -87,7 +87,6 @@
         <% table.columns.each do |column| %>
           <% header = column.header %>
           <th <%= header.attributes.to_html_attributes.html_safe %>>
-            <span class="dt-hdr"><%= header.label %></span>
             <% if column.sortable? %>
               <%
                 sort_param   = params[column.name][:sort_order].to_sym rescue nil
@@ -143,6 +142,7 @@
                 <div class="dt-pop-close-btn ui-icon ui-icon-close"></div>
               </div>
             <% end %>
+            <span class="dt-hdr"><%= header.label %></span>
           </th>
         <% end %>
         <th class="dt-col-csp">

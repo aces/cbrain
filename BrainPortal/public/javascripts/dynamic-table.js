@@ -51,6 +51,45 @@
           column_hide: "ui-icon-radio-on"
         };
 
+    /* localStorage hidden columns module */
+    var hidden = undefined;
+    if (typeof localStorage !== 'undefined')
+      hidden = {
+        /* currently hidden columns for this table */
+        columns: {},
+
+        /* hidden columns for all tables */
+        all: undefined,
+
+        /* save hidden columns to localStorage */
+        save: function () {
+          if (!this.all) this.load();
+
+          this.all[dyntbl_id] = this.columns;
+          localStorage.setItem('dyntbl_hidden_columns', JSON.stringify(this.all));
+        },
+
+        /* load hidden columns from localStorage */
+        load: function () {
+          if (!this.all) {
+            try {
+              this.all = JSON.parse(localStorage.getItem('dyntbl_hidden_columns') || '{}');
+
+            } catch (exception) {
+              console.log(exception);
+
+              localStorage.removeItem('dyntbl_hidden_columns');
+              this.all = {};
+            }
+          }
+
+          if (!this.columns || $.isEmptyObject(this.columns))
+            this.columns = this.all[dyntbl_id] || {};
+
+          return this.columns;
+        }
+      };
+
     /* trigger a sorting request when the header of a sortable column is clicked */
     table.find('.dt-sort > .dt-hdr')
       .bind('click.dyn-tbl', function () {
@@ -111,10 +150,15 @@
     table.find('.dt-col-csp > .dt-popup')
       .bind('show.dyn-tbl', function () {
         var popup    = $(this),
+            width    = popup.outerWidth(),
+            edge_gap = 10,
             position = popup.offset();
 
         popup.parent().css({ position: 'static' });
-        popup.offset(position);
+        popup.offset({
+          top:  position.top,
+          left: Math.min(position.left, $(window).width() - width - edge_gap)
+        });
       })
       .bind('hide.dyn-tbl', function () {
         $(this)
@@ -170,46 +214,8 @@
           .trigger('change');
       });
 
-    /* localStorage hidden columns module */
-    var hidden = undefined;
-    if (typeof localStorage !== 'undefined') {
-      hidden = {
-        /* currently hidden columns for this table */
-        columns: {},
-
-        /* hidden columns for all tables */
-        all: undefined,
-
-        /* save hidden columns to localStorage */
-        save: function () {
-          if (!this.all) this.load();
-
-          this.all[dyntbl_id] = this.columns;
-          localStorage.setItem('dyntbl_hidden_columns', JSON.stringify(this.all));
-        },
-
-        /* load hidden columns from localStorage */
-        load: function () {
-          if (!this.all) {
-            try {
-              this.all = JSON.parse(localStorage.getItem('dyntbl_hidden_columns') || '{}');
-
-            } catch (exception) {
-              console.log(exception);
-
-              localStorage.removeItem('dyntbl_hidden_columns');
-              this.all = {};
-            }
-          }
-
-          if (!this.columns || $.isEmptyObject(this.columns))
-            this.columns = this.all[dyntbl_id] || {};
-
-          return this.columns;
-        }
-      };
-
-      /* restore previously hidden columns */
+    /* restore previously hidden columns */
+    if (hidden) {
       hidden.load();
 
       $.each(hidden.columns, function (column) {
