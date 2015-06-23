@@ -73,27 +73,36 @@ module DynamicTableHelper
 
     # Table rows. Instances of DynamicTable::Row, each contains a single piece
     # of the collection to create a table for.
+    #
     # Internal field; rows are created and managed automatically. Use the
     # +row+ method to modify row attributes.
     attr_accessor :rows
+
     # Table columns. Instances of DynamicTable::Column, each handles a single
     # field of the collection objects.
+    #
     # Internal field; columns are created by using the +column+ method inside
     # +dynamic_table+'s block. Use the arguments to the +column+ method to modify
     # column attributes.
     attr_accessor :columns
+
     # Hash of extra UI components for the table, such as pagination.
+    #
     # Internal field; add UI components using their respective methods.
     # This property is mainly used to render the components themselves.
     attr_accessor :components
+
     # Template from the templating engine (usually ERB) used to render the table
     # and to access request parameters.
+    #
     # Internal field; this attribute is automatically set to the currently
     # evaluated template when calling +dynamic_table+.
     attr_accessor :template
+
     # HTML attributes for the table. Unlike row and cell attributes,
     # the table's attributes cannot be specified using a callback and are
     # thus defined at table creation.
+    #
     # Internal field; table attributes are set directly when calling
     # +dynamic_table+.
     attr_accessor :attributes
@@ -101,6 +110,7 @@ module DynamicTableHelper
     # Create a new DynamicTable for +collection+ with HTML attributes
     # +attributes+ and default request targets +targets+ using the template
     # +template+ for rendering.
+    #
     # Internal method; see +dynamic_table+ for information on how to
     # create a dynamic table.
     def initialize(collection, template, attributes = {}, targets = {})
@@ -350,27 +360,12 @@ module DynamicTableHelper
     #  option) requires table cells to have a css class matching the column
     #  name.
     def row(options = {}, &block)
-      @rows.each do |row|
-        opts = options.clone
-        opts.merge!(block.call(row.object) || {}) if block
+      # Apply to existing rows
+      @rows.each { |row| row.apply(options.clone, &block) }
 
-        row.override = opts[:override] if opts.has_key?(:override)
-        (row.attributes ||= {}).merge!(opts[:html]) if opts[:html]
-        row.attributes[:id]    = opts[:id]    if opts[:id]
-        row.attributes[:class] = opts[:class] if opts[:class]
-        row.attributes[:class] = DynamicTable.parse_css_classes(row.attributes[:class])
-
-        if [:selectable, :select_value, :select_param].any? { |k| opts[k] }
-          obj = row.object
-
-          row.select_value   = opts[:select_value]
-          row.select_value ||= obj.id   if obj.respond_to?(:id)
-          row.select_value ||= obj[:id] if obj.respond_to?(:[]) && obj[:id]
-          row.select_value ||= obj.hash
-
-          row.select_param   = opts[:select_param] || 'selection'
-        end
-      end
+      # Store for future rows (created by a render :row, for example)
+      (@row_options ||= {}).deep_merge!(options)
+      @row_block = block
     end
 
     # Mark rows as selectable. Equivalent to the selectable, select_value
@@ -451,6 +446,7 @@ module DynamicTableHelper
 
     # Simple structure representing a single column in a dynamic table, including
     # headers, sorting, filtering and cell formatting.
+    #
     # Internal class; use the +column+ method of DynamicTable to create and
     # manage columns.
     class Column
@@ -572,6 +568,7 @@ module DynamicTableHelper
 
     # Simple structure representing a single row in the table holding one
     # of the collection's object.
+    #
     # Internal structure; specify row attributes using DynamicTable's
     # +row+ method.
     Row = Struct.new(
@@ -587,6 +584,32 @@ module DynamicTableHelper
       # Parameter name in the request to send select_value as.
       :select_param
     ) do
+      # Apply a set of +options+, possibly returned by calling +block+
+      # on the row's collection object, to the row. Available options are
+      # the same as those specified in DynamicTable's row method.
+      def apply(options = {}, &block)
+        options.merge!(block.call(self.object) || {}) if block
+
+        # HTML options
+        self.override = options[:override] if options.has_key?(:override)
+        (self.attributes ||= {}).merge!(options[:html]) if options[:html]
+        self.attributes[:id]    = options[:id]    if options[:id]
+        self.attributes[:class] = options[:class] if options[:class]
+        self.attributes[:class] = DynamicTable.parse_css_classes(self.attributes[:class])
+
+        # Selection-related options
+        if [:selectable, :select_value, :select_param].any? { |k| options[k] }
+          obj = self.object
+
+          self.select_value   = options[:select_value]
+          self.select_value ||= obj.id   if obj.respond_to?(:id)
+          self.select_value ||= obj[:id] if obj.respond_to?(:[]) && obj[:id]
+          self.select_value ||= obj.hash
+
+          self.select_param   = options[:select_param] || 'selection'
+        end
+      end
+
       # Whether a row can be selected or not. Selectable rows have a checkbox
       # as the very first column to allow selection.
       def selectable?
@@ -595,6 +618,7 @@ module DynamicTableHelper
     end
 
     # Simple structure holding pagination attributes for the table.
+    #
     # Internal structure; use DynamicTable's +pagination+ method to specify
     # pagination parmeters.
     class Pagination
@@ -645,8 +669,16 @@ module DynamicTableHelper
     # +collection+ and +options+ are identical to +dynamic_table+'s.
     # They only differ in the +template+ parameter, which corresponds to
     # the templating engine's template (usually +self+ in +dynamic_table+).
-    # Internal method; use +dynamic_table+ (which invokes this) to create and
-    # render dynamic tables.
+    #
+    # Note that calling any of the public API methods (+column+, +row+,
+    # +pagination+, etc.) outside of the expected block may produce unexpected
+    # behavior, as the table expects it's creation parameters to be static after
+    # creation.
+    #
+    # Special API method; only use this method if you need to issue specific
+    # calls to the render method (such as rendering only rows or pagination).
+    # Otherwise, use +dynamic_table+ (which invokes this) to create and render
+    # dynamic tables.
     def self.create(collection, template, options = {})
       attributes         = options[:html] || {}
       attributes[:id]    = options[:id]    if options[:id]
@@ -664,19 +696,100 @@ module DynamicTableHelper
       targets         = { :sort => sort_target, :filter => filter_target }
 
       table = self.new(collection, template, attributes, targets)
+      table.instance_variable_set(:@row_selection, options[:row_selection]) if
+        options[:row_selection]
+
       yield table
 
+      table.apply_default_attributes
       table
     end
 
-    # Render the dynamic table to HTML using the shared/dynamic_table partial.
-    # Internal method; the +dynamic_table+ module method will automatically
-    # render the table once created.
-    def render
+    # Render the specified dynamic table +element+ to HTML using the
+    # shared/dynamic_table partial. +element+ can be one of:
+    #
+    # [full]
+    #  Entire table, extra UI components included.
+    #
+    # [table]
+    #  Just the core table, without extra UI components.
+    #
+    # [header]
+    #  Bare column headers (with sorting/filtering UI)
+    #
+    # [row]
+    #  A set of rows. +args+ will be expected to contain either an Enumerable
+    #  (or a single) +Row+ instance or a collection item to generate
+    #  the row from.
+    #
+    # [<component>]
+    #  Just the UI component (<component>) requested. Make sure the requested
+    #  UI component is present on the table, as the render will obviously
+    #  fail otherwise.
+    #
+    # Note that only specifying +full+ will render a fully functional table, as
+    # it will render the container element to which client-side events are
+    # bound.
+    #
+    # Special API method; the +dynamic_table+ module method will automatically
+    # render the entire table once created. Only use this method in conjunction
+    # with the +create+ class method if you need to render specific elements
+    # separately.
+    def render(element = :full, *args)
+      rows = (args[0].is_a?(Enumerable) ? args[0] : [args[0]]).map do |obj|
+        row = obj.is_a?(Row) ? obj : Row.new(obj, {})
+        row.apply(@row_options.clone, &@row_block)
+        row
+      end if element == :row
+
       table = self
       @template.instance_eval do
-        render :partial => "shared/dynamic_table", :locals => { :table => table }
+        render(:partial => "shared/dynamic_table", :locals => {
+          :table   => table,
+          :element => element,
+          :args    => [rows]
+        })
       end
+    end
+
+    # Apply default column header and cell HTML attributes prior to rendering.
+    #
+    # Note that this method should only be called once; it does not check if the
+    # attributes are already there.
+    #
+    # Internal method; the default attributes are automatically added at table
+    # creation (+create+).
+    def apply_default_attributes
+      # Add header specific attributes
+      @columns.each do |column|
+        header = column.header
+        cls    = (header.attributes[:class] ||= [])
+        cls   << column.name.to_s
+        cls   << 'dt-hidden' if ! column.visible?
+        cls   << 'dt-sort'   if column.sortable?
+        cls   << 'dt-filter' if column.filterable?
+        header.attributes['data-column'] ||= column.name.to_s
+      end
+
+      # Add cell specific attributes
+      @columns.each do |column|
+        cell  = column.cell
+        cls   = (cell.attributes[:class] ||= [])
+        cls  << column.name.to_s
+        cls  << 'dt-hidden' if ! column.visible?
+        cell.attributes['data-column'] ||= column.name.to_s
+      end
+    end
+
+    # Whether or not this table allows the user to select rows using a
+    # checkbox column.
+    #
+    # Internal method; used when rendering to know whether or not to add a
+    # checkbox column. Use the +selectable+ and +row+ methods to make rows
+    # selectable or use +dynamic_table+'s row_selection option to force
+    # the table to have a checkbox column.
+    def has_row_selection?
+      @row_selection || @rows.any? { |row| row.selectable? }
     end
 
     # Parse a string, symbol or array (+classes+) into proper css class names.
@@ -744,6 +857,13 @@ module DynamicTableHelper
   #  Same as sort_target, but for filtering instead. The 2 arguments passed
   #  to the lambda function will be the column name and the filter object.
   #
+  # [row_selection]
+  #  Whether or not table rows are expected to be selectable. If this option is
+  #  set, the table will have a separate column with checkboxes to allow
+  #  selecting rows and the header's checkbox will select all rows in the table.
+  #  Note that this option is automatically set if any row in the table is
+  #  marked as selectable (see the +selectable+ and +row+ DynamicTable methods).
+  #
   # [selection_mode]
   #  Specifies how many rows can be selected at once in the table. Either
   #  :single, to only allow a single row to be selected at a time, or :multiple
@@ -781,6 +901,12 @@ module DynamicTableHelper
   #  filtering. For example, a column for user logins would have
   #  name :login and filtering field 'user_id'. If a map for a given
   #  column name is not found, it defaults to the column name itself.
+  #
+  # [render]
+  #  Whether the table should be automatically rendered after creation or not.
+  #  Specifying false (as it defaults to true) will make dynamic_index_table
+  #  return the table instead of calling render. This mimics calling
+  #  DynamicTable.create and allows only rendering parts of the table.
   #
   # This method gives index_table-like defaults for:
   # * sort_target and filter_target
@@ -864,7 +990,9 @@ module DynamicTableHelper
       table.filter_map = filter_map
 
       block.call(table)
-    end.render
+    end
+
+    (options.has_key?(:render) && ! options[:render]) ? table : table.render
   end
 
 end
