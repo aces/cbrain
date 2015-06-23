@@ -22,7 +22,10 @@
 #
 */
 
-/* Dynamic tables behavior */
+/*
+ * Dynamic tables client-side behavior
+ * Event namespace: .dyn-tbl
+ */
 
 (function () {
   "use strict";
@@ -34,11 +37,13 @@
     };
   }
 
-  $(document).delegate('.dynamic-table', 'init.dyn-tbl', function () {
-
-    /* make sure the table is only initialized once */
-    if ($(this).data('initialized')) return;
-    $(this).data('initialized', true)
+  /*
+   * bind event
+   * Present on .dynamic-table nodes, refreshes the dynamic table's event
+   * bindings. Trigger this event if the table has changed (rows have been
+   * added/removed, for example) and the current bindings are no longer valid.
+   */
+  $(document).delegate('.dynamic-table', 'bind.dyn-tbl', function () {
 
     var container      = $(this),
         dyntbl_id      = container.attr('id'),
@@ -92,6 +97,7 @@
 
     /* trigger a sorting request when the header of a sortable column is clicked */
     table.find('.dt-sort > .dt-hdr')
+      .unbind('click.dyn-tbl')
       .bind('click.dyn-tbl', function () {
         $(this)
           .siblings('.dt-sort-btn')
@@ -101,6 +107,7 @@
 
     /* sorting and filtering requests */
     table.find('.dt-sort-btn, .dt-fpop-txt:not(.dt-zero)')
+      .unbind('click.dyn-tbl')
       .bind('click.dyn-tbl', function () {
         var url = $(this).data('url');
         if (!url || !request_type) return;
@@ -116,6 +123,7 @@
     /* show/hide popups on filter/columns display button clicks */
     var popup_buttons = table.find('.dt-filter-btn, .dt-col-btn');
     popup_buttons
+      .unbind('click.dyn-tbl')
       .bind('click.dyn-tbl', function () {
         popup_buttons
           .not(this)
@@ -134,6 +142,7 @@
 
     /* hide popups when their close buttons are clicked */
     table.find('.dt-pop-close-btn')
+      .unbind('click.dyn-tbl')
       .bind('click.dyn-tbl', function () {
         var popup = $(this)
           .parent()
@@ -148,6 +157,7 @@
 
     /* stick the columns display popup in place when shown */
     table.find('.dt-col-csp > .dt-popup')
+      .unbind('show.dyn-tbl')
       .bind('show.dyn-tbl', function () {
         var popup    = $(this),
             width    = popup.outerWidth(),
@@ -160,6 +170,7 @@
           left: Math.min(position.left, $(window).width() - width - edge_gap)
         });
       })
+      .unbind('hide.dyn-tbl')
       .bind('hide.dyn-tbl', function () {
         $(this)
           .css({ left: '', top: '' })
@@ -170,6 +181,7 @@
     /* show rows as selected if their respective checkbox is checked */
     var checkboxes = table.find('td.dt-sel > .dt-sel-check');
     checkboxes
+      .unbind('change.dyn-tbl')
       .bind('change.dyn-tbl', function () {
         $(this)
           .closest('tr')
@@ -189,6 +201,7 @@
 
     /* trigger selection checkboxes when the row is clicked */
     table.find('.dt-body > .dt-sel-row')
+      .unbind('click.dyn-tbl')
       .bind('click.dyn-tbl', function () {
         var checkbox = $(this)
           .find('.dt-sel-check')
@@ -206,6 +219,7 @@
 
     /* toggle all checkboxes when the header checkbox is clicked */
     table.find('th.dt-sel > .dt-sel-check')
+      .unbind('change.dyn-tbl')
       .bind('change.dyn-tbl', function () {
         var checked = $(this).prop('checked');
 
@@ -233,6 +247,7 @@
 
     /* toggle columns when the column is clicked in the column display popup */
     table.find('.dt-cpop-col')
+      .unbind('click.dyn-tbl')
       .bind('click.dyn-tbl', function () {
         $(this)
           .find('.dt-cpop-icon')
@@ -261,6 +276,7 @@
 
     /* filter out filter options if they dont begin with the search input */
     table.find('.dt-fpop-find > input')
+      .unbind('input.dyn-tbl')
       .bind('input.dyn-tbl', function () {
         var key = $.trim($(this).val()).toLowerCase();
 
@@ -295,11 +311,11 @@
 
   });
 
-  /* initialize the tables at initial page load */
-  $('.dynamic-table').trigger('init.dyn-tbl');
+  /* bind table events at initial page load */
+  $('.dynamic-table').trigger('bind.dyn-tbl');
 
   /* and when new content is loaded */
   $(document).bind('new_content', function () {
-    $('.dynamic-table').trigger('init.dyn-tbl');
+    $('.dynamic-table').trigger('bind.dyn-tbl');
   });
 })();
