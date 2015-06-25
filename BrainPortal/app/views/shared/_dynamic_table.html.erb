@@ -36,7 +36,7 @@
     <% templates[:table].call %>
     <% templates[:pagination].call if pgn_location && pgn_location != :top %>
     <script type="application/javascript">
-      $('#<%= j table.attributes[:id] %>').trigger('bind.dyn-tbl');
+      $('#<%= j table.attributes[:id] %>').trigger('reload.dyn-tbl');
     </script>
   </div>
 <% end %>

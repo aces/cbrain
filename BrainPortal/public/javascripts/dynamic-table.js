@@ -38,12 +38,12 @@
   }
 
   /*
-   * bind event
-   * Present on .dynamic-table nodes, refreshes the dynamic table's event
-   * bindings. Trigger this event if the table has changed (rows have been
-   * added/removed, for example) and the current bindings are no longer valid.
+   * reload event
+   * Present on .dynamic-table nodes, refreshes the dynamic table's state and
+   * event bindings. Trigger this event if the table has changed (rows have
+   * been added/removed, for example) and the current state is no longer valid.
    */
-  $(document).delegate('.dynamic-table', 'bind.dyn-tbl', function () {
+  $(document).delegate('.dynamic-table', 'reload.dyn-tbl', function () {
 
     var container      = $(this),
         dyntbl_id      = container.attr('id'),
@@ -55,6 +55,8 @@
           column_show: "ui-icon-radio-off",
           column_hide: "ui-icon-radio-on"
         };
+
+    /* Modules */
 
     /* localStorage column visibility module */
     var column_visibility = undefined;
@@ -95,6 +97,8 @@
         }
       };
 
+    /* Requests */
+
     /* trigger a sorting request when the header of a sortable column is clicked */
     table.find('.dt-sort > .dt-hdr')
       .unbind('click.dyn-tbl')
@@ -119,6 +123,8 @@
             container.replaceWith(data);
           });
       });
+
+    /* Popups */
 
     /* show/hide popups on filter/columns display button clicks */
     var popup_buttons = table.find('.dt-filter-btn, .dt-col-btn');
@@ -178,6 +184,8 @@
           .css({ position: 'relative' });
       });
 
+    /* Selection */
+
     /* show rows as selected if their respective checkbox is checked */
     var checkboxes = table.find('td.dt-sel > .dt-sel-check');
     checkboxes
@@ -228,6 +236,8 @@
           .trigger('change');
       });
 
+    /* Column visibility */
+
     /* restore previous column visibility status */
     if (column_visibility) {
       var visibility = column_visibility.load();
@@ -245,9 +255,18 @@
         table.find(['td.' + column, 'th.' + column].join(','))
           .toggleClass('dt-hidden', !visible);
       });
-
-      adjust_empty();
     }
+
+    /* make sure that each cell's visibility is consistent with it's column */
+    table.find('.dt-head > tr > th').each(function () {
+      var column = $(this).data('column'),
+          hidden = $(this).hasClass('dt-hidden');
+
+      if (!column) return;
+
+      table.find('td.' + column)
+        .toggleClass('dt-hidden', hidden);
+    });
 
     /* toggle columns when the column is clicked in the column display popup */
     table.find('.dt-cpop-col')
@@ -273,6 +292,8 @@
           column_visibility.save();
         }
       });
+
+    /* Misc */
 
     /* filter out filter options if they dont begin with the search input */
     table.find('.dt-fpop-find > input')
@@ -311,11 +332,11 @@
 
   });
 
-  /* bind table events at initial page load */
-  $('.dynamic-table').trigger('bind.dyn-tbl');
+  /* load the table at initial page load */
+  $('.dynamic-table').trigger('reload.dyn-tbl');
 
   /* and when new content is loaded */
   $(document).bind('new_content', function () {
-    $('.dynamic-table').trigger('bind.dyn-tbl');
+    $('.dynamic-table').trigger('reload.dyn-tbl');
   });
 })();

@@ -33,6 +33,11 @@ $(function () {
     if (!url) return;
 
     /* Fetch the missing bourreau row info */
-    $.get(url, function (data) { row.replaceWith(data); });
+    $.get(url, function (data) {
+      row.replaceWith(data);
+
+      /* Notify the table that its content changed */
+      $('#bourreaux_table').trigger('reload.dyn-tbl');
+    });
   });
 });
