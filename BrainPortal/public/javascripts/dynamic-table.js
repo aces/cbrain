@@ -56,34 +56,34 @@
           column_hide: "ui-icon-radio-on"
         };
 
-    /* localStorage hidden columns module */
-    var hidden = undefined;
+    /* localStorage column visibility module */
+    var column_visibility = undefined;
     if (typeof localStorage !== 'undefined')
-      hidden = {
-        /* currently hidden columns for this table */
+      column_visibility = {
+        /* current column visibility status for this table */
         columns: {},
 
-        /* hidden columns for all tables */
+        /* column visibility status for all tables */
         all: undefined,
 
-        /* save hidden columns to localStorage */
+        /* save visibility status to localStorage */
         save: function () {
           if (!this.all) this.load();
 
           this.all[dyntbl_id] = this.columns;
-          localStorage.setItem('dyntbl_hidden_columns', JSON.stringify(this.all));
+          localStorage.setItem('dyntbl_column_visibility', JSON.stringify(this.all));
         },
 
-        /* load hidden columns from localStorage */
+        /* load visibility status from localStorage */
         load: function () {
           if (!this.all) {
             try {
-              this.all = JSON.parse(localStorage.getItem('dyntbl_hidden_columns') || '{}');
+              this.all = JSON.parse(localStorage.getItem('dyntbl_column_visibility') || '{}');
 
             } catch (exception) {
               console.log(exception);
 
-              localStorage.removeItem('dyntbl_hidden_columns');
+              localStorage.removeItem('dyntbl_column_visibility');
               this.all = {};
             }
           }
@@ -228,21 +228,25 @@
           .trigger('change');
       });
 
-    /* restore previously hidden columns */
-    if (hidden) {
-      hidden.load();
+    /* restore previous column visibility status */
+    if (column_visibility) {
+      var visibility = column_visibility.load();
 
-      $.each(hidden.columns, function (column) {
+      table.find('.dt-head > tr > th').each(function () {
+        var column  = $(this).data('column'),
+            visible = visibility[column];
+
+        if (!visibility.hasOwnProperty(column)) return;
+
         table.find(".dt-cpop-col[data-column='" + column + "'] > .dt-cpop-icon")
-          .removeClass(icons.column_show)
-          .addClass(icons.column_hide);
+          .toggleClass(icons.column_show, visible)
+          .toggleClass(icons.column_hide, !visible);
 
-        table
-          .find(['td.' + column, 'th.' + column].join(','))
-          .addClass('dt-hidden');
-
-        adjust_empty();
+        table.find(['td.' + column, 'th.' + column].join(','))
+          .toggleClass('dt-hidden', !visible);
       });
+
+      adjust_empty();
     }
 
     /* toggle columns when the column is clicked in the column display popup */
@@ -263,14 +267,10 @@
 
         adjust_empty();
 
-        /* add/remove it from the currently hidden columns */
-        if (hidden) {
-          if (table.find('th.' + column).is(':visible'))
-            delete hidden.columns[column];
-          else
-            hidden.columns[column] = true;
-
-          hidden.save();
+        /* update the column's visibility status */
+        if (column_visibility) {
+          column_visibility.columns[column] = table.find('th.' + column).is(':visible');
+          column_visibility.save();
         }
       });
 
