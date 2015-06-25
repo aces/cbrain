@@ -857,6 +857,12 @@ module DynamicTableHelper
   #  Same as sort_target, but for filtering instead. The 2 arguments passed
   #  to the lambda function will be the column name and the filter object.
   #
+  # [render]
+  #  Whether the table should be automatically rendered after creation or not.
+  #  Specifying false (as it defaults to true) will make dynamic_table
+  #  return the table instead of calling render. This mimics calling
+  #  DynamicTable.create and allows only rendering parts of the table.
+  #
   # [row_selection]
   #  Whether or not table rows are expected to be selectable. If this option is
   #  set, the table will have a separate column with checkboxes to allow
@@ -880,7 +886,9 @@ module DynamicTableHelper
   #                  if the user clicked a regular link.
   #  Defaults to :html_link
   def dynamic_table(collection, options = {}, &block)
-    DynamicTable.create(collection, self, options, &block).render
+    table = DynamicTable.create(collection, self, options, &block)
+
+    (options.has_key?(:render) && ! options[:render]) ? table : table.render
   end
 
   # This method is a simple variation of +dynamic_table+ (and DynamicTable)
@@ -901,12 +909,6 @@ module DynamicTableHelper
   #  filtering. For example, a column for user logins would have
   #  name :login and filtering field 'user_id'. If a map for a given
   #  column name is not found, it defaults to the column name itself.
-  #
-  # [render]
-  #  Whether the table should be automatically rendered after creation or not.
-  #  Specifying false (as it defaults to true) will make dynamic_index_table
-  #  return the table instead of calling render. This mimics calling
-  #  DynamicTable.create and allows only rendering parts of the table.
   #
   # This method gives index_table-like defaults for:
   # * sort_target and filter_target

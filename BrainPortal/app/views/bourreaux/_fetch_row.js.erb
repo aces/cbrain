@@ -33,15 +33,6 @@ $(function () {
     if (!url) return;
 
     /* Fetch the missing bourreau row info */
-    $.get(url, function (data) {
-      var cells = $(data);
-
-      /* Fill the corresponding cells */
-      row.children('td').each(function () {
-        var cell = cells.filter("td[data-column='" + $(this).data('column') + "']");
-
-        if (cell.length) $(this).html(cell.html());
-      });
-    });
+    $.get(url, function (data) { row.replaceWith(data); });
   });
 });

@@ -22,48 +22,11 @@
 #
 -%>
 
-<div class="menu_bar">
-  <% if check_role(:site_manager) || check_role(:admin_user) %>
-    <%= new_model_button 'Create New Server', new_bourreau_path %>
-  <% end %>
-  <%= ajax_link (@filter_params["details"] == 'on' ? "Hide Details" : "Show Details" ),
-              bourreaux_path(:bourreaux  => {:details  => set_toggle(@filter_params["details"])}),
-              :datatype  => 'script', :class  => "button"
-  %>
-
-  <%= link_to "User Access Report", rr_access_bourreaux_path,
-              :datatype  => 'script', :class  => "button"
-  %>
-
-  <%= link_to "Disk Cache Report", rr_disk_usage_bourreaux_path,
-              :datatype  => 'script', :class  => "button"
-  %>
-
-  <%= link_to "Task Workdir Size Report", report_path(
-                :table_name => "cbrain_tasks.combined_task_rep",
-                :row_type   => :user_id,
-                :col_type   => :bourreau_id,
-                :generate   => "ok"
-              ), :class  => "button"
-  %>
-
-  <%= link_to "Access to Data Providers", rr_access_dp_bourreaux_path,
-              :datatype  => 'script', :class  => "button"
-  %>
-
-  <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>
-</div>
-
-<%= render :partial => 'shared/active_filters', :locals => {:model => :bourreau} %>
-
-<% content_for :scripts do %>
-  <% javascript_tag (render :partial => "fetch_row.js.erb", :formats => [:js]).to_s %>
-<% end %>
-
-<%=
-  dynamic_index_table(@bourreaux,
+<%
+  table = dynamic_index_table(@bourreaux,
     :id         => "bourreaux_table",
     :class      => [ :resource_list ],
+    :render     => false,
     :sort_map   => {
       :type        => 'remote_resources.type',
       :name        => 'remote_resources.name',
@@ -81,16 +44,26 @@
 %>
   <%
     loaded = lambda do |resource|
-      ! resource.is_a?(Bourreau) ||
-      ! resource.online?         ||
-      resource.info_cached?(:ping)
+      ! resource.is_a?(Bourreau)   ||
+      ! resource.online?           ||
+      resource.info_cached?(:ping) ||
+      (@row_fetch && resource.info(:ping))
+    end
+
+    filters_for = lambda do |target, opts = {}|
+      return if @row_fetch
+      if target.is_a?(Symbol)
+        basic_filters_for(@filtered_scope, @header_scope, RemoteResource, target)
+      else
+        association_filters_for(@filtered_scope, @header_scope, RemoteResource, target, opts)
+      end
     end
 
     t.row { |r| { :html => { 'data-info-url' => row_data_bourreau_path(r) } } unless loaded.(r) }
 
     t.column("Server Type", :type,
       :sortable => true,
-      :filters  => basic_filters_for(@filtered_scope, @header_scope, RemoteResource, :type)
+      :filters  => filters_for.(:type)
     ) { |r| r.is_a?(Bourreau) ? "Execution" : "Portal" }
 
     t.column("Server Name", :name,
@@ -115,12 +88,12 @@
     t.column("Owner", :owner,
       :hidden   => true,
       :sortable => true,
-      :filters  => association_filters_for(@filtered_scope, @header_scope, RemoteResource, User, :name_method => :login)
+      :filters  => filters_for.(User, :name_method => :login)
     ) { |r| link_to_user_with_tooltip(r.user) }
 
     t.column("Project", :group,
       :sortable => true,
-      :filters  => association_filters_for(@filtered_scope, @header_scope, RemoteResource, Group)
+      :filters  => filters_for.(Group)
     ) { |r| link_to_group_if_accessible(r.group) }
 
     t.column("Site", :site,
@@ -130,7 +103,7 @@
     t.column("Time Zone", :time_zone,
       :hidden   => true,
       :sortable => true,
-      :filters  => basic_filters_for(@filtered_scope, @header_scope, RemoteResource, :time_zone)
+      :filters  => filters_for.(:time_zone)
     ) { |r| r.time_zone || "(Unset)" }
 
     t.column("Online?", :online,
@@ -244,4 +217,48 @@
       end
     end
   %>
+<% end %>
+
+<% if @row_fetch %>
+  <%= table.render :row, @bourreaux.to_a %>
+<% else %>
+  <div class="menu_bar">
+    <% if check_role(:site_manager) || check_role(:admin_user) %>
+      <%= new_model_button 'Create New Server', new_bourreau_path %>
+    <% end %>
+    <%= ajax_link (@filter_params["details"] == 'on' ? "Hide Details" : "Show Details" ),
+                bourreaux_path(:bourreaux  => {:details  => set_toggle(@filter_params["details"])}),
+                :datatype  => 'script', :class  => "button"
+    %>
+
+    <%= link_to "User Access Report", rr_access_bourreaux_path,
+                :datatype  => 'script', :class  => "button"
+    %>
+
+    <%= link_to "Disk Cache Report", rr_disk_usage_bourreaux_path,
+                :datatype  => 'script', :class  => "button"
+    %>
+
+    <%= link_to "Task Workdir Size Report", report_path(
+                  :table_name => "cbrain_tasks.combined_task_rep",
+                  :row_type   => :user_id,
+                  :col_type   => :bourreau_id,
+                  :generate   => "ok"
+                ), :class  => "button"
+    %>
+
+    <%= link_to "Access to Data Providers", rr_access_dp_bourreaux_path,
+                :datatype  => 'script', :class  => "button"
+    %>
+
+    <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>
+  </div>
+
+  <%= render :partial => 'shared/active_filters', :locals => {:model => :bourreau} %>
+
+  <% content_for :scripts do %>
+    <% javascript_tag (render :partial => "fetch_row.js.erb", :formats => [:js]).to_s %>
+  <% end %>
+
+  <%= table.render %>
 <% end %>
