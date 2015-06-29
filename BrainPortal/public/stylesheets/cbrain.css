@@ -1626,11 +1626,26 @@ img {
   width: 100%;
 }
 
-.batch_job_header {
-  background-color: #C9E6F6;
+#tasks_table td.expand,
+#tasks_table th.expand {
+  max-width: 12px;
 }
 
+#tasks_table td.expand > .ui-icon {
+  background-image: url(../images/ui-black-icons.png);
+}
 
+#tasks_table td.expand > .batch-btn {
+  cursor: pointer;
+}
+
+#tasks_table tr.batch:nth-child(odd) {
+  background-color: #cde6f4;
+}
+
+#tasks_table tr.batch:nth-child(even) {
+  background-color: #e3f2fb;
+}
 
 /* % ######################################################### */
 /* % Styles for Data Provider Browse page */

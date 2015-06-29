@@ -1,0 +1,100 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+$(function () {
+  "use strict";
+
+  var icons = {
+    batch_show: "ui-icon-plus",
+    batch_hide: "ui-icon-minus",
+    batch_load: "ui-icon-transfer-e-w"
+  };
+
+  /* Fetch the task list for batch row +row+ from +url+ */
+  function fetch_batch(row, url) {
+    $.get(url, function (data) {
+      var rows  = $(data),
+          batch = rows.filter('.batch'),
+          tasks = rows.filter('.task');
+
+      row.after(tasks).replaceWith(batch);
+
+      /* Toggle task row visibility */
+      batch.find('.batch-btn')
+        .bind('click.batch_list', function () {
+          $(this)
+            .toggleClass(icons.batch_show)
+            .toggleClass(icons.batch_hide);
+
+          tasks.toggle();
+        });
+
+      /* Make the batch's checkbox select/deselect all tasks in the batch */
+      batch.find('.dt-sel-check')
+        .removeAttr('value')
+        .removeAttr('name')
+        .bind('change.batch_list', function () {
+          var checked = $(this).prop('checked');
+
+          tasks.find('.dt-sel-check')
+            .prop('checked', checked)
+            .trigger('change');
+        });
+
+      /* Notify the table that its content changed */
+      $('#tasks_table').trigger('reload.dyn-tbl');
+    });
+  };
+
+  $(document).delegate('#tasks_table', 'new_content.batch_list', function () {
+    $(this).find('.dt-table > .dt-body > tr.batch').each(function () {
+      var row    = $(this),
+          button = row.find('.batch-btn'),
+          url    = button.data('batch-url');
+
+      /* No batch button or url? Is this even a batch? */
+      if (!button.length || !url) return;
+
+      button
+        .unbind('click.batch_list')
+        .bind('click.batch_list', function () {
+          /* Direct link to the batch */
+          if (button.data('batch-type') == 'html_link') {
+            window.location.href = url;
+
+          /* AJAX row fetch */
+          } else {
+            button
+              .unbind('click.batch_list')
+              .removeClass([ icons.batch_show, icons.batch_hide ].join(' '))
+              .addClass(icons.batch_load);
+
+            fetch_batch(row, url);
+          }
+        });
+    });
+  });
+
+  $('#tasks_table').trigger('new_content.batch_list');
+});
