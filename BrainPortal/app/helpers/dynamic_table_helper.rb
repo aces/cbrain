@@ -282,7 +282,7 @@ module DynamicTableHelper
       format = block || Proc.new do |obj|
         if obj.respond_to?(field_name)
           obj.send(field_name)
-        elsif obj.respond_to?(:[]) && obj[field_name]
+        elsif obj.respond_to?(:[]) && (obj[field_name] rescue nil)
           obj[field_name]
         elsif obj.is_a?(Enumerable)
           obj.to_a[index]
@@ -388,20 +388,32 @@ module DynamicTableHelper
     # been defined on the table yet, and at the bottom otherwise.
     #
     # Available options:
+    # [collection]
+    #  Collection to paginate instead of the table's own collection. Useful if,
+    #  for example, the orignal collection to display is already paginated but
+    #  needs to be transformed before rendering;
+    #    dynamic_table(@paginated_list.map { |e| .... } ) do |t|
+    #      t.pagination(:top, :collection => @paginated_list)
+    #      ...
+    #    end
+    #  Note that incorrect pagination may be generated if the collection given
+    #  to paginate with (this option) is of the same length as the one used for
+    #  rendering.
+    #
     # [page]
-    #  Current page number. Unless the table's collection is already paginated,
+    #  Current page number. Unless the collection is already paginated,
     #  defaults to taking value from Rails request parameters (params[:page]),
     #  falling back to the first (1) page if the parameter is not specified.
     #
     # [per_page]
-    #  How many rows per page should the table have. Unless the table's
-    #  collection is already paginated, defaults to taking the value
-    #  from Rails request parameters (params[:per_page]), falling back to 25
-    #  rows per page if the parameter is not specified.
+    #  How many rows per page should the table have. Unless the collection
+    #  is already paginated, defaults to taking the value from Rails request
+    #  parameters (params[:per_page]), falling back to 25 rows per page if
+    #  the parameter is not specified.
     #
     # [total_entries]
     #  Total entry count for the collection represented by the table. Defaults
-    #  to the length of the table's collection. The total entry count is usually
+    #  to the collection's length. The total entry count is usually
     #  different from the collection's length when the collection is already
     #  paginated.
     #
@@ -420,12 +432,12 @@ module DynamicTableHelper
     # table's collection is already paginated (already a WillPaginate::Collection)
     def pagination(location = nil, options = {})
       # If options are given without a location...
-      if ! options && ! [:top, :bottom, :both].include?(location)
-        options  = location
+      if options.blank? && ! [:top, :bottom, :both].include?(location)
+        options  = location || {}
         location = nil
       end
 
-      collection = @collection
+      collection = options.delete(:collection) || @collection
       @template.instance_eval do
         options[:page]          ||= params[:page]     || 1
         options[:per_page]      ||= params[:per_page] || 25
@@ -434,7 +446,7 @@ module DynamicTableHelper
 
       @components[:pagination] = Pagination.new(
         location || (@columns.blank? ? :top : :bottom),
-        @collection,
+        collection,
         options  || {}
       )
     end
@@ -603,7 +615,7 @@ module DynamicTableHelper
 
           self.select_value   = options[:select_value]
           self.select_value ||= obj.id   if obj.respond_to?(:id)
-          self.select_value ||= obj[:id] if obj.respond_to?(:[]) && obj[:id]
+          self.select_value ||= obj[:id] if obj.respond_to?(:[]) && (obj[:id] rescue nil)
           self.select_value ||= obj.hash
 
           self.select_param   = options[:select_param] || 'selection'
@@ -970,6 +982,12 @@ module DynamicTableHelper
       end
 
       define_method(:pagination) do |location = nil, options = {}| #:nodoc:
+        # If options are given without a location...
+        if options.blank? && ! [:top, :bottom, :both].include?(location)
+          options  = location || {}
+          location = nil
+        end
+
         # Pre-set some HTML attributes for the per-page input
         (options[:input_html] ||= {}).merge!({
           :name        => 'per_page',

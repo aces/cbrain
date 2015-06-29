@@ -210,7 +210,9 @@
     /* trigger selection checkboxes when the row is clicked */
     table.find('.dt-body > .dt-sel-row')
       .unbind('click.dyn-tbl')
-      .bind('click.dyn-tbl', function () {
+      .bind('click.dyn-tbl', function (event) {
+        if (!$(this).children('td').is(event.target)) return;
+
         var checkbox = $(this)
           .find('.dt-sel-check')
           .first();
