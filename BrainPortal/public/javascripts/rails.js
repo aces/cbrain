@@ -333,4 +333,51 @@
     if (this == event.target) rails.enableFormElements($(this));
   });
 
+  // The function below overrides the allowAction to create a custom dialog box
+  $.rails.allowAction = function(element) {
+          var message = element.data('confirm'),
+          answer = false, callback;
+          if (!message) { return true; } // if there is no message, proceed with action
+
+          if ($.rails.fire(element, 'confirm')) {
+                  myCustomConfirmBox(message, function() {
+                          callback = $.rails.fire(element,
+                                  'confirm:complete', [answer]);
+                          if(callback) {
+                                  var oldAllowAction = $.rails.allowAction;
+                                  $.rails.allowAction = function() { return true; };
+                                  element.trigger('click');
+                                  $.rails.allowAction = oldAllowAction;
+                          }
+                  });
+          }
+          return false;
+  }
+
+  // The custom dialog box actually gets created in the function below
+  function myCustomConfirmBox(message, callback) {
+
+	  $("#dialog-confirm").html("<font color='red'>" + message + "</font>");
+
+	      // Define the Dialog and its properties.
+	      $("#dialog-confirm").dialog({
+	          resizable: false,
+	          modal: true,
+	          title: "Modal",
+	          height: 250,
+	          width: 400,
+	          buttons: {
+	              "Yes": function () {
+	                  $(this).dialog('close');
+	                  callback();
+	              },
+	                  "No": function () {
+	                  $(this).dialog('close');
+	              }
+	          }
+	      });
+
+  }
+
+
 })( jQuery );
