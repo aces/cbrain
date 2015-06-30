@@ -126,8 +126,8 @@ class CSVFile < TextFile
   end
 
   #Create an array of array for csv file,
-  def create_csv_array(quote,separator)
-    cache_path = self.cache_full_path
+  def create_csv_array(quote,separator,file=self)
+    cache_path = file.cache_full_path
     file       = File.read(cache_path)
     file.encode!('UTF-16le', invalid: :replace, replace: '')
     file.encode!('UTF-8')
