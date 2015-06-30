@@ -233,7 +233,7 @@ class RemoteResource < ActiveRecord::Base
       is_local = self.id && self.id == CBRAIN::SelfRemoteResourceId
       valid = DataProvider.this_is_a_proper_cache_dir! path,
         :local => is_local,
-        :key   => self.cache_md5,
+        :key   => self.cache_md5.presence || "unset",  # having this string forces the check
         :host  => is_local ? Socket.gethostname : self.ssh_control_host
       unless valid
         errors.add(:dp_cache_dir," is invalid (does not exist, is unaccessible, contains data or is a system directory).")

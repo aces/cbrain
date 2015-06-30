@@ -1029,23 +1029,31 @@ class DataProvider < ActiveRecord::Base
   # Class-level cache-handling methods
   #################################################################
 
-  # Returns (and creates if necessary) a unique key
-  # for this Ruby process' cache. This key is
-  # maintained in a file in the cache_rootdir().
-  # It's setup to be a MD5 checksum, 32 hex characters long.
+  # Returns a unique key for this Ruby process' cache. This key
+  # is maintained in a file in the cache_rootdir(), and created
+  # by a call to self.create_cache_md5() .
+  # It is setup to be a MD5 checksum, 32 hex characters long.
   # Note that this key is also recorded in a RemoteResource
   # object during CBRAIN's validation steps, at launch time.
   def self.cache_md5
     return @@key if self.class_variable_defined?('@@key') && ! @@key.blank?
 
     # Try to read key from special file in cache root directory
-    cache_root = cache_rootdir
+    cache_root = self.cache_rootdir() # class method, not cached
     key_file = (cache_root + DP_CACHE_MD5_FILE).to_s
     if File.exist?(key_file)
       @@key = File.read(key_file)  # a MD5 string, 32 hex characters, + LF
       @@key.gsub!(/\W+/,"") unless @@key.blank?
       return @@key          unless @@key.blank?
     end
+    nil
+  end
+
+  # Creates a persistent file in the cache directory to record
+  # a MD5 token to uniquely identify it.
+  def self.create_cache_md5
+    cache_root = self.cache_rootdir() # class method, not cached
+    key_file = (cache_root + DP_CACHE_MD5_FILE).to_s
     # Create a key. We MD5 the hostname, the cache root dir
     # and the time. This should be good enough. It will still
     # work even if the directory is moved about or the computer
@@ -1069,7 +1077,7 @@ class DataProvider < ActiveRecord::Base
       @@key = File.read(key_file)  # a MD5 string, 32 hex characters, + LF
       @@key.gsub!(/\W+/,"") unless @@key.blank?
       raise "Error: could not read a proper Data Provider Cache Key from file '#{key_file}'!" if @@key.blank?
-      return @@key
+      return @@key.presence
     end
   end
 
@@ -1083,7 +1091,7 @@ class DataProvider < ActiveRecord::Base
     return DateTime.parse(@@cache_rev) if ! force && self.class_variable_defined?('@@cache_rev') && ! @@cache_rev.blank?
 
     # Check that the root seems OK
-    cache_root = self.cache_rootdir # a Pathname obj
+    cache_root = self.cache_rootdir() # class method, not cached
     self.this_is_a_proper_cache_dir!(cache_root) # raises exception if bad dir
 
     # Try to read rev from special file in cache root directory
@@ -1143,28 +1151,44 @@ class DataProvider < ActiveRecord::Base
   #            checking the local filesystem.
   def self.this_is_a_proper_cache_dir!(cache_root,options = {})
     cache_root    = cache_root.to_s
-    check_local   = options.has_key?(:local) ? options.delete(:local) : true
-    check_key     = options.delete(:key)
-    cache_host    = options.delete(:host)
+    check_local   = options.has_key?(:local) ? options[:local] : true
+    check_key     = options[:key]
+    cache_host    = options[:host]
     cache_host  ||= Socket.gethostname if check_local
 
     cb_error "Invalid blank DP cache directory configured." if cache_root.blank?
     cb_error "DP cache directory configured cannot be a system temp dir: '#{cache_root}'" if
       cache_root.to_s =~ /^(\/tmp|\/(var|usr|private|opt|net|lib|mnt|sys)\/tmp)/i
 
+    cache_root_path = Pathname.new(cache_root)
+
     if cache_host
-      bad_dp = self.all
+
+      # Check to see if the cache dir match the path of any known Data Provider
+      conflict_dp = self.all
         .select do |dp|
-          dp.remote_dir == cache_root ||
-          Regexp.new("^#{Regexp.quote(dp.remote_dir)}/?").match(cache_root) ||
-          Regexp.new("^#{Regexp.quote(cache_root)}/?").match(dp.remote_dir)
+          Pathname.new(dp.remote_dir).cleanpath == cache_root_path
         end
         .find do |dp|
           hosts  = (dp.alternate_host || "").split(',')
           hosts <<  dp.remote_host
           hosts.include? cache_host
         end
-      cb_error "DP cache directory already in use by data provider '#{bad_dp.name}'" if bad_dp
+      cb_error "DP cache directory matches the root of data provider '#{conflict_dp.name}'" if conflict_dp
+
+      # Check to see if the cache dir match the cache dir of any other known Remote Resource
+      current_rr_id = RemoteResource.current_resource.id
+      conflict_rr = RemoteResource.all.reject do |rr|
+          rr.id == current_rr_id ||
+          rr.dp_cache_dir.blank? ||
+          rr.ssh_control_host.blank?
+        end
+        .select do |rr|
+          Pathname.new(rr.dp_cache_dir).cleanpath == cache_root_path &&
+          rr.ssh_control_host == cache_host
+        end
+        .first
+      cb_error "DP cache directory matches the cache directory of #{conflict_rr.pretty_type} Server '#{conflict_rr.name}'" if conflict_rr
     end
 
     return true unless check_local
@@ -1174,7 +1198,6 @@ class DataProvider < ActiveRecord::Base
     cb_error "DP cache directory not accessible: '#{cache_root}'" unless
       File.readable?(cache_root) && File.writable?(cache_root)
 
-    cache_root_path = Pathname.new(cache_root)
     rev_file        = (cache_root_path + DP_CACHE_ID_FILE).to_s
     key_file        = (cache_root_path + DP_CACHE_MD5_FILE).to_s
 
@@ -1187,7 +1210,7 @@ class DataProvider < ActiveRecord::Base
     if entries.nil? # exception?
       cb_error "Cannot inspect content of DP cache directory '#{cache_root}' ?"
     end
-    entries.reject! { |e| e == "." || e == ".." || e == ".DS_Store" }
+    entries.reject! { |e| e == "." || e == ".." || e == ".DS_Store" || e == DP_CACHE_ID_FILE || e == DP_CACHE_MD5_FILE }
     if entries.size > 0
       maxshow = entries.size > 5 ? 5 : entries.size
       cb_error "It seems the configured DP cache directory '#{cache_root}' contains data!\n" +
@@ -1198,12 +1221,14 @@ class DataProvider < ActiveRecord::Base
   end
 
   # Root directory for the DataProvider cache system of the current Rails app.
-  #     "/CbrainCacheDir"
+  #     "/path/to/CbrainCacheDir"
   # Will raise an exception if this has not been configured by the admin.
+  # The path is stored in the attribute dp_cache_dir of the RemoteResource
+  # (BrainPortal) object that describes the current rail app.
   def self.cache_rootdir
-    @cache_rootdir = RemoteResource.current_resource.dp_cache_dir if @cache_rootdir.blank?
-    cb_error "No cache directory for Data Providers configured!"  if @cache_rootdir.blank? || ! ( @cache_rootdir.is_a?(String) || @cache_rootdir.is_a?(Pathname) )
-    @cache_rootdir = Pathname.new(@cache_rootdir)
+    cache_rootdir = RemoteResource.current_resource.dp_cache_dir
+    cb_error "No cache directory for Data Providers configured!"  if cache_rootdir.blank?
+    Pathname.new(cache_rootdir)
   end
 
   def self.rsync_ignore_patterns #:nodoc:
@@ -1356,6 +1381,11 @@ class DataProvider < ActiveRecord::Base
   # Internal cache-handling methods
   #################################################################
 
+  # Returns the same value as the class method of the same
+  # name, but caches the path in the current object.
+  def cache_rootdir #:nodoc:
+    @cache_rootdir ||= self.class.cache_rootdir()
+  end
 
   # Returns an array of two subdirectory levels where a file
   # is cached. These are two strings of two digits each. For
@@ -1407,7 +1437,7 @@ class DataProvider < ActiveRecord::Base
   def mkdir_cache_subdirs(userfile) #:nodoc:
     raise "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
     uid = userfile.id
-    cache_root = self.class.cache_rootdir
+    cache_root = self.cache_rootdir() # instance method, cached
     self.class.mkdir_numerical_subdir_tree_components(cache_root, uid) # from NumericalSubdirTree module
   end
 
@@ -1425,7 +1455,7 @@ class DataProvider < ActiveRecord::Base
   #     "/CbrainCacheDir/34/45/77"
   def cache_full_dirname(userfile) #:nodoc:
     raise "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
-    self.class.cache_rootdir + cache_subdirs_path(userfile)
+    self.cache_rootdir + cache_subdirs_path(userfile)
   end
 
   # Returns the full path of the cached file:
