@@ -23,15 +23,6 @@
 -%>
 
 <div class="menu_bar">
-  <%= button_with_dropdown_menu("View Options") do %>
-    <div class="view_options">
-      <%= form_tag(exception_logs_path, :method => :get) do %>
-        Number of exceptions per page:
-        <%= select_tag( :per_page, options_for_select( [25, 50, 100, 200, 500 ], @per_page ), :class => "submit_onchange" ) %>
-        <%= hidden_field_tag :update_filter, true %>
-      <% end %>
-    </div>
-  <% end %>
   <%= external_submit_button "Delete Checked Exceptions", "exception_form", :class  => "button", :confirm  => "Are you sure you want to delete the selected logs?"  %>
 </div>
 

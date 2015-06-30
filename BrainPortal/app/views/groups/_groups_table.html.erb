@@ -24,18 +24,33 @@
 
 <div class="menu_bar">
    <%= new_model_button "Create Project", new_group_path %>
-   <span id="view_option_button">
-     <%= render :partial => "groups/view_option_button" %>
-   </span>
    <%= overlay_ajax_link "Help", "/doc/groups/groups_info.html", :class  => "button" %>
 </div>
 
 <%= render :partial => 'shared/active_filters', :locals => {:model => :group} %>
 
+<% button_view = (@filter_params["button_view"] == "on") %>
+
 <div class="pagination">
- <div class="pagination_left_side"></div>
+  <div class="pagination_left_side">
+    <%=
+      filter_add_link (button_view ? "Switch to List View" : "Switch to Button View"),
+        :parameter => :button_view,
+        :value     => set_toggle(@filter_params["button_view"])
+    %>
+    <% if button_view %>
+      &nbsp;
+      <%=
+        filter_add_link (@filter_params["small_buttons"] == 'on' ? "Large buttons" : "Small buttons"),
+          :parameter => :small_buttons,
+          :value     => set_toggle(@filter_params["small_buttons"])
+      %>
+    <% end %>
+  </div>
   <div class="page_links">
-    <%= will_paginate @groups, :inner_window => 5, :outer_window => 4, :container => false, :params => { :file_ids => nil } %>
+    <% if current_user.has_role?(:normal_user) && button_view %>
+      <%= will_paginate @groups, :inner_window => 5, :outer_window => 4, :container => false, :params => { :file_ids => nil } %>
+    <% end %>
     (<%= pluralize @total_entries, "projects" %>)
   </div>
   <div class="pagination_right_side">
@@ -43,7 +58,7 @@
   </div>
 </div>
 
-<% if @filter_params["button_view"] == "on" %>
+<% if button_view %>
   <% unless current_user.has_role?(:normal_user) %>
     <%=
       dynamic_index_table([],
@@ -52,6 +67,7 @@
         :sort_map   => { :name => 'groups.name', :site => 'sites.name' },
         :filter_map => { :site => 'site_id' }
       ) do |t|
+        t.paginate(:collection => @groups)
         t.column("Name",         :name, :sortable => true)
         t.column("Project Type", :type, :filters  => basic_filters_for(@filtered_scope, @header_scope, Group, :type))
         t.column("Site",         :site, :filters  => association_filters_for(@filtered_scope, @header_scope, Group, :site))
@@ -127,6 +143,8 @@
         :site => 'site_id'
       }
     ) do |t|
+      t.paginate
+
       t.column("Name", :name,
         :sortable => true
       ) { |g| link_to_group_if_accessible(g) }

@@ -29,9 +29,6 @@
   <%= button_with_dropdown_menu("Filters") do %>
     <%= render :partial => 'messages/filters' %>
   <% end %>
-  <span id="view_option_button">
-    <%= render :partial => "messages/view_option_button" %>
-  </span>
   <%= overlay_ajax_link "Help", "/doc/messages/message_info.html", :class  => "button" %>
 
   <%= external_submit_button "Delete Checked Messages", "message_form", :class  => "button", :confirm  => "Are you sure you want to delete the selected messages?"  %>

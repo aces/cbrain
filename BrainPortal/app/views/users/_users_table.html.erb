@@ -24,9 +24,6 @@
 
 <div class="menu_bar">
   <%= new_model_button 'Create User', new_user_path %>
-  <span id="view_option_button">
-    <%= render :partial => "view_option_button" %>
-  </span>
 </div>
 
 <%= render :partial => 'shared/active_filters', :locals => { :model => :user } %>
@@ -54,7 +51,8 @@
       :time_zone       => 'users.time_zone'
     },
     :filter_map => {
-      :site => 'site_id'
+      :login => 'account_locked',
+      :site  => 'site_id'
     }
   ) do |t|
 %>

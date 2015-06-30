@@ -226,11 +226,6 @@
     <% if check_role(:site_manager) || check_role(:admin_user) %>
       <%= new_model_button 'Create New Server', new_bourreau_path %>
     <% end %>
-    <%= ajax_link (@filter_params["details"] == 'on' ? "Hide Details" : "Show Details" ),
-                bourreaux_path(:bourreaux  => {:details  => set_toggle(@filter_params["details"])}),
-                :datatype  => 'script', :class  => "button"
-    %>
-
     <%= link_to "User Access Report", rr_access_bourreaux_path,
                 :datatype  => 'script', :class  => "button"
     %>

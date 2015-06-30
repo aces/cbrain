@@ -67,9 +67,9 @@
       :updated_at   => 'cbrain_tasks.updated_at'
     },
     :filter_map => {
-      :user   => 'user_id',
-      :group  => 'group_id',
-      :server => 'bourreau_id'
+      :owner   => 'user_id',
+      :project => 'group_id',
+      :server  => 'bourreau_id'
     }
   ) do |t|
 %>
@@ -322,6 +322,14 @@
     <div class="pagination_left_side">
       <% if batch_view %>
         <strong>Currently in Batch View</strong>
+      <% else %>
+        <%=
+          ajax_link(
+            "Switch to Batch View",
+            { params[:controller] => { :sort_hash => { :order => 'cbrain_tasks.batch', :dir => 'ASC' } } },
+            { :datatype => 'script' }
+          )
+        %>
       <% end %>
     </div>
     <div class="page_links">
