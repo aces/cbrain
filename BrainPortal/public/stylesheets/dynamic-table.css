@@ -84,7 +84,7 @@
   background-color: #ffffff;
 }
 
-.dt-head .ui-icon {
+.dt-table > .dt-head .ui-icon {
   background-image: url(../images/ui-white-icons.png);
 }
 
@@ -123,6 +123,8 @@
   display: inline-block;
   float: right;
   margin-top: 2px;
+  position: relative;
+  z-index: 1;
 }
 
 /* popups */
@@ -140,7 +142,7 @@
   text-align: left;
   top: 2.7em;
   white-space: normal;
-  z-index: 1;
+  z-index: 2;
 }
 
 .dt-popup > table {
@@ -187,7 +189,8 @@
   visibility: hidden;
 }
 
-.dt-sel-check:checked + .dt-sel-lbl > .dt-sel-icon {
+.dt-sel-check:checked + .dt-sel-lbl > .dt-sel-icon,
+.dt-sel-check[checked=checked] + .dt-sel-lbl > .dt-sel-icon {
   visibility: visible;
 }
 

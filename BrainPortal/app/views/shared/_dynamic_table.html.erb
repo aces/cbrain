@@ -169,7 +169,10 @@
                    type="checkbox"
                    id="<%= id %>"
                    name="<%= row.select_param %>"
-                   value="<%= row.select_value %>" />
+                   value="<%= row.select_value %>"
+                   <% if row.selected %>
+                     checked="checked"
+                   <% end %> />
             <label class="dt-sel-lbl" for="<%= id %>">
               <span class="dt-sel-icon ui-icon ui-icon-check"></span>
             </label>
