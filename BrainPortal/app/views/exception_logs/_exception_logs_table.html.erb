@@ -23,43 +23,74 @@
 -%>
 
 <div class="menu_bar">
-  <%= button_with_dropdown_menu("View Options") do %>
-    <div class="view_options">
-      <%= form_tag(exception_logs_path, :method => :get) do %>
-        Number of exceptions per page:
-        <%= select_tag( :per_page, options_for_select( [25, 50, 100, 200, 500 ], @per_page ), :class => "submit_onchange" ) %>
-        <%= hidden_field_tag :update_filter, true %>
-      <% end %>
-    </div>
-  <% end %>
   <%= external_submit_button "Delete Checked Exceptions", "exception_form", :class  => "button", :confirm  => "Are you sure you want to delete the selected logs?"  %>
 </div>
 
-
 <%= render :partial => 'shared/active_filters', :locals => {:model => :exception_log} %>
-
 
 <div class="pagination">
   <span class="page_links">
-    <%= will_paginate @exception_logs, :container => false %>
     (<%= pluralize @exception_logs.total_entries, "message" %>)
   </span>
 </div>
+
 <%= ajax_form_tag(url_for(:action => :destroy), :method => :delete, :datatype => :script, :id => "exception_form") do %>
-  <%= index_table(@exception_logs, :class => "resource_list") do |t| %>
+  <%=
+    dynamic_index_table(@exception_logs,
+      :id         => 'exception_logs_table',
+      :class      => [ :resource_list ],
+      :sort_map   => {
+        :exception_class    => 'exception_logs.exception_class',
+        :request_method     => 'exception_logs.request_method',
+        :request_controller => 'exception_logs.request_controller',
+        :request_action     => 'exception_logs.request_action',
+        :request_format     => 'exception_logs.request_format',
+        :user               => 'users.login',
+        :revision_no        => 'exception_logs.revision_no',
+        :created_at         => 'exception_logs.created_at'
+      },
+      :filter_map => {
+        :user => 'user_id'
+      }
+    ) do |t|
+  %>
     <%
-      t.column(select_all_checkbox("exception_log_checkbox")) do |e|
-        check_box_tag("exception_log_ids[]", e.id, nil, :class  => 'exception_log_checkbox')
+      filters_for = lambda do |field|
+        basic_filters_for(@filtered_scope, ExceptionLog.scoped, ExceptionLog, field)
       end
-      t.sort_column("Exception", 'ExceptionLog', 'exception_class', :filters => basic_filters_for(@filtered_scope, ExceptionLog.scoped, ExceptionLog, :exception_class)) { |e| link_to e.exception_class, e }
-      t.column("Message") { |e| crop_text_to(75, e.message)  }
-      t.sort_column("Method", 'ExceptionLog', 'request_method', :filters => basic_filters_for(@filtered_scope, ExceptionLog.scoped, ExceptionLog, :request_method), &:request_method)
-      t.sort_column("Controller", 'ExceptionLog', 'request_controller', :filters => basic_filters_for(@filtered_scope, ExceptionLog.scoped, ExceptionLog, :request_controller), &:request_controller)
-      t.sort_column("Action", 'ExceptionLog', 'request_action', :filters => basic_filters_for(@filtered_scope, ExceptionLog.scoped, ExceptionLog, :request_action), &:request_action)
-      t.sort_column("Format", 'ExceptionLog', 'request_format', :filters => basic_filters_for(@filtered_scope, ExceptionLog.scoped, ExceptionLog, :request_format), &:request_format)
-      t.sort_column("User", 'User', 'login', :filters => association_filters_for(@filtered_scope, ExceptionLog.scoped, "exception_log", "user", :name_method => "login")) { |e| link_to_user_with_tooltip(e.user) }
-      t.sort_column("Revision", 'ExceptionLog', 'revision_no', :filters => basic_filters_for(@filtered_scope, ExceptionLog.scoped, ExceptionLog, :revision_no), &:revision_no)
-      t.reverse_sort_column("Raised at", 'ExceptionLog', 'created_at') { |e| to_localtime(e.created_at,:datetime) }
+
+      generic_column = lambda do |label,field|
+        t.column(label, field,
+          :sortable => true,
+          :filters  => filters_for.(field)
+        )
+      end
+
+      t.paginate
+      t.selectable('exception_log_ids[]')
+
+      t.column("Exception", :exception_class,
+        :sortable => true,
+        :filters  => filters_for.(:exception_class)
+      ) { |e| link_to e.exception_class, e }
+
+      t.column("Message", :message) { |e| crop_text_to(75, e.message) }
+
+      generic_column.("Method",     :request_method)
+      generic_column.("Controller", :request_controller)
+      generic_column.("Action",     :request_action)
+      generic_column.("Format",     :request_format)
+
+      t.column("User", :user,
+        :sortable => true,
+        :filters  => association_filters_for(@filtered_scope, ExceptionLog.scoped, "exception_log", "user", :name_method => "login")
+      ) { |e| link_to_user_with_tooltip(e.user) }
+
+      generic_column.("Revision",   :revision_no)
+
+      t.column("Raised at", :created_at,
+        :sortable => true
+      ) { |e| to_localtime(e.created_at, :datetime) }
     %>
   <% end %>
 <% end %>

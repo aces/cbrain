@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -56,8 +56,8 @@
       <%= hijacker_submit_button("Trigger Error Recovery", :url => url_for(:action  => :operation, :operation => 'recover'), :method  => :post, :datatype => :script, :class => "button") %>
     <p/>
   <% end %>
-  
-  
+
+
   <%= button_with_dropdown_menu("For Completed Tasks") do %>
     <p class="dropmenu_info">
       This panel allows you to affect tasks that have completed successfully.
@@ -90,8 +90,8 @@
       on Execution Server: <%= bourreau_select :dup_bourreau_id %>
     <p/>
   <% end %>
-  
-  
+
+
   <%= button_with_dropdown_menu("Terminating And Cleaning Up") do %>
     <p class="dropmenu_info">
       This panel allows you to affect tasks that you no longer need.
@@ -100,13 +100,13 @@
       later on.
     </p>
     <p class="centered">
-      <%= 
-        hijacker_submit_button("Terminate Tasks", :url => url_for(:action  => :operation, :operation => 'terminate'), 
-                                                  :method  => :post, 
-                                                  :datatype => :script, 
+      <%=
+        hijacker_submit_button("Terminate Tasks", :url => url_for(:action  => :operation, :operation => 'terminate'),
+                                                  :method  => :post,
+                                                  :datatype => :script,
                                                   :class => "button",
                                                   :confirm => "Are you sure you want to terminate the selected tasks?"
-                                                  ) 
+                                                  )
       %>
     </p>
     <p class="dropmenu_info">
@@ -119,14 +119,14 @@
       the tasks' work directories.
     <p/>
     <p class="centered">
-      <%= 
-        hijacker_submit_button("Remove Work Directories", :url => url_for(:action  => :operation, :operation => 'zap_wd'),    
-                                                  :method  => :post, 
-                                                  :datatype => :script, 
-                                                  :class => "button", 
+      <%=
+        hijacker_submit_button("Remove Work Directories", :url => url_for(:action  => :operation, :operation => 'zap_wd'),
+                                                  :method  => :post,
+                                                  :datatype => :script,
+                                                  :class => "button",
                                                   :confirm =>
                   "Are you sure you want to remove the\nWORK DIRECTORIES of the selected tasks?"
-                                                  ) 
+                                                  )
       %>
     <p/>
     <p class="dropmenu_info">
@@ -139,20 +139,20 @@
       <%= colored_archived_status(:userfile) %> in the 'Workdir Size' column).
     </p>
     <p class="centered">
-      <%= 
-        hijacker_submit_button("Remove Tasks",    :url => url_for(:action  => :operation, :operation => 'delete'),    
-                                                  :method  => :post, 
-                                                  :datatype => :script, 
-                                                  :class => "button", 
+      <%=
+        hijacker_submit_button("Remove Tasks",    :url => url_for(:action  => :operation, :operation => 'delete'),
+                                                  :method  => :post,
+                                                  :datatype => :script,
+                                                  :class => "button",
                                                   :confirm =>
                   "Are you sure you want to remove the selected tasks?\n\n" +
                   "IMPORTANT NOTE: This will also remove their archived work directories, if any."
-                                                  ) 
+                                                  )
       %>
     <p/>
   <% end %>
-  
-  
+
+
   <%= button_with_dropdown_menu("Archiving") do %>
     <p class="dropmenu_info">
       This panel allows you to archive the content of the work directory
@@ -194,15 +194,9 @@
       <%= data_provider_select :archive_dp_id, { :selector => "" }, :include_blank => "" %>
     <p/>
   <% end %>
-  
-  
+
   <%= button_with_dropdown_menu("Filters") do %>
     <%= render :partial => 'tasks/filters' %>
   <% end %>
-  
-  <span id="view_option_button"> 
-    <%= render :partial => 'view_option_button' %>
-  </span>
 
 </div>
-

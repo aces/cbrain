@@ -22,27 +22,64 @@
 #
 -%>
 
-<%= index_table data_providers, :class => "resource_list whole_width", :id => "data_provider_table_#{id}" do |t| %>
-  <% 
-    t.sort_column("Provider Name", DataProvider, :name) { |dp| link_to_data_provider_if_accessible(dp, current_user, :html_options => { :class => dp.online? ? nil : 'error_link' }) }
+<%=
+  dynamic_index_table(data_providers,
+    :class      => [ :resource_list, :whole_width ],
+    :id         => "data_provider_table_#{id}",
+    :sort_map   => {
+      :name        => 'data_providers.name',
+      :type        => 'data_providers.type',
+      :owner       => 'users.login',
+      :group       => 'groups.name',
+      :time_zone   => 'data_providers.time_zone',
+      :online      => 'data_providers.online',
+      :mode        => 'data_providers.read_only',
+      :sync        => 'data_providers.not_syncable',
+      :description => 'data_providers.description'
+    },
+    :filter_map => {
+      :owner => 'user_id',
+      :group => 'group_id'
+    }
+  ) do |t|
+%>
+  <%
+    t.column("Provider Name", :name,
+      :sortable => true
+    ) { |dp| link_to_data_provider_if_accessible(dp, current_user, :html_options => { :class => dp.online? ? nil : 'error_link' }) }
 
-    if @filter_params["details"] == 'on'
-      t.sort_column("Type", DataProvider, :type, :filters => basic_filters_for(@filtered_scope, @header_scope, :data_provider, :type) { |v| v.to_s } ) { |dp| dp.class.to_s } if current_user.has_role? :admin_user
-    end 
+    t.column("Type", :type,
+      :sortable => true,
+      :hidden   => true,
+      :filters  => basic_filters_for(@filtered_scope, @header_scope, :data_provider, :type) { |v| v.to_s }
+    ) { |dp| dp.class.to_s } if current_user.has_role? :admin_user
 
-    if @filter_params["details"] == 'on'
-      t.sort_column("Owner", User, :login, :filters => association_filters_for(@filtered_scope, @header_scope, :data_provider, :user, :name_method => :login)) { |dp| link_to_user_with_tooltip(dp.user) }
-    end 
+    t.column("Owner", :owner,
+      :hidden   => true,
+      :sortable => true,
+      :filters  => association_filters_for(@filtered_scope, @header_scope, :data_provider, :user, :name_method => :login)
+    ) { |dp| link_to_user_with_tooltip(dp.user) }
 
-    t.sort_column("Project", Group, :name, :filters => association_filters_for(@filtered_scope, @header_scope, :data_provider, :group)) { |dp| link_to_group_if_accessible(dp.group) }
-    if @filter_params["details"] == 'on'
-      t.column("Site") { |dp| link_to_site_if_accessible(dp.site) }
-      t.sort_column("Time Zone", DataProvider, :time_zone) { |dp| dp.time_zone || "(Unset)" }
-    end
+    t.column("Project", :group,
+      :sortable => true,
+      :filters  => association_filters_for(@filtered_scope, @header_scope, :data_provider, :group)
+    ) { |dp| link_to_group_if_accessible(dp.group) }
 
-    t.sort_column("Online?", DataProvider, :online) { |dp| red_if(!dp.online?, "Yes", "No") }
+    t.column("Site", :site,
+      :hidden => true
+    ) { |dp| link_to_site_if_accessible(dp.site) }
+
+    t.column("Time Zone", :time_zone,
+      :hidden   => true,
+      :sortable => true
+    ) { |dp| dp.time_zone || "(Unset)" }
+
+    t.column("Online?", :online,
+      :sortable => true
+    ) { |dp| red_if(!dp.online?, "Yes", "No") }
   %>
-  <% t.column("Alive?") do |dp| %>
+
+  <% t.column("Alive?", :alive) do |dp| %>
     <% if dp.online? %>
       <%= staggered_loading "span", url_for(:action  => :is_alive, :id  => dp.id), :error_message  => "<span class=\"warning\">???</span>" do %>
         <span class="loading_message"><%= html_colorize("(...)","magenta") %></span>
@@ -51,29 +88,35 @@
       No
     <% end %>
   <% end %>
-  <% 
-    t.column("Files") do |dp|
+
+  <%
+    t.column("Files", :files) do |dp|
       file_count = Userfile.find_all_accessible_by_user(current_user, :conditions => { :data_provider_id => dp.id }).count
       if file_count > 0
-        index_count_filter file_count, :userfiles, { :data_provider_id => dp.id }
+        index_count_filter(file_count, :userfiles, { :data_provider_id => dp.id })
       else
         "0"
       end
     end
 
-    t.sort_column("Mode", DataProvider, :read_only) { |dp| dp.read_only ? "Read Only" : "Read/Write" }
+    t.column("Mode", :mode,
+      :sortable => true
+    ) { |dp| dp.read_only ? "Read Only" : "Read/Write" }
 
-    if @filter_params["details"] == 'on'
-      t.sort_column("Syncability", DataProvider, "not_syncable") { |dp| dp.not_syncable ? "NOT syncable" : "Fully syncable" }
-      t.sort_column("Description", DataProvider, "description") { |dp|  overlay_description(dp.description) }
-    end
+    t.column("Syncability", :sync,
+      :hidden   => true,
+      :sortable => true
+    ) { |dp| dp.not_syncable ? "NOT syncable" : "Fully syncable" }
 
-    t.column("Operations") do |dp|
+    t.column("Description", :description,
+      :hidden   => true,
+      :sortable => true
+    ) { |dp| overlay_description(dp.description) }
+
+    t.column("Operations", :operations) do |dp|
       if dp.is_browsable?(current_user) && dp.can_be_accessed_by?(current_user) && dp.online?
         link_to 'Browse', browse_data_provider_path(dp), :class => 'action_link'
       end
     end
-    
   %>
 <% end %>
-

@@ -24,20 +24,33 @@
 
 <div class="menu_bar">
    <%= new_model_button "Create Project", new_group_path %>
-   <span id="view_option_button">
-     <%= render :partial => "groups/view_option_button" %>
-   </span>
    <%= overlay_ajax_link "Help", "/doc/groups/groups_info.html", :class  => "button" %>
 </div>
 
-
 <%= render :partial => 'shared/active_filters', :locals => {:model => :group} %>
 
+<% button_view = (@filter_params["button_view"] == "on") %>
 
 <div class="pagination">
- <div class="pagination_left_side"></div>
+  <div class="pagination_left_side">
+    <%=
+      filter_add_link (button_view ? "Switch to List View" : "Switch to Button View"),
+        :parameter => :button_view,
+        :value     => set_toggle(@filter_params["button_view"])
+    %>
+    <% if button_view %>
+      &nbsp;
+      <%=
+        filter_add_link (@filter_params["small_buttons"] == 'on' ? "Large buttons" : "Small buttons"),
+          :parameter => :small_buttons,
+          :value     => set_toggle(@filter_params["small_buttons"])
+      %>
+    <% end %>
+  </div>
   <div class="page_links">
-    <%= will_paginate @groups, :inner_window => 5, :outer_window => 4, :container => false, :params => { :file_ids => nil } %>
+    <% if current_user.has_role?(:normal_user) && button_view %>
+      <%= will_paginate @groups, :inner_window => 5, :outer_window => 4, :container => false, :params => { :file_ids => nil } %>
+    <% end %>
     (<%= pluralize @total_entries, "projects" %>)
   </div>
   <div class="pagination_right_side">
@@ -45,15 +58,19 @@
   </div>
 </div>
 
-
-<% if @filter_params["button_view"] == "on" %>
-  <% if !current_user.has_role?(:normal_user) %>
+<% if button_view %>
+  <% unless current_user.has_role?(:normal_user) %>
     <%=
-      index_table([], :class => "project_button_header") do |t|
-        t.sort_column("Name", Group, "name")
-        t.column("Project Type", :filters => basic_filters_for(@filtered_scope, @header_scope, Group, :type))
-        t.sort_column("Site", Site, "name", :filters => association_filters_for(@filtered_scope, @header_scope, Group, :site))
-        t.empty("")
+      dynamic_index_table([],
+        :id         => "project_button_table",
+        :class      => "project_button_header",
+        :sort_map   => { :name => 'groups.name', :site => 'sites.name' },
+        :filter_map => { :site => 'site_id' }
+      ) do |t|
+        t.paginate(:collection => @groups)
+        t.column("Name",         :name, :sortable => true)
+        t.column("Project Type", :type, :filters  => basic_filters_for(@filtered_scope, @header_scope, Group, :type))
+        t.column("Site",         :site, :filters  => association_filters_for(@filtered_scope, @header_scope, Group, :site))
       end
     %>
   <% end %>
@@ -109,44 +126,72 @@
           </div>
         </div>
       <% end %>
-
     <% end %>
-
   </div>
 <% else %>
   <%=
-    index_table(@groups, :class => "resource_list") do |t|
-      t.describe_sort_column("Name", Group, "name") do |col|
-        col.cell(:class => "left") { |g|  link_to_group_if_accessible g}
+    dynamic_index_table(@groups,
+      :id         => 'groups_table',
+      :class      => [ :resource_list ],
+      :sort_map   => {
+        :name        => 'groups.name',
+        :description => 'groups.description',
+        :type        => 'groups.type',
+        :site        => 'sites.name'
+      },
+      :filter_map => {
+        :site => 'site_id'
+      }
+    ) do |t|
+      t.paginate
+
+      t.column("Name", :name,
+        :sortable => true
+      ) { |g| link_to_group_if_accessible(g) }
+
+      t.column("Description", :description,
+        :sortable => true,
+      ) { |g| overlay_description(g.description) }
+
+      t.column("Project Type", :type,
+        :sortable => true,
+        :filters  => basic_filters_for(@filtered_scope, @header_scope, Group, :type)
+      ) { |g| g.pretty_category_name(current_user) }
+
+      t.column("Site", :site,
+        :sortable => true,
+        :filters  => association_filters_for(@filtered_scope, @header_scope, Group, :site)
+      ) { |g| link_to_site_if_accessible(g.site) }
+
+      t.column("Users", :users) do |g|
+        @group_id_2_user_counts[g.id] || 0
       end
-      t.sort_column("Description", Group, "description") { |g|  overlay_description(g.description) }
-      t.sort_column("Project Type", Group, "type", :filters => basic_filters_for(@filtered_scope, @header_scope, Group, :type)) do |g|
-        g.pretty_category_name(current_user)
+      t.column("Files", :files) do |g|
+        index_count_filter @group_id_2_userfile_counts[g.id], :userfiles, { :group_id => g.id }, :show_zeros => true
       end
-      t.sort_column("Site", Site, "name", :filters => association_filters_for(@filtered_scope, @header_scope, Group, :site)) { |g| link_to_site_if_accessible(g.site) }
-      t.column("Users") { |g| @group_id_2_user_counts[g.id] || 0 }
-      t.column("Files") do |g|
-        index_count_filter @group_id_2_userfile_counts[g.id], :userfiles, {:group_id => g.id}, :show_zeros => true
+      t.column("Tasks", :tasks) do |g|
+        index_count_filter @group_id_2_task_counts[g.id], :tasks, { :group_id => g.id }, :show_zeros => true
       end
-      t.column("Tasks") do |g|
-        index_count_filter @group_id_2_task_counts[g.id], :tasks, {:group_id => g.id}, :show_zeros => true
-      end
+
       if current_user.has_role?(:admin_user)
-        t.column("Tools") do |g|
-          index_count_filter @group_id_2_tool_counts[g.id], :tools, {:group_id => g.id}
+        t.column("Tools", :tools) do |g|
+          index_count_filter @group_id_2_tool_counts[g.id], :tools, { :group_id => g.id }
         end
-        t.column("Data Providers") do |g|
-          index_count_filter @group_id_2_data_provider_counts[g.id], :data_providers, {:group_id => g.id}
+        t.column("Data Providers", :data_providers) do |g|
+          index_count_filter @group_id_2_data_provider_counts[g.id], :data_providers, { :group_id => g.id }
         end
-        t.column("Portal") do |g|
-          index_count_filter @group_id_2_brain_portal_counts[g.id], :bourreaux, {:group_id => g.id, :type => "BrainPortal"}
+        t.column("Portal", :portals) do |g|
+          index_count_filter @group_id_2_brain_portal_counts[g.id], :bourreaux, { :group_id => g.id, :type => "BrainPortal" }
         end
-        t.column("Execution") do |g|
-          index_count_filter @group_id_2_bourreau_counts[g.id], :bourreaux, {:group_id => g.id, :type => "Bourreau"}
+        t.column("Execution", :bourreaux) do |g|
+          index_count_filter @group_id_2_bourreau_counts[g.id], :bourreaux, { :group_id => g.id, :type => "Bourreau" }
         end
       end
-      t.column("Switch") do |g|
-        link_to 'Switch', {:action => :switch, :id => g.id}, :class => 'action_link', :method  => :post
+
+      t.column("Switch", :switch) do |g|
+        link_to 'Switch', { :action => :switch, :id => g.id },
+          :class   => 'action_link',
+          :method  => :post
       end
     end
   %>

@@ -26,5 +26,3 @@
 var new_table = jQuery(<%= html_for_js(render(:partial => 'tasks_display')) %>);
 jQuery("#tasks_display").html(new_table);
 new_table.trigger("new_content");
-jQuery("#view_option_button").html(<%= html_for_js(render(:partial => 'view_option_button')) %>).trigger("new_content"); 
-

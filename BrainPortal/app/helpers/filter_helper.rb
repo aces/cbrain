@@ -137,4 +137,18 @@ module FilterHelper
       "#{key.to_s.humanize}: #{value}"
     end
   end
+
+  # Show count of an association and link to association's page.
+  def index_count_filter(count, controller, filters, options={})
+     count = count.to_i
+     return ""  if count == 0 && ! ( options[:show_zeros] || options[:link_zeros] )
+     return "0" if count == 0 && ! options[:link_zeros]
+     controller = :bourreaux if controller.to_sym == :remote_resources
+     name = options[:name] || count
+     filter_reset_link name,
+                       :controller   => controller,
+                       :filters      => filters,
+                       :ajax         => false,
+                       :clear_params => options[:clear_params]
+  end
 end

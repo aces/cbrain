@@ -94,8 +94,8 @@ class VaultLocalDataProvider < LocalDataProvider
   def impl_provider_report #:nodoc:
     issues    = []
     base_path = Pathname.new(remote_dir)
-    users     = User.where(:id => self.userfiles.group(:user_id).raw_rows(:user_id).flatten)
-    user_dirs = User.where({}).raw_rows(:login).flatten
+    users     = User.where({})
+    user_dirs = users.raw_rows(:login).flatten
 
     # Look for files outside user directories
     Dir.foreach(base_path).reject { |f| f.start_with?('.') || user_dirs.include?(f) }.each do |out|
@@ -108,6 +108,7 @@ class VaultLocalDataProvider < LocalDataProvider
 
     # Look for unregistered files in user directories
     users.each do |user|
+      next unless File.directory?(base_path + user.login)
       registered = self.userfiles.where(:user_id => user).raw_rows(:name).flatten
       Dir.foreach(base_path + user.login).reject { |f| f.start_with?('.') || registered.include?(f) }.each do |unreg|
         issues << {

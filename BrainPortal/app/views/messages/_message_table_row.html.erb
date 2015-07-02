@@ -18,67 +18,56 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<tr class=" message_display_<%= mess.id %>">
-  
-  <td class="<%= "#{mess.message_type}_display "%>left_side wrap<%= mess.read? ? " message_read" : " message_unread" %>">
-    <% if render_for == :index %>
-      <%= check_box_tag("message_ids[]", mess.id.to_s, false, :class => 'messlist') %>
-  </td>
-  <td class="<%= "#{mess.message_type}_display " %>middle bold left<%= mess.read? ? " message_read" : " message_unread" %>" style="white-space:normal">
-    <% end %>
-    &nbsp;
-    <%= show_hide_toggle Message.parse_markup( mess.header ), "#message_table_details_#{mess.id}" %>
+<%
+  css_read = "message_" + (mess.read? ? "read" : "unread")
+  css_type = "#{mess.message_type}_display"
 
-    <div id="message_table_details_<%= mess.id %>" style="display:none">
-      <%= render :partial  => 'messages/message_details', :locals  => {:mess  => mess} %>
+  span  = 4
+  span += 1 unless current_user.has_role?(:normal_user)
+%>
+
+<tr class="<%= "message_display_#{mess.id} #{css_read} #{css_type}"%>">
+  <td class="wrap left" style="white-space:normal">
+    <%= show_hide_toggle(Message.parse_markup(mess.header), "#message_table_details_#{mess.id}") %>
+    <div id="message_table_details_<%= mess.id %>" style="display: none">
+      <%= render :partial  => 'messages/message_details', :locals  => { :mess  => mess } %>
     </div>
   </td>
-  <td class="<%= "#{mess.message_type}_display " %>middle<%= mess.read? ? " message_read" : " message_unread" %>">
+  <td>
     <%= mess.sender.try(:login) || "System" %>
   </td>
   <% unless current_user.has_role?(:normal_user) %>
-    <td class="<%= "#{mess.message_type}_display " %>middle<%= mess.read? ? " message_read" : " message_unread" %>">
+    <td>
       <%= mess.user.login %>
     </td>
   <% end %>
-
-  <td class="<%= "#{mess.message_type}_display " %>middle<%= mess.read? ? " message_read" : " message_unread" %>">
+  <td>
     <%= to_localtime(mess.last_sent, :datetime) %>
   </td>
-
-  <td class="<%= "#{mess.message_type}_display "%>right_side<%= mess.read? ? " message_read" : " message_unread" %>">
-
-    <% if mess.read %>
-      <%= 
-         delete_button 'Mark&nbsp;as&nbsp;Unread'.html_safe, message_path(mess, :read => "false"),
-                 :class => 'action_link', 
-                 :method  => "PUT",
-                 :target  => ".message_display_#{mess.id}", 
-                 :loading_message  => "<td colspan='4' style='color:red; text-align:center;'>Updating...</td>"
-      %>
-    <% else %>
-      <%= 
-        delete_button  'Mark&nbsp;as&nbsp;Read'.html_safe,  message_path(mess, :read  => "true"),
-                 :class => 'action_link', 
-                 :method  => "PUT",
-                 :target  => ".message_display_#{mess.id}", 
-                 :loading_message  => "<td colspan='4' style='color:red; text-align:center;'>Updating...</td>"
-      %>
-    <% end %>
+  <td>
+    <%=
+      delete_button("Mark&nbsp;as&nbsp;#{mess.read ? 'Unread' : 'Read'}".html_safe,
+        message_path(mess, :read => (!mess.read).to_s),
+        :class           => 'action_link',
+        :method          => "PUT",
+        :target          => ".message_display_#{mess.id}",
+        :loading_message => "<td colspan='#{span}' style='color: red; text-align: center;'>Updating...</td>"
+      )
+    %>
     &nbsp;
-    <%= 
-       delete_button  'Delete',  message_path(mess),
-                :class => 'action_link', 
-                :method  => "DELETE",
-                :target  => ".message_display_#{mess.id}", 
-                :remove_target => ".message_display_#{mess.id}", 
-                :loading_message  => "<td colspan='4' style='color:red; text-align:center;'>Deleting...</td>"
+    <%=
+      delete_button('Delete',
+        message_path(mess),
+        :class           => 'action_link',
+        :method          => "DELETE",
+        :target          => ".message_display_#{mess.id}",
+        :remove_target   => ".message_display_#{mess.id}",
+        :loading_message => "<td colspan='#{span}' style='color: red; text-align: center;'>Deleting...</td>"
+      )
     %>
   </td>
-
 </tr>
-

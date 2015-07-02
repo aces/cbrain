@@ -227,8 +227,10 @@ class BourreauxController < ApplicationController
   end
 
   def row_data #:nodoc:
-    @remote_resource = RemoteResource.find_accessible_by_user(params[:id], current_user)
-    render :partial => 'bourreau_table_row', :locals  => { :bourreau  => @remote_resource, :row_number => params[:row_number].to_i }
+    @bourreaux = [ RemoteResource.find_accessible_by_user(params[:id], current_user) ]
+    # FIXME its nice to re-use the bourreaux_display partial, but this flag should probably be refactored...
+    @row_fetch = true
+    render :partial => 'bourreaux_display'
   end
 
   def load_info #:nodoc:

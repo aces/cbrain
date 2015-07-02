@@ -105,8 +105,7 @@ class TasksController < ApplicationController
 
     current_session.save_preferences_for_user(current_user, :tasks, :per_page)
 
-    @bourreau_status = {}
-    bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online? }
+    @bourreau_status = bourreaux.map { |b| [b.id, b.online?] }.to_h
     respond_to do |format|
       format.html
       format.xml   { render :xml  => @tasks }
@@ -117,14 +116,25 @@ class TasksController < ApplicationController
 
   # Renders a set of tasks associated with a batch.
   def batch_list
-    scope = filter_variable_setup current_user.available_tasks.real_tasks.where(:batch_id => params[:batch_id] )
-    scope = scope.includes( [:bourreau, :user, :group] ).order( "cbrain_tasks.rank, cbrain_tasks.level, cbrain_tasks.id" ).readonly(false)
+    @tasks = filter_variable_setup(
+      current_user
+        .available_tasks
+        .real_tasks
+        .where(:batch_id => params[:batch_id])
+    )
+      .includes([ :bourreau, :user, :group ])
+      .order("cbrain_tasks.rank, cbrain_tasks.level, cbrain_tasks.id")
+      .readonly(false)
 
-    @tasks = scope
-    @bourreau_status = {}
-    Bourreau.find_all_accessible_by_user(current_user).all.each { |bo| @bourreau_status[bo.id] = bo.online?}
+    @bourreau_status = Bourreau
+      .find_all_accessible_by_user(current_user)
+      .all
+      .map { |b| [b.id, b.online?] }
+      .to_h
 
-    render :layout => false
+    @row_fetch = true
+
+    render :partial => 'tasks_display', :layout => false
   end
 
 

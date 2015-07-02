@@ -35,64 +35,89 @@
 
 <%= render :partial => 'shared/active_filters', :locals => {:model => :tool} %>
 
-
-<%= index_table(@tools, :class => "resource_list") do |t| %>
+<%=
+  dynamic_index_table(@tools,
+    :id         => 'tools_table',
+    :class      => [ :resource_list ],
+    :sort_map   => {
+      :name        => 'tools.name',
+      :description => 'tools.description',
+      :category    => 'tools.category',
+      :owner       => 'users.login',
+      :group       => 'groups.name'
+    },
+    :filter_map => {
+      :owner    => 'user_id',
+      :group    => 'group_id'
+    }
+  ) do |t|
+%>
   <%
+    t.column("Tool Name", :name,
+      :sortable => true
+    ) do |tool|
+      if current_user.has_role?(:admin_user)
+        link_to tool.name, { :action => :edit, :id => tool.id }
+      else
+        tool.name
+      end
+    end
+
+    t.column("Description", :description,
+      :sortable => true
+    ) { |tool| overlay_description(tool.description) }
+
+    t.column("Category", :category,
+      :sortable => true,
+      :filters  => basic_filters_for(@filtered_scope, @header_scope, Tool, :category)
+    )
+
+    t.column("Owner", :owner,
+      :sortable => true,
+      :filters  => association_filters_for(@filtered_scope, @header_scope, Tool, :user, :name_method => :login)
+    ) { |tool| link_to_user_with_tooltip(tool.user) }
+
+    t.column("Project", :group,
+      :sortable => true,
+      :filters  => association_filters_for(@filtered_scope, @header_scope, Tool, :group)
+    ) { |tool| link_to_group_if_accessible(tool.group) }
+
+    t.column("Execution & Versions", :exec) do |tool|
+      tool.bourreaux
+        .reject { |b| ! b.can_be_accessed_by?(current_user) }
+        .sort { |a,b| a.name.casecmp(b.name) }
+        .map do |b|
+          tcs = ToolConfig
+            .where(:bourreau_id => b.id, :tool_id => tool.id)
+            .reject { |tc| ! tc.can_be_accessed_by?(current_user) }
+            .size
+          "#{link_to_bourreau_if_accessible(b)}#{" (#{pluralize tcs, "version"})" if tcs >= 1}"
+        end
+        .join('<br />')
+        .html_safe
+    end
+
     if current_user.has_role?(:admin_user)
-      t.sort_column("Tool Name", Tool, :name) { |tool| link_to tool.name, { :action => :edit, :id => tool.id }}
-    else
-      t.sort_column("Tool Name", Tool, :name, &:name)
-    end
-
-    t.sort_column("Description", Tool, :description) { |tool|  overlay_description(tool.description) }
-
-    t.sort_column("Category", Tool, :category, :filters => basic_filters_for(@filtered_scope, @header_scope, Tool, :category), &:category)
-
-    t.sort_column("Owner", User, :login, :filters => association_filters_for(@filtered_scope, @header_scope, Tool, :user, :name_method => :login)) { |tool| link_to_user_with_tooltip(tool.user) }
-
-    t.sort_column("Project", Group, :name, :filters => association_filters_for(@filtered_scope, @header_scope, Tool, :group)) { |tool| link_to_group_if_accessible(tool.group) }
-
-    t.describe_column("Execution & Versions") do |col|
-      col.cell(:class => "left") do |tool|
-        result = ""
-        bourreaux = tool.bourreaux.reject { |b| ! b.can_be_accessed_by?(current_user) }
-        bourreaux.sort{|a, b| a.name.casecmp(b.name)}.each do |b|
-          tcs = ToolConfig.where( :bourreau_id => b.id, :tool_id => tool.id )
-          tcs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }
-          result += link_to_bourreau_if_accessible(b)
-          if tcs.size >= 1
-            result += " (#{pluralize tcs.size, "version"})"
-          end
-          result += "<br/>"
-        end
-        result.html_safe
+      t.column("Access?", :access) do |tool|
+        link_to 'Access?',
+          {
+            :controller => :tool_configs,
+            :action     => :index,
+            :tool_id    => tool.id
+          },
+          :class => "action_link"
       end
     end
 
-    if current_user.has_role?(:admin_user)
-      t.column("Access?") { |tool| link_to 'Access?', { :controller => :tool_configs, :action => :index, :tool_id => tool.id }, :class => "action_link" }
+    t.column("Help", :help) do |tool|
+      path = tool.cbrain_task_class.constantize.public_path("edit_params_help.html") rescue nil
+      overlay_ajax_link "Help", path.to_s if path
     end
 
-    t.describe_column("Help/Info") do |col|
-
-      col.cell do |tool|
-        task_class = tool.cbrain_task_class.constantize rescue nil
-        next unless task_class
-        help_path = task_class.public_path("edit_params_help.html")
-        if help_path
-          overlay_ajax_link "Help", help_path.to_s
-        end
-      end
-
-      col.cell do |tool|
-        task_class = tool.cbrain_task_class.constantize rescue nil
-        next unless task_class
-        info_path = task_class.public_path("tool_info.html")
-        if info_path
-          overlay_ajax_link "Info", info_path.to_s
-        end
-      end
+    t.column("Info", :info) do |tool|
+      path = tool.cbrain_task_class.constantize.public_path("tool_info.html") rescue nil
+      overlay_ajax_link "Info", path.to_s if path
     end
   %>
-<% end %>
 
+<% end %>
