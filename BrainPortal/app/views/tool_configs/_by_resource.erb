@@ -97,7 +97,7 @@
         <th><%= for_tool ? "Execution Servers" : "Tools" %> </th>
         <th>Versions Configured</th>
         <th>Projects In Effect</th>
-        <th>Users with access problem(s)</th>
+        <th class="left_align">Users with access problem(s)</th>
       </tr>
     <% end %>
 
@@ -150,7 +150,13 @@
                 !user_can_access_resource[user] || !user_can_access_versus[user] || !tc.can_be_accessed_by?(user)
               end
             %>
-            <%= array_to_table(users_with_access_pb, :rows => 1, :table_class => 'simple') do |user,r,c| %>
+            <%=
+              array_to_table(users_with_access_pb,
+                :rows        => 1,
+                :table_class => 'simple',
+                :td_class    => 'warning'
+              ) do |user,r,c|
+            %>
               <!-- Add information on the tooltip -->
               <%= html_tool_tip(user.login) do %>
                 <%= "* Execution Server's project<br/>".html_safe      unless
