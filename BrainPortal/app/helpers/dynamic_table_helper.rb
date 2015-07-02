@@ -333,8 +333,13 @@ module DynamicTableHelper
     # [selectable]
     #  Whether or not this row can be selected. If specified, the table will
     #  have an extra column with checkboxes to allow selection.
-    #  Note that specifying select_value or select_param will automatically
-    #  mark the row as selectable.
+    #  Note that specifying selected, select_value or select_param will
+    #  automatically mark the row as selectable.
+    #
+    # [selected]
+    #  Whether or not this row is initially selected. Selected rows have checked
+    #  checkboxes in the checkbox column.
+    #  Marks the row as selectable if specified.
     #
     # [select_value]
     #  Value to send back in the request should this row be selected.
@@ -368,13 +373,14 @@ module DynamicTableHelper
       @row_block = block
     end
 
-    # Mark rows as selectable. Equivalent to the selectable, select_value
-    # and select_param row options, with +value+ corresponding to select_value
-    # and +param+ to select_param. See the corresponding +row+ method options for
-    # further information.
-    def selectable(param = nil, value = nil)
+    # Mark rows as selectable. Equivalent to the selectable, selected,
+    # select_value and select_param row options, with +value+ corresponding to
+    # select_value and +param+ to select_param. See the corresponding +row+
+    # method options for further information.
+    def selectable(param = nil, value = nil, selected = nil)
       self.row(
         :selectable   => true,
+        :selected     => selected,
         :select_param => param,
         :select_value => value
       )
@@ -594,7 +600,9 @@ module DynamicTableHelper
       # Value to send back in the request should this row be selected.
       :select_value,
       # Parameter name in the request to send select_value as.
-      :select_param
+      :select_param,
+      # Assuming this row is selectable, whether it is initially selected or not.
+      :selected
     ) do
       # Apply a set of +options+, possibly returned by calling +block+
       # on the row's collection object, to the row. Available options are
@@ -610,14 +618,14 @@ module DynamicTableHelper
         self.attributes[:class] = DynamicTable.parse_css_classes(self.attributes[:class])
 
         # Selection-related options
-        if [:selectable, :select_value, :select_param].any? { |k| options[k] }
+        unless [:selectable, :selected, :select_value, :select_param].all? { |k| options[k].nil? }
           obj = self.object
 
+          self.selected       = options[:selected]
           self.select_value   = options[:select_value]
           self.select_value ||= obj.id   if obj.respond_to?(:id)
           self.select_value ||= obj[:id] if obj.respond_to?(:[]) && (obj[:id] rescue nil)
           self.select_value ||= obj.hash
-
           self.select_param   = options[:select_param] || 'selection'
         end
       end
@@ -625,7 +633,7 @@ module DynamicTableHelper
       # Whether a row can be selected or not. Selectable rows have a checkbox
       # as the very first column to allow selection.
       def selectable?
-        self.select_value || self.select_param
+        ! self.selected.nil? || self.select_value || self.select_param
       end
     end
 
@@ -890,12 +898,19 @@ module DynamicTableHelper
   #
   # [request_type]
   #  Type of request to perform when sorting and filtering. Available types:
-  #  [:ajax_replace] Perform the request using AJAX and replace the table with
-  #                  the contents of the response when a sorting or filtering
-  #                  link is triggered.
-  #  [:html_link]    Follow regular HTML link behavior; when a sorting or
-  #                  filtering link is triggered, load the new page as
-  #                  if the user clicked a regular link.
+  #
+  #  [:ajax_replace]
+  #   Perform the request using AJAX and replace the table with the contents
+  #   of the response when a sorting or filtering link is triggered.
+  #
+  #  [:html_link]
+  #   Follow regular HTML link behavior; when a sorting or filtering link is
+  #   triggered, load the new page as if the user clicked a regular link.
+  #
+  #  [:server_javascript]
+  #   Perform a GET request for a server-rendered javascript snippet to update
+  #   the table when a sorting or filtering link is triggered.
+  #
   #  Defaults to :html_link
   def dynamic_table(collection, options = {}, &block)
     table = DynamicTable.create(collection, self, options, &block)

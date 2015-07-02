@@ -109,19 +109,34 @@
           .click();
       });
 
-    /* sorting and filtering requests */
-    table.find('.dt-sort-btn, .dt-fpop-txt:not(.dt-zero)')
+    /* sorting, filtering and pagination requests */
+    container.find('.dt-sort-btn, .dt-fpop-txt:not(.dt-zero), .dt-pag-pages > a')
       .unbind('click.dyn-tbl')
-      .bind('click.dyn-tbl', function () {
-        var url = $(this).data('url');
+      .bind('click.dyn-tbl', function (event) {
+        event.preventDefault();
+
+        var url = $(this).attr('href') || $(this).data('url');
         if (!url || !request_type) return;
 
-        if (request_type == 'html_link')
+        switch (request_type) {
+        case 'html_link':
           window.location.href = url;
-        else
+          break;
+
+        case 'ajax_replace':
           $.get(url, function (data) {
             container.replaceWith(data);
+            $('.dynamic-table').trigger('reload.dyn-tbl');
           });
+          break;
+
+        case 'server_javascript':
+          $.get(url, $.noop, 'script');
+          break;
+
+        default:
+          return;
+        }
       });
 
     /* Popups */
