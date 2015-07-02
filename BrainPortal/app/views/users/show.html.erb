@@ -101,7 +101,7 @@
 
     <%
       if (current_user.has_role?(:admin_user) || current_user.has_role?(:site_manager)) && not_admin_user(@user)
-        t.boolean_edit_cell('user[account_locked]', (@user.account_locked ? "1" : ""), "1", "", :header => "Account Locked")
+        t.boolean_edit_cell('user[account_locked]', (@user.account_locked ? "1" : ""), "1", "0", :header => "Account Locked")
       end
     %>
 

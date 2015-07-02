@@ -142,7 +142,7 @@ class ToolConfigsController < ApplicationController
     form_tool_config.bourreau_id = @tool_config.bourreau_id
 
     # Update everything else
-    [ :version_name, :description, :script_prologue, :group_id, :ncpus ].each do |att|
+    [ :version_name, :description, :script_prologue, :group_id, :ncpus, :docker_image ].each do |att|
        @tool_config[att] = form_tool_config[att]
     end
 

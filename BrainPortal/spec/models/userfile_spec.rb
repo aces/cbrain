@@ -256,75 +256,7 @@ describe Userfile do
       expect(userfile.update_file_type("new_type")).to be_falsey
     end
   end
-
-   describe "#add_format" do
-     let(:userfile1) {create(:userfile)}
-     let(:userfile2) {create(:userfile)}
-
-     it "should return an array containing all format_source" do
-       userfile.add_format(userfile).inspect
-       expect(userfile.add_format(userfile2).size).to eq(2)
-     end
-  end
-
-  describe "#format_name" do
-
-   it "should alweays return nil" do
-     expect(userfile.format_name).to eq(nil)
-   end
-  end
-
-  describe "#format_names" do
-
-    it "should call format_source" do
-      expect(userfile).to receive(:format_source)
-      userfile.format_names
-    end
-
-    it "should concatenate format_name and result of format.map" do
-      allow(userfile).to receive(:format_source).and_return(nil)
-      allow(userfile).to receive(:format_name).and_return(1)
-      allow(userfile).to receive_message_chain(:formats, :map).and_return([2,3])
-      expect(userfile.format_names).to match_array([1,2,3])
-    end
-  end
-
-  describe "#has_format?" do
-
-    it "should return true if get_format return true" do
-      allow(userfile).to receive(:get_format).and_return(true)
-      expect(userfile.has_format?("format")).to be_truthy
-    end
-
-    it "should return false if get_format return false" do
-      allow(userfile).to receive(:get_format).and_return(false)
-      expect(userfile.has_format?("format")).to be_falsey
-    end
-  end
-
-  describe "#get_format" do
-
-    it "should return self if self.format_name.to_s.downcase == f.to_s.downcase" do
-      f = double("format")
-      allow(f).to receive_message_chain(:to_s, :downcase).and_return(f)
-      allow(userfile).to receive_message_chain(:format_name, :to_s, :downcase).and_return(f)
-      expect(userfile.get_format(f)).to eq(userfile)
-    end
-
-    it "should return self if self.class.name == f" do
-      f = double("format")
-      allow(userfile).to receive_message_chain(:class, :name).and_return(f)
-      expect(userfile.get_format(f)).to eq(userfile)
-    end
-
-    it "should call formats.all.find on self in other case" do
-      f = double("format")
-      expect(userfile).to receive(:formats).and_return(Userfile)
-      userfile.get_format(f)
-    end
-
-  end
-
+  
   #Testing the get_tags_for_user method
   describe "#get_tags_for_user" do
 
