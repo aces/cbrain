@@ -296,7 +296,7 @@ td.dt-sel > .dt-sel-lbl > .dt-sel-icon {
   color: #888888;
 }
 
-.dt-cpop-icon.ui-icon {
+.dt-cpop-col > .dt-cpop-icon.ui-icon {
   background-image: url(../images/ui-black-icons.png);
 }
 
