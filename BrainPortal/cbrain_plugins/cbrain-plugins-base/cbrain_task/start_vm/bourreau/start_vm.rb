@@ -242,7 +242,7 @@ class CbrainTask::StartVM < ClusterTask
     
     # Port 2222 of localhost is bound to the ssh port of the host.  
     # See ScirVM.get_ssh_master
-    sshfs_command = "mkdir #{local_dir} -p ; umount #{local_dir} ; sshfs -p #{get_VM_to_host_ssh_tunnel_port} -C -o nonempty -o follow_symlinks -o reconnect -o StrictHostKeyChecking=no #{user}@localhost:#{remote_dir} #{local_dir}"
+    sshfs_command = "mkdir #{local_dir} -p ; umount #{local_dir} ; sshfs -p #{get_VM_to_host_ssh_tunnel_port} -C -o nonempty -o follow_symlinks -o reconnect -o ServerAliveInterval=15 -o StrictHostKeyChecking=no #{user}@localhost:#{remote_dir} #{local_dir}"
     addlog "Mounting dir: #{sshfs_command}"
     addlog scir.run_command(sshfs_command,self) 
     # leave time to fuse to mount the dir
