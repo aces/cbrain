@@ -315,7 +315,7 @@ Step 4: Data Providers
 STEP
 
 #---------------------------------------------------
-cache_ok = DataProvider.this_is_a_proper_cache_dir!(myself.dp_cache_dir) rescue nil
+cache_ok = DataProvider.this_is_a_proper_cache_dir!(myself.dp_cache_dir, :for_remote_resource_id => myself.id) rescue nil
 if !cache_ok
   cache_dir = "#{seeds_dev_support_dir}/portal_data_provider_cache"
   puts <<-WARN

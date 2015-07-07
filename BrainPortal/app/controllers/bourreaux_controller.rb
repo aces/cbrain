@@ -150,7 +150,7 @@ class BourreauxController < ApplicationController
       @bourreau.reload
       respond_to do |format|
         format.html { render :action => 'show' }
-        format.xml  { render :xml  => @bourreau.errors, :status  => :unprocessable_entity}
+        format.xml  { render :xml  => @bourreau.errors, :status  => :unprocessable_entity }
       end
       return
     end
@@ -162,6 +162,7 @@ class BourreauxController < ApplicationController
     # File upload size limit (portal only)
     add_meta_data_from_form(@bourreau, [ :upload_size_limit ])
 
+    # Clean up all file synchronization stuff if the DP cache dir has changed.
     if old_dp_cache_dir != @bourreau.dp_cache_dir
       old_ss = SyncStatus.where( :remote_resource_id => @bourreau.id )
       old_ss.each do |ss|
@@ -176,6 +177,13 @@ class BourreauxController < ApplicationController
         info_message += "You may have to clean up the content of the old cache directory\n" +
                         "'#{old_dp_cache_dir}' on host '#{host}'\n"
       end
+
+      # Record new ID for local cache; this can also be done during the boot process.
+      if (@bourreau.id == RemoteResource.current_resource.id)
+        md5 = DataProvider.create_cache_md5
+        @bourreau.update_attributes( :cache_md5 => md5 )
+      end
+
       Message.send_message(current_user,
         :message_type => :system,
         :critical     => true,

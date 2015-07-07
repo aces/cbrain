@@ -95,5 +95,12 @@
   </div>
   </p>
 
+  <span title="Docker image">
+    <p><%= f.label :docker_image, "Docker image:" %><br/>
+      <%= f.text_field :docker_image %><br/>
+      <div class="field_explanation">The name and tag of the Docker image in which the tool is installed, for instance "centos:latest". This name refers to the Docker index accessed by the Bourreau, which is configured manually in the Bourreau for now.</div>
+    </p>
+  </span>
+
 </div>
 

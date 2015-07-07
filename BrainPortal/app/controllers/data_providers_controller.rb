@@ -30,8 +30,8 @@ class DataProvidersController < ApplicationController
   api_available :except => [:cleanup]
 
   before_filter :login_required
-  before_filter :manager_role_required,    :only => [:new, :create]
-  before_filter :core_admin_role_required, :only => [:report, :repair]
+  before_filter :manager_role_required, :only => [:new, :create]
+  before_filter :admin_role_required,   :only => [:report, :repair]
 
   API_HIDDEN_ATTRIBUTES = [ :cloud_storage_client_identifier, :cloud_storage_client_token ]
 
