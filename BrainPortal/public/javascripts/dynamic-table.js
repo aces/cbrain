@@ -96,6 +96,12 @@
         dyntbl_id = dyntbl.attr('id'),
         table     = dyntbl.find('.dt-table');
 
+    /* unstick the selection state of pre-selected rows */
+    table
+      .find('.dt-sel-check[checked]')
+      .removeAttr('checked')
+      .prop('checked', true);
+
     /* restore previous column visibility status */
     if (column_visibility) {
       var visibility = column_visibility(dyntbl_id).load();
@@ -122,7 +128,8 @@
 
       if (!column) return;
 
-      table.find('td.' + column)
+      table
+        .find('td.' + column)
         .toggleClass('dt-hidden', hidden);
     });
 
