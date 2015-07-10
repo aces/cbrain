@@ -139,8 +139,7 @@ INTRO
 puts <<BASE_DIR
 
 All data files (Data Providers, cache directories, bourreau
-work directories etc) will be created in?
-
+work directories etc) will be created in? (enter a path or keep the supplied default)
 BASE_DIR
 
 default_support_dir     = "#{rails_home}/seeds_dev_support_dir"
