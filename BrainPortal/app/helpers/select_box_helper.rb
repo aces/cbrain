@@ -249,6 +249,7 @@ module SelectBoxHelper
   #            or any model that has a tool_config attribute.
   # [tool_configs] the array of ToolConfig objects used to build the select box. Defaults to all tool configs
   #                  accessible by the current_user.
+  # [allow_offline] by default the offline tc will be disabled. If this option is set to true the tc will be selectable
   #
   # The selection box will partition the ToolConfig objects by 'categories', where there
   # are three such categories:
@@ -260,6 +261,8 @@ module SelectBoxHelper
   def tool_config_select(parameter_name = 'tool_config_id', options = {}, select_tag_options = {})
     options       = { :selector => options } unless options.is_a?(Hash)
     selector      = options[:selector]
+    allow_offline = options[:allow_offline] == true ? true : false
+
     if selector.respond_to?(:tool_config_id)
       selected = selector.tool_config_id.to_s
     elsif selector.is_a?(ToolConfig)
@@ -325,7 +328,7 @@ module SelectBoxHelper
         pairlist = []
         tool_tool_configs.each do |tc|
           desc     = tc.version_name || tc.short_description
-          tc_pair  = !b_is_online ? [ desc, tc.id.to_s, {:disabled => "true"} ] : [ desc, tc.id.to_s ]
+          tc_pair  = !b_is_online && !allow_offline ? [ desc, tc.id.to_s, {:disabled => "true"} ] : [ desc, tc.id.to_s ]
           pairlist << tc_pair
         end
         if same_tool && (! same_bourreau || ordered_bourreau_ids.size == 1)
