@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Helper methods for tasks forms.
@@ -39,12 +39,12 @@ module TaskFormHelper
   # Note that the real file must start with a '_', like all partials.
   #
   # This is useful for developers of tasks that are 'plugins', they
-  # don't have to know exatcly where their partial will end up on the
+  # don't have to know exactly where their partial will end up on the
   # filesystem and can just use the plain name of their file in their own
   # task's 'views'.
   def task_partial(partial_name)
     plain = partial_name.to_s.sub(/^_/,"").sub(/(\.html)?(\.erb)?/i,"")
-    "tasks/cbrain_plugins/cbrain_task/#{@task.name.underscore}/views/#{plain}.html.erb"
+    "tasks/cbrain_plugins/installed-plugins/cbrain_task/#{@task.name.underscore}/views/#{plain}.html.erb"
   end
 
   # This method can be used to insert in a task's parameters panel

@@ -17,18 +17,18 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#= Portal Agent Locker Worker
-#
 # This class implements a worker that constantly relocks the
-# SSH Agent for the CBRAIN system 20 seconds after any other part
+# SSH Agent for the CBRAIN system N seconds (default: 60) after any other part
 # of the system has unlocked it. A single instance of this worker
 # is expected to be started on the Portal side when the system boots.
 class PortalAgentLocker < Worker
 
   Revision_info=CbrainFileRevision[__FILE__]
+
+  MaxUnlockTime=60 # independent of this worker's check_interval
 
   def setup #:nodoc:
     @agent         = SshAgent.find('portal') # our agent
@@ -36,13 +36,7 @@ class PortalAgentLocker < Worker
 
     # See CBRAIN.with_unlocked_agent for more info
     admin          = User.admin
-    @passphrase    = admin.meta[:global_ssh_agent_lock_passphrase] ||= admin.send(:random_string)
-    @passphrase_md = admin.meta.md_for_key(:global_ssh_agent_lock_passphrase)
-
-    # @log_md is only used if the environment variable CBRAIN_DEBUG_TRACES is set
-    # Again, see CBRAIN.with_unlocked_agent for more info.
-                     admin.meta[:ssh_agent_unlock_history] ||= ""
-    @log_md        = admin.meta.md_for_key(:ssh_agent_unlock_history)
+    @passphrase    = admin.meta[:global_ssh_agent_lock_passphrase] ||= User.random_string
 
     # Who am I within CBRAIN?
     rr = RemoteResource.current_resource
@@ -59,11 +53,30 @@ class PortalAgentLocker < Worker
     @cycle_count    = 0
   end
 
-  # Relocks the agent that was unlocked by CBRAIN.with_unlocked_agent() 
+  # Relocks the agent that was unlocked by CBRAIN.with_unlocked_agent()
   def do_regular_work #:nodoc:
 
     @cycle_count += 1
     return if @cycle_count == 1 # we skip very first cycle, for better statistics.
+
+    # Timestamp of most recent unlock event
+    most_recent_unlocked = nil
+
+    # Find all previous messages; this also sets most_recent_unlocked if found
+    all_past_events      = SshAgentUnlockingEvent.order(:created_at).all
+    most_recent_unlocked = all_past_events[-1].created_at if all_past_events.size > 0
+#worker_log.debug "xxx MR0 #{most_recent_unlocked.presence || "(nil)"}"
+
+    # Clean up all these messages; log them if we are in debug mode
+    all_past_events.each do |ulockev|
+      message = ulockev.message
+      if message.present?
+        worker_log.debug "Unlocked by: #{ulockev.to_log_entry}"
+      else
+        worker_log.warn "No reason found for unlocked agent! Date was: #{ulockev.created_at}"
+      end
+      ulockev.destroy
+    end
 
     # Get keys from agent; a locked agent returns an empty list.
     keys = @agent.list_keys # this will raise an exception and properly terminate this worker if the agent is dead.
@@ -71,45 +84,22 @@ class PortalAgentLocker < Worker
       @time_unlocked = nil
       @sess_unlocked = 0
       worker_log.debug "No keys, or already locked."
-      return 
+      return
     end
 
-    # There is a mechanism to inform the AgentLocker about which part
-    # of CBRAIN unlocked it, if CBRAIN_DEBUG_TRACES is set. The
-    # stack trace is sent to the @log_md record in the DB. Costly!
-    if ENV['CBRAIN_DEBUG_TRACES'].present?
-      log = ""
-      MetaDataStore.transaction do
-        @log_md.reload
-        @log_md.lock!
-        log = @log_md.meta_value || ""
-        @log_md.meta_value = ""
-        @log_md.save
-      end
-
-      log.split(/\n/).each do |l|
-        worker_log.debug "Unlocked by: #{l}"
-      end
-      if log.blank? && @time_unlocked.blank?
-        worker_log.warn "No reason found for unlocked agent!"
-      end
-    end
-
+    # Start adjusting statistics
     contrib = @time_unlocked.blank? ? @half_int : @interval # seconds unlocked contributed by latest cycle
     @cumul_unlocked += contrib
     @sess_unlocked  += contrib
 
-    # OK, so how recently was it unlocked?
+    # OK, so how recently was the agent unlocked?
     @time_unlocked ||= Time.now.to_i # set the first time we encounter it unlocked
 #worker_log.debug "xxx TU1 #{@time_unlocked}"
-    @passphrase_md.reload
-    md_date          =  @passphrase_md.updated_at.to_i # this timestamp updated by CBRAIN.with_unlocked_agent()
-#worker_log.debug "xxx MD0 #{md_date}"
-    @time_unlocked   = md_date if md_date > @time_unlocked # keep most recent of the two.
-#worker_log.debug "xxx TU2 #{md_date}"
+    @time_unlocked   = most_recent_unlocked.to_i if most_recent_unlocked.to_i > @time_unlocked # keep most recent of the two.
+#worker_log.debug "xxx TU2 #{@time_unlocked}"
 #worker_log.debug "xxx DIF #{Time.now.to_i - @time_unlocked}"
 
-    if Time.now.to_i - @time_unlocked < 20 # change too recent
+    if Time.now.to_i - @time_unlocked < MaxUnlockTime # change too recent
       worker_log.debug "Agent unlocked, but too recently to lock again. Session unlocked: #{@sess_unlocked} s."
       return # postpone until next check
     end

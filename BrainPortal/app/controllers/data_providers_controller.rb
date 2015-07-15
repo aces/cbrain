@@ -20,7 +20,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#Restful controller for the DataProvider resource.
+# RESTful controller for the DataProvider resource.
+
+
 class DataProvidersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -28,7 +30,8 @@ class DataProvidersController < ApplicationController
   api_available :except => [:cleanup]
 
   before_filter :login_required
-  before_filter :manager_role_required, :only => [:new, :create]
+  before_filter :manager_role_required,    :only => [:new, :create]
+  before_filter :core_admin_role_required, :only => [:report, :repair]
 
   API_HIDDEN_ATTRIBUTES = [ :cloud_storage_client_identifier, :cloud_storage_client_token ]
 
@@ -98,7 +101,7 @@ class DataProvidersController < ApplicationController
     @provider.group_id ||= (( current_project && current_project.id ) || current_user.own_group.id)
 
     if @provider.save
-      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers, :browse_gid])
+      add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid])
       @provider.addlog_context(self,"Created by #{current_user.login}")
       flash[:notice] = "Provider successfully created."
       respond_to do |format|
@@ -141,7 +144,7 @@ class DataProvidersController < ApplicationController
          )
       )
       meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/^dp_no_copy_\d+$|^rr_no_sync_\d+$/)
-      add_meta_data_from_form(@provider, [:must_move, :must_erase, :no_uploads, :no_viewers, :browse_gid] + meta_flags_for_restrictions)
+      add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid] + meta_flags_for_restrictions)
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
         format.html { redirect_to :action => :show }
@@ -186,7 +189,8 @@ class DataProvidersController < ApplicationController
     end
   end
 
-  def is_alive #:nodoc:
+  # Returns information about the aliveness of +dataprovider+.
+  def is_alive
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
     is_alive =  @provider.is_alive?
 
@@ -197,7 +201,8 @@ class DataProvidersController < ApplicationController
     end
   end
 
-  def disk_usage #:nodoc:
+  # Returns a report about the +dataprovider+ disk usage by users.
+  def disk_usage
     dataprovider_id = params[:id]       || ""
     user_ids        = params[:user_ids] || nil
 
@@ -237,7 +242,7 @@ class DataProvidersController < ApplicationController
       format.json { render :json => info_by_user }
     end
 
-  rescue => ex
+  rescue
     respond_to do |format|
       format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
       format.xml  { head :unprocessable_entity }
@@ -246,7 +251,9 @@ class DataProvidersController < ApplicationController
 
   end
 
-  def dp_access #:nodoc:
+  # Generates list of providers accessible by the current user.
+  # Generates list of users available by the current user.
+  def dp_access
     @providers = DataProvider.find_all_accessible_by_user(current_user).all.sort do |a,b|
                    (b.online?.to_s       <=> a.online?.to_s).nonzero?       ||
                    (a.is_browsable?.to_s <=> b.is_browsable?.to_s).nonzero? ||
@@ -258,7 +265,8 @@ class DataProvidersController < ApplicationController
                  end
   end
 
-  def dp_transfers #:nodoc:
+  # Generates list of providers accessible by the current user.
+  def dp_transfers
     @providers = DataProvider.find_all_accessible_by_user(current_user).all.sort do |a,b|
                    (b.online?.to_s       <=> a.online?.to_s).nonzero?       ||
                    (a.is_browsable?.to_s <=> b.is_browsable?.to_s).nonzero? ||
@@ -266,9 +274,9 @@ class DataProvidersController < ApplicationController
                  end
   end
 
-  #Browse the files of a data provider.
-  #This action is only available for data providers that are browsable.
-  #Both registered and unregistered files will appear in the list.
+  # Browse the files of a data provider.
+  # This action is only available for data providers that are browsable.
+  # Both registered and unregistered files will appear in the list.
   def browse
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
 
@@ -295,7 +303,7 @@ class DataProvidersController < ApplicationController
       @fileinfolist = get_recent_provider_list_all(@provider, @as_user, params[:refresh])
     rescue => e
       flash[:error] = 'Cannot get list of files. Maybe the remote directory doesn\'t exist or is locked?' #emacs fails to parse this properly so I switched to single quotes.
-      Message.send_internal_error_message(User.find_by_login('admin'), "Browse DP exception, YAML=#{YAML.inspect}", e, params) rescue nil
+      Message.send_internal_error_message(User.find_by_login('admin'), "Browse DP exception", e, params) rescue nil
       respond_to do |format|
         format.html { redirect_to :action => :index }
         format.xml  { render :xml   => flash[:error], :status  => :unprocessable_entity}
@@ -321,9 +329,7 @@ class DataProvidersController < ApplicationController
 
     @fileinfolist.each do |fi|
       fi_name  = fi.name
-      fi_size  = fi.size
       fi_type  = fi.symbolic_type
-      fi_mtime = fi.mtime
 
       fi.userfile = nil
       fi.message  = ""
@@ -391,8 +397,8 @@ class DataProvidersController < ApplicationController
   # Register a list of files into the system.
   # The files' meta data will be saved as Userfile resources.
   # This method is (unfortunately) also used to unregister files, and delete them (on the browsable side)
-  # TODO: refactor completely!
   def register
+    # TODO: refactor completely!
     @provider  = DataProvider.find_accessible_by_user(params[:id], current_user)
 
     @filter_params["browse_hash"] ||= {}
@@ -597,7 +603,6 @@ class DataProvidersController < ApplicationController
       failed_list   = {}
       CBRAIN.spawn_with_active_records(:admin, "#{move_or_copy} Registered Files") do
         to_operate.each do |u|
-          orig_name = u.name
           begin
             if move_or_copy == "MOVE"
               u.provider_move_to_otherprovider(new_dp)
@@ -641,13 +646,76 @@ class DataProvidersController < ApplicationController
 
   end
 
+  # Report inconsistencies in the data provider.
+  def report
+    @provider = DataProvider.find(params[:id])
+    @issues   = @provider.provider_report(params[:reload])
+
+    respond_to do |format|
+      format.html # report.html.erb
+      format.xml  { render :xml  => { :issues => @issues } }
+      format.json { render :json => { :issues => @issues } }
+    end
+  end
+
+  # Repair one or more inconsistencies in the data provider.
+  def repair
+    @provider = DataProvider.find(params[:id])
+    @issues   = @provider.provider_report.select { |i| params[:issue_ids].include? i[:id].to_s }
+
+    # Try to repair the inconsistencies (or issues)
+    failed_list  = []
+    success_list = []
+    @issues.each do |issue|
+      begin
+        @provider.provider_repair(issue)
+        success_list << issue
+      rescue => ex
+        failed_list  << [issue, ex]
+      end
+    end
+
+    # Display a message reporting how many issues were repaired
+    unless @issues.empty?
+      if failed_list.empty?
+        Message.send_message(current_user,
+          :message_type  => :notice,
+          :header        => "#{@issues.size} issue(s) repaired successfully.",
+          :variable_text => success_list.map do |issue|
+            line  = ["|#{issue[:message]}|: repaired"]
+            line << " (action taken: #{issue[:action].to_s.titleize})" if issue[:action]
+            line << "\n"
+            line.join
+          end.join
+        )
+      else
+        Message.send_message(current_user,
+          :message_type  => :error,
+          :header        => "Out of #{@issues.size} issue(s), #{failed_list.size} could not be repaired:",
+          :variable_text => failed_list.map { |issue,ex| "|#{issue[:message]}|: #{ex.message}\n" }.join
+        )
+      end
+    end
+
+    api_response = {
+      :repaired => success_list,
+      :failed   => failed_list.map { |issue,ex| { :issue => issue, :exception => ex.message } }
+    }
+
+    respond_to do |format|
+      format.html { redirect_to :action => :report }
+      format.xml  { render      :xml    => api_response }
+      format.json { render      :json   => api_response }
+    end
+  end
+
   private
 
   def get_type_list #:nodoc:
-    # This list may contain 'LocalDataProvider' which is useless in any environments
-    # where there are distributed resources. It would only work in a CBRAIN environment
-    # where all portals and bourreaux are on the same machine.
-    (check_role(:site_manager) || check_role(:admin_user)) ? DataProvider.descendants.map(&:name) : %w{ SshDataProvider }
+    data_provider_list = (check_role(:site_manager) || check_role(:admin_user)) ? DataProvider.descendants.map(&:name).sort : %w{ SshDataProvider }     
+    grouped_options = data_provider_list.hashed_partitions { |name| name.constantize.pretty_category_name }
+    grouped_options.delete(nil) # data providers that can not be on this list return a category name of nil, so we remove them
+    grouped_options.to_a
   end
 
   # Note: the following methods should all be part of one of the subclasses of DataProvider, probably.

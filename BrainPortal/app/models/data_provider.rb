@@ -207,6 +207,7 @@ class DataProvider < ActiveRecord::Base
   include ResourceAccess
   include LicenseAgreements
   include NumericalSubdirTree
+  include ConsistencyChecks
 
   cbrain_abstract_model! # objects of this class are not to be instantiated
 
@@ -238,7 +239,7 @@ class DataProvider < ActiveRecord::Base
   belongs_to              :group
   has_many                :userfiles, :dependent => :restrict
 
-  attr_accessible         :name, :user_id, :group_id, :remote_user, :remote_host, :remote_port, :remote_dir, :online,
+  attr_accessible         :name, :user_id, :group_id, :remote_user, :remote_host, :alternate_host, :remote_port, :remote_dir, :online,
                           :read_only, :description, :time_of_death, :not_syncable, :time_zone, :cloud_storage_client_identifier,
                           :cloud_storage_client_token, :license_agreements
 
@@ -256,10 +257,14 @@ class DataProvider < ActiveRecord::Base
                ]
     attr_accessor(*AttrList)
 
-    def initialize(attributes = {})
+    def initialize(attributes = {}) #:nodoc:
        (attributes.keys.collect(&:to_sym) & AttrList).each { |name| self.send("#{name}=",attributes[name]) }
     end
 
+    # Return the depth of the file,
+    # For example for file located at the following place:
+    #   /first_dir/second_dir/file
+    # it will return 3
     def depth #:nodoc:
       return @depth if @depth
       cb_error "File doesn't have a name." if self.name.blank?
@@ -269,7 +274,7 @@ class DataProvider < ActiveRecord::Base
       @depth
     end
 
-    def to_xml(options = {})
+    def to_xml(options = {}) #:nodoc:
       require 'builder' unless defined?(Builder)
 
       options = options.dup
@@ -290,8 +295,7 @@ class DataProvider < ActiveRecord::Base
       end
     end
 
-    def to_json
-      myhash = {};
+    def to_json #:nodoc:
       self.instance_variables.each do |key_sym|
           key = key_sym.to_s.sub "@", ""   # changes '@name' or :@name to 'name'
           value = self.__send__(key)
@@ -319,7 +323,7 @@ class DataProvider < ActiveRecord::Base
   # Basenames for special files in caching system
   DP_CACHE_ID_FILE  = "DP_Cache_Rev.id"
   DP_CACHE_MD5_FILE = "DP_Cache_Key.md5"
-
+  DP_CACHE_SYML     = "DP_Cache" # Name for the symlinks pointing to the DP cache
 
   #################################################################
   #      Official DataProvider API methods
@@ -573,8 +577,6 @@ class DataProvider < ActiveRecord::Base
   # Deletes the cached copy of the content of +userfile+;
   # does not affect the real file on the provider side.
   def cache_erase(userfile)
-    uid = userfile.id
-    cache_root = self.class.cache_rootdir
     SyncStatus.ready_to_modify_cache(userfile,:destroy) do
       # The cache contains three more levels, try to clean them:
       #   "/CbrainCacheDir/01/23/45/basename"
@@ -594,7 +596,7 @@ class DataProvider < ActiveRecord::Base
         # 4- Remove the top level of the cache, "01", if possible
         level0 = level1.parent
         Dir.rmdir(level0)
-      rescue Errno::ENOENT, Errno::ENOTEMPTY => ex
+      rescue Errno::ENOENT, Errno::ENOTEMPTY
         # Nothing to do if we fail, as we are just trying to clean
         # up the cache structure from bottom to top
       end
@@ -661,7 +663,7 @@ class DataProvider < ActiveRecord::Base
               val = entry.send(meth)
               fileinfo.send("#{meth}=", val)
             end
-          rescue => e
+          rescue
             bad_attributes << meth
           end
         end
@@ -985,7 +987,7 @@ class DataProvider < ActiveRecord::Base
   # it feels helpful. Remember, some provider don't
   # even store data in a "path" at all (e.g. Amazon S3).
   # So this string is often purely for informational purposes.
-  def provider_full_path(userfile) #:nodoc:
+  def provider_full_path(userfile)
     raise "Error: method not yet implemented in subclass."
   end
 
@@ -997,6 +999,15 @@ class DataProvider < ActiveRecord::Base
 
   def self.pretty_type #:nodoc:
     self.to_s
+  end
+  
+  # This is a method that will return category type for this data provider
+  # in the case of this class (abstract) it will not be invoked.
+  # Returning a nil is the convention that we'll use to HIDE a data provider class from the interface.
+  # So we'll return nil if the data provider class is not appriopriate for the users to view.
+  
+  def self.pretty_category_name
+    nil
   end
 
   # Returns the site this data provider belongs to.
@@ -1018,23 +1029,31 @@ class DataProvider < ActiveRecord::Base
   # Class-level cache-handling methods
   #################################################################
 
-  # Returns (and creates if necessary) a unique key
-  # for this Ruby process' cache. This key is
-  # maintained in a file in the cache_rootdir().
-  # It's setup to be a MD5 checksum, 32 hex characters long.
+  # Returns a unique key for this Ruby process' cache. This key
+  # is maintained in a file in the cache_rootdir(), and created
+  # by a call to self.create_cache_md5() .
+  # It is setup to be a MD5 checksum, 32 hex characters long.
   # Note that this key is also recorded in a RemoteResource
   # object during CBRAIN's validation steps, at launch time.
   def self.cache_md5
     return @@key if self.class_variable_defined?('@@key') && ! @@key.blank?
 
     # Try to read key from special file in cache root directory
-    cache_root = cache_rootdir
+    cache_root = self.cache_rootdir() # class method, not cached
     key_file = (cache_root + DP_CACHE_MD5_FILE).to_s
     if File.exist?(key_file)
       @@key = File.read(key_file)  # a MD5 string, 32 hex characters, + LF
       @@key.gsub!(/\W+/,"") unless @@key.blank?
       return @@key          unless @@key.blank?
     end
+    nil
+  end
+
+  # Creates a persistent file in the cache directory to record
+  # a MD5 token to uniquely identify it.
+  def self.create_cache_md5
+    cache_root = self.cache_rootdir() # class method, not cached
+    key_file = (cache_root + DP_CACHE_MD5_FILE).to_s
     # Create a key. We MD5 the hostname, the cache root dir
     # and the time. This should be good enough. It will still
     # work even if the directory is moved about or the computer
@@ -1058,7 +1077,7 @@ class DataProvider < ActiveRecord::Base
       @@key = File.read(key_file)  # a MD5 string, 32 hex characters, + LF
       @@key.gsub!(/\W+/,"") unless @@key.blank?
       raise "Error: could not read a proper Data Provider Cache Key from file '#{key_file}'!" if @@key.blank?
-      return @@key
+      return @@key.presence
     end
   end
 
@@ -1072,7 +1091,7 @@ class DataProvider < ActiveRecord::Base
     return DateTime.parse(@@cache_rev) if ! force && self.class_variable_defined?('@@cache_rev') && ! @@cache_rev.blank?
 
     # Check that the root seems OK
-    cache_root = self.cache_rootdir # a Pathname obj
+    cache_root = self.cache_rootdir() # class method, not cached
     self.this_is_a_proper_cache_dir!(cache_root) # raises exception if bad dir
 
     # Try to read rev from special file in cache root directory
@@ -1101,7 +1120,7 @@ class DataProvider < ActiveRecord::Base
       fh.syswrite(@@cache_rev + "\n")
       fh.close
       return "Unknown" # String to indicate it WAS unknown.
-    rescue => ex # Oh? Open write failed? Some other process has created it underneath us.
+    rescue # Oh? Open write failed? Some other process has created it underneath us.
       if ! File.exist?(rev_file)
         raise "Error: could not create a proper Data Provider Cache Revision DateTime in file '#{rev_file}' !"
       end
@@ -1120,29 +1139,78 @@ class DataProvider < ActiveRecord::Base
   # (meaning it seems to have been used as a cache
   # directory in the past) or if the directory is empty
   # and writable. An exception is raised otherwise.
-  def self.this_is_a_proper_cache_dir!(cache_root,check_local_filesystem = true)
-
-    cache_root      = cache_root.to_s
+  # +options+ can be used to specify extra checks to be made.
+  # Available options are:
+  #  [*local*] Check against the local filesystem, active by default.
+  #  [*key*]   MD5 key to match if a DP_CACHE_MD5_FILE exists
+  #            in +cache_root+. Only applied if checking the
+  #            local filesystem.
+  #  [*host*]  Host machine the check is made against. Allows
+  #            checking for path conflicts with data providers.
+  #            Defaults to the current machine's hostname if
+  #            checking the local filesystem.
+  def self.this_is_a_proper_cache_dir!(cache_root,options = {})
+    cache_root    = cache_root.to_s
+    check_local   = options.has_key?(:local) ? options[:local] : true
+    check_key     = options[:key]
+    cache_host    = options[:host]
+    cache_host  ||= Socket.gethostname if check_local
 
     cb_error "Invalid blank DP cache directory configured." if cache_root.blank?
     cb_error "DP cache directory configured cannot be a system temp dir: '#{cache_root}'" if
       cache_root.to_s =~ /^(\/tmp|\/(var|usr|private|opt|net|lib|mnt|sys)\/tmp)/i
-    return true unless check_local_filesystem
+
+    cache_root_path = Pathname.new(cache_root)
+
+    if cache_host
+
+      # Check to see if the cache dir match the path of any known Data Provider
+      conflict_dp = self.all
+        .select do |dp|
+          Pathname.new(dp.remote_dir).cleanpath == cache_root_path
+        end
+        .find do |dp|
+          hosts  = (dp.alternate_host || "").split(',')
+          hosts <<  dp.remote_host
+          hosts.include? cache_host
+        end
+      cb_error "DP cache directory matches the root of data provider '#{conflict_dp.name}'" if conflict_dp
+
+      # Check to see if the cache dir match the cache dir of any other known Remote Resource
+      current_rr_id = RemoteResource.current_resource.id
+      conflict_rr = RemoteResource.all.reject do |rr|
+          rr.id == current_rr_id ||
+          rr.dp_cache_dir.blank? ||
+          rr.ssh_control_host.blank?
+        end
+        .select do |rr|
+          Pathname.new(rr.dp_cache_dir).cleanpath == cache_root_path &&
+          rr.ssh_control_host == cache_host
+        end
+        .first
+      cb_error "DP cache directory matches the cache directory of #{conflict_rr.pretty_type} Server '#{conflict_rr.name}'" if conflict_rr
+    end
+
+    return true unless check_local
 
     cb_error "DP cache directory doesn't exist: '#{cache_root}'" unless
       File.directory?(cache_root)
     cb_error "DP cache directory not accessible: '#{cache_root}'" unless
       File.readable?(cache_root) && File.writable?(cache_root)
 
-    cache_root_path = Pathname.new(cache_root)
     rev_file        = (cache_root_path + DP_CACHE_ID_FILE).to_s
+    key_file        = (cache_root_path + DP_CACHE_MD5_FILE).to_s
+
+    cb_error "DP cache directory already in use by another server" if
+      check_key && File.exist?(key_file) && File.read(key_file).gsub(/\W+/,"") != check_key
+
     return true if File.exist?(rev_file)
 
     entries = Dir.entries(cache_root.to_s) rescue nil
     if entries.nil? # exception?
       cb_error "Cannot inspect content of DP cache directory '#{cache_root}' ?"
     end
-    entries.reject! { |e| e == "." || e == ".." || e == ".DS_Store" }
+    entries.reject! { |e| e == "." || e == ".." || e == ".DS_Store" || e == DP_CACHE_ID_FILE || e == DP_CACHE_MD5_FILE }
     if entries.size > 0
       maxshow = entries.size > 5 ? 5 : entries.size
       cb_error "It seems the configured DP cache directory '#{cache_root}' contains data!\n" +
@@ -1152,13 +1220,15 @@ class DataProvider < ActiveRecord::Base
     return true
   end
 
-  # Root directory for ALL DataProviders caches:
-  #     "/CbrainCacheDir"
-  # This is a class method.
-  def self.cache_rootdir #:nodoc:
-    @cache_rootdir = RemoteResource.current_resource.dp_cache_dir if @cache_rootdir.blank?
-    cb_error "No cache directory for Data Providers configured!"  if @cache_rootdir.blank? || ! ( @cache_rootdir.is_a?(String) || @cache_rootdir.is_a?(Pathname) )
-    @cache_rootdir = Pathname.new(@cache_rootdir)
+  # Root directory for the DataProvider cache system of the current Rails app.
+  #     "/path/to/CbrainCacheDir"
+  # Will raise an exception if this has not been configured by the admin.
+  # The path is stored in the attribute dp_cache_dir of the RemoteResource
+  # (BrainPortal) object that describes the current rail app.
+  def self.cache_rootdir
+    cache_rootdir = RemoteResource.current_resource.dp_cache_dir
+    cb_error "No cache directory for Data Providers configured!"  if cache_rootdir.blank?
+    Pathname.new(cache_rootdir)
   end
 
   def self.rsync_ignore_patterns #:nodoc:
@@ -1235,7 +1305,7 @@ class DataProvider < ActiveRecord::Base
   # Returns true if RemoteResource +rr+ is allowed to access DataProvider +check_dp+
   # (which defaults to self). The information for this restriction is maintained
   # as a blacklist in the meta data store.
-  def rr_allowed_syncing?(rr = RemoteResource.current_resource, check_dp = self) #:nodoc:
+  def rr_allowed_syncing?(rr = RemoteResource.current_resource, check_dp = self)
     rr ||= RemoteResource.current_resource
     meta_key_disabled = "rr_no_sync_#{rr.id}"
     self.meta[meta_key_disabled].blank?
@@ -1244,7 +1314,7 @@ class DataProvider < ActiveRecord::Base
   # Works like rr_allowed_syncing? but raise an exception when the
   # sync operation is not allowed. The exception message can be
   # customized with the first argument.
-  def rr_allowed_syncing!(server_does_what = "access the files of", rr = RemoteResource.current_resource, check_dp = self) #:nodoc:
+  def rr_allowed_syncing!(server_does_what = "access the files of", rr = RemoteResource.current_resource, check_dp = self)
     rr ||= RemoteResource.current_resource
     cb_error "Error: server #{rr.name} cannot #{server_does_what} provider #{check_dp.name}." unless
       self.rr_allowed_syncing?(rr, check_dp)
@@ -1254,14 +1324,14 @@ class DataProvider < ActiveRecord::Base
   # other DataProvider +other_dp+ .
   # The information for this restriction is maintained
   # as a blacklist in the meta data store.
-  def dp_allows_copy?(other_dp) #:nodoc:
+  def dp_allows_copy?(other_dp)
     meta_key_disabled = "dp_no_copy_#{other_dp.id}"
     self.meta[meta_key_disabled].blank?
   end
 
   # Works like dp_allows_copy? but raises an exception of the
   # copy or move operation is not allowed.
-  def dp_allows_copy!(other_dp) #:nodoc:
+  def dp_allows_copy!(other_dp)
     cb_error "Error: provider #{self.name} is not allowed to send data to provider #{other_dp.name}." unless
       self.dp_allows_copy?(other_dp)
   end
@@ -1311,6 +1381,11 @@ class DataProvider < ActiveRecord::Base
   # Internal cache-handling methods
   #################################################################
 
+  # Returns the same value as the class method of the same
+  # name, but caches the path in the current object.
+  def cache_rootdir #:nodoc:
+    @cache_rootdir ||= self.class.cache_rootdir()
+  end
 
   # Returns an array of two subdirectory levels where a file
   # is cached. These are two strings of two digits each. For
@@ -1362,7 +1437,7 @@ class DataProvider < ActiveRecord::Base
   def mkdir_cache_subdirs(userfile) #:nodoc:
     raise "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
     uid = userfile.id
-    cache_root = self.class.cache_rootdir
+    cache_root = self.cache_rootdir() # instance method, cached
     self.class.mkdir_numerical_subdir_tree_components(cache_root, uid) # from NumericalSubdirTree module
   end
 
@@ -1380,7 +1455,7 @@ class DataProvider < ActiveRecord::Base
   #     "/CbrainCacheDir/34/45/77"
   def cache_full_dirname(userfile) #:nodoc:
     raise "DataProvider internal API change incompatibility (string vs userfile)" if userfile.is_a?(String)
-    self.class.cache_rootdir + cache_subdirs_path(userfile)
+    self.cache_rootdir + cache_subdirs_path(userfile)
   end
 
   # Returns the full path of the cached file:
@@ -1433,7 +1508,7 @@ class DataProvider < ActiveRecord::Base
   # returns
   #
   #   'Mike O'\''Connor'
-  def shell_escape(s)
+  def shell_escape(s) #:nodoc:
     s.to_s.bash_escape(true)  # in config/initializers/core_extentions/string.rb
   end
 
@@ -1461,7 +1536,7 @@ class DataProvider < ActiveRecord::Base
   # and returns it. The user of this method is expected to have already
   # properly escaped any special characters in the arguments to the
   # command.
-  def bash_this(command)
+  def bash_this(command) #:nodoc:
     fh = IO.popen(command,"r")
     output = fh.read
     fh.close

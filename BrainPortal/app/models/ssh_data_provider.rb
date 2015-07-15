@@ -39,6 +39,12 @@ class SshDataProvider < DataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  
+  # this returns the category of the data provider -- used in view for admins
+  def self.pretty_category_name
+    "Single Level Types"
+  end
+  
   def impl_is_alive? #:nodoc:
     return false unless self.master.is_alive?
     remote_cmd = "test -d #{self.remote_dir.bash_escape} && echo OK-Dir 2>&1"
@@ -138,7 +144,7 @@ class SshDataProvider < DataProvider
     self.master # triggers unlocking the agent
     Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
       begin
-        att = sftp.lstat!(newpath)
+        sftp.lstat!(newpath)
         return false # means file exists already
       rescue => ex
         # Nothing to do! An exception means everything is OK, so just go on.
@@ -162,40 +168,7 @@ class SshDataProvider < DataProvider
   end
 
   def impl_provider_list_all(user=nil) #:nodoc:
-    list    = []
-    attlist = [ 'symbolic_type', 'size', 'permissions',
-                'uid',  'gid',  'owner', 'group',
-                'atime', 'ctime', 'mtime' ]
-    self.master # triggers unlocking the agent
-    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
-      sftp.dir.foreach(self.browse_remote_dir(user)) do |entry|
-        attributes = entry.attributes
-        type = attributes.symbolic_type
-        next if type != :regular && type != :directory && type != :symlink
-        next if entry.name == "." || entry.name == ".."
-        next if is_excluded?(entry.name) # in DataProvider
-
-        fileinfo               = FileInfo.new
-        fileinfo.name          = entry.name
-
-        bad_attributes = []
-        attlist.each do |meth|
-          begin
-            val = attributes.send(meth)
-            fileinfo.send("#{meth}=", val)
-          rescue => e
-            #puts "Method #{meth} not supported: #{e.message}"
-            bad_attributes << meth
-          end
-        end
-        attlist -= bad_attributes unless bad_attributes.empty?
-
-        list << fileinfo
-      end
-    end
-
-    list.sort! { |a,b| a.name <=> b.name }
-    list
+    self.remote_dir_entries(self.browse_remote_dir(user))
   end
 
   # Allows us to browse a remote directory that changes based on the user.
@@ -258,8 +231,8 @@ class SshDataProvider < DataProvider
           begin
             val = attributes.send(meth)
             fileinfo.send("#{meth}=", val)
-          rescue => e
-            #puts "Method #{meth} not supported: #{e.message}"
+          rescue
+            # puts "Method #{meth} not supported: #{e.message}"
             bad_attributes << meth
           end
         end
@@ -279,6 +252,39 @@ class SshDataProvider < DataProvider
   def provider_full_path(userfile)
     basename = userfile.name
     Pathname.new(remote_dir) + basename
+  end
+
+  def impl_provider_report #:nodoc:
+    issues       = []
+    remote_files = self.remote_dir_entries(self.remote_dir).map(&:name)
+
+    # Make sure all registered files exist
+    self.userfiles.where("name NOT IN (?)", remote_files.empty? ? [''] : remote_files).each do |miss|
+      issues << {
+        :type        => :missing,
+        :message     => "Missing userfile '#{miss.name}'",
+        :severity    => :major,
+        :action      => :destroy,
+        :userfile_id => miss.id,
+      }
+    end
+
+    # Look for unregistered files
+    remote_files.select { |u| ! self.userfiles.where(:name => u).exists? }.each do |unreg|
+      issues << {
+        :type     => :unregistered,
+        :message  => "Unregisted file '#{unreg}'",
+        :severity => :trivial
+      }
+    end
+
+    issues
+  end
+
+  def impl_provider_repair(issue) #:nodoc
+    raise "No automatic repair possible. Register or delete the file manually." if issue[:type] == :unregistered
+
+    super(issue)
   end
 
   protected
@@ -306,15 +312,20 @@ class SshDataProvider < DataProvider
   end
 
   # Returns the SshMaster object handling the persistent connection to the Provider side.
-  # Addendum, Aug 1st 2012: the connection is no longer necessary persistent, by
-  # passing the :nomaster=true option to SshMaster when on a Bourreau!
   # This incurs a costs, but increases security. Every access to this method
   # will also, as a side effect, unlock the global CBRAIN SSH agent.
-  # This will open a 20 seconds window to perform a SSH or SFTP operation
-  # on the connection.
+  # This will open a N seconds window to perform a SSH or SFTP operation
+  # on the connection (N is configured in the AgentLocker subprocess).
+  #
+  # Addendum, Aug 1st 2012: the connection is no longer necessary persistent, by
+  # passing the :nomaster=true option to SshMaster when on a Bourreau!
   def master
     persistent = RemoteResource.current_resource.is_a?(BrainPortal)
-    @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port, :category => "DataProvider", :nomaster => ! persistent)
+    @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port,
+                  :category => "DP_#{Process.uid}",
+                  :uniq     => self.id.to_s,
+                  :nomaster => ! persistent
+                )
     # Unlock agent, in preparation for doing stuff on it
     CBRAIN.with_unlocked_agent(:caller_level => 1)
     @master.start("DataProvider_#{self.name}") # does nothing is it's already started
@@ -329,6 +340,45 @@ class SshDataProvider < DataProvider
       text = fh.read
     end
     text
+  end
+
+  # Returns a list of all files in remote directory +dirname+, with all their
+  # associated metadata; size, permissions, access times, owner, group, etc.
+  def remote_dir_entries(dirname)
+    list    = []
+    attlist = [ 'symbolic_type', 'size', 'permissions',
+                'uid',  'gid',  'owner', 'group',
+                'atime', 'ctime', 'mtime' ]
+    self.master # triggers unlocking the agent
+    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
+      sftp.dir.foreach(dirname) do |entry|
+        attributes = entry.attributes
+        type = attributes.symbolic_type
+        next if type != :regular && type != :directory && type != :symlink
+        next if entry.name == "." || entry.name == ".."
+        next if is_excluded?(entry.name) # in DataProvider
+
+        fileinfo               = FileInfo.new
+        fileinfo.name          = entry.name
+
+        bad_attributes = []
+        attlist.each do |meth|
+          begin
+            val = attributes.send(meth)
+            fileinfo.send("#{meth}=", val)
+          rescue
+            #puts "Method #{meth} not supported: #{e.message}"
+            bad_attributes << meth
+          end
+        end
+        attlist -= bad_attributes unless bad_attributes.empty?
+
+        list << fileinfo
+      end
+    end
+
+    list.sort! { |a,b| a.name <=> b.name }
+    list
   end
 
 end

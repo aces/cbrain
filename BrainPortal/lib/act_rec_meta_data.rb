@@ -287,7 +287,7 @@ module ActRecMetaData
     allmeta = self.meta.all
     @_cbrain_meta = nil
     return true unless allmeta && allmeta.size > 0
-    MetaDataStore.delete(allmeta.map &:id)
+    MetaDataStore.delete(allmeta.map(&:id))
     true
   end
 

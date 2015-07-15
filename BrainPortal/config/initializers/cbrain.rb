@@ -20,12 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-# I don't know why I have to force it to psych here...
-# On brainstorm, it defaults to syck...
-require 'yaml'
-require 'psych'
-YAML::ENGINE.yamler = 'psych'
-
 # CBRAIN constants and some global utility methods.
 class CBRAIN
 
@@ -50,15 +44,15 @@ class CBRAIN
 
   # CBRAIN plugins locations
   Plugins_Dir          = "#{Rails.root.to_s}/cbrain_plugins"
-  TasksPlugins_Dir     = "#{Plugins_Dir}/cbrain_task" # singular; historical
-  UserfilesPlugins_Dir = "#{Plugins_Dir}/userfiles"
+  TasksPlugins_Dir     = "#{Plugins_Dir}/installed-plugins/cbrain_task" # singular; historical
+  UserfilesPlugins_Dir = "#{Plugins_Dir}/installed-plugins/userfiles"
 
   $CBRAIN_StartTime_Revision = "???"  # Will be filled in by validation script
 
   # Some environment variables MUST be set for some subsystems to work.
   # In deployment at McGill, we run the rails application under control
   # of 'monit' which clears the environment of almost everything!
-  ENV['HOME'] = Rails_UserHome        # Most notably, ssh and Net::SFTP needs this
+  ENV['HOME'] = Rails_UserHome        # Most notably, ssh and Net::SFTP need this
 
   # File creation umask
   File.umask(0077)  # octal literal
@@ -240,44 +234,24 @@ class CBRAIN
     if agent
       @_rr_name   ||= RemoteResource.current_resource.name rescue "UnknownServer"
       admin         = User.admin
-      passphrase    = admin.meta[:global_ssh_agent_lock_passphrase] ||= admin.send(:random_string)
-      passphrase_md = admin.meta.md_for_key(:global_ssh_agent_lock_passphrase)
+      passphrase    = admin.meta[:global_ssh_agent_lock_passphrase] ||= User.random_string
 
-      agent.unlock(passphrase)
-      passphrase_md.touch
-
-      # Log info about what unlocked the agent, if traces are turned on.
-      if ENV['CBRAIN_DEBUG_TRACES'].present?
-
-        # Prepare info line about the unlocking event
-        pretty_context = ""
-        mytraces = caller.reject { |l| (l !~ /\/(BrainPortal|Bourreau)\//) || (l =~ /block in/) }
-        mytrace  = mytraces[options[:caller_level] || 0]
-        if mytrace.blank? # two alternative logging messages possible in this IF statement
-          mytrace = caller[0] 
-          #pretty_context = sprintf("%s : Unlocking happened outside of CBRAIN codebase.",@_rr_name)
-        end
-        if pretty_context.blank? && mytrace.present? && mytrace =~ /\/([^\/]+):(\d+):in \`(\S+)\'/
-          basename,linenum,method = Regexp.last_match[1,3]
-          pretty_context = sprintf("%s : %s() in file %s at line %d",@_rr_name, method, basename, linenum)
-        end
-
-        # We have an info line, send it out
-        if pretty_context.present?
-          puts_red "Unlocking agent: #{pretty_context}"
-          @_log_md ||= admin.meta.md_for_key(:ssh_agent_unlock_history) # find record only once
-          if @_log_md.blank?
-            admin.meta[:ssh_agent_unlock_history] ||= "" # done only once, to trigger creation of record
-            @_log_md = admin.meta.md_for_key(:ssh_agent_unlock_history)
-          end
-          MetaDataStore.transaction do
-            @_log_md.lock!
-            @_log_md.meta_value += "#{pretty_context}\n"
-            @_log_md.save
-          end
-        end
-
+      # Prepare info line about the unlocking event
+      pretty_context = ""
+      mytraces = caller.reject { |l| (l !~ /\/(BrainPortal|Bourreau)\//) || (l =~ /block in/) }
+      mytrace  = mytraces[options[:caller_level] || 0]
+      if mytrace.blank? # two alternative logging messages possible in this IF statement
+        mytrace = mytraces[0].presence || caller[0]
+        #pretty_context = sprintf("%s : Unlocking happened outside of CBRAIN codebase.",@_rr_name)
       end
+      if pretty_context.blank? && mytrace.present? && mytrace =~ /([^\/]+):(\d+):in \`(\S+)\'/
+        basename,linenum,method = Regexp.last_match[1,3] # means 1, 2 and 3
+        pretty_context = sprintf("%s : %s() in file %s at line %d",@_rr_name, method, basename, linenum)
+      end
+      pretty_context = sprintf("%s : No known location",@_rr_name) if pretty_context.blank?
+
+      SshAgentUnlockingEvent.create(:message => pretty_context)  # new record with message and timestamp
+      agent.unlock(passphrase) # unlock the SshAgent; it will be relocked by the SshAgentLocker background process started on the Portal side.
 
     end
 

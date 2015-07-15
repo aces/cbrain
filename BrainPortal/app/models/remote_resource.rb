@@ -195,7 +195,7 @@ class RemoteResource < ActiveRecord::Base
   end
 
   # Verify that the ignore patterns are correct.
-  def proper_dp_ignore_patterns #:nodoc:
+  def proper_dp_ignore_patterns
 
     ig_pat = self.dp_ignore_patterns || [] # nil and [] are ok
     unless ig_pat.is_a?(Array)
@@ -206,15 +206,15 @@ class RemoteResource < ActiveRecord::Base
     all_ok = true
 
     ig_pat.each do |pattern|
-       if (! pattern.is_a?(String)) ||
-          pattern.blank? ||
-          pattern == "*" ||
-          ! pattern.is_a?(String) ||
-          pattern =~ /\*\*/ ||
-          pattern =~ /\// ||
-          pattern !~ /^[\w\-\.\+\=\@\%\&\:\,\~\*\?]+$/ # very strict! other special characters can cause shell side-effects!
-          errors.add(:spaced_dp_ignore_patterns, "has unacceptable pattern: '#{pattern}'." )
-          all_ok = false
+      if (! pattern.is_a?(String)) ||
+        pattern.blank? ||
+        pattern == "*" ||
+        ! pattern.is_a?(String) ||
+        pattern =~ /\*\*/ ||
+        pattern =~ /\// ||
+        pattern !~ /^[\w\-\.\+\=\@\%\&\:\,\~\*\?]+$/ # very strict! other special characters can cause shell side-effects!
+        errors.add(:spaced_dp_ignore_patterns, "has unacceptable pattern: '#{pattern}'." )
+        all_ok = false
       end
     end
 
@@ -222,10 +222,10 @@ class RemoteResource < ActiveRecord::Base
   end
 
   # Verify that the dp_cache_dir is correct, at least from
-  # what we can see. It's possibel to edit the path of an
+  # what we can see. It's possible to edit the path of an
   # external RemoteResource, so we can't check that the dir
   # exist over there.
-  def dp_cache_path_valid #:nodoc:
+  def dp_cache_path_valid
     path = self.dp_cache_dir
 
     return true if path.blank?  # We allow this even if it won't work, until the admin sets it.
@@ -235,19 +235,19 @@ class RemoteResource < ActiveRecord::Base
       return false
     end
 
-    if self.id && self.id == CBRAIN::SelfRemoteResourceId
-      is_ok = false
-      mess  = ""
-      begin
-        is_ok = DataProvider.this_is_a_proper_cache_dir!(path, self.id == CBRAIN::SelfRemoteResourceId)
-      rescue => ex
-        is_ok = false
-        mess  = ex.message
-      end
-      unless is_ok
-        errors.add(:dp_cache_dir," does not exist, is unaccessible, contains data or is a system directory: #{mess}")
+    begin
+      is_local = self.id && self.id == CBRAIN::SelfRemoteResourceId
+      valid = DataProvider.this_is_a_proper_cache_dir! path,
+        :local => is_local,
+        :key   => self.cache_md5.presence || "unset",  # having this string forces the check
+        :host  => is_local ? Socket.gethostname : self.ssh_control_host
+      unless valid
+        errors.add(:dp_cache_dir," is invalid (does not exist, is unaccessible, contains data or is a system directory).")
         return false
       end
+    rescue => ex
+      errors.add(:dp_cache_dir," is invalid: #{ex.message}")
+      return false
     end
 
     true
@@ -263,7 +263,9 @@ class RemoteResource < ActiveRecord::Base
   # for this RemoteResource. The method does not start it, if
   # it's created.
   def ssh_master
-    category = "#{self.class}"
+    # category: we add the UNIX userid so as not to conflict
+    # with any other user on the system when creating out socket in /tmp
+    category = "#{self.class}_#{Process.uid}"
     uniq     = "#{self.id}"
     master   = SshMaster.find_or_create(self.ssh_control_user,self.ssh_control_host,self.ssh_control_port || 22,
                :category => category, :uniq => uniq)
@@ -367,14 +369,14 @@ class RemoteResource < ActiveRecord::Base
 
   # Returns true if this remote resource is configued
   # for DB tunnelling
-  def has_db_tunnelling_info? #:nodoc:
+  def has_db_tunnelling_info?
     return true if self.has_ssh_control_info? && ( ! self.tunnel_mysql_port.blank? )
     false
   end
 
   # Returns true if this remote resource is configued
   # for ActiveResource tunnelling
-  def has_actres_tunnelling_info? #:nodoc:
+  def has_actres_tunnelling_info?
     return true if self.has_ssh_control_info? && ( ! self.tunnel_actres_port.blank? )
     false
   end
@@ -621,10 +623,10 @@ class RemoteResource < ActiveRecord::Base
         control_info = Control.find(what) # asks for controls/info.xml or controls/ping.xml
         info = RemoteResourceInfo.new(control_info.attributes)
       end
-    rescue => ex
+    rescue
       # Oops, it's dead
-      #puts "Control connection to remote_resource '#{self.name}' (#{self.id}) failed:"
-      #puts "Exception=#{ex.to_s}\n#{ex.backtrace.join("\n")}"
+      # puts "Control connection to remote_resource '#{self.name}' (#{self.id}) failed:"
+      # puts "Exception=#{ex.to_s}\n#{ex.backtrace.join("\n")}"
     end
 
     # If we can't find the info, we return a
@@ -690,7 +692,8 @@ class RemoteResource < ActiveRecord::Base
     nil
   end
 
-  def zap_info_cache(what = :info) #:nodoc:
+  # Zaps the cache in DB
+  def zap_info_cache(what = :info)
     @info = nil if what == :info
     @ping = nil if what == :ping
     info_key = "#{what}_cache".to_sym
@@ -847,8 +850,8 @@ class RemoteResource < ActiveRecord::Base
 
   end
 
-  #Treat process_command_xxx calls as bad commands,
-  #otherwise as NoMethodErrors
+  # Treat process_command_xxx calls as bad commands,
+  # otherwise as NoMethodErrors
   def self.method_missing(method, *args)
     if method.to_s =~ /^process_command_(.+)/
       cb_error "Unknown command #{Regexp.last_match[1]}"

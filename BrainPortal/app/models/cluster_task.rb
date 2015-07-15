@@ -27,8 +27,6 @@ require 'fileutils'
 #Abstract model representing a job running on a cluster. This is the core class for
 #launching GridEngine/PBS/MOAB/UNIX jobs (etc) using Scir.
 #
-#See the document CbrainTask.txt for a complete introduction.
-#
 #=Attributes:
 #[<b>user_id</b>] The id of the user who requested this task.
 #[<b>bourreau_id</b>] The id of the Bourreau on which the task is running.
@@ -337,6 +335,57 @@ class ClusterTask < CbrainTask
       return false if cur_dir != Dir.getwd
     end
     true
+  end
+
+  # Make a given +userfile+ available to the task
+  # for processing at +file_path+, which is a relative
+  # path inside the work directory of the task.
+  # For example, to access the userfile with ID 6 at
+  # <workdir>/mincfiles/input.mnc, do:
+  #
+  #     make_available(6, "mincfiles/input.mnc")
+  #
+  # If +file_path+ ends with a slash (/), the file's name
+  # will be appended to form a valid file path:
+  #
+  #     make_available(6, "mincfiles/")
+  #
+  # Will make userfile with ID 6 available at
+  # <workdir>/mincfiles/<name of userfile with ID 6>
+  #
+  # +userfile+ can either be an ID or an userfile
+  # object. Note that just like safe_symlink, this method
+  # will silently replace an existing symlink at +file_path+
+  def make_available(userfile, file_path)
+    cb_error "File path argument must be relative" if
+      file_path.blank? || file_path.to_s =~ /^\//
+
+    # Fetch and sync the requested userfile
+    userfile      = Userfile.find(userfile) unless userfile.is_a?(Userfile)
+    userfile.sync_to_cache
+
+    # Compute the final absolute path to the target file symlink
+    full_path     = Pathname.new("#{self.full_cluster_workdir}/#{file_path}")
+    full_path    += userfile.name if file_path.to_s.end_with?("/")
+
+    # Pathname objects for the userfile and bourreau directories
+    workdir_path  = Pathname.new(self.cluster_shared_dir)
+    dp_cache_path = Pathname.new(self.bourreau.dp_cache_dir)
+    userfile_path = Pathname.new(userfile.cache_full_path)
+
+    # Figure out the two parts of the new symlink target; from file_path to
+    # the DP cache symlink, and from the DP symlink to the userfile
+    to_dp_syml    = workdir_path.relative_path_from(full_path.dirname) + DataProvider::DP_CACHE_SYML
+    to_cached     = userfile_path.relative_path_from(dp_cache_path)
+
+    # Make sure the directory exists and there is no symlink already there
+    FileUtils.mkpath(full_path.dirname) unless Dir.exists?(full_path.dirname)
+    File.unlink(full_path) if File.symlink?(full_path.to_s)
+
+    # Create the symlink
+    Dir.chdir(self.full_cluster_workdir) do
+      File.symlink((to_dp_syml + to_cached).to_s, file_path.to_s)
+    end
   end
 
   # Returns true if +path+ points to a file or
@@ -669,7 +718,7 @@ class ClusterTask < CbrainTask
   # (hold, suspend, terminate, etc etc)
   ##################################################################
 
-  #Terminate the task (if it's currently in an appropriate state.)
+  # Terminate the task (if it's currently in an appropriate state.)
   def terminate
     cur_status = self.status
     self.modify_scir_class_for_vm if self.job_template_goes_to_vm?
@@ -933,7 +982,7 @@ class ClusterTask < CbrainTask
   # store (part of) their contents in the task's object;
   # this is called explicitely only in the case when the
   # portal performs a 'show' request on a single task
-  # otherise it's too expensive to do it every time. The
+  # otherwise it's too expensive to do it every time. The
   # pseudo attributes :cluster_stdout and :cluster_stderr
   # are not really part of the task's ActiveRecord model.
   def capture_job_out_err(run_number=nil,stdout_lim=2000,stderr_lim=2000)
@@ -955,16 +1004,16 @@ class ClusterTask < CbrainTask
      scriptfile = Pathname.new(self.full_cluster_workdir) + self.qsub_script_basename(run_number) rescue nil
      if stdoutfile && File.exist?(stdoutfile)
        io = IO.popen("tail -#{stdout_lim} #{stdoutfile.to_s.bash_escape}","r")
-        self.cluster_stdout = io.read
-        io.close
+       self.cluster_stdout = io.read
+       io.close
      end
      if stderrfile && File.exist?(stderrfile)
        io = IO.popen("tail -#{stderr_lim} #{stderrfile.to_s.bash_escape}","r")
-        self.cluster_stderr = io.read
-        io.close
+       self.cluster_stderr = io.read
+       io.close
      end
      if scriptfile && File.exist?(scriptfile.to_s)
-        self.script_text = File.read(scriptfile.to_s) rescue ""
+       self.script_text = File.read(scriptfile.to_s) rescue ""
      end
      true
   end
@@ -1041,7 +1090,7 @@ class ClusterTask < CbrainTask
       end
 
       system("chmod","-R","u+rwX",".") # uppercase X mode affects only directories
-      ret = system("tar -czf '#{temp_tar_file}' --exclude '*#{temp_tar_file}' . </dev/null >'#{tar_capture}' 2>&1")
+      system("tar -czf '#{temp_tar_file}' --exclude '*#{temp_tar_file}' . </dev/null >'#{tar_capture}' 2>&1")
       out = File.read(tar_capture) rescue ""
 
       # Remove some common warnings
@@ -1159,10 +1208,9 @@ class ClusterTask < CbrainTask
   rescue => ex
     self.addlog_exception(ex, "Unarchiving process exception:")
     return false
-
   ensure
     File.unlink(tar_capture)   rescue true
-   end
+  end
 
   # This method performs the same steps as
   # archive_work_directory, with the added
@@ -1383,11 +1431,12 @@ class ClusterTask < CbrainTask
     end
   end
 
+  
   # Submit the actual job request to the cluster management software.
   # Expects that the WD has already been changed.
   def submit_cluster_job
     self.addlog("Launching job on cluster.")
-    name     = self.name
+
     commands = self.cluster_commands  # Supplied by subclass; can use self.params
    
     # Tweak tasks going to VMs
@@ -1434,7 +1483,7 @@ class ClusterTask < CbrainTask
 
 # CbrainTask '#{self.name}' commands section
 
-#{commands.join("\n")}
+#{self.use_docker? ? self.docker_commands : commands.join("\n")}
 
     QSUB_SCRIPT
     qsubfile = self.qsub_script_basename
@@ -1596,6 +1645,27 @@ class ClusterTask < CbrainTask
     return nil
   end
 
+  def use_docker?
+    return self.tool_config.docker_image.present?
+  end
+  
+  # Returns the command line(s) associated with the task, wrapped in a Docker call if a Docker image has to be used.
+  def docker_commands
+    commands = self.cluster_commands  
+    commands_joined=commands.join("\n");
+
+    cache_dir=RemoteResource.current_resource.dp_cache_dir;
+    task_dir=self.bourreau.cms_shared_dir;
+    docker_commands = "cat << DOCKERJOB > .dockerjob.sh
+#!/bin/bash\n
+#{commands_joined}\n
+DOCKERJOB\n
+chmod 755 ./.dockerjob.sh\n
+docker run --rm -v $PWD:/cbrain-script -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w /cbrain-script #{self.tool_config.docker_image} /cbrain-script/.dockerjob.sh \n
+"
+    return docker_commands
+  end
+  
   # Re-routes methods of Scir class to use ScirVM rather than default Scir class for jobs going to VMs.
   def modify_scir_class_for_vm
     scir_class = self.scir_session

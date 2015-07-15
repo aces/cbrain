@@ -144,9 +144,9 @@ class BourreauxController < ApplicationController
     @groups   = current_user.available_groups
 
     fields    = params[:bourreau]
-    fields ||= {}
+    fields  ||= {}
 
-    subtype          = fields.delete(:type)
+    fields.delete(:type)
     old_dp_cache_dir = @bourreau.dp_cache_dir
 
     if ! @bourreau.update_attributes_with_logging(fields, current_user,
@@ -155,7 +155,7 @@ class BourreauxController < ApplicationController
       @bourreau.reload
       respond_to do |format|
         format.html { render :action => 'show' }
-        format.xml  { render :xml  => @bourreau.errors, :status  => :unprocessable_entity}
+        format.xml  { render :xml  => @bourreau.errors, :status  => :unprocessable_entity }
       end
       return
     end
@@ -164,6 +164,10 @@ class BourreauxController < ApplicationController
     syms_limit_users = @users.map { |u| "task_limit_user_#{u.id}".to_sym }
     add_meta_data_from_form(@bourreau, [ :task_limit_total, :task_limit_user_default, :error_message_mailing_list ] + syms_limit_users )
 
+    # File upload size limit (portal only)
+    add_meta_data_from_form(@bourreau, [ :upload_size_limit ])
+
+    # Clean up all file synchronization stuff if the DP cache dir has changed.
     if old_dp_cache_dir != @bourreau.dp_cache_dir
       old_ss = SyncStatus.where( :remote_resource_id => @bourreau.id )
       old_ss.each do |ss|
@@ -178,6 +182,13 @@ class BourreauxController < ApplicationController
         info_message += "You may have to clean up the content of the old cache directory\n" +
                         "'#{old_dp_cache_dir}' on host '#{host}'\n"
       end
+
+      # Record new ID for local cache; this can also be done during the boot process.
+      if (@bourreau.id == RemoteResource.current_resource.id)
+        md5 = DataProvider.create_cache_md5
+        @bourreau.update_attributes( :cache_md5 => md5 )
+      end
+
       Message.send_message(current_user,
         :message_type => :system,
         :critical     => true,
@@ -251,7 +262,7 @@ class BourreauxController < ApplicationController
       format.json { render :json    => info   }
     end
 
-  rescue => ex
+  rescue
     respond_to do |format|
       format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
       format.xml  { head :unprocessable_entity }
@@ -416,7 +427,8 @@ class BourreauxController < ApplicationController
   end
 
 
-  def cache_disk_usage #:nodoc:
+  # Generates report of cache disc usage by users.
+  def cache_disk_usage
     bourreau_id = params[:id]       || ""
     user_ids    = params[:user_ids] || nil
 
@@ -457,7 +469,7 @@ class BourreauxController < ApplicationController
       format.json { render :json => info_by_user }
     end
 
-  rescue => ex
+  rescue
     respond_to do |format|
       format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
       format.xml  { head :unprocessable_entity }
@@ -508,8 +520,8 @@ class BourreauxController < ApplicationController
     rrlist           = RemoteResource.find_all_accessible_by_user(current_user).all
 
     # Index of acceptable users and remote_resources
-    userlist_index   = userlist.index_by &:id
-    rrlist_index     = rrlist.index_by &:id
+    userlist_index   = userlist.index_by(&:id)
+    rrlist_index     = rrlist.index_by(&:id)
 
     # Extract what caches are asked to be cleaned up
     rrid_to_userids = {}  # rr_id => { uid => true , uid => true , uid => true ...}
@@ -533,7 +545,7 @@ class BourreauxController < ApplicationController
       begin
         remote_resource.send_command_clean_cache(userids,cleanup_older.ago,cleanup_younger.ago)
         flash[:notice] += "Sending cleanup command to #{remote_resource.name}."
-      rescue => e
+      rescue
         flash[:notice] += "Could not contact #{remote_resource.name}."
       end
     end
@@ -577,7 +589,7 @@ class BourreauxController < ApplicationController
     sent_refresh = [] # for flash message
     refresh_bs.each do |b|
       if b.online? && b.has_owner_access?(current_user) && (! b.meta[:data_provider_statuses_last_update] || b.meta[:data_provider_statuses_last_update] < 1.minute.ago)
-        b.send_command_check_data_providers(@dps.map &:id) rescue true
+        b.send_command_check_data_providers(@dps.map(&:id)) rescue true
         sent_refresh << b.name
       end
     end

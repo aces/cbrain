@@ -17,15 +17,15 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 module CBRAINExtensions #:nodoc:
   module HashExtensions #:nodoc:
-    
+
     # Hash conversion methods.
     module Conversions
-      
+
       # This method allows you to perform a transformation
       # on all the keys of the hash; the keys are going to be passed
       # in turn to the block, and whatever the block returns
@@ -64,18 +64,18 @@ module CBRAINExtensions #:nodoc:
       if defined?(Rails)
         # Remove sensitive parameters.
         def hide_filtered!
-          keys.each do |k| 
+          keys.each do |k|
             self[k] =  "[FILTERED]" if  Rails.configuration.filter_parameters.any? {|f| k =~ /#{f}/ }
             self[k] = self[k].hide_filtered if self[k].respond_to?(:hide_filtered)
           end
           self
         end
 
-        def hide_filtered
+        def hide_filtered #:nodoc:
           clone.hide_filtered!
         end
       end
-      
+
     end
   end
 end

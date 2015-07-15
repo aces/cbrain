@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#Helper for dynamic, non-ajax interface elements.
+# Helper for dynamic, non-ajax interface elements.
 module RichUiHelper
 
   Revision_info=CbrainFileRevision[__FILE__]
@@ -58,45 +58,45 @@ module RichUiHelper
     dropdown_class += options.delete(:dropdown_class).to_s
     options_setup("hover_open", options)
     atts = options.to_html_attributes
-    html = ["<span #{atts}>\n"]
-    html << link_to(h(header), "#")
-    html << "<div id=#{target_id} class=\"#{dropdown_class}\" style=\"display:none\">\n"
-    html << capture(&block)
-    html << "</div>"
-    html << "</span>"
-    return html.join.html_safe
+    html = "<span #{atts}>\n".html_safe +
+           link_to(h(header), "#") +
+            "<div id=#{target_id} class=\"#{dropdown_class}\" style=\"display:none\">\n".html_safe +
+            capture(&block) +
+            "</div></span>".html_safe
+    return html
   end
 
-  #Create tab bars in the interface.
-  #Content is provided with a block.
-  #[options] A hash of html options for the tab bar structure.
-  #Usage:
-  # <% build_tabs do |tb| %>
-  #   <% tb.tab "First Tab" do %>
-  #      <h1>First tab contents</h1>
-  #      More contents.
-  #   <% end %>
-  #   <% tb.tab "Second Tab" do %>
-  #      Wow! Even more contents!
-  #   <% end %>
-  # <% end %>
-  #
+  # Create tab bars in the interface.
+  # Content is provided with a block.
+  # [options] A hash of html options for the tab bar structure.
+  # Usage:
+  #  <% build_tabs do |tb| %>
+  #    <% tb.tab "First Tab" do %>
+  #       <h1>First tab contents</h1>
+  #       More contents.
+  #    <% end %>
+  #    <% tb.tab "Second Tab" do %>
+  #       Wow! Even more contents!
+  #    <% end %>
+  #  <% end %>
   #
   def build_tabs(options = {}, &block)
-     bar = TabBuilder.new
+    bar = TabBuilder.new
 
-     options[:class] ||= ""
-     options[:class] +=  " tabs"
+    options[:class] ||= ""
+    options[:class] +=  " tabs"
 
-     atts = options.to_html_attributes
+    atts = options.to_html_attributes
 
-     capture(bar,&block)  #Load content into bar object
+    capture(bar,&block)  #Load content into bar object
 
-     safe_concat("<div #{atts}>")
-     safe_concat(bar.tab_titles)
-     safe_concat(bar.tab_divs)
-     safe_concat("</div>")
-     ""
+     html =
+       "<div #{atts}>".html_safe +
+       bar.tab_titles +
+       bar.tab_divs +
+       "</div>".html_safe
+
+     return html
    end
 
   ############################################################
@@ -107,11 +107,11 @@ module RichUiHelper
   class TabBuilder
 
     def initialize
-      @tab_titles = ""
-      @tab_divs   = ""
+      @tab_titles = "".html_safe
+      @tab_divs   = "".html_safe
     end
 
-    def tab_titles
+    def tab_titles #:nodoc:
       ("<ul>\n" + @tab_titles + "\n</ul>\n").html_safe
     end
 
@@ -119,39 +119,39 @@ module RichUiHelper
 
     attr_reader :tab_divs
 
-    #This creates an individual tab, it either takes a block and/or a partial as an option (:partial => "partial")
+    # This creates an individual tab, it either takes a block and/or a partial as an option (:partial => "partial")
     def tab(name, &block)
-      capture = eval("method(:capture)", block.binding)
-      @tab_titles += "<li><a href='##{name.gsub(/\s+/,'_')}'>#{name}</a></li>"
+      capture   = eval("method(:capture)", block.binding)
+      random_id = rand(1000000).to_s
+      @tab_titles += "<li><a href=\"#tb_#{random_id}\">#{name}</a></li>".html_safe
 
 
-      #########################################
-      #tab content div.                       #
-      #                                       #
-      #This can be either a partial or a block#
-      #########################################
-      @tab_divs += "<div id=#{name.gsub(/\s+/,'_')}>\n"
-      @tab_divs += capture.call(&block)
-      @tab_divs += "</div>\n"
-      ""
+      ###########################################
+      # tab content div.                        #
+      #                                         #
+      # This can be either a partial or a block #
+      ###########################################
+      @tab_divs += "<div id=\"tb_#{random_id}\">\n".html_safe +
+                   capture.call(&block) +
+                   "</div>\n".html_safe
+      return "" # in case invoked with <%= instead <% 
     end
   end
 
 
-  #Create accordion menus in the interface.
-  #Content is provided with a block.
-  #[options] A hash of html options for the accordion structure.
-  #Usage:
-  # <% build_accordion do |acc| %>
-  #   <% acc.section "Section Header" do %>
-  #      <h1>First section contents</h1>
-  #      More contents.
-  #   <% end %>
-  #   <% acc.section "Section Two" do %>
-  #      Wow! Even more contents!
-  #   <% end %>
-  # <% end %>
-  #
+  # Create accordion menus in the interface.
+  # Content is provided with a block.
+  # [options] A hash of html options for the accordion structure.
+  # Usage:
+  #  <% build_accordion do |acc| %>
+  #    <% acc.section "Section Header" do %>
+  #       <h1>First section contents</h1>
+  #       More contents.
+  #    <% end %>
+  #    <% acc.section "Section Two" do %>
+  #       Wow! Even more contents!
+  #    <% end %>
+  #  <% end %>
   #
   def build_accordion(options = {}, &block)
     options[:class] ||= ""
@@ -161,10 +161,10 @@ module RichUiHelper
 
     content = capture(AccordionBuilder.new, &block)
 
-    safe_concat("<div #{atts}>")
-    safe_concat(content)
-    safe_concat("</div>")
-    ""
+    html = "<div #{atts}>".html_safe +
+           content +
+           "</div>".html_safe
+    return html
   end
 
   ############################################################
@@ -174,19 +174,18 @@ module RichUiHelper
   #############################################################
   class AccordionBuilder
     def section(header, &block)
-      capture     = eval("method(:capture)",     block.binding)
-      safe_concat = eval("method(:safe_concat)", block.binding)
-      head = "<h3><a href=\"#\">#{header}</a></h3>"
-      body = "<div style=\"display: none\">#{capture.call(&block)}</div>"
-      safe_concat.call(head)
-      safe_concat.call(body)
-      ""
+      capture     = eval("method(:capture)", block.binding)
+      head = "<h3><a href=\"#\">#{header}</a></h3>".html_safe
+      body = "<div style=\"display: none\">".html_safe +
+             capture.call(&block) +
+             "</div>".html_safe
+      return head + body
     end
   end
 
-  #Create a tooltip that displays html when mouseovered.
-  #Text of the icon is provided as an argument.
-  #Html to be displayed on mouseover is given as a block.
+  # Create a tooltip that displays html when mouseovered.
+  # Text of the icon is provided as an argument.
+  # Html to be displayed on mouseover is given as a block.
   def html_tool_tip(text = "<span class=\"action_link\">?</span>".html_safe, options = {}, &block)
     @html_tool_tip_id ||= 0
     @html_tool_tip_id += 1
@@ -224,17 +223,17 @@ module RichUiHelper
     result.html_safe
   end
 
-  #Create an overlay dialog box with a link as the button.
-  #Content is provided through a block.
-  #Options:
-  # [width] width in pixels of the overlay.
+  # Create an overlay dialog box with a link as the button.
+  # Content is provided through a block.
+  # Options:
+  #  [width] width in pixels of the overlay.
   #
-  #All other options will be treated at HTML attributes.
+  # All other options will be treated at HTML attributes.
   #
-  #Usage:
-  # <% overlay_content "Click me" do %>
-  #   This content will be in the overlay
-  # <% end %>
+  # Usage:
+  #  <% overlay_content "Click me" do %>
+  #    This content will be in the overlay
+  #  <% end %>
   #
   def overlay_content_link(name, options = {}, &block)
     options_setup("overlay_content_link", options)
@@ -256,14 +255,14 @@ module RichUiHelper
     html.html_safe
   end
 
-  #Create a button with a drop down menu
+  # Create a button with a drop down menu
   #
-  #Options:
-  #[:partial] a partial to render as the content of the menu.
-  #[:content_id] id of the menu section of the structure.
-  #[:button_id] id of the button itself.
-  #All other options are treated as HTML attributes on the
-  #enclosing span.
+  # Options:
+  # [:partial] a partial to render as the content of the menu.
+  # [:content_id] id of the menu section of the structure.
+  # [:button_id] id of the button itself.
+  # All other options are treated as HTML attributes on the
+  # enclosing span.
   def button_with_dropdown_menu(title, options={}, &block)
     partial    = options.delete :partial
     content_id = options.delete :content_id
@@ -279,7 +278,7 @@ module RichUiHelper
       display_style = "style=\"display: none\" "
     end
 
-    content=""
+    content = "".html_safe
     if block_given?
       content += capture(&block)
     end
@@ -288,17 +287,19 @@ module RichUiHelper
     end
 
     atts = options.to_html_attributes
-    safe_concat("<span #{atts}>")
-    safe_concat("<a #{button_id} class=\"button_menu\">#{title}</a>")
-    safe_concat("<div #{content_id} #{display_style} class=\"drop_down_menu\">")
-    safe_concat(content)
-    safe_concat("</div>")
-    safe_concat("</span>")
-    ""
+
+    html  = "<span #{atts}>" +
+            "<a #{button_id} class=\"button_menu\">#{title}</a>" +
+            "<div #{content_id} #{display_style} class=\"drop_down_menu\">"
+    html  = html.html_safe
+    html += content
+    html += "</div></span>".html_safe
+
+    return html
   end
 
-  #Create an element that will toggle between hiding and showing another element.
-  #The appearance/disappearance can also be animated.
+  # Create an element that will toggle between hiding and showing another element.
+  # The appearance/disappearance can also be animated.
   def show_hide_toggle(text, target, options = {})
     element_type = options.delete(:element_type) || "a"
     if element_type.downcase == "a"
@@ -326,11 +327,11 @@ module RichUiHelper
   end
 
 
-  #Create an checkbox that will toggle between hiding and showing another element.
-  #The appearance/disappearance can also be animated.
+  # Create an checkbox that will toggle between hiding and showing another element.
+  # The appearance/disappearance can also be animated.
   def show_hide_checkbox(target, options = {})
     options["data-target"] = target
-    
+
     checked = options.delete(:checked)
     if checked
       options["CHECKED"] = true
@@ -345,7 +346,7 @@ module RichUiHelper
     if slide_effect
       options["data-slide-effect"] = true
     end
-    
+
     slide_duration = options.delete(:slide_duration)
     if slide_duration
       options["data-slide-duration"] = slide_duration

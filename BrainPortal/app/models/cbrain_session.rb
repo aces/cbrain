@@ -53,7 +53,7 @@ class CbrainSession
     @session[controller.to_sym]["sort_hash"] ||= {}
   end
 
-  #Import a user's saved preferences from the db into the session.
+  # Import a user's saved preferences from the db into the session.
   def load_preferences_for_user(current_user)
     user_preferences = current_user.meta[:preferences] || {}
     user_preferences.each { |k, v|  @session[k.to_sym] = v || {}}
@@ -84,7 +84,7 @@ class CbrainSession
     end
   end
 
-  #Mark this session as active in the database.
+  # Mark this session as active in the database.
   def activate
     return unless @session_model
     # @session_model.update_attributes!(:user_id => @session[:user_id], :active => true)
@@ -93,14 +93,14 @@ class CbrainSession
     @session_model.save!
   end
 
-  #Mark this session as inactive in the database.
+  # Mark this session as inactive in the database.
   def deactivate
     return unless @session_model
     @session_model.active  = false
     @session_model.save!
   end
 
-  #Returns the list of currently active users on the system.
+  # Returns the list of currently active users on the system.
   def self.active_users(options = {})
     active_sessions = session_class.where(
       ["sessions.active = 1 AND sessions.user_id IS NOT NULL AND sessions.updated_at > ?", 10.minutes.ago]
@@ -171,8 +171,8 @@ class CbrainSession
     end
   end
 
-  #Update attributes of the session object based on the incoming request parameters
-  #contained in the +params+ hash.
+  # Update attributes of the session object based on the incoming request parameters
+  # contained in the +params+ hash.
   def update(params)
     controller = params[:proxy_destination_controller] || params[:controller]
     if params[controller]
@@ -226,12 +226,12 @@ class CbrainSession
     end
   end
 
-  #Returns the params saved for +controller+.
+  # Returns the params saved for +controller+.
   def params_for(controller)
     @session[controller.to_sym] || {}
   end
 
-  #Find nested values without raising an exception.
+  # Find nested values without raising an exception.
   def param_chain(*keys)
     return nil if keys.empty?
     final_key = keys.pop
@@ -248,12 +248,12 @@ class CbrainSession
     current_hash[final_key]
   end
 
-  #Hash-like access to session attributes.
+  # Hash-like access to session attributes.
   def [](key)
     @session[key]
   end
 
-  #Hash-like assignment to session attributes.
+  # Hash-like assignment to session attributes.
   def []=(key, value)
     return unless @session_model
     if key == :user_id
@@ -263,9 +263,9 @@ class CbrainSession
     @session[key] = value
   end
 
-  #The method_missing method has been redefined to allow for simplified access to session parameters.
+  # The method_missing method has been redefined to allow for simplified access to session parameters.
   #
-  #*Example*: calling +current_session+.+current_filters+ will access <tt>session[:current_filters]</tt>
+  # *Example*: calling +current_session+.+current_filters+ will access <tt>session[:current_filters]</tt>
   def method_missing(key, *args)
     @session[key.to_sym]
   end

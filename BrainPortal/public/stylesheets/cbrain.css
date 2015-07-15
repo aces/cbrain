@@ -37,15 +37,15 @@
 /* Main BODY of the HTML document */
 
 body {
-    background: white;
-    color: #484848;
-    font-family: Verdana, sans-serif;
-    font-size: 12px;
-    margin: 0;
-    min-width: 90em;
-    padding: 0;
-    max-height: 100%;
-    line-height: 18px;
+  background: white;
+  color: #484848;
+  font-family: Verdana, sans-serif;
+  font-size: 12px;
+  margin: 0;
+  min-width: 90em;
+  padding: 0;
+  max-height: 100%;
+  line-height: 18px;
 }
 
 
@@ -59,64 +59,64 @@ h1, h2, h3, h4 {
 }
 
 h1 {
-    margin-top: 5px;
-    margin-bottom: 5px;
-    margin-left: 2px;
-    margin-right: 2px;
-    padding: 1em;
-    text-align: center;
-    font-size: 24px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-left: 2px;
+  margin-right: 2px;
+  padding: 1em;
+  text-align: center;
+  font-size: 24px;
 }
 
 h2 {
-    font-size: 20px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-left: 15px;
-    margin-bottom: 15px;
-    margin-top: 10px;
-    margin-right: 0em;
-    margin-left: 0em;
-    border-bottom: 2px solid #bbbbbb;
-    color: #444;
+  font-size: 20px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 15px;
+  margin-bottom: 15px;
+  margin-top: 10px;
+  margin-right: 0em;
+  margin-left: 0em;
+  border-bottom: 2px solid #bbbbbb;
+  color: #444;
 }
 
 h3 {
-    font-size: 16px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-left: 15px;
-    margin-bottom: 15px;
-    margin-top: 10px;
-    margin-right: 0em;
-    margin-left: 0em;
-    border-bottom: 2px solid #bbbbbb;
-    color: #444;
+  font-size: 16px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 15px;
+  margin-bottom: 15px;
+  margin-top: 10px;
+  margin-right: 0em;
+  margin-left: 0em;
+  border-bottom: 2px solid #bbbbbb;
+  color: #444;
 }
 
 h4 {
-    font-size: 12px;
-    padding-left: 0px;
-    margin-top: 0em;
-    margin-bottom: 0.5em;
-    margin-right: 0em;
-    margin-left: 0em;
-    padding-bottom: 0em;
-    padding-top: 0em;
-    color: #000;
-    border-bottom: 1px solid #666;
+  font-size: 12px;
+  padding-left: 0px;
+  margin-top: 0em;
+  margin-bottom: 0.5em;
+  margin-right: 0em;
+  margin-left: 0em;
+  padding-bottom: 0em;
+  padding-top: 0em;
+  color: #000;
+  border-bottom: 1px solid #666;
 }
 
 h5 {
-    font-size: 11px;
-    padding-left: 0px;
-    margin-top: 0em;
-    margin-bottom: 0.5em;
-    margin-right: 0em;
-    margin-left: 0em;
-    padding-bottom: 0em;
-    padding-top: 0em;
-    color: #000;
+  font-size: 11px;
+  padding-left: 0px;
+  margin-top: 0em;
+  margin-bottom: 0.5em;
+  margin-right: 0em;
+  margin-left: 0em;
+  padding-bottom: 0em;
+  padding-top: 0em;
+  color: #000;
 }
 
 
@@ -127,27 +127,27 @@ h5 {
 /* % ######################################################### */
 
 .display_table {
-    display: table;
+  display: table;
 }
 
 .display_row {
-    display: table-row;
+  display: table-row;
 }
 
 .display_cell {
-    display: table-cell;
+  display: table-cell;
 }
 
 .display_block {  /* default for divs */
-    display: block !important;
+  display: block !important;
 }
 
 .display_inline {  /* default for spans */
-    display: inline !important;
+  display: inline !important;
 }
 
 .display_inline_block {
-    display: inline-block;
+  display: inline-block;
 }
 
 
@@ -156,65 +156,60 @@ h5 {
 /* % ######################################################### */
 
 table {
-    border-spacing: 0em;
-    border: 2px solid black;
+  border-spacing: 0em;
+  border: 2px solid black;
 }
 
 table th {
-    border: 2px solid white;
-    color: #333333;
-    background: #eeeeee;
-    padding-left: 0.5em;
-    padding-right: 0.5em;
-    text-align: center;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
+  border: 2px solid white;
+  color: #333333;
+  background: #eeeeee;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  text-align: center;
+  text-indent: 0px;
+  font-family: Verdana;
+  font-weight: bold;
+  font-size: 11px;
 }
 
 table td {
-    border: 1px solid #dddddd;
-    /* background: white; */
-    color: #404040;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    padding-left: 2px;
-    padding-right: 2px;
-    text-align: center;
-    font-family: Verdana, sans-serif, Arial;
-    font-weight: normal;
-    font-size: 11px;
+  border: 1px solid #dddddd;
+  /* background: white; */
+  color: #404040;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 2px;
+  padding-right: 2px;
+  text-align: center;
+  font-family: Verdana, sans-serif, Arial;
+  font-weight: normal;
+  font-size: 11px;
 }
 
 th.supertitle {
-    background-color: #05A3D6;
-    color: #ffffff;
+  background-color: #05A3D6;
+  color: #ffffff;
 }
 
 th.blank {
-    background-color: inherit;
-}
-
-td.tabletext {
-    text-align: left;
-    padding: 0 1em;
+  background-color: inherit;
 }
 
 tr.list-even {
-    background-color: white;
+  background-color: white;
 }
 
 tr.list-odd {
-    background-color: #F1F1F1;
+  background-color: #F1F1F1;
 }
 
 tr.list-unavailable {
-    background-color: #ffebe5;
+  background-color: #ffebe5;
 }
 
 tr.selected_row {
-    background-color: yellow;
+  background-color: yellow;
 }
 
 
@@ -235,8 +230,8 @@ tr.selected_row {
    in the DIV element's attributes.
 */
 .vertical_text_container {
-   vertical-align: bottom; /* will position the .vertical_text DIV at the bottom */
-   height: 20em;
+  vertical-align: bottom; /* will position the .vertical_text DIV at the bottom */
+  height: 20em;
 }
 
 /*
@@ -245,70 +240,70 @@ tr.selected_row {
    for one line of text.
 */
 div.vertical_text {
-    display: block;
-    white-space: nowrap;
-    width: 1.5em;
-    height: auto;
-    margin: auto;
-    text-align: left;
+  display: block;
+  white-space: nowrap;
+  width: 1.5em;
+  height: auto;
+  margin: auto;
+  text-align: left;
 /* background-color: pink; */
-    transform:                translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
-    transform-origin:         0% 0%;
-    -webkit-transform:        translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
-    -webkit-transform-origin: 0% 0%;
-    -moz-transform:           translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
-    -moz-transform-origin:    0% 0%;
-    -o-transform:             translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
-    -o-transform-origin:      0% 0%;
-    -ms-transform:            translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
-    -ms-transform-origin:     0% 0%;
+  transform:                translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
+  transform-origin:         0% 0%;
+  -webkit-transform:        translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
+  -webkit-transform-origin: 0% 0%;
+  -moz-transform:           translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
+  -moz-transform-origin:    0% 0%;
+  -o-transform:             translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
+  -o-transform-origin:      0% 0%;
+  -ms-transform:            translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
+  -ms-transform-origin:     0% 0%;
 }
 
 /* Use this on whatever contains the DIV with .down_vertical_text */
 .down_vertical_text_container {
-   vertical-align: top; /* will position the DIV at the top */
-   height: 20em;
+  vertical-align: top; /* will position the DIV at the top */
+  height: 20em;
 }
 
 div.down_vertical_text {
-    display: block;
-    white-space: nowrap;
-    width: 1.5em;
-    height: auto;
-    margin: auto;
-    text-align: left;
+  display: block;
+  white-space: nowrap;
+  width: 1.5em;
+  height: auto;
+  margin: auto;
+  text-align: left;
 /* background-color: pink; */
-    transform:                translate(0%, -100%) rotate(90deg) translate(0%, 0%);
-    transform-origin:         0% 100%;
-    -webkit-transform:        translate(0%, -100%) rotate(90deg) translate(0%, 0%);
-    -webkit-transform-origin: 0% 100%;
-    -moz-transform:           translate(0%, -100%) rotate(90deg) translate(0%, 0%);
-    -moz-transform-origin:    0% 100%;
-    -o-transform:             translate(0%, -100%) rotate(90deg) translate(0%, 0%);
-    -o-transform-origin:      0% 100%;
-    -ms-transform:            translate(0%, -100%) rotate(90deg) translate(0%, 0%);
-    -ms-transform-origin:     0% 100%;
+  transform:                translate(0%, -100%) rotate(90deg) translate(0%, 0%);
+  transform-origin:         0% 100%;
+  -webkit-transform:        translate(0%, -100%) rotate(90deg) translate(0%, 0%);
+  -webkit-transform-origin: 0% 100%;
+  -moz-transform:           translate(0%, -100%) rotate(90deg) translate(0%, 0%);
+  -moz-transform-origin:    0% 100%;
+  -o-transform:             translate(0%, -100%) rotate(90deg) translate(0%, 0%);
+  -o-transform-origin:      0% 100%;
+  -ms-transform:            translate(0%, -100%) rotate(90deg) translate(0%, 0%);
+  -ms-transform-origin:     0% 100%;
 }
 
 div.down_vertical_text2 {
-    display: block;
-    white-space: nowrap;
-    width: 1.5em;
-    height: auto;
-    margin: auto;
-    text-align: right;
-    direction: rtl;
+  display: block;
+  white-space: nowrap;
+  width: 1.5em;
+  height: auto;
+  margin: auto;
+  text-align: right;
+  direction: rtl;
 /* background-color: pink; */
-    transform:                translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
-    transform-origin:         100% 0%;
-    -webkit-transform:        translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
-    -webkit-transform-origin: 100% 0%;
-    -moz-transform:           translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
-    -moz-transform-origin:    100% 0%;
-    -o-transform:             translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
-    -o-transform-origin:      100% 0%;
-    -ms-transform:            translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
-    -ms-transform-origin:     100% 0%;
+  transform:                translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
+  transform-origin:         100% 0%;
+  -webkit-transform:        translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
+  -webkit-transform-origin: 100% 0%;
+  -moz-transform:           translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
+  -moz-transform-origin:    100% 0%;
+  -o-transform:             translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
+  -o-transform-origin:      100% 0%;
+  -ms-transform:            translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
+  -ms-transform-origin:     100% 0%;
 }
 
 
@@ -320,66 +315,66 @@ div.down_vertical_text2 {
 /* % ######################################################### */
 
 .resource_list {
-    border: 0px;
-    border-collapse: collapse;
-    margin-top: 0.8em;
-    width: 100%;
+  border: 0px;
+  border-collapse: collapse;
+  margin-top: 0.8em;
+  width: 100%;
 }
 
 .resource_list th {
-    border: 0px;
-    background-color: #0471B4;
-    text-align: center;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
-    color: #ffffff;
-    white-space: nowrap;
+  border: 0px;
+  background-color: #0471B4;
+  text-align: center;
+  text-indent: 0px;
+  font-family: Verdana;
+  font-weight: bold;
+  font-size: 11px;
+  color: #ffffff;
+  white-space: nowrap;
 }
 
 .resource_list th a {
-    color: #ffffff;
-    text-decoration: none;
+  color: #ffffff;
+  text-decoration: none;
 }
 
 .resource_list th a:link {
-    color: #ffffff;
-    text-decoration: none;
+  color: #ffffff;
+  text-decoration: none;
 }
 
 .resource_list td {
-    border: 0px;
-    text-align: center;
-    padding-left: 1em;
-    padding-right: 1em;
-    white-space: nowrap;
+  border: 0px;
+  text-align: center;
+  padding-left: 1em;
+  padding-right: 1em;
+  white-space: nowrap;
 }
 
 table.resource_list td.checkbox {
-    text-align: center;
+  text-align: center;
 }
 
 table.resource_list td.left_align {
-    text-align: left;
+  text-align: left;
 }
 
 table.resource_list tr.subtitle {
-    background-color: #05A3D6;
+  background-color: #05A3D6;
 }
 
 table.resource_list th.subtitle {
-    background-color: #E7E7E7;
-    color: #444444;
+  background-color: #E7E7E7;
+  color: #444444;
 }
 
 table.resource_list td.subtitle {
-    background-color: #05A3D6;
+  background-color: #05A3D6;
 }
 
 table.resource_list tr.subtitle_bordered {
-    background-color: #0471B4;
-    border: 2px solid #0471B4;
+  background-color: #0471B4;
+  border: 2px solid #0471B4;
 }
 
 .index_block {
@@ -391,7 +386,7 @@ table.resource_list tr.subtitle_bordered {
 }
 
 .order_icon {
-    color: #ffffff;
+  color: #ffffff;
 }
 
 
@@ -402,23 +397,23 @@ table.resource_list tr.subtitle_bordered {
 /* % ############################################## */
 
 table.simple {
-    border: 0px;
+  border: 0px;
 }
 
 table.simple tr {
-    border: 1px;
-    text-align: left;
+  border: 1px;
+  text-align: left;
 }
 
 table.simple td {
-    border: 0px;
-    text-align: left;
-    padding: 1px 0.5em 1px 0.5em;
+  border: 0px;
+  text-align: left;
+  padding: 1px 0.5em 1px 0.5em;
 }
 
 table.bordered {
-    border: solid 1px black;
-    margin: 2px;
+  border: solid 1px black;
+  margin: 2px;
 }
 
 /* % ######################################################### */
@@ -447,23 +442,15 @@ table.bordered {
 /* % General styles for text */
 /* % ######################################################### */
 
-.white_text {
-  color: white;
-}
-
-.white_text a {
-  color: white;
-}
-
 .warning {
-    color: red;
+  color: red;
 }
 
 h1.warning {
-    font-size: 14px;
-    line-height: 1.1em;
-    padding: 0;
-    margin: 0;
+  font-size: 14px;
+  line-height: 1.1em;
+  padding: 0;
+  margin: 0;
 }
 
 .loading_message {
@@ -472,36 +459,36 @@ h1.warning {
 }
 
 .no_wrap {
-   white-space: nowrap !important;
+  white-space: nowrap !important;
 }
 
 .wrap {
-   white-space: normal !important;
+  white-space: normal !important;
 }
 
 .some_left_right_padding {
-   padding-left: 1em !important;
-   padding-right: 1em !important;
+  padding-left: 1em !important;
+  padding-right: 1em !important;
 }
 
 .left {
-    text-align: left !important;
+  text-align: left !important;
 }
 
 .right {
-    text-align: right !important;
+  text-align: right !important;
 }
 
 .left_align {
-    text-align: left;
+  text-align: left;
 }
 
 .right_align {
-   text-align: right;
+  text-align: right;
 }
 
 .centered {
-   text-align: center !important;
+  text-align: center !important;
 }
 
 .small {
@@ -509,8 +496,8 @@ h1.warning {
 }
 
 .alone_per_line {
-    display: block;
-    clear: both;
+  display: block;
+  clear: both;
 }
 
 .hidden {
@@ -550,7 +537,9 @@ h1.warning {
   color: purple;
 }
 
-
+.float_left {
+  float: left;
+}
 
 /* % ######################################################### */
 /* % General styles for definition lists */
@@ -571,28 +560,28 @@ dd {
 /* % ######################################################### */
 
 a {
-    color: #000;
-    text-decoration: underline;
+  color: #000;
+  text-decoration: underline;
 }
 
 .action_link {
-    color: blue !important;
-    text-decoration: none !important;
+  color: blue !important;
+  text-decoration: none !important;
 }
 
 .task_help_link {
-    color: blue;
-    text-decoration: none;
-    font-size: 0.7em;
-    vertical-align: +1px;
+  color: blue;
+  text-decoration: none;
+  font-size: 0.7em;
+  vertical-align: +1px;
 }
 
 .error_link {
-    color: red !important;
+  color: red !important;
 }
 
 .no_decorations {
-    text-decoration: none;
+  text-decoration: none;
 }
 
 /* % ######################################################### */
@@ -600,20 +589,20 @@ a {
 /* % ######################################################### */
 
 .whole_width {
-    width: 100%;
+  width: 100%;
 }
 
 .generalbox {
-    display: table-cell;
-    width: auto;
-    margin-left: 1em;
-    margin-right: 1em;
-    margin-bottom: 1em;
-    padding: 1em;
-    background-color: #F6F6F6;
-    color: #505050;
-    line-height: 1.5em;
-    border: 1px solid #E4E4E4;
+  display: table-cell;
+  width: auto;
+  margin-left: 1em;
+  margin-right: 1em;
+  margin-bottom: 1em;
+  padding: 1em;
+  background-color: #F6F6F6;
+  color: #505050;
+  line-height: 1.5em;
+  border: 1px solid #E4E4E4;
 }
 
 /* % ######################################################### */
@@ -621,43 +610,24 @@ a {
 /* % ######################################################### */
 
 .notesbox {
-    padding: 1em;
-    background-color: #F6F6F6;
-    color: #505050;
-    line-height: 1.5em;
-    border: 1px solid #E4E4E4;
-    width: 800px;
-    margin: 1px;
+  padding: 1em;
+  background-color: #F6F6F6;
+  color: #505050;
+  line-height: 1.5em;
+  border: 1px solid #E4E4E4;
+  width: 800px;
+  margin: 1px;
 }
 
 .groupentry {
-    border: 1px solid black;
-    width: auto;
-    margin-left: 0;
-    margin-right: 1em;
-    padding-left: 1em;
-    padding-right: 1em;
-    background-color: #E6E6E6;
-    color: black;
-}
-
-.splitleft {
-    float: left;
-    width: auto;
-    margin-left: 3em;
-    margin-right: 4em;
-    margin-bottom: 1em;
-    line-height: 1.5em;
-    max-width: 45%;
-}
-
-.splitright {
-    float: right;
-    min-width: 25em;
-    width: auto;
-    margin-left: 1em;
-    padding: 1em;
-    line-height: 1.5em;
+  border: 1px solid black;
+  width: auto;
+  margin-left: 0;
+  margin-right: 1em;
+  padding-left: 1em;
+  padding-right: 1em;
+  background-color: #E6E6E6;
+  color: black;
 }
 
 
@@ -742,30 +712,30 @@ a {
 /* % #################################################################### */
 
 pre {
-    overflow-x: auto; /* Use horizontal scroller if needed; for Firefox 2, not needed in Firefox 3 */
-    white-space: pre-wrap; /* css-3 */
-    white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
-    white-space: -pre-wrap; /* Opera 4-6 */
-    text-align: left;
-    white-space: -o-pre-wrap; /* Opera 7 */
-    word-wrap: break-word; /* Internet Explorer 5.5+ */
+  overflow-x: auto; /* Use horizontal scroller if needed; for Firefox 2, not needed in Firefox 3 */
+  white-space: pre-wrap; /* css-3 */
+  white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+  white-space: -pre-wrap; /* Opera 4-6 */
+  text-align: left;
+  white-space: -o-pre-wrap; /* Opera 7 */
+  word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
 
 .standard_out {
-    max-width: 1600px;
+  max-width: 1600px;
 }
 
 .ssh_key {
-    max-width: 80em;
-    font-size: 0.7em;
-    line-height: 1.3em;
+  max-width: 80em;
+  font-size: 0.7em;
+  line-height: 1.3em;
 }
 
 .script_preview {
-    border: solid black;
-    background-color: #EEEEEE;
-    padding-left: 0.2em;
-    padding-right: 0.2em;
+  border: solid black;
+  background-color: #EEEEEE;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
 }
 
 
@@ -775,39 +745,39 @@ pre {
 /* % ######################################################### */
 
 .flash_notice {
-    z-index: 0;
-    border: 2px solid green;
-    padding-top: 1em;
-    padding-bottom: 1em;
-    padding-left: 1em;
-    padding-right: 1em;
-    margin-bottom: 2px;
-    margin-top: 2px;
-    background-color: #ddffdd;
+  z-index: 0;
+  border: 2px solid green;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  padding-left: 1em;
+  padding-right: 1em;
+  margin-bottom: 2px;
+  margin-top: 2px;
+  background-color: #ddffdd;
 }
 
 .flash_system {
-    z-index: 0;
-    border: 2px solid #00ffff;
-    padding-top: 1em;
-    padding-bottom: 1em;
-    padding-left: 1em;
-    padding-right: 1em;
-    margin-bottom: 2px;
-    margin-top: 2px;
-    background-color: #ddeeff;
+  z-index: 0;
+  border: 2px solid #00ffff;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  padding-left: 1em;
+  padding-right: 1em;
+  margin-bottom: 2px;
+  margin-top: 2px;
+  background-color: #ddeeff;
 }
 
 .flash_error {
-    z-index: 0;
-    border: 2px solid red;
-    padding-top: 1em;
-    padding-bottom: 1em;
-    padding-left: 1em;
-    padding-right: 1em;
-    margin-bottom: 2px;
-    margin-top: 2px;
-    background-color: #ffeeee;
+  z-index: 0;
+  border: 2px solid red;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  padding-left: 1em;
+  padding-right: 1em;
+  margin-bottom: 2px;
+  margin-top: 2px;
+  background-color: #ffeeee;
 }
 
 
@@ -817,42 +787,107 @@ pre {
 /* % ######################################################### */
 
 .field_with_errors {
-    padding: 2px;
-    background-color: red;
-    display: inline-table;
+  padding: 2px;
+  background-color: red;
+  display: inline-table;
 }
 
 .errorExplanation {
-    width: 400px;
-    border: 2px solid red;
-    padding: 7px;
-    padding-bottom: 12px;
-    margin-bottom: 20px;
-    background-color: #f0f0f0;
-    color: #000;
+  width: 400px;
+  border: 2px solid red;
+  padding: 7px;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  background-color: #f0f0f0;
+  color: #000;
 }
 
 .errorExplanation h2 {
-    text-align: left;
-    font-weight: bold;
-    padding: 5px 5px 5px 15px;
-    font-size: 12px;
-    margin: -7px;
-    width: auto;
-    background-color: #c00;
-    color: #fff;
+  text-align: left;
+  font-weight: bold;
+  padding: 5px 5px 5px 15px;
+  font-size: 12px;
+  margin: -7px;
+  width: auto;
+  background-color: #c00;
+  color: #fff;
 }
 
 .errorExplanation p {
-    color: #000;
-    margin-bottom: 0;
-    padding: 5px;
+  color: #000;
+  margin-bottom: 0;
+  padding: 5px;
 }
 
 .errorExplanation ul li {
-    font-size: 12px;
-    list-style: square;
-    color: #000;
+  font-size: 12px;
+  list-style: square;
+  color: #000;
+}
+
+
+
+/* % ######################################################### */
+/* % Documentation popups */
+/* % ######################################################### */
+
+.help_document_popup > div {
+  width: 100%;
+  height: 100%;
+}
+
+.help_document_popup > button {
+  margin-bottom: 10px;
+}
+
+
+
+/* % ######################################################### */
+/* % Tool launch bar (userfiles index) */
+/* % ######################################################### */
+
+.launch_bar {
+  border: 2px solid #0471B4;
+  margin: 5px;
+  padding: 5px;
+  position: relative;
+  text-align: right;
+}
+
+.launch_bar span {
+  display: inline-block;
+  margin: 0px 5px;
+}
+
+.launch_bar span.info {
+  display: block;
+  float: left;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+
+/* % ######################################################### */
+/* % File upload progress dialog */
+/* % ######################################################### */
+
+.no_close .ui-dialog-titlebar-close {
+  display: none;
+}
+
+.progress_dialog {
+  min-height: 100% !important;
+}
+
+.progress_dialog .bar {
+  position: relative;
+  text-align: center;
+}
+
+.progress_dialog .label {
+  position: absolute;
+  top: 4px;
+  width: 100%;
 }
 
 
@@ -862,28 +897,28 @@ pre {
 /* % ######################################################### */
 
 .account {
-    background: #0471B4;
-    color: #fff;
-    height:1.8em;
-    font-size: 0.9em;
-    padding: 2px 2px 0px 6px;
-    margin: 0px;
+  background: #0471B4;
+  color: #fff;
+  height:1.8em;
+  font-size: 0.9em;
+  padding: 2px 2px 0px 6px;
+  margin: 0px;
 }
 
 .account a {
-    color: #fff;
-    padding: 0 1em 0 0.8em;
-    font-weight: bold;
-    text-decoration: none;
+  color: #fff;
+  padding: 0 1em 0 0.8em;
+  font-weight: bold;
+  text-decoration: none;
 }
 
 .home_credits {
-    display: inline;
+  display: inline;
 }
 
 .loggedas {
-    float: right;
-    margin-right: 0.5em;
+  float: right;
+  margin-right: 0.5em;
 }
 
 
@@ -893,22 +928,22 @@ pre {
 /* % ######################################################### */
 
 #header {
-    height: 6em;
-    margin: 0px;
-    background-color: #05A3D6;
-    position: relative;
+  height: 6em;
+  margin: 0px;
+  background-color: #05A3D6;
+  position: relative;
 }
 
 #header h1 {
-    color: white;
-    display: inline-block;
-    margin: 0;
-    padding: 0.5em;
-    vertical-align: top;
+  color: white;
+  display: inline-block;
+  margin: 0;
+  padding: 0.5em;
+  vertical-align: top;
 }
 
 #header h1 a {
-    color: white;
+  color: white;
 }
 
 #header a:hover {
@@ -922,19 +957,10 @@ pre {
   padding: 0;
 }
 
-#mni_logo {
-    float: right;
-    background-image: url(/images/mni_logo.png);
-    width: 84px;
-    height: 69px;
-    margin: 6px;
-    border: 2px solid black;
-}
-
 #main-menu {
-    position: absolute;
-    bottom: 0px;
-    font-size: 11px;
+  position: absolute;
+  bottom: 0px;
+  font-size: 11px;
 }
 
 
@@ -943,43 +969,43 @@ pre {
 }
 
 #main-menu ul {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 #main-menu li {
-    float: left;
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    white-space: nowrap;
+  float: left;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
 }
 
 #main-menu li a {
-    display: block;
-    text-decoration: none;
-    font-weight: bold;
-    margin: 0;
-    padding: 4px 10px 4px 10px;
+  display: block;
+  text-decoration: none;
+  font-weight: bold;
+  margin: 0;
+  padding: 4px 10px 4px 10px;
 }
 
 #main-menu li a:hover {
-    background: gray;
-    color: #fff;
+  background: gray;
+  color: #fff;
 }
 
 #main-menu li a:hover, a:active {
-    background: #ffffff none repeat scroll 0 0;
-    color: #555555;
+  background: #ffffff none repeat scroll 0 0;
+  color: #555555;
 }
 
 .selected a {
-    background-color: white;
-    color: #05A3D6;
+  background-color: white;
+  color: #05A3D6;
 }
 
 .unselected a {
-    color: white;
+  color: white;
 }
 
 #active_project_div {
@@ -992,13 +1018,11 @@ pre {
 
 #header_project_menu {
   color: #F33;
-  /* margin: 0.8em 1em 0 0; */
   padding-left: 0.5em;
   padding-right: 0.5em;
 }
 
 #project_menu_items {
-  /* color: #22C; */
   padding: 0 1em 0 1em;
 }
 
@@ -1066,72 +1090,37 @@ pre {
   right: 5px;
 }
 
-/* Gradients done using: http://www.colorzilla.com/gradient-editor/ */
-.personal_project {
-  background: #4394df; /* Old browsers */
-  background: -moz-linear-gradient(-45deg,  #4394df 0%, #2174bd 24%, #064c8a 50%, #1e68a8 79%, #237cc9 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#4394df), color-stop(24%,#2174bd), color-stop(50%,#064c8a), color-stop(79%,#1e68a8), color-stop(100%,#237cc9)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* IE10+ */
-  background: linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4394df', endColorstr='#237cc9',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
-}
+.system_project_point     { color:      #c51700; }
+.system_project           { background: #c51700; }
+.system_project:active    { background: #c51700; }
 
-.personal_project:active {
-  background: #4394df; /* Old browsers */
-  background: -moz-linear-gradient(-45deg,  #4394df 0%, #2174bd 24%, #064c8a 50%, #1e68a8 79%, #237cc9 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#4394df), color-stop(24%,#2174bd), color-stop(50%,#064c8a), color-stop(79%,#1e68a8), color-stop(100%,#237cc9)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* IE10+ */
-  background: linear-gradient(-45deg,  #4394df 0%,#2174bd 24%,#064c8a 50%,#1e68a8 79%,#237cc9 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4394df', endColorstr='#237cc9',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
-}
+.everyone_project_point   { color:      #960065; }
+.everyone_project         { background: #960065; }
+.everyone_project:active  { background: #960065; }
 
-.shared_project {
-  background: #00cc00; /* Old browsers */
-  background: -moz-linear-gradient(-45deg,  #00cc00 0%, #009900 24%, #006600 50%, #009900 79%, #00cc00 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#00cc00), color-stop(24%,#009900), color-stop(50%,#006600), color-stop(79%,#009900), color-stop(100%,#00cc00)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(-45deg,  #00cc00 0%,#009900 24%,#006600 50%,#009900 79%,#00cc00 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(-45deg,  #00cc00 0%,#009900 24%,#006600 50%,#009900 79%,#00cc00 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(-45deg,  #00cc00 0%,#009900 24%,#006600 50%,#009900 79%,#00cc00 100%); /* IE10+ */
-  background: linear-gradient(135deg,  #00cc00 0%,#009900 24%,#006600 50%,#009900 79%,#00cc00 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00cc00', endColorstr='#00cc00',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
-}
+.site_project_point       { color:      #b00035; }
+.site_project             { background: #b00035; }
+.site_project:active      { background: #b00035; }
 
-.shared_project:active {
-  background: #00cc00; /* Old browsers */
-  background: -moz-linear-gradient(-45deg,  #00cc00 0%, #009900 24%, #006600 50%, #009900 79%, #00cc00 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#00cc00), color-stop(24%,#009900), color-stop(50%,#006600), color-stop(79%,#009900), color-stop(100%,#00cc00)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(-45deg,  #00cc00 0%,#009900 24%,#006600 50%,#009900 79%,#00cc00 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(-45deg,  #00cc00 0%,#009900 24%,#006600 50%,#009900 79%,#00cc00 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(-45deg,  #00cc00 0%,#009900 24%,#006600 50%,#009900 79%,#00cc00 100%); /* IE10+ */
-  background: linear-gradient(135deg,  #00cc00 0%,#009900 24%,#006600 50%,#009900 79%,#00cc00 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00cc00', endColorstr='#00cc00',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
-}
+.user_project_point       { color:      #017277; }
+.user_project             { background: #017277; }
+.user_project:active      { background: #017277; }
 
-.system_project {
-  background: #fb3927; /* Old browsers */
-  background: -moz-linear-gradient(-45deg,  #fb3927 0%, #da1304 24%, #8f0a01 50%, #c21104 79%, #e71405 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#fb3927), color-stop(24%,#da1304), color-stop(50%,#8f0a01), color-stop(79%,#c21104), color-stop(100%,#e71405)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* IE10+ */
-  background: linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fb3927', endColorstr='#e71405',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
-}
+.shared_project_point     { color:      #008b41; }
+.shared_project           { background: #008b41; }
+.shared_project:active    { background: #008b41; }
 
-.system_project:active {
-  background: #fb3927; /* Old browsers */
-  background: -moz-linear-gradient(-45deg,  #fb3927 0%, #da1304 24%, #8f0a01 50%, #c21104 79%, #e71405 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#fb3927), color-stop(24%,#da1304), color-stop(50%,#8f0a01), color-stop(79%,#c21104), color-stop(100%,#e71405)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* IE10+ */
-  background: linear-gradient(-45deg,  #fb3927 0%,#da1304 24%,#8f0a01 50%,#c21104 79%,#e71405 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fb3927', endColorstr='#e71405',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
-}
+.personal_project_point   { color:      #0a4081; }
+.personal_project         { background: #0a4081; }
+.personal_project:active  { background: #0a4081; }
+
+.invisible_project_point  { color:      #c59900; }
+.invisible_project        { background: #c59900; }
+.invisible_project:active { background: #c59900; }
+
+.empty_project_point      { color:      #c56a00; }
+.empty_project            { background: #c56a00; }
+.empty_project:active     { background: #c56a00; }
 
 .giant{
   margin-top: 0.3em;
@@ -1156,28 +1145,28 @@ pre {
 
 
 .project_button_header {
-    border: 0px;
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 0.8em;
+  border: 0px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.8em;
 }
 
 .project_button_header th {
-    border: 0px;
-    background-color: #0471B4;
-    text-align: left;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
-    color: #ffffff;
-    padding-left: 5em;
-    white-space: nowrap;
+  border: 0px;
+  background-color: #0471B4;
+  text-align: left;
+  text-indent: 0px;
+  font-family: Verdana;
+  font-weight: bold;
+  font-size: 11px;
+  color: #ffffff;
+  padding-left: 5em;
+  white-space: nowrap;
 }
 
 .project_button_header th a {
-    color: #ffffff;
-    text-decoration: none;
+  color: #ffffff;
+  text-decoration: none;
 }
 
 /* % ######################################################### */
@@ -1214,9 +1203,9 @@ pre {
 /* % ######################################################### */
 
 .main-content {
-    background-color: #FFFFFF;
-    margin: 0;
-    padding: 1em;
+  background-color: #FFFFFF;
+  margin: 0;
+  padding: 1em;
 }
 
 
@@ -1226,18 +1215,18 @@ pre {
 /* % ######################################################### */
 
 .footer {
-    clear: both;
-    border-top: 2px solid #e4e4e4;
-    font-size: 0.9em;
-    color: #aaa;
-    text-align: center;
-    background: #ffffff;
-    vertical-align: bottom;
+  clear: both;
+  border-top: 2px solid #e4e4e4;
+  font-size: 0.9em;
+  color: #aaa;
+  text-align: center;
+  background: #ffffff;
+  vertical-align: bottom;
 }
 
 .footer a {
-    font-size: 0.9em;
-    color: #aaa;
+  font-size: 0.9em;
+  color: #aaa;
 }
 
 /* % ######################################################### */
@@ -1245,26 +1234,26 @@ pre {
 /* % ######################################################### */
 
 .credits_footer {
-    clear: both;
-    vertical-align: bottom;
+  clear: both;
+  vertical-align: bottom;
 }
 
 .credits_footer a {
-    color: white;
-    text-decoration: none;
+  color: white;
+  text-decoration: none;
 }
 
 .site_logos {
-    float: right;
-    margin-right: 2em;
-    height: 100px;
-    border: 0;
+  float: right;
+  margin-right: 2em;
+  height: 100px;
+  border: 0;
 }
 
 .canarie_logo {
-    float: left;
-    margin-left: 2em;
-    height: 100px;
+  float: left;
+  margin-left: 2em;
+  height: 100px;
 }
 
 
@@ -1274,21 +1263,21 @@ pre {
 /* ######################################################### */
 
 .credit_box {
-    margin-left: 1em;
-    margin-right: 1em;
-    margin-bottom: 1em;
-    padding-bottom: 1em;
-    background-color: #f6f6f6;
-    color: #505050;
-    line-height: 1.5em;
-    border: 1px solid #e4e4e4;
-    padding:6px;
-    width: 50%;
+  margin-left: 1em;
+  margin-right: 1em;
+  margin-bottom: 1em;
+  padding-bottom: 1em;
+  background-color: #f6f6f6;
+  color: #505050;
+  line-height: 1.5em;
+  border: 1px solid #e4e4e4;
+  padding:6px;
+  width: 50%;
 }
 
 .box_spacer {
-    min-width: 1em;
-    display: table-cell;
+  min-width: 1em;
+  display: table-cell;
 }
 
 
@@ -1297,38 +1286,38 @@ pre {
 /* ######################################################### */
 
 .logintable {
-    border: 1px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-top: 1em;
-    padding-left: 1em;
-    padding-right: 1em;
-    padding-bottom: 1em;
+  border: 1px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 1em;
+  padding-left: 1em;
+  padding-right: 1em;
+  padding-bottom: 1em;
 }
 
 .logintable td {
-    border: 0px;
-    font-size: 1em;
-    color: #0471B4;
-    text-align: right;
-    padding-top: 0.5em;
-    padding-left: 2em;
-    padding-right: 2em;
-    padding-bottom: 0.5em;
-    margin: 0px;
+  border: 0px;
+  font-size: 1em;
+  color: #0471B4;
+  text-align: right;
+  padding-top: 0.5em;
+  padding-left: 2em;
+  padding-right: 2em;
+  padding-bottom: 0.5em;
+  margin: 0px;
 }
 
 .logintable td.field {
-    text-align: left;
-    padding: 2px;
+  text-align: left;
+  padding: 2px;
 }
 
 .logintable tr {
-    margin: 1px;
+  margin: 1px;
 }
 
 #request_password {
-    padding-right: 12em;
+  padding-right: 12em;
 }
 
 
@@ -1339,16 +1328,16 @@ pre {
 
 
 .latest_summary_table {
-    border: 0px;
-    background-color: #E4E4E4;
-    width: 100%;
+  border: 0px;
+  background-color: #E4E4E4;
+  width: 100%;
 }
 
 .latest_summary_table td {
-    padding: 0.4em 1em 0.5em 1em;
-    font-weight: bold;
-    border: 0px;
-    text-align: left;
+  padding: 0.4em 1em 0.5em 1em;
+  font-weight: bold;
+  border: 0px;
+  text-align: left;
 }
 
 .exception_report {
@@ -1364,10 +1353,10 @@ pre {
 /* % ######################################################### */
 
 .menu_bar {
-    padding-top: 0.2em;
-    padding-bottom: 0.2em;
-    margin-left: 0;
-    margin-right: auto;
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+  margin-left: 0;
+  margin-right: auto;
 }
 
 
@@ -1440,7 +1429,6 @@ pre {
   text-align: center;
   white-space: nowrap;
   clear: both;
-  /* padding: 0 1em; */
 }
 
 
@@ -1450,13 +1438,13 @@ pre {
 /* % ######################################################### */
 
 .userfiles_tool_selector {
-    padding: 0 1em;
-    display: table-row;
+  padding: 0 1em;
+  display: table-row;
 }
 
 .userfiles_bourreau_selector {
-    padding: 0 1em;
-    display: table-row;
+  padding: 0 1em;
+  display: table-row;
 }
 
 /* % ######################################################### */
@@ -1480,7 +1468,6 @@ pre {
 }
 
 .show_table td {
-/*  background: none; */
   color: black;
   border: none;
   margin: 0;
@@ -1513,45 +1500,6 @@ pre {
   color: red;
 }
 
-/* % ######################################################### */
-/* % File Menu Edit Tags table formatting */
-/* % ######################################################### */
-
-.edittagstable {
-    float: left;
-    width: 10%;
-    padding: 6px;
-    margin-top: 0em;
-    margin-left: 0em;
-    margin-right: 0em;
-    margin-bottom: 0em;
-    padding: 0px;
-}
-
-.edittagstable th {
-    border: 0px;
-    background: #0471B4;
-    text-align: left;
-    text-indent: 0px;
-    font-family: Verdana;
-    font-weight: bold;
-    font-size: 11px;
-    color: #ffffff;
-    padding: 2px;
-}
-
-.edittagstable td {
-    border: 0px;
-    text-align: left;
-    text-indent: 5px;
-    font-family: Verdana, sans-serif, Arial;
-    font-weight: normal;
-    font-size: 11px;
-    color: #404040;
-    background-color: #fafafa;
-    padding: 2px;
-}
-
 
 
 /* % ######################################################### */
@@ -1559,15 +1507,15 @@ pre {
 /* % ########################################################  */
 
 .sidebar {
-    white-space: nowrap;
-    font-size: 0.9em;
-    padding: 5px;
-    margin-top: 5px;
-    margin-left: 5px;
-    margin-right: 5px;
-    margin-bottom: 5px;
-    background-color: #f6f6f6;
-    border: 1px solid #dddddd;
+  white-space: nowrap;
+  font-size: 0.9em;
+  padding: 5px;
+  margin-top: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  background-color: #f6f6f6;
+  border: 1px solid #dddddd;
 }
 
 
@@ -1576,17 +1524,10 @@ pre {
 /* % ########################################################  */
 
 .view_options {
-    font-weight: bold;
-    line-height: 1.7em;
-    padding: 0 1em 0 1em;
-    white-space: nowrap;
-}
-
-#userfiles_search_by_filename {
-    background-color: #f6f6f6;
-    border: 1px solid #dddddd;
-    text-align: left;
-    padding: 0 1em 1em 1em;
+  font-weight: bold;
+  line-height: 1.7em;
+  padding: 0 1em 0 1em;
+  white-space: nowrap;
 }
 
 
@@ -1600,25 +1541,25 @@ pre {
 }
 
 .filter_menu {
-    padding: 0;
-    margin-left: 0px;
-    text-align: left;
+  padding: 0;
+  margin-left: 0px;
+  text-align: left;
 }
 
 .filter_menu li {
-    list-style-type: none;
-    margin-left: 0px;
-    font-weight: bold;
+  list-style-type: none;
+  margin-left: 0px;
+  font-weight: bold;
 }
 
 .custom_filter li {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 /* current_filters is an ID because the element is modified with AJAX */
 #current_filters ul {
-    padding-left: 0;
-    color: #0471B4;
+  padding-left: 0;
+  color: #0471B4;
 }
 
 .current_filters_item {
@@ -1628,77 +1569,30 @@ pre {
 
 /* current_filters is an ID because the element is modified with AJAX */
 #current_filters a {
-    text-decoration: none;
-    color: blue;
+  text-decoration: none;
+  color: blue;
 }
 
 
-
-/* % ######################################################### */
-/* % Formatting for details toggle links */
-/* % ######################################################### */
-
-#show_details_link {
-    margin-left: 5px;
-}
-
-#hide_details_link {
-    margin-left: 6px;
-}
-
-
-/* % ######################################################### */
-/* % Show and Edit Pages*/
-/* % ######################################################### */
-
-.show_file_table {
-    clear: both;
-    margin-right: auto;
-    margin-left: 0px;
-    width: auto;
-}
-
-.show_file_table td {
-    text-align: left;
-}
-
-.show_file_table th {
-    width: auto;
-}
-
-/* % ######################################################### */
-/* % Userfiles Show and Edit */
-/* % ######################################################### */
-
-.edit_file_table {
-    clear: both;
-    margin-right: auto;
-    margin-left: 0px;
-    /* width: 950px; */
-}
-
-.edit_file_table td {
-    text-align: left;
-}
 
 /* % ######################################################### */
 /* % Task Show and Edit */
 /* % ######################################################### */
 
 th.center_align_heading {
-    text-align: center;
+  text-align: center;
 }
 
 .show_task_prerequisites {
-    clear: both;
-    margin-right: auto;
-    margin-left: 0px;
-    width: 100%;
+  clear: both;
+  margin-right: auto;
+  margin-left: 0px;
+  width: 100%;
 }
 
 .show_task_prerequisites td {
-    text-align: left;
-    margin-right: 0em;
+  text-align: left;
+  margin-right: 0em;
 }
 
 
@@ -1708,19 +1602,19 @@ th.center_align_heading {
 /* % ######################################################### */
 
 .plain_file_list {
-    max-width: 950px;
-    margin-left: 0px;
+  max-width: 950px;
+  margin-left: 0px;
 }
 
 #userfile_contents_display {
-    border: 0.2em solid #6699CC;
-    padding: 0.5em;
-    margin-top: 1em;
-    margin-left: 1em;
+  border: 0.2em solid #6699CC;
+  padding: 0.5em;
+  margin-top: 1em;
+  margin-left: 1em;
 }
 
 img {
-    border: none;
+  border: none;
 }
 
 
@@ -1730,41 +1624,16 @@ img {
 /* % ######################################################### */
 
 #tasks_div {
-    width: 100%;
-    padding-right: 1em;
+  width: 100%;
+  padding-right: 1em;
 }
 
 #tasks_table {
-    width: 100%;
+  width: 100%;
 }
 
 .batch_job_header {
-    background-color: #C9E6F6;
-}
-
-
-
-/* % ######################################################### */
-/* % Task Show Page */
-/* % ######################################################### */
-
-.showtasksdisplay {
-    float: left;
-    width: 97%;
-    padding: 6px;
-    margin-top: 0.5em;
-    margin-left: 1em;
-    margin-right: 1em;
-    margin-bottom: 4em;
-}
-
-.showtasksdisplay th {
-    width: 20%;
-    text-align: left;
-}
-
-.showtasksdisplay td {
-    text-align: left;
+  background-color: #C9E6F6;
 }
 
 
@@ -1773,39 +1642,59 @@ img {
 /* % Styles for Data Provider Browse page */
 /* % ######################################################### */
 
-.dp_browse_pages {
-    width: auto;
-    margin-left: 1em;
-    margin-right: 4em;
-    margin-bottom: 0em;
-    padding: 0.25em;
-    background-color: #ffffff;
-    color: #505050;
-    text-align: left;
-    border: none;
-    float: left;
-}
-
-.dp_browse_filter_div {
-    float: right;
-    width: 8%;
-    min-width: 14em;
-    color: black;
-}
-
 .dp_disk_usage_color_span {
-    vertical-align: middle;
-    padding: 0 0.5em 0 0.5em;
+  vertical-align: middle;
+  padding: 0 0.5em 0 0.5em;
 }
 
 .dp_disk_usage_color_block {
-    width: 2em;
-    height: 2em;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
+  width: 2em;
+  height: 2em;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
 }
 
 
+
+/* % ######################################################### */
+/* % Styles for Data Provider Report page */
+/* % ######################################################### */
+
+#data_provider_issues {
+  width: 100%;
+  margin-top: 10px;
+  border: 0;
+}
+
+#data_provider_issues td {
+  border: 1px solid gray;
+  border-width: 1px 0 0 0;
+}
+
+#data_provider_issues td.shrinkable {
+  display: table;
+  overflow: hidden;
+  table-layout: fixed;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+#data_provider_issues tr.severity-trivial {
+  background-color: #c9f3f3;
+}
+
+#data_provider_issues tr.severity-minor {
+  background-color: #cef9ce;
+}
+
+#data_provider_issues tr.severity-major {
+  background-color: #fff1e6;
+}
+
+#data_provider_issues tr.severity-critical {
+  background-color: #ffd3d3;
+}
 
 
 
@@ -1861,44 +1750,44 @@ img {
 /* % ######################################################### */
 
 .message_display_table {
-    clear: both;
-    border: 0;
-    width: 100%;
+  clear: both;
+  border: 0;
+  width: 100%;
 }
 
 .message_display_table th {
-    color: black;
-    background-color: white;
-    font-size: 1.2em;
-    padding-bottom: 0.4em;
-    border: 0;
-    margin: 0px;
+  color: black;
+  background-color: white;
+  font-size: 1.2em;
+  padding-bottom: 0.4em;
+  border: 0;
+  margin: 0px;
 }
 
 .message_display_table td {
-    font-size: 1em;
-    padding: 0.2em 0.4em;
+  font-size: 1em;
+  padding: 0.2em 0.4em;
 }
 
 .message_display_table tr {
-    border: 0;
-    width: 20%;
+  border: 0;
+  width: 20%;
 }
 
 td.notice_display {
-    background-color: #ddffdd;
-    border-color: green;
+  background-color: #ddffdd;
+  border-color: green;
 
 }
 
 td.error_display {
-    background-color: #ffeeee;
-    border-color: red;
+  background-color: #ffeeee;
+  border-color: red;
 }
 
 td.system_display {
-    background-color: #ddeeff;
-    border-color: blue;
+  background-color: #ddeeff;
+  border-color: blue;
 }
 
 td.message_read {
@@ -1910,20 +1799,20 @@ td.message_unread {
 }
 
 td.right_side {
-    border-width: 0.2em 0.2em 0.2em 0;
-    text-align: right;
+  border-width: 0.2em 0.2em 0.2em 0;
+  text-align: right;
 }
 
 td.left_side {
-    border-width: 0.2em 0em 0.2em 0.2em;
-    font-weight: bold;
-    text-align: left;
+  border-width: 0.2em 0em 0.2em 0.2em;
+  font-weight: bold;
+  text-align: left;
 }
 
 td.middle {
-    border-width: 0.2em 0em 0.2em;
-    font-weight: bold;
-    padding: 0.25em;
+  border-width: 0.2em 0em 0.2em;
+  font-weight: bold;
+  padding: 0.25em;
 }
 
 /* % ######################################################### */
@@ -1931,18 +1820,18 @@ td.middle {
 /* % ######################################################### */
 
 #message_table {
-    margin-left: 0em;
+  margin-left: 0em;
 }
 
 #message_table td {
-    padding-left: 7px;
-    padding-right: 7px;
+  padding-left: 7px;
+  padding-right: 7px;
 }
 
 #message_table th {
-    width: auto;
-    padding: 0px;
-    margin-left: 20px;
+  width: auto;
+  padding: 0px;
+  margin-left: 20px;
 }
 
 
@@ -1952,11 +1841,11 @@ td.middle {
 /* % ######################################################### */
 
 .button_table {
-    width: 100px;
+  width: 100px;
 }
 
 .button_table td {
-    padding: 4px;
+  padding: 4px;
 }
 
 .button_div {
@@ -1974,25 +1863,15 @@ td.middle {
 
 
 /* % ######################################################### */
-/* % ActiveRecord Log table  */
-/* % ######################################################### */
-
-.log_table {
-    padding: 2px;
-}
-
-
-
-/* % ######################################################### */
 /* % Notes and Help Text Styles */
 /* % ######################################################### */
 
 #data_provider_classes {
-    max-width: 60em;
-    position: absolute;
-    background-color: white;
-    border: 0.2em solid #0471B4;
-    padding: 1em;
+  max-width: 60em;
+  position: absolute;
+  background-color: white;
+  border: 0.2em solid #0471B4;
+  padding: 1em;
 }
 
 
@@ -2002,29 +1881,37 @@ td.middle {
 /* % ######################################################### */
 
 .html_tool_tip {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 9999;
-    background-color: #FFFFCC;
-    font: normal 8pt sans-serif;
-    color: black;
-    padding: 5px;
-    border: 1px solid black;
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  background-color: #FFFFCC;
+  font: normal 8pt sans-serif;
+  color: black;
+  padding: 5px;
+  border: 1px solid black;
 }
 
 .white_bg {
-    background-color: white;
+  background-color: white;
 }
 
+/* % ######################################################### */
+/* % Extra Toolkit element styling */
+/* % ######################################################### */
+
+.button.grayed-out {
+  opacity: 0.6;
+  filter: alpha(opacity=60);
+}
 
 /* % ######################################################### */
 /* % Z Toolkit element styling */
 /* % ######################################################### */
 
 .button {
-    z-index: 500;
+  z-index: 500;
 }
 
 .button_with_drop_down {
@@ -2033,16 +1920,16 @@ td.middle {
 }
 
 .button_with_drop_down > .drop_down_menu {
-    position: absolute;
-    z-index: 501;
-    border: solid;
-    border-width: 1px;
-    padding: 5px;
-    background: #f8f8f8;
+  position: absolute;
+  z-index: 501;
+  border: solid;
+  border-width: 1px;
+  padding: 5px;
+  background: #f8f8f8;
 }
 
 .dropmenu_info {
-    width: 30em;
+  width: 30em;
 }
 
 #new_model .ui-button-icon-secondary {
@@ -2131,11 +2018,6 @@ td.middle {
   padding: 0;
   font-size: 11px;
   text-align: center;
-}
-
-/* Basic styling */
-.float_left {
-  float: left;
 }
 
 /* % ######################################################### */

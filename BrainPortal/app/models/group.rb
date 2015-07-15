@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #Model representing the Group resource. Groups are meant to represented collective access
@@ -44,24 +44,24 @@ class Group < ActiveRecord::Base
 
   before_validation       :set_default_creator
   after_destroy           :reassign_models_to_owner_group
-  
+
   validates               :name,
                           :presence => true,
                           :name_format => true
-  
+
   has_many                :tools
-  has_and_belongs_to_many :users 
+  has_and_belongs_to_many :users
   has_many                :userfiles
-  has_many                :data_providers 
+  has_many                :data_providers
   has_many                :remote_resources
   has_many                :cbrain_tasks
   has_many                :tags
   belongs_to              :site
   belongs_to              :creator,
                           :class_name   => "User"
-  
+
   attr_accessible         :name, :description, :site_id, :creator_id, :user_ids
-  
+
   cb_scope                :name_like, lambda { |n| {:conditions => ["groups.name LIKE ?", "%#{n}%"]} }
 
   # Returns the unique and special group 'everyone'
@@ -76,15 +76,16 @@ class Group < ActiveRecord::Base
     self
   end
 
-  def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
+  # Can this group be accessed by +user+?
+  def can_be_accessed_by?(user, access_requested = :read)
     @can_be_accessed_cache       ||= {}
     @can_be_accessed_cache[user] ||= (user.has_role?(:admin_user) || user.is_member_of_group(self))
   end
-  
-  #Can this group be edited by +user+?
+
+  # Can this group be edited by +user+?
   #
-  #Returns false in general. Should be overidden in subclasses
-  #in cases where editing is possible.
+  # Returns false in general. Should be overidden in subclasses
+  # in cases where editing is possible.
   def can_be_edited_by?(user)
     false
   end
@@ -109,18 +110,18 @@ class Group < ActiveRecord::Base
   def self.short_pretty_type #:nodoc:
     self.to_s.demodulize.underscore.titleize.sub(/\s*group\s*/i,"")
   end
-  
+
 
   private
-  
-  #Set creator id if it's not set.
+
+  # Set creator id if it's not set.
   def set_default_creator #:nodoc:
-    admin_user = User.find_by_login("admin")
+    admin_user = User.admin
     if self.creator_id.nil? && admin_user #if admin doesn't exist it should mean that it's a new system.
       self.creator_id = admin_user.id
     end
   end
-  
+
   def reassign_models_to_owner_group #:nodoc:
     group_has_many_model_list = Group.reflect_on_all_associations.select { |a| a.macro == :has_many }.map { |a| a.name }
     objlist = group_has_many_model_list.inject([]) { |list,modsym| list += self.send(modsym) }

@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'socket'
@@ -27,23 +27,23 @@ require 'socket'
 # Original author: Nicolas Kassis
 #
 # This file contains a singleton Portal sanity checker class
-# Each sanity(database consitency) check is created in a instance method of the class 
-# The class will run all instance methods named ensure_* when self.become is 
+# Each sanity(database consitency) check is created in a instance method of the class
+# The class will run all instance methods named ensure_* when self.become is
 # called after a new revision.
 # The class creates new sanity check records when it is run after a new revision
-# to this file. 
+# to this file.
 #
 # self.check has been overloaded to add a database record when checks are run to prevent
 # multiple runs of the test and to ensure that the test have been runned in the past
 #
 # The is a rake task to run these sanity checks called rake db:sanity:check
-# This rake task should be run before starting cbrain for the first time. 
-class PortalSanityChecks < CbrainChecker
+# This rake task should be run before starting cbrain for the first time.
+class PortalSanityChecks < CbrainChecker #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  #Checks to see if the validation was run since last change
-  def self.done?
+  # Checks to see if the validation was run since last change
+  def self.done? #:nodoc:
     if SanityCheck.find_by_revision_info(Revision_info.to_s)
       true
     else
@@ -51,27 +51,27 @@ class PortalSanityChecks < CbrainChecker
     end
   end
 
-  #validates the model. Used in lib/task/cbrain_model_validation.rake
-  def self.check(checks_to_run)
+  # validates the model. Used in lib/task/cbrain_model_validation.rake
+  def self.check(checks_to_run) #:nodoc:
 
     #Run sanity checks if it has never has been run
     #-----------------------------------------------------------------------------
     puts "C> CBRAIN BrainPortal database sanity check started, " + Time.now.to_s
     #-----------------------------------------------------------------------------
-    
+
     begin
       #Where the magic happens
       #Run all methods in this class starting with ensure_
       super #calling super to run the actual checks
       puts "C> \t- Adding new sanity check record."
       SanityCheck.new(:revision_info => Revision_info.to_s).save! #Adding new SanityCheck record
-      
+
       #-----------------------------------------------------------------------------
       # Rescue: for the cases when the Rails application is started as part of
       # a DB migration.
       #-----------------------------------------------------------------------------
     rescue => error
-      
+
       if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
         puts "C> Skipping validation:"
         puts "C> \t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
@@ -90,7 +90,7 @@ class PortalSanityChecks < CbrainChecker
   end
 
 
-   
+
   ####################################################
   # Add new validations below                        #
   #                                                  #
@@ -102,10 +102,10 @@ class PortalSanityChecks < CbrainChecker
   # end                                              #
   #                                                  #
   ####################################################
-  
-  #Creates the everyone group and adds the admin user if it does not exist
-  def self.ensure_001_group_and_users_have_been_created
-    
+
+  # Creates the everyone group and adds the admin user if it does not exist
+  def self.ensure_001_group_and_users_have_been_created #:nodoc:
+
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that required groups and users have been created..."
     #-----------------------------------------------------------------------------
@@ -123,11 +123,11 @@ class PortalSanityChecks < CbrainChecker
       Kernel.exit(10)
     end
   end
-  
 
 
-  #adds everyone to the everyone group 
-  def self.ensure_002_users_belongs_to_everyone_group
+
+  # adds everyone to the everyone group
+  def self.ensure_002_users_belongs_to_everyone_group #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that all users have their own group and belong to 'everyone'..."
@@ -142,7 +142,7 @@ class PortalSanityChecks < CbrainChecker
         u.group_ids = groups
         u.save!
       end
-      
+
       user_group = u.own_group
       if ! user_group
         puts "C> \t- User #{u.login} doesn't have its own system group. Creating one."
@@ -164,8 +164,8 @@ class PortalSanityChecks < CbrainChecker
 
 
 
-  #Makes sure that all sites belong to a group and that users of that site belong to it
-  def self.ensure_that_all_sites_have_a_group_and_that_all_their_users_belong_to_it
+  # Makes sure that all sites belong to a group and that users of that site belong to it
+  def self.ensure_that_all_sites_have_a_group_and_that_all_their_users_belong_to_it #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that all sites have a group and that all their users belong to it..."
@@ -186,7 +186,7 @@ class PortalSanityChecks < CbrainChecker
         site_group.site = s
         site_group.save!
       end
-      
+
       unless s.user_ids.sort == site_group.user_ids.sort
         puts "C> \t- '#{site_group.name}' group user list does not match site user list. Resetting users."
         site_group.user_ids = s.user_ids
@@ -194,11 +194,11 @@ class PortalSanityChecks < CbrainChecker
     end
 
   end
-  
 
 
-  #Groups must have a type like WorkGroup, SystemGroup...
-  def self.ensure_that_all_groups_have_a_type
+
+  # Groups must have a type like WorkGroup, SystemGroup...
+  def self.ensure_that_all_groups_have_a_type #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that all groups have a type..."
@@ -215,8 +215,8 @@ class PortalSanityChecks < CbrainChecker
 
 
 
-  #Userfiles must belong to a group or everyone
-  def self.ensure_that_all_userfiles_have_a_group
+  # Userfiles must belong to a group or everyone
+  def self.ensure_that_all_userfiles_have_a_group #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that userfiles all have a group..."
@@ -232,14 +232,14 @@ class PortalSanityChecks < CbrainChecker
       file.group = ugroup
       file.save!
     end
-    
+
   end
-  
+
 
 
   # ToolConfigs must belong to a group or everyone
-  def self.ensure_that_all_toolconfigs_have_a_group
-    
+  def self.ensure_that_all_toolconfigs_have_a_group #:nodoc:
+
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that toolconfigs all gave a group..."
     #-----------------------------------------------------------------------------
@@ -255,8 +255,8 @@ class PortalSanityChecks < CbrainChecker
 
 
 
-  #Makes sure that the portal is registered as a remote ressource or adds it
-  def self.ensure_that_rails_app_is_a_remote_resource
+  # Makes sure that the portal is registered as a remote ressource or adds it
+  def self.ensure_that_rails_app_is_a_remote_resource #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that this RAILS app is registered as a RemoteResource..."
@@ -266,7 +266,7 @@ class PortalSanityChecks < CbrainChecker
     myname     ||= CBRAIN::CBRAIN_RAILS_APP_NAME if CBRAIN.const_defined?('CBRAIN_RAILS_APP_NAME')
 
     brainportal  = myname ? BrainPortal.find_by_name(myname) : nil
- 
+
     if ! brainportal
       puts "C> \t- There is no BrainPortal record for this RAILS app."
       puts "C> \t  Please run 'rake db:seed RAILS_ENV=#{Rails.env}' to create one."
@@ -278,12 +278,12 @@ class PortalSanityChecks < CbrainChecker
       puts "C> \t- NOTE: You need to use the interface to configure properly the Data Provider cache directory."
     end
 
-   end
+  end
 
 
 
-  #Custom filters must have a type or be of type UserfileCustomFilter
-  def self.ensure_custom_filters_have_a_type
+  # Custom filters must have a type or be of type UserfileCustomFilter
+  def self.ensure_custom_filters_have_a_type #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring custom filters have a type..."
@@ -299,28 +299,14 @@ class PortalSanityChecks < CbrainChecker
       end
     end
   end
-  
-  def self.ensure_format_groups_match_source_groups
-    
-    #-----------------------------------------------------------------------------
-    puts "C> Ensuring formats have the same group as source file..."
-    #-----------------------------------------------------------------------------
-    
-    format_files = Userfile.all(:conditions  => "format_source_id IS NOT NULL")
-    format_files.each do |f|
-      if f.format_source && f.group_id != f.format_source.group_id
-        f.group_id = f.format_source.group_id
-        f.save!
-      end
-    end
-  end
-  
-  def self.ensure_tags_have_a_group_id
-    
+
+  # Each tags should have a group
+  def self.ensure_tags_have_a_group_id #:nodoc:
+
     #-----------------------------------------------------------------------------
     puts "C> Ensuring tags have a group..."
     #-----------------------------------------------------------------------------
-    
+
     tags = Tag.all(:conditions => "group_id IS NULL")
     tags.each do |t|
       new_group = t.user.own_group
@@ -328,15 +314,16 @@ class PortalSanityChecks < CbrainChecker
       t.save!
     end
   end
-  
-  def self.ensure_groups_have_creator_id
-    
+
+  # Each groups should have a creator
+  def self.ensure_groups_have_creator_id #:nodoc:
+
     #-----------------------------------------------------------------------------
     puts "C> Ensuring groups have a creator_id..."
     #-----------------------------------------------------------------------------
-    
+
     admin_user = User.find_by_login("admin")
-    
+
     Group.all.each do |g|
       if g.creator_id.nil?
         g.creator_id = admin_user.id

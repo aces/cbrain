@@ -34,6 +34,9 @@ CbrainRailsPortal::Application.routes.draw do
   # Control channel
   resources :controls,       :controller => :controls
 
+  # Documentation
+  resources :docs,           :controller => :help_documents
+
   # Standard CRUD resources
   resources :sites
   resources :custom_filters
@@ -105,6 +108,8 @@ CbrainRailsPortal::Application.routes.draw do
       post 'register'
       get  'is_alive'
       get  'disk_usage'
+      get  'report'
+      post 'repair'
     end
     collection do
       get  'dp_access'
@@ -158,35 +163,39 @@ CbrainRailsPortal::Application.routes.draw do
 
   # Special named routes
   root  :to                       => 'portal#welcome'
-  match '/home'                   => 'portal#welcome'
-  match '/credits'                => 'portal#credits'
-  match '/about_us'               => 'portal#about_us'
-  match '/login'                  => 'sessions#new'
-  match '/session_status'         => 'sessions#show'
-  match '/logout'                 => 'sessions#destroy'
-  match '/filter_proxy'           => 'application#filter_proxy'
+  get   '/home'                   => 'portal#welcome'
+  post  '/home'                   => 'portal#welcome' # lock/unlock service
+  get   '/credits'                => 'portal#credits'
+  get   '/about_us'               => 'portal#about_us'
+  get   '/login'                  => 'sessions#new'
+  get   '/session_status'         => 'sessions#show'
+  get   '/logout'                 => 'sessions#destroy'
+  get   '/filter_proxy'           => 'application#filter_proxy'
 
   # Report Maker
-  match "/report",                :controller => :portal, :action => :report
+  get   "/report",                :controller => :portal, :action => :report
 
   # Licence handling
-  match '/show_license/:license', :controller => :portal, :action => :show_license
-  match '/sign_license/:license', :controller => :portal, :action => :sign_license, :via => :post
+  get   '/show_license/:license', :controller => :portal, :action => :show_license
+  post  '/sign_license/:license', :controller => :portal, :action => :sign_license
 
   # Portal log
-  match '/portal_log', :controller => :portal, :action => :portal_log
+  get   '/portal_log', :controller => :portal, :action => :portal_log
 
-  # Service
-  match '/service/info',           :controller => :service, :action => :info
-  match '/service/stats',          :controller => :service, :action => :stats
-  match '/service/detailed_stats', :controller => :service, :action => :detailed_stats
-  match '/service/doc',            :controller => :service, :action => :doc
-  match '/service/releasenotes',   :controller => :service, :action => :releasenotes
-  match '/service/support',        :controller => :service, :action => :support
-  match '/service/source',         :controller => :service, :action => :source
-  match '/service/tryme',          :controller => :service, :action => :tryme
-  match '/service/licence',        :controller => :service, :action => :licence
-  match '/service/provenance',     :controller => :service, :action => :provenance
+  # Service; most of these actions are only needed
+  # for the CANARIE monitoring system, and are therefore
+  # shipped disabled by default, because it's not needed
+  # anywhere else.
+  #get   '/service/info',           :controller => :service, :action => :info
+  #get   '/service/stats',          :controller => :service, :action => :stats
+  #get   '/service/detailed_stats', :controller => :service, :action => :detailed_stats
+  #get   '/service/doc',            :controller => :service, :action => :doc
+  #get   '/service/releasenotes',   :controller => :service, :action => :releasenotes
+  #get   '/service/support',        :controller => :service, :action => :support
+  #get   '/service/source',         :controller => :service, :action => :source
+  #get   '/service/tryme',          :controller => :service, :action => :tryme
+  #get   '/service/licence',        :controller => :service, :action => :licence
+  #get   '/service/provenance',     :controller => :service, :action => :provenance
 
 end
 

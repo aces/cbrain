@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20141112190453) do
+ActiveRecord::Schema.define(:version => 20150615174035) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -56,12 +56,18 @@ ActiveRecord::Schema.define(:version => 20141112190453) do
   end
 
   add_index "cbrain_tasks", ["batch_id"], :name => "index_cbrain_tasks_on_batch_id"
+  add_index "cbrain_tasks", ["bourreau_id", "status", "type"], :name => "index_cbrain_tasks_on_bourreau_id_and_status_and_type"
+  add_index "cbrain_tasks", ["bourreau_id", "status"], :name => "index_cbrain_tasks_on_bourreau_id_and_status"
   add_index "cbrain_tasks", ["bourreau_id"], :name => "index_cbrain_tasks_on_bourreau_id"
+  add_index "cbrain_tasks", ["cluster_workdir_size"], :name => "index_cbrain_tasks_on_cluster_workdir_size"
+  add_index "cbrain_tasks", ["group_id", "bourreau_id", "status"], :name => "index_cbrain_tasks_on_group_id_and_bourreau_id_and_status"
   add_index "cbrain_tasks", ["group_id"], :name => "index_cbrain_tasks_on_group_id"
   add_index "cbrain_tasks", ["launch_time"], :name => "index_cbrain_tasks_on_launch_time"
   add_index "cbrain_tasks", ["status"], :name => "index_cbrain_tasks_on_status"
   add_index "cbrain_tasks", ["type"], :name => "index_cbrain_tasks_on_type"
+  add_index "cbrain_tasks", ["user_id", "bourreau_id", "status"], :name => "index_cbrain_tasks_on_user_id_and_bourreau_id_and_status"
   add_index "cbrain_tasks", ["user_id"], :name => "index_cbrain_tasks_on_user_id"
+  add_index "cbrain_tasks", ["workdir_archived"], :name => "index_cbrain_tasks_on_workdir_archived"
 
   create_table "custom_filters", :force => true do |t|
     t.string   "name"
@@ -94,6 +100,7 @@ ActiveRecord::Schema.define(:version => 20141112190453) do
     t.string   "time_zone"
     t.string   "cloud_storage_client_identifier"
     t.string   "cloud_storage_client_token"
+    t.string   "alternate_host"
   end
 
   add_index "data_providers", ["group_id"], :name => "index_data_providers_on_group_id"
@@ -157,6 +164,15 @@ ActiveRecord::Schema.define(:version => 20141112190453) do
 
   add_index "groups_users", ["group_id"], :name => "index_groups_users_on_group_id"
   add_index "groups_users", ["user_id"], :name => "index_groups_users_on_user_id"
+
+  create_table "help_documents", :force => true do |t|
+    t.string   "key",        :null => false
+    t.string   "path",       :null => false
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "help_documents", ["key"], :name => "index_help_documents_on_key", :unique => true
 
   create_table "messages", :force => true do |t|
     t.string   "header"
@@ -277,6 +293,12 @@ ActiveRecord::Schema.define(:version => 20141112190453) do
     t.text     "description"
   end
 
+  create_table "ssh_agent_unlocking_events", :force => true do |t|
+    t.string   "message"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
   create_table "sync_status", :force => true do |t|
     t.integer  "userfile_id"
     t.integer  "remote_resource_id"
@@ -321,6 +343,7 @@ ActiveRecord::Schema.define(:version => 20141112190453) do
     t.datetime "updated_at"
     t.integer  "group_id"
     t.integer  "ncpus"
+    t.string   "docker_image"
   end
 
   add_index "tool_configs", ["bourreau_id"], :name => "index_tool_configs_on_bourreau_id"
@@ -355,16 +378,18 @@ ActiveRecord::Schema.define(:version => 20141112190453) do
     t.integer  "data_provider_id"
     t.boolean  "group_writable",                                  :default => false, :null => false
     t.integer  "num_files"
-    t.integer  "format_source_id"
     t.boolean  "hidden",                                          :default => false
     t.boolean  "immutable",                                       :default => false
     t.boolean  "archived",                                        :default => false
+    t.text     "description"
   end
 
+  add_index "userfiles", ["archived", "id"], :name => "index_userfiles_on_archived_and_id"
   add_index "userfiles", ["data_provider_id"], :name => "index_userfiles_on_data_provider_id"
-  add_index "userfiles", ["format_source_id"], :name => "index_userfiles_on_format_source_id"
   add_index "userfiles", ["group_id"], :name => "index_userfiles_on_group_id"
+  add_index "userfiles", ["hidden", "id"], :name => "index_userfiles_on_hidden_and_id"
   add_index "userfiles", ["hidden"], :name => "index_userfiles_on_hidden"
+  add_index "userfiles", ["immutable", "id"], :name => "index_userfiles_on_immutable_and_id"
   add_index "userfiles", ["name"], :name => "index_userfiles_on_name"
   add_index "userfiles", ["type"], :name => "index_userfiles_on_type"
   add_index "userfiles", ["user_id"], :name => "index_userfiles_on_user_id"

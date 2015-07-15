@@ -17,32 +17,32 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe Tag do
-  let (:tag) {Factory.create(:tag)}
+  let (:tag) { create(:tag) }
 
   it "should check that name is unique" do
-    bad_name=Factory.build(:tag, :group_id => tag.group_id, :name => tag.name)
-    bad_name.should_not be_valid
+    bad_name = build(:tag, :group_id => tag.group_id, :name => tag.name)
+    expect(bad_name).not_to be_valid
   end
 
   it "should check that name is unique only for same scope" do
-    bad_name=Factory.build(:tag, :name => tag.name)
-    bad_name.should be_valid
+    bad_name= build(:tag, :name => tag.name)
+    expect(bad_name).to be_valid
   end
 
   it "should check that name have specific format" do
-    good_name = Factory.build(:tag, :name => "Abcdef")
-    good_name.should be_valid
+    good_name = build(:tag, :name => "Abcdef")
+    expect(good_name).to be_valid
   end
 
   it "should not be valid if the name is invalid" do
-    bad_name = Factory.build(:tag, :name => "Ab@cdef")
-    bad_name.should_not be_valid
+    bad_name = build(:tag, :name => "Ab@cdef")
+    expect(bad_name).not_to be_valid
   end
 
 end

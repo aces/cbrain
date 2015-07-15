@@ -17,22 +17,22 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe VaultSmartDataProvider do
-  let(:vault_smart_data_provider) {Factory.create(:vault_smart_data_provider)}
-  
+  let(:vault_smart_data_provider) {create(:vault_smart_data_provider)}
+
   describe "#after_initialize_select_provider" do
-    
+
     it "should receive select_local_or_network_provider" do
-      vault_smart_data_provider.should_receive(:select_local_or_network_provider)
+      expect(vault_smart_data_provider).to receive(:select_local_or_network_provider)
       vault_smart_data_provider.after_initialize_select_provider
     end
-    
+
   end
-  
+
 end
 

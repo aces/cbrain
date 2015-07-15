@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #
@@ -47,7 +47,7 @@
 #   parsed = HttpUserAgent.new(ua_string)
 #
 class HttpUserAgent
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   attr_accessor :browser_name, :browser_version,
@@ -66,7 +66,7 @@ class HttpUserAgent
     self.reset
 
     @full_ua = user_agent_string
-    
+
     # Pre-processing
     adj_ua = user_agent_string
     adj_ua.gsub!(/(MSIE|Opera)\s+([\d\.]+)/,'\1/\2')
@@ -121,6 +121,7 @@ class HttpUserAgent
     return self
   end
 
+  # Reset all the fields of the user agent.
   def reset
     self.browser_name    = nil
     self.browser_version = nil

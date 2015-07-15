@@ -17,119 +17,119 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe EnCbrainSshDataProvider do
-  let(:en_cbrain_ssh_data_provider) {Factory.create(:en_cbrain_ssh_data_provider)}
-  let(:userfile) {Factory.create(:userfile, :data_provider => en_cbrain_ssh_data_provider)}
-  
+  let(:en_cbrain_ssh_data_provider) {create(:en_cbrain_ssh_data_provider)}
+  let(:userfile) {create(:userfile, :data_provider => en_cbrain_ssh_data_provider)}
+
   describe "#is_browsable?" do
-    
+
     it "should return false" do
-      en_cbrain_ssh_data_provider.is_browsable?.should be_false  
+      expect(en_cbrain_ssh_data_provider.is_browsable?).to be_falsey
     end
-    
+
   end
 
   describe "#allow_file_owner_change" do
-    
+
     it "should return true" do
-      en_cbrain_ssh_data_provider.allow_file_owner_change?.should be_true  
+      expect(en_cbrain_ssh_data_provider.allow_file_owner_change?).to be_truthy
     end
-    
+
   end
 
 
   describe "#impl_provider_erase" do
 
     it "should erase provider" do
-      en_cbrain_ssh_data_provider.stub!(:remote_dir).and_return("x/y/z")
-      en_cbrain_ssh_data_provider.stub!(:ssh_shared_options)
-      en_cbrain_ssh_data_provider.should_receive(:remote_bash_this).with(/rm -rf/)
+      allow(en_cbrain_ssh_data_provider).to receive(:remote_dir).and_return("x/y/z")
+      allow(en_cbrain_ssh_data_provider).to receive(:ssh_shared_options)
+      expect(en_cbrain_ssh_data_provider).to receive(:remote_bash_this).with(/rm -rf/)
       en_cbrain_ssh_data_provider.impl_provider_erase(userfile)
     end
 
     it "should return true" do
-      en_cbrain_ssh_data_provider.stub!(:remote_dir).and_return("x/y/z")
-      en_cbrain_ssh_data_provider.stub!(:ssh_shared_options)
-      en_cbrain_ssh_data_provider.stub!(:remote_bash_this)
-      en_cbrain_ssh_data_provider.impl_provider_erase(userfile).should be_true
+      allow(en_cbrain_ssh_data_provider).to receive(:remote_dir).and_return("x/y/z")
+      allow(en_cbrain_ssh_data_provider).to receive(:ssh_shared_options)
+      allow(en_cbrain_ssh_data_provider).to receive(:remote_bash_this)
+      expect(en_cbrain_ssh_data_provider.impl_provider_erase(userfile)).to be_truthy
     end
-  
+
   end
 
   describe "#impl_provider_rename" do
     before(:each) do
       path = Pathname.new("x/y/z")
-      en_cbrain_ssh_data_provider.stub!(:provider_full_path).and_return(path)
+      allow(en_cbrain_ssh_data_provider).to receive(:provider_full_path).and_return(path)
     end
 
     it "should attempt to unlock the CBRAIN SSH agent" do
-      en_cbrain_ssh_data_provider.should_receive(:master)
-      Net::SFTP.should_receive(:start).and_return "OK"
-      en_cbrain_ssh_data_provider.impl_provider_rename(userfile,"new_name").should == "OK"
+      expect(en_cbrain_ssh_data_provider).to receive(:master)
+      expect(Net::SFTP).to receive(:start).and_return "OK"
+      expect(en_cbrain_ssh_data_provider.impl_provider_rename(userfile,"new_name")).to eq("OK")
     end
 
     it "should return false if file already exist" do
-      sftp = mock('mock_sftp') 
-      Net::SFTP.should_receive(:start).and_yield(sftp)
-      req  = mock("req") 
-      sftp.stub_chain(:lstat,:wait).and_return(req)
-      req.stub_chain(:response, :ok?).and_return(true)
-      en_cbrain_ssh_data_provider.should_receive(:master) # just ignore it
-      en_cbrain_ssh_data_provider.impl_provider_rename(userfile,"new_name").should be_false
+      sftp = double('mock_sftp')
+      expect(Net::SFTP).to receive(:start).and_yield(sftp)
+      req  = double("req")
+      allow(sftp).to receive_message_chain(:lstat,:wait).and_return(req)
+      allow(req).to receive_message_chain(:response, :ok?).and_return(true)
+      expect(en_cbrain_ssh_data_provider).to receive(:master) # just ignore it
+      expect(en_cbrain_ssh_data_provider.impl_provider_rename(userfile,"new_name")).to be_falsey
     end
-    
+
     it "should return false if rename doesn't work" do
-      sftp  = mock('mock_sftp') 
-      Net::SFTP.should_receive(:start).and_yield(sftp)
-      req1  = mock("req1") 
-      sftp.stub_chain(:lstat,:wait).and_return(req1)
-      req1.stub_chain(:response, :ok?).and_return(false)
-      req2  = mock("req2") 
-      sftp.stub_chain(:rename,:wait).and_return(req2)
-      req2.stub_chain(:response, :ok?).and_return(false)
-      en_cbrain_ssh_data_provider.should_receive(:master) # just ignore it
-      en_cbrain_ssh_data_provider.impl_provider_rename(userfile,"new_name").should be_false
+      sftp  = double('mock_sftp')
+      expect(Net::SFTP).to receive(:start).and_yield(sftp)
+      req1  = double("req1")
+      allow(sftp).to receive_message_chain(:lstat,:wait).and_return(req1)
+      allow(req1).to receive_message_chain(:response, :ok?).and_return(false)
+      req2  = double("req2")
+      allow(sftp).to receive_message_chain(:rename,:wait).and_return(req2)
+      allow(req2).to receive_message_chain(:response, :ok?).and_return(false)
+      expect(en_cbrain_ssh_data_provider).to receive(:master) # just ignore it
+      expect(en_cbrain_ssh_data_provider.impl_provider_rename(userfile,"new_name")).to be_falsey
     end
-    
+
     it "should return true if all works fine" do
-      sftp  = mock('mock_sftp') 
-      Net::SFTP.should_receive(:start).and_yield(sftp)
-      req1  = mock("req1") 
-      sftp.stub_chain(:lstat,:wait).and_return(req1)
-      req1.stub_chain(:response, :ok?).and_return(false)
-      req2  = mock("req2") 
-      sftp.stub_chain(:rename,:wait).and_return(req2)
-      req2.stub_chain(:response, :ok?).and_return(true)
-      en_cbrain_ssh_data_provider.should_receive(:master) # just ignore it
-      en_cbrain_ssh_data_provider.impl_provider_rename(userfile,"new_name").should be_true
+      sftp  = double('mock_sftp')
+      expect(Net::SFTP).to receive(:start).and_yield(sftp)
+      req1  = double("req1")
+      allow(sftp).to receive_message_chain(:lstat,:wait).and_return(req1)
+      allow(req1).to receive_message_chain(:response, :ok?).and_return(false)
+      req2  = double("req2")
+      allow(sftp).to receive_message_chain(:rename,:wait).and_return(req2)
+      allow(req2).to receive_message_chain(:response, :ok?).and_return(true)
+      expect(en_cbrain_ssh_data_provider).to receive(:master) # just ignore it
+      expect(en_cbrain_ssh_data_provider.impl_provider_rename(userfile,"new_name")).to be_truthy
     end
-    
+
   end
 
   describe "#impl_provider_list_all" do
-    
+
     it "should return a cbrain error" do
-      lambda{en_cbrain_ssh_data_provider.impl_provider_list_all}.should raise_error(CbrainError)
+      expect{en_cbrain_ssh_data_provider.impl_provider_list_all}.to raise_error(CbrainError)
     end
-  
+
   end
 
   describe "#provider_full_path" do
     it "should return provider_full_path" do
-      cache_subdirs_from_id = ["146","22","44"] 
-      en_cbrain_ssh_data_provider.stub!(:cache_subdirs_from_id).and_return(cache_subdirs_from_id)
-      en_cbrain_ssh_data_provider.stub!(:remote_dir).and_return("x/y/z")
-      provider_full_path = 
+      cache_subdirs_from_id = ["146","22","44"]
+      allow(en_cbrain_ssh_data_provider).to receive(:cache_subdirs_from_id).and_return(cache_subdirs_from_id)
+      allow(en_cbrain_ssh_data_provider).to receive(:remote_dir).and_return("x/y/z")
+      provider_full_path =
         Pathname.new("#{en_cbrain_ssh_data_provider.remote_dir}/#{cache_subdirs_from_id[0]}/#{cache_subdirs_from_id[1]}/#{cache_subdirs_from_id[2]}/#{userfile.name}")
-      en_cbrain_ssh_data_provider.provider_full_path(userfile).should be == provider_full_path
+      expect(en_cbrain_ssh_data_provider.provider_full_path(userfile)).to eq(provider_full_path)
     end
   end
-  
-  
+
+
 end
 

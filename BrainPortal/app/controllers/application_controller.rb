@@ -58,7 +58,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery :secret => 'b5e7873bd1bd67826a2661e01621334b'
 
 
-  def filter_proxy
+  def filter_proxy #:nodoc:
     redirect_to(:controller  => params[:proxy_destination_controller],
                 :action      => params[:proxy_destination_action] || "index",
                 :id          => params[:proxy_destination_id])
@@ -73,14 +73,14 @@ class ApplicationController < ActionController::Base
   # Returns the name of the model class associated with a given contoller. By default
   # takes the name from the name of the controller, but can be redefined in subclasses
   # as needed.
-  def resource_class
+  def resource_class #:nodoc:
     @resource_class ||= Class.const_get self.class.to_s.sub(/Controller$/, "").singularize
   end
 
   # This method adjust the Rails app's time zone in the rare
   # cases where the admin has changed it in the DB using the
   # interface.
-  def adjust_system_time_zone
+  def adjust_system_time_zone #:nodoc:
     myself = RemoteResource.current_resource
     syszone = myself.time_zone
     return true unless syszone && ActiveSupport::TimeZone[syszone]
@@ -116,7 +116,7 @@ class ApplicationController < ActionController::Base
   #the 'back' button on the browser.
   #
   #NOTE: Does not seem to be effective for all browsers.
-  def set_cache_killer
+  def set_cache_killer #:nodoc:
     # (no-cache) Instructs the browser not to cache and get a fresh version of the resource
     # (no-store) Makes sure the resource is not stored to disk anywhere - does not guarantee that the
     # resource will not be written
@@ -138,7 +138,7 @@ class ApplicationController < ActionController::Base
 
   # Check if the user needs to change their password
   # or sign license agreements.
-  def check_account_validity
+  def check_account_validity #:nodoc:
     return false unless current_user
     return true  if     params[:controller] == "sessions"
     return false unless check_password_reset()
@@ -183,7 +183,7 @@ class ApplicationController < ActionController::Base
 
   # 'After' callback: logs in the Rails logger information about the user who
   # just performed the request.
-  def log_user_info
+  def log_user_info #:nodoc:
     reqenv = request.env
     login  = current_user ? current_user.login : "(none)"
 
@@ -194,7 +194,9 @@ class ApplicationController < ActionController::Base
     # Compute the info from the request (when not logged in)
     ip   ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
     if host.blank? && ip =~ /^[\d\.]+$/
-      addrinfo = Socket.gethostbyaddr(ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ ip ]
+      addrinfo = Rails.cache.fetch("host_addr/#{ip}") do
+        Socket.gethostbyaddr(ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ ip ]
+      end
       host = addrinfo[0]
     end
 
@@ -219,7 +221,7 @@ class ApplicationController < ActionController::Base
 
   # 'After' callback: store a hash in the metadata of the session, in order
   # to keep the count of each action by controller and by client_type.
-  def action_counter
+  def action_counter #:nodoc:
     # Extract information about controller and action
     client_type            = current_session["client_type"] # this is set in log_user_info() above.
     return true if client_type.blank?
@@ -263,10 +265,10 @@ class ApplicationController < ActionController::Base
   ########################################################################
 
   # Find new messages to be displayed at the top of the page.
-  def prepare_messages
+  def prepare_messages #:nodoc:
     return unless current_user
     return if     current_user.all_licenses_signed.blank?
-    return if     request.format.blank?
+    return if     request.format.blank? || request.xhr?
     return unless request.format.to_sym == :html || params[:controller] == 'messages'
 
     @display_messages = []
@@ -317,7 +319,7 @@ class ApplicationController < ActionController::Base
   # the option :delete_on_blank by default, and extracts
   # by default the hash tables of value for +meta_params+ from
   # params[:meta]. See ActRecMetaData for more information.
-  def add_meta_data_from_form(target_object, meta_keys = [], meta_params = nil, options = {})
+  def add_meta_data_from_form(target_object, meta_keys = [], meta_params = nil, options = {}) #:nodoc:
     return true if meta_keys.empty?
     meta_params = meta_params.presence || params[:meta] || {}
     target_object.update_meta_data(meta_params, meta_keys, { :delete_on_blank => true }.merge(options))
@@ -332,7 +334,7 @@ class ApplicationController < ActionController::Base
   alias :old_redirect_to :redirect_to
 
   # Change default redirect code to 303
-  def redirect_to(options = {}, response_status = {})
+  def redirect_to(options = {}, response_status = {}) #:nodoc:
     if options.is_a?(Hash)
       options[:status] ||= 303
     else
@@ -341,8 +343,8 @@ class ApplicationController < ActionController::Base
     old_redirect_to(options, response_status)
   end
 
-  #Home pages in hash form.
-  def start_page_params
+  # Home pages in hash form.
+  def start_page_params #:nodoc:
     if current_user.nil?
       { :controller => :sessions, :action => :new }
     elsif current_user.has_role?(:normal_user)
@@ -352,8 +354,8 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  #Different home pages for admins and other users.
-  def start_page_path
+  # Different home pages for admins and other users.
+  def start_page_path #:nodoc:
     url_for(start_page_params)
   end
 
@@ -363,8 +365,8 @@ class ApplicationController < ActionController::Base
   #
   ####################################################
 
-  #Use in order to return param key if it's present in params
-  def extract_params_key (list=[], default=nil)
+  # Use in order to return param key if it's present in params
+  def extract_params_key (list=[], default=nil) #:nodoc:
     list.detect { |x| params.has_key?(x) && x } || default
   end
 

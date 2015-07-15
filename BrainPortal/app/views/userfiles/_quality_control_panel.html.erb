@@ -18,33 +18,66 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<h2>
-  QC Tagging for: <%= @userfile.name %>
-</h2>
-(Dataset <%= @current_index + 1 %> out of <%= @filelist.size %>)
-<br><br>
-<% if @current_index > 0 %>
-  <%= submit_button "Previous", :name => :previous %> 
+<!-- State information -->
+
+<% @filelist.each do |id| %>
+  <%= hidden_field_tag "file_ids[]", id %>
 <% end %>
-<%= submit_button "Pass", :name => :pass %> <%= submit_button "Fail", :name => :fail %> <%= submit_button "Unknown", :name => :unknown %> 
+
+<%= hidden_field_tag :index, @current_index %>
+
+
+
+<h2>
+  Quality Control Tagging for: <%= @userfile.name %>
+</h2>
+
+(Dataset <%= @current_index + 1 %> out of <%= @filelist.size %>)
+
+<p>
+
+<% if @current_index > 0 %>
+  <%= submit_button "Previous", :name => :previous %>
+<% end %>
+
+<%= submit_button "Pass",    :name => :pass %>
+<%= submit_button "Fail",    :name => :fail %>
+<%= submit_button "Unknown", :name => :unknown %>
+
 <% if @current_index < @filelist.size - 1 %>
   <%= submit_button "Next", :name => :next %>
 <% end %>
-<br><br>
-  <% @filelist.each do |id| %>
-    <%= hidden_field_tag "file_ids[]", id %>
-  <% end %>
-  <%= hidden_field_tag :index, @current_index %>
-  <select name="tag_ids[]" multiple="multiple" style="width:150px" >
-  <%= options_from_collection_for_select current_user.available_tags, 'id', 'name', @userfile.get_tags_for_user(current_user).map(&:id) %>
-  </select>
-  <br>
-  <%= submit_tag "Update Tags" %>
+
+<p>
+
+<select name="tag_ids[]" multiple="multiple" style="width:150px" >
+  <%= options_from_collection_for_select current_user.available_tags, 'id', 'name',
+      @userfile.get_tags_for_user(current_user).raw_first_column(:id) %>
+</select>
 
 <br>
-<%= render :partial => @partial %>
+
+<%= submit_tag "Update Tags" %>
+
+<p>
+
+<% begin %>
+  <%= render :file => @qc_view_file %>
+<% rescue => ex %>
+  There was an error generating the QC panel for this file. Please talk to the developers.
+  <% if current_user.has_role? :admin_user %>
+    <pre>
+    Exception: <%= ex.class %> : <%= ex.message %>
+    <% ex.backtrace.each do |line| %>
+    <%= line %>
+    <% end %>
+    </pre>
+  <% end %>
+<% end %>
+
+<br>
 

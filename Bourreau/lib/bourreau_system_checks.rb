@@ -134,7 +134,6 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     # Adjust the tasks
     adj_success = 0 ; adj_fail = 0 ; adj_same = 0 ; adj_zap = 0
     local_old_tasks.each_with_index do |task,idx|
-      tid          = task.id
       old_workdir  = task.cluster_workdir
       last_updated = task.updated_at || Time.now
       #puts_red "OLD=#{old_workdir}"
@@ -296,11 +295,11 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
         t.addlog("INCONSISTENCY REPAIR: This task was marked archived both as a file and on cluster (cluster archive was invalid)")
         t.workdir_archived     = true
         t.cluster_workdir_size = nil
-       else # turn to case C
+      else # turn to case C
         t.addlog("INCONSISTENCY REPAIR: This task was marked archived both as a file and on cluster (file archive was invalid)")
         t.workdir_archive_userfile_id = nil
-       end
-       t.save
+      end
+      t.save
     end
 
     # CASE 5
@@ -429,6 +428,30 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
       :critical      => true,
       :send_email    => false
     ) rescue true
+
+  end
+
+
+
+  def self.a100_ensure_dp_cache_symlink_exists
+
+    myself        = RemoteResource.current_resource
+    gridshare_dir = myself.cms_shared_dir
+    cache_dir     = myself.dp_cache_dir
+
+    return unless Dir.exists?(gridshare_dir) && Dir.exists?(cache_dir)
+
+    #----------------------------------------------------------------------------
+    puts "C> Making sure the grid share directory has a symlink to the data provider cache..."
+    #----------------------------------------------------------------------------
+
+    sym_path = "#{gridshare_dir}/#{DataProvider::DP_CACHE_SYML}"
+    return if File.symlink?(sym_path) && File.realpath(sym_path) == File.realpath(cache_dir)
+
+    File.unlink(sym_path) if File.exists?(sym_path)
+    File.symlink(cache_dir, sym_path)
+
+    puts "C> \t- '#{sym_path}' -> '#{cache_dir}'"
 
   end
 

@@ -1,0 +1,38 @@
+<% if @_license_text.present? -%>
+
+<!--
+<%= @_license_text.gsub("--", "==") -%>
+-->
+<% end -%>
+
+<h1>Description of the options for <%= class_name %></h1>
+
+<b><center>Document your task's parameters in this HTML template.</center></b>
+
+<p>
+This file will be shown as a (Help) link at the top of the task's
+parameters form.  As a task programmer you are meant to explain
+what your task does, and what all your little input elements mean.
+
+Note that this file is NOT a .erb template, and so no dynamic content
+is possible here. If you need to include images from your static
+assets in your task's "public" directory, you will have to hardcode
+a path like this:
+
+    <img href="cbrain_plugins/cbrain_tasks/<%= file_name %>/publicfile.jpg">
+
+which will work AFTER you install the task with rake
+cbrain:plugins:install:all (because some symbolic links need to be
+set up). We highly suggest not including too many pictures in this
+file, as it shows as an overlay in the task's parameters form.
+
+Please remove this comment block once you've finished editing this file...
+<p>
+
+<b>Some Section</b>
+<ul>
+    <li><b>param1:</b> description 1.</li>
+    <li><b>param2:</b> description 2.</li>
+    <li><b>param3:</b> description 3.</li>
+</ul>
+

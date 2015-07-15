@@ -1,0 +1,57 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<fieldset>
+  <legend>List of other tasks under control</legend>
+
+  <p>
+  This task has no parameters. It just run these other tasks in parallel:
+  </p>
+
+  <ul>
+  <% task_ids_enabled = @task.params[:task_ids_enabled] || {} %>
+  <% task_ids_enabled.keys.sort { |a,b| a.to_i <=> b.to_i }.each do |tid| %>
+  <%   enabled = (task_ids_enabled[tid] || "0") == "1" %>
+  <%   subtask = CbrainTask.find_by_id(tid) %>
+    <li>
+      <% if subtask %>
+        <%= red_if(! enabled,"On","Off", :color1 => 'green') %>
+        <%= link_to_task_if_accessible(subtask, nil, :name => subtask.fullname) %>
+        (currently in state <strong><%= colored_status(subtask.status) %></strong>)
+      <% else %>
+        <%= html_colorize("Off") %>
+        (Task #<%= h(tid) %> no longer exists)
+      <% end %>
+    </li>
+  <% end %>
+  </ul>
+
+  <p>
+  In the task manager, you can view the full
+  <%= filter_reset_link "list of tasks", :controller => :tasks, :filters  => { :batch_id => @task.batch_id }, :ajax => false %>
+  in this batch.
+  </p>
+
+</fieldset>
+

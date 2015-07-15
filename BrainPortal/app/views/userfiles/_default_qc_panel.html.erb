@@ -1,0 +1,36 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% if ! @userfile.is_locally_synced? %>
+  This file must be synced locally to view QC data.
+<% else %>
+  <% if @userfile.is_a?(ImageFile) %>
+    <%= image_tag url_for(:action  => :content, :id => @userfile.id) %><br>
+  <% else %>
+    <span class="warning">
+    This file does not seem to contain any QC data, or no template is available to QC this file type.
+    </span>
+  <% end %>
+<% end %>
+

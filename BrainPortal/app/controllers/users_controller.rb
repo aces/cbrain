@@ -155,7 +155,7 @@ class UsersController < ApplicationController
     end
   end
 
-  def change_password
+  def change_password #:nodoc:
     @user = User.find(params[:id])
     cb_error "You don't have permission to view this page.", :redirect => start_page_path unless edit_permission?(@user)
   end
@@ -286,7 +286,8 @@ class UsersController < ApplicationController
 
     if @user
       if @user.account_locked?
-        flash[:error] = "This account is locked, please write to #{User.admin.email || "the support staff"} to get this account unlocked."
+        contact = RemoteResource.current_resource.support_email.presence || User.admin.email.presence || "the support staff"
+        flash[:error] = "This account is locked, please write to #{contact} to get this account unlocked."
         respond_to do |format|
           format.html { redirect_to :action  => :request_password }
           format.xml  { render :nothing => true, :status  => 401 }

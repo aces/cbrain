@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # CBRAIN extensions for logging information about ANY
@@ -30,7 +30,7 @@
 # Original author: Pierre Rioux
 
 # = CBRAIN Data Tracking API
-# 
+#
 # It's important operations performed by CBRAIN users be tracked
 # carefully. Whenever a data file is processed trough a scientific tool, we
 # need to record somewhere that this was performed, and the record should
@@ -38,9 +38,9 @@
 # the revision numbers of other modules involved, and if possible what
 # parameters were used. The same information should be recorded for the
 # output files produced by the tools, too.
-# 
+#
 # === The 'active_record_log' Table
-# 
+#
 # As of subversion revision 393 of CBRAIN, a new database table will
 # provide the data tracking facility. Although it is a normal Rails
 # ActiveRecord table, it is designed to store objects related to ANY other
@@ -49,48 +49,48 @@
 # This table and its records are NOT expected to be ever accessed by CBRAIN
 # programmers directly, instead a simple API has been added to the lowest
 # level of the ActiveRecord class hierarchy, ActiveRecord::Base.
-# 
+#
 # === The new ActiveRecord methods
-# 
+#
 # There are four instance methods in the data tracking API. These
 # four methods are available for ANY ActiveRecord object 'obj' on the
 # system. They are:
-# 
+#
 #     obj.addlog(message)
 #     obj.addlog_context(ctx,message=nil)
 #     obj.addlog_revinfo(data,message=nil)
 #     obj.getlog()
-# 
+#
 # All of these manipulate a simple text file that is associated precisely
 # and uniquely with the object on which the method is called. The text
 # file is stored as a single long string with embedded newlines.
 # Here
 # is how each of these method work, and in what situation you should use
 # them.
-# 
+#
 # * obj.addlog(message)
-# 
+#
 # This is the simplest logging method. It simply appends the message
 # string to the obj's current log. If the message is the very first
 # message created for that object, then addlog will automatically
 # prepend a line logging the class and revision information for
 # the object 'obj'. The format of the appended line is:
-# 
+#
 #   [2009-08-03 17:32:19] message
-# 
+#
 # * obj.addlog_context(ctx,message=nil)
-# 
+#
 # This method works like addlog(), but also prepends the optional
 # message with callback information and revision information
 # associated with 'ctx'. This method is meant to add a log
 # entry describing where the program IS at the current moment,
 # so usually and almost systematically, you should use 'self'
 # as the ctx argument. The logged line will look like this:
-# 
+#
 #   [2009-08-03 17:32:19] ctxclass currentmethod() ctxrevinfo message
-# 
+#
 # * obj.addlog_revinfo(data,message=nil)
-# 
+#
 # This message works like addlog(), but also prepends the optional
 # message with revision information about the 'data', which can be
 # almost anything (an object, or a class, or anything that responds
@@ -98,9 +98,9 @@
 # add a log entry describing information about another resource (the
 # 'data') that is currently being used for processing this object.
 # The logged line will look like this:
-# 
+#
 #   [2009-08-03 17:32:19] dataclass datarevinfo message
-# 
+#
 # * obj.getlog()
 #
 # Returns the current log as a single long string with embedded
@@ -109,18 +109,18 @@
 # Note that along with these new methods, some ActiveRecord callbacks have
 # been defined behind the scene such that any ActiveRecord object being
 # destroy()ed will trigger the destruction of its associated log.
-# 
+#
 # === Examples
-# 
+#
 # Here's a complete example that show in which situations all three addlog()
 # methods should be called, and what the resulting logs will look like.
-# 
+#
 # Let's suppose we have a subroutine do_analysis() that receives a userfile
 # 'myfile', does some processing on it using the methods 'shred' of the
 # data processing object 'myshred' (of class 'Shredder'), which returns a
 # new userfile 'resultfile'. The plain pseudo code looks like this (the
 # content of two ruby files 'processor.rb' and 'shredder.rb' are shown):
-# 
+#
 #   class Processor
 #     Revision_info="SId: processor.rb 123 2009-07-30 16:55:47Z prioux S"
 #     def do_analysis(myfile,myshred)
@@ -128,7 +128,7 @@
 #       return resultfile
 #     end
 #   end
-# 
+#
 #   class Shredder
 #     Revision_info="SId: shredder.rb 424 2009-08-30 13:25:12Z prioux S"
 #     def shred(file)
@@ -136,10 +136,10 @@
 #       return resfile
 #     end
 #   end
-# 
+#
 # We want to improve the code to record the information about all these steps
 # and methods. Let's just sprinkle addlog() calls here and there:
-# 
+#
 #   class Processor
 #     Revision_info="SId: processor.rb 123 2009-07-30 16:55:47Z prioux S"
 #     def do_analysis(myfile,myshred)
@@ -149,7 +149,7 @@
 #       return resultfile
 #     end
 #   end
-# 
+#
 #   class Shredder
 #     Revision_info="SId: shredder.rb 424 2009-08-30 13:25:12Z prioux S"
 #     def shred(file)
@@ -161,24 +161,24 @@
 #       return resfile
 #     end
 #   end
-# 
+#
 # The resulting logfiles associated with 'myfile' and 'resultfile'
 # now contain a great deal of information about what happened to them.
 # Here's the log for 'myfile'; the hashed numbers before the date stamp
 # indicate which line of code created which log entry.
-# 
+#
 #   #1 [2009-08-03 17:32:19] SingleFile revision 322 tsherif 2009-07-13
 #   #1 [2009-08-03 17:32:19] Processor do_analysis() revision 123 prioux 2009-07-30 Sending to Shredder
 #   #3 [2009-08-03 17:32:19] Shredder shred() revision 424 prioux 2009-08-30
 #   #4 [2009-08-03 17:32:19] Dosome revision 66 prioux 2009-04-21
 #   #5 [2009-08-03 17:32:19] Processed by method 'thing'
-# 
+#
 # And here's the log for 'resultfile'.
-# 
+#
 #   #6 [2009-08-03 17:32:19] SingleFile revision 322 tsherif 2009-07-13
 #   #6 [2009-08-03 17:32:19] Shredder shred() revision 424 prioux 2009-08-30
 #   #2 [2009-08-03 17:32:19] Processor do_analysis() revision 123 prioux 2009-07-30 Created by Shredder
-# 
+#
 module ActRecLog
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -231,7 +231,7 @@ module ActRecLog
       log = "" if log.blank?
       lines = message.split(/\s*\n/)
       lines.pop while lines.size > 0 && lines[-1] == ""
-  
+
       message = lines.join("\n") + "\n"
       log += Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + calling_method + message
       while log.size > 65500 && log =~ /\n/   # TODO: archive ?
@@ -242,8 +242,8 @@ module ActRecLog
       else
         arl.update_attributes( { :log => log } )
       end
-    rescue => ex
-      #puts_green "EX: #{ex.class}: #{ex.message}\n#{ex.backtrace.join("\n")}"
+    rescue
+      # puts_green "EX: #{ex.class}: #{ex.message}\n#{ex.backtrace.join("\n")}"
       false
     end
   end
@@ -269,16 +269,13 @@ module ActRecLog
   # where you call addlog_context() itself).
   def addlog_context(context, message=nil, caller_level=0)
     return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
-    prev_level     = caller[caller_level]
-
     class_name     = context.class.to_s
     class_name     = context.to_s if class_name == "Class"
     rev_info       = context.revision_info
-    #pretty_info    = rev_info.svn_id_pretty_rev_author_date
     pretty_info    = rev_info.svn_id_rev
- 
+
     full_message   = "#{class_name} rev. #{pretty_info}"
-    full_message   += " #{message}" unless message.blank?
+    full_message  += " #{message}" unless message.blank?
     self.addlog(full_message, :caller_level => caller_level + 1)
   end
 
@@ -304,7 +301,7 @@ module ActRecLog
     rev_info       = anobject.revision_info
     #pretty_info    = rev_info.svn_id_pretty_rev_author_date
     pretty_info    = rev_info.svn_id_rev
- 
+
     full_message   = "#{class_name} rev. #{pretty_info}"
     full_message   += " #{message}" unless message.blank?
     self.addlog(full_message, :caller_level => caller_level + 1)
@@ -382,7 +379,7 @@ module ActRecLog
     self.save(:validate => false)
   end
 
-  # This method is a bit like update_attriutes_with_logging, but
+  # This method is a bit like update_attributes_with_logging, but
   # no new attributes are expected as argument. It is often used
   # as a replacement for save() when the attributes have already been
   # been changed.
@@ -502,7 +499,7 @@ module ActRecLog
     return nil if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
     arl = active_record_log
     return arl if arl
-    
+
     myid    = self.id
     mytable = self.class.table_name
     return nil unless myid

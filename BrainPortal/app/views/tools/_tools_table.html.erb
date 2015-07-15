@@ -74,18 +74,22 @@
     end
 
     t.describe_column("Help/Info") do |col|
+
       col.cell do |tool|
-        tool_plain_name = tool.cbrain_task_class.demodulize.underscore
-        help_path = "/doc/tasks/#{tool_plain_name}_options.html"
-        if File.exist?( Rails.root.to_s + "/public" + help_path )
-          overlay_ajax_link "Help", help_path
+        task_class = tool.cbrain_task_class.constantize rescue nil
+        next unless task_class
+        help_path = task_class.public_path("edit_params_help.html")
+        if help_path
+          overlay_ajax_link "Help", help_path.to_s
         end
       end
+
       col.cell do |tool|
-        tool_plain_name = tool.cbrain_task_class.demodulize.underscore
-        info_path = "/doc/tasks/#{tool_plain_name}_info/#{tool_plain_name}_info.html"
-        if File.exist?( Rails.root.to_s + "/public" + info_path )
-          overlay_ajax_link "Info", info_path
+        task_class = tool.cbrain_task_class.constantize rescue nil
+        next unless task_class
+        info_path = task_class.public_path("tool_info.html")
+        if info_path
+          overlay_ajax_link "Info", info_path.to_s
         end
       end
     end

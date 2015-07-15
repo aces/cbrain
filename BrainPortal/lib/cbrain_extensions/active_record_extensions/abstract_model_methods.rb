@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 module CBRAINExtensions #:nodoc:
@@ -25,9 +25,9 @@ module CBRAINExtensions #:nodoc:
   module ActiveRecordExtensions #:nodoc:
 
     module AbstractModelMethods #:nodoc:
-      
+
       Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
       def self.included(includer) #:nodoc:
         includer.class_eval do
           extend ClassMethods
@@ -37,7 +37,7 @@ module CBRAINExtensions #:nodoc:
       # ActiveRecord extensions to tag some ActiveRecord single table
       # inheritance models as 'abstract'.
       module ClassMethods
-  
+
         # Prevent instantiating an object if the class has been flagged
         # as a cbrain_abstract_model .
         #def new(*args) #:nodoc:
@@ -51,7 +51,7 @@ module CBRAINExtensions #:nodoc:
         def cbrain_abstract_model!(on_off = true)
           @_cbrain_abstract_model_ = (on_off == true)
         end
-          
+
         # Returns whether or not the current class
         # is abstract, as far as CBRAIN is concerned;
         # such class should not be used to instanciate

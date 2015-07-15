@@ -20,19 +20,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#Helper methods for resource select boxes.
+# Helper methods for resource select boxes.
 module SelectBoxHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  #Create a standard user select box for selecting a user id for a form.
-  #The +parameter_name+ argument will be the name of the parameter
-  #when the form is submitted and the +select_tag_options+ hash will be sent
-  #directly as options to the +select_tag+ helper method called to create the element.
-  #The +options+ hash can contain either or both of the following:
-  #[selector] used for default selection. This can be a User object, a user id (String or Fixnum),
-  #           or any model that has a user_id attribute.
-  #[users] the array of User objects used to build the select box. Defaults to +current_user.available_users+.
+  # Create a standard user select box for selecting a user id for a form.
+  # The +parameter_name+ argument will be the name of the parameter
+  # when the form is submitted and the +select_tag_options+ hash will be sent
+  # directly as options to the +select_tag+ helper method called to create the element.
+  # The +options+ hash can contain either or both of the following:
+  # [selector] used for default selection. This can be a User object, a user id (String or Fixnum),
+  #            or any model that has a user_id attribute.
+  # [users] the array of User objects used to build the select box. Defaults to +current_user.available_users+.
   def user_select(parameter_name = "user_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options[:selector]
@@ -60,14 +60,14 @@ module SelectBoxHelper
     select_tag parameter_name, grouped_options, select_tag_options
   end
 
-  #Create a standard groups select box for selecting a group id for a form.
-  #The +parameter_name+ argument will be the name of the parameter
-  #when the form is submitted and the +select_tag_options+ hash will be sent
-  #directly as options to the +select_tag+ helper method called to create the element.
-  #The +options+ hash can contain either or both of the following:
-  #[selector] used for default selection. This can be a Group object, a group id (String or Fixnum),
-  #           or any model that has a group_id attribute.
-  #[groups] the array of Group objects used to build the select box. Defaults to +current_user.available_groups+.
+  # Create a standard groups select box for selecting a group id for a form.
+  # The +parameter_name+ argument will be the name of the parameter
+  # when the form is submitted and the +select_tag_options+ hash will be sent
+  # directly as options to the +select_tag+ helper method called to create the element.
+  # The +options+ hash can contain either or both of the following:
+  # [selector] used for default selection. This can be a Group object, a group id (String or Fixnum),
+  #            or any model that has a group_id attribute.
+  # [groups] the array of Group objects used to build the select box. Defaults to +current_user.available_groups+.
   def group_select(parameter_name = "group_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options.has_key?(:selector) ? (options[:selector].presence || "") : current_project
@@ -138,15 +138,15 @@ module SelectBoxHelper
     select_tag parameter_name, grouped_options, select_tag_options
   end
 
-  #Create a standard data provider select box for selecting a data provider id for a form.
-  #The +parameter_name+ argument will be the name of the parameter
-  #when the form is submitted and the +select_tag_options+ hash will be sent
-  #directly as options to the +select_tag+ helper method called to create the element.
-  #The +options+ hash can contain either or both of the following:
-  #[selector] used for default selection. This can be a DataProvider object, a data provider id (String or Fixnum),
-  #           or any model that has a data_provider_id attribute.
-  #[data_providers] the array of DataProvider objects used to build the select box. Defaults to all data providers
-  #                 accessible by the current_user.
+  # Create a standard data provider select box for selecting a data provider id for a form.
+  # The +parameter_name+ argument will be the name of the parameter
+  # when the form is submitted and the +select_tag_options+ hash will be sent
+  # directly as options to the +select_tag+ helper method called to create the element.
+  # The +options+ hash can contain either or both of the following:
+  # [selector] used for default selection. This can be a DataProvider object, a data provider id (String or Fixnum),
+  #            or any model that has a data_provider_id attribute.
+  # [data_providers] the array of DataProvider objects used to build the select box. Defaults to all data providers
+  #                  accessible by the current_user.
   def data_provider_select(parameter_name = "data_provider_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options[:selector].presence
@@ -191,15 +191,15 @@ module SelectBoxHelper
     select_tag parameter_name, grouped_options, select_tag_options
   end
 
-  #Create a standard bourreau select box for selecting a bourreau id for a form.
-  #The +parameter_name+ argument will be the name of the parameter
-  #when the form is submitted and the +select_tag_options+ hash will be sent
-  #directly as options to the +select_tag+ helper method called to create the element.
-  #The +options+ hash can contain either or both of the following:
-  #[selector] used for default selection. This can be a Bourreau object, a Boureau id (String or Fixnum),
-  #           or any model that has a bourreau_id attribute.
-  #[bourreaux] the array of Bourreau objects used to build the select box. Defaults to all bourreaux
-  #            accessible by the current_user.
+  # Create a standard bourreau select box for selecting a bourreau id for a form.
+  # The +parameter_name+ argument will be the name of the parameter
+  # when the form is submitted and the +select_tag_options+ hash will be sent
+  # directly as options to the +select_tag+ helper method called to create the element.
+  # The +options+ hash can contain either or both of the following:
+  # [selector] used for default selection. This can be a Bourreau object, a Boureau id (String or Fixnum),
+  #            or any model that has a bourreau_id attribute.
+  # [bourreaux] the array of Bourreau objects used to build the select box. Defaults to all bourreaux
+  #             accessible by the current_user.
   def bourreau_select(parameter_name = "bourreau_id", options = {}, select_tag_options = {} )
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options[:selector].presence
@@ -238,24 +238,24 @@ module SelectBoxHelper
     select_tag parameter_name, options_html, select_tag_options
   end
 
-  #Create a standard tool config select box for selecting a tool config in a form.
-  #The +parameter_name+ argument will be the name of the parameter
-  #when the form is submitted and the +select_tag_options+ hash will be sent
-  #directly as options to the +select_tag+ helper method called to create the element.
+  # Create a standard tool config select box for selecting a tool config in a form.
+  # The +parameter_name+ argument will be the name of the parameter
+  # when the form is submitted and the +select_tag_options+ hash will be sent
+  # directly as options to the +select_tag+ helper method called to create the element.
   #
-  #The +options+ hash can contain either or both of the following:
+  # The +options+ hash can contain either or both of the following:
   #
-  #[selector] used for default selection. This can be a ToolConfig object, a ToolConfig id (String or Fixnum),
-  #           or any model that has a tool_config attribute.
-  #[tool_configs] the array of ToolConfig objects used to build the select box. Defaults to all tool configs
-  #                 accessible by the current_user.
+  # [selector] used for default selection. This can be a ToolConfig object, a ToolConfig id (String or Fixnum),
+  #            or any model that has a tool_config attribute.
+  # [tool_configs] the array of ToolConfig objects used to build the select box. Defaults to all tool configs
+  #                  accessible by the current_user.
   #
-  #The selection box will partition the ToolConfig objects by 'categories', where there
-  #are three such categories:
+  # The selection box will partition the ToolConfig objects by 'categories', where there
+  # are three such categories:
   #
-  #- ToolConfigs for specific Bourreaux (and any Tools)
-  #- ToolConfigs for specific Tools (and any Bourreaux)
-  #- ToolConfigs for specific Tools on specific Bourreaux
+  # - ToolConfigs for specific Bourreaux (and any Tools)
+  # - ToolConfigs for specific Tools (and any Bourreaux)
+  # - ToolConfigs for specific Tools on specific Bourreaux
   #
   def tool_config_select(parameter_name = 'tool_config_id', options = {}, select_tag_options = {})
     options       = { :selector => options } unless options.is_a?(Hash)
@@ -274,8 +274,8 @@ module SelectBoxHelper
 
     tool_config_options = []   # [ [ grouplabel, [ [pair], [pair] ] ], [ grouplabel, [ [pair], [pair] ] ] ]
 
-    bourreaux_by_ids = Bourreau.where(:id => tool_configs.map(&:bourreau_id).uniq.compact).all.index_by &:id
-    tools_by_ids     = Tool.where(    :id => tool_configs.map(&:tool_id).uniq.compact).all.index_by &:id
+    bourreaux_by_ids = Bourreau.where(:id => tool_configs.map(&:bourreau_id).uniq.compact).all.index_by(&:id)
+    tools_by_ids     = Tool.where(    :id => tool_configs.map(&:tool_id).uniq.compact).all.index_by(&:id)
 
     # Globals for Execution Servers
     bourreau_globals = tool_configs.select { |tc| tc.applies_to_bourreau_only? }
@@ -324,7 +324,7 @@ module SelectBoxHelper
 
         pairlist = []
         tool_tool_configs.each do |tc|
-          desc     = tc.short_description
+          desc     = tc.version_name || tc.short_description
           tc_pair  = !b_is_online ? [ desc, tc.id.to_s, {:disabled => "true"} ] : [ desc, tc.id.to_s ]
           pairlist << tc_pair
         end
@@ -352,14 +352,13 @@ module SelectBoxHelper
     select_tag parameter_name, grouped_options, select_tag_options
   end
 
-  #------------------
-  #Create a standard task by status select box for selecting a task status for a form.
-  #The +parameter_name+ argument will be the name of the parameter
-  #when the form is submitted and the +select_tag_options+ hash will be sent
-  #directly as options to the +select_tag+ helper method called to create the element.
-  #The +options+ hash can contain either or both of the following:
-  #[selector] used for default selection. This can be a task status.
-  #[task_status] the array of task status used to build the select box. Default CbrainTask::ALL_STATUS.
+  # Create a standard task by status select box for selecting a task status for a form.
+  # The +parameter_name+ argument will be the name of the parameter
+  # when the form is submitted and the +select_tag_options+ hash will be sent
+  # directly as options to the +select_tag+ helper method called to create the element.
+  # The +options+ hash can contain either or both of the following:
+  # [selector] used for default selection. This can be a task status.
+  # [task_status] the array of task status used to build the select box. Default CbrainTask::ALL_STATUS.
   def task_status_select(parameter_name = "data[status]", options = {}, select_tag_options = {} )
     options     = { :selector => options } unless options.is_a?(Hash)
     selected    = options[:selector]
@@ -406,17 +405,17 @@ module SelectBoxHelper
     select_tag parameter_name, grouped_options, select_tag_options
   end
 
-  #Create a standard userfiles type select box for selecting a userfile type for a form.
-  #The +parameter_name+ argument will be the name of the parameter
-  #when the form is submitted and the +select_tag_options+ hash will be sent
-  #directly as options to the +select_tag+ helper method called to create the element.
-  #The +options+ hash can contain either or both of the following:
-  #[selector] used for default selection. This can be a Userfile type.
-  #[userfile_types] a list of Userfiles type used to build the select box.
-  #[generate_descendants] a boolean if it's true take the descendant of classes in :userfile_types else only take
-  #the classes in :userfile_types
-  #[:include_top] a boolean only used when :generate_descendants is true, if it's true
-  #keep the top and the descendants, otherwise only takes the descendants.
+  # Create a standard userfiles type select box for selecting a userfile type for a form.
+  # The +parameter_name+ argument will be the name of the parameter
+  # when the form is submitted and the +select_tag_options+ hash will be sent
+  # directly as options to the +select_tag+ helper method called to create the element.
+  # The +options+ hash can contain either or both of the following:
+  # [selector] used for default selection. This can be a Userfile type.
+  # [userfile_types] a list of Userfiles type used to build the select box.
+  # [generate_descendants] a boolean if it's true take the descendant of classes in :userfile_types else only take
+  # the classes in :userfile_types
+  # [:include_top] a boolean only used when :generate_descendants is true, if it's true
+  # keep the top and the descendants, otherwise only takes the descendants.
   def userfile_type_select(parameter_name = "file_type", options = {}, select_tag_options = {} )
     options              = { :selector => options } unless options.is_a?(Hash)
     generate_descendants =  options.has_key?(:generate_descendants) ? options[:generate_descendants] : true
@@ -426,17 +425,17 @@ module SelectBoxHelper
     type_select(parameter_name, options.dup.merge({:types => userfile_types, :generate_descendants => generate_descendants, :include_top => include_top}), select_tag_options)
   end
 
-  #Create a standard groups type select box for selecting a group type for a form.
-  #The +parameter_name+ argument will be the name of the parameter
-  #when the form is submitted and the +select_tag_options+ hash will be sent
-  #directly as options to the +select_tag+ helper method called to create the element.
-  #The +options+ hash can contain either or both of the following:
-  #[selector] used for default selection. This can be a Group type.
-  #[group_types] a list of Groups type used to build the select box.
-  #[generate_descendants] a boolean if it's true take the descendant of classes in :group_types else only take
-  #the classes in :group_types
-  #[:include_top] a boolean only used when :generate_descendants is true, if it's true
-  #keep the top and the descendants, otherwise only takes the descendants.
+  # Create a standard groups type select box for selecting a group type for a form.
+  # The +parameter_name+ argument will be the name of the parameter
+  # when the form is submitted and the +select_tag_options+ hash will be sent
+  # directly as options to the +select_tag+ helper method called to create the element.
+  # The +options+ hash can contain either or both of the following:
+  # [selector] used for default selection. This can be a Group type.
+  # [group_types] a list of Groups type used to build the select box.
+  # [generate_descendants] a boolean if it's true take the descendant of classes in :group_types else only take
+  # the classes in :group_types
+  # [:include_top] a boolean only used when :generate_descendants is true, if it's true
+  # keep the top and the descendants, otherwise only takes the descendants.
   def group_type_select(parameter_name = "group_type", options = {}, select_tag_options = {} )
     options              = { :selector => options } unless options.is_a?(Hash)
     generate_descendants =  options.has_key?(:generate_descendants) ? options[:generate_descendants] : true
@@ -446,17 +445,17 @@ module SelectBoxHelper
     type_select(parameter_name, options.dup.merge({:types => group_types, :generate_descendants => generate_descendants, :include_top => include_top}), select_tag_options)
   end
 
-  #Create a standard tasks type select box for selecting a task type for a form.
-  #The +parameter_name+ argument will be the name of the parameter
-  #when the form is submitted and the +select_tag_options+ hash will be sent
-  #directly as options to the +select_tag+ helper method called to create the element.
-  #The +options+ hash can contain either or both of the following:
-  #[selector] used for default selection. This can be a Task type.
-  #[task_types] a list of Tasks type used to build the select box.
-  #[generate_descendants] a boolean if it's true take the descendant of classes in :task_types else only take
-  #the classes in :task_types
-  #[:include_top] a boolean only used when :generate_descendants is true, if it's true
-  #keep the top and the descendants, otherwise only takes the descendants.
+  # Create a standard tasks type select box for selecting a task type for a form.
+  # The +parameter_name+ argument will be the name of the parameter
+  # when the form is submitted and the +select_tag_options+ hash will be sent
+  # directly as options to the +select_tag+ helper method called to create the element.
+  # The +options+ hash can contain either or both of the following:
+  # [selector] used for default selection. This can be a Task type.
+  # [task_types] a list of Tasks type used to build the select box.
+  # [generate_descendants] a boolean if it's true take the descendant of classes in :task_types else only take
+  # the classes in :task_types
+  # [:include_top] a boolean only used when :generate_descendants is true, if it's true
+  # keep the top and the descendants, otherwise only takes the descendants.
   def task_type_select(parameter_name = "task_type", options = {}, select_tag_options = {} )
     options              = { :selector => options } unless options.is_a?(Hash)
     generate_descendants =  options.has_key?(:generate_descendants) ? options[:generate_descendants] : true
@@ -467,17 +466,17 @@ module SelectBoxHelper
   end
 
 
-  #Create a standard types select box for selecting a types type for a form.
-  #The +parameter_name+ argument will be the name of the parameter
-  #when the form is submitted and the +select_tag_options+ hash will be sent
-  #directly as options to the +select_tag+ helper method called to create the element.
-  #The +options+ hash can contain either or both of the following:
-  #[selector] used for default selection. This can be a type present in types.
-  #[types] a list of types used to build the select box.
-  #[generate_descendants] a boolean if it's true take the descendant of classes in :types else only take
-  #the classes in :types
-  #[:include_top] a boolean only used when :generate_descendants is true, if it's true
-  #keep the top and the descendants, otherwise only takes the descendants.
+  # Create a standard types select box for selecting a types type for a form.
+  # The +parameter_name+ argument will be the name of the parameter
+  # when the form is submitted and the +select_tag_options+ hash will be sent
+  # directly as options to the +select_tag+ helper method called to create the element.
+  # The +options+ hash can contain either or both of the following:
+  # [selector] used for default selection. This can be a type present in types.
+  # [types] a list of types used to build the select box.
+  # [generate_descendants] a boolean if it's true take the descendant of classes in :types else only take
+  # the classes in :types
+  # [:include_top] a boolean only used when :generate_descendants is true, if it's true
+  # keep the top and the descendants, otherwise only takes the descendants.
   def type_select(parameter_name = "type", options = {}, select_tag_options = {} )
     options              = { :selector => options } unless options.is_a?(Hash)
     generate_descendants = options[:generate_descendants]
@@ -508,10 +507,10 @@ module SelectBoxHelper
 
   private
 
-  #Create an options_for_select box.
-  #The +top+ parameter is the top level type, one with which we start.
-  #The +selected+ parameter indicate which element need to be selected
-  #[:include_top] indicate if top is or is not keep in final options_for_select
+  # Create an options_for_select box.
+  # The +top+ parameter is the top level type, one with which we start.
+  # The +selected+ parameter indicate which element need to be selected
+  # [:include_top] indicate if top is or is not keep in final options_for_select
   def hierarchical_type_options_for_select(top, selected, options = {})
     include_top = options.has_key?(:include_top) ? options[:include_top] : false
     klass_lev   = { top => include_top ? 0 : -1 }
@@ -545,8 +544,8 @@ module SelectBoxHelper
     user_by_lock_status_hash = users.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"}
     ordered_by_lock_status   = []
 
-    user_by_lock_status_hash.sort.each do |status,users|
-      user_name_id = users.sort_by { |u| u.login }.map { |u| ["#{u.login} (#{u.full_name})" , u.id] }
+    user_by_lock_status_hash.sort.each do |status,users_by_status|
+      user_name_id = users_by_status.sort_by { |u| u.login }.map { |u| ["#{u.login} (#{u.full_name})" , u.id] }
       ordered_by_lock_status << [status, user_name_id]
     end
 

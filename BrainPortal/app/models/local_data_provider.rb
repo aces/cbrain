@@ -38,6 +38,13 @@ class LocalDataProvider < DataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # this returns the category of the data provider -- used in view for admins
+  # Returning a nil is the convention that we'll use to HIDE a data provider class from the interface.
+  # So we'll return nil if the data_provider class is not appriopriate for the users to view
+  def self.pretty_category_name
+    nil
+  end
+  
   # Returns true: local data providers are considered fast syncing.
   def is_fast_syncing?
     true
@@ -115,6 +122,23 @@ class LocalDataProvider < DataProvider
 
   def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
     self.cache_collection_index(userfile, directory, allowed_types)
+  end
+
+  def impl_provider_report #:nodoc:
+    issues = []
+
+    # Make sure all registered files exist
+    self.userfiles.all.select { |u| ! File.exists?(self.provider_full_path(u)) }.each do |miss|
+      issues << {
+        :type        => :missing,
+        :message     => "Missing userfile '#{miss.name}'",
+        :severity    => :major,
+        :action      => :destroy,
+        :userfile_id => miss.id
+      }
+    end
+
+    issues
   end
 
   protected

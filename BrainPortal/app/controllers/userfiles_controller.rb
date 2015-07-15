@@ -22,7 +22,7 @@
 
 require 'fileutils'
 
-#RESTful controller for the Userfile resource.
+# RESTful controller for the Userfile resource.
 class UserfilesController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -55,33 +55,18 @@ class UserfilesController < ApplicationController
     @filtered_scope = filter_scope(@filter_params,@header_scope)
 
     #------------------------------
-    # Sorting scope
+    # Sorted scope
     #------------------------------
 
-    @filter_params["sort_hash"]["order"] ||= 'userfiles.name'
-    sorted_scope          = base_sorted_scope @filtered_scope
+    sorted_scope, joins = sorted_scope(@filter_params,@header_scope,@filtered_scope)
+
+    #------------------------------
+    # Tags
+    #------------------------------
+
     tags_and_total_counts = @header_scope.select("tags.name as tag_name, tags.id as tag_id, COUNT(tags.name) as tag_count").joins(:tags).group("tags.name")
     filt_tag_counts       = @filtered_scope.joins(:tags).group("tags.name").count
     @tag_filters          = tags_and_total_counts.map { |tc| ["#{tc.tag_name} (#{filt_tag_counts[tc.tag_name].to_i}/#{tc.tag_count})", { :parameter  => :filter_tags_array, :value => tc.tag_id, :class => "#{"filter_zero" if filt_tag_counts[tc.tag_name].blank?}" }]  }
-
-    # Identify and add necessary table joins
-    joins                                  = []
-    sort_table                             = @filter_params["sort_hash"]["order"].split(".")[0]
-    if sort_table == "users" || current_user.has_role?(:site_manager)
-      joins << :user
-    end
-    case sort_table
-    when "groups"
-      joins << :group
-    when "data_providers"
-      joins << :data_provider
-    end
-    sorted_scope = sorted_scope.joins(joins) unless joins.empty?
-
-    # Add a secondary sorting column (name)
-    sorted_scope = sorted_scope.order('userfiles.name') unless @filter_params["sort_hash"]["order"] == 'userfiles.name'
-
-
 
     #------------------------------
     # Pagination preparation
@@ -91,7 +76,7 @@ class UserfilesController < ApplicationController
     unless [:html, :js].include?(request.format.to_sym)
       @per_page = 999_999_999
     end
-    offset = (@current_page - 1) * @per_page
+    @current_offset = offset = (@current_page - 1) * @per_page
 
 
     #------------------------------
@@ -106,9 +91,9 @@ class UserfilesController < ApplicationController
       @filtered_scope  = @filtered_scope.scoped( :joins => :user ) if current_user.has_role?(:site_manager)
       # use 'distinct userfiles.id' on count in order to remove duplicate entry
       # due to the presence of file with multiple status
-      @userfiles_total = @filtered_scope.count("distinct userfiles.id")
-      ordered_real     = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
-    # ---- WITH tree sort ----
+      @userfiles_total      = @filtered_scope.count("distinct userfiles.id")
+      ordered_real          = sorted_scope.includes(includes - joins).offset(offset).limit(@per_page).all
+    # ---- WITH tree sort ----
     else
       # We first get a list of 'simple' objects [ id, parent_id ]
       simple_pairs      = sorted_scope.raw_rows( [ "userfiles.id", "userfiles.parent_id" ] )
@@ -142,6 +127,8 @@ class UserfilesController < ApplicationController
 
     end
 
+    @userfiles_total_size = @filtered_scope.sum(:size)
+
 
 
     #------------------------------
@@ -166,7 +153,6 @@ class UserfilesController < ApplicationController
     @immutable_total = @filtered_scope.where(:immutable => true).count
 
     current_session.save_preferences_for_user(current_user, :userfiles, :view_hidden, :tree_sort, :view_all, :details, :per_page)
-
     respond_to do |format|
       format.html
       format.js
@@ -206,7 +192,6 @@ class UserfilesController < ApplicationController
     redirect_to :action => :index
   end
 
-  #####################################################
   # Transfer contents of a file.
   # If no relevant parameters are given, the controller
   # will simply attempt to send the entire file.
@@ -216,8 +201,8 @@ class UserfilesController < ApplicationController
   #                   userfile.
   # [:arguments]      arguments to pass to the content
   #                   loader method.
-  #####################################################
-  #GET /userfiles/1/content?option1=....optionN=...
+  #
+  # GET /userfiles/1/content?option1=....optionN=...
   def content
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
@@ -247,6 +232,11 @@ class UserfilesController < ApplicationController
     end
   end
 
+  # Renders a partial within the 'show' page by invoking
+  # some custom viewer code registered by a Userfile subclass.
+  # The main parameter is :viewer ; an optional :viewer_userfile_class
+  # can be provided to override which class to search for the viewer code
+  # (by default, the class of +userfile+)
   def display
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
 
@@ -280,9 +270,17 @@ class UserfilesController < ApplicationController
       else
         render :text => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>", :status  => "404"
       end
-    rescue => exception
-      raise unless Rails.env == 'production'
+    rescue ActionView::Template::Error => e
+      exception = e.original_exception
+
+      raise exception unless Rails.env == 'production'
       ExceptionLog.log_exception(exception, current_user, request)
+      Message.send_message(current_user,
+        :message_type => 'error',
+        :header => "Could not view #{@userfile.name}",
+        :description => "An internal error occured when trying to display the contents of #{@userfile.name}."
+      )
+
       render :text => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>", :status => "500"
     end
   end
@@ -307,6 +305,21 @@ class UserfilesController < ApplicationController
       @userfile[:log]                = @log
       @userfile[:remote_sync_status] = @remote_sync_status
       @userfile[:children_ids]       = @children_ids
+    # Prepare next/previous userfiles for html
+    elsif request.format.to_sym == :html
+      @sort_index     = params[:sort_index].to_i || 0
+
+      # Rebuild the sorted Userfile scope
+      @filter_params  = current_session.params_for(params[:proxy_destination_controller] || params[:controller])
+      header_scope    = header_scope(@filter_params)
+      filtered_scope  = filter_scope(@filter_params, header_scope)
+      sorted_scope, _ = sorted_scope(@filter_params, header_scope, filtered_scope)
+
+      # Fetch the neighbors of the shown userfile in the ordered scope's order
+      neighbors = sorted_scope.where("userfiles.id != ?", @userfile.id).offset([0, @sort_index - 1].max).limit(2).all
+      neighbors.unshift nil if @sort_index == 0
+
+      @previous_userfile, @next_userfile = neighbors
     end
 
     respond_to do |format|
@@ -382,7 +395,7 @@ class UserfilesController < ApplicationController
   #            no files nested within directories will be extracted
   #            (the +collection+ option has no such limitations).
   def create #:nodoc:
-
+    
     flash[:error]     ||= ""
     flash[:notice]    ||= ""
     params[:userfile] ||= {}
@@ -430,14 +443,13 @@ class UserfilesController < ApplicationController
                      :tag_ids          => params[:tags]
                    )
                  )
-
-      if ! userfile.save
+      
+      if !userfile.save
         flash[:error]  += "File '#{basename}' could not be added.\n"
         userfile.errors.each do |field, error|
           flash[:error] += "#{field.to_s.capitalize} #{error}.\n"
         end
         respond_to do |format|
-          format.html { redirect_to redirect_path }
           format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
         end
         return
@@ -584,12 +596,12 @@ class UserfilesController < ApplicationController
       new_name = attributes.delete(:name) || old_name
 
       @userfile.attributes = attributes
-      @userfile.type     = type         if type
-      @userfile.user_id  = new_user_id  if current_user.available_users.where(:id => new_user_id).first
-      @userfile.group_id = new_group_id if current_user.available_groups.where(:id => new_group_id).first
-      @userfile = @userfile.class_update
+      @userfile.type       = type         if type
+      @userfile.user_id    = new_user_id  if current_user.available_users.where(:id => new_user_id).first
+      @userfile.group_id   = new_group_id if current_user.available_groups.where(:id => new_group_id).first
+      @userfile            = @userfile.class_update
 
-      if @userfile.save_with_logging(current_user, %w( group_writable num_files format_source_id parent_id hidden ) )
+      if @userfile.save_with_logging(current_user, %w( group_writable num_files parent_id hidden ) )
         if new_name != old_name
           @userfile.provider_rename(new_name)
           @userfile.addlog("Renamed by #{current_user.login}: #{old_name} -> #{new_name}")
@@ -761,12 +773,10 @@ class UserfilesController < ApplicationController
       @current_index += 1
     end
 
-    @userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
-    partial_base = "userfiles/quality_control/"
-    if File.exists?(Rails.root.to_s + "/app/views/#{partial_base}_#{@userfile.class.name.underscore}.#{request.format.to_sym}.erb")
-      @partial = partial_base + @userfile.class.name.underscore
-    else
-      @partial = partial_base + "default"
+    @userfile     = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
+    @qc_view_file = @userfile.view_path("qc_panel.html.erb").to_s # model-specific view partial, in its plugin directory
+    if ! File.exists?(@qc_view_file)
+      @qc_view_file = "userfiles/_default_qc_panel.html.erb" # default provided by cbrain
     end
 
     render :partial => "quality_control_panel"
@@ -1000,12 +1010,8 @@ class UserfilesController < ApplicationController
       to_delete.each_with_index do |userfile,count|
         $0 = "Delete ID=#{userfile.id} #{count+1}/#{to_delete.size}\0"
         begin
-          if userfile.data_provider.is_browsable? && userfile.data_provider.meta[:must_erase].blank?
-            unregistered_success_list << userfile
-          else
-            deleted_success_list << userfile
-          end
           userfile.destroy
+          deleted_success_list << userfile
         rescue => e
           (failed_list[e.message] ||= []) << userfile
         end
@@ -1084,10 +1090,25 @@ class UserfilesController < ApplicationController
     end
 
     # Sync all files
-    userfiles_list.each { |u| u.sync_to_cache rescue true }
+    failed_list = {}
+    userfiles_list.each do |userfile|
+      begin
+        userfile.sync_to_cache
+      rescue => e
+        (failed_list[e.message] ||= []) << userfile
+      end
+    end
+    if failed_list.present?
+      error_message_sender("Error when syncing file(s)", failed_list);
+      respond_to do |format|
+          format.html { redirect_to :action => :index, :format =>  request.format.to_sym }
+          format.json { render :json => { :error => flash[:error] } }
+      end
+      return
+    end
 
     # When sending a single file, just throw it at the browser.
-    if filelist.size == 1 && userfiles_list[0].is_a?(SingleFile)
+    if userfiles_list.size == 1 && userfiles_list[0].is_a?(SingleFile)
       userfile = userfiles_list[0]
       fullpath = userfile.cache_full_path
       send_file fullpath, :stream => true, :filename => is_blank ? fullpath.basename : specified_filename
@@ -1600,9 +1621,6 @@ class UserfilesController < ApplicationController
       header_scope = header_scope.where( :hidden => false ) # show only the non-hidden files
     end
 
-    # The userfile index only show and count the main files, not their subformats.
-    header_scope = header_scope.where( :format_source_id => nil )
-
     header_scope
   end
 
@@ -1635,5 +1653,38 @@ class UserfilesController < ApplicationController
     return filtered_scope
   end
 
+  # Sort a scoped Userfile according with the parameters
+  # selected by user
+  # Returns the sorted scoped Userfile and the set of joins
+  # placed on it.
+  # FIXME the sorting joins are required by some callers of
+  # sorted_scope and both solutions (returning the joins and
+  # recomputing them) are awkward
+  def sorted_scope(filters,header_scope,filtered_scope)
+    # Prepare sorting options
+    filters["sort_hash"]["order"] ||= 'userfiles.name'
+
+    # Apply the sorting parameters
+    sorted_scope          = base_sorted_scope filtered_scope
+
+    # Identify and add necessary table joins
+    joins                 = []
+    sort_table            = filters["sort_hash"]["order"].split(".")[0]
+    if sort_table == "users" || current_user.has_role?(:site_manager)
+      joins << :user
+    end
+    case sort_table
+    when "groups"
+      joins << :group
+    when "data_providers"
+      joins << :data_provider
+    end
+    sorted_scope = sorted_scope.joins(joins) unless joins.empty?
+
+    # Add a secondary sorting column (name)
+    sorted_scope = sorted_scope.order('userfiles.name') unless filters["sort_hash"]["order"] == 'userfiles.name'
+
+    return sorted_scope, joins
+  end
 
 end

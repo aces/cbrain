@@ -103,7 +103,7 @@
       <%= user_select("userfile[user_id]", { :selector => @userfile }) %>
     <% end %>
 
-    <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@userfile.group), :disabled => (!@userfile.has_owner_access?(current_user) || @userfile.format_source_id)) do %>
+    <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@userfile.group), :disabled => (!@userfile.has_owner_access?(current_user))) do %>
       <%= group_select 'userfile[group_id]', { :groups => current_user.available_groups, :selector => @userfile.group_id.to_s } %>
     <% end  %>
 
@@ -152,14 +152,15 @@
       <% end %>
     <% end %>
 
+    <% t.edit_cell(:description, :content => simple_format(@userfile.description, :sanitize => true), :show_width => 2) do %>
+      <%= text_area_tag "userfile[description]", @userfile.description, :rows => 10, :cols => 80 %>
+    <% end %>
+
   <% end %>
 
   <br>
 
-  <%=
-    file_link_table(@userfile, :joins => :data_provider, :conditions => {"data_providers.online" => true}, :access_requested  => :read,
-                               :html  => {:class  => "action_link"})
-  %>
+  <%= file_link_table(@previous_userfile, @next_userfile, @sort_index, :html  => {:class  => "action_link"}) %>
 
   <br>
 
@@ -187,6 +188,10 @@
         (This file cannot be viewed as it is stored on Data Provider
         <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
         which is configured to <strong>not allow synchronization</strong> <em>at all</em>)
+		
+  	  <% elsif @sync_status == "Corrupted" %>
+  	
+		<span style="background-color: pink;">(The content of this file seems to be corrupted. This might be the result of a bad data transfer while it was being created or a filesystem failure. There isn't much you can do about this, although if the file was produced by a task, consider restarting the task's Post Processing stage.)</span>
 
       <% elsif ! @userfile.data_provider.rr_allowed_syncing? %>
 
@@ -204,7 +209,7 @@
 
         (The contents of this file cannot be viewed: no viewer code available at this moment
         for files of type '<%= @userfile.pretty_type %>')
-
+	  
       <% else %>
 
         <% if ! @userfile.is_locally_synced? %>
@@ -230,8 +235,16 @@
 
         <div id="userfile_viewer">
           <div class="display_userfile">
-            <% if @viewer %>
-               <%= render :file  => @viewer.partial_path %>
+            <% begin %>
+              <% if @viewer %>
+                <%= render :file  => @viewer.partial_path %>
+              <% end %>
+            <% rescue ActionView::Template::Error => e %>
+              <span class="warning">
+                An error occured when loading the viewer plugin.
+              </span>
+              <% raise e.original_exception unless Rails.env == 'production' %>
+              <% ExceptionLog.log_exception(e.original_exception, current_user, request) %>
             <% end %>
           </div>
         </div>

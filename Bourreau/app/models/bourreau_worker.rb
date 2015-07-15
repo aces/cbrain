@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Original authors: Pierre Rioux and Anton Zoubarev
@@ -151,7 +151,8 @@ class BourreauWorker < Worker
     @process_task_list_pid = nil
   end
 
-  # Propagate a stop signal to the SubWorker. In the subworker it will do nothing.
+  # Propagate a stop signal to the SubWorker.
+  # In the subworker it will do nothing.
   def stop_signal_received_callback #:nodoc:
     if @process_task_list_pid
       worker_log.info "Propagating STOP to subprocess #{@process_task_list_pid}"
@@ -358,7 +359,6 @@ class BourreauWorker < Worker
   # these transitions.
   def process_task(task) # when entering this methods task is a partial object, with only a few attributes
 
-    mypid = Process.pid
     notification_needed = true # set to false later, in the case of restarts and recovers
 
     task.reload # reloads the task and all its attributes
@@ -497,8 +497,10 @@ class BourreauWorker < Worker
           task.addlog("Task work directory invalid or does not exist.") unless workdir_ok
           if ! workdir_ok
             canrecover = (fromwhat == 'Setup' ? true : false)
+            task.addlog("But since this was a setup failure, we will simply assume we can move on to 'New'.") if canrecover
           else
             canrecover = Dir.chdir(workdir) do
+              task.addlog("Triggering recovery method '#{recover_method}()'.")
               task.send(recover_method)  # custom recovery method written by task programmer
             end
           end

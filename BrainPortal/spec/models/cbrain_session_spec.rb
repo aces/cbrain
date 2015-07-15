@@ -20,21 +20,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe CbrainSession do
 
-  let(:session)    {Hash.new}
-  let(:sess_model) {double("sess_model").as_null_object}
-  let(:cb_session) {CbrainSession.new(session, {:controller => "userfiles"}, sess_model)}
+  let(:session)      { Hash.new }
+  let(:sess_model)   { double("sess_model").as_null_object }
+  let(:cb_session)   { CbrainSession.new(session, {:controller => "userfiles"}, sess_model) }
   let(:current_user) { mock_model(User).as_null_object }
 
 
   describe "#initialize" do
 
     it "should add a hash for contoller with filter_hash and sort_hash if doesn't exist" do
-      cb_session[:userfiles]["filter_hash"].should be == {}
-      cb_session[:userfiles]["sort_hash"].should be == {}
+      expect(cb_session[:userfiles]["filter_hash"]).to eq({})
+      expect(cb_session[:userfiles]["sort_hash"]).to eq({})
     end
 
   end
@@ -43,13 +43,13 @@ describe CbrainSession do
     let(:meta_data) { double("meta").as_null_object}
 
     it "should get meta data from the db" do
-      current_user.should_receive(:meta).and_return({})
+      expect(current_user).to receive(:meta).and_return({})
       cb_session.load_preferences_for_user(current_user)
     end
 
     it "should get preferences from the meta data" do
-      current_user.stub(:meta).and_return(meta_data)
-      meta_data.should_receive(:[]).with(:preferences)
+      allow(current_user).to receive(:meta).and_return(meta_data)
+      expect(meta_data).to receive(:[]).with(:preferences)
       cb_session.load_preferences_for_user(current_user)
     end
 
@@ -60,18 +60,18 @@ describe CbrainSession do
 
     before(:each) do
       session[:controller] = {"key" => "value"}
-      current_user.stub_chain(:meta, :[], :cb_deep_clone).and_return(user_preferences)
-      current_user.stub_chain(:meta, :[]=)
+      allow(current_user).to receive_message_chain(:meta, :[], :cb_deep_clone).and_return(user_preferences)
+      allow(current_user).to receive_message_chain(:meta, :[]=)
     end
 
     it "should add session preference to db if they are listed" do
       cb_session.save_preferences_for_user(current_user, :controller, :key)
-      user_preferences[:controller].keys.should include("key")
+      expect(user_preferences[:controller].keys).to include("key")
     end
 
     it "should add session preference to db if they are listed" do
       cb_session.save_preferences_for_user(current_user, :controller)
-      user_preferences[:controller].keys.should_not include("key")
+      expect(user_preferences[:controller].keys).not_to include("key")
     end
 
   end
@@ -83,9 +83,9 @@ describe CbrainSession do
     end
 
     it "should set the 'active' and 'user_id' attributes" do
-      sess_model.should_receive(:user_id=).with(session[:user_id])
-      sess_model.should_receive(:active=).with(true)
-      sess_model.should_receive(:save!)
+      expect(sess_model).to receive(:user_id=).with(session[:user_id])
+      expect(sess_model).to receive(:active=).with(true)
+      expect(sess_model).to receive(:save!)
       cb_session.activate
     end
 
@@ -96,8 +96,8 @@ describe CbrainSession do
   describe "#deactivate" do
 
     it "should reset the 'active' attribute" do
-      sess_model.should_receive(:active=).with(false)
-      sess_model.should_receive(:save!)
+      expect(sess_model).to receive(:active=).with(false)
+      expect(sess_model).to receive(:save!)
       cb_session.deactivate
     end
 
@@ -110,10 +110,10 @@ describe CbrainSession do
     it "should call where on session_class and where on User.where" do
       cb_class = ActiveRecord::SessionStore::Session
       cb_scope = double("cb_scope").as_null_object
-      cb_class.should_receive(:where).and_return(cb_scope)
+      expect(cb_class).to receive(:where).and_return(cb_scope)
       us_scope = double("us_scope")
-      User.should_receive(:where).and_return(us_scope)
-      us_scope.should_receive(:where)
+      expect(User).to receive(:where).and_return(us_scope)
+      expect(us_scope).to receive(:where)
       CbrainSession.active_users
     end
 
@@ -126,8 +126,8 @@ describe CbrainSession do
     it "should call where on session_class and count on scope" do
       cb_class = ActiveRecord::SessionStore::Session
       scope = double("scope").as_null_object
-      cb_class.should_receive(:where).and_return(scope)
-      scope.should_receive(:count)
+      expect(cb_class).to receive(:where).and_return(scope)
+      expect(scope).to receive(:count)
       CbrainSession.count
     end
 
@@ -139,7 +139,7 @@ describe CbrainSession do
 
     it "should return ActiveRecord::SessionStore::Session" do
       cb_class = ActiveRecord::SessionStore::Session
-      CbrainSession.session_class.should be == cb_class
+      expect(CbrainSession.session_class).to eq(cb_class)
      end
 
   end
@@ -150,8 +150,8 @@ describe CbrainSession do
 
     it "should call all on session_class" do
       cb_class = ActiveRecord::SessionStore::Session
-      CbrainSession.should_receive(:session_class).and_return(cb_class)
-      cb_class.should_receive(:all)
+      expect(CbrainSession).to receive(:session_class).and_return(cb_class)
+      expect(cb_class).to receive(:all)
       CbrainSession.all
     end
 
@@ -161,20 +161,18 @@ describe CbrainSession do
 
   describe "self.recent_activity" do
     1.upto(15) do |i|
-      name = "cb_session#{i}"
       sess = ActiveRecord::SessionStore::Session.create!( :updated_at => (i*10).seconds.ago, :session_id => "xyz#{i}", :data => {})
       sess.user_id = i
       sess.active  = true
       sess.save
-      user = "user#{i}"
       let!(:name) { CbrainSession.new(sess, {:controller => "userfile"}, sess_model) }
     end
 
     it "should return an array containning recent activity (max n)" do
-      CbrainSession.stub!(:clean_sessions).and_return(true)
-      User.stub!(:find_by_id).and_return(current_user)
+      allow(CbrainSession).to receive(:clean_sessions).and_return(true)
+      allow(User).to receive(:find_by_id).and_return(current_user)
       n = 9
-      CbrainSession.recent_activity(n).size.should be == n
+      expect(CbrainSession.recent_activity(n).size).to eq(n)
     end
 
   end
@@ -188,9 +186,9 @@ describe CbrainSession do
       cb_session[:raw_user_agent]      = "raw_user_agent"
       cb_session[:other]               = "other"
       cb_session.clear_data!
-      cb_session[:guessed_remote_host].should be == "guessed_remote_host"
-      cb_session[:raw_user_agent].should      be == "raw_user_agent"
-      cb_session[:other].should               be_nil
+      expect(cb_session[:guessed_remote_host]).to eq("guessed_remote_host")
+      expect(cb_session[:raw_user_agent]).to      eq("raw_user_agent")
+      expect(cb_session[:other]).to               be_nil
     end
 
   end
@@ -203,7 +201,7 @@ describe CbrainSession do
       hash1 = {"key1" => "val1"}
       params = {:controller => :userfiles, :userfiles => {"new_hash" => hash1}}
       cb_session.update(params)
-      cb_session[:userfiles]["new_hash"].should be == hash1
+      expect(cb_session[:userfiles]["new_hash"]).to eq(hash1)
     end
 
     it "should merge hash if attributes of the session have hash with same name" do
@@ -213,13 +211,13 @@ describe CbrainSession do
       cb_session[:userfiles]["new_hash"] = hash1
       params = {:controller => :userfiles, :userfiles => {"new_hash" => hash2}}
       cb_session.update(params)
-      cb_session[:userfiles]["new_hash"].should be == merge_hash
+      expect(cb_session[:userfiles]["new_hash"]).to eq(merge_hash)
     end
 
     it "should add a new array if attributes of the session doesn't have hash with same name" do
       params = {:controller => :userfiles, :userfiles => {"new_array" => 1}}
       cb_session.update(params)
-      cb_session[:userfiles]["new_array"].should be == [1]
+      expect(cb_session[:userfiles]["new_array"]).to eq([1])
     end
 
     it "should merge array if attributes of the session have array with same name" do
@@ -228,7 +226,7 @@ describe CbrainSession do
       final_array = array1 + [4]
       params = {:controller => :userfiles, :userfiles => {"new_array" => 4}}
       cb_session.update(params)
-      cb_session[:userfiles]["new_array"].should =~ final_array
+      expect(cb_session[:userfiles]["new_array"]).to match_array(final_array)
     end
 
     it "should remove specific item in list" do
@@ -239,37 +237,37 @@ describe CbrainSession do
       part_hash = full_hash
       part_hash.delete to_rm
       cb_session.update(params)
-      cb_session[:userfiles]["hash"].should be == part_hash
+      expect(cb_session[:userfiles]["hash"]).to eq(part_hash)
     end
 
     it "should remove all list if @session[controller.to_sym][list] not respond to delete " do
       cb_session[:userfiles]["hash"] = 2
       params = {:controller => :userfiles, :userfiles => {"remove" => {"hash" => true}}}
       cb_session.update(params)
-      cb_session[:userfiles]["hash"].should be_nil
+      expect(cb_session[:userfiles]["hash"]).to be_nil
     end
 
     it "should return to initial state for @session[controller]" do
       cb_session[:userfiles]["hash"] = {"key1" => "val1", "key2" => "val2"}
       params = {:controller => :userfiles, :userfiles => {"clear_all" => "all"}}
       cb_session.update(params)
-      cb_session[:userfiles]["hash"].should        be_nil
-      cb_session[:userfiles]["filter_hash"].should be == {}
-      cb_session[:userfiles]["sort_hash"].should   be == {}
+      expect(cb_session[:userfiles]["hash"]).to        be_nil
+      expect(cb_session[:userfiles]["filter_hash"]).to eq({})
+      expect(cb_session[:userfiles]["sort_hash"]).to   eq({})
     end
 
     it "should clear specific hash" do
       cb_session[:userfiles]["hash"] = {"key1" => "val1", "key2" => "val2"}
       params = {:controller => :userfiles, :userfiles => {"clear_hash" => 1}}
       cb_session.update(params)
-      cb_session[:userfiles]["hash"].should be == {}
+      expect(cb_session[:userfiles]["hash"]).to eq({})
     end
 
     it "should clear specific value" do
       cb_session[:userfiles]["val"] = 1
       params = {:controller => :userfiles, :userfiles => {"clear_val" => 1}}
       cb_session.update(params)
-      cb_session[:userfiles]["val"].should be_nil
+      expect(cb_session[:userfiles]["val"]).to be_nil
     end
 
   end
@@ -281,7 +279,7 @@ describe CbrainSession do
     it "should return the params saved for +controller+" do
       hash = {"filter_hash"=>{}}
       cb_session[:userfiles] = hash
-      cb_session.params_for("userfiles").should be == hash
+      expect(cb_session.params_for("userfiles")).to eq(hash)
     end
 
   end
@@ -293,7 +291,7 @@ describe CbrainSession do
     it "should acces to session attributes" do
       hash = {"filter_hash"=>{}}
       cb_session[:userfiles] = hash
-      cb_session[:userfiles].should be == hash
+      expect(cb_session[:userfiles]).to eq(hash)
     end
 
   end
@@ -305,7 +303,7 @@ describe CbrainSession do
     it "should assign value to session attribute" do
       hash = {"filter_hash"=>{}}
       cb_session[:userfiles] = hash
-      cb_session[:userfiles].should be == hash
+      expect(cb_session[:userfiles]).to eq(hash)
     end
 
   end
@@ -317,7 +315,7 @@ describe CbrainSession do
     it "should return the params saved for +controller+" do
       hash = {"filter_hash"=>{}}
       cb_session[:userfiles] = hash
-      cb_session.method_missing("userfiles").should be == hash
+      expect(cb_session.method_missing("userfiles")).to eq(hash)
     end
 
   end
@@ -329,12 +327,12 @@ describe CbrainSession do
     it "should clear persistent_userfile_ids hash" do
       cb_session[:persistent_userfile_ids] = [0,1,2]
       cb_session.persistent_userfile_ids_clear
-      cb_session[:persistent_userfile_ids].should be == {}
+      expect(cb_session[:persistent_userfile_ids]).to eq({})
     end
 
     it "should return size of original persistent_userfile_ids" do
       cb_session[:persistent_userfile_ids] = [0,1,2]
-      cb_session.persistent_userfile_ids_clear.should be == 3
+      expect(cb_session.persistent_userfile_ids_clear).to eq(3)
     end
 
   end
@@ -346,12 +344,12 @@ describe CbrainSession do
     it "should add id in id_list only if not already present" do
       cb_session[:persistent_userfile_ids] = {1 => true}
       cb_session.persistent_userfile_ids_add([3,2])
-      cb_session[:persistent_userfile_ids].should be =~ {1 => true, 2 => true, 3 => true}
+      expect(cb_session[:persistent_userfile_ids]).to match({1 => true, 2 => true, 3 => true})
     end
 
     it "should return number of added elem" do
       cb_session[:persistent_userfile_ids] = {1 => true}
-      cb_session.persistent_userfile_ids_add([1,2]).should be == 1
+      expect(cb_session.persistent_userfile_ids_add([1,2])).to eq(1)
     end
 
   end
@@ -363,12 +361,12 @@ describe CbrainSession do
     it "should remove id in id_list only if already present" do
       cb_session[:persistent_userfile_ids] = {1 => true, 2 => true, 3 => true}
       cb_session.persistent_userfile_ids_remove([3,2])
-      cb_session[:persistent_userfile_ids].should be =~ {1 => true}
+      expect(cb_session[:persistent_userfile_ids]).to match({1 => true})
     end
 
     it "should return number of removed elem" do
       cb_session[:persistent_userfile_ids] = {1 => true}
-      cb_session.persistent_userfile_ids_remove([2]).should be == 0
+      expect(cb_session.persistent_userfile_ids_remove([2])).to eq(0)
     end
 
   end
@@ -380,7 +378,7 @@ describe CbrainSession do
     it "should return array with persistent_userfile_ids_list" do
       hash = {1 => true, 2 => true, 3 => true}
       cb_session[:persistent_userfile_ids] = hash
-      cb_session.persistent_userfile_ids_list.should be == hash.keys
+      expect(cb_session.persistent_userfile_ids_list).to eq(hash.keys)
     end
 
   end
@@ -392,7 +390,7 @@ describe CbrainSession do
    it "should return hash with persistent_userfile_ids_list" do
       hash = {1 => true, 2 => true, 3 => true}
       cb_session[:persistent_userfile_ids] = hash
-      cb_session.persistent_userfile_ids.should be == hash
+      expect(cb_session.persistent_userfile_ids).to eq(hash)
     end
 
   end

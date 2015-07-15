@@ -7,7 +7,7 @@ class AddVersionNameToToolConfig < ActiveRecord::Migration
           tc.version_name = $1 if tc.short_description =~ /(\d+\.[\d\.]+)/
           tc.save!
         end
-      rescue ActiveRecord::RecordInvalid => e
+      rescue ActiveRecord::RecordInvalid
         if tc.version_name.blank?
           tc.version_name = "TC_#{tc.id}"
         else

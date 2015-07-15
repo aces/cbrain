@@ -56,18 +56,28 @@ module AuthenticatedSystem #:nodoc:
       authorized? || access_denied
     end
 
+    def site_membership_required
+      (!current_user.site.nil? || access_error(401)) if current_user.has_role?(:normal_user)
+    end
+      
+    
     ##########################################################
     #NEXT TWO ADDED BY TAREK
     ##########################################################
-
-    #Before filter to ensure that logged in User is an admin user.
+    
+    # Before filter to ensure that logged in User is an admin user.
     def admin_role_required
       current_user.has_role?(:admin_user) || access_error(401)
     end
 
-    #Before filter to ensure that logged in User is a site manager (or admin).
+    # Before filter to ensure that logged in User is a site manager (or admin).
     def manager_role_required
       current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user) || access_error(401)
+    end
+
+    #Before filter to ensure that logged in User is the core admin.
+    def core_admin_role_required
+      current_user.has_role?(:core_admin) || access_error(401)
     end
 
     ##########################################################

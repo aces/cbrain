@@ -17,14 +17,14 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This model represents a remote execution server.
 class Bourreau < RemoteResource
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   has_many :cbrain_tasks, :dependent => :restrict
   has_many :tool_configs, :dependent => :destroy
   has_many :tools, :through => :tool_configs, :uniq => true
@@ -126,11 +126,11 @@ class Bourreau < RemoteResource
     if ! self.proxied_host.blank?
       proxy_args = "-R #{self.proxied_host.bash_escape} -H #{port.to_s.bash_escape} -D #{self.tunnel_mysql_port.to_s.bash_escape}"
     end
-  
+
     # SSH command to start it up; we pipe to it either a new database.yml file
     # which will be installed, or "" which means to use whatever
     # yml file is already configured at the other end.
-    start_command = "ruby #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} start -e #{myrailsenv.to_s.bash_escape} -p #{port.to_s.bash_escape} 2>&1"
+    start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec ruby #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} start -e #{myrailsenv.to_s.bash_escape} -p #{port.to_s.bash_escape} 2>&1"
     self.write_to_remote_shell_command(start_command, :stdout => captfile) { |io| io.write(db_yml) }
 
     out = File.read(captfile) rescue ""
@@ -166,10 +166,10 @@ class Bourreau < RemoteResource
       proxy_args = "-R #{self.proxied_host.to_s.bash_escape} -H #{port.to_s.bash_escape} -D #{self.tunnel_mysql_port.to_s.bash_escape}"
     end
 
-    stop_command = "ruby #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} stop"
-    confirm = self.read_from_remote_shell_command(stop_command) {|io| io.read}   
- 
-    return true if confirm =~ /Bourreau Stopped/i # output of 'cbrain_remote_ctl' 
+    stop_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec ruby #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} stop"
+    confirm = self.read_from_remote_shell_command(stop_command) {|io| io.read}
+
+    return true if confirm =~ /Bourreau Stopped/i # output of 'cbrain_remote_ctl'
     return false
   end
 
@@ -208,19 +208,19 @@ class Bourreau < RemoteResource
       port = self.has_actres_tunnelling_info?  ? self.tunnel_actres_port : self.actres_port # actres_port no longer supported
       proxy_args = "-R #{self.proxied_host.to_s.bash_escape} -H #{port.to_s.bash_escape} -D #{self.tunnel_mysql_port.to_s.bash_escape}"
     end
-  
+
     # Copy the database.yml file
     # Note: the database.yml file will be removed automatically by the cbrain_remote_ctl script when it exits.
     copy_command = "cat > #{self.ssh_control_rails_dir.to_s.bash_escape}/config/database.yml"
     self.write_to_remote_shell_command(copy_command) { |io| io.write(db_yml) }
 
     # SSH command to start the console.
-    start_command = "ruby #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} console -e #{myrailsenv.to_s.bash_escape}"
+    start_command = "cd #{self.ssh_control_rails_dir.to_s.bash_escape}; bundle exec ruby #{self.ssh_control_rails_dir.to_s.bash_escape}/script/cbrain_remote_ctl #{proxy_args} console -e #{myrailsenv.to_s.bash_escape}"
     self.read_from_remote_shell_command(start_command, :force_pseudo_ttys => true) # no block, so that ttys gets connected to remote stdin, stdout and stderr
   end
 
   # This method adds Bourreau-specific information fields
-  # to the RemoteResourceInfo object normally returned 
+  # to the RemoteResourceInfo object normally returned
   # by the RemoteResource class method of the same name.
   def self.remote_resource_info
     info = super
@@ -315,7 +315,7 @@ class Bourreau < RemoteResource
        yml += "  #{field}: #{val.to_s}\n"
     end
     yml += "\n"
-   
+
     yml
   end
 
@@ -540,7 +540,7 @@ class Bourreau < RemoteResource
     task = CbrainTask.find(task_id)
     run_number = command.run_number || task.run_number
     stdout_lim = command.stdout_lim
-    stderr_lim = command.stderr_lim 
+    stderr_lim = command.stderr_lim
     task.capture_job_out_err(run_number,stdout_lim,stderr_lim)
     command.cluster_stdout = task.cluster_stdout
     command.cluster_stderr = task.cluster_stderr

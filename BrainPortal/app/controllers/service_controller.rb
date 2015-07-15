@@ -22,6 +22,9 @@
 
 # Controller for the Service.
 # Implement actions as defined by the CANARIE Web Service Monitoring API.
+#
+# By default, all these actions are commented out in the route.rb file,
+# so for most installations this controller is NOT USED at all.
 class ServiceController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -39,7 +42,7 @@ class ServiceController < ApplicationController
                                    Canada and around the world.".gsub(/\s\s+/, " "),  # the ugly gsub is because of CANARIE
               :version         => CbrainFileRevision.cbrain_head_tag,
               :institution     => "McGill University",
-              :releaseTime     => Time.parse(CbrainFileRevision.cbrain_head_revinfo.time).utc.iso8601,
+              :releaseTime     => Time.parse(CbrainFileRevision.cbrain_head_revinfo.datetime).utc.iso8601,
               :researchSubject => "Multi-discipline",
               :supportEmail    => RemoteResource.current_resource.support_email,
               :category        => "Data Manipulation",
@@ -102,15 +105,9 @@ class ServiceController < ApplicationController
   end
 
   # Return release note describing the current version
-  # of the platform.
+  # of the platform APIs.
   def releasenotes
-    respond_to do |format|
-      text = "Coming soon; will point to GitHub's release notes."
-      format.html { render :text => text }
-      format.xml  { render :xml  => { :text => text } }
-      format.json { render :json => { :text => text } }
-    end
-
+    redirect_to 'https://github.com/aces/cbrain-apis/blob/master/Release-Notes.md'
   end
 
   # Provides information on how to get support
@@ -128,19 +125,14 @@ class ServiceController < ApplicationController
     end
   end
 
-  # Return link to the code source of the platform.
+  # Return link to the source code of the APIs for the platform
   def source
-    # TODO Eventually, redirect to GitHub
-    render :nothing => true, :status => 204
+    redirect_to 'https://github.com/aces/cbrain-apis'
   end
 
   # Redirects to the main login page.
   def tryme
-    respond_to do |format|
-      format.html  { redirect_to login_path }
-      format.xml   { render :nothing => true, :status => 406 }
-      format.json  { render :nothing => true, :status => 406 }
-    end
+    redirect_to 'https://github.com/aces/cbrain-apis/blob/master/demonstration.pdf'
   end
 
   # Allows users to view platform's
@@ -223,7 +215,7 @@ class ServiceController < ApplicationController
       next if contr_action == 'portal,welcome'
       next if contr_action == 'portal,credits'
       next if contr_action == 'portal,about_us'
-      controller,action = contr_action.split(",")
+      controller        = contr_action.split(",").first
       next if controller   == 'service'  # all of them
       next if controller   == 'controls' # show
       next if controller   == 'sessions' # new, show, destroy, create

@@ -90,7 +90,7 @@
         <%
           tcs = ToolConfig.where( :bourreau_id => bourreau.id, :tool_id => tool.id )
           if bourreau.can_be_accessed_by?(user) && tool.can_be_accessed_by?(user)
-            tcs_ok = tcs.count { |tc| tc.can_be_accessed_by?(user) }
+            tcs_ok = tcs.all.count { |tc| tc.can_be_accessed_by?(user) }
           else
             tcs_ok = 0
           end

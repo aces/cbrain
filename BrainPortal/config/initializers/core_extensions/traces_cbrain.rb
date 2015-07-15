@@ -17,10 +17,10 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-if ENV['CBRAIN_DEBUG_TRACES'].present? && ! defined?($CBRAIN_DEBUG_OVERRIDE) 
+if ENV['CBRAIN_DEBUG_TRACES'].present? && ! defined?($CBRAIN_DEBUG_OVERRIDE)
 
   $CBRAIN_DEBUG_OVERRIDE=true # we use this ugly global in the rare case where this file is sourced twice
 

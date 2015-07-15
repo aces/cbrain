@@ -20,92 +20,92 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-require 'spec_helper'
+require 'rails_helper'
 
 describe FileCollection do
-  let(:provider) {Factory.create(:ssh_data_provider, :online => true, :read_only => false)}
-  let(:file_collection) {Factory.create(:file_collection, :data_provider => provider) }
+  let(:provider)        { create(:ssh_data_provider, :online => true, :read_only => false) }
+  let(:file_collection) { create(:file_collection, :data_provider => provider) }
   cache_full_path = Pathname.new("base_path/path")
 
   before(:each) do
-    File.stub!(:exist?).and_return(true)
-    file_collection.stub!(:cache_full_path).and_return(cache_full_path)
-    provider.stub!(:cache_prepare).and_return(true)
+    allow(File).to            receive(:exist?).and_return(true)
+    allow(file_collection).to receive(:cache_full_path).and_return(cache_full_path)
+    allow(provider).to        receive(:cache_prepare).and_return(true)
   end
 
   describe "#collection_file" do
     before(:each) do
-      file_collection.stub_chain(:list_files, :find).and_return(true)
-      File.stub!(:readable?).and_return(true)
-      File.stub!(:directory?).and_return(false)
-      File.stub!(:symlink?).and_return(false)
+      allow(file_collection).to receive_message_chain(:list_files, :find).and_return(true)
+      allow(File).to            receive(:readable?).and_return(true)
+      allow(File).to            receive(:directory?).and_return(false)
+      allow(File).to            receive(:symlink?).and_return(false)
     end
 
     it "should return nil if collection file not in the collection's list of files" do
-      file_collection.stub_chain(:list_files, :find).and_return(nil)
-      file_collection.collection_file('path').should be_nil
+      allow(file_collection).to receive_message_chain(:list_files, :find).and_return(nil)
+      expect(file_collection.collection_file('path')).to be_nil
     end
 
     it "should return the full path of the collection file if it exists" do
-      file_collection.collection_file('path').should == cache_full_path
+      expect(file_collection.collection_file('path')).to eq(cache_full_path)
     end
 
     it "should return nil if we have a file does not exist" do
-      File.stub!(:exist?).and_return(false)
-      file_collection.collection_file('path').should be_nil
+      allow(File).to receive(:exist?).and_return(false)
+      expect(file_collection.collection_file('path')).to be_nil
     end
 
     it "should return nil if we have a file does not readable" do
-      File.stub!(:readable?).and_return(false)
-      file_collection.collection_file('path').should be_nil
+      allow(File).to receive(:readable?).and_return(false)
+      expect(file_collection.collection_file('path')).to be_nil
     end
 
     it "should return nil if we have a directory" do
-      File.stub!(:directory?).and_return(true)
-      file_collection.collection_file('path').should be_nil
+      allow(File).to receive(:directory?).and_return(true)
+      expect(file_collection.collection_file('path')).to be_nil
     end
 
     it "should return nil if we have a symlink" do
-      File.stub!(:symlink?).and_return(true)
-      file_collection.collection_file('path').should be_nil
+      allow(File).to receive(:symlink?).and_return(true)
+      expect(file_collection.collection_file('path')).to be_nil
     end
   end
 
   describe "#extract_collection_from_archive_file" do
     before(:each) do
-      FileCollection.stub!(:cache_prepare).and_return(true)
-      File.stub!(:directory?).and_return(true)
-      Dir.stub!(:chdir).and_yield
-      file_collection.stub!(:remove_unwanted_files)
-      file_collection.stub!(:sync_to_provider)
-      file_collection.stub!(:set_size!)
-      file_collection.stub!(:save)
+      allow(File).to            receive(:directory?).and_return(true)
+      allow(Dir).to             receive(:chdir).and_yield
+      allow(file_collection).to receive(:cache_prepare).and_return(true)
+      allow(file_collection).to receive(:remove_unwanted_files)
+      allow(file_collection).to receive(:sync_to_provider)
+      allow(file_collection).to receive(:set_size!)
+      allow(file_collection).to receive(:save)
     end
 
     it "should execute 'gunzip' if archive is a *.tar.gz" do
-      file_collection.should_receive(:system).with(/^gunzip/)
+      expect(file_collection).to receive(:system).with(/^gunzip/)
       file_collection.extract_collection_from_archive_file("dir.tar.gz")
     end
 
     it "should execute 'gunzip' if archive is a *.tgz" do
-      file_collection.should_receive(:system).with(/^gunzip/)
+      expect(file_collection).to receive(:system).with(/^gunzip/)
       file_collection.extract_collection_from_archive_file("dir.tgz")
     end
 
     it "should execute 'tar -xf' if archive is a *.tar" do
-      file_collection.should_receive(:system).with(/^tar -xf/)
+      expect(file_collection).to receive(:system).with(/^tar -xf/)
       file_collection.extract_collection_from_archive_file("dir.tar")
     end
 
     it "should execute 'unzip' if archive is a *.zip" do
-      file_collection.should_receive(:system).with(/^unzip/)
+      expect(file_collection).to receive(:system).with(/^unzip/)
       file_collection.extract_collection_from_archive_file("dir.zip")
     end
 
     it "should raise an exception if archive have an unknown extension" do
-      lambda{
+      expect{
         file_collection.extract_collection_from_archive_file("dir.unknown")
-      }.should raise_error
+      }.to raise_error
     end
   end
 
@@ -116,21 +116,21 @@ describe FileCollection do
 
     before(:each) do
       file_info1.size = file_info2.size = 1024
-      file_collection.stub!(:list_files).and_return([file_info1,file_info2])
+      allow(file_collection).to receive(:list_files).and_return([file_info1,file_info2])
     end
 
     it "should set size with the size of this collection" do
       file_collection.set_size!
       file_collection.reload
-      file_collection.size.should == 2048
+      expect(file_collection.size).to eq(2048)
     end
     it "should set num_files with the number of files in this collection" do
       file_collection.set_size!
       file_collection.reload
-      file_collection.num_files.should == file_collection.list_files.size
+      expect(file_collection.num_files).to eq(file_collection.list_files.size)
     end
     it "should return true if all works correctly" do
-      file_collection.set_size!.should be_true
+      expect(file_collection.set_size!).to be_truthy
     end
   end
 
@@ -143,37 +143,37 @@ describe FileCollection do
     let(:file_collection2) { mock_model(FileCollection, :size => 1024, :num_files => 1).as_null_object}
 
     before(:each) do
-      file_collection1.stub!(:list_files).and_return([file_info1,file_info2])
-      file_collection2.stub!(:list_files).and_return([file_info3])
-      File.stub!(:directory?).and_return(true)
-      FileUtils.stub!(:cp_r)
-      file_collection.stub!(:cache_prepare)
-      file_collection.stub!(:sync_to_cache)
-      file_collection.stub!(:sync_to_provider)
-      file_collection.stub!(:save)
+      allow(file_collection1).to receive(:list_files).and_return([file_info1,file_info2])
+      allow(file_collection2).to receive(:list_files).and_return([file_info3])
+      allow(File).to receive(:directory?).and_return(true)
+      allow(FileUtils).to receive(:cp_r)
+      allow(file_collection).to receive(:cache_prepare)
+      allow(file_collection).to receive(:sync_to_cache)
+      allow(file_collection).to receive(:sync_to_provider)
+      allow(file_collection).to receive(:save)
     end
 
     it "should return :collision if the collection share common file names" do
-      file_collection2.stub!(:list_files).and_return([file_info2])
-      file_collection.merge_collections([file_collection1,file_collection2]).should be == :collision
+      allow(file_collection2).to receive(:list_files).and_return([file_info2])
+      expect(file_collection.merge_collections([file_collection1,file_collection2])).to eq(:collision)
     end
 
     it "should return :succes if all works correctly" do
-      file_collection.merge_collections([file_collection1,file_collection2]).should be == :success
+      expect(file_collection.merge_collections([file_collection1,file_collection2])).to eq(:success)
     end
 
     it "should update num_files when merge is done" do
       final_numfiles = file_collection1.num_files + file_collection2.num_files
       file_collection.merge_collections([file_collection1,file_collection2])
       file_collection.reload
-      file_collection.num_files.should be == final_numfiles
+      expect(file_collection.num_files).to eq(final_numfiles)
     end
 
     it "should update size when merge is done" do
       final_size = file_collection1.size + file_collection2.size
       file_collection.merge_collections([file_collection1,file_collection2])
       file_collection.reload
-      file_collection.size.should be == final_size
+      expect(file_collection.size).to eq(final_size)
     end
   end
 
@@ -181,9 +181,9 @@ describe FileCollection do
 
     it "should call IO.popen" do
       a = double("cache_path")
-      file_collection.stub_chain(:cache_full_path, :parent).and_return(a)
-      Dir.stub!(:chdir).and_yield
-      IO.should_receive(:popen).with(/^find/).and_yield(double("fh", :readlines => [] ))
+      allow(file_collection).to receive_message_chain(:cache_full_path, :parent).and_return(a)
+      allow(Dir).to receive(:chdir).and_yield
+      expect(IO).to receive(:popen).with(/^find/).and_yield(double("fh", :readlines => [] ))
       file_collection.list_first_level_dirs
     end
   end
@@ -194,25 +194,25 @@ describe FileCollection do
 
     before(:each) do
       a = double("cache_path")
-      file_collection.stub!(:cache_full_path).and_return(a)
-      Dir.stub!(:chdir).and_yield
+      allow(file_collection).to receive(:cache_full_path).and_return(a)
+      allow(Dir).to receive(:chdir).and_yield
     end
 
     it "should delete file if it match with ._*" do
-      Find.stub(:find).and_yield("._")
-      File.should_receive(:delete)
+      allow(Find).to receive(:find).and_yield("._")
+      expect(File).to receive(:delete)
       file_collection.remove_unwanted_files
     end
 
     it "should delete file if it .DS_Store" do
-      Find.stub(:find).and_yield(".DS_Store")
-      File.should_receive(:delete)
+      allow(Find).to receive(:find).and_yield(".DS_Store")
+      expect(File).to receive(:delete)
       file_collection.remove_unwanted_files
     end
 
     it "should not delete file if is not ._ or not .DS_Store file" do
-      Find.stub(:find).and_yield(".")
-      File.should_not_receive(:delete)
+      allow(Find).to receive(:find).and_yield(".")
+      expect(File).not_to receive(:delete)
       file_collection.remove_unwanted_files
     end
   end

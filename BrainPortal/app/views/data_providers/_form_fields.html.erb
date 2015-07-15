@@ -46,7 +46,7 @@
 <span title="Type of data provider.">
 
   <p><%= f.label :type, "Type" %><br/>
-  <%= f.select :type, @typelist, { :prompt => "Select Provider Type" }, { :disabled => (params[:action].to_sym == :edit) } %><br/>
+  <%= f.select :type, grouped_options_for_select(@typelist), { :prompt => "Select Provider Type" }, { :disabled => (params[:action].to_sym == :edit) } %><br/>
   <div class="field_explanation"><%= show_hide_toggle "(Data Provider Type Information)", "#data_provider_classes", :class  => 'action_link' %></div>
   </p>
 
@@ -113,7 +113,7 @@
     <strong>VaultSmartDataProvider:</strong> This class implements a 'wrapper' data provider that
     acts either as a VaultLocalDataProvider or a VaultSshDataProvider
     depending on whether or not the current hostname matches
-    the value of the attribute remote_host.
+    the value of the attribute remote_host or is in the alternate_host list.
     This means that in the case where the current Rails application
     runs on the same machine as the data provider, the faster
     and more efficient VaultLocalDataProvider will be used.
@@ -174,6 +174,11 @@
     <%= f.text_field :remote_host %></p>
   </span>
 
+  <span title="Alternate name(s) (comma-separated) of the remote machine on which the data provider is located (required only for Smart data providers).">
+    <p><%= f.label :alternate_host, "Alternate Hostname(s)" %><br/>
+    <%= f.text_field :alternate_host %></p>
+  </span>
+
   <span title="Username on the remote machine where the data provider is located (not required for VaultLocalDataProvider).">
     <p><%= f.label :remote_user, "Remote Username" %><br/>
     <%= f.text_field :remote_user %></p>
@@ -221,13 +226,10 @@
   <p><label for='meta_must_move'>Files must be copied/moved upon registration (browsable DPs only):</label>
   <%= check_box_tag 'meta[must_move]',  "on", @provider.new_record? ? false : !@provider.meta[:must_move].blank? %>
 
-  <p><label for='meta_erase'>Files will always be erased upon de-registration (browsable DPs only):</label>
-  <%= check_box_tag 'meta[must_erase]', "on", @provider.new_record? ? false : !@provider.meta[:must_erase].blank? %>
-
   <p><label for='meta_browse_gid'>Files can be browsed only by members of this project (browsable DPs only):</label>
   <%= group_select 'meta[browse_gid]', { :selector => (@provider.new_record? ? nil : @provider.meta[:browse_gid]) }, { :include_blank => "(Any Users)" } %>
 
-  <p><label for='meta_no_uploads'>Cannot be used for uploading files in the file manager:</label>
+  <p><label for='meta_no_uploads'>Cannot be used for uploading files from the file manager:</label>
   <%= check_box_tag 'meta[no_uploads]', "on", @provider.new_record? ? false : !@provider.meta[:no_uploads].blank? %>
 
   <p><label for='meta_no_viwers'>Files cannot be viewed in the file manager:</label>

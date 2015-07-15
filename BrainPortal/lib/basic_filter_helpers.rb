@@ -59,7 +59,7 @@ module BasicFilterHelpers
     filtered_scope
   end
 
-  #Apply currently active sort parameters to a scope
+  # Apply currently active sort parameters to a scope
   def base_sorted_scope(sorted_scope = resource_class.scoped)
     if @filter_params["sort_hash"] && @filter_params["sort_hash"]["order"] && table_column?(*@filter_params["sort_hash"]["order"].split("."))
       sorted_scope = sorted_scope.order("#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}")
@@ -79,8 +79,8 @@ module BasicFilterHelpers
     false
   end
 
-  #Create filtered array to be used by TableBuilder for
-  #basic attribute filters.
+  # Create filtered array to be used by TableBuilder for
+  # basic attribute filters.
   def basic_filters_for(filtered_scope, header_scope, tab, col, &formatter)
     table         = tab.to_s.underscore.pluralize
     column        = col.to_sym
@@ -114,8 +114,8 @@ module BasicFilterHelpers
       }
   end
 
-  #Create filtered array to be used by TableBuilder for
-  #basic association filters.
+  # Create filtered array to be used by TableBuilder for
+  # basic association filters.
   def association_filters_for(filtered_scope, header_scope, tab, assoc, options = {}, &formatter)
     table       = tab.to_s.underscore.pluralize
     association = assoc.to_s.underscore.singularize

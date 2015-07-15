@@ -22,9 +22,15 @@
 #
 -%>
 
-<%= form_tag( "/userfiles", :multipart => true, :method => :post) do %>
+<%= form_tag("/userfiles", :id => "file_upload", :multipart => true, :method => :post) do %>
 
-  <div>Select file to upload: <%= file_field_tag("upload_file")  %></div>
+  <div>
+    Select file to upload: <%= file_field_tag("upload_file")  %>
+    <% limit = RemoteResource.current_resource.meta[:upload_size_limit] %>
+    <% if limit.present? %>
+      <span class="warning">Upload size limit: <%= limit %></span>
+    <% end %>
+  </div>
   </p>
 
   <div class="display_cell">
@@ -73,6 +79,10 @@
     </fieldset>
   </div>
   </p>
+
+  <% content_for :scripts do %>
+    <%= javascript_tag (render :partial => "file_upload.js.erb", :formats => [:js]).to_s %>
+  <% end %>
 
   <div><%= submit_tag("Upload file") %></div>
 <%end%>

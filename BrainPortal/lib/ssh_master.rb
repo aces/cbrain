@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This class provides the functionality necessary to create,
@@ -31,7 +31,7 @@ require 'rubygems'
 require 'sys/proctable'
 require 'active_support'
 
-# = SSH Tunnel Utility Class 
+# = SSH Tunnel Utility Class
 #
 # This class provides the functionality necessary to create,
 # destroy, and manage persistent SSH master (control) connections
@@ -122,7 +122,7 @@ class SshMaster
     ssh_masters[key]
   end
 
-  def self.ssh_master_cache #:nodoc
+  def self.ssh_master_cache #:nodoc:
     #@@ssh_masters ||= {}
     #@@ssh_masters
     $cbrain_ssh_masters ||= {}  # rails reload the class every time so can't use @@ssh_masters
@@ -299,13 +299,13 @@ class SshMaster
     end
     true
   end
-  
+
   # Start the master SSH connection, including all tunnels if
   # necessary. The connection is maintained in a subprocess.
   # If a subprocess is already running, nothing will happen:
   # you have to stop() if before you can restart it.
   def start(label = nil)
-    
+
     self.properly_registered?
     return true if @nomaster # special option: not a master at all!
     return true if self.read_pidfile
@@ -421,7 +421,7 @@ class SshMaster
 
     return false unless self.quick_is_alive?
     return false if     @pid.blank? && ! @nomaster
-    
+
     shared_options = self.ssh_shared_options
     sshcmd = "ssh -q -x -n #{shared_options} " +
              "echo OK-#{Process.pid}"
@@ -501,11 +501,11 @@ class SshMaster
                       " -o PasswordAuthentication=no"         +
                       " -o KbdInteractiveAuthentication=no"   +
                       " -o KbdInteractiveDevices=none"        +
-    (@nomaster ?      "" : 
+    (@nomaster ?      "" :
                       " -o ServerAliveInterval=30"            +
                       " -o ServerAliveCountMax=5"             +
                       " -o ControlMaster=#{control_master}"   +
-                      " -o ControlPath=#{socket}"             
+                      " -o ControlPath=#{socket}"
     )                                                         +
                       " #{@user}@#{@host} "
     args_string
@@ -578,7 +578,7 @@ class SshMaster
       system(ssh_command)
     end
   end
-  
+
   # This stops the master SSH connection if it is alive, and
   # de-register the object from the class. It's nice but not
   # really necessary.
@@ -729,7 +729,7 @@ class SshMaster
   def shell_escape(s) #:nodoc:
     "'" + s.to_s.gsub(/'/,"'\\\\''") + "'"
   end
-  
+
   # Create a bash redirection operator (like "<infile"
   # or "2>>err.txt"); +options+ is a hash containing the +key+
   # whose value is the file to use for redirection; +fd+

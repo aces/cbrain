@@ -23,28 +23,28 @@
 require 'digest/sha1'
 require 'pbkdf2'
 
-#Model representing CBrain users.
-#All authentication of user access to the system is handle by the User model.
-#User level access to pages are handled through a given user's +class+ (currently *NormalUser*, *SiteManager*, *AdminUser*).
+# Model representing CBrain users.
+# All authentication of user access to the system is handle by the User model.
+# User level access to pages are handled through a given user's +class+ (currently *NormalUser*, *SiteManager*, *AdminUser*).
 #
-#=Attributes:
-#[*full_name*] The full name of the user.
-#[*login*] The user's login ID.
-#[*email*] The user's e-mail address.
-#= Associations:
-#*Has* *many*:
-#* Userfile
-#* CustomFilter
-#* Tag
-#* Feedback
-#*Has* *and* *belongs* *to* *many*:
-#* Group
+# =Attributes:
+# [*full_name*] The full name of the user.
+# [*login*] The user's login ID.
+# [*email*] The user's e-mail address.
+# = Associations:
+# *Has* *many*:
+# * Userfile
+# * CustomFilter
+# * Tag
+# * Feedback
+# *Has* *and* *belongs* *to* *many*:
+# * Group
 #
-#=Dependencies
-#[<b>On Destroy</b>] A user cannot be destroyed if it is still associated with any
-#                    Userfile, RemoteResource or DataProvider resources.
-#                    Destroying a user will destroy the associated
-#                    Tag, Feedback and CustomFilter resources.
+# =Dependencies
+# [<b>On Destroy</b>] A user cannot be destroyed if it is still associated with any
+#                     Userfile, RemoteResource or DataProvider resources.
+#                     Destroying a user will destroy the associated
+#                     Tag, Feedback and CustomFilter resources.
 class User < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -113,12 +113,12 @@ class User < ActiveRecord::Base
 
   cb_scope                   :name_like, lambda { |n| where("users.login LIKE ? OR users.full_name LIKE ?", "%#{n}%", "%#{n}%") }
 
-  #Return the admin user
+  # Returns the admin user
   def self.admin
     @@admin ||= self.find_by_login("admin")
   end
 
-  #Return all users with admin users.
+  # Returns all users with admin privileges.
   def self.all_admins(reset = false)
     if reset
       @@all_admins = AdminUser.all
@@ -209,7 +209,7 @@ class User < ActiveRecord::Base
 
   # Create a random password (to be sent for resets).
   def set_random_password
-    s = random_string
+    s = self.class.random_string
     self.password = s
     self.password_confirmation = s
   end
@@ -285,44 +285,47 @@ class User < ActiveRecord::Base
   #
   ###############################################
 
-  #Does this user's role match +role+?
+  # Does this user's role match +role+?
   def has_role?(role)
     return self.is_a?(role.to_s.classify.constantize)
   end
 
-  #Find the tools that this user has access to.
+  # Find the tools that this user has access to.
   def available_tools
     cb_error "#available_tools called from User base class! Method must be implement in a subclass."
   end
 
-  #Find the scientific tools that this user has access to.
+  # Find the scientific tools that this user has access to.
   def available_scientific_tools
     self.available_tools.where( :category  => "scientific tool" ).order( "tools.select_menu_text" )
   end
 
-  #Find the conversion tools that this user has access to.
+  # Find the conversion tools that this user has access to.
   def available_conversion_tools
     self.available_tools.where( :category  => "conversion tool" ).order( "tools.select_menu_text" )
   end
 
-  #Return the list of groups available to this user based on role.
+  # Returns the list of groups available to this user based on role.
   def available_groups
     cb_error "#available_groups called from User base class! Method must be implement in a subclass."
   end
 
+  # Returns the list of tags available to this user.
   def available_tags
     Tag.where( ["tags.user_id=? OR tags.group_id IN (?)", self.id, self.group_ids] )
   end
 
+  # Returns the list of tasks available to this user.
   def available_tasks
     cb_error "#available_tasks called from User base class! Method must be implement in a subclass."
   end
 
-  #Return the list of users under this user's control based on role.
+  # Return the list of users under this user's control based on role.
   def available_users
     cb_error "#available_users called from User base class! Method must be implement in a subclass."
   end
 
+  # Can this user be accessed by +user+?
   def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
     return true if user.has_role? :admin_user
     return true if user.has_role?(:site_manager) && self.site_id == user.site_id
@@ -391,15 +394,12 @@ class User < ActiveRecord::Base
     true
   end
 
-
   def password_required? #:nodoc:
     crypted_password.blank? || !password.blank?
   end
 
-  private
-
-  #Create a random string (currently for passwords).
-  def random_string
+  # Create a random string (currently for passwords).
+  def self.random_string
     length = rand(5) + 4
     s = ""
     length.times do
@@ -413,6 +413,8 @@ class User < ActiveRecord::Base
     s += ["!", "@", "#", "$", "%", "^", "&", "*"][rand(8)]
     s
   end
+
+  private
 
   def prevent_group_collision #:nodoc:
     if self.login && SystemGroup.find_by_name(self.login)

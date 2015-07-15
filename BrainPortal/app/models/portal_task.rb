@@ -17,13 +17,11 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This subclass of CbrainTask provides the methods and developer API
 # for deploying CbrainTasks on the BrainPortal side.
-#
-# See the documentation in CbrainTask.txt for more information.
 class PortalTask < CbrainTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -138,7 +136,7 @@ class PortalTask < CbrainTask
   end
 
   # Backwards compatibility auto adaptation:
-  # if a task's code is extended to incldue new parameters,
+  # if a task's code is extended to include new parameters,
   # then this will re-insert their default values
   # into the params[] hash.
   #
@@ -230,15 +228,23 @@ class PortalTask < CbrainTask
   end
 
   # This method will be called if the user clicks
-  # on a button labelled /Refresh/ when creating
-  # a new task or editing an existing one. It
+  # on a button matching refresh_form_regex (/refresh/ by default)
+  # when creating a new task or editing an existing one. It
   # doesn't have to do anything, but usually it's
   # convenient when we want to dynamicallty adjust
   # some of the form elements.
   def refresh_form
     ""
   end
-  
+
+  # This method is called to check if a task form submission
+  # corresponds to a refresh action. If the button the user clicked
+  # matches this, refresh_form is called.
+  # Defaults to /refresh/
+  def refresh_form_regex
+    /refresh/i
+  end
+
   # This method is called after the user has clicked
   # to submit the form for the task, but before it
   # is launched. Just like before_form(), it doesn't have
@@ -645,6 +651,43 @@ class PortalTask < CbrainTask
     true
   end
 
+
+
+  ##################################################################
+  # Methods To Fetch View Files
+  ##################################################################
+
+  # Returns the directory where some public assets (files) for the current task
+  # can be found, as served from the webserver. For a task such as UnixWc,
+  # it would map to this relative path:
+  #
+  #   "/cbrain_plugins/cbrain_tasks/unix_wc"
+  #
+  # This relative path, as seen from the "public" directory of the Rails app,
+  # is a symbolic link to the "views/public" subdirectory where the task plugin
+  # was installed.
+  #
+  # When given an argument 'public_file', the path returned will be extended
+  # to point to a sub file of that directory. E.g. with "abc/def.csv" :
+  #
+  #   "/cbrain_plugins/cbrain_tasks/unix_wc/abc/def.csv"
+  #
+  # Returns nil if no file exists that match the argument 'public_file'.
+  # Otherwise, returns a Pathname object.
+  def self.public_path(public_file=nil)
+    base = Pathname.new("/cbrain_plugins/cbrain_tasks") + self.to_s.demodulize.underscore
+    return base if public_file.blank?
+    public_file = Pathname.new(public_file.to_s).cleanpath
+    raise "Public file path outside of task plugin." if public_file.absolute? || public_file.to_s =~ /^\.\./
+    base = base + public_file
+    return nil unless File.exists?((Rails.root + "public").to_s + base.to_s)
+    base
+  end
+
+  # See the class method of the same name.
+  def public_path(public_file=nil)
+    self.class.public_path(public_file)
+  end
 
 
   ##################################################################

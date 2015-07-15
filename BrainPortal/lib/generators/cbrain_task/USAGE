@@ -1,0 +1,53 @@
+Description:
+  Stubs out a model and a view for a new CbrainTask.
+  Pass the plain task name as the first argument, in
+  camel case format.
+
+Usage:
+  rails generate cbrain_task TaskName [--advanced] [--license license_file]
+
+Options:
+  --advanced : will include templates for the advanced
+               PortalTask API methods in the
+               Ruby code template for the task. Otherwise,
+               only the standard methods will be inserted
+               in the template.
+
+  --license  : will add the text present in license_file
+               at the beginning of each template.
+
+Example:
+
+    rails generate cbrain_task UniversalTranslator
+
+  will create these directories, Ruby code files and ERB and HTML view files:
+
+  * Directories:
+    cbrain_plugins/cbrain-plugins-local/cbrain_task/universal_translator/
+    cbrain_plugins/cbrain-plugins-local/cbrain_task/universal_translator/portal/
+    cbrain_plugins/cbrain-plugins-local/cbrain_task/universal_translator/bourreau/
+    cbrain_plugins/cbrain-plugins-local/cbrain_task/universal_translator/common/
+    cbrain_plugins/cbrain-plugins-local/cbrain_task/universal_translator/views/
+    cbrain_plugins/cbrain-plugins-local/cbrain_task/universal_translator/views/public/
+
+  * Ruby code files:
+    cbrain_plugins/cbrain-plugins-local/cbrain_task/universal_translator/portal/universal_translator.rb
+    cbrain_plugins/cbrain-plugins-local/cbrain_task/universal_translator/bourreau/universal_translator.rb
+    cbrain_plugins/cbrain-plugins-local/cbrain_task/universal_translator/common/universal_translator.rb
+
+  * ERB partials:
+    cbrain_plugins/cbrain-plugins-local/cbrain_task/universal_translator/views/_task_params.html.erb
+    cbrain_plugins/cbrain-plugins-local/cbrain_task/universal_translator/views/_show_params.html.erb
+
+  * HTML excepts for documentation
+    cbrain_plugins/cbrain-plugins-local/cbrain_task/universal_translator/views/public/edit_params_help.html
+    cbrain_plugins/cbrain-plugins-local/cbrain_task/universal_translator/views/public/tool_info.html
+
+  Note that the path component 'cbrain-plugin-local' is a name given to a
+  dummy CBRAIN plugins package; feel free to rename it as needed
+  once you're ready to distribute your task.
+
+  The created files, once modified to suit your needs, are fully
+  ready to be deployed by running the standard rake task
+  "cbrain:plugins:install:all".
+

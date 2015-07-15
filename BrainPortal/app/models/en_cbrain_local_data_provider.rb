@@ -17,10 +17,11 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'fileutils'
+require 'find'
 
 #
 # This class provides an implementation for a data provider
@@ -69,13 +70,14 @@ class EnCbrainLocalDataProvider < LocalDataProvider
   end
 
   # Returns the real path on the DP, since there is no caching here.
-  def cache_full_path(userfile) #:nodoc:
+  def cache_full_path(userfile)
     basename  = userfile.name
     threelevels = cache_subdirs_from_id(userfile.id)
     Pathname.new(remote_dir) + threelevels[0] + threelevels[1] + threelevels[2] + basename
   end
 
-  def cache_erase(userfile) #:nodoc:
+  # Will actually not do anything except record that all is 'fine' with the SyncStatus entry of the file.
+  def cache_erase(userfile)
     SyncStatus.ready_to_modify_cache(userfile,:destroy) do
       true
     end
@@ -90,7 +92,7 @@ class EnCbrainLocalDataProvider < LocalDataProvider
       FileUtils.remove_entry(parent1.to_s, true)
       Dir.rmdir(parent2.to_s)
       Dir.rmdir(parent3.to_s)
-    rescue Errno::ENOENT, Errno::ENOTEMPTY => ex
+    rescue Errno::ENOENT, Errno::ENOTEMPTY
       # It's OK if any of the rmdir fails, and we simply ignore that.
     end
     true
@@ -102,6 +104,46 @@ class EnCbrainLocalDataProvider < LocalDataProvider
     newpath   = oldparent + newname
     return false unless FileUtils.move(oldpath.to_s,newpath.to_s)
     true
+  end
+  
+  # this returns the category of the data provider -- used in view for admins
+  def self.pretty_category_name
+    "Enhanced CBRAIN Types"
+  end
+
+  def impl_provider_report #:nodoc:
+    issues = []
+
+    # Search the provider's root directory for unknown directories and/or files
+    userfile_paths = self.userfiles.map { |u| self.provider_full_path(u).to_s }
+    all_paths      = Find.find(remote_dir).reject { |p| File.directory?(p) && ! (Dir.entries(p) - %w{ . .. }).empty? }
+    base_regex     = Regexp.new('^' + Regexp.quote(remote_dir) + '/?')
+    (all_paths - userfile_paths).each do |unk|
+      issues << {
+        :type      => :unknown,
+        :message   => "Unknown file or directory '#{unk.sub(base_regex, '')}'",
+        :severity  => :major,
+        :action    => :delete,
+        :file_path => unk
+      }
+    end
+
+    issues + super
+  end
+
+  def impl_provider_repair(issue) #:nodoc:
+    return super(issue) unless issue[:action] == :delete
+
+    # Remove the file/directory itself
+    path = issue[:file_path]
+    (File.directory?(path) ? Dir : File).unlink(path)
+    path = File.dirname(path)
+
+    # Remove all empty directories up to remote_dir
+    while path != remote_dir && (Dir.entries(path) - %w{ . .. }).empty?
+      Dir.unlink(path)
+      path = File.dirname(path)
+    end
   end
 
 end
