@@ -883,8 +883,9 @@ class RemoteResource < ActiveRecord::Base
     return true if last_update && last_update > 30.seconds.ago
     CBRAIN.spawn_with_active_records(:admin, "DP Check") do
       dp_stats = {}
-      dp_ids.each do |dp_id|
+      dp_ids.each_with_index do |dp_id,idx|
         dp  = DataProvider.find_by_id(dp_id)
+        $0 = "DP Check #{idx+1}/#{dp_ids.size}: #{dp.try(:name) || "UnknownDP"}\0\0\0\0"
         if ! dp
           stat = "notexist"
         elsif ! dp.online?
