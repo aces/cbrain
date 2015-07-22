@@ -840,6 +840,7 @@ class UserfilesController < ApplicationController
                               :header        => "Collections Merged",
                               :variable_text => "[[#{collection.name}][/userfiles/#{collection.id}]]"
                               )
+          collection.addlog(self, "Created by #{current_user.login} by merging #{userfiles.size} files.")
         elsif result == :collision
           Message.send_message(current_user,
                               :message_type  => :error,

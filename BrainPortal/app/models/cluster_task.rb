@@ -1425,7 +1425,7 @@ class ClusterTask < CbrainTask
     end
   end
 
-  
+
   # Submit the actual job request to the cluster management software.
   # Expects that the WD has already been changed.
   def submit_cluster_job
@@ -1630,12 +1630,12 @@ class ClusterTask < CbrainTask
   end
 
   def use_docker?
-    return (self.tool_config.docker_image and self.tool_config.docker_image != "")
+    return self.tool_config.docker_image.present?
   end
-  
+
   # Returns the command line(s) associated with the task, wrapped in a Docker call if a Docker image has to be used.
   def docker_commands
-    commands = self.cluster_commands  
+    commands = self.cluster_commands
     commands_joined=commands.join("\n");
 
     cache_dir=RemoteResource.current_resource.dp_cache_dir;
@@ -1649,7 +1649,7 @@ docker run --rm -v $PWD:/cbrain-script -v #{cache_dir}:#{cache_dir} -v #{task_di
 "
     return docker_commands
   end
-  
+
 
   ##################################################################
   # Lifecycle hooks
