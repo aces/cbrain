@@ -365,8 +365,9 @@ class ClusterTask < CbrainTask
     userfile.sync_to_cache
 
     # Compute the final absolute path to the target file symlink
-    full_path     = Pathname.new("#{self.full_cluster_workdir}/#{file_path}")
-    full_path    += userfile.name if file_path.to_s.end_with?("/")
+    file_path     = Pathname.new(file_path.to_s)
+    file_path    += userfile.name if file_path.to_s.end_with?("/")
+    full_path     = Pathname.new(self.full_cluster_workdir) + file_path
 
     # Pathname objects for the userfile and bourreau directories
     workdir_path  = Pathname.new(self.cluster_shared_dir)
