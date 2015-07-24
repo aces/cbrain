@@ -58,10 +58,12 @@
   <%- end -%>
   </li>
 <%- end -%>
-<h1><%= descriptor['name'] %></h1>
+<h1>
+  <%= descriptor['name'] %>
 <%- if descriptor['tool-version'] -%>
-<h4><%= descriptor['tool-version'] %></h4>
+  <%= descriptor['tool-version'] %>
 <%- end -%>
+</h1>
 <br />
 
 <%- if descriptor['description'] -%>

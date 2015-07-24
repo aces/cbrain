@@ -26,10 +26,16 @@ require 'fileutils'
 # files. The generated code can be added right away to CBRAIN's available tasks
 # or written to file for later modification.
 #
-# NOTE: Only JSON is currently supported
+# NOTE: Only JSON and a single schema (boutiques) is currently supported
 module SchemaTaskGenerator
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  # Directory where descriptor schemas are located
+  SCHEMA_DIR = "#{Rails.root.to_s}/lib/cbrain_task_generators/schemas"
+
+  # Default schema file to use when validating auto-loaded descriptors
+  DEFAULT_SCHEMA_FILE = 'boutiques.schema.json'
 
   # Represents a schema to validate task descriptors against
   class Schema
@@ -150,14 +156,20 @@ module SchemaTaskGenerator
       # The newly created Tool and ToolConfig (if needed) will initially belong
       # to the core admin.
 
+      name         = @descriptor['name']
+      version      = @descriptor['tool-version'] || '(unknown)'
+      description  = @descriptor['description']  || ''
+      docker_image = @descriptor['docker-image']
+      resource     = RemoteResource.current_resource
+
       # Create and save a new Tool for this task, unless theres already one.
       Tool.new(
-        :name              => @descriptor['name'],
+        :name              => name,
         :user_id           => User.admin.id,
         :group_id          => User.admin.own_group.id,
         :category          => "scientific tool",
         :cbrain_task_class => task.to_s,
-        :description       => @descriptor['description']
+        :description       => description
       ).save! unless
         Tool.exists?(:cbrain_task_class => task.to_s)
 
@@ -168,15 +180,16 @@ module SchemaTaskGenerator
 
       ToolConfig.new(
         :tool_id      => task.tool.id,
-        :bourreau_id  => RemoteResource.current_resource.id,
+        :bourreau_id  => resource.id,
         :group_id     => Group.everyone.id,
-        :version_name => @descriptor['tool-version'],
-        :docker_image => @descriptor['docker-image']
+        :version_name => version,
+        :description  => "#{name} #{version} on #{resource.name}",
+        :docker_image => docker_image
       ).save! unless
         ToolConfig.exists?(
           :tool_id      => task.tool.id,
           :bourreau_id  => RemoteResource.current_resource.id,
-          :version_name => @descriptor['tool-version']
+          :version_name => version
         )
     end
 
@@ -244,6 +257,13 @@ module SchemaTaskGenerator
         :edit_help   => apply_template.('edit_help.html.erb')
       },
     )
+  end
+
+  # Returns the default Schema instance to use when validating descriptors
+  # without a specific schema or when auto-loading descriptors.
+  # (constructed from DEFAULT_SCHEMA_FILE)
+  def self.default_schema
+    @@default_schema ||= Schema.new("#{SCHEMA_DIR}/#{DEFAULT_SCHEMA_FILE}")
   end
 
   # Utility method to convert a JSON string or file path into a hash.
