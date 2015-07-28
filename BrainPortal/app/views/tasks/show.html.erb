@@ -141,9 +141,14 @@
     <%= build_tabs do |tb| %>
        <%= tb.tab("Summary") do %>
          <% begin %>
-           <% locals = { :task => @task, :params  => @task.params } %>
-           <% if @task.class.respond_to?(:raw_partial) %>
-             <%= render :inline => @task.class.raw_partial(:show_params), :locals => locals %>
+           <%
+             locals = { :task => @task, :params  => @task.params }
+             raw_partial = lambda do |partial|
+               @task.class.raw_partial(partial) if @task.class.respond_to?(:raw_partial)
+             end
+           %>
+           <% if raw_partial.(:show_params) %>
+             <%= render :inline => raw_partial.(:show_params), :locals => locals %>
            <% else %>
              <%= render :partial => task_partial('show_params'), :locals => locals %>
            <% end %>

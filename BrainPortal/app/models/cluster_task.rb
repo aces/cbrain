@@ -1684,7 +1684,7 @@ end
 
       model.sub!(/.rb$/, '')
       require_dependency "#{dir}/#{model}.rb" unless
-        CbrainTask.const_defined? model.classify
+        [ model.classify, model.camelize ].any? { |m| CbrainTask.const_defined?(m) rescue nil }
     end
   end
 end

@@ -114,9 +114,19 @@ module SchemaTaskGenerator
     # Integrates the encapsulated CbrainTask in this CBRAIN installation.
     # Unless +register+ is specified to be false, this method will add the
     # required Tool and ToolConfig if necessary for the CbrainTask to be
-    # useable right away (Since almost all information required to make the
+    # useable right away (since almost all information required to make the
     # Tool and ToolConfig objects is available in the spec).
-    def integrate(register = true)
+    # Also, unless +multi_version+ is specified to be false, this method will
+    # wrap the encapsulated CbrainTask in a version switcher class to allow
+    # different CbrainTask classes for each tool version.
+    # Returns the newly generated CbrainTask subclass.
+    def integrate(register: true, multi_version: true)
+      # Make sure the task class about to be generated does not already exist,
+      # to avoid mixing the classes up.
+      name = SchemaTaskGenerator.classify(@name)
+      Object.send(:remove_const, name)     if Object.const_defined?(name)
+      CbrainTask.send(:remove_const, name) if CbrainTask.const_defined?(name)
+
       # As the same code is used to dynamically load tasks descriptors and
       # create task templates, the class definitions are generated as strings
       # (Otherwise the source wouldn't be available to write down the generated
@@ -125,8 +135,8 @@ module SchemaTaskGenerator
       eval @source[Rails.root.to_s =~ /BrainPortal$/ ? :portal : :bourreau]
 
       # Try and retrieve the just-generated task class
-      task   = @name.camelize.constantize rescue nil
-      task ||= "CbrainTask::#{@name.camelize}".constantize
+      task   = name.constantize rescue nil
+      task ||= "CbrainTask::#{name}".constantize
 
       # Since the task class doesn't have a matching cbrain_plugins directory
       # tree, some methods need to be added/redefined to ensure the cooperation
@@ -146,23 +156,48 @@ module SchemaTaskGenerator
           :task_params => generated.source[:task_params],
           :show_params => generated.source[:show_params],
           :edit_help   => generated.source[:edit_help]
-        })[partial];
+        })[partial]
       end
 
-      return unless register
+      # If multi-versioning is enabled, replace the task class object constant
+      # in CbrainTask (or Object) by a version switcher wrapper class.
+      if multi_version
+        # Build the corresponding switcher and add the task's version and class
+        # to it.
+        version  = @descriptor['tool-version']
+        switcher = SchemaTaskGenerator.version_switcher(name)
+        switcher.known_versions[version] = task
+
+        # Redefine the CbrainTask or Object constant pointing to the task's
+        # class to point to the switcher instead.
+        mod = [ Object, CbrainTask ]
+          .select { |m| m.const_defined?(name) }
+          .first
+        if mod
+          mod.send(:remove_const, name)
+          mod.const_set(name, switcher)
+        end
+      end
 
       # With the task class and descriptor, we have enough information to
       # generate a Tool and ToolConfig to register the tool into CBRAIN.
-      # The newly created Tool and ToolConfig (if needed) will initially belong
-      # to the core admin.
+      register(task) if register
 
+      task
+    end
+
+    # Register a newly generated CbrainTask subclass (+task+) in this CBRAIN
+    # installation, creating the appropriate Tool and ToolConfig objects from
+    # the information contained in the descriptor. The newly created Tool and
+    # ToolConfig will initially belong to the core admin.
+    def register(task)
       name         = @descriptor['name']
       version      = @descriptor['tool-version'] || '(unknown)'
       description  = @descriptor['description']  || ''
       docker_image = @descriptor['docker-image']
       resource     = RemoteResource.current_resource
 
-      # Create and save a new Tool for this task, unless theres already one.
+      # Create and save a new Tool for the task, unless theres already one.
       Tool.new(
         :name              => name,
         :user_id           => User.admin.id,
@@ -173,7 +208,7 @@ module SchemaTaskGenerator
       ).save! unless
         Tool.exists?(:cbrain_task_class => task.to_s)
 
-      # Create and save a new ToolConfig for this task on this server, unless
+      # Create and save a new ToolConfig for the task on this server, unless
       # theres already one. Only applies to Bourreaux (as it would make no
       # sense on the portal).
       return if Rails.root.to_s =~ /BrainPortal$/
@@ -188,7 +223,7 @@ module SchemaTaskGenerator
       ).save! unless
         ToolConfig.exists?(
           :tool_id      => task.tool.id,
-          :bourreau_id  => RemoteResource.current_resource.id,
+          :bourreau_id  => resource.id,
           :version_name => version
         )
     end
@@ -231,7 +266,7 @@ module SchemaTaskGenerator
   # validation issues.
   def self.generate(schema, descriptor, strict_validation = true)
     descriptor = self.expand_json(descriptor)
-    name       = descriptor['name'].camelize
+    name       = self.classify(descriptor['name'])
     schema     = Schema.new(schema) unless schema.is_a?(Schema)
     errors     = schema.send(
       strict_validation ? :'validate!' : :validate,
@@ -259,6 +294,123 @@ module SchemaTaskGenerator
     )
   end
 
+  # Generate (or retrieve if it has been generated already) a version switcher
+  # class for CbrainTask subclasses named +name+. The version switcher class
+  # will behave just like a blank CbrainTask subclass until it is assigned
+  # a ToolConfig. It will then replace its methods with the ones from the
+  # CbrainTask subclass corresponding to that particular version:
+  #   class A < PortalTask
+  #     def f; :a; end
+  #   end
+  #
+  #   class B < PortalTask
+  #     def f; :b; end
+  #   end
+  #
+  #   s = version_switcher('A')
+  #   s.known_versions['1.1'] = A
+  #   s.known_versions['1.2'] = B
+  #
+  #   s.tool_config = ToolConfig.new(:version => '1.1')
+  #   s.f # :a
+  def self.version_switcher(name)
+    base = Rails.root.to_s =~ /BrainPortal$/ ? PortalTask : ClusterTask
+    @@version_switchers       ||= {}
+    @@version_switchers[name] ||= Class.new(base) do
+
+      # Versions known to this version switcher and their associated CbrainTask
+      # subclasses.
+      def self.known_versions
+        class_variable_set(:@@known_versions, {}) unless
+          class_variable_defined?(:@@known_versions)
+
+        class_variable_get(:@@known_versions)
+      end
+
+      # Add a few singleton methods on the object to perform a version switch
+      # once the tool config is set.
+      after_initialize do
+        # FIXME: the simplest and most straightforward way to make the version
+        # switcher task instance become an instance of the version-specific
+        # class would be to directly change the instance's class.
+        # At the time of writing, this is impossible in Ruby.
+        # This method (+as_version+) tries its best to mimic the missing
+        # functionality.
+
+        # Convert this blank CbrainTask object (instance of the version switcher
+        # class) to a more-or-less real instance of the class corresponding to
+        # +version+ by including all of its methods in, replacing the defaults
+        # from PortalTask or ClusterTask.
+        define_singleton_method(:as_version) do |version|
+          cb_error "Unknown or invalid version '#{version}'" unless
+            (version_class = self.class.known_versions[version])
+
+          # Use the Ruby 2.0 refinement API to include version_class methods
+          # inside this object's singleton class (or metaclass)
+          metaclass = class << self; self; end
+          metaclass.include(Module.new { include refine(version_class) { } })
+
+          # And try to make the object appear to be a version_class.
+          define_singleton_method(:class) { version_class }
+          define_singleton_method(:kind_of?) { |klass| is_a?(klass) }
+          define_singleton_method(:is_a?) do |klass|
+            klass <= version_class || super(klass)
+          end
+          define_singleton_method(:instance_of?) do |klass|
+            klass == version_class || super(klass)
+          end
+
+          # An object can only be given methods for a single version, and
+          # exactly once. Conflicts and odd issues could occur otherwise.
+          # Thus, there is no longer a need for :as_version or the tool_config
+          # setter hooks.
+          [ :as_version, :tool_config=, :tool_config_id= ].each do |m|
+            metaclass.send(:remove_method, m) rescue nil
+          end
+        end
+
+        # If we dont have a tool config already, try to catch the exact moment
+        # when the version switcher instance gets assigned its tool config and
+        # invoke as_version when it happens.
+        if self.tool_config
+          self.as_version(self.tool_config.version_name)
+        else
+          [ :tool_config=, :tool_config_id= ].each do |method|
+            define_singleton_method(method) do |*args|
+              value = super(*args)
+              self.as_version(self.tool_config.version_name) if self.tool_config
+              value
+            end
+          end
+        end
+      end
+
+      # Just like generated task classes, the version switcher doesn't have a
+      # cbrain_plugins directory structure and needs a few methods for views
+      # and controllers, adjusted to reflect that a ToolConfig is needed to
+      # access the real task class.
+
+      # No public path
+      def self.public_path(public_file)
+        nil
+      end
+
+      # No generated source (yet)
+      def self.generated_from
+        nil
+      end
+
+      # Stubbed out raw view partials
+      def self.raw_partial(partial)
+        ({
+          :task_params => %q{ No version specified },
+          :show_params => %q{ No version specified }
+        })[partial]
+      end
+
+    end
+  end
+
   # Returns the default Schema instance to use when validating descriptors
   # without a specific schema or when auto-loading descriptors.
   # (constructed from DEFAULT_SCHEMA_FILE)
@@ -272,6 +424,15 @@ module SchemaTaskGenerator
     return obj unless obj.is_a?(String)
 
     JSON.parse!(File.exists?(obj) ? IO.read(obj) : obj)
+  end
+
+  # Utility method to convert a string (+str+) to an identifier suitable for a
+  # Ruby class name. Similar to Rails' classify, but tries to handle more cases.
+  def self.classify(str)
+    str.gsub!('-', '_')
+    str.gsub!(/\W/, '')
+    str.gsub!(/^\d/, '')
+    str.camelize
   end
 
   private

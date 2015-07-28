@@ -170,7 +170,7 @@ class CbrainTask::<%= name %> < PortalTask
     # Create a list of tasks out of the default input file list
     # (interface_userfile_ids), each file going into parameter '<%= single_file['id'] %>'
     self.params[:interface_userfile_ids].map do |id|
-      task = self.dup
+      task = self.clone
 
       # Set and sanitize the one file parameter for each id
       task.params[:'<%= single_file['id']%>'] = id

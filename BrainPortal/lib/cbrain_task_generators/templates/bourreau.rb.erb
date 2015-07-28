@@ -237,10 +237,10 @@ class CbrainTask::<%= name %> < ClusterTask
     end
 
 %     required.select { |o| ! o['list'] }.each do |output|
-    ensure_exists(outputs[:'<%= output['id'] %>'])
+    ensure_exists.(outputs[:'<%= output['id'] %>'])
 %     end
 %     required.select { |o|   o['list'] }.each do |output|
-    ensure_matches(outputs[:'<%= output['id'] %>'])
+    ensure_matches.(outputs[:'<%= output['id'] %>'])
 %     end
 
 %   end
@@ -291,8 +291,6 @@ class CbrainTask::<%= name %> < ClusterTask
     succeeded
 % end
   end
-
-  private
 
   # Generic helper methods
 
