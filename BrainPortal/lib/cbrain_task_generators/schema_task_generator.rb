@@ -342,8 +342,22 @@ module SchemaTaskGenerator
         # +version+ by including all of its methods in, replacing the defaults
         # from PortalTask or ClusterTask.
         define_singleton_method(:as_version) do |version|
-          cb_error "Unknown or invalid version '#{version}'" unless
-            (version_class = self.class.known_versions[version])
+          # Try to get the version-specific class corresponding to +version+,
+          # falling back on the first defined version in known_versions if it
+          # cannot be found.
+          known = self.class.known_versions
+          unless (version_class = known[version])
+            cb_error "No known versions for #{self.class.name}!?" unless
+              known.present?
+
+            logger.warn(
+              "WARNING: " +
+              "Unknown version #{version} for #{self.class.name}, " +
+              "using #{known.first[0]} instead"
+            )
+
+            version, version_class = known.first
+          end
 
           # Use the Ruby 2.0 refinement API to include version_class methods
           # inside this object's singleton class (or metaclass)
