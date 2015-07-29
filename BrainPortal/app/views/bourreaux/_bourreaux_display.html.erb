@@ -22,93 +22,238 @@
 #
 -%>
 
-<div class="menu_bar">
-  <% if check_role(:site_manager) || check_role(:admin_user) %>
-    <%= new_model_button 'Create New Server', new_bourreau_path %>
-  <% end %>
-  <%= ajax_link (@filter_params["details"] == 'on' ? "Hide Details" : "Show Details" ),
-              bourreaux_path(:bourreaux  => {:details  => set_toggle(@filter_params["details"])}),
-              :datatype  => 'script', :class  => "button"
-  %>
-
-  <%= link_to "User Access Report", rr_access_bourreaux_path,
-              :datatype  => 'script', :class  => "button"
-  %>
-
-  <%= link_to "Disk Cache Report", rr_disk_usage_bourreaux_path,
-              :datatype  => 'script', :class  => "button"
-  %>
-
-  <%= link_to "Task Workdir Size Report", report_path(
-                :table_name => "cbrain_tasks.combined_task_rep",
-                :row_type   => :user_id,
-                :col_type   => :bourreau_id,
-                :generate   => "ok"
-              ), :class  => "button"
-  %>
-
-  <%= link_to "Access to Data Providers", rr_access_dp_bourreaux_path,
-              :datatype  => 'script', :class  => "button"
-  %>
-
-  <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>
-</div>
-
-
-<%= render :partial => 'shared/active_filters', :locals => {:model => :bourreau} %>
-
-
-<% operations_width_colspan = 3 %>
-<%= index_table(@bourreaux, :id => "bourreau_table", :class => "resource_list") do |t| %>
+<%
+  table = dynamic_index_table(@bourreaux,
+    :id         => "bourreaux_table",
+    :class      => [ :resource_list ],
+    :render     => false,
+    :sort_map   => {
+      :type        => 'remote_resources.type',
+      :name        => 'remote_resources.name',
+      :owner       => 'users.login',
+      :group       => 'groups.name',
+      :time_zone   => 'remote_resources.time_zone',
+      :online      => 'remote_resources.online',
+      :description => 'remote_resources.description'
+    },
+    :filter_map => {
+      :owner => 'user_id',
+      :group => 'group_id'
+    }
+  ) do |t|
+%>
   <%
-    t.sort_column("Server Type", RemoteResource, :type, :filters => basic_filters_for(@filtered_scope, @header_scope, RemoteResource, :type))
-    t.sort_column("Server Name", RemoteResource, :name)
-    if @filter_params["details"] == 'on'
-      t.column("Live Revision")
-      t.sort_column("Owner", User, :login, :filters => association_filters_for(@filtered_scope, @header_scope, RemoteResource, User, :name_method => :login))
+    loaded = lambda do |resource|
+      ! resource.is_a?(Bourreau)   ||
+      ! resource.online?           ||
+      resource.info_cached?(:ping) ||
+      (@row_fetch && resource.info(:ping))
     end
-    t.sort_column("Project", Group, :name, :filters => association_filters_for(@filtered_scope, @header_scope, RemoteResource, Group))
-    if @filter_params["details"] == 'on'
-      t.column("Site")
-      t.sort_column("Time Zone", RemoteResource, :time_zone, :filters => basic_filters_for(@filtered_scope, @header_scope, RemoteResource, :time_zone))
-    end
-    t.sort_column("Online?", RemoteResource, :online)
-    t.column("Uptime")
-    t.describe_column("Workers") do |col|
-      col.cell(:if => Proc.new{ |rr| rr.is_a?(Bourreau) })
-    end
-    t.describe_column("Tasks") do |col|
-      col.cell(:if => Proc.new{ |rr| rr.is_a?(Bourreau) })
-    end
-    if @filter_params["details"] == 'on'
-      t.describe_column("Tasks Space") do |col|
-        col.cell(:if => Proc.new{ |rr| rr.is_a?(Bourreau) })
+
+    filters_for = lambda do |target, opts = {}|
+      return if @row_fetch
+      if target.is_a?(Symbol)
+        basic_filters_for(@filtered_scope, @header_scope, RemoteResource, target)
+      else
+        association_filters_for(@filtered_scope, @header_scope, RemoteResource, target, opts)
       end
     end
-    if @filter_params["details"] == 'on'
-      t.sort_column("Description", RemoteResource, :description)
+
+    t.row { |r| { :html => { 'data-info-url' => row_data_bourreau_path(r) } } unless loaded.(r) }
+
+    t.column("Server Type", :type,
+      :sortable => true,
+      :filters  => filters_for.(:type)
+    ) { |r| r.is_a?(Bourreau) ? "Execution" : "Portal" }
+
+    t.column("Server Name", :name,
+      :sortable => true
+    ) do |r|
+      link_to_bourreau_if_accessible(r, current_user, :html_options => {
+        :class => (! loaded.(r) || r.info(:ping).name != '???') ? nil : 'error_link'
+      })
     end
-    t.column("Status page URL")
-    t.column("Operations", :colspan => operations_width_colspan)
+
+    t.column("Live Revision", :revision,
+      :hidden => true
+    ) do |r|
+      if loaded.(r)
+        revision = r.info(:ping).starttime_revision
+        red_if(revision != '???' && revision != $CBRAIN_StartTime_Revision, revision, nil, :color2 => 'red')
+      else
+        html_colorize("(...)", "magenta")
+      end
+    end
+
+    t.column("Owner", :owner,
+      :hidden   => true,
+      :sortable => true,
+      :filters  => filters_for.(User, :name_method => :login)
+    ) { |r| link_to_user_with_tooltip(r.user) }
+
+    t.column("Project", :group,
+      :sortable => true,
+      :filters  => filters_for.(Group)
+    ) { |r| link_to_group_if_accessible(r.group) }
+
+    t.column("Site", :site,
+      :hidden => true
+    ) { |r| link_to_site_if_accessible(r.site_affiliation) }
+
+    t.column("Time Zone", :time_zone,
+      :hidden   => true,
+      :sortable => true,
+      :filters  => filters_for.(:time_zone)
+    ) { |r| r.time_zone || "(Unset)" }
+
+    t.column("Online?", :online,
+      :sortable => true
+    ) { |r| red_if(! r.online, "Yes", "Offline") }
+
+    t.column("Uptime", :uptime, &(lambda do |r|
+      info = r.info(:ping) if loaded.(r)
+      return html_colorize("(...)", "magenta") unless info
+      return red_if(r.online?, "-", "Down!")   if info.name == '???'
+
+      html_tool_tip(
+        pretty_elapsed(info.uptime.to_i, :num_components => 2, :short => true),
+        :offset_x => 50
+      ) do
+        "Since #{to_localtime(info.uptime.to_i.ago, :datetime)}" +
+        "(for #{pretty_elapsed(info.uptime.to_i)})"
+      end
+    end))
+
+    t.column("Workers", :workers, &(lambda do |r|
+      return '-' unless r.is_a?(Bourreau) && r.online?
+
+      info = r.info(:ping) if loaded.(r)
+      return html_colorize("(...)", "magenta") unless info
+
+      if info.worker_pids == '???'
+        html_colorize("Stopped", "red")
+      else
+        nworkers = info.worker_pids.count(',') + 1
+        red_if(nworkers != r.workers_instances, "Running (x #{nworkers})", nil, :color2 => "orange")
+      end
+    end))
+
+    t.column("Tasks", :tasks, &(lambda do |r|
+      return unless r.is_a?(Bourreau)
+      running = CbrainTask.status(:active).where(:bourreau_id => r.id).count
+
+      html_tool_tip(
+        index_count_filter(
+          running,
+          :tasks,
+          { :bourreau_id => r.id, :status => :active },
+          :show_zeros => true
+        ),
+        :tooltip_div_class => 'white_bg html_tool_tip'
+      ) do
+        render :partial => 'load_info', :locals => { :bourreau => r }
+      end
+    end))
+
+    t.column("Tasks Space", :tasks_space, &(lambda do |r|
+      return unless r.is_a?(Bourreau)
+
+      known   = CbrainTask
+        .real_tasks
+        .where(:bourreau_id => r.id)
+        .sum(:cluster_workdir_size)
+      unknown = CbrainTask
+        .real_tasks
+        .where(:bourreau_id => r.id, :cluster_workdir_size => nil)
+        .where("cluster_workdir IS NOT NULL")
+        .count
+
+      contents  = link_to(colored_pretty_size(known), report_path(
+        :table_name  => "cbrain_tasks.combined_task_rep",
+        :col_type    => "bourreau_id",
+        :row_type    => "user_id",
+        :bourreau_id => r.id,
+        :generate    => "Go"
+      ), { :class => 'no_decorations' })
+
+      contents += " (#{unknown} unkn)" if unknown > 0
+      contents
+    end))
+
+    t.column("Description", :description,
+      :hidden   => true,
+      :sortable => true
+    ) { |r| overlay_description(r.description) }
+
+    t.column("Status page URL", :status_url) do |r|
+      link_to("Status", r.external_status_page_url, :class => "action_link", :target => "_blank") if
+        r.is_a?(Bourreau) && ! r.external_status_page_url.blank?
+    end
+
+    t.column("Start/Stop", :start_stop, &(lambda do |r|
+      return unless r.is_a?(Bourreau) && r.has_owner_access?(current_user)
+
+      if ! r.has_remote_control_info?
+        html_colorize("(Missing SSH control info)")
+      elsif ! r.has_actres_tunnelling_info?
+        html_colorize("(Missing ActiveResource SSH tunnel info)")
+      elsif ! r.has_db_tunnelling_info?
+        html_colorize("(Missing database SSH tunnel info)")
+      else
+        link_to('Start', start_bourreau_path(r), :class => 'action_link', :method  => :post) +
+        '&nbsp;&nbsp;&nbsp;'.html_safe +
+        link_to('Stop',  stop_bourreau_path(r),  :class => 'action_link', :method  => :post)
+      end
+    end))
+
+    if current_user.has_role?(:admin_user)
+      t.column("Access", :access) do |r|
+        link_to("Access?", {
+          :controller  => :tool_configs,
+          :action      => :index,
+          :bourreau_id => r.id,
+        }, :class => 'action_link') if
+          r.is_a?(Bourreau)
+      end
+    end
   %>
-
-  <% row_number = 0 %>
-  <% t.row_override do |rr| %>
-    <% row_number += 1 %>
-    <% full_width_colspan = t.num_cells + operations_width_colspan - 1 %>
-    <% if rr.is_a?(Bourreau) && rr.online? && !rr.info_cached?(:ping)  %>
-      <%= staggered_loading "tr", url_for(:action  => :row_data, :id => rr.id, :row_number => row_number),
-                           :id             => "bourreau_#{rr.id}",
-                           :class          => "row_highlight #{row_number % 2 == 0 ? "list-even" : "list-odd"}",
-                           :replace        => true,
-                           :error_message  => "<td colspan=\"#{full_width_colspan}\" class=\"loading_message\">Information for '#{h(rr.name)}' unavailable</td>" do %>
-        <%= render :partial => 'bourreau_table_row', :locals  => { :render_mode => :placeholder, :bourreau  => rr, :row_number => row_number } %>
-      <% end %>
-    <% else %>
-      <%= render :partial => 'bourreau_table_row', :locals  => {  :render_mode => :active_check, :bourreau  => rr, :row_number => row_number } %>
-    <% end %>
-  <% end %>
-
 <% end %>
 
+<% if @row_fetch %>
+  <%= table.render :row, @bourreaux.to_a %>
+<% else %>
+  <div class="menu_bar">
+    <% if check_role(:site_manager) || check_role(:admin_user) %>
+      <%= new_model_button 'Create New Server', new_bourreau_path %>
+    <% end %>
+    <%= link_to "User Access Report", rr_access_bourreaux_path,
+                :datatype  => 'script', :class  => "button"
+    %>
 
+    <%= link_to "Disk Cache Report", rr_disk_usage_bourreaux_path,
+                :datatype  => 'script', :class  => "button"
+    %>
+
+    <%= link_to "Task Workdir Size Report", report_path(
+                  :table_name => "cbrain_tasks.combined_task_rep",
+                  :row_type   => :user_id,
+                  :col_type   => :bourreau_id,
+                  :generate   => "ok"
+                ), :class  => "button"
+    %>
+
+    <%= link_to "Access to Data Providers", rr_access_dp_bourreaux_path,
+                :datatype  => 'script', :class  => "button"
+    %>
+
+    <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>
+  </div>
+
+  <%= render :partial => 'shared/active_filters', :locals => {:model => :bourreau} %>
+
+  <% content_for :scripts do %>
+    <% javascript_tag (render :partial => "fetch_row.js.erb", :formats => [:js]).to_s %>
+  <% end %>
+
+  <%= table.render %>
+<% end %>

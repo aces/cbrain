@@ -27,22 +27,48 @@
   <%= overlay_ajax_link "Help", "/doc/sites/site_info.html", :class  => "button" %>
 </div>
 
-
 <%= render :partial => 'shared/active_filters', :locals => {:model => :site} %>
 
+<div class="centered"> (<%= pluralize @sites.count, "site" %>) </div>
 
-<div class="centered">
-(<%= pluralize @sites.count, "site" %>)
-</div>
-<%= index_table(@sites, :class => "resource_list") do |t| %>
+<%=
+  dynamic_index_table(@sites,
+    :id       => 'sites_table',
+    :class    => [ :resource_list ],
+    :sort_map => {
+      :name        => 'sites.name',
+      :description => 'sites.description'
+    }
+  ) do |t|
+%>
   <%
-    t.sort_column("Name", Site, :name) { |s| link_to_site_if_accessible(s)  }
-    t.sort_column("Description", Site, :description) { |s| overlay_description(s.description) }
-    t.column("Managers") do |s|
-      array_to_table(s.managers.sort{|a, b| a.login.casecmp(b.login)}, :min_data => 2, :table_class => 'simple bordered') { |m,r,c| link_to_user_with_tooltip(m)}
+    t.column("Name", :name,
+      :sortable => true,
+    ) { |s| link_to_site_if_accessible(s) }
+
+    t.column("Description", :description,
+      :sortable => true,
+    ) { |s| overlay_description(s.description) }
+
+    t.column("Managers", :managers) do |s|
+      array_to_table(s.managers.sort { |a,b| a.login.casecmp(b.login) },
+        :min_data    => 2,
+        :table_class => 'simple bordered'
+      ) { |m,r,c| link_to_user_with_tooltip(m) }
     end
-    t.column("Number of Users") { |s| filter_add_link s.users.count.to_s, :controller => :users, :filters => {:site_id => s.id}, :ajax => false }
-    t.column("Number of Projects") { |s| filter_add_link s.groups.count.to_s, :controller => :groups, :filters => {:site_id => s.id}, :ajax => false }
+
+    t.column("Number of Users", :nusers) do |s|
+      filter_add_link s.users.count.to_s,
+        :controller => :users,
+        :filters    => { :site_id => s.id },
+        :ajax       => false
+    end
+
+    t.column("Number of Projects", :nprojects) do |s|
+      filter_add_link s.groups.count.to_s,
+        :controller => :groups,
+        :filters    => { :site_id => s.id },
+        :ajax       => false
+    end
   %>
 <% end %>
-

@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -29,13 +29,13 @@
 <% if current_user.has_role?(:admin_user) %>
 
     <div class="generalbox no_wrap">
-    
+
       <h1><%= link_to_bourreau_if_accessible(RemoteResource.current_resource, current_user, :name => "System Info") %></h1>
-      
+
       <p>
         <strong>Portal instance name:</strong> <%= link_to_bourreau_if_accessible(RemoteResource.current_resource) %>
       </p>
-      
+
       <%= form_tag home_path do %>
         <% if BrainPortal.current_resource.portal_locked? %>
               <%= hidden_field_tag :lock_portal, "unlock" %>
@@ -47,7 +47,7 @@
               <%= text_field_tag :message, message, :size => 30 %>
               <%= submit_tag "Lock this Portal", {:confirm => "Are you sure you wish to lock this portal?"} %>
         <% end %>
-      <% end %>  
+      <% end %>
 
       <% if @active_users %>
         <p>
@@ -90,7 +90,7 @@
       <p>
         <strong>Sessions</strong>
       </p>
-      
+
       There are currently <%= CbrainSession.count %> entries in the sessions table.<br/>
       <%= form_tag home_path do %>
         Clear sessions older than
@@ -102,10 +102,10 @@
            ]) %>
         <%= submit_tag "Clear", :confirm => "Are you sure you want to clear the sessions?" %>
       <% end %>
-  
 
 
-      <% 
+
+      <%
         one_day_ex    = ExceptionLog.where([ "created_at > ?", 1.day.ago ]).count
         three_day_ex  = ExceptionLog.where([ "created_at > ?", 3.day.ago ]).count
         one_week_ex   = ExceptionLog.where([ "created_at > ?", 1.week.ago ]).count
@@ -138,7 +138,7 @@
 
 
 <div class="generalbox no_wrap">
-  <h1><%= link_to "Account Info", user_path(current_user) %></h1>  
+  <h1><%= link_to "Account Info", user_path(current_user) %></h1>
     <p>
       <strong>Your login name:</strong> <%= link_to_user_if_accessible(current_user) %>
     </p>
@@ -164,26 +164,30 @@
     </p>
     <p>
       <strong>Your default Execution Server:</strong> <%= link_to_bourreau_if_accessible(@default_bourreau) %>
-    </p>  
+    </p>
 </div>
 
 <% if @tasks.size > 0 || @files.size > 0 %>
   <div class="box_spacer"></div>
-  
+
   <div class="generalbox no_wrap">
 
     <% if @tasks.size > 0 %>
-
-    <h1>
-       <%= sort_link("Latest Updated Tasks", CbrainTask, :updated_at, :dir => "DESC", :controller => :tasks, :action => :index, :ajax => false, :url_params => {:clear_filter => true}) %>
-       <% active_count = CbrainTask.active.count rescue 0 %>
-       <% if active_count > 0 %>
-         <%= filter_reset_link "(#{active_count} active)", :controller => :tasks, :filters  => { :status => :active }, :ajax => false %>
-       <% else %>
-         (None active)
-       <% end %>
-    </h1>
-
+      <h1>
+        <%=
+          link_to "Latest Updated Tasks",
+            :controller   => :tasks,
+            :action       => :index,
+            :tasks        => { :sort_hash => { :order => 'cbrain_tasks.updated_at', :dir => 'DESC' } },
+            :clear_filter => true
+        %>
+        <% active_count = CbrainTask.active.count rescue 0 %>
+        <% if active_count > 0 %>
+          <%= filter_reset_link "(#{active_count} active)", :controller => :tasks, :filters  => { :status => :active }, :ajax => false %>
+        <% else %>
+          (None active)
+        <% end %>
+      </h1>
       <table class="latest_summary_table">
         <% for task in @tasks %>
           <tr>
@@ -194,13 +198,18 @@
           </tr>
         <% end %>
       </table>
-
     <% end %>
 
     <% if @files.size > 0 %>
-
-    <h1><%= sort_link("Latest Updated Files", Userfile, :updated_at, :dir => "DESC", :controller => :userfiles, :action => :index, :ajax => false, :url_params => {:clear_filter => true}) %></h1>
-
+      <h1>
+        <%=
+          link_to "Latest Updated Files",
+            :controller   => :userfiles,
+            :action       => :index,
+            :userfiles    => { :sort_hash => { :order => 'userfiles.updated_at', :dir => 'DESC' } },
+            :clear_filter => true
+        %>
+      </h1>
       <table class="latest_summary_table">
         <% for file in @files %>
           <tr>
@@ -211,9 +220,8 @@
           </tr>
         <% end %>
       </table>
-
     <% end %>
-   
+
   </div>
 
 <% end %>

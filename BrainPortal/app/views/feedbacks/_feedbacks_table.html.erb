@@ -27,18 +27,47 @@
   <%= overlay_ajax_link "Help", "/doc/feedback/feedback.html", :class  => "button" %>
 </div>
 
-
 <%= render :partial => 'shared/active_filters', :locals => {:model => :feedback} %>
 
-
-<%= index_table(@feedbacks, :class => "resource_list") do |t| %>
+<%=
+  dynamic_index_table(@feedbacks,
+    :id         => 'feedbacks_table',
+    :class      => [ :resource_list ],
+    :sort_map   => {
+      :summary    => 'feedbacks.summary',
+      :author     => 'users.login',
+      :created_at => 'feedbacks.created_at'
+    },
+    :filter_map => {
+      :author => 'user_id'
+    }
+  ) do |t|
+%>
   <%
-    t.sort_column("Summary", 'Feedback', 'summary') { |fb| link_to fb.summary, fb }
-    t.sort_column("Author", 'User', 'login', :filters => association_filters_for(@filtered_scope, Feedback.scoped, "feedback", "user", :name_method => "login")) { |fb| link_to_user_with_tooltip(fb.user) }
-    t.sort_column("Posted at", 'Feedback', 'created_at') { |fb| to_localtime(fb.created_at,:datetime) }
-    t.describe_column("Operations") do |col|
-      col.delete_link(:if => Proc.new { |fb| current_user.has_role?(:admin_user) || current_user.id == fb.user_id}, :confirm => Proc.new { |f| "Are you sure you want to delete this feedback?" })
-    end
-  %>
-<% end %>
+    t.column("Summary", :summary,
+      :sortable => true
+    ) { |f| link_to f.summary, f }
 
+    t.column("Author", :author,
+      :sortable => true,
+      :filters  => association_filters_for(@filtered_scope, Feedback.scoped, "feedback", "user", :name_method => "login")
+    ) { |f| link_to_user_with_tooltip(f.user) }
+
+    t.column("Posted at", :created_at,
+      :sortable => true
+    ) { |f| to_localtime(f.created_at, :datetime) }
+  %>
+
+  <% t.column("Operations", :operations) do |f| %>
+    <div id="#feedback_<%= f.id %>">
+      <%=
+        delete_button('Delete', { :action => :destroy, :id => f.id },
+          :class           => 'action_link',
+          :confirm         => "Are you sure you want to delete this feedback?",
+          :target          => "#feedback_#{f.id}",
+          :loading_message => "Deleting..."
+        )
+      %>
+    </div>
+  <% end %>
+<% end %>

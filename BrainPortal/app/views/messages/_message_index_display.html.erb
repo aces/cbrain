@@ -29,38 +29,92 @@
   <%= button_with_dropdown_menu("Filters") do %>
     <%= render :partial => 'messages/filters' %>
   <% end %>
-  <span id="view_option_button">
-    <%= render :partial => "messages/view_option_button" %>
-  </span>
   <%= overlay_ajax_link "Help", "/doc/messages/message_info.html", :class  => "button" %>
 
   <%= external_submit_button "Delete Checked Messages", "message_form", :class  => "button", :confirm  => "Are you sure you want to delete the selected messages?"  %>
 </div>
 
-
 <%= render :partial => 'shared/active_filters', :locals => {:model => :message} %>
-
 
 <div class="pagination">
   <span class="page_links">
-    <%= will_paginate @messages, :container => false %>
     (<%= pluralize @messages.total_entries, "message" %>)
   </span>
 </div>
 
-<%= form_tag({:controller => :messages, :action => :delete_messages}, :method => :delete, :id => "message_form" ) do %>
-    <%= index_table @messages, :class => "resource_list", :id => "message_table" do |t| %>
-      <%
-        t.column(select_all_checkbox 'messlist')
-        t.sort_column("Message", Message, :header)
-        t.sort_column("Sender", Message, :sender)
-        unless current_user.has_role?(:normal_user)
-          t.sort_column("Recipient", User, :login)
-        end
-        t.reverse_sort_column("Last Updated", Message, :last_sent)
-        t.column("Operations", :colspan => "3")
-        t.row_override { |m| render :partial => 'message_table_row', :locals  => { :mess  => m, :render_for => :index } }
-      %>
+<%= form_tag({ :controller => :messages, :action => :delete_messages }, :method => :delete, :id => "message_form") do %>
+  <%=
+    dynamic_index_table(@messages,
+      :id       => "message_table",
+      :class    => [ :resource_list ],
+      :sort_map => {
+        :header    => 'messages.header',
+        :sender    => 'messages.sender',
+        :recipient => 'users.login',
+        :last_sent => 'messages.last_sent'
+      }
+    ) do |t|
+  %>
+    <%
+      t.paginate
+      t.selectable("message_ids[]")
+
+      t.row do |m| {
+        :class => [
+          "message_display_#{m.id}",
+          "#{m.message_type}_display",
+          "message_#{m.read? ? "" : "un"}read"
+        ]
+      } end
+    %>
+
+    <% t.column("Message", :header, :sortable => true) do |m| %>
+      <%= show_hide_toggle(Message.parse_markup(m.header), "#message_table_details_#{m.id}") %>
+      <div id="message_table_details_<%= m.id %>" style="display: none">
+        <%= render :partial  => 'messages/message_details', :locals  => { :mess  => m } %>
+      </div>
     <% end %>
+
+    <%
+      t.column("Sender", :sender,
+        :sortable => true
+      ) { |m| m.sender.try(:login) || "System" }
+
+      t.column("Recipient", :recipient,
+        :sortable => true
+      ) { |m| m.user.login } unless current_user.has_role?(:normal_user)
+
+      t.column("Last Updated", :last_sent,
+        :sortable => true
+      ) { |m| to_localtime(m.last_sent, :datetime) }
+    %>
+
+    <% t.column("Operations", :operations) do |m| %>
+      <div>
+        <%=
+          delete_button("Mark&nbsp;as&nbsp;#{m.read ? 'Unread' : 'Read'}".html_safe,
+            message_path(m, :read => (!m.read).to_s),
+            :class                  => 'action_link',
+            :method                 => "PUT",
+            :target                 => ".message_display_#{m.id}",
+            :loading_message        => "<div style='color: red; text-align: center;'>Updating...</div>",
+            :loading_message_target => ".message_display_#{m.id} > td.operations > div"
+          )
+        %>
+        &nbsp;
+        <%=
+          delete_button('Delete',
+            message_path(m),
+            :class                  => 'action_link',
+            :method                 => "DELETE",
+            :target                 => ".message_display_#{m.id}",
+            :remove_target          => ".message_display_#{m.id}",
+            :loading_message        => "<div style='color: red; text-align: center;'>Updating...</div>",
+            :loading_message_target => ".message_display_#{m.id} > td.operations > div"
+          )
+        %>
+      </div>
+    <% end %>
+  <% end %>
 <% end %>
 

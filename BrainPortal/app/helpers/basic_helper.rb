@@ -79,5 +79,15 @@ module BasicHelper
     "<span style=\"color:#{color}\" class=\"bold_icon\">A</span>".html_safe
   end
 
+  # Alternate toggle for session attributes that switch between values 'on' and 'off'
+  def set_toggle(old_value)
+   old_value == 'on' ? 'off' : 'on'
+  end
+
+  # Renders an 'down-and-right' arrow with an indentation proportional to +level+
+  def tree_view_icon(level = 0)
+    ('&nbsp' * 4 * (level.presence || 0) + '&#x21b3;').html_safe
+  end
+
 end
 
