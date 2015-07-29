@@ -82,7 +82,7 @@
 
   <p>
   Option: Merge configuration from another existing entry:
-  <%= tool_config_select :merge_from_tc_id, {}, { :include_blank => 'Merge from...' } %>
+  <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
   <%= submit_tag 'Merge Configuration', :name => :merge %><br/>
   <div class="field_explanation">
   <% if @tool_config.tool_id && @tool_config.bourreau_id %>

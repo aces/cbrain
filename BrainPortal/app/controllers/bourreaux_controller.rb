@@ -369,9 +369,9 @@ class BourreauxController < ApplicationController
   end
 
   # Define disk usage of remote ressource,
-  # with date filtration if wanted.
+  # with date filtering if wanted.
   def rr_disk_usage
-    date_filtration = params[:date_range] || {}
+    date_filtering = params[:date_range] || {}
 
     # Time:     Present ............................................................ Past
     # In Words: now .......... older_limit ..... younger_limit ................. long ago
@@ -380,13 +380,13 @@ class BourreauxController < ApplicationController
     #
     #                          |---- files to be deleted ----|
 
-    date_filtration["relative_from"] ||= 50.years.to_i.to_s
-    date_filtration["relative_to"]   ||= 1.week.to_i.to_s
-    accessed_after  = date_filtration["relative_from"].to_i.ago
-    accessed_before = date_filtration["relative_to"].to_i.ago
+    date_filtering["relative_from"] ||= 50.years.to_i.to_s
+    date_filtering["relative_to"]   ||= 1.week.to_i.to_s
+    accessed_after  = date_filtering["relative_from"].to_i.ago
+    accessed_before = date_filtering["relative_to"].to_i.ago
 
     # Used only relative value for determine_date_range_start_end --> harcode the 4 first values.
-    (accessed_after,accessed_before) = determine_date_range_start_end(false , false, Time.now, Time.now , date_filtration["relative_from"], date_filtration["relative_to"])
+    (accessed_after,accessed_before) = determine_date_range_start_end(false , false, Time.now, Time.now , date_filtering["relative_from"], date_filtering["relative_to"])
 
     # For the interface
     @cache_younger = Time.now.to_i - accessed_after.to_i  # partial will adjust to closest value in selection box
@@ -545,11 +545,11 @@ class BourreauxController < ApplicationController
       end
     end
 
-    date_filtration                              = {}
-    date_filtration["relative_from"]             = cleanup_younger
-    date_filtration["relative_to"]               = cleanup_older
+    date_filtering                              = {}
+    date_filtering["relative_from"]             = cleanup_younger
+    date_filtering["relative_to"]               = cleanup_older
 
-    redirect_to :action => :rr_disk_usage, :date_range => date_filtration
+    redirect_to :action => :rr_disk_usage, :date_range => date_filtering
 
   end
 
