@@ -240,7 +240,7 @@ class PortalController < ApplicationController
     row_type        = params[:row_type]   || ""
     col_type        = params[:col_type]   || ""
     submit          = extract_params_key([ :generate, :refresh, :flip ], "look")
-    date_filtration = params[:date_range] || {}
+    date_filtering = params[:date_range] || {}
 
     if submit == :flip
       params[:row_type] = col_type
@@ -278,9 +278,9 @@ class PortalController < ApplicationController
       return # with false value for @table_ok
     end
 
-    #date_filtration verification
-    error_mess = check_filter_date(date_filtration["date_attribute"], date_filtration["absolute_or_relative_from"], date_filtration["absolute_or_relative_to"],
-                                   date_filtration["absolute_from"], date_filtration["absolute_to"], date_filtration["relative_from"], date_filtration["relative_to"])
+    #date_filtering verification
+    error_mess = check_filter_date(date_filtering["date_attribute"], date_filtering["absolute_or_relative_from"], date_filtering["absolute_or_relative_to"],
+                                   date_filtering["absolute_from"], date_filtering["absolute_to"], date_filtering["relative_from"], date_filtering["relative_to"])
     if error_mess.present?
       flash.now[:error] = "#{error_mess}"
       return
@@ -310,11 +310,11 @@ class PortalController < ApplicationController
       @filter_fixed[att.to_s] = val
     end
 
-    # Add date filtration
-    mode_is_absolute_from = date_filtration["absolute_or_relative_from"] == "absolute" ? true : false
-    mode_is_absolute_to   = date_filtration["absolute_or_relative_to"]   == "absolute" ? true : false
+    # Add date filtering
+    mode_is_absolute_from = date_filtering["absolute_or_relative_from"] == "absolute" ? true : false
+    mode_is_absolute_to   = date_filtering["absolute_or_relative_to"]   == "absolute" ? true : false
     table_content_scope = add_time_condition_to_scope(table_content_scope, table_name, mode_is_absolute_from , mode_is_absolute_to,
-        date_filtration["absolute_from"], date_filtration["absolute_to"], date_filtration["relative_from"], date_filtration["relative_to"], date_filtration["date_attribute"])
+        date_filtering["absolute_from"], date_filtering["absolute_to"], date_filtering["relative_from"], date_filtering["relative_to"], date_filtering["date_attribute"])
 
     # Compute content fetcher
     table_ops = table_op.split(/\W+/).reject { |x| x.blank? }.map { |x| x.to_sym } # 'sum(size)' => [ :sum, :size ]

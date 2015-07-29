@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -41,7 +41,7 @@
    #restricted_att_list = @model_atts.blank? ? full_att_list : full_att_list.select { |pair| @model_atts.include?(pair[1].to_sym) }
    restricted_att_list = @model_atts.blank? ? [] : full_att_list.select { |pair| @model_atts.include?(pair[1].to_sym) }
    att_ok              = restricted_att_list.present?
-   date_filtration     = params[:date_range] || {}
+   date_filtering     = params[:date_range] || {}
 %>
 
 <%= stylesheet_link_tag    'tablesorter_themes/blue/style' %>
@@ -72,7 +72,7 @@ in a tabular layout. Proceed as follow:
       modify the report's properties and regenerate it anew any time you want.
   </li>
 </ul>
-  
+
 
 <%= form_tag( report_path , :method => :get) do %>
 
@@ -168,7 +168,7 @@ in a tabular layout. Proceed as follow:
       %>
                <%= disk_space_info_display(size || 0) do %>
                  <%= pretty_size(size) %></br>
-                 <%= 
+                 <%=
                    filter_reset_link (pluralize(num_entries,"entry") + " / " + pluralize(sum_files,"file")),
                                      :controller => :userfiles,
                                      :filters => @filter_fixed.merge(td_filters || {}),
@@ -356,17 +356,17 @@ in a tabular layout. Proceed as follow:
       <% end %>
 
       <script type="text/javascript">
-        $(document).ready(function() { 
+        $(document).ready(function() {
             $("#report_table").tablesorter({
-              // define a custom text extraction function 
-              textExtraction: function(node) { 
-                // extract data from markup and return it  
+              // define a custom text extraction function
+              textExtraction: function(node) {
+                // extract data from markup and return it
                 var sortvalue = $(node).data('sortvalue');
                 return sortvalue;
               },
               sortList: [ [0,0] ]
-            }); 
-        }); 
+            });
+        });
       </script>
 
     <% elsif @table_ok %>
@@ -456,7 +456,7 @@ in a tabular layout. Proceed as follow:
 
        <tr>
         <th>Dates:</th>
-        <td colspan="2"><%= date_range_panel(date_filtration) %>
+        <td colspan="2"><%= date_range_panel(date_filtering) %>
         <small>(Note: the links in the report will NOT include the date restrictions)</small>
         </td>
       </tr>
@@ -464,7 +464,7 @@ in a tabular layout. Proceed as follow:
       </table>
 
     </div>
-      
+
     <br>
   <% end %>
 

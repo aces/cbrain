@@ -25,9 +25,9 @@ module DateRangeRestriction
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # Checks consistence of values for filtration by date.
+  # Checks consistence of values for filtering by date.
   # The values in argument usually come from values posted by the partial 'shared/_date_range_panel.html.erb'.
-  # For exemple if filtration by absolute_date_from will be process
+  # For exemple if filtering by absolute_date_from will be process
   # then the absolute date 'from' is required.
   # Returns an empty string if everything is good,
   # else returns an explicit message in order to know what's wrong.
@@ -57,7 +57,7 @@ module DateRangeRestriction
   # absolute date from and absolute date to (format is dd/mm/yyyy),
   # relative date from and relative date to (in second),
   # and finally a string 'updated_at' or 'created_at' to know
-  # if filtration need to be perform on created_at or updated_at
+  # if filtering need to be perform on created_at or updated_at
   def add_time_condition_to_scope(scope, table_name, mode_is_absolute_from, mode_is_absolute_to, absolute_from, absolute_to, relative_from, relative_to, date_attribute)
 
     return scope if date_attribute.blank?
@@ -72,7 +72,7 @@ module DateRangeRestriction
 
   end
 
-  # Define start time and end time for futur filtration
+  # Define start time and end time for futur filtering
   def determine_date_range_start_end(mode_is_absolute_from, mode_is_absolute_to, absolute_from, absolute_to, relative_from, relative_to)
 
     utc_offset = Time.now.in_time_zone.utc_offset.seconds
