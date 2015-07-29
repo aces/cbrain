@@ -363,7 +363,7 @@ class CbrainSession
     if dir.to_s.strip.upcase == "DESC"
       "DESC"
     else
-      ""
+      "ASC"
     end
   end
 

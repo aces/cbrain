@@ -107,8 +107,6 @@ raise "You can only run this seeding process as a BrainPortal CBRAIN application
 
 unix_user  = Etc.getpwuid(Process.uid).name rescue ENV['USER']
 rails_home = Rails.root.to_s
-seeds_dev_support_dir = "#{rails_home}/seeds_dev_support_dir"
-Dir.mkdir(seeds_dev_support_dir) unless Dir.exists?(seeds_dev_support_dir)
 
 print <<INTRO
 
@@ -132,18 +130,23 @@ develop it.
 
 You can run it multiple times without fear.
 
-All data files (Data Providers, cache directories, bourreau
-work directories etc) will be created in:
-
-  #{seeds_dev_support_dir}
-
 IMPORTANT: Do not run this on a network-accessible
 RAILS server or a production server, as it will introduce
 several dummy users with weak passwords.
 ===========================================================
 INTRO
 
+puts <<BASE_DIR
 
+All data files (Data Providers, cache directories, bourreau
+work directories etc) will be created in? (enter a path or keep the supplied default)
+BASE_DIR
+
+default_support_dir     = "#{rails_home}/seeds_dev_support_dir"
+print "[#{default_support_dir}] "
+seeds_dev_support_dir   = STDIN.gets.strip.presence
+seeds_dev_support_dir ||= default_support_dir
+Dir.mkdir(seeds_dev_support_dir) unless Dir.exists?(seeds_dev_support_dir)
 
 puts <<STEP
 

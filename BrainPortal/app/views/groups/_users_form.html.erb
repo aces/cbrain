@@ -65,7 +65,9 @@
 
 <!-- Separation between active and locked users -->
 <% 
-  user_by_lock_status_hash = @users.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"} 
+  user_by_lock_status_hash = @users
+    .sort { |a,b| a.login.casecmp(b.login) }
+    .hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users" }
   active_users = user_by_lock_status_hash["Active users"] || []
   locked_users = user_by_lock_status_hash["Locked users"] || []
 %>
