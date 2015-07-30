@@ -116,16 +116,22 @@ module SchemaTaskGenerator
     # required Tool and ToolConfig if necessary for the CbrainTask to be
     # useable right away (since almost all information required to make the
     # Tool and ToolConfig objects is available in the spec).
-    # Also, unless +multi_version+ is specified to be false, this method will
-    # wrap the encapsulated CbrainTask in a version switcher class to allow
-    # different CbrainTask classes for each tool version.
+    # Also, if +multi_version+ is specified, this method will wrap the
+    # encapsulated CbrainTask in a version switcher class to allow different
+    # CbrainTask classes for each tool version.
     # Returns the newly generated CbrainTask subclass.
-    def integrate(register: true, multi_version: true)
+    def integrate(register: true, multi_version: false)
       # Make sure the task class about to be generated does not already exist,
       # to avoid mixing the classes up.
       name = SchemaTaskGenerator.classify(@name)
-      Object.send(:remove_const, name)     if Object.const_defined?(name)
-      CbrainTask.send(:remove_const, name) if CbrainTask.const_defined?(name)
+      [ Object, CbrainTask ].select { |m| m.const_defined?(name) }.each do |m|
+        Rails.logger.warn(
+          "WARNING: #{name} is already defined in #{m.name}; " +
+          "undefining to avoid collisions"
+        ) unless multi_version
+
+        m.send(:remove_const, name)
+      end
 
       # As the same code is used to dynamically load tasks descriptors and
       # create task templates, the class definitions are generated as strings
@@ -170,12 +176,9 @@ module SchemaTaskGenerator
 
         # Redefine the CbrainTask or Object constant pointing to the task's
         # class to point to the switcher instead.
-        mod = [ Object, CbrainTask ]
-          .select { |m| m.const_defined?(name) }
-          .first
-        if mod
-          mod.send(:remove_const, name)
-          mod.const_set(name, switcher)
+        [ Object, CbrainTask ].select { |m| m.const_defined?(name) }.each do |m|
+          m.send(:remove_const, name)
+          m.const_set(name, switcher)
         end
       end
 
@@ -337,6 +340,16 @@ module SchemaTaskGenerator
         # This method (+as_version+) tries its best to mimic the missing
         # functionality.
 
+        # FIXME: unfortunately, while the technique +as_version+ uses is
+        # more-or-less sound Ruby-wise (it bulk-imports the version class
+        # instance methods into the version switcher instance's singleton
+        # class), it apparently overrides/messes up some sensitive core Ruby
+        # methods which make Ruby segfault when the object is garbage collected.
+
+        # As such, this version switching functionality is not currently in use,
+        # for lack of a working technique to try to 'convert' the version
+        # switcher instance.
+
         # Convert this blank CbrainTask object (instance of the version switcher
         # class) to a more-or-less real instance of the class corresponding to
         # +version+ by including all of its methods in, replacing the defaults
@@ -351,18 +364,26 @@ module SchemaTaskGenerator
               known.present?
 
             logger.warn(
-              "WARNING: " +
-              "Unknown version #{version} for #{self.class.name}, " +
-              "using #{known.first[0]} instead"
+              "WARNING: Unknown version #{version} for #{self.class.name}, " +
+              "using #{known.first[0]} instead."
             )
 
             version, version_class = known.first
           end
 
+          # An object can only be given methods for a single version, and
+          # exactly once. Conflicts and odd issues could occur otherwise.
+          # Thus, there is no longer a need for :as_version or the tool_config
+          # setter hooks.
+          [ :as_version, :tool_config=, :tool_config_id= ].each do |m|
+            self.singleton_class.send(:remove_method, m) rescue nil
+          end
+
           # Use the Ruby 2.0 refinement API to include version_class methods
           # inside this object's singleton class (or metaclass)
-          metaclass = class << self; self; end
-          metaclass.include(Module.new { include refine(version_class) { } })
+          self.singleton_class.include(Module.new do
+            include refine(version_class) { }
+          end)
 
           # And try to make the object appear to be a version_class.
           define_singleton_method(:class) { version_class }
@@ -372,14 +393,6 @@ module SchemaTaskGenerator
           end
           define_singleton_method(:instance_of?) do |klass|
             klass == version_class || super(klass)
-          end
-
-          # An object can only be given methods for a single version, and
-          # exactly once. Conflicts and odd issues could occur otherwise.
-          # Thus, there is no longer a need for :as_version or the tool_config
-          # setter hooks.
-          [ :as_version, :tool_config=, :tool_config_id= ].each do |m|
-            metaclass.send(:remove_method, m) rescue nil
           end
         end
 
