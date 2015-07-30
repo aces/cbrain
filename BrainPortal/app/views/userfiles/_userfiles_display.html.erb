@@ -30,6 +30,9 @@
       <blink><%= html_colorize("(#{pluralize(current_session.persistent_userfile_ids.size," file")} persistently selected)") %></blink>
     </div>
   <% end %>
+  <div class="page_links">
+    (<%= pluralize @userfiles.total_entries, "file" %>)
+  </div>
   <div class="pagination_right_side">
     Search by name: <%= ajax_search_box "name_like", userfiles_path(:update_filter => :filter_hash) %>
   </div>

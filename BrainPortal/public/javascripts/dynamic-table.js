@@ -118,20 +118,28 @@
         var url = $(this).attr('href') || $(this).data('url');
         if (!url || !request_type) return;
 
+        var loading = $('#loading_image');
+
         switch (request_type) {
         case 'html_link':
           window.location.href = url;
           break;
 
         case 'ajax_replace':
+          loading.show();
+
           $.get(url, function (data) {
             container.replaceWith(data);
             $('.dynamic-table').trigger('reload.dyn-tbl');
+
+            loading.hide();
           });
           break;
 
         case 'server_javascript':
-          $.get(url, $.noop, 'script');
+          loading.show();
+
+          $.get(url, function () { loading.hide(); }, 'script');
           break;
 
         default:
