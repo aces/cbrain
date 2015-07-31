@@ -348,7 +348,7 @@ $(function () {
   /* Optional parameters */
 
   /* Clicking on the parameter's checkbox toggles the parameter's state */
-  parameters.delegate('.tsk-prm-opt', 'change', function () {
+  parameters.delegate('.tsk-prm-opt', 'change activate.tsk-prm', function () {
     var opt   = $(this),
         param = opt.parent();
 
@@ -391,16 +391,16 @@ $(function () {
   });
 
   /* Changing a parameter's value automatically marks it as active */
-  parameters.delegate('.tsk-prm-in', 'change', function () {
+  parameters.delegate('.tsk-prm-in', 'focus activate.tsk-prm', function () {
     $(this)
       .closest('.tsk-prm')
       .find('.tsk-prm-opt')
       .prop('checked', true)
-      .trigger('change');
+      .trigger('activate.tsk-prm');
   });
 
   /* Activate optional parameters with default values */
-  parameters.find(".tsk-prm-in[value]").trigger('change');
+  parameters.find(".tsk-prm-in[value]").trigger('activate.tsk-prm');
 
   /* Drop-down lists */
 
@@ -432,7 +432,7 @@ $(function () {
     param
       .find('.tsk-prm-in')
       .val(item.data('value'))
-      .trigger('change');
+      .trigger('activate.tsk-prm');
 
     /* Display the newly selected value in the drop-down's label */
     param
@@ -463,7 +463,7 @@ $(function () {
       )
       .siblings('.tsk-prm-opt')
       .prop('checked', true)
-      .trigger('change');
+      .trigger('activate.tsk-prm');
   });
 
   /* Clicking on a '-' button removes the row */
