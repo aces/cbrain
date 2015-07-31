@@ -199,12 +199,12 @@
     )
   %>
   <div class="tsk-prm-sel">
-    <span class="tsk-prm-sel-icon ui-icon ui-icon-triangle-1-s"></span>
     <%% if options.empty? %>
       <span class="tsk-prm-sel-lbl disabled">
         <%%= nothing %>
       </span>
     <%% else %>
+      <span class="tsk-prm-sel-icon ui-icon ui-icon-triangle-1-s"></span>
       <span class="tsk-prm-sel-lbl">
         <%% if (pair = options.select { |o| o.first == value }.first) %>
           <%%= pair.last %>
@@ -225,6 +225,14 @@
     <%%= desc %>
   </span>
 <%% end %>
+
+<%%# Give a short (up to +max+ characters) representation of +list+ %>
+<%%
+  short_repr = lambda do |list, max|
+    str = list.map(&:to_s).join(', ')
+    str.length <= max ? str : (str[0, max - 3] + '...')
+  end
+%%>
 
 <%# Generate a complete HTML block for a given parameter +param+ -%>
 <%- parameter = lambda do |param| -%>
@@ -265,7 +273,7 @@
     <%- if single_file -%>
         # Automatic single file input
         dropdown.(id, id,
-          [], nothing: '(Automatically selected)',
+          [], nothing: short_repr.(input_files.map(&:name), 65),
           optional: <%= opt %>
         )
     <%- elsif param['cbrain-file-type'] -%>
