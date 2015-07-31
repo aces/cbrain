@@ -149,12 +149,20 @@ class CbrainTask::<%= name %> < ClusterTask
 %     key_width  = max_width.(out_keys, 'command-line-key') + "''".length
 %     path_width = max_width.(out_keys, 'path-template')    + "'',".length
 %     out_keys.each do |key|
+%       stripped = key['path-template-stripped-extensions']
       <%=
-        "%-#{key_width}s => substitute_keys(%-#{path_width}s keys)," % [
+        "%-#{key_width}s => apply_template(%-#{path_width}s keys%s" % [
           "'#{key['command-line-key']}'",
-          "'#{key['path-template']}',"
+          "'#{key['path-template']}',",
+          stripped ? ', strip: [' : '),'
         ]
       %>
+%       if stripped
+%         stripped.each do |ext|
+        '<%= ext %>',
+%         end
+      ]),
+%       end
 %     end
     })
 
@@ -182,7 +190,7 @@ class CbrainTask::<%= name %> < ClusterTask
 %     path_width = max_width.(outputs, 'path-template') + "'',".length
 %     outputs.each do |output|
       <%=
-        "%-#{id_width}s => substitute_keys(%-#{path_width}s keys)," % [
+        "%-#{id_width}s => apply_template(%-#{path_width}s keys)," % [
           ":'#{output['id']}'",
           "'#{output['path-template']}',"
         ]
@@ -192,7 +200,7 @@ class CbrainTask::<%= name %> < ClusterTask
 
 %   end
     # Generate the final command-line to run <%= name %>
-    [ substitute_keys(<<-'CMD', keys<%= flags.empty? ? '' : ', flags' %>) ]
+    [ apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %>) ]
       <%= descriptor['command-line'] %>
     CMD
 % end
@@ -226,7 +234,7 @@ class CbrainTask::<%= name %> < ClusterTask
     # Make sure that every required output +path+ actually exists
     # (or that its +glob+ matches something).
     ensure_exists = lambda do |path|
-      return if File.exists(path)
+      return if File.exists?(path)
       self.addlog("Missing output file #{path}")
       succeeded &&= false
     end
@@ -320,21 +328,42 @@ class CbrainTask::<%= name %> < ClusterTask
     self.results_data_provider_id ||= files.first.data_provider_id rescue nil
   end
 
-  # Substitute each parameter value in +keys+ in +str+ prepended by the
-  # corresponding flag in +flags+, if available.
-  # substitute_keys('f -e [1]', { '[1]' => 5 })                    => 'f -e 5'
-  # substitute_keys('f -e [1]', { '[1]' => 5 }, { '[1]' => '-z' }) => 'f -e -z 5'
-  def substitute_keys(str, keys, flags = {})
-    keys.inject(str) do |str, (key, value)|
+  # Apply substitution keys +keys+ to +template+ in order to format a
+  # command-line or output file name.
+  # Substitute each value in +keys+ in +template+, prepended by the
+  # corresponding flag in +flags+ (if available) and stripped of the
+  # endings in +strip+:
+  #   apply_template('f [1]', { '[1]' => 5 })
+  #     => 'f 5'
+  #
+  #   apply_template('f [1]', { '[1]' => 5 },
+  #     flags: { '[1]' => '-z' }
+  #   ) => 'f -z 5'
+  #
+  #   apply_template('f [1]', { '[1]' => '5.z' },
+  #     flags: { '[1]' => '-z' },
+  #     strip: [ '.z' ]
+  #   ) => 'f -z 5'
+  def apply_template(template, keys, flags: {}, strip: [])
+    keys.inject(template) do |template, (key, value)|
       flag = flags[key]
-      next str.gsub(key, flag) if flag && value == true
+      next template.gsub(key, flag) if flag && value == true
 
       value = (value.is_a?(Enumerable) ? value.dup : [value])
         .reject(&:nil?)
-        .map { |v| (v.is_a?(Userfile) ? v.name : v.to_s).bash_escape }
+        .map do |v|
+          v = v.name if v.is_a?(Userfile)
+          v = v.dup  if v.is_a?(String)
+
+          strip.find do |e|
+            v.sub!(/#{Regexp.quote(e)}$/, '')
+          end if v.is_a?(String)
+
+          v.to_s.bash_escape
+        end
         .join(' ')
 
-      str.gsub(key, flag && value.present? ? "#{flag} #{value}" : value)
+      template.gsub(key, flag && value.present? ? "#{flag} #{value}" : value)
     end
   end
 
