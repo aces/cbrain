@@ -592,6 +592,10 @@ a {
   width: 100%;
 }
 
+.whole_width > table {
+  width: 100%;
+}
+
 .generalbox {
   display: table-cell;
   width: auto;
@@ -1151,22 +1155,12 @@ pre {
   margin-top: 0.8em;
 }
 
-.project_button_header th {
-  border: 0px;
-  background-color: #0471B4;
-  text-align: left;
-  text-indent: 0px;
-  font-family: Verdana;
-  font-weight: bold;
-  font-size: 11px;
-  color: #ffffff;
-  padding-left: 5em;
-  white-space: nowrap;
+.project_button_header > table {
+  width: 100%;
 }
 
-.project_button_header th a {
-  color: #ffffff;
-  text-decoration: none;
+.project_button_header > table > tbody {
+  display: none;
 }
 
 /* % ######################################################### */
@@ -1632,11 +1626,26 @@ img {
   width: 100%;
 }
 
-.batch_job_header {
-  background-color: #C9E6F6;
+#tasks_table td.expand,
+#tasks_table th.expand {
+  max-width: 12px;
 }
 
+#tasks_table td.expand > .ui-icon {
+  background-image: url(../images/ui-black-icons.png);
+}
 
+#tasks_table td.expand > .batch-btn {
+  cursor: pointer;
+}
+
+#tasks_table tr.batch:nth-child(odd) {
+  background-color: #cde6f4;
+}
+
+#tasks_table tr.batch:nth-child(even) {
+  background-color: #e3f2fb;
+}
 
 /* % ######################################################### */
 /* % Styles for Data Provider Browse page */
@@ -1750,91 +1759,98 @@ img {
 /* % ######################################################### */
 
 .message_display_table {
-  clear: both;
+  border-collapse: collapse;
   border: 0;
+  clear: both;
   width: 100%;
 }
 
-.message_display_table th {
-  color: black;
-  background-color: white;
-  font-size: 1.2em;
-  padding-bottom: 0.4em;
-  border: 0;
-  margin: 0px;
+.message_display_table td:first-child {
+  text-align: left;
 }
 
 .message_display_table td {
+  border: 0;
   font-size: 1em;
+  font-weight: bold;
   padding: 0.2em 0.4em;
+  text-align: right;
+}
+
+.message_display_table td:last-child {
+  font-weight: normal;
 }
 
 .message_display_table tr {
-  border: 0;
-  width: 20%;
+  border-width: 2px;
 }
 
-td.notice_display {
+.message_display_table tr.notice_display {
   background-color: #ddffdd;
   border-color: green;
-
 }
 
-td.error_display {
+.message_display_table tr.error_display {
   background-color: #ffeeee;
   border-color: red;
 }
 
-td.system_display {
+.message_display_table tr.system_display {
   background-color: #ddeeff;
   border-color: blue;
 }
 
-td.message_read {
+.message_display_table tr.message_read {
   border-style: none;
 }
 
-td.message_unread {
+.message_display_table tr.message_unread {
   border-style: solid;
-}
-
-td.right_side {
-  border-width: 0.2em 0.2em 0.2em 0;
-  text-align: right;
-}
-
-td.left_side {
-  border-width: 0.2em 0em 0.2em 0.2em;
-  font-weight: bold;
-  text-align: left;
-}
-
-td.middle {
-  border-width: 0.2em 0em 0.2em;
-  font-weight: bold;
-  padding: 0.25em;
 }
 
 /* % ######################################################### */
 /* % Message Index */
 /* % ######################################################### */
 
-#message_table {
-  margin-left: 0em;
+#message_table tbody > tr {
+  border: 2px solid black;
 }
 
-#message_table td {
-  padding-left: 7px;
-  padding-right: 7px;
+#message_table tr.notice_display {
+  border-color: green;
 }
 
-#message_table th {
-  width: auto;
-  padding: 0px;
-  margin-left: 20px;
+#message_table tr.error_display {
+  border-color: red;
 }
 
+#message_table tr.system_display {
+  border-color: blue;
+}
 
+#message_table tr.message_read {
+  border-style: none;
+}
+
+#message_table tr.message_unread {
+  border-style: solid;
+}
+
+#message_table tr.notice_display:not(:hover):not(:active) {
+  background-color: #ddffdd;
+}
+
+#message_table tr.error_display:not(:hover):not(:active) {
+  background-color: #ffeeee;
+}
+
+#message_table tr.system_display:not(:hover):not(:active) {
+  background-color: #ddeeff;
+}
+
+#message_table td.operations {
+  text-align: right;
+}
 
 /* % ######################################################### */
 /* % Table for user checkboxes for Groups and Sites  */

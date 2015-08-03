@@ -105,8 +105,7 @@ class TasksController < ApplicationController
 
     current_session.save_preferences_for_user(current_user, :tasks, :per_page)
 
-    @bourreau_status = {}
-    bourreaux.each { |bo| @bourreau_status[bo.id] = bo.online? }
+    @bourreau_status = bourreaux.map { |b| [b.id, b.online?] }.to_h
     respond_to do |format|
       format.html
       format.xml   { render :xml  => @tasks }
@@ -117,14 +116,25 @@ class TasksController < ApplicationController
 
   # Renders a set of tasks associated with a batch.
   def batch_list
-    scope = filter_variable_setup current_user.available_tasks.real_tasks.where(:batch_id => params[:batch_id] )
-    scope = scope.includes( [:bourreau, :user, :group] ).order( "cbrain_tasks.rank, cbrain_tasks.level, cbrain_tasks.id" ).readonly(false)
+    @tasks = filter_variable_setup(
+      current_user
+        .available_tasks
+        .real_tasks
+        .where(:batch_id => params[:batch_id])
+    )
+      .includes([ :bourreau, :user, :group ])
+      .order("cbrain_tasks.rank, cbrain_tasks.level, cbrain_tasks.id")
+      .readonly(false)
 
-    @tasks = scope
-    @bourreau_status = {}
-    Bourreau.find_all_accessible_by_user(current_user).all.each { |bo| @bourreau_status[bo.id] = bo.online?}
+    @bourreau_status = Bourreau
+      .find_all_accessible_by_user(current_user)
+      .all
+      .map { |b| [b.id, b.online?] }
+      .to_h
 
-    render :layout => false
+    @row_fetch = true
+
+    render :partial => 'tasks_display', :layout => false
   end
 
 
@@ -466,6 +476,14 @@ class TasksController < ApplicationController
     flash[:notice] += "\n"            unless messages.blank? || messages =~ /\n$/
     flash[:notice] += messages + "\n" unless messages.blank?
 
+    tool_id                           = params[:tool_id]
+    top_tool_ids                      = current_user.meta[:top_tool_ids] ||
+                                        Hash.new
+    top_tool_ids[tool_id]             = top_tool_ids[tool_id] ?
+                                          top_tool_ids[tool_id] + 1 : 1
+    current_user.meta[:top_tool_ids]  = top_tool_ids
+
+
     respond_to do |format|
       format.html { redirect_to :controller => :tasks, :action => :index }
       format.xml  { render :xml  => tasklist }
@@ -485,7 +503,7 @@ class TasksController < ApplicationController
     old_params = @task.params.clone
     @task.add_new_params_defaults # auto-adjust params with new defaults if needed
 
-    # Save old params and update the current task to reflect
+    # Save old attributes and update the current task to reflect
     # the form's content.
     new_att          = params[:cbrain_task] || {} # not the TASK's params[], the REQUEST's params[]
     new_att          = new_att.reject { |k,v| k =~ /^(cluster_jobid|cluster_workdir|status|batch_id|launch_time|prerequisites|share_wd_tid|run_number|level|rank|cluster_workdir_size|workdir_archived|workdir_archive_userfile_id)$/ } # some attributes cannot be changed through the controller
@@ -506,7 +524,7 @@ class TasksController < ApplicationController
 
     # Give a task the ability to do a refresh of its form
     commit_name = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ], :whatever)
-    commit_name = :refresh if params[:commit] =~ /refresh/i
+    commit_name = :refresh if params[:commit] =~ @task.refresh_form_regex
     if commit_name == :refresh
       initialize_common_form_values
       flash[:notice] += @task.wrapper_refresh_form

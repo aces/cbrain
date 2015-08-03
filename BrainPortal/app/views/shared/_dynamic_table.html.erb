@@ -1,0 +1,219 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% templates = {} %>
+
+<%# Template for a fully featured dynamic table %>
+<% templates[:full] = Proc.new do %>
+  <%
+    table.attributes[:id] ||= table.generate_id
+    (table.attributes[:class] ||= []) << "dynamic-table"
+    pgn_location = table.components[:pagination].location rescue nil
+  %>
+  <div <%= table.attributes.to_html_attributes.html_safe %>>
+    <% templates[:pagination].call if pgn_location && pgn_location != :bottom %>
+    <% templates[:table].call %>
+    <% templates[:pagination].call if pgn_location && pgn_location != :top %>
+    <script type="application/javascript">
+      $('#<%= j table.attributes[:id] %>').trigger('reload.dyn-tbl');
+    </script>
+  </div>
+<% end %>
+
+<%# Template for just the core table of a dynamic table %>
+<% templates[:table] = Proc.new do %>
+  <table class="dt-table">
+    <thead class="dt-head">
+      <% templates[:header].call %>
+    </thead>
+    <tbody class="dt-body">
+      <% templates[:row].call(table.rows) %>
+      <% if table.rows.blank? %>
+        <tr>
+          <%
+            span  = table.columns.length rescue 0
+            span += 1 if table.has_row_selection?
+          %>
+          <td class="dt-table-empty dt-table-wide" colspan="<%= span %>"> No records found </td>
+          <td class="dt-col-csp"> ... </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
+
+<%# Template for the column headers of a dynamic table %>
+<% templates[:header] = Proc.new do %>
+  <tr>
+    <% if table.has_row_selection? %>
+      <% id = table.generate_id %>
+      <th class="dt-sel">
+        <input class="dt-sel-check" type="checkbox" id="<%= id %>" />
+        <label class="dt-sel-lbl" for="<%= id %>">
+          <span class="dt-sel-icon ui-icon ui-icon-check"></span>
+        </label>
+      </th>
+    <% end %>
+    <% table.columns.each do |column| %>
+      <% header = column.header %>
+      <th <%= header.attributes.to_html_attributes.html_safe %>>
+        <% if column.sortable? %>
+          <%
+            sort_param   = params[column.name][:sort_order].to_sym rescue nil
+            sort_order   = column.sort_order
+            sort_order   = sort_param if sort_order == :auto
+            sort_order ||= :none
+            sort_url     = column.sort_target.call(column.name, sort_order)
+            sort_url     = url_for(sort_url) unless sort_url.is_a?(String)
+            sort_icon    = ({
+              :asc  => "ui-icon-carat-1-n",
+              :desc => "ui-icon-carat-1-s",
+              :none => "ui-icon-carat-2-n-s"
+            })[sort_order]
+          %>
+          <span class="dt-sort-btn ui-icon <%= sort_icon %>"
+                data-url="<%= sort_url.html_safe %>"
+                data-column="<%= column.name.to_s %>"
+                data-order="<%= sort_order.to_s %>">
+          </span>
+        <% end %>
+        <% if column.filterable? && ! column.filters.blank? %>
+          <span class="dt-filter-btn ui-icon ui-icon-zoomin"></span>
+          <div class="dt-popup">
+            <table>
+              <thead>
+                <tr>
+                  <td class="dt-fpop-find-icon ui-icon ui-icon-search"></td>
+                  <td class="dt-fpop-find"><input type="text" /></td>
+                </tr>
+              </thead>
+              <tbody>
+                <% column.filters.each do |filter| %>
+                  <tr>
+                    <% zero_cls = filter.indicator.strip == '0' ? 'dt-zero' : '' %>
+                    <td class="dt-fpop-cnt <%= zero_cls %>">
+                      <%= filter.indicator %>
+                    </td>
+                    <%
+                      filter_url = filter.target.call(column.name, filter)
+                      filter_url = url_for(sort_url) unless sort_url.is_a?(String)
+                    %>
+                    <td class="dt-fpop-txt <%= zero_cls %>"
+                        data-url="<%= filter_url.html_safe %>"
+                        data-column="<%= column.name.to_s %>"
+                        data-value="<%= filter.value %>">
+                      <%= filter.label %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+            <div class="dt-pop-title">Filter - <%= column.pretty_name %></div>
+            <div class="dt-pop-close-btn ui-icon ui-icon-close"></div>
+          </div>
+        <% end %>
+        <span class="dt-hdr"><%= header.label %></span>
+      </th>
+    <% end %>
+    <th class="dt-col-csp">
+      <span class="dt-col-btn ui-icon ui-icon-plusthick"></span>
+      <div class="dt-popup">
+        <table>
+          <tbody>
+            <% table.columns.each do |column| %>
+              <tr class="dt-cpop-col" data-column="<%= column.name.to_s %>">
+                <td class="dt-cpop-icon ui-icon ui-icon-radio-<%= column.visible? ? "off" : "on" %>"></td>
+                <td><%= column.pretty_name %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+        <div class="dt-pop-title">Columns</div>
+        <div class="dt-pop-close-btn ui-icon ui-icon-close"></div>
+      </div>
+    </th>
+  </tr>
+<% end %>
+
+<%# Template for a set of rows in a dynamic table %>
+<% templates[:row] = Proc.new do |rows| %>
+  <% rows.each do |row| %>
+    <% (row.attributes[:class] ||= []) << "dt-sel-row" if row.selectable? %>
+    <tr <%= row.attributes.to_html_attributes.html_safe %>>
+      <% if table.has_row_selection? %>
+        <% if row.selectable? %>
+          <td class="dt-sel">
+            <% id = table.generate_id %>
+            <input class="dt-sel-check"
+                   type="checkbox"
+                   id="<%= id %>"
+                   name="<%= row.select_param %>"
+                   value="<%= row.select_value %>"
+                   <% if row.selected %>
+                     checked="checked"
+                   <% end %> />
+            <label class="dt-sel-lbl" for="<%= id %>">
+              <span class="dt-sel-icon ui-icon ui-icon-check"></span>
+            </label>
+          </td>
+        <% else %>
+          <td class="dt-sel-disabled"></td>
+        <% end %>
+      <% end %>
+      <% if row.override %>
+        <%= row.override.call(row.object, row, table) %>
+      <% else %>
+        <% table.columns.each do |column| %>
+          <% cell = column.cell %>
+          <td <%= cell.attributes.to_html_attributes.html_safe %>>
+            <%= capture(row.object, &cell.format) || '' %>
+          </td>
+        <% end %>
+      <% end %>
+      <td class="dt-col-csp"> ... </td>
+    </tr>
+  <% end %>
+<% end %>
+
+<%# Template for the pagination component of a dynamic table %>
+<% templates[:pagination] = Proc.new do %>
+  <%
+    pagination           = table.components[:pagination]
+    input_attr           = pagination.input_html
+    input_attr[:type]  ||= 'text'
+    input_attr[:name]  ||= 'per-page'
+    input_attr[:value] ||= pagination.collection.per_page
+  %>
+  <div class="dt-pagination">
+    <div class="dt-pag-pages">
+      <%= will_paginate pagination.collection, :container => false %>
+    </div>
+    <div class="dt-pag-cnt">
+      <input <%= input_attr.to_html_attributes.html_safe %> />
+      per page.
+    </div>
+  </div>
+<% end %>
+
+<% templates[element].call(*args) %>

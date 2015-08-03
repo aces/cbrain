@@ -37,23 +37,39 @@ class CSVFile < TextFile
     /\.csv$/i
   end
 
-  #A guesser for CSV file, try to define the quote character
-  #and the seperator character
+  # Tries to guess and return the quote character
+  # and the separator character for the content of the CSV file.
+  # This method invokes the class method of the same name,
+  # passing it the path the of the userfile's cache path. It
+  # assumes the file has already been synchronized.
+  #
+  # Returns a triplet: [ quote_character, record_sepeaator, invalid_encoding ]
+  # where invalid_encoding is true or false
   def guess_csv_quote_sep
+    cache_path        = self.cache_full_path.to_s
+    cb_error "File is not synchronized" unless self.is_locally_cached?
+    self.class.guess_csv_quote_sep(cache_path)
+  end
+
+  # Tries to guess and return the quote character
+  # and the separator character for a file +path+ on the local filesystem.
+  #
+  # Returns a triplet: [ quote_character, record_sepeaator, invalid_encoding ]
+  # where invalid_encoding is true or false
+  def self.guess_csv_quote_sep(path)
     quote_char_list  = ["\"","'","\x00"]
     col_sep_list     = [",",";",":","#","\t"," "]
     poss_combination = {}
     invalid_encoding = false
 
-    cache_path        = self.cache_full_path.to_s
-    escape_cache_path = cache_path.bash_escape
+    escape_cache_path = path.bash_escape
 
     # Extract line delimiter. Sample output of 'file' command:
     # dos:  ASCII text, with CRLF line terminators
     # mac:  ASCII text, with CR line terminators
     # unix: ASCII text
     line_delim = ""
-    IO.popen("file #{escape_cache_path}","r") do |fh|
+    IO.popen("file #{escape_cache_path} 2>/dev/null","r") do |fh|
       if fh.gets.index("with CR line")
         line_delim = "015" # octal for perl's -0 option : 015 is CR
       else
@@ -62,7 +78,7 @@ class CSVFile < TextFile
     end
 
     # Get first 10 lines of the CSV document.
-    csv_content = IO.popen("perl -0#{line_delim} -pe 'exit 0 if $. > 10' #{escape_cache_path}","r") { |fh| fh.read }
+    csv_content = IO.popen("perl -0#{line_delim} -pe 'exit 0 if $. > 10' #{escape_cache_path} 2>/dev/null","r") { |fh| fh.read }
 
     quote_char_list.each do |qc|
       col_sep_list.each  do |cs|
@@ -125,14 +141,35 @@ class CSVFile < TextFile
     return solution
   end
 
-  #Create an array of array for csv file,
-  def create_csv_array(quote,separator)
+  # Returns an array of array for the CSV file, representing
+  # the rows and columns.
+  def create_csv_array(quote, separator)
     cache_path = self.cache_full_path
-    file       = File.read(cache_path)
-    file.encode!('UTF-16le', invalid: :replace, replace: '')
-    file.encode!('UTF-8')
+    content    = self.class.read_file_content_as_UTF8(cache_path)
+    return self.class.parse_file_content_as_csv(content, quote, separator)
+  end
 
-    return CSV.parse(file, :quote_char => quote, :col_sep => separator, :row_sep => :auto)
+  # Utility method that chains together the behavior of
+  # read_file_content_as_UTF8() and parse_file_content_as_csv().
+  # This behaves like the instance method of the same name.
+  def self.create_csv_array(path, quote, separator)
+    content = read_file_content_as_UTF8(path)
+    parse_file_content_as_csv(content, quote, separator)
+  end
+
+  # Invokes the parse() method of the CSV class to parse the
+  # +content+ of a file (presumable read using the read_file_content_as_UTF8() method).
+  def self.parse_file_content_as_csv(content, quote, separator)
+    return CSV.parse(content, :quote_char => quote, :col_sep => separator, :row_sep => :auto)
+  end
+
+  # Reads the content of a file specified by path, forcing the encoding to be UTF8
+  # Returns the transformed content.
+  def self.read_file_content_as_UTF8(path)
+    content = File.read(path)
+    content.encode!('UTF-16le', invalid: :replace, replace: '')
+    content.encode!('UTF-8')
+    return content
   end
 
 end

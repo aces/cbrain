@@ -25,12 +25,6 @@
 <%= button_with_dropdown_menu("View Options") do %>
   <div class="view_options">
     <%=
-      filter_add_link (@filter_params["details"] == 'off' ? "Show Details" : "Hide Details"),
-                      :parameter => :details,
-                      :value     => set_toggle(@filter_params["details"])
-    %>
-    <br>
-    <%=
         filter_add_link (@filter_params["tree_sort"] == "off" ? "Enable Tree View" : "Disable Tree View"),
                         :parameter => :tree_sort,
                         :value     => set_toggle(@filter_params["tree_sort"])
@@ -46,10 +40,6 @@
                         :value     => set_toggle(@filter_params["view_hidden"])
     %>
     (<%= hidden_icon %>)
-    <br>
-    Number of files per page <small>(between 25 and 1000)</small>:
-    <%= ajax_search_box( :per_page , userfiles_path(:update_filter => true), :default => @per_page, :datatype => "script", :size => 4) %>
-
   </div>
 <% end %>
 

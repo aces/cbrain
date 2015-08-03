@@ -18,18 +18,18 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
 <%
 # uniq_id needed because there can be several load_info DIVs in the page
-uniq_id = rand(100000).to_s 
+uniq_id = rand(100000).to_s
 %>
-<% 
+<%
    num_online         = @bourreaux.count { |b| b.online? }
-   include_blank_text = num_online == 0 ? "No online server for this tool!" : "Select Server & Version" 
-   select_attributes = {
+   include_blank_text = num_online == 0 ? "No online server for this tool!" : "Select Server & Version"
+   select_attributes  = {
      "class"                => 'request_on_change',
      "data-loading-message" => "&nbsp;",
      "data-target"          => "#load_info_#{uniq_id}",
@@ -43,10 +43,10 @@ uniq_id = rand(100000).to_s
 
 <div>
   <strong>Server&nbsp;&amp;&nbsp;Version:</strong><br>
-  <%= tool_config_select "tool_config_id", { :tool_configs => @tool_configs, 
+  <%= tool_config_select "tool_config_id", { :tool_configs => @tool_configs,
                                              :selector     => @tool_config },
                                              select_attributes %>
-  
+
   <% if num_online > 0 %>
     <%= submit_tag "Launch Tool",
       "class"       => "button launch_tool",
@@ -54,14 +54,14 @@ uniq_id = rand(100000).to_s
       "data-method" => "POST"
     %>
   <% end %>
-  
+
 
   <br/>
 
   <div id="load_info_<%= uniq_id %>">
   <% if @bourreaux.size > 0 && @tool_config %>
     <%= render :partial => 'bourreaux/load_info', :locals => { :bourreau => Bourreau.find(@tool_config.bourreau_id) } %>
-  <% end %>       
+  <% end %>
   </div>
 </div>
 

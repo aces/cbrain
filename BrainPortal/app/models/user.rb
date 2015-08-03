@@ -183,23 +183,22 @@ class User < ActiveRecord::Base
 
   # Authenticates a user by their login name and unencrypted password. Returns the user or nil.
   def self.authenticate(login, password)
-    u = find_by_login(login) rescue nil # need to get the salt
+    u = find_by_login(login) rescue nil
     return nil unless u && u.authenticated?(password)
-    u.last_connected_at = Time.now
-    u.save
     u
   end
 
   def authenticated?(password) #:nodoc:
-    # Changed encryption type if crypted_password is in sha1or in pbkdf2
     plain_crypted_password = crypted_password.sub(/^\w+:/,"")
+    # Changed encryption type if crypted_password is in sha1 or in pbkdf2 (old convention)
     if (password_type(crypted_password) == :sha1   && plain_crypted_password == encrypt_in_sha1(password)) ||
        (password_type(crypted_password) == :pbkdf2 && plain_crypted_password == encrypt_in_pbkdf2(password))
-      self.password = password
-      self.encrypt_password # explicit call to compute the crypted password (a real rails attribute)
-      self.password   = nil # zap pseudo-attribute for security
-      self.save             # Save the new User record; as a side effect of the callback 'encrypt_password' the encrypted password will be updated
+      self.password = password # not a real attribute; only used by encrypt_password() below
+      self.encrypt_password()  # explicit call to compute the crypted password (stored as a real rails attribute)
+      self.password   = nil    # zap pseudo-attribute for security
+      self.save
       true
+    # This is now the default CBRAIN encryption mode
     elsif password_type(crypted_password) == :pbkdf2_sha1 # Just check that it matches the PBKDF2 with digest SHA1
       plain_crypted_password == encrypt_in_pbkdf2_sha1(password)
     else

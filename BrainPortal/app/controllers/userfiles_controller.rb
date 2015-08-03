@@ -395,7 +395,7 @@ class UserfilesController < ApplicationController
   #            no files nested within directories will be extracted
   #            (the +collection+ option has no such limitations).
   def create #:nodoc:
-    
+
     flash[:error]     ||= ""
     flash[:notice]    ||= ""
     params[:userfile] ||= {}
@@ -443,7 +443,7 @@ class UserfilesController < ApplicationController
                      :tag_ids          => params[:tags]
                    )
                  )
-      
+
       if !userfile.save
         flash[:error]  += "File '#{basename}' could not be added.\n"
         userfile.errors.each do |field, error|
@@ -840,6 +840,7 @@ class UserfilesController < ApplicationController
                               :header        => "Collections Merged",
                               :variable_text => "[[#{collection.name}][/userfiles/#{collection.id}]]"
                               )
+          collection.addlog(self, "Created by #{current_user.login} by merging #{userfiles.size} files.")
         elsif result == :collision
           Message.send_message(current_user,
                               :message_type  => :error,
@@ -1269,6 +1270,9 @@ class UserfilesController < ApplicationController
   # abcd/*  ->  abcd/CONTENT.tar.gz
   # On the an Database archived FileCollection:
   # "abcd"  ->  "abcd" with 'archived' attribute set to true
+  #
+  # Also handles unarchiving TarArchives, just like create's
+  # :archive => 'collection' option.
   def archive_management
     filelist    = params[:file_ids] || []
 
@@ -1276,8 +1280,8 @@ class UserfilesController < ApplicationController
     userfiles        = []
     skipped_messages = {}
     Userfile.find_accessible_by_user(filelist, current_user, :access_requested => :write).each do |userfile|
-      unless userfile.is_a?(FileCollection)
-        (skipped_messages["Not a FileCollection"] ||= []) << userfile
+      unless userfile.is_a?(FileCollection) || userfile.is_a?(TarArchive)
+        (skipped_messages["Not a FileCollection or TarArchive"] ||= []) << userfile
         next
       end
 
@@ -1307,13 +1311,29 @@ class UserfilesController < ApplicationController
       failed_list  = {}
 
       userfiles.each_with_index do |userfile,i|
-        if userfile.archived?
+        if userfile.is_a?(TarArchive)
+          $0 = "UnarchiveFile ID=#{userfile.id} #{i+1}/#{userfiles.size}\0"
+
+          basename = userfile.name.split('.')[0]
+          if current_user.userfiles.exists?(:name => basename, :data_provider_id => collection.data_provider_id)
+            error_message = "Collection '#{collection.name}' already exists."
+            break
+          end
+
+          collection      = userfile.dup.becomes(FileCollection)
+          collection.name = basename
+
+          userfile.sync_to_cache
+          collection.extract_collection_from_archive_file(userfile.cache_full_path.to_s)
+          userfile.destroy
+        elsif userfile.archived?
           $0 = "UnarchiveFile ID=#{userfile.id} #{i+1}/#{userfiles.size}\0"
           error_message = userfile.provider_unarchive
         else
           $0 = "ArchiveFile ID=#{userfile.id} #{i+1}/#{userfiles.size}\0"
           error_message = userfile.provider_archive
         end
+
         if error_message.blank?
           success_list << userfile
         else

@@ -22,43 +22,95 @@
 #
 -%>
 
-
-<%= render :partial => 'shared/active_filters', :locals => {:model => :userfile} %>
-
+<%= render :partial => 'shared/active_filters', :locals => { :model => :userfile } %>
 
 <div class="pagination">
-  <%= render :partial => 'userfiles/pagination' %>
+  <% if current_session.persistent_userfile_ids.size > 0 %>
+    <div class="pagination_left_side">
+      <blink><%= html_colorize("(#{pluralize(current_session.persistent_userfile_ids.size," file")} persistently selected)") %></blink>
+    </div>
+  <% end %>
+  <div class="pagination_right_side">
+    Search by name: <%= ajax_search_box "name_like", userfiles_path(:update_filter => :filter_hash) %>
+  </div>
 </div>
 
-<%= index_table @userfiles, :class => "resource_list", :id => "userfiles_table" do |t| %>
+<%=
+  dynamic_index_table(@userfiles,
+    :id           => 'userfiles_table',
+    :request_type => :server_javascript,
+    :sort_map     => {
+      :name           => 'userfiles.name',
+      :type           => 'userfiles.type',
+      :login          => 'users.login',
+      :creation_date  => 'userfiles.created_at',
+      :size           => 'userfiles.size',
+      :group          => 'groups.name',
+      :group_writable => 'userfiles.group_writable',
+      :data_provider  => 'data_providers.name'
+    },
+    :filter_map   => {
+      :login          => 'user_id',
+      :group          => 'group_id',
+      :data_provider  => 'data_provider_id'
+    }
+  ) do |t|
+%>
   <%
-    t.row_attributes do |u|
-      if params[:find_file_id].to_s == u.id.to_s
-        { :class => "selected_row row_highlight" }
-      elsif u.available?
-        { :class =>"#{cycle("list-odd", "list-even")} row_highlight" }
+    filters_for = lambda do |target,options = {}|
+      return unless @filtered_scope && @header_scope
+      if target.is_a?(Symbol)
+        basic_filters_for(@filtered_scope, @header_scope, Userfile, target)
       else
-        { :class => "row_highlight", :title => "This file is unavailable due to its provider being offline" }
+        association_filters_for(@filtered_scope, @header_scope, Userfile, target, options)
       end
     end
-    t.column(select_all_checkbox("userfiles_checkbox")) do |u|
-      check_box_tag("file_ids[]", u.id.to_s, current_session.persistent_userfile_ids[u.id.to_s], :class  => 'userfiles_checkbox', :disabled => !u.available?)
+
+    t.paginate(@per_page > 50 ? :both : :top)
+
+    t.row do |u|
+      {
+        :selected     => current_session.persistent_userfile_ids[u.id.to_s],
+        :select_param => 'file_ids[]',
+        :select_value => u.id
+      } if u.available?
     end
-    t.describe_sort_column("Filename", 'Userfile', 'name') do |col|
-      col.cell(:class => "left") { |u| filename_listing(u, :html_options => { :class => !u.available? ? 'error_link' : nil }, :query_params => { :sort_index => @current_offset + @userfiles.index(u) }) }
+
+    t.column("Filename", :name,
+      :sortable => true
+    ) do |u|
+      filename_listing(u,
+        :html_options => { :class      => ('error_link' unless u.available?) },
+        :query_params => { :sort_index => (@current_offset + @userfiles.index(u) if @current_offset) }
+      )
     end
-    t.sort_column("File Type", 'Userfile', 'type', :filters => basic_filters_for(@filtered_scope, @header_scope, Userfile, :type)) { |u| u.pretty_type }
+
+    t.column("File Type", :type,
+      :field_name => :pretty_type,
+      :sortable   => true,
+      :filters    => filters_for.(:type)
+    )
+
+    t.column("Owner", :login,
+      :sortable => true,
+      :filters  => filters_for.(User, :name_method => "login")
+    ) { |u| link_to_user_if_accessible(u.user) }
+
+    t.column("Creation Date", :creation_date,
+      :sortable => true
+    ) do |u|
+      html_tool_tip(to_localtime(u.created_at, :date), :offset_x => 0, :offset_y => 20) do
+        ("Created: #{u.created_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z")} <br />" +
+         "Updated: #{u.updated_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z")}").html_safe
+      end
+    end
   %>
-  <% unless @filter_params["details"] == 'off' %>
-    <% t.sort_column("Owner", 'User', 'login', :filters => association_filters_for(@filtered_scope, @header_scope, Userfile, :user, :name_method => "login")) { |u| link_to_user_if_accessible(u.user) } %>
-    <% t.reverse_sort_column("Creation Date", 'Userfile', 'created_at') do |u| %>
-     <%=  html_tool_tip(to_localtime(u.created_at,:date), :offset_x => 0, :offset_y => 20) do %>
-          Created: <%= u.created_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z") %><br/>
-          Updated: <%= u.updated_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z") %>
-     <% end %>
-    <% end %>
-  <% end %>
-  <% t.sort_column("Size", 'Userfile', 'size') do |u| %>
+
+  <%
+    t.column("Size", :size,
+      :sortable => true
+    ) do |u|
+  %>
     <%= u.archived? ? archived_icon : "" %>
     <% if u.size.present?  %>
       <span title="<%= u.size %> bytes"><%= u.archived ? colored_pretty_size(u.size) : colored_format_size(u) %></span>
@@ -75,24 +127,43 @@
       <% end %>
     <% end %>
   <% end %>
-  <% t.column("Tags", :filters => @tag_filters) { |u| u.get_tags_for_user(current_user).collect{ |t| h(t.name) }.join("<br>").html_safe } %>
-  <%
-    unless current_project
-       t.describe_sort_column("Project", 'Group', 'name', :filters => association_filters_for(@filtered_scope, @header_scope, Userfile, :group)) do |col|
-         col.cell(:if => Proc.new { |u| u.group } ) { |u| link_to_group_if_accessible(u.group) }
-       end
-     end
-     t.describe_sort_column("Project Access", 'Userfile', 'group_writable') do |col|
-       col.cell(:if => Proc.new { |u| u.group } ) { |u| u.group_writable ? 'Read/Write' : 'Read Only' }
-     end
-     unless @filter_params["details"] == 'off'
-       t.sort_column("Provider", 'DataProvider', 'name', :filters => association_filters_for(@filtered_scope, @header_scope, Userfile, :data_provider)) { |u| link_to_data_provider_if_accessible(u.data_provider) }
-     end
-  %>
-  <% t.column("Description") do |u| %>
-    <%= html_tool_tip(crop_text_to(40, u.description), :offset_x => 0, :offset_y => 20) do %>
-      <% simple_format(u.description, :sanitize => true) %>
-    <% end if u.description.present? %>
-  <% end %>
-<% end %>
 
+  <%
+    t.column("Tags", :tags,
+      :filters => @tag_filters
+    ) do |u|
+      u.get_tags_for_user(current_user)
+        .collect { |t| h(t.name) }
+        .join("<br />")
+        .html_safe
+    end
+
+    unless current_project
+      t.column("Project", :group,
+        :sortable => true,
+        :filters  => filters_for.(Group)
+      ) do |u|
+        link_to_group_if_accessible(u.group) if u.group
+      end
+    end
+
+    t.column("Project Access", :group_writable,
+      :sortable => true
+    ) do |u|
+      u.group_writable ? 'Read/Write' : 'Read Only' if u.group
+    end
+
+    t.column("Provider", :data_provider,
+      :sortable => true,
+      :filters  => filters_for.(DataProvider)
+    ) do |u|
+      link_to_data_provider_if_accessible(u.data_provider)
+    end
+
+    t.column("Description") do |u|
+      html_tool_tip(crop_text_to(40, u.description), :offset_x => 0, :offset_y => 20) do
+        simple_format(u.description, :sanitize => true)
+      end if u.description.present?
+    end
+  %>
+<% end %>

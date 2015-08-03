@@ -18,14 +18,26 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<%= button_with_dropdown_menu("View Options") do %>
-  <div class="view_options">
-     Number of users per page:
-     <%= ajax_onchange_select( :per_page, users_path(:update_filter => true), options_for_select( [ 25, 50, 100, 200, 500 ], @per_page ), :datatype => "script") %>
-  </div>
-<% end %>
+$(function () {
+  "use strict";
 
+  $('#bourreaux_table > .dt-table > .dt-body > tr').each(function () {
+    var row = $(this),
+        url = row.data('info-url');
+
+    /* No url given? Nothing to do. */
+    if (!url) return;
+
+    /* Fetch the missing bourreau row info */
+    $.get(url, function (data) {
+      row.replaceWith(data);
+
+      /* Notify the table that its content changed */
+      $('#bourreaux_table').trigger('reload.dyn-tbl');
+    });
+  });
+});

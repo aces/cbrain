@@ -18,14 +18,14 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
 <% title 'Exception Info' %>
 
 <div class="index_block">
-  
+
   <%= form_tag(url_for(:action => :destroy), :method => :delete) do %>
     <%= hidden_field_tag "exception_log_ids[]", @exception_log.id %>
     <%= submit_tag "Delete", :class => "button" %>
@@ -46,7 +46,7 @@
     <% t.cell("Received by instance") { @exception_log.instance_name } %>
     <% t.cell("Start time revision")  { @exception_log.revision_no} %>
   <% end %>
-  
+
   <fieldset>
     <legend>Backtrace</legend>
     <div class="exception_description">
@@ -59,13 +59,21 @@
       <% t.cell(k, :td_options => { :class => "wrap" }) { @exception_log.session[k] } %>
     <% end %>
   <% end %>
-  
+
   <%= show_table(@exception_log, :width => 2, :header => "Headers") do |t| %>
     <% @exception_log.request_headers.keys.sort.each do |k| %>
       <% t.cell(k, :td_options => { :class => "wrap" }) { @exception_log.request_headers[k] } %>
     <% end %>
   <% end %>
-  
+
+  <% if @exception_log.truncated_attributes.present? %>
+    <%= show_table(@exception_log, :width => 2, :header => "Truncated attributes") do |t| %>
+      <% @exception_log.truncated_attributes.each do |key,val| %>
+        <% t.cell(key, :td_options => { :class => "wrap" }) { val } %>
+      <% end %>
+    <% end %>
+  <% end %>
+
 </div>
 
 

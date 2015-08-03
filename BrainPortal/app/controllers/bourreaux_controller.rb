@@ -150,7 +150,7 @@ class BourreauxController < ApplicationController
       @bourreau.reload
       respond_to do |format|
         format.html { render :action => 'show' }
-        format.xml  { render :xml  => @bourreau.errors, :status  => :unprocessable_entity}
+        format.xml  { render :xml  => @bourreau.errors, :status  => :unprocessable_entity }
       end
       return
     end
@@ -162,6 +162,7 @@ class BourreauxController < ApplicationController
     # File upload size limit (portal only)
     add_meta_data_from_form(@bourreau, [ :upload_size_limit ])
 
+    # Clean up all file synchronization stuff if the DP cache dir has changed.
     if old_dp_cache_dir != @bourreau.dp_cache_dir
       old_ss = SyncStatus.where( :remote_resource_id => @bourreau.id )
       old_ss.each do |ss|
@@ -176,6 +177,13 @@ class BourreauxController < ApplicationController
         info_message += "You may have to clean up the content of the old cache directory\n" +
                         "'#{old_dp_cache_dir}' on host '#{host}'\n"
       end
+
+      # Record new ID for local cache; this can also be done during the boot process.
+      if (@bourreau.id == RemoteResource.current_resource.id)
+        md5 = DataProvider.create_cache_md5
+        @bourreau.update_attributes( :cache_md5 => md5 )
+      end
+
       Message.send_message(current_user,
         :message_type => :system,
         :critical     => true,
@@ -219,8 +227,10 @@ class BourreauxController < ApplicationController
   end
 
   def row_data #:nodoc:
-    @remote_resource = RemoteResource.find_accessible_by_user(params[:id], current_user)
-    render :partial => 'bourreau_table_row', :locals  => { :bourreau  => @remote_resource, :row_number => params[:row_number].to_i }
+    @bourreaux = [ RemoteResource.find_accessible_by_user(params[:id], current_user) ]
+    # FIXME its nice to re-use the bourreaux_display partial, but this flag should probably be refactored...
+    @row_fetch = true
+    render :partial => 'bourreaux_display'
   end
 
   def load_info #:nodoc:
@@ -361,9 +371,9 @@ class BourreauxController < ApplicationController
   end
 
   # Define disk usage of remote ressource,
-  # with date filtration if wanted.
+  # with date filtering if wanted.
   def rr_disk_usage
-    date_filtration = params[:date_range] || {}
+    date_filtering = params[:date_range] || {}
 
     # Time:     Present ............................................................ Past
     # In Words: now .......... older_limit ..... younger_limit ................. long ago
@@ -372,13 +382,13 @@ class BourreauxController < ApplicationController
     #
     #                          |---- files to be deleted ----|
 
-    date_filtration["relative_from"] ||= 50.years.to_i.to_s
-    date_filtration["relative_to"]   ||= 1.week.to_i.to_s
-    accessed_after  = date_filtration["relative_from"].to_i.ago
-    accessed_before = date_filtration["relative_to"].to_i.ago
+    date_filtering["relative_from"] ||= 50.years.to_i.to_s
+    date_filtering["relative_to"]   ||= 1.week.to_i.to_s
+    accessed_after  = date_filtering["relative_from"].to_i.ago
+    accessed_before = date_filtering["relative_to"].to_i.ago
 
     # Used only relative value for determine_date_range_start_end --> harcode the 4 first values.
-    (accessed_after,accessed_before) = determine_date_range_start_end(false , false, Time.now, Time.now , date_filtration["relative_from"], date_filtration["relative_to"])
+    (accessed_after,accessed_before) = determine_date_range_start_end(false , false, Time.now, Time.now , date_filtering["relative_from"], date_filtering["relative_to"])
 
     # For the interface
     @cache_younger = Time.now.to_i - accessed_after.to_i  # partial will adjust to closest value in selection box
@@ -537,11 +547,11 @@ class BourreauxController < ApplicationController
       end
     end
 
-    date_filtration                              = {}
-    date_filtration["relative_from"]             = cleanup_younger
-    date_filtration["relative_to"]               = cleanup_older
+    date_filtering                              = {}
+    date_filtering["relative_from"]             = cleanup_younger
+    date_filtering["relative_to"]               = cleanup_older
 
-    redirect_to :action => :rr_disk_usage, :date_range => date_filtration
+    redirect_to :action => :rr_disk_usage, :date_range => date_filtering
 
   end
 

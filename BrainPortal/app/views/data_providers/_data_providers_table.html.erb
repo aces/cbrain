@@ -33,11 +33,6 @@
     <%= new_model_button "Create New Data Provider", new_data_provider_path %>
   <% end %>
 
-  <%= ajax_link (@filter_params["details"] == 'on' ? "Hide Details" : "Show Details" ),
-              {:controller  => :data_providers, :action  => :index, :data_providers  => {:details  => set_toggle(@filter_params["details"])}},
-              :datatype  => 'script', :class  => "button"
-  %>
-
   <%= link_to "User Access Report",
              {:controller  => :data_providers, :action  => :dp_access},
               :datatype  => 'script', :class  => "button"

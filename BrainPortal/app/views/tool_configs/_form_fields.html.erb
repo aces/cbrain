@@ -82,7 +82,7 @@
 
   <p>
   Option: Merge configuration from another existing entry:
-  <%= tool_config_select :merge_from_tc_id, {}, { :include_blank => 'Merge from...' } %>
+  <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
   <%= submit_tag 'Merge Configuration', :name => :merge %><br/>
   <div class="field_explanation">
   <% if @tool_config.tool_id && @tool_config.bourreau_id %>
@@ -94,6 +94,13 @@
   <% end %>
   </div>
   </p>
+
+  <span title="Docker image">
+    <p><%= f.label :docker_image, "Docker image:" %><br/>
+      <%= f.text_field :docker_image %><br/>
+      <div class="field_explanation">The name and tag of the Docker image in which the tool is installed, for instance "centos:latest". This name refers to the Docker index accessed by the Bourreau, which is configured manually in the Bourreau for now.</div>
+    </p>
+  </span>
 
 </div>
 

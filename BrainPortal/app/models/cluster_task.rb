@@ -365,8 +365,9 @@ class ClusterTask < CbrainTask
     userfile.sync_to_cache
 
     # Compute the final absolute path to the target file symlink
-    full_path     = Pathname.new("#{self.full_cluster_workdir}/#{file_path}")
-    full_path    += userfile.name if file_path.to_s.end_with?("/")
+    file_path     = Pathname.new(file_path.to_s)
+    file_path    += userfile.name if file_path.to_s.end_with?("/")
+    full_path     = Pathname.new(self.full_cluster_workdir) + file_path
 
     # Pathname objects for the userfile and bourreau directories
     workdir_path  = Pathname.new(self.cluster_shared_dir)
@@ -1425,6 +1426,7 @@ class ClusterTask < CbrainTask
     end
   end
 
+
   # Submit the actual job request to the cluster management software.
   # Expects that the WD has already been changed.
   def submit_cluster_job
@@ -1470,7 +1472,7 @@ class ClusterTask < CbrainTask
 
 # CbrainTask '#{self.name}' commands section
 
-#{commands.join("\n")}
+#{self.use_docker? ? self.docker_commands : commands.join("\n")}
 
     QSUB_SCRIPT
     qsubfile = self.qsub_script_basename
@@ -1628,6 +1630,26 @@ class ClusterTask < CbrainTask
     return nil
   end
 
+  def use_docker?
+    return self.tool_config.docker_image.present?
+  end
+
+  # Returns the command line(s) associated with the task, wrapped in a Docker call if a Docker image has to be used.
+  def docker_commands
+    commands = self.cluster_commands
+    commands_joined=commands.join("\n");
+
+    cache_dir=RemoteResource.current_resource.dp_cache_dir;
+    task_dir=self.bourreau.cms_shared_dir;
+    docker_commands = "cat << DOCKERJOB > .dockerjob.sh
+#!/bin/bash\n
+#{commands_joined}\n
+DOCKERJOB\n
+chmod 755 ./.dockerjob.sh\n
+docker run --rm -v $PWD:/cbrain-script -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w /cbrain-script #{self.tool_config.docker_image} /cbrain-script/.dockerjob.sh \n
+"
+    return docker_commands
+  end
 
 
   ##################################################################

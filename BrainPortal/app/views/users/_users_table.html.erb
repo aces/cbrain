@@ -24,60 +24,123 @@
 
 <div class="menu_bar">
   <%= new_model_button 'Create User', new_user_path %>
-  <span id="view_option_button">
-      <%= render :partial => "view_option_button" %>
-  </span>
 </div>
 
-
-<%= render :partial => 'shared/active_filters', :locals => {:model => :user} %>
-
+<%= render :partial => 'shared/active_filters', :locals => { :model => :user } %>
 
 <div class="pagination">
-  <%= render :partial => 'pagination' %>
+  <div class="pagination_right_side">
+    Search by name:
+    <%= ajax_search_box "name_like", users_path(:update_filter => :filter_hash) %>
+  </div>
 </div>
 
-<%= index_table(@users, :class => "resource_list") do |t| %>
+<%=
+  dynamic_index_table(@users,
+    :id         => 'users_table',
+    :class      => [ :resource_list ],
+    :sort_map   => {
+      :login           => 'users.login',
+      :full_name       => 'users.full_name',
+      :email           => 'users.email',
+      :last_connection => 'users.last_connected_at',
+      :type            => 'users.type',
+      :site            => 'sites.name',
+      :city            => 'users.city',
+      :country         => 'users.country',
+      :time_zone       => 'users.time_zone'
+    },
+    :filter_map => {
+      :login => 'account_locked',
+      :site  => 'site_id'
+    }
+  ) do |t|
+%>
   <%
-    t.sort_column("Login", "User", "login", :filters => basic_filters_for(@filtered_scope, @header_scope, 'users', 'account_locked') { |l| l ? "Locked" : "Unlocked"  }) { |u|  link_to_user_if_accessible(u, current_user, :html_options => { :class => u.account_locked ? 'error_link' : nil } ) }
-    t.describe_sort_column("Full name", "User", "full_name") { |col| col.cell :class => :left, &:full_name }
-    t.sort_column("Email", "User", "email") { |u| mail_to u.email }
-    t.reverse_sort_column("Last Connection", "User", "last_connected_at") { |u|  u.last_connected_at ? to_localtime(u.last_connected_at,:datetime) : "Unknown"}
-    t.column("Projects") do |u|
-      groups = u.available_groups.sort{|a, b| a.name.casecmp(b.name)}
-      result = ""
-      if groups.size > 0
-        result += html_tool_tip(pluralize(groups.size,"project"), :offset_x => 60 ) do
-                    array_to_table(groups, :table_class => 'simple', :ratio => "3:1", :fill_by_columns => true) { |g,r,c| g.name }
-                  end
-      end
-      result.html_safe
+    t.pagination
+
+    t.column("Login", :login,
+      :sortable => true,
+      :filters  => basic_filters_for(@filtered_scope, @header_scope, 'users', 'account_locked') { |l| l ? "Locked" : "Unlocked"  }
+    ) { |u| link_to_user_if_accessible(u, current_user, :html_options => { :class => u.account_locked ? 'error_link' : nil }) }
+
+    t.column("Full name", :full_name,
+      :sortable => true
+    )
+
+    t.column("Email", :email,
+      :sortable => true
+    ) { |u| mail_to u.email }
+
+    t.column("Last Connection", :last_connection,
+      :sortable => true
+    ) { |u| u.last_connected_at ? to_localtime(u.last_connected_at, :datetime) : "Unknown" }
+
+    t.column("Projects", :groups) do |u|
+      groups = u.available_groups.sort { |a,b| a.name.casecmp(b.name) }
+      html_tool_tip(pluralize(groups.size, "project"), :offset_x => 60) do
+        array_to_table(groups,
+          :table_class     => 'simple',
+          :ratio           => "3:1",
+          :fill_by_columns => true
+        ) { |g,r,c| g.name }
+      end.html_safe if groups.size > 0
     end
-    t.sort_column("Role", "User", "type", :filters => basic_filters_for(@filtered_scope, @header_scope, 'users', 'type')) { |u| u.type.underscore.titleize }
-    t.sort_column("Site", "Site", "name", :filters => association_filters_for(@filtered_scope, User.scoped, "user", "site")) { |u| link_to_site_if_accessible(u.site)  }
-    t.sort_column("City", "User", "city", :filters => basic_filters_for(@filtered_scope, @header_scope, 'users', 'city'), &:city)
-    t.sort_column("Country", "User", "country", :filters => basic_filters_for(@filtered_scope, @header_scope, 'users', 'country'), &:country)
-    t.sort_column("Time Zone", "User", "time_zone") { |u| u.time_zone || "(Unset)" }
-    t.column("Files") do |u|
+
+    t.column("Role", :type,
+      :sortable => true,
+      :filters  => basic_filters_for(@filtered_scope, @header_scope, 'users', 'type')
+    ) { |u| u.type.underscore.titleize }
+
+    t.column("Site", :site,
+      :sortable => true,
+      :filters  => association_filters_for(@filtered_scope, User.scoped, "user", "site")
+    ) { |u| link_to_site_if_accessible(u.site) }
+
+    t.column("City", :city,
+      :sortable => true,
+      :filters  => basic_filters_for(@filtered_scope, @header_scope, 'users', 'city')
+    )
+
+    t.column("Country", :country,
+      :sortable => true,
+      :filters  => basic_filters_for(@filtered_scope, @header_scope, 'users', 'country')
+    )
+
+    t.column("Time Zone", :time_zone,
+      :sortable => true,
+    ) { |u| u.time_zone || "(Unset)" }
+
+    t.column("Files", :files) do |u|
       size = Userfile.where(:user_id => u.id).sum(:size)
-      index_count_filter(@users_file_counts[u.id], :userfiles, { :user_id => u.id }, :show_zeros => 1 ) +
-      ( (size > 0) ? " (#{colored_pretty_size(size)} used)" : "" ).html_safe
+      index_count_filter(@users_file_counts[u.id], :userfiles, { :user_id => u.id }, :show_zeros => 1) +
+      (size > 0 ? " (#{colored_pretty_size(size)} used)" : "").html_safe
     end
-    t.column("Tasks") do |u|
+
+    t.column("Tasks", :tasks) do |u|
       size = CbrainTask.real_tasks.where(:user_id => u.id).sum(:cluster_workdir_size)
       unk  = CbrainTask.real_tasks.where(:user_id => u.id, :cluster_workdir_size => nil).where("cluster_workdir IS NOT NULL").count
-      index_count_filter(@users_task_counts[u.id], :tasks, { :user_id => u.id }, :show_zeros => 1 ) +
+      index_count_filter(@users_task_counts[u.id], :tasks, { :user_id => u.id }, :show_zeros => 1) +
       ( (size  > 0 && unk  > 0) ? " (#{colored_pretty_size(size)} used, #{unk} unkn)" :
         (size  > 0 && unk == 0) ? " (#{colored_pretty_size(size)} used)" :
         (size == 0 && unk  > 0) ? " (#{unk} unkn)" : ""
       ).html_safe
     end
-    t.describe_column("Operations") do |col|
-      col.cell(:if => Proc.new { |u| u != User.admin }) { |u| link_to 'Switch',  switch_user_path(u), :class => 'action_link', :method  => :post  }
-      if current_user.has_role? :admin_user
-        col.cell { |u| link_to 'Access?', { :controller => :tool_configs, :action => :index, :user_id => u.id }, :class => 'action_link' }
+
+    t.column("Switch", :switch) do |u|
+      link_to 'Switch', switch_user_path(u), :class => 'action_link', :method  => :post if u != User.admin
+    end
+
+    if current_user.has_role? :admin_user
+      t.column("Access", :access) do |u|
+        link_to 'Access?',
+          {
+            :controller => :tool_configs,
+            :action     => :index,
+            :user_id    => u.id
+          },
+          :class => 'action_link'
       end
     end
   %>
 <% end %>
-
