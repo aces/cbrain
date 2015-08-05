@@ -62,7 +62,7 @@ class FileCollection < Userfile
         system("gunzip < #{escaped_tmparchivefile} | tar xf -")
       elsif archive_file_name =~ /\.tar$/i
         system("tar -xf #{escaped_tmparchivefile}")
-      elsif archive_file_name =~ /\.zip/i
+      elsif archive_file_name =~ /\.zip$/i
         system("unzip #{escaped_tmparchivefile}")
       else
         cb_error "Cannot extract files from archive with unknown extension '#{archive_file_name}'"
