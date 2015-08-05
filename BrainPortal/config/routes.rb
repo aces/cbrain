@@ -157,8 +157,10 @@ CbrainRailsPortal::Application.routes.draw do
   get   '/credits'                => 'portal#credits'
   get   '/about_us'               => 'portal#about_us'
   get   '/login'                  => 'sessions#new'
-  get   '/session_status'         => 'sessions#show'
   get   '/logout'                 => 'sessions#destroy'
+  get   '/session_status'         => 'sessions#show'
+  get   '/session_data'           => 'session_data#show'
+  post  '/session_data'           => 'session_data#update'
   get   '/filter_proxy'           => 'application#filter_proxy'
 
   # Report Maker

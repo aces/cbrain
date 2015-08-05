@@ -25,9 +25,9 @@
 <%= render :partial => 'shared/active_filters', :locals => { :model => :userfile } %>
 
 <div class="pagination">
-  <% if current_session.persistent_userfile_ids.size > 0 %>
+  <% if current_session[:persistent_userfiles].present? %>
     <div class="pagination_left_side">
-      <blink><%= html_colorize("(#{pluralize(current_session.persistent_userfile_ids.size," file")} persistently selected)") %></blink>
+      <blink><%= html_colorize("(#{pluralize(current_session[:persistent_userfiles].size," file")} persistently selected)") %></blink>
     </div>
   <% end %>
   <div class="page_links">
@@ -73,7 +73,7 @@
 
     t.row do |u|
       {
-        :selected     => current_session.persistent_userfile_ids[u.id.to_s],
+        :selected     => current_session[:persistent_userfiles].try(:include?, u.id.to_s),
         :select_param => 'file_ids[]',
         :select_value => u.id
       } if u.available?

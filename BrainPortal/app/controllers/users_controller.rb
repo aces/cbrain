@@ -54,7 +54,7 @@ class UsersController < ApplicationController
     # Turn the array ordered_real into the final paginated collection
     @users = @users.paginate(:page => @current_page, :per_page => @per_page)
 
-    current_session.save_preferences_for_user(current_user, :users, :per_page)
+    current_session.save_preferences
 
     respond_to do |format|
       format.html # index.html.erb
@@ -271,7 +271,7 @@ class UsersController < ApplicationController
     myportal.addlog("Admin user '#{current_user.login}' switching to user '#{@user.login}'")
     current_user.addlog("Switching to user '#{@user.login}'")
     @user.addlog("Switched from user '#{current_user.login}'")
-    current_session.clear_data!
+    current_session.clear
     self.current_user = @user
     current_session[:user_id] = @user.id
 

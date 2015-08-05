@@ -135,7 +135,11 @@
         <%= hijacker_submit_button("Mark Content As Newer", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple', :operation => 'all_newer'), :ajax_submit  => false, :method  => :post, :class => "button") %>
     <% end %>
 
-    <% select_label = "Selected Files" + (current_session.persistent_userfile_ids.size != 0 ? " (now: #{current_session.persistent_userfile_ids.size})" : "") %>
+    <%
+      select_label  = "Selected Files"
+      select_label += " (now: #{current_session[:persistent_userfiles].size})" if
+        current_session[:persistent_userfiles].present?
+    %>
     <%= button_with_dropdown_menu(select_label) do %>
       <p class="left_align">
       This panel manages your list of <em>persistently</em> selected files.
@@ -144,10 +148,10 @@
       for all operation buttons (move/copy, submit tasks, etc).
       </p>
       <p>
-      <% if current_session.persistent_userfile_ids.size == 0 %>
+      <% if current_session[:persistent_userfiles].blank? %>
         Currently, no files are selected persistently.
       <% else %>
-        <%= html_colorize("#{pluralize(current_session.persistent_userfile_ids.size,"file")} currently selected persistently.") %>
+        <%= html_colorize("#{pluralize(current_session[:persistent_userfiles].size,"file")} currently selected persistently.") %>
       <% end %>
       </p>
       <p>

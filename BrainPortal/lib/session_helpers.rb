@@ -34,7 +34,7 @@ module SessionHelpers
 
   # Returns the current session as a CbrainSession object.
   def current_session
-    @cbrain_session ||= CbrainSession.new(session, params, request.env['rack.session.record'] )
+    @cbrain_session ||= CbrainSession.new(session, request.env['rack.session.record'] )
   end
 
   # Returns currently active project.

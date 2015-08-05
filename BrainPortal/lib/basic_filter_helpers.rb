@@ -148,32 +148,14 @@ module BasicFilterHelpers
   # Set up the current_session variable. Mainly used to set up the filter hash to be
   # used by index actions.
   def update_filters
-    current_controller = params[:proxy_destination_controller] || params[:controller]
-    params[current_controller] ||= {}
-    clear_params       = params.keys.select{ |k| k.to_s =~ /^clear_/}
-    clear_param_key    = clear_params.first
-    clear_param_value  = params[clear_param_key]
-    if clear_param_key
-      params[current_controller][clear_param_key.to_s] = clear_param_value
-    end
-    clear_params.each { |p| params.delete p.to_s }
-    if params[:update_filter]
-      update_filter      = params[:update_filter].to_s
-      parameters = request.query_parameters.clone
-      parameters.delete "update_filter"
-      parameters.delete "proxy_destination_controller"
-      parameters.delete "proxy_destination_action"
-      if update_filter =~ /_hash$/
-        params[current_controller][update_filter] = parameters
-      else
-        params[current_controller] = parameters
-      end
-      params.delete "update_filter"
-      parameters.keys.each { |p|  params.delete p}
-    end
-    current_session.update(params)
+    Rails.logger.warn(
+      'WARNING: BasicFilterHelpers::update_filters has been ' +
+      'stubbed pending a rewrite of the filtering subsystem'
+    )
 
-    @filter_params = current_session.params_for(params[:proxy_destination_controller] || params[:controller])
+    controller = params[:proxy_destination_controller] || params[:controller]
+    current_session.update({ :controllers => { controller => params } })
+    @filter_params = current_session.params_for(controller)
   end
 
   ########################################################################

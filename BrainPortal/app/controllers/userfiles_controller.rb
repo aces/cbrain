@@ -152,7 +152,7 @@ class UserfilesController < ApplicationController
     @archived_total  = @filtered_scope.where(:archived => true).count
     @immutable_total = @filtered_scope.where(:immutable => true).count
 
-    current_session.save_preferences_for_user(current_user, :userfiles, :view_hidden, :tree_sort, :view_all, :details, :per_page)
+    current_session.save_preferences
     respond_to do |format|
       format.html
       format.js
@@ -948,48 +948,39 @@ class UserfilesController < ApplicationController
   # Adds the selected userfile IDs to the session's persistent list
   def manage_persistent
 
-    if (params[:operation] || 'clear') =~ /(clear|add|remove|replace)/i
-      filelist  = params[:file_ids] || []
-      operation = Regexp.last_match[1].downcase
-    elsif (params[:operation]) =~ /select/i
-      operation      = "add"
-      # Reduce userfiles list according to @filter_params
-      filelist       = []
-      header_scope   = header_scope(@filter_params)
-      filtered_scope = filter_scope(@filter_params, header_scope)
-      filtered_scope.each do |f|
-        filelist << f.id.to_s if f.available?
-      end
+    operation  = (params[:operation] || 'clear').downcase
+    persistent = (current_session[:persistent_userfiles] || Set.new)
+
+    if operation =~ /select/
+      files = filter_scope(@filter_params, header_scope(@filter_params))
+        .select(&:available?)
+        .map(&:id)
+        .map(&:to_s)
     else
-      operation = 'clear'
+      files = params[:file_ids] || []
     end
 
-    flash[:notice] = ""
+    case operation
+    when /add/, /select/
+      persistent += files
 
-    cleared_count = added_count = removed_count = 0
+    when /remove/
+      persistent -= files
 
-    if operation == 'clear' || operation == 'replace'
-      cleared_count = current_session.persistent_userfile_ids_clear
-      flash[:notice] += "#{view_pluralize(cleared_count, "file")} cleared from persistent list.\n" if cleared_count > 0
+    when /clear/
+      persistent.clear
+
+    when /replace/
+      persistent.replace(files)
     end
 
-    if operation == 'add'   || operation == 'replace'
-      added_count   = current_session.persistent_userfile_ids_add(filelist)
-      flash[:notice] += "#{view_pluralize(added_count, "file")} added to persistent list.\n" if added_count > 0
+    if persistent.size > 0
+      flash[:notice] = "#{view_pluralize(persistent.size, 'file')} now persistently selected."
+    else
+      flash[:notice] = "Peristent selection list now empty."
     end
 
-    if operation == 'remove'
-      removed_count = current_session.persistent_userfile_ids_remove(filelist)
-      flash[:notice] += "#{view_pluralize(removed_count, "file")} removed from persistent list.\n" if removed_count > 0
-    end
-
-    persistent_ids = current_session.persistent_userfile_ids_list
-    flash[:notice] += "Total of #{view_pluralize(persistent_ids.size, "file")} now in the persistent list of files.\n" if
-      persistent_ids.size > 0 && (added_count > 0 || removed_count > 0 || cleared_count > 0)
-
-    flash[:notice] += "No changes made to the persistent list of userfiles." if
-      added_count == 0 && removed_count == 0 && cleared_count == 0
-
+    current_session[:persistent_userfiles] = persistent
     redirect_to :action => :index, :page => params[:page]
   end
 
@@ -1367,9 +1358,9 @@ class UserfilesController < ApplicationController
   # Adds the persistent userfile ids to the params[:file_ids] argument
   def auto_add_persistent_userfile_ids #:nodoc:
     params[:file_ids] ||= []
-    if params[:ignore_persistent].blank?
-      params[:file_ids] = params[:file_ids] | current_session.persistent_userfile_ids_list
-    end
+    params[:file_ids]  |= current_session[:persistent_userfiles].to_a if
+      params[:ignore_persistent].blank? &&
+      current_session[:persistent_userfiles].present?
   end
 
   # Verify that all files selected for an operation

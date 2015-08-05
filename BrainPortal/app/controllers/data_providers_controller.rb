@@ -377,7 +377,7 @@ class DataProvidersController < ApplicationController
       end
     end
 
-    current_session.save_preferences_for_user(current_user, :data_providers, :browse_hash)
+    current_session.save_preferences
 
     respond_to do |format|
       format.html

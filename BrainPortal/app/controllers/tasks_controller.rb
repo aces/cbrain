@@ -103,7 +103,7 @@ class TasksController < ApplicationController
       pager
     end
 
-    current_session.save_preferences_for_user(current_user, :tasks, :per_page)
+    current_session.save_preferences
 
     @bourreau_status = bourreaux.map { |b| [b.id, b.online?] }.to_h
     respond_to do |format|
@@ -210,7 +210,7 @@ class TasksController < ApplicationController
     @tool_config = @task.tool_config # for acces in view
 
     # Filter list of files as provided by the get request
-    file_ids = (params[:file_ids] || []) | current_session.persistent_userfile_ids_list
+    file_ids = (params[:file_ids] || []) | (current_session[:persistent_userfiles] || [])
     @files            = Userfile.find_accessible_by_user(file_ids, current_user, :access_requested => :write) rescue []
     if @files.empty?
       flash[:error] = "You must select at least one file to which you have write access."

@@ -87,7 +87,7 @@ class GroupsController < ApplicationController
       @group_id_2_brain_portal_counts  = BrainPortal.group("group_id").count
     end
 
-    current_session.save_preferences_for_user(current_user, :groups, :button_view, :per_page)
+    current_session.save_preferences
 
     respond_to do |format|
       format.js
@@ -235,9 +235,9 @@ class GroupsController < ApplicationController
     redirect_action     = params[:redirect_action]     || :index
     redirect_id         = params[:redirect_id]
 
-    current_session.param_chain("userfiles", "filter_hash").delete("group_id")
-    current_session.param_chain("tasks"    , "filter_hash").delete("group_id")
-    current_session.persistent_userfile_ids_clear
+    current_session.params_for(:userfiles)['filter_hash'].delete('group_id')
+    current_session.params_for(:tasks)['filter_hash'].delete('group_id')
+    current_session[:persistent_userfiles].clear rescue nil
 
     redirect_path = { :controller => redirect_controller, :action => redirect_action }
     redirect_path[:id] = redirect_id unless redirect_id.blank?
