@@ -1634,6 +1634,10 @@ class ClusterTask < CbrainTask
     return self.tool_config.docker_image.present?
   end
 
+  def docker_executable_name
+    return RemoteResource.current_resource.docker_executable_name.presence || "docker"
+  end
+
   # Returns the command line(s) associated with the task, wrapped in a Docker call if a Docker image has to be used.
   def docker_commands
     commands = self.cluster_commands
@@ -1646,7 +1650,7 @@ class ClusterTask < CbrainTask
 #{commands_joined}\n
 DOCKERJOB\n
 chmod 755 ./.dockerjob.sh\n
-docker run --rm -v $PWD:/cbrain-script -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w /cbrain-script #{self.tool_config.docker_image} /cbrain-script/.dockerjob.sh \n
+#{docker_executable_name} run --rm -v ${PWD}:${PWD} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w ${PWD} #{self.tool_config.docker_image} ${PWD}/.dockerjob.sh \n
 "
     return docker_commands
   end

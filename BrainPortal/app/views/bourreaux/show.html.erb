@@ -343,6 +343,12 @@
           %>
         <% end %>
       <% end %>
+      <%= show_table(@bourreau, :header => "Docker Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+        <% t.edit_cell :docker_executable_name, :header => "Docker executable" do %>
+          <%= text_field_tag "bourreau[docker_executable_name]", @bourreau.docker_executable_name, :size => 60 %><br/>
+           <div class="field_explanation">Name of the Docker executable available on the machines where tasks will run. Defaults to "docker" if left empty.</div>
+        <% end %>
+      <% end %>
     <% end %>
 
     <%= render :partial => 'runtime_info' %>
