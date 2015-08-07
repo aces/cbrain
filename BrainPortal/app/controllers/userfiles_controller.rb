@@ -1330,6 +1330,8 @@ class UserfilesController < ApplicationController
             collection.name = basename
             collection.extract_collection_from_archive_file(userfile.cache_full_path.to_s)
             userfile.destroy
+
+            error_message = ""
           rescue => ex
             error_message = ex.message
           end
