@@ -27,8 +27,8 @@ namespace :doc do
      rdoc.title    = "CBRAIN BrainPortal API Documentation"
      rdoc.options << '-a'
      rdoc.options << '-W https://github.com/aces/cbrain/blob/master/BrainPortal/%s'
-     rdoc.main = 'doc/README_FOR_APP'
-     rdoc.rdoc_files.include('doc/README_FOR_APP')
+     rdoc.main = 'README'
+     rdoc.rdoc_files.include('README')
      rdoc.rdoc_files.include('app/*/*.rb')
      rdoc.rdoc_files.include('app/models/userfiles/*.rb')
      rdoc.rdoc_files.include('lib/*.rb')

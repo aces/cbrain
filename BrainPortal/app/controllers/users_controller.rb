@@ -20,6 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require 'ipaddr'
+
 #RESTful controller for the User resource.
 class UsersController < ApplicationController
 
@@ -190,6 +192,12 @@ class UsersController < ApplicationController
       params[:user][:time_zone] = nil # change "" to nil
     end
 
+    # IP whitelist
+    params[:meta][:ip_whitelist].split(',').each do |ip|
+      IPAddr.new(ip.strip) rescue cb_error "Invalid whitelist IP address: #{ip}"
+    end if
+      params[:meta] && params[:meta][:ip_whitelist]
+
     # For logging
     original_group_ids = @user.group_ids
 
@@ -212,7 +220,7 @@ class UsersController < ApplicationController
       if @user.save_with_logging(current_user, %w( full_name login email role city country account_locked ) )
         @user.reload
         @user.addlog_object_list_updated("Groups", Group, original_group_ids, @user.group_ids, current_user)
-        add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id])
+        add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id, :ip_whitelist])
         flash[:notice] = "User #{@user.login} was successfully updated."
         format.html { redirect_to :action => :show }
         format.xml { head :ok }

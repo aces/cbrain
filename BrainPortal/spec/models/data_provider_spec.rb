@@ -803,37 +803,54 @@ describe DataProvider do
       expect(DataProvider.cache_md5).to eq("XYZ")
     end
 
-    it "should create the md5 file, if it does not exist" do
+    it "should return nothing, if it does not exist" do
       allow(File).to receive(:exist?).and_return(false)
+      expect(DataProvider.cache_md5).to be_nil
+    end
+
+  end
+
+  describe "#create_cache_md5" do
+    before(:each) do
+      allow(DataProvider).to receive(:cache_rootdir).and_return("cache")
+      allow(DataProvider).to receive(:sleep)
+      DataProvider.class_variable_set("@@key", nil)
+    end
+
+    it "should create the file" do
       allow(IO).to receive(:sysopen)
       fh = double("file_handle").as_null_object
       expect(IO).to receive(:open).and_return(fh)
-      DataProvider.cache_md5
+      DataProvider.create_cache_md5
+    end
+
+    it "should generate a md5 token" do
+      allow(IO).to receive(:sysopen)
+      fh = double("file_handle").as_null_object
+      allow(IO).to receive(:open).and_return(fh)
+      expect(DataProvider.create_cache_md5).to be_truthy
     end
 
     context "when creating the file fails" do
       before(:each) do
         allow(IO).to receive(:sysopen).and_raise(StandardError)
       end
-      it "should raise an exception if the file doesn't exist" do
-        allow(File).to receive(:exist?).and_return(false)
-        expect {DataProvider.cache_md5}.to raise_error
+
+      it "should return the file's token if it exists" do
+        expect(File).to receive(:exist?).and_return(true)
+        expect(File).to receive(:read).and_return('XYZ')
+        expect(DataProvider.create_cache_md5).to eq('XYZ')
       end
-      context "if the file already exist" do
-        let(:key) {double("key", :blank? => false).as_null_object}
-        before(:each) do
-          allow(File).to receive(:exist?).and_return(false, true)
-          allow(DataProvider).to receive(:sleep)
-          allow(File).to receive(:read).and_return(key)
-        end
-        it "should read the file" do
-          expect(File).to receive(:read).and_return(key)
-          DataProvider.cache_md5
-        end
-        it "should raise an exception if the key is blank" do
-          allow(key).to receive(:blank?).and_return(true)
-          expect {DataProvider.cache_md5}.to raise_error
-        end
+
+      it "should raise an exception if the file cannot be created" do
+        allow(File).to receive(:exist?).and_return(false)
+        expect {DataProvider.create_cache_md5}.to raise_error
+      end
+
+      it "should raise an exception if there is no token" do
+        allow(File).to receive(:exist?).and_return(true)
+        allow(File).to receive(:read).and_return('')
+        expect {DataProvider.create_cache_md5}.to raise_error
       end
     end
   end

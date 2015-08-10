@@ -914,19 +914,19 @@ RSpec.describe UserfilesController, :type => :controller do
 
       it "should create a tar for multiple files" do
         expect(controller).to receive(:create_relocatable_tar_for_userfiles)
-        allow(Userfile).to    receive(:find_accessible_by_user).and_return([1,2])
+        allow(Userfile).to    receive(:find_accessible_by_user).and_return([mock_userfile, mock_userfile])
         get :download, :file_ids => [1,2]
       end
 
       it "should send the tar file for multiple files" do
         expect(controller).to receive(:send_file)
-        allow(Userfile).to    receive(:find_accessible_by_user).and_return([1,2])
+        allow(Userfile).to    receive(:find_accessible_by_user).and_return([mock_userfile, mock_userfile])
         get :download, :file_ids => [1,2]
       end
 
       it "should delete the tar file" do
         allow(CBRAIN).to   receive(:spawn_fully_independent).and_yield
-        allow(Userfile).to receive(:find_accessible_by_user).and_return([1,2])
+        allow(Userfile).to receive(:find_accessible_by_user).and_return([mock_userfile, mock_userfile])
         expect(File).to    receive(:unlink)
         get :download, :file_ids => [1,2]
       end
