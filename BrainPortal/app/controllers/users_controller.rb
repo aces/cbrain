@@ -193,9 +193,10 @@ class UsersController < ApplicationController
     end
 
     # IP whitelist
-    (params[:meta][:ip_whitelist] || '').split(',').each do |ip|
+    params[:meta][:ip_whitelist].split(',').each do |ip|
       IPAddr.new(ip.strip) rescue cb_error "Invalid whitelist IP address: #{ip}"
-    end
+    end if
+      params[:meta] && params[:meta][:ip_whitelist]
 
     # For logging
     original_group_ids = @user.group_ids
