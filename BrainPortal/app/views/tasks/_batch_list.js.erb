@@ -55,7 +55,7 @@ $(function () {
       batch
         .find('.dt-sel-check')
         .removeAttr('value')
-        .removeAttr('name')
+        .removeAttr('name');
 
       /* Notify the table that its content changed */
       $('#tasks_table').trigger('refresh.dyn-tbl');
