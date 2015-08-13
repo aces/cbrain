@@ -90,7 +90,21 @@
         :select_value => u.id
       } if u.available?
     end
+  %>
 
+  <%
+    t.column('', :type_icon,
+      :pretty_name => "Type Icon"
+    ) do |u|
+  %>
+    <% if u.is_a?(FileCollection) %>
+      <span class="ui-icon ui-icon-folder-collapsed"></span>
+    <% else %>
+      <span class="ui-icon ui-icon-document"></span>
+    <% end %>
+  <% end %>
+
+  <%
     t.column("Filename", :name,
       :sortable => true
     ) do |u|
