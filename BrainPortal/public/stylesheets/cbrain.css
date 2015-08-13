@@ -1441,6 +1441,15 @@ pre {
   display: table-row;
 }
 
+#userfiles_table td.type_icon,
+#userfiles_table th.type_icon {
+  max-width: 12px;
+}
+
+#userfiles_table td.type_icon > .ui-icon {
+  background-image: url(../images/ui-black-icons.png);
+}
+
 /* % ######################################################### */
 /* % Show page table formatting */
 /* % ######################################################### */
