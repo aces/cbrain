@@ -142,7 +142,7 @@ class PortalController < ApplicationController
       found_ctrl = nil
       found_ms   = 0
 
-      (log.split("\n",num_lines+10) + [ "\n" ]).each do |line|
+      (log.split("\n") + [ "\n" ]).each do |line|
         next unless line
         next unless line =~ /^Started (\S+) "\/(\w*)/ || ! paragraph.empty?
 
@@ -168,7 +168,7 @@ class PortalController < ApplicationController
       end
       log = filtlogs.join("\n")
     else
-      log.split("\n",num_lines+10).each do |line|
+      log.split("\n").each do |line|
         if line =~ /^User: (\S+)/
           found_user = Regexp.last_match[1]
           @user_counts[found_user] += 1

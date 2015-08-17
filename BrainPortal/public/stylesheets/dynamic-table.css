@@ -28,7 +28,6 @@
 .dynamic-table {
   color: #000000;
   display: inline-block;
-  font-family: sans-serif;
 }
 
 .dt-table {
@@ -42,7 +41,6 @@
   background: inherit;
   border: 0;
   color: inherit;
-  font-family: inherit;
   padding: 0.2em 0em 0.2em 0.9em;
   text-align: inherit;
   white-space: nowrap;
@@ -51,7 +49,6 @@
 .dt-body > tr > td {
   border: 0;
   color: inherit;
-  font-family: inherit;
   padding: 0.2em 0.5em 0.2em 0.9em;
   text-align: left;
 }
