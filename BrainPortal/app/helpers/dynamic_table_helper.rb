@@ -201,8 +201,9 @@ module DynamicTableHelper
     #              the value if not present.
     #  [indicator] Special indicator value to be shown next to the label in the
     #              UI. Usually used for the number of table rows matching the
-    #              filter. Note that specifying '0' will disable selection of
-    #              the filter. Defaults to '-'.
+    #              filter. Defaults to '-'.
+    #  [empty]     If specified, the filter will be rendered in a style indicating
+    #              that it would return an empty result set. Defaults to false.
     #  If you supply an Enumerable of arrays or strings instead, they will be
     #  converted to hashes in the following manner:
     #    [1, "A"]    => { :value =>   1, :label => "A", :indicator => '-' }
@@ -267,13 +268,13 @@ module DynamicTableHelper
       # Filtering
       filter_target = as_func.call(options[:filter_target] || @targets[:filter])
       filters       = options[:filters].map do |f|
-        if f.is_a?(Enumerable)
+        if f.is_a?(Hash)
+          f
+        elsif f.is_a?(Enumerable)
           val, lbl, ind = f.to_a
           { :value => val,    :label => lbl || val, :indicator => ind || '-' }
-        elsif f.is_a?(String) || f.is_a?(Symbol)
-          { :value => f.to_s, :label => f.to_s,     :indicator => '-'        }
         else
-          f
+          { :value => f.to_s, :label => f.to_s,     :indicator => '-'        }
         end
       end if options[:filters]
 
@@ -528,7 +529,7 @@ module DynamicTableHelper
 
         if filter = options[:filter]
           @filters = filter[:filters].map do |f|
-            Filter.new(f[:value], f[:label], filter[:target], f[:indicator])
+            Filter.new(f[:value], f[:label], filter[:target], f[:indicator] || "-", f[:empty])
           end
         end
       end
@@ -559,8 +560,10 @@ module DynamicTableHelper
         # Target request to perform when this filter is selected
         :target,
         # Indicator value to show for this filter in the filter list next
-        # to the label. '0' will disable selection of the filter.
-        :indicator
+        # to the label.
+        :indicator,
+        # If true, toggle rendering of the filter text to a style indicating an empty result set.
+        :empty
       )
 
       # Whether or not the column is initially visible. The column's visibility
@@ -967,7 +970,9 @@ module DynamicTableHelper
       link.match(/href="(.+?)"/)[1] # FIXME there is no filter_add_url...
     end
 
-    table = (@@index_table_class ||= Class.new(DynamicTable) do
+    # We create and cache a subclass of DynamicTable to act as
+    # a compatibility layer for the old 'index_table' framework
+    @@index_table_class ||= Class.new(DynamicTable) do
       attr_accessor :sort_map
       attr_accessor :filter_map
 
@@ -987,7 +992,8 @@ module DynamicTableHelper
 
         # If we have index_table-like filters, convert them to DynamicTable's format
         options[:filters].map! do |label,hash|
-          [hash[:filters].first[1], label]
+          empty = hash[:class].presence.to_s.match(/filter_zero/).present? # old HTML class convention
+          { :value => hash[:filters].first[1], :label => label, :empty => empty }
         end if
           options[:filters] && options[:filters].all? do |filter|
             filter[1][:filters].first[1] rescue nil
@@ -1019,12 +1025,15 @@ module DynamicTableHelper
       alias_method :paginated, :pagination
       alias_method :paginate,  :pagination
 
-    end).create(collection, self, options) do |table|
-      # Make the table aware of the sorting and filtering mappings
-      table.sort_map   = sort_map
-      table.filter_map = filter_map
+    end
 
-      block.call(table)
+    # Alright, let's create an instance of our backwards-compatible index_table object
+    table = @@index_table_class.create(collection, self, options) do |mytable|
+      # Make the table aware of the sorting and filtering mappings
+      mytable.sort_map   = sort_map
+      mytable.filter_map = filter_map
+
+      block.call(mytable)
     end
 
     (options.has_key?(:render) && ! options[:render]) ? table : table.render

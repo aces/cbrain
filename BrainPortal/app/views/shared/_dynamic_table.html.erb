@@ -115,7 +115,7 @@
               <tbody class="dt-fpop-body">
                 <% column.filters.each do |filter| %>
                   <tr>
-                    <% zero_cls = filter.indicator.strip == '0' ? 'dt-zero' : '' %>
+                    <% zero_cls = filter.empty.present? ? 'dt-zero' : '' %>
                     <td class="dt-fpop-cnt <%= zero_cls %>">
                       <%= filter.indicator %>
                     </td>
