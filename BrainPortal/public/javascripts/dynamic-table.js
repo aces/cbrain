@@ -158,7 +158,7 @@
     /* trigger a sorting request when the header of a sortable column is clicked */
     dyntbl
       .undelegate('.dt-sort > .dt-hdr', 'click.dyn-tbl')
-      .delegate('.dt-sort > .dt-hdr', 'click.dyn-tbl', function () {
+      .delegate(  '.dt-sort > .dt-hdr', 'click.dyn-tbl', function () {
         $(this)
           .siblings('.dt-sort-btn')
           .first()
@@ -168,7 +168,7 @@
     /* sorting, filtering and pagination requests */
     dyntbl
       .undelegate('.dt-sort-btn, .dt-fpop-txt, .dt-pag-pages > a', 'click.dyn-tbl')
-      .delegate('.dt-sort-btn, .dt-fpop-txt, .dt-pag-pages > a', 'click.dyn-tbl', function (event) {
+      .delegate(  '.dt-sort-btn, .dt-fpop-txt, .dt-pag-pages > a', 'click.dyn-tbl', function (event) {
         event.preventDefault();
 
         var url = $(this).attr('href') || $(this).data('url');

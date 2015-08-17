@@ -284,8 +284,8 @@ td.dt-sel > .dt-sel-lbl > .dt-sel-icon {
   width: 100%;
 }
 
-.dt-fpop-body > tr > .dt-fpop-txt.dt-zero,
-.dt-fpop-body > tr > .dt-fpop-cnt.dt-zero {
+.dt-fpop-body > tr > .dt-fpop-txt.dt-empty,
+.dt-fpop-body > tr > .dt-fpop-cnt.dt-empty {
   color: #bbbbbb;
 }
 

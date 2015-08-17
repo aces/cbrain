@@ -1028,12 +1028,12 @@ module DynamicTableHelper
     end
 
     # Alright, let's create an instance of our backwards-compatible index_table object
-    table = @@index_table_class.create(collection, self, options) do |mytable|
+    table = @@index_table_class.create(collection, self, options) do |t|
       # Make the table aware of the sorting and filtering mappings
-      mytable.sort_map   = sort_map
-      mytable.filter_map = filter_map
+      t.sort_map   = sort_map
+      t.filter_map = filter_map
 
-      block.call(mytable)
+      block.call(t)
     end
 
     (options.has_key?(:render) && ! options[:render]) ? table : table.render
