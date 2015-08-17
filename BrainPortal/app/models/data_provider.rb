@@ -513,8 +513,8 @@ class DataProvider < ActiveRecord::Base
     sync_to_provider(userfile)
   end
 
-  # This method provides a quick way to set the cache's file
-  # content to an exact copy of +localfile+, a locally accessible file.
+  # This method provides a quick way to set the cache's file content
+  # to an exact copy of +localpath+, a locally accessible file or directory.
   # The syncronization method +sync_to_provider+ will automatically
   # be called after the copy is performed.
   def cache_copy_from_local_file(userfile, localpath)
@@ -545,7 +545,7 @@ class DataProvider < ActiveRecord::Base
 
   # This method provides a quick way to copy the cache's file
   # to an exact copy +localfile+, a locally accessible file.
-  # The syncronization method +sync_to_cache+ will automatically
+  # The synchronization method +sync_to_cache+ will automatically
   # be called before the copy is performed.
   #
   # Note that if +localpath+ is a path to an existing filesystem

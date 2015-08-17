@@ -77,14 +77,18 @@
     ) { |u| u.last_connected_at ? to_localtime(u.last_connected_at, :datetime) : "Unknown" }
 
     t.column("Projects", :groups) do |u|
-      groups = u.available_groups.sort { |a,b| a.name.casecmp(b.name) }
-      html_tool_tip(pluralize(groups.size, "project"), :offset_x => 60) do
-        array_to_table(groups,
-          :table_class     => 'simple',
-          :ratio           => "3:1",
-          :fill_by_columns => true
-        ) { |g,r,c| g.name }
-      end.html_safe if groups.size > 0
+      group_names = u.available_groups.order(:name).raw_first_column(:name).reject { |n| n == u.login }
+      if group_names.size > 1 && group_names.size < 40
+        html_tool_tip(pluralize(group_names.size, "project"), :offset_x => 60) do
+          array_to_table(group_names,
+            :table_class     => 'simple',
+            :ratio           => "3:1",
+            :fill_by_columns => true
+          ) { |name,r,c| name }
+        end.html_safe
+      elsif group_names.size > 1
+        pluralize(group_names.size, "project")
+      end
     end
 
     t.column("Role", :type,
