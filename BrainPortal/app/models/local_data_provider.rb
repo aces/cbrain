@@ -88,11 +88,11 @@ class LocalDataProvider < DataProvider
 
       # Look up user name from uid
       uid        = stat.uid
-      owner_name = (uid_to_owner[uid] ||= Etc.getpwuid(uid).name)
+      owner_name = (uid_to_owner[uid] ||= (Etc.getpwuid(uid).name rescue uid.to_s))
 
       # Lookup group name from gid
       gid        = stat.gid
-      group_name = (gid_to_group[gid] ||= Etc.getgrgid(gid).name)
+      group_name = (gid_to_group[gid] ||= (Etc.getgrgid(gid).name rescue gid.to_s))
 
       # Create a FileInfo
       fileinfo               = FileInfo.new

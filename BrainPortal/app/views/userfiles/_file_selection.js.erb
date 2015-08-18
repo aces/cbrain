@@ -42,7 +42,7 @@
     var selection = (localStorage.getItem('userfiles_selection') || "").split(',');
 
     $("input[name='file_ids[]']").each(function () {
-      this.checked = selection.indexOf(this.value) != -1;
+      this.checked = this.checked || selection.indexOf(this.value) != -1;
     });
 
     save();

@@ -94,7 +94,7 @@
           desc_first = nil
           desc_rest  = nil
           if g.description.present?
-            desc_lines = h(g.description).lines.to_a
+            desc_lines = g.description.lines.to_a
             desc_first = desc_lines.shift.presence
             desc_rest  = desc_lines.join.presence
           end

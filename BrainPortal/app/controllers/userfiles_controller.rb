@@ -100,14 +100,6 @@ class UserfilesController < ApplicationController
       simple_pairs      = tree_sort_by_pairs(simple_pairs) # private method in this controller
       # At this point, each simple_pair is [ userfile_id, parent_id, [ child1_id, child2_id... ], orig_idx, level ]
       @userfiles_total  = simple_pairs.size
-      if params[:find_file_id]
-        find_file_id    = params[:find_file_id].to_i
-        find_file_index = simple_pairs.index { |u| u[0] == find_file_id }
-        if find_file_index
-          @current_page = (find_file_index / @per_page) + 1
-          offset = (@current_page - 1) * @per_page
-        end
-      end
 
       # Paginate the list of simple objects
       page_of_userfiles = simple_pairs[offset, @per_page] || []
@@ -307,7 +299,7 @@ class UserfilesController < ApplicationController
       @userfile[:children_ids]       = @children_ids
     # Prepare next/previous userfiles for html
     elsif request.format.to_sym == :html
-      @sort_index     = params[:sort_index].to_i || 0
+      @sort_index     = [ 0, params[:sort_index].to_i, 999_999_999 ].sort[1]
 
       # Rebuild the sorted Userfile scope
       @filter_params  = current_session.params_for(params[:proxy_destination_controller] || params[:controller])
@@ -450,6 +442,7 @@ class UserfilesController < ApplicationController
           flash[:error] += "#{field.to_s.capitalize} #{error}.\n"
         end
         respond_to do |format|
+          format.html { redirect_to redirect_path }
           format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
         end
         return
@@ -1312,20 +1305,29 @@ class UserfilesController < ApplicationController
 
       userfiles.each_with_index do |userfile,i|
         if userfile.is_a?(TarArchive)
-          $0 = "UnarchiveFile ID=#{userfile.id} #{i+1}/#{userfiles.size}\0"
+          begin
+            $0 = "UnarchiveFile ID=#{userfile.id} #{i+1}/#{userfiles.size}\0"
 
-          basename = userfile.name.split('.')[0]
-          if current_user.userfiles.exists?(:name => basename, :data_provider_id => collection.data_provider_id)
-            error_message = "Collection '#{collection.name}' already exists."
-            break
+            basename = userfile.name.dup
+            raise "Only files with extensions .tar, .tar.gz and .tgz are supported." unless
+              basename.sub!(/\.(tar(\.gz)?|tgz)$/, '')
+
+            raise "Collection '#{basename}' already exists." if
+              current_user.userfiles.exists?(
+                :name             => basename,
+                :data_provider_id => userfile.data_provider_id
+              )
+
+            userfile.sync_to_cache
+            collection      = userfile.dup.becomes(FileCollection)
+            collection.name = basename
+            collection.extract_collection_from_archive_file(userfile.cache_full_path.to_s)
+            userfile.destroy
+
+            error_message = ""
+          rescue => ex
+            error_message = ex.message
           end
-
-          collection      = userfile.dup.becomes(FileCollection)
-          collection.name = basename
-
-          userfile.sync_to_cache
-          collection.extract_collection_from_archive_file(userfile.cache_full_path.to_s)
-          userfile.destroy
         elsif userfile.archived?
           $0 = "UnarchiveFile ID=#{userfile.id} #{i+1}/#{userfiles.size}\0"
           error_message = userfile.provider_unarchive

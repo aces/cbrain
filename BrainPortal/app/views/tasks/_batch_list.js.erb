@@ -34,66 +34,102 @@ $(function () {
   /* Fetch the task list for batch row +row+ from +url+ */
   function fetch_batch(row, url) {
     $.get(url, function (data) {
-      var rows  = $(data),
-          batch = rows.filter('.batch'),
-          tasks = rows.filter('.task');
+      var rows   = $(data),
+          batch  = rows.filter('.batch'),
+          tasks  = rows.filter('.task');
 
-      row.after(tasks).replaceWith(batch);
+      /* Replace the old row with the new ones */
+      row
+        .after(tasks)
+        .replaceWith(batch);
 
-      /* Toggle task row visibility */
-      batch.find('.batch-btn')
-        .bind('click.batch_list', function () {
-          $(this)
-            .toggleClass(icons.batch_show)
-            .toggleClass(icons.batch_hide);
+      /* Add a few attributes to make expanding/collapsing tasks easier */
+      batch
+        .find('.batch-btn')
+        .data('batch-type', 'loaded');
 
-          tasks.toggle();
-        });
+      tasks
+        .addClass('batch-' + batch.data('batch-id'));
 
-      /* Make the batch's checkbox select/deselect all tasks in the batch */
-      batch.find('.dt-sel-check')
+      /* The batch's checkbox should no longer send anything */
+      batch
+        .find('.dt-sel-check')
         .removeAttr('value')
-        .removeAttr('name')
-        .bind('change.batch_list', function () {
-          var checked = $(this).prop('checked');
-
-          tasks.find('.dt-sel-check')
-            .prop('checked', checked)
-            .trigger('change');
-        });
+        .removeAttr('name');
 
       /* Notify the table that its content changed */
-      $('#tasks_table').trigger('reload.dyn-tbl');
+      $('#tasks_table').trigger('refresh.dyn-tbl');
     });
   };
 
   $(document).delegate('#tasks_table', 'new_content.batch_list', function () {
-    $(this).find('.dt-table > .dt-body > tr.batch').each(function () {
-      var row    = $(this),
-          button = row.find('.batch-btn'),
-          url    = button.data('batch-url');
+    var table = $(this);
 
-      /* No batch button or url? Is this even a batch? */
-      if (!button.length || !url) return;
+    /* Redirect clicks on the batch's type to the expand button */
+    table
+      .undelegate('tr.batch > td.type', 'click.batch_list')
+      .delegate('tr.batch > td.type', 'click.batch_list', function (event) {
+        event.stopPropagation();
 
-      button
-        .unbind('click.batch_list')
-        .bind('click.batch_list', function () {
-          /* Direct link to the batch */
-          if (button.data('batch-type') == 'html_link') {
-            window.location.href = url;
+        $(this).parent().find('.batch-btn').click();
+      });
 
-          /* AJAX row fetch */
-          } else {
-            button
-              .unbind('click.batch_list')
-              .removeClass([ icons.batch_show, icons.batch_hide ].join(' '))
-              .addClass(icons.batch_load);
+    /* Make the batch's checkbox select/deselect all tasks in the batch */
+    table
+      .undelegate('tr.batch > .dt-sel > .dt-sel-check', 'change.batch_list')
+      .delegate('tr.batch > .dt-sel > .dt-sel-check', 'change.batch_list', function () {
+        var checkbox = $(this);
 
-            fetch_batch(row, url);
-          }
-        });
-    });
+        table
+          .find('.task.batch-' + checkbox.closest('tr.batch').data('batch-id'))
+          .find('.dt-sel-check')
+          .prop('checked', checkbox.prop('checked'))
+          .trigger('change');
+      });
+
+    /* Expand/fetch/open batch */
+    table
+      .undelegate('.batch-btn', 'click.batch_list')
+      .delegate('.batch-btn', 'click.batch_list', function () {
+        var button = $(this),
+            type   = button.data('batch-type'),
+            url    = button.data('batch-url');
+
+        switch (type) {
+        /* Direct link to the batch */
+        case 'html_link':
+          window.location.href = url;
+          break;
+
+        /* AJAX batch fetch */
+        case 'ajax_fetch':
+          button
+            .data('batch-type', 'loading')
+            .removeClass([ icons.batch_show, icons.batch_hide ].join(' '))
+            .addClass(icons.batch_load);
+
+          fetch_batch(button.closest('tr.batch'), url);
+
+          break;
+
+        /* Batch already loaded, just expand/collapse it */
+        case 'loaded':
+          button
+            .toggleClass(icons.batch_show)
+            .toggleClass(icons.batch_hide);
+
+          table
+            .find('.task.batch-' + button.closest('tr.batch').data('batch-id'))
+            .toggle();
+
+          break;
+
+        /* Batch loading in progress, nothing to do */
+        case 'loading':
+        default:
+          break;
+        }
+      });
   });
 
   $('#tasks_table').trigger('new_content.batch_list');

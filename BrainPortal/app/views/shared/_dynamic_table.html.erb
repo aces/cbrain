@@ -101,14 +101,18 @@
         <% if column.filterable? && ! column.filters.blank? %>
           <span class="dt-filter-btn ui-icon ui-icon-zoomin"></span>
           <div class="dt-popup">
-            <table>
-              <thead>
+            <table class="dt-fpop-table">
+              <thead class="dt-fpop-head">
                 <tr>
-                  <td class="dt-fpop-find-icon ui-icon ui-icon-search"></td>
-                  <td class="dt-fpop-find"><input type="text" /></td>
+                  <td class="dt-fpop-find-icon">
+                    <span class="ui-icon ui-icon-search"></span>
+                  </td>
+                  <td class="dt-fpop-find">
+                    <input type="text" />
+                  </td>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="dt-fpop-body">
                 <% column.filters.each do |filter| %>
                   <tr>
                     <% zero_cls = filter.indicator.strip == '0' ? 'dt-zero' : '' %>
@@ -139,8 +143,8 @@
     <th class="dt-col-csp">
       <span class="dt-col-btn ui-icon ui-icon-plusthick"></span>
       <div class="dt-popup">
-        <table>
-          <tbody>
+        <table class="dt-cpop-table">
+          <tbody class="dt-cpop-body">
             <% table.columns.each do |column| %>
               <tr class="dt-cpop-col" data-column="<%= column.name.to_s %>">
                 <td class="dt-cpop-icon ui-icon ui-icon-radio-<%= column.visible? ? "off" : "on" %>"></td>

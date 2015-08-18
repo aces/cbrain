@@ -25,7 +25,7 @@
 <% if @userfile.is_locally_synced? %>
 
   <%
-    tar_list_io = IO.popen("tar -tvzf #{@userfile.cache_full_path.to_s.bash_escape}","r") rescue nil
+    tar_list_io = IO.popen("tar tvf #{@userfile.cache_full_path.to_s.bash_escape}","r") rescue nil
     tar_list    = tar_list_io.read rescue nil
     tar_list_io.close rescue nil
   %>

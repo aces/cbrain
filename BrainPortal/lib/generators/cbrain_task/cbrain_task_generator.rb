@@ -29,15 +29,17 @@ class CbrainTaskGenerator < Rails::Generators::Base
   argument     :file_or_class, :type => :string,  :default => "application"
   class_option :advanced,      :type => :boolean, :default => false
   class_option :license,       :type => :string,  :required => false, :default => ""
+  class_option :plugin_name,   :type => :string,  :required => false, :default => "local"
 
   def create_task #:nodoc:
     license = options[:license]
+    plugin  = options[:plugin_name]
     @_license_text = ""
     if license.present?
       raise "Error: can't find license file: #{license}" if !File.exist?(license)
       @_license_text = File.read(license)
     end
-    task_dir      = "cbrain_plugins/cbrain-plugins-local/cbrain_task/#{file_name}"
+    task_dir      = "cbrain_plugins/cbrain-plugins-#{plugin}/cbrain_task/#{file_name}"
     empty_directory "#{task_dir}"
     empty_directory "#{task_dir}/portal"
     empty_directory "#{task_dir}/bourreau"
