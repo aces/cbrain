@@ -29,6 +29,9 @@
 <%= render :partial => 'shared/active_filters', :locals => { :model => :user } %>
 
 <div class="pagination">
+  <div class="page_links">
+    (<%= pluralize @users.total_entries, "user" %>)
+  </div>
   <div class="pagination_right_side">
     Search by name:
     <%= ajax_search_box "name_like", users_path(:update_filter => :filter_hash) %>

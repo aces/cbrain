@@ -202,8 +202,9 @@ module DynamicTableHelper
     #  [indicator] Special indicator value to be shown next to the label in the
     #              UI. Usually used for the number of table rows matching the
     #              filter. Defaults to '-'.
-    #  [empty]     If specified, the filter will be rendered in a style indicating
-    #              that it would return an empty result set. Defaults to false.
+    #  [empty]     If specified, the filter will be rendered in a style
+    #              indicating that it would return an empty result set.
+    #              Defaults to false.
     #  If you supply an Enumerable of arrays or strings instead, they will be
     #  converted to hashes in the following manner:
     #    [1, "A"]    => { :value =>   1, :label => "A", :indicator => '-' }
@@ -269,12 +270,27 @@ module DynamicTableHelper
       filter_target = as_func.call(options[:filter_target] || @targets[:filter])
       filters       = options[:filters].map do |f|
         if f.is_a?(Hash)
-          f
+          {
+            :value     => f[:value],
+            :label     => f[:label]     || f[:value],
+            :indicator => f[:indicator] || '-',
+            :empty     => !!f[:empty]
+          }
         elsif f.is_a?(Enumerable)
-          val, lbl, ind = f.to_a
-          { :value => val,    :label => lbl || val, :indicator => ind || '-' }
+          value, label, indicator = f.to_a
+          {
+            :value     => value,
+            :label     => label     || value,
+            :indicator => indicator || '-',
+            :empty     => false
+          }
         else
-          { :value => f.to_s, :label => f.to_s,     :indicator => '-'        }
+          {
+            :value     => f.to_s,
+            :label     => f.to_s,
+            :indicator => '-',
+            :empty     => false
+          }
         end
       end if options[:filters]
 
@@ -529,7 +545,13 @@ module DynamicTableHelper
 
         if filter = options[:filter]
           @filters = filter[:filters].map do |f|
-            Filter.new(f[:value], f[:label], filter[:target], f[:indicator] || "-", f[:empty])
+            Filter.new(
+              f[:value],
+              f[:label],
+              filter[:target],
+              f[:indicator],
+              f[:empty]
+            )
           end
         end
       end
@@ -562,7 +584,8 @@ module DynamicTableHelper
         # Indicator value to show for this filter in the filter list next
         # to the label.
         :indicator,
-        # If true, toggle rendering of the filter text to a style indicating an empty result set.
+        # If true, toggle rendering of the filter text to a style indicating an
+        # empty result set.
         :empty
       )
 
@@ -992,8 +1015,9 @@ module DynamicTableHelper
 
         # If we have index_table-like filters, convert them to DynamicTable's format
         options[:filters].map! do |label,hash|
-          empty = hash[:class].presence.to_s.match(/filter_zero/).present? # old HTML class convention
-          { :value => hash[:filters].first[1], :label => label, :empty => empty }
+          value = hash[:filters].first[1]
+          empty = hash[:class].to_s =~ /filter_zero/ # old HTML class convention
+          { :value => value, :label => label, :empty => empty }
         end if
           options[:filters] && options[:filters].all? do |filter|
             filter[1][:filters].first[1] rescue nil
