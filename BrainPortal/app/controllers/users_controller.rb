@@ -44,9 +44,11 @@ class UsersController < ApplicationController
     @filtered_scope = base_filtered_scope @header_scope.includes( [:groups, :site] ).order( sort_order )
     @users          = base_sorted_scope @filtered_scope
 
-    # Precompute file and task counts.
-    @users_file_counts=Userfile.where(:user_id => @users.map(&:id)).group(:user_id).count
-    @users_task_counts=CbrainTask.real_tasks.where(:user_id => @users.map(&:id)).group(:user_id).count
+    # Precompute file, task and locked/unlocked counts.
+    @users_file_counts  = Userfile.where(:user_id => @users.map(&:id)).group(:user_id).count
+    @users_task_counts  = CbrainTask.real_tasks.where(:user_id => @users.map(&:id)).group(:user_id).count
+    @locked_users_count   = @users.where(:account_locked => true).count
+    @unlocked_users_count = @users.count - @locked_users_count
 
     # For Pagination
     unless [:html, :js].include?(request.format.to_sym)
