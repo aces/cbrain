@@ -368,7 +368,6 @@ class Userfile < ActiveRecord::Base
     end
     query_string = "(#{query_user_string}) OR (#{query_group_string})"
     query_array  = [user.id, user.group_ids, data_provider_ids]
-    puts query_array.inspect
     if user.has_role? :site_manager
       scope = scope.joins(:user).readonly(false)
       query_string += "OR (users.site_id = ?)"
@@ -376,8 +375,6 @@ class Userfile < ActiveRecord::Base
     end
 
     scope = scope.where( [query_string] + query_array)
-
-    puts scope
 
     scope
   end
