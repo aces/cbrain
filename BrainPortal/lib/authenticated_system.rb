@@ -56,15 +56,16 @@ module AuthenticatedSystem #:nodoc:
       authorized? || access_denied
     end
 
-    def site_membership_required
+    # Before filter to ensure that logged in User is a member of a site, before show action on SiteController.
+    def site_membership_required #:nodoc:
       (!current_user.site.nil? || access_error(401)) if current_user.has_role?(:normal_user)
     end
-      
-    
+
+
     ##########################################################
     #NEXT TWO ADDED BY TAREK
     ##########################################################
-    
+
     # Before filter to ensure that logged in User is an admin user.
     def admin_role_required
       current_user.has_role?(:admin_user) || access_error(401)

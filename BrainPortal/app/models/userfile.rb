@@ -344,11 +344,13 @@ class Userfile < ActiveRecord::Base
   # [For *admin* users:] any file on the system.
   # [For <b>site managers </b>] any file that belongs to a user of their site,
   #                             or assigned to a group to which the user belongs.
-  # [For regular users:] all files that belong to the user all
+  # [For regular users:] all files that belong to the user. all
   #                      files assigned to a group to which the user belongs.
   def self.find_all_accessible_by_user(user, options = {})
     self.accessible_for_user(user, options)
   end
+
+
 
   # This method takes in an array to be used as the :+conditions+
   # parameter for Userfile.where and modifies it to restrict based
