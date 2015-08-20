@@ -344,11 +344,13 @@ class Userfile < ActiveRecord::Base
   # [For *admin* users:] any file on the system.
   # [For <b>site managers </b>] any file that belongs to a user of their site,
   #                             or assigned to a group to which the user belongs.
-  # [For regular users:] all files that belong to the user all
+  # [For regular users:] all files that belong to the user. all
   #                      files assigned to a group to which the user belongs.
   def self.find_all_accessible_by_user(user, options = {})
     self.accessible_for_user(user, options)
   end
+
+
 
   # This method takes in an array to be used as the :+conditions+
   # parameter for Userfile.where and modifies it to restrict based
@@ -366,6 +368,7 @@ class Userfile < ActiveRecord::Base
     end
     query_string = "(#{query_user_string}) OR (#{query_group_string})"
     query_array  = [user.id, user.group_ids, data_provider_ids]
+    puts query_array.inspect
     if user.has_role? :site_manager
       scope = scope.joins(:user).readonly(false)
       query_string += "OR (users.site_id = ?)"
@@ -373,6 +376,8 @@ class Userfile < ActiveRecord::Base
     end
 
     scope = scope.where( [query_string] + query_array)
+
+    puts scope
 
     scope
   end
