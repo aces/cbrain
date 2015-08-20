@@ -269,7 +269,7 @@ module ScopeHelpers
 
         expect(filter.attribute).to eq('a')
         expect(filter.value).to     eq('v')
-        expect(filter.operator).to  eq(:match)
+        expect(filter.operator).to  eq('match')
       end
 
       it "should accept short attribute hash keys" do
@@ -281,7 +281,7 @@ module ScopeHelpers
 
         expect(filter.attribute).to eq('a')
         expect(filter.value).to     eq('v')
-        expect(filter.operator).to  eq(:match)
+        expect(filter.operator).to  eq('match')
       end
 
       it "should delegate to a subclass if :type is given" do
@@ -361,41 +361,41 @@ module ScopeHelpers
     context "when converting to hash" do
       it "should export all attributes" do
         expect(filter.to_hash).to eq({
-          :attribute   => 'full_name',
-          :value       => 'A',
-          :operator    => :==,
-          :association => nil
+          'attribute'   => 'full_name',
+          'value'       => 'A',
+          'operator'    => '==',
+          'association' => nil
         })
       end
 
       context "in compact mode" do
         it "should export only set attributes" do
           expect(filter.to_hash(compact: true)).to eq({
-            :a => 'full_name',
-            :v => 'A'
+            'a' => 'full_name',
+            'v' => 'A'
           })
         end
 
         it "should shrink attribute keys" do
           expect(filter.to_hash(compact: true)).to eq({
-            :a => 'full_name',
-            :v => 'A'
+            'a' => 'full_name',
+            'v' => 'A'
           })
         end
 
         it "should shrink long operators" do
           filter.operator = :match
           expect(filter.to_hash(compact: true)).to eq({
-            :a => 'full_name',
-            :v => 'A',
-            :o => :m
+            'a' => 'full_name',
+            'v' => 'A',
+            'o' => 'm'
           })
         end
 
         it "should remove default values" do
           expect(filter.to_hash(compact: true)).to eq({
-            :a => 'full_name',
-            :v => 'A'
+            'a' => 'full_name',
+            'v' => 'A'
           })
         end
       end
@@ -532,7 +532,7 @@ module ScopeHelpers
         })
 
         expect(order.attribute).to eq('a')
-        expect(order.direction).to eq(:asc)
+        expect(order.direction).to eq('asc')
       end
 
       it "should accept short attribute hash keys" do
@@ -542,7 +542,7 @@ module ScopeHelpers
         })
 
         expect(order.attribute).to eq('a')
-        expect(order.direction).to eq(:asc)
+        expect(order.direction).to eq('asc')
       end
 
       it "should delegate to a subclass if :type is given" do
@@ -586,28 +586,28 @@ module ScopeHelpers
     context "when converting to hash" do
       it "should export all attributes" do
         expect(order.to_hash).to eq({
-          :attribute   => 'full_name',
-          :direction   => :asc,
-          :association => nil
+          'attribute'   => 'full_name',
+          'direction'   => 'asc',
+          'association' => nil
         })
       end
 
       context "in compact mode" do
         it "should export only set attributes" do
           expect(order.to_hash(compact: true)).to eq({
-            :a => 'full_name'
+            'a' => 'full_name'
           })
         end
 
         it "should shrink attribute keys" do
           expect(order.to_hash(compact: true)).to eq({
-            :a => 'full_name'
+            'a' => 'full_name'
           })
         end
 
         it "should remove default values" do
           expect(order.to_hash(compact: true)).to eq({
-            :a => 'full_name'
+            'a' => 'full_name'
           })
         end
       end

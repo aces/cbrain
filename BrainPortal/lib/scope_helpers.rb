@@ -49,8 +49,8 @@
 # Currently active/known scopes are stored in Rails' session as a hash with
 # scope names for keys and scope hash definitions/representations as values:
 #   current_session[:scopes] == {
-#     'userfiles' => { :f => [ ... ], :o => ... },
-#     'tasks'     => { :f => [ ... ], :o => ... },
+#     'userfiles' => { 'f' => [ ... ], 'o' => ... },
+#     'tasks'     => { 'f' => [ ... ], 'o' => ... },
 #     ...
 #   }
 # To directly add or replace one of the session scopes, convert the scope to a
@@ -78,9 +78,9 @@ module ScopeHelpers
     includer.class_eval do
       helper_method(
         :filter_values_for,
-        :scope_url_params,
-        :filter_url_params,
-        :order_url_params
+        :scope_params,
+        :scope_filter_params,
+        :scope_order_params
       )
 
       before_filter :update_session_scopes
@@ -101,12 +101,12 @@ module ScopeHelpers
     # matter in which order they are applied.
     attr_accessor :filters
 
-    # Set operation to combine the filter result sets with. Either +:and+ or
-    # +:intersection+ for intersection (each item in the final result set must
-    # match all filters) or +:or+ or +:union+ for union (each item in the final
+    # Set operation to combine the filter result sets with. Either +and+ or
+    # +intersection+ for intersection (each item in the final result set must
+    # match all filters) or +or+ or +union+ for union (each item in the final
     # result set must match at least one filter).
     #
-    # TODO: Not implemented yet, as +:or+/+:union+ is not implemented for
+    # TODO: Not implemented yet, as +or+/+union+ is not implemented for
     # ActiveRecord models (the query interface does not support them cleanly
     # as of Rails 3) and slow/awkward for regular Ruby collections.
     attr_accessor :filter_combination
@@ -160,8 +160,8 @@ module ScopeHelpers
     # Create a deep copy of the Scope +other+, down to each Filter in *filters*
     # and each Order in *order*. This method allows +dup+ and +clone+ (which
     # invoke it) to create independent copies which can then be used by
-    # +scope_url_params+ and +url_for+ to create URLs changing arbitrary Scope
-    # elements (see +scope_url_params+).
+    # +scope_params+ and +url_for+ to create URLs changing arbitrary Scope
+    # elements (see +scope_params+).
     def initialize_copy(other)
       hash_dup = lambda { |obj| obj.class.from_hash(obj.to_hash) }
 
@@ -201,7 +201,7 @@ module ScopeHelpers
 
     # Create a new Scope described by the contents of +hash+. Each recognized
     # pair in +hash+ corresponds to a Scope attribute and is expected to
-    # match the format of the attribute (e.g. +:filters+ should be an Enumerable
+    # match the format of the attribute (e.g. +filters+ should be an Enumerable
     # of filters).
     #
     # For attributes containing objects (*filters*, *order*, *pagination*, etc.)
@@ -221,25 +221,25 @@ module ScopeHelpers
     #
     # The following keys are recognized in +hash+:
     #
-    # [:filters or :f]
+    # [+filters+ or +f+]
     #  *filters* attribute: an array (or Enumerable) of Scope::Filter instances.
     #
-    # [:order or :o]
+    # [+order+ or +o+]
     #  *order* attribute: an array (or Enumerable) of Scope::Order instances.
     #
-    # [:pagination or :p]
+    # [+pagination+ or +p+]
     #  *pagination* attribute: a Scope::Pagination instance.
     #
-    # [:selection or :s]
+    # [+selection+ or +s+]
     #  *selection* attribute: an array of selected IDs or keys inside the
     #  collection.
     #
-    # [:custom or :c]
+    # [+custom+ or +c+]
     #  *custom* attribute: an arbitrary Ruby hash of custom view options.
     #
-    # [:filter_combination or :fc]
-    #  *filter_combination* attribute: either +:and+/+:intersection+ or
-    #  +:or+/+:union+ (defaults to +:and+).
+    # [+filter_combination+ or +fc+]
+    #  *filter_combination* attribute: either +and+/+intersection+ or
+    #  +or+/+union+ (defaults to +and+).
     #
     # Any missing key will lead to a nil attribute and be handled appriately;
     # arrays will default to empty and absent components will be ignored.
@@ -255,19 +255,19 @@ module ScopeHelpers
       scope = self.new
 
       # Filtering and ordering rules
-      scope.filters = (hash[:filters] || hash[:f] || [])
+      scope.filters = (hash['filters'] || hash['f'] || [])
         .map { |filter| Filter.from_hash(filter) }
         .compact
 
-      scope.order = (hash[:order] || hash[:o] || [])
+      scope.order = (hash['order'] || hash['o'] || [])
         .map { |order| Order.from_hash(order) }
         .compact
 
       # Pagination, selection and other properties
-      scope.pagination = Pagination.from_hash(hash[:pagination] || hash[:p])
-      scope.selection  =  hash[:selection] || hash[:s] || []
-      scope.custom     = (hash[:custom]    || hash[:c] || {}).with_indifferent_access
-      scope.filter_combination = hash[:filter_combination] || hash[:fc] || :and
+      scope.pagination = Pagination.from_hash(hash['pagination'] || hash['p'])
+      scope.selection  =  hash['selection'] || hash['s'] || []
+      scope.custom     = (hash['custom']    || hash['c'] || {}).with_indifferent_access
+      scope.filter_combination = (hash['filter_combination'] || hash['fc'] || 'and').to_s
 
       scope
     end
@@ -280,12 +280,12 @@ module ScopeHelpers
     # +compact_hash+).
     def to_hash(compact: false)
       hash = {
-        :filters    => @filters.map(&:to_hash),
-        :order      => @order.map(&:to_hash),
-        :pagination => @pagination.try(:to_hash),
-        :selection  => @selection,
-        :custom     => @custom.symbolize_keys,
-        :filter_combination => @filter_combination,
+        'filters'    => @filters.map(&:to_hash),
+        'order'      => @order.map(&:to_hash),
+        'pagination' => @pagination.try(:to_hash),
+        'selection'  => @selection,
+        'custom'     => @custom.stringify_keys,
+        'filter_combination' => @filter_combination.to_s,
       }
 
       compact ? self.class.compact_hash(hash) : hash
@@ -304,27 +304,27 @@ module ScopeHelpers
 
       compact = {
         # Compact filtering rules
-        :f => (hash[:filters] || hash[:f] || [])
+        'f' => (hash['filters'] || hash['f'] || [])
           .map { |filter| Filter.compact_hash(filter) }
           .reject(&:blank?),
 
         # Compact ordering rules
-        :o => (hash[:order] || hash[:o] || [])
+        'o' => (hash['order'] || hash['o'] || [])
           .map { |order| Order.compact_hash(order) }
           .reject(&:blank?),
 
         # Compact the pagination component
-        :p => Pagination.compact_hash(hash[:pagination] || hash[:p]),
+        'p' => Pagination.compact_hash(hash['pagination'] || hash['p']),
 
         # Include other attributes
-        :s  => hash[:s]  || hash[:selection],
-        :c  => hash[:c]  || hash[:custom],
-        :fc => hash[:fc] || hash[:filter_combination],
+        's'  => hash['s']  || hash['selection'],
+        'c'  => hash['c']  || hash['custom'],
+        'fc' => (hash['fc'] || hash['filter_combination']).to_s,
       }
 
       # Delete empty/default values
       compact.delete_if { |key, value| value.blank? }
-      compact.delete(:fc) if compact[:fc].to_s == 'and'
+      compact.delete('fc') if compact['fc'].to_s == 'and'
 
       compact
     end
@@ -360,27 +360,27 @@ module ScopeHelpers
       # check if the collection/model element passes the filter. The possible
       # operators are:
       #
-      # [:==, :!=, :>, :>=, :<, :<=]
+      # [+==+, +!=+, +>+, +>=+, +<+, +<=+]
       #  Standard comparison operators; a single value in *value* is expected.
       #
-      # [:in, :out]
-      #  Set inclusion (:in) or exclusion (:out); a set (Enumerable) of values
+      # [+in+, +out+]
+      #  Set inclusion (in) or exclusion (out); a set (Enumerable) of values
       #  in *value* is expected.
       #  Behaves like Ruby's include? method and SQL's IN clause.
       #
-      # [:match]
+      # [+match+]
       #  Case insensitive string inclusion; a single string in *value* is
       #  expected.
       #  Behaves like a case-insensitive Ruby include? and SQL's LIKE clause.
-      #  Shortened to just :m in compact Filter hash representations.
+      #  Shortened to just +m+ in compact Filter hash representations.
       #
-      # [:range]
+      # [+range+]
       #  Range match; a pair of values in *value* is expected.
       #  Given a range [a, b] in *value* and x as *attribute*'s value,
       #  corresponds to the predicate a <= x <= b.
-      #  Shortened to just :r in compact Filter hash representations.
+      #  Shortened to just +r+ in compact Filter hash representations.
       #
-      # Defaults to an equality comparison (:==).
+      # Defaults to an equality comparison (+==+).
       attr_accessor :operator
 
       # Optional ActiveRecord model to join on to the filtered model before
@@ -407,7 +407,7 @@ module ScopeHelpers
       # to determine which Filter subclass to load when creating a Filter
       # instance using +from_hash+.
       # Returns nil in the superclass (Scope::Filter) as a filter hash is
-      # assumed to be a Scope::Filter if no +:type+ key is present
+      # assumed to be a Scope::Filter if no +type+ key is present
       # (see +from_hash+).
       def self.type_name
         nil
@@ -425,7 +425,7 @@ module ScopeHelpers
         raise "no operator to filter with"      unless @operator
         raise "no attribute to filter on items" unless @attribute
 
-        @value ||= [] if [ :in, :out, :range ].include?(@operator)
+        @value ||= [] if [ 'in', 'out', 'range' ].include?(@operator.to_s)
 
         if (collection <= ActiveRecord::Base rescue nil)
           apply_on_model(collection)
@@ -447,25 +447,25 @@ module ScopeHelpers
       #
       # The following keys are recognized in +hash+:
       #
-      # [:type or :t]
+      # [+type+ or +t+]
       #  Type (subclass) of Filter of create from +hash+, as a string or symbol.
       #  If present, this key's value is expected to match a subclass'
       #  +type_name+ (or the Ruby class name) and that subclass' +from_hash+
       #  will be invoked on +hash+ to create the filter instead. If the key does
       #  not match any subclass' +type_name+, a blank filter will be created.
       #
-      # [:attribute or :a]
+      # [+attribute+ or +a+]
       #  *attribute* attribute: a symbol or string.
       #
-      # [:value or :v]
+      # [+value+ or +v+]
       #  *value* attribute: a scalar (number, bool, string, symbol, etc.)
       #  value or an array (or Enumerable) of scalar values.
       #
-      # [:operator or :o]
+      # [+operator+ or +o+]
       #  *operator* attribute: one of the possible operators (see the
-      #  *operator* attribute) as a symbol or string (defaults to :==).
+      #  *operator* attribute) as a symbol or string (defaults to ==).
       #
-      # [:association or :j]
+      # [+association+ or +j+]
       #  *association* attribute: an ActiveRecord model or an array with an
       #  ActiveRecord model and the two attributes to perform the join with.
       #  A string or symbol representing the model or DB table can also be
@@ -482,39 +482,39 @@ module ScopeHelpers
 
         filter = self.new
 
-        # Handle Filter subclasses (:type key)
-        if type = (hash[:type] || hash[:t])
+        # Handle Filter subclasses (type key)
+        if type = (hash['type'] || hash['t'])
           subclass = self.descendants.find { |sub| sub.type_name == type }
           return subclass ? subclass.from_hash(hash) : filter
         end
 
         # *attribute* must be alphanumeric (word-like)
-        attribute = (hash[:attribute] || hash[:a]).to_s.gsub(/[^\w.]/, '')
+        attribute = (hash['attribute'] || hash['a']).to_s.gsub(/[^\w.]/, '')
         filter.attribute = attribute unless attribute.blank?
 
         # *operator* must be one of the possible predicate operators
-        operator = (hash[:operator] || hash[:o] || :==).to_s.downcase.to_sym
-        operator = :range if operator == :r
-        operator = :match if operator == :m
+        operator = (hash['operator'] || hash['o'] || :==).to_s.downcase
+        operator = 'range' if operator == 'r'
+        operator = 'match' if operator == 'm'
         filter.operator = operator if
-          [ :==, :!=, :>, :>=, :<, :<=, :in, :out, :match, :range ].include?(operator)
+          [ '==', '!=', '>', '>=', '<', '<=', 'in', 'out', 'match', 'range' ].include?(operator)
 
         # *value* must be a simple scalar value or a set of simple values,
         # depending on which *operator* is to be applied
-        value = hash[:value] || hash[:v]
+        value = hash['value'] || hash['v']
         value = (value.is_a?(Enumerable) ? value : [value])
           .map(&:to_s)
           .reject(&:blank?)
 
         filter.value = (
-          case operator
-          when :==, :!=, :>, :>=, :<, :<=
+          case operator.to_s
+          when '==', '!=', '>', '>=', '<', '<='
             value.first
-          when :in, :out
+          when 'in', 'out'
             value unless value.empty?
-          when :match
+          when 'match'
             value.first.to_s
-          when :range
+          when 'range'
             value[0, 2] if value.length == 2
           else
             nil
@@ -523,7 +523,7 @@ module ScopeHelpers
 
         # *association* must be an ActiveRecord model or an array with the
         # correct format
-        filter.association = ScopeHelpers.parse_assoc(hash[:association] || hash[:j])
+        filter.association = ScopeHelpers.parse_assoc(hash['association'] || hash['j'])
 
         filter
       end
@@ -538,10 +538,10 @@ module ScopeHelpers
       # See Scope's +to_hash+ method for further information.
       def to_hash(compact: false)
         hash = {
-          :attribute   => @attribute,
-          :operator    => @operator,
-          :value       => @value,
-          :association => ScopeHelpers.assoc_with_table(@association)
+          'attribute'   => @attribute.to_s,
+          'operator'    => @operator.to_s,
+          'value'       => @value,
+          'association' => ScopeHelpers.assoc_with_table(@association)
         }
 
         compact ? self.class.compact_hash(hash) : hash
@@ -555,17 +555,17 @@ module ScopeHelpers
         Scope.generic_compact_hash(
           hash,
           {
-            :type        => :t,
-            :attribute   => :a,
-            :operator    => :o,
-            :value       => :v,
-            :association => :j
+            'type'        => 't',
+            'attribute'   => 'a',
+            'operator'    => 'o',
+            'value'       => 'v',
+            'association' => 'j'
           },
           values: [
-            [ :operator, :range, :r ],
-            [ :operator, :match, :m ]
+            [ 'operator', 'range', 'r' ],
+            [ 'operator', 'match', 'm' ]
           ],
-          defaults: { :operator => :== }
+          defaults: { 'operator' => '==' }
         )
       end
 
@@ -579,49 +579,49 @@ module ScopeHelpers
         # *association*).
         attribute, model = ScopeHelpers.resolve_model_attribute(@attribute, model, @association)
 
-        case @operator
-        # Standard comparison operators can just be used as-is, bar for :== and
+        case (operator = @operator.to_s)
+        # Standard comparison operators can just be used as-is, bar for == and
         # when NULLs are involved.
-        when :==, :!=, :>, :>=, :<, :<=
-          operator = (
+        when '==', '!=', '>', '>=', '<', '<='
+          sql_operator = (
             # IS/IS NOT for NULLs (nil)
-            if    @value.nil? && @operator == :== then 'IS'
-            elsif @value.nil? && @operator == :!= then 'IS NOT'
+            if    @value.nil? && operator == '==' then 'IS'
+            elsif @value.nil? && operator == '!=' then 'IS NOT'
             # SQL uses a single =
-            elsif @operator == :== then '='
+            elsif operator == '==' then '='
             # Other cases are as-is
-            else @operator
+            else operator
             end
           )
-          return model.where("#{attribute} #{operator} ?", @value)
+          return model.where("#{attribute} #{sql_operator} ?", @value)
 
-        # :in corresponds to IN, and :out to NOT IN
-        when :in, :out
-          operator     = (@operator == :in ? 'IN' : 'NOT IN')
+        # in corresponds to IN, and out to NOT IN
+        when 'in', 'out'
+          sql_operator = (operator == 'in' ? 'IN' : 'NOT IN')
           placeholders = @value.map { '?' }.join(',')
           return (
             if @value.present?
-              model.where("#{attribute} #{operator} (#{placeholders})", *@value)
-            elsif @operator == :in
+              model.where("#{attribute} #{sql_operator} (#{placeholders})", *@value)
+            elsif operator == 'in'
               model.where('1 = 0')
             else
               model.where({})
             end
           )
 
-        # :match is more-or-less LIKE
-        when :match
+        # match is more-or-less LIKE
+        when 'match'
           pattern = "%#{@value.gsub(/([%_!])/, '!\1')}%"
           return model.where("#{attribute} LIKE ? ESCAPE '!'", pattern)
 
-        # :range is exactly BETWEEN
-        when :range
+        # range is exactly BETWEEN
+        when 'range'
           min, max = @value.sort
           return model.where("#{attribute} BETWEEN ? AND ?", min, max)
 
         # Invalid operator?
         else
-          raise "unknown operator '#{@operator}'"
+          raise "unknown operator '#{operator}'"
         end
       end
 
@@ -643,32 +643,32 @@ module ScopeHelpers
         attr_cast = ScopeHelpers.generate_cast(value, attr_get.(collection.first))
         raise "no way to convert '#{value}' to '#{@attribute}' values" unless attr_cast
 
-        case @operator
+        case (operator = @operator.to_s)
         # Standard comparison operators are just invoked directly (send
         # method) to each item against @value.
-        when :==, :!=, :>, :>=, :<, :<=
+        when '==', '!=', '>', '>=', '<', '<='
           value = attr_cast.(@value)
           return collection.select do |item|
-            attr_get.(item).send(@operator, value) rescue nil
+            attr_get.(item).send(operator, value) rescue nil
           end
 
-        # :in and :out naturally correspond to the include? method
-        when :in, :out
-          method = (@operator == :in ? :select : :reject)
+        # in and out naturally correspond to the include? method
+        when 'in', 'out'
+          method = (operator == 'in' ? :select : :reject)
           values = @value.map(&attr_cast)
           return collection.send(method) do |item|
             values.include?(attr_get.(item)) rescue nil
           end
 
-        # :match is a case-insensitive :in
-        when :match
+        # match is a case-insensitive in
+        when 'match'
           value = @value.to_s.downcase
           return collection.select do |item|
             attr_get.(item).to_s.downcase.include?(value) rescue nil
           end
 
-        # :range corresponds to min <= value <= max
-        when :range
+        # range corresponds to min <= value <= max
+        when 'range'
           min, max = @value.map(&attr_cast).sort
           return collection.select do |item|
             attr = attr_get.(item)
@@ -677,7 +677,7 @@ module ScopeHelpers
 
         # Invalid operator?
         else
-          raise "unknown operator '#{@operator}'"
+          raise "unknown operator '#{operator}'"
         end
       end
     end
@@ -700,9 +700,9 @@ module ScopeHelpers
       attr_accessor :attribute
 
       # SQL-like direction in which to perform the sorting/ordering; either
-      # +:asc+ to sort in ascending order (1, 2, 3, ...) or +:desc+ to sort in
+      # +asc+ to sort in ascending order (1, 2, 3, ...) or +desc+ to sort in
       # descending order (7, 6, 5, ...).
-      # Defaults to ascending order (:asc).
+      # Defaults to ascending order (asc).
       attr_accessor :direction
 
       # Optional ActiveRecord model to join on to the filtered model before
@@ -749,25 +749,25 @@ module ScopeHelpers
       # Create a new Order described by the contents of +hash+. Works similarly
       # to Filter's +from_hash+ method, as each recognized pair in +hash+
       # corresponds to an Order attribute and is expected to match the
-      # attribute's format, bar for +:type+.
+      # attribute's format, bar for +type+.
       #
       # The following keys are recognized in +hash+:
       #
-      # [:type or :t]
+      # [+type+ or +t+]
       #  Type (subclass) of Filter to create from +hash+, as a string or symbol.
-      #  Handled the same way as Filter's own +:type+ key; see Filter's
+      #  Handled the same way as Filter's own +type+ key; see Filter's
       #  +from_hash+ method.
       #
-      # [:attribute or :a]
+      # [+attribute+ or +a+]
       #  *attribute* attribute: a symbol or string.
       #
-      # [:direction or :d]
-      #  *direction* attribute: either +:asc+ or +:desc+ (defaults to +:asc+).
+      # [+direction+ or +d+]
+      #  *direction* attribute: either +asc+ or +desc+ (defaults to +asc+).
       #
-      # [:association or :j]
+      # [+association+ or +j+]
       #  *association* attribute: an ActiveRecord model or an array with an
       #  ActiveRecord model and the two attributes to perform the join with.
-      #  Handled the same way as Filter's own +:association+ key; see Filter's
+      #  Handled the same way as Filter's own +association+ key; see Filter's
       #  +from_hash+ method.
       #
       # Returns the newly created Order (just like new would)
@@ -780,23 +780,23 @@ module ScopeHelpers
 
         order = self.new
 
-        # Handle Order subclasses (:type key)
-        if type = (hash[:type] || hash[:t])
+        # Handle Order subclasses (type key)
+        if type = (hash['type'] || hash['t'])
           subclass = self.descendants.find { |sub| sub.type_name == type }
           return subclass ? subclass.from_hash(hash) : order
         end
 
         # *attribute* must be alphanumeric (word-like)
-        attribute = (hash[:attribute] || hash[:a]).to_s.gsub(/[^\w.]/, '')
+        attribute = (hash['attribute'] || hash['a']).to_s.gsub(/[^\w.]/, '')
         order.attribute = attribute unless attribute.blank?
 
         # *direction* must be either ascending or descending
-        direction   = (hash[:direction] || hash[:d] || :asc).to_s.downcase.to_sym
-        order.direction = direction if [ :asc, :desc ].include?(direction)
+        direction   = (hash['direction'] || hash['d'] || 'asc').to_s.downcase
+        order.direction = direction if [ 'asc', 'desc' ].include?(direction)
 
         # *association* must be an ActiveRecord model or an array with the
         # correct format
-        order.association = ScopeHelpers.parse_assoc(hash[:association] || hash[:j])
+        order.association = ScopeHelpers.parse_assoc(hash['association'] || hash['j'])
 
         order
       end
@@ -809,9 +809,9 @@ module ScopeHelpers
       # See Scope's +to_hash+ method for further information.
       def to_hash(compact: false)
         hash = {
-          :attribute   => @attribute,
-          :direction   => @direction,
-          :association => ScopeHelpers.assoc_with_table(@association)
+          'attribute'   => @attribute.to_s,
+          'direction'   => @direction.to_s,
+          'association' => ScopeHelpers.assoc_with_table(@association)
         }
 
         compact ? self.class.compact_hash(hash) : hash
@@ -825,12 +825,12 @@ module ScopeHelpers
         Scope.generic_compact_hash(
           hash,
           {
-            :type        => :t,
-            :attribute   => :a,
-            :direction   => :d,
-            :association => :j
+            'type'        => 't',
+            'attribute'   => 'a',
+            'direction'   => 'd',
+            'association' => 'j'
           },
-          defaults: { :direction => :asc }
+          defaults: { 'direction' => 'asc' }
         )
       end
 
@@ -845,7 +845,7 @@ module ScopeHelpers
         attribute, model = ScopeHelpers.resolve_model_attribute(@attribute, model, @association)
 
         raise "unknown direction '#{@direction}'" unless
-          [ :asc, :desc ].include?(@direction)
+          [ 'asc', 'desc' ].include?(@direction.to_s)
 
         model.order("#{attribute} #{@direction.to_s.upcase}")
       end
@@ -864,7 +864,7 @@ module ScopeHelpers
         raise "no way to get '#{@attribute}' out of collection items" unless attr_get
 
         collection = collection.sort_by(&attr_get)
-        collection.reverse! if @direction == :desc
+        collection.reverse! if @direction.to_s == 'desc'
         collection
       end
     end
@@ -917,13 +917,13 @@ module ScopeHelpers
       #
       # The following keys are recognized in +hash+:
       #
-      # [:page or :i]
+      # [+page+ or +i+]
       #  *page* attribute: an integer.
       #
-      # [:per_page or :p]
+      # [+per_page+ or +p+]
       #  *per_page* attribute: an integer.
       #
-      # [:total or :t]
+      # [+total+ or +t+]
       #  *total* attribute: an integer.
       #
       # Returns the newly created Pagination (just like new would)
@@ -934,9 +934,9 @@ module ScopeHelpers
           hash.is_a?(HashWithIndifferentAccess)
 
         pagination = self.new
-        pagination.page     = (hash[:i] || hash[:page] || 1).to_i
-        pagination.per_page = (hash[:p] || hash[:per_page]).to_i
-        pagination.total    = (hash[:t] || hash[:total]).to_i
+        pagination.page     = (hash['i'] || hash['page'] || 1).to_i
+        pagination.per_page = (hash['p'] || hash['per_page']).to_i
+        pagination.total    = (hash['t'] || hash['total']).to_i
         pagination
       end
 
@@ -948,9 +948,9 @@ module ScopeHelpers
       # See Scope's +to_hash+ method for further information.
       def to_hash(compact: false)
         hash = {
-          :page     => @page,
-          :per_page => @per_page,
-          :total    => @total
+          'page'     => @page.to_i,
+          'per_page' => @per_page.to_i,
+          'total'    => @total.to_i
         }
 
         compact ? self.class.compact_hash(hash) : hash
@@ -964,11 +964,11 @@ module ScopeHelpers
         Scope.generic_compact_hash(
           hash,
           {
-            :page     => :i,
-            :per_page => :p,
-            :total    => :t
+            'page'     => 'i',
+            'per_page' => 'p',
+            'total'    => 't'
           },
-          defaults: { :page => 1 }
+          defaults: { 'page' => 1 }
         )
       end
     end
@@ -982,9 +982,9 @@ module ScopeHelpers
     # +keys+ is expected to be a mapping of +hash+'s keys to shorter
     # versions of the same keys:
     #   {
-    #     :attribute => :a,
-    #     :operator  => :o,
-    #     :value     => :v
+    #     'attribute' => 'a',
+    #     'operator'  => 'o',
+    #     'value'     => 'v'
     #   }
     #
     # +values+, if given, is expected to be a list of +hash+ values to
@@ -992,25 +992,25 @@ module ScopeHelpers
     #   [
     #     [<key>, <long value>, <short value>],
     #
-    #     # hash[:operator] would become :r if it was :range
-    #     [:operator,  :range,     :r],
+    #     # hash['operator'] would become 'r' if it was 'range'
+    #     ['operator',  'range',     'r'],
     #
-    #     # hash[:direction] would become :asc if it was :ascending
-    #     [:direction, :ascending, :asc],
+    #     # hash['direction'] would become 'asc' if it was 'ascending'
+    #     ['direction', 'ascending', 'asc'],
     #   ]
     #
     # +defaults+, if given, is expected to be a mapping of default values
     # for +hash+ which should be removed when compacting:
     #   {
-    #     # :asc is the default for :direction, and doesn't need to be included
+    #     # 'asc' is the default for 'direction', and doesn't need to be included
     #     # in the compacted hash version
-    #     :direction => :asc
+    #     'direction' => 'asc'
     #   }
     def self.generic_compact_hash(hash, keys, values: {}, defaults: {})
       # Make sure +hash+ is proper
       return nil unless hash.is_a?(Hash)
 
-      compact = hash.symbolize_keys
+      compact = hash.stringify_keys
 
       hash = hash.with_indifferent_access unless
         hash.is_a?(HashWithIndifferentAccess)
@@ -1100,7 +1100,9 @@ module ScopeHelpers
   # methods).
   def update_session_scopes
     default = default_scope_name
-    mode    = (params['_scope_mode'] || 'replace').to_sym
+    mode    = params['_scope_mode'].to_sym if
+        [ 'append', 'delete', 'replace' ].include?(params['_scope_mode'])
+    mode  ||= :replace
 
     # Decompress (if required) and merge _scopes and _cur_scope
     scopes = (params['_scopes'] || {})
@@ -1114,11 +1116,11 @@ module ScopeHelpers
 
     # Pagination parameters (which override _scopes and _cur_scope)
     pagination = {}
-    pagination[:i] = params['page']     if params['page']
-    pagination[:p] = params['per_page'] if params['per_page']
+    pagination['i'] = params['page']     if params['page']
+    pagination['p'] = params['per_page'] if params['per_page']
 
     current_session.update({
-      :scopes => { default => { :p => pagination } }
+      :scopes => { default => { 'p' => pagination } }
     }, mode) unless
       pagination.empty?
   end
@@ -1132,18 +1134,18 @@ module ScopeHelpers
   #   @scope = scope_from_session('userfiles')
   #   # ...
   #   new_scope = @scope.dup
-  #   new_scope.filters[0].operator = :!=
-  #   query_params = scope_url_params('userfiles', new_scope)
+  #   new_scope.filters[0].operator = '!='
+  #   query_params = scope_params('userfiles', new_scope)
   # Same as above, using the hash representation of +@scope+:
   #   @scope = scope_from_session('userfiles')
   #   # ...
   #   scope_hash = @scope.to_hash
-  #   scope_hash[:filters][0][:operator] = :!=
+  #   scope_hash['filters'][0]['operator'] = '!='
   #   scope_hash = @scope.class.compact_hash(scope_hash)
-  #   query_params = scope_url_params('userfiles', scope_hash)
+  #   query_params = scope_params('userfiles', scope_hash)
   # Unless +compress+ is specified as false, the generated URL parameters will
   # use the compressed format as specified by +compress_scope+.
-  def scope_url_params(name, scope, compress: true)
+  def scope_params(name, scope, compress: true)
     scope = scope.to_hash if scope.is_a?(Scope)
     scope = Scope.compact_hash(scope)
     scope = ScopeHelpers.compress_scope(scope) if compress
@@ -1174,7 +1176,7 @@ module ScopeHelpers
   #
   # Note that the generated URL parameters are in compressed format (see
   # +compress_scope+).
-  def filter_url_params(operation, filters, scope: nil)
+  def scope_filter_params(operation, filters, scope: nil)
     scope ||= default_scope_name
     filters = (filters.is_a?(Array) ? filters : [filters]).map do |filter|
       filter = filter.to_hash if filter.is_a?(Scope::Filter)
@@ -1186,13 +1188,13 @@ module ScopeHelpers
 
   # Generate URL parameters suitable for +url_for+ to update the session scope
   # named +scope+'s ordering rules (via +update_session_scopes+) via a given
-  # +operation+. This method behaves just like +filter_url_params+, but operates
-  # on a Scope's ordering rules (Order instances or hash representations)
+  # +operation+. This method behaves just like +scope_filter_params+, but
+  # operates on a Scope's ordering rules (Order instances or hash representations)
   # instead of filters. As such, the same +operation+s are available (:add,
   # :remove, :set, :replace, :clear) and the +scope+ and +orders+ parameters are
-  # handled the exact same way +filter_url_params+'s +scope+ and +filters+
+  # handled the exact same way +scope_filter_params+'s +scope+ and +filters+
   # parameters are handled.
-  def order_url_params(operation, orders, scope: nil)
+  def scope_order_params(operation, orders, scope: nil)
     scope ||= default_scope_name
     orders = (orders.is_a?(Array) ? orders : [orders]).map do |order|
       order = order.to_hash if order.is_a?(Scope::Order)
@@ -1304,35 +1306,35 @@ module ScopeHelpers
     scope.tr!('-_', '+/')
     scope = Base64.decode64(scope)
     scope = ActiveSupport::Gzip.decompress(scope)
-    scope = YAML.load(scope)
+    scope = YAML.safe_load(scope)
     scope
   end
 
   # Generate URL parameters suitable for +url_for+ to update the session scope
   # named +scope+'s items (ordering or filtering rules). This method is the
-  # internal implementation of +filter_url_params+ (and +order_url_params+).
-  # - +operation+ corresponds exactly to +filter_url_params+'s +operation+
+  # internal implementation of +scope_filter_params+ (and +scope_order_params+).
+  # - +operation+ corresponds exactly to +scope_filter_params+'s +operation+
   # parameter.
-  # - +scope+ corresponds to +filter_url_params+'s +scope+ parameter, minus
+  # - +scope+ corresponds to +scope_filter_params+'s +scope+ parameter, minus
   # the default value.
   # - +attr+ is expected to be either :filters, to update scope filtering rules,
   # or :order, for ordering rules. It corresponds to the Scope attribute name
   # to apply +changes+ on.
-  # - +changes+ corresponds to +filter_url_params+'s +changes+ parameter, and
+  # - +changes+ corresponds to +scope_filter_params+'s +changes+ parameter, and
   # is expected to be an array of compact hash representations of filters
   # (Scope::Filter) or ordering rules (Scope::Order).
   #
   # Note that unlike most other utility methods, this method is exclusively
-  # intended to be used only to implement +filter_url_params+ and
-  # +order_url_params+ and is most likely unsuitable for anything else.
+  # intended to be used only to implement +scope_filter_params+ and
+  # +scope_order_params+ and is most likely unsuitable for anything else.
   def self.scope_items_url_params(scope, operation, attr, changes) #:nodoc:
     return if changes.blank? && operation != :clear
 
-    key  = (attr == :filters ? :f : :o)
+    key  = (attr == :filters ? 'f' : 'o')
     hash = (
       case operation
       when :set
-        replaced  = changes.map { |c| c[:a] }
+        replaced  = changes.map { |c| c['a'] }
         changes  += scope_from_session(scope)
           .send(attr)
           .reject { |c| replaced.include?(f.attribute) }
