@@ -925,6 +925,12 @@ pre {
   margin-right: 0.5em;
 }
 
+.last_updated {
+  margin-right: 0.6em;
+  color: #83b4d1;
+  font-weight: bold;
+}
+
 
 
 /* % ######################################################### */
@@ -1439,6 +1445,15 @@ pre {
 .userfiles_bourreau_selector {
   padding: 0 1em;
   display: table-row;
+}
+
+#userfiles_table td.type_icon,
+#userfiles_table th.type_icon {
+  max-width: 12px;
+}
+
+#userfiles_table td.type_icon > .ui-icon {
+  background-image: url(../images/ui-black-icons.png);
 }
 
 /* % ######################################################### */

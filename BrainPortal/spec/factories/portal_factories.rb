@@ -30,11 +30,14 @@ FactoryGirl.define do
     sequence(:login)      { |n| "user#{n}" }
     sequence(:full_name)  { |n| "Bob #{n}" }
     sequence(:email)      { |n| "user#{n}@example.com" }
-    password              "Password!"
-    password_confirmation "Password!"
+    password              "1Password!"
+    password_confirmation "1Password!"
 
     after(:build) do |user|
-      user.define_singleton_method(:encrypt_password) { true }
+      user.define_singleton_method(:encrypt_password) do
+        self.salt             = 'and pepper'
+        self.crypted_password = 'of revenants and zombies'
+      end
     end
 
     trait :encrypted_password do

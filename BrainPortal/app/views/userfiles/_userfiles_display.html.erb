@@ -31,7 +31,19 @@
     </div>
   <% end %>
   <div class="page_links">
-    (<%= pluralize @userfiles.total_entries, "file" %>)
+    (
+      <%
+        show_total = lambda do |total, name, icon|
+          (", #{total} #{name} " + icon).html_safe if
+            total.present? && (total.is_a?(String) || total > 0)
+        end
+      %>
+      <%= pluralize(@userfiles_total," entry") -%>,
+      <%= colored_pretty_size(@userfiles_total_size) -%>
+      <%= show_total.(@hidden_total,    'hidden',    hidden_icon) -%>
+      <%= show_total.(@archived_total,  'archived',  archived_icon) -%>
+      <%= show_total.(@immutable_total, 'immutable', immutable_icon) -%>
+    )
   </div>
   <div class="pagination_right_side">
     Search by name: <%= ajax_search_box "name_like", userfiles_path(:update_filter => :filter_hash) %>
@@ -78,7 +90,21 @@
         :select_value => u.id
       } if u.available?
     end
+  %>
 
+  <%
+    t.column('', :type_icon,
+      :pretty_name => "Type Icon"
+    ) do |u|
+  %>
+    <% if u.is_a?(FileCollection) %>
+      <span class="ui-icon ui-icon-folder-collapsed"></span>
+    <% else %>
+      <span class="ui-icon ui-icon-document"></span>
+    <% end %>
+  <% end %>
+
+  <%
     t.column("Filename", :name,
       :sortable => true
     ) do |u|

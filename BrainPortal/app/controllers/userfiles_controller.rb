@@ -100,14 +100,6 @@ class UserfilesController < ApplicationController
       simple_pairs      = tree_sort_by_pairs(simple_pairs) # private method in this controller
       # At this point, each simple_pair is [ userfile_id, parent_id, [ child1_id, child2_id... ], orig_idx, level ]
       @userfiles_total  = simple_pairs.size
-      if params[:find_file_id]
-        find_file_id    = params[:find_file_id].to_i
-        find_file_index = simple_pairs.index { |u| u[0] == find_file_id }
-        if find_file_index
-          @current_page = (find_file_index / @per_page) + 1
-          offset = (@current_page - 1) * @per_page
-        end
-      end
 
       # Paginate the list of simple objects
       page_of_userfiles = simple_pairs[offset, @per_page] || []
@@ -450,6 +442,7 @@ class UserfilesController < ApplicationController
           flash[:error] += "#{field.to_s.capitalize} #{error}.\n"
         end
         respond_to do |format|
+          format.html { redirect_to redirect_path }
           format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
         end
         return
@@ -1321,6 +1314,8 @@ class UserfilesController < ApplicationController
             collection.name = basename
             collection.extract_collection_from_archive_file(userfile.cache_full_path.to_s)
             userfile.destroy
+
+            error_message = ""
           rescue => ex
             error_message = ex.message
           end

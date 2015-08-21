@@ -105,6 +105,15 @@
       end
     %>
 
+    <% if current_user.has_role?(:admin_user) %>
+      <% t.edit_cell('meta[ip_whitelist]', :header => 'Source IP Whitelist', :content => @user.meta['ip_whitelist'] || '') do %>
+        <%= text_field_tag "meta[ip_whitelist]", @user.meta['ip_whitelist'], :size => 40 %><br />
+        <div class="field_explanation">
+          Comma-separated list of allowed source IPs (X.X.X.X/XX) for the user to connect from.
+        </div>
+      <% end %>
+    <% end %>
+
   <% end %>
   <% unless @user.signed_license_agreements.empty? %>
     <%= show_table(@user, :header => "License Agreements", :width => 3) do |t| %>

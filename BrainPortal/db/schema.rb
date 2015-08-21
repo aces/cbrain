@@ -315,6 +315,7 @@ ActiveRecord::Schema.define(:version => 20150615174035) do
     t.datetime "updated_at"
     t.integer  "group_id"
     t.integer  "ncpus"
+    t.string   "docker_image"
   end
 
   add_index "tool_configs", ["bourreau_id"], :name => "index_tool_configs_on_bourreau_id"

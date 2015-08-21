@@ -227,7 +227,7 @@
           .each { |s,t| statuses[s] = t.size }
       end
     %>
-    <%= pluralize(ntasks, "task") if statuses.size > 1 %>
+    <%= pluralize(ntasks, "task") + ":" if statuses.size > 1 %>
     <%=
       statuses
         .keys

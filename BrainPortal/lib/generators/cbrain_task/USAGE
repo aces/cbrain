@@ -4,17 +4,22 @@ Description:
   camel case format.
 
 Usage:
-  rails generate cbrain_task TaskName [--advanced] [--license license_file]
+  rails generate cbrain_task TaskName [--advanced] [--license license_file] [--plugin-name name]
 
 Options:
-  --advanced : will include templates for the advanced
-               PortalTask API methods in the
-               Ruby code template for the task. Otherwise,
-               only the standard methods will be inserted
-               in the template.
+  --advanced    : will include templates for the advanced
+                  PortalTask API methods in the
+                  Ruby code template for the task. Otherwise,
+                  only the standard methods will be inserted
+                  in the template.
 
-  --license  : will add the text present in license_file
-               at the beginning of each template.
+  --license     : will add the text present in license_file
+                  at the beginning of each template.
+
+  --plugin-name : plugin name to generate the stubs under.
+                  For example, specifying 'foo' would generate
+                  the stubs under cbrain_plugins/cbrain-plugins-foo/.
+                  Defaults to 'local' if unspecified.
 
 Example:
 

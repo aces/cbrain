@@ -32,7 +32,7 @@ if tool_list.present?
   if !top_tool_ids.empty?
     # Define top 5 tools for current users
     top_5_tool_ids = Hash[current_user.meta[:top_tool_ids].sort_by { |k,v| -v }[0..5]].keys
-    top_5_tools    = Tool.find(top_5_tool_ids).map{ |t| [t.select_menu_text, t.id] }
+    top_5_tools    = Tool.where(:id => top_5_tool_ids).map{ |t| [t.select_menu_text, t.id] }
 
     # Removed the top 5 to the complete list
     tool_list      = tool_list - top_5_tools
