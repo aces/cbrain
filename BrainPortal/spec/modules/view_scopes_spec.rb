@@ -22,11 +22,11 @@
 
 require 'rails_helper'
 
-describe ScopeHelpers do
+describe ViewScopes do
   # TODO
 end
 
-module ScopeHelpers
+module ViewScopes
   describe Scope do
     # TODO
   end

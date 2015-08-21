@@ -67,23 +67,17 @@
 # this module mainly target views, by taking concerns such as selection and
 # pagination, and are expected to be 'closer' to the user than ActiveRecord's
 # scopes (which would pose a security risk if they could be directly accessed).
-module ScopeHelpers
+module ViewScopes
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # ScopeHelpers is intended to be included as a controller extension module,
-  # exposing +scope_from_session+, +default_scope_name+, +update_session_scopes+,
-  # URL parameter methods and +filter_values_for+.
+  # ViewScopes is intended to be included as a controller extension module,
+  # exposing +scope_from_session+, +scope_to_session+ and +default_scope_name+.
   def self.included(includer) #:nodoc:
     includer.class_eval do
-      helper_method(
-        :filter_values_for,
-        :scope_params,
-        :scope_filter_params,
-        :scope_order_params
-      )
+      helper_method(:default_scope_name)
 
-      before_filter :update_session_scopes
+      before_filter(:update_session_scopes)
     end
   end
 
@@ -172,13 +166,16 @@ module ScopeHelpers
       @custom     = other.custom.dup
     end
 
-    # Apply the set of filtering and sorting rules and pagination from this
-    # scope to a given +collection+, which is either an ActiveRecord model
-    # or a Ruby Enumerable. Once the rules have been applied, the original
-    # collection is returned, scoped with the scope's rules; a scoped
-    # ActiveRecord model if +collection+ was a model or a new Ruby Enumerable
-    # matching the rules if +collection+ was a Ruby Enumerable.
-    def apply(collection)
+    # Apply the set of filtering and sorting rules from this scope to a given
+    # +collection+, which is either an ActiveRecord model or a Ruby Enumerable.
+    # Once the rules have been applied, the original collection is returned,
+    # scoped with the scope's rules; a scoped ActiveRecord model if +collection+
+    # was a model or a new Ruby Enumerable matching the rules if +collection+
+    # was a Ruby Enumerable.
+    #
+    # Note that pagination is not applied by default; specify +paginate+ to
+    # paginate +collection+.
+    def apply(collection, paginate: false)
       # Apply all filtering rules
       collection = @filters.inject(collection) do |collection, filter|
         filter.apply(collection)
@@ -194,7 +191,7 @@ module ScopeHelpers
       end
 
       # Paginate
-      collection = @pagination.apply(collection) if @pagination
+      collection = @pagination.apply(collection) if paginate && @pagination
 
       collection
     end
@@ -493,18 +490,30 @@ module ScopeHelpers
         filter.attribute = attribute unless attribute.blank?
 
         # *operator* must be one of the possible predicate operators
+        possible_operators = [
+          '==', '!=', '>', '>=', '<', '<=',
+          'in', 'out', 'match', 'range'
+        ]
+
         operator = (hash['operator'] || hash['o'] || :==).to_s.downcase
         operator = 'range' if operator == 'r'
         operator = 'match' if operator == 'm'
-        filter.operator = operator if
-          [ '==', '!=', '>', '>=', '<', '<=', 'in', 'out', 'match', 'range' ].include?(operator)
+        filter.operator = operator if possible_operators.include?(operator)
 
         # *value* must be a simple scalar value or a set of simple values,
         # depending on which *operator* is to be applied
+        scalars = [
+          Numeric,
+          String, Symbol,
+          Date, DateTime,
+          TrueClass, FalseClass,
+          NilClass
+        ]
+
         value = hash['value'] || hash['v']
-        value = (value.is_a?(Enumerable) ? value : [value])
-          .map(&:to_s)
-          .reject(&:blank?)
+        value = (value.is_a?(Enumerable) ? value : [value]).select do |v|
+          scalars.any? { |c| v.is_a?(c) }
+        end
 
         filter.value = (
           case operator.to_s
@@ -523,7 +532,7 @@ module ScopeHelpers
 
         # *association* must be an ActiveRecord model or an array with the
         # correct format
-        filter.association = ScopeHelpers.parse_assoc(hash['association'] || hash['j'])
+        filter.association = ViewScopes.parse_assoc(hash['association'] || hash['j'])
 
         filter
       end
@@ -541,7 +550,7 @@ module ScopeHelpers
           'attribute'   => @attribute.to_s,
           'operator'    => @operator.to_s,
           'value'       => @value,
-          'association' => ScopeHelpers.assoc_with_table(@association)
+          'association' => ViewScopes.assoc_with_table(@association)
         }
 
         compact ? self.class.compact_hash(hash) : hash
@@ -577,7 +586,7 @@ module ScopeHelpers
       def apply_on_model(model) #:nodoc:
         # Resolve and validate *attribute* as an attribute of +model+ (or
         # *association*).
-        attribute, model = ScopeHelpers.resolve_model_attribute(@attribute, model, @association)
+        attribute, model = ViewScopes.resolve_model_attribute(@attribute, model, @association)
 
         case (operator = @operator.to_s)
         # Standard comparison operators can just be used as-is, bar for == and
@@ -636,11 +645,11 @@ module ScopeHelpers
         # we need to cast/convert *value* before the comparison?
         # Once known, keep the access and conversion methods as lambdas to make
         # attribute access as fast as possible.
-        attr_get  = ScopeHelpers.generate_getter(collection.first, @attribute)
+        attr_get  = ViewScopes.generate_getter(collection.first, @attribute)
         raise "no way to get '#{@attribute}' out of collection items" unless attr_get
 
         value     = (@value.is_a?(Enumerable) ? @value.first : @value)
-        attr_cast = ScopeHelpers.generate_cast(value, attr_get.(collection.first))
+        attr_cast = ViewScopes.generate_cast(value, attr_get.(collection.first))
         raise "no way to convert '#{value}' to '#{@attribute}' values" unless attr_cast
 
         case (operator = @operator.to_s)
@@ -796,7 +805,7 @@ module ScopeHelpers
 
         # *association* must be an ActiveRecord model or an array with the
         # correct format
-        order.association = ScopeHelpers.parse_assoc(hash['association'] || hash['j'])
+        order.association = ViewScopes.parse_assoc(hash['association'] || hash['j'])
 
         order
       end
@@ -811,7 +820,7 @@ module ScopeHelpers
         hash = {
           'attribute'   => @attribute.to_s,
           'direction'   => @direction.to_s,
-          'association' => ScopeHelpers.assoc_with_table(@association)
+          'association' => ViewScopes.assoc_with_table(@association)
         }
 
         compact ? self.class.compact_hash(hash) : hash
@@ -842,7 +851,7 @@ module ScopeHelpers
       def apply_on_model(model) #:nodoc:
         # Resolve and validate *attribute* as an attribute of +model+ (or
         # *association*).
-        attribute, model = ScopeHelpers.resolve_model_attribute(@attribute, model, @association)
+        attribute, model = ViewScopes.resolve_model_attribute(@attribute, model, @association)
 
         raise "unknown direction '#{@direction}'" unless
           [ 'asc', 'desc' ].include?(@direction.to_s)
@@ -860,7 +869,7 @@ module ScopeHelpers
         # Assuming all objects are similar, how is *attribute* accessed?
         # Once known, keep the access method as a lambda to make attribute
         # access as fast as possible.
-        attr_get = ScopeHelpers.generate_getter(collection.first, @attribute)
+        attr_get = ViewScopes.generate_getter(collection.first, @attribute)
         raise "no way to get '#{@attribute}' out of collection items" unless attr_get
 
         collection = collection.sort_by(&attr_get)
@@ -1109,7 +1118,7 @@ module ScopeHelpers
     scopes.merge!({ default => params['_cur_scope'] }) if params['_cur_scope']
     scopes = scopes.map do |n, s|
       return [n, s] if s.is_a?(Hash)
-      [ n, (ScopeHelpers.decompress_scope(s) rescue s) ]
+      [ n, (ViewScopes.decompress_scope(s) rescue s) ]
     end.to_h
 
     current_session.update({ :scopes => scopes }, mode) unless scopes.blank?
@@ -1123,155 +1132,6 @@ module ScopeHelpers
       :scopes => { default => { 'p' => pagination } }
     }, mode) unless
       pagination.empty?
-  end
-
-  # View methods
-
-  # Generate URL parameters suitable for +url_for+ to update the session scope
-  # named +name+ to match +scope+ (a Scope instance or a hash representation)
-  # via +update_session_scopes+. For example, to change the first filter of the
-  # 'userfiles' scope:
-  #   @scope = scope_from_session('userfiles')
-  #   # ...
-  #   new_scope = @scope.dup
-  #   new_scope.filters[0].operator = '!='
-  #   query_params = scope_params('userfiles', new_scope)
-  # Same as above, using the hash representation of +@scope+:
-  #   @scope = scope_from_session('userfiles')
-  #   # ...
-  #   scope_hash = @scope.to_hash
-  #   scope_hash['filters'][0]['operator'] = '!='
-  #   scope_hash = @scope.class.compact_hash(scope_hash)
-  #   query_params = scope_params('userfiles', scope_hash)
-  # Unless +compress+ is specified as false, the generated URL parameters will
-  # use the compressed format as specified by +compress_scope+.
-  def scope_params(name, scope, compress: true)
-    scope = scope.to_hash if scope.is_a?(Scope)
-    scope = Scope.compact_hash(scope)
-    scope = ScopeHelpers.compress_scope(scope) if compress
-
-    { '_scopes' => { name => scope } }
-  end
-
-  # Generate URL parameters suitable for +url_for+ to update the session scope
-  # named +scope+'s filters (via +update_session_scopes+) via a given
-  # +operation+. +filters+ is expected to be Filter instances or hash
-  # representations (a single filter or an Enumerable), depending on which
-  # +operation+ is to be performed, and +operation+ is expected to be one of:
-  # [+:add+]
-  #  Add one or more +filters+ to the specified scope.
-  # [+:remove+]
-  #  Remove one or more +filters+ from the specified scope.
-  # [+:set+]
-  #  Add one or more +filters+ to the specified scope, replacing existing
-  #  filters filtering on the same attributes as +filters+.
-  # [+:replace+]
-  #  Replace all filters in the specified scope by the ones in +filters+.
-  # [+:clear+]
-  #  Remove all filters in the specified scope (+filters is ignored).
-  #  Equivalent to using +:replace+ with an empty +filters+.
-  #
-  # +scope+ defaults to the current route's scope name (see
-  # +default_scope_name+).
-  #
-  # Note that the generated URL parameters are in compressed format (see
-  # +compress_scope+).
-  def scope_filter_params(operation, filters, scope: nil)
-    scope ||= default_scope_name
-    filters = (filters.is_a?(Array) ? filters : [filters]).map do |filter|
-      filter = filter.to_hash if filter.is_a?(Scope::Filter)
-      Scope::Filter.compact_hash(filter)
-    end
-
-    ScopeHelpers.scope_items_url_params(scope, operation, :filters, filters)
-  end
-
-  # Generate URL parameters suitable for +url_for+ to update the session scope
-  # named +scope+'s ordering rules (via +update_session_scopes+) via a given
-  # +operation+. This method behaves just like +scope_filter_params+, but
-  # operates on a Scope's ordering rules (Order instances or hash representations)
-  # instead of filters. As such, the same +operation+s are available (:add,
-  # :remove, :set, :replace, :clear) and the +scope+ and +orders+ parameters are
-  # handled the exact same way +scope_filter_params+'s +scope+ and +filters+
-  # parameters are handled.
-  def scope_order_params(operation, orders, scope: nil)
-    scope ||= default_scope_name
-    orders = (orders.is_a?(Array) ? orders : [orders]).map do |order|
-      order = order.to_hash if order.is_a?(Scope::Order)
-      Scope::Order.compact_hash(order)
-    end
-
-    ScopeHelpers.scope_items_url_params(scope, operation, :order, orders)
-  end
-
-  # Fetch the possible values (and their count) for +attribute+ within
-  # +collection+, which is either a Ruby Enumerable or ActiveRecord model.
-  # As this method is intended as a view helper to create the list of values to
-  # filter a collection/model with, the possible values are returned as a list
-  # of hashes matching +DynamicTable+'s filter format, containing:
-  # [:value]
-  #  Possible value for +attribute+.
-  # [:label]
-  #  String representation of +:value+ (or just +:value+ if unavailable).
-  # [:indicator]
-  #  Count of how many times this specific +:value: was found for +attribute+ in
-  #  +collection+.
-  #
-  # If +label+ is specified, it is expected to be an attribute name as a string
-  # or symbol (like +attribute+), representing which +collection+ attribute to
-  # use as value labels.
-  #
-  # If +association+ is specified, it is expected to be in the same format as
-  # +Scope+::+Filter+'s *association* attribute, and fulfills roughly the same
-  # purpose; allow +attribute+ and +label+ to refer to attributes on the joined
-  # model (only applicable if +collection+ is an ActiveRecord model).
-  def filter_values_for(collection, attribute, label: nil, association: nil)
-    # TODO Unscoped/base scope/total item count.
-
-    if (collection <= ActiveRecord::Base rescue nil)
-      # Resolve and validate the main +attribute+ to fetch the values of
-      attribute, model = ScopeHelpers.resolve_model_attribute(attribute, collection, association)
-
-      # And +label+, if provided
-      if label
-        label, model = ScopeHelpers.resolve_model_attribute(label, model, association)
-      else
-        label = attribute
-      end
-
-      # NOTE: The 'AS' specifier bypasses Rails' uniq on the column names, which
-      # would remove the label column if label happens to have the same value
-      # as attribute.
-      label_alias = model.connection.quote_column_name('label')
-
-      model
-        .where("#{attribute} IS NOT NULL")
-        .order(attribute, label)
-        .group(attribute, label)
-        .raw_rows(attribute, "#{label} AS #{label_alias}", "COUNT(#{attribute})")
-        .reject { |r| r.first.blank? }
-        .map    { |v, l, c| { :value => v, :label => l, :indicator => c } }
-
-    else
-      # Make sure +attribute+ and +label+ can be accessed in
-      # +collection+'s items.
-      attr_get = ScopeHelpers.generate_getter(collection.first, attribute)
-      raise "no way to get '#{attribute}' out of collection items" unless attr_get
-
-      if label == attribute
-        lbl_get = attr_get
-      else
-        lbl_get = ScopeHelpers.generate_getter(collection.first, label || attribute)
-        raise "no way to get '#{label}' out of collection items" unless lbl_get
-      end
-
-      collection
-        .map     { |i| [attr_get.(i), lbl_get.(i)].freeze }
-        .reject  { |v, l| v.blank? }
-        .sort_by { |v, l| v }
-        .inject(Hash.new(0)) { |h, i| h[i] += 1; h }
-        .map { |(v, l), c| { :value => v, :label => l, :indicator => c } }
-    end
   end
 
   # Utility/internal methods
@@ -1308,58 +1168,6 @@ module ScopeHelpers
     scope = ActiveSupport::Gzip.decompress(scope)
     scope = YAML.safe_load(scope)
     scope
-  end
-
-  # Generate URL parameters suitable for +url_for+ to update the session scope
-  # named +scope+'s items (ordering or filtering rules). This method is the
-  # internal implementation of +scope_filter_params+ (and +scope_order_params+).
-  # - +operation+ corresponds exactly to +scope_filter_params+'s +operation+
-  # parameter.
-  # - +scope+ corresponds to +scope_filter_params+'s +scope+ parameter, minus
-  # the default value.
-  # - +attr+ is expected to be either :filters, to update scope filtering rules,
-  # or :order, for ordering rules. It corresponds to the Scope attribute name
-  # to apply +changes+ on.
-  # - +changes+ corresponds to +scope_filter_params+'s +changes+ parameter, and
-  # is expected to be an array of compact hash representations of filters
-  # (Scope::Filter) or ordering rules (Scope::Order).
-  #
-  # Note that unlike most other utility methods, this method is exclusively
-  # intended to be used only to implement +scope_filter_params+ and
-  # +scope_order_params+ and is most likely unsuitable for anything else.
-  def self.scope_items_url_params(scope, operation, attr, changes) #:nodoc:
-    return if changes.blank? && operation != :clear
-
-    key  = (attr == :filters ? 'f' : 'o')
-    hash = (
-      case operation
-      when :set
-        replaced  = changes.map { |c| c['a'] }
-        changes  += scope_from_session(scope)
-          .send(attr)
-          .reject { |c| replaced.include?(f.attribute) }
-        { key => changes }
-      when :clear
-        { key => [] }
-      else
-        { key => changes }
-      end
-    )
-
-    mode = (
-      case operation
-      when :add    then :append
-      when :remove then :delete
-      else :replace
-      end
-    )
-
-    {
-      '_scope_mode' => mode,
-      '_scopes' => {
-        scope => ScopeHelpers.compress_scope(hash)
-      }
-    }
   end
 
   # Generate a getter function (lambda) to directly get the value of +attribute+
@@ -1487,8 +1295,9 @@ module ScopeHelpers
     assoc, assoc_attr, model_attr = self.parse_assoc(assoc)
     return [ model, nil ] unless assoc
 
-    # No join columns? Just use a natural join.
-    return [ model.joins(assoc.table_name.to_sym), assoc ] if
+    # No join columns? There should be a relation with a similar name on
+    # the model.
+    return [ model.joins(assoc.table_name.singularize.to_sym), assoc ] if
       assoc_attr.blank? || model_attr.blank?
 
     # Joins columns are specified? Validate them first before joining.
