@@ -304,7 +304,36 @@ class PortalTask < CbrainTask
     {}
   end
 
+  ######################################################
+  # Task properties directives
+  ######################################################
 
+  # Directive version of +self.properties+. +*args+ is
+  # expected to be a list of task properties to enable.
+  #   class SomeTask < PortalTask
+  #     task_properties :a, :b, :c
+  #   end
+  # is equivalent to
+  #   class SomeTask < PortalTask
+  #     def self.properties
+  #       { :a => true, :b => true, :c => true }
+  #     end
+  #   end
+  # See +self.properties+ for a list of available
+  # task properties.
+  def self.task_properties(*args)
+    properties = args.pop if args.last.is_a?(Hash)
+    properties = properties.reverse_merge(args.map { |p| [p, true] }.to_h)
+    define_singleton_method(:properties) { properties }
+  end
+
+  # Directive version of +self.untouchable_params_attributes+.
+  # Similar in behaviour to +self.task_properties+.
+  def self.untouchable_params(*args)
+    params = args.pop if args.last.is_a?(Hash)
+    params = params.reverse_merge(args.map { |p| [p, true] }.to_h)
+    define_method(:untouchable_params_attributes) { params }
+  end
 
   ######################################################
   # Wrappers around official API
