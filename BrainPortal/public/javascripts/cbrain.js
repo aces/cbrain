@@ -517,7 +517,7 @@
       return page;
     }
     
-    $(document).delegate(".pagination a", "click", function() {
+    $(document).delegate(".page_links > a", "click", function() {
       var link = $(this);
       var url = link.attr("href");
       var page_param = get_page_parameter(url);
