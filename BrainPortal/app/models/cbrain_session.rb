@@ -116,16 +116,21 @@ class CbrainSession
     @session[key] = value
   end
 
-  # Update sessions attributes from the contents of +hash+. While similiar to
-  # Hash's merge method, this method has a few key differences:
+  # Update sessions attributes from the contents of +changes+. +changes+ is
+  # expected to be either a +hash+ of attributes to update, a +mode+ and a
+  # +hash+ (pair) or a list of those to be applied in order:
+  #   apply_changes({ ... }) # Single hash
+  #   apply_changes([:delete, { ... }]) # Pair
+  #   apply_changes([{ ... }, { ... }]) # List of hashes
+  #   apply_changes([[:append, { ... }], [:delete, { ... }]]) # List of pairs
+  #
+  # While similiar to Hash's merge method, this method has a few key
+  # differences:
   #
   # - Hashes in +hash+ and session attributes are recursively merged:
   #     @session # { :a => { :b => 1 } }
   #     update({ :a => { :c => 1 } })
   #     @session # { :a => { :b => 1, :c => 1 } }
-  #
-  # - update does not accept a block; session attributes are always overwritten
-  #   by their new value in +hash+, if present.
   #
   # - nil values are automatically removed from hashes to avoid clutter. This
   #   cleanly allows removing keys from hashes:
@@ -133,57 +138,106 @@ class CbrainSession
   #     update({ :a => { :b => nil } })
   #     @session # { :a => {} }
   #
-  # - collection (Array, Set) collision handling is based on +collection_mode+,
-  #   which is one of:
+  # - update does not accept a block; session attributes are always overwritten
+  #   by their new value in +hash+, if present.
   #
-  #   [:replace]
-  #    Handle collections just like regular values; replace the entire
-  #    collection with the new one in +hash+:
-  #      @session # { :a => [1] }
-  #      update({ :a => [2] }, :replace)
-  #      @session # { :a => [2] }
+  # +mode+ determines what kind of update should be performed. The possible
+  # +mode+s are:
   #
-  #   [:append]
-  #    Append the values in +hash+'s collection to the corresponding one in
-  #    the session attributes.
-  #      @session # { :a => [1] }
-  #      update({ :a => [2] }, :append)
-  #      @session # { :a => [1, 2] }
+  # [:replace]
+  #  Replace colliding values in session attributes from the ones in +hash+,
+  #  regardless of their type (default mode).
   #
-  #   [:delete]
-  #    Opposite of append; remove the values in +hash+'s collection from the
-  #    corresponding one in the session attributes.
-  #      @session # { :a => [1] }
-  #      update({ :a => [1, 2] }, :delete)
-  #      @session # { :a => [2] }
-  def update(hash, collection_mode = :replace)
-    (update = lambda do |base, new|
-      base.merge!(new) do |key, old, new|
-        next new unless old.is_a?(new.class) || new.is_a?(old.class)
+  # [:append]
+  #  Replace colliding values, as in +:replace+, except when at least one of
+  #  them is a collection (Array or Set), in which case the resulting value
+  #  is the union of both collections (or the collection and the element).
+  #
+  # [:delete]
+  #  Remove any non-colliding value present in +hash+ from session
+  #  attributes, except for collections (Array or Set), from which the elements
+  #  in +changes+ are substracted.
+  #
+  # While oddly specified, this method is hopefully intuitive to use and allow
+  # a wide range of operations from just an input hash and a mode switch.
+  # For example:
+  #   # Adding a key to the session
+  #   @session # { :a => 1 }
+  #   apply_changes({ :b => 2 })
+  #   @session # { :a => 1, :b => 2 }
+  #
+  #   # Adding an element to an array in the session
+  #   @session # { :a => { :c => [1] } }
+  #   apply_changes([:append, { :a => { :c => [2] } }])
+  #   @session # { :a => { :c => [1, 2] } }
+  #
+  #   # Removing keys from the session
+  #   @session # { :a => { :c => 1, :d => 2 } }
+  #   apply_changes([:delete, { :a => { :c => nil, :d => 2 } }])
+  #   @session # { :a => {} }
+  def apply_changes(changes)
+    # At least one of +vars+ is one of +classes+
+    any_of = lambda do |vars, classes|
+      vars.any? { |v| classes.any? { |c| v.is_a?(c) } }
+    end
+    # Every element of +vars+ is one of +classes+
+    all_of = lambda do |vars, classes|
+      vars.all? { |v| classes.any? { |c| v.is_a?(c) } }
+    end
 
-        case old
-        when Hash
-          update.(old, new)
-        when Set, Array
-          case collection_mode
-          when :replace
-            new
-          when :append
-            old + new
-          when :delete
-            old - new
-          end
-        else
-          new
+    # Apply the changes +new+ to +base+ (respecting +mode+) recursively.
+    apply = lambda do |base, new, mode|
+      # Avoid adding new keys when merging in delete mode
+      new.select! { |k,v| base.has_key?(k) } if mode == :delete
+
+      base.merge!(new) do |key, old, new|
+        # Recursively merge hashes with the same key
+        next apply.(old, new, mode) if old.is_a?(Hash) && new.is_a?(Hash)
+
+        # Unless one of the values is a collection, the old value is replaced
+        # by the new one (or nil, when deleting).
+        next (mode == :delete ? nil : new) unless (
+          all_of.([new, old], [Set, Array, NilClass]) &&
+          any_of.([new, old], [Set, Array]) &&
+          [:append, :delete].include?(mode)
+        )
+
+        # Ensure both values exist before trying to merge them
+        old ||= new.class.new
+        new ||= old.class.new
+        new   = new.to_a if old.is_a?(Array)
+
+        # Merge both collections
+        case mode
+        when :append then old + new
+        when :delete then old - new
         end
       end
 
-      base.delete_if { |k,v| v.nil? }
+      # Clear out nil values to avoid cluttering
+      base.reject! { |k,v| v.nil? }
       base
-    end).(
-      @session,
-      hash.reject { |k,v| self.class.internal_keys.include?(k) }
-    )
+    end
+
+    # Is +obj+ a symbol-hash pair? ([Symbol, Hash])
+    is_pair = lambda do |obj|
+      obj.is_a?(Array) &&
+      obj.size == 2 &&
+      obj.first.is_a?(Symbol) &&
+      obj.last.is_a?(Hash)
+    end
+
+    # Push each changeset through the update lambda (removing internal_keys
+    # beforehand).
+    changes = [changes] if is_pair.(changes)
+    changes = [[:replace, changes]] if changes.is_a?(Hash)
+    changes.each do |mode, change|
+      apply.(
+        @session,
+        change.reject { |k,v| self.class.internal_keys.include?(k) },
+        mode || :replace
+      )
+    end
   end
 
   # Clear out all session attributes bar those used for tracking (IP, host,

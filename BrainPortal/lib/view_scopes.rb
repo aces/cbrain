@@ -48,15 +48,15 @@
 #
 # Currently active/known scopes are stored in Rails' session as a hash with
 # scope names for keys and scope hash definitions/representations as values:
-#   current_session[:scopes] == {
+#   current_session['scopes'] == {
 #     'userfiles' => { 'f' => [ ... ], 'o' => ... },
 #     'tasks'     => { 'f' => [ ... ], 'o' => ... },
 #     ...
 #   }
 # To directly add or replace one of the session scopes, convert the scope to a
 # compact hash representation first before adding to
-# +current_session[:scopes]+:
-#   current_session[:scopes]['tasks'] = scope.to_hash(compact: true)
+# +current_session['scopes']+:
+#   current_session['scopes']['tasks'] = scope.to_hash(compact: true)
 #
 # Scopes created from hashes and session attributes are automatically sanitized
 # and it is thus safe to pass user-supplied values to create them.
@@ -75,7 +75,11 @@ module ViewScopes
   # exposing +scope_from_session+, +scope_to_session+ and +default_scope_name+.
   def self.included(includer) #:nodoc:
     includer.class_eval do
-      helper_method(:default_scope_name)
+      helper_method(
+        :default_scope_name,
+        :scope_from_session,
+        :scope_to_session
+      )
 
       before_filter(:update_session_scopes)
     end
@@ -86,6 +90,16 @@ module ViewScopes
   # typically created from an hash representation (see +from_hash+ and
   # +scope_from_session+).
   class Scope
+
+    # Name of this scope in Rails' session. This attribute is transient, not
+    # present in any hash representation and is only used to keep track of
+    # which session scope hash representation it was generated from. It notably
+    # allows keeping track of the active session scope in a controller without
+    # having to carry the name around.
+    #
+    # Note that this attribute is entirely optional and does not influence the
+    # operation of Scope's methods in any way.
+    attr_accessor :name
 
     # Filters this scope filters the collection or model with. Instances of
     # Scope::Filter, each represents a single filtering rule to apply.
@@ -281,7 +295,7 @@ module ViewScopes
         'order'      => @order.map(&:to_hash),
         'pagination' => @pagination.try(:to_hash),
         'selection'  => @selection,
-        'custom'     => @custom.stringify_keys,
+        'custom'     => @custom.stringify_keys.to_h,
         'filter_combination' => @filter_combination.to_s,
       }
 
@@ -314,8 +328,8 @@ module ViewScopes
         'p' => Pagination.compact_hash(hash['pagination'] || hash['p']),
 
         # Include other attributes
-        's'  => hash['s']  || hash['selection'],
-        'c'  => hash['c']  || hash['custom'],
+        's'  =>  hash['s']  || hash['selection'],
+        'c'  => (hash['c']  || hash['custom']).stringify_keys.to_h,
         'fc' => (hash['fc'] || hash['filter_combination']).to_s,
       }
 
@@ -909,8 +923,8 @@ module ViewScopes
           (collection <= ActiveRecord::Base rescue nil)
 
         # Clamp @page and @per_page to a sane range
-        page     = [1,  [@page,     99_999].min].max
-        per_page = [25, [@per_page, 1000  ].min].max
+        page     = [1,  [@page.to_i,     99_999].min].max
+        per_page = [25, [@per_page.to_i, 1000  ].min].max
 
         collection.paginate(
           :page          => page,
@@ -943,9 +957,9 @@ module ViewScopes
           hash.is_a?(HashWithIndifferentAccess)
 
         pagination = self.new
-        pagination.page     = (hash['i'] || hash['page'] || 1).to_i
-        pagination.per_page = (hash['p'] || hash['per_page']).to_i
-        pagination.total    = (hash['t'] || hash['total']).to_i
+        pagination.page     = Integer(hash['i'] || hash['page'] || 1) rescue nil
+        pagination.per_page = Integer(hash['p'] || hash['per_page'])  rescue nil
+        pagination.total    = Integer(hash['t'] || hash['total'])     rescue nil
         pagination
       end
 
@@ -957,9 +971,9 @@ module ViewScopes
       # See Scope's +to_hash+ method for further information.
       def to_hash(compact: false)
         hash = {
-          'page'     => @page.to_i,
-          'per_page' => @per_page.to_i,
-          'total'    => @total.to_i
+          'page'     => (@page.to_i     if @page),
+          'per_page' => (@per_page.to_i if @per_page),
+          'total'    => (@total.to_i    if @total)
         }
 
         compact ? self.class.compact_hash(hash) : hash
@@ -1019,7 +1033,7 @@ module ViewScopes
       # Make sure +hash+ is proper
       return nil unless hash.is_a?(Hash)
 
-      compact = hash.stringify_keys
+      compact = hash.stringify_keys.to_h
 
       hash = hash.with_indifferent_access unless
         hash.is_a?(HashWithIndifferentAccess)
@@ -1046,25 +1060,27 @@ module ViewScopes
   end
 
   # Create a new Scope from the hash-based session scope definition named +name+
-  # stored in Rails' session object (+:scopes+ key), invoking Scope's
+  # stored in Rails' session object (+scopes+ key), invoking Scope's
   # +from_hash+ method to create the Scope instance. If +name+ is not present in
   # the session, an empty Scope is created instead. +name+ defaults to the
   # default scope name; +default_scope_name+.
   def scope_from_session(name = nil)
-    name ||= default_scope_name
-    scopes = (current_session[:scopes] ||= {})
-    hash   = (scopes[name] ||= {})
-    Scope.from_hash(hash)
+    name   ||= default_scope_name
+    scopes   = (current_session['scopes'] ||= {})
+    hash     = (scopes[name] ||= {})
+
+    Scope.from_hash(hash).tap { |s| s.name = name }
   end
 
   # Store a +scope+ under the name +name+ in compact hash form in Rails' session
-  # object (+:scopes+ key), invoking the scope's +to_hash+ method to convert
+  # object (+scopes+ key), invoking the scope's +to_hash+ method to convert
   # to Scope instance to a hash. If +name+ is already present in the session's
-  # scopes, the old scope is replaced by +scope+. +name+ defaults to the
-  # default scope name; +default_scope_name+
+  # scopes, the old scope is replaced by +scope+. +name+ defaults to the scope's
+  # *name* attribute or (if unset) to the default scope name
+  # (+default_scope_name+).
   def scope_to_session(scope, name = nil)
-    name ||= default_scope_name
-    scopes = (current_session[:scopes] ||= {})
+    name   ||= scope.name || default_scope_name
+    scopes   = (current_session['scopes'] ||= {})
     scopes[name] = scope.to_hash(compact: true)
   end
 
@@ -1076,7 +1092,7 @@ module ViewScopes
   end
 
   # Update the hash-based scope definitions stored in Rails' session (under the
-  # +:scopes+ key) using scope-specific query parameters.
+  # +scopes+ key) using scope-specific query parameters.
   # This method, called just before any action (as a before_filter), allows
   # updating the session's view scopes just before the control is handed to the
   # controller.
@@ -1084,53 +1100,58 @@ module ViewScopes
   # The following query parameters are recognized by +update_session_scopes+:
   #
   # [_scopes]
-  #  Expected to be a hash to be merged in the session's scopes (:scopes) as
-  #  specified by CbrainSession's +update+ method.
+  #  Expected to be a hash of changes to be merged in the session's scopes as
+  #  specified by CbrainSession's +apply_changes+ method.
   #
-  # [_cur_scope]
-  #  Expected to be a hash to be merged in the current route's scope
-  #  (current_session[:scopes][+default_scope_name+]). Behaves similarly to
-  #  +_scopes+, as it too uses CbrainSession's +update+ method.
+  # [_default_scope]
+  #  Expected to be a hash to be merged in the current route's default scope
+  #  (current_session['scopes'][+default_scope_name+]). Behaves similarly to
+  #  +_scopes+, as it too uses CbrainSession's +apply_changes+ method.
   #
   # [_scope_mode]
-  #  Mode to merge array/collections when merging into session scopes using
-  #  +_scopes+ or +_cur_scope+. Corresponds to the collection_mode parameter
-  #  of CbrainSession's +update+ method. Defaults to 'replace'.
+  #  Merging mode to employ when merging into session scopes using +_scopes+ or
+  #  +_default_scope+. Corresponds to the mode parameter of CbrainSession's
+  #  +apply_changes+ method. Defaults to 'replace'.
   #
-  # [page, per_page]
-  #  Common pagination parameters to update the current route's default scope
+  # [page, per-page/per_page]
+  #  Common pagination parameters to update the scope named _pag_scope_name
   #  with. These parameters correspond to the *page* and *per_page* attributes
   #  of Scope::Pagination, and are handled purely for convenience and
   #  convention; the same functionality (and more) can be accessed by
   #  passing a hash to the +_scopes+ parameter instead.
   #
-  # Note that the scopes in +_cur_scope+ and +_scopes+ can be in
+  # [_pag_scope_name]
+  #  Name of the scope to update with the page and per-page/per_page parameters.
+  #  Defaults to the current route's default scope name (+default_scope_name+).
+  #
+  # Note that the scopes in +_default_scope+ and +_scopes+ can be in
   # compressed format (see the +compress_scope+ and +decompress_scope+ utility
   # methods).
   def update_session_scopes
-    default = default_scope_name
-    mode    = params['_scope_mode'].to_sym if
+    mode   = params['_scope_mode'].to_sym if
         [ 'append', 'delete', 'replace' ].include?(params['_scope_mode'])
-    mode  ||= :replace
+    mode ||= :replace
 
-    # Decompress (if required) and merge _scopes and _cur_scope
-    scopes = (params['_scopes'] || {})
-    scopes.merge!({ default => params['_cur_scope'] }) if params['_cur_scope']
+    # Decompress (if required) and merge _scopes and _default_scope
+    scopes = (params['_scopes'] || {}).deep_dup
+    scopes.merge!({ default_scope_name => params['_default_scope'] }) if
+      params['_default_scope']
     scopes = scopes.map do |n, s|
       return [n, s] if s.is_a?(Hash)
       [ n, (ViewScopes.decompress_scope(s) rescue s) ]
     end.to_h
 
-    current_session.update({ :scopes => scopes }, mode) unless scopes.blank?
+    current_session.apply_changes([mode, { 'scopes' => scopes }]) unless scopes.blank?
 
-    # Pagination parameters (which override _scopes and _cur_scope)
+    # Pagination parameters (which override _scopes and _default_scope)
     pagination = {}
     pagination['i'] = params['page']     if params['page']
+    pagination['p'] = params['per-page'] if params['per-page']
     pagination['p'] = params['per_page'] if params['per_page']
 
-    current_session.update({
-      :scopes => { default => { 'p' => pagination } }
-    }, mode) unless
+    current_session.apply_changes({ 'scopes' => {
+      (params['_pag_scope_name'] || default_scope_name) => { 'p' => pagination }
+    } }) unless
       pagination.empty?
   end
 
@@ -1149,9 +1170,9 @@ module ViewScopes
     scope = ActiveSupport::Gzip.compress(scope)
     scope = Base64.encode64(scope)
     scope
-      .tr('+/', '-_')
-      .sub(/=*$/, '')
-      .gsub(/\s/, '')
+      .tr('+/',  '-_')
+      .gsub(/=+$/, '')
+      .gsub(/\s/,  '')
   end
 
   # Decompress +scope+, which is expected to be a scope string compressed by

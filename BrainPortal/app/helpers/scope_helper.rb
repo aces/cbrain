@@ -29,6 +29,9 @@ module ScopeHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # Internal alias to ease access to ViewScopes::Scope and its inner classes.
+  Scope = ViewScopes::Scope
+
   # Generate URL parameters suitable for +url_for+ to update the session scope
   # named +name+ to match +scope+ (a Scope instance or a hash representation)
   # via +update_session_scopes+. For example, to change the first filter of the
@@ -43,7 +46,6 @@ module ScopeHelper
   #   # ...
   #   scope_hash = @scope.to_hash
   #   scope_hash['filters'][0]['operator'] = '!='
-  #   scope_hash = @scope.class.compact_hash(scope_hash)
   #   query_params = scope_params('userfiles', scope_hash)
   # Unless +compress+ is specified as false, the generated URL parameters will
   # use the compressed format as specified by +compress_scope+.
@@ -56,10 +58,10 @@ module ScopeHelper
   end
 
   # Generate URL parameters suitable for +url_for+ to update the session scope
-  # named +scope+'s filters (via +update_session_scopes+) via a given
-  # +operation+. +filters+ is expected to be Filter instances or hash
-  # representations (a single filter or an Enumerable), depending on which
-  # +operation+ is to be performed, and +operation+ is expected to be one of:
+  # +scope+'s filters (via +update_session_scopes+) via a given +operation+.
+  # +filters+ is expected to be Filter instances or hash representations (a
+  # single filter or an Enumerable), depending on which +operation+ is to be
+  # performed, and +operation+ is expected to be one of:
   # [+:add+]
   #  Add one or more +filters+ to the specified scope.
   # [+:remove+]
@@ -73,52 +75,59 @@ module ScopeHelper
   #  Remove all filters in the specified scope (+filters is ignored).
   #  Equivalent to using +:replace+ with an empty +filters+.
   #
-  # +scope+ defaults to the current route's scope name (see
-  # +default_scope_name+).
+  # +scope+ is expected to be either the name of a session scope to be fetched
+  # using +scope_from_session+ or a Scope object with a valid *name* attribute.
+  # Falls back on +default_scope_name+ if nil.
   #
   # Note that the generated URL parameters are in compressed format (see
   # +compress_scope+).
-  def scope_filter_params(operation, filters, scope: nil)
-    scope ||= default_scope_name
+  def scope_filter_params(scope, operation, filters)
+    scope = scope_from_session(scope || default_scope_name) unless
+      scope.is_a?(Scope)
+
     filters = (filters.is_a?(Array) ? filters : [filters]).map do |filter|
       filter = filter.to_hash if filter.is_a?(Scope::Filter)
       Scope::Filter.compact_hash(filter)
     end
 
-    ScopeHelper.scope_items_url_params(scope, operation, :filters, filters)
+    scope_items_url_params(scope, operation, :filters, filters)
   end
 
   # Generate URL parameters suitable for +url_for+ to update the session scope
-  # named +scope+'s ordering rules (via +update_session_scopes+) via a given
+  # +scope+'s ordering rules (via +update_session_scopes+) via a given
   # +operation+. This method behaves just like +scope_filter_params+, but
   # operates on a Scope's ordering rules (Order instances or hash representations)
   # instead of filters. As such, the same +operation+s are available (:add,
   # :remove, :set, :replace, :clear) and the +scope+ and +orders+ parameters are
   # handled the exact same way +scope_filter_params+'s +scope+ and +filters+
   # parameters are handled.
-  def scope_order_params(operation, orders, scope: nil)
-    scope ||= default_scope_name
+  def scope_order_params(scope, operation, orders)
+    scope = scope_from_session(scope || default_scope_name) unless
+      scope.is_a?(Scope)
+
     orders = (orders.is_a?(Array) ? orders : [orders]).map do |order|
       order = order.to_hash if order.is_a?(Scope::Order)
       Scope::Order.compact_hash(order)
     end
 
-    ScopeHelper.scope_items_url_params(scope, operation, :order, orders)
+    scope_items_url_params(scope, operation, :order, orders)
   end
 
   # Generate URL parameters suitable for +url_for+ to update the session
-  # scope named +scope+'s custom attributes with +custom+ (expected to be
-  # a hash of attributes to merge in) using CbrainSession's +update+ method.
+  # +scope+ custom attributes with +custom+ (expected to be a hash of attributes
+  # to merge in) using CbrainSession's +apply_changes+ method.
   #
-  # +scope+ defaults to the current route's scope name (see
-  # +default_scope_name+).
+  # +scope+ is expected to be either the name of a session scope to be fetched
+  # using +scope_from_session+ or a Scope object with a valid *name* attribute.
+  # Falls back on +default_scope_name+ if nil.
   #
   # Note that as with +scope_filter_params+ and +scope_order_params+, the
   # generated URL parameters are compressed using +compress_scope+.
-  def scope_custom_params(custom, scope: nil)
-    scope ||= default_scope_name
+  def scope_custom_params(scope, custom)
+    name   = scope.name if scope.is_a?(Scope)
+    name ||= scope || default_scope_name
 
-    { '_scopes' => { scope => ViewScopes.compress_scope({
+    { '_scopes' => { name => ViewScopes.compress_scope({
       'c' => custom
     }) } }
   end
@@ -128,8 +137,6 @@ module ScopeHelper
   # to names (instead of IDs). For example, a filter for +:user_id == 1+
   # could have a string representation of 'User: admin' while one for
   # +:status in ['A', 'B', 'C']+ could have 'Status: one of A, B or C'.
-  #
-  # TODO Ruby collections
   #
   # Note that this method is rather inflexible on how the representations
   # are generated and relies on internal mappings for certain known
@@ -302,13 +309,13 @@ module ScopeHelper
 
   # Utility/internal methods
 
-  # Generate URL parameters suitable for +url_for+ to update the session scope
-  # named +scope+'s items (ordering or filtering rules). This method is the
-  # internal implementation of +scope_filter_params+ (and +scope_order_params+).
+  # Generate URL parameters suitable for +url_for+ to update the session +scope+
+  # items (ordering or filtering rules). This method is the internal
+  # implementation of +scope_filter_params+ (and +scope_order_params+).
   # - +operation+ corresponds exactly to +scope_filter_params+'s +operation+
   # parameter.
-  # - +scope+ corresponds to +scope_filter_params+'s +scope+ parameter, minus
-  # the default value.
+  # - +scope+ is a Scope object corresponding to +scope_filter_params+'s +scope+
+  # parameter.
   # - +attr+ is expected to be either :filters, to update scope filtering rules,
   # or :order, for ordering rules. It corresponds to the Scope attribute name
   # to apply +changes+ on.
@@ -319,7 +326,7 @@ module ScopeHelper
   # Note that unlike most other utility methods, this method is exclusively
   # intended to be used only to implement +scope_filter_params+ and
   # +scope_order_params+ and is most likely unsuitable for anything else.
-  def self.scope_items_url_params(scope, operation, attr, changes) #:nodoc:
+  def scope_items_url_params(scope, operation, attr, changes) #:nodoc:
     return if changes.blank? && operation != :clear
 
     key  = (attr == :filters ? 'f' : 'o')
@@ -327,9 +334,10 @@ module ScopeHelper
       case operation
       when :set
         replaced  = changes.map { |c| c['a'] }
-        changes  += scope_from_session(scope)
+        changes  += scope
           .send(attr)
-          .reject { |c| replaced.include?(f.attribute) }
+          .reject { |c| replaced.include?(c.attribute) }
+          .map    { |c| c.to_hash(compact: true) }
         { key => changes }
       when :clear
         { key => [] }
@@ -349,7 +357,7 @@ module ScopeHelper
     {
       '_scope_mode' => mode,
       '_scopes' => {
-        scope => ViewScopes.compress_scope(hash)
+        scope.name => ViewScopes.compress_scope(hash)
       }
     }
   end
