@@ -1063,4 +1063,157 @@ module DynamicTableHelper
     (options.has_key?(:render) && ! options[:render]) ? table : table.render
   end
 
+  # Specialization of +dynamic_table+ (and DynamicTable) to make creating
+  # tables using the view scopes mechanism (see the ViewScopes module) easier
+  # by supplying sort_targer and filter_target lambda functions using Scope
+  # filtering and ordering rules.
+  # This method's parameters are the same as +dynamic_table+'s, with the
+  # following additional options:
+  #
+  # [scope]
+  #  Session scope to use for filtering, sorting and pagination targets. Either
+  #  a Scope object with a valid *name* attribute or the name of a scope to
+  #  fetch from scope_from_session. Defaults to the instance variable @scope
+  #  (if it exists and is a Scope with a valid name) or the route's default
+  #  scope (see default_scope_name).
+  #
+  # [order_map]
+  #  Mapping (hash) of column names to ViewScopes::Scope::Order objects (or
+  #  their hash representations). These objects will be used with
+  #  scope_order_params to create sorting links updating the scope named
+  #  scope_name. Columns default to an Order object sorting on the column name
+  #  (the object's attribute is the column name). Note that the Order object's
+  #  direction is automatically set to the opposite of the current value or
+  #  :asc if empty.
+  #
+  # [filter_map]
+  #  Similarly to order_map, filter_map is a mapping of column names to
+  #  ViewScopes::Scope::Filter objects (or hash representations). It is handled
+  #  the same way as order_map, except for acting on filtering rules instead of
+  #  ordering ones, using scope_filter_params to create links. Note that the
+  #  Filter object's value is automatically set to the selected filter's value.
+  #
+  # This method customizes:
+  # * sort_target and filter_target using scope_*_params
+  # * fetching the sorting order and column
+  # * scope name used for pagination-related requests
+  def dynamic_scoped_table(collection, options = {}, &block)
+    scope = options[:scope] || @scope || default_scope_name
+    scope = scope_from_session(scope) unless scope.is_a?(ViewScopes::Scope)
+    order_map  = (options[:order_map]  || {}).with_indifferent_access
+    filter_map = (options[:filter_map] || {}).with_indifferent_access
+
+    # Fetch (order_map) or create an Order object for column +column+
+    column_order = lambda do |column|
+      order = order_map[column] || { :attribute => column }
+      order = ViewScopes::Scope::Order.from_hash(order) unless
+        order.is_a?(ViewScopes::Scope::Order)
+      order
+    end
+
+    # Fetch (filter_map) or create a Filter object for column +column+
+    column_filter = lambda do |column|
+      filter = filter_map[column] || { :attribute => column }
+      filter = ViewScopes::Scope::Filter.from_hash(filter) unless
+        filter.is_a?(ViewScopes::Scope::Filter)
+      filter
+    end
+
+    # The sorting target is +scope_order_params+ with the corresponding
+    # column Order object for sorting/ordering.
+    options[:sort_target] ||= lambda do |column, direction|
+      order = column_order.(column)
+      order.direction = (direction.to_s == 'asc' ? 'desc' : 'asc')
+
+      ({
+        :controller => params[:controller],
+        :action     => params[:action],
+      }).merge(scope_order_params(scope, :replace, order))
+    end
+
+    # And the filtering target is +scope_filter_params+ with the corresponding
+    # column Filter object for filtering.
+    options[:filter_target] ||= lambda do |column, table_filter|
+      filter = column_filter.(column)
+      filter.value = table_filter.value
+
+      ({
+        :controller => params[:controller],
+        :action     => params[:action],
+        :page            => 1,
+        :_pag_scope_name => scope.name
+      }).merge(scope_filter_params(scope, :set, filter))
+    end
+
+    # Create and cache a subclass of DynamicTable customized to handle the
+    # Scopes API directly.
+    @@scoped_table_class ||= Class.new(DynamicTable) do
+      attr_accessor :scope
+      attr_accessor :column_order
+      attr_accessor :column_filter
+
+      define_method(:column) do |label, name = nil, options = {}, &block| #:nodoc:
+        # If the column is sortable and its order set as :auto, use the
+        # currently active Scope's matching ordering rule's direction rather
+        # than the params[<column>][:sort_order] default.
+        sortable = [:sortable, :sort_target, :sort_order].any? { |k| options[k] }
+        is_auto  = ! options[:sort_order] || options[:sort_order] == :auto
+        if ! @scope.order.empty? && sortable && is_auto
+          name  = (name || label.to_s.underscore).to_sym
+          order = @scope.order.find { |o| o.attribute == @column_order.(name).attribute }
+          options[:sort_order] = order.try(:direction) || :none
+        end
+
+        super(label, name, options, &block)
+      end
+
+      define_method(:pagination) do |location = nil, options = {}| #:nodoc:
+        # If options are given without a location...
+        if options.blank? && ! [:top, :bottom, :both].include?(location)
+          options  = location || {}
+          location = nil
+        end
+
+        # Pre-set some HTML attributes for the per-page input
+        (options[:input_html] ||= {}).reverse_merge!({
+          :name        => 'per_page',
+          :class       => 'search_box',
+          :'data-type' => 'script',
+          :'data-url'  =>  @template.instance_eval do
+            url_for(
+              :controller => params[:controller],
+              :action     => params[:action],
+              :_pag_scope_name => @scope.name
+            )
+          end
+        })
+
+        # Ensure the correct scope is used when updating pagination-related
+        # attributes.
+        (options[:params] ||= {}).reverse_merge!({
+          :_pag_scope_name => @scope.name
+        })
+
+        super(location, options)
+      end
+
+      alias_method :paginated, :pagination
+      alias_method :paginate,  :pagination
+
+    end
+
+    # Create the Scope-based dynamic table instance and bind the scope and
+    # Filter/Order column lambda functions before handing it to the caller's
+    # block.
+    table = @@scoped_table_class.create(collection, self, options) do |t|
+      t.scope         = scope
+      t.column_order  = column_order
+      t.column_filter = column_filter
+
+      block.call(t)
+    end
+
+    (options.has_key?(:render) && ! options[:render]) ? table : table.render
+  end
+
 end

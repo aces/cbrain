@@ -87,10 +87,10 @@
             sort_url     = column.sort_target.call(column.name, sort_order)
             sort_url     = url_for(sort_url) unless sort_url.is_a?(String)
             sort_icon    = ({
-              :asc  => "ui-icon-carat-1-n",
-              :desc => "ui-icon-carat-1-s",
-              :none => "ui-icon-carat-2-n-s"
-            })[sort_order]
+              'asc'  => "ui-icon-carat-1-n",
+              'desc' => "ui-icon-carat-1-s",
+              'none' => "ui-icon-carat-2-n-s"
+            })[sort_order.to_s]
           %>
           <span class="dt-sort-btn ui-icon <%= sort_icon %>"
                 data-url="<%= sort_url.html_safe %>"
@@ -121,7 +121,7 @@
                     </td>
                     <%
                       filter_url = filter.target.call(column.name, filter)
-                      filter_url = url_for(sort_url) unless sort_url.is_a?(String)
+                      filter_url = url_for(filter_url) unless filter_url.is_a?(String)
                     %>
                     <td class="dt-fpop-txt <%= empty_cls %>"
                         data-url="<%= filter_url.html_safe %>"
@@ -203,15 +203,16 @@
 <%# Template for the pagination component of a dynamic table %>
 <% templates[:pagination] = Proc.new do %>
   <%
-    pagination           = table.components[:pagination]
-    input_attr           = pagination.input_html
+    pagination = table.components[:pagination]
+    options    = pagination.options.reverse_merge({ :container => false })
+    input_attr = pagination.input_html
     input_attr[:type]  ||= 'text'
     input_attr[:name]  ||= 'per-page'
     input_attr[:value] ||= pagination.collection.per_page
   %>
   <div class="dt-pagination">
     <div class="dt-pag-pages">
-      <%= will_paginate pagination.collection, :container => false %>
+      <%= will_paginate(pagination.collection, options) %>
     </div>
     <div class="dt-pag-cnt">
       <input <%= input_attr.to_html_attributes.html_safe %> />
