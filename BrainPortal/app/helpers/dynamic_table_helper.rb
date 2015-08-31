@@ -277,11 +277,11 @@ module DynamicTableHelper
             :empty     => !!f[:empty]
           }
         elsif f.is_a?(Enumerable)
-          value, label, indicator = f.to_a
+          val, lbl, ind = f.to_a
           {
-            :value     => value,
-            :label     => label     || value,
-            :indicator => indicator || '-',
+            :value     => val,
+            :label     => lbl || val,
+            :indicator => ind || '-',
             :empty     => false
           }
         else

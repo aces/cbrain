@@ -159,7 +159,20 @@
 
   <%
     t.column("Tags", :tags,
-      :filters => @tag_filters
+      :filters => @tag_filters.map do |label, filter|
+        {
+          :label => label,
+          :value => filter[:value],
+          :empty => filter[:class].to_s =~ /filter_zero/
+        }
+      end,
+      :filter_target => lambda do |column, filter|
+        filter_add_link('', {
+          :parameter => :filter_tags_array,
+          :value     => filter.value,
+          :class     => ""
+        }).match(/href="(.+?)"/)[1]
+      end
     ) do |u|
       u.get_tags_for_user(current_user)
         .collect { |t| h(t.name) }
