@@ -351,8 +351,16 @@ module ViewScopes
     # - Association filtering for ActiveRecord models
     #
     # This class is also intended to be used as a base class for more
-    # specialized filtering cases. See the +type_name+ and +from_hash+ class
-    # methods for more information on how to subclass Filter.
+    # specialized filtering cases. To subclass Filter, the following methods
+    # will most likely need to be re-implemented in the subclass to match the
+    # specialized filter's needs, as their behavior is specific to this generic
+    # filter:
+    # - +self.type_name+
+    # - +apply+
+    # - +valid?+
+    # - +self.from_hash+
+    # - +to_hash+
+    # - +self.compact_hash+
     class Filter
       # Name of the collection/model attribute to filter on, as a string or
       # symbol. Must be present as an attribute in collection/model elements or
@@ -496,7 +504,8 @@ module ViewScopes
         # Handle Filter subclasses (type key)
         if type = (hash['type'] || hash['t'])
           subclass = self.descendants.find { |sub| sub.type_name == type }
-          return subclass ? subclass.from_hash(hash) : filter
+          return subclass && subclass.respond_to?(:from_hash) ?
+            subclass.from_hash(hash) : filter
         end
 
         # *attribute* must be alphanumeric (word-like)
@@ -574,7 +583,20 @@ module ViewScopes
       # +from_hash+'s structure. Behaves similarly to Scope's +compact_hash+
       # method, except for being applied to a Filter hash representation
       # instead of a Scope one.
+      #
+      # Note that if +hash+ contains a +type+ (or +t+) key and a valid subclass
+      # exists, this method will invoke the subclass' own +compact_hash+ (if it
+      # exists) to compact +hash+.
       def self.compact_hash(hash)
+        return nil unless hash.is_a?(Hash)
+
+        # Handle Filter subclasses (type key)
+        if type = (hash['type'] || hash[:type] || hash['t'] || hash[:t])
+          subclass = self.descendants.find { |sub| sub.type_name == type }
+          return subclass.compact_hash(hash) if
+            subclass && subclass.respond_to?(:compact_hash)
+        end
+
         Scope.generic_compact_hash(
           hash,
           {
@@ -709,8 +731,17 @@ module ViewScopes
     # model or Ruby collection (Enumerable). This class provides basic
     # ascending/descending ordering, and just like Scope::Filter, is also
     # intended to be used as a base class for more specialized sorting/ordering
-    # rules. See the +type_name+ and +from_hash+ class methods for more
-    # information on how to subclass Order.
+    # rules.
+    #
+    # To subclass Order, the following methods will most likely need to be
+    # re-implemented in the subclass to match the specialized ordering rule's
+    # needs, as their behavior is specific to this simple ordering rule:
+    # - +self.type_name+
+    # - +apply+
+    # - +valid?+
+    # - +self.from_hash+
+    # - +to_hash+
+    # - +self.compact_hash+
     class Order
       # Name of the collection/model attribute to order/sort the
       # collection/model with, as a string or symbol. Must be present as an
@@ -806,7 +837,8 @@ module ViewScopes
         # Handle Order subclasses (type key)
         if type = (hash['type'] || hash['t'])
           subclass = self.descendants.find { |sub| sub.type_name == type }
-          return subclass ? subclass.from_hash(hash) : order
+          return subclass && subclass.respond_to?(:from_hash) ?
+            subclass.from_hash(hash) : order
         end
 
         # *attribute* must be alphanumeric (word-like)
@@ -844,7 +876,20 @@ module ViewScopes
       # +from_hash+'s structure. Behaves similarly to Scope's +compact_hash+
       # method, except for being applied to a Order hash representation instead
       # of a Scope one.
+      #
+      # Note that if +hash+ contains a +type+ (or +t+) key and a valid subclass
+      # exists, this method will invoke the subclass' own +compact_hash+ (if it
+      # exists) to compact +hash+.
       def self.compact_hash(hash)
+        return nil unless hash.is_a?(Hash)
+
+        # Handle Order subclasses (type key)
+        if type = (hash['type'] || hash[:type] || hash['t'] || hash[:t])
+          subclass = self.descendants.find { |sub| sub.type_name == type }
+          return subclass.compact_hash(hash) if
+            subclass && subclass.respond_to?(:compact_hash)
+        end
+
         Scope.generic_compact_hash(
           hash,
           {
@@ -1166,7 +1211,7 @@ module ViewScopes
   def self.compress_scope(scope)
     return scope if scope.is_a?(String)
 
-    scope = scope.to_yaml
+    scope = scope.deep_dup.to_yaml
     scope = ActiveSupport::Gzip.compress(scope)
     scope = Base64.encode64(scope)
     scope

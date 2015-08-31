@@ -68,7 +68,8 @@ module ScopeHelper
   #  Remove one or more +filters+ from the specified scope.
   # [+:set+]
   #  Add one or more +filters+ to the specified scope, replacing existing
-  #  filters filtering on the same attributes as +filters+.
+  #  filters filtering on the same attributes as +filters+ (requires all filters
+  #  in +filters+ to have valid *attribute* values).
   # [+:replace+]
   #  Replace all filters in the specified scope by the ones in +filters+.
   # [+:clear+]
@@ -86,9 +87,8 @@ module ScopeHelper
       scope.is_a?(Scope)
 
     filters = (filters.is_a?(Array) ? filters : [filters]).map do |filter|
-      filter = filter.to_hash if filter.is_a?(Scope::Filter)
-      Scope::Filter.compact_hash(filter)
-    end
+      filter.is_a?(Scope::Filter) ? filter : Scope::Filter.from_hash(filter)
+    end if filters
 
     scope_items_url_params(scope, operation, :filters, filters)
   end
@@ -106,9 +106,8 @@ module ScopeHelper
       scope.is_a?(Scope)
 
     orders = (orders.is_a?(Array) ? orders : [orders]).map do |order|
-      order = order.to_hash if order.is_a?(Scope::Order)
-      Scope::Order.compact_hash(order)
-    end
+      order.is_a?(Scope::Order) ? order : Scope::Order.from_hash(order)
+    end if orders
 
     scope_items_url_params(scope, operation, :order, orders)
   end
@@ -160,6 +159,10 @@ module ScopeHelper
     naming_methods = {
       :user => :login
     }
+
+    # In the best case, +filter+ has its own +to_s+ to generate a nice string
+    # representation directly.
+    return filter.to_s if filter.class.public_instance_methods(false).include?(:to_s)
 
     attribute = filter.attribute.to_s
     operator  = filter.operator.to_s
@@ -320,8 +323,8 @@ module ScopeHelper
   # or :order, for ordering rules. It corresponds to the Scope attribute name
   # to apply +changes+ on.
   # - +changes+ corresponds to +scope_filter_params+'s +changes+ parameter, and
-  # is expected to be an array of compact hash representations of filters
-  # (Scope::Filter) or ordering rules (Scope::Order).
+  # is expected to be an array of filter objects (Scope::Filter) or ordering
+  # rules (Scope::Order).
   #
   # Note that unlike most other utility methods, this method is exclusively
   # intended to be used only to implement +scope_filter_params+ and
@@ -329,20 +332,16 @@ module ScopeHelper
   def scope_items_url_params(scope, operation, attr, changes) #:nodoc:
     return if changes.blank? && operation != :clear
 
-    key  = (attr == :filters ? 'f' : 'o')
-    hash = (
+    key   = (attr == :filters ? 'f' : 'o')
+    items = (
       case operation
       when :set
-        replaced  = changes.map { |c| c['a'] }
-        changes  += scope
-          .send(attr)
-          .reject { |c| replaced.include?(c.attribute) }
-          .map    { |c| c.to_hash(compact: true) }
-        { key => changes }
+        replaced = changes.map { |c| c.attribute }
+        changes + scope.send(attr).reject { |c| replaced.include?(c.attribute) }
       when :clear
-        { key => [] }
+        []
       else
-        { key => changes }
+        changes
       end
     )
 
@@ -357,7 +356,9 @@ module ScopeHelper
     {
       '_scope_mode' => mode,
       '_scopes' => {
-        scope.name => ViewScopes.compress_scope(hash)
+        scope.name => ViewScopes.compress_scope({
+          key => items.map { |i| i.to_hash(compact: true) }
+        })
       }
     }
   end
