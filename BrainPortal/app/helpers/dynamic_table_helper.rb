@@ -694,11 +694,19 @@ module DynamicTableHelper
           collection.respond_to?(:current_page) &&
           collection.current_page
         )
-          collection = collection.to_a.paginate(
-            :page          => page,
-            :per_page      => per_page,
-            :total_entries => total_entries
-          )
+          # Is there a paginate method available?
+          if collection.respond_to?(:paginate)
+            collection.paginate(
+              :page          => page,
+              :per_page      => per_page,
+              :total_entries => total_entries
+            )
+          # Otherwise, just manually create a WillPaginate::Collection
+          else
+            WillPaginate::Collection.create(page, per_page, total_entries) do |pager|
+              pager.replace(collection[pager.offset, pager.per_page].to_a)
+            end
+          end
         end
 
         @collection = collection
