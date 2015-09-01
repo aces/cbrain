@@ -361,6 +361,9 @@ module ViewScopes
     # - +self.from_hash+
     # - +to_hash+
     # - +self.compact_hash+
+    # Note that subclasses need to make sure their generated hash
+    # representations have the correct +type+ (+t+) key, or +from_hash+ wont
+    # be able to recreate the right object.
     class Filter
       # Name of the collection/model attribute to filter on, as a string or
       # symbol. Must be present as an attribute in collection/model elements or
@@ -742,6 +745,9 @@ module ViewScopes
     # - +self.from_hash+
     # - +to_hash+
     # - +self.compact_hash+
+    # Note that subclasses need to make sure their generated hash
+    # representations have the correct +type+ (+t+) key, or +from_hash+ wont
+    # be able to recreate the right object.
     class Order
       # Name of the collection/model attribute to order/sort the
       # collection/model with, as a string or symbol. Must be present as an
@@ -971,11 +977,22 @@ module ViewScopes
         page     = [1,  [@page.to_i,     99_999].min].max
         per_page = [25, [@per_page.to_i, 1000  ].min].max
 
-        collection.paginate(
-          :page          => page,
-          :per_page      => per_page,
-          :total_entries => @total
-        )
+        # Is there a native paginate method available?
+        if collection.respond_to?(:paginate)
+          collection.paginate(
+            :page          => page,
+            :per_page      => per_page,
+            :total_entries => @total
+          )
+
+        # Otherwise, just manually create a WillPaginate::Collection
+        else
+          total = @total || collection.length
+
+          WillPaginate::Collection.create(page, per_page, total) do |pager|
+            pager.replace(collection[pager.offset, pager.per_page].to_a)
+          end
+        end
       end
 
       # Create a new Pagination object described by the contents of +hash+. Just
@@ -1183,7 +1200,7 @@ module ViewScopes
       params['_default_scope']
     scopes = scopes.map do |n, s|
       return [n, s] if s.is_a?(Hash)
-      [ n, (ViewScopes.decompress_scope(s) rescue s) ]
+      [ n, ViewScopes.decompress_scope(s) ]
     end.to_h
 
     current_session.apply_changes([mode, { 'scopes' => scopes }]) unless scopes.blank?

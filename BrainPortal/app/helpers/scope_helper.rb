@@ -127,8 +127,47 @@ module ScopeHelper
     name ||= scope || default_scope_name
 
     { '_scopes' => { name => ViewScopes.compress_scope({
-      'c' => custom
+      'c' => custom.stringify_keys
     }) } }
+  end
+
+  # Link version of +scope_params+; acts identically to +scope_params+ but
+  # generates a link instead of URL parameters. All arguments but +label+ and
+  # +options+ are passed directly to +scope_params+ in order to create the
+  # link's URL and thus behave identically to +scope_params+'s corresponding
+  # parameters.
+  #
+  # +label+ is expected to be the link's text label and +options+ is expected
+  # to be a hash of options to pass to link_to or ajax_link. Only the special
+  # option :ajax (whether or not to use ajax_link instead of link_to,
+  # defaulting to link_to) is not passed.
+  def scope_link(label, name, scope, compress: true, options: {})
+    url = url_for(scope_params(name, scope, compress: compress))
+    generic_scope_link(label, url, options)
+  end
+
+  # Link version of +scope_filter_params+. Identical to +scope_link+ but uses
+  # +scope_filter_params+ in order to generate the URL. See +scope_link+ for more
+  # information.
+  def scope_filter_link(label, scope, operation, filters, options: {})
+    url = url_for(scope_filter_params(scope, operation, filters))
+    generic_scope_link(label, url, options)
+  end
+
+  # Link version of +scope_order_params+. Identical to +scope_link+ but uses
+  # +scope_order_params+ in order to generate the URL. See +scope_link+ for more
+  # information.
+  def scope_order_link(label, scope, operation, orders, options: {})
+    url = url_for(scope_order_params(scope, operation, orders))
+    generic_scope_link(label, url, options)
+  end
+
+  # Link version of +scope_custom_params+. Identical to +scope_link+ but uses
+  # +scope_custom_params+ in order to generate the URL. See +scope_link+ for more
+  # information.
+  def scope_custom_link(label, scope, custom, options: {})
+    url = url_for(scope_custom_params(scope, custom))
+    generic_scope_link(label, url, options)
   end
 
   # Generate a pretty string representation of +filter+, optionally using
@@ -361,6 +400,19 @@ module ScopeHelper
         })
       }
     }
+  end
+
+  # Generate a link to +url+ with label +label+. Paper-thin wrapper around
+  # link_to and ajax_link intended for scope_*_link methods, this method just
+  # passes +label+, +url+ and +options+ to one of the two based on +options+'s
+  # :ajax key (only key which is not passed down).
+  def generic_scope_link(label, url, options)
+    return link_to(label, url, options) unless options.delete(:ajax)
+
+    ajax_link(label, url, options.reverse_merge({
+      :class    => 'action_link',
+      :datatype => :script
+    }))
   end
 
 end
