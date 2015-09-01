@@ -180,6 +180,18 @@
       contents
     end))
 
+    t.column("Cache Space (#{check_role(:admin_user) ? 'all' : 'own'})", :cache_space,
+      :hidden => true
+    ) do |r|
+      size = r.sync_status
+        .joins(:userfile)
+        .where(check_role(:admin_user) ?  {} : { 'userfiles.user_id' => current_user.id })
+        .sum('userfiles.size')
+        .to_i
+
+      colored_pretty_size(size)
+    end
+
     t.column("Description", :description,
       :hidden   => true,
       :sortable => true

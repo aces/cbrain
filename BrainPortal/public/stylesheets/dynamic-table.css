@@ -138,6 +138,7 @@
   border: 0.3em solid #0471b4;
   display: none;
   left: 0;
+  min-width: 120px;
   position: absolute;
   text-align: left;
   top: 2.7em;

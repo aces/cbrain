@@ -25,7 +25,7 @@ class TasksController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available
+  api_available :except => [:update, :destroy]
 
   before_filter :login_required
 
