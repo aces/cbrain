@@ -23,7 +23,21 @@
 -%>
 
 <b>
-  <%= filter_add_link crop_text_to(15, tag.name), :controller => :userfiles, :parameter  => :filter_tags_array, :value => tag.id  %>
+  <%=
+    ajax_link(
+      crop_text_to(15, tag.name),
+      url_for(
+        scope_filter_params(@scope, :set, {
+          'type'  => 'uf.tags',
+          'value' => [tag.id]
+        }).reverse_merge({
+          :controller => :userfiles
+        })
+      ),
+      :class    => 'action_link',
+      :datatype => :script
+    )
+  %>
 </b>
 
 <small><small>
