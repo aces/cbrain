@@ -302,6 +302,7 @@ module ScopeHelper
   # model (only applicable if +collection+ is an ActiveRecord model).
   def filter_values_for(collection, attribute, label: nil, association: nil)
     # TODO Unscoped/base scope/total item count.
+    return [] if collection.blank?
 
     if (collection <= ActiveRecord::Base rescue nil)
       # Resolve and validate the main +attribute+ to fetch the values of

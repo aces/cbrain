@@ -42,7 +42,17 @@ class UserfilesController < ApplicationController
   # GET /userfiles.xml
   def index #:nodoc:
     @scope = scope_from_session('userfiles')
-    @scope.name ||= 'userfiles'
+
+    # Manually handle the 'name_like' input, as it cant be pre-computed
+    # server-side (and going the JS route would be overkill).
+    if (name_like = params[:name_like])
+      @scope.filters.reject! { |f| f.attribute.to_s == 'name' }
+      @scope.filters << Scope::Filter.from_hash({
+        :attribute => 'name',
+        :operator  => 'match',
+        :value     => name_like
+      })
+    end
 
     # Base userfiles scope, without any filtering or ordering
     @base_scope = base_scope
@@ -277,9 +287,8 @@ class UserfilesController < ApplicationController
       @sort_index     = [ 0, params[:sort_index].to_i, 999_999_999 ].sort[1]
 
       # Rebuild the sorted Userfile scope
-      @scope        = scope_from_session('userfiles')
-      @scope.name ||= 'userfiles'
-      sorted_scope  = view_scope
+      @scope       = scope_from_session('userfiles')
+      sorted_scope = view_scope
 
       # Fetch the neighbors of the shown userfile in the ordered scope's order
       neighbors = sorted_scope.where("userfiles.id != ?", @userfile.id).offset([0, @sort_index - 1].max).limit(2).all
@@ -915,9 +924,7 @@ class UserfilesController < ApplicationController
   # Adds the selected userfile IDs to the session's persistent list
   def manage_persistent
 
-    @scope = scope_from_session('userfiles')
-    @scope.name ||= 'userfiles'
-
+    @scope     = scope_from_session('userfiles')
     operation  = (params[:operation] || 'clear').downcase
     persistent = Set.new(current_session[:persistent_userfiles])
 
@@ -1615,7 +1622,7 @@ class UserfilesController < ApplicationController
     base ||= base_scope
 
     custom_filters  = (@scope.custom[:custom_filters] || []).dup
-    custom_filters &= current_user.custom_filter_ids.map(&:to_s)
+    custom_filters &= current_user.custom_filter_ids
     custom_filters.map! { |id| UserfileCustomFilter.find(id) }
 
     @scope.order << Scope::Order.from_hash({
