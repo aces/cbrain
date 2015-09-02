@@ -30,105 +30,104 @@ class TasksController < ApplicationController
   before_filter :login_required
 
   def index #:nodoc:
-    bourreaux    = Bourreau.find_all_accessible_by_user(current_user).all
-    bourreau_ids = bourreaux.map(&:id)
+    @scope      = scope_from_session('tasks')
+    api_request = [:xml, :json].include?(request.format.to_sym)
 
-    scope = filter_variable_setup current_user.available_tasks.real_tasks.where( :bourreau_id => bourreau_ids )
-
-    if request.format.to_sym == :xml || request.format.to_sym == :json
-      @filter_params["sort_hash"]["order"] ||= "cbrain_tasks.updated_at"
-      @filter_params["sort_hash"]["dir"]   ||= "DESC"
+    # Default sorting order and batch mode
+    if api_request
+      @scope.order << Scope::Order.from_hash({
+        :attribute => 'updated_at',
+        :direction => :desc
+      }) if @scope.order.blank?
     else
-      @filter_params["sort_hash"]["order"] ||= "cbrain_tasks.batch"
+      @scope.order << Scope::Order.from_hash({
+        :attribute => 'rank',
+        :direction => :asc
+      }) if @scope.order.blank?
+
+      @scope.custom[:batch] = true if @scope.custom[:batch].nil?
     end
 
-    # Set sort order and make it persistent.
-    @sort_order = @filter_params["sort_hash"]["order"]
-    @sort_dir   = @filter_params["sort_hash"]["dir"]
+    @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
+    @view_scope = view_scope(current_user.available_tasks)
+      .includes([:bourreau, :user, :group])
 
-    @showing_batch = false #i.e. don't show levels for individual entries.
+    # Display totals
+    @total_tasks       = @view_scope.count
+    @total_space_known = @view_scope.sum(:cluster_workdir_size)
+    @total_space_unkn  = @view_scope
+      .where(:cluster_workdir_size => nil)
+      .where('cluster_workdir IS NOT NULL')
+      .count
 
-    # In batch view...
-    if @sort_order == "cbrain_tasks.batch"
-      if @filter_params["filter_hash"]["batch_id"]  # we show a specific batch
-        @sort_order      = "cbrain_tasks.rank, cbrain_tasks.level, cbrain_tasks.id"
-        @sort_dir        = ""
-        @showing_batch   = true
-      else # batch view with several batches visible
-        @sort_order = "cbrain_tasks.batch_id"
-        @sort_dir   = 'DESC'
+    # Batch mode & pagination
+    single_batch    = @scope.filters.any? { |f| f.attribute == 'batch_id' }
+    @showing_batch  = @scope.custom[:batch] && single_batch
+
+    if ! api_request && @scope.custom[:batch] && ! single_batch
+      @tasks = @scope.pagination.apply(@view_scope.group(:batch_id).count.to_a)
+      @tasks.map! do |id, count|
+        first = @view_scope
+            .where(:batch_id => id)
+            .order([:rank, :level, :id])
+            .first
+
+        { :batch => id, :first => first, :count => count } if first
       end
-    end
-
-    scope = scope.includes( [:bourreau, :user, :group] ).readonly
-
-    @total_tasks       = scope.count    # number of TASKS
-    @total_space_known = scope.sum(:cluster_workdir_size)
-    @total_space_unkn  = scope.where(:cluster_workdir_size => nil).where("cluster_workdir IS NOT NULL").count
-
-    # For Pagination
-    offset = (@current_page - 1) * @per_page
-
-    if @filter_params["sort_hash"]["order"] == "cbrain_tasks.batch" && !@filter_params["filter_hash"]["batch_id"] && request.format.to_sym != :xml  && request.format.to_sym != :json
-      batch_ids                 = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).raw_first_column("distinct(cbrain_tasks.batch_id)")
-      task_counts_in_batch      = scope.where(:batch_id => batch_ids).group(:batch_id).count
-      full_batch_ids            = scope.raw_first_column("distinct(cbrain_tasks.batch_id)")
-      full_task_counts_in_batch = scope.where(:batch_id => full_batch_ids).group(:batch_id).count
-      @total_entries            = full_task_counts_in_batch.count
-
-      @tasks = {} # hash batch_id => task_info
-      batch_ids.each do |batch_id|
-         num_tasks  = task_counts_in_batch[batch_id] || 0
-         first_task = num_tasks == 1 ?
-            scope.where(:batch_id => batch_id).first :
-            scope.where(:batch_id => batch_id).order( [ :rank, :level, :id ] ).first
-         next unless first_task.present? # in rare case a delete operation happens in background
-         @tasks[batch_id] = { :first_task => first_task, :num_tasks => num_tasks }
-      end
-      pagination_list = batch_ids
+      @tasks.compact!
     else
-      @total_entries = @total_tasks
-      task_list = scope.order( "#{@sort_order} #{@sort_dir}" ).offset( offset ).limit( @per_page ).all
-
-      @tasks = {} # hash task_id -> task_info for a single task
-      task_list.each do |t|
-        @tasks[t.id] = { :first_task => t, :statuses => [t.status], :num_tasks => 1 }
+      @tasks = @scope.pagination.apply(@view_scope).to_a
+      @tasks.map! do |task|
+        { :batch => task.batch_id, :first => task, :count => 1 }
       end
-      pagination_list = task_list.map(&:id)
     end
 
-    @paginated_list = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
-      pager.replace(pagination_list)
-      pager.total_entries = @total_entries
-      pager
-    end
+    # Bourreaux status
+    @bourreau_status = Bourreau.find_all_accessible_by_user(current_user)
+      .map { |b| [b.id, b.online?] }
+      .to_h
 
+    # Save the modified scope object
+    scope_to_session(@scope, 'tasks')
     current_session.save_preferences
 
-    @bourreau_status = bourreaux.map { |b| [b.id, b.online?] }.to_h
     respond_to do |format|
       format.html
-      format.xml   { render :xml  => @tasks }
-      format.json  { render :json => task_list }
       format.js
+
+      # For backwards compatibility with old XML/JSON API clients.
+      format.xml do
+        render :xml => (@tasks.map do |task|
+          task = task[:first]
+          [task.id, {
+            :first_task => task,
+            :statuses   => [task.status],
+            :num_tasks  => 1
+          }]
+        end).to_h
+      end
+
+      format.json do
+        render :json => @tasks.map { |task| task[:first] }
+      end
     end
   end
 
   # Renders a set of tasks associated with a batch.
   def batch_list
-    @tasks = filter_variable_setup(
+    @scope = scope_from_session('tasks')
+    @tasks = view_scope(
       current_user
         .available_tasks
         .real_tasks
         .where(:batch_id => params[:batch_id])
     )
-      .includes([ :bourreau, :user, :group ])
-      .order("cbrain_tasks.rank, cbrain_tasks.level, cbrain_tasks.id")
-      .readonly(false)
+      .includes([:bourreau, :user, :group])
+      .order([:rank, :level, :id])
+      .map { |task| { :batch => task.batch_id, :first => task, :count => 1 } }
 
     @bourreau_status = Bourreau
       .find_all_accessible_by_user(current_user)
-      .all
       .map { |b| [b.id, b.online?] }
       .to_h
 
@@ -582,9 +581,9 @@ class TasksController < ApplicationController
     batch_ids   = Array(params[:batch_ids] || [])
 
     if batch_ids.delete "nil"
-      task_ids += filter_variable_setup(CbrainTask.real_tasks.where( :batch_id => nil )).select("id").raw_first_column
+      task_ids += view_scope(CbrainTask.real_tasks.where( :batch_id => nil )).select("id").raw_first_column
     end
-    task_ids   += filter_variable_setup(CbrainTask.real_tasks.where( :batch_id => batch_ids )).select("id").raw_first_column
+    task_ids   += view_scope(CbrainTask.real_tasks.where( :batch_id => batch_ids )).select("id").raw_first_column
     task_ids    = task_ids.map(&:to_i).uniq
 
     commit_name = extract_params_key([ :update_user_id, :update_group_id, :update_results_data_provider_id, :update_tool_config_id ])
@@ -745,10 +744,10 @@ class TasksController < ApplicationController
     batch_ids   = [ batch_ids ] unless batch_ids.is_a?(Array)
 
     if batch_ids.delete "nil"
-      tasklist += filter_variable_setup(CbrainTask.where( :batch_id => nil )).select("id").raw_first_column
+      tasklist += view_scope(CbrainTask.where( :batch_id => nil )).select("id").raw_first_column
     end
 
-    tasklist   += filter_variable_setup(CbrainTask.where( :batch_id => batch_ids )).select("id").raw_first_column
+    tasklist   += view_scope(CbrainTask.where( :batch_id => batch_ids )).select("id").raw_first_column
     tasklist    = tasklist.map(&:to_i).uniq
 
     flash[:error]  ||= ""
@@ -989,25 +988,25 @@ class TasksController < ApplicationController
     CbrainTask
   end
 
-  def filter_variable_setup(starting_scope) #:nodoc:
-    @header_scope = starting_scope
-    @header_scope = @header_scope.where( :group_id => current_project.id ) if current_project
+  def view_scope(base) #:nodoc:
+    base = base.where(:group_id => current_project.id) if current_project
+    base = base.where(
+      :bourreau_id => Bourreau
+        .find_all_accessible_by_user(current_user)
+        .raw_rows(:id)
+        .flatten
+    )
 
-    @filtered_scope = base_filtered_scope(@header_scope)
+    custom_filters  = (@scope.custom[:custom_filters] || []).dup
+    custom_filters &= current_user.custom_filter_ids
+    custom_filters.map! { |id| TaskCustomFilter.find(id) }
 
-    if @filter_params["filter_hash"]["bourreau_id"].blank?
-      @filtered_scope = @filtered_scope.where( :bourreau_id => Bourreau.find_all_accessible_by_user(current_user).all.map(&:id) )
+    view = @scope.apply(base)
+    view = custom_filters.inject(view) do |scope, filter|
+      filter.filter_scope(scope)
     end
 
-    # Handle custom filters
-    @filter_params["filter_custom_filters_array"] ||= []
-    @filter_params["filter_custom_filters_array"] &= current_user.custom_filter_ids.map(&:to_s)
-    @filter_params["filter_custom_filters_array"].each do |custom_filter_id|
-      custom_filter = TaskCustomFilter.find(custom_filter_id)
-      @filtered_scope = custom_filter.filter_scope(@filtered_scope)
-    end
-
-    @filtered_scope
+    view
   end
 
   # Warning: private context in effect here.
