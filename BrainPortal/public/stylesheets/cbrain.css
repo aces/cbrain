@@ -1663,6 +1663,14 @@ img {
   background-color: #e3f2fb;
 }
 
+#tasks_table tr.task.unavailable:nth-child(odd) {
+  background-color: #fcd1de;
+}
+
+#tasks_table tr.task.unavailable:nth-child(even) {
+  background-color: #fee5ec;
+}
+
 /* % ######################################################### */
 /* % Styles for Data Provider Browse page */
 /* % ######################################################### */

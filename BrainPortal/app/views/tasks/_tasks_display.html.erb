@@ -91,7 +91,7 @@
         available = @bourreau_status[task.bourreau.id]
         {
           :id    => "task_#{task.id}",
-          :class => [ :task ],
+          :class => [:task, (available ? :available : :unavailable)],
           :select_param => ('tasklist[]' if available),
           :select_value => (task.id      if available),
           :html => {
