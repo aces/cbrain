@@ -116,7 +116,7 @@ class TasksController < ApplicationController
         .where(:batch_id => params[:batch_id])
     )
       .includes([:bourreau, :user, :group])
-      .order([:rank, :level, :id])
+      .order(['cbrain_tasks.rank', 'cbrain_tasks.level', 'cbrain_tasks.id'])
       .map { |task| { :batch => task.batch_id, :first => task, :count => 1 } }
 
     @bourreau_status = Bourreau

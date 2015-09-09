@@ -166,7 +166,7 @@
           [2.months,   'Two months' ],
           [1.year,     'One year'   ]
         ]).map do |value, label|
-          [value.ago.to_datetime, label + ' old']
+          [value.ago.to_datetime, label + ' ago']
         end
       ) { |m| to_localtime(m.last_sent, :datetime) }
     %>
