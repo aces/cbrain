@@ -28,7 +28,7 @@
       toggle_link = lambda do |on, off, key|
         scope_custom_link((@scope.custom[key] ? off : on),
           @scope, { key => !@scope.custom[key] },
-          options: { :ajax_link => true }
+          link_options: { :ajax => true }
         )
       end
     %>

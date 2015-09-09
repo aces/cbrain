@@ -17,23 +17,22 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #RESTful controller for the Feedback resource.
 class FeedbacksController < ApplicationController
   before_filter :login_required
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   # GET /feedbacks
   # GET /feedbacks.xml
   def index #:nodoc:
-    @filter_params["sort_hash"]["order"] ||= 'feedbacks.created_at'
-    @filter_params["sort_hash"]["dir"] ||= 'DESC'
-    
-    @filtered_scope = base_filtered_scope
-    @feedbacks      = base_sorted_scope @filtered_scope.includes(:user)
+    @scope = scope_from_session('feedbacks')
+    scope_default_order(@scope, 'created_at', :desc)
+
+    @feedbacks = @scope.apply(Feedback.includes(:user))
 
     respond_to do |format|
       format.js
@@ -106,7 +105,7 @@ class FeedbacksController < ApplicationController
   def destroy #:nodoc:
     @feedback = Feedback.find(params[:id])
     @feedback.destroy
-    
+
     respond_to do |format|
       format.html { redirect_to :action => :index, :status => 303 }
       format.js   { redirect_to :action => :index, :format => :js, :status => 303 }

@@ -45,14 +45,10 @@ class UserfilesController < ApplicationController
 
     # Manually handle the 'name_like' input, as it cant be pre-computed
     # server-side (and going the JS route would be overkill).
-    if (name_like = params[:name_like])
-      @scope.filters.reject! { |f| f.attribute.to_s == 'name' }
-      @scope.filters << Scope::Filter.from_hash({
-        :attribute => 'name',
-        :operator  => 'match',
-        :value     => name_like
-      })
-    end
+    scope_filter_from_params(@scope, :name_like, {
+      :attribute => 'name',
+      :operator  => 'match'
+    })
 
     # Base userfiles scope, without any filtering or ordering
     @base_scope = base_scope

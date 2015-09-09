@@ -17,24 +17,27 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Controller for viewing or managing exception logs.
 class ExceptionLogsController < ApplicationController
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_filter :login_required 
+  before_filter :login_required
   before_filter :admin_role_required
 
   def index #:nodoc:
-    @filter_params["sort_hash"]["order"] ||= 'exception_logs.created_at'
-    @filter_params["sort_hash"]["dir"]   ||= 'DESC'
-    
-    @filtered_scope = base_filtered_scope
-    @exception_logs = base_sorted_scope(@filtered_scope).paginate(:page => @current_page, :per_page => @per_page)
+    @scope = scope_from_session('exception_logs')
+    scope_default_order(@scope, 'created_at', :desc)
 
+    @view_scope = @scope.apply(ExceptionLog)
+
+    @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
+    @exception_logs = @scope.pagination.apply(@view_scope)
+
+    scope_to_session(@scope)
     current_session.save_preferences
 
     respond_to do |format|
@@ -56,7 +59,7 @@ class ExceptionLogsController < ApplicationController
   def destroy #:nodoc:
     @exception_logs = ExceptionLog.find(params[:exception_log_ids])
     @exception_logs.each(&:destroy)
-    
+
     flash[:notice] = "#{view_pluralize(@exception_logs.count, "exception")} deleted."
 
     respond_to do |format|

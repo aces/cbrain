@@ -125,7 +125,12 @@
   <%
     t.column("Task Type", :type,
       :sortable => true,
-      :filters  => filter_values_for(@view_scope, :type)
+      :filters  => filter_values_for(@view_scope, :type,
+        format: lambda do |value, label, count|
+          label = label.constantize.pretty_type rescue label
+          { :value => value, :label => label, :indicator => count }
+        end
+      )
     ) do |type,id,count,task|
   %>
     <% case type %>
@@ -146,22 +151,14 @@
 
     t.column("Owner", :owner,
       :sortable => true,
-      :filters  => filter_values_for(
-        @view_scope, :user_id,
-        label: 'users.login',
-        association: User
-      )
+      :filters  => assoc_filter_values_for(@view_scope, User, label: 'login')
     ) do |type,id,count,task|
       link_to_user_if_accessible(task.user) unless type == :loaded_batch
     end
 
     t.column("Project", :project,
       :sortable => true,
-      :filters  => filter_values_for(
-        @view_scope, :group_id,
-        label: 'groups.name',
-        association: Group
-      )
+      :filters  => assoc_filter_values_for(@view_scope, Group)
     ) do |type,id,count,task|
       link_to_group_if_accessible(task.group) unless type == :loaded_batch
     end unless current_project
@@ -312,7 +309,7 @@
         scope_custom_link(
           "Switch to #{batch_view ? 'List' : 'Batch'} View",
           @scope, { 'batch' => !batch_view },
-          options: { :ajax => true }
+          link_options: { :ajax => true }
         )
       %>
     </div>

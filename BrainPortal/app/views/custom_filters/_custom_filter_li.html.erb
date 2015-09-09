@@ -24,17 +24,15 @@
 
 <b>
 <%=
-  ajax_link(
-    crop_text_to(15, filter.name),
-    url_for(scope_custom_params(@scope, {
-        'custom_filters' => [filter.id]
-      }).merge({
-        :controller  => @custom_filter.filtered_class_controller,
-        :_scope_mode => :append
-      })
-    ),
-    :class    => 'action_link',
-    :datatype => :script
+  scope_custom_link(crop_text_to(15, filter.name),
+    @scope, { 'custom_filters' => [filter.id] },
+    url_options:  {
+      'controller'  => @custom_filter.filtered_class_controller,
+      '_scope_mode' => 'append'
+    },
+    link_options: {
+      :ajax => true
+    }
   )
 %>
 </b>

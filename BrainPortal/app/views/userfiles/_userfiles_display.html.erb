@@ -115,16 +115,17 @@
     t.column("File Type", :type,
       :field_name => :pretty_type,
       :sortable   => true,
-      :filters    => filter_values_for(@view_scope, :type)
+      :filters    => filter_values_for(@view_scope, :type,
+        format: lambda do |value, label, count|
+          label = label.constantize.pretty_type rescue label
+          { :value => value, :label => label, :indicator => count }
+        end
+      )
     )
 
     t.column("Owner", :login,
       :sortable => true,
-      :filters  => filter_values_for(
-        @view_scope, :user_id,
-        label: 'users.login',
-        association: User
-      )
+      :filters  => assoc_filter_values_for(@view_scope, User, label: 'login')
     ) { |u| link_to_user_if_accessible(u.user) }
 
     t.column("Creation Date", :creation_date,
@@ -189,11 +190,7 @@
     unless current_project
       t.column("Project", :group,
         :sortable => true,
-        :filters  => filter_values_for(
-          @view_scope, :group_id,
-          label: 'groups.name',
-          association: Group
-        )
+        :filters  => assoc_filter_values_for(@view_scope, Group)
       ) do |u|
         link_to_group_if_accessible(u.group) if u.group
       end
@@ -207,11 +204,7 @@
 
     t.column("Provider", :data_provider,
       :sortable => true,
-      :filters  => filter_values_for(
-        @view_scope, :data_provider_id,
-        label: 'data_providers.name',
-        association: DataProvider
-      )
+      :filters  => assoc_filter_values_for(@view_scope, DataProvider)
     ) do |u|
       link_to_data_provider_if_accessible(u.data_provider)
     end

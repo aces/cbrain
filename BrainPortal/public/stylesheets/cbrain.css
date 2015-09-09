@@ -1424,6 +1424,7 @@ pre {
   padding-left: 2em;
 }
 
+.pagination_center,
 .page_links {
   display: table-cell;
   text-align: center;
@@ -1830,6 +1831,16 @@ img {
 
 #message_table tbody > tr {
   border: 2px solid black;
+}
+
+#message_table th.critical > .dt-hdr {
+  font-size: 1.8em;
+  padding-right: 0.5em;
+}
+
+#message_table td.critical {
+  padding-left: 1em;
+  font-weight: bold;
 }
 
 #message_table tr.notice_display {

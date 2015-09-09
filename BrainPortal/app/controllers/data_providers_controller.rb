@@ -36,15 +36,14 @@ class DataProvidersController < ApplicationController
   API_HIDDEN_ATTRIBUTES = [ :cloud_storage_client_identifier, :cloud_storage_client_token ]
 
   def index #:nodoc:
-    @filter_params["sort_hash"]["order"] ||= "data_providers.name"
+    @scope = scope_from_session('data_providers')
+    scope_default_order(@scope, 'name')
 
-    @header_scope   = DataProvider.find_all_accessible_by_user(current_user)
-    @filtered_scope = base_filtered_scope @header_scope.includes(:user, :group)
-    @data_providers = base_sorted_scope @filtered_scope
-
-    if current_user.has_role? :admin_user
-      @filter_params['details'] = 'on' unless @filter_params.has_key?('details')
-    end
+    @data_providers = @scope.apply(
+      DataProvider
+        .find_all_accessible_by_user(current_user)
+        .includes(:user, :group)
+    )
 
     respond_to do |format|
       format.html

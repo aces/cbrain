@@ -34,34 +34,30 @@
     (<%=
       scope_filter_link('clear',
         scope, :clear, nil,
-        options: { :ajax => true }
+        link_options: { :ajax => true }
       )
     %>)
     <span id="current_filters">
       <% scope.filters.each do |filter| %>
         <span class="current_filters_item">
-          <%= crop_text_to(30, pretty_scope_filter(filter, model: model)) %>
+          <%= pretty_scope_filter(filter, model: model) %>
         </span>
         <%=
           scope_filter_link(delete_icon,
             scope, :remove, filter,
-            options: { :ajax => true }
+            link_options: { :ajax => true }
           )
         %>
       <% end %>
-      <% Array(scope.custom[:custom_filters]).each do |id| %>
+      <% Array(scope.custom[:custom_filters]).uniq.each do |id| %>
         <span class="current_filters_item">
           <%= crop_text_to(30, UserfileCustomFilter.find(id).name) %>
         </span>
         <%=
-          ajax_link(
-            delete_icon,
-            url_for(
-              scope_custom_params(scope, { 'custom_filters' => [id] })
-                .merge({ '_scope_mode' => 'delete' })
-            ),
-            :class    => 'action_link',
-            :datatype => :script
+          scope_custom_link(delete_icon,
+            scope, { 'custom_filters' => [id] },
+            url_options:  { '_scope_mode' => 'delete' },
+            link_options: { :ajax         => true     }
           )
         %>
       <% end %>

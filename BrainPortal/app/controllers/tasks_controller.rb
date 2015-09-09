@@ -35,16 +35,9 @@ class TasksController < ApplicationController
 
     # Default sorting order and batch mode
     if api_request
-      @scope.order << Scope::Order.from_hash({
-        :attribute => 'updated_at',
-        :direction => :desc
-      }) if @scope.order.blank?
+      scope_default_order(@scope, 'updated_at', :desc)
     else
-      @scope.order << Scope::Order.from_hash({
-        :attribute => 'rank',
-        :direction => :asc
-      }) if @scope.order.blank?
-
+      scope_default_order(@scope, 'rank')
       @scope.custom[:batch] = true if @scope.custom[:batch].nil?
     end
 
@@ -69,7 +62,7 @@ class TasksController < ApplicationController
       @tasks.map! do |id, count|
         first = @view_scope
             .where(:batch_id => id)
-            .order([:rank, :level, :id])
+            .order(['cbrain_tasks.rank', 'cbrain_tasks.level', 'cbrain_tasks.id'])
             .first
 
         { :batch => id, :first => first, :count => count } if first
@@ -993,7 +986,7 @@ class TasksController < ApplicationController
     base = base.where(
       :bourreau_id => Bourreau
         .find_all_accessible_by_user(current_user)
-        .raw_rows(:id)
+        .raw_rows("#{Bourreau.quoted_table_name}.id")
         .flatten
     )
 

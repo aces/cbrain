@@ -24,18 +24,10 @@
 
 <b>
   <%=
-    ajax_link(
-      crop_text_to(15, tag.name),
-      url_for(
-        scope_filter_params(@scope, :set, {
-          'type'  => 'uf.tags',
-          'value' => [tag.id]
-        }).reverse_merge({
-          :controller => :userfiles
-        })
-      ),
-      :class    => 'action_link',
-      :datatype => :script
+    scope_filter_link(crop_text_to(15, tag.name),
+      @scope, :set, { 'type' => 'uf.tags', 'value' => [tag.id] },
+      url_options:  { :controller => :userfiles },
+      link_options: { :ajax       => true       }
     )
   %>
 </b>

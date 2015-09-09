@@ -31,23 +31,22 @@ class MessagesController < ApplicationController
   # GET /messages
   # GET /messages.xml
   def index #:nodoc:
-    @filter_params["sort_hash"]["order"] ||= "messages.last_sent"
-    @filter_params["sort_hash"]["dir"]   ||= "DESC"
+    @scope = scope_from_session('messages')
+    scope_default_order(@scope, 'last_sent', :desc)
 
-    scope = base_filtered_scope
-    if @filter_params["sort_hash"]["order"] == "messages.sender"
-      scope = scope.joins("LEFT JOIN users as senders ON senders.id = messages.sender_id").
-                      order("senders.login #{@filter_params["sort_hash"]["dir"]}")
-    else
-      scope = base_sorted_scope(scope)
-    end
-    scope = scope.includes(:user)
-    unless current_user.has_role?(:admin_user)
-      scope = scope.where(:user_id => current_user.available_users.map(&:id))
-    end
+    @view_scope = @messages = @scope.apply(
+      Message.where(current_user.has_role?(:admin_user) ?
+        {} : { :user_id => current_user.available_users.map(&:id) }
+      )
+    )
 
-    @messages = scope.paginate(:page => @current_page, :per_page => @per_page)
+    @read_count   = @view_scope.where(:read => true).count
+    @unread_count = @view_scope.count - @read_count
 
+    @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
+    @messages = @scope.pagination.apply(@view_scope)
+
+    scope_to_session(@scope)
     current_session.save_preferences
 
     respond_to do |format|
