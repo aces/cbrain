@@ -1,0 +1,189 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "id": "http://github.com/boutiques/boutiques-schema",
+    "type": "object",
+    "title": "Tool",
+    "properties": {
+        "name": {
+            "id": "http://github.com/boutiques/boutiques-schema/name",
+            "minLength": 1,
+            "description": "Tool name.",
+            "type": "string"
+        },
+        "tool-version": {
+            "id": "http://github.com/boutiques/boutiques-schema/description",
+            "minLength": 1,
+            "description": "Tool version.",
+            "type": "string"
+        },
+        "description": {
+            "id": "http://github.com/boutiques/boutiques-schema/description",
+            "minLength": 1,
+            "description": "Tool description.",
+            "type": "string"
+        },
+        "command-line": {
+            "id": "http://github.com/boutiques/boutiques-schema/command-line",
+            "minLength": 1,
+            "description": "A string that describes the tool command line, where input and output values are identified by \"keys\". At runtime, command-line keys are substituted with flags and values.",
+            "type": "string"
+        },
+        "docker-image": {
+            "id": "http://github.com/boutiques/boutiques-schema/docker-image",
+            "minLength": 1,
+            "description": "Name of a Docker image where tool is installed and configured. Example: docker.io/neurodebian.",
+            "type": "string"
+        },
+        "docker-index": {
+            "id": "http://github.com/boutiques/boutiques-schema/docker-index",
+            "minLength": 1,
+            "description": "Docker index where Docker image is available.",
+            "default": "http://index.docker.io",
+            "type": "string"
+        },
+        "schema-version": {
+            "id": "http://github.com/boutiques/boutiques-schema/schema-version",
+            "type": "string",
+            "description": "Version of the schema used.",
+            "enum": ["0.2-snapshot"]
+        },
+        "inputs": {
+            "id": "http://github.com/boutiques/boutiques-schema/inputs",
+            "type": "array",
+            "items": {
+                "id": "http://github.com/boutiques/boutiques-schema/input",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/id",
+                        "minLength": 1,
+                        "description": "A short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: \"data_file\".",
+                        "type": "string",
+                        "pattern": "^[0-9,_,a-z,A-Z]*$"
+                    },
+                    "name": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/name",
+                        "minLength": 1,
+                        "description": "A human-readable input name. Example: 'Data file'.",
+                        "type": "string"
+                    },
+                    "type": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/type",
+                        "type": "string",
+                        "description": "Input type.",
+                        "enum": ["String", "File", "Flag" , "Number" ]
+                    },
+                    "description": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/description",
+                        "minLength": 1,
+                        "description": "Input description.",
+                        "type": "string"
+                    },
+                    "command-line-key": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/command-line-key",
+                        "minLength": 1,
+                        "description": "A string contained in command-line, substituted by the input value and/or flag at runtime.",
+                        "type": "string"
+                    },
+                    "list": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/list",
+                        "description":"True if input is a list of value. An input of type \"Flag\" cannot be a list.",
+                        "type": "boolean"
+                    },
+                    "optional":{
+                        "id": "http://github.com/boutiques/boutiques-schema/input/optional",
+                        "description": "True if input is optional.",
+                        "type": "boolean"
+                    },
+                    "command-line-flag":{
+                        "id": "http://github.com/boutiques/boutiques-schema/input/command-line-flag",
+                        "minLength": 1,
+                        "description": "Option flag of the input, involved in the command-line-key substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: -v, --force.",
+                        "type": "string"
+                    },
+                    "default-value":{
+                        "id": "http://github.com/boutiques/boutiques-schema/input/default-value",
+                        "minLength": 1,
+                        "description": "Default value of the input, used by the tool when no option is specified."
+                    }
+                },
+                "required": [
+                    "name",
+                    "id",
+                    "type"
+                ]
+            }
+        },
+        "output-files": {
+            "id": "http://github.com/boutiques/boutiques-schema/output-files",
+            "type": "array",
+            "items": {
+                "id": "http://github.com/boutiques/boutiques-schema/output",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/id",
+                        "minLength": 1,
+                        "description": "A short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: \"data_file\"",
+                        "pattern": "^[0-9,_,a-z,A-Z]*$",
+                        "type": "string"
+                    },
+                    "name": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/name",
+                        "description": "A human-readable output name. Example: 'Data file'",
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "description": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/description",
+                        "description": "Output description.",
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "command-line-key": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/command-line-key",
+                        "description": "A string contained in command-line, substituted by the output value and/or flag at runtime.",
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "path-template": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/path-template",
+                        "description": "Describes the output file path relatively to the execution directory. May contain input command-line-keys. Example: \"results/[INPUT1]_brain.mnc\".",
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "list": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/list",
+                        "description": "True if output is a list of value.",
+                        "type": "boolean"
+                    },
+                    "optional":{
+                        "id": "http://github.com/boutiques/boutiques-schema/output/optional",
+                        "description": "True if output may not be produced by the tool.",
+                        "type": "boolean"
+                    },
+                    "command-line-flag":{
+                        "id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag",
+                        "minLength": 1,
+                        "description": "Option flag of the output, involved in the command-line-key substitution. Examples: -o, --output",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "path-template"
+                ]
+            }
+        }
+    },
+    "required": [
+        "name",
+        "description",
+        "command-line",
+        "schema-version",
+        "inputs",
+        "output-files"
+    ]
+}
+

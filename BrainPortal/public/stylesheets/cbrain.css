@@ -541,6 +541,10 @@ h1.warning {
   float: left;
 }
 
+.cmd-flag {
+  color: #0471b4;
+}
+
 /* % ######################################################### */
 /* % General styles for definition lists */
 /* % ######################################################### */
@@ -1604,6 +1608,232 @@ th.center_align_heading {
   margin-right: 0em;
 }
 
+/* Show task parameters */
+.task-show > table {
+  border: 0;
+}
+
+.tsk-sw-hdr,
+.tsk-sw-name,
+.tsk-sw-val {
+  background: inherit;
+  border: 0;
+  text-align: left;
+}
+
+.tsk-sw-hdr {
+  font-family: sans-serif;
+  font-size: 1.1em;
+  font-weight: bold;
+  padding: 30px 5px 10px 5px;
+  text-align: left;
+}
+
+.tsk-sw-name {
+  padding-right: 40px;
+}
+
+.tsk-sw-param > tr > .tsk-sw-hdr {
+  padding-top: 5px;
+}
+
+.tsk-sw-param > tr > .tsk-sw-val {
+  font-family: monospace;
+}
+
+/* Edit task parameters */
+.task-params > ul {
+  list-style: none;
+  padding-left: 20px;
+  padding: 0;
+}
+
+.task-params > ul > li {
+  margin-bottom: 30px;
+  margin-top: 10px;
+}
+
+/* label */
+.tsk-prm-lbl {
+  display: block;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-bottom: 5px;
+  margin-left: 25px;
+}
+
+.tsk-prm-lbl > .required {
+  color: red;
+}
+
+.tsk-prm.flag > .tsk-prm-lbl {
+  margin-left: 30px;
+}
+
+/* optional */
+.tsk-prm-opt,
+.tsk-prm-chk {
+  display: none;
+}
+
+.tsk-prm-opt-lbl,
+.tsk-prm-chk-lbl {
+  background: #ffffff;
+  border: 1px solid #888888;
+  display: inline-block;
+  float: left;
+  height: 22px;
+  width: 22px;
+}
+
+.tsk-prm-opt-lbl {
+  border-right: 0;
+}
+
+.tsk-prm-opt-lbl > .tsk-prm-opt-icon,
+.tsk-prm-chk-lbl > .tsk-prm-chk-icon {
+  background-image: url("images/ui-icons_ffffff_256x240.png");
+  margin-left: 3px;
+  margin-top: 2px;
+  visibility: hidden;
+}
+
+.tsk-prm-opt:checked + .tsk-prm-opt-lbl,
+.tsk-prm-opt[checked=checked] + .tsk-prm-opt-lbl,
+.tsk-prm-chk:checked + .tsk-prm-chk-lbl,
+.tsk-prm-chk[checked=checked] + .tsk-prm-chk-lbl {
+  background: #0471b4;
+}
+
+.tsk-prm-opt:checked + .tsk-prm-opt-lbl > .tsk-prm-opt-icon,
+.tsk-prm-opt[checked=checked] + .tsk-prm-opt-lbl > .tsk-prm-opt-icon,
+.tsk-prm-chk:checked + .tsk-prm-chk-lbl > .tsk-prm-chk-icon,
+.tsk-prm-chk[checked=checked] + .tsk-prm-chk-lbl > .tsk-prm-chk-icon {
+  visibility: visible;
+}
+
+/* input */
+.tsk-prm-in,
+.tsk-prm-sel {
+  background: #ffffff;
+  border: 1px solid #888888;
+  color: #000000;
+  display: block;
+  font-family: monospace;
+  font-size: 15px;
+  margin-left: 23px;
+  min-height: 18px;
+  padding: 2px 5px;
+  position: relative;
+  width: auto;
+}
+
+.tsk-prm.string > .tsk-prm-in,
+.tsk-prm.string > .tsk-prm-list > li > .tsk-prm-in {
+  width: 600px;
+}
+
+.tsk-prm.number > .tsk-prm-in,
+.tsk-prm.number > .tsk-prm-list > li > .tsk-prm-in,
+.tsk-prm-sel {
+  min-width: 175px;
+}
+
+/* selection */
+.tsk-prm-sel-lbl {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.tsk-prm-sel-lbl.disabled {
+  color: #888888;
+  font-style: italic;
+}
+
+.tsk-prm-sel > .tsk-prm-sel-icon {
+  background-image: url("images/ui-icons_666666_256x240.png");
+  float: right;
+  margin-top: 2px;
+}
+
+.tsk-prm-sel-opt {
+  border: 1px solid #888888;
+  display: none;
+  left: -1px;
+  list-style: none;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0;
+  position: absolute;
+  top: 22px;
+  min-width: 185px;
+  z-index: 501;
+}
+
+.tsk-prm-sel-opt > li {
+  background: #ffffff;
+  color: #000000;
+  display: block;
+  font-family: monospace;
+  font-size: 15px;
+  padding: 4px 5px;
+  width: auto;
+}
+
+.tsk-prm-sel-opt > li:hover {
+  background: #fff3d3;
+}
+
+.tsk-prm-sel-opt > li:active {
+  background: #ffe49a;
+}
+
+/* list */
+.tsk-prm-list {
+  list-style: none;
+  margin-left: 23px;
+  padding: 0;
+}
+
+.tsk-prm-list > li {
+  margin-bottom: 3px;
+}
+
+.tsk-prm-list > li > .tsk-prm-in {
+  display: inline-block;
+  margin-left: 0;
+}
+
+.tsk-prm-list > li > .tsk-prm-add,
+.tsk-prm-list > li > .tsk-prm-rm {
+  background-image: url("images/ui-icons_666666_256x240.png");
+  display: inline-block;
+  cursor: pointer;
+  position: relative;
+  top: 3px;
+}
+
+.tsk-prm-add:hover,
+.tsk-prm-rm:hover {
+  background-color: #dddddd;
+}
+
+.tsk-prm-add:active,
+.tsk-prm-rm:active {
+  background-color: #ffffff;
+}
+
+/* description */
+.tsk-prm-desc {
+  display: block;
+  margin-top: 5px;
+  margin-left: 25px;
+  max-width: 600px;
+}
+
+.tsk-prm.flag > .tsk-prm-desc {
+  margin-left: 30px;
+}
 
 
 /* % ######################################################### */
