@@ -141,7 +141,17 @@
     <%= build_tabs do |tb| %>
        <%= tb.tab("Summary") do %>
          <% begin %>
-           <%= render :partial => task_partial('show_params'), :locals => { :task => @task, :params => @task.params } %>
+           <%
+             locals = { :task => @task, :params  => @task.params }
+             raw_partial = lambda do |partial|
+               @task.class.raw_partial(partial) if @task.class.respond_to?(:raw_partial)
+             end
+           %>
+           <% if raw_partial.(:show_params) %>
+             <%= render :inline => raw_partial.(:show_params), :locals => locals %>
+           <% else %>
+             <%= render :partial => task_partial('show_params'), :locals => locals %>
+           <% end %>
          <% rescue ActionView::MissingTemplate %>
            <pre>Problem loading summary view (no template provided by task author).</pre>
          <% rescue => ex %>

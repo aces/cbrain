@@ -1,0 +1,370 @@
+
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+# NOTE: This is a working template generated from a descriptor:
+# [Schema]         <%= schema['id'] %>
+# [Schema version] <%= descriptor['schema-version'] %>
+# [Tool]           <%= descriptor['name'] %>
+# [Version]        <%= descriptor['tool-version'] || '?' %>
+# See the CbrainTask Programmer Guide (CBRAIN Wiki) for a more complete picture
+# of how CbrainTasks are constructed.
+% # NOTE: This template's weird indentation is there to try and make the
+% # generated code as legible as possible.
+
+# Bourreau-side CbrainTask subclass to launch <%= name %>
+class CbrainTask::<%= name %> < ClusterTask
+
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  # Descriptor-based tasks are, by default, easily restartable and recoverable
+  include RestartableTask
+  include RecoverableTask
+
+% # Maximum width of a given +key+'s value in a +list+ of hashes
+% max_width = lambda do |list, key|
+%   list.map { |i| i[key].to_s.length rescue 0 }.max
+% end
+%
+% # Parameter groups
+% inputs   = descriptor['inputs'].dup
+% outputs  = descriptor['output-files'].dup
+% files    = inputs.select  { |i| i['type'] == 'File'   }
+% required = outputs.select { |o| ! o['optional']       }
+% globs    = outputs.select { |o| o['list']             }
+% in_keys  = inputs.select  { |i| i['command-line-key'] }
+% out_keys = outputs.select { |o| o['command-line-key'] }
+% flags    = (inputs + outputs).select { |p| p['command-line-flag'] }
+%
+  # Setup the cluster's environment to execute <%= name %>; create the relevant
+  # directories, prepare symlinks to input files, set environment variables,
+  # etc. Returns true if the task was correctly set up.
+  def setup #:nodoc:
+% unless files.empty?
+    params = self.params
+
+    # An error occured. Log +message+ and return false immediately.
+    retn  = Proc.new { |r| return r }
+    error = lambda do |message|
+      self.addlog(message)
+      retn.(false)
+    end
+
+    # Resolve all input userfiles IDs to their Userfile instances and set the
+    # results data provider if missing.
+%   resolve = format_call('resolve_file_parameter', files) { |file| [
+%     ":'#{file['id']}'",
+%     'error'
+%   ] }
+%   files.each do |file|
+    <%= resolve.(file) %>
+%   end
+
+    # And make them all available to <%= name %>
+%   make_available = format_call('make_available', files) { |file| [
+%     "params[:'#{file['id']}']",
+%     "'.'"
+%   ] }
+%   files.each do |file|
+    <%= make_available.(file) %>
+%   end
+
+% end
+    true
+  end
+
+  # The set of shell commands to run on the cluster to execute <%= name %>.
+  # Any output on stdout or stderr will be captured and logged for information
+  # or debugging purposes.
+  # Note that this function also generates the list of output filenames
+  # in params.
+  def cluster_commands #:nodoc:
+% if in_keys.empty? && out_keys.empty?
+%   unless outputs.empty?
+    # Output filenames
+    self.params.merge!({
+%     id_width = max_width.(outputs, 'id') + ":''".length
+%     outputs.each do |output|
+      <%=
+        "%-#{id_width}s => %s" % [
+          ":'#{output['id']}'",
+          "'#{output['path-template']}',"
+        ]
+      %>
+%     end
+    })
+
+%   end
+    # Command-line
+    [ '<%= descriptor['command-line'] %>' ]
+% else
+    params = self.params
+
+    # <%= name %>'s command line and output file names is constructed from a
+    # set of key-value pairs (keys) which are substituted in the command line
+    # and output templates. For example, if we have { '[1]' => '5' } for keys,
+    # a command line such as "foo [1] -e [1]" would turn into "foo 5 -e 5".
+
+%   unless in_keys.empty?
+    # Substitution keys for input parameters
+    keys = {
+%     key_width = max_width.(in_keys, 'command-line-key') + "'".length
+%     in_keys.each do |key|
+      <%=
+        "'%-#{key_width}s => params[:'%s']," % [
+          key['command-line-key'] + "'",
+          key['id']
+        ]
+      %>
+%     end
+    }
+
+%   end
+%   unless out_keys.empty?
+    # Substitution keys for output files
+%     if in_keys.empty?
+    keys = {
+%     else
+    keys.merge!({
+%     end
+%
+%     key_width  = max_width.(out_keys, 'command-line-key') + "''".length
+%     path_width = max_width.(out_keys, 'path-template')    + "'',".length
+%     out_keys.each do |key|
+%       stripped = key['path-template-stripped-extensions']
+      <%=
+        "%-#{key_width}s => apply_template(%-#{path_width}s keys%s" % [
+          "'#{key['command-line-key']}'",
+          "'#{key['path-template']}',",
+          stripped ? ', strip: [' : '),'
+        ]
+      %>
+%       if stripped
+%         stripped.each do |ext|
+        '<%= ext %>',
+%         end
+      ]),
+%       end
+%     end
+    })
+
+%   end
+%   unless flags.empty?
+    # Input/output command-line flags used with keys in command-line
+    # substitution.
+    flags = {
+%     key_width = max_width.(flags, 'command-line-key')  + "''".length
+%     flags.each do |flag|
+      <%=
+        "%-#{key_width}s => %s" % [
+          "'#{flag['command-line-key']}'",
+          "'#{flag['command-line-flag']}',"
+        ]
+      %>
+%     end
+    }
+
+%   end
+%   unless outputs.empty?
+    # Generate output filenames
+    params.merge!({
+%     id_width   = max_width.(outputs, 'id')          + ":''".length
+%     path_width = max_width.(outputs, 'path-template') + "'',".length
+%     outputs.each do |output|
+      <%=
+        "%-#{id_width}s => apply_template(%-#{path_width}s keys)," % [
+          ":'#{output['id']}'",
+          "'#{output['path-template']}',"
+        ]
+      %>
+%     end
+    })
+
+%   end
+    # Generate the final command-line to run <%= name %>
+    [ apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %>) ]
+      <%= descriptor['command-line'] %>
+    CMD
+% end
+  end
+
+  # Called after the task is done, this method saves <%= name %>'s output files
+  # to the Bourreau's cache and registers them into CBRAIN for later retrieval.
+  # Returns true on success.
+  def save_results #:nodoc:
+    # Additional checks to see if <%= name %> succeeded would belong here.
+
+% if outputs.empty?
+    # No output files to save; nothing to do
+    true
+% else
+    # No matter how many errors occur, we need to save as many output
+    # files as possible and carry the error state to the end.
+    params    = self.params
+    succeeded = true
+
+    # Extract out the output files parameters from params. They will be re-added
+    # once their existence is validated and their registration into CBRAIN is
+    # complete.
+    outputs = params.extract!(*[
+%   outputs.each do |output|
+      :'<%= output['id'] %>',
+%   end
+    ])
+
+%   unless required.empty?
+    # Make sure that every required output +path+ actually exists
+    # (or that its +glob+ matches something).
+    ensure_exists = lambda do |path|
+      return if File.exists?(path)
+      self.addlog("Missing output file #{path}")
+      succeeded &&= false
+    end
+    ensure_matches = lambda do |glob|
+      return unless Dir.glob(glob).empty?
+      self.addlog("No output files matching #{glob}")
+      succeeded &&= false
+    end
+
+%     required.select { |o| ! o['list'] }.each do |output|
+    ensure_exists.(outputs[:'<%= output['id'] %>'])
+%     end
+%     required.select { |o|   o['list'] }.each do |output|
+    ensure_matches.(outputs[:'<%= output['id'] %>'])
+%     end
+
+%   end
+%   unless globs.empty?
+    # Expand output file globs/patterns inside outputs for output file lists.
+    [
+%     globs.each do |output|
+      :'<%= output['id'] %>',
+%     end
+    ].each do |param|
+      outputs[param] = Dir.glob(outputs[param])
+    end
+
+%   end
+    # Save (and register) all generated files to the results data provider
+    outputs.each do |param, paths|
+      paths = [paths] unless paths.is_a?(Enumerable)
+      paths.each do |path|
+        next unless path.present? && File.exists?(path)
+
+        self.addlog("Saving result file #{path}")
+        name = File.basename(path)
+
+        output = safe_userfile_find_or_new((
+          File.directory?(path) ? FileCollection : Userfile.suggested_file_type(name)
+        ), :name => name)
+        unless output.save
+          self.addlog("Failed to save file #{path}")
+          succeeded &&= false
+          next
+        end
+
+        output.cache_copy_from_local_file(path)
+        params[param] ||= []
+        params[param]  << output.id
+        self.addlog("Saved result file #{path}")
+%   if (single_file = files.first if files.count == 1 && ! files.first['list'])
+
+        # As all output files were generated from a single input file,
+        # the outputs can all be made children of the one parent input file.
+        parent = params[:'<%= single_file['id'] %>']
+        output.move_to_child_of(parent)
+        self.addlog_to_userfiles_these_created_these([parent], [output])
+%   end
+      end
+    end
+
+    succeeded
+% end
+  end
+
+  # Generic helper methods
+
+  # Make a given set of userfiles +files+ available to <%= name %> at
+  # +directory+. Simple variation on +ClusterTask+::+make_available+
+  # to allow +files+ to be an Enumerable of files to make available under
+  # +directory+.
+  def make_available(files, directory)
+    files = [files] unless files.is_a?(Enumerable)
+    files.compact.each { |file| super(file, directory + '/') }
+  end
+
+  # Resolve/replace input userfiles IDs for parameter +param+
+  # to their Userfile instances, calling +failed+ if a file cannot be resolved.
+  # Also try and set the results data provider if its missing.
+  def resolve_file_parameter(param, failed)
+    value = params[param]
+    return if value.nil?
+
+    files = (value.is_a?(Enumerable) ? value : [value]).map do |file|
+      file = Userfile.find_by_id(file) unless file.is_a?(Userfile)
+      failed.("Could not find file with ID #{file}") unless file
+      file
+    end
+
+    params[param] = value.is_a?(Enumerable) ? files : files.first
+    self.results_data_provider_id ||= files.first.data_provider_id rescue nil
+  end
+
+  # Apply substitution keys +keys+ to +template+ in order to format a
+  # command-line or output file name.
+  # Substitute each value in +keys+ in +template+, prepended by the
+  # corresponding flag in +flags+ (if available) and stripped of the
+  # endings in +strip+:
+  #   apply_template('f [1]', { '[1]' => 5 })
+  #     => 'f 5'
+  #
+  #   apply_template('f [1]', { '[1]' => 5 },
+  #     flags: { '[1]' => '-z' }
+  #   ) => 'f -z 5'
+  #
+  #   apply_template('f [1]', { '[1]' => '5.z' },
+  #     flags: { '[1]' => '-z' },
+  #     strip: [ '.z' ]
+  #   ) => 'f -z 5'
+  def apply_template(template, keys, flags: {}, strip: [])
+    keys.inject(template) do |template, (key, value)|
+      flag = flags[key]
+      next template.gsub(key, flag) if flag && value == true
+
+      value = (value.is_a?(Enumerable) ? value.dup : [value])
+        .reject(&:nil?)
+        .map do |v|
+          v = v.name if v.is_a?(Userfile)
+          v = v.dup  if v.is_a?(String)
+
+          strip.find do |e|
+            v.sub!(/#{Regexp.quote(e)}$/, '')
+          end if v.is_a?(String)
+
+          v.to_s.bash_escape
+        end
+        .join(' ')
+
+      template.gsub(key, flag && value.present? ? "#{flag} #{value}" : value)
+    end
+  end
+
+end

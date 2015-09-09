@@ -31,10 +31,11 @@ namespace :cbrain do
       # Unfortunately we don't have access to cbrain.rb where some useful constants are defined in the
       # CBRAIN class, such as CBRAIN::TasksPlugins_Dir ; if we ever change where plugins are stored, we
       # have to update this here and the cbrain.rb file too.
-      plugins_dir           = Rails.root            + "cbrain_plugins"
-      installed_plugins_dir = plugins_dir           + "installed-plugins"
-      tasks_plugins_dir     = installed_plugins_dir + "cbrain_task"
-      userfiles_plugins_dir = installed_plugins_dir + "userfiles"
+      plugins_dir             = Rails.root            + "cbrain_plugins"
+      installed_plugins_dir   = plugins_dir           + "installed-plugins"
+      userfiles_plugins_dir   = installed_plugins_dir + "userfiles"
+      tasks_plugins_dir       = installed_plugins_dir + "cbrain_task"
+      descriptors_plugins_dir = installed_plugins_dir + "cbrain_task_descriptors"
 
       Dir.chdir(plugins_dir.to_s) do
         packages = Dir.glob('*').reject { |path| path =~ /^(installed-plugins)$/ }.select { |f| File.directory?(f) }
@@ -46,64 +47,57 @@ namespace :cbrain do
           puts "Checking plugins in package '#{package}'..."
           Dir.chdir(package) do
 
-            # Setup each userfile plugin
+            # Setup a single unit (userfiles, tasks or descriptors)
+            setup = lambda do |glob, name, directory, condition: nil, after: nil|
+              files = Dir.glob(glob)
+              files.select!(&condition) if condition
+              puts "Found #{files.size} #{name}(s) to set up..."
+              files.each do |u_slash_f|
+                plugin           = Pathname.new(u_slash_f).basename.to_s
+                symlink_location = directory   + plugin
+                plugin_location  = plugins_dir + package + u_slash_f
+                symlink_value    = plugin_location.relative_path_from(symlink_location.parent)
 
-            files = Dir.glob('userfiles/*').select { |f| File.directory?(f) }
-            puts "Found #{files.size} file(s) to set up..."
-            files.each do |u_slash_f|                                  # "userfiles/abcd"
-              myfile           = Pathname.new(u_slash_f).basename.to_s # "abcd"
-              symlink_location = userfiles_plugins_dir + myfile
-              plugin_location  = plugins_dir           + package + u_slash_f
-              symlink_value    = plugin_location.relative_path_from(symlink_location.parent)
-              #puts "#{u_slash_f} #{myfile}\n TS=#{symlink_location}\n PL=#{plugin_location}\n LL=#{symlink_value}"
-
-              if File.exists?(symlink_location)
-                if File.symlink?(symlink_location)
-                  if File.readlink(symlink_location) == symlink_value.to_s
-                    puts "-> Userfile already setup: '#{myfile}'."
+                if File.exists?(symlink_location)
+                  if File.symlink?(symlink_location)
+                    if File.readlink(symlink_location) == symlink_value.to_s
+                      puts "-> #{name.capitalize} already setup: '#{plugin}'."
+                      next
+                    end
+                    puts "-> Error: there is already a symlink with an unexpected value here:\n   #{symlink_location}"
                     next
                   end
-                  puts "-> Error: there is already a symlink with an unexpected value here:\n   #{symlink_location}"
+                  puts "-> Error: there is already an entry (file or directory) here:\n   #{symlink_location}"
                   next
                 end
-                puts "-> Error: there is already an entry (file or directory) here:\n   #{symlink_location}"
-                next
-              end
 
-              puts "-> Creating symlink for userfile '#{myfile}'."
-              File.symlink symlink_value, symlink_location
-              #puts "  #{symlink_value} as #{symlink_location}"
+                puts "-> Creating symlink for #{name} '#{plugin}'."
+                File.symlink symlink_value, symlink_location
+
+                after.(symlink_location) if after
+              end
             end
 
+            # Setup each userfile plugin
+            setup.('userfiles/*', 'userfile', userfiles_plugins_dir,
+              condition: lambda { |f| File.directory?(f) }
+            )
 
             # Setup each cbrain_task plugin
-
-            tasks = Dir.glob('cbrain_task/*').select { |f| File.directory?(f) }
-            puts "Found #{tasks.size} tasks(s) to set up..."
-            tasks.each do |u_slash_t|                                  # "cbrain_task/abcd"
-              mytask           = Pathname.new(u_slash_t).basename.to_s # "abcd"
-              symlink_location = tasks_plugins_dir + mytask
-              plugin_location  = plugins_dir       + package + u_slash_t
-              symlink_value    = plugin_location.relative_path_from(symlink_location.parent)
-
-              if File.exists?(symlink_location)
-                if File.symlink?(symlink_location)
-                  if File.readlink(symlink_location) == symlink_value.to_s
-                    puts "-> Task already setup: '#{mytask}'."
-                    next
-                  end
-                  puts "-> Error: there is already a symlink with an unexpected value here:\n   #{symlink_location}"
-                  next
-                end
-                puts "-> Error: there is already an entry (file or directory) here:\n   #{symlink_location}"
-                next
+            setup.('cbrain_task/*', 'task', tasks_plugins_dir,
+              condition: lambda { |f| File.directory?(f) },
+              after: lambda do |symlink_location|
+                File.symlink "cbrain_task_class_loader.rb", "#{symlink_location}.rb"
               end
+            )
 
-              puts "-> Creating symlink for task '#{mytask}'."
-              File.symlink symlink_value, symlink_location
-              File.symlink "cbrain_task_class_loader.rb", "#{symlink_location}.rb" # intelligent loader wrapper
-              #puts "  #{symlink_value} as #{symlink_location}"
-            end
+            # Setup each cbrain_task descriptor plugin
+            setup.('cbrain_task_descriptors/*', 'descriptor', descriptors_plugins_dir,
+              condition: lambda { |f| File.extname(f) == '.json' },
+              after: lambda do |symlink_location|
+                File.symlink "cbrain_task_descriptor_loader.rb", "#{symlink_location.sub(/.json$/, '.rb')}"
+              end
+            )
 
           end # chdir package
         end # each package
@@ -203,26 +197,25 @@ namespace :cbrain do
       # Unfortunately we don't have access to cbrain.rb where some useful constants are defined in the
       # CBRAIN class, such as CBRAIN::TasksPlugins_Dir ; if we ever change where plugins are stored, we
       # have to update this here and the cbrain.rb file too.
-      plugins_dir           = Rails.root            + "cbrain_plugins"
-      installed_plugins_dir = plugins_dir           + "installed-plugins"
-      tasks_plugins_dir     = installed_plugins_dir + "cbrain_task"
-      userfiles_plugins_dir = installed_plugins_dir + "userfiles"
+      plugins_dir             = Rails.root            + "cbrain_plugins"
+      installed_plugins_dir   = plugins_dir           + "installed-plugins"
+      userfiles_plugins_dir   = installed_plugins_dir + "userfiles"
+      tasks_plugins_dir       = installed_plugins_dir + "cbrain_task"
+      descriptors_plugins_dir = installed_plugins_dir + "cbrain_task_descriptors"
 
-      puts "Erasing all symlinks for userfiles installed from CBRAIN plugins..."
-      Dir.chdir(userfiles_plugins_dir.to_s) do
-        Dir.glob('*').select { |f| File.symlink?(f) }.each do |f|
-          puts "-> Erasing link for userfile '#{f}'."
-          File.unlink(f)
+      erase = lambda do |name, dir|
+        puts "Erasing all symlinks for #{name.pluralize} installed from CBRAIN plugins..."
+        Dir.chdir(dir.to_s) do
+          Dir.glob('*').select { |f| File.symlink?(f) }.each do |f|
+            puts "-> Erasing link for #{name} '#{f}'."
+            File.unlink(f)
+          end
         end
       end
 
-      puts "Erasing all symlinks for tasks installed from CBRAIN plugins..."
-      Dir.chdir(tasks_plugins_dir.to_s) do
-        Dir.glob('*').select { |f| File.symlink?(f) }.each do |f|
-          puts "-> Erasing link for task '#{f}'."
-          File.unlink(f)
-        end
-      end
+      erase.('userfile',   userfiles_plugins_dir)
+      erase.('task',       tasks_plugins_dir)
+      erase.('descriptor', descriptors_plugins_dir)
 
     end
 
