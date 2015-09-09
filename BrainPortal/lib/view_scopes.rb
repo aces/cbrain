@@ -1217,7 +1217,46 @@ module ViewScopes
       pagination.empty?
   end
 
-  # Utility/internal methods
+  # Utility/helper methods
+
+  # Add a +filter+ (a Filter instance or a hash representation) to a given
+  # +scope+ (a Scope instance) with a value taken from the request parameter
+  # +param+. Unless +unique+ is specified to be false, other filters in +scope+
+  # acting on the same attribute will be removed before adding the new filter.
+  #
+  # Intended to be a simpler/quicker way to do:
+  #   if (value = params[param])
+  #     scope.filters << Scope::Filter.from_hash({
+  #       :attribute => 'field',
+  #       :value     => value
+  #     })
+  #   end
+  def scope_filter_from_params(scope, param, filter, unique: true)
+    return unless params[param]
+
+    filter = Scope::Filter.from_hash(filter) unless filter.is_a?(Scope::Filter)
+    filter.value = params[param]
+
+    scope.filters.reject! { |f| f.attribute.to_s == filter.attribute } if
+      unique && filter.attribute
+
+    scope.filters << filter
+  end
+
+  # Add a default Order instance to a +scope+ (a Scope instance) with the
+  # specified +attribute+ and +direction+ if it doesn't have any yet. This
+  # method is intended as a simpler/quicker way to set a default sorting order
+  # on a scope.
+  def scope_default_order(scope, attribute, direction = :asc)
+    return unless scope.order.blank?
+
+    scope.order << Scope::Order.from_hash({
+      :attribute => attribute,
+      :direction => direction
+    })
+  end
+
+  # Internal methods
 
   # Compress +scope+, which is expected to be a hash representation of a Scope,
   # into a string intended to be embedded in a URL. The +decompress_scope+
@@ -1249,7 +1288,7 @@ module ViewScopes
     scope.tr!('-_', '+/')
     scope = Base64.decode64(scope)
     scope = ActiveSupport::Gzip.decompress(scope)
-    scope = YAML.safe_load(scope)
+    scope = YAML.safe_load(scope, [Date, Time, DateTime])
     scope
   end
 

@@ -137,37 +137,38 @@ module ScopeHelper
   # link's URL and thus behave identically to +scope_params+'s corresponding
   # parameters.
   #
-  # +label+ is expected to be the link's text label and +options+ is expected
-  # to be a hash of options to pass to link_to or ajax_link. Only the special
-  # option :ajax (whether or not to use ajax_link instead of link_to,
-  # defaulting to link_to) is not passed.
-  def scope_link(label, name, scope, compress: true, options: {})
-    url = url_for(scope_params(name, scope, compress: compress))
-    generic_scope_link(label, url, options)
+  # +label+ is expected to be the link's text label and +url_options+ and
+  # +link_options+ are expected to be hashes of options to pass to url_for and
+  # link_to (or ajax_link), respectively. Only the special link option :ajax
+  # (whether or not to use ajax_link instead of link_to, defaulting to link_to)
+  # is not passed.
+  def scope_link(label, name, scope, compress: true, url_options: {}, link_options: {})
+    url = url_for(scope_params(name, scope, compress: compress).merge(url_options))
+    generic_scope_link(label, url, link_options)
   end
 
   # Link version of +scope_filter_params+. Identical to +scope_link+ but uses
   # +scope_filter_params+ in order to generate the URL. See +scope_link+ for more
   # information.
-  def scope_filter_link(label, scope, operation, filters, options: {})
-    url = url_for(scope_filter_params(scope, operation, filters))
-    generic_scope_link(label, url, options)
+  def scope_filter_link(label, scope, operation, filters, url_options: {}, link_options: {})
+    url = url_for(scope_filter_params(scope, operation, filters).merge(url_options))
+    generic_scope_link(label, url, link_options)
   end
 
   # Link version of +scope_order_params+. Identical to +scope_link+ but uses
   # +scope_order_params+ in order to generate the URL. See +scope_link+ for more
   # information.
-  def scope_order_link(label, scope, operation, orders, options: {})
-    url = url_for(scope_order_params(scope, operation, orders))
-    generic_scope_link(label, url, options)
+  def scope_order_link(label, scope, operation, orders, url_options: {}, link_options: {})
+    url = url_for(scope_order_params(scope, operation, orders).merge(url_options))
+    generic_scope_link(label, url, link_options)
   end
 
   # Link version of +scope_custom_params+. Identical to +scope_link+ but uses
   # +scope_custom_params+ in order to generate the URL. See +scope_link+ for more
   # information.
-  def scope_custom_link(label, scope, custom, options: {})
-    url = url_for(scope_custom_params(scope, custom))
-    generic_scope_link(label, url, options)
+  def scope_custom_link(label, scope, custom, url_options: {}, link_options: {})
+    url = url_for(scope_custom_params(scope, custom).merge(url_options))
+    generic_scope_link(label, url, link_options)
   end
 
   # Generate a pretty string representation of +filter+, optionally using
@@ -187,11 +188,11 @@ module ScopeHelper
     }
 
     # Explanatory flag (boolean attributes) value names to use instead of
-    # '<attribute>: true' or '<attribute>: false'.
+    # '<attribute>: true/1' or '<attribute>: false/0'.
     flag_names = {
-      'critical' => ['Critical', 'Not critical'],
-      'read'     => ['Read',     'Unread'],
-      'locked'   => ['Locked',   'Unlocked']
+      'critical'       => ['Critical', 'Not critical'],
+      'read'           => ['Read',     'Unread'],
+      'account_locked' => ['Locked',   'Unlocked']
     }
 
     # Model methods/attributes to use as representation of a model record
@@ -212,7 +213,7 @@ module ScopeHelper
     # attribute is in flag_names, the corresponding flag value name is
     # the filter's representation.
     if flag = flag_names[attribute]
-      return values.first ? flag.first : flag.last
+      return values.first.to_s =~ /^(true|t|yes|y|on|1)$/i ? flag.first : flag.last
     end
 
     # Is +filter+'s attribute an association attribute? If so, resolve it
@@ -283,11 +284,13 @@ module ScopeHelper
   # +collection+, which is either a Ruby Enumerable or ActiveRecord model.
   # As this method is intended as a view helper to create the list of values to
   # filter a collection/model with, the possible values are returned as a list
-  # of hashes matching +DynamicTable+'s filter format, containing:
+  # of hashes matching +DynamicTable+'s filter format (unless +format+ is
+  # specified. See below), containing:
   # [:value]
   #  Possible value for +attribute+.
   # [:label]
-  #  String representation of +:value+ (or just +:value+ if unavailable).
+  #  Label (string representation) for +:value+ (or just +:value+ if
+  #  unavailable).
   # [:indicator]
   #  Count of how many times this specific +:value: was found for +attribute+ in
   #  +collection+.
@@ -300,9 +303,23 @@ module ScopeHelper
   # +Scope+::+Filter+'s *association* attribute, and fulfills roughly the same
   # purpose; allow +attribute+ and +label+ to refer to attributes on the joined
   # model (only applicable if +collection+ is an ActiveRecord model).
-  def filter_values_for(collection, attribute, label: nil, association: nil)
-    # TODO Unscoped/base scope/total item count.
+  #
+  # If +format+ is specified, it is expected to be a lambda (or proc) accepting
+  # three arguments; a possible value for +attribute+, a label for the value,
+  # and a count of how many times this value was present and will be used to
+  # format the list of filter values, overriding the default +DynamicTable+
+  # format specified above. Specifying +format+ is roughly equivalent to using
+  # map on the  the generated filter values but without having to unpack the
+  # +DynamicTable+'s filter format hash.
+  #
+  # TODO Unscoped/base scope/total item count.
+  def filter_values_for(collection, attribute, label: nil, association: nil, format: nil)
     return [] if collection.blank?
+
+    # DynamicTable's filter hashes are the default output format
+    format ||= lambda do |value, label, count|
+      { :value => value, :label => label, :indicator => count }
+    end
 
     if (collection <= ActiveRecord::Base rescue nil)
       # Resolve and validate the main +attribute+ to fetch the values of
@@ -326,7 +343,7 @@ module ScopeHelper
         .group(attribute, label)
         .raw_rows(attribute, "#{label} AS #{label_alias}", "COUNT(#{attribute})")
         .reject { |r| r.first.blank? }
-        .map    { |v, l, c| { :value => v, :label => l, :indicator => c } }
+        .map(&format)
 
     else
       # Make sure +attribute+ and +label+ can be accessed in
@@ -346,11 +363,49 @@ module ScopeHelper
         .reject  { |v, l| v.blank? }
         .sort_by { |v, l| v }
         .inject(Hash.new(0)) { |h, i| h[i] += 1; h }
-        .map { |(v, l), c| { :value => v, :label => l, :indicator => c } }
+        .map { |(v, l), c| format.(v, l, c) }
     end
   end
 
-  # Utility/internal methods
+  # Fetch the possible values (and their count) for +model+'s (an ActiveRecord
+  # model) association +assoc+ (again an ActiveRecord model), using the
+  # attribute +label+ as labels. This method is a small wrapper around
+  # +filter_values_for+ to make generating association filters easier. For
+  # example, to get group filters for a given @view_scope, one can do:
+  #   assoc_filter_values_for(@view_scope, Group)
+  # which is equivalent to
+  #   filter_values_for(
+  #     @view_scope, :group_id,
+  #     label: 'groups.name',
+  #     association: Group
+  #   )
+  #
+  # Note that +assoc_filter_values_for+ will take the first association on
+  # +model+ matching +assoc+. For a more flexible version of this method (to
+  # use the full association format (which supports arbitrary joins), for
+  # example), use +filter_values_for+ instead.
+  def assoc_filter_values_for(model, assoc, label: 'name')
+    return [] unless (model <= ActiveRecord::Base rescue nil)
+
+    assoc = assoc.klass if assoc.respond_to?(:klass)
+    reflection = model
+      .reflect_on_all_associations
+      .find { |r| r.klass == assoc }
+    raise "no associations on '#{model.table_name}' matching '#{assoc.table_name}'" unless
+      reflection
+
+    filter_values_for(
+      model, reflection.foreign_key,
+      label: ("#{reflection.table_name}.#{label}" if label),
+      association: [
+        assoc,
+        reflection.association_primary_key,
+        reflection.association_foreign_key
+      ]
+    )
+  end
+
+  # Internal methods
 
   # Generate URL parameters suitable for +url_for+ to update the session +scope+
   # items (ordering or filtering rules). This method is the internal

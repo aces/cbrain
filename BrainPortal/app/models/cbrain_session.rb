@@ -190,6 +190,12 @@ class CbrainSession
       # Avoid adding new keys when merging in delete mode
       new.select! { |k,v| base.has_key?(k) } if mode == :delete
 
+      # FIXME: Unlike regular Ruby hashes, Rails' HashWithIndifferentAccess
+      # hash subclass does not support a collision-handling block/proc. To work
+      # around this, HashWithIndifferentAccess objects are converted back into
+      # regular hashes.
+      base = base.to_hash if base.is_a?(HashWithIndifferentAccess)
+
       base.merge!(new) do |key, old, new|
         # Recursively merge hashes with the same key
         next apply.(old, new, mode) if old.is_a?(Hash) && new.is_a?(Hash)
