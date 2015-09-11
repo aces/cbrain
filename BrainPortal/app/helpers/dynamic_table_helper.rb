@@ -1191,6 +1191,7 @@ module DynamicTableHelper
             url_for(
               :controller => params[:controller],
               :action     => params[:action],
+              :page            => 1,
               :_pag_scope_name => @scope.name
             )
           end
