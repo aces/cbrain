@@ -62,7 +62,7 @@ class Group < ActiveRecord::Base
 
   attr_accessible         :name, :description, :site_id, :creator_id, :user_ids
 
-  cb_scope                :name_like, lambda { |n| {:conditions => ["groups.name LIKE ?", "%#{n}%"]} }
+  cb_scope                :name_like, lambda { |n| {:conditions => ["groups.name LIKE ?", "%#{n.strip}%"]} }
 
   # Returns the unique and special group 'everyone'
   def self.everyone
