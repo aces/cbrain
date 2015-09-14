@@ -26,11 +26,11 @@
 <%=
   scope_custom_link(crop_text_to(15, filter.name),
     @scope, { 'custom_filters' => [filter.id] },
-    url_options:  {
+    url:  {
       'controller'  => @custom_filter.filtered_class_controller,
       '_scope_mode' => 'append'
     },
-    link_options: {
+    link: {
       :ajax => true
     }
   )

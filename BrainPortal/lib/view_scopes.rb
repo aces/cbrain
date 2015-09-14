@@ -329,7 +329,7 @@ module ViewScopes
 
         # Include other attributes
         's'  =>  hash['s']  || hash['selection'],
-        'c'  => (hash['c']  || hash['custom']).stringify_keys.to_h,
+        'c'  => (hash['c']  || hash['custom'] || {}).stringify_keys.to_h,
         'fc' => (hash['fc'] || hash['filter_combination']).to_s,
       }
 

@@ -178,7 +178,7 @@
           <%=
             scope_filter_link('Has no parent',
               @scope, :add, { 'type' => 'uf.hier', 'operator' => 'no_parent' },
-              link_options: { :ajax => true }
+              link: { :ajax => true }
             )
           %>
         </li>
@@ -186,7 +186,7 @@
           <%=
             scope_filter_link('Has no children',
               @scope, :add, { 'type' => 'uf.hier', 'operator' => 'no_child' },
-              link_options: { :ajax => true }
+              link: { :ajax => true }
             )
           %>
         </li>

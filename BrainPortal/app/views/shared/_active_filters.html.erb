@@ -34,7 +34,7 @@
     (<%=
       scope_filter_link('clear',
         scope, :clear, nil,
-        link_options: { :ajax => true }
+        link: { :ajax => true }
       )
     %>)
     <span id="current_filters">
@@ -45,7 +45,7 @@
         <%=
           scope_filter_link(delete_icon,
             scope, :remove, filter,
-            link_options: { :ajax => true }
+            link: { :ajax => true }
           )
         %>
       <% end %>
@@ -56,8 +56,8 @@
         <%=
           scope_custom_link(delete_icon,
             scope, { 'custom_filters' => [id] },
-            url_options:  { '_scope_mode' => 'delete' },
-            link_options: { :ajax         => true     }
+            url:  { '_scope_mode' => 'delete' },
+            link: { :ajax         => true     }
           )
         %>
       <% end %>

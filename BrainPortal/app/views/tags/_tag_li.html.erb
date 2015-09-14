@@ -26,8 +26,8 @@
   <%=
     scope_filter_link(crop_text_to(15, tag.name),
       @scope, :set, { 'type' => 'uf.tags', 'value' => [tag.id] },
-      url_options:  { :controller => :userfiles },
-      link_options: { :ajax       => true       }
+      url:  { :controller => :userfiles },
+      link: { :ajax       => true       }
     )
   %>
 </b>

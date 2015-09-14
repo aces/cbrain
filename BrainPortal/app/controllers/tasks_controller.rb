@@ -730,6 +730,8 @@ class TasksController < ApplicationController
   # [*Terminate*] Kill the task, while maintaining its temporary files and its entry in the database.
   # [*Delete*] Kill the task, delete the temporary files and remove its entry in the database.
   def operation
+    @scope      = scope_from_session('tasks')
+
     operation   = params[:operation]
     tasklist    = params[:tasklist]  || []
     tasklist    = [ tasklist ]  unless tasklist.is_a?(Array)
@@ -981,7 +983,10 @@ class TasksController < ApplicationController
     CbrainTask
   end
 
-  def view_scope(base) #:nodoc:
+  # View tasks scope; filtered and sorted list of tasks to display (or currently
+  # displayed). +base+ is expected to be the base scope to filter and sort
+  # (defaults to +base_scope+). Requires a valid @scope object.
+  def view_scope(base)
     base = base.where(:group_id => current_project.id) if current_project
     base = base.where(
       :bourreau_id => Bourreau

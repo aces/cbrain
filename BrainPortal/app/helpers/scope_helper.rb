@@ -52,8 +52,16 @@ module ScopeHelper
   def scope_params(name, scope, compress: true)
     scope = scope.to_hash if scope.is_a?(Scope)
     scope = Scope.compact_hash(scope)
-    scope = ViewScopes.compress_scope(scope) if compress
 
+    # Scope's compact_hash will naturally remove default values (empty arrays
+    # and hashes). They are restored here to allow clearing the corresponding
+    # Scope attributes, as CbrainSession's apply_changes method will only update
+    # an attribute if the corresponding key is present in the input hash.
+    { 'o' => [], 'f' => [], 'c' => {} }.each do |key, default|
+      scope[key] = default unless scope.has_key?(key)
+    end
+
+    scope = ViewScopes.compress_scope(scope) if compress
     { '_scopes' => { name => scope } }
   end
 
@@ -137,38 +145,38 @@ module ScopeHelper
   # link's URL and thus behave identically to +scope_params+'s corresponding
   # parameters.
   #
-  # +label+ is expected to be the link's text label and +url_options+ and
-  # +link_options+ are expected to be hashes of options to pass to url_for and
-  # link_to (or ajax_link), respectively. Only the special link option :ajax
-  # (whether or not to use ajax_link instead of link_to, defaulting to link_to)
-  # is not passed.
-  def scope_link(label, name, scope, compress: true, url_options: {}, link_options: {})
-    url = url_for(scope_params(name, scope, compress: compress).merge(url_options))
-    generic_scope_link(label, url, link_options)
+  # +label+ is expected to be the link's text label and +url+ and +link+ are
+  # expected to be hashes of options to pass to url_for and link_to
+  # (or ajax_link), respectively. Only the special link option :ajax (whether
+  # or not to use ajax_link instead of link_to, defaulting to link_to) is not
+  # passed.
+  def scope_link(label, name, scope, compress: true, url: {}, link: {})
+    url = url_for(scope_params(name, scope, compress: compress).merge(url))
+    generic_scope_link(label, url, link)
   end
 
   # Link version of +scope_filter_params+. Identical to +scope_link+ but uses
   # +scope_filter_params+ in order to generate the URL. See +scope_link+ for more
   # information.
-  def scope_filter_link(label, scope, operation, filters, url_options: {}, link_options: {})
-    url = url_for(scope_filter_params(scope, operation, filters).merge(url_options))
-    generic_scope_link(label, url, link_options)
+  def scope_filter_link(label, scope, operation, filters, url: {}, link: {})
+    url = url_for(scope_filter_params(scope, operation, filters).merge(url))
+    generic_scope_link(label, url, link)
   end
 
   # Link version of +scope_order_params+. Identical to +scope_link+ but uses
   # +scope_order_params+ in order to generate the URL. See +scope_link+ for more
   # information.
-  def scope_order_link(label, scope, operation, orders, url_options: {}, link_options: {})
-    url = url_for(scope_order_params(scope, operation, orders).merge(url_options))
-    generic_scope_link(label, url, link_options)
+  def scope_order_link(label, scope, operation, orders, url: {}, link: {})
+    url = url_for(scope_order_params(scope, operation, orders).merge(url))
+    generic_scope_link(label, url, link)
   end
 
   # Link version of +scope_custom_params+. Identical to +scope_link+ but uses
   # +scope_custom_params+ in order to generate the URL. See +scope_link+ for more
   # information.
-  def scope_custom_link(label, scope, custom, url_options: {}, link_options: {})
-    url = url_for(scope_custom_params(scope, custom).merge(url_options))
-    generic_scope_link(label, url, link_options)
+  def scope_custom_link(label, scope, custom, url: {}, link: {})
+    url = url_for(scope_custom_params(scope, custom).merge(url))
+    generic_scope_link(label, url, link)
   end
 
   # Generate a pretty string representation of +filter+, optionally using

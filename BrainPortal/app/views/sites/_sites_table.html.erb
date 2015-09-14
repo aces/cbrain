@@ -65,14 +65,14 @@
     t.column("Number of Users", :nusers) do |s|
       scope_filter_link(s.users.count.to_s,
         users_scope, :set, { :a => 'site_id', :v => s.id },
-        url_options: { :controller => :users }
+        url: { :controller => :users }
       )
     end
 
     t.column("Number of Projects", :nprojects) do |s|
       scope_filter_link(s.groups.count.to_s,
         groups_scope, :set, { :a => 'site_id', :v => s.id },
-        url_options: { :controller => :groups }
+        url: { :controller => :groups }
       )
     end
   %>

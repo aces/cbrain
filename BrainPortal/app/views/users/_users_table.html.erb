@@ -41,7 +41,7 @@
         <%=
           scope_filter_link("#{@unlocked_users_count} active",
             @scope, :set, { :a => 'account_locked', :v => 0 },
-            link_options: { :ajax => true }
+            link: { :ajax => true }
           )
         %>
       <% end %>
@@ -49,7 +49,7 @@
         <%=
           scope_filter_link("#{@locked_users_count} locked",
             @scope, :set, { :a => 'account_locked', :v => 1 },
-            link_options: { :ajax => true }
+            link: { :ajax => true }
           )
         %>
       <% end %>

@@ -48,7 +48,7 @@
           scope_filter_link(
             html_colorize("#{@unread_count} unread"),
             @scope, :set, { :a => 'read', :v => 0 },
-            link_options: { :ajax => true }
+            link: { :ajax => true }
           )
         %>
       <% end %>
@@ -57,7 +57,7 @@
           scope_filter_link(
             "#{@read_count} read",
             @scope, :set, { :a => 'read', :v => 1 },
-            link_options: { :ajax => true }
+            link: { :ajax => true }
           )
         %>
       <% end %>
