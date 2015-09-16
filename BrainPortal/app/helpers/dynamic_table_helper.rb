@@ -57,7 +57,7 @@
 #
 # Dynamic table public API methods:
 # * +dynamic_table+              Create a dynamic table
-# * +dynamic_index_table+        Create a index-specific dynamic table
+# * +dynamic_scoped_table+       Create a dynamic table using the Scope API
 # * +DynamicTable+::+column+     Add a column
 # * +DynamicTable+::+row+        Set row attributes
 # * +DynamicTable+::+selectable+ Make rows selectable
@@ -948,125 +948,6 @@ module DynamicTableHelper
   #  Defaults to :html_link
   def dynamic_table(collection, options = {}, &block)
     table = DynamicTable.create(collection, self, options, &block)
-
-    (options.has_key?(:render) && ! options[:render]) ? table : table.render
-  end
-
-  # This method is a simple variation of +dynamic_table+ (and DynamicTable)
-  # to make creating index tables easier. For example, this method supplies
-  # sort_target and filter_target lambda functions mimicking what
-  # index_table (IndexTableHelper) would send.
-  # This method's parameters are the same as +dynamic_table+'s, with the
-  # following additional options:
-  #
-  # [sort_map]
-  #  Mapping (hash) between table column names and the full column definitions
-  #  used for sorting. For example, a column for user logins would have
-  #  name :login and sorting definition 'users.login'. If a map for a given
-  #  column name is not found, it defaults to the column name itself.
-  #
-  # [filter_map]
-  #  Mapping (hash) between table column names and object fields used for
-  #  filtering. For example, a column for user logins would have
-  #  name :login and filtering field 'user_id'. If a map for a given
-  #  column name is not found, it defaults to the column name itself.
-  #
-  # This method gives index_table-like defaults for:
-  # * sort_target and filter_target
-  # * fetching the sorting order and column (@filter_params)
-  # * converting filters to DynamicTable's format ([<value>, <label>, <indicator>])
-  # * sending how many rows per page should be displayed (per_page)
-  def dynamic_index_table(collection, options = {}, &block)
-    sort_map   = options[:sort_map]   || {}
-    filter_map = options[:filter_map] || {}
-
-    # Sorting parameters syntax:
-    #  <controller>[sort_hash][order]=<column>&
-    #  <controller>[sort_hash][dir]=<'ASC'|'DESC'>
-    options[:sort_target] ||= lambda do |column,order|
-      {
-        :controller => params[:controller],
-        :action     => params[:action],
-        params[:controller] => { :sort_hash => {
-          :order => sort_map[column] || column,
-          :dir   => (order == :asc ? :desc : :asc).to_s.upcase
-        } }
-      }
-    end
-
-    # Use the filter_proxy mechanism to add filters
-    options[:filter_target] ||= lambda do |column,filter|
-      filter_column = filter_map[column] || column
-      link = filter_add_link('', { :filters => { filter_column => filter.value } })
-      link.match(/href="(.+?)"/)[1] # FIXME there is no filter_add_url...
-    end
-
-    # We create and cache a subclass of DynamicTable to act as
-    # a compatibility layer for the old 'index_table' framework
-    @@index_table_class ||= Class.new(DynamicTable) do
-      attr_accessor :sort_map
-      attr_accessor :filter_map
-
-      define_method(:column) do |label, name = nil, options = {}, &block| #:nodoc:
-        # If the column is sortable and its order set as :auto, use
-        # filter_params' order value rather than the
-        # params[<column>][:sort_order] default.
-        filter_params = @template.instance_eval { @filter_params }
-        sortable      = [:sortable, :sort_target, :sort_order].any? { |k| options[k] }
-        is_auto       = ! options[:sort_order] || options[:sort_order] == :auto
-        if sortable && is_auto
-          name    = (name || label.to_s.underscore).to_sym
-          order   = :none unless filter_params['sort_hash']['order'] == @sort_map[name]
-          order ||= filter_params['sort_hash']['dir'].downcase.to_sym rescue :asc
-          options[:sort_order] = order
-        end
-
-        # If we have index_table-like filters, convert them to DynamicTable's format
-        options[:filters].map! do |label,hash|
-          value = hash[:filters].first[1]
-          empty = hash[:class].to_s =~ /filter_zero/ # old HTML class convention
-          { :value => value, :label => label, :empty => empty }
-        end if
-          options[:filters] && options[:filters].all? do |filter|
-            filter[1][:filters].first[1] rescue nil
-          end
-
-        super(label, name, options, &block)
-      end
-
-      define_method(:pagination) do |location = nil, options = {}| #:nodoc:
-        # If options are given without a location...
-        if options.blank? && ! [:top, :bottom, :both].include?(location)
-          options  = location || {}
-          location = nil
-        end
-
-        # Pre-set some HTML attributes for the per-page input
-        (options[:input_html] ||= {}).merge!({
-          :name        => 'per_page',
-          :class       => 'search_box',
-          :'data-type' => 'script',
-          :'data-url'  =>  @template.instance_eval do
-            url_for(:controller => params[:controller], :update_filter => true)
-          end
-        }) { |key,old,new| old }
-
-        super(location, options)
-      end
-
-      alias_method :paginated, :pagination
-      alias_method :paginate,  :pagination
-
-    end
-
-    # Alright, let's create an instance of our backwards-compatible index_table object
-    table = @@index_table_class.create(collection, self, options) do |t|
-      # Make the table aware of the sorting and filtering mappings
-      t.sort_map   = sort_map
-      t.filter_map = filter_map
-
-      block.call(t)
-    end
 
     (options.has_key?(:render) && ! options[:render]) ? table : table.render
   end

@@ -1007,6 +1007,119 @@ class TasksController < ApplicationController
     view
   end
 
-  # Warning: private context in effect here.
+  public
+
+  # Tasks-specific status filter; filter by a broad class of statuses: whether
+  # or not a given task's status is within a specific class of statuses. For
+  # example, the 'active' status class contains 'New', 'Standby', 'Configured',
+  # etc.
+  #
+  # Note that this filter uses Scope::Filter's *value* attribute to hold the
+  # status class to check against, and that the *attribute* attribute is
+  # statically set to 'status' (as this filter will only ever filter on a task's
+  # status).
+  class StatusFilter < Scope::Filter
+    # Status classes and their corresponding statuses (possible values for the
+    # *value* attribute). These correspond to CbrainTask's status lists.
+    StatusClasses = {
+      'completed'  => CbrainTask::COMPLETED_STATUS,
+      'running'    => CbrainTask::RUNNING_STATUS,
+      'active'     => CbrainTask::ACTIVE_STATUS,
+      'queued'     => CbrainTask::QUEUED_STATUS,
+      'processing' => CbrainTask::PROCESSING_STATUS,
+      'failed'     => CbrainTask::FAILED_STATUS
+    }
+
+    # Create a new blank StatusFilter. Only present to pre-set *attribute*.
+    def initalize
+      @attribute = 'status'
+    end
+
+    # Nice string representation of this filter for +pretty_scope_filter+.
+    def to_s
+      "Status: #{@value.to_s.humanize}"
+    end
+
+    # The methods below are TagFilter specific versions of the Scope::Filter
+    # interface. See Scope::Filter for more details on how these methods
+    # operate and for detailed parameter information.
+
+    # Type name to recognize this filter when in hash representation
+    # (+type+ (+t+) key).
+    def self.type_name
+      't.sts'
+    end
+
+    # Apply this filter on +collection+, which is expected to be a tasks
+    # model or scope or a collection of CbrainTask objects.
+    #
+    # Note that this filter is specific to CbrainTasks and will not operate
+    # correctly with any other kind of object.
+    def apply(collection)
+      raise "no status to filter with" unless @value.present?
+
+      statuses = StatusClasses[@value.to_s.downcase]
+
+      # With a CbrainTask model (or scope)
+      if (collection <= ActiveRecord::Base rescue nil)
+        collection.where(:status => statuses)
+
+      # With a Ruby Enumerable
+      else
+        collection.select { |t| statuses.include?(t.status) }
+      end
+    end
+
+    # Check if this filter is valid (+apply+ can be used). A StatusFilter only
+    # requires a valid *value* to be useable.
+    def valid?
+      @value.present?
+    end
+
+    # Create a new StatusFilter from a hash representation. The following keys
+    # are recognized in +hash+:
+    #
+    # [+value+ or +v+]
+    #  *value* attribute: a string or symbol denoting which set of statuses to
+    #  match against; one of 'completed', 'running', 'active', 'queued',
+    #  'processing' or 'failed'.
+    #
+    # Note that no other key from Scope::Filter's +from_hash+ is recognized.
+    def self.from_hash(hash)
+      return nil unless hash.is_a?(Hash)
+
+      hash = hash.with_indifferent_access unless
+        hash.is_a?(HashWithIndifferentAccess)
+
+      filter = self.new
+      value = (hash['value'] || hash['v']).to_s.downcase
+      filter.value = value if StatusClasses.keys.include?(value)
+
+      filter
+    end
+
+    # Convert this StatusFilter into a hash representation, doing the exact
+    # opposite of +from_hash+.
+    def to_hash(compact: false)
+      hash = {
+        'type'  => self.class.type_name,
+        'value' => @value
+      }
+
+      compact ? self.class.compact_hash(hash) : hash
+    end
+
+    # Compact +hash+, a hash representation of StatusFilter (matching
+    # +from_hash+'s structure).
+    def self.compact_hash(hash)
+      ViewScopes::Scope.generic_compact_hash(
+        hash,
+        {
+          'type'  => 't',
+          'value' => 'v',
+        }
+      )
+    end
+  end
 
 end

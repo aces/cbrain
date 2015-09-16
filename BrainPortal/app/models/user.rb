@@ -111,8 +111,6 @@ class User < ActiveRecord::Base
 
   force_text_attribute_encoding 'UTF-8', :full_name, :city, :country
 
-  cb_scope                   :name_like, lambda { |n| where("users.login LIKE ? OR users.full_name LIKE ?", "%#{n}%", "%#{n}%") }
-
   # Returns the admin user
   def self.admin
     @@admin ||= self.find_by_login("admin")

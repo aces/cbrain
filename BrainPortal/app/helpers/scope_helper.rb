@@ -433,7 +433,7 @@ module ScopeHelper
   # intended to be used only to implement +scope_filter_params+ and
   # +scope_order_params+ and is most likely unsuitable for anything else.
   def scope_items_url_params(scope, operation, attr, changes) #:nodoc:
-    return if changes.blank? && operation != :clear
+    return {} unless changes.present? || [:clear, :replace].include?(operation)
 
     key   = (attr == :filters ? 'f' : 'o')
     items = (
@@ -477,6 +477,42 @@ module ScopeHelper
       :class    => 'action_link',
       :datatype => :script
     }))
+  end
+
+  # Deprecated/old methods
+
+  # Generate +count+ as a link to +controller+'s index page, with +filters+ as
+  # the only filters applied on +controller+'s scope. +count+ is expected to be
+  # a count (Integer) of some sort (usually a count of elements on one end of
+  # an association), :controller a controller name as a symbol or string, and
+  # +filters+ a set of old-style filters (hash of <attribute> => <value> pairs,
+  # each equivalent to a { :a => <attribute>, :v => <value>, :o => '==' }
+  # Filter).
+  #
+  # The available options in +options+ are:
+  # [:show_zeros]
+  #  By default, +index_count_filter+ will return an empty string if +count+
+  #  is 0. If this option is specified, '0' will be returned instead.
+  # [:scope_name]
+  #  Scope name to update with the generated link. Defaults to +controller+,
+  #  the same as the controller name.
+  #
+  # This method more-or-less behaves as a clunky, if sightly less wordy,
+  # alternative to using scope_filter_link (:replace operation) directly with
+  # a few quirks added.
+  def index_count_filter(count, controller, filters, options = {})
+    return (options[:show_zeros] ? '0' : '') if (count = count.to_i) == 0
+
+    controller = controller.to_s.downcase
+    controller = 'bourreaux' if controller == 'remote_resources'
+
+    scope_filter_link(count,
+      (options[:scope_name] || controller),
+      :replace, filters.map do |attr, value|
+        { :a => attr, :v => value }
+      end,
+      url: { :controller => controller }
+    )
   end
 
 end

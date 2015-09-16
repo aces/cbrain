@@ -49,7 +49,13 @@
 
   <p>
   In the task manager, you can view the full
-  <%= filter_reset_link "list of tasks", :controller => :tasks, :filters  => { :batch_id => @task.batch_id }, :ajax => false %>
+  <%=
+    scope_filter_link('list of tasks',
+      'tasks', :replace, { :a => 'batch_id', :v => @task.batch_id },
+      url:  { :controller => :tasks },
+      link: { :ajax       => false  }
+    )
+  %>
   in this batch.
   </p>
 

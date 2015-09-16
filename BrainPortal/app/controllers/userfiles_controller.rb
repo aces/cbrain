@@ -1620,6 +1620,7 @@ class UserfilesController < ApplicationController
     custom_filters  = (@scope.custom[:custom_filters] || []).dup
     custom_filters &= current_user.custom_filter_ids
     custom_filters.map! { |id| UserfileCustomFilter.find(id) }
+    custom_filters.compact!
 
     @scope.order << Scope::Order.from_hash({
       :attribute => 'name',

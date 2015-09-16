@@ -152,8 +152,16 @@ in a tabular layout. Proceed as follow:
 
          # Standard proc for TD content (and totals too).
          td_content_proc = Proc.new do |vector,td_filters|
-           pretty_cell_value = @filter_show_proc ? @filter_show_proc.call(vector) : vector[0].to_s
-           index_count_filter(vector[0], @filter_model, @filter_fixed.merge( td_filters || {} ), :name => pretty_cell_value)
+           next '' if vector[0].to_i == 0
+
+           scope_filter_link(
+             (@filter_show_proc ? @filter_show_proc.call(vector) : vector[0].to_s),
+             @filter_model.to_s, :replace,
+             @filter_fixed.merge(td_filters).map do |attr, value|
+               { :a => attr, :v => value }
+             end,
+             url: { :controller => @filter_model }
+           )
          end
       %>
 
@@ -169,10 +177,13 @@ in a tabular layout. Proceed as follow:
                <%= disk_space_info_display(size || 0) do %>
                  <%= pretty_size(size) %></br>
                  <%=
-                   filter_reset_link (pluralize(num_entries,"entry") + " / " + pluralize(sum_files,"file")),
-                                     :controller => :userfiles,
-                                     :filters => @filter_fixed.merge(td_filters || {}),
-                                     :ajax => false
+                   scope_filter_link("#{pluralize(num_entries,"entry")} / #{pluralize(sum_files,"file")}",
+                     'userfiles', :replace,
+                     @filter_fixed.merge(td_filters).map do |attr, value|
+                       { :a => attr, :v => value }
+                     end,
+                     url: { :controller => :userfiles }
+                   )
                  %>
                  <% if num_size_unk > 0 %>
                    </br><%= html_colorize(pluralize(num_size_unk," file") + " w/ unk size") %>
