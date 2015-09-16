@@ -78,7 +78,7 @@ class SessionsController < ApplicationController
     current_session.deactivate if current_session
     current_user.addlog("Logged out") if current_user
     portal.addlog("User #{current_user.login} logged out") if current_user
-    current_session.clear_data!
+    current_session.clear
     #reset_session
     flash[:notice] = "You have been logged out."
 
@@ -251,7 +251,7 @@ class SessionsController < ApplicationController
     current_session.activate
     user   = current_user
 
-    current_session.load_preferences_for_user(user)
+    current_session.load_preferences
 
     # Record the best guess for browser's remote host name
     reqenv  = request.env

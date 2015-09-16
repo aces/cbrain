@@ -23,7 +23,13 @@
 -%>
 
 <b>
-  <%= filter_add_link crop_text_to(15, tag.name), :controller => :userfiles, :parameter  => :filter_tags_array, :value => tag.id  %>
+  <%=
+    scope_filter_link(crop_text_to(15, tag.name),
+      @scope, :set, { 'type' => 'uf.tags', 'value' => [tag.id] },
+      url:  { :controller => :userfiles },
+      link: { :ajax       => true       }
+    )
+  %>
 </b>
 
 <small><small>

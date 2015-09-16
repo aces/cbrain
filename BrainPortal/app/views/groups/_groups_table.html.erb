@@ -27,50 +27,71 @@
    <%= overlay_ajax_link "Help", "/doc/groups/groups_info.html", :class  => "button" %>
 </div>
 
-<%= render :partial => 'shared/active_filters', :locals => {:model => :group} %>
+<%=
+  render(:partial => 'shared/active_filters', :locals  => {
+    :scope => @scope,
+    :model => Group
+  })
+%>
 
-<% button_view = (@filter_params["button_view"] == "on") %>
+<% button_view = @scope.custom[:button] %>
 
 <div class="pagination">
   <div class="pagination_left_side">
     <%=
-      filter_add_link (button_view ? "Switch to List View" : "Switch to Button View"),
-        :parameter => :button_view,
-        :value     => set_toggle(@filter_params["button_view"])
+      scope_custom_link(
+        "Switch to #{button_view ? 'List' : 'Button'} View",
+        @scope, { 'button' => !button_view }
+      )
     %>
-    <% if button_view %>
-      &nbsp;
-      <%=
-        filter_add_link (@filter_params["small_buttons"] == 'on' ? "Large buttons" : "Small buttons"),
-          :parameter => :small_buttons,
-          :value     => set_toggle(@filter_params["small_buttons"])
-      %>
-    <% end %>
+    &nbsp;
+    <%=
+      scope_custom_link(
+        "#{@scope.custom[:small_buttons] ? 'Large' : 'Small'} buttons",
+        @scope, { 'small_buttons' => !@scope.custom[:small_buttons] }
+      ) if button_view
+    %>
   </div>
   <div class="page_links">
     <% if current_user.has_role?(:normal_user) && button_view %>
       <%= will_paginate @groups, :inner_window => 5, :outer_window => 4, :container => false, :params => { :file_ids => nil } %>
     <% end %>
-    (<%= pluralize @total_entries, "projects" %>)
+    (<%= pluralize @view_scope.count, "projects" %>)
   </div>
   <div class="pagination_right_side">
-    Search by name: <%= ajax_search_box "name_like", groups_path(:update_filter => :filter_hash) %>
+    Search by name: <%= ajax_search_box "name_like", groups_path %>
   </div>
 </div>
 
 <% if button_view %>
   <% unless current_user.has_role?(:normal_user) %>
     <%=
-      dynamic_index_table([],
+      dynamic_scoped_table([],
         :id         => "project_button_table",
         :class      => "project_button_header",
-        :sort_map   => { :name => 'groups.name', :site => 'sites.name' },
-        :filter_map => { :site => 'site_id' }
+        :scope      => @scope,
+        :order_map  => {
+          :site => { :a => 'sites.name', :j => Site }
+        },
+        :filter_map => {
+          :site => { :a => 'site_id' }
+        }
       ) do |t|
         t.paginate(:collection => @groups)
-        t.column("Name",         :name, :sortable => true)
-        t.column("Project Type", :type, :filters  => basic_filters_for(@filtered_scope, @header_scope, Group, :type))
-        t.column("Site",         :site, :filters  => association_filters_for(@filtered_scope, @header_scope, Group, :site))
+
+        t.column("Name", :name,
+          :sortable => true
+        )
+
+        t.column("Project Type", :type,
+          :sortable => true,
+          :filters  => filter_values_for(@view_scope, :type)
+        )
+
+        t.column("Site", :site,
+          :sortable => true,
+          :filters  => assoc_filter_values_for(@view_scope, Site)
+        )
       end
     %>
   <% end %>
@@ -78,7 +99,7 @@
     <%= group_legend(@groups) %>
   </div>
   <div>
-    <% css_small = "small" if @filter_params["small_buttons"] == 'on' %>
+    <% css_small = "small" if @scope.custom[:small_buttons] %>
     <% @groups.each do |g| %>
       <% if g == "ALL" %>
         <div style="color:black" data-href="<%= url_for(:action => :switch, :id => "all") %>" data-method="post" class="project_button <%= css_small %>">
@@ -130,17 +151,15 @@
   </div>
 <% else %>
   <%=
-    dynamic_index_table(@groups,
+    dynamic_scoped_table(@groups,
       :id         => 'groups_table',
       :class      => [ :resource_list ],
-      :sort_map   => {
-        :name        => 'groups.name',
-        :description => 'groups.description',
-        :type        => 'groups.type',
-        :site        => 'sites.name'
+      :scope      => @scope,
+      :order_map  => {
+        :site => { :a => 'sites.name', :j => Site }
       },
       :filter_map => {
-        :site => 'site_id'
+        :site => { :a => 'site_id' }
       }
     ) do |t|
       t.paginate
@@ -155,12 +174,12 @@
 
       t.column("Project Type", :type,
         :sortable => true,
-        :filters  => basic_filters_for(@filtered_scope, @header_scope, Group, :type)
+        :filters  => filter_values_for(@view_scope, :type)
       ) { |g| g.pretty_category_name(current_user) }
 
       t.column("Site", :site,
         :sortable => true,
-        :filters  => association_filters_for(@filtered_scope, @header_scope, Group, :site)
+        :filters  => assoc_filter_values_for(@view_scope, Site)
       ) { |g| link_to_site_if_accessible(g.site) }
 
       t.column("Users", :users) do |g|

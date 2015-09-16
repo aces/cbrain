@@ -135,7 +135,11 @@
         <%= hijacker_submit_button("Mark Content As Newer", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple', :operation => 'all_newer'), :ajax_submit  => false, :method  => :post, :class => "button") %>
     <% end %>
 
-    <% select_label = "Selected Files" + (current_session.persistent_userfile_ids.size != 0 ? " (now: #{current_session.persistent_userfile_ids.size})" : "") %>
+    <%
+      select_label  = "Selected Files"
+      select_label += " (now: #{current_session[:persistent_userfiles].size})" if
+        current_session[:persistent_userfiles].present?
+    %>
     <%= button_with_dropdown_menu(select_label) do %>
       <p class="left_align">
       This panel manages your list of <em>persistently</em> selected files.
@@ -144,10 +148,10 @@
       for all operation buttons (move/copy, submit tasks, etc).
       </p>
       <p>
-      <% if current_session.persistent_userfile_ids.size == 0 %>
+      <% if current_session[:persistent_userfiles].blank? %>
         Currently, no files are selected persistently.
       <% else %>
-        <%= html_colorize("#{pluralize(current_session.persistent_userfile_ids.size,"file")} currently selected persistently.") %>
+        <%= html_colorize("#{pluralize(current_session[:persistent_userfiles].size,"file")} currently selected persistently.") %>
       <% end %>
       </p>
       <p>
@@ -170,8 +174,22 @@
 
       <h4>Other Filters</h4>
       <ul class="filter_menu">
-        <li><%= filter_add_link "Has No Parent", :filters => {:has_no_parent  => true} %></li>
-        <li><%= filter_add_link "Has No Children", :filters => {:has_no_child  => true} %></li>
+        <li>
+          <%=
+            scope_filter_link('Has no parent',
+              @scope, :add, { 'type' => 'uf.hier', 'operator' => 'no_parent' },
+              link: { :ajax => true }
+            )
+          %>
+        </li>
+        <li>
+          <%=
+            scope_filter_link('Has no children',
+              @scope, :add, { 'type' => 'uf.hier', 'operator' => 'no_child' },
+              link: { :ajax => true }
+            )
+          %>
+        </li>
       </ul>
     <% end %>
     <span id="view_option_button">

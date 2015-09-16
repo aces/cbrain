@@ -1428,6 +1428,7 @@ pre {
   padding-left: 2em;
 }
 
+.pagination_center,
 .page_links {
   display: table-cell;
   text-align: center;
