@@ -1186,6 +1186,33 @@ module ViewScopes
   #  Name of the scope to update with the page and per-page/per_page parameters.
   #  Defaults to the current route's default scope name (+default_scope_name+).
   #
+  # [_simple_filters]
+  #  Special flag to indicate that the remaining query parameters are to be
+  #  interpreted as simple attribute => value filters (each corresponding to a
+  #  { :a => <attribute>, :v => <value>, :o => '==' } Scope::Filter).
+  #  This simplified interface is meant to be used when manually composing URLs
+  #  without aid from the Scope API (such as in applications outside CBRAIN
+  #  or when composing by hand). For example, an URL to filter userfiles on a
+  #  certain data provider could look like:
+  #    http://portal.cbrain.ca/userfiles?_simple_filters=1&data_provider_id=4
+  #  instead of the full version required by the +_scopes+ parameter.
+  #
+  #  To specify which scope to update, have +_simple_filters+'s value be the
+  #  name of the target scope. If such a scope is not found (+_simple_filters+
+  #  is '1' or 'true', for example), +update_session_scopes+ will fall back
+  #  to the controller's name (common convention for index pages) then to
+  #  +default_scope_name+. For example, doing:
+  #    http://portal.cbrain.ca/userfiles?_simple_filters=tasks&...
+  #  would update the 'tasks' scope, if it exists, while:
+  #    http://portal.cbrain.ca/userfiles?_simple_filters=1&...
+  #  would try to update the 'userfiles' scope, falling back to
+  #  +default_scope_name+ if there is no 'userfiles' scope.
+  #
+  #  Note that this option cannot be used in conjunction with +_scopes+ or
+  #  +_default_scope+, and that every query parameter (other than
+  #  +_simple_filters+, +_scope_mode+ and pagination parameters) is considered
+  #  to be a filter.
+  #
   # Note that the scopes in +_default_scope+ and +_scopes+ can be in
   # compressed format (see the +compress_scope+ and +decompress_scope+ utility
   # methods).
@@ -1194,15 +1221,46 @@ module ViewScopes
         [ 'append', 'delete', 'replace' ].include?(params['_scope_mode'])
     mode ||= :replace
 
-    # Decompress (if required) and merge _scopes and _default_scope
-    scopes = (params['_scopes'] || {}).deep_dup
-    scopes.merge!({ default_scope_name => params['_default_scope'] }) if
-      params['_default_scope']
-    scopes = scopes.map do |n, s|
-      return [n, s] if s.is_a?(Hash)
-      [ n, ViewScopes.decompress_scope(s) ]
-    end.to_h
+    # Special _simple_filters filter syntax
+    if (simple = params['_simple_filters'])
+      # Determine which scope to update
+      known      = (current_session['scopes'] ||= {})
+      controller = params[:controller].to_s.downcase
+      name   = simple     if known.has_key?(simple)
+      name ||= controller if known.has_key?(controller)
+      name ||= default_scope_name
 
+      # Then convert other query parameters to Scope::Filter hashes
+      excluded = [
+        'action', 'controller',
+        '_simple_filters', '_scope_mode',
+        'page', 'per-page', 'per_page'
+      ]
+      scopes   = { name => { 'f' =>
+        params.to_h
+          .reject { |key| excluded.include?(key) }
+          .map    { |attr,value| { 'a' => attr.to_s, 'v' => value.to_s } }
+      } }
+
+    # Generic scopes updates through '_scopes' or '_default_scope'
+    elsif params['_scopes'] || params['_default_scope']
+      # Merge _scopes and _default_scope
+      scopes = (params['_scopes'] || {}).deep_dup
+      scopes.merge!({ default_scope_name => params['_default_scope'] }) if
+        params['_default_scope']
+
+      # Then decompress, if required
+      scopes = scopes.map do |n, s|
+        return [n, s] if s.is_a?(Hash)
+        [ n, ViewScopes.decompress_scope(s) ]
+      end.to_h
+
+    # No scopes updates requested
+    else
+      scopes = nil
+    end
+
+    # Apply the scope changes, if any
     current_session.apply_changes([mode, { 'scopes' => scopes }]) unless scopes.blank?
 
     # Pagination parameters (which override _scopes and _default_scope)
