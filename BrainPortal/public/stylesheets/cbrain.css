@@ -929,6 +929,12 @@ pre {
   margin-right: 0.5em;
 }
 
+.last_updated {
+  margin-right: 0.6em;
+  color: #83b4d1;
+  font-weight: bold;
+}
+
 
 
 /* % ######################################################### */
@@ -1098,37 +1104,37 @@ pre {
   right: 5px;
 }
 
-.system_project_point     { color:      #c51700; }
-.system_project           { background: #c51700; }
-.system_project:active    { background: #c51700; }
+.system_project_point     { color:      #d41c1c; }
+.system_project           { background: #d41c1c; }
+.system_project:active    { background: #d41c1c; }
 
-.everyone_project_point   { color:      #960065; }
-.everyone_project         { background: #960065; }
-.everyone_project:active  { background: #960065; }
+.everyone_project_point   { color:      #af0b0b; }
+.everyone_project         { background: #af0b0b; }
+.everyone_project:active  { background: #af0b0b; }
 
-.site_project_point       { color:      #b00035; }
-.site_project             { background: #b00035; }
-.site_project:active      { background: #b00035; }
+.site_project_point       { color:      #8c0953; }
+.site_project             { background: #8c0953; }
+.site_project:active      { background: #8c0953; }
 
-.user_project_point       { color:      #017277; }
-.user_project             { background: #017277; }
-.user_project:active      { background: #017277; }
+.user_project_point       { color:      #500d75; }
+.user_project             { background: #500d75; }
+.user_project:active      { background: #500d75; }
 
-.shared_project_point     { color:      #008b41; }
-.shared_project           { background: #008b41; }
-.shared_project:active    { background: #008b41; }
+.shared_project_point     { color:      #098c09; }
+.shared_project           { background: #098c09; }
+.shared_project:active    { background: #098c09; }
 
-.personal_project_point   { color:      #0a4081; }
-.personal_project         { background: #0a4081; }
-.personal_project:active  { background: #0a4081; }
+.personal_project_point   { color:      #076969; }
+.personal_project         { background: #076969; }
+.personal_project:active  { background: #076969; }
 
-.invisible_project_point  { color:      #c59900; }
-.invisible_project        { background: #c59900; }
-.invisible_project:active { background: #c59900; }
+.invisible_project_point  { color:      #70a30a; }
+.invisible_project        { background: #70a30a; }
+.invisible_project:active { background: #70a30a; }
 
-.empty_project_point      { color:      #c56a00; }
-.empty_project            { background: #c56a00; }
-.empty_project:active     { background: #c56a00; }
+.empty_project_point      { color:      #16a916; }
+.empty_project            { background: #16a916; }
+.empty_project:active     { background: #16a916; }
 
 .giant{
   margin-top: 0.3em;
@@ -1887,6 +1893,14 @@ img {
   background-color: #e3f2fb;
 }
 
+#tasks_table tr.task.unavailable:nth-child(odd) {
+  background-color: #fcd1de;
+}
+
+#tasks_table tr.task.unavailable:nth-child(even) {
+  background-color: #fee5ec;
+}
+
 /* % ######################################################### */
 /* % Styles for Data Provider Browse page */
 /* % ######################################################### */
@@ -2052,40 +2066,46 @@ img {
 /* % Message Index */
 /* % ######################################################### */
 
-#message_table tbody > tr {
-  border: 2px solid black;
+#message_table tr.notice_display.message_read:hover,
+#message_table tr.notice_display.message_unread:hover,
+#message_table tr.system_display.message_read:hover,
+#message_table tr.system_display.message_unread:hover,
+#message_table tr.error_display.message_read:hover,
+#message_table tr.error_display.message_unread:hover {
+  background: #fff3d3;
 }
 
-#message_table tr.notice_display {
-  border-color: green;
+#message_table tr.notice_display.message_read:active,
+#message_table tr.notice_display.message_unread:active,
+#message_table tr.system_display.message_read:active,
+#message_table tr.system_display.message_unread:active,
+#message_table tr.error_display.message_read:active,
+#message_table tr.error_display.message_unread:active {
+  background: #ffe49a;
 }
 
-#message_table tr.error_display {
-  border-color: red;
+#message_table tr.notice_display.message_read {
+  background: #c3f6b3;
 }
 
-#message_table tr.system_display {
-  border-color: blue;
+#message_table tr.notice_display.message_unread {
+  background: #5cdd5c;
 }
 
-#message_table tr.message_read {
-  border-style: none;
+#message_table tr.system_display.message_read {
+  background: #b6c7f0;
 }
 
-#message_table tr.message_unread {
-  border-style: solid;
+#message_table tr.system_display.message_unread {
+  background: #5f7ec6;
 }
 
-#message_table tr.notice_display:not(:hover):not(:active) {
-  background-color: #ddffdd;
+#message_table tr.error_display.message_read {
+  background: #ff8f8f;
 }
 
-#message_table tr.error_display:not(:hover):not(:active) {
-  background-color: #ffeeee;
-}
-
-#message_table tr.system_display:not(:hover):not(:active) {
-  background-color: #ddeeff;
+#message_table tr.error_display.message_unread {
+  background: #ff6b6b;
 }
 
 #message_table td.operations {

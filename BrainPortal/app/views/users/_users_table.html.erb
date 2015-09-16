@@ -29,6 +29,23 @@
 <%= render :partial => 'shared/active_filters', :locals => { :model => :user } %>
 
 <div class="pagination">
+  <div class="page_links">
+    (
+      <%= pluralize @users.total_entries, "user" %>
+      <% if @unlocked_users_count > 0 %>,
+        <%=
+          filter_add_link "#{@unlocked_users_count} active",
+            :filters => { :account_locked => 0 }
+        %>
+      <% end %>
+      <% if @locked_users_count > 0 %>,
+        <%=
+          filter_add_link "#{@locked_users_count} locked",
+            :filters => { :account_locked => 1 }
+        %>
+      <% end %>
+    )
+  </div>
   <div class="pagination_right_side">
     Search by name:
     <%= ajax_search_box "name_like", users_path(:update_filter => :filter_hash) %>

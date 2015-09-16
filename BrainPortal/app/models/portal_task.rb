@@ -304,7 +304,46 @@ class PortalTask < CbrainTask
     {}
   end
 
+  ######################################################
+  # Task properties directives
+  ######################################################
 
+  # Create a property directive named +name+ for property method +method+
+  # (property methods are methods expected to return property hashes, such
+  # as +untouchable_params_attributes+ and +unpresetable_params_attributes+).
+  # If +instance_method+ is given, an instance method is created for the
+  # property instead of a class method.
+  #
+  #   class SomeTask < PortalTask
+  #     property_directive.(:task_properties, :properties)
+  #     # ...
+  #     task_properties :a, :b, :c
+  #   end
+  # is equivalent to
+  #   class SomeTask < PortalTask
+  #     def self.properties
+  #       { :a => true, :b => true, :c => true }
+  #     end
+  #   end
+  property_directive = lambda do |name, method, instance_method: false|
+    define_singleton_method(name) do |*args|
+      props = args.pop if args.last.is_a?(Hash)
+      props = props.reverse_merge(args.map { |p| [p, true] }.to_h)
+
+      if instance_method
+        define_method(method) { props }
+      else
+        define_singleton_method(method) { props }
+      end
+    end
+  end
+
+  # Directive versions of +self.properties+, +untouchable_params_attributes+ and
+  # +unpresetable_params_attributes+. See +property_directive+ for more
+  # information on how they are used.
+  property_directive.(:task_properties,     :properties)
+  property_directive.(:untouchable_params,  :untouchable_params_attributes,  instance_method: true)
+  property_directive.(:unpresetable_params, :unpresetable_params_attributes, instance_method: true)
 
   ######################################################
   # Wrappers around official API

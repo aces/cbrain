@@ -121,7 +121,7 @@
                     </td>
                     <%
                       filter_url = filter.target.call(column.name, filter)
-                      filter_url = url_for(sort_url) unless sort_url.is_a?(String)
+                      filter_url = url_for(filter_url) unless filter_url.is_a?(String)
                     %>
                     <td class="dt-fpop-txt <%= empty_cls %>"
                         data-url="<%= filter_url.html_safe %>"
