@@ -80,10 +80,16 @@
 
     t.column("Login", :login,
       :sortable => true,
-      :filters  => filter_values_for(@view_scope, :account_locked,
-        format: lambda do |value, label, count|
+      :filters  => filter_values_for(@base_scope, :account_locked,
+        scope:  @scope,
+        format: lambda do |value, label, count, scoped|
           label = (!value || value == 0 ? 'Unlocked' : 'Locked')
-          { :value => value, :label => label, :indicator => count }
+          {
+            :value     => value,
+            :label     => "#{label} (#{scoped}/#{count})",
+            :indicator => scoped,
+            :empty     => scoped == 0
+          }
         end
       )
     ) do |u|
@@ -121,27 +127,22 @@
 
     t.column("Role", :type,
       :sortable => true,
-      :filters  => filter_values_for(@view_scope, :type,
-        format: lambda do |value, label, count|
-          label = label.constantize.pretty_type rescue label
-          { :value => value, :label => label, :indicator => count }
-        end
-      )
+      :filters  => default_filters_for(@base_scope, :type)
     ) { |u| u.type.underscore.titleize }
 
     t.column("Site", :site,
       :sortable => true,
-      :filters  => assoc_filter_values_for(@view_scope, Site)
+      :filters  => default_filters_for(@base_scope, Site)
     ) { |u| link_to_site_if_accessible(u.site) }
 
     t.column("City", :city,
       :sortable => true,
-      :filters  => filter_values_for(@view_scope, :city)
+      :filters  => default_filters_for(@base_scope, :city)
     )
 
     t.column("Country", :country,
       :sortable => true,
-      :filters  => filter_values_for(@view_scope, :country)
+      :filters  => default_filters_for(@base_scope, :country)
     )
 
     t.column("Time Zone", :time_zone,

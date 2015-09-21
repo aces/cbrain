@@ -39,11 +39,10 @@ class DataProvidersController < ApplicationController
     @scope = scope_from_session('data_providers')
     scope_default_order(@scope, 'name')
 
-    @data_providers = @scope.apply(
-      DataProvider
-        .find_all_accessible_by_user(current_user)
-        .includes(:user, :group)
-    )
+    @base_scope = DataProvider
+      .find_all_accessible_by_user(current_user)
+      .includes(:user, :group)
+    @data_providers = @scope.apply(@base_scope)
 
     respond_to do |format|
       format.html

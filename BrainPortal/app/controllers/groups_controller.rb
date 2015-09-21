@@ -42,7 +42,8 @@ class GroupsController < ApplicationController
     @scope.custom[:button] = true if
       current_user.has_role?(:normal_user) && @scope.custom[:button].nil?
 
-    @view_scope = @scope.apply(current_user.available_groups.includes(:site))
+    @base_scope = current_user.available_groups.includes(:site)
+    @view_scope = @scope.apply(@view_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
     @groups = @scope.pagination.apply(@view_scope)

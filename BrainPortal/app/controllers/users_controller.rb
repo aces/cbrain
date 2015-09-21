@@ -44,7 +44,8 @@ class UsersController < ApplicationController
       :operator  => 'match'
     })
 
-    @view_scope = @scope.apply(current_user.available_users.includes(:groups, :site))
+    @base_scope = current_user.available_users.includes(:groups, :site)
+    @view_scope = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
     @users = @scope.pagination.apply(@view_scope) if

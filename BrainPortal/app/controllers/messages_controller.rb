@@ -34,11 +34,10 @@ class MessagesController < ApplicationController
     @scope = scope_from_session('messages')
     scope_default_order(@scope, 'last_sent', :desc)
 
-    @view_scope = @messages = @scope.apply(
-      Message.where(current_user.has_role?(:admin_user) ?
-        {} : { :user_id => current_user.available_users.map(&:id) }
-      )
-    )
+    @base_scope = Message
+    @base_scope = @base_scope.where(:user_id => current_user.available_users.map(&:id)) unless
+      current_user.has_role?(:admin_user)
+    @view_scope = @messages = @scope.apply(@base_scope)
 
     @read_count   = @view_scope.where(:read => true).count
     @unread_count = @view_scope.count - @read_count

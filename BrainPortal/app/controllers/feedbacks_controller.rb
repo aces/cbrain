@@ -32,7 +32,8 @@ class FeedbacksController < ApplicationController
     @scope = scope_from_session('feedbacks')
     scope_default_order(@scope, 'created_at', :desc)
 
-    @feedbacks = @scope.apply(Feedback.includes(:user))
+    @base_scope = Feedback.includes(:user)
+    @feedbacks  = @scope.apply(@base_scope)
 
     respond_to do |format|
       format.js

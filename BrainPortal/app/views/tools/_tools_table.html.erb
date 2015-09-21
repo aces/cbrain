@@ -71,17 +71,17 @@
 
     t.column("Category", :category,
       :sortable => true,
-      :filters  => filter_values_for(@tools, :category)
+      :filters  => default_filters_for(@base_scope, :category)
     )
 
     t.column("Owner", :owner,
       :sortable => true,
-      :filters  => assoc_filter_values_for(@tools, User, label: 'login')
+      :filters  => default_filters_for(@base_scope, User)
     ) { |tool| link_to_user_with_tooltip(tool.user) }
 
     t.column("Project", :group,
       :sortable => true,
-      :filters  => assoc_filter_values_for(@tools, Group)
+      :filters  => default_filters_for(@base_scope, Group)
     ) { |tool| link_to_group_if_accessible(tool.group) }
 
     t.column("Execution & Versions", :exec) do |tool|

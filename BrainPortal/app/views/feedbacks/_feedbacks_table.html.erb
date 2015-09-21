@@ -53,7 +53,7 @@
 
     t.column("Author", :author,
       :sortable => true,
-      :filters  => assoc_filter_values_for(@feedbacks, User, label: 'login')
+      :filters  => default_filters_for(@base_scope, User)
     ) { |f| link_to_user_with_tooltip(f.user) }
 
     t.column("Posted at", :created_at,

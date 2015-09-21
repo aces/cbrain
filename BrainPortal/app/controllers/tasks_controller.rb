@@ -42,8 +42,9 @@ class TasksController < ApplicationController
     end
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
-    @view_scope = view_scope(current_user.available_tasks)
+    @base_scope = user_scope(current_user.available_tasks)
       .includes([:bourreau, :user, :group])
+    @view_scope = view_scope(@base_scope)
 
     # Display totals
     @total_tasks       = @view_scope.count
@@ -109,13 +110,14 @@ class TasksController < ApplicationController
   # Renders a set of tasks associated with a batch.
   def batch_list
     @scope = scope_from_session('tasks')
-    @tasks = view_scope(
+    @base_scope = user_scope(
       current_user
         .available_tasks
         .real_tasks
         .where(:batch_id => params[:batch_id])
+        .includes([:bourreau, :user, :group])
     )
-      .includes([:bourreau, :user, :group])
+    @tasks = view_scope(@base_scope)
       .order(['cbrain_tasks.rank', 'cbrain_tasks.level', 'cbrain_tasks.id'])
       .map { |task| { :batch => task.batch_id, :first => task, :count => 1 } }
 
@@ -570,14 +572,11 @@ class TasksController < ApplicationController
   def update_multiple
 
     # Construct task_ids and batch_ids
-    task_ids    = Array(params[:tasklist]  || [])
-    batch_ids   = Array(params[:batch_ids] || [])
-
-    if batch_ids.delete "nil"
-      task_ids += view_scope(CbrainTask.real_tasks.where( :batch_id => nil )).select("id").raw_first_column
-    end
-    task_ids   += view_scope(CbrainTask.real_tasks.where( :batch_id => batch_ids )).select("id").raw_first_column
-    task_ids    = task_ids.map(&:to_i).uniq
+    task_ids   = Array(params[:tasklist]  || [])
+    batch_ids  = Array(params[:batch_ids] || [])
+    batch_ids << nil if batch_ids.delete('nil')
+    task_ids  += view_scope(user_scope(CbrainTask.where(:batch_id => batch_ids))).select(:id).raw_first_column
+    task_ids   = task_ids.map(&:to_i).uniq
 
     commit_name = extract_params_key([ :update_user_id, :update_group_id, :update_results_data_provider_id, :update_tool_config_id ])
 
@@ -732,18 +731,14 @@ class TasksController < ApplicationController
   def operation
     @scope      = scope_from_session('tasks')
 
-    operation   = params[:operation]
-    tasklist    = params[:tasklist]  || []
-    tasklist    = [ tasklist ]  unless tasklist.is_a?(Array)
-    batch_ids   = params[:batch_ids] || []
-    batch_ids   = [ batch_ids ] unless batch_ids.is_a?(Array)
-
-    if batch_ids.delete "nil"
-      tasklist += view_scope(CbrainTask.where( :batch_id => nil )).select("id").raw_first_column
-    end
-
-    tasklist   += view_scope(CbrainTask.where( :batch_id => batch_ids )).select("id").raw_first_column
-    tasklist    = tasklist.map(&:to_i).uniq
+    operation  = params[:operation]
+    tasklist   = params[:tasklist]  || []
+    tasklist   = [ tasklist ]  unless tasklist.is_a?(Array)
+    batch_ids  = params[:batch_ids] || []
+    batch_ids  = [ batch_ids ] unless batch_ids.is_a?(Array)
+    batch_ids << nil if batch_ids.delete('nil')
+    tasklist  += view_scope(user_scope(CbrainTask.where(:batch_id => batch_ids))).select(:id).raw_first_column
+    tasklist   = tasklist.map(&:to_i).uniq
 
     flash[:error]  ||= ""
     flash[:notice] ||= ""
@@ -983,28 +978,30 @@ class TasksController < ApplicationController
     CbrainTask
   end
 
-  # View tasks scope; filtered and sorted list of tasks to display (or currently
-  # displayed). +base+ is expected to be the base scope to filter and sort
-  # (defaults to +base_scope+). Requires a valid @scope object.
-  def view_scope(base)
-    base = base.where(:group_id => current_project.id) if current_project
-    base = base.where(
-      :bourreau_id => Bourreau
-        .find_all_accessible_by_user(current_user)
-        .raw_rows("#{Bourreau.quoted_table_name}.id")
-        .flatten
-    )
+  # User task scope; tasks from +base+ currently visible/accessible to the
+  # user, respecting project and bourreau restrictions.
+  def user_scope(base)
+    base
+      .where(current_project ? { :group_id => current_project.id } : {})
+      .where(
+        :bourreau_id => Bourreau
+          .find_all_accessible_by_user(current_user)
+          .raw_rows("#{Bourreau.quoted_table_name}.id")
+          .flatten
+      )
+  end
 
+  # View tasks scope; filtered and sorted list of tasks to display (or currently
+  # displayed). +base+ is expected to be the base scope to filter and sort.
+  # Requires a valid @scope object.
+  def view_scope(base)
     custom_filters  = (@scope.custom[:custom_filters] || []).dup
     custom_filters &= current_user.custom_filter_ids
     custom_filters.map! { |id| TaskCustomFilter.find(id) }
 
-    view = @scope.apply(base)
-    view = custom_filters.inject(view) do |scope, filter|
+    custom_filters.inject(@scope.apply(base)) do |scope, filter|
       filter.filter_scope(scope)
     end
-
-    view
   end
 
   public

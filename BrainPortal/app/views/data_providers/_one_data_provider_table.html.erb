@@ -47,18 +47,18 @@
     t.column("Type", :type,
       :sortable => true,
       :hidden   => true,
-      :filters  => filter_values_for(@data_providers, :type)
+      :filters  => default_filters_for(@base_scope, :type)
     ) { |dp| dp.class.to_s } if current_user.has_role? :admin_user
 
     t.column("Owner", :owner,
       :hidden   => true,
       :sortable => true,
-      :filters  => assoc_filter_values_for(@data_providers, User, label: 'login')
+      :filters  => default_filters_for(@base_scope, User)
     ) { |dp| link_to_user_with_tooltip(dp.user) }
 
     t.column("Project", :group,
       :sortable => true,
-      :filters  => assoc_filter_values_for(@data_providers, Group)
+      :filters  => default_filters_for(@base_scope, Group)
     ) { |dp| link_to_group_if_accessible(dp.group) }
 
     t.column("Site", :site,

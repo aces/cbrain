@@ -101,10 +101,16 @@
         :pretty_name => 'Critical',
         :hidden      => true,
         :filters     => filter_values_for(
-          @view_scope, :critical,
-          format: lambda do |value, label, count|
+          @base_scope, :critical,
+          scope:  @scope,
+          format: lambda do |value, label, count, scoped|
             label = (! value || value == 0) ? 'Not critical' : 'Critical'
-            { :value => value, :label => label, :indicator => count }
+            {
+              :value     => value,
+              :label     => "#{label} (#{scoped}/#{count})",
+              :indicator => scoped,
+              :empty     => scoped == 0
+            }
           end
         )
       ) { |m| html_colorize("!!!") if m.critical }
@@ -113,9 +119,15 @@
         :hidden   => true,
         :sortable => true,
         :filters  => filter_values_for(
-          @view_scope, :message_type,
-          format: lambda do |value, label, count|
-            { :value => value, :label => label.humanize, :indicator => count }
+          @base_scope, :message_type,
+          scope:  @scope,
+          format: lambda do |value, label, count, scoped|
+            {
+              :value     => value,
+              :label     => "#{label.humanize} (#{scoped}/#{count})",
+              :indicator => scoped,
+              :empty     => scoped == 0
+            }
           end
         )
       ) { |m| m.message_type.humanize }
@@ -132,7 +144,8 @@
       t.column("Sender", :sender,
         :sortable => true,
         :filters  => filter_values_for(
-          @view_scope, :sender_id,
+          @base_scope, :sender_id,
+          scope: @scope,
           label: 'users.login',
           association: [User, 'id', 'sender_id'],
         ) + [{
@@ -147,7 +160,8 @@
       t.column("Recipient", :recipient,
         :sortable => true,
         :filters  => filter_values_for(
-          @view_scope, :user_id,
+          @base_scope, :user_id,
+          scope: @scope,
           label: 'users.login',
           association: [User, 'id', 'user_id']
         )

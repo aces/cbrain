@@ -34,7 +34,8 @@ class ToolsController < ApplicationController
     @scope = scope_from_session('tools')
     scope_default_order(@scope, 'name')
 
-    @tools = @scope.apply(current_user.available_tools.includes(:user, :group))
+    @base_scope = current_user.available_tools.includes(:user, :group)
+    @tools = @scope.apply(@base_scope)
 
     respond_to do |format|
       format.js

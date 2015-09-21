@@ -125,12 +125,7 @@
   <%
     t.column("Task Type", :type,
       :sortable => true,
-      :filters  => filter_values_for(@view_scope, :type,
-        format: lambda do |value, label, count|
-          label = label.constantize.pretty_type rescue label
-          { :value => value, :label => label, :indicator => count }
-        end
-      )
+      :filters  => default_filters_for(@base_scope, :type)
     ) do |type,id,count,task|
   %>
     <% case type %>
@@ -151,14 +146,14 @@
 
     t.column("Owner", :owner,
       :sortable => true,
-      :filters  => assoc_filter_values_for(@view_scope, User, label: 'login')
+      :filters  => default_filters_for(@base_scope, User)
     ) do |type,id,count,task|
       link_to_user_if_accessible(task.user) unless type == :loaded_batch
     end
 
     t.column("Project", :project,
       :sortable => true,
-      :filters  => assoc_filter_values_for(@view_scope, Group)
+      :filters  => default_filters_for(@base_scope, Group)
     ) do |type,id,count,task|
       link_to_group_if_accessible(task.group) unless type == :loaded_batch
     end unless current_project
@@ -166,7 +161,8 @@
     t.column("Execution Server", :server,
       :sortable => true,
       :filters  => filter_values_for(
-        @view_scope, :bourreau_id,
+        @base_scope, :bourreau_id,
+        scope: @scope,
         label: 'remote_resources.name',
         association: [Bourreau, 'id', 'bourreau_id']
       )
@@ -178,7 +174,7 @@
   <%
     t.column("Current Status", :status,
       :sortable => true,
-      :filters  => filter_values_for(@view_scope, :status)
+      :filters  => default_filters_for(@base_scope, :status)
     ) do |type,id,count,task|
   %>
     <%

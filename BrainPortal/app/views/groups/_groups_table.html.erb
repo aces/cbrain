@@ -85,12 +85,12 @@
 
         t.column("Project Type", :type,
           :sortable => true,
-          :filters  => filter_values_for(@view_scope, :type)
+          :filters  => default_filters_for(@base_scope, :type)
         )
 
         t.column("Site", :site,
           :sortable => true,
-          :filters  => assoc_filter_values_for(@view_scope, Site)
+          :filters  => default_filters_for(@base_scope, Site)
         )
       end
     %>
@@ -174,12 +174,12 @@
 
       t.column("Project Type", :type,
         :sortable => true,
-        :filters  => filter_values_for(@view_scope, :type)
+        :filters  => default_filters_for(@base_scope, :type)
       ) { |g| g.pretty_category_name(current_user) }
 
       t.column("Site", :site,
         :sortable => true,
-        :filters  => assoc_filter_values_for(@view_scope, Site)
+        :filters  => default_filters_for(@base_scope, Site)
       ) { |g| link_to_site_if_accessible(g.site) }
 
       t.column("Users", :users) do |g|

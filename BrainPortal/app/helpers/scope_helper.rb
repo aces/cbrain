@@ -293,7 +293,7 @@ module ScopeHelper
   # As this method is intended as a view helper to create the list of values to
   # filter a collection/model with, the possible values are returned as a list
   # of hashes matching +DynamicTable+'s filter format (unless +format+ is
-  # specified. See below), containing:
+  # specified; see below), containing:
   # [:value]
   #  Possible value for +attribute+.
   # [:label]
@@ -303,114 +303,146 @@ module ScopeHelper
   #  Count of how many times this specific +:value: was found for +attribute+ in
   #  +collection+.
   #
-  # If +label+ is specified, it is expected to be an attribute name as a string
-  # or symbol (like +attribute+), representing which +collection+ attribute to
-  # use as value labels.
+  # This method accepts following optional (named) arguments:
+  # [label]
+  #  Attribute name (as a string or symbol) representing which +collection+
+  #  attribute to use as value labels. Defaults to the value of +attribute+ if
+  #  left unspecified.
   #
-  # If +association+ is specified, it is expected to be in the same format as
-  # +Scope+::+Filter+'s *association* attribute, and fulfills roughly the same
-  # purpose; allow +attribute+ and +label+ to refer to attributes on the joined
-  # model (only applicable if +collection+ is an ActiveRecord model).
+  # [association]
+  #  Association to join on +collection+. Expected to be in the same format as
+  #  +Scope+::+Filter+'s *association* attribute, it roughly fulfills the same
+  #  purpose; allow +attribute+ and +label+ to refer to attributes on the joined
+  #  model (only applicable if +collection+ is an ActiveRecord model).
   #
-  # If +format+ is specified, it is expected to be a lambda (or proc) accepting
-  # three arguments; a possible value for +attribute+, a label for the value,
-  # and a count of how many times this value was present and will be used to
-  # format the list of filter values, overriding the default +DynamicTable+
-  # format specified above. Specifying +format+ is roughly equivalent to using
-  # map on the  the generated filter values but without having to unpack the
-  # +DynamicTable+'s filter format hash.
+  #  If :association is specified and is an AR model, +attribute+ is also
+  #  allowed to be nil to indicate that it should automatically be selected as
+  #  the foreign key of the first association on +collection+ matching the given
+  #  +association+ model. The +label+ option will also default to the 'name'
+  #  attribute on the given +association+ (and will refer to the association
+  #  model unless qualified by a table name). This behavior allows generating
+  #  association filters without explicitly specifying the association join
+  #  attributes. For example,
+  #    filter_values_for(@userfiles, nil, :association => DataProvider)
+  #  is equivalent to the more verbose
+  #    filter_values_for(@userfiles, 'data_provider_id',
+  #      :label       => 'data_providers.name',
+  #      :association => DataProvider
+  #    )
   #
-  # TODO Unscoped/base scope/total item count.
-  def filter_values_for(collection, attribute, label: nil, association: nil, format: nil)
+  # [format]
+  #  Lambda (or proc) accepting three arguments; a possible value for
+  #  +attribute+, a label for the value, and a count of how many times this
+  #  value was present. This lambda will be used to format the list of filter
+  #  values, overriding the default +DynamicTable+ format specified above.
+  #  Specifying +format+ is roughly equivalent to using map on the generated
+  #  filter values but without having to unpack the +DynamicTable+'s filter
+  #  format hash.
+  #
+  # [scope]
+  #  Generate a separate set of filter value counts (how many times a given
+  #  filter value is found) for +collection+ when scoped under +scope+. For
+  #  example, if a given userfile collection has 30 TextFiles out of 40 and
+  #  10 of those 30 belong to a given user, the unscoped TextFile filter count
+  #  would be 30 and the user-scoped count 10. When this option is specified,
+  #  +format+ takes a fourth argument; the corresponding scoped count, and,
+  #  if +format+ is unspecified, the two counts (normal and scoped) are appended
+  #  to the default label value. For example, in the above TextFile example,
+  #  the label would look like 'TextFile (10/30)'.
+  #
+  #  Note that any Filter filtering on +attribute+ in +scope+ will be skipped to
+  #  avoid generating empty filter values (while this behavior is
+  #  counter-intuitive and clunky, it is required for table filtering).
+  def filter_values_for(collection, attribute, label: nil, association: nil, format: nil, scope: nil)
     return [] if collection.blank?
 
-    # DynamicTable's filter hashes are the default output format
-    format ||= lambda do |value, label, count|
-      { :value => value, :label => label, :indicator => count }
+    # Remove any +attribute+ filter on +scope+
+    if scope
+      scope = scope.dup
+      scope.filters.reject! do |f|
+        f.attribute.to_s.downcase == attribute.to_s.downcase
+      end
     end
 
+    # Invoke the model/collection specific method
     if (collection <= ActiveRecord::Base rescue nil)
-      # Resolve and validate the main +attribute+ to fetch the values of
-      attribute, model = ViewScopes.resolve_model_attribute(attribute, collection, association)
-
-      # And +label+, if provided
-      if label
-        label, model = ViewScopes.resolve_model_attribute(label, model, association)
-      else
-        label = attribute
-      end
-
-      # NOTE: The 'AS' specifier bypasses Rails' uniq on the column names, which
-      # would remove the label column if label happens to have the same value
-      # as attribute.
-      label_alias = model.connection.quote_column_name('label')
-
-      model
-        .where("#{attribute} IS NOT NULL")
-        .order(attribute, label)
-        .group(attribute, label)
-        .raw_rows(attribute, "#{label} AS #{label_alias}", "COUNT(#{attribute})")
-        .reject { |r| r.first.blank? }
-        .map(&format)
-
+      filters = model_filter_values(
+        collection, attribute, label,
+        association: association,
+        scope: scope
+      )
     else
-      # Make sure +attribute+ and +label+ can be accessed in
-      # +collection+'s items.
-      attr_get = ViewScopes.generate_getter(collection.first, attribute)
-      raise "no way to get '#{attribute}' out of collection items" unless attr_get
+      filters = collection_filter_values(
+        collection, attribute, label,
+        scope: scope
+      )
+    end
 
-      if label == attribute
-        lbl_get = attr_get
-      else
-        lbl_get = ViewScopes.generate_getter(collection.first, label || attribute)
-        raise "no way to get '#{label}' out of collection items" unless lbl_get
-      end
+    # No need to use the default format if one is specified
+    return filters.map(&format) if format
 
-      collection
-        .map     { |i| [attr_get.(i), lbl_get.(i)].freeze }
-        .reject  { |v, l| v.blank? }
-        .sort_by { |v, l| v }
-        .inject(Hash.new(0)) { |h, i| h[i] += 1; h }
-        .map { |(v, l), c| format.(v, l, c) }
+    # Format the generated filter arrays as DynamicTable's filter hashes
+    filters.map do |value, label, count, *rest|
+      scoped = rest.first
+      label  = "#{label} (#{scoped}/#{count})" if scoped
+      {
+        :value     => value,
+        :label     => label,
+        :indicator => scoped || count,
+        :empty     => (scoped || count) == 0
+      }
     end
   end
 
-  # Fetch the possible values (and their count) for +model+'s (an ActiveRecord
-  # model) association +assoc+ (again an ActiveRecord model), using the
-  # attribute +label+ as labels. This method is a small wrapper around
-  # +filter_values_for+ to make generating association filters easier. For
-  # example, to get group filters for a given @view_scope, one can do:
-  #   assoc_filter_values_for(@view_scope, Group)
-  # which is equivalent to
-  #   filter_values_for(
-  #     @view_scope, :group_id,
-  #     label: 'groups.name',
-  #     association: Group
-  #   )
+  # Fetch the possible values for +attribute+ within +collection+.
+  # A simple wrapper around +filter_values_for+, this method offers a set
+  # of commonly used defaults to +filter_values_for+ when generating simple
+  # attribute filters.
   #
-  # Note that +assoc_filter_values_for+ will take the first association on
-  # +model+ matching +assoc+. For a more flexible version of this method (to
-  # use the full association format (which supports arbitrary joins), for
-  # example), use +filter_values_for+ instead.
-  def assoc_filter_values_for(model, assoc, label: 'name')
-    return [] unless (model <= ActiveRecord::Base rescue nil)
+  # +collection+ and +attribute+ are passed directly to +filter_values_for+,
+  # with one exception; if both +collection+ and +attribute+ are AR models
+  # (or scopes), +default_filters_for+ will pass +attribute+ as an association
+  # on +collection+ instead:
+  #   default_filters_for(some_scope, SomeModel)
+  # corresponds to:
+  #   filter_values_for(scope_scope, nil, association: SomeModel)
+  #
+  # For more information on how filter values are generated,
+  # see +filter_values_for+.
+  def default_filters_for(collection, attribute)
+    # Generate a formatting lambda which will call +block+ to format a filter
+    # value's label.
+    formatter = lambda do |block|
+      return unless block
 
-    assoc = assoc.klass if assoc.respond_to?(:klass)
-    reflection = model
-      .reflect_on_all_associations
-      .find { |r| r.klass == assoc }
-    raise "no associations on '#{model.table_name}' matching '#{assoc.table_name}'" unless
-      reflection
+      lambda do |args|
+        value, label, count, scoped = args
+        label = block.(label) rescue label
+        label = "#{label} (#{scoped}/#{count})" if scoped
+        {
+          :value     => value,
+          :label     => label,
+          :indicator => scoped || count,
+          :empty     => (scoped || count) == 0
+        }
+      end
+    end
 
-    filter_values_for(
-      model, reflection.foreign_key,
-      label: ("#{reflection.table_name}.#{label}" if label),
-      association: [
-        assoc,
-        reflection.association_primary_key,
-        reflection.association_foreign_key
-      ]
-    )
+    # Is +attribute+ an association?
+    if (attribute <= ActiveRecord::Base rescue nil)
+      filter_values_for(collection, nil, association: attribute,
+        scope: @scope,
+        label: ('login' if attribute <= User)
+      )
+    else
+      filter_values_for(collection, attribute,
+        scope:  @scope,
+        format: formatter.((
+          proc { |l| l.constantize.pretty_type } if
+            attribute.to_s.downcase == 'type'
+        ))
+      )
+    end
   end
 
   # Internal methods
@@ -477,6 +509,119 @@ module ScopeHelper
       :class    => 'action_link',
       :datatype => :script
     }))
+  end
+
+  # Fetch the possible values (and their count) for +attribute+ within +model+,
+  # an ActiveRecord model. Internal model-specific implementation of
+  # +filter_values_for+ for AR models; see +filter_values_for+ for more
+  # information on this method's arguments (which are handled just like
+  # +filter_values_for+'s, save for +scope+).
+  #
+  # Note that the filter values returned by this method are in array format,
+  # ([value, label, count, (scoped_count)]) as this method is intended for
+  # internal use by +filter_values_for+ which will perform final formatting.
+  def model_filter_values(model, attribute, label, association: nil, scope: nil)
+    # Handle the special case where +attribute+ is nil and corresponds to
+    # +model+'s foreign key for +association+
+    if ! attribute && association
+      # Find the matching +association+ reflection on +model+
+      assoc = association.respond_to?(:klass) ? association.klass : association
+      reflection = model
+        .reflect_on_all_associations
+        .find { |r| r.klass == assoc }
+      raise "no associations on '#{model.table_name}' matching '#{assoc.table_name}'" unless
+        reflection
+
+      # Use +association+'s reflection to set missing argument values
+      attribute   = reflection.foreign_key
+      label       = "#{reflection.table_name}.#{label || 'name'}"
+      association = [
+        assoc,
+        reflection.association_primary_key,
+        reflection.association_foreign_key
+      ]
+    end
+
+    # Resolve and validate the main +attribute+ to fetch the values of
+    attribute, model = ViewScopes.resolve_model_attribute(attribute, model, association)
+
+    # And +label+, if provided
+    if label
+      label, model = ViewScopes.resolve_model_attribute(label, model, association)
+    else
+      label = attribute
+    end
+
+    # NOTE: The 'AS' specifier bypasses Rails' uniq on column names, which
+    # would remove the label column if +label+ happens to have the same value
+    # as +attribute+.
+    label_alias = model.connection.quote_column_name('label')
+
+    # Fetch the main filter values as an array of arrays:
+    # [[value, label, count], [...]]
+    filters = model
+      .where("#{attribute} IS NOT NULL")
+      .order(attribute, label)
+      .group(attribute, label)
+      .raw_rows(attribute, "#{label} AS #{label_alias}", "COUNT(#{attribute})")
+      .reject { |r| r.first.blank? }
+      .map(&:to_a)
+      .to_a
+
+    # No +scope+? Then +filters+ is ready
+    return filters unless scope
+
+    # Add in the scoped counts
+    scoped = scope.apply(model)
+      .where("#{attribute} IS NOT NULL")
+      .group(attribute)
+      .raw_rows(attribute, "COUNT(#{attribute})")
+      .to_h
+
+    filters.map { |f| f << (scoped[f.first] || 0) }
+  end
+
+  # Fetch the possible values (and their count) for +attribute+ within
+  # +collection+, a generic Ruby collection. Internal collection-specific
+  # implementation of +filter_values_for+ for Ruby collections; see
+  # +filter_values_for+ for more information on this method's arguments
+  # (which are handled just like +filter_values_for+'s, save for +scope+).
+  #
+  # Note that the filter values returned by this method are in array format,
+  # ([value, label, count, (scoped_count)]) as this method is intended for
+  # internal use by +filter_values_for+ which will perform final formatting.
+  def collection_filter_values(collection, attribute, label, scope: nil)
+    # Make sure +attribute+ and +label+ can be accessed in
+    # +collection+'s items.
+    attr_get = ViewScopes.generate_getter(collection.first, attribute)
+    raise "no way to get '#{attribute}' out of collection items" unless attr_get
+
+    if label == attribute
+      lbl_get = attr_get
+    else
+      lbl_get = ViewScopes.generate_getter(collection.first, label || attribute)
+      raise "no way to get '#{label}' out of collection items" unless lbl_get
+    end
+
+    # Generate the main filter values as a hash; [value, label] => count
+    count_values = lambda do |collection|
+      collection
+        .map     { |i| [attr_get.(i), lbl_get.(i)].freeze }
+        .reject  { |v, l| v.blank? }
+        .sort_by { |v, l| v }
+        .inject(Hash.new(0)) { |h, i| h[i] += 1; h }
+    end
+
+    filters = count_values.(collection)
+
+    # Add in the scoped counts, if required, then flatten the hash into
+    # array format
+    if scope
+      scoped = count_values.(scope.apply(collection))
+      filters.map { |i, c| [*i, c, scoped[i] || 0] }
+    else
+      filters.map { |(v, l), c| [v, l, c] }
+    end
   end
 
   # Deprecated/old methods

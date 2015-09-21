@@ -50,7 +50,7 @@
 
     t.column("Server Type", :type,
       :sortable => true,
-      :filters  => filter_values_for(@bourreaux, :type)
+      :filters  => default_filters_for(@base_scope, :type)
     ) { |r| r.is_a?(Bourreau) ? "Execution" : "Portal" }
 
     t.column("Server Name", :name,
@@ -75,12 +75,12 @@
     t.column("Owner", :owner,
       :hidden   => true,
       :sortable => true,
-      :filters  => assoc_filter_values_for(@bourreaux, User, label: 'login')
+      :filters  => default_filters_for(@base_scope, User)
     ) { |r| link_to_user_with_tooltip(r.user) }
 
     t.column("Project", :group,
       :sortable => true,
-      :filters  => assoc_filter_values_for(@bourreaux, Group)
+      :filters  => default_filters_for(@base_scope, Group)
     ) { |r| link_to_group_if_accessible(r.group) }
 
     t.column("Site", :site,
@@ -90,7 +90,7 @@
     t.column("Time Zone", :time_zone,
       :hidden   => true,
       :sortable => true,
-      :filters  => filter_values_for(@bourreaux, :time_zone)
+      :filters  => default_filters_for(@base_scope, :time_zone)
     ) { |r| r.time_zone || "(Unset)" }
 
     t.column("Online?", :online,

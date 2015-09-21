@@ -57,7 +57,7 @@
       generic_column = lambda do |label,field|
         t.column(label, field,
           :sortable => true,
-          :filters  => filter_values_for(@view_scope, field)
+          :filters  => default_filters_for(@base_scope, field)
         )
       end
 
@@ -66,7 +66,7 @@
 
       t.column("Exception", :exception_class,
         :sortable => true,
-        :filters  => filter_values_for(@view_scope, :exception_class)
+        :filters  => default_filters_for(@base_scope, :exception_class)
       ) { |e| link_to e.exception_class, e }
 
       t.column("Message", :message) { |e| crop_text_to(75, e.message) }
@@ -78,7 +78,7 @@
 
       t.column("User", :user,
         :sortable => true,
-        :filters  => assoc_filter_values_for(@view_scope, User, label: 'login')
+        :filters  => default_filters_for(@view_scope, User)
       ) { |e| link_to_user_with_tooltip(e.user) }
 
       generic_column.("Revision",   :revision_no)

@@ -41,11 +41,10 @@ class BourreauxController < ApplicationController
     @scope = scope_from_session('bourreaux')
     scope_default_order(@scope, 'type')
 
-    @bourreaux = @scope.apply(
-      RemoteResource
-        .find_all_accessible_by_user(current_user)
-        .includes(:user, :group)
-    )
+    @base_scope = RemoteResource
+      .find_all_accessible_by_user(current_user)
+      .includes(:user, :group)
+    @bourreaux = @scope.apply(@base_scope)
 
     respond_to do |format|
       format.html
