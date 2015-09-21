@@ -954,7 +954,7 @@ module DynamicTableHelper
 
   # Specialization of +dynamic_table+ (and DynamicTable) to make creating
   # tables using the view scopes mechanism (see the ViewScopes module) easier
-  # by supplying sort_targer and filter_target lambda functions using Scope
+  # by supplying sort_target and filter_target lambda functions using Scope
   # filtering and ordering rules.
   # This method's parameters are the same as +dynamic_table+'s, with the
   # following additional options:

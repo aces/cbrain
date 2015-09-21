@@ -252,7 +252,7 @@ module ViewScopes
     #  *filter_combination* attribute: either +and+/+intersection+ or
     #  +or+/+union+ (defaults to +and+).
     #
-    # Any missing key will lead to a nil attribute and be handled appriately;
+    # Any missing key will lead to a nil attribute and be handled accordingly;
     # arrays will default to empty and absent components will be ignored.
     #
     # Returns the newly created Scope (just like new would)
@@ -752,7 +752,7 @@ module ViewScopes
       # Name of the collection/model attribute to order/sort the
       # collection/model with, as a string or symbol. Must be present as an
       # attribute on in collection/model elements and correspond to a comparable
-      # value (anything that supports <, >), or no sorting/orderin will be
+      # value (anything that supports <, >), or no sorting/ordering will be
       # performed on the collection/model at all.
       #
       # Note that it can also be an attribute on the matching association
@@ -1263,7 +1263,8 @@ module ViewScopes
     # Apply the scope changes, if any
     current_session.apply_changes([mode, { 'scopes' => scopes }]) unless scopes.blank?
 
-    # Pagination parameters (which override _scopes and _default_scope)
+    # Pagination parameters (which override _scopes, _default_scope
+    # and _simple_filters)
     pagination = {}
     pagination['i'] = params['page']     if params['page']
     pagination['p'] = params['per-page'] if params['per-page']

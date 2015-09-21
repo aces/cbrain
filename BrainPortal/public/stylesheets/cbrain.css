@@ -2067,6 +2067,16 @@ img {
 /* % Message Index */
 /* % ######################################################### */
 
+#message_table th.critical > .dt-hdr {
+  font-size: 1.8em;
+  padding-right: 0.5em;
+}
+
+#message_table td.critical {
+  font-weight: bold;
+  padding-left: 1em;
+}
+
 #message_table tr.notice_display.message_read:hover,
 #message_table tr.notice_display.message_unread:hover,
 #message_table tr.system_display.message_read:hover,

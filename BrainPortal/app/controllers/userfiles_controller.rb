@@ -1623,10 +1623,7 @@ class UserfilesController < ApplicationController
     custom_filters.map! { |id| UserfileCustomFilter.find(id) }
     custom_filters.compact!
 
-    @scope.order << Scope::Order.from_hash({
-      :attribute => 'name',
-      :direction => 'asc'
-    }) if @scope.order.blank?
+    scope_default_order(@scope, 'name')
 
     view = @scope.apply(base)
     view = custom_filters.inject(view) do |scope, filter|
@@ -1749,7 +1746,8 @@ class UserfilesController < ApplicationController
   # whether or not a given userfile has children or a parent.
   #
   # Note that this filter uses Scope::Filter's *operator* attribute to hold
-  # which condition to filter on. The following conditions (values for
+  # which condition to filter on, and that the *attribute* attribute is set
+  # accordingly to avoid duplication. The following conditions (values for
   # *operator*) are available:
   # [+no_child+]  Userfiles without any children (shortened to 'c').
   # [+no_parent+] Userfiles without a parent (shortened to 'p').
@@ -1829,7 +1827,8 @@ class UserfilesController < ApplicationController
       filter = self.new
 
       operator = (hash['operator'] || hash['o'] || 'no_child').to_s.downcase
-      filter.operator = operator if ['no_child', 'no_parent'].include?(operator)
+      filter.operator  = operator if ['no_child', 'no_parent'].include?(operator)
+      filter.attribute = "##{filter.operator}" if filter.operator
 
       filter
     end

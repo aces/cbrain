@@ -172,25 +172,9 @@
         <%= render :partial => 'userfiles/tag_table_sidebar' %>
       </div>
 
-      <h4>Other Filters</h4>
-      <ul class="filter_menu">
-        <li>
-          <%=
-            scope_filter_link('Has no parent',
-              @scope, :add, { 'type' => 'uf.hier', 'operator' => 'no_parent' },
-              link: { :ajax => true }
-            )
-          %>
-        </li>
-        <li>
-          <%=
-            scope_filter_link('Has no children',
-              @scope, :add, { 'type' => 'uf.hier', 'operator' => 'no_child' },
-              link: { :ajax => true }
-            )
-          %>
-        </li>
-      </ul>
+      <div id="userfiles_other_filters">
+        <%= render :partial => 'userfiles/other_filters' %>
+      </div>
     <% end %>
     <span id="view_option_button">
       <%= render :partial => "userfiles/view_option_button" %>

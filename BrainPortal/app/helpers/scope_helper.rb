@@ -281,7 +281,7 @@ module ScopeHelper
       '<='    => 'under ',
       'in'    => 'one of ',
       'out'   => 'anything except ',
-      'match' => '~',
+      'match' => 'like ',
       'range' => 'between '
     })[filter.operator.to_s]
 
