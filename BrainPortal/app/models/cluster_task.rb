@@ -1645,8 +1645,8 @@ class ClusterTask < CbrainTask
 
     cache_dir=RemoteResource.current_resource.dp_cache_dir;
     task_dir=self.bourreau.cms_shared_dir;
-    docker_commands = "cat << DOCKERJOB > .dockerjob.sh
-#!/bin/bash\n
+    docker_commands = "cat << \"DOCKERJOB\" > .dockerjob.sh
+#!/bin/bash -l\n
 #{commands_joined}\n
 DOCKERJOB\n
 chmod 755 ./.dockerjob.sh\n
