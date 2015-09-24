@@ -32,23 +32,25 @@
   <%= overlay_ajax_link "Help", "/doc/tool/tool_info.html", :class  => "button menu_button" %>
 </div>
 
-
-<%= render :partial => 'shared/active_filters', :locals => {:model => :tool} %>
+<%=
+  render(:partial => 'shared/active_filters', :locals  => {
+    :scope => @scope,
+    :model => Tool
+  })
+%>
 
 <%=
-  dynamic_index_table(@tools,
+  dynamic_scoped_table(@tools,
     :id         => 'tools_table',
     :class      => [ :resource_list ],
-    :sort_map   => {
-      :name        => 'tools.name',
-      :description => 'tools.description',
-      :category    => 'tools.category',
-      :owner       => 'users.login',
-      :group       => 'groups.name'
+    :scope      => @scope,
+    :order_map  => {
+      :owner => { :a => 'users.login', :j => User  },
+      :group => { :a => 'groups.name', :j => Group }
     },
     :filter_map => {
-      :owner    => 'user_id',
-      :group    => 'group_id'
+      :owner => { :a => 'user_id'  },
+      :group => { :a => 'group_id' }
     }
   ) do |t|
 %>
@@ -69,17 +71,17 @@
 
     t.column("Category", :category,
       :sortable => true,
-      :filters  => basic_filters_for(@filtered_scope, @header_scope, Tool, :category)
+      :filters  => default_filters_for(@base_scope, :category)
     )
 
     t.column("Owner", :owner,
       :sortable => true,
-      :filters  => association_filters_for(@filtered_scope, @header_scope, Tool, :user, :name_method => :login)
+      :filters  => default_filters_for(@base_scope, User)
     ) { |tool| link_to_user_with_tooltip(tool.user) }
 
     t.column("Project", :group,
       :sortable => true,
-      :filters  => association_filters_for(@filtered_scope, @header_scope, Tool, :group)
+      :filters  => default_filters_for(@base_scope, Group)
     ) { |tool| link_to_group_if_accessible(tool.group) }
 
     t.column("Execution & Versions", :exec) do |tool|

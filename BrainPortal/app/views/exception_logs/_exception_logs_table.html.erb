@@ -26,7 +26,12 @@
   <%= external_submit_button "Delete Checked Exceptions", "exception_form", :class  => "button", :confirm  => "Are you sure you want to delete the selected logs?"  %>
 </div>
 
-<%= render :partial => 'shared/active_filters', :locals => {:model => :exception_log} %>
+<%=
+  render(:partial => 'shared/active_filters', :locals  => {
+    :scope => @scope,
+    :model => ExceptionLog
+  })
+%>
 
 <div class="pagination">
   <span class="page_links">
@@ -36,33 +41,23 @@
 
 <%= ajax_form_tag(url_for(:action => :destroy), :method => :delete, :datatype => :script, :id => "exception_form") do %>
   <%=
-    dynamic_index_table(@exception_logs,
+    dynamic_scoped_table(@exception_logs,
       :id         => 'exception_logs_table',
       :class      => [ :resource_list ],
-      :sort_map   => {
-        :exception_class    => 'exception_logs.exception_class',
-        :request_method     => 'exception_logs.request_method',
-        :request_controller => 'exception_logs.request_controller',
-        :request_action     => 'exception_logs.request_action',
-        :request_format     => 'exception_logs.request_format',
-        :user               => 'users.login',
-        :revision_no        => 'exception_logs.revision_no',
-        :created_at         => 'exception_logs.created_at'
+      :scope      => @scope,
+      :order_map  => {
+        :user => { :a => 'users.login', :j => User }
       },
       :filter_map => {
-        :user => 'user_id'
+        :user => { :a => 'user_id' }
       }
     ) do |t|
   %>
     <%
-      filters_for = lambda do |field|
-        basic_filters_for(@filtered_scope, ExceptionLog.scoped, ExceptionLog, field)
-      end
-
       generic_column = lambda do |label,field|
         t.column(label, field,
           :sortable => true,
-          :filters  => filters_for.(field)
+          :filters  => default_filters_for(@base_scope, field)
         )
       end
 
@@ -71,7 +66,7 @@
 
       t.column("Exception", :exception_class,
         :sortable => true,
-        :filters  => filters_for.(:exception_class)
+        :filters  => default_filters_for(@base_scope, :exception_class)
       ) { |e| link_to e.exception_class, e }
 
       t.column("Message", :message) { |e| crop_text_to(75, e.message) }
@@ -83,7 +78,7 @@
 
       t.column("User", :user,
         :sortable => true,
-        :filters  => association_filters_for(@filtered_scope, ExceptionLog.scoped, "exception_log", "user", :name_method => "login")
+        :filters  => default_filters_for(@view_scope, User)
       ) { |e| link_to_user_with_tooltip(e.user) }
 
       generic_column.("Revision",   :revision_no)

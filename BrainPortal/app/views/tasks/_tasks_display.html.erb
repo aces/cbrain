@@ -23,69 +23,41 @@
 -%>
 
 <%
-  batch_view = @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' rescue nil
+  batch_view = @scope.custom[:batch] rescue nil
+  list = @tasks.map { |t| [(t[:count] == 1 ? :task : :batch), t[:batch], t[:count], t[:first]] }
 
-  if @row_fetch
-    # In row fetch mode, @tasks will contain a list of tasks for a single batch.
-    # The loaded batch header is created from this list and the first task of the batch.
-    list = @tasks.map { |task| [ :task, task.batch_id, nil, task ] }
-  else
-    # In table display mode, @paginated_list will contain an already paginated list
-    # of batch ids which maps into @tasks, a hash of task_info structures. In this
-    # context, a task is a batch with just one task.
-    list = @paginated_list.map do |id|
-      batch = @tasks[id]
-      [ (batch[:num_tasks] == 1 ? :task : :batch), id, batch, batch[:first_task] ] if
-        batch.present? && batch[:first_task].present?
-    end.compact
-  end
-
-  # This table's columns accept 4 arguments (type, id, batch and task) are specially made
+  # This table's columns accept 4 arguments (type, id, count and task) and are specially made
   # to render 3 row types;
   #
-  # - Task rows (+type+ is :task). +id+ is the task's batch id, +batch+ is not used (can be nil)
+  # - Task rows (+type+ is :task). +id+ is the task's batch id, +count+ is not used (can be nil)
   #   and +task+ is the task object to render.
   #
-  # - Batch rows (+type+ is :batch). +id+ is the batch's id, +batch+ is a hash containing various
-  #   attributes of the batch (task_info) and +task+ is the first task of the batch.
+  # - Batch rows (+type+ is :batch). +id+ is the batch's id, +count+ is the batch's task count
+  #   and +task+ is the first task of the batch.
   #
-  # - Loaded batch rows (+type+ is :loaded_batch). +id+ is the batch's id, +batch+ is not used and
+  # - Loaded batch rows (+type+ is :loaded_batch). +id+ is the batch's id, +count+ is not used and
   #   +task+ is the first task of the batch. This row type is used for AJAX-loaded batch headers.
-  table = dynamic_index_table(list,
+  table = dynamic_scoped_table(list,
     :id         => "tasks_table",
     :class      => [ :resource_list ],
     :render     => false,
-    :sort_map   => {
-      :type         => 'cbrain_tasks.type',
-      :description  => 'cbrain_tasks.description',
-      :owner        => 'users.login',
-      :project      => 'groups.name',
-      :server       => 'remote_resources.name',
-      :status       => 'cbrain_tasks.status',
-      :workdir_size => 'cbrain_tasks.cluster_workdir_size',
-      :created_at   => 'cbrain_tasks.created_at',
-      :updated_at   => 'cbrain_tasks.updated_at'
+    :order_map  => {
+      :owner        => { :a => 'users.login',           :j => User     },
+      :project      => { :a => 'groups.name',           :j => Group    },
+      :server       => { :a => 'remote_resources.name', :j => Bourreau },
+      :workdir_size => { :a => 'cluster_workdir_size' }
     },
     :filter_map => {
-      :owner   => 'user_id',
-      :project => 'group_id',
-      :server  => 'bourreau_id'
+      :owner   => { :a => 'user_id'     },
+      :project => { :a => 'group_id'    },
+      :server  => { :a => 'bourreau_id' }
     }
   ) do |t|
 %>
   <%
-    filters_for = lambda do |target, opts = {}|
-      return if @row_fetch
-      if target.is_a?(Symbol)
-        basic_filters_for(@filtered_scope, @header_scope, CbrainTask, target)
-      else
-        association_filters_for(@filtered_scope, @header_scope, CbrainTask, target, opts)
-      end
-    end
+    t.paginate(:collection => @tasks) unless @row_fetch
 
-    t.paginate(:collection => @paginated_list) unless @row_fetch
-
-    t.row do |type,id,batch,task|
+    t.row do |type,id,count,task|
       case type
       when :task
         available = @bourreau_status[task.bourreau.id]
@@ -117,7 +89,7 @@
     <%
       t.column('', :expand,
         :pretty_name => "Batch"
-      ) do |type,id,batch,task|
+      ) do |type,id,count,task|
     %>
       <% next if type == :task %>
       <%
@@ -126,7 +98,7 @@
             :class => [ 'batch-btn', 'ui-icon', 'ui-icon-minus' ],
             :title => "Expand batch"
           }
-        elsif batch[:num_tasks] <= @per_page
+        elsif count <= @scope.pagination.per_page.to_i
           attributes = {
             :class => [ 'batch-btn', 'ui-icon', 'ui-icon-plus' ],
             :title => "Expand batch",
@@ -139,11 +111,10 @@
             :title => "Open batch",
             :'data-batch-type' => 'html_link',
             :'data-batch-url'  =>
-              filter_add_link('',
-                :controller => :tasks,
-                :filters    => { :batch_id => task.batch_id },
-                :ajax       => false
-              ).match(/href="(.+?)"/)[1]
+              url_for(scope_filter_params(@scope, :set, {
+                :attribute => 'batch_id',
+                :value     => task.batch_id
+              }))
           }
         end
       %>
@@ -154,8 +125,8 @@
   <%
     t.column("Task Type", :type,
       :sortable => true,
-      :filters  => filters_for.(:type)
-    ) do |type,id,batch,task|
+      :filters  => default_filters_for(@base_scope, :type)
+    ) do |type,id,count,task|
   %>
     <% case type %>
     <% when :task %>
@@ -169,28 +140,33 @@
   <%
     t.column("Description", :description,
       :sortable => true
-    ) do |type,id,batch,task|
+    ) do |type,id,count,task|
       overlay_description(task.description, :header_width => 35) unless type == :loaded_batch
     end
 
     t.column("Owner", :owner,
       :sortable => true,
-      :filters  => filters_for.(User, :name_method => :login)
-    ) do |type,id,batch,task|
+      :filters  => default_filters_for(@base_scope, User)
+    ) do |type,id,count,task|
       link_to_user_if_accessible(task.user) unless type == :loaded_batch
     end
 
     t.column("Project", :project,
       :sortable => true,
-      :filters  => filters_for.(Group)
-    ) do |type,id,batch,task|
+      :filters  => default_filters_for(@base_scope, Group)
+    ) do |type,id,count,task|
       link_to_group_if_accessible(task.group) unless type == :loaded_batch
     end unless current_project
 
     t.column("Execution Server", :server,
       :sortable => true,
-      :filters  => filters_for.(Bourreau, :association_table => :remote_resources)
-    ) do |type,id,batch,task|
+      :filters  => filter_values_for(
+        @base_scope, :bourreau_id,
+        scope: @scope,
+        label: 'remote_resources.name',
+        association: [Bourreau, 'id', 'bourreau_id']
+      )
+    ) do |type,id,count,task|
       link_to_bourreau_if_accessible(task.bourreau) unless type == :loaded_batch
     end
   %>
@@ -198,15 +174,15 @@
   <%
     t.column("Current Status", :status,
       :sortable => true,
-      :filters  => filters_for.(:status)
-    ) do |type,id,batch,task|
+      :filters  => default_filters_for(@base_scope, :status)
+    ) do |type,id,count,task|
   %>
     <%
       case type
       when :task
         next colored_status(task.status)
       when :batch
-        ntasks   = batch[:num_tasks]
+        ntasks   = count
         statuses = {}
         CbrainTask
           .real_tasks
@@ -222,7 +198,7 @@
         ntasks   = @tasks.size
         statuses = {}
         @tasks
-          .to_a
+          .map { |t| t[:first] }
           .hashed_partitions { |t| t.status =~ /Fail/i ? 'Failed' : t.status }
           .each { |s,t| statuses[s] = t.size }
       end
@@ -238,12 +214,12 @@
     %>
   <% end %>
 
-  <% t.column("Run Number", :run) { |type,id,batch,task| task.run_number.to_s if type == :task } %>
+  <% t.column("Run Number", :run) { |type,id,count,task| task.run_number.to_s if type == :task } %>
 
   <%
     t.column("Workdir Size", :workdir_size,
       :sortable => true
-    ) do |type,id,batch,task|
+    ) do |type,id,count,task|
   %>
     <% case type %>
     <% when :task %>
@@ -266,7 +242,7 @@
   <%
     t.column("Time Submitted", :created_at,
       :sortable => true
-    ) do |type,id,batch,task|
+    ) do |type,id,count,task|
       case type
       when :task
         to_localtime(task.created_at, :datetime)
@@ -277,7 +253,7 @@
 
     t.column("Last Updated", :updated_at,
       :sortable => true
-    ) do |type,id,batch,task|
+    ) do |type,id,count,task|
       case type
       when :task
         to_localtime(task.updated_at, :datetime)
@@ -312,25 +288,26 @@
       </td>
     </tr>
   <% else %>
-    <%= table.render :row, [[ :loaded_batch, @tasks.first.batch_id, nil, @tasks.first ]] %>
+    <%= table.render :row, [[ :loaded_batch, @tasks.first[:batch], nil, @tasks.first[:first] ]] %>
     <%= table.render :row, list %>
   <% end %>
 <% else %>
-  <%= render :partial => 'shared/active_filters', :locals => {:model => :cbrain_task} %>
+  <%=
+    render(:partial => 'shared/active_filters', :locals  => {
+      :scope => @scope,
+      :model => CbrainTask
+    })
+  %>
 
   <div class="pagination">
     <div class="pagination_left_side">
-      <% if batch_view %>
-        <strong>Currently in Batch View</strong>
-      <% else %>
-        <%=
-          ajax_link(
-            "Switch to Batch View",
-            { params[:controller] => { :sort_hash => { :order => 'cbrain_tasks.batch', :dir => 'ASC' } } },
-            { :datatype => 'script' }
-          )
-        %>
-      <% end %>
+      <%=
+        scope_custom_link(
+          "Switch to #{batch_view ? 'List' : 'Batch'} View",
+          @scope, { 'batch' => !batch_view },
+          link: { :ajax => true }
+        )
+      %>
     </div>
     <div class="page_links">
       (<%= pluralize @total_tasks, "task" %>)

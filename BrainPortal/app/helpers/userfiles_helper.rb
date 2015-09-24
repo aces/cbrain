@@ -30,7 +30,7 @@ module UserfilesHelper
   # link to show page, sync status and formats.
   def filename_listing(userfile, link_options={})
     html = []
-    html << tree_view_icon(userfile.level) if @filter_params["tree_sort"] == "on" && userfile.level.to_i > 0
+    html << tree_view_icon(userfile.level) if @scope.custom[:tree_sort] && userfile.level.to_i > 0
     html << link_to_userfile_if_accessible(userfile, nil, link_options)
     if userfile.hidden?
       html << " "

@@ -51,9 +51,10 @@ class PortalController < ApplicationController
       @active_users = CbrainSession.active_users
       @active_users.unshift(current_user) unless @active_users.include?(current_user)
       if request.post?
-        unless params[:session_clear].blank?
-          CbrainSession.session_class.where(["updated_at < ?", params[:session_clear].to_i.seconds.ago]).delete_all
-        end
+        CbrainSession.clean_sessions
+        CbrainSession.purge_sessions(params[:session_clear].to_i.seconds.ago) unless
+          params[:session_clear].blank?
+
         if params[:lock_portal] == "lock"
           BrainPortal.current_resource.lock!
           BrainPortal.current_resource.addlog("User #{current_user.login} locked this portal.")
@@ -68,9 +69,6 @@ class PortalController < ApplicationController
           flash.now[:error] = ""
         end
       end
-    #elsif current_user.has_role? :site_manager
-    #  @active_users = CbrainSession.active_users.where( :site_id  => current_user.site_id )
-    #  @active_users.unshift(current_user) unless @active_users.include?(current_user)
     end
 
     bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).raw_first_column("remote_resources.id")

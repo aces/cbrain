@@ -22,23 +22,22 @@
 #
 -%>
 
-<b>
-  <%=
-    scope_filter_link(crop_text_to(15, tag.name),
-      @scope, :set, { 'type' => 'uf.tags', 'value' => [tag.id] },
-      url:  { :controller => :userfiles },
-      link: { :ajax       => true       }
-    )
-  %>
-</b>
-
-<small><small>
-  <% if tag.group_id != current_user.own_group.id %>
-    (Project: <%= tag.group.name %>)
-  <% end %>
-  <% if tag.user_id == current_user.id %>
-   <%= overlay_ajax_link "Edit", edit_tag_path(tag) %>
-  <%= ajax_link 'Delete', tag_path(tag), :confirm => "Are you sure you want to delete tag '#{tag.name}' ?", :method => :delete, :datatype  => 'script' %>  
- <% end %>
-</small></small>
-
+<h4>Other Filters</h4>
+<ul class="filter_menu">
+  <li>
+    <%=
+      scope_filter_link('Has no parent',
+        @scope, :set, { 'type' => 'uf.hier', 'operator' => 'no_parent' },
+        link: { :ajax => true }
+      )
+    %>
+  </li>
+  <li>
+    <%=
+      scope_filter_link('Has no children',
+        @scope, :set, { 'type' => 'uf.hier', 'operator' => 'no_child' },
+        link: { :ajax => true }
+      )
+    %>
+  </li>
+</ul>

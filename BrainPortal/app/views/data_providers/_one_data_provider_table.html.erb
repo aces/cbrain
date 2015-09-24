@@ -23,23 +23,19 @@
 -%>
 
 <%=
-  dynamic_index_table(data_providers,
+  dynamic_scoped_table(data_providers,
     :class      => [ :resource_list, :whole_width ],
     :id         => "data_provider_table_#{id}",
-    :sort_map   => {
-      :name        => 'data_providers.name',
-      :type        => 'data_providers.type',
-      :owner       => 'users.login',
-      :group       => 'groups.name',
-      :time_zone   => 'data_providers.time_zone',
-      :online      => 'data_providers.online',
-      :mode        => 'data_providers.read_only',
-      :sync        => 'data_providers.not_syncable',
-      :description => 'data_providers.description'
+    :scope      => @scope,
+    :order_map  => {
+      :owner => { :a => 'users.login', :j => User  },
+      :group => { :a => 'groups.name', :j => Group },
+      :mode  => { :a => 'data_providers.read_only'    },
+      :sync  => { :a => 'data_providers.not_syncable' }
     },
     :filter_map => {
-      :owner => 'user_id',
-      :group => 'group_id'
+      :owner => { :a => 'user_id'  },
+      :group => { :a => 'group_id' }
     }
   ) do |t|
 %>
@@ -51,18 +47,18 @@
     t.column("Type", :type,
       :sortable => true,
       :hidden   => true,
-      :filters  => basic_filters_for(@filtered_scope, @header_scope, :data_provider, :type) { |v| v.to_s }
+      :filters  => default_filters_for(@base_scope, :type)
     ) { |dp| dp.class.to_s } if current_user.has_role? :admin_user
 
     t.column("Owner", :owner,
       :hidden   => true,
       :sortable => true,
-      :filters  => association_filters_for(@filtered_scope, @header_scope, :data_provider, :user, :name_method => :login)
+      :filters  => default_filters_for(@base_scope, User)
     ) { |dp| link_to_user_with_tooltip(dp.user) }
 
     t.column("Project", :group,
       :sortable => true,
-      :filters  => association_filters_for(@filtered_scope, @header_scope, :data_provider, :group)
+      :filters  => default_filters_for(@base_scope, Group)
     ) { |dp| link_to_group_if_accessible(dp.group) }
 
     t.column("Site", :site,

@@ -24,21 +24,18 @@
 
 <%= button_with_dropdown_menu("View Options") do %>
   <div class="view_options">
-    <%=
-        filter_add_link (@filter_params["tree_sort"] == "off" ? "Enable Tree View" : "Disable Tree View"),
-                        :parameter => :tree_sort,
-                        :value     => set_toggle(@filter_params["tree_sort"])
+    <%
+      toggle_link = lambda do |on, off, key|
+        scope_custom_link((@scope.custom[key] ? off : on),
+          @scope, { key => !@scope.custom[key] },
+          link: { :ajax => true }
+        )
+      end
     %>
-    <br>
-    <%= filter_add_link @filter_params["view_all"] == 'on' ? "Show only your own files": "Show all available files",
-                        :parameter => :view_all,
-                        :value     => set_toggle(@filter_params["view_all"])
-    %>
-    <br>
-    <%= filter_add_link @filter_params["view_hidden"] == 'on' ? "Do not show hidden files": "Show hidden files",
-                        :parameter => :view_hidden,
-                        :value     => set_toggle(@filter_params["view_hidden"])
-    %>
+
+    <%= toggle_link.("Enable Tree View",         "Disable Tree View",        :tree_sort)   %><br />
+    <%= toggle_link.("Show all available files", "Show only your own files", :view_all)    %><br />
+    <%= toggle_link.("Show hidden files",        "Do not show hidden files", :view_hidden) %>
     (<%= hidden_icon %>)
   </div>
 <% end %>

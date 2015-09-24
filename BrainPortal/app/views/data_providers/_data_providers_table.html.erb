@@ -54,9 +54,12 @@
   <%= help_button("data_providers/info") %>
 </div>
 
-
-<%= render :partial => 'shared/active_filters', :locals => {:model => :data_provider} %>
-
+<%=
+  render(:partial => 'shared/active_filters', :locals  => {
+    :scope => @scope,
+    :model => DataProvider
+  })
+%>
 
 <fieldset>
 <legend>Official Data Storage</legend>
