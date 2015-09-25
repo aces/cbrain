@@ -187,25 +187,54 @@ module ViewScopes
     # was a model or a new Ruby Enumerable matching the rules if +collection+
     # was a Ruby Enumerable.
     #
+    # If a rule application fails (a filter's target attribute does not exist on
+    # +collection+, for example), +on_failure+ specifies how to handle the
+    # failure. Three failure resolution methods are available:
+    # [:ignore] The erroneous rule is skipped (default).
+    # [:empty]  An empty collection is returned.
+    # [:raise]  The erroneous rule's raised exception is re-thrown/re-raised.
+    # This parameter is mainly used to avoid raising filtering/sorting rule
+    # exceptions to callers which might just want to ignore the erroneous filter
+    # rather than directly handling the issue (as Scopes are mainly used for
+    # views).
+    #
     # Note that pagination is not applied by default; specify +paginate+ to
     # paginate +collection+.
-    def apply(collection, paginate: false)
+    def apply(collection, on_failure: :ignore, paginate: false)
+      # Wrap a filtering or sorting rule application to handle exceptions,
+      # using +fallback+ as a fall-back value for :ignore.
+      empty = (collection <= ActiveRecord::Base rescue nil) ?
+        collection.where('1 = 0') : []
+      wrap = lambda do |fallback, &block|
+        begin
+          block.call()
+        rescue => e
+          case on_failure
+          when :ignore then next fallback
+          when :empty  then return empty
+          when :raise  then raise
+          end
+        end
+      end
+
       # Apply all filtering rules
       collection = @filters.inject(collection) do |collection, filter|
-        filter.apply(collection)
+        wrap.(collection) { filter.apply(collection) }
       end
 
       # Apply sorting rules
       if (collection <= ActiveRecord::Base rescue nil)
         collection = @order.inject(collection) do |collection, order|
-          order.apply(collection)
+          wrap.(collection) { order.apply(collection) }
         end
       else
-        collection = @order.first.apply(collection) unless @order.empty?
+        collection = wrap.(collection) { @order.first.apply(collection) } unless
+          @order.empty?
       end
 
       # Paginate
-      collection = @pagination.apply(collection) if paginate && @pagination
+      collection = wrap.(collection) { @pagination.apply(collection) } if
+        paginate && @pagination
 
       collection
     end
@@ -1269,10 +1298,17 @@ module ViewScopes
     pagination['i'] = params['page']     if params['page']
     pagination['p'] = params['per-page'] if params['per-page']
     pagination['p'] = params['per_page'] if params['per_page']
+    pag_scope = params['_pag_scope_name'] || default_scope_name
 
-    current_session.apply_changes({ 'scopes' => {
-      (params['_pag_scope_name'] || default_scope_name) => { 'p' => pagination }
-    } }) unless
+    # FIXME: the per_page parameter is often passed in many requests where it
+    # doesn't belong, creating spurious Scopes in the session. A workaround is
+    # to require the target scope to already exist:
+    pagination.delete('p') unless
+      (current_session['scopes'] || {}).has_key?(pag_scope)
+
+    current_session.apply_changes(
+      { 'scopes' => { pag_scope => { 'p' => pagination } } }
+    ) unless
       pagination.empty?
   end
 

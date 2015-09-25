@@ -51,7 +51,7 @@
       <% end %>
       <% Array(scope.custom[:custom_filters]).uniq.each do |id| %>
         <span class="current_filters_item">
-          <%= crop_text_to(30, UserfileCustomFilter.find(id).name) %>
+          <%= crop_text_to(30, CustomFilter.find(id).name) %>
         </span>
         <%=
           scope_custom_link(delete_icon,

@@ -384,7 +384,7 @@ module ScopeHelper
     # Format the generated filter arrays as DynamicTable's filter hashes
     filters.map do |value, label, count, *rest|
       scoped = rest.first
-      label  = "#{label} (#{scoped}/#{count})" if scoped
+      label  = "#{label} (of #{count})" if scoped
       {
         :value     => value,
         :label     => label,
@@ -418,7 +418,7 @@ module ScopeHelper
       lambda do |args|
         value, label, count, scoped = args
         label = block.(label) rescue label
-        label = "#{label} (#{scoped}/#{count})" if scoped
+        label = "#{label} (of #{count})" if scoped
         {
           :value     => value,
           :label     => label,
@@ -561,7 +561,7 @@ module ScopeHelper
     # [[value, label, count], [...]]
     filters = model
       .where("#{attribute} IS NOT NULL")
-      .order(attribute, label)
+      .order(label, attribute)
       .group(attribute, label)
       .raw_rows(attribute, "#{label} AS #{label_alias}", "COUNT(#{attribute})")
       .reject { |r| r.first.blank? }
@@ -608,7 +608,7 @@ module ScopeHelper
       collection
         .map     { |i| [attr_get.(i), lbl_get.(i)].freeze }
         .reject  { |v, l| v.blank? }
-        .sort_by { |v, l| v }
+        .sort_by { |v, l| l }
         .inject(Hash.new(0)) { |h, i| h[i] += 1; h }
     end
 
