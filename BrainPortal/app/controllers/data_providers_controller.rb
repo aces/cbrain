@@ -297,13 +297,16 @@ class DataProvidersController < ApplicationController
     })
 
     # Browsing as a different user? Make sure the target user is set.
-    @as_user   = current_user
+    @as_user = current_user
       .available_users
-      .where(:id => @scope.custom['as_user_id'] ||= (
-        params['as_user_id'] || current_user.id
+      .where(:id => (
+        params['as_user_id'] ||
+        @scope.custom['as_user_id'] ||
+        current_user.id
       ))
       .first
     @as_user ||= current_user
+    @scope.custom['as_user_id'] = @as_user.id
 
     begin
       # [ base, size, type, mtime ]
