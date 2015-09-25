@@ -18,27 +18,35 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
 <%= button_with_dropdown_menu("View Options") do %>
   <div class="view_options">
-
     <% user_list = current_user.available_users.sort_by(&:login) %>
     <% if user_list.size > 1 %>
       Browse as another user:
-      <%= ajax_onchange_select( :as_user_id, browse_data_provider_path(:update_filter => "browse_hash"),
-          options_for_select( user_list.collect { |u| [ u.login, u.id.to_s ] },
-                              @as_user.id.to_s ), :datatype => "script") %>
+      <%=
+        ajax_onchange_select(:as_user_id,
+          browse_data_provider_path,
+          options_for_select(
+            user_list.collect { |u| [ u.login, u.id.to_s ] },
+            @as_user.id.to_s
+          ),
+          :datatype => 'script'
+        )
+      %>
       <br/>
     <% end %>
 
-    <%= ajax_link 'Refresh list of files', browse_data_provider_path(:refresh => true), :datatype  => 'script' %><br/>
-  
-    Number of files per page:
-    <%= ajax_onchange_select( :per_page, browse_data_provider_path(:update_filter => "browse_hash"), options_for_select( [25, 50, 100, 200, 500 ], @per_page ), :datatype => "script") %>
-    
+    <%=
+      ajax_link('Refresh list of files',
+        browse_data_provider_path(:refresh => true),
+        :datatype => 'script'
+      )
+    %>
+    <br/>
   </div>
 <% end %>
 

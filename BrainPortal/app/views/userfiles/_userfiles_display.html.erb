@@ -22,12 +22,23 @@
 #
 -%>
 
-<%= render :partial => 'shared/active_filters', :locals => { :model => :userfile } %>
+<%=
+  render(:partial => 'shared/active_filters', :locals  => {
+    :scope => @scope,
+    :model => Userfile
+  })
+%>
 
 <div class="pagination">
-  <% if current_session.persistent_userfile_ids.size > 0 %>
+  <% if current_session[:persistent_userfiles].present? %>
     <div class="pagination_left_side">
-      <blink><%= html_colorize("(#{pluralize(current_session.persistent_userfile_ids.size," file")} persistently selected)") %></blink>
+      <blink>
+        <%=
+          html_colorize(
+            "(#{pluralize(current_session[:persistent_userfiles].size," file")} persistently selected)"
+          )
+        %>
+      </blink>
     </div>
   <% end %>
   <div class="page_links">
@@ -46,46 +57,33 @@
     )
   </div>
   <div class="pagination_right_side">
-    Search by name: <%= ajax_search_box "name_like", userfiles_path(:update_filter => :filter_hash) %>
+    Search by name: <%= ajax_search_box("name_like", userfiles_path) %>
   </div>
 </div>
 
 <%=
-  dynamic_index_table(@userfiles,
+  dynamic_scoped_table(@userfiles,
     :id           => 'userfiles_table',
     :request_type => :server_javascript,
-    :sort_map     => {
-      :name           => 'userfiles.name',
-      :type           => 'userfiles.type',
-      :login          => 'users.login',
-      :creation_date  => 'userfiles.created_at',
-      :size           => 'userfiles.size',
-      :group          => 'groups.name',
-      :group_writable => 'userfiles.group_writable',
-      :data_provider  => 'data_providers.name'
+    :order_map    => {
+      :creation_date => { :a => 'created_at' },
+      :login         => { :a => 'users.login',         :j => User         },
+      :group         => { :a => 'groups.name',         :j => Group        },
+      :data_provider => { :a => 'data_providers.name', :j => DataProvider },
     },
     :filter_map   => {
-      :login          => 'user_id',
-      :group          => 'group_id',
-      :data_provider  => 'data_provider_id'
+      :login         => { :a => 'user_id'          },
+      :group         => { :a => 'group_id'         },
+      :data_provider => { :a => 'data_provider_id' },
     }
   ) do |t|
 %>
   <%
-    filters_for = lambda do |target,options = {}|
-      return unless @filtered_scope && @header_scope
-      if target.is_a?(Symbol)
-        basic_filters_for(@filtered_scope, @header_scope, Userfile, target)
-      else
-        association_filters_for(@filtered_scope, @header_scope, Userfile, target, options)
-      end
-    end
-
-    t.paginate(@per_page > 50 ? :both : :top)
+    t.paginate(@scope.pagination.per_page > 50 ? :both : :top)
 
     t.row do |u|
       {
-        :selected     => current_session.persistent_userfile_ids[u.id.to_s],
+        :selected     => current_session[:persistent_userfiles].try(:include?, u.id.to_s),
         :select_param => 'file_ids[]',
         :select_value => u.id
       } if u.available?
@@ -117,12 +115,12 @@
     t.column("File Type", :type,
       :field_name => :pretty_type,
       :sortable   => true,
-      :filters    => filters_for.(:type)
+      :filters    => default_filters_for(@base_scope, :type)
     )
 
     t.column("Owner", :login,
       :sortable => true,
-      :filters  => filters_for.(User, :name_method => "login")
+      :filters  => default_filters_for(@base_scope, User)
     ) { |u| link_to_user_if_accessible(u.user) }
 
     t.column("Creation Date", :creation_date,
@@ -158,8 +156,25 @@
   <% end %>
 
   <%
+    filtering_tags = ((
+      @scope.filters.find do |f|
+        f.attribute == 'tags' && f.is_a?(UserfilesController::TagFilter)
+      end
+    ).try(:value) || []).dup
+
     t.column("Tags", :tags,
-      :filters => @tag_filters
+      :filters       => @tag_filters,
+      :filter_target => lambda do |column, filter|
+        ({
+          :controller      => params[:controller],
+          :action          => params[:action],
+          :page            => 1,
+          :_pag_scope_name => @scope.name
+        }).merge(scope_filter_params(@scope, :set, {
+          'type'  => 'uf.tags',
+          'value' => (filtering_tags + [filter.value]).uniq
+        }))
+      end
     ) do |u|
       u.get_tags_for_user(current_user)
         .collect { |t| h(t.name) }
@@ -170,7 +185,7 @@
     unless current_project
       t.column("Project", :group,
         :sortable => true,
-        :filters  => filters_for.(Group)
+        :filters  => default_filters_for(@base_scope, Group)
       ) do |u|
         link_to_group_if_accessible(u.group) if u.group
       end
@@ -184,7 +199,7 @@
 
     t.column("Provider", :data_provider,
       :sortable => true,
-      :filters  => filters_for.(DataProvider)
+      :filters  => default_filters_for(@base_scope, DataProvider)
     ) do |u|
       link_to_data_provider_if_accessible(u.data_provider)
     end

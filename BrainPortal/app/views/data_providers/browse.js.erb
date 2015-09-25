@@ -22,5 +22,7 @@
 #
 -%>
 
-jQuery("#dp_browse_table").html(<%= html_for_js(render :partial  => 'dp_browse_table') %>);
+jQuery("#dp_browse_table")
+  .html(<%= html_for_js(render :partial  => 'dp_browse_table') %>)
+  .trigger('new_content');
 

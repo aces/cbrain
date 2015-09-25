@@ -27,19 +27,22 @@
   <%= overlay_ajax_link "Help", "/doc/feedback/feedback.html", :class  => "button" %>
 </div>
 
-<%= render :partial => 'shared/active_filters', :locals => {:model => :feedback} %>
+<%=
+  render(:partial => 'shared/active_filters', :locals => {
+    :scope => @scope,
+    :model => Feedback
+  })%>
 
 <%=
-  dynamic_index_table(@feedbacks,
+  dynamic_scoped_table(@feedbacks,
     :id         => 'feedbacks_table',
     :class      => [ :resource_list ],
+    :scope      => @scope,
     :sort_map   => {
-      :summary    => 'feedbacks.summary',
-      :author     => 'users.login',
-      :created_at => 'feedbacks.created_at'
+      :author => { :a => 'users.login', :j => User }
     },
     :filter_map => {
-      :author => 'user_id'
+      :author => { :a => 'user_id' }
     }
   ) do |t|
 %>
@@ -50,7 +53,7 @@
 
     t.column("Author", :author,
       :sortable => true,
-      :filters  => association_filters_for(@filtered_scope, Feedback.scoped, "feedback", "user", :name_method => "login")
+      :filters  => default_filters_for(@base_scope, User)
     ) { |f| link_to_user_with_tooltip(f.user) }
 
     t.column("Posted at", :created_at,

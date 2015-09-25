@@ -17,24 +17,25 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #RESTful controller for the Site resource.
 class SitesController < ApplicationController
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
-  before_filter :login_required 
+
+  before_filter :login_required
   before_filter :admin_role_required, :except  => :show
   before_filter :site_membership_required, :only => :show
-  
+
   # GET /sites
   # GET /sites.xml
   def index #:nodoc:
-    @filter_params["sort_hash"]["order"] ||= 'sites.name'
-    
-    @sites = base_sorted_scope(base_filtered_scope Site.includes( [:users, :groups] ))
+    @scope = scope_from_session('sites')
+    scope_default_order(@scope, 'name')
+
+    @sites = @scope.apply(Site.includes(:users, :groups))
 
     respond_to do |format|
       format.js
@@ -47,13 +48,13 @@ class SitesController < ApplicationController
   # GET /sites/1.xml
   def show #:nodoc:
     @site = current_user.has_role?(:admin_user) ? Site.find(params[:id]) : current_user.site
-    
+
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @site }
     end
   end
- 
+
   def new #:nodoc:
     @site = Site.new
     render :partial => "new"
@@ -63,7 +64,7 @@ class SitesController < ApplicationController
   # POST /sites.xml
   def create #:nodoc:
     @site = Site.new(params[:site])
-    
+
     respond_to do |format|
       if @site.save
         @site.addlog_context(self,"Created by '#{current_user.login}'")
@@ -81,7 +82,7 @@ class SitesController < ApplicationController
   # PUT /sites/1.xml
   def update #:nodoc:
     @site = Site.find(params[:id])
-    
+
     params[:site] ||= {}
 
     original_user_ids    = @site.user_ids
@@ -89,12 +90,12 @@ class SitesController < ApplicationController
     original_group_ids   = @site.group_ids
 
     commit_name = extract_params_key([ :update_users, :update_groups ])
-    
+
     unless commit_name == :update_users
       params[:site][:user_ids]    = original_user_ids    # we need to make sure they stay the same
       params[:site][:manager_ids] = original_manager_ids # we need to make sure they stay the same
     end
-    
+
     unless commit_name == :update_groups
       params[:site][:group_ids] = original_group_ids    # we need to make sure they stay the same
     end

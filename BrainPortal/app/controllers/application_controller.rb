@@ -34,7 +34,7 @@ class ApplicationController < ActionController::Base
 
   include AuthenticatedSystem
   include SessionHelpers
-  include BasicFilterHelpers
+  include ViewScopes
   include ViewHelpers
   include ApiHelpers
   include PermissionHelpers

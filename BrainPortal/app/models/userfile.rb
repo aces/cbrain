@@ -78,7 +78,7 @@ class Userfile < ActiveRecord::Base
   attr_accessible         :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable,
                           :num_files, :tag_ids, :hidden, :immutable, :description
 
-  cb_scope                :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
+  cb_scope                :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n.strip}%"]} }
 
   cb_scope                :has_no_parent, :conditions => {:parent_id => nil}
   cb_scope                :has_no_child,  lambda { |ignored|
@@ -86,12 +86,12 @@ class Userfile < ActiveRecord::Base
                                             parents_ids.blank? ? where({}) : where("userfiles.id NOT IN (?)", parents_ids)
                                           }
   cb_scope                :parent_name_like, lambda { |n|
-                                            matching_parents_ids = Userfile.where("name like ?", "%#{n}%").raw_first_column(:id).uniq
+                                            matching_parents_ids = Userfile.where("name like ?", "%#{n.strip}%").raw_first_column(:id).uniq
                                             where(:parent_id => matching_parents_ids)
                                           }
 
   cb_scope                :child_name_like, lambda { |n|
-                                             matching_children_ids = Userfile.where("name like ?", "%#{n}%").where("parent_id IS NOT NULL").raw_first_column(:id).uniq
+                                             matching_children_ids = Userfile.where("name like ?", "%#{n.strip}%").where("parent_id IS NOT NULL").raw_first_column(:id).uniq
                                              matching_parents_ids  = Userfile.where(:id => matching_children_ids).raw_first_column(:parent_id).uniq
                                              where(:id => matching_parents_ids)
                                             }

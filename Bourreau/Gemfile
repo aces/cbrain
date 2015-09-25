@@ -32,6 +32,7 @@ gem "mysql2"
 gem "sys-proctable", :git => 'git://github.com/djberg96/sys-proctable.git'
 gem "thin"
 gem "pbkdf2-ruby"
+gem "json-schema"
 
 group :development, :test do
   gem "wirble"

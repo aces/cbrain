@@ -175,15 +175,19 @@
     <% if @tasks.size > 0 %>
       <h1>
         <%=
-          link_to "Latest Updated Tasks",
-            :controller   => :tasks,
-            :action       => :index,
-            :tasks        => { :sort_hash => { :order => 'cbrain_tasks.updated_at', :dir => 'DESC' } },
-            :clear_filter => true
+          scope_link('Latest Updated Tasks',
+            'tasks', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
+            url: { :controller => :tasks, :action => :index }
+          )
         %>
         <% active_count = CbrainTask.active.count rescue 0 %>
         <% if active_count > 0 %>
-          <%= filter_reset_link "(#{active_count} active)", :controller => :tasks, :filters  => { :status => :active }, :ajax => false %>
+          <%=
+            scope_filter_link("(#{active_count} active)",
+              'tasks', :replace, { :t => 't.sts', :v => 'active' },
+              url: { :controller => :tasks }
+            )
+          %>
         <% else %>
           (None active)
         <% end %>
@@ -203,11 +207,10 @@
     <% if @files.size > 0 %>
       <h1>
         <%=
-          link_to "Latest Updated Files",
-            :controller   => :userfiles,
-            :action       => :index,
-            :userfiles    => { :sort_hash => { :order => 'userfiles.updated_at', :dir => 'DESC' } },
-            :clear_filter => true
+          scope_link('Latest Updated Files',
+            'userfiles', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
+            url: { :controller => :userfiles, :action => :index }
+          )
         %>
       </h1>
       <table class="latest_summary_table">

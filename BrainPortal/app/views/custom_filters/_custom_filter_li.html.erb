@@ -23,7 +23,18 @@
 -%>
 
 <b>
-<%= filter_add_link crop_text_to(15, filter.name), :controller => @custom_filter.filtered_class_controller, :parameter  => :filter_custom_filters_array, :value => filter.id  %>
+<%=
+  scope_custom_link(crop_text_to(15, filter.name),
+    @scope, { 'custom_filters' => [filter.id] },
+    url:  {
+      'controller'  => @custom_filter.filtered_class_controller,
+      '_scope_mode' => 'append'
+    },
+    link: {
+      :ajax => true
+    }
+  )
+%>
 </b>
 <small><small>
    <%= overlay_ajax_link "Edit", edit_custom_filter_path(filter) %>

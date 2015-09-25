@@ -42,15 +42,6 @@ class Message < ActiveRecord::Base
 
   attr_accessible :header, :description, :variable_text, :message_type, :read, :user_id, :expiry, :last_sent, :critical, :display, :send_email, :group_id, :sender_id
 
-  cb_scope :time_interval, lambda { |s, e|
-                                    bef = s.to_i
-                                    aft = e.to_i
-                                    bef,aft = aft,bef if aft < bef
-                                    bef = bef < 1 ? 1.day.from_now : bef.ago
-                                    aft = aft.ago
-                                    { :conditions => [ "messages.last_sent < TIMESTAMP(?) AND messages.last_sent > TIMESTAMP(?)", bef, aft ] }
-                                  }
-
   # Send a new message to a user, the users of a group, or a site.
   #
   # The +destination+ argument can be a User, a Group, a Site,

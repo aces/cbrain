@@ -30,54 +30,29 @@ class GroupsController < ApplicationController
   # GET /groups
   # GET /groups.xml
   def index  #:nodoc:
-    @filter_params["sort_hash"]["order"] ||= "groups.name"
-    if current_user.has_role?(:normal_user)
-      @filter_params["button_view"] ||= "on"
-    end
+    @scope = scope_from_session('groups')
+    scope_default_order(@scope, 'groups.name')
 
-    @header_scope   = current_user.available_groups
-    @filtered_scope = base_filtered_scope @header_scope.includes(:site)
-    @sorted_scope   = base_sorted_scope @filtered_scope
-    @total_entries  = @sorted_scope.count
+    params[:name_like].strip! if params[:name_like]
+    scope_filter_from_params(@scope, :name_like, {
+      :attribute => 'name',
+      :operator  => 'match'
+    })
 
-    # For Pagination
-    @per_page = 50 unless @filter_params["per_page"]
-    offset = (@current_page - 1) * @per_page
+    @scope.custom[:button] = true if
+      current_user.has_role?(:normal_user) && @scope.custom[:button].nil?
 
-    unless [:html, :js].include?(request.format.to_sym)
-      @per_page = 999_999_999
-      offset = 0
-    end
+    @base_scope = current_user.available_groups.includes(:site)
+    @view_scope = @scope.apply(@base_scope)
 
-    if @filter_params["button_view"] == "on"
-      pagination_list = @sorted_scope.limit(@per_page).offset(offset).where("groups.type = 'WorkGroup'").all.sort_by(&:short_pretty_type)
-      num_workgroups  = pagination_list.size
-      num_missing     = @per_page - num_workgroups
+    @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
+    @groups = @scope.pagination.apply(@view_scope)
+    @groups = (@groups.to_a << 'ALL') if @scope.custom[:button]
 
-      if num_missing > 0
-        total_workgroups = @sorted_scope.where("groups.type = 'WorkGroup'").count
-        sys_offset = [offset - total_workgroups, 0].max
-        pagination_list += @sorted_scope.limit(num_missing).offset(sys_offset).where("groups.type <> 'WorkGroup'").all
-      end
-      num_missing = @per_page - pagination_list.size
-      if num_missing > 0
-        pagination_list << "ALL"
-      end
-      @total_entries += 1
-    else
-      pagination_list  = @sorted_scope.limit(@per_page).offset(offset)
-    end
-
-    @groups = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
-      pager.replace(pagination_list)
-      pager.total_entries = @total_entries
-      pager
-    end
-
-    @group_id_2_userfile_counts      = Userfile.group("group_id").count
-    @group_id_2_task_counts          = CbrainTask.group("group_id").count
-    @group_id_2_user_counts          = User.joins(:groups).group("group_id").count.convert_keys!(&:to_i) # .joins make keys as string
-    if @filter_params["button_view"] == "on"
+    @group_id_2_userfile_counts = Userfile.group("group_id").count
+    @group_id_2_task_counts     = CbrainTask.group("group_id").count
+    @group_id_2_user_counts     = User.joins(:groups).group("group_id").count.convert_keys!(&:to_i) # .joins make keys as string
+    if @scope.custom[:button]
       @group_id_2_userfile_counts[nil] = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read).count
       @group_id_2_task_counts[nil]     = current_user.available_tasks.count
     else
@@ -87,12 +62,13 @@ class GroupsController < ApplicationController
       @group_id_2_brain_portal_counts  = BrainPortal.group("group_id").count
     end
 
-    current_session.save_preferences_for_user(current_user, :groups, :button_view, :per_page)
+    scope_to_session(@scope)
+    current_session.save_preferences
 
     respond_to do |format|
       format.js
-      format.html  # index.html.erb
-      format.xml   { render :xml => @groups }
+      format.html # index.html.erb
+      format.xml  { render :xml  => @groups }
       format.json { render :json => @groups.to_json(methods: :type) }
     end
   end
@@ -235,9 +211,13 @@ class GroupsController < ApplicationController
     redirect_action     = params[:redirect_action]     || :index
     redirect_id         = params[:redirect_id]
 
-    current_session.param_chain("userfiles", "filter_hash").delete("group_id")
-    current_session.param_chain("tasks"    , "filter_hash").delete("group_id")
-    current_session.persistent_userfile_ids_clear
+    ['userfiles', 'tasks'].each do |name|
+      scope = scope_from_session(name)
+      scope.filters.reject! { |f| f.attribute.to_s == 'group_id' }
+      scope_to_session(scope)
+    end
+
+    current_session[:persistent_userfiles].clear rescue nil
 
     redirect_path = { :controller => redirect_controller, :action => redirect_action }
     redirect_path[:id] = redirect_id unless redirect_id.blank?

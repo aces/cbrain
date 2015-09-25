@@ -1,5 +1,4 @@
 
-<%-
 #
 # CBRAIN Project
 #
@@ -20,23 +19,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
--%>
 
-<div class="pagination_left_side">
-  <% if @filter_params["sort_hash"]["order"] == 'cbrain_tasks.batch' %>
-    <strong>Currently in Batch View</strong>
-  <% end %>  
-</div>
-<div class="page_links">
-  <%= will_paginate @paginated_list, :container => false %>
-  (<%= pluralize @total_tasks, "task" %>)
-</div>
-<div class="pagination_right_side">
-  <% if @total_space_known > 0 %>
-  Total task space used: <%= colored_pretty_size(@total_space_known) %>
-  <% end %>
-  <% if @total_space_unkn  > 0 %>
-  (<%= pluralize @total_space_unkn, "task" %> without space estimates)
-  <% end %>
-</div>
+#
+# CbrainTask descriptor loader
+#
 
+1.times do # just starts a block so local variables don't pollute anything
+
+  basename = File.basename(__FILE__)
+  if basename == 'cbrain_task_descriptor_loader.rb' # usually, the symlink destination
+    puts "Weird. Trying to load the loader?!?"
+    break
+  end
+
+  schema     = SchemaTaskGenerator.default_schema
+  descriptor = __FILE__.sub(/.rb$/,'.json')
+
+  SchemaTaskGenerator.generate(schema, descriptor).integrate if
+    File.exists?(descriptor)
+
+end
