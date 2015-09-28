@@ -195,7 +195,7 @@
     <p/>
   <% end %>
 
-  <%= button_with_dropdown_menu("Filters") do %>
+  <%= button_with_dropdown_menu("Filters", :content_id => 'tasks_filters') do %>
     <%= render :partial => 'tasks/filters' %>
   <% end %>
 

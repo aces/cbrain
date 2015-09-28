@@ -656,11 +656,17 @@ class DataProvidersController < ApplicationController
 
   # Report inconsistencies in the data provider.
   def report
+    @scope    = scope_from_session(default_scope_name)
     @provider = DataProvider.find(params[:id])
     @issues   = @provider.provider_report(params[:reload])
 
+    scope_default_order(@scope, :severity)
+    @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
+    @view_scope = @scope.apply(@issues, paginate: true)
+
     respond_to do |format|
-      format.html # report.html.erb
+      format.html
+      format.js
       format.xml  { render :xml  => { :issues => @issues } }
       format.json { render :json => { :issues => @issues } }
     end

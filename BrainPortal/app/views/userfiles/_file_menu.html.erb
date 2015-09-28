@@ -166,15 +166,8 @@
       <% end %>
       </p>
     <% end %>
-    <%= button_with_dropdown_menu("Filters", :content_id => 'userfiles_filters_dropdown_menu') do %>
+    <%= button_with_dropdown_menu("Filters", :content_id => 'userfiles_filters') do %>
       <%= render :partial => 'userfiles/filters' %>
-      <div id="tag_table_sidebar">
-        <%= render :partial => 'userfiles/tag_table_sidebar' %>
-      </div>
-
-      <div id="userfiles_other_filters">
-        <%= render :partial => 'userfiles/other_filters' %>
-      </div>
     <% end %>
     <span id="view_option_button">
       <%= render :partial => "userfiles/view_option_button" %>

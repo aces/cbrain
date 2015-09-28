@@ -51,10 +51,12 @@ class UserfilesController < ApplicationController
       :operator  => 'match'
     })
 
-    # Base userfiles scope, without any filtering or ordering
-    @base_scope = base_scope
-    # Ordered, filtered view scope
-    @view_scope = view_scope(@base_scope)
+    # Apply basic and @scope-based scoping
+    scope_default_order(@scope, 'name')
+    @base_scope = custom_scope(
+      base_scope.includes([:user, :data_provider, :sync_status, :tags, :group])
+    )
+    @view_scope = @scope.apply(@base_scope)
 
     # Generate tag filters
     tag_counts   = @view_scope.joins(:tags).group('tags.name').count
@@ -71,17 +73,13 @@ class UserfilesController < ApplicationController
         }
       end
 
-    # Join in other models to display additional view information
-    @view_scope = @view_scope.includes([
-      :user, :data_provider, :sync_status, :tags, :group
-    ])
-
     # Generate display totals
     @userfiles_total = @view_scope.count('distinct userfiles.id')
     @archived_total  = @view_scope.where(:archived => true).count
     @immutable_total = @view_scope.where(:immutable => true).count
     @hidden_total    = @view_scope.undo_where(:hidden).where(:hidden => true).count unless
       @scope.custom[:view_hidden]
+    @userfiles_total_size = @view_scope.sum(:size)
 
     # Prepare the Pagination object
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
@@ -1592,8 +1590,9 @@ class UserfilesController < ApplicationController
     result
   end
 
-  # Base userfiles scope; all userfiles currently visible to the user, without any
-  # filtering yet. Requires a valid @scope object.
+  # Base userfiles scope; all userfiles currently visible to the user,
+  # respecting view options, user and project restrictions.
+  # Requires a valid @scope object.
   def base_scope
     base = Userfile.scoped
 
@@ -1612,25 +1611,14 @@ class UserfilesController < ApplicationController
     base
   end
 
-  # View userfiles scope; filtered and sorted list of userfiles to display.
-  # +base+ is expected to be the base scope to filter and sort (defaults to
-  # +base_scope+). Requires a valid @scope object.
-  def view_scope(base = nil)
-    base ||= base_scope
-
-    custom_filters  = (@scope.custom[:custom_filters] || []).dup
-    custom_filters &= current_user.custom_filter_ids
-    custom_filters.map! { |id| UserfileCustomFilter.find(id) }
-    custom_filters.compact!
-
-    scope_default_order(@scope, 'name')
-
-    view = @scope.apply(base)
-    view = custom_filters.inject(view) do |scope, filter|
-      filter.filter_scope(scope)
-    end
-
-    view
+  # Custom filters scope; filtered list of userfiles respecting currently active
+  # custom filters. +base+ is expected to be the initial scope to apply custom
+  # filters to (defaults to +base_scope+). Requires a valid @scope object.
+  def custom_scope(base = nil)
+    ((@scope.custom[:custom_filters] || []) & current_user.custom_filter_ids)
+      .map { |id| UserfileCustomFilter.find_by_id(id) }
+      .compact
+      .inject(base || base_scope) { |scope, filter| filter.filter_scope(scope) }
   end
 
   # Userfiles-specific tag Scope filter; filter by a set of tags which must

@@ -1,0 +1,75 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%=
+  render(:partial => 'shared/active_filters', :locals  => {
+    :scope => @scope,
+    :model => nil
+  })
+%>
+
+<%
+  @issues.each do |issue|
+    issue[:userfile] = Userfile.find_by_id(issue[:userfile_id]) if issue[:userfile_id]
+    issue[:user]   = User.find_by_id(issue[:user_id]) if issue[:user_id]
+    issue[:user] ||= issue[:userfile].user if issue[:userfile]
+  end
+%>
+
+<%=
+  dynamic_scoped_table(@view_scope,
+    :id    => 'data_provider_issues',
+    :scope => @scope
+  ) do |t|
+%>
+  <%
+    t.paginate
+    t.selectable('issue_ids[]')
+
+    t.row { |issue| { :class => "severity-#{issue[:severity]}" } }
+
+    t.column('Issue', :message,
+      :sortable => true
+    )
+
+    t.column('Severity', :severity,
+      :sortable => true,
+      :filters  => default_filters_for(@issues, :severity)
+    ) { |issue| issue[:severity].to_s.titleize }
+
+    t.column('Action', :action,
+      :sortable => true
+    ) { |issue| issue[:action] ? issue[:action].to_s.titleize : '-' }
+
+    t.column('File', :userfile) do |issue|
+      next '-' unless issue[:userfile]
+      link_to_userfile_if_accessible(issue[:userfile], current_user)
+    end
+
+    t.column('User', :user) do |issue|
+      next '-' unless issue[:user]
+      link_to_user_with_tooltip(issue[:user])
+    end
+  %>
+<% end %>

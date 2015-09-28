@@ -694,19 +694,21 @@ module DynamicTableHelper
           collection.respond_to?(:current_page) &&
           collection.current_page
         )
-          # Is there a paginate method available?
-          if collection.respond_to?(:paginate)
-            collection.paginate(
-              :page          => page,
-              :per_page      => per_page,
-              :total_entries => total_entries
-            )
-          # Otherwise, just manually create a WillPaginate::Collection
-          else
-            WillPaginate::Collection.create(page, per_page, total_entries) do |pager|
-              pager.replace(collection[pager.offset, pager.per_page].to_a)
+          collection = (
+            # Is there a paginate method available?
+            if collection.respond_to?(:paginate)
+              collection.paginate(
+                :page          => page,
+                :per_page      => per_page,
+                :total_entries => total_entries
+              )
+            # Otherwise, just manually create a WillPaginate::Collection
+            else
+              WillPaginate::Collection.create(page, per_page, total_entries) do |pager|
+                pager.replace(collection[pager.offset, pager.per_page].to_a)
+              end
             end
-          end
+          )
         end
 
         @collection = collection
@@ -1064,6 +1066,7 @@ module DynamicTableHelper
         end
 
         # Pre-set some HTML attributes for the per-page input
+        scope = @scope
         (options[:input_html] ||= {}).reverse_merge!({
           :name        => 'per_page',
           :class       => 'search_box',
@@ -1073,7 +1076,7 @@ module DynamicTableHelper
               :controller => params[:controller],
               :action     => params[:action],
               :page            => 1,
-              :_pag_scope_name => @scope.name
+              :_pag_scope_name => scope.name
             )
           end
         })
