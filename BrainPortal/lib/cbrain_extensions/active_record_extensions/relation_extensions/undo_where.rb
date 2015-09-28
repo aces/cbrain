@@ -54,7 +54,8 @@ module CBRAINExtensions #:nodoc:
 
           to_reject = {} #  "tab1.col1" => true, "tab1.col2" => true etc...
           args.map do |colspec|  #  "col" or "table.col"
-            raise "Invalid column specification \"#{colspec}\"." unless colspec.to_s =~ /^((\w+)\.)?(\w+)$/
+            raise "Invalid column specification \"#{colspec}\"." unless
+              colspec.to_s =~ /^(\`?(\w+)\`?\.)?\`?(\w+)\`?$/
             tab = Regexp.last_match[2].presence || mytable
             col = Regexp.last_match[3]
             to_reject["#{tab}.#{col}"] = true

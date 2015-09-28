@@ -572,9 +572,16 @@ module ScopeHelper
     # as +attribute+.
     label_alias = model.connection.quote_column_name('label')
 
+    # FIXME: undo_where is somewhat hacky and not exactly correct sometimes, but
+    # it is still required as some filters (custom filters) are still applied
+    # directly (without a Scope) and cannot be easily removed. Ideally, those
+    # filters should be ported to the Scope API and filter_values_for should
+    # accept a collection of scope objects to generate the separate counts with.
+    bare_model = model.undo_where(attribute)
+
     # Fetch the main filter values as an array of arrays:
     # [[value, label, count], [...]]
-    filters = model
+    filters = bare_model
       .where("#{attribute} IS NOT NULL")
       .order(label, attribute)
       .group(attribute, label)
