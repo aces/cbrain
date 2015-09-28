@@ -48,6 +48,10 @@ class SiteManager < User
     self.site.users
   end
 
+  def accessible_sites #:nodoc:
+    Site.where( :id => self.site_id )
+  end
+
   def visible_users #:nodoc:
     User.where("users.type <> 'AdminUser'")
   end

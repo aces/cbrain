@@ -971,6 +971,13 @@ pre {
   padding: 0;
 }
 
+#cbsearch {
+      padding: 1em 1em 0 0;
+      text-align: right;
+      float: right;
+      vertical-align: top;
+}
+
 #main-menu {
   position: absolute;
   bottom: 0px;

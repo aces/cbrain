@@ -42,6 +42,10 @@ class AdminUser < User
     User.scoped
   end
 
+  def accessible_sites #:nodoc:
+    Site.scoped
+  end
+
   def visible_users #:nodoc:
     User.scoped
   end

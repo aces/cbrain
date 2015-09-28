@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -27,10 +27,11 @@
 <!-- ********************* -->
 
 <div id="header">
+
   <h1>
     <%= link_to_if(current_user, RemoteResource.current_resource.name.presence || "CBRAIN", start_page_path) %>
     <% if current_user && current_project && !(params[:controller] == "groups" && params[:action] == "index") %>
-      - 
+      -
       <%= hover_dropdown(link_to(current_project.name, group_path(current_project)), :dropdown_class => "project_select_dropdown") do %>
         <div style="margin-right:0.2em">
           <% current_user.groups.where(:type => "WorkGroup", :invisible => false).limit(20).all.each do |g| %>
@@ -39,46 +40,59 @@
           <%= link_to "All Projects", {:controller => :groups, :action => :switch, :id  => "all"}, :method => :post %><br>
           <%= link_to "More Projects", groups_path %>
         </div>
-      <% end %>  
+      <% end %>
     <% end %>
     <%= yield(:title) %>
   </h1>
+
   <%= image_tag "ajax-loader.gif", :style => "display:none", :id => "loading_image" %>
-    <% if current_user %>
-      <div id="main-menu" class="main_menu_left">
-           <ul>
-             <% if !current_user.has_role?(:normal_user) || (current_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
-               <li <%= set_selected(params[:controller], :userfiles) %>>
-                 <%= link_to 'Files', userfiles_path %>
-               </li>
-               <li <%= set_selected(params[:controller], :tasks) %>>
-                 <%= link_to 'Tasks', :controller => :tasks, :action => :index %>
-               </li>
-             <% end %>
-             <% unless current_user.has_role?(:normal_user) %>
-               <li <%= set_selected(params[:controller], :data_providers) %>>
-                 <%= link_to 'Data Providers', data_providers_path %>
-               </li>
-               <li <%= set_selected(params[:controller], :bourreaux) %>>
-                 <%= link_to 'Servers', bourreaux_path %>
-               </li>               
-               <li <%= set_selected(params[:controller], :tools) %>>
-                <%= link_to 'Tools', tools_path %>
-               </li>
-               <li <%= set_selected(params[:controller], :users) %>>
-                <%= link_to 'Users', users_path %>
-               </li>
-             <% end %>
-             <% if current_user.has_role?(:admin_user) %>
-               <li <%= set_selected(params[:controller], :sites) %>>
-                 <%= link_to 'Sites', sites_path %>
-               </li> 
-               <li <%= set_selected(params[:controller], :exception_logs) %>>
-                 <%= link_to 'Exceptions', exception_logs_path %>
-               </li> 
-             <% end %>
-           </ul>
-      </div>  <!-- End id="main_menu_left" -->
-  <% end %>  
-</div>   <!-- End id="header" -->   
+
+  <% if current_user && current_user.has_role?(:admin_user) &&
+     ! (params[:controller] == 'portal' && params[:action] == 'search') %>
+    <div id="cbsearch">
+      <%= form_tag search_path, :method => :get do %>
+        <%= text_field_tag :search, nil, :placeholder => 'Search for anything' %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if current_user %>
+    <div id="main-menu" class="main_menu_left">
+       <ul>
+         <% if !current_user.has_role?(:normal_user) || (current_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
+           <li <%= set_selected(params[:controller], :userfiles) %>>
+             <%= link_to 'Files', userfiles_path %>
+           </li>
+           <li <%= set_selected(params[:controller], :tasks) %>>
+             <%= link_to 'Tasks', :controller => :tasks, :action => :index %>
+           </li>
+         <% end %>
+         <% unless current_user.has_role?(:normal_user) %>
+           <li <%= set_selected(params[:controller], :data_providers) %>>
+             <%= link_to 'Data Providers', data_providers_path %>
+           </li>
+           <li <%= set_selected(params[:controller], :bourreaux) %>>
+             <%= link_to 'Servers', bourreaux_path %>
+           </li>
+           <li <%= set_selected(params[:controller], :tools) %>>
+            <%= link_to 'Tools', tools_path %>
+           </li>
+           <li <%= set_selected(params[:controller], :users) %>>
+            <%= link_to 'Users', users_path %>
+           </li>
+         <% end %>
+         <% if current_user.has_role?(:admin_user) %>
+           <li <%= set_selected(params[:controller], :sites) %>>
+             <%= link_to 'Sites', sites_path %>
+           </li>
+           <li <%= set_selected(params[:controller], :exception_logs) %>>
+             <%= link_to 'Exceptions', exception_logs_path %>
+           </li>
+         <% end %>
+       </ul>
+    </div>  <!-- End id="main_menu" -->
+
+  <% end %>
+
+</div>   <!-- End id="header" -->
 

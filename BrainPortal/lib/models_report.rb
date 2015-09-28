@@ -131,5 +131,73 @@ class ModelsReport
     stats
   end
 
+  # This method implements the 'search for anything' for the controller portal action +search+
+  # It's also used in the rails console's shortcuts.
+  #
+  # If +token+ looks like an ID, the models are searched by ID only.
+  # Otherwise, models are searched by name, version_name, description, etc.
+  #
+  # It returns a hash table with these keys:
+  #
+  #   {
+  #     :users  => [],  # array of User objects
+  #     :tasks  => [],  # CbrainTask objects
+  #     :groups => [],  # Group objects
+  #     :files  => [],  # Userfile objects
+  #     :rrs    => [],  # RemoteResource objects
+  #     :dps    => [],  # DataProvider objects
+  #     :sites  => [],  # Site objects
+  #     :tools  => [],  # Tool objects
+  #     :tcs    => [],  # ToolConfig objects
+  #   }
+  def self.search_for_token(token, user=current_user) #:nodoc:
+
+    token       = token.to_s.presence || "-999"
+    is_numeric  = token =~ /^\d+$/    || token == "-999"
+
+
+    file_scope  = Userfile      .find_all_accessible_by_user(user) .order(:name)
+    task_scope  = CbrainTask    .find_all_accessible_by_user(user) .order(:id)
+    rr_scope    = RemoteResource.find_all_accessible_by_user(user) .order(:name)
+    dp_scope    = DataProvider  .find_all_accessible_by_user(user) .order(:name)
+    tool_scope  = Tool          .find_all_accessible_by_user(user) .order(:name)
+    tc_scope    = ToolConfig    .find_all_accessible_by_user(user) .order(:tool_id)
+
+    # For the next three, wow: 'available' and 'accessible' have reverse meaning!
+    # 'available' means user can modify them, 'accessible' means they can only view.
+    user_scope  = user.available_users  .order(:login)
+    group_scope = user.available_groups .order(:name)
+    site_scope  = user.accessible_sites .order(:name)
+
+    results = if (is_numeric)
+      {
+        :users  => Array(user_scope  .find_by_id(token)) ,
+        :tasks  => Array(task_scope  .find_by_id(token)) ,
+        :groups => Array(group_scope .find_by_id(token)) ,
+        :files  => Array(file_scope  .find_by_id(token)) ,
+        :rrs    => Array(rr_scope    .find_by_id(token)) ,
+        :dps    => Array(dp_scope    .find_by_id(token)) ,
+        :sites  => Array(site_scope  .find_by_id(token)) ,
+        :tools  => Array(tool_scope  .find_by_id(token)) ,
+        :tcs    => Array(tc_scope    .find_by_id(token)) ,
+      }
+    else
+      ptoken = "%#{token}%"
+      {
+        :users  => user_scope  .where( [ "login like ? OR full_name like ? OR email like ?", ptoken, ptoken, ptoken ] ).all ,
+        :tasks  => task_scope  .where( [ "description like ?"                              , ptoken                 ] ).all ,
+        :groups => group_scope .where( [ "name like ?"                                     , ptoken                 ] ).all ,
+        :files  => file_scope  .where( [ "name like ? OR description like ?"               , ptoken, ptoken         ] ).all ,
+        :rrs    => rr_scope    .where( [ "name like ? OR description like ?"               , ptoken, ptoken         ] ).all ,
+        :dps    => dp_scope    .where( [ "name like ? OR description like ?"               , ptoken, ptoken         ] ).all ,
+        :sites  => site_scope  .where( [ "name like ? OR description like ?"               , ptoken, ptoken         ] ).all ,
+        :tools  => tool_scope  .where( [ "name like ? OR description like ?"               , ptoken, ptoken         ] ).all ,
+        :tcs    => tc_scope    .where( [ "version_name like ? OR description like ?"       , ptoken, ptoken         ] ).all ,
+      }
+    end
+
+    results
+  end
+
 end
 
