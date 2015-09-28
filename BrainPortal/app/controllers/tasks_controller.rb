@@ -42,9 +42,10 @@ class TasksController < ApplicationController
     end
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
-    @base_scope = user_scope(current_user.available_tasks)
-      .includes([:bourreau, :user, :group])
-    @view_scope = view_scope(@base_scope)
+    @base_scope = custom_scope(user_scope(
+      current_user.available_tasks.includes([:bourreau, :user, :group])
+    ))
+    @view_scope = @scope.apply(@base_scope)
 
     # Display totals
     @total_tasks       = @view_scope.count
@@ -110,14 +111,14 @@ class TasksController < ApplicationController
   # Renders a set of tasks associated with a batch.
   def batch_list
     @scope = scope_from_session('tasks')
-    @base_scope = user_scope(
+    @base_scope = custom_scope(user_scope(
       current_user
         .available_tasks
         .real_tasks
         .where(:batch_id => params[:batch_id])
         .includes([:bourreau, :user, :group])
-    )
-    @tasks = view_scope(@base_scope)
+    ))
+    @tasks = @scope.apply(@base_scope)
       .order(['cbrain_tasks.rank', 'cbrain_tasks.level', 'cbrain_tasks.id'])
       .map { |task| { :batch => task.batch_id, :first => task, :count => 1 } }
 
@@ -570,12 +571,13 @@ class TasksController < ApplicationController
 
   # Allows user to update attributes of multiple tasks.
   def update_multiple
+    @scope = scope_from_session('tasks')
 
     # Construct task_ids and batch_ids
     task_ids   = Array(params[:tasklist]  || [])
     batch_ids  = Array(params[:batch_ids] || [])
     batch_ids << nil if batch_ids.delete('nil')
-    task_ids  += view_scope(user_scope(CbrainTask.where(:batch_id => batch_ids))).select(:id).raw_first_column
+    task_ids  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).select(:id).raw_first_column
     task_ids   = task_ids.map(&:to_i).uniq
 
     commit_name = extract_params_key([ :update_user_id, :update_group_id, :update_results_data_provider_id, :update_tool_config_id ])
@@ -729,7 +731,7 @@ class TasksController < ApplicationController
   # [*Terminate*] Kill the task, while maintaining its temporary files and its entry in the database.
   # [*Delete*] Kill the task, delete the temporary files and remove its entry in the database.
   def operation
-    @scope      = scope_from_session('tasks')
+    @scope = scope_from_session('tasks')
 
     operation  = params[:operation]
     tasklist   = params[:tasklist]  || []
@@ -737,7 +739,7 @@ class TasksController < ApplicationController
     batch_ids  = params[:batch_ids] || []
     batch_ids  = [ batch_ids ] unless batch_ids.is_a?(Array)
     batch_ids << nil if batch_ids.delete('nil')
-    tasklist  += view_scope(user_scope(CbrainTask.where(:batch_id => batch_ids))).select(:id).raw_first_column
+    tasklist  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).select(:id).raw_first_column
     tasklist   = tasklist.map(&:to_i).uniq
 
     flash[:error]  ||= ""
@@ -991,17 +993,22 @@ class TasksController < ApplicationController
       )
   end
 
-  # View tasks scope; filtered and sorted list of tasks to display (or currently
-  # displayed). +base+ is expected to be the base scope to filter and sort.
-  # Requires a valid @scope object.
-  def view_scope(base)
-    custom_filters  = (@scope.custom[:custom_filters] || []).dup
-    custom_filters &= current_user.custom_filter_ids
-    custom_filters.map! { |id| TaskCustomFilter.find(id) }
+  # Custom filters scope; filtered list of tasks respecting currently active
+  # custom filters. +base+ is expected to be the initial scope to apply custom
+  # filters to. Requires a valid @scope object.
+  def custom_scope(base)
+    ((@scope.custom[:custom_filters] || []) & current_user.custom_filter_ids)
+      .map { |id| TaskCustomFilter.find_by_id(id) }
+      .compact
+      .inject(base) { |scope, filter| filter.filter_scope(scope) }
+  end
 
-    custom_filters.inject(@scope.apply(base)) do |scope, filter|
-      filter.filter_scope(scope)
-    end
+  # Combination of +user_scope+, +custom_scope+ and @scope object; returns a
+  # scoped list of tasks fitlered/ordered by all three. +base+ is expected to
+  # be the base scope to start with (passed directly to +user_scope+).
+  # Requires a valid @scope object.
+  def filtered_scope(base)
+    @scope.apply(custom_scope(user_scope(base)))
   end
 
   public
