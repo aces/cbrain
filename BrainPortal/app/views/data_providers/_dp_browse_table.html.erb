@@ -34,9 +34,9 @@
   <div class="pagination">
     <div class="pagination_left_side">
       Register files as:
-      <%= master_select("file_select", ["..."] + SingleFile.valid_file_classes.map(&:pretty_type)) %>,
+      <%= master_select("file_select", ["..."] + SingleFile.valid_file_classes.map(&:pretty_type).sort) %>,
       and directories as:
-      <%= master_select("directory_select", ["..."] + FileCollection.valid_file_classes.map(&:pretty_type)) %>
+      <%= master_select("directory_select", ["..."] + FileCollection.valid_file_classes.map(&:pretty_type).sort) %>
     </div>
 
     <div class="pagination_right_side">

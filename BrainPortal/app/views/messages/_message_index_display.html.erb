@@ -107,7 +107,7 @@
             label = (! value || value == 0) ? 'Not critical' : 'Critical'
             {
               :value     => value,
-              :label     => "#{label} (#{scoped}/#{count})",
+              :label     => "#{label} (of #{count})",
               :indicator => scoped,
               :empty     => scoped == 0
             }
@@ -124,7 +124,7 @@
           format: lambda do |value, label, count, scoped|
             {
               :value     => value,
-              :label     => "#{label.humanize} (#{scoped}/#{count})",
+              :label     => "#{label.humanize} (of #{count})",
               :indicator => scoped,
               :empty     => scoped == 0
             }

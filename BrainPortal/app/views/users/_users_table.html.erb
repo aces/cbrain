@@ -86,7 +86,7 @@
           label = (!value || value == 0 ? 'Unlocked' : 'Locked')
           {
             :value     => value,
-            :label     => "#{label} (#{scoped}/#{count})",
+            :label     => "#{label} (of #{count})",
             :indicator => scoped,
             :empty     => scoped == 0
           }
