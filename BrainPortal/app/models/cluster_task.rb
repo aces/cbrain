@@ -139,7 +139,7 @@ class ClusterTask < CbrainTask
   # job on the cluster. The value returned by a
   # CbrainTask should be conservative and be reasonably
   # larger than the longest run expected, without being
-  # overly excessive. The default value used by
+  # overlay excessive. The default value used by
   # the framework is 24.hours
   def job_walltime_estimate
     24.hours
@@ -1492,6 +1492,7 @@ class ClusterTask < CbrainTask
     job.wd       = workdir
     job.name     = self.tname_tid  # "#{self.name}-#{self.id}" # some clusters want all names to be different!
     job.walltime = self.job_walltime_estimate
+    job.tc_extra_qsub_args = tool_config.tc_extra_qsub_args
 
     # Log version of Scir lib
     drm     = scir_class.drm_system

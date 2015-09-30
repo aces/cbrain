@@ -103,6 +103,7 @@ class ScirUnix < Scir
 
     def run(job)
       reset_job_info_cache
+      puts_red job.inspect
       command = job.qsub_command
       pid = Process.fork do
         (3..50).each { |i| IO.for_fd(i).close rescue true } # with some luck, it's enough
