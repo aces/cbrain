@@ -1,0 +1,120 @@
+
+<% title 'Search' %>
+
+<%= form_tag(search_path, :method => :get) do %>
+   <%= text_field_tag :search, @search.presence, :placeholder => "Search for anything" %>
+   <span class="field_explanation">This will search files, tasks, users, tools, projects, etc by name or description. <%= @limit %> results shown maximum.</span>
+<% end %>
+
+<% if [ @users, @tasks, @groups, @files, @rrs, @dps, @sites, @tools, @tcs ].any? { |var| var.present? } %>
+  <%# <h2>Results</h2> %>
+  <p>
+<% end %>
+
+<% [ :files, :tasks, :users, :groups, :rrs, :dps, :sites, :tools, :tcs ].each do |var| %>
+  <%
+     # Compute a @x_size variable for each result set, and truncate results to 20 entries max.
+     # Should be using reflexive interface instead of an eval, but oh well.
+     eval "
+       array        = @#{var}
+       @#{var}_size = array.size
+       @#{var}      = @#{var}[0,#{@limit}] if array.size > #{@limit}
+     "
+  %>
+<% end %>
+
+<% # this is used by array_to_table() below
+   tables_options = {
+     :rows            => 5,
+     :fill_by_columns => true,
+     :table_class     => "simple",
+     :td_class        => "left_align",
+   }
+%>
+
+<% if @files.present? %>
+  <h3>Files (found: <%= @files_size %>)</h3>
+  <%= array_to_table(@files, tables_options) do |file,r,c| %>
+     <%= link_to_userfile_if_accessible(file) %> (<%= file.user.login %>)
+  <% end %>
+<% end %>
+
+<% if @tasks.present? %>
+  <h3>Tasks (found: <%= @tasks_size %>)</h3>
+  <%= array_to_table(@tasks, tables_options) do |task,r,c| %>
+     <%= link_to_model_if_accessible(CbrainTask,task,:name_and_bourreau) %> (<%= task.user.login %>)
+     <%= link_to "(edit)", edit_task_path(task), :class => 'action_link' %><br>
+     <%= overlay_description(task.description, :header_width => 35) %>
+  <% end %>
+<% end %>
+
+<% if @users.present? %>
+  <h3>Users (found: <%= @users_size %>)</h3>
+  <%= array_to_table(@users, tables_options) do |user,r,c| %>
+     <%= user.full_name %> (<%= link_to_user_if_accessible(user) %>)
+     <%= link_to '(switch)', switch_user_path(user), :method  => :post, :class => 'action_link' if current_user.has_role?(:admin_user) %>
+  <% end %>
+<% end %>
+
+<% if @groups.present? %>
+  <h3>Projects (found: <%= @groups_size %>)</h3>
+  <%= array_to_table(@groups, tables_options) do |group,r,c| %>
+     <%= link_to_group_if_accessible(group) %> (<%= group.creator.try(:login) %>)
+     <%= link_to '(switch)', { :controller => :groups, :action => :switch, :id => group.id } , :method  => :post, :class => 'action_link' %>
+  <% end %>
+<% end %>
+
+<% if @rrs.present? %>
+  <h3>Execution Servers (found: <%= @rrs_size %>)</h3>
+  <%= array_to_table(@rrs, tables_options) do |rr,r,c| %>
+     <%= link_to_bourreau_if_accessible(rr) %>
+     <% task_count = current_user.cbrain_tasks.real_tasks.where(:bourreau_id => rr.id).count %>
+     <% if task_count > 0 %>
+       (<%= index_count_filter(task_count, :tasks,
+            { :user_id => current_user.id, :bourreau_id => rr.id}) %> tasks)
+     <% end %>
+  <% end %>
+<% end %>
+
+<% if @dps.present? %>
+  <h3>Data Providers (found: <%= @dps_size %>)</h3>
+  <%= array_to_table(@dps, tables_options) do |dp,r,c| %>
+     <%= link_to_data_provider_if_accessible(dp) %>
+     <%= link_to '(browse)', browse_data_provider_path(dp), :class => 'action_link' if dp.is_browsable? %>
+     <% file_count = current_user.userfiles.where(:data_provider_id => dp.id).count %>
+     <% if file_count > 0 %>
+       (<%= index_count_filter(file_count, :userfiles,
+            { :user_id => current_user.id, :data_provider_id => dp.id}) %> registered files)
+     <% end %>
+  <% end %>
+<% end %>
+
+<% if @sites.present? %>
+  <h3>Sites (found: <%= @sites_size %>)</h3>
+  <%= array_to_table(@sites, tables_options) do |site,r,c| %>
+     <%= link_to_site_if_accessible(site) %>
+  <% end %>
+<% end %>
+
+<% if @tools.present? %>
+  <h3>Tools (found: <%= @tools_size %>)</h3>
+  <%= array_to_table(@tools, tables_options) do |tool,r,c| %>
+    <% if current_user.has_role?(:admin_user) %>
+      <%= link_to tool.name, edit_tool_path(tool) %>
+    <%  else %>
+      <%= tool.name %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @tcs.present? %>
+  <h3>Tool Versions (found: <%= @tcs_size %>)</h3>
+  <%= array_to_table(@tcs, tables_options) do |tc,r,c| %>
+    <% if current_user.has_role?(:admin_user) %>
+      <%= tc.tool.name %>@<%= tc.bourreau.name%> : <%= link_to tc.version_name, edit_tool_config_path(tc) %>
+    <%  else %>
+      <%= tc.tool.name %>@<%= tc.bourreau.name%> : <%= tc.version_name %>
+    <% end %>
+  <% end %>
+<% end %>
+

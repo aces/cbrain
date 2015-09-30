@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Model representing a user with adminstrative rights.
@@ -25,25 +25,29 @@
 class AdminUser < User
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   def available_tools  #:nodoc:
     Tool.scoped
   end
-  
+
   def available_groups  #:nodoc:
     Group.scoped
   end
-  
+
   def available_tasks  #:nodoc:
     CbrainTask.scoped
   end
-  
+
   def available_users  #:nodoc:
     User.scoped
   end
-  
+
+  def accessible_sites #:nodoc:
+    Site.scoped
+  end
+
   def visible_users #:nodoc:
     User.scoped
   end
-  
+
 end

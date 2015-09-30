@@ -322,6 +322,11 @@ class User < ActiveRecord::Base
     cb_error "#available_users called from User base class! Method must be implement in a subclass."
   end
 
+  # Return the list of sites accessible to the user
+  def accessible_sites
+    cb_error "#accessible_sites called from User base class! Method must be implement in a subclass."
+  end
+
   # Can this user be accessed by +user+?
   def can_be_accessed_by?(user, access_requested = :read) #:nodoc:
     return true if user.has_role? :admin_user
