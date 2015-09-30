@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150615174035) do
+ActiveRecord::Schema.define(:version => 20150929193957) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -236,6 +236,7 @@ ActiveRecord::Schema.define(:version => 20150615174035) do
     t.string   "support_email"
     t.string   "system_from_email"
     t.string   "external_status_page_url"
+    t.string   "docker_executable_name"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
@@ -316,6 +317,7 @@ ActiveRecord::Schema.define(:version => 20150615174035) do
     t.integer  "group_id"
     t.integer  "ncpus"
     t.string   "docker_image"
+    t.string   "tc_extra_qsub_args"
   end
 
   add_index "tool_configs", ["bourreau_id"], :name => "index_tool_configs_on_bourreau_id"
@@ -360,7 +362,6 @@ ActiveRecord::Schema.define(:version => 20150615174035) do
   add_index "userfiles", ["data_provider_id"], :name => "index_userfiles_on_data_provider_id"
   add_index "userfiles", ["group_id"], :name => "index_userfiles_on_group_id"
   add_index "userfiles", ["hidden", "id"], :name => "index_userfiles_on_hidden_and_id"
-  add_index "userfiles", ["hidden"], :name => "index_userfiles_on_hidden"
   add_index "userfiles", ["immutable", "id"], :name => "index_userfiles_on_immutable_and_id"
   add_index "userfiles", ["name"], :name => "index_userfiles_on_name"
   add_index "userfiles", ["type"], :name => "index_userfiles_on_type"
