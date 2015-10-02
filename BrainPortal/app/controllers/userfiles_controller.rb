@@ -57,6 +57,12 @@ class UserfilesController < ApplicationController
     @custom_scope = custom_scope(@base_scope)
     @view_scope   = @scope.apply(@custom_scope)
 
+    # Are hidden files displayed?
+    unless @scope.custom[:view_hidden]
+      @hidden_total = @view_scope.where(:hidden => true).count
+      @view_scope = @view_scope.where(:hidden => false)
+    end
+
     # Generate tag filters
     tag_counts   = @view_scope.joins(:tags).group('tags.name').count
     @tag_filters = @base_scope
@@ -74,10 +80,8 @@ class UserfilesController < ApplicationController
 
     # Generate display totals
     @userfiles_total = @view_scope.count('distinct userfiles.id')
-    @archived_total  = @view_scope.where(:archived => true).count
+    @archived_total  = @view_scope.where(:archived  => true).count
     @immutable_total = @view_scope.where(:immutable => true).count
-    @hidden_total    = @view_scope.undo_where(:hidden).where(:hidden => true).count unless
-      @scope.custom[:view_hidden]
     @userfiles_total_size = @view_scope.sum(:size)
 
     # Prepare the Pagination object
@@ -1606,7 +1610,6 @@ class UserfilesController < ApplicationController
     end
 
     base = base.where(:group_id => current_project.id) if current_project
-    base = base.where(:hidden => false) unless @scope.custom[:view_hidden]
     base
   end
 
