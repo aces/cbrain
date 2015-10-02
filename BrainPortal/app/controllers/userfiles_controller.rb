@@ -53,10 +53,9 @@ class UserfilesController < ApplicationController
 
     # Apply basic and @scope-based scoping
     scope_default_order(@scope, 'name')
-    @base_scope = custom_scope(
-      base_scope.includes([:user, :data_provider, :sync_status, :tags, :group])
-    )
-    @view_scope = @scope.apply(@base_scope)
+    @base_scope   = base_scope.includes([:user, :data_provider, :sync_status, :tags, :group])
+    @custom_scope = custom_scope(@base_scope)
+    @view_scope   = @scope.apply(@custom_scope)
 
     # Generate tag filters
     tag_counts   = @view_scope.joins(:tags).group('tags.name').count

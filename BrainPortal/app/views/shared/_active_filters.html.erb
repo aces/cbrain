@@ -32,8 +32,13 @@
   <span class="active_status_left_side">
     <span class="active_label">Active Filters</span>
     (<%=
-      scope_filter_link('clear',
-        scope, :clear, nil,
+      empty = scope.dup
+      empty.filters.clear
+      empty.custom[:custom_filters] = [] if
+        empty.custom.has_key?(:custom_filters)
+
+      scope_link('clear',
+        scope.name, empty.to_hash,
         link: { :ajax => true }
       )
     %>)
