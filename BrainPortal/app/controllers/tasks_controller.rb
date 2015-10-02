@@ -42,10 +42,10 @@ class TasksController < ApplicationController
     end
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
-    @base_scope = custom_scope(user_scope(
-      current_user.available_tasks.includes([:bourreau, :user, :group])
-    ))
-    @view_scope = @scope.apply(@base_scope)
+    @base_scope   = user_scope(current_user.available_tasks)
+      .includes([:bourreau, :user, :group])
+    @custom_scope = custom_scope(@base_scope)
+    @view_scope   = @scope.apply(@custom_scope)
 
     # Display totals
     @total_tasks       = @view_scope.count

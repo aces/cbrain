@@ -100,16 +100,15 @@
       t.column("&#9888;".html_safe, :critical,
         :pretty_name => 'Critical',
         :hidden      => true,
-        :filters     => filter_values_for(
-          @base_scope, :critical,
-          scope:  @scope,
-          format: lambda do |value, label, count, scoped|
+        :filters     => scoped_filters_for(
+          @base_scope, @scope, :critical,
+          format: lambda do |value, label, base, view|
             label = (! value || value == 0) ? 'Not critical' : 'Critical'
             {
               :value     => value,
-              :label     => "#{label} (of #{count})",
-              :indicator => scoped,
-              :empty     => scoped == 0
+              :label     => "#{label} (of #{base})",
+              :indicator => view,
+              :empty     => view == 0
             }
           end
         )
@@ -118,15 +117,14 @@
       t.column("Type", :message_type,
         :hidden   => true,
         :sortable => true,
-        :filters  => filter_values_for(
-          @base_scope, :message_type,
-          scope:  @scope,
-          format: lambda do |value, label, count, scoped|
+        :filters  => scoped_filters_for(
+          @base_scope, @scope, :message_type,
+          format: lambda do |value, label, base, view|
             {
               :value     => value,
-              :label     => "#{label.humanize} (of #{count})",
-              :indicator => scoped,
-              :empty     => scoped == 0
+              :label     => "#{label.humanize} (of #{base})",
+              :indicator => view,
+              :empty     => view == 0
             }
           end
         )
@@ -145,9 +143,8 @@
         :sortable => true,
         :filters  => filter_values_for(
           @base_scope, :sender_id,
-          scope: @scope,
           label: 'users.login',
-          association: [User, 'id', 'sender_id'],
+          association: [User, 'id', 'sender_id']
         ) + [{
           :value     => nil,
           :label     => 'System',
@@ -161,7 +158,6 @@
         :sortable => true,
         :filters  => filter_values_for(
           @base_scope, :user_id,
-          scope: @scope,
           label: 'users.login',
           association: [User, 'id', 'user_id']
         )
