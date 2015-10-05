@@ -108,19 +108,13 @@ module ActiveRecord #:nodoc:
 
     include CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::RawData
 
-    #####################################################################
-    # ActiveRecord::Relation Added Behavior For To Undo Conditions
-    #####################################################################
-
-    include CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::UndoWhere
-
   end
 
   # CBRAIN ActiveRecord::Associations::CollectionProxy extensions
   # delegating extended Relation methods.
   module Associations #:nodoc:
     class CollectionProxy #:nodoc:
-      delegate :raw_first_column, :raw_rows, :undo_where, :to => :scoped
+      delegate :raw_first_column, :raw_rows, :to => :scoped
     end
   end
 
