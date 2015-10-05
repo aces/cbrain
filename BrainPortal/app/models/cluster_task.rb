@@ -1496,9 +1496,10 @@ class ClusterTask < CbrainTask
     # Note: all extra_qsub_args defined in the tool_configs (bourreau, tool and bourreau/tool)
     # are appended by level of priority. 'less' specific first, 'more' specific later.
     # In this way if the same option is defined twice the more specific one will be the used.
-    job.tc_extra_qsub_args += "#{bourreau_glob_config.extra_qsub_args} "
-    job.tc_extra_qsub_args += "#{tool_glob_config.extra_qsub_args} "
-    job.tc_extra_qsub_args += "#{tool_config.extra_qsub_args} "
+    job.tc_extra_qsub_args  = ""
+    job.tc_extra_qsub_args += "#{bourreau_glob_config.extra_qsub_args} " if bourreau_glob_config
+    job.tc_extra_qsub_args += "#{tool_glob_config.extra_qsub_args} "     if tool_glob_config
+    job.tc_extra_qsub_args += "#{tool_config.extra_qsub_args} "          if tool_config
 
     # Log version of Scir lib
     drm     = scir_class.drm_system
