@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This is a replacement for the drmaa.rb library; this particular subclass
@@ -131,8 +131,9 @@ class ScirPbs < Scir
       command += "-e #{shell_escape(self.stderr)} " if self.stderr
       command += "-j oe "                           if self.join
       command += "-q #{shell_escape(self.queue)} "  unless self.queue.blank?
-      command += " #{Scir.cbrain_config[:extra_qsub_args]} "     unless Scir.cbrain_config[:extra_qsub_args].blank?
-      command += "-l walltime=#{self.walltime.to_i} " unless self.walltime.blank?
+      command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
+      command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?
+      command += "-l walltime=#{self.walltime.to_i} "       unless self.walltime.blank?
       command += "#{shell_escape(self.arg[0])}"
       command += " 2>&1"
 

@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This is a replacement for the drmaa.rb library; this particular subclass
@@ -144,7 +144,8 @@ class ScirSharcnet < Scir
       command += "-e #{shell_escape(stderrfile)} "  if stderrfile && ! self.join && stderrfile != stdoutfile
       command += "-q #{shell_escape(self.queue)} "  unless self.queue.blank?
       command += "-r #{(self.walltime.to_i/60)+1} " unless self.walltime.blank?  # sqsub uses minutes
-      command += " #{Scir.cbrain_config[:extra_qsub_args]} "     unless Scir.cbrain_config[:extra_qsub_args].blank?
+      command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
+      command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?
       command += "/bin/bash #{shell_escape(self.arg[0])}"
       command += " 2>&1" # they mix stdout and stderr !!! grrrrrr
 
