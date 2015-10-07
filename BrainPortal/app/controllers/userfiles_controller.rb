@@ -286,7 +286,7 @@ class UserfilesController < ApplicationController
 
       # Rebuild the sorted Userfile scope
       @scope       = scope_from_session('userfiles')
-      sorted_scope = view_scope
+      sorted_scope = filtered_scope
 
       # Fetch the neighbors of the shown userfile in the ordered scope's order
       neighbors = sorted_scope.where("userfiles.id != ?", @userfile.id).offset([0, @sort_index - 1].max).limit(2).all
@@ -927,7 +927,7 @@ class UserfilesController < ApplicationController
     persistent = Set.new(current_session[:persistent_userfiles])
 
     if operation =~ /select/
-      files = view_scope
+      files = filtered_scope
         .select(&:available?)
         .map(&:id)
         .map(&:to_s)
@@ -1621,6 +1621,13 @@ class UserfilesController < ApplicationController
       .map { |id| UserfileCustomFilter.find_by_id(id) }
       .compact
       .inject(base || base_scope) { |scope, filter| filter.filter_scope(scope) }
+  end
+
+  # Combination of +base_scope+, +custom_scope+ and @scope object; returns a
+  # scoped list of userfiles fitlered/ordered by all three.
+  # Requires a valid @scope object.
+  def filtered_scope
+    @scope.apply(custom_scope(base_scope))
   end
 
   # Userfiles-specific tag Scope filter; filter by a set of tags which must
