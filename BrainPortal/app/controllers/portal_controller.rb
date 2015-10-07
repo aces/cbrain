@@ -359,22 +359,10 @@ class PortalController < ApplicationController
   # This action searches among all sorts of models for IDs or strings,
   # and reports links to the matches found.
   def search
+    @search  = params[:search]
+    @limit   = 20 # used by interface only
 
-    @search = params[:search]
-    @limit  = 20 # used by interface only
-
-    results = @search.present? ? ModelsReport.search_for_token(@search, current_user) : {}
-
-    @users  = results[:users]  || []
-    @tasks  = results[:tasks]  || []
-    @groups = results[:groups] || []
-    @files  = results[:files]  || []
-    @rrs    = results[:rrs]    || []
-    @dps    = results[:dps]    || []
-    @sites  = results[:sites]  || []
-    @tools  = results[:tools]  || []
-    @tcs    = results[:tcs]    || []
-
+    @results = @search.present? ? ModelsReport.search_for_token(@search, current_user) : {}
   end
 
   private
