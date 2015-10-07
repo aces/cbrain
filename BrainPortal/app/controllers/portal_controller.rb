@@ -356,6 +356,27 @@ class PortalController < ApplicationController
     @filter_show_proc  = (table_op =~ /sum.*size/) ? (Proc.new { |vector| colored_pretty_size(vector[0]) }) : nil
   end
 
+  # This action searches among all sorts of models for IDs or strings,
+  # and reports links to the matches found.
+  def search
+
+    @search = params[:search]
+    @limit  = 20 # used by interface only
+
+    results = @search.present? ? ModelsReport.search_for_token(@search, current_user) : {}
+
+    @users  = results[:users]  || []
+    @tasks  = results[:tasks]  || []
+    @groups = results[:groups] || []
+    @files  = results[:files]  || []
+    @rrs    = results[:rrs]    || []
+    @dps    = results[:dps]    || []
+    @sites  = results[:sites]  || []
+    @tools  = results[:tools]  || []
+    @tcs    = results[:tcs]    || []
+
+  end
+
   private
 
   def merge_vals_as_array(*sub_reports) #:nodoc:

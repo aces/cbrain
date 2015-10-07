@@ -1493,6 +1493,14 @@ class ClusterTask < CbrainTask
     job.name     = self.tname_tid  # "#{self.name}-#{self.id}" # some clusters want all names to be different!
     job.walltime = self.job_walltime_estimate
 
+    # Note: all extra_qsub_args defined in the tool_configs (bourreau, tool and bourreau/tool)
+    # are appended by level of priority. 'less' specific first, 'more' specific later.
+    # In this way if the same option is defined twice the more specific one will be the used.
+    job.tc_extra_qsub_args  = ""
+    job.tc_extra_qsub_args += "#{bourreau_glob_config.extra_qsub_args} " if bourreau_glob_config
+    job.tc_extra_qsub_args += "#{tool_glob_config.extra_qsub_args} "     if tool_glob_config
+    job.tc_extra_qsub_args += "#{tool_config.extra_qsub_args} "          if tool_config
+
     # Log version of Scir lib
     drm     = scir_class.drm_system
     version = scir_class.version
@@ -1645,8 +1653,8 @@ class ClusterTask < CbrainTask
 
     cache_dir=RemoteResource.current_resource.dp_cache_dir;
     task_dir=self.bourreau.cms_shared_dir;
-    docker_commands = "cat << DOCKERJOB > .dockerjob.sh
-#!/bin/bash\n
+    docker_commands = "cat << \"DOCKERJOB\" > .dockerjob.sh
+#!/bin/bash -l\n
 #{commands_joined}\n
 DOCKERJOB\n
 chmod 755 ./.dockerjob.sh\n

@@ -17,34 +17,38 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Model representing a user with normal rights.
 # Normal users only have access to resources they own or those
 # of projects they are members of.
 class NormalUser < User
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def available_tools  #:nodoc:
     Tool.where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.group_ids])
   end
-  
-  def available_groups  #:nodoc:              
-    self.groups.where("groups.name <> 'everyone'").where(invisible: false)
+
+  def available_groups  #:nodoc:
+    self.groups.where("groups.type <> 'EveryoneGroup'").where(:invisible => false)
   end
-  
+
   def available_tasks  #:nodoc:
     CbrainTask.where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.group_ids] )
   end
-  
+
   def available_users  #:nodoc:
     User.where( :id => self.id )
   end
-  
+
+  def accessible_sites #:nodoc:
+    Site.where( :id => (self.site_id || -1) )
+  end
+
   def visible_users #:nodoc:
     User.where("users.type <> 'AdminUser'")
   end
-  
+
 end

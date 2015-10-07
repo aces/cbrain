@@ -205,12 +205,12 @@ end
 
 # Show bourreau worker processes on given bourreau(x).
 def ps_work(*arg)
-  bb_bash(*arg){ |b| "ps ax -o ruser,pid,%cpu,%mem,vsize,state,stime,time,command | grep 'Worker #{b.name}' | grep -v grep | sed -e 's/  *$//'" }
+  bb_bash(*arg){ |b| "ps -u $USER -o user,pid,%cpu,%mem,vsize,state,stime,time,command | grep 'Worker #{b.name}' | grep -v grep | sed -e 's/  *$//'" }
 end
 
 # Show all processes on given bourreau(x).
 def ps_bb(*arg)
-  bb_bash(*arg){ |b| "ps ax -o ruser,pid,%cpu,%mem,vsize,state,stime,time,command | grep ^$USER | sed -e 's/  *$//'" }
+  bb_bash(*arg){ |b| "ps -u $USER -o user,pid,%cpu,%mem,vsize,state,stime,time,command | sed -e 's/  *$//'" }
 end
 
 # Disable AR logging (actually, just sets logging level to ERROR)
