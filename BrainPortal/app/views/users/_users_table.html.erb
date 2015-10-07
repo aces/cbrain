@@ -80,15 +80,15 @@
 
     t.column("Login", :login,
       :sortable => true,
-      :filters  => filter_values_for(@base_scope, :account_locked,
-        scope:  @scope,
-        format: lambda do |value, label, count, scoped|
+      :filters  => scoped_filters_for(
+        @base_scope, @scope, :account_locked,
+        format: lambda do |value, label, base, view|
           label = (!value || value == 0 ? 'Unlocked' : 'Locked')
           {
             :value     => value,
-            :label     => "#{label} (of #{count})",
-            :indicator => scoped,
-            :empty     => scoped == 0
+            :label     => "#{label} (of #{base})",
+            :indicator => view,
+            :empty     => view == 0
           }
         end
       )
