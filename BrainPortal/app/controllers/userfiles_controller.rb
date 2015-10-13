@@ -647,7 +647,12 @@ class UserfilesController < ApplicationController
     failed_list   = {}
     CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending update to files") do
       access_requested = commit_name == :update_tags ? :read : :write
-      filelist         = Userfile.find_all_accessible_by_user(current_user, :access_requested => access_requested ).where(:id => file_ids).all
+      # if the current user is admin or site manager they're allowed to update attributes of any file even if they're not the owner. Otherwise, the current user must be the owner to modify the attributes.
+      if current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)
+        filelist       = Userfile.find_all_accessible_by_user(current_user, :access_requested => access_requested ).where(:id => file_ids).all
+      else
+        filelist       = Userfile.find_all_accessible_by_user(current_user, :access_requested => access_requested ).where(:id => file_ids, :user_id => current_user.id).all
+      end
       failure_ids      = file_ids - filelist.map {|u| u.id.to_s }
       failed_files     = Userfile.where(:id => failure_ids).select([:id, :name, :type]).all
       failed_list["you don't have write access"] = failed_files if failed_files.present?
