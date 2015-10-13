@@ -17,6 +17,7 @@ function myCustomConfirmBox(message, callback) {
 	$(".cbrain-dialog-confirm").dialog({
 		resizable: false,
 		modal: true,
+		dialogClass: "no-close",
 		title: "Confirmation",
 		width: 400,
 		buttons: {

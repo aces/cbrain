@@ -2339,24 +2339,9 @@ img {
 	border: 3px solid red !important;
 }
 
-.ui-dialog-titlebar-close {
-  visibility: hidden;
+.no-close .ui-dialog-titlebar-close {
+  display: none;
 }
-
-
-/*
-
-
-
-.ui-dialog-titlebar {
-  outline: red solid thick;
-  height: 20px;
-}
-.ui-dialog {
-  outline: #00FF00 dotted thick;
-}
-*/
-
 
 
 
