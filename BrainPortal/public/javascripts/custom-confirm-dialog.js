@@ -6,18 +6,18 @@
 // The custom dialog box actually gets created in the function below
 function myCustomConfirmBox(message, callback) {
 
-	if ($('#dialog-confirm').length == 0){
-		$(document.body).append('<div id="dialog-confirm"></div>');
+	if ($('.cbrain-dialog-confirm').length == 0){
+		$(document.body).append('<div class="cbrain-dialog-confirm"></div>');
 	}
 
-	$("#dialog-confirm").html(message);
+	$(".cbrain-dialog-confirm").html(message);
+
 
 	// Define the Dialog and its properties.
-	$("#dialog-confirm").dialog({
+	$(".cbrain-dialog-confirm").dialog({
 		resizable: false,
 		modal: true,
 		title: "Confirmation",
-		height: 150,
 		width: 400,
 		buttons: {
 			"Yes": function () {

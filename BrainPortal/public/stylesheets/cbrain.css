@@ -2333,6 +2333,30 @@ img {
 /* % Jquery Confirmation UI styling */
 /* % ######################################################### */
 
-#dialog-confirm { color: red; }
+.cbrain-dialog-confirm {
+	background-color: pink !important;
+	font-weight: bold !important;
+	border: 3px solid red !important;
+}
+
+.ui-dialog-titlebar-close {
+  visibility: hidden;
+}
+
+
+/*
+
+
+
+.ui-dialog-titlebar {
+  outline: red solid thick;
+  height: 20px;
+}
+.ui-dialog {
+  outline: #00FF00 dotted thick;
+}
+*/
+
+
 
 
