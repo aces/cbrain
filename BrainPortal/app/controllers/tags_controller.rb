@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #RESTful controller for the Tag resource.
@@ -41,12 +41,14 @@ class TagsController < ApplicationController
   # POST /tags.xml
   def create #:nodoc:
     @tag = Tag.new(params[:tag])
-    @tag.user_id = current_user.id
+
+     @tag.user_id = current_user.id if @tag.user_id.blank? || !current_user.available_users.raw_first_column(:user_id).include?(@tag.user_id)
+     @tag.group_id = current_user.own_group.id if @tag.user_id.blank? || !current_user.available_groups.map(&:id).include?(@tag.group_id)
 
     respond_to do |format|
       if @tag.save
         flash[:notice] = 'Tag was successfully created.'
-        format.html { redirect_to userfiles_path }        
+        format.html { redirect_to userfiles_path }
         format.xml  { render :xml => @tag, :status => :created, :location => @tag }
       else
         format.html { redirect_to userfiles_path }
@@ -60,6 +62,9 @@ class TagsController < ApplicationController
   # PUT /tags/1.xml
   def update #:nodoc:
     @tag = current_user.tags.find(params[:id])
+
+    @tag.user_id = current_user.id if @tag.user_id.blank? || !current_user.available_users.raw_first_column(:user_id).include?(@tag.user_id)
+    @tag.group_id = current_user.own_group.id if @tag.user_id.blank? || !current_user.available_groups.map(&:id).include?(@tag.group_id)
 
     respond_to do |format|
       if @tag.update_attributes(params[:tag])
