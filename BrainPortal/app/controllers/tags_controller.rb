@@ -93,11 +93,11 @@ class TagsController < ApplicationController
 
   # This method validates that the current user has access to the user and group being assigned to the created or updated tag
   def validate_params #:nodoc:
-    user_id = params[:tag][:user_id]
-    group_id = params[:tag][:group_id]
+   user_id = params[:tag][:user_id]
+   group_id = params[:tag][:group_id]
 
-    params[:tag][:user_id]  = current_user.id           if !current_user.available_users.raw_first_column(:id).include?(user_id)
-    params[:tag][:group_id] = current_user.own_group.id if !current_user.available_groups.raw_first_column(:id).include?(group_id)
+   params[:tag][:user_id]  = current_user.id           if !current_user.available_users.raw_first_column(:id).include?(user_id)
+   params[:tag][:group_id] = current_user.own_group.id if !current_user.available_groups.raw_first_column(:id).include?(group_id)
   end
 
 
