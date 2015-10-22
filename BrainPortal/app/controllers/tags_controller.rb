@@ -25,7 +25,7 @@ class TagsController < ApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   before_filter :login_required
-  before_filter(:only => [:update]) { |c| c.authenticate_params }
+  before_filter(:only => [:update, :create]) { |c| c.send :validate_params }
   layout false
 
   def new #:nodoc:
@@ -41,9 +41,6 @@ class TagsController < ApplicationController
   # POST /tags.xml
   def create #:nodoc:
     @tag = Tag.new(params[:tag])
-
-     @tag.user_id = current_user.id if @tag.user_id.blank? || !current_user.available_users.raw_first_column(:user_id).include?(@tag.user_id)
-     @tag.group_id = current_user.own_group.id if @tag.group_id.blank? || !current_user.available_groups.map(&:id).include?(@tag.group_id)
 
     respond_to do |format|
       if @tag.save
@@ -92,14 +89,15 @@ class TagsController < ApplicationController
     end
   end
 
+  private
 
-
-  def authenticate_params
+  # This method validates that the current user has access to the user and group being assigned to the created or updated tag
+  def validate_params #:nodoc:
     user_id = params[:tag][:user_id]
     group_id = params[:tag][:group_id]
 
-    params[:tag][:user_id] = current_user.id if user_id.blank? || !current_user.available_users.raw_first_column(:id).include?(user_id)
-    params[:tag][:group_id] = current_user.own_group.id if group_id.blank? || !current_user.available_groups.raw_first_column(:id).include?(group_id)
+    params[:tag][:user_id]  = current_user.id           if !current_user.available_users.raw_first_column(:id).include?(user_id)
+    params[:tag][:group_id] = current_user.own_group.id if !current_user.available_groups.raw_first_column(:id).include?(group_id)
   end
 
 
