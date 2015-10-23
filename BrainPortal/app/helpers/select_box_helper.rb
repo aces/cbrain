@@ -68,6 +68,7 @@ module SelectBoxHelper
   # [selector] used for default selection. This can be a Site object, a site id (String or Fixnum),
   #            or any model that has a site_id attribute.
   # [sites] the array of Site objects used to build the select box. Defaults to +Site.order(:name).all+.
+  # +options+ need not be hash, the default selected item can be passed as an argument.
   # When calling site_select, set the :prompt option in select_tag_options hash, to the text you want
   # displayed when no option is selected
   def site_select(parameter_name = "site", options = {}, select_tag_options = {} )
