@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # CBRAIN constants and some global utility methods.
@@ -172,7 +172,7 @@ class CBRAIN
       end
     end
   end
-  
+
   # This method runs a Ruby block in the background, as a separate subprocess,
   # but without any access to the services provided by Rails (no ActiveRecords,
   # no DB, all filehandles closed except for STDIN, STDOUT and STDERR). If
