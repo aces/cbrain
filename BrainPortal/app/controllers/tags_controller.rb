@@ -96,8 +96,8 @@ class TagsController < ApplicationController
     user_id = params[:tag][:user_id]
     group_id = params[:tag][:group_id]
 
-    params[:tag][:user_id]  = current_user.id           if !current_user.available_users.raw_first_column(:id).include?(user_id)
-    params[:tag][:group_id] = current_user.own_group.id if !current_user.available_groups.raw_first_column(:id).include?(group_id)
+    params[:tag][:user_id]  = current_user.id           if !current_user.available_users.raw_first_column(:id).include?(user_id.to_i)
+    params[:tag][:group_id] = current_user.own_group.id if !current_user.available_groups.raw_first_column(:id).include?(group_id.to_i)
   end
 
 
