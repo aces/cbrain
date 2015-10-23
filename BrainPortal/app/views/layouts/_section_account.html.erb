@@ -56,10 +56,10 @@
         <% end %>
       <% end %>
     <% end %>
-    Rev:&nbsp;<%= $CBRAIN_StartTime_Revision %>
-    <%if current_user.has_role?(:admin_user) && !CbrainFileRevision.git_branch_name.blank? %>
-      &nbsp;<%= CbrainFileRevision.git_branch_name %>
-    <%end%>
+    Rev: <%= CBRAIN::CBRAIN_StartTime_Revision %>
+    <% if current_user.has_role?(:admin_user) %>
+      <%= "Branch: " + (CBRAIN::CBRAIN_Git_Branch.present? ? CBRAIN::CBRAIN_Git_Branch : "unknown") %>
+    <% end %>
   </span>
 
   <span class="loggedas">

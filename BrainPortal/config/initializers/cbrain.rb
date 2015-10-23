@@ -48,7 +48,10 @@ class CBRAIN
   TasksPlugins_Dir           = "#{Plugins_Dir}/installed-plugins/cbrain_task" # singular; historical
   TaskDescriptorsPlugins_Dir = "#{Plugins_Dir}/installed-plugins/cbrain_task_descriptors"
 
-  $CBRAIN_StartTime_Revision = "???"  # Will be filled in by validation script
+  CBRAIN_StartTime_Revision = CbrainFileRevision.cbrain_head_tag
+
+  # Return current git branch for Cbrain, if no branch present resturn blank
+  CBRAIN_Git_Branch = CbrainFileRevision.git_branch_name
 
   # Some environment variables MUST be set for some subsystems to work.
   # In deployment at McGill, we run the rails application under control
