@@ -290,7 +290,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
   def self.a080_ensure_set_starttime_revision
     #-----------------------------------------------------------------------------
     puts  "C> Current application tag or revision: #{CBRAIN::CBRAIN_StartTime_Revision}"
-    puts  "C> Current Git branch: + #{CBRAIN::CBRAIN_Git_Branch.presence || "unknown"}"
+    puts  "C> Current Git branch: #{CBRAIN::CBRAIN_Git_Branch.presence || "unknown"}"
     #-----------------------------------------------------------------------------
   end
 
