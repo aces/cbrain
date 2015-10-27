@@ -26,7 +26,13 @@
 <!-- PARTIAL: ACCOUNT SECTION -->
 <!-- ************************ -->
 
-<div class="account">
+<%
+  # We can colorize the CBRAIN interface based on the current GIT branch
+  # One only needs to define a CSS class 'account_git_branch_NAME'
+  git_branch = CBRAIN::CBRAIN_Git_Branch.presence || "unknown"
+%>
+
+<div class="account account_git_branch_<%= git_branch.gsub(/\W/,"_") %>">
 
   <span class="home_credits">
     <% if current_user %>
@@ -58,7 +64,7 @@
     <% end %>
     Rev: <%= CBRAIN::CBRAIN_StartTime_Revision %>
     <% if current_user.present? && current_user.has_role?(:admin_user) %>
-      Branch: <%=  CBRAIN::CBRAIN_Git_Branch.presence || "unknown" %>
+      Branch: <%= git_branch %>
     <% end %>
   </span>
 
