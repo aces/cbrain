@@ -57,8 +57,8 @@
       <% end %>
     <% end %>
     Rev: <%= CBRAIN::CBRAIN_StartTime_Revision %>
-    <% if current_user.has_role?(:admin_user) %>
-     &nbsp;Branch: <%=  CBRAIN::CBRAIN_Git_Branch.presence || "unknown" %>
+    <% if current_user.present? && current_user.has_role?(:admin_user) %>
+      Branch: <%=  CBRAIN::CBRAIN_Git_Branch.presence || "unknown" %>
     <% end %>
   </span>
 
