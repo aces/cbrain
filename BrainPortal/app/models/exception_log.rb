@@ -56,7 +56,7 @@ class ExceptionLog < ActiveRecord::Base
     e.session            = session.to_hash
     e.request_headers    = hdrs
     e.instance_name      = CBRAIN::Instance_Name rescue "(?)"
-    e.revision_no        = $CBRAIN_StartTime_Revision
+    e.revision_no        = CBRAIN::CBRAIN_StartTime_Revision
     e.save
 
     e

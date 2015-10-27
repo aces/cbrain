@@ -66,7 +66,7 @@
     ) do |r|
       if loaded.(r)
         revision = r.info(:ping).starttime_revision
-        red_if(revision != '???' && revision != $CBRAIN_StartTime_Revision, revision, nil, :color2 => 'red')
+        red_if(revision != '???' && revision != CBRAIN::CBRAIN_StartTime_Revision, revision, nil, :color2 => 'red')
       else
         html_colorize("(...)", "magenta")
       end
