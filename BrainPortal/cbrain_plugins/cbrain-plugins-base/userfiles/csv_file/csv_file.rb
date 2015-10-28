@@ -27,7 +27,7 @@ class CSVFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  has_viewer :name => 'CSV Viewer', :partial  => :csv_file, :if  => :is_locally_synced?
+  has_viewer :name => 'CSV Viewer', :partial  => :csv_file, :if  => :is_viewable
 
   def self.pretty_type #:nodoc:
     "CSV File"
@@ -35,6 +35,13 @@ class CSVFile < TextFile
 
   def self.file_name_pattern #:nodoc:
     /\.csv$/i
+  end
+
+  def is_viewable #:nodoc
+    return false unless is_locally_synced?
+    return false unless self.size.presence
+    return false unless self.size < 200_000
+    true
   end
 
   # Tries to guess and return the quote character

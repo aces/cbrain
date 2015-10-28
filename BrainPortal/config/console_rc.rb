@@ -117,7 +117,7 @@ end
 # cycle_bb :start,   [list of bourreaux]   # starts bourreaux
 # cycle_bb :stop,    [list of bourreaux]   # stops bourreaux (implies :workoff)
 # cycle_bb :workon,  [list of bourreaux]   # starts bourreau workers
-# cycle_bb :workoff, [list of bourreaux]   # starts bourreau workers
+# cycle_bb :workoff, [list of bourreaux]   # stops bourreau workers
 # cycle_bb :cycle,   [list of bourreaux]   # does 'workoff,stop,start,workon'
 def cycle_bb(*bb)
 
@@ -128,7 +128,7 @@ def cycle_bb(*bb)
 
 Usage: cycle_bb(what, bourreau_list = <online bourreaux>)
 where 'what' is "start", "stop", "workon", "workoff" or a combination,
-or the keyword "cycle" which means "stop start workon".
+or the keyword "cycle" which means "workoff stop start workon".
 
     USAGE
     return false
