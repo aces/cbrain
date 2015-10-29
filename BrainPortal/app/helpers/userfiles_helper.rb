@@ -48,7 +48,7 @@ module UserfilesHelper
     html.join.html_safe
   end
 
-  def neighbor_file_link(neighbor, index, dir, options = {})
+  def neighbor_file_link(neighbor, index, dir, options = {}) #:nodoc:
     return "" unless neighbor
 
     if dir == :previous
@@ -63,6 +63,8 @@ module UserfilesHelper
     link_to text, {:action  => action, :id  => neighbor.id, :sort_index => index}, link_options
   end
 
+  # Generates a set of two links, one for a 'previous' file and one for a 'next' file.
+  # The argument +sort_index+ is the index of the 'current' file.
   def file_link_table(previous_userfile, next_userfile, sort_index, options = {})
     (
     "<div class=\"display_table\" style=\"width:100%\">" +

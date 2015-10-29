@@ -721,22 +721,25 @@ class Worker
 
 end
 
+# This class pretends to be a logger object, but simply prefix
+# all the log messages with a constant string before passing it to
+# a real logger.
 class LoggerPrefixer #:nodoc:
   attr_accessor :true_logger
   attr_accessor :prefix
-  def debug(message)
+  def debug(message) #:nodoc:
     true_logger.debug(prefix + message)
   end
-  def info(message)
+  def info(message) #:nodoc:
     true_logger.info(prefix + message)
   end
-  def warn(message)
+  def warn(message) #:nodoc:
     true_logger.warn(prefix + message)
   end
-  def error(message)
+  def error(message) #:nodoc:
     true_logger.error(prefix + message)
   end
-  def fatal(message)
+  def fatal(message) #:nodoc:
     true_logger.fatal(prefix + message)
   end
 end

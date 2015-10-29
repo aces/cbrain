@@ -36,17 +36,18 @@ class Scir
   end
 
   # These constants are the same as the ones used for DRMAA
-  STATE_UNDETERMINED          = 0x00
-  STATE_QUEUED_ACTIVE         = 0x10
-  STATE_SYSTEM_ON_HOLD        = 0x11
-  STATE_USER_ON_HOLD          = 0x12
-  STATE_USER_SYSTEM_ON_HOLD   = 0x13
-  STATE_RUNNING               = 0x20
-  STATE_SYSTEM_SUSPENDED      = 0x21
-  STATE_USER_SUSPENDED        = 0x22
-  STATE_USER_SYSTEM_SUSPENDED = 0x23
-  STATE_DONE                  = 0x30
-  STATE_FAILED                = 0x40
+
+  STATE_UNDETERMINED          = 0x00 #:nodoc:
+  STATE_QUEUED_ACTIVE         = 0x10 #:nodoc:
+  STATE_SYSTEM_ON_HOLD        = 0x11 #:nodoc:
+  STATE_USER_ON_HOLD          = 0x12 #:nodoc:
+  STATE_USER_SYSTEM_ON_HOLD   = 0x13 #:nodoc:
+  STATE_RUNNING               = 0x20 #:nodoc:
+  STATE_SYSTEM_SUSPENDED      = 0x21 #:nodoc:
+  STATE_USER_SUSPENDED        = 0x22 #:nodoc:
+  STATE_USER_SYSTEM_SUSPENDED = 0x23 #:nodoc:
+  STATE_DONE                  = 0x30 #:nodoc:
+  STATE_FAILED                = 0x40 #:nodoc:
 
   # Returns the file name for the implementation.
   def self.drmaa_implementation
@@ -122,7 +123,7 @@ class Scir
       reset_job_info_cache
     end
 
-    def run(job)
+    def run(job) #:nodoc:
       reset_job_info_cache
       command = job.qsub_command
       qsubout = ""
@@ -130,17 +131,17 @@ class Scir
       return qsubout_to_jid(qsubout)
     end
 
-    def update_job_info_cache
+    def update_job_info_cache #:nodoc:
       # sets @job_info_cache to a hash: { jid => drmaa_status, ... }
       raise "This method must be provided in a subclass."
     end
 
-    def reset_job_info_cache
+    def reset_job_info_cache #:nodoc:
       @job_info_cache     = nil
       @cache_last_updated = (100*@job_ps_cache_delay).seconds.ago
     end
 
-    def job_ps(jid,caller_updated_at = nil)
+    def job_ps(jid,caller_updated_at = nil) #:nodoc:
       caller_updated_at ||= (5*@job_ps_cache_delay).seconds.ago
       if @job_info_cache.nil? || @cache_last_updated < @job_ps_cache_delay.ago || caller_updated_at > @job_ps_cache_delay.ago
         update_job_info_cache
@@ -151,27 +152,27 @@ class Scir
       Scir::STATE_UNDETERMINED
     end
 
-    def hold(jid)
+    def hold(jid) #:nodoc:
       raise "This method must be provided in a subclass"
     end
 
-    def release(jid)
+    def release(jid) #:nodoc:
       raise "This method must be provided in a subclass"
     end
 
-    def suspend(jid)
+    def suspend(jid) #:nodoc:
       raise "This method must be provided in a subclass"
     end
 
-    def resume(jid)
+    def resume(jid) #:nodoc:
       raise "This method must be provided in a subclass"
     end
 
-    def terminate(jid)
+    def terminate(jid) #:nodoc:
       raise "This method must be provided in a subclass"
     end
 
-    def queue_tasks_tot_max
+    def queue_tasks_tot_max #:nodoc:
       [ "nyi", "nyi" ]
     end
 
@@ -208,23 +209,23 @@ class Scir
       Class.const_get(self.class.to_s.sub(/::JobTemplate/,"")).revision_info
     end
 
-    def self.new_jobtemplate(params = {})
+    def self.new_jobtemplate(params = {}) #:nodoc:
       job_template = self.new(params)
       job_template.queue = Scir.cbrain_config[:default_queue] if ( ! Scir.cbrain_config[:default_queue].blank? ) && ( job_template.queue.blank? )
       return job_template
     end
 
-    def initialize(params = {})
+    def initialize(params = {}) #:nodoc:
       params.each_pair { |m,v| self.send("#{m}=",v) }
     end
 
-    def qsub_command
+    def qsub_command #:nodoc:
       raise "Method qsub_command() must be provided in a subclass."
     end
 
     protected
 
-    def shell_escape(s)
+    def shell_escape(s) #:nodoc:
       "'" + s.gsub(/'/,"'\\\\''") + "'"
     end
 

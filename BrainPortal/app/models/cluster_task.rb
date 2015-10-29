@@ -1638,15 +1638,26 @@ class ClusterTask < CbrainTask
     return nil
   end
 
+
+
+  ##################################################################
+  # Docker support methods
+  ##################################################################
+
+  # Returns true if the task's ToolConfig is configured to point to a docker image
+  # for the task's processing.
   def use_docker?
     return self.tool_config.docker_image.present?
   end
 
+  # Return the 'docker' command to be used for the task; this is fetched
+  # from the Bourreau's own attribute. Default: "docker".
   def docker_executable_name
     return RemoteResource.current_resource.docker_executable_name.presence || "docker"
   end
 
-  # Returns the command line(s) associated with the task, wrapped in a Docker call if a Docker image has to be used.
+  # Returns the command line(s) associated with the task, wrapped in
+  # a Docker call if a Docker image has to be used.
   def docker_commands
     commands = self.cluster_commands
     commands_joined=commands.join("\n");
@@ -1662,6 +1673,7 @@ chmod 755 ./.dockerjob.sh\n
 "
     return docker_commands
   end
+
 
 
   ##################################################################

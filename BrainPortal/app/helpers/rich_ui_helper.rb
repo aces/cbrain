@@ -104,9 +104,9 @@ module RichUiHelper
   # Utility class for the build_tabs method (see above).
   #
   #############################################################
-  class TabBuilder
+  class TabBuilder #:nodoc:
 
-    def initialize
+    def initialize #:nodoc:
       @tab_titles = "".html_safe
       @tab_divs   = "".html_safe
     end
@@ -115,9 +115,7 @@ module RichUiHelper
       ("<ul>\n" + @tab_titles + "\n</ul>\n").html_safe
     end
 
-
-
-    attr_reader :tab_divs
+    attr_reader :tab_divs #:nodoc:
 
     # This creates an individual tab, it either takes a block and/or a partial as an option (:partial => "partial")
     def tab(name, &block)
@@ -134,7 +132,7 @@ module RichUiHelper
       @tab_divs += "<div id=\"tb_#{random_id}\">\n".html_safe +
                    capture.call(&block) +
                    "</div>\n".html_safe
-      return "" # in case invoked with <%= instead <% 
+      return "" # in case invoked with <%= instead <%
     end
   end
 
@@ -172,8 +170,9 @@ module RichUiHelper
   # Utility class for the build_accordion method (see above).
   #
   #############################################################
-  class AccordionBuilder
-    def section(header, &block)
+  class AccordionBuilder #:nodoc:
+
+    def section(header, &block) #:nodoc:
       capture     = eval("method(:capture)", block.binding)
       head = "<h3><a href=\"#\">#{header}</a></h3>".html_safe
       body = "<div style=\"display: none\">".html_safe +
@@ -181,6 +180,7 @@ module RichUiHelper
              "</div>".html_safe
       return head + body
     end
+
   end
 
   # Create a tooltip that displays html when mouseovered.

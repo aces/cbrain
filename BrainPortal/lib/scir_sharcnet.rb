@@ -31,7 +31,7 @@ class ScirSharcnet < Scir
 
   class Session < Scir::Session #:nodoc:
 
-    def update_job_info_cache
+    def update_job_info_cache #:nodoc:
       @job_info_cache = {}
       jid = 'Dummy'
       IO.popen("sqjobs -u #{CBRAIN::Rails_UserName.to_s.bash_escape} 2>/dev/null;sqjobs -n","r") do |fh|
@@ -58,7 +58,7 @@ class ScirSharcnet < Scir
       end
     end
 
-    def statestring_to_stateconst(state)
+    def statestring_to_stateconst(state) #:nodoc:
       return Scir::STATE_RUNNING        if state.match(/R/i)
       return Scir::STATE_QUEUED_ACTIVE  if state.match(/Q/i)
       return Scir::STATE_USER_ON_HOLD   if state.match(/H/i)
@@ -66,15 +66,15 @@ class ScirSharcnet < Scir
       return Scir::STATE_UNDETERMINED
     end
 
-    def hold(jid)
+    def hold(jid) #:nodoc:
       raise "There is no 'hold' action available on Sharcnet clusters."
     end
 
-    def release(jid)
+    def release(jid) #:nodoc:
       raise "There is no 'release' action available on Sharcnet clusters."
     end
 
-    def suspend(jid)
+    def suspend(jid) #:nodoc:
       raise "There is no 'suspend' action available on Sharcnet clusters."
       # does not work on sharcnet (they have bugs...)
       IO.popen("sqsuspend #{shell_escape(jid)} 2>&1","r") do |i|
@@ -84,7 +84,7 @@ class ScirSharcnet < Scir
       end
     end
 
-    def resume(jid)
+    def resume(jid) #:nodoc:
       raise "There is no 'resume' action available on Sharcnet clusters."
       # does not work on sharcnet (they have bugs...)
       IO.popen("sqresume #{shell_escape(jid)} 2>&1","r") do |i|
@@ -94,7 +94,7 @@ class ScirSharcnet < Scir
       end
     end
 
-    def terminate(jid)
+    def terminate(jid) #:nodoc:
       IO.popen("sqkill #{shell_escape(jid)} 2>&1","r") do |i|
         p = i.readlines
         raise "Error deleting: #{p.join("\n")}" unless p =~ /is being terminated/
@@ -102,7 +102,7 @@ class ScirSharcnet < Scir
       end
     end
 
-    def queue_tasks_tot_max
+    def queue_tasks_tot_max #:nodoc:
       job_ps('!dummy!') # to trigger refresh of @job_ps_cache if necessary
       tot_max = @job_info_cache['!sharcnet_load!'] || [ 'unknown', 'unknown' ]
       tot_max
@@ -112,7 +112,7 @@ class ScirSharcnet < Scir
 
     private
 
-    def qsubout_to_jid(txt)
+    def qsubout_to_jid(txt) #:nodoc:
       if txt && txt =~ /as jobid\s+(\S+)/
         return Regexp.last_match[1]
       end
@@ -123,7 +123,7 @@ class ScirSharcnet < Scir
 
   class JobTemplate < Scir::JobTemplate #:nodoc:
 
-    def qsub_command
+    def qsub_command #:nodoc:
       raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless
         self.command == "/bin/bash" && self.arg.size == 1
       raise "Error: stdin not supported" if self.stdin

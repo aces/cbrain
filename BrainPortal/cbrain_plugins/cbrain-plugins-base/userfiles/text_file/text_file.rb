@@ -31,7 +31,7 @@ class TextFile < SingleFile
     /\.txt$/i
   end
 
-  def is_viewable? #:nodoc
+  def is_viewable? #:nodoc:
     return false unless self.size.presence
     return false unless self.size < 500_000
     return false unless is_locally_synced?
