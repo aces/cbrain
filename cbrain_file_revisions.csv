@@ -1,5 +1,5 @@
-4.2.0 -#- 2015-10-30 12:19:56 -0400 -#- CBRAIN Team -#- __CBRAIN_TAG__
-6082312dae05915865a7d2bb592d556cb306b9bf -#- 2015-10-29 14:36:28 -0400 -#- Pierre Rioux -#- __CBRAIN_HEAD__
+4.2.1 -#- 2015-10-30 15:14:55 -0400 -#- CBRAIN Team -#- __CBRAIN_TAG__
+97a6aed96a89b4f02f938a158c1762903dce0367 -#- 2015-10-30 15:13:54 -0400 -#- Pierre Rioux -#- __CBRAIN_HEAD__
 d6f728be5bffe7343f99fcb27f7079f4414bc2c1 -#- 2015-05-21 14:03:58 -0400 -#- Ehsan Afkhami -#- Bourreau/.gitignore
 b0eff7b5443f01744f3d158e8c7bd0fff9587ead -#- 2015-07-24 16:05:37 -0400 -#- Remi Bernard -#- Bourreau/Gemfile
 bc10f836fd930c034bc5a1af6375987587524a8f -#- 2015-08-07 13:14:41 -0400 -#- Remi Bernard -#- Bourreau/README
@@ -68,11 +68,11 @@ b2ba5066485399b4770dbce969efa7af64ea0cba -#- 2013-01-14 17:03:51 -0500 -#- Tarek
 de3216d5876d326eab6a0b190e4ec24f4c054626 -#- 2011-07-18 17:16:57 -0400 -#- Pierre Rioux -#- Bourreau/config/environments/production.rb
 de3216d5876d326eab6a0b190e4ec24f4c054626 -#- 2011-07-18 17:16:57 -0400 -#- Pierre Rioux -#- Bourreau/config/environments/test.rb
 73d1908294f5d0a218c07e2ce6428e273fb600d1 -#- 2015-04-01 15:24:59 -0400 -#- Natacha Beck -#- Bourreau/config/initializers/.gitignore
+97a6aed96a89b4f02f938a158c1762903dce0367 -#- 2015-10-30 15:13:54 -0400 -#- Pierre Rioux -#- Bourreau/config/initializers/added_core_extensions
+97a6aed96a89b4f02f938a158c1762903dce0367 -#- 2015-10-30 15:13:54 -0400 -#- Pierre Rioux -#- Bourreau/config/initializers/added_core_extensions.rb
 de3216d5876d326eab6a0b190e4ec24f4c054626 -#- 2011-07-18 17:16:57 -0400 -#- Pierre Rioux -#- Bourreau/config/initializers/backtrace_silencers.rb
 f2d9036347c5409ac5b5d511418240310574eeb1 -#- 2009-10-16 21:02:26 +0000 -#- prioux -#- Bourreau/config/initializers/cbrain.rb
 2eceeb92afa749dd8c5c28082493fcdc0111af95 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- Bourreau/config/initializers/config_bourreau.rb.TEMPLATE
-a6f869ce167123fd66ff7213d87bf57e555bb61e -#- 2012-04-19 16:10:37 -0400 -#- Pierre Rioux -#- Bourreau/config/initializers/core_extensions
-5466bda5a3b1c7c0cafd3dca2582e1887c2fcd9d -#- 2012-06-18 16:03:49 -0400 -#- Pierre Rioux -#- Bourreau/config/initializers/core_extensions.rb
 1a52029fd93bee0475fa41b6d62b5fc88fe29ba2 -#- 2011-06-23 18:08:20 -0400 -#- Pierre Rioux -#- Bourreau/config/initializers/inflections.rb
 81c9cb67a35c5ca1912c57e0e7ef1f752b1230dd -#- 2012-10-30 17:17:39 -0400 -#- Tarek Sherif -#- Bourreau/config/initializers/initialize_console.rb
 1330547b55174af9e9ad3fd4d74be7c0ff493bac -#- 2008-10-27 21:15:19 +0000 -#- prioux -#- Bourreau/config/initializers/mime_types.rb
@@ -122,7 +122,7 @@ bc10f836fd930c034bc5a1af6375987587524a8f -#- 2015-08-07 13:14:41 -0400 -#- Remi 
 c7d4662266d4eb7485c3611989d3a6283d59e014 -#- 2015-03-16 17:17:05 -0400 -#- Pierre Rioux -#- Bourreau/lib/tasks/cbrain_plugins.rake
 077511bc3a7a9c3674df2d6eee186c2741b3ee9e -#- 2015-01-05 16:56:36 -0500 -#- Pierre Rioux -#- Bourreau/log/.gitignore
 9e7d5e139af67222beac8a263b65da260eb4ad3f -#- 2013-01-21 17:03:53 -0500 -#- Pierre Rioux -#- Bourreau/script/cbrain_bashrc
-60364960418830dfc7add9663cd3d38115f0ac68 -#- 2013-12-13 11:13:55 -0500 -#- Natacha Beck -#- Bourreau/script/cbrain_remote_ctl
+97a6aed96a89b4f02f938a158c1762903dce0367 -#- 2015-10-30 15:13:54 -0400 -#- Pierre Rioux -#- Bourreau/script/cbrain_remote_ctl
 de3216d5876d326eab6a0b190e4ec24f4c054626 -#- 2011-07-18 17:16:57 -0400 -#- Pierre Rioux -#- Bourreau/script/rails
 9c2f8ed85c34be82bd39ace7737020baa301f385 -#- 2011-09-18 21:09:54 -0400 -#- Pierre Rioux -#- Bourreau/script/show_cbrain_rev
 a9db076d944b822b8b5328b3d7c7cd4ddfc6c1a9 -#- 2012-08-02 14:19:46 -0400 -#- Tarek Sherif -#- Bourreau/spec/cluster_task_spec.rb
@@ -920,8 +920,8 @@ bc5ff0c2fb5f055763f0601d1af6b49a0595d0cf -#- 2015-04-23 17:09:58 -0400 -#- Pierr
 9ed82ccd397e8291af470670fb032a04d4606758 -#- 2014-11-12 16:25:19 -0500 -#- Tarek Sherif -#- CBRAIN_licenses.txt
 df3e2af099c3247e5b7c350de3afc8f99b0253d8 -#- 2012-01-25 13:10:16 -0500 -#- Pierre Rioux -#- LICENSE.txt
 8c0d044038ede0b706ed465a2d14006c8accf1ca -#- 2015-03-09 20:29:40 -0400 -#- Pierre Rioux -#- README.md
-b7a704897dd9406489be2a675a7d0c9144005faf -#- 2015-05-20 10:27:43 -0400 -#- Pierre Rioux -#- Release-Notes.md
+97a6aed96a89b4f02f938a158c1762903dce0367 -#- 2015-10-30 15:13:54 -0400 -#- Pierre Rioux -#- Release-Notes.md
 d0e6e910a147a24e467236e93314c0b46ea406ba -#- 2012-08-30 11:35:20 -0400 -#- Pierre Rioux -#- alldoc.sh
-1a44b0b82ef7a8a12bdfe4dbfc430e2ff989be4a -#- 2015-08-13 15:32:25 -0400 -#- Pierre Rioux -#- cbrain_file_revisions.csv
-2eceeb92afa749dd8c5c28082493fcdc0111af95 -#- 2012-01-26 13:46:35 -0500 -#- Pierre Rioux -#- generate_rev_list.sh
+1a3dd1860815114528c56712d3fdc96a73a96558 -#- 2015-10-30 14:48:29 -0400 -#- Pierre Rioux -#- cbrain_file_revisions.csv
+1a3dd1860815114528c56712d3fdc96a73a96558 -#- 2015-10-30 14:48:29 -0400 -#- Pierre Rioux -#- generate_rev_list.sh
 9cb6e6130c771f2b343ce959b3f5d3dfdcd8afd5 -#- 2015-02-05 14:58:06 -0500 -#- Pierre Rioux -#- license_header.txt
