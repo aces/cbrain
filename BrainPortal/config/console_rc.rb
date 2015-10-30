@@ -117,7 +117,7 @@ end
 # cycle_bb :start,   [list of bourreaux]   # starts bourreaux
 # cycle_bb :stop,    [list of bourreaux]   # stops bourreaux (implies :workoff)
 # cycle_bb :workon,  [list of bourreaux]   # starts bourreau workers
-# cycle_bb :workoff, [list of bourreaux]   # starts bourreau workers
+# cycle_bb :workoff, [list of bourreaux]   # stops bourreau workers
 # cycle_bb :cycle,   [list of bourreaux]   # does 'workoff,stop,start,workon'
 def cycle_bb(*bb)
 
@@ -128,7 +128,7 @@ def cycle_bb(*bb)
 
 Usage: cycle_bb(what, bourreau_list = <online bourreaux>)
 where 'what' is "start", "stop", "workon", "workoff" or a combination,
-or the keyword "cycle" which means "stop start workon".
+or the keyword "cycle" which means "workoff stop start workon".
 
     USAGE
     return false
@@ -205,12 +205,12 @@ end
 
 # Show bourreau worker processes on given bourreau(x).
 def ps_work(*arg)
-  bb_bash(*arg){ |b| "ps ax -o ruser,pid,%cpu,%mem,vsize,state,stime,time,command | grep 'Worker #{b.name}' | grep -v grep | sed -e 's/  *$//'" }
+  bb_bash(*arg){ |b| "ps -u $USER -o user,pid,%cpu,%mem,vsize,state,stime,time,command | grep 'Worker #{b.name}' | grep -v grep | sed -e 's/  *$//'" }
 end
 
 # Show all processes on given bourreau(x).
 def ps_bb(*arg)
-  bb_bash(*arg){ |b| "ps ax -o ruser,pid,%cpu,%mem,vsize,state,stime,time,command | grep ^$USER | sed -e 's/  *$//'" }
+  bb_bash(*arg){ |b| "ps -u $USER -o user,pid,%cpu,%mem,vsize,state,stime,time,command | sed -e 's/  *$//'" }
 end
 
 # Disable AR logging (actually, just sets logging level to ERROR)

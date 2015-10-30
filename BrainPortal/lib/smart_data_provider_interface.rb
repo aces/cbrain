@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'socket'
@@ -182,11 +182,11 @@ module SmartDataProviderInterface
     @provider.provider_collection_index(userfile, directory, allowed_types)
   end
 
-  def provider_report(force_reload=nil)
+  def provider_report(force_reload=nil) #:nodoc:
     @provider.provider_report(force_reload)
   end
 
-  def provider_repair(issue)
+  def provider_repair(issue) #:nodoc:
     @provider.provider_repair(issue)
   end
 

@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # CBRAIN constants and some global utility methods.
@@ -43,11 +43,15 @@ class CBRAIN
                       "PID-#{Process.pid}"
 
   # CBRAIN plugins locations
-  Plugins_Dir          = "#{Rails.root.to_s}/cbrain_plugins"
-  TasksPlugins_Dir     = "#{Plugins_Dir}/installed-plugins/cbrain_task" # singular; historical
-  UserfilesPlugins_Dir = "#{Plugins_Dir}/installed-plugins/userfiles"
+  Plugins_Dir                = "#{Rails.root.to_s}/cbrain_plugins"
+  UserfilesPlugins_Dir       = "#{Plugins_Dir}/installed-plugins/userfiles"
+  TasksPlugins_Dir           = "#{Plugins_Dir}/installed-plugins/cbrain_task" # singular; historical
+  TaskDescriptorsPlugins_Dir = "#{Plugins_Dir}/installed-plugins/cbrain_task_descriptors"
 
-  $CBRAIN_StartTime_Revision = "???"  # Will be filled in by validation script
+  CBRAIN_StartTime_Revision = CbrainFileRevision.cbrain_head_tag
+
+  # Return current git branch for Cbrain, if no branch present resturn blank
+  CBRAIN_Git_Branch = CbrainFileRevision.git_branch_name
 
   # Some environment variables MUST be set for some subsystems to work.
   # In deployment at McGill, we run the rails application under control
@@ -171,7 +175,7 @@ class CBRAIN
       end
     end
   end
-  
+
   # This method runs a Ruby block in the background, as a separate subprocess,
   # but without any access to the services provided by Rails (no ActiveRecords,
   # no DB, all filehandles closed except for STDIN, STDOUT and STDERR). If

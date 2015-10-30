@@ -56,16 +56,19 @@ class ExceptionLog < ActiveRecord::Base
     e.session            = session.to_hash
     e.request_headers    = hdrs
     e.instance_name      = CBRAIN::Instance_Name rescue "(?)"
-    e.revision_no        = $CBRAIN_StartTime_Revision
+    e.revision_no        = CBRAIN::CBRAIN_StartTime_Revision
     e.save
 
     e
   end
 
-  after_find :replace_attributes_too_big
-  attr_accessor :truncated_attributes
+  # This next section is handling the case where reports (trace dumps etc)
+  # are too long, so they are truncated explicitely.
 
-  def replace_attributes_too_big
+  after_find    :replace_attributes_too_big
+  attr_accessor :truncated_attributes #:nodoc:
+
+  def replace_attributes_too_big #:nodoc:
     raw = {}
     self.class.serialized_attributes.keys.each do |att|
       att = att.to_sym

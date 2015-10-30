@@ -25,10 +25,17 @@ class TextFile < SingleFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  has_viewer :name => 'Text File', :partial  => :text_file, :if  => :is_locally_synced?
+  has_viewer :name => 'Text File', :partial  => :text_file, :if => :is_viewable?
 
   def self.file_name_pattern #:nodoc:
     /\.txt$/i
+  end
+
+  def is_viewable? #:nodoc:
+    return false unless self.size.presence
+    return false unless self.size < 500_000
+    return false unless is_locally_synced?
+    true
   end
 
 end

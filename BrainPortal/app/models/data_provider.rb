@@ -513,8 +513,8 @@ class DataProvider < ActiveRecord::Base
     sync_to_provider(userfile)
   end
 
-  # This method provides a quick way to set the cache's file
-  # content to an exact copy of +localfile+, a locally accessible file.
+  # This method provides a quick way to set the cache's file content
+  # to an exact copy of +localpath+, a locally accessible file or directory.
   # The syncronization method +sync_to_provider+ will automatically
   # be called after the copy is performed.
   def cache_copy_from_local_file(userfile, localpath)
@@ -545,7 +545,7 @@ class DataProvider < ActiveRecord::Base
 
   # This method provides a quick way to copy the cache's file
   # to an exact copy +localfile+, a locally accessible file.
-  # The syncronization method +sync_to_cache+ will automatically
+  # The synchronization method +sync_to_cache+ will automatically
   # be called before the copy is performed.
   #
   # Note that if +localpath+ is a path to an existing filesystem
@@ -1000,12 +1000,11 @@ class DataProvider < ActiveRecord::Base
   def self.pretty_type #:nodoc:
     self.to_s
   end
-  
+
   # This is a method that will return category type for this data provider
   # in the case of this class (abstract) it will not be invoked.
   # Returning a nil is the convention that we'll use to HIDE a data provider class from the interface.
   # So we'll return nil if the data provider class is not appriopriate for the users to view.
-  
   def self.pretty_category_name
     nil
   end

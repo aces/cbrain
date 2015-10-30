@@ -27,18 +27,20 @@
   <%= overlay_ajax_link "Help", "/doc/sites/site_info.html", :class  => "button" %>
 </div>
 
-<%= render :partial => 'shared/active_filters', :locals => {:model => :site} %>
+<%=
+  render(:partial => 'shared/active_filters', :locals  => {
+    :scope => @scope,
+    :model => Site
+  })
+%>
 
 <div class="centered"> (<%= pluralize @sites.count, "site" %>) </div>
 
 <%=
-  dynamic_index_table(@sites,
-    :id       => 'sites_table',
-    :class    => [ :resource_list ],
-    :sort_map => {
-      :name        => 'sites.name',
-      :description => 'sites.description'
-    }
+  dynamic_scoped_table(@sites,
+    :id    => 'sites_table',
+    :class => [ :resource_list ],
+    :scope => @scope
   ) do |t|
 %>
   <%
@@ -57,18 +59,21 @@
       ) { |m,r,c| link_to_user_with_tooltip(m) }
     end
 
+    users_scope  = scope_from_session('users')
+    groups_scope = scope_from_session('groups')
+
     t.column("Number of Users", :nusers) do |s|
-      filter_add_link s.users.count.to_s,
-        :controller => :users,
-        :filters    => { :site_id => s.id },
-        :ajax       => false
+      scope_filter_link(s.users.count.to_s,
+        users_scope, :set, { :a => 'site_id', :v => s.id },
+        url: { :controller => :users }
+      )
     end
 
     t.column("Number of Projects", :nprojects) do |s|
-      filter_add_link s.groups.count.to_s,
-        :controller => :groups,
-        :filters    => { :site_id => s.id },
-        :ajax       => false
+      scope_filter_link(s.groups.count.to_s,
+        groups_scope, :set, { :a => 'site_id', :v => s.id },
+        url: { :controller => :groups }
+      )
     end
   %>
 <% end %>

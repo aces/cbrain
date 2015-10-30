@@ -1493,6 +1493,14 @@ class ClusterTask < CbrainTask
     job.name     = self.tname_tid  # "#{self.name}-#{self.id}" # some clusters want all names to be different!
     job.walltime = self.job_walltime_estimate
 
+    # Note: all extra_qsub_args defined in the tool_configs (bourreau, tool and bourreau/tool)
+    # are appended by level of priority. 'less' specific first, 'more' specific later.
+    # In this way if the same option is defined twice the more specific one will be the used.
+    job.tc_extra_qsub_args  = ""
+    job.tc_extra_qsub_args += "#{bourreau_glob_config.extra_qsub_args} " if bourreau_glob_config
+    job.tc_extra_qsub_args += "#{tool_glob_config.extra_qsub_args} "     if tool_glob_config
+    job.tc_extra_qsub_args += "#{tool_config.extra_qsub_args} "          if tool_config
+
     # Log version of Scir lib
     drm     = scir_class.drm_system
     version = scir_class.version
@@ -1630,23 +1638,34 @@ class ClusterTask < CbrainTask
     return nil
   end
 
+
+
+  ##################################################################
+  # Docker support methods
+  ##################################################################
+
+  # Returns true if the task's ToolConfig is configured to point to a docker image
+  # for the task's processing.
   def use_docker?
     return self.tool_config.docker_image.present?
   end
 
+  # Return the 'docker' command to be used for the task; this is fetched
+  # from the Bourreau's own attribute. Default: "docker".
   def docker_executable_name
     return RemoteResource.current_resource.docker_executable_name.presence || "docker"
   end
 
-  # Returns the command line(s) associated with the task, wrapped in a Docker call if a Docker image has to be used.
+  # Returns the command line(s) associated with the task, wrapped in
+  # a Docker call if a Docker image has to be used.
   def docker_commands
     commands = self.cluster_commands
     commands_joined=commands.join("\n");
 
     cache_dir=RemoteResource.current_resource.dp_cache_dir;
     task_dir=self.bourreau.cms_shared_dir;
-    docker_commands = "cat << DOCKERJOB > .dockerjob.sh
-#!/bin/bash\n
+    docker_commands = "cat << \"DOCKERJOB\" > .dockerjob.sh
+#!/bin/bash -l\n
 #{commands_joined}\n
 DOCKERJOB\n
 chmod 755 ./.dockerjob.sh\n
@@ -1654,6 +1673,7 @@ chmod 755 ./.dockerjob.sh\n
 "
     return docker_commands
   end
+
 
 
   ##################################################################
@@ -1679,14 +1699,17 @@ chmod 755 ./.dockerjob.sh\n
 end
 
 # Patch: pre-load all model files for the subclasses
-Dir.chdir(CBRAIN::TasksPlugins_Dir) do
-  Dir.glob("*.rb").each do |model|
-    next if model == "cbrain_task_class_loader.rb"
-    model.sub!(/.rb$/,"")
-    unless CbrainTask.const_defined? model.classify
-      #puts_blue "Loading CbrainTask subclass #{model.classify} from #{model}.rb ..."
-      require_dependency "#{CBRAIN::TasksPlugins_Dir}/#{model}.rb"
+[ CBRAIN::TasksPlugins_Dir, CBRAIN::TaskDescriptorsPlugins_Dir ].each do |dir|
+  Dir.chdir(dir) do
+    Dir.glob("*.rb").each do |model|
+      next if [
+        'cbrain_task_class_loader.rb',
+        'cbrain_task_descriptor_loader.rb'
+      ].include?(model)
+
+      model.sub!(/.rb$/, '')
+      require_dependency "#{dir}/#{model}.rb" unless
+        [ model.classify, model.camelize ].any? { |m| CbrainTask.const_defined?(m) rescue nil }
     end
   end
 end
-

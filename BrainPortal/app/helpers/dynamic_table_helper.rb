@@ -57,7 +57,7 @@
 #
 # Dynamic table public API methods:
 # * +dynamic_table+              Create a dynamic table
-# * +dynamic_index_table+        Create a index-specific dynamic table
+# * +dynamic_scoped_table+       Create a dynamic table using the Scope API
 # * +DynamicTable+::+column+     Add a column
 # * +DynamicTable+::+row+        Set row attributes
 # * +DynamicTable+::+selectable+ Make rows selectable
@@ -201,8 +201,10 @@ module DynamicTableHelper
     #              the value if not present.
     #  [indicator] Special indicator value to be shown next to the label in the
     #              UI. Usually used for the number of table rows matching the
-    #              filter. Note that specifying '0' will disable selection of
-    #              the filter. Defaults to '-'.
+    #              filter. Defaults to '-'.
+    #  [empty]     If specified, the filter will be rendered in a style
+    #              indicating that it would return an empty result set.
+    #              Defaults to false.
     #  If you supply an Enumerable of arrays or strings instead, they will be
     #  converted to hashes in the following manner:
     #    [1, "A"]    => { :value =>   1, :label => "A", :indicator => '-' }
@@ -267,13 +269,28 @@ module DynamicTableHelper
       # Filtering
       filter_target = as_func.call(options[:filter_target] || @targets[:filter])
       filters       = options[:filters].map do |f|
-        if f.is_a?(Enumerable)
+        if f.is_a?(Hash)
+          {
+            :value     => f[:value],
+            :label     => f[:label]     || f[:value],
+            :indicator => f[:indicator] || '-',
+            :empty     => !!f[:empty]
+          }
+        elsif f.is_a?(Enumerable)
           val, lbl, ind = f.to_a
-          { :value => val,    :label => lbl || val, :indicator => ind || '-' }
-        elsif f.is_a?(String) || f.is_a?(Symbol)
-          { :value => f.to_s, :label => f.to_s,     :indicator => '-'        }
+          {
+            :value     => val,
+            :label     => lbl || val,
+            :indicator => ind || '-',
+            :empty     => false
+          }
         else
-          f
+          {
+            :value     => f.to_s,
+            :label     => f.to_s,
+            :indicator => '-',
+            :empty     => false
+          }
         end
       end if options[:filters]
 
@@ -528,7 +545,13 @@ module DynamicTableHelper
 
         if filter = options[:filter]
           @filters = filter[:filters].map do |f|
-            Filter.new(f[:value], f[:label], filter[:target], f[:indicator])
+            Filter.new(
+              f[:value],
+              f[:label],
+              filter[:target],
+              f[:indicator],
+              f[:empty]
+            )
           end
         end
       end
@@ -559,8 +582,11 @@ module DynamicTableHelper
         # Target request to perform when this filter is selected
         :target,
         # Indicator value to show for this filter in the filter list next
-        # to the label. '0' will disable selection of the filter.
-        :indicator
+        # to the label.
+        :indicator,
+        # If true, toggle rendering of the filter text to a style indicating an
+        # empty result set.
+        :empty
       )
 
       # Whether or not the column is initially visible. The column's visibility
@@ -668,10 +694,20 @@ module DynamicTableHelper
           collection.respond_to?(:current_page) &&
           collection.current_page
         )
-          collection = collection.to_a.paginate(
-            :page          => page,
-            :per_page      => per_page,
-            :total_entries => total_entries
+          collection = (
+            # Is there a paginate method available?
+            if collection.respond_to?(:paginate)
+              collection.paginate(
+                :page          => page,
+                :per_page      => per_page,
+                :total_entries => total_entries
+              )
+            # Otherwise, just manually create a WillPaginate::Collection
+            else
+              WillPaginate::Collection.create(page, per_page, total_entries) do |pager|
+                pager.replace(collection[pager.offset, pager.per_page].to_a)
+              end
+            end
           )
         end
 
@@ -918,80 +954,106 @@ module DynamicTableHelper
     (options.has_key?(:render) && ! options[:render]) ? table : table.render
   end
 
-  # This method is a simple variation of +dynamic_table+ (and DynamicTable)
-  # to make creating index tables easier. For example, this method supplies
-  # sort_target and filter_target lambda functions mimicking what
-  # index_table (IndexTableHelper) would send.
+  # Specialization of +dynamic_table+ (and DynamicTable) to make creating
+  # tables using the view scopes mechanism (see the ViewScopes module) easier
+  # by supplying sort_target and filter_target lambda functions using Scope
+  # filtering and ordering rules.
   # This method's parameters are the same as +dynamic_table+'s, with the
   # following additional options:
   #
-  # [sort_map]
-  #  Mapping (hash) between table column names and the full column definitions
-  #  used for sorting. For example, a column for user logins would have
-  #  name :login and sorting definition 'users.login'. If a map for a given
-  #  column name is not found, it defaults to the column name itself.
+  # [scope]
+  #  Session scope to use for filtering, sorting and pagination targets. Either
+  #  a Scope object with a valid *name* attribute or the name of a scope to
+  #  fetch from scope_from_session. Defaults to the instance variable @scope
+  #  (if it exists and is a Scope with a valid name) or the route's default
+  #  scope (see default_scope_name).
+  #
+  # [order_map]
+  #  Mapping (hash) of column names to ViewScopes::Scope::Order objects (or
+  #  their hash representations). These objects will be used with
+  #  scope_order_params to create sorting links updating the scope named
+  #  scope_name. Columns default to an Order object sorting on the column name
+  #  (the object's attribute is the column name). Note that the Order object's
+  #  direction is automatically set to the opposite of the current value or
+  #  :asc if empty.
   #
   # [filter_map]
-  #  Mapping (hash) between table column names and object fields used for
-  #  filtering. For example, a column for user logins would have
-  #  name :login and filtering field 'user_id'. If a map for a given
-  #  column name is not found, it defaults to the column name itself.
+  #  Similarly to order_map, filter_map is a mapping of column names to
+  #  ViewScopes::Scope::Filter objects (or hash representations). It is handled
+  #  the same way as order_map, except for acting on filtering rules instead of
+  #  ordering ones, using scope_filter_params to create links. Note that the
+  #  Filter object's value is automatically set to the selected filter's value.
   #
-  # This method gives index_table-like defaults for:
-  # * sort_target and filter_target
-  # * fetching the sorting order and column (@filter_params)
-  # * converting filters to DynamicTable's format ([<value>, <label>, <indicator>])
-  # * sending how many rows per page should be displayed (per_page)
-  def dynamic_index_table(collection, options = {}, &block)
-    sort_map   = options[:sort_map]   || {}
-    filter_map = options[:filter_map] || {}
+  # This method customizes:
+  # * sort_target and filter_target using scope_*_params
+  # * fetching the sorting order and column
+  # * scope name used for pagination-related requests
+  def dynamic_scoped_table(collection, options = {}, &block)
+    scope = options[:scope] || @scope || default_scope_name
+    scope = scope_from_session(scope) unless scope.is_a?(ViewScopes::Scope)
+    order_map  = (options[:order_map]  || {}).with_indifferent_access
+    filter_map = (options[:filter_map] || {}).with_indifferent_access
 
-    # Sorting parameters syntax:
-    #  <controller>[sort_hash][order]=<column>&
-    #  <controller>[sort_hash][dir]=<'ASC'|'DESC'>
-    options[:sort_target] ||= lambda do |column,order|
-      {
+    # Fetch (order_map) or create an Order object for column +column+
+    column_order = lambda do |column|
+      order = order_map[column] || { :attribute => column }
+      order = ViewScopes::Scope::Order.from_hash(order) unless
+        order.is_a?(ViewScopes::Scope::Order)
+      order
+    end
+
+    # Fetch (filter_map) or create a Filter object for column +column+
+    column_filter = lambda do |column|
+      filter = filter_map[column] || { :attribute => column }
+      filter = ViewScopes::Scope::Filter.from_hash(filter) unless
+        filter.is_a?(ViewScopes::Scope::Filter)
+      filter
+    end
+
+    # The sorting target is +scope_order_params+ with the corresponding
+    # column Order object for sorting/ordering.
+    options[:sort_target] ||= lambda do |column, direction|
+      order = column_order.(column)
+      order.direction = (direction.to_s == 'asc' ? 'desc' : 'asc')
+
+      ({
         :controller => params[:controller],
         :action     => params[:action],
-        params[:controller] => { :sort_hash => {
-          :order => sort_map[column] || column,
-          :dir   => (order == :asc ? :desc : :asc).to_s.upcase
-        } }
-      }
+      }).merge(scope_order_params(scope, :replace, order))
     end
 
-    # Use the filter_proxy mechanism to add filters
-    options[:filter_target] ||= lambda do |column,filter|
-      filter_column = filter_map[column] || column
-      link = filter_add_link('', { :filters => { filter_column => filter.value } })
-      link.match(/href="(.+?)"/)[1] # FIXME there is no filter_add_url...
+    # And the filtering target is +scope_filter_params+ with the corresponding
+    # column Filter object for filtering.
+    options[:filter_target] ||= lambda do |column, table_filter|
+      filter = column_filter.(column)
+      filter.value = table_filter.value
+
+      ({
+        :controller => params[:controller],
+        :action     => params[:action],
+        :page            => 1,
+        :_pag_scope_name => scope.name
+      }).merge(scope_filter_params(scope, :set, filter))
     end
 
-    table = (@@index_table_class ||= Class.new(DynamicTable) do
-      attr_accessor :sort_map
-      attr_accessor :filter_map
+    # Create and cache a subclass of DynamicTable customized to handle the
+    # Scopes API directly.
+    @@scoped_table_class ||= Class.new(DynamicTable) do
+      attr_accessor :scope
+      attr_accessor :column_order
+      attr_accessor :column_filter
 
       define_method(:column) do |label, name = nil, options = {}, &block| #:nodoc:
-        # If the column is sortable and its order set as :auto, use
-        # filter_params' order value rather than the
-        # params[<column>][:sort_order] default.
-        filter_params = @template.instance_eval { @filter_params }
-        sortable      = [:sortable, :sort_target, :sort_order].any? { |k| options[k] }
-        is_auto       = ! options[:sort_order] || options[:sort_order] == :auto
-        if sortable && is_auto
-          name    = (name || label.to_s.underscore).to_sym
-          order   = :none unless filter_params['sort_hash']['order'] == @sort_map[name]
-          order ||= filter_params['sort_hash']['dir'].downcase.to_sym rescue :asc
-          options[:sort_order] = order
+        # If the column is sortable and its order set as :auto, use the
+        # currently active Scope's matching ordering rule's direction rather
+        # than the params[<column>][:sort_order] default.
+        sortable = [:sortable, :sort_target, :sort_order].any? { |k| options[k] }
+        is_auto  = ! options[:sort_order] || options[:sort_order] == :auto
+        if ! @scope.order.empty? && sortable && is_auto
+          name  = (name || label.to_s.underscore).to_sym
+          order = @scope.order.find { |o| o.attribute == @column_order.(name).attribute }
+          options[:sort_order] = order.try(:direction) || :none
         end
-
-        # If we have index_table-like filters, convert them to DynamicTable's format
-        options[:filters].map! do |label,hash|
-          [hash[:filters].first[1], label]
-        end if
-          options[:filters] && options[:filters].all? do |filter|
-            filter[1][:filters].first[1] rescue nil
-          end
 
         super(label, name, options, &block)
       end
@@ -1004,14 +1066,26 @@ module DynamicTableHelper
         end
 
         # Pre-set some HTML attributes for the per-page input
-        (options[:input_html] ||= {}).merge!({
+        scope = @scope
+        (options[:input_html] ||= {}).reverse_merge!({
           :name        => 'per_page',
           :class       => 'search_box',
           :'data-type' => 'script',
           :'data-url'  =>  @template.instance_eval do
-            url_for(:controller => params[:controller], :update_filter => true)
+            url_for(
+              :controller => params[:controller],
+              :action     => params[:action],
+              :page            => 1,
+              :_pag_scope_name => scope.name
+            )
           end
-        }) { |key,old,new| old }
+        })
+
+        # Ensure the correct scope is used when updating pagination-related
+        # attributes.
+        (options[:params] ||= {}).reverse_merge!({
+          :_pag_scope_name => @scope.name
+        })
 
         super(location, options)
       end
@@ -1019,12 +1093,17 @@ module DynamicTableHelper
       alias_method :paginated, :pagination
       alias_method :paginate,  :pagination
 
-    end).create(collection, self, options) do |table|
-      # Make the table aware of the sorting and filtering mappings
-      table.sort_map   = sort_map
-      table.filter_map = filter_map
+    end
 
-      block.call(table)
+    # Create the Scope-based dynamic table instance and bind the scope and
+    # Filter/Order column lambda functions before handing it to the caller's
+    # block.
+    table = @@scoped_table_class.create(collection, self, options) do |t|
+      t.scope         = scope
+      t.column_order  = column_order
+      t.column_filter = column_filter
+
+      block.call(t)
     end
 
     (options.has_key?(:render) && ! options[:render]) ? table : table.render

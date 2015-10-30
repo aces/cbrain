@@ -37,6 +37,10 @@ module CbrainRailsPortal
     # Custom directories with classes and modules you want to be autoloadable.
     # config.autoload_paths += %W(#{config.root}/extras)
     config.autoload_paths += Dir["#{config.root}/lib"]
+    config.autoload_paths += Dir["#{config.root}/lib/cbrain_task_generators"]
+
+    # CBRAIN Plugins load paths: add directories for each Userfile model
+    config.autoload_paths += Dir[ * Dir.glob("#{config.root}/cbrain_plugins/installed-plugins/userfiles/*") ]
 
     # CBRAIN Plugins load paths: add directory for the CbrainTask models
     # This directory contains symbolic links to a special loader code
@@ -47,8 +51,14 @@ module CbrainRailsPortal
     # properly set up all tasks installed from plugins (and the defaults tasks).
     config.autoload_paths += Dir["#{config.root}/cbrain_plugins/installed-plugins/cbrain_task"]
 
-    # CBRAIN Plugins load paths: add directories for each Userfile model
-    config.autoload_paths += Dir[ * Dir.glob("#{config.root}/cbrain_plugins/installed-plugins/userfiles/*") ]
+    # CBRAIN Plugins load paths: add directory for descriptor-based CbrainTask
+    # models. This directory, similarly to the one above, contains symbolic
+    # links to a special loader code which will call a task generator to
+    # generate the requested CbrainTask subclass on the fly.
+    #
+    # The rake task cbrain:plugins:install:all also takes care of creating the
+    # symlinks for this location.
+    config.autoload_paths += Dir["#{config.root}/cbrain_plugins/installed-plugins/cbrain_task_descriptors"]
 
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.

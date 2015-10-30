@@ -24,109 +24,107 @@
 
 <div name="dataprovider_files" class="index_block">
 
-  <h2>Files Available On Remote Data Provider '<%= @provider.name %>'
-  <% if @as_user != current_user %>
-    (Browsing as user '<%= @as_user.login %>')
-  <% end %>
+  <h2>
+    Files Available On Remote Data Provider '<%= @provider.name %>'
+    <% if @as_user != current_user %>
+      (Browsing as user '<%= @as_user.login %>')
+    <% end %>
   </h2>
 
-  <% if @filter_params["browse_hash"]["name_like"].present? %>
-    <div class="active_status">
-      <span class="active_status_left_side">
-         <span class="active_label">Active Filters:</span>
-         <span class="current_filters_item">
-           Name like: <%=  @filter_params["browse_hash"]["name_like"] %>
-         </span>
-         <%= filter_remove_link delete_icon, "name_like", :parameter => "browse_hash", :ajax => false, :action  => :browse, :id => @provider.id  %>
-      </span>
-    </div>
-  <% end %>
-
   <div class="pagination">
-    <div class="pagination_left_side"></div>
-
-    <div class="page_links">
-      <%= will_paginate @fileinfolist, :container => false %> (<%= pluralize @file_count, "files" %>)
+    <div class="pagination_left_side">
+      Register files as:
+      <%= master_select("file_select", ["..."] + SingleFile.valid_file_classes.map(&:pretty_type).sort) %>,
+      and directories as:
+      <%= master_select("directory_select", ["..."] + FileCollection.valid_file_classes.map(&:pretty_type).sort) %>
     </div>
 
     <div class="pagination_right_side">
-      Search by name: <%=  ajax_search_box "name_like", browse_data_provider_path(:update_filter => :browse_hash) %>
+      Search by name: <%= ajax_search_box("name_like", browse_data_provider_path) %>
     </div>
   </div>
 
-  <table class="resource_list" id="dp_browse_table">
-    <tr>
-      <th><%= select_all_checkbox "file_checkbox" %></th>
-      <th>Name</th>
-      <th>Size</th>
-      <th>Type<br>
-        <%= master_select("file_select", ["All files as..."] + SingleFile.valid_file_classes.map(&:pretty_type) ) %><br>
-        <%= master_select("directory_select", ["All directories as..."] + FileCollection.valid_file_classes.map(&:pretty_type) ) %>
-      </th>
-      <th>Last modified</th>
-      <th>Registered?</th>
-      <th>Note</th>
-    </tr>
+  <%=
+    render(:partial => 'shared/active_filters', :locals  => {
+      :scope => @scope,
+      :model => nil
+    })
+  %>
 
-    <% @fileinfolist.each do |fi| %>
-      <%
-         fi_name     = fi.name
-         fi_size     = fi.size
-         fi_type     = fi.symbolic_type
-         fi_mtime    = fi.mtime
+  <%=
+    dynamic_scoped_table(@files,
+      :id           => 'dp_browse_table',
+      :class        => [:whole_width],
+      :request_type => 'server_javascript',
+      :scope        => @scope
+    ) do |t|
+  %>
+    <%
+      t.paginate
 
-         fi_userfile = fi.userfile
-         fi_ok       = fi.state_ok
-         fi_message  = fi.message
-      %>
-      <tr class="<%= cycle('list-odd', 'list-even') %>  row_highlight">
+      t.row do |f|
+        {
+          :select_param => 'basenames[]',
+          :select_value => f.name
+        } if f.state_ok
+      end
 
-        <% if fi_ok %>
-          <td><%= check_box_tag("basenames[]",fi_name, false, :class => "file_checkbox") %></td>
-        <% else %>
-          <td></td>
-        <% end %>
+      t.column('Name', :name,
+        :sortable => true
+      )
 
-        <td class="left"><%= fi_name %></td>
+      t.column('Size', :size,
+        :sortable => true
+      ) { |f| f.symbolic_type == :regular ? colored_pretty_size(f.size) : '-' }
 
-        <td><%= fi_type == :regular ? fi_size : "-" %></td>
+      t.column('Type', :symbolic_type,
+        :sortable => true,
+        :filters  => filter_values_for(@fileinfolist, :symbolic_type,
+          format: lambda do |value, label, count|
+            { :value => value.to_s, :label => label.to_s.humanize, :indicator => count }
+          end
+        )
+      ) do |f|
+        next f.userfile.pretty_type if f.userfile
+        next html_colorize('Unacceptable?') unless f.state_ok
 
-        <% if fi_userfile %>
-          <td><%= fi_userfile.class.to_s %></td>
-        <% else %>
-           <% if ! fi_ok %>
-             <td><%= html_colorize("Unacceptable?") %></td>
-           <% elsif fi_type == :regular %>
-             <td>
-               <%=
-                 select_tag("filetypes[]",
-                   options_for_select(SingleFile.valid_file_classes.map{|c| [c.pretty_type, "#{c.name}-#{fi_name}"]}, class_param_for_name(fi_name, SingleFile)),
-                   :class  => "file_select")
-               %>
-             </td>
-           <% elsif fi_type == :directory %>
-             <td>
-              <%=
-                select_tag("filetypes[]",
-                    options_for_select(FileCollection.valid_file_classes.map{|c| [c.pretty_type, "#{c.name}-#{fi_name}"]}, class_param_for_name(fi_name, FileCollection)),
-                    :class  => "directory_select")
-              %>
-             </td>
-           <% end %>
-        <% end %>
+        case f.symbolic_type
+        when :regular
+          base       = SingleFile
+          html_class = 'file_select'
+        when :directory
+          base       = FileCollection
+          html_class = 'directory_select'
+        else
+          next f.symbolic_type.to_s.humanize
+        end
 
-        <td><%= to_localtime(Time.at(fi_mtime),:datetime) %></td>
+        select_tag('filetypes[]',
+          options_for_select(
+            base.valid_file_classes.map do |c|
+              [c.pretty_type, "#{c.name}-#{f.name}"]
+            end,
+            class_param_for_name(f.name, base)
+          ),
+          :class => html_class
+        )
+      end
 
-        <% if fi_userfile %>
-          <% to_who = "" %>
-          <% to_who = " (as user #{fi_userfile.user.login})" if (fi_userfile.user_id != @as_user.id) || (fi_userfile.user_id != current_user.id) %>
-          <td><%= link_to "Registered#{to_who}", { :controller => 'userfiles', :action => 'show', :id => fi_userfile.id } %></td>
-        <% else %>
-          <td>No</td>
-        <% end %>
-        <td><%= fi_message %></td>
-      </tr>
-    <% end %> <!-- each fileinfo -->
-  </table>
+      t.column('Last modified', :mtime,
+        :sortable => true
+      ) { |f| to_localtime(Time.at(f.mtime), :datetime) }
+
+      t.column('Registered?', :registered) do |f|
+        userfile = f.userfile
+        next 'No' unless userfile
+
+        owner = "(as user #{userfile.user.login})" unless
+          [@as_user.id, current_user.id].include?(userfile.user_id)
+        link_to("Registered #{owner}", { :controller => 'userfiles', :action => 'show', :id => userfile.id })
+      end
+
+      t.column('Note', :message)
+    %>
+  <% end %>
+
 </div>
-

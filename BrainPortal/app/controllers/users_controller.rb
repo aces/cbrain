@@ -35,28 +35,30 @@ class UsersController < ApplicationController
   API_HIDDEN_ATTRIBUTES = [ :salt, :crypted_password ]
 
   def index #:nodoc:
-    @filter_params["sort_hash"]["order"] ||= 'users.full_name'
+    @scope = scope_from_session('users')
+    scope_default_order(@scope, 'full_name')
 
-    sort_order = "#{@filter_params["sort_hash"]["order"]} #{@filter_params["sort_hash"]["dir"]}"
+    params[:name_like].strip! if params[:name_like]
+    scope_filter_from_params(@scope, :name_like, {
+      :attribute => 'full_name',
+      :operator  => 'match'
+    })
 
-    @header_scope = current_user.available_users
+    @base_scope = current_user.available_users.includes(:groups, :site)
+    @view_scope = @scope.apply(@base_scope)
 
-    @filtered_scope = base_filtered_scope @header_scope.includes( [:groups, :site] ).order( sort_order )
-    @users          = base_sorted_scope @filtered_scope
+    @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
+    @users = @scope.pagination.apply(@view_scope) if
+      [:html, :js].include?(request.format.to_sym)
 
-    # Precompute file and task counts.
-    @users_file_counts=Userfile.where(:user_id => @users.map(&:id)).group(:user_id).count
-    @users_task_counts=CbrainTask.real_tasks.where(:user_id => @users.map(&:id)).group(:user_id).count
+    # Precompute file, task and locked/unlocked counts.
+    @users_file_counts  = Userfile.where(:user_id => @view_scope).group(:user_id).count
+    @users_task_counts  = CbrainTask.real_tasks.where(:user_id => @view_scope).group(:user_id).count
+    @locked_users_count   = @view_scope.where(:account_locked => true).count
+    @unlocked_users_count = @view_scope.count - @locked_users_count
 
-    # For Pagination
-    unless [:html, :js].include?(request.format.to_sym)
-      @per_page = 999_999_999
-    end
-
-    # Turn the array ordered_real into the final paginated collection
-    @users = @users.paginate(:page => @current_page, :per_page => @per_page)
-
-    current_session.save_preferences_for_user(current_user, :users, :per_page)
+    scope_to_session(@scope)
+    current_session.save_preferences
 
     respond_to do |format|
       format.html # index.html.erb
@@ -279,7 +281,7 @@ class UsersController < ApplicationController
     myportal.addlog("Admin user '#{current_user.login}' switching to user '#{@user.login}'")
     current_user.addlog("Switching to user '#{@user.login}'")
     @user.addlog("Switched from user '#{current_user.login}'")
-    current_session.clear_data!
+    current_session.clear
     self.current_user = @user
     current_session[:user_id] = @user.id
 

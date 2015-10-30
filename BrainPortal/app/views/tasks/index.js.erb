@@ -18,11 +18,16 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
 <%= render :partial  => "shared/flash_update" %>
-var new_table = jQuery(<%= html_for_js(render(:partial => 'tasks_display')) %>);
-jQuery("#tasks_display").html(new_table);
-new_table.trigger("new_content");
+
+jQuery("#tasks_display")
+  .html(<%= html_for_js(render(:partial => 'tasks_display')) %>)
+  .trigger("new_content");
+
+jQuery("#tasks_filters")
+  .html(<%= html_for_js(render(:partial => 'filters')) %>)
+  .trigger("new_content");

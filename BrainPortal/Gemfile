@@ -34,12 +34,16 @@ gem "sys-proctable", :git => 'git://github.com/djberg96/sys-proctable.git'
 gem "thin"
 gem "rails_autolink"
 gem "pbkdf2-ruby"
+gem "json-schema"
 gem "test-unit"
 
 group :development do
   gem "wirble"
   gem "looksee"
   gem "hirb"
+  gem "pry"
+  gem "pry-byebug"
+  gem "pry-doc"
 end
 
 group :test do

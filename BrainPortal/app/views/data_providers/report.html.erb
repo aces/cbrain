@@ -34,41 +34,7 @@
     <% end %>
   </div>
 
-  <table id="data_provider_issues">
-    <tbody>
-      <tr>
-        <th><%= select_all_checkbox("issue_checkbox") %></th>
-        <th>Issue</th>
-        <th>Severity</th>
-        <th>Action</th>
-        <th>File</th>
-        <th>User</th>
-      </tr>
-      <% unless @issues.empty? %>
-        <% @issues.each do |issue| %>
-          <%
-            userfile   = Userfile.find_by_id(issue[:userfile_id]) if issue[:userfile_id]
-            user       = User.find_by_id(issue[:user_id])         if issue[:user_id]
-            user     ||= userfile.user if userfile
-          %>
-          <tr class="severity-<%= issue[:severity].to_s %>">
-            <td><%= check_box_tag("issue_ids[]", issue[:id], false, :class => "issue_checkbox") %></td>
-            <td class="left shrinkable"><%= issue[:message] %></td>
-            <td><%= issue[:severity].to_s.titleize %></td>
-            <td><%= issue[:action] ? issue[:action].to_s.titleize : '-' %></td>
-            <% if userfile %>
-              <td class="left"><%= link_to_userfile_if_accessible(userfile, current_user) %></td>
-            <% else %>
-              <td> - </td>
-            <% end %>
-            <td><%= user ? link_to_user_with_tooltip(user) : '-' %></td>
-          </tr>
-        <% end %>
-      <% else %>
-        <tr>
-          <td colspan="6"><em>No issues to report</em></td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
+  <div class="resource_list" id="dp_report_table">
+    <%= render :partial => 'dp_report_table' %>
+  </div>
 <% end %>

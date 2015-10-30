@@ -1,4 +1,3 @@
-
 <%-
 #
 # CBRAIN Project
@@ -23,61 +22,50 @@
 -%>
 
 <%
-  filter_links = []
-  controller = params[:controller].to_sym || :unknown
-  (@filter_params["filter_hash"].presence || []).each do |att, val|
-    filter =
-    if att == "time_interval"
-      s = val[0].to_i
-      e = val[1].to_i
-      s,e = e,s if e > s
-      s_text = pretty_elapsed(s, :num_components  => 1) + " ago"
-      s_text = "now"          if s == 0
-      s_text = "the big bang" if s > 10.years
-      e_text = pretty_elapsed(e, :num_components  => 1) + " ago"
-      e_text = "now"          if e == 0
-      e_text = "the big bang" if e > 10.years
-      text = "Time interval: between #{s_text} and #{e_text}"
-      "<span class=\"current_filters_item\">#{h(text).capitalize}</span>"
-    elsif att == "critical"
-      text = val == '1' ? "Critical" : "Not critical"
-      "<span class=\"current_filters_item\">#{text}</span>"
-    elsif att == "read"
-      text = val == '1' ? "Read" : "Unread"
-      "<span class=\"current_filters_item\">#{text}</span>"
-    elsif att == "type"
-      "<span class=\"current_filters_item\">#{crop_text_to(30, Array(val).map(&:constantize).map(&:pretty_type).join(", "))}</span>"
-    elsif att == "account_locked"
-      text = val == '1' ? "Locked" : "Unlocked"
-      "<span class=\"current_filters_item\">#{text}</span>"
-    else
-      "<span class=\"current_filters_item\">#{crop_text_to(30, display_filter(model, att, val, {:user  => :login}))}</span>"
-    end
-    filter += filter_remove_link(delete_icon, att)
-    filter_links << filter
-  end
-
-  if @filter_params["filter_tags_array"].present?
-    current_user.available_tags.find(@filter_params["filter_tags_array"]).each do |tag|
-      filter_links << "<span class=\"current_filters_item\">#{crop_text_to(30, "Tag: #{tag.name}")}</span>" + filter_remove_link(delete_icon, tag.id, :parameter  => :filter_tags_array)
-    end
-  end
-
-  if @filter_params["filter_custom_filters_array"].present?
-    current_user.custom_filters.find(@filter_params["filter_custom_filters_array"]).each do |filter|
-      filter_links << "<span class=\"current_filters_item\">#{crop_text_to(30, "Custom: #{filter.name}")}</span>" + filter_remove_link(delete_icon, filter.id, :parameter  => :filter_custom_filters_array)
-    end
-  end
+  return if scope.blank? || (
+    scope.filters.blank? &&
+    scope.custom[:custom_filters].blank?
+  )
 %>
-
-<% if filter_links.size > 0 %>
 
 <div class="active_status">
   <span class="active_status_left_side">
-    <span class="active_label">Active Filters</span> (<%= filter_clear_link 'clear', :class  => "action_link" %>):
-    <span id="current_filters"><%= filter_links.join(", ").html_safe %></span>
+    <span class="active_label">Active Filters</span>
+    (<%=
+      empty = scope.dup
+      empty.filters.clear
+      empty.custom[:custom_filters] = [] if
+        empty.custom.has_key?(:custom_filters)
+
+      scope_link('clear',
+        scope.name, empty.to_hash,
+        link: { :ajax => true }
+      )
+    %>)
+    <span id="current_filters">
+      <% scope.filters.each do |filter| %>
+        <span class="current_filters_item">
+          <%= pretty_scope_filter(filter, model: model) %>
+        </span>
+        <%=
+          scope_filter_link(delete_icon,
+            scope, :remove, filter,
+            link: { :ajax => true }
+          )
+        %>
+      <% end %>
+      <% Array(scope.custom[:custom_filters]).uniq.each do |id| %>
+        <span class="current_filters_item">
+          <%= crop_text_to(30, CustomFilter.find(id).name) %>
+        </span>
+        <%=
+          scope_custom_link(delete_icon,
+            scope, { 'custom_filters' => [id] },
+            url:  { '_scope_mode' => 'delete' },
+            link: { :ajax         => true     }
+          )
+        %>
+      <% end %>
+    </span>
   </span>
 </div>
-
-<% end %>
-

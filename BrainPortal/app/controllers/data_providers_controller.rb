@@ -36,15 +36,13 @@ class DataProvidersController < ApplicationController
   API_HIDDEN_ATTRIBUTES = [ :cloud_storage_client_identifier, :cloud_storage_client_token ]
 
   def index #:nodoc:
-    @filter_params["sort_hash"]["order"] ||= "data_providers.name"
+    @scope = scope_from_session('data_providers')
+    scope_default_order(@scope, 'name')
 
-    @header_scope   = DataProvider.find_all_accessible_by_user(current_user)
-    @filtered_scope = base_filtered_scope @header_scope.includes(:user, :group)
-    @data_providers = base_sorted_scope @filtered_scope
-
-    if current_user.has_role? :admin_user
-      @filter_params['details'] = 'on' unless @filter_params.has_key?('details')
-    end
+    @base_scope = DataProvider
+      .find_all_accessible_by_user(current_user)
+      .includes(:user, :group)
+    @data_providers = @scope.apply(@base_scope)
 
     respond_to do |format|
       format.html
@@ -291,12 +289,24 @@ class DataProvidersController < ApplicationController
       return
     end
 
-    @filter_params["browse_hash"] ||= {}
-    @per_page  = @filter_params["browse_hash"]["per_page"]
-    validate_pagination_values # validates @per_page and @current_page
-    as_user_id = params[:as_user_id].presence || @filter_params["browse_hash"]["as_user_id"].presence || current_user.id
-    @as_user   = current_user.available_users.where(:id => as_user_id).first || current_user
-    @filter_params["browse_hash"]["as_user_id"] = @as_user.id.to_s
+    # Load up the default scope for DP browsing and handle 'name_like'.
+    @scope = scope_from_session(default_scope_name)
+    scope_filter_from_params(@scope, :name_like, {
+      :attribute => 'name',
+      :operator  => 'match'
+    })
+
+    # Browsing as a different user? Make sure the target user is set.
+    @as_user = current_user
+      .available_users
+      .where(:id => (
+        params['as_user_id'] ||
+        @scope.custom['as_user_id'] ||
+        current_user.id
+      ))
+      .first
+    @as_user ||= current_user
+    @scope.custom['as_user_id'] = @as_user.id
 
     begin
       # [ base, size, type, mtime ]
@@ -362,22 +372,16 @@ class DataProvidersController < ApplicationController
 
     end
 
-    # Search by name
-    if @filter_params["browse_hash"]["name_like"].present?
-      search_term   = @filter_params["browse_hash"]["name_like"].to_s.downcase
-      @fileinfolist = @fileinfolist.select{|file| file.name.to_s.downcase.index(search_term)}
-    end
+    # Now that @fileinfolist is complete, apply @scope's elements and paginate
+    # before display.
+    @fileinfolist = @scope.apply(@fileinfolist)
 
-    @file_count   = @fileinfolist.count
-    unless request.format.to_sym == :xml || request.format.to_sym == :json
-      @fileinfolist = WillPaginate::Collection.create(@current_page, @per_page) do |pager|
-        pager.replace(@fileinfolist[(@current_page-1)*@per_page, @per_page] || [])
-        pager.total_entries = @file_count
-        pager
-      end
-    end
+    @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
+    @files = @scope.pagination.apply(@fileinfolist) unless
+      [:xml, :json].include?(request.format.to_sym)
 
-    current_session.save_preferences_for_user(current_user, :data_providers, :browse_hash)
+    scope_to_session(@scope)
+    current_session.save_preferences
 
     respond_to do |format|
       format.html
@@ -399,12 +403,16 @@ class DataProvidersController < ApplicationController
   # This method is (unfortunately) also used to unregister files, and delete them (on the browsable side)
   def register
     # TODO: refactor completely!
-    @provider  = DataProvider.find_accessible_by_user(params[:id], current_user)
+    @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
 
-    @filter_params["browse_hash"] ||= {}
-    as_user_id = params[:as_user_id].presence || @filter_params["browse_hash"]["as_user_id"].presence || current_user.id
-    @as_user = current_user.available_users.where(:id => as_user_id).first || current_user
-    @filter_params["browse_hash"]["as_user_id"] = @as_user.id.to_s
+    scope      = scope_from_session('data_providers#browse')
+    @as_user   = current_user
+      .available_users
+      .where(:id => scope.custom['as_user_id'] ||= (
+        params['as_user_id'] || current_user.id
+      ))
+      .first
+    @as_user ||= current_user
 
     unless @provider.is_browsable?(current_user)
       flash[:error] = "You cannot register files from this provider."
@@ -648,11 +656,17 @@ class DataProvidersController < ApplicationController
 
   # Report inconsistencies in the data provider.
   def report
+    @scope    = scope_from_session(default_scope_name)
     @provider = DataProvider.find(params[:id])
     @issues   = @provider.provider_report(params[:reload])
 
+    scope_default_order(@scope, :severity)
+    @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
+    @view_scope = @scope.apply(@issues, paginate: true)
+
     respond_to do |format|
-      format.html # report.html.erb
+      format.html
+      format.js
       format.xml  { render :xml  => { :issues => @issues } }
       format.json { render :json => { :issues => @issues } }
     end

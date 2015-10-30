@@ -38,15 +38,13 @@ class BourreauxController < ApplicationController
   API_HIDDEN_ATTRIBUTES = [ :cache_md5 ]  # these are hidden back when APIs calls returns objects
 
   def index #:nodoc:
-    @filter_params["sort_hash"]["order"] ||= "remote_resources.type"
-    @filter_params["sort_hash"]["dir"]   ||= "DESC"
-    @header_scope   = RemoteResource.find_all_accessible_by_user(current_user)
-    @filtered_scope = base_filtered_scope @header_scope.includes(:user, :group)
-    @bourreaux      = base_sorted_scope @filtered_scope
+    @scope = scope_from_session('bourreaux')
+    scope_default_order(@scope, 'type')
 
-    if current_user.has_role? :admin_user
-      @filter_params['details'] = 'on' unless @filter_params.has_key?('details')
-    end
+    @base_scope = RemoteResource
+      .find_all_accessible_by_user(current_user)
+      .includes(:user, :group)
+    @bourreaux = @scope.apply(@base_scope)
 
     respond_to do |format|
       format.html

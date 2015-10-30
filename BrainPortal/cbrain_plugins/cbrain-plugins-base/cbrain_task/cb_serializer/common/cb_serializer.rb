@@ -27,7 +27,7 @@ class CbrainTask::CbSerializer
     return "CBRAIN Serializer"
   end
 
-  # Returns the list of tasks parallelized;
+  # Returns the list of tasks serialized;
   # this list includes only the tasks that have been
   # 'enabled' (disabling can be triggered using the
   # interface).

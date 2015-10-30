@@ -26,33 +26,52 @@
   <%= new_model_button 'Create User', new_user_path %>
 </div>
 
-<%= render :partial => 'shared/active_filters', :locals => { :model => :user } %>
+<%=
+  render(:partial => 'shared/active_filters', :locals  => {
+    :scope => @scope,
+    :model => User
+  })
+%>
 
 <div class="pagination">
+  <div class="pagination_center">
+    (
+      <%= pluralize @users.total_entries, "user" %>
+      <% if @unlocked_users_count > 0 %>,
+        <%=
+          scope_filter_link("#{@unlocked_users_count} active",
+            @scope, :set, { :a => 'account_locked', :v => 0 },
+            link: { :ajax => true }
+          )
+        %>
+      <% end %>
+      <% if @locked_users_count > 0 %>,
+        <%=
+          scope_filter_link("#{@locked_users_count} locked",
+            @scope, :set, { :a => 'account_locked', :v => 1 },
+            link: { :ajax => true }
+          )
+        %>
+      <% end %>
+    )
+  </div>
   <div class="pagination_right_side">
-    Search by name:
-    <%= ajax_search_box "name_like", users_path(:update_filter => :filter_hash) %>
+    Search by name: <%= ajax_search_box "name_like", users_path %>
   </div>
 </div>
 
 <%=
-  dynamic_index_table(@users,
+  dynamic_scoped_table(@users,
     :id         => 'users_table',
     :class      => [ :resource_list ],
-    :sort_map   => {
-      :login           => 'users.login',
-      :full_name       => 'users.full_name',
-      :email           => 'users.email',
-      :last_connection => 'users.last_connected_at',
-      :type            => 'users.type',
-      :site            => 'sites.name',
-      :city            => 'users.city',
-      :country         => 'users.country',
-      :time_zone       => 'users.time_zone'
+    :scope      => @scope,
+    :order_map  => {
+      :last_connection => { :a => 'last_connected_at' },
+      :site            => { :a => 'sites.name', :j => Site }
     },
     :filter_map => {
-      :login => 'account_locked',
-      :site  => 'site_id'
+      :login => { :a => 'account_locked' },
+      :site  => { :a => 'site_id' }
     }
   ) do |t|
 %>
@@ -61,8 +80,23 @@
 
     t.column("Login", :login,
       :sortable => true,
-      :filters  => basic_filters_for(@filtered_scope, @header_scope, 'users', 'account_locked') { |l| l ? "Locked" : "Unlocked"  }
-    ) { |u| link_to_user_if_accessible(u, current_user, :html_options => { :class => u.account_locked ? 'error_link' : nil }) }
+      :filters  => scoped_filters_for(
+        @base_scope, @scope, :account_locked,
+        format: lambda do |value, label, base, view|
+          label = (!value || value == 0 ? 'Unlocked' : 'Locked')
+          {
+            :value     => value,
+            :label     => "#{label} (of #{base})",
+            :indicator => view,
+            :empty     => view == 0
+          }
+        end
+      )
+    ) do |u|
+      link_to_user_if_accessible(u, current_user,
+        :html_options => { :class => u.account_locked ? 'error_link' : nil }
+      )
+    end
 
     t.column("Full name", :full_name,
       :sortable => true
@@ -77,34 +111,38 @@
     ) { |u| u.last_connected_at ? to_localtime(u.last_connected_at, :datetime) : "Unknown" }
 
     t.column("Projects", :groups) do |u|
-      groups = u.available_groups.sort { |a,b| a.name.casecmp(b.name) }
-      html_tool_tip(pluralize(groups.size, "project"), :offset_x => 60) do
-        array_to_table(groups,
-          :table_class     => 'simple',
-          :ratio           => "3:1",
-          :fill_by_columns => true
-        ) { |g,r,c| g.name }
-      end.html_safe if groups.size > 0
+      group_names = u.available_groups.order(:name).raw_first_column(:name).reject { |n| n == u.login }
+      if group_names.size > 1 && group_names.size < 40
+        html_tool_tip(pluralize(group_names.size, "project"), :offset_x => 60) do
+          array_to_table(group_names,
+            :table_class     => 'simple',
+            :ratio           => "3:1",
+            :fill_by_columns => true
+          ) { |name,r,c| name }
+        end.html_safe
+      elsif group_names.size > 1
+        pluralize(group_names.size, "project")
+      end
     end
 
     t.column("Role", :type,
       :sortable => true,
-      :filters  => basic_filters_for(@filtered_scope, @header_scope, 'users', 'type')
+      :filters  => default_filters_for(@base_scope, :type)
     ) { |u| u.type.underscore.titleize }
 
     t.column("Site", :site,
       :sortable => true,
-      :filters  => association_filters_for(@filtered_scope, User.scoped, "user", "site")
+      :filters  => default_filters_for(@base_scope, Site)
     ) { |u| link_to_site_if_accessible(u.site) }
 
     t.column("City", :city,
       :sortable => true,
-      :filters  => basic_filters_for(@filtered_scope, @header_scope, 'users', 'city')
+      :filters  => default_filters_for(@base_scope, :city)
     )
 
     t.column("Country", :country,
       :sortable => true,
-      :filters  => basic_filters_for(@filtered_scope, @header_scope, 'users', 'country')
+      :filters  => default_filters_for(@base_scope, :country)
     )
 
     t.column("Time Zone", :time_zone,

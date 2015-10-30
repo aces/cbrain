@@ -1,4 +1,3 @@
-
 #
 # CBRAIN Project
 #
@@ -17,7 +16,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #RESTful controller for the Tag resource.
@@ -26,6 +25,7 @@ class TagsController < ApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   before_filter :login_required
+  before_filter :validate_params, :only => [:update, :create]
   layout false
 
   def new #:nodoc:
@@ -41,12 +41,11 @@ class TagsController < ApplicationController
   # POST /tags.xml
   def create #:nodoc:
     @tag = Tag.new(params[:tag])
-    @tag.user_id = current_user.id
 
     respond_to do |format|
       if @tag.save
         flash[:notice] = 'Tag was successfully created.'
-        format.html { redirect_to userfiles_path }        
+        format.html { redirect_to userfiles_path }
         format.xml  { render :xml => @tag, :status => :created, :location => @tag }
       else
         format.html { redirect_to userfiles_path }
@@ -89,4 +88,18 @@ class TagsController < ApplicationController
       format.xml  { head :ok }
     end
   end
+
+  private
+
+  # This method validates that the current user has access to the user and group being assigned to the created or updated tag
+  def validate_params #:nodoc:
+    user_id = params[:tag][:user_id]
+    group_id = params[:tag][:group_id]
+
+    params[:tag][:user_id]  = current_user.id           if !current_user.available_users.raw_first_column(:id).include?(user_id.to_i)
+    params[:tag][:group_id] = current_user.own_group.id if !current_user.available_groups.raw_first_column(:id).include?(group_id.to_i)
+  end
+
+
+
 end

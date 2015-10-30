@@ -27,3 +27,26 @@
   <%= render :partial => 'custom_filters/custom_filter_list' %>
 </div>
 
+<div id="tag_table_sidebar">
+  <%= render :partial => 'userfiles/tag_table_sidebar' %>
+</div>
+
+<h4>Other Filters</h4>
+<ul class="filter_menu">
+  <li>
+    <%=
+      scope_filter_link('Has no parent',
+        @scope, :set, { 'type' => 'uf.hier', 'operator' => 'no_parent' },
+        link: { :ajax => true }
+      )
+    %>
+  </li>
+  <li>
+    <%=
+      scope_filter_link('Has no children',
+        @scope, :set, { 'type' => 'uf.hier', 'operator' => 'no_child' },
+        link: { :ajax => true }
+      )
+    %>
+  </li>
+</ul>

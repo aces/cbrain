@@ -1,5 +1,4 @@
 
-<%-
 #
 # CBRAIN Project
 #
@@ -20,15 +19,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
--%>
 
-<div class="pagination_left_side"></div>
-<div class="page_links">
-  <%= will_paginate @users, :container => false %>
-  (<%= pluralize @users.total_entries, "user" %>)
-</div>
-<div class="pagination_right_side">
-  Search by name:
-  <%= ajax_search_box "name_like", users_path(:update_filter => :filter_hash) %>
-</div>
+#
+# CbrainTask descriptor loader
+#
 
+1.times do # just starts a block so local variables don't pollute anything
+
+  basename = File.basename(__FILE__)
+  if basename == 'cbrain_task_descriptor_loader.rb' # usually, the symlink destination
+    puts "Weird. Trying to load the loader?!?"
+    break
+  end
+
+  schema     = SchemaTaskGenerator.default_schema
+  descriptor = __FILE__.sub(/.rb$/,'.json')
+
+  SchemaTaskGenerator.generate(schema, descriptor).integrate if
+    File.exists?(descriptor)
+
+end

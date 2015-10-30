@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -26,7 +26,13 @@
 <!-- PARTIAL: ACCOUNT SECTION -->
 <!-- ************************ -->
 
-<div class="account">
+<%
+  # We can colorize the CBRAIN interface based on the current GIT branch
+  # One only needs to define a CSS class 'account_git_branch_NAME'
+  git_branch = CBRAIN::CBRAIN_Git_Branch.presence || "unknown"
+%>
+
+<div class="account account_git_branch_<%= git_branch.gsub(/\W/,"_") %>">
 
   <span class="home_credits">
     <% if current_user %>
@@ -56,11 +62,46 @@
         <% end %>
       <% end %>
     <% end %>
-    Rev:&nbsp;<%= $CBRAIN_StartTime_Revision %>
+    Rev: <%= CBRAIN::CBRAIN_StartTime_Revision %>
+    <% if current_user.present? && current_user.has_role?(:admin_user) %>
+      Branch: <%= git_branch %>
+    <% end %>
   </span>
 
   <span class="loggedas">
     <% if current_user %>
+      <span class="last_updated">
+        (last updated <span class="elapsed">0m</span> ago)
+        <script>
+          (function () {
+            "use strict";
+
+            var last_update = new Date();
+            setInterval(function () {
+              var diff = Math.floor((new Date() - last_update) / (60 * 1000)),
+                  part = undefined,
+                  text = [];
+
+              part = Math.round(diff % 60);
+              diff = Math.floor(diff / 60);
+              text.unshift(part + 'm');
+
+              part = Math.round(diff % 24);
+              diff = Math.floor(diff / 24);
+              if (part) text.unshift(part + 'h');
+
+              if (diff) text.unshift(diff + 'd');
+
+              $('span.last_updated > span.elapsed').text(text.join(' '));
+            }, 20 * 1000);
+
+            $(document).delegate('*', 'new_content', function () {
+              last_update = new Date();
+            });
+          })();
+        </script>
+      </span>
+
       Logged in as <%= current_user.full_name %>
       <%= link_to "Sign out", "/logout" %>
     <% else %>

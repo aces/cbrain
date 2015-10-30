@@ -22,9 +22,19 @@
 #
 -%>
 
+<%
+  locals      = { :params  => @task.params, :form => form }
+  raw_partial = lambda do |partial|
+    @task.class.raw_partial(partial) if @task.class.respond_to?(:raw_partial)
+  end
+%>
+
 <h2>Task Parameters
-  <% public_path = @task.public_path("edit_params_help.html") %>
-  <% if public_path %>
+  <% if raw_partial.(:edit_help) %>
+    <%= overlay_content_link "(Help)", :class => "task_help_link", :enclosing_element => "span" do %>
+      <%= render :inline => raw_partial.(:edit_help), :locals => locals %>
+    <% end %>
+  <% elsif (public_path = @task.public_path("edit_params_help.html")) %>
     <%= overlay_ajax_link "(Help)", public_path.to_s, :class  => "task_help_link" %>
   <% end %>
   :
@@ -32,7 +42,9 @@
 
 <div class="generalbox">
 <%= error_messages_for(@task) %>
-<%= render :partial => task_partial('task_params'),
-           :locals  => { :params  => @task.params, :form => form }
- %>
+<% if raw_partial.(:task_params) %>
+  <%= render :inline => raw_partial.(:task_params), :locals => locals %>
+<% else %>
+  <%= render :partial => task_partial('task_params'), :locals => locals %>
+<% end %>
 </div>

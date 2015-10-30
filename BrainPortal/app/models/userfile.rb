@@ -78,7 +78,7 @@ class Userfile < ActiveRecord::Base
   attr_accessible         :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable,
                           :num_files, :tag_ids, :hidden, :immutable, :description
 
-  cb_scope                :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n}%"]} }
+  cb_scope                :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n.strip}%"]} }
 
   cb_scope                :has_no_parent, :conditions => {:parent_id => nil}
   cb_scope                :has_no_child,  lambda { |ignored|
@@ -86,12 +86,12 @@ class Userfile < ActiveRecord::Base
                                             parents_ids.blank? ? where({}) : where("userfiles.id NOT IN (?)", parents_ids)
                                           }
   cb_scope                :parent_name_like, lambda { |n|
-                                            matching_parents_ids = Userfile.where("name like ?", "%#{n}%").raw_first_column(:id).uniq
+                                            matching_parents_ids = Userfile.where("name like ?", "%#{n.strip}%").raw_first_column(:id).uniq
                                             where(:parent_id => matching_parents_ids)
                                           }
 
   cb_scope                :child_name_like, lambda { |n|
-                                             matching_children_ids = Userfile.where("name like ?", "%#{n}%").where("parent_id IS NOT NULL").raw_first_column(:id).uniq
+                                             matching_children_ids = Userfile.where("name like ?", "%#{n.strip}%").where("parent_id IS NOT NULL").raw_first_column(:id).uniq
                                              matching_parents_ids  = Userfile.where(:id => matching_children_ids).raw_first_column(:parent_id).uniq
                                              where(:id => matching_parents_ids)
                                             }
@@ -220,6 +220,7 @@ class Userfile < ActiveRecord::Base
     self.valid_file_types.include? type
   end
 
+  # Returns a suggested file type for the current userfile, based on its extension.
   def suggested_file_type
     @suggested_file_type ||= self.valid_file_classes.find{|ft| self.name =~ ft.file_name_pattern}
   end
@@ -625,7 +626,8 @@ class Userfile < ActiveRecord::Base
 
   public
 
-  class Viewer
+  class Viewer #:nodoc:
+
     attr_reader :userfile_class, :name, :partial
 
     def initialize(userfile_class, viewer) #:nodoc:
@@ -636,7 +638,7 @@ class Userfile < ActiveRecord::Base
       initialize_from_hash(atts.merge(:userfile_class => userfile_class))
     end
 
-    def initialize_from_hash(atts = {})
+    def initialize_from_hash(atts = {}) #:nodoc:
       userfile_class = atts.delete(:userfile_class) # e.g. TextFile (the class)
       unless userfile_class.present? && userfile_class.is_a?(Class) && userfile_class < Userfile
         cb_error("Viewer =#{userfile_class}= must be associated with a Userfile class.")
@@ -663,17 +665,17 @@ class Userfile < ActiveRecord::Base
       end
     end
 
-    def valid_for?(userfile)
+    def valid_for?(userfile) #:nodoc:
       return true if @conditions.empty?
       @conditions.all? { |condition| condition.call(userfile) }
     end
 
-    def ==(other)
+    def ==(other) #:nodoc:
       return false unless other.is_a? Viewer
       self.name == other.name
     end
 
-    def partial_path(alternate_partial=nil)
+    def partial_path(alternate_partial=nil) #:nodoc:
       @userfile_class.view_path(alternate_partial.presence || @partial)
     end
   end

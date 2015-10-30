@@ -23,22 +23,18 @@
 -%>
 
 <%
-  table = dynamic_index_table(@bourreaux,
+  table = dynamic_scoped_table(@bourreaux,
     :id         => "bourreaux_table",
     :class      => [ :resource_list ],
+    :scope      => @scope,
     :render     => false,
-    :sort_map   => {
-      :type        => 'remote_resources.type',
-      :name        => 'remote_resources.name',
-      :owner       => 'users.login',
-      :group       => 'groups.name',
-      :time_zone   => 'remote_resources.time_zone',
-      :online      => 'remote_resources.online',
-      :description => 'remote_resources.description'
+    :order_map  => {
+      :owner => { :a => 'users.login', :j => User  },
+      :group => { :a => 'groups.name', :j => Group }
     },
     :filter_map => {
-      :owner => 'user_id',
-      :group => 'group_id'
+      :owner => { :a => 'user_id'  },
+      :group => { :a => 'group_id' }
     }
   ) do |t|
 %>
@@ -50,20 +46,11 @@
       (@row_fetch && resource.info(:ping))
     end
 
-    filters_for = lambda do |target, opts = {}|
-      return if @row_fetch
-      if target.is_a?(Symbol)
-        basic_filters_for(@filtered_scope, @header_scope, RemoteResource, target)
-      else
-        association_filters_for(@filtered_scope, @header_scope, RemoteResource, target, opts)
-      end
-    end
-
     t.row { |r| { :html => { 'data-info-url' => row_data_bourreau_path(r) } } unless loaded.(r) }
 
     t.column("Server Type", :type,
       :sortable => true,
-      :filters  => filters_for.(:type)
+      :filters  => default_filters_for(@base_scope, :type)
     ) { |r| r.is_a?(Bourreau) ? "Execution" : "Portal" }
 
     t.column("Server Name", :name,
@@ -79,7 +66,7 @@
     ) do |r|
       if loaded.(r)
         revision = r.info(:ping).starttime_revision
-        red_if(revision != '???' && revision != $CBRAIN_StartTime_Revision, revision, nil, :color2 => 'red')
+        red_if(revision != '???' && revision != CBRAIN::CBRAIN_StartTime_Revision, revision, nil, :color2 => 'red')
       else
         html_colorize("(...)", "magenta")
       end
@@ -88,12 +75,12 @@
     t.column("Owner", :owner,
       :hidden   => true,
       :sortable => true,
-      :filters  => filters_for.(User, :name_method => :login)
+      :filters  => default_filters_for(@base_scope, User)
     ) { |r| link_to_user_with_tooltip(r.user) }
 
     t.column("Project", :group,
       :sortable => true,
-      :filters  => filters_for.(Group)
+      :filters  => default_filters_for(@base_scope, Group)
     ) { |r| link_to_group_if_accessible(r.group) }
 
     t.column("Site", :site,
@@ -103,7 +90,7 @@
     t.column("Time Zone", :time_zone,
       :hidden   => true,
       :sortable => true,
-      :filters  => filters_for.(:time_zone)
+      :filters  => default_filters_for(@base_scope, :time_zone)
     ) { |r| r.time_zone || "(Unset)" }
 
     t.column("Online?", :online,
@@ -180,6 +167,18 @@
       contents
     end))
 
+    t.column("Cache Space (#{check_role(:admin_user) ? 'all' : 'own'})", :cache_space,
+      :hidden => true
+    ) do |r|
+      size = r.sync_status
+        .joins(:userfile)
+        .where(check_role(:admin_user) ?  {} : { 'userfiles.user_id' => current_user.id })
+        .sum('userfiles.size')
+        .to_i
+
+      colored_pretty_size(size)
+    end
+
     t.column("Description", :description,
       :hidden   => true,
       :sortable => true
@@ -249,7 +248,12 @@
     <%= overlay_ajax_link "Help", "/doc/server/view_server.html", :class  => "button" %>
   </div>
 
-  <%= render :partial => 'shared/active_filters', :locals => {:model => :bourreau} %>
+  <%=
+    render(:partial => 'shared/active_filters', :locals  => {
+      :scope => @scope,
+      :model => RemoteResource
+    })
+  %>
 
   <% content_for :scripts do %>
     <% javascript_tag (render :partial => "fetch_row.js.erb", :formats => [:js]).to_s %>

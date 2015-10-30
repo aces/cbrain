@@ -26,4 +26,4 @@
 jQuery("#userfiles_display").html(<%= html_for_js(render(:partial => 'userfiles_display')) %>);
 jQuery("#userfiles_display").trigger("new_content");
 jQuery("#view_option_button").html(<%= html_for_js(render(:partial => 'view_option_button')) %>).trigger("new_content");
-
+jQuery("#userfiles_filters").html(<%= html_for_js(render(:partial => 'filters')) %>).trigger("new_content");

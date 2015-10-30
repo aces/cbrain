@@ -51,9 +51,10 @@ class PortalController < ApplicationController
       @active_users = CbrainSession.active_users
       @active_users.unshift(current_user) unless @active_users.include?(current_user)
       if request.post?
-        unless params[:session_clear].blank?
-          CbrainSession.session_class.where(["updated_at < ?", params[:session_clear].to_i.seconds.ago]).delete_all
-        end
+        CbrainSession.clean_sessions
+        CbrainSession.purge_sessions(params[:session_clear].to_i.seconds.ago) unless
+          params[:session_clear].blank?
+
         if params[:lock_portal] == "lock"
           BrainPortal.current_resource.lock!
           BrainPortal.current_resource.addlog("User #{current_user.login} locked this portal.")
@@ -68,9 +69,6 @@ class PortalController < ApplicationController
           flash.now[:error] = ""
         end
       end
-    #elsif current_user.has_role? :site_manager
-    #  @active_users = CbrainSession.active_users.where( :site_id  => current_user.site_id )
-    #  @active_users.unshift(current_user) unless @active_users.include?(current_user)
     end
 
     bourreau_ids = Bourreau.find_all_accessible_by_user(current_user).raw_first_column("remote_resources.id")
@@ -142,7 +140,7 @@ class PortalController < ApplicationController
       found_ctrl = nil
       found_ms   = 0
 
-      (log.split("\n",num_lines+10) + [ "\n" ]).each do |line|
+      (log.split("\n") + [ "\n" ]).each do |line|
         next unless line
         next unless line =~ /^Started (\S+) "\/(\w*)/ || ! paragraph.empty?
 
@@ -168,7 +166,7 @@ class PortalController < ApplicationController
       end
       log = filtlogs.join("\n")
     else
-      log.split("\n",num_lines+10).each do |line|
+      log.split("\n").each do |line|
         if line =~ /^User: (\S+)/
           found_user = Regexp.last_match[1]
           @user_counts[found_user] += 1
@@ -356,6 +354,15 @@ class PortalController < ApplicationController
     @filter_row_key    = row_type
     @filter_col_key    = col_type
     @filter_show_proc  = (table_op =~ /sum.*size/) ? (Proc.new { |vector| colored_pretty_size(vector[0]) }) : nil
+  end
+
+  # This action searches among all sorts of models for IDs or strings,
+  # and reports links to the matches found.
+  def search
+    @search  = params[:search]
+    @limit   = 20 # used by interface only
+
+    @results = @search.present? ? ModelsReport.search_for_token(@search, current_user) : {}
   end
 
   private

@@ -30,7 +30,7 @@ module UserfilesHelper
   # link to show page, sync status and formats.
   def filename_listing(userfile, link_options={})
     html = []
-    html << tree_view_icon(userfile.level) if @filter_params["tree_sort"] == "on" && userfile.level.to_i > 0
+    html << tree_view_icon(userfile.level) if @scope.custom[:tree_sort] && userfile.level.to_i > 0
     html << link_to_userfile_if_accessible(userfile, nil, link_options)
     if userfile.hidden?
       html << " "
@@ -48,7 +48,7 @@ module UserfilesHelper
     html.join.html_safe
   end
 
-  def neighbor_file_link(neighbor, index, dir, options = {})
+  def neighbor_file_link(neighbor, index, dir, options = {}) #:nodoc:
     return "" unless neighbor
 
     if dir == :previous
@@ -63,6 +63,8 @@ module UserfilesHelper
     link_to text, {:action  => action, :id  => neighbor.id, :sort_index => index}, link_options
   end
 
+  # Generates a set of two links, one for a 'previous' file and one for a 'next' file.
+  # The argument +sort_index+ is the index of the 'current' file.
   def file_link_table(previous_userfile, next_userfile, sort_index, options = {})
     (
     "<div class=\"display_table\" style=\"width:100%\">" +

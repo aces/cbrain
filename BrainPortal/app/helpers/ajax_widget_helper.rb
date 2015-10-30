@@ -100,7 +100,8 @@ module AjaxWidgetHelper
     html.html_safe
   end
 
-  def ajax_refresh_link(text, target, options = {})
+  # This doesn't seem to be used anymore? PR OCT 2015
+  def ajax_refresh_link(text, target, options = {}) #:nodoc:
     options["data-target"] = target
 
     options[:class] ||= ""

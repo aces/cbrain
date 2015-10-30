@@ -52,6 +52,7 @@
   border: 0;
   color: inherit;
   font-family: inherit;
+  height: 22px;
   padding: 0.2em 0.5em 0.2em 0.9em;
   text-align: left;
 }
@@ -138,6 +139,7 @@
   border: 0.3em solid #0471b4;
   display: none;
   left: 0;
+  min-width: 120px;
   position: absolute;
   text-align: left;
   top: 2.7em;
@@ -246,7 +248,7 @@ td.dt-sel > .dt-sel-lbl > .dt-sel-icon {
 }
 
 .dt-popup > .dt-fpop-table {
-  padding: 0.6em 0.8em 0.6em 0.3em;
+  padding: 0.6em 0.8em 0.6em 0.5em;
 }
 
 .dt-fpop-head > tr > .dt-fpop-find-icon {
@@ -287,23 +289,20 @@ td.dt-sel > .dt-sel-lbl > .dt-sel-icon {
   width: 100%;
 }
 
-.dt-fpop-cnt.dt-zero {
+.dt-fpop-body > tr > .dt-fpop-txt.dt-empty,
+.dt-fpop-body > tr > .dt-fpop-cnt.dt-empty {
   color: #bbbbbb;
 }
 
-.dt-fpop-txt.dt-zero {
-  color: #bbbbbb;
-}
-
-.dt-fpop-txt:not(.dt-zero) {
+.dt-fpop-txt {
   cursor: pointer;
 }
 
-.dt-fpop-txt:not(.dt-zero):hover {
+.dt-fpop-txt:hover {
   background-color: #fff3d3;
 }
 
-.dt-fpop-txt:not(.dt-zero):active {
+.dt-fpop-txt:active {
   background-color: #ffe49a;
 }
 
