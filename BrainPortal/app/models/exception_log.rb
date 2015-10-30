@@ -62,10 +62,13 @@ class ExceptionLog < ActiveRecord::Base
     e
   end
 
-  after_find :replace_attributes_too_big
-  attr_accessor :truncated_attributes
+  # This next section is handling the case where reports (trace dumps etc)
+  # are too long, so they are truncated explicitely.
 
-  def replace_attributes_too_big
+  after_find    :replace_attributes_too_big
+  attr_accessor :truncated_attributes #:nodoc:
+
+  def replace_attributes_too_big #:nodoc:
     raw = {}
     self.class.serialized_attributes.keys.each do |att|
       att = att.to_sym

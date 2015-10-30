@@ -24,10 +24,12 @@ class SubpathFormatValidator < ActiveModel::EachValidator #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  def validate_each(object, attribute, value)
+  def validate_each(object, attribute, value) #:nodoc:
     # FIXME currenly, hidden files and directories are not supported
     unless value.blank? || value =~ /^(?:[^.\/][^\/]*\/?)+$/
       object.errors[attribute] << (options[:message] || "contains invalid characters")
     end
   end
+
 end
+

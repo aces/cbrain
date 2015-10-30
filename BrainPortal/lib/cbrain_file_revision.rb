@@ -194,13 +194,13 @@ class CbrainFileRevision
     @_git_available == :yes
   end
 
+  # If the current app was deployed using GIT, returns the current GIT branch name.
   def self.git_branch_name
     return "" unless git_available?
     IO.popen("git rev-parse --abbrev-ref HEAD") do |fh|
       fh.gets.strip
     end
   end
-
 
   def self.for_relpath(relpath, mode = :auto) #:nodoc:
     cbrain_root = Pathname.new(Rails.root).parent

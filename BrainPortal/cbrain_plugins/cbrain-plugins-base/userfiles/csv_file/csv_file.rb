@@ -27,7 +27,7 @@ class CSVFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  has_viewer :name => 'CSV Viewer', :partial  => :csv_file, :if  => :is_viewable
+  has_viewer :name => 'CSV Viewer', :partial  => :csv_file, :if => :is_viewable?
 
   def self.pretty_type #:nodoc:
     "CSV File"
@@ -37,10 +37,10 @@ class CSVFile < TextFile
     /\.csv$/i
   end
 
-  def is_viewable #:nodoc
-    return false unless is_locally_synced?
+  def is_viewable? #:nodoc:
     return false unless self.size.presence
-    return false unless self.size < 200_000
+    return false unless self.size < 200_000  # smaller than the limit in TextFile
+    return false unless is_locally_synced?
     true
   end
 
