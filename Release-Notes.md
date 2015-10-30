@@ -1,5 +1,10 @@
 ## CBRAIN Release Notes
 
+#### Version 4.2.1 Released 2015-10-30
+
+Hot bug fixes in the previous release, related to bad files on
+the Bourreau Rails app side.
+
 #### Version 4.2.0 Released 2015-10-30
 
 Bug fixes and enhancements.
