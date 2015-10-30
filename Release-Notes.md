@@ -1,5 +1,13 @@
 ## CBRAIN Release Notes
 
+#### Version 4.2.0 Released 2015-10-30
+
+Bug fixes and enhancements.
+
+- Scope system refactored completely
+- 'Boutique' system integration
+- Docker support for ClusterTasks.
+
 #### Version 4.1.0 Released 2015-08-13
 
 Several bug fixes, enhancements, and new features. The layouts of
