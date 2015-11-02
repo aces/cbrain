@@ -94,7 +94,7 @@ class UserfilesController < ApplicationController
     if @scope.custom[:tree_sort]
       # Sort using just IDs and parent IDs then paginate, giving the final
       # userfiles list in tuple (see +tree_sort_by_pairs+) form.
-      tuples = tree_sort_by_pairs(@view_scope.raw_rows([:id, :parent_id]))
+      tuples = tree_sort_by_pairs(@view_scope.raw_rows(["userfiles.id", "userfiles.parent_id"]))
       tuples = @scope.pagination.apply(tuples)
 
       # Keep just ID and depth/level; there is no need for the parent ID,
