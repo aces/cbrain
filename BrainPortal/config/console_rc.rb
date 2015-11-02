@@ -91,24 +91,25 @@ Usage: bb_bash(bourreau_list = <online bourreaux>) { |b| "bash_command" }
   return false if bourreau_list.blank?
 
   # Prevents AR logging while we work here
-  no_log()
+  no_log do
 
-  # Run command on each
-  bourreau_list.each do |b|
-    puts "================ #{b.name} ================"
-    comm = yield(b)
-    if ! comm.is_a?(String)
-      puts "Block returned no string: #{comm.inspect}"
-    else
-      if b.proxied_host.present?
-        comm = "ssh #{b.proxied_host.bash_escape} #{comm.bash_escape}"
+    # Run command on each
+    bourreau_list.each do |b|
+      puts "================ #{b.name} ================"
+      comm = yield(b)
+      if ! comm.is_a?(String)
+        puts "Block returned no string: #{comm.inspect}"
+      else
+        if b.proxied_host.present?
+          comm = "ssh #{b.proxied_host.bash_escape} #{comm.bash_escape}"
+        end
+        b.ssh_master.remote_shell_command_reader(comm)
       end
-      b.ssh_master.remote_shell_command_reader(comm)
     end
+    return true
+
   end
-  return true
-ensure
-  do_log()
+
 end
 
 
@@ -138,9 +139,8 @@ or the keyword "cycle" which means "workoff stop start workon".
   bourreau_list = resolve_bourreaux(bb)
   return false if bourreau_list.blank?
 
-  # Prevents AR logging while we work here
-  no_log()
-  bourreau_list = resolve_bourreaux(bb)
+  # Disable all logging; undone in ensure block a tend of method (uglee)
+  no_log
 
   # Figure out what to do
   started = {}
@@ -200,7 +200,7 @@ or the keyword "cycle" which means "workoff stop start workon".
   puts ""
   true
 ensure
-  do_log()
+  do_log
 end
 
 # Show bourreau worker processes on given bourreau(x).
@@ -214,28 +214,41 @@ def ps_bb(*arg)
 end
 
 # Disable AR logging (actually, just sets logging level to ERROR)
-def no_log
-  ActiveRecord::Base.logger.level   = Logger::ERROR rescue true
-  ActiveResource::Base.logger.level = Logger::ERROR rescue true
+def no_log(&block)
+  set_log_level(Logger::ERROR,&block) rescue nil
 end
 
 # Enable AR logging
-def do_log
-  ActiveRecord::Base.logger.level   = Logger::DEBUG
-  ActiveResource::Base.logger.level = Logger::DEBUG
+def do_log(&block)
+  set_log_level(Logger::DEBUG,&block) rescue nil
+end
+
+def set_log_level(level) #:nodoc:
+  l1 = ActiveRecord::Base.logger.level   rescue nil
+  l2 = ActiveResource::Base.logger.level rescue nil
+  ActiveRecord::Base.logger.level   = level rescue true
+  ActiveResource::Base.logger.level = level rescue true
+  if block_given?
+    begin
+      return yield
+    ensure
+      ActiveRecord::Base.logger.level   = l1 if l1
+      ActiveResource::Base.logger.level = l2 if l2
+    end
+  end
 end
 
 # Utility method used by bb_bash() etc
 def resolve_bourreaux(bb)
   bb = bb[0] if bb.size == 1 && bb[0].is_a?(Array)
-  bb = Bourreau.find_all_by_online(true) if bb.blank?
+  bb = no_log { Bourreau.find_all_by_online(true) } if bb.blank?
   bourreau_list = bb.map do |b|
     if b.is_a?(String)
-      Bourreau.find_by_name(b)
+      no_log { Bourreau.find_by_name(b) }
     elsif (b.is_a?(Fixnum) || b.to_s =~ /^\d+$/)
-      Bourreau.find_by_id(b)
+      no_log { Bourreau.find_by_id(b) }
     elsif b.is_a?(Regexp)
-      Bourreau.all.detect { |x| x.name =~ b }
+      no_log { Bourreau.all.detect { |x| x.name =~ b } }
     else
       b
     end
@@ -273,7 +286,7 @@ end
 #   cu 'name'
 #   cu id
 #   cu /regex/
-def self.cu(user=:show)
+def cu(user=:show)
   return $_current_user if user == :show
   if user.nil? || user.is_a?(User)
     $_current_user = user
@@ -295,7 +308,7 @@ end
 #   cp 'name'
 #   cp id
 #   cp /regex/
-def self.cp(group='show me')
+def cp(group='show me')
   return $_current_project if group == 'show me'
   if group.nil? || group.is_a?(Group)
     $_current_project = group
@@ -314,8 +327,64 @@ end
 cu User.admin
 cp nil
 
+# Friendly Fast Finder
+# Search for anything by ID or name.
+# Sets variables in the console with the objects found:
+#
+#   @ff # array of Userfile objects
+#   @tt # array of CbrainTask objects
+#   @uu # array of User objects
+#   @gg # array of Group objects
+#   @rr # array of RemoteResource objects
+#   @dd # array of DataProvider objects
+#   @ss # array of Site objects
+#   @oo # array of Tool objects
+#   @cc # array of ToolConfig objects
+#
+# At the same time, if any of these arrays contain any entries
+# a similar variable with a single letter name (e.g. @u, @t, @g etc) will
+# be set to the first entry of the array.
+#
+# A special subject of @rr containing only objects of subclass Bourreau will
+# be in @bb (with the similar @b also set).
+def fff(token)
 
+  results=no_log { ModelsReport.search_for_token(token,cu) }
+  @ff = results[:files  ]; @f = @ff[0]
+  @tt = results[:tasks  ]; @t = @tt[0]
+  @uu = results[:users  ]; @u = @uu[0]
+  @gg = results[:groups ]; @g = @gg[0]
+  @rr = results[:rrs    ]; @r = @rr[0]
+  @dd = results[:dps    ]; @d = @dd[0]
+  @ss = results[:sites  ]; @s = @ss[0]
+  @oo = results[:tools  ]; @o = @oo[0]
+  @cc = results[:tcs    ]; @c = @cc[0]
+  @bb = @rr.select { |r| r.is_a?(Bourreau) }; @b = @bb[0]
 
+  report = lambda do |name,letter|  # ("User", 'u') will look into @uu and @u
+    list = eval "@#{letter}#{letter}" # look up @uu or @ff etc
+    next if list.size == 0
+    if (list.size == 1)
+      printf "%15s : @#{letter} = %s\n",name,list[0].inspect[0..60]
+    else
+      printf "%15s : @#{letter}#{letter} contains %d results\n",
+        ApplicationController.helpers.pluralize("2",name).sub(/^[\s\d]+/,""), # ugleeee
+        list.size
+    end
+  end
+
+  report.("File",           'f')
+  report.("Task",           't')
+  report.("User",           'u')
+  report.("Group",          'g')
+  report.("DataProvider",   'd')
+  report.("RemoteResource", 'r')
+  report.("Site",           's')
+  report.("Tool",           'o')
+  report.("ToolConfig",     'c')
+  report.("Bourreau",       'b')
+
+end
 #####################################################
 # Preload single table inheritance models
 #####################################################
@@ -347,6 +416,7 @@ rescue => error
 ensure
   do_log()
 end
+
 
 
 
