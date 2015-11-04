@@ -76,6 +76,12 @@ end
 # The bash command must be a string returned by the block
 # The list of bourreau can be provided as ids, as names,
 # or as bourreau objects themselves.
+#
+# Example:
+#
+#   bb_bash(23, /super/) { |b| "echo On #{b.name} hostname is `hostname`" }
+#
+# will run the bash command on Bourreaux #23 and the ones with names matching /super/.
 def bb_bash(*bb)
 
   if ! block_given?
@@ -96,14 +102,15 @@ Usage: bb_bash(bourreau_list = <online bourreaux>) { |b| "bash_command" }
     # Run command on each
     bourreau_list.each do |b|
       puts "================ #{b.name} ================"
-      comm = yield(b)
+      comm = yield(b) # the bash command to run on the remote host
       if ! comm.is_a?(String)
         puts "Block returned no string: #{comm.inspect}"
-      else
-        if b.proxied_host.present?
+      else # ok send command to remote host
+        if b.proxied_host.present? # another level of remote host... ?
+          # ... then we prefix the remote command with another ssh call.
           comm = "ssh #{b.proxied_host.bash_escape} #{comm.bash_escape}"
         end
-        b.ssh_master.remote_shell_command_reader(comm)
+        b.ssh_master.remote_shell_command_reader(comm) # run it
       end
     end
     return true
