@@ -551,11 +551,11 @@ class RemoteResource < ActiveRecord::Base
       :rails_time_zone    => time_zone_name,
 
       # Svn info
-      :revision           => @git_tag,                  # 'live' value
-      :lc_author          => @git_author,               # at process start
-      :lc_rev             => @git_commit,               # at process start
-      :lc_date            => @git_date,                 # at process start
-      :starttime_revision => $CBRAIN_StartTime_Revision # at process start
+      :revision           => @git_tag,                          # 'live' value
+      :lc_author          => @git_author,                       # at process start
+      :lc_rev             => @git_commit,                       # at process start
+      :lc_date            => @git_date,                         # at process start
+      :starttime_revision => CBRAIN::CBRAIN_StartTime_Revision  # at process start
 
     )
 
@@ -571,7 +571,7 @@ class RemoteResource < ActiveRecord::Base
     info                    = RemoteResourceInfo.new
     info.id                 = rr.id
     info.name               = rr.name
-    info.starttime_revision = $CBRAIN_StartTime_Revision
+    info.starttime_revision = CBRAIN::CBRAIN_StartTime_Revision
     info.uptime             = Time.now.localtime - CBRAIN::Startup_LocalTime
     info
   end

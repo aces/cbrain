@@ -18,19 +18,19 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
 <% title "Project Info" %>
 
-<% if @group.is_a?(WorkGroup) %> 
+<% if @group.is_a?(WorkGroup) %>
   <div class="menu_bar">
     <% unless @group.creator_id == current_user.id %>
       <%= link_to 'Unregister', {:action => :unregister, :id => @group.id}, :class => "button", :method  => :post %>
     <% end %>
     <% if @group.can_be_edited_by?(current_user) %>
-    
+
         <%= link_to 'Switch', {:action => :switch, :id => @group.id}, :class => "button", :method  => :post %>
         <% if current_user.has_role?(:normal_user) && @group.can_be_edited_by?(current_user) && current_user.visible_users.present? %>
           <%= overlay_ajax_link "Invite Other Users", new_invitation_path(group_id: @group.id), class: "button" %>
@@ -44,7 +44,7 @@
 
 <%= error_messages_for @group, :header_message => "Project could not be updated." %>
 
-<div class="display_inline_block" style="min-width: 50%"> 
+<div class="display_inline_block" style="min-width: 50%">
 
   <%= show_table(@group, :edit_condition => @group.can_be_edited_by?(current_user)) do |t| %>
 
@@ -55,23 +55,23 @@
     <% t.cell("Creator") { @group.creator.try(:login)} %>
 
     <% t.edit_cell(:site_id, :content => link_to_site_if_accessible(@group.site), :disabled => !current_user.has_role?(:admin_user)) do %>
-      <%= select_tag "group[site_id]", options_for_select(Site.all.map{ |s| [s.name, s.id]}, :selected => @group.site_id), :include_blank => true %>
+	  <%= site_select "group[site_id]", @group.site_id, :prompt => "(Select a site)" %>
     <% end %>
 
     <% t.cell("Type") { @group.pretty_category_name(current_user) } %>
-    
+
     <% t.edit_cell(:description, :content =>  overlay_description(@group.description)) do %>
         <%= text_area_tag "group[description]", @group.description, :rows => 4, :cols => 40 %><br>
         <div class="field_explanation">The first line should be a short summary, and the rest are for details.</div><br>
     <% end %>
-    
+
     <% if current_user.has_role?(:admin_user) && @group.is_a?(WorkGroup) %>
       <% t.edit_cell("Invisible", :content => check_box_tag(nil ,nil, @group.invisible?, :disabled => true)) do %>
         <%= hidden_field_tag "group[invisible]", "0" %>
         <%= check_box_tag("group[invisible]", "1", @group.invisible?) %>
       <% end %>
     <% end %>
-    
+
     <% t.empty_cell %>
 
   <% end %>
@@ -91,7 +91,7 @@
 
   <% end %>
 
-  <% 
+  <%
     group_members  = @group.users
     open_invites   = Invitation.where(sender_id: current_user.id, group_id: @group.id, active: true)
   %>
@@ -112,12 +112,12 @@
         <div class="generalbox" style="width: 100%">
           <%= render :partial => 'users_form' %><br>
           <%= hidden_field_tag :update_users, true %>
-        </div> 
+        </div>
       <% end %>
     <% end %>
     <% if open_invites.present? %>
       <% default_text = array_to_table(open_invites.map(&:user).sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| u.login } %>
-    
+
       <% t.edit_cell(:invites, :show_width => 2,
                                :header  => 'Pending Invitations',
                                :content => default_text) do %>

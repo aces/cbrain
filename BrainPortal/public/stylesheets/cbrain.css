@@ -905,7 +905,7 @@ pre {
 /* % ######################################################### */
 
 .account {
-  background: #0471B4;
+  background: #0471B4;  /* can be overridden in .account_git_branch_NNNN later in this file */
   color: #fff;
   height:1.8em;
   font-size: 0.9em;
@@ -933,6 +933,27 @@ pre {
   margin-right: 0.6em;
   color: #83b4d1;
   font-weight: bold;
+}
+
+/* ============================================================================== */
+/* Special coloring of the account section's background, based on GIT branch name */
+/* These should all be named .account_git_branch_NNNN where NNNN is a branch name */
+/* ============================================================================== */
+
+.account_git_branch_dev { /* used by devlopment team, obviously */
+  background: #AA04B4;
+}
+
+.account_git_branch_master {
+  background: #0471B4; /* same as in .account */
+}
+
+.account_git_branch_service {
+  background: #0471B4; /* same as in .account */
+}
+
+.account_git_branch_unknown {  /* when not deployed using GIT */
+  background: #0471B4; /* same as in .account */
 }
 
 
@@ -2358,5 +2379,20 @@ img {
   width: 100%;
   resize: both;
 }
+
+/* % ######################################################### */
+/* % Jquery Confirmation UI styling */
+/* % ######################################################### */
+
+.cbrain-dialog-confirm {
+	background-color: pink !important;
+	font-weight: bold !important;
+	border: 3px solid red !important;
+}
+
+.no-close .ui-dialog-titlebar-close {
+  display: none;
+}
+
 
 

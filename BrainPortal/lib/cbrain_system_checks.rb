@@ -288,14 +288,10 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
 
   def self.a080_ensure_set_starttime_revision
-
-    # Global for the whole Rails process
-    $CBRAIN_StartTime_Revision = RemoteResource.current_resource.info.revision
-
     #-----------------------------------------------------------------------------
-    puts "C> Current application tag or revision: #{$CBRAIN_StartTime_Revision}"
+    puts  "C> Current application tag or revision: #{CBRAIN::CBRAIN_StartTime_Revision}"
+    puts  "C> Current Git branch: #{CBRAIN::CBRAIN_Git_Branch.presence || "unknown"}"
     #-----------------------------------------------------------------------------
-
   end
 
   private

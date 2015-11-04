@@ -21,8 +21,8 @@
 #
 
 # Needed to load files on the bourreau through the symbolic link
-# named "core_extensions".
-Dir.glob(Pathname.new(__FILE__).parent + "core_extensions" + '*.rb') do |extfile|
+# named "added_core_extensions".
+Dir.glob(Pathname.new(__FILE__).parent + "added_core_extensions" + '*.rb') do |extfile|
   require extfile
 end
 

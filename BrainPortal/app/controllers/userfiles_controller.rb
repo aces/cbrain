@@ -96,7 +96,7 @@ class UserfilesController < ApplicationController
     elsif @scope.custom[:tree_sort]
       # Sort using just IDs and parent IDs then paginate, giving the final
       # userfiles list in tuple (see +tree_sort_by_pairs+) form.
-      tuples = tree_sort_by_pairs(@view_scope.raw_rows([:id, :parent_id]))
+      tuples = tree_sort_by_pairs(@view_scope.raw_rows(['userfiles.id', 'userfiles.parent_id']))
       tuples = @scope.pagination.apply(tuples) unless api_request
 
       # Keep just ID and depth/level; there is no need for the parent ID,
@@ -222,7 +222,7 @@ class UserfilesController < ApplicationController
     viewer_name           = params[:viewer]
     viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
 
-    # Try to find out viewer aming those registered in the classes
+    # Try to find out viewer among those registered in the classes
     @viewer      = viewer_userfile_class.find_viewer(viewer_name)
     @viewer    ||= (viewer_name.camelcase.constantize rescue nil).try(:find_viewer, viewer_name) rescue nil
 
@@ -237,7 +237,9 @@ class UserfilesController < ApplicationController
     end
 
     # Ok, some viewers are invalid for some specific userfiles, so reject it if it's the case.
-    @viewer      = nil if @viewer && ! @viewer.valid_for?(@userfile)
+    if (params[:content_viewer] != 'off')
+      @viewer      = nil if @viewer && ! @viewer.valid_for?(@userfile)
+    end
 
     begin
       if @viewer
@@ -651,7 +653,12 @@ class UserfilesController < ApplicationController
     failed_list   = {}
     CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending update to files") do
       access_requested = commit_name == :update_tags ? :read : :write
-      filelist         = Userfile.find_all_accessible_by_user(current_user, :access_requested => access_requested ).where(:id => file_ids).all
+      # if the current user is admin or site manager they're allowed to update attributes of any file even if they're not the owner. Otherwise, the current user must be the owner to modify the attributes.
+      if current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)
+        filelist       = Userfile.find_all_accessible_by_user(current_user, :access_requested => access_requested ).where(:id => file_ids).all
+      else
+        filelist       = Userfile.find_all_accessible_by_user(current_user, :access_requested => access_requested ).where(:id => file_ids, :user_id => current_user.id).all
+      end
       failure_ids      = file_ids - filelist.map {|u| u.id.to_s }
       failed_files     = Userfile.where(:id => failure_ids).select([:id, :name, :type]).all
       failed_list["you don't have write access"] = failed_files if failed_files.present?

@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -31,7 +31,7 @@
   <% end %>
 
   <%= link_to 'Report Maker', report_path, :class => "button" %>
-  
+
   <% if delete_permission?(@user) %>
     <%= link_to 'Delete', user_path(@user), { :confirm => "Are you sure you want to delete '#{@user.name}' ?", :method => :delete, :class => "button" } %>
   <% end %>
@@ -47,7 +47,7 @@
     <% t.attribute_cell(:login) %>
 
     <%
-      t.edit_cell(:type, :content => @user.type.underscore.titleize, :disabled => !((current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)) && not_admin_user(@user))) do 
+      t.edit_cell(:type, :content => @user.type.underscore.titleize, :disabled => !((current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)) && not_admin_user(@user))) do
         select_tag "user[type]", options_for_select(roles_for_user(current_user), :selected => @user.type)
       end
     %>
@@ -56,7 +56,7 @@
 
     <%
       t.edit_cell(:site_id, :content => link_to_site_if_accessible(@user.site), :disabled => !current_user.has_role?(:admin_user)) do
-        select_tag "user[site_id]", options_for_select(Site.all.map{ |s| [s.name, s.id]}, :selected => @user.site_id), :include_blank => true
+		  site_select "user[site_id]", @user.site_id, :prompt => "(Select a site)"
       end
     %>
 
@@ -94,7 +94,7 @@
         select_tag "user[time_zone]", time_zone_options_for_select(@user.time_zone, /canada/i), :include_blank => true
       end
     %>
-    
+
     <% t.edit_cell(:password, :content => "********") do %>
       <%= link_to "Change Password", change_password_user_path(@user) %>
     <% end %>
@@ -158,7 +158,7 @@
      <table class="resource_list">
         <tr>
           <th colspan="3">
-            Projects 
+            Projects
             <% if current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user) %>
               <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span" do %>
                 <%= form_for @user, :as => :user, :url => { :action => "update" } do |f| -%>
@@ -192,7 +192,7 @@
     <P>
 
   <% end %>
-  
+
   <P>
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
 </div>
