@@ -1403,6 +1403,37 @@ pre {
 }
 
 
+/* % ######################################################### */
+/* % Persistent Selection Bar */
+/* % ######################################################### */
+
+.persistent-selection > .psel-icon {
+  display: inline-block;
+  vertical-align: middle;
+  visibility: hidden;
+  background-image: url(../images/ui-black-icons.png);
+}
+
+.psel-count {
+  color: #05a3d6;
+  font-size: 1.2em;
+  font-family: monospace;
+  vertical-align: middle;
+}
+
+.psel-count.psel-zero {
+  color: #719ba9;
+}
+
+.psel-count.psel-refresh {
+  color: #00d9a2;
+}
+
+.psel-all, .psel-clear {
+  color: blue;
+  cursor: pointer;
+}
+
 
 /* % ######################################################### */
 /* % Pagination Bar */
