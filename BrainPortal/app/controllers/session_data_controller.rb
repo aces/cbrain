@@ -43,12 +43,9 @@ class SessionDataController < ApplicationController
 
   # POST /session_data
   def update #:nodoc:
-    mode    = request.query_parameters[:mode].to_sym rescue :replace
-    changes = request.request_parameters.reject do |k,v|
-      CbrainSession.internal_keys.include?(k)
-    end
+    mode = request.query_parameters[:mode].to_sym rescue :replace
+    current_session.apply_changes([request.request_parameters, mode])
 
-    current_session.update(changes, mode)
     show
 
   rescue => ex
