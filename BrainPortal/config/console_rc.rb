@@ -104,14 +104,15 @@ Usage: bb_bash(bourreau_list = <online bourreaux>) { |b| "bash_command" }
       puts "================ #{b.name} ================"
       comm = yield(b) # the bash command to run on the remote host
       if ! comm.is_a?(String)
-        puts "Block returned no string: #{comm.inspect}"
-      else # ok send command to remote host
-        if b.proxied_host.present? # another level of remote host... ?
-          # ... then we prefix the remote command with another ssh call.
-          comm = "ssh #{b.proxied_host.bash_escape} #{comm.bash_escape}"
-        end
-        b.ssh_master.remote_shell_command_reader(comm) # run it
+        puts "Block didn't return a string to use as command. Got: #{comm.inspect}"
+        next
       end
+      # ok send command to remote host
+      if b.proxied_host.present? # another level of remote host... ?
+        # ... then we prefix the remote command with another ssh call.
+        comm = "ssh #{b.proxied_host.bash_escape} #{comm.bash_escape}"
+      end
+      b.ssh_master.remote_shell_command_reader(comm) # run it
     end
     return true
 

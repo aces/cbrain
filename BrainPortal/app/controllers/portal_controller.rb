@@ -52,7 +52,7 @@ class PortalController < ApplicationController
       @active_users.unshift(current_user) unless @active_users.include?(current_user)
       if request.post?
         CbrainSession.clean_sessions
-        CbrainSession.purge_sessions(params[:session_clear].to_i.seconds.ago) unless
+        CbrainSession.purge_sessions(since: params[:session_clear].to_i.seconds.ago) unless
           params[:session_clear].blank?
 
         if params[:lock_portal] == "lock"

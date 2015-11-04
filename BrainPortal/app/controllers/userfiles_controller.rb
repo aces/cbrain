@@ -218,7 +218,7 @@ class UserfilesController < ApplicationController
     viewer_name           = params[:viewer]
     viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
 
-    # Try to find out viewer aming those registered in the classes
+    # Try to find out viewer among those registered in the classes
     @viewer      = viewer_userfile_class.find_viewer(viewer_name)
     @viewer    ||= (viewer_name.camelcase.constantize rescue nil).try(:find_viewer, viewer_name) rescue nil
 
@@ -233,7 +233,9 @@ class UserfilesController < ApplicationController
     end
 
     # Ok, some viewers are invalid for some specific userfiles, so reject it if it's the case.
-    @viewer      = nil if @viewer && ! @viewer.valid_for?(@userfile)
+    if (params[:content_viewer] != 'off')
+      @viewer      = nil if @viewer && ! @viewer.valid_for?(@userfile)
+    end
 
     begin
       if @viewer
