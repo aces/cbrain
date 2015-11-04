@@ -129,17 +129,17 @@ class CbrainSession
   #
   # - Hashes in +hash+ and session attributes are recursively merged:
   #     @session # { :a => { :b => 1 } }
-  #     update({ :a => { :c => 1 } })
+  #     apply_changes({ :a => { :c => 1 } })
   #     @session # { :a => { :b => 1, :c => 1 } }
   #
   # - nil values are automatically removed from hashes to avoid clutter. This
   #   cleanly allows removing keys from hashes:
   #     @session # { :a => { :b => 1 } }
-  #     update({ :a => { :b => nil } })
+  #     apply_changes({ :a => { :b => nil } })
   #     @session # { :a => {} }
   #
-  # - update does not accept a block; session attributes are always overwritten
-  #   by their new value in +hash+, if present.
+  # - apply_changes does not accept a block; session attributes are always
+  #   overwritten by their new value in +hash+, if present.
   #
   # +mode+ determines what kind of update should be performed. The possible
   # +mode+s are:

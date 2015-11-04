@@ -23,7 +23,7 @@
 # Helpers to apply user-specified scopes on CBRAIN's models or collections for
 # viewing purposes. Scopes are a flexible and safe way to define which filtering
 # and sorting rules to apply on a given collection before display and keep 
-# track of item selection and pagination information.
+# track of custom view options and pagination information.
 #
 # Scopes currently in use are usually stored in Rails' session, and can easily
 # be converted to and from hashes. For example, a scope to filter by an
@@ -64,9 +64,9 @@
 # see +Scope+'s +compact_hash+ method for more information.
 #
 # NOTE: While similar to ActiveRecord's scoping mechanism, the scopes defined in
-# this module mainly target views, by taking concerns such as selection and
-# pagination, and are expected to be 'closer' to the user than ActiveRecord's
-# scopes (which would pose a security risk if they could be directly accessed).
+# this module mainly target views and are expected to be 'closer' to the user
+# than ActiveRecord's scopes (which would pose a security risk if they could be
+# directly accessed).
 module ViewScopes
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -85,10 +85,9 @@ module ViewScopes
     end
   end
 
-  # Represents a scope to filter and sort a given model or collection
-  # (via +apply+) and hold selection and pagination information. This object is
-  # typically created from an hash representation (see +from_hash+ and
-  # +scope_from_session+).
+  # Represents a scope filtering/sorting/paginating a given model or collection
+  # (via +apply+). This object is typically created from an hash representation
+  # (see +from_hash+ and +scope_from_session+).
   class Scope
 
     # Name of this scope in Rails' session. This attribute is transient, not
@@ -138,14 +137,6 @@ module ViewScopes
     # collection or model before it can be displayed (and thus belongs in Scope)
     attr_accessor :pagination
 
-    # List of record IDs (models) and collection keys (or indices, if there is
-    # no such thing) selected by the user in the model or collection.
-    #
-    # While a UI concern, keeping selection in scopes allows any component of
-    # the application to access and alter user selection and allows persisting
-    # selection information with scopes in the session or DB.
-    attr_accessor :selection
-
     # An indifferent hash of extra scoping/filtering/sorting parameters specific
     # to the Scope instance. These extra parameters can be used to store extra
     # view-specific options that would otherwise have to be persisted and set
@@ -161,7 +152,6 @@ module ViewScopes
     def initialize
       @filters   = []
       @order     = []
-      @selection = []
       @custom    = HashWithIndifferentAccess.new
     end
 
@@ -176,7 +166,6 @@ module ViewScopes
       @filters    = other.filters.map(&hash_dup)
       @order      = other.order.map(&hash_dup)
       @pagination = hash_dup.(other.pagination) if other.pagination
-      @selection  = other.selection.dup
       @custom     = other.custom.dup
     end
 
@@ -270,10 +259,6 @@ module ViewScopes
     # [+pagination+ or +p+]
     #  *pagination* attribute: a Scope::Pagination instance.
     #
-    # [+selection+ or +s+]
-    #  *selection* attribute: an array of selected IDs or keys inside the
-    #  collection.
-    #
     # [+custom+ or +c+]
     #  *custom* attribute: an arbitrary Ruby hash of custom view options.
     #
@@ -303,9 +288,8 @@ module ViewScopes
         .map { |order| Order.from_hash(order) }
         .compact
 
-      # Pagination, selection and other properties
+      # Pagination, custom options and other properties
       scope.pagination = Pagination.from_hash(hash['pagination'] || hash['p'])
-      scope.selection  =  hash['selection'] || hash['s'] || []
       scope.custom     = (hash['custom']    || hash['c'] || {}).with_indifferent_access
       scope.filter_combination = (hash['filter_combination'] || hash['fc'] || 'and').to_s
 
@@ -323,7 +307,6 @@ module ViewScopes
         'filters'    => @filters.map(&:to_hash),
         'order'      => @order.map(&:to_hash),
         'pagination' => @pagination.try(:to_hash),
-        'selection'  => @selection,
         'custom'     => @custom.stringify_keys.to_h,
         'filter_combination' => @filter_combination.to_s,
       }
@@ -357,7 +340,6 @@ module ViewScopes
         'p' => Pagination.compact_hash(hash['pagination'] || hash['p']),
 
         # Include other attributes
-        's'  =>  hash['s']  || hash['selection'],
         'c'  => (hash['c']  || hash['custom'] || {}).stringify_keys.to_h,
         'fc' => (hash['fc'] || hash['filter_combination']).to_s,
       }

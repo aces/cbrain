@@ -44,7 +44,7 @@
     :order_map  => {
       :owner        => { :a => 'users.login',           :j => User     },
       :project      => { :a => 'groups.name',           :j => Group    },
-      :server       => { :a => 'remote_resources.name', :j => Bourreau },
+      :server       => { :a => 'remote_resources.name', :j => [Bourreau, 'id', 'bourreau_id'] },
       :workdir_size => { :a => 'cluster_workdir_size' }
     },
     :filter_map => {
