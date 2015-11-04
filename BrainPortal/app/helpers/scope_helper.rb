@@ -771,6 +771,7 @@ module ScopeHelper
     scope_filter_link(count,
       (options[:scope_name] || controller),
       :replace, filters.map do |attr, value|
+        value = value.to_s if value.is_a?(Symbol)
         { :a => attr, :v => value }
       end,
       url: { :controller => controller }
