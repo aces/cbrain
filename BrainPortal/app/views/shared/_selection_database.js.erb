@@ -237,9 +237,12 @@
 
         if (!store) return;
 
+        psel.trigger('status.psel', ['clear']);
+
         var request = store.clear();
         request.onsuccess = function () {
           psel.trigger('refresh.psel');
+          psel.trigger('status.psel', [null]);
           psel.find('.psel-in').val('[]');
 
           $(bind_selector).prop('checked', false);
@@ -306,7 +309,8 @@
     var icons = {
       generate: 'ui-icon-refresh',
       fetch:    'ui-icon-arrowstop-1-s',
-      bound:    'ui-icon-arrowstop-1-e'
+      bound:    'ui-icon-arrowstop-1-e',
+      clear:    'ui-icon-trash'
     };
 
     icons.all = Object.keys(icons)

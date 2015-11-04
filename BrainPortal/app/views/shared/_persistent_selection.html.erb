@@ -90,6 +90,7 @@
    URL to perform a POST request on in order to view only selected elements.
    Specifying this option with make the current selection counter in the UI
    an action link to view to perform the request (and view the elements).
+   TODO: not fully implemented yet.
 
   [item_name]
    Item name (string) for selected items in the component's textual UI content:
@@ -163,7 +164,8 @@
   clear_tooltip = "psel-clear-tp-#{rand(10000)}"
 
   html ||= {}
-  (html[:class] ||= []) << 'persistent-selection'
+  html[:class]  = Array(html[:class])
+  html[:class] << 'persistent-selection'
   html['data-store-name']     = name
   html['data-bind-selector']  = bind  if bind
   html['data-watch-selector'] = watch if watch
