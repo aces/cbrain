@@ -739,7 +739,7 @@ class TasksController < ApplicationController
     batch_ids  = params[:batch_ids] || []
     batch_ids  = [ batch_ids ] unless batch_ids.is_a?(Array)
     batch_ids << nil if batch_ids.delete('nil')
-    tasklist  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).select(:id).raw_first_column
+    tasklist  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).raw_first_column("cbrain_tasks.id")
     tasklist   = tasklist.map(&:to_i).uniq
 
     flash[:error]  ||= ""
