@@ -135,37 +135,6 @@
         <%= hijacker_submit_button("Mark Content As Newer", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple', :operation => 'all_newer'), :ajax_submit  => false, :method  => :post, :class => "button") %>
     <% end %>
 
-    <%
-      select_label  = "Selected Files"
-      select_label += " (now: #{current_session[:persistent_userfiles].size})" if
-        current_session[:persistent_userfiles].present?
-    %>
-    <%= button_with_dropdown_menu(select_label) do %>
-      <p class="left_align">
-      This panel manages your list of <em>persistently</em> selected files.
-      This list is maintained even when you switch from page to page.<br/>
-      These files plus those selected on the current page will all be used
-      for all operation buttons (move/copy, submit tasks, etc).
-      </p>
-      <p>
-      <% if current_session[:persistent_userfiles].blank? %>
-        Currently, no files are selected persistently.
-      <% else %>
-        <%= html_colorize("#{pluralize(current_session[:persistent_userfiles].size,"file")} currently selected persistently.") %>
-      <% end %>
-      </p>
-      <p>
-      <% [ 'Select all files on all pages', 'Add To List', 'Remove From List', 'Clear The List'].each do |label| %>
-        <%= hijacker_submit_button(label,
-              :url => url_for(:action  => :manage_persistent, :operation => label),
-              :method => :post,
-              :class => "button",
-              :ajax_submit => false
-            )
-        %>
-      <% end %>
-      </p>
-    <% end %>
     <%= button_with_dropdown_menu("Filters", :content_id => 'userfiles_filters') do %>
       <%= render :partial => 'userfiles/filters' %>
     <% end %>
