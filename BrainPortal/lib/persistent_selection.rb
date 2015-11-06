@@ -42,17 +42,17 @@ module PersistentSelection
   def merge_persistent_selection
     params.keys.each do |key|
       next unless key =~ /^_psel_/
-      params.delete(key)
 
-      value = params[key]
-      key   = key.sub(/^_psel_/, '')
+      value = params.delete(key)
       value = value.first if value.is_a?(Enumerable)
       next if value.blank?
 
+      key   = key.sub(/^_psel_/, '')
       value = JSON.parse(value)
       next unless value['bound'].is_a?(Array) && value['selection'].is_a?(Array)
 
-      params[key] = value['selection'].to_set
+      params[key] = value['selection']
+        .to_set
         .subtract(value['bound'])
         .merge(params[key] || [])
         .to_a
