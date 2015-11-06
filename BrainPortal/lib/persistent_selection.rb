@@ -47,10 +47,11 @@ module PersistentSelection
       value = value.first if value.is_a?(Enumerable)
       next if value.blank?
 
+      key   = key.sub(/^_psel_/, '')
       value = JSON.parse(value)
       next unless value['bound'].is_a?(Array) && value['selection'].is_a?(Array)
 
-      params[key.sub(/^_psel_/, '')] = value['selection']
+      params[key] = value['selection']
         .to_set
         .subtract(value['bound'])
         .merge(params[key] || [])
