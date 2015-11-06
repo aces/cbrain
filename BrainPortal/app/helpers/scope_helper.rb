@@ -255,6 +255,14 @@ module ScopeHelper
     values.map! { |value| value.constantize.pretty_type rescue value } if
       attribute == 'type'
 
+    # Special case for the messages table; a null (nil) sender means the
+    # message was sent by the system, and a filter for it should be displayed
+    # as such.
+    if attribute == 'sender'
+      values << nil if values.blank?
+      values.map! { |value| value.nil? ? 'System' : value }
+    end
+
     # Convert the values to a textual representation, depending on which
     # operator they will be used with; single values are as-is, but
     # sets are converted to 'A, B or C' and ranges to 'A and B'.
