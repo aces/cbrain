@@ -40,18 +40,18 @@ module PersistentSelection
   # selected values are expected to be unique, and that the selection elements
   # are expected to be directly in params (not nested under any other key).
   def merge_persistent_selection
-    params.each do |key, value|
+    params.keys.each do |key|
       next unless key =~ /^_psel_/
-      params.delete(key)
 
-      key   = key.sub(/^_psel_/, '')
+      value = params.delete(key)
       value = value.first if value.is_a?(Enumerable)
       next if value.blank?
 
       value = JSON.parse(value)
       next unless value['bound'].is_a?(Array) && value['selection'].is_a?(Array)
 
-      params[key] = value['selection'].to_set
+      params[key.sub(/^_psel_/, '')] = value['selection']
+        .to_set
         .subtract(value['bound'])
         .merge(params[key] || [])
         .to_a
