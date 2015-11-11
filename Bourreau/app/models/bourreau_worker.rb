@@ -276,6 +276,9 @@ class BourreauWorker < Worker
 
       worker_log.debug "Updated #{task.bname_tid} to state #{new_status}"
 
+      # Mechanism for tasks to submit other tasks.
+      handle_tasks_submitted_by(task) if new_status == 'On CPU'; # tasks that are on CPU may submit new tasks
+      
       return if initial_status == 'On CPU' && new_status == 'On CPU'; # nothing else to do
 
       # Record bourreau delay time for Queued -> On CPU
@@ -536,4 +539,84 @@ class BourreauWorker < Worker
     end
   end
 
+  # Handles new tasks submitted by "task". Tasks may submit new tasks
+  # of type CbrainTask::PSOMWorker. This mechanism could be
+  # generalized to submit other types of tasks but it has security
+  # implications.  To submit new tasks, a task must create a
+  # cbrain-psom-worker-*.submit CSV file at the root of its work
+  # directory.  A new CbrainTask::PSOMWorker task will be submitted
+  # for each line of this CSV file.  Each line of the CSV file defines
+  # the values of the parameter of the new task, namely:
+  #  # * the PSOM output directory (string)
+  # * the worker id (string)
+  # Once a CSV file has been handled, it is deleted.
+  #
+  # Example: a CSV file containing "/home/blah,123" will submit a
+  # PSOMWorker task with output_directory="/home/blah" and
+  # worker_id="123"
+  #
+  # Method parameter:
+  # * "task" is the submitter task. CSV files will be searched in the
+  # work dir of "task".  New tasks are submitted on the same Bourreau
+  # than "task".  New tasks belong to the same user than "task".
+  # 
+  def handle_tasks_submitted_by task
+    workdir = task.full_cluster_workdir
+    Dir.glob(File.join(workdir,"cbrain-psom-worker-*.submit")).each do |filename|
+      worker_log.info("Found cbrain-psom-worker file: #{filename}.")
+      file = File.open(filename, "r")
+      if(file.flock(File::LOCK_NB|File::LOCK_EX)) # here we ensure that only 1 worker can access the file at
+                                                  # the same time. Otherwise, the new task may be submitted
+                                                  # by each worker. See nice examples at:
+                                                  # http://www.codegnome.com/blog/2013/05/26/locking-files-with-ruby
+        while (line = file.gets)
+          continue if (line.blank? || line.strip.blank?)
+          submit_task_from_string(line.strip,task.user,task.bourreau_id)
+        end
+        file.close # this also releases the lock. 
+        File.delete(filename)
+      else
+       worker_log.info("Another worker is working on this file: ignoring it.")
+       file.close # in case the lock was not obtained, still close the file. 
+      end
+    end
+  end
+
+  # Creates a CbrainTask::PSOMWorker task and submits it.
+  # Parameters:
+  # * string: a string containing two values separated by a comma. These values
+  #           are the output_dir and worker_id parameters of the new task, respectively.
+  # * user: the user to which the new task belongs.
+  # * bourreau_id: id of the Bourreau where the new task will be submitted.
+  # 
+  def submit_task_from_string string,user,bourreau_id
+
+    # Checks string format
+    items = string.split(",")
+    raise "Malformed psom-worker-submit string: #{string}" if items.size != 2
+
+    # Gets parameters of PSOM worker task
+    output_dir = items[0].strip
+    worker_id = items[1].strip
+    worker_log.info("Submitting PSOMWorker task with output_dir=#{output_dir} and worker_id=#{worker_id}.")
+
+    # Creates task
+    task_class_name = "PSOMWorker"
+    task = CbrainTask.const_get(task_class_name).new
+
+    task.params = Hash.new
+    task.params[:output_dir] = output_dir
+    task.params[:worker_id] = worker_id
+    task.user = user
+    task.bourreau_id=bourreau_id
+
+    # Sets tool config as the first one we find for class CbrainTask::#{task_class_name}
+    tool = Tool.where(:cbrain_task_class => "CbrainTask::#{task_class_name}").first
+    tool_config = ToolConfig.where(:tool_id => tool.id).first
+    task.tool_config = tool_config
+
+    task.status = "New"
+    task.save!
+  end
+  
 end
