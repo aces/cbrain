@@ -600,23 +600,28 @@ class BourreauWorker < Worker
     worker_id = items[1].strip
     worker_log.info("Submitting PSOMWorker task with output_dir=#{output_dir} and worker_id=#{worker_id}.")
 
-    # Creates task
-    task_class_name = "PSOMWorker"
-    task = CbrainTask.const_get(task_class_name).new
-
-    task.params = Hash.new
-    task.params[:output_dir] = output_dir
-    task.params[:worker_id] = worker_id
-    task.user = user
-    task.bourreau_id=bourreau_id
-
-    # Sets tool config as the first one we find for class CbrainTask::#{task_class_name}
-    tool = Tool.where(:cbrain_task_class => "CbrainTask::#{task_class_name}").first
-    tool_config = ToolConfig.where(:tool_id => tool.id).first
-    task.tool_config = tool_config
-
-    task.status = "New"
-    task.save!
+    begin
+      # Creates task
+      task_class_name = "PSOMWorker"
+      task = CbrainTask.const_get(task_class_name).new
+      
+      task.params = Hash.new
+      task.params[:output_dir] = output_dir
+      task.params[:worker_id] = worker_id
+      task.user = user
+      task.bourreau_id=bourreau_id
+      
+      # Sets tool config as the first one we find for class CbrainTask::#{task_class_name}
+      tool = Tool.where(:cbrain_task_class => "CbrainTask::#{task_class_name}").first
+      tool_config = ToolConfig.where(:tool_id => tool.id).first
+      task.tool_config = tool_config
+      
+      task.status = "New"
+      task.save!
+    rescue => ex
+      # most likely the PSOMWorker class is not available in this Bourreau. 
+      worker_log.info("Error while submitting PSOMWorker task: #{ex.message}.")
+    end
   end
   
 end
