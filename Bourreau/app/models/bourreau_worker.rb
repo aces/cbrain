@@ -564,20 +564,24 @@ class BourreauWorker < Worker
     workdir = task.full_cluster_workdir
     Dir.glob(File.join(workdir,"cbrain-psom-worker-*.submit")).each do |filename|
       worker_log.info("Found cbrain-psom-worker file: #{filename}.")
-      file = File.open(filename, "r")
-      if(file.flock(File::LOCK_NB|File::LOCK_EX)) # here we ensure that only 1 worker can access the file at
-                                                  # the same time. Otherwise, the new task may be submitted
-                                                  # by each worker. See nice examples at:
-                                                  # http://www.codegnome.com/blog/2013/05/26/locking-files-with-ruby
-        while (line = file.gets)
-          continue if (line.blank? || line.strip.blank?)
-          submit_task_from_string(line.strip,task.user,task.bourreau_id)
+      begin
+        file = File.open(filename, "r")
+        if(file.flock(File::LOCK_NB|File::LOCK_EX)) # here we ensure that only 1 worker can access the file at
+                                                    # the same time. Otherwise, the new task may be submitted
+                                                    # by each worker. See nice examples at:
+                                                    # http://www.codegnome.com/blog/2013/05/26/locking-files-with-ruby
+          while (line = file.gets)
+            continue if (line.blank? || line.strip.blank?)
+            submit_task_from_string(line.strip,task.user,task.bourreau_id)
+          end
+          file.close # this also releases the lock. 
+          File.delete(filename)
+        else
+          worker_log.info("Another worker is working on this file: ignoring it.")
+          file.close # in case the lock was not obtained, still close the file. 
         end
-        file.close # this also releases the lock. 
-        File.delete(filename)
-      else
-       worker_log.info("Another worker is working on this file: ignoring it.")
-       file.close # in case the lock was not obtained, still close the file. 
+      rescue => ex
+        worker_log.info("Error while submitting PSOMWorker task: #{ex.message}.")
       end
     end
   end
@@ -600,28 +604,23 @@ class BourreauWorker < Worker
     worker_id = items[1].strip
     worker_log.info("Submitting PSOMWorker task with output_dir=#{output_dir} and worker_id=#{worker_id}.")
 
-    begin
-      # Creates task
-      task_class_name = "PSOMWorker"
-      task = CbrainTask.const_get(task_class_name).new
-      
-      task.params = Hash.new
-      task.params[:output_dir] = output_dir
-      task.params[:worker_id] = worker_id
-      task.user = user
-      task.bourreau_id=bourreau_id
-      
-      # Sets tool config as the first one we find for class CbrainTask::#{task_class_name}
-      tool = Tool.where(:cbrain_task_class => "CbrainTask::#{task_class_name}").first
-      tool_config = ToolConfig.where(:tool_id => tool.id).first
-      task.tool_config = tool_config
-      
-      task.status = "New"
-      task.save!
-    rescue => ex
-      # most likely the PSOMWorker class is not available in this Bourreau. 
-      worker_log.info("Error while submitting PSOMWorker task: #{ex.message}.")
-    end
+    # Creates task
+    task_class_name = "PSOMWorker"
+    task = CbrainTask.const_get(task_class_name).new
+    
+    task.params = Hash.new
+    task.params[:output_dir] = output_dir
+    task.params[:worker_id] = worker_id
+    task.user = user
+    task.bourreau_id=bourreau_id
+    
+    # Sets tool config as the first one we find for class CbrainTask::#{task_class_name}
+    tool = Tool.where(:cbrain_task_class => "CbrainTask::#{task_class_name}").first
+    tool_config = ToolConfig.where(:tool_id => tool.id).first
+    task.tool_config = tool_config
+    
+    task.status = "New"
+    task.save!
   end
   
 end
