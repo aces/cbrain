@@ -156,8 +156,8 @@
 
       t.column("Recipient", :recipient,
         :sortable => true,
-        :filters  => filter_values_for(
-          @base_scope, :user_id,
+        :filters  => scoped_filters_for(
+          @base_scope, @scope, :user_id,
           label: 'users.login',
           association: [User, 'id', 'user_id']
         )
