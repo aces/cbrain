@@ -373,7 +373,9 @@ def fff(token)
     list = eval "@#{letter}#{letter}" # look up @uu or @ff etc
     next if list.size == 0
     if (list.size == 1)
-      printf "%15s : @#{letter} = %s\n",name,list[0].inspect[0..60]
+      first = list[0]
+      pretty = first.respond_to?(:to_summary) ? no_log { first.to_summary } : first.inspect[0..60]
+      printf "%15s : @#{letter} = %s\n",name,pretty
     else
       printf "%15s : @#{letter}#{letter} contains %d results\n",
         ApplicationController.helpers.pluralize("2",name).sub(/^[\s\d]+/,""), # ugleeee
@@ -393,38 +395,103 @@ def fff(token)
   report.("Bourreau",       'b')
 
 end
+
+
+
 #####################################################
-# Preload single table inheritance models
+# Add 'to_summary' methods to the objects that can
+# be found by 'fff', for pretty reports.
 #####################################################
 
-begin
-  no_log()
-  Dir.chdir(File.join(Rails.root.to_s, "app", "models")) do
-    Dir.glob("*.rb").each do |model|
-      model.sub!(/.rb$/,"")
-      require_dependency "#{model}.rb" unless Object.const_defined? model.classify
-    end
-  end
+# Make sure the classes are loaded
+# Note that it's important ot load PortalTask too, because of its own pre-loading of subclasses.
+[ Userfile, CbrainTask, PortalTask, User, Group, DataProvider, RemoteResource, Site, Tool, ToolConfig, Bourreau ]
 
-  #Load userfile file types
-  Dir.chdir(File.join(Rails.root.to_s, "app", "models", "userfiles")) do
-    Dir.glob("*.rb").each do |model|
-      model.sub!(/.rb$/,"")
-      require_dependency "#{model}.rb" unless Object.const_defined? model.classify
-    end
+
+class Userfile
+  def to_summary
+    sprintf "<%s#%d> [%s:%s] S=%s N=\"%s\" DP=%s",
+      self.class.to_s, self.id,
+      user.login,      group.name,
+      size ? size : "unk",
+      name,            data_provider.name
   end
-rescue => error
-  if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
-    puts "Skipping model load:\n\t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
-  elsif error.to_s.match(/Unknown database/i)
-    puts "Skipping model load:\n\t- System database doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
-  else
-    raise
-  end
-ensure
-  do_log()
 end
 
+class CbrainTask
+  def to_summary
+    sprintf "<%s#%d> [%s:%s] S=%s B=%s",
+      self.class.to_s, self.id,
+      user.login,      group.name,
+      cluster_workdir_size.presence || "unk",
+      bourreau.name
+  end
+end
+
+class User
+  def to_summary
+    sprintf "<%s#%d> L=%s F=\"%s\" S=%s",
+      self.class.to_s, self.id,
+      login,      full_name,
+      site.try(:name) || "(No site)"
+  end
+end
+
+class Group
+  def to_summary
+    sprintf "<%s#%d> N=\"%s\" C=%s",
+      self.class.to_s, self.id,
+      name,
+      creator.try(:login) || "(No creator)"
+  end
+end
+
+class DataProvider
+  def to_summary
+    sprintf "<%s#%d> [%s:%s] N=\"%s\"",
+      self.class.to_s, self.id,
+      user.login,      group.name,
+      name
+  end
+end
+
+class RemoteResource
+  def to_summary
+    sprintf "<%s#%d> [%s:%s] N=\"%s\"",
+      self.class.to_s, self.id,
+      user.login,      group.name,
+      name
+  end
+end
+
+class Site
+  def to_summary
+    sprintf "<%s#%d> N=\"%s\"",
+      self.class.to_s, self.id,
+      name
+  end
+end
+
+class Tool
+  def to_summary
+    sprintf "<%s#%d> [%s:%s] N=\"%s\" C=%s",
+      self.class.to_s, self.id,
+      user.login,      group.name,
+      name,
+      cbrain_task_class
+  end
+end
+
+class ToolConfig
+  def to_summary
+    sprintf "<%s#%d> [%s] T=%s B=%s V=\"%s\"",
+      self.class.to_s, self.id,
+      group.name,
+      try(:tool).try(:name)     || "(No tool)",
+      try(:bourreau).try(:name) || "(No bourreau)",
+      version_name.presence     || "(No version)"
+  end
+end
 
 
 
