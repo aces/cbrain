@@ -1,0 +1,129 @@
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<div id="toolsDialog" title="Select Tool" >
+
+  <div class="userfiles_bourreau_selector" id="tool_version_selector">
+  </div>
+
+  <br/>
+
+
+  <div id="toolsDialogWrapper">
+
+    <div id="toolsDialogLeftCol">
+      <div>
+        <b>Search: </b><input type="text" id="searchToolSelectionBox">
+      </div>
+
+
+      <% if !@type_list.empty?  || !@package_list.empty? || !@tag_list.empty? %>
+      <br/>
+      <div>
+        All tools: <input type="checkbox" class="tag_checkbox" id="showAllTools"/>
+      </div>
+      <br/>
+
+      <% if !@type_list.empty? %>
+        <b>Type:</b>
+        <br/>
+        <% @type_list.each do |type| %>
+              <%= type %>:
+              <input type="checkbox" class="tag_checkbox" name="<%= type %>"/><br/>
+        <% end %>
+        <br/>
+      <% end %>
+
+      <% if !@package_list.empty? %>
+        <b>Sofware Package:</b><br/>
+        <% @package_list.each do |package| %>
+          <%= package %>:
+          <input type="checkbox" class="tag_checkbox" name="<%= package %>"/><br/>
+        <% end %>
+        <br/>
+      <% end %>
+
+      <% if !@tag_list.empty? %>
+        <b>Tags:</b><br/>
+        <% @tag_list.each do |tag|%>
+          <%= tag %>:
+          <input type="checkbox" class="tag_checkbox" name="<%= tag %>"/><br/>
+        <% end %>
+        <br/>
+      <% end %>
+
+      <a id="clearTags" href="#">clear selection</a>
+      <% end %>
+
+    </div>
+
+    <div id="toolsDialogRightCol">
+        <b>Tools:</b>
+        <div class="tools-container">
+
+          <table id="toolSelectTable" >
+
+            <% if @tools_to_pick.present? %>
+
+            <% @tools_to_pick.each do |tool| %>
+
+            <tr
+            <%tool.get_all_tags.each do |tool_tag|%>
+            data-<%= tool_tag %> = 'true'
+            <%end%>
+            >
+            <td id="tool_<%= tool.id %>">
+
+              <%=
+              "<b><a href= '#' data-tool-id=\"#{tool.id}\" class='toolsLink'>#{tool.name}</a></b><br/>Tags: #{tool.get_all_tags.join(' ')}<br/>".html_safe
+              %>
+
+              <%= link_to( "Tool Website", tool.url, :target => "_blank") if tool.url.present? %>
+
+            </td>
+          </tr>
+
+          <%end%>
+
+          <% else %>
+
+          <tr>
+            <td>
+              <% if current_user.has_role? :admin_user %>
+                <h1 class="warning">No tools available. New tools may be registered from the Tools index.</h1>
+              <% else %>
+                <h1 class="warning">No tools available. Contact your admin to have them registered.</h1>
+              <% end %>
+            </td>
+          </tr>
+
+          <% end %>
+
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

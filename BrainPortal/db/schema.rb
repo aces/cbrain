@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150929193957) do
+ActiveRecord::Schema.define(:version => 20151124191445) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -333,6 +333,10 @@ ActiveRecord::Schema.define(:version => 20150929193957) do
     t.string   "cbrain_task_class"
     t.string   "select_menu_text"
     t.text     "description"
+    t.string   "url"
+    t.string   "application_package_name"
+    t.string   "application_type"
+    t.string   "application_tags"
   end
 
   add_index "tools", ["category"], :name => "index_tools_on_category"
