@@ -30,13 +30,14 @@
 
 <% content_for :scripts do %>
   <%= javascript_tag (render :partial => "launch_task.js.erb",    :formats => [:js]).to_s %>
+  <%= javascript_tag (render :partial => "file_selection.js.erb", :formats => [:js]).to_s %>
   <%= javascript_tag (render :partial => "tools_interface.js.erb", :formats => [:js]).to_s %>
-
 <% end %>
+
 
 <div id="userfiles_menus_and_filelist">
 
-  <%= multi_form_tag(:method => :post, "data-type"  => "script") do %>
+  <%= multi_form_tag(:method => :post, "data-type"  => "script", :id => "userfile_table_form") do %>
 
       <div class="index_block">
         <%= render :partial => "userfiles/file_menu" %>
@@ -52,3 +53,4 @@
 </div> <!-- cell #1 -->
 
 <%= render "tools_interface" %>
+

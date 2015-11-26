@@ -49,7 +49,7 @@ class Tool < ActiveRecord::Base
   validates_uniqueness_of :name, :select_menu_text, :cbrain_task_class
   validates_presence_of   :name, :cbrain_task_class, :user_id, :group_id, :category, :select_menu_text, :description
   validates_inclusion_of  :category, :in => Categories
-  validates_format_of :url, :with => URI::regexp(%w(http https))
+  validates_format_of :url, :with => URI::regexp(%w(http https)), :if => :url_present?
 
 
   belongs_to              :user
@@ -151,6 +151,10 @@ class Tool < ActiveRecord::Base
   end
 
   private
+
+  def url_present?
+    url.present?
+  end
 
   def get_tag_attribute(attribute_name, return_class)
     tag = read_attribute(attribute_name)

@@ -1,0 +1,59 @@
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+/* FIXME not optimal, perfomance-wise */
+(function () {
+  "use strict";
+
+  /* Make sure we have local storage available */
+  if (typeof localStorage === 'undefined') return;
+
+  $(document)
+    .ready(restore)
+    .delegate('#userfiles_display',       'new_content.file_select', restore)
+    .delegate("input[name='file_ids[]']", 'change.file_select',      save);
+
+  $(window)
+    .unload(save);
+
+  /* Restore the previous userfile selection, if available */
+  function restore() {
+    var selection = (localStorage.getItem('userfiles_selection') || "").split(',');
+
+    $("input[name='file_ids[]']").each(function () {
+      this.checked = this.checked || selection.indexOf(this.value) != -1;
+    });
+
+    save();
+  };
+
+  /* Save current userfile selection */
+  function save() {
+    var selection = [];
+    $("input[name='file_ids[]']").each(function () {
+      if (this.checked) selection.push(this.value);
+    });
+
+    localStorage.setItem('userfiles_selection', selection.join(','));
+  };
+})();
