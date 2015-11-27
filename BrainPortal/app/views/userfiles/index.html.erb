@@ -30,7 +30,6 @@
 
 <% content_for :scripts do %>
   <%= javascript_tag (render :partial => "launch_task.js.erb",    :formats => [:js]).to_s %>
-  <%= javascript_tag (render :partial => "file_selection.js.erb", :formats => [:js]).to_s %>
   <%= javascript_tag (render :partial => "tools_interface.js.erb", :formats => [:js]).to_s %>
 <% end %>
 
