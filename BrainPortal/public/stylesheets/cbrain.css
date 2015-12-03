@@ -2394,5 +2394,32 @@ img {
   display: none;
 }
 
+/* Styling to replace CSS in cbrain.js --ehsan */
+
+.project_button:hover {
+  -webkit-transform: scale(1.3);
+  -moz-transform: scale(1.3);
+  -o-transform: scale(1.3);
+  -ms-transform: scale(1.3);
+}
+
+.project_button:active {
+  -webkit-transform: scale(1.2);
+  -moz-transform: scale(1.2);
+  -o-transform: scale(1.2);
+  -ms-transform: scale(1.2);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
