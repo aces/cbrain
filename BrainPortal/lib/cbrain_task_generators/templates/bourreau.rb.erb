@@ -54,6 +54,14 @@ class CbrainTask::<%= name %> < ClusterTask
 % out_keys = outputs.select { |o| o['command-line-key'] }
 % flags    = (inputs + outputs).select { |p| p['command-line-flag'] }
 %
+
+% if descriptor['can-submit-new-tasks']
+  # Task properties
+  def self.properties #:nodoc:
+    super.merge :can_submit_new_tasks => true
+  end
+% end  
+  
   # Setup the cluster's environment to execute <%= name %>; create the relevant
   # directories, prepare symlinks to input files, set environment variables,
   # etc. Returns true if the task was correctly set up.

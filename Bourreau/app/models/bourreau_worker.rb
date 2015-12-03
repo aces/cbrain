@@ -279,8 +279,12 @@ class BourreauWorker < Worker
 
       worker_log.debug "Updated #{task.bname_tid} to state #{new_status}"
 
-      # Mechanism for tasks to submit other tasks.
-      handle_tasks_submitted_by(task) if new_status == 'On CPU'; # tasks that are on CPU may submit new tasks
+      # Mechanism for tasks to submit other tasks: tasks that were not in a status 
+      # in COMPLETED_STATUS or FAILED_STATUS at the previous iteration may submit new
+      # tasks provided that they have the can_submit_new_tasks
+      # property.
+      handle_tasks_submitted_by(task) if task.class.properties[:can_submit_new_tasks] &&
+                                         !(CbrainTask::COMPLETED_STATUS.include?(task.status) || CbrainTask::FAILED_STATUS.include?(task.status))
       
       return if initial_status == 'On CPU' && new_status == 'On CPU'; # nothing else to do
 
