@@ -26,6 +26,9 @@
 #
 #This class implements a worker that manages the CBRAIN queue of tasks.
 #This model is not an ActiveRecord class.
+require 'json'
+require 'json-schema'
+
 class BourreauWorker < Worker
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -539,88 +542,119 @@ class BourreauWorker < Worker
     end
   end
 
-  # Handles new tasks submitted by "task". Tasks may submit new tasks
-  # of type CbrainTask::PSOMWorker. This mechanism could be
-  # generalized to submit other types of tasks but it has security
-  # implications.  To submit new tasks, a task must create a
-  # cbrain-psom-worker-*.submit CSV file at the root of its work
-  # directory.  A new CbrainTask::PSOMWorker task will be submitted
-  # for each line of this CSV file.  Each line of the CSV file defines
-  # the values of the parameter of the new task, namely:
-  #  # * the PSOM output directory (string)
-  # * the worker id (string)
-  # Once a CSV file has been handled, it is deleted.
-  #
-  # Example: a CSV file containing "/home/blah,123" will submit a
-  # PSOMWorker task with output_directory="/home/blah" and
-  # worker_id="123"
+  # Handles new tasks submitted by "task". To submit a new task, a
+  # task must create a new-task-*.json JSON file at the root of its
+  # work directory.  Once a JSON file has been handled, it is deleted.
   #
   # Method parameter:
-  # * "task" is the submitter task. CSV files will be searched in the
+  # * "task" is the submitter task. JSON files will be searched in the
   # work dir of "task".  New tasks are submitted on the same Bourreau
   # than "task".  New tasks belong to the same user than "task".
   # 
   def handle_tasks_submitted_by task
     workdir = task.full_cluster_workdir
-    Dir.glob(File.join(workdir,"cbrain-psom-worker-*.submit")).each do |filename|
-      worker_log.info("Found cbrain-psom-worker file: #{filename}.")
+    Dir.glob(File.join(workdir,"new-task-*.json")).each do |filename|
+      worker_log.info("Found new task file: #{filename}.")
       begin
         file = File.open(filename, "r")
-        if(file.flock(File::LOCK_NB|File::LOCK_EX)) # here we ensure that only 1 worker can access the file at
+        if(file.flock(File::LOCK_NB|File::LOCK_EX)) # Here we ensure that only 1 worker can access the file at
                                                     # the same time. Otherwise, the new task may be submitted
-                                                    # by each worker. See nice examples at:
+                                                    # by several workers. See nice examples at:
                                                     # http://www.codegnome.com/blog/2013/05/26/locking-files-with-ruby
-          while (line = file.gets)
-            continue if (line.blank? || line.strip.blank?)
-            submit_task_from_string(line.strip,task.user,task.bourreau_id)
-          end
-          file.close # this also releases the lock. 
+          file_content = file.read
+          submit_task_from_string(file_content,task)
+          file.close # This also releases the lock. 
           File.delete(filename)
         else
           worker_log.info("Another worker is working on this file: ignoring it.")
-          file.close # in case the lock was not obtained, still close the file. 
+          file.close # In case the lock was not obtained, still close the file. 
         end
       rescue => ex
-        worker_log.info("Error while submitting PSOMWorker task: #{ex.message}.")
+        worker_log.info("Error while submitting new task: #{ex.message}.")
+        File.delete(filename) if File.exists?(filename)
       end
     end
   end
 
-  # Creates a CbrainTask::PSOMWorker task and submits it.
+  # Creates and submits a task defined by a JSON object.
   # Parameters:
-  # * string: a string containing two values separated by a comma. These values
-  #           are the output_dir and worker_id parameters of the new task, respectively.
-  # * user: the user to which the new task belongs.
-  # * bourreau_id: id of the Bourreau where the new task will be submitted.
+  # * json_string: A string containing a JSON object defining the task.
+  #                Example:
+  #                  {
+  #                    "tool-class": "CbrainTask::TestTool",
+  #                    "description": "A task running TestTool",
+  #                    "parameters": {
+  #                       "important_number": "123",
+  #                       "dummy_paramet4er": "432"
+  #                    }
+  #                  }
+  # * current_task: The current task from which the new task is submitted.
+  #                 Used to set the user, bourreau id and results data provider id
+  #                 for the new task.
   # 
-  def submit_task_from_string string,user,bourreau_id
+  def submit_task_from_string json_string,current_task
 
-    # Checks string format
-    items = string.split(",")
-    raise "Malformed psom-worker-submit string: #{string}" if items.size != 2
-
-    # Gets parameters of PSOM worker task
-    output_dir = items[0].strip
-    worker_id = items[1].strip
-    worker_log.info("Submitting PSOMWorker task with output_dir=#{output_dir} and worker_id=#{worker_id}.")
-
+    # Parses JSON string and checks format
+    validate_json_string(json_string) # Raises an exception if string is not valid
+    new_task_hash = JSON.parse(json_string)
+    worker_log.info("Submitting task #{new_task_hash}")
+    
     # Creates task
-    task_class_name = "PSOMWorker"
-    task = CbrainTask.const_get(task_class_name).new
-    
-    task.params = Hash.new
-    task.params[:output_dir] = output_dir
-    task.params[:worker_id] = worker_id
-    task.user = user
-    task.bourreau_id=bourreau_id
-    
-    # Sets tool config as the first one we find for class CbrainTask::#{task_class_name}
-    tool = Tool.where(:cbrain_task_class => "CbrainTask::#{task_class_name}").first
-    tool_config = ToolConfig.where(:tool_id => tool.id).first
-    task.tool_config = tool_config
-    
-    task.status = "New"
-    task.save!
+    task_class_name = new_task_hash["tool-class"]
+    new_task        = CbrainTask.const_get(task_class_name).new # Raises an exception if tool class is not found
+
+    # Sets tool config among tool configs accessible by user of current task
+    accessible_tool_configs = ToolConfig.find_all_accessible_by_user(current_task.user)
+    tool_config_id          = new_task_hash["tool-config-id"]
+    if tool_config_id.blank?
+      # Sets tool config as the first one we find for class task_class_name
+      tool        = Tool.where(:cbrain_task_class => "#{task_class_name}").first
+      tool_config = accessible_tool_configs.where(:tool_id => tool.id).first
+    else
+      tool_config = accessible_tool_configs.find(tool_config_id)
+    end
+    raise "Cannot find accessible tool config for class #{task_class_name}" if tool_config.blank?
+    new_task.tool_config = tool_config
+
+    # Sets task parameters
+    new_task.params = Hash.new
+    new_task_hash["parameters"].each do |param|
+      new_task.params[param[0].to_sym] = param[1]
+    end
+
+    # Sets other task attributes
+    # In the future, we could allow to register results to another data provider
+    # or to submit the task to another bourreau. This would require to carefully
+    # check permissions of current_task.user
+    new_task.description              = new_task_hash["description"]
+    new_task.user                     = current_task.user 
+    new_task.results_data_provider_id = current_task.results_data_provider_id 
+    new_task.bourreau_id              = current_task.bourreau_id   
+
+    # Submits the task
+    new_task.status = "New"
+    new_task.save!
   end
-  
+
+  # Validates a JSON string against
+  # the schema used to define new tasks.
+  def validate_json_string json_string
+    # The JSON schema could be extended with bourreau id and results
+    # data provider id but that would require careful permission
+    # checks. tool-config-id is not mandatory because it's specific
+    # to a CBRAIN installation and cannot be easily obtained by an
+    # external agent. In case no tool config id is provided, the first
+    # accessible tool config id will be selected.
+    schema = {
+      "type"       => "object",
+      "required" => ["tool-class","parameters"], 
+      "properties" => {
+        "tool-class"     => {"type"  => "string"},
+        "tool-config-id" => {"type"  => "number"},
+        "description"    => {"type"  => "string"},
+        "parameters"     => {"type"  => "object", "properties" => {"type" => "string" }},
+      }
+    }
+    JSON::Validator.validate!(schema,json_string) # raises an exception if json_string is not valid
+  end
 end
