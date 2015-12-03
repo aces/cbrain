@@ -557,6 +557,7 @@ class BourreauWorker < Worker
   # 
   def handle_tasks_submitted_by task
     workdir = task.full_cluster_workdir
+    return if workdir.blank? # in case workdir doesn't exist yet
     Dir.glob(File.join(workdir,"new-task-*.json")).each do |filename|
       worker_log.info("Found new task file: #{filename}.")
       begin
