@@ -575,7 +575,9 @@ class BourreauWorker < Worker
           file.close # In case the lock was not obtained, still close the file. 
         end
       rescue => ex
-        worker_log.info("Error while submitting new task: #{ex.message}.")
+        message="Error while submitting new task: #{ex.message}."
+        worker_log.info(message)
+        task.addlog(message)
         File.delete(filename) if File.exists?(filename)
       end
     end
@@ -602,21 +604,27 @@ class BourreauWorker < Worker
     # Parses JSON string and checks format
     validate_json_string(json_string) # Raises an exception if string is not valid
     new_task_hash = JSON.parse(json_string)
-    worker_log.info("Submitting task #{new_task_hash}")
-    
+
+    # Prints log message in worker and current_task logs
+    message = "Submitting new #{new_task_hash["tool-class"]} task."
+    worker_log.info(message)
+    current_task.addlog(message)
+        
     # Creates task
     task_class_name = new_task_hash["tool-class"]
     new_task        = CbrainTask.const_get(task_class_name).new # Raises an exception if tool class is not found
+    raise "Invalid tool class: #{task_class_name }" unless new_task.is_a? ClusterTask
 
     # Sets tool config among tool configs accessible by user of current task
+    tool                    = Tool.where(:cbrain_task_class => "#{task_class_name}").first
     accessible_tool_configs = ToolConfig.find_all_accessible_by_user(current_task.user)
     tool_config_id          = new_task_hash["tool-config-id"]
     if tool_config_id.blank?
       # Sets tool config as the first one we find for class task_class_name
-      tool        = Tool.where(:cbrain_task_class => "#{task_class_name}").first
       tool_config = accessible_tool_configs.where(:tool_id => tool.id).first
     else
       tool_config = accessible_tool_configs.find(tool_config_id)
+      raise "Tool config #{tool_config_id} doesn't belong to tool #{task_class_name}" unless tool_config.tool_id == tool.id
     end
     raise "Cannot find accessible tool config for class #{task_class_name}" if tool_config.blank?
     new_task.tool_config = tool_config
@@ -631,7 +639,7 @@ class BourreauWorker < Worker
     # In the future, we could allow to register results to another data provider
     # or to submit the task to another bourreau. This would require to carefully
     # check permissions of current_task.user
-    new_task.description              = new_task_hash["description"]
+    new_task.description              = new_task_hash["description"] || "Task submitted by task #{current_task.id}"
     new_task.user                     = current_task.user 
     new_task.results_data_provider_id = current_task.results_data_provider_id 
     new_task.bourreau_id              = current_task.bourreau_id   
