@@ -158,26 +158,10 @@ class PortalTask < CbrainTask
   end
 
 
-
+  
   #######################################################
   # Task Launch API
   #######################################################
-
-  # Special boolean properties of your task, returned as a
-  # hash table. Used by CBRAIN rendering code to control
-  # default elements. Advanced feature. The defaults
-  # for all properties are 'false' so that subclass
-  # only have to explicitely set the special properties
-  # that they want 'true' (since nil is also false).
-  def self.properties
-    {
-       :no_submit_button                   => false, # view will not automatically have a submit button
-       :i_save_my_task_in_after_form       => false, # used by validation code for detected coding errors
-       :i_save_my_tasks_in_final_task_list => false, # used by validation code for detected coding errors
-       :no_presets                         => false, # view will not contain the preset load/save panel
-       :use_parallelizer                   => false  # true or fixnum: turns on parallelization
-    }
-  end
 
   # This method should return a simple hash table
   # with the default launch arguments for your task;
