@@ -185,40 +185,27 @@
     //Makes a button set, buttons that are glued together
     loaded_element.find(".button_set").buttonset();
 
-    // this is a one liner -- ehsan --
     // After talking to Pierre we rather keep the function longer and have it be more clear
     // this also helps if the logic in the function needs to be changed
     loaded_element.find(".button_with_drop_down > div.drop_down_menu").each(function(e) {
       var menu    = $(this);
       var button  = menu.closest(".button_with_drop_down");
-      var keep_open = button.data("open");
-      if (keep_open !== "true") menu.hide();
+      var keep_open = button.attr("data-open");
+      if (keep_open !== "true") {
+        menu.hide();
+      }
     });
 
-
-    // put these on seperate lines -- ehsan --
     loaded_element.find(".button_with_drop_down > div.drop_down_menu")
-                  .find(".hijacker_submit_button").click(function(e) {
-                    loaded_element.find(".drop_down_menu:visible").siblings(".button_menu").click();
-                  });
-
+              .find(".hijacker_submit_button").click(function(e) {
+                loaded_element.find(".drop_down_menu:visible").siblings(".button_menu").click();
+              });
 
     loaded_element.find(".button_with_drop_down").children(".button_menu").button({
       icons: {
         secondary: 'ui-icon-triangle-1-s'
       }
     }).click(function(event) {
-
-      // just use toggle -- ehsan --
-      /*var menu = $(this).siblings(".drop_down_menu");
-      if (menu.is(":visible")) {
-        menu.hide();
-      } else {
-        loaded_element.find(".drop_down_menu:visible").hide();
-        menu.show();
-      }*/
-
-      // just use toggle -- ehsan --
       var menu = $(this).siblings(".drop_down_menu");
       if (!menu.is(":visible")) loaded_element.find(".drop_down_menu:visible").hide();
       menu.toggle();
@@ -560,8 +547,8 @@
     });
 
 
-    // too many handlers being added on each mouseenter-- ehsan
-    $(document).delegate(".hover_open", "mouseenter", function() {
+   /* // too many handlers being added on each mouseenter-- ehsan --
+    $(document).undelegate(".hover_open", "mouseenter").delegate(".hover_open", "mouseenter", function() {
       var header = $(this);
       var target = $(header.data("target"));
 
@@ -572,10 +559,25 @@
       });
 
       return false;
-     });
+     }); */
 
 
-    // could be cleaner --ehsan
+     $(".hover_open").bind("mouseenter", function() {
+       var header = $(this);
+       var target = $(header.data("target"));
+
+       target.show();
+       header.mouseleave(function() {
+         target.hide();
+         return false;
+       });
+
+       return false;
+      });
+
+
+    // could be cleaner --ehsan --
+    // This is clear peice of code
     $(document).delegate(".show_toggle", "click", function() {
       var current_element = $(this);
       var target_element = $(current_element.data("target"));
@@ -623,13 +625,8 @@
 
       if (!alternate_text) alternate_text = "Cancel";
 
-      if (visible) {
-        group.find(".inline_edit_field_default_text").show();
-        group.find(".inline_edit_field_input").hide();
-      } else {
-        group.find(".inline_edit_field_default_text").hide();
-        group.find(".inline_edit_field_input").show();
-      }
+      group.find(".inline_edit_field_default_text").toggle(visible);
+      group.find(".inline_edit_field_input").toggle(!visible);
 
       link.html(alternate_text);
       link.data("alternate-text", current_text);
@@ -637,21 +634,7 @@
       return false;
     });
 
-    // this is no longer used --ehsan
-    //Highlighting on resource list tables.
-    $(document).delegate(".row_highlight", "mouseenter", function() {
-      var element = $(this);
-      element.data("original-color", element.css("background-color"));
-      element.css("background-color", "#FFFFE5");
-    });
 
-    // this is no longer used --ehsan
-    $(document).delegate(".row_highlight", "mouseleave", function() {
-      var element = $(this);
-      element.css("background-color", element.data("original-color"));
-    });
-
-    // used a lot and clean up --ehsan
     $(document).delegate(".ajax_link", "ajax:success", function(event, data, status, xhr) {
       var link     = $(this);
       var target   = link.data("target");
@@ -685,13 +668,16 @@
     $(document).delegate(".select_all", "click", function() {
       var header_box = $(this);
       var checkbox_class = header_box.data("checkbox-class");
-      // set all checkboxes in a line --ehsan
-      $('.' + checkbox_class).each(function(index, element) {
+      // set all checkboxes in a line -- ehsan --
+
+      /*$('.' + checkbox_class).each(function(index, element) {
         element.checked = header_box.prop('checked');
-      });
+      });*/
+
+      $('.' + checkbox_class).prop('checked',header_box.prop('checked'))
+
     });
 
-    // make sure all vars and elements are used --ehsan
     $(document).delegate(".select_master", "change", function() {
       var master_select = $(this);
       var select_class = master_select.data("select-class");
