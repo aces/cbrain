@@ -29,7 +29,7 @@ gem "net-ssh",  :require => 'net/ssh'
 gem "net-sftp", :require => 'net/sftp'
 gem "log4r"
 gem "mysql2"
-gem "sys-proctable", :git => 'git://github.com/djberg96/sys-proctable.git'
+gem "sys-proctable", :git => 'git://github.com/djberg96/sys-proctable.git', :ref => "ac047b6"
 gem "thin"
 gem "pbkdf2-ruby"
 gem "json-schema"
@@ -38,5 +38,6 @@ group :development, :test do
   gem "wirble"
   gem "looksee"
   gem "hirb"
+  gem "test-unit"
 end
 

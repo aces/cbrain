@@ -30,7 +30,7 @@ gem "net-sftp", :require => 'net/sftp'
 gem "will_paginate"
 gem "log4r"
 gem "mysql2"
-gem "sys-proctable", :git => 'git://github.com/djberg96/sys-proctable.git'
+gem "sys-proctable", :git => 'git://github.com/djberg96/sys-proctable.git', :ref => "ac047b6"
 gem "thin"
 gem "rails_autolink"
 gem "pbkdf2-ruby"

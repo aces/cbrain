@@ -404,7 +404,7 @@ end
 #####################################################
 
 # Make sure the classes are loaded
-# Note that it's important ot load PortalTask too, because of its own pre-loading of subclasses.
+# Note that it's important to load PortalTask too, because of its own pre-loading of subclasses.
 [ Userfile, CbrainTask, PortalTask, User, Group, DataProvider, RemoteResource, Site, Tool, ToolConfig, Bourreau ]
 
 
