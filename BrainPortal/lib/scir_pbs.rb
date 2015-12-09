@@ -31,8 +31,9 @@ class ScirPbs < Scir
   class Session < Scir::Session #:nodoc:
 
     def update_job_info_cache #:nodoc:
-      out, err = bash_this_and_capture_out_err("qstat -f")
-      raise "Cannot get output of 'qstat -f' ?!?" if out.blank? && ! err.blank?
+      qstat_command = "qstat -u #{CBRAIN::Rails_UserName.to_s.bash_escape} -f"
+      out, err = bash_this_and_capture_out_err(qstat_command)
+      raise "Cannot get output of '#{qstat_command}' ?!?" if out.blank? && ! err.blank?
       jid = 'Dummy'
       @job_info_cache = {}
       out.split(/\s*\n\s*/).each do |line|
