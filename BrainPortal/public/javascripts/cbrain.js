@@ -1,4 +1,3 @@
-
 /*
 #
 # CBRAIN Project
@@ -21,12 +20,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 */
+
 (function() {
   "use strict";
 
   var loading_image = $("#loading_image");
 
-  //General ajax error handler
+  // General ajax error handler
   $(document).ajaxError(function(evt, req, set) {
     if (req.status !== 0) {
       $('.flash_error').remove();
@@ -40,10 +40,11 @@
   });
 
 
-  //This function assigns 'data' to a 'target' in the DOM and is used mainly after an ajax request
+  // This function assigns 'data' to a 'target' in the DOM and is used mainly after an ajax request
   // returns successfully
-  //The options argument may contain values for 'width', 'height',
+  // The options argument may contain values for 'width', 'height',
   // 'replace' evaluated as boolean, 'scroll_bottom' evaluated as boolean
+
   function modify_target(data, target, options) {
     options = options || {};
 
@@ -54,6 +55,7 @@
 
     new_content = $(data);
     if (target === "__OVERLAY__") {
+
       width = parseInt(options["width"], 10); // || 800);
       height = parseInt(options["height"], 10); // || 500);
       $("<div class='overlay_content'></div>").html(new_content).appendTo($("body")).dialog({
@@ -64,6 +66,7 @@
           $(this).remove();
         }
       });
+
     } else {
       current_target = $(target);
 
@@ -76,8 +79,8 @@
       if (options["scroll_bottom"]) current_target.scrollTop(current_target[0].scrollHeight);
 
     }
-    new_content.trigger("new_content");
 
+    new_content.trigger("new_content");
   }
 
   //Behaviours for newly loaded content that isn't triggered
@@ -91,17 +94,15 @@
     var loaded_element = $(event.target);
 
     /////////////////////////////////////////////////////////////////////
-    //
     // UI Helper Methods see application_helper.rb for corresponding
     // helpers.
-    //
     /////////////////////////////////////////////////////////////////////
 
     loaded_element.find(".scroll_bottom").each(function() {
       $(this).scrollTop(this.scrollHeight);
     });
 
-    //All elements with the accordion class will be changed to accordions.
+    // All elements with the accordion class will be changed to accordions.
     loaded_element.find(".accordion").accordion({
       active: false,
       collapsible: true,
@@ -217,7 +218,6 @@
     // Project button behaviour
     //
     /////////////////////////////////////////////////////////////////////
-    // replace this with css in css file -- ehsan
 
     loaded_element.find(".project_button").each(function(event) {
       var project_button = $(this);
@@ -231,43 +231,13 @@
         project_details.hide();
       });
 
-    }).mouseenter(function() {
-      var project_button = $(this);
-      // replaced this with CSS -- ehsan --
-      /*project_button.css("-webkit-transform", "scale(1.3)");
-      project_button.css("-moz-transform", "scale(1.3)");
-      project_button.css("-o-transform", "scale(1.3)");
-      project_button.css("-ms-transform", "scale(1.3)");*/
-    }).mouseleave(function() {
-      var project_button = $(this);
-       // replaced this with CSS -- ehsan --
-     /* project_button.css("-webkit-transform", "scale(1)");
-      project_button.css("-moz-transform", "scale(1)");
-      project_button.css("-o-transform", "scale(1)");
-      project_button.css("-ms-transform", "scale(1)"); */
-    }).mousedown(function(event) {
-
-       /*if (event.target.nodeName === "A") return true;
-
-      var project_button = $(this);
-
-      project_button.css("-webkit-transform", "scale(1.2)");
-      project_button.css("-moz-transform", "scale(1.2)");
-      project_button.css("-o-transform", "scale(1.2)");
-      project_button.css("-ms-transform", "scale(1.2)");*/
-    }).mouseup(function() {
-      /* var project_button = $(this);
-
-     project_button.css("-webkit-transform", "scale(1.1)");
-      project_button.css("-moz-transform", "scale(1.1)");
-      project_button.css("-o-transform", "scale(1.1)");
-      project_button.css("-ms-transform", "scale(1.1)"); */
     }).click(function(event) {
       if (event.target.nodeName === "A") {
         return true;
       }
       // link created and clicked in two lines -- ehsan
-      // the div that represents the project has other anchors in it so putting this div in an anchor is a bad idea.. (we get nested anchors)
+      // the div that represents the project has other anchors in it so putting this div in an anchor is a bad idea..
+      // (we get nested anchors)
       var project_button = $(this);
       var url = project_button.data("href");
       var method = project_button.data("method");
@@ -347,11 +317,12 @@
     }
 
 
-    //See ajax_element() in application_helper.rb
-    //The ajax element will have its contents loaded by the response from an
-    //ajax request (so the element's conents will be loaded later with respect
-    //to the rest of the page). If the "data-replace" attribute is set to "true"
-    //the entire element will be replace an not just its contents.
+    // See ajax_element() in application_helper.rb
+    // The ajax element will have its contents loaded by the response from an
+    // ajax request (so the element's conents will be loaded later with respect
+    // to the rest of the page). If the "data-replace" attribute is set to "true"
+    // the entire element will be replace an not just its contents.
+
     loaded_element.find(".ajax_element").each(function(index, element) {
       update_ajax_element(element);
     });
@@ -365,8 +336,6 @@
     });
 
 
-
-    // updates a list of elements one by one -- can be implemented without index --ehsan
     (function staggered_loading(index, element_array) {
       if (index >= element_array.length) return;
 
@@ -405,7 +374,6 @@
     })(0, loaded_element.find(".staggered_loader"));
 
 
-    // use less vars -- ehsan -- this makes the code more clear
     //Overlay dialogs
     //See overlay_dialog_with_button()
     loaded_element.find(".overlay_dialog").each( function(index,element) {
@@ -440,16 +408,7 @@
         slide_duration = parseInt(slide_duration, 10);
       }
 
-      if (invert === "true") {
-        show = !show;
-      }
-      // use toggle -- ehsan --
-     // if (show) {
-       // target_element.show();
-      // } else {
-      //  target_element.hide();
-    //  }
-
+      if (invert === "true") show = !show;
       target_element.toggle(show);
 
       checkbox.change(function() {
@@ -613,7 +572,7 @@
       return false;
     });
 
-    // refactor with toggle... --ehsan
+    // refactor with toggle... --ehsan --
     $(document).delegate(".inline_edit_field_link", "click", function() {
       var link = $(this);
       var visible = link.data("visible");
@@ -753,8 +712,6 @@
     });
 
 
-    //this can be done much simpler ways .. too many vars --ehsan
-
     //html_tool_tip_code based on xstooltip provided by
     //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
     $(document).delegate(".html_tool_tip_trigger", "mouseenter", function(event) {
@@ -796,9 +753,7 @@
       var reset_form = current_form.data("reset-form");
       var scroll_bottom = current_form.data("scroll-bottom")
 
-      if (reset_form !== "false") {
-        current_form.resetForm();
-      }
+      if (reset_form !== "false") current_form.resetForm();
 
       modify_target(data, target, {scroll_bottom : scroll_bottom});
 
@@ -925,9 +880,8 @@
       var parents = onclick_elem.data("parents");
       var replace_elem;
 
-      if (!parents) {
-        parents = ""
-      }
+      if (!parents) parents = "";
+
 
       parents += " __cbrain_parent_" + onclick_elem.attr("id");
 
