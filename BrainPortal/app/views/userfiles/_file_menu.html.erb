@@ -26,6 +26,61 @@
     <%= link_to "Upload File",{:action  => :new}, :class  => "button menu_button"%>
     <%= link_to "Select Tool","#", :class  => "button menu_button", :id => "toolSelectLink" %>
 
+    <%= button_with_dropdown_menu("File Management") do %>
+
+      <h4>Download</h4>
+      Specify Download File Name (optional):
+      <%= text_field_tag :specified_filename %>
+      <%= hijacker_submit_button("Download Files", :url  => url_for(:controller => 'userfiles', :action => 'download'), :ajax_submit  => false, :class => "button", :method  => :get) %>
+      <hr>
+
+
+      <% writable_dps = DataProvider.find_all_accessible_by_user(current_user).all.select { |dp| ! dp.read_only? } %>
+      <h4>Move/Copy</h4>
+      To Data Provider:
+      <%= data_provider_select(:data_provider_id_for_mv_cp, { :data_providers => writable_dps }, :include_blank => "(Select Destination)") %>
+      <!-- jQuery has a bug for the following checkbox, which explains the style attribute. -->
+      Overwrite files on Destination, if they exist:
+      <input type="checkbox" name="crush_destination" value="crush" style="position: relative; left: 0;">
+      <%= hijacker_submit_button("Move Files", :name => :move, :url  => url_for(:action  => :change_provider), :class => "button", :method  => :post) %>
+      <%= hijacker_submit_button("Copy Files", :name => :copy, :url  => url_for(:action  => :change_provider), :class => "button", :method  => :post) %>
+      <hr>
+
+      <h4>Create collection</h4>
+      Name for the collection (optional):
+      <%= text_field_tag :collection_name %>
+      To Data Provider:
+      <%= data_provider_select(:data_provider_id_for_collection, { :data_providers => writable_dps }, :include_blank => "(Select Destination)") %>
+      <%= hijacker_submit_button("Create Collection", :url    => url_for(:action  => :create_collection),
+                                                      :class  => "button",
+                                                      :method => :post)
+      %>
+      <hr>
+
+      <h4>Compression, archiving and deletion</h4>
+      For file(s):
+      <%= hijacker_submit_button("(Un)compress",  :url     => url_for(:action  => :compress ),
+                                                  :confirm => "Are you sure you want to compress or uncompress the selected files?",
+                                                  :class   => "button",
+                                                  :method  => :post)
+      %>
+
+      For collection(s) and archive(s):
+      <%= hijacker_submit_button("(Un)archive",   :url     => url_for(:action  => :archive_management ),
+                                                  :confirm => "Are you sure you want to archive or unarchive the selected files collection?",
+                                                  :class   => "button",
+                                                  :method  => :post)
+      %>
+
+      For any type:
+      <%= hijacker_submit_button("Delete", :url     => url_for(:action  => :delete_files),
+                                           :confirm => "Are you sure you want to delete the selected files?",
+                                           :class     => "button",
+                                           :method  => :delete)
+      %>
+
+    <% end %>
+
 
     <%= button_with_dropdown_menu("Update Attributes") do %>
         <h4>Tags</h4>
