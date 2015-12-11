@@ -83,14 +83,6 @@ class Tool < ActiveRecord::Base
   end
 
 
-  # Return an array of the tags associated with this tool
-  # by +user+. Actually returns a ActiveRecord::Relation.
-  def get_tags_for_user(user)
-    user = User.find(user) unless user.is_a?(User)
-    self.tags.where(["tags.user_id=? OR tags.group_id IN (?)", user.id, user.cached_group_ids])
-  end
-
-
   # Get an array of application_tags associated with all tools
   def self.get_all_application_tags
     Tool.select([:application_tags, :id]).all.map{|t| t.application_tags}.flatten.uniq

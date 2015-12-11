@@ -48,7 +48,7 @@
         <br/>
         <% @type_list.each do |type| %>
 
-          <label><%= type %>:<input type="checkbox" class="tag_checkbox" name="<%= type %>"/></label>
+          <label><%= type %>:<input type="checkbox" class="tag_checkbox" name="tooltags-<%= type %>"/></label>
               <br/>
 
         <% end %>
@@ -58,7 +58,7 @@
       <% if !@package_list.empty? %>
         <b>Sofware Package:</b><br/>
         <% @package_list.each do |package| %>
-            <label><%= package %>:<input type="checkbox" class="tag_checkbox" name="<%= package %>"/></label><br/>
+            <label><%= package %>:<input type="checkbox" class="tag_checkbox" name="tooltags-<%= package %>"/></label><br/>
         <% end %>
         <br/>
       <% end %>
@@ -66,7 +66,7 @@
       <% if !@tag_list.empty? %>
         <b>Tags:</b><br/>
         <% @tag_list.each do |tag|%>
-            <label><%= tag %>:<input type="checkbox" class="tag_checkbox" name="<%= tag %>"/></label><br/>
+            <label><%= tag %>:<input type="checkbox" class="tag_checkbox" name="tooltags-<%= tag %>"/></label><br/>
         <% end %>
         <br/>
       <% end %>
@@ -88,15 +88,14 @@
 
               <tr
               <%tool.get_all_tags.each do |tool_tag|%>
-              data-<%= tool_tag %> = 'true'
+              data-tooltags-<%= tool_tag %> = 'true'
               <%end%>
               >
                 <td id="tool_<%= tool.id %>">
 
-                  <%=
-                  "<b><a href= '#' data-tool-id=\"#{tool.id}\" class='toolsLink'>#{tool.name}</a></b><br/>
-                   Tags:       #{tool.get_all_tags.join(' ')}<br/>".html_safe
-                   %>
+                  <b><a href= "#" data-tool-id=<%=tool.id%> class="toolsLink"><%= tool.name %></a></b><br/>
+                   Tags:       <%=tool.get_all_tags.join(' ')%><br/>
+
 
                    <%= link_to( "Tool Website", tool.url, :target => "_blank") if tool.url.present? %>
 
