@@ -23,14 +23,14 @@
 source 'http://rubygems.org'
 
 # In the :default group
-gem 'rails',    :git => 'https://github.com/rails/rails.git', :branch => "3-2-stable"
-gem 'aws-s3',   :require => 'aws/s3' # Client library for Amazon's Simple Storage Service's REST API
-gem "net-ssh",  :require => 'net/ssh'
-gem "net-sftp", :require => 'net/sftp'
+gem 'rails',         :git     => 'https://github.com/rails/rails.git', :branch => "3-2-stable"
+gem 'aws-s3',        :require => 'aws/s3' # Client library for Amazon's Simple Storage Service's REST API
+gem "net-ssh",       :require => 'net/ssh'
+gem "net-sftp",      :require => 'net/sftp'
+gem "sys-proctable", :git     => 'https://github.com/djberg96/sys-proctable.git', :ref => "ac047b6"
+gem "mysql2",        "<0.4"
 gem "will_paginate"
 gem "log4r"
-gem "mysql2"
-gem "sys-proctable", :git => 'git://github.com/djberg96/sys-proctable.git'
 gem "thin"
 gem "rails_autolink"
 gem "pbkdf2-ruby"
