@@ -24,6 +24,8 @@ class TagsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  api_available
+
   before_filter :login_required
   before_filter :validate_params, :only => [:update, :create]
   layout false
@@ -77,14 +79,11 @@ class TagsController < ApplicationController
   # DELETE /tags/1.xml
   def destroy #:nodoc:
     @tag = current_user.tags.find(params[:id])
-    if current_session[:userfiles]["filter_tags_array"]
-      current_session[:userfiles]["filter_tags_array"].delete @tag.id.to_s
-    end
     @tag.destroy
 
     respond_to do |format|
       format.html { redirect_to userfiles_path }
-      format.js {render :partial  => "update_tag_table"}
+      format.js   { render :partial  => "update_tag_table" }
       format.xml  { head :ok }
     end
   end

@@ -50,16 +50,16 @@ class UserfilesController < ApplicationController
       :operator  => 'match'
     })
 
-    # Apply basic and @scope-based scoping
+    # Apply basic and @scope-based scoping/filtering
     scope_default_order(@scope, 'name')
     @base_scope   = base_scope.includes([:user, :data_provider, :sync_status, :tags, :group])
     @custom_scope = custom_scope(@base_scope)
-    @view_scope   = @scope.apply(@custom_scope)
 
-    # Are hidden files displayed?
-    unless @scope.custom[:view_hidden]
-      @hidden_total = @view_scope.where(:hidden => true).count
-      @view_scope = @view_scope.where(:hidden => false)
+    if @scope.custom[:view_hidden]
+      @view_scope   = @scope.apply(@custom_scope)
+    else
+      @hidden_total = @scope.apply(@custom_scope.where(:hidden => true)).count
+      @view_scope   = @scope.apply(@custom_scope.where(:hidden => false))
     end
 
     # Generate tag filters
@@ -288,7 +288,7 @@ class UserfilesController < ApplicationController
       @userfile[:children_ids]       = @children_ids
     # Prepare next/previous userfiles for html
     elsif request.format.to_sym == :html
-      @sort_index     = [ 0, params[:sort_index].to_i, 999_999_999 ].sort[1]
+      @sort_index  = [ 0, params[:sort_index].to_i, 999_999_999 ].sort[1]
 
       # Rebuild the sorted Userfile scope
       @scope       = scope_from_session('userfiles')
@@ -1580,7 +1580,7 @@ class UserfilesController < ApplicationController
   # custom filters. +base+ is expected to be the initial scope to apply custom
   # filters to (defaults to +base_scope+). Requires a valid @scope object.
   def custom_scope(base = nil)
-    ((@scope.custom[:custom_filters] || []) & current_user.custom_filter_ids)
+    ((@scope.custom[:custom_filters] &= current_user.custom_filter_ids) || [])
       .map { |id| UserfileCustomFilter.find_by_id(id) }
       .compact
       .inject(base || base_scope) { |scope, filter| filter.filter_scope(scope) }
@@ -1590,7 +1590,11 @@ class UserfilesController < ApplicationController
   # scoped list of userfiles fitlered/ordered by all three.
   # Requires a valid @scope object.
   def filtered_scope
-    @scope.apply(custom_scope(base_scope))
+    userfiles = custom_scope(base_scope)
+    userfiles = userfiles.where(:hidden => false) unless
+      @scope.custom[:view_hidden]
+
+    @scope.apply(userfiles)
   end
 
   # Userfiles-specific tag Scope filter; filter by a set of tags which must
