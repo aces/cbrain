@@ -276,7 +276,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
             :description   => "These relative paths in the local Data Provider cache were\n" +
                               "removed as there are no longer any userfiles matching them.\n",
             :variable_text => "#{wiped.size} cache subpaths:\n" + wiped.sort
-                              .hashed_partitions_with_index { |p,i| i / 10 }.map { |r,pp| pp.join(" ") }.join("\n"),
+                              .each_slice(10).map { |pp| pp.join(" ") }.join("\n"),
             :critical      => true,
             :send_email    => false
           ) rescue true

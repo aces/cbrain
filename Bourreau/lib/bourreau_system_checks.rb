@@ -223,7 +223,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
           :description   => "Some work directories of tasks have disappeared.",
           :variable_text => "Number of tasks: #{bad_tasks.size}\n" +
                             "List of tasks:\n" + bad_tasks.sort
-                            .hashed_partitions_with_index { |p,i| i / 8 }.map { |r,pp| pp.join(" ") }.join("\n"),
+                            .each_slice(8).map { |tids| tids.join(" ") }.join("\n"),
           :critical      => true,
           :send_email    => false
         ) rescue true
