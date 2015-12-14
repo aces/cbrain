@@ -104,8 +104,9 @@
    * UI, event bindings and current persistent selection set (see the
    * +generate+ event).
    */
+   /* TODO: handle the case where there is no bound elements */
   $(document).delegate('.persistent-selection', 'reload.psel', function psel_reload() {
-    var psel  = $(this),
+    var psel = $(this),
         bind_selector  = psel.data('bind-selector'),
         watch_selector = psel.data('watch-selector'),
         store_name     = psel.data('store-name'),
@@ -134,6 +135,7 @@
 
         psel.trigger('status.psel', [null]);
         psel.trigger('generate.psel');
+        psel.trigger('loaded.psel');
       };
 
       /* check each bound element's value against the DB */
@@ -230,24 +232,49 @@
     /* clear selection */
     psel
       .undelegate('.psel-clear', 'click.psel')
-      .delegate(  '.psel-clear', 'click.psel', function psel_clear() {
-        var store = open_store(store_name, (function (that) {
-          return function () { psel_clear.call(that); };
-        })(this));
-
-        if (!store) return;
-
-        psel.trigger('status.psel', ['clear']);
-
-        var request = store.clear();
-        request.onsuccess = function () {
-          psel.trigger('refresh.psel');
-          psel.trigger('status.psel', [null]);
-          psel.find('.psel-in').val('[]');
-
-          $(bind_selector).prop('checked', false);
-        };
+      .delegate(  '.psel-clear', 'click.psel', function () {
+        psel.trigger('clear.psel');
       });
+  });
+
+  /*
+   * +loaded+ event
+   * Present on .persistent-selection nodes, invoked when the persistent
+   * selection component is done loading (end of the +reload+ event, once
+   * bound elements are initialized). Triggered when the +reload+ event
+   * completes.
+   */
+  /* No default handler; this event is intended for other modules to use. */
+
+  /*
+   * +clear+ event
+   * Present on .persistent-selection nodes, clear the current persistent
+   * selection set. This event takes one optional argument; whether or not
+   * to do a +bare+ reload which only clears the selection set without updating
+   * the UI or the bound elements.
+   */
+  $(document).delegate('.persistent-selection', 'clear.psel', function psel_clear(event, bare) {
+    var psel = $(this);
+
+    var store = open_store(psel.data('store-name'), (function (that) {
+      return function () { psel_clear.call(that, bare); };
+    })(this));
+
+    if (!store) return;
+
+    psel.trigger('status.psel', ['clear']);
+
+    var request = store.clear();
+    request.onsuccess = function () {
+      psel.trigger('status.psel', [null]);
+      if (bare) return;
+
+      psel.trigger('refresh.psel');
+      psel.find('.psel-in').val('{}');
+
+      $(psel.data('bind-selector'))
+        .prop('checked', false);
+    };
   });
 
   /*

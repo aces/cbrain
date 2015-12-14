@@ -1,0 +1,99 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+  new_attr = {
+    'data-dialog'      => 'filter-dialog',
+    'data-overlay-url' => url_for({
+      :controller   => :custom_filters,
+      :action       => :new,
+      :filter_class => 'UserfileCustomFilter'
+    })
+  }
+%>
+<li id="filter-new" class="act-item" <%= new_attr.to_html_attributes.html_safe %>>
+  New filter
+  <span class="ui-icon ui-icon-plus"></span>
+</li>
+<li class="menu-separator">-</li>
+
+<%
+  filters = UserfileCustomFilter.where(:user_id => current_user.id).all
+  filters.each do |filter|
+%>
+  <%
+    apply_attr = {
+      'data-method' => 'GET',
+      'data-ajax'   => 1,
+      'data-url'    => url_for(
+        scope_custom_params(@scope, { 'custom_filters' => [filter.id] })
+          .merge({
+            'controller'  => params[:controller],
+            '_scope_mode' => 'append'
+          })
+      )
+    }
+
+    edit_attr = {
+      'data-dialog'      => 'filter-dialog',
+      'data-overlay-url' => edit_custom_filter_path(filter),
+      'data-filter-id'   => filter.id
+    }
+  %>
+  <li class="filter-item act-item" <%= apply_attr.to_html_attributes.html_safe %>>
+    <span class="filter-edit act-icon ui-icon-pencil"
+      <%= edit_attr.to_html_attributes.html_safe %>
+    ></span>
+    <span class="filter-name">
+      <%= filter.name %>
+    </span>
+  </li>
+<% end %>
+<% unless filters.empty? %>
+  <li class="menu-separator">-</li>
+<% end %>
+
+<%
+  no_parent_attr = {
+    'data-method' => 'GET',
+    'data-ajax'   => 1,
+    'data-url'    => url_for(scope_filter_params(
+      @scope, :set, { 'type' => 'uf.hier', 'operator' => 'no_parent' }
+    ))
+  }
+
+  no_children_attr = {
+    'data-method' => 'GET',
+    'data-ajax'   => 1,
+    'data-url'    => url_for(scope_filter_params(
+      @scope, :set, { 'type' => 'uf.hier', 'operator' => 'no_child' }
+    ))
+  }
+%>
+<li class="filter-item act-item" <%= no_parent_attr.to_html_attributes.html_safe %>>
+  Has no parent
+</li>
+<li class="filter-item act-item" <%= no_children_attr.to_html_attributes.html_safe %>>
+  Has no children
+</li>

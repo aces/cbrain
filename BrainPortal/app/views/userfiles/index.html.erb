@@ -24,28 +24,38 @@
 
 <% title("Files") %>
 
-<!-- **************************************************************************** -->
-<!-- CELL #1 : The two menu button lines, the pagination, and the userfiles table -->
-<!-- **************************************************************************** -->
+<% content_for :head do %>
+  <%= javascript_include_tag 'userfiles' %>
+  <%= stylesheet_link_tag    'userfiles' %>
+  <%= javascript_include_tag 'chosen.jquery.min' %>
+  <%= stylesheet_link_tag    'chosen.min' %>
+<% end %>
 
 <% content_for :scripts do %>
-  <%= javascript_tag (render :partial => "launch_task.js.erb",    :formats => [:js]).to_s %>
+  <%= javascript_tag (render :partial => 'launch_task.js.erb', :formats => [:js]).to_s %>
 <% end %>
 
 <div id="userfiles_menus_and_filelist">
-
-  <%= multi_form_tag(:method => :post, "data-type"  => "script") do %>
-      
-      <div class="index_block">
-        <%= render :partial => "userfiles/file_menu" %>
-        
-        <div id="userfiles_display">
-          <%= render :partial => 'userfiles_display' %>
-        </div>
-        
-        <%  sync_statuses = [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ] %>
-        <%= center_legend("Synchronization symbols:", sync_statuses.map { |s| [ status_html_symbol(s), s ] } ) %>
+  <%= multi_form_tag(:method => :post, 'data-type' => 'script') do %>
+    <div class="index_block">
+      <div id="menu_bar">
+        <%= render(:partial => 'file_menu') %>
       </div>
-  <% end %> <!-- form -->
-</div> <!-- cell #1 -->
 
+      <div id="userfiles_display">
+        <%= render(:partial => 'userfiles_display') %>
+      </div>
+
+      <% sync_statuses = ["InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider"] %>
+      <%= center_legend("Synchronization symbols:", sync_statuses.map { |s| [status_html_symbol(s), s] }) %>
+    </div>
+  <% end %>
+
+  <div id="userfiles_dialogs">
+    <%= render(:partial => 'dialogs') %>
+  </div>
+
+  <div id="userfiles_context_menu">
+    <%= render(:partial => 'context_menu')%>
+  </div>
+</div>
