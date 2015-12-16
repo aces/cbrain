@@ -54,6 +54,34 @@ class CbrainTask::<%= name %> < ClusterTask
 % out_keys = outputs.select { |o| o['command-line-key'] }
 % flags    = (inputs + outputs).select { |p| p['command-line-flag'] }
 %
+% if descriptor['cbrain:can-submit-new-tasks']
+
+  # Task properties are special boolean properties of your task, returned as a
+  # hash table. Used by CBRAIN code to control
+  # default elements. Advanced feature. The defaults
+  # for all properties are 'false' so that subclass
+  # only have to explicitely set the special properties
+  # that they want 'true' (since nil is also false). The list of available
+  # properties is defined in class CbrainTask.
+  def self.properties #:nodoc:
+    # The can_submit_new_tasks property allows a task to submit new tasks.
+    # To submit a new task, a task has to create a JSON file called
+    # new-task-*.json at the root of its working directory. Here is an example of
+    # JSON content for this file:
+    # {
+    #   "tool-class": "CbrainTask::TestTool",
+    #   "description": "A task running TestTool",
+    #   "parameters": {
+    #     "important_number": "123",
+    #     "dummy_paramet4er": "432"
+    #    }
+    # }
+    # The corresponding JSON schema is maintained in method
+    # validate_json_string of class BourreauWorker. 
+    super.merge :can_submit_new_tasks => true
+  end
+
+% end   
   # Setup the cluster's environment to execute <%= name %>; create the relevant
   # directories, prepare symlinks to input files, set environment variables,
   # etc. Returns true if the task was correctly set up.

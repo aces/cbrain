@@ -156,11 +156,11 @@ in a tabular layout. Proceed as follow:
 
            scope_filter_link(
              (@filter_show_proc ? @filter_show_proc.call(vector) : vector[0].to_s),
-             @filter_model.to_s, :replace,
+             @filter_controller.to_s, :replace,
              @filter_fixed.merge(td_filters).map do |attr, value|
                { :a => attr, :v => value }
              end,
-             url: { :controller => @filter_model }
+             url: { :controller => @filter_controller.to_s }
            )
          end
       %>

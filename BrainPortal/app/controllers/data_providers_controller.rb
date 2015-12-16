@@ -610,14 +610,16 @@ class DataProvidersController < ApplicationController
       success_list  = []
       failed_list   = {}
       CBRAIN.spawn_with_active_records(:admin, "#{move_or_copy} Registered Files") do
-        to_operate.each do |u|
+        to_operate.each_with_index do |u,idx|
+          $0="#{move_or_copy} Registered Files ID=#{u.id} #{idx+1}/#{to_operate.size}\0\0\0\0"
           begin
             if move_or_copy == "MOVE"
               u.provider_move_to_otherprovider(new_dp)
               u.set_size!
             elsif move_or_copy == "COPY" # and no ELSE !
               new = u.provider_copy_to_otherprovider(new_dp)
-              u.destroy rescue true # will simply unregister
+              u.delete rescue true # NOT destroy()! We don't want to delete the content!
+              u.destroy_log rescue true
               new.set_size!
             end
             success_list << u

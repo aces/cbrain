@@ -869,7 +869,8 @@ class DataProvider < ActiveRecord::Base
       newfile.name             = new_name
       newfile.user_id          = new_user_id
       newfile.group_id         = new_group_id
-      newfile.created_at       = Time.now unless target_exists
+      newfile.size             = userfile.size if     target_exists
+      newfile.created_at       = Time.now      unless target_exists
       newfile.updated_at       = Time.now
       newfile.immutable        = false
       newfile.save
