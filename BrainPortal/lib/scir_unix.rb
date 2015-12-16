@@ -35,11 +35,11 @@ class ScirUnix < Scir
       @job_info_cache = {}
       ps_command = case CBRAIN::System_Uname
         when /Linux/i
-          "ps ax -o pid,uid,state"
+          "ps x -o pid,uid,state"
         when /Solaris/i
-          "ps ax -o pid,uid,state"  # not tested
+          "ps x -o pid,uid,state"  # not tested
         else
-          "ps ax -o pid,uid,state"  # not tested
+          "ps x -o pid,uid,state"  # not tested
       end
       psout, pserr = bash_this_and_capture_out_err(ps_command)
       raise "Cannot get output of '#{ps_command}' ?!?" if psout.blank? && ! pserr.blank?

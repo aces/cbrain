@@ -32,8 +32,19 @@ class ScirPbs < Scir
 
     def update_job_info_cache #:nodoc:
       qstat_command = "qstat -u #{CBRAIN::Rails_UserName.to_s.bash_escape} -f"
-      out, err = bash_this_and_capture_out_err(qstat_command)
-      raise "Cannot get output of '#{qstat_command}' ?!?" if out.blank? && ! err.blank?
+      retry_count = 0
+      # In some cases, the standard output of the qstat command 
+      # is blank even though jobs are still running on the cluster. In this situation,
+      # all the active jobs will be marked completed while they are not. 
+      # To address this issue, we retry the qstat command up to 3 times with a 3-second interval
+      # as long as the output of qstat is blank.
+      while(retry_count < 3) do
+        out, err = bash_this_and_capture_out_err(qstat_command)
+        raise "Cannot get output of '#{qstat_command}' ?!?" if out.blank? && ! err.blank?
+        break unless out.strip.blank?
+        sleep 3
+        retry_count+=1
+      end
       jid = 'Dummy'
       @job_info_cache = {}
       out.split(/\s*\n\s*/).each do |line|
