@@ -1,3 +1,4 @@
+
 /*
 #
 # CBRAIN Project
@@ -53,7 +54,7 @@
 
     if (!target) return false;
 
-    new_content = $(data);
+    var new_content = $(data);
     if (target === "__OVERLAY__") {
 
       width = parseInt(options["width"], 10); // || 800);
@@ -186,8 +187,6 @@
     //Makes a button set, buttons that are glued together
     loaded_element.find(".button_set").buttonset();
 
-    // After talking to Pierre we rather keep the function longer and have it be more clear
-    // this also helps if the logic in the function needs to be changed
     loaded_element.find(".button_with_drop_down > div.drop_down_menu").each(function(e) {
       var menu    = $(this);
       var button  = menu.closest(".button_with_drop_down");
@@ -198,9 +197,9 @@
     });
 
     loaded_element.find(".button_with_drop_down > div.drop_down_menu")
-              .find(".hijacker_submit_button").click(function(e) {
-                loaded_element.find(".drop_down_menu:visible").siblings(".button_menu").click();
-              });
+                  .find(".hijacker_submit_button").click(function(e) {
+                    loaded_element.find(".drop_down_menu:visible").siblings(".button_menu").click();
+                  });
 
     loaded_element.find(".button_with_drop_down").children(".button_menu").button({
       icons: {
@@ -235,9 +234,7 @@
       if (event.target.nodeName === "A") {
         return true;
       }
-      // link created and clicked in two lines -- ehsan
-      // the div that represents the project has other anchors in it so putting this div in an anchor is a bad idea..
-      // (we get nested anchors)
+
       var project_button = $(this);
       var url = project_button.data("href");
       var method = project_button.data("method");
@@ -506,7 +503,6 @@
     });
 
 
-   /* // too many handlers being added on each mouseenter-- ehsan --
     $(document).undelegate(".hover_open", "mouseenter").delegate(".hover_open", "mouseenter", function() {
       var header = $(this);
       var target = $(header.data("target"));
@@ -518,25 +514,10 @@
       });
 
       return false;
-     }); */
+   });
 
 
-     $(".hover_open").bind("mouseenter", function() {
-       var header = $(this);
-       var target = $(header.data("target"));
 
-       target.show();
-       header.mouseleave(function() {
-         target.hide();
-         return false;
-       });
-
-       return false;
-      });
-
-
-    // could be cleaner --ehsan --
-    // This is clear peice of code
     $(document).delegate(".show_toggle", "click", function() {
       var current_element = $(this);
       var target_element = $(current_element.data("target"));
@@ -572,7 +553,6 @@
       return false;
     });
 
-    // refactor with toggle... --ehsan --
     $(document).delegate(".inline_edit_field_link", "click", function() {
       var link = $(this);
       var visible = link.data("visible");
@@ -627,11 +607,6 @@
     $(document).delegate(".select_all", "click", function() {
       var header_box = $(this);
       var checkbox_class = header_box.data("checkbox-class");
-      // set all checkboxes in a line -- ehsan --
-
-      /*$('.' + checkbox_class).each(function(index, element) {
-        element.checked = header_box.prop('checked');
-      });*/
 
       $('.' + checkbox_class).prop('checked',header_box.prop('checked'))
 
