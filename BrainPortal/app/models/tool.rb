@@ -129,10 +129,12 @@ class Tool < ActiveRecord::Base
     get_tag_attribute(:application_tags, return_class)
   end
 
+  # returns package_name tags associated with a tool
   def application_package_name(return_class = :array)
     get_tag_attribute(:application_package_name, return_class)
   end
 
+  # returns application_type tags associated with a tool
   def application_type(return_class = :array)
     get_tag_attribute(:application_type, return_class)
   end
@@ -144,11 +146,11 @@ class Tool < ActiveRecord::Base
 
   private
 
-  def url_present?
+  def url_present? #:nodoc:
     url.present?
   end
 
-  def get_tag_attribute(attribute_name, return_class)
+  def get_tag_attribute(attribute_name, return_class) #:nodoc:
     tag = read_attribute(attribute_name)
 
     if return_class == :string
