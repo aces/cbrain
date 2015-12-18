@@ -1,4 +1,3 @@
-
 <%-
 #
 # CBRAIN Project
@@ -25,12 +24,9 @@
 $(document).delegate('div#tool_version_selector > div', 'new_content', function (event) {
   "use strict";
 
-  /* Only trigger when the main div is loaded */
-  if (event.target != this) return;
-
   var userfile_checkboxes = $("input[name='file_ids[]']"),
       menu_button         = $(this).find('input.launch_tool'),
-      launch_form         = menu_button.closest('form'),
+      launch_form         = $("#userfile_table_form"),
       url                 = menu_button.attr('data-url'),
       method              = menu_button.attr('data-method'),
       tool_name           = launch_form.find('select#tool_id option:selected').text().replace("Launch ", ""),
@@ -41,19 +37,18 @@ $(document).delegate('div#tool_version_selector > div', 'new_content', function 
   if (method) launch_form.attr('method', method);
 
   menu_button
-    .button('option', 'label',
-      ((persistent || userfile_checkboxes.is(':checked')) ? "Launch " : "Prepare ") +
-      tool_name
-    )
     .unbind('click.launch_task')
     .bind('click.launch_task', function (event) {
+
+      // This was added to handle the popup dialog
+      $("#tool_version_selector").appendTo(launch_form);
+      $("#toolsDialog").dialog( "close");
+
       /* If we have userfiles selected, we can launch the task right away! */
       if (persistent || userfile_checkboxes.is(':checked')) return;
 
-      event.preventDefault();
 
-      /* Otherwise, hide the menu and show a nice bar to let the user pick files */
-      $(this).closest('.drop_down_menu').hide();
+      event.preventDefault();
 
       /* Remove old launch bars from previous selections */
       $('.launch_bar').remove();
@@ -75,11 +70,9 @@ $(document).delegate('div#tool_version_selector > div', 'new_content', function 
     .bind('change.launch_task', function () {
       var checked = userfile_checkboxes.filter(':checked').length;
 
-      /* Update the button in the menu */
-      menu_button.button('option', 'label', (checked ? "Launch " : "Prepare ") + tool_name);
-
       /* And the launch_bar, if it exists */
       $('.launch_bar span.file_status').text(checked ? "Launch with " + checked + " file(s)" : "No files selected");
       $('.launch_bar button').button(checked ? "enable" : "disable");
     });
 });
+

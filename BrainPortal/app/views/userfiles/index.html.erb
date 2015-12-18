@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -30,22 +30,26 @@
 
 <% content_for :scripts do %>
   <%= javascript_tag (render :partial => "launch_task.js.erb",    :formats => [:js]).to_s %>
+  <%= javascript_tag (render :partial => "tools_interface.js.erb", :formats => [:js]).to_s %>
 <% end %>
+
 
 <div id="userfiles_menus_and_filelist">
 
-  <%= multi_form_tag(:method => :post, "data-type"  => "script") do %>
-      
+  <%= multi_form_tag(:method => :post, "data-type"  => "script", :id => "userfile_table_form") do %>
+
       <div class="index_block">
         <%= render :partial => "userfiles/file_menu" %>
-        
+
         <div id="userfiles_display">
           <%= render :partial => 'userfiles_display' %>
         </div>
-        
+
         <%  sync_statuses = [ "InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider" ] %>
         <%= center_legend("Synchronization symbols:", sync_statuses.map { |s| [ status_html_symbol(s), s ] } ) %>
       </div>
   <% end %> <!-- form -->
 </div> <!-- cell #1 -->
+
+<%= render "tools_interface" %>
 

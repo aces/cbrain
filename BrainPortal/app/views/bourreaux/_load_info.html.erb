@@ -21,8 +21,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
-
-<h4>Latest load information about this Execution Server</h4>
+<br/>
 
 <% unless @latest_in_queue_delay.blank? %>
 <%
@@ -42,14 +41,13 @@
         html_colorize("awful",    'red')
       end
 %>
-  Most recent wait time before execution starts: <%= pretty_elapsed(@latest_in_queue_delay.to_i, :num_components => 2) %> (<%= rating %>)<br/>
+  <b>Last wait time:</b> <%= pretty_elapsed(@latest_in_queue_delay.to_i, :num_components => 2) %> (<%= rating %>)<br/>
   <% unless @time_of_last_queue_delay.blank? %>
-    <small>(This happened <%= pretty_elapsed(Time.now.to_i - @time_of_last_queue_delay.to_i, :num_components => 2) %> ago)</small><br/>
+    <small>(This happened <%= pretty_elapsed(Time.now.to_i - @time_of_last_queue_delay.to_i, :num_components => 2) %> ago)</small>&nbsp;<a href="#" id="showAdditionalToolInfo">more info</a><br/><br/>
   <% end %>
-  <br/>
 <% end %>
-
+<div class="additionalToolInfo">
 Number of active tasks (all users):  <%= @num_active %><br/>
 Number of queued tasks (all users):  <%= @num_queued %><br/>
-Number of running tasks (all users): <%= @num_processing %><br/>
-
+Number of running tasks (all users): <%= @num_processing %>
+</div>
