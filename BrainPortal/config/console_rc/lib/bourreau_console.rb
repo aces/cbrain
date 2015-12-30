@@ -1,3 +1,4 @@
+
 #
 # CBRAIN Project
 #
@@ -19,10 +20,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#=================================================================
-# Console-specific initialization code.
-#=================================================================
+# Adds two wrapper commands to connect to the Rails Console
+# of remote Bourreaux:
+#
+# bourreau.console  # connects to the console of object 'bourreau'
+# Bourreau.console(id_or_name_or_regex) # finds a bourreau and connects
+Bourreau.nil? # does nothing but loads the class
+class Bourreau
 
-if defined?(Rails::Console)
-  IRB.conf[:RC_NAME_GENERATOR] = lambda { |ext| (Rails.root + "config/console_rc/init_rc.rb").to_s }
+  def console #:nodoc:
+    start_remote_console
+  end
+
+  def self.console(id) #:nodoc:
+    b   = self.find(id)         rescue nil
+    b ||= self.find_by_name(id) rescue nil
+    b ||= self.all.detect { |x| x.name =~ id } if id.is_a?(Regexp)
+    unless b
+      puts "Can't find a Bourreau that match '#{id.inspect}'"
+      return
+    end
+    puts "Starting console for Bourreau '#{b.name}'"
+    b.console
+  end
 end
+

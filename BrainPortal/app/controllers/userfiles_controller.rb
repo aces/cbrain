@@ -1057,7 +1057,7 @@ class UserfilesController < ApplicationController
     tarfile      = create_relocatable_tar_for_userfiles(userfiles_list,current_user.login)
     tarfile_name = "#{specified_filename}.tar.gz"
     send_file tarfile, :stream  => true, :filename => tarfile_name
-    CBRAIN.spawn_fully_independent("DL clean #{current_user.login}") do
+    CBRAIN.spawn_fully_independent("Download Clean Tmp #{current_user.login}") do
       sleep 3000
       File.unlink(tarfile)
     end
