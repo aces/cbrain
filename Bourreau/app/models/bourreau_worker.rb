@@ -611,12 +611,12 @@ class BourreauWorker < Worker
     current_task.addlog(message)
         
     # Creates task
-    task_class_name = new_task_hash["tool-class"]
-    new_task        = CbrainTask.const_get(task_class_name).new # Raises an exception if tool class is not found
-    new_task.batch_id = current_task.id
+    task_class_name      = new_task_hash["tool-class"]
+    new_task             = CbrainTask.const_get(task_class_name).new # Raises an exception if tool class is not found
+    new_task.batch_id    = current_task.id
     new_task.launch_time = Time.now
-    current_task.level=0 if current_task.level.nil?
-    new_task.level = current_task.level+1
+    current_task.level   = 0 if current_task.level.nil?
+    new_task.level       = current_task.level + 1       # New task will be one level up its "parent" task in the task table.
     raise "Invalid tool class: #{task_class_name }" unless new_task.is_a? ClusterTask
 
     # Sets tool config among tool configs accessible by user of current task
@@ -669,10 +669,6 @@ class BourreauWorker < Worker
       current_task.add_prerequisites_for_post_processing(new_task,'Completed')
       current_task.save!
     end
-
-
-
-
 
   end
 
