@@ -162,10 +162,6 @@
       var text = inline_text_field.find(".current_text");
       var trigger = inline_text_field.find(inline_text_field.data("trigger"));
 
-      var data_type = inline_text_field.data("type") || "script";
-      var target = inline_text_field.data("target");
-      var method = inline_text_field.data("method") || "POST";
-
       trigger.click(function(event) {
         text.hide();
         form.show();
@@ -236,9 +232,9 @@
       }
 
       var project_button = $(this);
-      var url = project_button.data("href");
-      var method = project_button.data("method");
-      var link = $("<a href=\"" + url + "\" data-method=\"" + method + "\"></a>");
+      var url            = project_button.data("href");
+      var method         = project_button.data("method");
+      var link           = $("<a href=\"" + url + "\" data-method=\"" + method + "\"></a>");
 
       link.appendTo("body");
       link.click();
