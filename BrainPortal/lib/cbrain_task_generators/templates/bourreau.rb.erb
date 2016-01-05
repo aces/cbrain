@@ -30,13 +30,8 @@
 % # NOTE: This template's weird indentation is there to try and make the
 % # generated code as legible as possible.
 
-% if descriptor['cbrain:inherits-from-class']
-%   parent_class = descriptor['cbrain:inherits-from-class']
-% else
-%   parent_class = "ClusterTask"
-% end
 # Bourreau-side CbrainTask subclass to launch <%= name %>
-class CbrainTask::<%= name %> < <%= parent_class %>
+class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 'ClusterTask' %>
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
