@@ -48,12 +48,16 @@ uniq_id = rand(100000).to_s
                                              select_attributes %>
 
   <% if num_online > 0 %>
-    <%= submit_tag "Launch Tool",
+
+    <%= submit_tag @button_label + " " + @tool.name,
       "class"       => "button launch_tool",
-      "data-url"    => url_for(:controller => :tasks, :action => :new),
-      "data-method" => "POST"
+      "data-url"    => url_for(:controller => :tasks, :action => :new, :tool_id => @tool.id)
     %>
   <% end %>
+
+
+
+
 
 
   <br/>
@@ -63,5 +67,6 @@ uniq_id = rand(100000).to_s
     <%= render :partial => 'bourreaux/load_info', :locals => { :bourreau => Bourreau.find(@tool_config.bourreau_id) } %>
   <% end %>
   </div>
+  <br/>
 </div>
 

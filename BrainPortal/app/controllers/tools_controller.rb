@@ -50,6 +50,7 @@ class ToolsController < ApplicationController
       return
     end
 
+    @button_label = params[:button_label]
     tool_id       = params[:tool_id]
     @tool         = current_user.available_tools.find(tool_id)
 
@@ -123,6 +124,7 @@ class ToolsController < ApplicationController
   # PUT /tools/1.xml
   def update #:nodoc:
     @tool = current_user.available_tools.find(params[:id])
+
     respond_to do |format|
       if @tool.update_attributes_with_logging(params[:tool], current_user, %w( category cbrain_task_class select_menu_text ) )
         flash[:notice] = 'Tool was successfully updated.'

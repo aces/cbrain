@@ -32,7 +32,7 @@ class ScirMoab < Scir
 
     def update_job_info_cache #:nodoc:
       #xmltext, showqerr = bash_this_and_capture_out_err("showq --blocking --xml")
-      xmltext, showqerr = bash_this_and_capture_out_err("showq --xml")
+      xmltext, showqerr = bash_this_and_capture_out_err("showq --xml -u #{CBRAIN::Rails_UserName.to_s.bash_escape}")
       xmltext.force_encoding('ASCII-8BIT') # THE STUPID MOAB XML DUMP CAN CONTAIN BINARY DATA!
       raise "Cannot get output of 'showq --blocking --xml' ?!?" if xmltext.blank? && ! showqerr.blank?
       raise "Cannot get XML from showq; got:\n---Start\n#{xmltext}\n---End\n" unless
