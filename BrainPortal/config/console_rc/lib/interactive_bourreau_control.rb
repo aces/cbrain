@@ -114,8 +114,8 @@ Operations Mode : #{@mode == "each_command" ?
 
       dowait = false
       while (inputkeywords.size > 0)
-        letter   = inputkeywords.shift # coudl be a number too
-        dowait ||= process_user_letter(letter)
+        letter  = inputkeywords.shift # could be a number too
+        dowait |= process_user_letter(letter)
       end
       puts ""
       if dowait
