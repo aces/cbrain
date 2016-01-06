@@ -1,1 +1,0 @@
-../../BrainPortal/config/console_rc.rb

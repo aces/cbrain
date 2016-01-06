@@ -222,7 +222,8 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
           :header        => "Report of task workdir disappearances on '#{myself.name}'",
           :description   => "Some work directories of tasks have disappeared.",
           :variable_text => "Number of tasks: #{bad_tasks.size}\n" +
-                            "List of tasks:\n#{bad_tasks.join("\n")}\n",
+                            "List of tasks:\n" + bad_tasks.sort
+                            .each_slice(8).map { |tids| tids.join(" ") }.join("\n"),
           :critical      => true,
           :send_email    => false
         ) rescue true

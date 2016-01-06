@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -32,8 +32,10 @@
 <% end %>
 
 <% content_for :scripts do %>
-  <%= javascript_tag (render :partial => 'launch_task.js.erb', :formats => [:js]).to_s %>
+  <%= javascript_tag (render :partial => 'launch_task.js.erb',     :formats => [:js]).to_s %>
+  <%= javascript_tag (render :partial => 'tools_interface.js.erb', :formats => [:js]).to_s %>
 <% end %>
+
 
 <div id="userfiles_menus_and_filelist">
   <%= multi_form_tag(:method => :post, 'data-type' => 'script') do %>
@@ -46,7 +48,7 @@
         <%= render(:partial => 'userfiles_display') %>
       </div>
 
-      <% sync_statuses = ["InSync", "ProvNewer", "CacheNewer", "Corrupted", "ToCache", "ToProvider"] %>
+      <% sync_statuses = ['InSync', 'ProvNewer', 'CacheNewer', 'Corrupted', 'ToCache', 'ToProvider'] %>
       <%= center_legend("Synchronization symbols:", sync_statuses.map { |s| [status_html_symbol(s), s] }) %>
     </div>
   <% end %>
@@ -56,6 +58,8 @@
   </div>
 
   <div id="userfiles_context_menu">
-    <%= render(:partial => 'context_menu')%>
+    <%= render(:partial => 'context_menu') %>
   </div>
 </div>
+
+<%= render(:partial => 'tools_interface') %>

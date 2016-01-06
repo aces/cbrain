@@ -82,6 +82,66 @@
   margin-top: 5px;
 }
 
+/* Tool/task launch dialog */
+
+.tools-container {
+  border: 1px solid grey;
+  height: 500px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  width: 400px;
+}
+
+#toolSelectTable {
+  border: none;
+  width: 400px;
+}
+
+#toolSelectTable td {
+  padding: 5px;
+  text-align: left;
+}
+
+#toolSelectTable tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+#toolSelectTable tr:hover td {
+  background-color: #fff3d3;
+}
+
+#toolsDialogWrapper {
+  margin-right: 170px;
+}
+
+#toolsDialogLeftCol {
+  float: left;
+  width: 170px;
+}
+
+#toolsDialogRightCol {
+  float: right;
+  margin-right: -170px;
+  width: 100%;
+}
+
+.additionalToolInfo {
+  display: none;
+}
+
+.toolsDialogClass .ui-dialog-titlebar {
+  background: #05a3d6;
+  color: white;
+}
+
+.toolsDialogClass .ui-dialog-titlebar .ui-dialog-titlebar-close {
+  background: white;
+}
+
+.toolsDialogClass .ui-dialog-titlebar .ui-dialog-titlebar-close:hover {
+  background: #05a3d6;
+}
+
 /* Menus */
 
 .act-icon {
