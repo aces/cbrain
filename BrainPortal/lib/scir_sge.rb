@@ -30,8 +30,8 @@ class ScirSge < Scir
 
   class Session < Scir::Session #:nodoc:
 
-    def update_job_info_cache
-      out, err = bash_this_and_capture_out_err("qstat -xml")
+    def update_job_info_cache #:nodoc:
+      out, err = bash_this_and_capture_out_err("qstat -xml -u #{CBRAIN::Rails_UserName.to_s.bash_escape}")
       raise "Cannot get output of 'qstat -xml' ?!?" if out.blank? && ! err.blank?
       @job_info_cache = {}
       paragraphs = out.split(/(<\/?job_list)/)
@@ -47,7 +47,7 @@ class ScirSge < Scir
       true
     end
 
-    def statestring_to_stateconst(state)
+    def statestring_to_stateconst(state) #:nodoc:
       return Scir::STATE_RUNNING        if state =~ /r/i
       return Scir::STATE_USER_SUSPENDED if state =~ /s/i
       return Scir::STATE_USER_ON_HOLD   if state =~ /h/i
@@ -55,7 +55,7 @@ class ScirSge < Scir
       return Scir::STATE_UNDETERMINED
     end
 
-    def hold(jid)
+    def hold(jid) #:nodoc:
       IO.popen("qhold #{shell_escape(jid)} 2>&1") do |i|
         p = i.read
         raise "Error holding: #{p}" unless p =~ /modified hold of/i
@@ -63,7 +63,7 @@ class ScirSge < Scir
       end
     end
 
-    def release(jid)
+    def release(jid) #:nodoc:
       IO.popen("qrls #{shell_escape(jid)} 2>&1") do |i|
         p = i.read
         raise "Error releasing: #{p}" unless p =~ /modified hold of/i
@@ -71,15 +71,15 @@ class ScirSge < Scir
       end
     end
 
-    def suspend(jid)
+    def suspend(jid) #:nodoc:
       raise "There is no 'suspend' action implemented yet for SGE clusters"
     end
 
-    def resume(jid)
+    def resume(jid) #:nodoc:
       raise "There is no 'resume' action implemented yet for SGE clusters"
     end
 
-    def terminate(jid)
+    def terminate(jid) #:nodoc:
       IO.popen("qdel #{shell_escape(jid)} 2>&1") do |i|
         p = i.read
         raise "Error deleting: #{p}" unless p =~ /has deleted job|has registered/i
@@ -87,7 +87,7 @@ class ScirSge < Scir
       end
     end
 
-    def queue_tasks_tot_max
+    def queue_tasks_tot_max #:nodoc:
       queue = Scir.cbrain_config[:default_queue] || ""
       queueopt = queue.blank? ? "" : "-q #{shell_escape(queue)}"
       tot = max = nil
@@ -115,7 +115,7 @@ class ScirSge < Scir
 
     private
 
-    def qsubout_to_jid(txt)
+    def qsubout_to_jid(txt) #:nodoc:
       if txt && txt =~ /Your job (\d+)/i
         return Regexp.last_match[1]
       end
@@ -126,7 +126,7 @@ class ScirSge < Scir
 
   class JobTemplate < Scir::JobTemplate #:nodoc:
 
-    def qsub_command
+    def qsub_command #:nodoc:
       raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless
         self.command == "/bin/bash" && self.arg.size == 1
       raise "Error: stdin not supported" if self.stdin
@@ -142,12 +142,9 @@ class ScirSge < Scir
       command += "-e #{shell_escape(self.stderr)} " if self.stderr
       command += "-j y "                            if self.join
       command += "-q #{shell_escape(self.queue)} "  unless self.queue.blank?
-      if !self.tc_extra_qsub_args.blank?
-        command += "#{self.tc_extra_qsub_args} "
-      else
-        command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
-      end
-      command += "-l h_rt=#{self.walltime.to_i} "   unless self.walltime.blank?
+      command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
+      command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?
+      command += "-l h_rt=#{self.walltime.to_i} "           unless self.walltime.blank?
       command += "#{shell_escape(self.arg[0])}"
       command += " 2>&1"
 

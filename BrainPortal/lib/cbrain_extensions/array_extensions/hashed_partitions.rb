@@ -17,15 +17,15 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 module CBRAINExtensions #:nodoc:
   module ArrayExtensions #:nodoc:
-    
+
     # Convert array to hash based on given block.
     module HashedPartitions
-      
+
       # Converts the array into a complex hash.
       # Runs the given block, passing it each of the
       # elements of the array; the block must return
@@ -40,18 +40,29 @@ module CBRAINExtensions #:nodoc:
       # will return
       #
       #   { 0 => [0,3,6], 1 => [1,4], 2 => [2,5] }
+      #
+      # The method also works with a block receiving two arguments,
+      # the second one will be the index of the element in the array.
+      #
+      #   [ 'a', 'b', 'c', 'd'].hashed_partition { |n,i| i / 3 }
+      #
+      # will return
+      #
+      #   { 0 => ['a,'b','c'], 1 => ['d'] }
       def hashed_partition
         partitions = {}
-        self.each do |elem|
-           key = yield(elem)
+        self.each_with_index do |elem,i|
+           key = yield(elem,i)
            partitions[key] ||= []
            partitions[key] << elem
         end
         partitions
       end
 
-      alias hashed_partitions hashed_partition
-      
+      alias hashed_partitions            hashed_partition
+      alias hashed_partition_with_index  hashed_partition
+      alias hashed_partitions_with_index hashed_partition
+
     end
   end
 end

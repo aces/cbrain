@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -40,7 +40,7 @@
       <% if current_user.has_role?(:admin_user) %>
         <p>
           <%= f.label :site_id, "Site:" %>
-          <%= f.collection_select :site_id, Site.all, :id, :name, {:include_blank  => true} %>
+		  <%= site_select "group[site_id]",{}, :prompt => "(Select a site)" %>
         </p>
         <p>
         Make this a system group invisible to normal users:

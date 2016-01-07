@@ -1,0 +1,111 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title 'Search' %>
+
+<%= form_tag(search_path, :method => :get) do %>
+   <%= text_field_tag :search, @search.presence, :placeholder => "Search for anything" %>
+   <span class="field_explanation">This will search files, tasks, users, tools, projects, etc by name or description. <%= @limit %> results shown maximum.</span>
+<% end %>
+
+<%#
+  Display a nice short table for the result set named +name+ with title +title+.
+  Each table cell is formatted by the given block (which is passed directly to
+  array_to_table).
+%>
+<% result_table = lambda do |name, title = nil, &block| %>
+  <% return if (result = @results[name]).blank? %>
+  <h3><%= title || name.to_s.humanize %> (found: <%= result.size %>)</h3>
+  <%=
+    array_to_table(result[0, @limit], {
+      :rows            => 5,
+      :fill_by_columns => true,
+      :table_class     => "simple",
+      :td_class        => "left_align",
+    }, &block)
+  %>
+<% end %>
+
+<% result_table.(:files) do |file, r, c| %>
+  <%= link_to_userfile_if_accessible(file) %> (<%= file.user.login %>)
+<% end %>
+
+<% result_table.(:tasks) do |task, r, c| %>
+  <%= link_to_model_if_accessible(CbrainTask,task,:name_and_bourreau) %> (<%= task.user.login %>)
+  <%= link_to "(edit)", edit_task_path(task), :class => 'action_link' %><br>
+  <%= overlay_description(task.description, :header_width => 35) %>
+<% end %>
+
+<% result_table.(:users) do |user, r, c| %>
+  <%= user.full_name %> (<%= link_to_user_if_accessible(user) %>)
+  <%= link_to '(switch)', switch_user_path(user), :method  => :post, :class => 'action_link' if current_user.has_role?(:admin_user) %>
+<% end %>
+
+<% result_table.(:groups, 'Projects') do |group, r, c| %>
+  <%= link_to_group_if_accessible(group) %> (<%= group.creator.try(:login) %>)
+  <%= link_to '(switch)', { :controller => :groups, :action => :switch, :id => group.id } , :method  => :post, :class => 'action_link' %>
+<% end %>
+
+<% result_table.(:rrs, 'Execution Servers') do |rr, r, c| %>
+  <%= link_to_bourreau_if_accessible(rr) %>
+  <% task_count = current_user.cbrain_tasks.real_tasks.where(:bourreau_id => rr.id).count %>
+  <% if task_count > 0 %>
+    (<%= index_count_filter(
+      task_count, :tasks,
+      { :user_id => current_user.id, :bourreau_id => rr.id }
+    ) %> tasks)
+  <% end %>
+<% end %>
+
+<% result_table.(:dps, 'Data Providers') do |dp, r, c| %>
+  <%= link_to_data_provider_if_accessible(dp) %>
+  <%= link_to '(browse)', browse_data_provider_path(dp), :class => 'action_link' if dp.is_browsable? %>
+  <% file_count = current_user.userfiles.where(:data_provider_id => dp.id).count %>
+  <% if file_count > 0 %>
+    (<%= index_count_filter(
+      file_count, :userfiles,
+      { :user_id => current_user.id, :data_provider_id => dp.id }
+    ) %> registered files)
+  <% end %>
+<% end %>
+
+<% result_table.(:sites) do |site, r, c| %>
+  <%= link_to_site_if_accessible(site) %>
+<% end %>
+
+<% result_table.(:tools) do |tool, r, c| %>
+  <% if current_user.has_role?(:admin_user) %>
+    <%= link_to tool.name, edit_tool_path(tool) %>
+  <%  else %>
+    <%= tool.name %>
+  <% end %>
+<% end %>
+
+<% result_table.(:tcs, 'Tool Versions') do |tc, r, c| %>
+  <% if current_user.has_role?(:admin_user) %>
+    <%= tc.tool.name %>@<%= tc.bourreau.name%> : <%= link_to tc.version_name, edit_tool_config_path(tc) %>
+  <%  else %>
+    <%= tc.tool.name %>@<%= tc.bourreau.name%> : <%= tc.version_name %>
+  <% end %>
+<% end %>

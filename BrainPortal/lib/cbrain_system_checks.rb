@@ -275,7 +275,8 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
             :header        => "Report of cache crud removal on #{myself.is_a?(BrainPortal) ? "Portal" : "Execution Server"} '#{myself.name}'",
             :description   => "These relative paths in the local Data Provider cache were\n" +
                               "removed as there are no longer any userfiles matching them.\n",
-            :variable_text => "#{wiped.size} cache subpaths:\n" + wiped.sort.join("\n"),
+            :variable_text => "#{wiped.size} cache subpaths:\n" + wiped.sort
+                              .each_slice(10).map { |pp| pp.join(" ") }.join("\n"),
             :critical      => true,
             :send_email    => false
           ) rescue true
@@ -288,14 +289,10 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
 
   def self.a080_ensure_set_starttime_revision
-
-    # Global for the whole Rails process
-    $CBRAIN_StartTime_Revision = RemoteResource.current_resource.info.revision
-
     #-----------------------------------------------------------------------------
-    puts "C> Current application tag or revision: #{$CBRAIN_StartTime_Revision}"
+    puts  "C> Current application tag or revision: #{CBRAIN::CBRAIN_StartTime_Revision}"
+    puts  "C> Current Git branch: #{CBRAIN::CBRAIN_Git_Branch.presence || "unknown"}"
     #-----------------------------------------------------------------------------
-
   end
 
   private

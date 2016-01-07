@@ -31,15 +31,15 @@ class ScirUnix < Scir
 
   class Session < Scir::Session #:nodoc:
 
-    def update_job_info_cache
+    def update_job_info_cache #:nodoc:
       @job_info_cache = {}
       ps_command = case CBRAIN::System_Uname
         when /Linux/i
-          "ps ax -o pid,uid,state"
+          "ps x -o pid,uid,state"
         when /Solaris/i
-          "ps ax -o pid,uid,state"  # not tested
+          "ps x -o pid,uid,state"  # not tested
         else
-          "ps ax -o pid,uid,state"  # not tested
+          "ps x -o pid,uid,state"  # not tested
       end
       psout, pserr = bash_this_and_capture_out_err(ps_command)
       raise "Cannot get output of '#{ps_command}' ?!?" if psout.blank? && ! pserr.blank?
@@ -54,33 +54,33 @@ class ScirUnix < Scir
       true
     end
 
-    def statestring_to_stateconst(state)
+    def statestring_to_stateconst(state) #:nodoc:
       return Scir::STATE_USER_SUSPENDED if state.match(/[t]/i)
       return Scir::STATE_RUNNING        if state.match(/[sruz]/i)
       return Scir::STATE_UNDETERMINED
     end
 
-    def hold(jid)
+    def hold(jid) #:nodoc:
       true
     end
 
-    def release(jid)
+    def release(jid) #:nodoc:
       true
     end
 
-    def suspend(jid)
+    def suspend(jid) #:nodoc:
       Process.kill("-STOP",Process.getpgid(jid.to_i)) rescue true  # A negative signal name kills a GROUP
     end
 
-    def resume(jid)
+    def resume(jid) #:nodoc:
       Process.kill("-CONT",Process.getpgid(jid.to_i)) rescue true  # A negative signal name kills a GROUP
     end
 
-    def terminate(jid)
+    def terminate(jid) #:nodoc:
       Process.kill("-TERM",Process.getpgid(jid.to_i)) rescue true  # A negative signal name kills a GROUP
     end
 
-    def queue_tasks_tot_max
+    def queue_tasks_tot_max #:nodoc:
       loadav = `uptime`.strip
       loadav.match(/averages?:\s*([\d\.]+)/i)
       loadtxt = Regexp.last_match[1] || "unknown"
@@ -101,7 +101,7 @@ class ScirUnix < Scir
       [ "exception", "exception" ]
     end
 
-    def run(job)
+    def run(job) #:nodoc:
       reset_job_info_cache
       command = job.qsub_command
       pid = Process.fork do
@@ -116,7 +116,7 @@ class ScirUnix < Scir
 
     private
 
-    def qsubout_to_jid(txt)
+    def qsubout_to_jid(txt) #:nodoc:
       raise "Not used in this implementation."
     end
 
@@ -125,7 +125,7 @@ class ScirUnix < Scir
   class JobTemplate < Scir::JobTemplate #:nodoc:
 
     # NOTE: We use a custom 'run' method in the Session, instead of Scir's version.
-    def qsub_command
+    def qsub_command #:nodoc:
       raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless
         self.command == "/bin/bash" && self.arg.size == 1
       raise "Error: stdin not supported" if self.stdin

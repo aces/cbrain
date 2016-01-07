@@ -350,13 +350,29 @@ class ClusterTask < CbrainTask
   #
   #     make_available(6, "mincfiles/")
   #
-  # Will make userfile with ID 6 available at
+  # will make userfile with ID 6 available at
   # <workdir>/mincfiles/<name of userfile with ID 6>
   #
-  # +userfile+ can either be an ID or an userfile
+  # +userfile+ can either be an ID or a Userfile
   # object. Note that just like safe_symlink, this method
   # will silently replace an existing symlink at +file_path+
-  def make_available(userfile, file_path)
+  #
+  # In the case where +userfile+ is a FileCollection, an optional
+  # +userfile_sub_path+ can be provided to specify that the
+  # symlink will point not to the +userfile+ itself, but to
+  # a relative path in it. E.g. if userfile ID 99 points
+  # to a FileCollection named "Abcd" with content:
+  #
+  #   Abcd/hello.txt
+  #   Abcd/subdir/goodbye.txt
+  #
+  # then
+  #
+  #     make_available(99, "mygoodbye.txt", "subdir/goodbye.txt")
+  #
+  # will create a link 'mygoodbye.txt' that points deeper in the
+  # directory structure.
+  def make_available(userfile, file_path, userfile_sub_path = nil)
     cb_error "File path argument must be relative" if
       file_path.blank? || file_path.to_s =~ /^\//
 
@@ -370,9 +386,10 @@ class ClusterTask < CbrainTask
     full_path     = Pathname.new(self.full_cluster_workdir) + file_path
 
     # Pathname objects for the userfile and bourreau directories
-    workdir_path  = Pathname.new(self.cluster_shared_dir)
-    dp_cache_path = Pathname.new(self.bourreau.dp_cache_dir)
-    userfile_path = Pathname.new(userfile.cache_full_path)
+    workdir_path   = Pathname.new(self.cluster_shared_dir)
+    dp_cache_path  = Pathname.new(self.bourreau.dp_cache_dir)
+    userfile_path  = Pathname.new(userfile.cache_full_path)
+    userfile_path += Pathname.new(userfile_sub_path) if userfile_sub_path.present?
 
     # Figure out the two parts of the new symlink target; from file_path to
     # the DP cache symlink, and from the DP symlink to the userfile
@@ -1494,6 +1511,14 @@ class ClusterTask < CbrainTask
     job.walltime = self.job_walltime_estimate
     job.tc_extra_qsub_args = tool_config.tc_extra_qsub_args
 
+    # Note: all extra_qsub_args defined in the tool_configs (bourreau, tool and bourreau/tool)
+    # are appended by level of priority. 'less' specific first, 'more' specific later.
+    # In this way if the same option is defined twice the more specific one will be the used.
+    job.tc_extra_qsub_args  = ""
+    job.tc_extra_qsub_args += "#{bourreau_glob_config.extra_qsub_args} " if bourreau_glob_config
+    job.tc_extra_qsub_args += "#{tool_glob_config.extra_qsub_args} "     if tool_glob_config
+    job.tc_extra_qsub_args += "#{tool_config.extra_qsub_args} "          if tool_config
+
     # Log version of Scir lib
     drm     = scir_class.drm_system
     version = scir_class.version
@@ -1631,15 +1656,26 @@ class ClusterTask < CbrainTask
     return nil
   end
 
+
+
+  ##################################################################
+  # Docker support methods
+  ##################################################################
+
+  # Returns true if the task's ToolConfig is configured to point to a docker image
+  # for the task's processing.
   def use_docker?
     return self.tool_config.docker_image.present?
   end
 
+  # Return the 'docker' command to be used for the task; this is fetched
+  # from the Bourreau's own attribute. Default: "docker".
   def docker_executable_name
     return RemoteResource.current_resource.docker_executable_name.presence || "docker"
   end
 
-  # Returns the command line(s) associated with the task, wrapped in a Docker call if a Docker image has to be used.
+  # Returns the command line(s) associated with the task, wrapped in
+  # a Docker call if a Docker image has to be used.
   def docker_commands
     commands = self.cluster_commands
     commands_joined=commands.join("\n");
@@ -1655,6 +1691,7 @@ chmod 755 ./.dockerjob.sh\n
 "
     return docker_commands
   end
+
 
 
   ##################################################################

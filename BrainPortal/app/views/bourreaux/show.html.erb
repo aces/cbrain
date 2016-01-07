@@ -190,7 +190,7 @@
       <% end %>
       <% t.edit_cell(:spaced_dp_ignore_patterns, :header => "Patterns for filenames to ignore", :content => @bourreau.spaced_dp_ignore_patterns) do %>
         <%= text_field_tag "bourreau[spaced_dp_ignore_patterns]", @bourreau.spaced_dp_ignore_patterns, :size => 60 %><br/>
-        <div class="field_explanation">Separate several patterns with spaces; each pattern can contain<br> single '*'s, but no '/'s or special characters.</div>
+        <div class="field_explanation">Separate several patterns with spaces; each pattern can contain single '*'s, but no '/'s or special characters.</div>
       <% end %>
       <% t.edit_cell(:cache_trust_expire, :header => "Cache Expiration Timeout (in seconds)", :content => (@bourreau.cache_trust_expire == 0 ? "Never" : @bourreau.cache_trust_expire)) do %>
         <%= select_tag("bourreau[cache_trust_expire]", options_for_select([

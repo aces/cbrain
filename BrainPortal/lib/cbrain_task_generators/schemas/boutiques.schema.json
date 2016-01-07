@@ -45,7 +45,9 @@
             "id": "http://github.com/boutiques/boutiques-schema/schema-version",
             "type": "string",
             "description": "Version of the schema used.",
-            "enum": ["0.2-snapshot"]
+            "enum": [
+                "0.2"
+            ]
         },
         "inputs": {
             "id": "http://github.com/boutiques/boutiques-schema/inputs",
@@ -71,39 +73,56 @@
                         "id": "http://github.com/boutiques/boutiques-schema/input/type",
                         "type": "string",
                         "description": "Input type.",
-                        "enum": ["String", "File", "Flag" , "Number" ]
+                        "enum": [
+                            "String",
+                            "File",
+                            "Flag",
+                            "Number"
+                        ]
                     },
                     "description": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/description",
-                        "minLength": 1,
                         "description": "Input description.",
                         "type": "string"
                     },
                     "command-line-key": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/command-line-key",
-                        "minLength": 1,
                         "description": "A string contained in command-line, substituted by the input value and/or flag at runtime.",
                         "type": "string"
                     },
                     "list": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/list",
-                        "description":"True if input is a list of value. An input of type \"Flag\" cannot be a list.",
+                        "description": "True if input is a list of value. An input of type \"Flag\" cannot be a list.",
                         "type": "boolean"
                     },
-                    "optional":{
+                    "optional": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/optional",
                         "description": "True if input is optional.",
                         "type": "boolean"
                     },
-                    "command-line-flag":{
+                    "command-line-flag": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/command-line-flag",
-                        "minLength": 1,
                         "description": "Option flag of the input, involved in the command-line-key substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: -v, --force.",
                         "type": "string"
                     },
-                    "default-value":{
+                    "required-inputs": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/required-inputs",
+                        "description": "Ids of the inputs which must be present for this input to be available.",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "disabled-by-inputs": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/disabled-by-inputs",
+                        "description": "Ids of the inputs that disable this input when they are present.",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "default-value": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/default-value",
-                        "minLength": 1,
                         "description": "Default value of the input, used by the tool when no option is specified."
                     }
                 },
@@ -137,13 +156,11 @@
                     "description": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/description",
                         "description": "Output description.",
-                        "minLength": 1,
                         "type": "string"
                     },
                     "command-line-key": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/command-line-key",
                         "description": "A string contained in command-line, substituted by the output value and/or flag at runtime.",
-                        "minLength": 1,
                         "type": "string"
                     },
                     "path-template": {
@@ -152,19 +169,26 @@
                         "minLength": 1,
                         "type": "string"
                     },
+                    "path-template-stripped-extensions": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/path-template-stripped-extensions",
+                        "description": "List of file extensions that will be stripped from the input values before being substituted in the path template. Example: [\".nii\",\".nii.gz\"].",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
                     "list": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/list",
                         "description": "True if output is a list of value.",
                         "type": "boolean"
                     },
-                    "optional":{
+                    "optional": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/optional",
                         "description": "True if output may not be produced by the tool.",
                         "type": "boolean"
                     },
-                    "command-line-flag":{
+                    "command-line-flag": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag",
-                        "minLength": 1,
                         "description": "Option flag of the output, involved in the command-line-key substitution. Examples: -o, --output",
                         "type": "string"
                     }
@@ -186,4 +210,3 @@
         "output-files"
     ]
 }
-

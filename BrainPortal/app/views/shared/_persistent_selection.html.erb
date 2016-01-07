@@ -1,0 +1,212 @@
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%#
+  Persistent selection UI component/partial.
+  This partial provides an IndexedDB-based persistent selection mechanism; when
+  included within a form, the specified selectable values will be kept across
+  pages and sent along every submission. This mechanism is almost completely
+  client-based and transparent to controller actions; the only server-side
+  functionality required is to unpack the persistent selection set and merge it
+  into the current selection (if they have the same parameter name).
+  See PersistentSelection (persistent_selection.rb) for more information
+  on the server-side functionality.
+  Note that this mechanism expects selection values to be unique.
+
+  This partial recognizes the following local variables as arguments from a
+  parent view:
+  [name]
+   Unique name (string or symbol) for this persistent selection set. As
+   expected, displaying two persistent selection partials for the same name
+   will refer to the same selection set (and same client-side IndexedDB object
+   store). This argument has no default and is mandatory; every persistent
+   selection set must be named.
+
+  [param]
+   Request parameter name to send the persistently selected values as. Just like
+   +name+, this argument has no default and is mandatory; without a request
+   parameter name, the selection cannot be sent back to the server and thus
+   serves no purpose.
+   Note that the actual request parameter sent is '_psel_<param>' rather than
+   +param+ for unpacking and merging purposes. The selection set is still made
+   available under the +param+ key in the controller, however.
+
+  [bind]
+   CSS selector of HTML elements to bind to the persistent selection UI
+   component. These elements will update the persistent selection set when
+   changed by the user and be updated when the selection set is updated
+   externally (initial page load, buttons). These HTML elements are expected to
+   support the 'change' event and have 'checked' and 'value' attributes in order
+   to properly update the persistent selection set. As the persistent selection
+   mechanism is intended to be used with minimal controller changes, this
+   argument defaults to selecting HTML elements with a 'name' attribute matching
+   +param+ to transparently merge the persistent selection in the current one.
+   If this argument is explicitly unset (:bind => nil), no elements will be
+   bound and the persistent selection set will be left as-is.
+   Note that, for performance reasons, the persistent selection set sent to the
+   server is only generated on page load, and is not continually updated as
+   the user selects/deselects elements. Thus, if +bind+ differs from +param+,
+   both selections (current and persistent) will have to be merged manually.
+
+  [watch]
+   CSS selector of HTML elements to watch for external changes to the bound
+   elements. These elements are expected to support the 'change' event, and
+   will force a re-check of every bound element as if they changed. Meaningless
+   if +bind+ is explicitly unset. Typically used for select-all checkboxes.
+
+  [hidden]
+   Whether or not to hide the persistent selection component's UI. This boolean
+   argument naturally defaults to false and is mainly intended if server-side
+   access to the persistent selection set is required.
+
+  [all_url]
+   URL to query with an AJAX GET request to fetch the list (as a JSON array) of
+   all currently selectable items (on all pages if applicable). Specifying this
+   option adds a 'select all' action link to the component's UI to directly
+   select all possible elements (rather than having the user select everything
+   manually).
+
+  [selected_url]
+   URL to perform a POST request on in order to view only selected elements.
+   Specifying this option with make the current selection counter in the UI
+   an action link to view to perform the request (and view the elements).
+   TODO: not fully implemented yet.
+
+  [item_name]
+   Item name (string) for selected items in the component's textual UI content:
+   "<item_name>s currently selected", "Select all <item_name>s on all pages".
+   Defaults to "item".
+
+  [html]
+   Hash of HTML attributes to add to the persistent selection's container tag.
+   For example, specifying :html => { :id => 'foo' } will add an id of 'foo' to
+   the persistent selection container:
+     <div class="persistent-selection" id="foo">
+   Note that some HTML attributes are present by default, and may override those
+   specified by this argument.
+
+  For example, enabling persistent selection for userfile selection could look
+  like:
+    render(
+      :partial => 'shared/persistent_selection',
+      :locals  => {
+        :name      => 'userfiles',
+        :param     => 'file_ids[]',
+        :item_name => 'file'
+      }
+    )
+  If other HTML elements are used to specify which files are selected:
+    render(
+      :partial => 'shared/persistent_selection',
+      :locals  => {
+        :name      => 'userfiles',
+        :param     => 'file_ids[]',
+        :bind      => '[name="userfile_select[]"]',
+        :item_name => 'file'
+      }
+    )
+  If an element needs to be watched for external changes (a master checkbox,
+  for example):
+    render(
+      :partial => 'shared/persistent_selection',
+      :locals  => {
+        :name      => 'userfiles',
+        :param     => 'file_ids[]',
+        :bind      => '[name="userfile_select[]"]',
+        :watch     => '.all_files',
+        :item_name => 'file'
+      }
+    )
+  If no UI or selection changes are required:
+    render(
+      :partial => 'shared/persistent_selection',
+      :locals   => {
+        :name   => 'userfiles',
+        :param  => 'selected_userfiles',
+        :bind   => nil
+        :hidden => true
+      }
+    )
+%>
+
+<%
+  unless local_assigns.has_key?('bind')
+    bind = "[name=\"#{param}\"]"
+  end
+
+  watch        ||= nil
+  hidden       ||= false
+  item_name    ||= 'item'
+  all_url      ||= nil
+  selected_url ||= nil
+
+  all_tooltip   = "psel-all-tp-#{rand(10000)}"
+  clear_tooltip = "psel-clear-tp-#{rand(10000)}"
+
+  html ||= {}
+  html[:class]  = Array(html[:class])
+  html[:class] << 'persistent-selection'
+  html['data-store-name']     = name
+  html['data-bind-selector']  = bind  if bind
+  html['data-watch-selector'] = watch if watch
+  html['data-all-url']        = all_url      if all_url
+  html['data-selected-url']   = selected_url if selected_url
+%>
+
+<div <%= html.to_html_attributes.html_safe %>>
+  <% unless hidden %>
+    <span class="psel-icon ui-icon"></span>
+    <span class="psel-count">0</span>
+    <span class="psel-text"><%= item_name.pluralize %> currently selected</span>
+    (<!--
+      <%- if all_url -%>
+        --><span class="psel-all html_tool_tip_trigger"
+          data-tool-tip-id="<%= all_tooltip %>"
+          data-offset-y="20"
+        >select all</span>, <!--
+      <%- end -%>
+      --><span class="psel-clear html_tool_tip_trigger"
+        data-tool-tip-id="<%= clear_tooltip %>"
+        data-offset-y="20"
+      >clear</span><!--
+    -->)
+    <div id="<%= all_tooltip %>" class="html_tool_tip">
+      Select all <%= item_name.pluralize %> on all pages
+    </div>
+    <div id="<%= clear_tooltip %>" class="html_tool_tip">
+      Clear selected <%= item_name.pluralize %>
+    </div>
+  <% end %>
+  <input class="psel-in" name="_psel_<%= param %>" type="hidden" value="" />
+</div>
+
+<% unless request.xhr? %>
+  <% content_for :scripts do %>
+    <%=
+      javascript_tag (render(
+        :partial => 'shared/selection_database.js.erb',
+        :formats => [:js]
+      )).to_s
+    %>
+  <% end %>
+<% end %>

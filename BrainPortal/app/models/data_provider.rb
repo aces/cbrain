@@ -869,7 +869,8 @@ class DataProvider < ActiveRecord::Base
       newfile.name             = new_name
       newfile.user_id          = new_user_id
       newfile.group_id         = new_group_id
-      newfile.created_at       = Time.now unless target_exists
+      newfile.size             = userfile.size if     target_exists
+      newfile.created_at       = Time.now      unless target_exists
       newfile.updated_at       = Time.now
       newfile.immutable        = false
       newfile.save
@@ -1000,12 +1001,11 @@ class DataProvider < ActiveRecord::Base
   def self.pretty_type #:nodoc:
     self.to_s
   end
-  
+
   # This is a method that will return category type for this data provider
   # in the case of this class (abstract) it will not be invoked.
   # Returning a nil is the convention that we'll use to HIDE a data provider class from the interface.
   # So we'll return nil if the data provider class is not appriopriate for the users to view.
-  
   def self.pretty_category_name
     nil
   end

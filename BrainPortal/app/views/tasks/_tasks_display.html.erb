@@ -44,7 +44,7 @@
     :order_map  => {
       :owner        => { :a => 'users.login',           :j => User     },
       :project      => { :a => 'groups.name',           :j => Group    },
-      :server       => { :a => 'remote_resources.name', :j => Bourreau },
+      :server       => { :a => 'remote_resources.name', :j => [Bourreau, 'id', 'bourreau_id'] },
       :workdir_size => { :a => 'cluster_workdir_size' }
     },
     :filter_map => {
@@ -125,7 +125,7 @@
   <%
     t.column("Task Type", :type,
       :sortable => true,
-      :filters  => default_filters_for(@base_scope, :type)
+      :filters  => default_filters_for(@base_scope, @custom_scope, :type)
     ) do |type,id,count,task|
   %>
     <% case type %>
@@ -146,22 +146,22 @@
 
     t.column("Owner", :owner,
       :sortable => true,
-      :filters  => default_filters_for(@base_scope, User)
+      :filters  => default_filters_for(@base_scope, @custom_scope, User)
     ) do |type,id,count,task|
       link_to_user_if_accessible(task.user) unless type == :loaded_batch
     end
 
     t.column("Project", :project,
       :sortable => true,
-      :filters  => default_filters_for(@base_scope, Group)
+      :filters  => default_filters_for(@base_scope, @custom_scope, Group)
     ) do |type,id,count,task|
       link_to_group_if_accessible(task.group) unless type == :loaded_batch
     end unless current_project
 
     t.column("Execution Server", :server,
       :sortable => true,
-      :filters  => filter_values_for(
-        @base_scope, :bourreau_id,
+      :filters  => scoped_filters_for(
+        @base_scope, @custom_scope, :bourreau_id,
         scope: @scope,
         label: 'remote_resources.name',
         association: [Bourreau, 'id', 'bourreau_id']
@@ -174,7 +174,7 @@
   <%
     t.column("Current Status", :status,
       :sortable => true,
-      :filters  => default_filters_for(@base_scope, :status)
+      :filters  => default_filters_for(@base_scope, @custom_scope, :status)
     ) do |type,id,count,task|
   %>
     <%

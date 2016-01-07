@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150929193957) do
+ActiveRecord::Schema.define(:version => 20151120212700) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -317,7 +317,7 @@ ActiveRecord::Schema.define(:version => 20150929193957) do
     t.integer  "group_id"
     t.integer  "ncpus"
     t.string   "docker_image"
-    t.string   "tc_extra_qsub_args"
+    t.string   "extra_qsub_args"
   end
 
   add_index "tool_configs", ["bourreau_id"], :name => "index_tool_configs_on_bourreau_id"
@@ -333,6 +333,10 @@ ActiveRecord::Schema.define(:version => 20150929193957) do
     t.string   "cbrain_task_class"
     t.string   "select_menu_text"
     t.text     "description"
+    t.string   "url"
+    t.string   "application_package_name"
+    t.string   "application_type"
+    t.string   "application_tags"
   end
 
   add_index "tools", ["category"], :name => "index_tools_on_category"

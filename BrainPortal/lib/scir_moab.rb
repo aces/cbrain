@@ -30,9 +30,9 @@ class ScirMoab < Scir
 
   class Session < Scir::Session #:nodoc:
 
-    def update_job_info_cache
+    def update_job_info_cache #:nodoc:
       #xmltext, showqerr = bash_this_and_capture_out_err("showq --blocking --xml")
-      xmltext, showqerr = bash_this_and_capture_out_err("showq --xml")
+      xmltext, showqerr = bash_this_and_capture_out_err("showq --xml -u #{CBRAIN::Rails_UserName.to_s.bash_escape}")
       xmltext.force_encoding('ASCII-8BIT') # THE STUPID MOAB XML DUMP CAN CONTAIN BINARY DATA!
       raise "Cannot get output of 'showq --blocking --xml' ?!?" if xmltext.blank? && ! showqerr.blank?
       raise "Cannot get XML from showq; got:\n---Start\n#{xmltext}\n---End\n" unless
@@ -64,7 +64,7 @@ class ScirMoab < Scir
       true
     end
 
-    def statestring_to_stateconst(state)
+    def statestring_to_stateconst(state) #:nodoc:
       return Scir::STATE_RUNNING        if state.match(/Run|Starting/i)
       return Scir::STATE_QUEUED_ACTIVE  if state.match(/Idle|Queue|Defer|Staged/i)
       return Scir::STATE_USER_ON_HOLD   if state.match(/H[oe]ld/i)
@@ -72,7 +72,7 @@ class ScirMoab < Scir
       return Scir::STATE_UNDETERMINED
     end
 
-    def hold(jid)
+    def hold(jid) #:nodoc:
       IO.popen("mjobctl -h user #{shell_escape(jid)} 2>&1","r") do |i|
         p = i.read
         raise "Error holding: #{p.join("\n")}" unless p =~ /holds modified for job/i
@@ -80,7 +80,7 @@ class ScirMoab < Scir
       end
     end
 
-    def release(jid)
+    def release(jid) #:nodoc:
       IO.popen("mjobctl -u user #{shell_escape(jid)} 2>&1","r") do |i|
         p = i.read
         raise "Error releasing: #{p.join("\n")}" unless p =~ /holds modified for job/i
@@ -88,15 +88,15 @@ class ScirMoab < Scir
       end
     end
 
-    def suspend(jid)
+    def suspend(jid) #:nodoc:
       raise "There is no 'suspend' action available for MOAB clusters"
     end
 
-    def resume(jid)
+    def resume(jid) #:nodoc:
       raise "There is no 'resume' action available for MOAB clusters"
     end
 
-    def terminate(jid)
+    def terminate(jid) #:nodoc:
       #IO.popen("mjobctl -c #{shell_escape(jid)} 2>&1","r") do |i|
       IO.popen("canceljob #{shell_escape(jid)} 2>&1","r") do |i|
         p = i.read
@@ -105,7 +105,7 @@ class ScirMoab < Scir
       end
     end
 
-    def queue_tasks_tot_max
+    def queue_tasks_tot_max #:nodoc:
       job_ps("!dummy!") # trigger refresh if necessary
       moab_cluster_info = @job_info_cache["!moab_cluster_info!"]
       #<cluster LocalActiveNodes="43" LocalAllocProcs="270" LocalConfigNodes="49" LocalIdleNodes="4"
@@ -126,7 +126,7 @@ class ScirMoab < Scir
 
     private
 
-    def qsubout_to_jid(txt)
+    def qsubout_to_jid(txt) #:nodoc:
       if txt && txt =~ /^(\S+)/
         val = Regexp.last_match[1]
         return val unless val =~ /error/i
@@ -138,7 +138,7 @@ class ScirMoab < Scir
 
   class JobTemplate < Scir::JobTemplate #:nodoc:
 
-    def qsub_command
+    def qsub_command #:nodoc:
       raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless
         self.command == "/bin/bash" && self.arg.size == 1
       raise "Error: stdin not supported" if self.stdin
@@ -152,12 +152,9 @@ class ScirMoab < Scir
       command += "-o #{shell_escape(self.stdout)} " if self.stdout
       command += "-e #{shell_escape(self.stderr)} " if self.stderr
       command += "-j oe "                           if self.join
-      if !self.tc_extra_qsub_args.blank?
-        command += "#{self.tc_extra_qsub_args} "
-      else
-        command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
-      end
-      command += "-l walltime=#{self.walltime.to_i} " unless self.walltime.blank?
+      command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
+      command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?
+      command += "-l walltime=#{self.walltime.to_i} "       unless self.walltime.blank?
       command += "#{shell_escape(self.arg[0])}"
       command += " 2>&1"
 

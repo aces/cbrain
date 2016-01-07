@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This class encapsulates an information record about
@@ -194,6 +194,14 @@ class CbrainFileRevision
     @_git_available == :yes
   end
 
+  # If the current app was deployed using GIT, returns the current GIT branch name.
+  def self.git_branch_name
+    return "" unless git_available?
+    IO.popen("git rev-parse --abbrev-ref HEAD") do |fh|
+      fh.gets.strip
+    end
+  end
+
   def self.for_relpath(relpath, mode = :auto) #:nodoc:
     cbrain_root = Pathname.new(Rails.root).parent
     rev = self.new("#{cbrain_root}/#{relpath}") # TODO: find the object originally registered IN its file?
@@ -320,7 +328,7 @@ class CbrainFileRevision
     end
 
     return self unless revinfo # not much else to do
-   
+
     @commit   = revinfo[0]
     datetime  = revinfo[1]
     if datetime =~ /(\d\d\d\d-\d\d-\d\dT?)\s*(\d\d:\d\d:\d\dZ?)(\s*[+-][\d:]+)?/

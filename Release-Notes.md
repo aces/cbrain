@@ -1,5 +1,28 @@
 ## CBRAIN Release Notes
 
+#### Version 4.2.1 Released 2015-10-30
+
+Hot bug fixes in the previous release, related to bad files on
+the Bourreau Rails app side.
+
+#### Version 4.2.0 Released 2015-10-30
+
+Bug fixes and enhancements.
+
+- Scope system refactored completely
+- 'Boutique' system integration
+- Docker support for ClusterTasks.
+
+#### Version 4.1.0 Released 2015-08-13
+
+Several bug fixes, enhancements, and new features. The layouts of
+many tables have been cleaned, using new APIs (thank you Remi).
+
+As of now, new development will occur in a branch called "dev".
+The branch named "master" will always point to the latest release
+including special patches. When a new release is ready in "dev",
+we will merg it to "master" and tag it there.
+
 #### Version 4.0.1 Released 2015-05-19
 
 This release contains several bug fixes and tidying of loose ends

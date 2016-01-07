@@ -905,7 +905,7 @@ pre {
 /* % ######################################################### */
 
 .account {
-  background: #0471B4;
+  background: #0471B4;  /* can be overridden in .account_git_branch_NNNN later in this file */
   color: #fff;
   height:1.8em;
   font-size: 0.9em;
@@ -933,6 +933,27 @@ pre {
   margin-right: 0.6em;
   color: #83b4d1;
   font-weight: bold;
+}
+
+/* ============================================================================== */
+/* Special coloring of the account section's background, based on GIT branch name */
+/* These should all be named .account_git_branch_NNNN where NNNN is a branch name */
+/* ============================================================================== */
+
+.account_git_branch_dev { /* used by devlopment team, obviously */
+  background: #AA04B4;
+}
+
+.account_git_branch_master {
+  background: #0471B4; /* same as in .account */
+}
+
+.account_git_branch_service {
+  background: #0471B4; /* same as in .account */
+}
+
+.account_git_branch_unknown {  /* when not deployed using GIT */
+  background: #0471B4; /* same as in .account */
 }
 
 
@@ -969,6 +990,13 @@ pre {
   display: inline;
   margin: 0.5em 0 0 0;
   padding: 0;
+}
+
+#cbsearch {
+      padding: 1em 1em 0 0;
+      text-align: right;
+      float: right;
+      vertical-align: top;
 }
 
 #main-menu {
@@ -1395,6 +1423,36 @@ pre {
   font-weight: bold;
 }
 
+
+/* % ######################################################### */
+/* % Persistent Selection Bar */
+/* % ######################################################### */
+
+.persistent-selection > .psel-icon {
+  display: inline-block;
+  vertical-align: middle;
+  visibility: hidden;
+  background-image: url(../images/ui-black-icons.png);
+}
+
+.psel-count {
+  color: #05a3d6;
+  font-size: 1.2em;
+  font-family: monospace;
+}
+
+.psel-count.psel-zero {
+  color: #719ba9;
+}
+
+.psel-count.psel-refresh {
+  color: #00d9a2;
+}
+
+.psel-all, .psel-clear {
+  color: blue;
+  cursor: pointer;
+}
 
 
 /* % ######################################################### */
@@ -2322,4 +2380,78 @@ img {
   resize: both;
 }
 
+/* % ######################################################### */
+/* % Jquery Confirmation UI styling */
+/* % ######################################################### */
 
+.cbrain-dialog-confirm {
+	background-color: pink !important;
+	font-weight: bold !important;
+	border: 3px solid red !important;
+}
+
+.no-close .ui-dialog-titlebar-close {
+  display: none;
+}
+
+/* % ######################################################### */
+/* % Tools Dialog styling */
+/* % ######################################################### */
+
+/* container for tools table */
+.tools-container{
+    overflow-y:auto;
+    overflow-x:hidden;
+    height:500px;
+    width:400px;
+    border: 1px solid grey;
+}
+
+#toolSelectTable {
+  width: 400px;
+  border:none;
+}
+
+#toolSelectTable td {
+  padding: 5px;
+  text-align: left;
+}
+
+#toolSelectTable tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#toolSelectTable tr:hover td {
+  background-color: #fff3d3;
+}
+
+#toolsDialogWrapper {
+  margin-right: 170px;
+}
+#toolsDialogLeftCol {
+  float: left;
+  width: 170px;
+}
+#toolsDialogRightCol {
+  float: right;
+  width: 100%;
+  margin-right: -170px;
+}
+
+.additionalToolInfo{
+  display: none;
+}
+
+.toolsDialogClass .ui-dialog-titlebar{
+  background: #05a3d6;
+  color: white;
+
+}
+
+.toolsDialogClass .ui-dialog-titlebar .ui-dialog-titlebar-close{
+   background: white;
+}
+
+.toolsDialogClass .ui-dialog-titlebar .ui-dialog-titlebar-close:hover{
+   background: #05a3d6;
+}

@@ -3,10 +3,7 @@ Description:
   Pass the plain task name as the first argument, in
   camel case format.
 
-Usage:
-  rails generate cbrain_task TaskName [--advanced] [--license license_file] [--plugin-name name]
-
-Options:
+Option details:
   --advanced    : will include templates for the advanced
                   PortalTask API methods in the
                   Ruby code template for the task. Otherwise,
@@ -22,6 +19,8 @@ Options:
                   Defaults to 'local' if unspecified.
 
 Example:
+
+  This command
 
     rails generate cbrain_task UniversalTranslator
 
@@ -50,9 +49,9 @@ Example:
 
   Note that the path component 'cbrain-plugin-local' is a name given to a
   dummy CBRAIN plugins package; feel free to rename it as needed
-  once you're ready to distribute your task.
+  once you're ready to distribute your task, or you can specify it using
+  the option --plugin-name .
 
-  The created files, once modified to suit your needs, are fully
-  ready to be deployed by running the standard rake task
-  "cbrain:plugins:install:all".
+  Those files, once modified to suit your needs, are fully ready to be deployed
+  by running the CBRAIN rake task "cbrain:plugins:install:all".
 

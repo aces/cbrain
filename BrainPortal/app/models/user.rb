@@ -289,7 +289,7 @@ class User < ActiveRecord::Base
 
   # Find the tools that this user has access to.
   def available_tools
-    cb_error "#available_tools called from User base class! Method must be implement in a subclass."
+    cb_error "#available_tools called from User base class! Method must be implemented in a subclass."
   end
 
   # Find the scientific tools that this user has access to.
@@ -304,7 +304,7 @@ class User < ActiveRecord::Base
 
   # Returns the list of groups available to this user based on role.
   def available_groups
-    cb_error "#available_groups called from User base class! Method must be implement in a subclass."
+    cb_error "#available_groups called from User base class! Method must be implemented in a subclass."
   end
 
   # Returns the list of tags available to this user.
@@ -314,12 +314,17 @@ class User < ActiveRecord::Base
 
   # Returns the list of tasks available to this user.
   def available_tasks
-    cb_error "#available_tasks called from User base class! Method must be implement in a subclass."
+    cb_error "#available_tasks called from User base class! Method must be implemented in a subclass."
   end
 
   # Return the list of users under this user's control based on role.
   def available_users
-    cb_error "#available_users called from User base class! Method must be implement in a subclass."
+    cb_error "#available_users called from User base class! Method must be implemented in a subclass."
+  end
+
+  # Return the list of sites accessible to the user
+  def accessible_sites
+    cb_error "#accessible_sites called from User base class! Method must be implemented in a subclass."
   end
 
   # Can this user be accessed by +user+?

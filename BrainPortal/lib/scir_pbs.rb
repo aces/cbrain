@@ -30,9 +30,20 @@ class ScirPbs < Scir
 
   class Session < Scir::Session #:nodoc:
 
-    def update_job_info_cache
-      out, err = bash_this_and_capture_out_err("qstat -f")
-      raise "Cannot get output of 'qstat -f' ?!?" if out.blank? && ! err.blank?
+    def update_job_info_cache #:nodoc:
+      qstat_command = "qstat -u #{CBRAIN::Rails_UserName.to_s.bash_escape} -f"
+      # In some cases, the standard output of the qstat command
+      # is blank even though jobs are still running on the cluster. In this situation,
+      # all the active jobs will be marked completed while they are not.
+      # To address this issue, we retry the qstat command up to 3 times with a 3-second interval
+      # as long as the output of qstat is blank.
+      out = ""
+      3.times do
+        out, err = bash_this_and_capture_out_err(qstat_command)
+        raise "Cannot get output of '#{qstat_command}' ?!?" if out.blank? && err.present? # if no stdout yet there is stderr!
+        break if out.present?
+        sleep 3
+      end
       jid = 'Dummy'
       @job_info_cache = {}
       out.split(/\s*\n\s*/).each do |line|
@@ -51,7 +62,7 @@ class ScirPbs < Scir
       true
     end
 
-    def statestring_to_stateconst(state)
+    def statestring_to_stateconst(state) #:nodoc:
       return Scir::STATE_RUNNING        if state.match(/R/i)
       return Scir::STATE_QUEUED_ACTIVE  if state.match(/Q/i)
       return Scir::STATE_USER_ON_HOLD   if state.match(/H/i)
@@ -59,7 +70,7 @@ class ScirPbs < Scir
       return Scir::STATE_UNDETERMINED
     end
 
-    def hold(jid)
+    def hold(jid) #:nodoc:
       IO.popen("qhold #{shell_escape(jid)} 2>&1","r") do |i|
         p = i.readlines
         raise "Error holding: #{p.join("\n")}" if p.size > 0
@@ -67,7 +78,7 @@ class ScirPbs < Scir
       end
     end
 
-    def release(jid)
+    def release(jid) #:nodoc:
       IO.popen("qrls #{shell_escape(jid)} 2>&1","r") do |i|
         p = i.readlines
         raise "Error releasing: #{p.join("\n")}" if p.size > 0
@@ -75,15 +86,15 @@ class ScirPbs < Scir
       end
     end
 
-    def suspend(jid)
+    def suspend(jid) #:nodoc:
       raise "There is no 'suspend' action available for PBS clusters"
     end
 
-    def resume(jid)
+    def resume(jid) #:nodoc:
       raise "There is no 'resume' action available for PBS clusters"
     end
 
-    def terminate(jid)
+    def terminate(jid) #:nodoc:
       IO.popen("qdel #{shell_escape(jid)} 2>&1","r") do |i|
         p = i.readlines
         raise "Error deleting: #{p.join("\n")}" if p.size > 0
@@ -91,7 +102,7 @@ class ScirPbs < Scir
       end
     end
 
-    def queue_tasks_tot_max
+    def queue_tasks_tot_max #:nodoc:
       queue = Scir.cbrain_config[:default_queue]
       queue = "default" if queue.blank?
       queueinfo = `qstat -Q #{shell_escape(queue)} | tail -1`
@@ -106,7 +117,7 @@ class ScirPbs < Scir
 
     private
 
-    def qsubout_to_jid(txt)
+    def qsubout_to_jid(txt) #:nodoc:
       if txt && txt =~ /^(\d+)/
         return Regexp.last_match[1]
       end
@@ -117,7 +128,7 @@ class ScirPbs < Scir
 
   class JobTemplate < Scir::JobTemplate #:nodoc:
 
-    def qsub_command
+    def qsub_command #:nodoc:
       raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless
         self.command == "/bin/bash" && self.arg.size == 1
       raise "Error: stdin not supported" if self.stdin
@@ -131,12 +142,9 @@ class ScirPbs < Scir
       command += "-e #{shell_escape(self.stderr)} " if self.stderr
       command += "-j oe "                           if self.join
       command += "-q #{shell_escape(self.queue)} "  unless self.queue.blank?
-      if !self.tc_extra_qsub_args.blank?
-        command += "#{self.tc_extra_qsub_args} "
-      else
-        command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
-      end
-      command += "-l walltime=#{self.walltime.to_i} " unless self.walltime.blank?
+      command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
+      command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?
+      command += "-l walltime=#{self.walltime.to_i} "       unless self.walltime.blank?
       command += "#{shell_escape(self.arg[0])}"
       command += " 2>&1"
 
