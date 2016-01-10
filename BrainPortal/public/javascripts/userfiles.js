@@ -578,15 +578,16 @@ $(function() {
   userfiles.delegate('#userfiles_dialogs', 'new_content', function () {
     /* Dialog button icons */
     var icons = {
-      'Done':   'ui-icon-check',
-      'Apply':  'ui-icon-check',
-      'Cancel': 'ui-icon-closethick',
-      'Close':  'ui-icon-closethick',
-      'Upload': 'ui-icon-arrowthick-1-n',
-      'Copy':   'ui-icon-copy',
-      'Move':   'ui-icon-arrowreturnthick-1-e',
-      'Delete': 'ui-icon-trash',
-      'Create': 'ui-icon-plusthick',
+      'Done':    'ui-icon-check',
+      'Apply':   'ui-icon-check',
+      'Proceed': 'ui-icon-play',
+      'Cancel':  'ui-icon-closethick',
+      'Close':   'ui-icon-closethick',
+      'Upload':  'ui-icon-arrowthick-1-n',
+      'Copy':    'ui-icon-copy',
+      'Move':    'ui-icon-arrowreturnthick-1-e',
+      'Delete':  'ui-icon-trash',
+      'Create':  'ui-icon-plusthick',
     };
 
     /* Generic dialog properties and handlers */
@@ -665,7 +666,7 @@ $(function() {
         var dialog  = $(this),
             accept  = settings.accept || $.noop,
             cancel  = settings.cancel || $.noop,
-            action  = settings.action || 'Accept',
+            action  = settings.action || dialog.data('action') || 'Accept',
             buttons = {};
 
         buttons['Cancel'] = function (event) {
@@ -951,7 +952,6 @@ $(function() {
 
         $('#tag-del-confirm').trigger('open.uf', [this, {
           name:   row.find('.tag-name').text().trim(),
-          action: 'Delete',
           accept: function (event) {
             userfiles.tags.remove(row.data('id'))
               .done(function () {

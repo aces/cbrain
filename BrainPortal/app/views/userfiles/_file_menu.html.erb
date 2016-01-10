@@ -82,7 +82,6 @@
     data-method="DELETE"
     data-icon="ui-icon-trash"
     data-confirm-dlg="delete-confirm"
-    data-confirm-act="Delete"
   >Delete</span>
 </div>
 
@@ -111,6 +110,15 @@
     >
       Properties
       <span class="ui-icon ui-icon-document-b"></span>
+    </li>
+    <li id="qc-item"
+      class="act-item dyn-item"
+      data-url="<%= quality_control_userfiles_path %>"
+      data-method="POST"
+      data-confirm-dlg="qc-confirm"
+    >
+      Quality control
+      <span class="ui-icon ui-icon-check"></span>
     </li>
     <li id="sync-item"
       class="act-item dyn-item"
