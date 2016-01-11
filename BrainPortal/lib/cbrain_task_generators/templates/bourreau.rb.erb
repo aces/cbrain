@@ -45,8 +45,8 @@ class CbrainTask::<%= name %> < ClusterTask
 % end
 %
 % # Parameter groups
-% inputs   = descriptor['inputs'].dup
-% outputs  = descriptor['output-files'].dup
+% inputs   = descriptor['inputs'].dup       rescue []
+% outputs  = descriptor['output-files'].dup rescue []
 % files    = inputs.select  { |i| i['type'] == 'File'   }
 % required = outputs.select { |o| ! o['optional']       }
 % globs    = outputs.select { |o| o['list']             }
@@ -54,34 +54,35 @@ class CbrainTask::<%= name %> < ClusterTask
 % out_keys = outputs.select { |o| o['command-line-key'] }
 % flags    = (inputs + outputs).select { |p| p['command-line-flag'] }
 %
+% # TODO parallelization, presets, ...
 % if descriptor['cbrain:can-submit-new-tasks']
-
   # Task properties are special boolean properties of your task, returned as a
-  # hash table. Used by CBRAIN code to control
-  # default elements. Advanced feature. The defaults
-  # for all properties are 'false' so that subclass
-  # only have to explicitely set the special properties
-  # that they want 'true' (since nil is also false). The list of available
-  # properties is defined in class CbrainTask.
+  # hash table. Used by CBRAIN code to control default elements. Advanced
+  # feature. The defaults for all properties are 'false' so that subclasses
+  # only have to explicitely set the special properties that they want 'true'
+  # (since nil is also false). The list of available properties is defined in
+  # the CbrainTask class.
   def self.properties #:nodoc:
-    # The can_submit_new_tasks property allows a task to submit new tasks.
-    # To submit a new task, a task has to create a JSON file called
-    # new-task-*.json at the root of its working directory. Here is an example of
-    # JSON content for this file:
-    # {
-    #   "tool-class": "CbrainTask::TestTool",
-    #   "description": "A task running TestTool",
-    #   "parameters": {
-    #     "important_number": "123",
-    #     "dummy_paramet4er": "432"
-    #    }
-    # }
-    # The corresponding JSON schema is maintained in method
-    # validate_json_string of class BourreauWorker. 
-    super.merge :can_submit_new_tasks => true
+    super.merge({
+      # The can_submit_new_tasks property allows a task to submit new tasks.
+      # To submit a new task, a task has to create a JSON file called
+      # new-task-*.json at the root of its working directory. Here is an
+      # example of JSON content for this file:
+      # {
+      #   "tool-class": "CbrainTask::TestTool",
+      #   "description": "A task running TestTool",
+      #   "parameters": {
+      #     "important_number": "123",
+      #     "dummy_paramet4er": "432"
+      #    }
+      # }
+      # The corresponding JSON schema is maintained in the validate_json_string
+      # method validate_json_string of the BourreauWorker class.
+      :can_submit_new_tasks => true
+    })
   end
 
-% end   
+% end
   # Setup the cluster's environment to execute <%= name %>; create the relevant
   # directories, prepare symlinks to input files, set environment variables,
   # etc. Returns true if the task was correctly set up.
@@ -141,8 +142,15 @@ class CbrainTask::<%= name %> < ClusterTask
     })
 
 %   end
+%   if descriptor['cbrain:ignore-exit-status']
     # Command-line
-    [ '<%= descriptor['command-line'] %>' ]
+    [ <<-'CMD' ]
+%   else
+    # Command-line to run <%= name %> and save its exit status
+    [ <<-'CMD', "echo $? > ./#{exit_cluster_filename.bash_escape}" ]
+%   end
+      <%= descriptor['command-line'] %>
+    CMD
 % else
     params = self.params
 
@@ -227,28 +235,63 @@ class CbrainTask::<%= name %> < ClusterTask
     })
 
 %   end
+%   if descriptor['cbrain:ignore-exit-status']
     # Generate the final command-line to run <%= name %>
     [ apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %>) ]
       <%= descriptor['command-line'] %>
     CMD
+%   else
+    # Generate the final command-line to run <%= name %>
+    command = apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %>)
+      <%= descriptor['command-line'] %>
+    CMD
+
+    # And save its exit status
+    [ command, "echo $? > ./#{exit_cluster_filename.bash_escape}" ]
+%   end
 % end
   end
 
-  # Called after the task is done, this method saves <%= name %>'s output files
-  # to the Bourreau's cache and registers them into CBRAIN for later retrieval.
-  # Returns true on success.
+  # Called after the task is done, this method ensures <%= name %> succeeded and
+  # saves its output files to the Bourreau's cache before registering them into
+  # CBRAIN for later retrieval. Returns true on success.
   def save_results #:nodoc:
-    # Additional checks to see if <%= name %> succeeded would belong here.
-
-% if outputs.empty?
-    # No output files to save; nothing to do
-    true
-% else
+% unless outputs.empty?
     # No matter how many errors occur, we need to save as many output
     # files as possible and carry the error state to the end.
     params    = self.params
     succeeded = true
 
+% end
+% unless descriptor['cbrain:ignore-exit-status']
+    # Make sure <%= name %> completed successfully by checking its exit status
+    # in +exit_cluster_filename+.
+    unless File.exists?(exit_cluster_filename)
+      self.addlog("Missing exit status file #{exit_cluster_filename}")
+%   if outputs.empty?
+      return false
+%   else
+      succeeded &&= false
+%   end
+    end
+
+    exit_status = IO.read(exit_cluster_filename).strip.to_i
+    unless SystemExit.new(exit_status).success?
+      self.addlog("Command failed, exit status #{exit_status}")
+%   if outputs.empty?
+      return false
+%   else
+      succeeded &&= false
+%   end
+    end
+
+% end
+    # Additional checks to see if <%= name %> succeeded would belong here.
+
+% if outputs.empty?
+    # No output files to save; nothing else to do
+    true
+% else
     # Extract out the output files parameters from params. They will be re-added
     # once their existence is validated and their registration into CBRAIN is
     # complete.
@@ -329,6 +372,15 @@ class CbrainTask::<%= name %> < ClusterTask
   end
 
   # Generic helper methods
+% unless descriptor['cbrain:ignore-exit-status']
+
+  # Filename used to hold the exit status of <%= name %>, computed similarly
+  # to +*_cluster_filename+. This file is generated as soon as the task is
+  # completed and is checked in +save_results+ to make sure the task succeeded.
+  def exit_cluster_filename
+    ".qsub.exit.#{self.name}.#{self.run_id}"
+  end
+% end
 
   # Make a given set of userfiles +files+ available to <%= name %> at
   # +directory+. Simple variation on +ClusterTask+::+make_available+
