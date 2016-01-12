@@ -336,8 +336,7 @@ end
 
 #---------------------------------------------------
 en_dp_dir = "#{seeds_dev_support_dir}/dp_official"
-# en_dp
-EnCbrainSmartDataProvider.seed_record!({
+en_dp = EnCbrainSmartDataProvider.seed_record!({
     :remote_dir => en_dp_dir
   },
   {
@@ -594,34 +593,6 @@ seri_tool = Tool.seed_record!(
   }
 )
 
-sleeper_tool = Tool.seed_record!(
-  {
-    :cbrain_task_class => 'CbrainTask::Sleeper'
-  },
-  {
-    :name => 'Sleeper',
-    :user_id => User.find_by_login('mrbennet').id, :group_id => long_site.own_group.id,
-    :category => 'scientific tool',
-    :select_menu_text => 'Launch Sleeper',
-    :description => "Longbourne people only"
-  }
-)
-
-snoozer_tool = Tool.seed_record!(
-  {
-    :cbrain_task_class => 'CbrainTask::Snoozer'
-  },
-  {
-    :name => 'Snoozer',
-    :user_id => User.admin.id, :group_id => gentlemen.id,
-    :category => 'conversion tool',
-    :select_menu_text => 'Launch Snoozer',
-    :description => "Only for gentlemen"
-  }
-)
-
-
-
 puts <<STEP
 
 ----------------------------
@@ -722,28 +693,6 @@ diag_all_tcs = []
       },
       { :info_name_method => :description }
     )
-  end
-end
-
-[ main_bourreau, pember_bourreau, longbourne_bourreau ].each do |bourreau|
-  [ sleeper_tool, snoozer_tool ].each do |tool|
-    [ wisegroup, gentlemen, ladies ].each do |group|
-      ToolConfig.seed_record!(
-        {
-          :tool_id     => tool.id,
-          :bourreau_id => bourreau.id,
-          :group_id    => group.id
-        },
-        {
-          :description => "For #{group.name} only",
-          :env_array   => [ [ "USER_LIST", "#{group.users.map(&:login).join(",")}" ] ],
-          :script_prologue => "\n# Prologue for tool config\necho USER_LIST=$USER_LIST\n",
-          :ncpus       => 1,
-          :version_name     => "#{version_name += 1}"
-        },
-        { :info_name_method => :description }
-      )
-    end
   end
 end
 
@@ -852,12 +801,14 @@ Step 10: Tasks
 
 STEP
 
+PortalTask.nil? # force pre-load of all constants under CbrainTask, e.g. CbrainTask::Diagnostics etc
+
 User.all.each do |user|
   groups = [ user.own_group ] + user.groups.where( :type => 'WorkGroup' ).all
   groups.each do |group|
     Bourreau.all.each do |bourreau|
       next unless bourreau.can_be_accessed_by?(user)
-      [ diag_tool, sleeper_tool, snoozer_tool ].each do |tool|
+      [ diag_tool ].each do |tool|
         howlong = rand(10) + 5
         tc = ToolConfig.find_by_tool_id_and_bourreau_id(tool.id, bourreau.id)
         next unless tc.can_be_accessed_by?(user)

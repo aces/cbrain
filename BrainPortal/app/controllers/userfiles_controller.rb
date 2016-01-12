@@ -78,9 +78,9 @@ class UserfilesController < ApplicationController
       end
 
     # Generate display totals
-    @userfiles_total = @view_scope.count('distinct userfiles.id')
-    @archived_total  = @view_scope.where(:archived  => true).count
-    @immutable_total = @view_scope.where(:immutable => true).count
+    @userfiles_total      = @view_scope.count('distinct userfiles.id')
+    @archived_total       = @view_scope.where(:archived  => true).count
+    @immutable_total      = @view_scope.where(:immutable => true).count
     @userfiles_total_size = @view_scope.sum(:size)
 
     # Prepare the Pagination object
@@ -148,9 +148,9 @@ class UserfilesController < ApplicationController
     end
 
     # The variables below contain arrays of different types of tags associated with all Tools
-    @type_list = Tool.get_all_application_types
+    @type_list    = Tool.get_all_application_types
     @package_list = Tool.get_all_application_package_names
-    @tag_list = Tool.get_all_application_tags
+    @tag_list     = Tool.get_all_application_tags
 
     respond_to do |format|
       format.html
@@ -303,7 +303,7 @@ class UserfilesController < ApplicationController
       @remote_sync_status = SyncStatus.where(:userfile_id => @userfile.id, :remote_resource_id => rr_ids_accessible)
       @children_ids       = @userfile.children_ids  rescue []
 
-      @userfile[:log]                = @log
+      @userfile[:cbrain_log]         = @log
       @userfile[:remote_sync_status] = @remote_sync_status
       @userfile[:children_ids]       = @children_ids
     # Prepare next/previous userfiles for html
@@ -1607,7 +1607,7 @@ class UserfilesController < ApplicationController
   end
 
   # Combination of +base_scope+, +custom_scope+ and @scope object; returns a
-  # scoped list of userfiles fitlered/ordered by all three.
+  # scoped list of userfiles filtered/ordered by all three.
   # Requires a valid @scope object.
   def filtered_scope
     @scope.apply(custom_scope(base_scope))
