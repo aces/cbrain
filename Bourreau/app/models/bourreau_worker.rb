@@ -567,7 +567,7 @@ class BourreauWorker < Worker
                                                     # by several workers. See nice examples at:
                                                     # http://www.codegnome.com/blog/2013/05/26/locking-files-with-ruby
           file_content = file.read
-          submit_task_from_string(file_content,task)
+          submit_task_from_string(filename,file_content,task)
           file.close # This also releases the lock. 
           File.delete(filename)
         else
@@ -599,7 +599,7 @@ class BourreauWorker < Worker
   #                 Used to set the user, bourreau id and results data provider id
   #                 for the new task.
   # 
-  def submit_task_from_string json_string,current_task
+  def submit_task_from_string filename,json_string,current_task
 
     # Parses JSON string and checks format
     validate_json_string(json_string) # Raises an exception if string is not valid
@@ -611,8 +611,12 @@ class BourreauWorker < Worker
     current_task.addlog(message)
         
     # Creates task
-    task_class_name = new_task_hash["tool-class"]
-    new_task        = CbrainTask.const_get(task_class_name).new # Raises an exception if tool class is not found
+    task_class_name      = new_task_hash["tool-class"]
+    new_task             = CbrainTask.const_get(task_class_name).new # Raises an exception if tool class is not found
+    new_task.batch_id    = current_task.id
+    new_task.launch_time = Time.now
+    current_task.level   = 0 if current_task.level.nil?
+    new_task.level       = current_task.level + 1       # New task will be one level up its "parent" task in the task table.
     raise "Invalid tool class: #{task_class_name }" unless new_task.is_a? ClusterTask
 
     # Sets tool config among tool configs accessible by user of current task
@@ -635,6 +639,14 @@ class BourreauWorker < Worker
       new_task.params[param[0].to_sym] = param[1]
     end
 
+    # Sets task prerequisites
+    if new_task_hash["prerequisites"]
+      new_task_hash["prerequisites"].split(",").each do |id|
+        parent_task = CbrainTask.find(id)
+        new_task.add_prerequisites_for_setup(parent_task,'Completed')
+      end
+    end
+    
     # Sets other task attributes
     # In the future, we could allow to register results to another data provider
     # or to submit the task to another bourreau. This would require to carefully
@@ -647,6 +659,17 @@ class BourreauWorker < Worker
     # Submits the task
     new_task.status = "New"
     new_task.save!
+
+    # Returns task id to application
+    taskid_filename = File.join(File.dirname(filename),File.basename(filename,".json"))+".cbid"
+    File.write(taskid_filename,new_task.id.to_s+"\n")
+
+    # Add new task as a pre-requisite of the current task if requested
+    if new_task_hash["required-to-post-process"]
+      current_task.add_prerequisites_for_post_processing(new_task,'Completed')
+      current_task.save!
+    end
+
   end
 
   # Validates a JSON string against
@@ -662,10 +685,12 @@ class BourreauWorker < Worker
       "type"       => "object",
       "required" => ["tool-class","parameters"], 
       "properties" => {
-        "tool-class"     => {"type"  => "string"},
-        "tool-config-id" => {"type"  => "number"},
-        "description"    => {"type"  => "string"},
-        "parameters"     => {"type"  => "object", "properties" => {"type" => "string" }},
+        "tool-class"     => {"type"  => "string"},                                         # Class of the new task
+        "tool-config-id" => {"type"  => "number"},                                         # Tool config id of the new task
+        "description"    => {"type"  => "string"},                                         # Description of the new task
+        "parameters"     => {"type"  => "object", "properties" => {"type" => "string" }},  # Parameters of the new task
+        "prerequisites"  => {"type"  => "string"},                                         # List of task ids that are a prerequisite to setup the new task 
+        "required-to-post-process" =>  {"type"  => "boolean"}                          # If true, the current task will not post-process before the new task is completed
       }
     }
     JSON::Validator.validate!(schema,json_string) # raises an exception if json_string is not valid
