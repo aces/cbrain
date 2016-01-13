@@ -1745,7 +1745,7 @@ th.center_align_heading {
   position: absolute;
   top: 22px;
   min-width: 185px;
-  z-index: 501;
+  z-index: 51;
 }
 
 .tsk-prm-sel-opt > li {
@@ -1954,7 +1954,7 @@ img {
 
 .hover_dropdown {
   position: absolute;
-  z-index: 999;
+  z-index: 50;
 }
 
 .resource_header {
@@ -2129,7 +2129,7 @@ img {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 9999;
+  z-index: 200;
   background-color: #FFFFCC;
   font: normal 8pt sans-serif;
   color: black;
@@ -2154,18 +2154,13 @@ img {
 /* % Z Toolkit element styling */
 /* % ######################################################### */
 
-.button {
-  z-index: 500;
-}
-
 .button_with_drop_down {
   display: inline-block;
-  z-index: 501;
 }
 
 .button_with_drop_down > .drop_down_menu {
   position: absolute;
-  z-index: 501;
+  z-index: 51;
   border: solid;
   border-width: 1px;
   padding: 5px;

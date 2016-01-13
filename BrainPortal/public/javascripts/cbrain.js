@@ -71,8 +71,8 @@
         height = parseInt(options["height"], 10); // || 500);
         $("<div class='overlay_content'></div>").html(new_content).appendTo($("body")).dialog({
           position: 'center',
-          width: width,
-          height: height,
+          width:  width  || 'auto',
+          height: height || 'auto',
           close: function() {
             $(this).remove();
           }
@@ -438,8 +438,8 @@
       dialog.dialog({ 
         autoOpen: false,
         position: "center",
-        width: content_width,
-        height: content_height
+        width:  content_width  || 'auto',
+        height: content_height || 'auto'
       });
     
       dialog_link.click(function() {

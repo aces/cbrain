@@ -727,8 +727,8 @@ $(function() {
             $('#upload-dialog')
               .parent()
               .find(':button:contains("Upload")')
-              .prop('disabled', visible)
-              .toggleClass('ui-state-disabled', visible);
+              .toggleClass('ui-state-disabled', visible)
+              .prop('disabled', visible);
           });
 
       /* file type auto-detection */
