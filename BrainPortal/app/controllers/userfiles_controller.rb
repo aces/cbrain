@@ -1607,7 +1607,8 @@ class UserfilesController < ApplicationController
   # custom filters. +base+ is expected to be the initial scope to apply custom
   # filters to (defaults to +base_scope+). Requires a valid @scope object.
   def custom_scope(base = nil)
-    ((@scope.custom[:custom_filters] &= current_user.custom_filter_ids) || [])
+    @scope.custom[:custom_filters] ||= []
+    (@scope.custom[:custom_filters] &= current_user.custom_filter_ids)
       .map { |id| UserfileCustomFilter.find_by_id(id) }
       .compact
       .inject(base || base_scope) { |scope, filter| filter.filter_scope(scope) }
