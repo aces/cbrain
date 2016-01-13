@@ -57,7 +57,7 @@
 <%% label = lambda do |id, name, optional: false, flag: nil| %>
   <label class="tsk-prm-lbl" for="<%%= id.to_la_id %>">
     <%%= name %>
-    <%% if flag %>
+    <%% if flag.present? %>
       (<code class="cmd-flag"><%%= flag %></code>)
     <%% end %>
     <%% unless optional %>

@@ -1,0 +1,357 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+  default_project = current_project || current_user.own_group
+
+  writable_dps = DataProvider
+    .find_all_accessible_by_user(current_user)
+    .all
+    .reject { |dp| dp.read_only? }
+%>
+
+<div id="upload-dialog"
+  class="dlg-dialog"
+  title="Upload - Single file"
+  data-max-upload-size="" <%# TODO %>
+  data-type-detect-url="<%= detect_file_type_userfiles_path %>"
+>
+  <form action="<%= userfiles_path %>" method="post" enctype="multipart/form-data">
+    <label for="up-file" class="dlg-fld-lbl">Upload</label>
+    <input id="up-file" class="dlg-fld" type="file" name="upload_file" />
+    <span id="up-file-warn" class="dlg-msg-err">
+      &#9888; Too large! (&gt; 1 MB) <%# TODO %>
+    </span>
+    <br />
+
+    <label for="up-dp" class="dlg-fld-lbl">To</label>
+    <%=
+      data_provider_select('data_provider_id',
+        { :data_providers => writable_dps },
+        {
+          :id    => 'up-dp',
+          :class => 'dlg-fld',
+          :'data-placeholder' => "A data provider..."
+        }
+      )
+    %>
+    <%=
+      overlay_content_link('',
+        :id    => 'up-dp-help',
+        :class => 'ui-icon ui-icon-help',
+        :enclosing_element => 'span'
+      ) { data_providers_descriptions.html_safe }
+    %>
+    <br />
+
+    <label for="up-prj" class="dlg-fld-lbl">Project</label>
+    <%=
+      group_select('userfile[group_id]', {}, {
+        :id    => 'up-prj',
+        :class => 'dlg-fld',
+        :'data-placeholder' => "A project..."
+      })
+    %>
+    <br />
+
+    <div id="up-ex-container">
+      <input id="up-ex" class="dlg-chk" type="checkbox" />
+      <label for="up-ex" class="dlg-chk-icon">
+        <span class="ui-icon ui-icon-check"></span>
+      </label>
+      <label for="up-ex" class="dlg-chk-lbl">Extract</label>
+      <br />
+      <div id="up-ex-mode">
+        <input id="up-mul" class="dlg-rad" type="radio" name="_up_ex_mode" value="multiple" checked="" />
+        <label for="up-mul" class="dlg-rad-icon">
+          <span class="round-icon"></span>
+        </label>
+        <label for="up-mul" class="dlg-rad-lbl">As multiple files</label>
+        <br />
+
+        <input id="up-col" class="dlg-rad" type="radio" name="_up_ex_mode" value="collection" />
+        <label for="up-col" class="dlg-rad-icon">
+          <span class="round-icon"></span>
+        </label>
+        <label for="up-col" class="dlg-rad-lbl">As a single collection</label>
+      </div>
+    </div>
+    <br />
+
+    <input id="up-opt-toggle" type="checkbox" />
+    <label id="up-opt-icon" for="up-opt-toggle">
+      <span class="ui-icon up-closed ui-icon-carat-1-e"></span>
+      <span class="ui-icon up-open ui-icon-carat-1-s"></span>
+    </label>
+    <label id="up-opt-lbl" for="up-opt-toggle">Advanced options...</label>
+    <div id="up-opt">
+      <label for="up-tag" class="dlg-fld-lbl">Tags</label>
+      <select id="up-tag"
+        class="dlg-fld dlg-chosen"
+        name="tags[]"
+        multiple="multiple"
+        data-placeholder="Some tags..."
+        data-default-project="<%= default_project.id %>"
+      >
+        <%= options_from_collection_for_select(current_user.available_tags, 'id', 'name') %>
+      </select>
+      <br /><br />
+
+      <label for="up-type" class="dlg-fld-lbl">Detect as</label>
+      <%=
+        userfile_type_select(:file_type, {}, {
+          :id    => 'up-type',
+          :class => 'dlg-fld',
+          :'data-placeholder' => "A file type..."
+        })
+      %>
+      <span id="up-type-auto">(autodetected)</span>
+      <span id="up-type-unknown" class="dlg-msg-warn">Unknown file type!</span>
+      <br />
+
+      <input id="up-shr" class="dlg-chk" name="group_writable" type="checkbox" />
+      <label for="up-shr" class="dlg-chk-icon">
+        <span class="ui-icon ui-icon-check"></span>
+      </label>
+      <label for="up-shr" class="dlg-chk-lbl">
+        Allow modification by other project members
+      </label>
+    </div>
+  </form>
+</div>
+
+<div id="cpmv-dialog" class="dlg-dialog" title="Copy" data-title="Copy">
+  <form action="<%= change_provider_userfiles_path %>" method="post">
+    <label for="cpmv-dp" class="dlg-fld-lbl">To</label>
+    <%=
+      data_provider_select('data_provider_id_for_mv_cp',
+        { :data_providers => writable_dps },
+        {
+          :id    => 'up-dp',
+          :class => 'dlg-fld',
+          :'data-placeholder' => "A data provider..."
+        }
+      )
+    %>
+    <%=
+      overlay_content_link('',
+        :id    => 'up-dp-help',
+        :class => 'ui-icon ui-icon-help',
+        :enclosing_element => 'span'
+      ) { data_providers_descriptions.html_safe }
+    %>
+    <br />
+
+    <input id="cpmv-ovr" class="dlg-chk" name="crush_destination" value="crush" type="checkbox" />
+    <label for="cpmv-ovr" class="dlg-chk-icon">
+      <span class="ui-icon ui-icon-check"></span>
+    </label>
+    <label for="cpmv-ovr" class="dlg-chk-lbl">
+      Overwrite existing file(s) with the same name
+    </label>
+    <br /><br />
+  </form>
+</div>
+
+<div id="prop-dialog" class="dlg-dialog" title="File properties">
+  <form action="<%= update_multiple_userfiles_path %>" method="post">
+    <label for="pp-tag" class="dlg-fld-lbl">Tags</label>
+    <select id="pp-tag"
+      class="dlg-fld dlg-chosen"
+      name="tags[]"
+      multiple="multiple"
+      data-placeholder="Keep current tags"
+      data-default-project="<%= default_project.id %>"
+    >
+      <%= options_from_collection_for_select(current_user.available_tags, 'id', 'name') %>
+    </select>
+    <br /><br />
+
+    <input id="pp-tag-clr" class="dlg-chk" type="checkbox" />
+    <label for="pp-tag-clr" class="dlg-chk-icon">
+      <span class="ui-icon ui-icon-check"></span>
+    </label>
+    <label for="pp-tag-clr" class="dlg-chk-lbl">
+      Clear tags
+    </label>
+    <br />
+
+    <br />
+
+    <% unless current_user.has_role?(:normal_user) %>
+      <label for="pp-own" class="dlg-fld-lbl">Owner</label>
+      <%=
+        user_select('user_id', { :selector => nil }, {
+          :id       => 'pp-own',
+          :class    => 'dlg-fld',
+          :include_blank      => "(keep current owner)",
+          :'data-placeholder' => "Keep current owner"
+        })
+      %>
+      <br />
+    <% end %>
+
+    <label for="pp-prj" class="dlg-fld-lbl">Project</label>
+    <%=
+      group_select('group_id', { :selector => nil }, {
+        :id       => 'pp-prj',
+        :class    => 'dlg-fld',
+        :include_blank      => "(keep current project)",
+        :'data-placeholder' => "Keep current project"
+      })
+    %>
+    <br />
+
+    <input id="pp-shr" class="dlg-chk dlg-unset" data-name="group_writable" type="checkbox" />
+    <label for="pp-shr" class="dlg-chk-icon">
+      <span class="ui-icon ui-icon-check"></span>
+    </label>
+    <label for="pp-shr" class="dlg-chk-lbl">
+      Allow modification by other project members
+    </label>
+    <br />
+
+    <br />
+
+    <label for="pp-type" class="dlg-fld-lbl">Type</label>
+    <%=
+      userfile_type_select(:file_type, { :selector => nil }, {
+        :id       => 'pp-type',
+        :class    => 'dlg-fld',
+        :include_blank      => "(keep current file type)",
+        :'data-placeholder' => "Keep current file type"
+      })
+    %>
+    <br />
+
+    <input id="pp-hid" class="dlg-chk dlg-unset" data-name="hidden" type="checkbox" />
+    <label for="pp-hid" class="dlg-chk-icon">
+      <span class="ui-icon ui-icon-check"></span>
+    </label>
+    <label for="pp-hid"
+      class="dlg-chk-lbl html_tool_tip_trigger"
+      data-tool-tip-id="pp-hid-tp"
+      data-offset-x="80"
+      data-offset-y="-2"
+    >
+      Hidden (<span class="pp-hid-ind">H</span>)
+    </label>
+    <br />
+
+    <input id="pp-ro" class="dlg-chk dlg-unset" data-name="immutable" type="checkbox" />
+    <label for="pp-ro" class="dlg-chk-icon">
+      <span class="ui-icon ui-icon-check"></span>
+    </label>
+    <label for="pp-ro"
+      class="dlg-chk-lbl html_tool_tip_trigger"
+      data-tool-tip-id="pp-ro-tp"
+      data-offset-x="80"
+      data-offset-y="-2"
+    >
+      Locked (<span class="pp-ro-ind">I</span>)
+    </label>
+  </form>
+</div>
+
+<div id="pp-hid-tp" class="html_tool_tip" style="z-index:105">
+  Hidden files are invisible by default, and are usually reserved for
+  maintenance, internal and archiving purposes.
+</div>
+
+<div id="pp-ro-tp" class="html_tool_tip" style="z-index:105">
+  Locked files cannot be modified or moved across data providers.
+</div>
+
+<div id="filter-dialog" class="dlg-dialog"></div>
+
+<div id="tag-dialog" class="dlg-dialog" title="Tags">
+  <form action="#" method="post">
+    <%=
+      group_select('', {}, {
+        :id    => 'tag-mov-prj',
+        :class => 'tag-in-prj',
+        :'data-placeholder' => "A project..."
+      })
+    %>
+    <table id="tag-table">
+      <%= render(:partial => 'tags_table') %>
+    </table>
+  </form>
+</div>
+
+<div id="collection-dialog" class="dlg-dialog" title="New collection">
+  <form action="<%= create_collection_userfiles_path %>" method="post">
+    <label for="co-name" class="dlg-fld-lbl">Name</label>
+    <input id="co-name"
+      class="dlg-fld"
+      type="text"
+      name="collection_name"
+      value="NewCollection"
+    />
+    <span id="co-invalid-name" class="dlg-msg-err">
+      &#9888; Invalid!
+    </span>
+    <br />
+
+    <label for="co-dp" class="dlg-fld-lbl">Provider</label>
+    <%=
+      data_provider_select('data_provider_id_for_collection',
+        { :data_providers => writable_dps },
+        {
+          :id    => 'co-dp',
+          :class => 'dlg-fld',
+          :'data-placeholder' => "A data provider..."
+        }
+      )
+    %>
+    <br /><br />
+  </form>
+</div>
+
+<div id="delete-confirm"
+  class="dlg-dialog dlg-cfrm"
+  title="Delete"
+  data-action="Delete"
+>
+  <span class="dlg-cfrm-icon ui-icon ui-icon-alert"></span>
+  Are you sure you wish to delete these <span class="dlg-cfrm-cnt"></span> file(s)?
+</div>
+
+<div id="qc-confirm"
+  class="dlg-dialog dlg-cfrm"
+  title="Quality control"
+  data-action="Proceed"
+>
+  <span class="dlg-cfrm-icon ui-icon ui-icon-info"></span>
+  Note that quality control (QC) requires files to be synchronized locally first.
+</div>
+
+<div id="tag-del-confirm"
+  class="dlg-dialog dlg-cfrm"
+  title="Delete"
+  data-action="Delete"
+>
+  <span class="dlg-cfrm-icon ui-icon ui-icon-alert"></span>
+  Are you sure you wish to delete the tag <span class="dlg-cfrm-obj"></span> ?
+</div>

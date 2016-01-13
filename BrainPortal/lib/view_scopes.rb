@@ -984,22 +984,21 @@ module ViewScopes
         collection = collection.to_a unless
           (collection <= ActiveRecord::Base rescue nil)
 
-        # Clamp @page and @per_page to a sane range
-        page     = [1,  [@page.to_i,     99_999].min].max
-        per_page = [25, [@per_page.to_i, 1000  ].min].max
+        # Validate @total and clamp @page and @per_page to a sane range
+        total    = (@total || collection.size).to_i
+        per_page = [25, @per_page.to_i, 1000].sort[1]
+        page     = [1, @page.to_i, (total + per_page - 1) / per_page].sort[1]
 
         # Is there a native paginate method available?
         if collection.respond_to?(:paginate)
           collection.paginate(
             :page          => page,
             :per_page      => per_page,
-            :total_entries => @total
+            :total_entries => total
           )
 
         # Otherwise, just manually create a WillPaginate::Collection
         else
-          total = @total || collection.length
-
           WillPaginate::Collection.create(page, per_page, total) do |pager|
             pager.replace(collection[pager.offset, pager.per_page].to_a)
           end

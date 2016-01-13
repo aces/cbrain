@@ -851,56 +851,6 @@ pre {
 
 
 /* % ######################################################### */
-/* % Tool launch bar (userfiles index) */
-/* % ######################################################### */
-
-.launch_bar {
-  border: 2px solid #0471B4;
-  margin: 5px;
-  padding: 5px;
-  position: relative;
-  text-align: right;
-}
-
-.launch_bar span {
-  display: inline-block;
-  margin: 0px 5px;
-}
-
-.launch_bar span.info {
-  display: block;
-  float: left;
-  font-weight: bold;
-  margin-top: 5px;
-}
-
-
-/* % ######################################################### */
-/* % File upload progress dialog */
-/* % ######################################################### */
-
-.no_close .ui-dialog-titlebar-close {
-  display: none;
-}
-
-.progress_dialog {
-  min-height: 100% !important;
-}
-
-.progress_dialog .bar {
-  position: relative;
-  text-align: center;
-}
-
-.progress_dialog .label {
-  position: absolute;
-  top: 4px;
-  width: 100%;
-}
-
-
-
-/* % ######################################################### */
 /* % Account Section of Application Layout */
 /* % ######################################################### */
 
@@ -1202,14 +1152,6 @@ pre {
 }
 
 /* % ######################################################### */
-/* % JQuery UI overrides */
-/* % ######################################################### */
-
-.ui-dialog {
-  border: 2px solid !important;
-}
-
-/* % ######################################################### */
 /* % End User License Agreement */
 /* % ######################################################### */
 
@@ -1495,29 +1437,6 @@ pre {
 }
 
 
-
-/* % ######################################################### */
-/* % Userfiles Index File Manager */
-/* % ######################################################### */
-
-.userfiles_tool_selector {
-  padding: 0 1em;
-  display: table-row;
-}
-
-.userfiles_bourreau_selector {
-  padding: 0 1em;
-  display: table-row;
-}
-
-#userfiles_table td.type_icon,
-#userfiles_table th.type_icon {
-  max-width: 12px;
-}
-
-#userfiles_table td.type_icon > .ui-icon {
-  background-image: url(../images/ui-black-icons.png);
-}
 
 /* % ######################################################### */
 /* % Show page table formatting */
@@ -1826,7 +1745,7 @@ th.center_align_heading {
   position: absolute;
   top: 22px;
   min-width: 185px;
-  z-index: 501;
+  z-index: 51;
 }
 
 .tsk-prm-sel-opt > li {
@@ -2035,7 +1954,7 @@ img {
 
 .hover_dropdown {
   position: absolute;
-  z-index: 999;
+  z-index: 50;
 }
 
 .resource_header {
@@ -2210,7 +2129,7 @@ img {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 9999;
+  z-index: 200;
   background-color: #FFFFCC;
   font: normal 8pt sans-serif;
   color: black;
@@ -2235,18 +2154,13 @@ img {
 /* % Z Toolkit element styling */
 /* % ######################################################### */
 
-.button {
-  z-index: 500;
-}
-
 .button_with_drop_down {
   display: inline-block;
-  z-index: 501;
 }
 
 .button_with_drop_down > .drop_down_menu {
   position: absolute;
-  z-index: 501;
+  z-index: 51;
   border: solid;
   border-width: 1px;
   padding: 5px;
@@ -2392,66 +2306,4 @@ img {
 
 .no-close .ui-dialog-titlebar-close {
   display: none;
-}
-
-/* % ######################################################### */
-/* % Tools Dialog styling */
-/* % ######################################################### */
-
-/* container for tools table */
-.tools-container{
-    overflow-y:auto;
-    overflow-x:hidden;
-    height:500px;
-    width:400px;
-    border: 1px solid grey;
-}
-
-#toolSelectTable {
-  width: 400px;
-  border:none;
-}
-
-#toolSelectTable td {
-  padding: 5px;
-  text-align: left;
-}
-
-#toolSelectTable tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-#toolSelectTable tr:hover td {
-  background-color: #fff3d3;
-}
-
-#toolsDialogWrapper {
-  margin-right: 170px;
-}
-#toolsDialogLeftCol {
-  float: left;
-  width: 170px;
-}
-#toolsDialogRightCol {
-  float: right;
-  width: 100%;
-  margin-right: -170px;
-}
-
-.additionalToolInfo{
-  display: none;
-}
-
-.toolsDialogClass .ui-dialog-titlebar{
-  background: #05a3d6;
-  color: white;
-
-}
-
-.toolsDialogClass .ui-dialog-titlebar .ui-dialog-titlebar-close{
-   background: white;
-}
-
-.toolsDialogClass .ui-dialog-titlebar .ui-dialog-titlebar-close:hover{
-   background: #05a3d6;
 }

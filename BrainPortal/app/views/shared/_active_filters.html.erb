@@ -54,13 +54,19 @@
           )
         %>
       <% end %>
-      <% Array(scope.custom[:custom_filters]).uniq.each do |id| %>
+      <%
+        Array(scope.custom[:custom_filters])
+          .uniq
+          .map { |id| CustomFilter.find(id) rescue nil }
+          .compact
+          .each do |filter|
+      %>
         <span class="current_filters_item">
-          <%= crop_text_to(30, CustomFilter.find(id).name) %>
+          <%= crop_text_to(30, filter.name) %>
         </span>
         <%=
           scope_custom_link(delete_icon,
-            scope, { 'custom_filters' => [id] },
+            scope, { 'custom_filters' => [filter.id] },
             url:  { '_scope_mode' => 'delete' },
             link: { :ajax         => true     }
           )

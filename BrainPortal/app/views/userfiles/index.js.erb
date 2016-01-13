@@ -23,7 +23,28 @@
 -%>
 
 <%= render :partial  => "shared/flash_update" %>
-jQuery("#userfiles_display").html(<%= html_for_js(render(:partial => 'userfiles_display')) %>);
-jQuery("#userfiles_display").trigger("new_content");
-jQuery("#view_option_button").html(<%= html_for_js(render(:partial => 'view_option_button')) %>).trigger("new_content");
-jQuery("#userfiles_filters").html(<%= html_for_js(render(:partial => 'filters')) %>).trigger("new_content");
+
+$('#userfiles_display')
+  .html(<%= html_for_js(render(:partial => 'userfiles_display')) %>)
+  .trigger('new_content');
+
+$('#menu_bar')
+  .html(<%= html_for_js(render(:partial => 'file_menu')) %>)
+  .trigger('new_content');
+
+/*
+ * Dialogs cannot be updated all at once in #userfiles_dialogs as jQuery pops
+ * them out of their parent when .dialog() is invoked. This snippet updates
+ * them manually based on their ID instead, as the new_content event handler
+ * for #userfiles_dialogs does not rely on the dialogs being children of
+ * #userfiles_dialogs.
+ */
+$('<div>')
+  .html(<%= html_for_js(render(:partial => 'dialogs')) %>)
+  .find('.dlg-dialog')
+  .each(function () {
+    $('#' + $(this).attr('id')).html($(this).html());
+  });
+
+$('#userfiles_dialogs')
+  .trigger('new_content');

@@ -50,9 +50,8 @@ class ToolsController < ApplicationController
       return
     end
 
-    @button_label = params[:button_label]
-    tool_id       = params[:tool_id]
-    @tool         = current_user.available_tools.find(tool_id)
+    tool_id = params[:tool_id]
+    @tool   = current_user.available_tools.find(tool_id)
 
     # All accessible bourreaux for this tool
     bourreau_ids  = @tool.bourreaux.map(&:id)
@@ -66,8 +65,10 @@ class ToolsController < ApplicationController
 
     # Select a specific tool_config
     selected_by_default = current_user.meta["pref_bourreau_id"]
-    @tool_config        = bourreaux_ids.include?(selected_by_default) && @bourreaux.detect? { |b| b.id == selected_by_default && b.online? } ?
-                          @tool_configs.where(:bourreau_id => selected_by_default).last : nil
+    @tool_config = @tool_configs.where(:bourreau_id => selected_by_default).last if (
+      bourreaux_ids.include?(selected_by_default) &&
+      @bourreaux.detect? { |b| b.id == selected_by_default && b.online? }
+    )
 
     respond_to do |format|
       format.html { render :partial => 'tools/tool_config_select' }

@@ -22,124 +22,186 @@
 #
 -%>
 
-<div class="menu_bar">
-    <%= link_to "Upload File",{:action  => :new}, :class  => "button menu_button"%>
-    <%= link_to "Select Tool","#", :class  => "button menu_button", :id => "toolSelectLink" %>
+<div id="static-actions">
+  <span id="launch-btn"
+    class="act-btn"
+    data-dialog="toolsDialog"
+    data-icon="ui-icon-play"
+  >Launch</span>
 
-    <%= button_with_dropdown_menu("File Management") do %>
-
-      <h4>Download</h4>
-      Specify Download File Name (optional):
-      <%= text_field_tag :specified_filename %>
-      <%= hijacker_submit_button("Download Files", :url  => url_for(:controller => 'userfiles', :action => 'download'), :ajax_submit  => false, :class => "button", :method  => :get) %>
-      <hr>
-
-
-      <% writable_dps = DataProvider.find_all_accessible_by_user(current_user).all.select { |dp| ! dp.read_only? } %>
-      <h4>Move/Copy</h4>
-      To Data Provider:
-      <%= data_provider_select(:data_provider_id_for_mv_cp, { :data_providers => writable_dps }, :include_blank => "(Select Destination)") %>
-      <!-- jQuery has a bug for the following checkbox, which explains the style attribute. -->
-      Overwrite files on Destination, if they exist:
-      <input type="checkbox" name="crush_destination" value="crush" style="position: relative; left: 0;">
-      <%= hijacker_submit_button("Move Files", :name => :move, :url  => url_for(:action  => :change_provider), :class => "button", :method  => :post) %>
-      <%= hijacker_submit_button("Copy Files", :name => :copy, :url  => url_for(:action  => :change_provider), :class => "button", :method  => :post) %>
-      <hr>
-
-      <h4>Create collection</h4>
-      Name for the collection (optional):
-      <%= text_field_tag :collection_name %>
-      To Data Provider:
-      <%= data_provider_select(:data_provider_id_for_collection, { :data_providers => writable_dps }, :include_blank => "(Select Destination)") %>
-      <%= hijacker_submit_button("Create Collection", :url    => url_for(:action  => :create_collection),
-                                                      :class  => "button",
-                                                      :method => :post)
-      %>
-      <hr>
-
-      <h4>Compression, archiving and deletion</h4>
-      For file(s):
-      <%= hijacker_submit_button("(Un)compress",  :url     => url_for(:action  => :compress ),
-                                                  :confirm => "Are you sure you want to compress or uncompress the selected files?",
-                                                  :class   => "button",
-                                                  :method  => :post)
-      %>
-
-      For collection(s) and archive(s):
-      <%= hijacker_submit_button("(Un)archive",   :url     => url_for(:action  => :archive_management ),
-                                                  :confirm => "Are you sure you want to archive or unarchive the selected files collection?",
-                                                  :class   => "button",
-                                                  :method  => :post)
-      %>
-
-      For any type:
-      <%= hijacker_submit_button("Delete", :url     => url_for(:action  => :delete_files),
-                                           :confirm => "Are you sure you want to delete the selected files?",
-                                           :class     => "button",
-                                           :method  => :delete)
-      %>
-
-    <% end %>
-
-
-    <%= button_with_dropdown_menu("Update Attributes") do %>
-        <h4>Tags</h4>
-        <%= render :partial => 'userfiles/tag_table' %>
-        <hr>
-        <h4>Projects</h4>
-        Change Project:
-        <%= group_select('userfile[group_id]', {}, { :include_blank => "(select another project)" } ) %>
-        <%= hijacker_submit_button("Update", :name => :update_projects, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
-        <P>
-        Project Permission Update:
-        <%= select(:userfile, :group_writable, [['Read Only', false],['Read/Write', true]]) %>
-        <%= hijacker_submit_button("Update", :name => :update_permissions, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
-        <% if !current_user.has_role?(:normal_user) %>
-          <hr>
-          Change Owner:
-          <%= user_select('userfile[user_id]', {}, { :include_blank => "(select another owner)" } ) %>
-          <%= hijacker_submit_button("Update", :name => :update_owner, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
-        <% end %>
-        <hr>
-        Mark Or Unmark As Hidden (<%= hidden_icon %>):
-        <%= select(:userfile, :hidden, [['Not Hidden', false],['Mark as Hidden', true]]) %>
-        <%= hijacker_submit_button("Update", :name => :update_hidden, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
-        <hr>
-        Mark Or Unmark As Immutable (<%= immutable_icon %>):
-        <%= select(:userfile, :immutable, [['Not Immutable', false],['Mark as Immutable', true]]) %>
-        <%= hijacker_submit_button("Update", :name => :update_immutable, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
-        <hr>
-        Update Parent-Child Relationships:
-        <%= hijacker_submit_button("Update",  :url  => url_for(:action  => :new_parent_child ),
-                                                     :datatype => 'html',
-                                                     :overlay => true,
-                                                     :class => "button",
-                                                     :method  => :get)
-        %>
-        <hr>
-        Update File Type:
-        <%= userfile_type_select(:file_type, {}, { :include_blank => "(select another file type)" } ) %>
-        <%= hijacker_submit_button("Update", :name => :update_file_type, :url  => url_for(:action  => :update_multiple), :method  => :put, :class => "button") %>
-        <hr>
-        Start QC: <%=
-                      hijacker_submit_button("Start", :url  => url_for(:controller => 'userfiles', :action => 'quality_control'),
-                                                      :confirm  => "Please note that files must be synchronized locally for QC. \n\nContinue?",
-                                                      :ajax_submit  => false,
-                                                      :class => "button",
-                                                      :method  => :post)
-                  %>
-        <hr>
-        Cache Operations:<br/>
-        <%= hijacker_submit_button("Synchronize Files Locally", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple', :operation => 'sync_local'), :ajax_submit  => false, :method  => :post, :class => "button") %>
-        &nbsp;or&nbsp;
-        <%= hijacker_submit_button("Mark Content As Newer", :url  => url_for(:controller => 'userfiles', :action => 'sync_multiple', :operation => 'all_newer'), :ajax_submit  => false, :method  => :post, :class => "button") %>
-    <% end %>
-
-    <%= button_with_dropdown_menu("Filters", :content_id => 'userfiles_filters') do %>
-      <%= render :partial => 'userfiles/filters' %>
-    <% end %>
-    <span id="view_option_button">
-      <%= render :partial => "userfiles/view_option_button" %>
-    </span>
+  <span id="upload-btn"
+    class="act-btn"
+    data-dialog="upload-dialog"
+    data-icon="ui-icon-arrowthick-1-n"
+  >Upload</span>
 </div>
 
+<div id="dynamic-actions" class="hidden">
+  <span id="down-btn"
+    class="act-btn"
+    data-url="<%= download_userfiles_path %>"
+    data-method="POST"
+    data-empty-selection="0"
+    data-icon="ui-icon-arrowthickstop-1-s"
+  >Download</span>
+
+  <span id="copy-btn"
+    class="act-btn"
+    data-dialog="cpmv-dialog"
+    data-icon="ui-icon-copy"
+  >Copy</span>
+
+  <span id="move-btn"
+    class="act-btn"
+    data-dialog="cpmv-dialog"
+    data-icon="ui-icon-arrowreturnthick-1-e"
+  >Move</span>
+
+  <span id="ren-btn"
+    class="act-btn"
+    data-icon="ui-icon-pencil"
+  >Rename</span>
+
+  <span id="comp-btn"
+    class="act-btn"
+    data-url="<%= compress_userfiles_path() %>"
+    data-method="POST"
+    data-icon="ui-icon-suitcase"
+  >Compress</span>
+
+  <span id="ucomp-btn"
+    class="act-btn"
+    data-url="<%= uncompress_userfiles_path() %>"
+    data-method="POST"
+    data-icon="ui-icon-folder-open"
+  >Uncompress</span>
+
+  <span id="del-btn"
+    class="act-btn"
+    data-url="<%= delete_files_userfiles_path %>"
+    data-method="DELETE"
+    data-icon="ui-icon-trash"
+    data-confirm-dlg="delete-confirm"
+  >Delete</span>
+</div>
+
+<div id="menu-actions">
+  <span id="menu-btn" class="act-btn" data-icon="ui-icon-gear">More...</span>
+  <ul id="menu-list">
+    <li id="filters-item">
+      Custom filters
+      <span class="ui-icon ui-icon-zoomin"></span>
+      <ul id="filters-menu">
+        <%= render(:partial => 'filter_items') %>
+      </ul>
+    </li>
+    <li id="tag-item"
+      class="act-item"
+      data-dialog="tag-dialog"
+    >
+      Tags
+      <span class="ui-icon ui-icon-tag"></span>
+    </li>
+    <li class="menu-separator">-</li>
+
+    <li id="prop-item"
+      class="act-item dyn-item"
+      data-dialog="prop-dialog"
+    >
+      Properties
+      <span class="ui-icon ui-icon-document-b"></span>
+    </li>
+    <li id="qc-item"
+      class="act-item dyn-item"
+      data-url="<%= quality_control_userfiles_path %>"
+      data-method="POST"
+      data-confirm-dlg="qc-confirm"
+    >
+      Quality control
+      <span class="ui-icon ui-icon-check"></span>
+    </li>
+    <li id="sync-item"
+      class="act-item dyn-item"
+      data-url="<%= sync_multiple_userfiles_path(:operation => 'sync_local') %>"
+      data-method="POST"
+      data-empty-selection="0"
+    >
+      Synchronize
+      <span class="ui-icon ui-icon-refresh"></span>
+    </li>
+    <li id="mnew-item"
+      class="act-item dyn-item"
+      data-url="<%= sync_multiple_userfiles_path(:operation => 'all_newer') %>"
+      data-method="POST"
+      data-empty-selection="0"
+    >
+      Mark as newer
+      <span class="ui-icon ui-icon-flag"></span>
+    </li>
+    <li class="menu-separator dyn-item">-</li>
+
+    <li id="col-item"
+      class="act-item dyn-item"
+      data-dialog="collection-dialog"
+    >
+      New collection
+      <span class="ui-icon ui-icon-folder-collapsed"></span>
+    </li>
+    <li class="menu-separator dyn-item">-</li>
+
+    <li id="exp-item"
+      class="act-item"
+      data-url="<%= userfiles_path(:format => :csv) %>"
+      data-method="GET"
+    >
+      Export as CSV
+      <span class="ui-icon ui-icon-extlink"></span>
+    </li>
+    <li class="menu-separator">-</li>
+
+    <%
+      toggle_url = lambda do |key|
+        url_for(scope_custom_params(@scope, { key => !@scope.custom[key] }))
+      end
+    %>
+    <li id="vown-item"
+      class="act-item"
+      data-url="<%= toggle_url.(:view_all) %>"
+      data-method="GET"
+      data-ajax="1"
+    >
+      <% if @scope.custom[:view_all] %>
+        Show only my files
+      <% else %>
+        Show all files
+      <% end %>
+      <span class="ui-icon ui-icon-star"></span>
+    </li>
+    <li id="vhid-item"
+      class="act-item"
+      data-url="<%= toggle_url.(:view_hidden) %>"
+      data-method="GET"
+      data-ajax="1"
+    >
+      <% if @scope.custom[:view_hidden] %>
+        Hide hidden files
+      <% else %>
+        Show hidden files
+      <% end %>
+      <span class="ui-icon ui-icon-note"></span>
+    </li>
+    <li id="vtree-item"
+      class="act-item"
+      data-url="<%= toggle_url.(:tree_sort) %>"
+      data-method="GET"
+      data-ajax="1"
+    >
+      <% if @scope.custom[:tree_sort] %>
+        List view
+      <% else %>
+        Tree view
+      <% end %>
+      <span class="ui-icon ui-icon-arrowreturnthick-1-s"></span>
+    </li>
+  </ul>
+</div>
