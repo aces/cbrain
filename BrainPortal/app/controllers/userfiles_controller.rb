@@ -90,7 +90,7 @@ class UserfilesController < ApplicationController
 
     # Special case; only userfile IDs are required (API request)
     if params[:ids_only] && api_request
-      @userfiles = @view_scope.raw_first_column(:id)
+      @userfiles = @view_scope.raw_first_column('userfiles.id')
 
     # Tree sort
     elsif @scope.custom[:tree_sort]
