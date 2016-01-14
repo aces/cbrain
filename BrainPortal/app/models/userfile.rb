@@ -96,6 +96,10 @@ class Userfile < ActiveRecord::Base
                                              where(:id => matching_parents_ids)
                                             }
 
+  cb_scope                :contain_tags, lambda {|n|
+                                            joins(:tags).where('tag_id IN (?)', n).uniq
+                                          }
+
   ##############################################
   # Miscelleneous methods
   ##############################################

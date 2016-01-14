@@ -82,14 +82,10 @@ Archiving status<br>
 </p>
 
 <% unless current_user.available_tags.blank? %>
-  Tags
-  <table>
-    <% for tag in current_user.available_tags %>
-      <tr class="<%= cycle('list-odd', 'list-even') %>">
-        <td><%= check_box_tag("custom_filter[tag_ids][]", tag.id.to_s, custom_filter.tag_ids.include?(tag.id.to_s)) %></td>
-        <td><%= tag.name -%></td>
-      </tr>
-    <% end %>
-  </table>
+  Tags <br>
+  <%=
+  select_tag "data[tag_ids]", options_for_select((current_user.available_tags.map { |tags| [tags.name, tags.id] }), :selected => custom_filter.data["tag_ids"]),
+              :multiple => true, :size => 6, :selected => custom_filter.data["tag_ids"]
+  %>
 <% end %>
 
