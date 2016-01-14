@@ -510,6 +510,9 @@ $(function() {
       $('#userfiles_table')
         .undelegate('.dt-sel-row', 'contextmenu.uf.toggle-context')
         .delegate(  '.dt-sel-row', 'contextmenu.uf.toggle-context', function (event) {
+          /* keep the browser's context menu on links (anchors) */
+          if (event.target.tagName.toLowerCase() == 'a') return;
+
           var menu     = $('#userfiles_context_menu'),
               checkbox = $(this).find('.dt-sel-check').first();
 
