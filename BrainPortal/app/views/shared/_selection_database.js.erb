@@ -139,12 +139,6 @@
 
         /* once all bound elements are initialized... */
         store.transaction.oncomplete = function () {
-          psel.data('bound-values', JSON.stringify(
-            $(bind_selector).map(function () {
-              return $(this).val();
-            }).get()
-          ));
-
           psel.trigger('status.psel', [null]);
           psel.trigger('generate.psel');
         };
@@ -172,7 +166,7 @@
 
     /* add/remove sets of values from the selection set */
     function update(add, remove, done) {
-      var store = open_store(store_name, function () { update(add, remove); });
+      var store = open_store(store_name, function () { update(add, remove, done); });
       if (!store) return;
 
       var transaction = store.transaction;
@@ -207,10 +201,36 @@
       $(document)
         .undelegate(bind_selector, 'change.psel')
         .delegate(  bind_selector, 'change.psel', function psel_bchange() {
+          var value   = $(this).val(),
+              checked = this.checked;
+
+          /*
+           * keep track of deselected elements (exceptions from the generated
+           * selection array in psel-val) explicitly in psel-ex.
+           */
+          function update_exceptions() {
+            var except = psel.data('except'),
+                index  = except.indexOf(value);
+
+            if (checked && index > -1)
+              except.splice(index, 1);
+
+            else if (!checked && index == -1)
+              except.push(value);
+
+            else
+              return;
+
+            psel
+              .data('except', except)
+              .find('.psel-ex')
+              .val(JSON.stringify(except));
+          };
+
           if (this.checked)
-            update([$(this).val()], []);
+            update([value], [], update_exceptions);
           else
-            update([], [$(this).val()]);
+            update([], [value], update_exceptions);
         });
 
     /* check the entire bound element set when watched elements are triggered */
@@ -224,6 +244,11 @@
           $(bind_selector).each(function () {
             (this.checked ? add : remove).push($(this).val());
           });
+
+          psel
+            .data('except', remove)
+            .find('.psel-ex')
+            .val(JSON.stringify(remove));
 
           update(add, remove);
         });
@@ -283,8 +308,13 @@
 
       components.trigger('refresh.psel');
 
-      components.find('.psel-in')
-        .val('{}');
+      components.find('.psel-val')
+        .val('[]');
+
+      components
+        .data('except', [])
+        .find('.psel-ex')
+        .val('[]');
 
       components.each(function () {
         $($(this).data('bind-selector'))
@@ -296,7 +326,7 @@
   /*
    * +generate+ event
    * Present on .persistent-selection nodes, generate a JSON list of the current
-   * persistent selection set in the psel-in hidden field. Note that this event
+   * persistent selection set in the psel-val hidden field. Note that this event
    * requires the database store to already exist and is quite expensive as it
    * requires dumping the entire database store. Trigger this event to update
    * the selection set to send to the server.
@@ -325,13 +355,13 @@
         cursor.continue();
 
       } else {
-        components.each(function () {
-          $(this).find('.psel-in')
-            .val(JSON.stringify({
-              bound: JSON.parse($(this).data('bound-values')),
-              selection: selected
-            }));
-        });
+        components.find('.psel-val')
+          .val(JSON.stringify(selected));
+
+        components
+          .data('except', [])
+          .find('.psel-ex')
+          .val('[]');
 
         components.trigger('status.psel', [null]);
       }

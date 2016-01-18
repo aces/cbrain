@@ -41,19 +41,25 @@ module PersistentSelection
   # are expected to be directly in params (not nested under any other key).
   def merge_persistent_selection
     params.keys.each do |key|
-      next unless key =~ /^_psel_/
+      next unless key =~ /^_psel_val_/
 
-      value = params.delete(key)
-      value = value.first if value.is_a?(Enumerable)
-      next if value.blank?
+      values = params.delete(key)
+      values = values.first if values.is_a?(Enumerable)
 
-      key   = key.sub(/^_psel_/, '')
-      value = JSON.parse(value)
-      next unless value['bound'].is_a?(Array) && value['selection'].is_a?(Array)
+      except = params.delete(key.sub(/^_psel_val_/, '_psel_ex_'))
+      except = except.first if except.is_a?(Enumerable)
 
-      params[key] = value['selection']
+      next if values.blank?
+
+      key    = key.sub(/^_psel_val_/, '')
+      values = JSON.parse(values)
+      except = except.blank? ? [] : JSON.parse(except)
+
+      next unless values.is_a?(Array) && except.is_a?(Array)
+
+      params[key] = values
         .to_set
-        .subtract(value['bound'])
+        .subtract(except)
         .merge(params[key] || [])
         .to_a
     end

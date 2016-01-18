@@ -678,10 +678,7 @@ class UserfilesController < ApplicationController
     # Ensure there is actually something left to update
     if file_ids.blank? || changes.blank?
       flash[:notice] += "Nothing to update.\n"
-      redirect_to(params[:redirect_action] || {
-        :action => :index,
-        :format => request.format.to_sym
-      })
+      redirect_to(params[:redirect_action] || { :action => :index })
       return
     end
 
@@ -785,10 +782,7 @@ class UserfilesController < ApplicationController
         failed.present?
     end
 
-    redirect_to(params[:redirect_action] || {
-      :action => :index,
-      :format => request.format.to_sym
-    })
+    redirect_to(params[:redirect_action] || { :action => :index })
   end
 
   def quality_control #:nodoc:
