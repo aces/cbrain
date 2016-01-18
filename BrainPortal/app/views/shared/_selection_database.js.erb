@@ -87,6 +87,7 @@
         .addClass('psel-zero')
         .text('0');
 
+      psel.trigger('ready.psel');
       event.preventDefault();
     };
 
@@ -95,8 +96,19 @@
         .removeClass('psel-refresh')
         .toggleClass('psel-zero', request.result === 0)
         .text(request.result);
+
+      psel.trigger('ready.psel');
     };
   });
+
+  /*
+   * +ready+ event
+   * Present on .persistent-selection nodes, invoked when the persistent
+   * selection component has finished loading/updating/refreshing and the
+   * component's .psel-count node can be expected to contain the current
+   * persistent selection count. Triggered when the +refresh+ event completes.
+   */
+  /* No default handler; this event is intended for other modules to use. */
 
   /*
    * +reload+ event
@@ -104,7 +116,6 @@
    * UI, event bindings and current persistent selection set (see the
    * +generate+ event).
    */
-   /* TODO: handle the case where there is no bound elements */
   $(document).delegate('.persistent-selection', 'reload.psel', function psel_reload() {
     var psel = $(this),
         bind_selector  = psel.data('bind-selector'),
@@ -119,39 +130,45 @@
     /* Bound/watched elements */
 
     /* initialize bound elements according to their selection status */
-    (function initialize() {
-      var store = open_store(store_name, initialize);
-      if (!store) return;
+    if (bind_selector) {
+      (function initialize() {
+        var store = open_store(store_name, initialize);
+        if (!store) return;
 
-      psel.trigger('status.psel', ['bound']);
+        psel.trigger('status.psel', ['bound']);
 
-      /* once all bound elements are initialized... */
-      store.transaction.oncomplete = function () {
-        psel.data('bound-values', JSON.stringify(
-          $(bind_selector).map(function () {
-            return $(this).val();
-          }).get()
-        ));
+        /* once all bound elements are initialized... */
+        store.transaction.oncomplete = function () {
+          psel.data('bound-values', JSON.stringify(
+            $(bind_selector).map(function () {
+              return $(this).val();
+            }).get()
+          ));
 
-        psel.trigger('status.psel', [null]);
+          psel.trigger('status.psel', [null]);
+          psel.trigger('generate.psel');
+        };
+
+        /* check each bound element's value against the DB */
+        $(bind_selector).each(function () {
+          var element = $(this),
+              request = store.get(element.val());
+
+          request.onerror = function (event) {
+            element.prop('checked', false);
+          };
+
+          request.onsuccess = function () {
+            element.prop('checked', !!request.result);
+          };
+        });
+      })();
+
+    } else {
+      setTimeout(function () {
         psel.trigger('generate.psel');
-        psel.trigger('loaded.psel');
-      };
-
-      /* check each bound element's value against the DB */
-      $(bind_selector).each(function () {
-        var element = $(this),
-            request = store.get(element.val());
-
-        request.onerror = function (event) {
-          element.prop('checked', false);
-        };
-
-        request.onsuccess = function () {
-          element.prop('checked', !!request.result);
-        };
-      });
-    })();
+      }, 0);
+    }
 
     /* add/remove sets of values from the selection set */
     function update(add, remove, done) {
@@ -238,15 +255,6 @@
   });
 
   /*
-   * +loaded+ event
-   * Present on .persistent-selection nodes, invoked when the persistent
-   * selection component is done loading (end of the +reload+ event, once
-   * bound elements are initialized). Triggered when the +reload+ event
-   * completes.
-   */
-  /* No default handler; this event is intended for other modules to use. */
-
-  /*
    * +clear+ event
    * Present on .persistent-selection nodes, clear the current persistent
    * selection set. This event takes one optional argument; whether or not
@@ -254,26 +262,34 @@
    * the UI or the bound elements.
    */
   $(document).delegate('.persistent-selection', 'clear.psel', function psel_clear(event, bare) {
-    var psel = $(this);
+    var store_name = $(this).data('store-name');
 
-    var store = open_store(psel.data('store-name'), (function (that) {
+    var store = open_store(store_name, (function (that) {
       return function () { psel_clear.call(that, bare); };
     })(this));
 
     if (!store) return;
 
-    psel.trigger('status.psel', ['clear']);
+    var components = $('.persistent-selection').filter(function () {
+      return $(this).data('store-name') === store_name;
+    });
+
+    components.trigger('status.psel', ['clear']);
 
     var request = store.clear();
     request.onsuccess = function () {
-      psel.trigger('status.psel', [null]);
+      components.trigger('status.psel', [null]);
       if (bare) return;
 
-      psel.trigger('refresh.psel');
-      psel.find('.psel-in').val('{}');
+      components.trigger('refresh.psel');
 
-      $(psel.data('bind-selector'))
-        .prop('checked', false);
+      components.find('.psel-in')
+        .val('{}');
+
+      components.each(function () {
+        $($(this).data('bind-selector'))
+          .prop('checked', false);
+      });
     };
   });
 

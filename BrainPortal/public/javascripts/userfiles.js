@@ -470,8 +470,8 @@ $(function() {
         });
 
       userfiles
-        .undelegate('.persistent-selection', 'loaded.psel.uf.psel-loaded-dynamic')
-        .delegate(  '.persistent-selection', 'loaded.psel.uf.psel-loaded-dynamic', function () {
+        .undelegate('.persistent-selection', 'ready.psel.uf.psel-ready-dynamic')
+        .delegate(  '.persistent-selection', 'ready.psel.uf.psel-ready-dynamic', function () {
           toggle();
         })
         .undelegate('.persistent-selection', 'clear.psel.uf.psel-clear-dynamic')
