@@ -47,9 +47,10 @@
    +name+, this argument has no default and is mandatory; without a request
    parameter name, the selection cannot be sent back to the server and thus
    serves no purpose.
-   Note that the actual request parameter sent is '_psel_<param>' rather than
-   +param+ for unpacking and merging purposes. The selection set is still made
-   available under the +param+ key in the controller, however.
+   Note that the actual request parameter sent is '_psel_val_<param>' (along
+   with '_psel_ex_<param>') rather than +param+ for unpacking and merging
+   purposes. The selection set is still made available under the +param+ key in
+   the controller, however.
 
   [bind]
    CSS selector of HTML elements to bind to the persistent selection UI
@@ -197,7 +198,8 @@
       Clear selected <%= item_name.pluralize %>
     </div>
   <% end %>
-  <input class="psel-in" name="_psel_<%= param %>" type="hidden" value="" />
+  <input class="psel-val" name="_psel_val_<%= param %>" type="hidden" value="[]" />
+  <input class="psel-ex" name="_psel_ex_<%= param %>" type="hidden" value="[]" />
 </div>
 
 <% unless request.xhr? %>

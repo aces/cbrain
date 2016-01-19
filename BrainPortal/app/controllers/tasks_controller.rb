@@ -111,6 +111,8 @@ class TasksController < ApplicationController
   # Renders a set of tasks associated with a batch.
   def batch_list
     @scope = scope_from_session('tasks')
+    @scope.order.clear
+
     @base_scope = custom_scope(user_scope(
       current_user
         .available_tasks
@@ -118,6 +120,7 @@ class TasksController < ApplicationController
         .where(:batch_id => params[:batch_id])
         .includes([:bourreau, :user, :group])
     ))
+
     @tasks = @scope.apply(@base_scope)
       .order(['cbrain_tasks.rank', 'cbrain_tasks.level', 'cbrain_tasks.id'])
       .map { |task| { :batch => task.batch_id, :first => task, :count => 1 } }
@@ -997,7 +1000,8 @@ class TasksController < ApplicationController
   # custom filters. +base+ is expected to be the initial scope to apply custom
   # filters to. Requires a valid @scope object.
   def custom_scope(base)
-    ((@scope.custom[:custom_filters] || []) & current_user.custom_filter_ids)
+    @scope.custom[:custom_filters] ||= []
+    (@scope.custom[:custom_filters] &= current_user.custom_filter_ids)
       .map { |id| TaskCustomFilter.find_by_id(id) }
       .compact
       .inject(base) { |scope, filter| filter.filter_scope(scope) }

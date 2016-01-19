@@ -470,8 +470,8 @@ $(function() {
         });
 
       userfiles
-        .undelegate('.persistent-selection', 'loaded.psel.uf.psel-loaded-dynamic')
-        .delegate(  '.persistent-selection', 'loaded.psel.uf.psel-loaded-dynamic', function () {
+        .undelegate('.persistent-selection', 'ready.psel.uf.psel-ready-dynamic')
+        .delegate(  '.persistent-selection', 'ready.psel.uf.psel-ready-dynamic', function () {
           toggle();
         })
         .undelegate('.persistent-selection', 'clear.psel.uf.psel-clear-dynamic')
@@ -510,6 +510,9 @@ $(function() {
       $('#userfiles_table')
         .undelegate('.dt-sel-row', 'contextmenu.uf.toggle-context')
         .delegate(  '.dt-sel-row', 'contextmenu.uf.toggle-context', function (event) {
+          /* keep the browser's context menu on links (anchors) */
+          if (event.target.tagName.toLowerCase() == 'a') return;
+
           var menu     = $('#userfiles_context_menu'),
               checkbox = $(this).find('.dt-sel-check').first();
 
