@@ -17,17 +17,12 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'socket'
 
-#-----------------------------------------------------------------------------
-puts "C> CBRAIN Bourreau validation starting, " + Time.now.to_s
-puts "C> Rails environment is set to '#{Rails.env}'"
-puts "C> RAILS_ENV variable is set to '#{ENV['RAILS_ENV']}'" if (! ENV['RAILS_ENV'].blank?) && (Rails.env != ENV['RAILS_ENV'])
-puts "C> Hostname is '#{Socket.gethostname rescue "(Exception)"}'"
-#-----------------------------------------------------------------------------
+CbrainSystemChecks.print_intro_info # general information printed to STDOUT
 
 # Checking to see if this command requires validation or not
 

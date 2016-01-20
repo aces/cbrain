@@ -29,6 +29,16 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     Kernel.puts(*args)
   end
 
+  def self.print_intro_info #:nodoc:
+    #-----------------------------------------------------------------------------
+    puts "C> CBRAIN System Checks starting, " + Time.now.to_s
+    puts "C> Rails environment is set to '#{Rails.env}'"
+    puts "C> RAILS_ENV variable is set to '#{ENV['RAILS_ENV']}'" if (! ENV['RAILS_ENV'].blank?) && (Rails.env != ENV['RAILS_ENV'])
+    puts "C> CBRAIN instance is named '#{CBRAIN::Instance_Name}'"
+    puts "C> Hostname is '#{Socket.gethostname rescue "(Exception)"}'"
+    #-----------------------------------------------------------------------------
+  end
+
   # First thing first: identify which RemoteResource object
   # represents the current Rails application.
   def self.a002_ensure_Rails_can_find_itself
