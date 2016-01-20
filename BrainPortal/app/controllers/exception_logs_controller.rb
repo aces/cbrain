@@ -39,7 +39,6 @@ class ExceptionLogsController < ApplicationController
     @exception_logs = @scope.pagination.apply(@view_scope)
 
     scope_to_session(@scope)
-    current_session.save_preferences
 
     respond_to do |format|
       format.html # index.html.erb

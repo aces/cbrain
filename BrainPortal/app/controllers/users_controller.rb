@@ -58,7 +58,6 @@ class UsersController < ApplicationController
     @unlocked_users_count = @view_scope.count - @locked_users_count
 
     scope_to_session(@scope)
-    current_session.save_preferences
 
     respond_to do |format|
       format.html # index.html.erb

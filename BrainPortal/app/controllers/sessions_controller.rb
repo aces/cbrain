@@ -251,8 +251,6 @@ class SessionsController < ApplicationController
     current_session.activate
     user   = current_user
 
-    current_session.load_preferences
-
     # Record the best guess for browser's remote host name
     reqenv  = request.env
     from_ip = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']

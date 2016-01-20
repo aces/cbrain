@@ -63,7 +63,6 @@ class GroupsController < ApplicationController
     end
 
     scope_to_session(@scope)
-    current_session.save_preferences
 
     respond_to do |format|
       format.js
