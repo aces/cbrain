@@ -1625,13 +1625,7 @@ class UserfilesController < ApplicationController
     ((@scope.custom[:custom_filters] || []) & current_user.custom_filter_ids)
       .map { |id| UserfileCustomFilter.find_by_id(id) }
       .compact
-       .inject(base || base_scope) do |scope, filter|
-        filter_tags = filter.tag_ids.flatten.uniq
-        unless filter_tags.blank?
-          scope = scope.contain_tags(filter_tags)
-        end
-        filter.filter_scope(scope)
-      end
+      .inject(base || base_scope) { |scope, filter| filter.filter_scope(scope) }
   end
 
   # Combination of +base_scope+, +custom_scope+ and @scope object; returns a

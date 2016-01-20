@@ -48,6 +48,7 @@ class UserfileCustomFilter < CustomFilter
     scope = scope_type(scope)        unless self.data["type"].blank?
     scope = scope_archive(scope)     unless self.data["archiving_status"].blank?
     scope = scope_syncstatus(scope)  unless self.data["sync_status"].blank?
+    scope = scope_tags(scope)        unless self.data["tag_ids"].blank?
     scope
   end
 
@@ -163,6 +164,11 @@ class UserfileCustomFilter < CustomFilter
   # note that the scope will return 1 entry by status/file combination.
   def scope_syncstatus(scope)
     scope.joins(:sync_status).where(:sync_status => {:status => self.data["sync_status"]})
+  end
+
+  # Return +scope+ modified to filter the Userfile entry's by tag_ids.
+  def scope_tags(scope)
+    scope.contain_tags((self.data["tag_ids"]).flatten.uniq)
   end
 
 end
