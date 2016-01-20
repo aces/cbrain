@@ -91,18 +91,21 @@ module ActRecMetaData
   #
   # = MetaData Handler Class
   #
-  # This class provides the method used to get and set metadata
+  # This class contains the methods used to get and set metadata
   # on any ActiveRecord object. The class is used to provide
   # a handler for the object's metadata; this handler is obtained
   # by calling the meta() method on any instance of an ActiveRecord:
   #
-  #   myobj = Userfile.find(23)
+  #   myobj = User.find(23)
   #   myobj.meta     # returns the handler, which is not useful by itself.
   #
   # Given the handler, we can now get and set metadata by calling methods
   # on it:
   #
-  #   myobj.meta[:author] = "prioux"
+  #   myobj.meta[:alignment] = "Chaotic Good"
+  #   myobj.meta[:heroes]    = [ 'Lilith', 'Mordecai', 'Roland', 'Brick' ]
+  #   myobj.meta[:birthday]  = 2.day.from_now
+  #   myobj.meta[:version]   = 99
   #
   # For the rest of the API, see the documentation in module ActRecMetaData.
   class MetaDataHandler

@@ -136,7 +136,7 @@ Operations Mode : #{@mode == "each_command" ?
   def process_user_letter(letter) #:nodoc:
 
     # Validate the user input
-    if letter !~ /^([haombwikygsrczqx]|\d+)$/
+    if letter !~ /^([haombwitkygsrczqx]|\d+)$/
       puts "Unknown command: #{letter} (ignored)"
       return false
     end
@@ -153,12 +153,16 @@ Operations Mode : #{@mode == "each_command" ?
 
         B = starts bourreaux
         W = starts workers
-        I = stops workers
+        T = stops workers
         K = stops bourreaux
         Y = cycle: stop workers and bourreaux then
             start bourreaux and workers (replace operation queue)
+
+      * Queue Control
+
+        Z = empties (zaps) operation queue
         G = executes operation queue
-        M = toggles operations mode
+        M = toggles queue execution mode
 
       * Bash queries
 
@@ -168,7 +172,7 @@ Operations Mode : #{@mode == "each_command" ?
 
       * Misc
 
-        Z = empties (zaps) operation queue
+        I = query bourreaux for 'info' record
         E,Q,X = exits
 
       You can enter multiple commands all on a single line, e.g.
@@ -219,12 +223,12 @@ Operations Mode : #{@mode == "each_command" ?
     end
 
     # Operation queue commands
-    if letter =~ /^[bwik]$/
+    if letter =~ /^[bwtk]$/
       @operations += " " if @operations.present?
       @operations += "StartBourreaux" if letter == "b"
       @operations += "StartWorkers"   if letter == "w"
       @operations += "StopBourreaux"  if letter == "k"
-      @operations += "StopWorkers"    if letter == "i"
+      @operations += "StopWorkers"    if letter == "t"
       return false
     end
 
@@ -267,6 +271,23 @@ Operations Mode : #{@mode == "each_command" ?
           op_list.each do |op|
             res, mess = apply_operation(op, bou)
           end
+        end
+      end
+      return true
+    end
+
+    # Status: 'info'
+    if letter == "i"
+      bourreau_list = @bourreaux.select { |b| @selected[b.id] }
+      if bourreau_list.empty?
+        puts "\nWell, no Bourreaux are selected. So nothing done."
+        return false
+      end
+      bourreau_list.each do |bou|
+        puts "==== Bourreau: #{bou.name} ===="
+        info = bou.remote_resource_info rescue { :exception => "Cannot connect." }
+        info.keys.sort.each do |key|
+          printf "%30s => %s\n",key.to_s,info[key].to_s
         end
       end
       return true

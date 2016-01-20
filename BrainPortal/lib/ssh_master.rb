@@ -495,6 +495,7 @@ class SshMaster
     args_string =
                       " -p #{@port}"                          +
                       " -A"                                   +
+                      " -o BatchMode=yes"                     +
                       " -o ConnectTimeout=10"                 +
                       " -o StrictHostKeyChecking=no"          +
                       " -o PasswordAuthentication=no"         +
