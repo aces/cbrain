@@ -115,6 +115,7 @@ CbrainRailsPortal::Application.routes.draw do
     end
     collection do
       post   'download'
+      get    'download'
       get    'new_parent_child'
       post   'create_parent_child'
       delete 'delete_files'
