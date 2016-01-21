@@ -342,10 +342,10 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 
         self.addlog("Saving result file #{path}")
         name = File.basename(path)
-
-        output = safe_userfile_find_or_new((
-          File.directory?(path) ? FileCollection : Userfile.suggested_file_type(name)
-        ), :name => name)
+        
+	userfile_class = Userfile.suggested_file_type(name)
+        userfile_class ||= ( File.directory?(path) ? FileCollection : SingleFile )
+        output = safe_userfile_find_or_new(userfile_class, :name => name)
         unless output.save
           self.addlog("Failed to save file #{path}")
           succeeded &&= false
