@@ -202,24 +202,6 @@ class Userfile < ActiveRecord::Base
     self.class.valid_file_classes
   end
 
-  # Names of classes this type of file can be converted to.
-  # Essentially distinguishes between SingleFile subtypes and FileCollection subtypes.
-  def self.valid_file_types
-    return @valid_file_types if @valid_file_types
-
-    @valid_file_types = self.valid_file_classes.map(&:name)
-  end
-
-  # Instance version of the class method.
-  def valid_file_types
-    self.class.valid_file_types
-  end
-
-  # Checks validity according to valid_file_types.
-  def is_valid_file_type?(type)
-    self.valid_file_types.include? type
-  end
-
   # Returns a suggested file type for the current userfile, based on its extension.
   def suggested_file_type
     @suggested_file_type ||= self.valid_file_classes.find{|ft| self.name =~ ft.file_name_pattern}
@@ -229,17 +211,6 @@ class Userfile < ActiveRecord::Base
   # the filename +name+ .
   def self.suggested_file_type(name)
     self.valid_file_classes.find {|ft| name =~ ft.file_name_pattern }
-  end
-
-  # Updates the class (type attribute) of this file if +type+ is
-  # valid according to valid_file_types.
-  def update_file_type(type, by_user = nil)
-    if self.is_valid_file_type?(type)
-      self.type = type
-      self.save_with_logging(by_user, [], 1 )
-    else
-      false
-    end
   end
 
 
