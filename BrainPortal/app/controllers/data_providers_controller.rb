@@ -381,7 +381,6 @@ class DataProvidersController < ApplicationController
       [:xml, :json].include?(request.format.to_sym)
 
     scope_to_session(@scope)
-    current_session.save_preferences
 
     respond_to do |format|
       format.html

@@ -84,7 +84,6 @@ class TasksController < ApplicationController
 
     # Save the modified scope object
     scope_to_session(@scope, 'tasks')
-    current_session.save_preferences
 
     respond_to do |format|
       format.html
