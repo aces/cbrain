@@ -31,7 +31,7 @@
 % # generated code as legible as possible.
 
 # Portal-side CbrainTask subclass to launch <%= name %>
-class CbrainTask::<%= name %> < PortalTask
+class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 'PortalTask' %>
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

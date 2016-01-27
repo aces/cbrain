@@ -217,6 +217,8 @@ class ToolConfig < ActiveRecord::Base
   # and its script is blank or only contains blank lines or
   # comments.
   def is_trivial?
+    return false if self.extra_qsub_args.present?
+    return false if self.docker_image.present?
     return false if (self.env_array || []).size > 0
     text = self.script_prologue
     return true if text.blank?
