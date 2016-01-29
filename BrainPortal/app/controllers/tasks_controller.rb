@@ -208,7 +208,8 @@ class TasksController < ApplicationController
 
     # Filter list of files as provided by the get request
     file_ids = params[:file_ids] || []
-    @files   = Userfile.find_accessible_by_user(file_ids, current_user, :access_requested => :write) rescue []
+    access   = @task.class.properties[:readonly_input_files] ? :read : :write
+    @files   = Userfile.find_accessible_by_user(file_ids, current_user, :access_requested => access) rescue []
     if @files.empty?
       flash[:error] = "You must select at least one file to which you have write access."
       redirect_to :controller  => :userfiles, :action  => :index
