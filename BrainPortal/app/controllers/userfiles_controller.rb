@@ -146,11 +146,6 @@ class UserfilesController < ApplicationController
       @tools_to_pick = top_5_tools + @tools_to_pick
     end
 
-    # The variables below contain arrays of different types of tags associated with all Tools
-    @type_list    = Tool.get_all_application_types
-    @package_list = Tool.get_all_application_package_names
-    @tag_list     = Tool.get_all_application_tags
-
     respond_to do |format|
       format.html
       format.js
