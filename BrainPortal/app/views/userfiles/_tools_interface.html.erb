@@ -21,6 +21,23 @@
 #
 -%>
 
+<%
+  tags_for = lambda do |attr|
+    current_user.available_tools
+      .select(["tools.#{attr.to_s}", :id])
+      .where("tools.category != 'background'")
+      .where("tools.#{attr.to_s} IS NOT NULL")
+      .where("tools.#{attr.to_s} != ''")
+      .all
+      .map(&attr)
+      .flatten
+      .uniq
+  end
+
+  types    = tags_for.(:application_type)
+  packages = tags_for.(:application_package_name)
+  tags     = tags_for.(:application_tags)
+%>
 <div id="toolsDialog" title="Select Tool" >
 
   <div class="userfiles_bourreau_selector" id="tool_version_selector">
@@ -36,42 +53,40 @@
       </div>
 
 
-      <% if !@type_list.empty?  || !@package_list.empty? || !@tag_list.empty? %>
+      <% unless types.empty? && packages.empty? && tags.empty? %>
       <br/>
       <div>
-        <label>All tools:<input type="checkbox" class="tag_checkbox" id="showAllTools"/></label><br/>
+        <label><input type="checkbox" class="tag_checkbox" id="showAllTools"/>All tools</label><br/>
       </div>
       <br/>
 
-      <% if !@type_list.empty? %>
+      <% unless types.empty? %>
         <b>Type:</b>
         <br/>
-        <% @type_list.each do |type| %>
+        <% types.each do |type| %>
 
-          <label><%= type %>:<input type="checkbox" class="tag_checkbox" name="tooltags-<%= type %>"/></label>
+          <label><input type="checkbox" class="tag_checkbox" name="tooltags-<%= type %>"/><%= type %></label>
               <br/>
 
         <% end %>
         <br/>
       <% end %>
 
-      <% if !@package_list.empty? %>
+      <% unless packages.empty? %>
         <b>Sofware Package:</b><br/>
-        <% @package_list.each do |package| %>
-            <label><%= package %>:<input type="checkbox" class="tag_checkbox" name="tooltags-<%= package %>"/></label><br/>
+        <% packages.each do |package| %>
+            <label><input type="checkbox" class="tag_checkbox" name="tooltags-<%= package %>"/><%= package %></label><br/>
         <% end %>
         <br/>
       <% end %>
 
-      <% if !@tag_list.empty? %>
+      <% unless tags.empty? %>
         <b>Tags:</b><br/>
-        <% @tag_list.each do |tag|%>
-            <label><%= tag %>:<input type="checkbox" class="tag_checkbox" name="tooltags-<%= tag %>"/></label><br/>
+        <% tags.each do |tag|%>
+            <label><input type="checkbox" class="tag_checkbox" name="tooltags-<%= tag %>"/><%= tag %></label><br/>
         <% end %>
         <br/>
       <% end %>
-
-      <a id="clearTags" href="#">clear selection</a>
       <% end %>
 
     </div>

@@ -103,6 +103,12 @@ module ActiveRecord #:nodoc:
   class Relation
 
     #####################################################################
+    # ActiveRecord::Relation safety net to avoid OOM conditions
+    #####################################################################
+
+    prepend CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::SafeInspect
+
+    #####################################################################
     # ActiveRecord::Relation Added Behavior For Unstructured Data Fetches
     #####################################################################
 

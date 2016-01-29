@@ -311,7 +311,7 @@ class PortalTask < CbrainTask
   #   end
   property_directive = lambda do |name, method, instance_method: false|
     define_singleton_method(name) do |*args|
-      props = args.pop if args.last.is_a?(Hash)
+      props = args.last.is_a?(Hash) ? args.pop : {}
       props = props.reverse_merge(args.map { |p| [p, true] }.to_h)
 
       if instance_method

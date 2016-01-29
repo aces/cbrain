@@ -54,14 +54,13 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % out_keys = outputs.select { |o| o['command-line-key'] }
 % flags    = (inputs + outputs).select { |p| p['command-line-flag'] }
 %
-% # TODO parallelization, presets, ...
-% if descriptor['cbrain:can-submit-new-tasks']
   # Task properties are special boolean properties of your task, returned as a
-  # hash table. Used by CBRAIN code to control default elements. Advanced
-  # feature. The defaults for all properties are 'false' so that subclasses
-  # only have to explicitely set the special properties that they want 'true'
-  # (since nil is also false). The list of available properties is defined in
-  # the CbrainTask class.
+  # hash table. Used internally by CBRAIN to enable/disable special task
+  # handling. All properties are unset (false) by default.
+  #
+  # Both generated task classes (ClusterTask for the Bourreau, PortalTask for
+  # the Portal) have different properties as they have different use cases.
+  # The properties below are for the Bourreau-side class (ClusterTask).
   def self.properties #:nodoc:
     super.merge({
       # The can_submit_new_tasks property allows a task to submit new tasks.
@@ -78,11 +77,10 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
       # }
       # The corresponding JSON schema is maintained in the validate_json_string
       # method validate_json_string of the BourreauWorker class.
-      :can_submit_new_tasks => true
+      :can_submit_new_tasks => <%= !!descriptor['cbrain:can-submit-new-tasks'] %>,
     })
   end
 
-% end
   # Setup the cluster's environment to execute <%= name %>; create the relevant
   # directories, prepare symlinks to input files, set environment variables,
   # etc. Returns true if the task was correctly set up.

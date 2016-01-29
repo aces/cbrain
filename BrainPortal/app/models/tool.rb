@@ -83,22 +83,6 @@ class Tool < ActiveRecord::Base
   end
 
 
-  # Get an array of application_tags associated with all tools
-  def self.get_all_application_tags
-    Tool.select([:application_tags, :id]).all.map{|t| t.application_tags}.flatten.uniq
-  end
-
-  # Get an array of application_types associated with all tools
-  def self.get_all_application_types
-    Tool.select([:application_type, :id]).all.map{|t| t.application_type}.flatten.uniq
-  end
-
-  # Get an array of application_packages associated with all tools
-  def self.get_all_application_package_names
-    Tool.select([:application_package_name, :id]).all.map{|t| t.application_package_name}.flatten.uniq
-  end
-
-
   # Overloading assignment operator to accept arrays and strings for application_tag
   def application_tags=(val)
 

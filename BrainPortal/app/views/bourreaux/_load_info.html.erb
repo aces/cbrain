@@ -21,7 +21,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
-<br/>
 
 <% unless @latest_in_queue_delay.blank? %>
 <%
@@ -43,7 +42,7 @@
 %>
   <b>Last wait time:</b> <%= pretty_elapsed(@latest_in_queue_delay.to_i, :num_components => 2) %> (<%= rating %>)<br/>
   <% unless @time_of_last_queue_delay.blank? %>
-    <small>(This happened <%= pretty_elapsed(Time.now.to_i - @time_of_last_queue_delay.to_i, :num_components => 2) %> ago)</small>&nbsp;<a href="#" id="showAdditionalToolInfo">more info</a><br/><br/>
+    <small>(This happened <%= pretty_elapsed(Time.now.to_i - @time_of_last_queue_delay.to_i, :num_components => 2) %> ago)</small>&nbsp;<a href="#" id="showAdditionalToolInfo">more info</a><br/>
   <% end %>
 <% end %>
 <div class="additionalToolInfo">

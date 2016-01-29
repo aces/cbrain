@@ -209,7 +209,7 @@
            * selection array in psel-val) explicitly in psel-ex.
            */
           function update_exceptions() {
-            var except = psel.data('except'),
+            var except = (psel.data('except') || []),
                 index  = except.indexOf(value);
 
             if (checked && index > -1)

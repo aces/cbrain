@@ -25,8 +25,16 @@ $(document).ready(function() {
 
   var tagArray = [];
 
-  $("#toolsDialog").dialog({autoOpen : false, modal : true, show : "blind", hide : "blind", width: 600,
-  height: 600, dialogClass: 'toolsDialogClass'});
+  $("#toolsDialog").dialog({
+    autoOpen:    false,
+    resizable:   false,
+    modal:       true,
+    show:        "blind",
+    hide:        "blind",
+    width:       600,
+    height:      600,
+    dialogClass: 'toolsDialogClass'
+  });
 
   // This get executed when the dialog is invoked/opened
   $("#toolsDialog").bind('open.uf', function () {
@@ -37,21 +45,6 @@ $(document).ready(function() {
     $("#searchToolSelectionBox").val("");
     $('#toolSelectTable tr').show();
     $("#toolsDialog").dialog( "open");
-
-    return false;
-  });
-
-  // This get executed when the clear selection link is clicked
-  $("#clearTags").click(function() {
-
-    $(".tag_checkbox").attr("checked",false);
-    tagArray = [];
-
-    $('#toolSelectTable tr').show();
-    $("#showAllTools").attr('checked', true);
-
-    $('#tool_version_selector').html("");
-    $("#searchToolSelectionBox").val("")
 
     return false;
   });
@@ -117,23 +110,16 @@ $(document).ready(function() {
 
     }else{ //If there search box is not empty
 
-      var startsWith = new RegExp("^" + searchBox.val(), "i");
+      var key = searchBox.val().toLowerCase();
 
-      // If there are no tags
-      if (arrayLength == 0){
-
+      if (arrayLength == 0)
         $('#toolSelectTable tr').show();
-        $('#toolSelectTable tr').filter(function() {
-          if(startsWith.test($(this).find('.toolsLink').text()) == false) $(this).hide();
-        });
+      else
+        applyTags(arrayLength);
 
-        return;
-      }
-
-      applyTags(arrayLength);
-
-      $('#toolSelectTable tr:visible').filter(function() {
-        if(startsWith.test($(this).find('.toolsLink').text()) == false) $(this).hide();
+      $('#toolSelectTable tr:visible').each(function () {
+        if ($(this).find('.toolsLink').text().toLowerCase().indexOf(key) == -1)
+          $(this).hide();
       });
     }
   }
@@ -151,12 +137,15 @@ $(document).ready(function() {
 
   // This is executed when a tool link is clicked
   // It performs an ajax request to the server to get the tool versions currently available
-  $('.toolsLink').click(function(e) {
+  $('#toolSelectTable td').click(function(e) {
+    var link = $(this).find('.toolsLink');
+
+    if (e.target != this && e.target != link[0]) return;
 
     $.ajax({
       type: "GET",
       url: "/tools/tool_config_select",
-      data : { tool_id: $(this).data("toolId") },
+      data : { tool_id: link.data("toolId") },
       dataType: "html",
       success: function (data) {
         $("#tool_version_selector")
@@ -165,7 +154,7 @@ $(document).ready(function() {
       }
     });
 
-    $("#tool_version_selector").appendTo("#tool_" + $(this).data("toolId"));
+    $("#tool_version_selector").appendTo("#tool_" + link.data("toolId"));
     return false;
   });
 
