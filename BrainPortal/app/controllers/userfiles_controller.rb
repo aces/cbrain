@@ -146,11 +146,6 @@ class UserfilesController < ApplicationController
       @tools_to_pick = top_5_tools + @tools_to_pick
     end
 
-    # The variables below contain arrays of different types of tags associated with all Tools
-    @type_list    = Tool.get_all_application_types
-    @package_list = Tool.get_all_application_package_names
-    @tag_list     = Tool.get_all_application_tags
-
     respond_to do |format|
       format.html
       format.js
@@ -631,7 +626,7 @@ class UserfilesController < ApplicationController
       :user_id,
       :group_id,
       :group_writable,
-      :file_type,
+      :type,
       :hidden,
       :immutable
     )
@@ -741,16 +736,12 @@ class UserfilesController < ApplicationController
         changes[attr] = (changes[attr].blank? ? 0 : 1) if changes.has_key?(attr)
       end
 
-      # Extract attribute changes requiring special handling
+      # Extract tags, as they require special handling
       tags = changes.delete(:tags)
-      type = changes.delete(:file_type)
 
       userfiles.all.each do |userfile|
         failure = "cannot update tags" if
           tags && ! userfile.set_tags_for_user(current_user, tags)
-
-        failure = "cannot update file type" if
-          type && ! userfile.update_file_type(type, current_user)
 
         failure = "cannot update attributes" if
           changes.present? && ! userfile.update_attributes_with_logging(changes, current_user, changes.keys)

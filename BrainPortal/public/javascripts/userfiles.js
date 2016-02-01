@@ -770,7 +770,8 @@ $(function() {
     $('#cpmv-dialog')
       .unbind('open.uf.cpmv-open')
       .bind(  'open.uf.cpmv-open', function (event, source) {
-        var move    = $(source).is('#move-btn'),
+        /* FIXME not exactly a clean way to detect if moving or copying... */
+        var move    = $(source).is('#move-btn') || $(source).is('#move-ctx'),
             dialog  = $(this),
             buttons = {},
             title   = undefined;

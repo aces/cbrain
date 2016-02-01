@@ -239,7 +239,8 @@ class CbrainTask < ActiveRecord::Base
        :i_save_my_task_in_after_form       => false, # used by validation code for detected coding errors
        :i_save_my_tasks_in_final_task_list => false, # used by validation code for detected coding errors
        :no_presets                         => false, # view will not contain the preset load/save panel
-       :use_parallelizer                   => false  # true or fixnum: turns on parallelization
+       :use_parallelizer                   => false, # true or fixnum: turns on parallelization
+       :readonly_input_files               => false, # doesn't require write access to input files
     }
   end
 
