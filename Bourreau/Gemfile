@@ -38,6 +38,6 @@ group :development, :test do
   gem "wirble"
   gem "looksee"
   gem "hirb"
-  gem "test-unit"
+  gem "test-unit",    "~> 3.1"
 end
 
