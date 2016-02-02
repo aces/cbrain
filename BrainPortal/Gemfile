@@ -35,7 +35,7 @@ gem "thin"
 gem "rails_autolink"
 gem "pbkdf2-ruby"
 gem "json-schema"
-gem "test-unit"
+gem "test-unit",    "~> 3.1"
 
 group :development do
   gem "wirble"
@@ -47,14 +47,14 @@ group :development do
 end
 
 group :test do
-  gem "rspec", "> 3.0.0"
-  gem "rspec-rails"
-  gem "factory_girl_rails"
-  gem "simplecov"
-  gem "rspec-mocks"
-  gem 'rspec-activemodel-mocks'
-  gem 'rspec-collection_matchers'
-  gem "database_cleaner"
+  gem "rspec",                    "~> 3.4"
+  gem "rspec-rails",              "~> 3.2"
+  gem "factory_girl_rails",       "~> 4.5"
+  gem "simplecov",                "~> 0.11"
+  gem "rspec-mocks",              "~> 3.4"
+  gem 'rspec-activemodel-mocks',  "~> 1.0"
+  gem 'rspec-collection_matchers',"~> 1.1"
+  gem "database_cleaner",         "~> 1.5"
   gem "sqlite3" # this is not normally needed outside of CBRAIN's nightly test website
   gem "syntax"  # this is not normally needed outside of CBRAIN's nightly test website
 end
