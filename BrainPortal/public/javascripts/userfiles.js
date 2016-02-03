@@ -646,11 +646,21 @@ $(function() {
 
     /* Tri-state checkboxes (unset, unchecked, checked) */
     $('.dlg-dialog')
-      .undelegate('.dlg-chk.dlg-unset', 'change.uf.clear-unset')
-      .delegate(  '.dlg-chk.dlg-unset', 'change.uf.clear-unset', function () {
-        $(this)
-          .attr('name', $(this).data('name'))
-          .removeClass('dlg-unset');
+      .undelegate('.dlg-chk.dlg-tri-state', 'change.uf.switch-state')
+      .delegate(  '.dlg-chk.dlg-tri-state', 'change.uf.switch-state', function (event) {
+        event.preventDefault();
+
+        if ($(this).hasClass('dlg-unset'))
+          $(this)
+            .attr('name', $(this).data('name'))
+            .removeClass('dlg-unset')
+            .prop('checked', true);
+
+        else if (this.checked)
+          $(this)
+            .removeAttr('name')
+            .addClass('dlg-unset')
+            .prop('checked', false);
       });
 
     /* Disable 'Enter' key form submission in dialogs */

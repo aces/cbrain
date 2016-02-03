@@ -310,10 +310,10 @@
 
 .dlg-chk.dlg-unset + .dlg-chk-icon > .ui-icon {
   background: black;
-  border: 3px solid #ffffff;
-  height: 10px;
+  border: 4px solid #ffffff;
+  height: 8px;
   visibility: visible;
-  width: 10px;
+  width: 8px;
 }
 
 .dlg-rad-icon > .round-icon {
