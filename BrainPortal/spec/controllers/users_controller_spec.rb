@@ -35,7 +35,10 @@ RSpec.describe UsersController, :type => :controller do
 
     describe "index" do
       before(:each) do
-        1.upto(3) { create(:normal_user)}
+        1.upto(3) { |x| create(:normal_user, :city    => "city_#{rand(100)}",
+                                             :country => "country_#{rand(100)}",
+                              )
+                  }
       end
       context "with admin user" do
         before(:each) do
@@ -46,23 +49,24 @@ RSpec.describe UsersController, :type => :controller do
           expect(assigns[:users]).to eq(User.all(:order => "users.full_name"))
         end
         it "should sort by full name" do
-          get :index, "users" => { "sort_hash"  => { "order" => "users.full_name" } }
+          get :index, "_scopes"=>{"users" => {"o"=>[{"a"=>"full_name"}]}}
           expect(assigns[:users]).to eq(User.all(:order => "users.full_name"))
         end
         it "should sort by last connection" do
-          get :index, "users" => { "sort_hash"  => { "order" => "users.last_connected_at" } }
+          get :index, "_scopes"=>{"users" => {"o"=>[{"a"=>"last_connected_at"}]}}
           expect(assigns[:users]).to eq(User.all(:order => "users.last_connected_at"))
         end
         it "should sort by site" do
-          get :index, "users" => { "sort_hash"  => { "order" => "sites.name" } }
+          get :index, "_scopes"=>{"users" => {"o" =>[{"a"=>"sites"}]}}
           expect(assigns[:users]).to eq(User.all(:include => :site, :order => "sites.name"))
         end
         it "should sort by city" do
-          get :index, "users" => { "sort_hash"  => { "order" => "users.city" } }
+          get :index, "_scopes"=>{"users" => {"o" =>[{"a"=>"city"}]}}
           expect(assigns[:users]).to eq(User.all(:order => "users.city"))
         end
         it "should sort by country" do
-          get :index, "users" => { "sort_hash"  => { "order" => "users.country" } }
+          get :index, "_scopes"=>{"users" => {"o" =>[{"a"=>"country"}]}}
+          puts User.all.inspect
           expect(assigns[:users]).to eq(User.all(:order => "users.country"))
         end
       end
@@ -577,9 +581,8 @@ RSpec.describe UsersController, :type => :controller do
 
     describe "switch" do
        let(:current_session) do
-         h = CbrainSession.new(session, {:controller => :users}, ActiveRecord::SessionStore::Session.new )
+         h = CbrainSession.new(session, ActiveRecord::SessionStore::Session.new )
          allow(h).to receive(:params_for).and_return({})
-         allow(h).to receive(:clear_data!)
          h
        end
 

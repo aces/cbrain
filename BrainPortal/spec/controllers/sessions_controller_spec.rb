@@ -28,7 +28,7 @@ RSpec.describe SessionsController, :type => :controller do
 
   before(:each) do
     allow(BrainPortal).to receive(:current_resource).and_return(portal)
-    allow(Kernel).to receive(:sleep)
+    allow(Kernel).to      receive(:sleep)
   end
 
   describe "new" do
@@ -42,7 +42,9 @@ RSpec.describe SessionsController, :type => :controller do
     let(:current_user) { mock_model(User, :account_locked? => false).as_null_object }
 
     before(:each) do
-      allow(User).to receive(:authenticate).and_return(current_user)
+      allow(User).to         receive(:authenticate).and_return(current_user)
+      allow(current_user).to receive(:meta).and_return({})
+      allow(controller).to receive(:current_session).and_return(current_session)
     end
 
     it "should render the login page if authentication fails" do
@@ -76,28 +78,22 @@ RSpec.describe SessionsController, :type => :controller do
     end
 
     it "should render the login page if the portal is locked and the user is not an admin" do
-      allow(portal).to receive(:portal_locked?).and_return(true)
+      allow(portal).to       receive(:portal_locked?).and_return(true)
       allow(current_user).to receive(:has_role?).and_return(false)
       post :create
       expect(response).to render_template("new")
     end
 
     it "should not render the login page if the portal is locked and the user is an admin" do
-      allow(portal).to receive(:portal_locked?).and_return(true)
+      allow(portal).to       receive(:portal_locked?).and_return(true)
       allow(current_user).to receive(:has_role?).and_return(true)
+      allow(controller).to   receive(:user_tracking)
       post :create
       expect(response).not_to render_template("new")
     end
 
     it "should activate the session" do
-      allow(controller).to receive(:current_session).and_return(current_session)
       expect(current_session).to receive(:activate)
-      post :create
-    end
-
-    it "should load user preferences" do
-      allow(controller).to receive(:current_session).and_return(current_session)
-      expect(current_session).to receive(:load_preferences_for_user)
       post :create
     end
 
@@ -154,7 +150,7 @@ RSpec.describe SessionsController, :type => :controller do
 
     it "should clear the session data" do
       allow(controller).to receive(:current_session).and_return(current_session)
-      expect(current_session).to receive(:clear_data!)
+      expect(current_session).to receive(:clear)
       delete :destroy
     end
 

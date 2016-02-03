@@ -636,10 +636,9 @@ class UserfilesController < ApplicationController
       :immutable
     )
 
-    changes[:user_id]  = changes[:user_id].to_i   if changes.has_key?(:user_id)
-    changes[:group_id] = changes[:group_id].to_i  if changes.has_key?(:group_id)
-    changes[:tags] = changes[:tags].reject(&:blank?).map(&:to_i) if
-      changes.has_key?(:tags)
+    changes[:user_id]  = changes[:user_id].to_i                      if changes.has_key?(:user_id)
+    changes[:group_id] = changes[:group_id].to_i                     if changes.has_key?(:group_id)
+    changes[:tags]     = changes[:tags].reject(&:blank?).map(&:to_i) if changes.has_key?(:tags)
 
     flash[:notice] = ''
     flash[:error]  = ''
@@ -697,7 +696,7 @@ class UserfilesController < ApplicationController
 
       # R/W access check
       failed["you don't have access"] = Userfile
-        .where(:id => file_ids - userfiles.select(:id).map(&:id))
+        .where(:id => file_ids - userfiles.raw_first_column(:id))
         .select([:id, :name, :type])
         .all
 
@@ -1600,7 +1599,7 @@ class UserfilesController < ApplicationController
   # custom filters. +base+ is expected to be the initial scope to apply custom
   # filters to (defaults to +base_scope+). Requires a valid @scope object.
   def custom_scope(base = nil)
-    @scope.custom[:custom_filters] ||= []
+    (@scope.custom[:custom_filters] ||= []).map!(&:to_i)
     (@scope.custom[:custom_filters] &= current_user.custom_filter_ids)
       .map { |id| UserfileCustomFilter.find_by_id(id) }
       .compact
