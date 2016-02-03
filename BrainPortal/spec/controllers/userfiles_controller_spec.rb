@@ -525,23 +525,23 @@ RSpec.describe UserfilesController, :type => :controller do
       end
 
       it "should update the file type when requested" do
-        post :update_multiple, :file_ids => [user_userfile.id], :file_type => "TextFile"
+        post :update_multiple, :file_ids => [user_userfile.id], :type => "TextFile"
         user_userfile.reload
         expect(user_userfile.type).to match("TextFile")
       end
 
       it "should display the number of succesful updates" do
-        post :update_multiple, :file_ids => [user_userfile.id], :file_type => "TextFile"
+        post :update_multiple, :file_ids => [user_userfile.id], :type => "TextFile"
         expect(flash[:notice]).to match(" successful ")
       end
 
       it "should display the 'failed' updates" do
-        post :update_multiple, :file_ids => [user_userfile.id], :file_type => "FileCollection"
+        post :update_multiple, :file_ids => [user_userfile.id], :type => "FileCollection"
         expect(flash[:error]).to match(" failed ")
       end
 
       it "should redirect to the index" do
-        post :update_multiple, :file_ids => [user_userfile.id], :file_type => "TextFile"
+        post :update_multiple, :file_ids => [user_userfile.id], :type => "TextFile"
         expect(response).to redirect_to(:action => :index)
       end
     end
@@ -1063,7 +1063,7 @@ RSpec.describe UserfilesController, :type => :controller do
       end
 
       it "it should display an error message when attempting to update to an invalid type" do
-        post :update_multiple, :update_file_type => true, :file_ids => [user_userfile.id], :file_type => "FileCollection"
+        post :update_multiple, :update_type => true, :file_ids => [user_userfile.id], :type => "FileCollection"
         expect(flash[:error]).to match(" failed ")
       end
 
