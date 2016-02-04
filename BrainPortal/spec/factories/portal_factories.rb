@@ -162,7 +162,7 @@ FactoryGirl.define do
   Userfile.nil? # force pre-load of all constants under Userfile
   factory :text_file, parent: :userfile, class: TextFile do
     sequence(:name) { |n| "text_file_#{n}" }
-   end
+  end
 
   factory :single_file, parent: :userfile, class: SingleFile do
     sequence(:name) { |n| "single_file_#{n}" }
