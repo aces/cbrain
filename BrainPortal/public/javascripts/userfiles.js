@@ -646,11 +646,21 @@ $(function() {
 
     /* Tri-state checkboxes (unset, unchecked, checked) */
     $('.dlg-dialog')
-      .undelegate('.dlg-chk.dlg-unset', 'change.uf.clear-unset')
-      .delegate(  '.dlg-chk.dlg-unset', 'change.uf.clear-unset', function () {
-        $(this)
-          .attr('name', $(this).data('name'))
-          .removeClass('dlg-unset');
+      .undelegate('.dlg-chk.dlg-tri-state', 'change.uf.switch-state')
+      .delegate(  '.dlg-chk.dlg-tri-state', 'change.uf.switch-state', function (event) {
+        event.preventDefault();
+
+        if ($(this).hasClass('dlg-unset'))
+          $(this)
+            .attr('name', $(this).data('name'))
+            .removeClass('dlg-unset')
+            .prop('checked', true);
+
+        else if (this.checked)
+          $(this)
+            .removeAttr('name')
+            .addClass('dlg-unset')
+            .prop('checked', false);
       });
 
     /* Disable 'Enter' key form submission in dialogs */
@@ -691,6 +701,8 @@ $(function() {
 
     /* Upload dialog */
     (function () {
+      var upload_button = undefined;
+
       $('#upload-dialog')
         .dialog('option', 'buttons', {
           'Cancel': function (event) {
@@ -706,6 +718,15 @@ $(function() {
         })
         .unbind('open.uf.up-open')
         .bind(  'open.uf.up-open', function () {
+          if (!upload_button)
+            upload_button = $('#upload-dialog')
+              .parent()
+              .find(':button:contains("Upload")');
+
+          upload_button
+            .toggleClass('ui-state-disabled', true)
+            .prop('disabled', true);
+
           $('#up-file').trigger('click');
         });
 
@@ -727,15 +748,13 @@ $(function() {
               visibility: visible ? 'visible' : 'hidden'
             });
 
-            $('#upload-dialog')
-              .parent()
-              .find(':button:contains("Upload")')
+            upload_button
               .toggleClass('ui-state-disabled', visible)
               .prop('disabled', visible);
           });
 
-      /* file type auto-detection */
       $('#upload-dialog')
+        /* file type auto-detection */
         .undelegate('#up-type', 'change.uf.up-arch-detect')
         .delegate(  '#up-type', 'change.uf.up-arch-detect', function (event) {
           if (!event.namespace) {
@@ -763,6 +782,15 @@ $(function() {
 
             $('#up-type').val(data).trigger('change.uf');
           });
+        })
+        /* only activate the upload button if a file is selected */
+        .undelegate('#up-file', 'change.uf.toggle-up-btn')
+        .delegate(  '#up-file', 'change.uf.toggle-up-btn', function () {
+          var selected = !!$(this).val();
+
+          upload_button
+            .toggleClass('ui-state-disabled', !selected)
+            .prop('disabled', !selected);
         });
     })();
 
@@ -903,12 +931,8 @@ $(function() {
         if (name === old) return;
 
         userfiles.tags.update(id, { name: name })
-          .done(function () {
-            $('#tag-dialog').data('dirty', 1);
-          })
-          .fail(function (a, b, c, d, e, f) {
-            $('#tag-dialog').trigger('close.uf');
-          });
+          .done(function () { $('#tag-dialog').data('dirty', 1);    })
+          .fail(function () { $('#tag-dialog').trigger('close.uf'); });
       })
       /* swap a tag's project label for a drop-down menu on click */
       .undelegate('.tag-body .tag-txt-prj', 'click.uf.tag-swap-iprj')
@@ -941,12 +965,8 @@ $(function() {
         if (group === old) return;
 
         userfiles.tags.update(id, { group_id: group })
-          .done(function () {
-            $('#tag-dialog').data('dirty', 1);
-          })
-          .fail(function () {
-            $('#tag-dialog').trigger('close.uf');
-          });
+          .done(function () { $('#tag-dialog').data('dirty', 1);    })
+          .fail(function () { $('#tag-dialog').trigger('close.uf'); });
       })
       /* remove an existing tag */
       .undelegate('.tag-body .tag-act', 'click.uf.tag-remove')
@@ -1285,6 +1305,7 @@ $(function() {
       cache:       false,
       contentType: false,
       processData: false,
+      headers:     { 'Accept': 'application/json' },
       xhr: function () {
         var xhr = $.ajaxSettings.xhr();
         xhr.upload.onloadstart = onloadstart;

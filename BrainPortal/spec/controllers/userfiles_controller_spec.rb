@@ -35,12 +35,13 @@ RSpec.describe UserfilesController, :type => :controller do
   let(:site_manager)          { create(:site_manager) }
   let(:user)                  { create(:normal_user, :site => site_manager.site) }
   let(:admin_userfile)        { create(:single_file, :user => admin) }
+  let(:admin_userfile_2)      { create(:single_file, :user => admin) }
   let(:site_manager_userfile) { create(:single_file, :user => site_manager) }
   let(:user_userfile)         { create(:single_file, :user => user) }
   let(:child_userfile)        { create(:single_file, :user => admin, :parent_id => admin_userfile.id) }
   let(:group_userfile)        { create(:single_file, :group_id => user.group_ids.last, :data_provider => data_provider) }
   let(:mock_userfile)         { mock_model(TextFile, :id => 1).as_null_object }
-  let(:data_provider)         { create(:data_provider, :user => user, :online => true, :read_only => false) }
+  let(:data_provider)         { create(:local_data_provider, :user => user, :online => true, :read_only => false) }
 
   after(:all) do
     FileUtils.rm(Dir.glob("spec/fixtures/cbrain_test_file_*"))
@@ -52,112 +53,108 @@ RSpec.describe UserfilesController, :type => :controller do
 
       context "with admin user" do
         before(:each) do
-          session[:user_id] = admin.id
+          allow(controller).to receive(:current_user).and_return(admin)
           admin_userfile
           site_manager_userfile
           user_userfile
         end
 
         it "should display all files if 'view all' is on" do
-          get :index, "userfiles" => { "view_all" => "on" }
+          get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}}}
           expect(assigns[:userfiles].to_a).to match_array(Userfile.all)
         end
 
         it "should only display user's files if 'view all' is off" do
-          get :index, "userfiles" => { "view_all" => "off" }
+          get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>false}}}
           expect(assigns[:userfiles].to_a).to match_array(Userfile.all(:conditions => {:user_id => admin.id}))
         end
 
-        it "should not tree sort if tree sort not set" do
-          expect(controller).not_to receive(:tree_sort_by_pairs)
-          get :index, "userfiles" => { "tree_sort" => "off" }
+        it "should not tree sort if 'tree_sort' is set" do
+          expect(controller).to receive(:tree_sort_by_pairs)
+          get :index, "_scopes"=>{"userfiles" => {"c"=>{"tree_sort"=>true}}}
         end
-
-        it "should allow access to all files" do
-          get :index, "userfiles" => { "tree_sort" => "on", "view_all" => "on" }
-          expect(assigns[:userfiles].to_a).to match_array(Userfile.all)
-        end
-
 
         context "filtering and sorting" do
-          before(:each) do
-            session[:userfiles] ||= {}
-            session[:userfiles]["view_all"] = "on"
-            session[:userfiles]["tree_sort"] = "off"
-          end
 
-          it "should filter by type" do
+          it "should filter by type FileCollection" do
             file_collection = create(:file_collection)
-            get :index, "userfiles" => { "filter_hash" => {"type" => "FileCollection"} }
+            get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "f"=>[{"a"=>"type", "v"=>"FileCollection"}]}}
             expect(assigns[:userfiles].to_a).to match_array([file_collection])
           end
 
           it "should filter by tag" do
+            admin_userfile_2
             tag = create(:tag, :userfiles => [admin_userfile], :user => admin)
-            get :index, "userfiles" => { "filter_tags_array" => tag.id.to_s }
+            get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "f"=>[{"t"=>"uf.tags", "v"=>[tag.id]}]}}
             expect(assigns[:userfiles].to_a).to match_array([admin_userfile])
           end
 
           it "should filter by custom filter" do
-            custom_filter = UserfileCustomFilter.create(:name => "userfile_filter", :user => admin, :data => {"file_name_type"=>"match", "file_name_term" => admin_userfile.name})
-            get :index, "userfiles" => { "filter_custom_filters_array" => custom_filter.id.to_s }
-            expect(assigns[:userfiles].to_a.first).to eq(admin_userfile)
+            custom_filter      = UserfileCustomFilter.create(:name => "userfile_filter", :user => admin)
+            custom_filter.data = {"file_name_type"=>"match", "file_name_term" => admin_userfile.name}
+            custom_filter.save
+            allow(admin).to receive(:custom_filter_ids).and_return([custom_filter.id])
+            get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true, "custom_filters"=>[custom_filter.id]}}}
+            expect(assigns[:userfiles].to_a).to eq([admin_userfile])
           end
 
           it "should filter for no parent" do
-            get :index, "userfiles" => { "filter_hash" => {"has_no_parent" => "true"} }
+            admin_userfile.parent_id = admin_userfile_2.id
+            admin_userfile.save
+            get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "f"=>[{"t"=>"uf.hier", "o"=>"no_parent"}]}}
             expect(assigns[:userfiles].to_a).to match_array(Userfile.all(:conditions => {:parent_id => nil}))
           end
 
           it "should filter for no children" do
             admin_userfile
             child_userfile
-            get :index, "userfiles" => { "filter_hash" => {"has_no_child" => "true"} }
+            get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "f"=>[{"t"=>"uf.hier", "o"=>"no_child"}]}}
             expect(assigns[:userfiles].to_a).to match_array(Userfile.all(:conditions => "userfiles.id NOT IN (SELECT parent_id FROM userfiles WHERE parent_id IS NOT NULL)"))
           end
 
           it "should sort by name" do
-            get :index, "userfiles" => { "sort_hash" => {"order" => "userfiles.name"} }
+            get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"name"}]}}
             expect(assigns[:userfiles]).to eq(Userfile.all(:order => "userfiles.name"))
           end
 
           it "should be able to reverse sort" do
-            get :index, "userfiles" => { "sort_hash" => {"order" => "userfiles.name", "dir" => "DESC"} }
+            get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"name", "d"=>"desc"}]}}
             expect(assigns[:userfiles]).to eq(Userfile.all(:order => "userfiles.name DESC"))
           end
 
           it "should sort by type" do
-            get :index, "userfiles" => { "sort_hash" => {"order" => "userfiles.type"} }
+            get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"type"}]}}
             expect(assigns[:userfiles]).to eq(Userfile.all(:order => "userfiles.type"))
           end
 
           it "should sort by owner name" do
-            get :index, "userfiles" => { "sort_hash" => {"order" => "users.login"} }
+            get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"users.login", "j"=>"users"}]}}
             expect(assigns[:userfiles]).to eq(Userfile.all(:joins => :user, :order => "users.login"))
           end
 
           it "should sort by creation date" do
-            get :index, "userfiles" => { "sort_hash" => {"order" => "userfiles.created_at"} }
+            get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"created_at"}]}}
             expect(assigns[:userfiles]).to eq(Userfile.all(:order => "userfiles.created_at"))
           end
 
           it "should sort by size" do
-            get :index, "userfiles" => { "sort_hash" => {"order" => "userfiles.size"} }
+            get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"size"}]}}
             expect(assigns[:userfiles]).to eq(Userfile.all(:order => "userfiles.size"))
           end
 
           it "should sort by project name" do
-            get :index, "userfiles" => { "sort_hash" => {"order" => "groups.name"} }
+            get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"groups.name", "j"=>"groups"}]}}
             expect(assigns[:userfiles]).to eq(Userfile.all(:joins => :group, :order => "groups.name"))
           end
 
           it "should sort by project access" do
-            get :index, "userfiles" => { "sort_hash" => {"order" => "userfiles.group_writable"} }
+            [{"a"=>"group_writable"}]
+            get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"group_writable"}]}}
             expect(assigns[:userfiles].map(&:group_writable)).to eq(Userfile.all(:order => "userfiles.group_writable").map(&:group_writable))
           end
 
           it "should sort by provider" do
-            get :index, "userfiles" => { "sort_hash" => {"order" => "data_providers.name"} }
+            get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"data_providers.name", "j"=>"data_providers"}]}}
             expect(assigns[:userfiles]).to eq(Userfile.all(:joins => :data_provider, :order => "data_providers.name"))
           end
         end
@@ -167,19 +164,19 @@ RSpec.describe UserfilesController, :type => :controller do
 
       context "with site manager" do
         before(:each) do
-          session[:user_id] = site_manager.id
+          allow(controller).to receive(:current_user).and_return(site_manager)
           admin_userfile
           site_manager_userfile
           user_userfile
         end
 
         it "should display site-associated files if 'view all' is on" do
-          get :index, "userfiles" => { "view_all" => "on" }
+          get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}}}
           expect(assigns[:userfiles].to_a).to match_array(Userfile.find_all_accessible_by_user(site_manager, :access_requested => :read))
         end
 
         it "should only display user's files if 'view all' is off" do
-          get :index, "userfiles" => { "view_all" => "off" }
+          get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>false}}}
           expect(assigns[:userfiles].to_a).to match_array([site_manager_userfile])
         end
       end
@@ -188,19 +185,19 @@ RSpec.describe UserfilesController, :type => :controller do
 
       context "with regular user" do
         before(:each) do
-          session[:user_id] = user.id
+          allow(controller).to receive(:current_user).and_return(user)
           site_manager_userfile
           user_userfile
         end
 
         it "should display group-associated files if 'view all' is on" do
           group_userfile
-          get :index, "userfiles" => { "view_all" => "on" }
+          get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}}}
           expect(assigns[:userfiles].to_a).to match_array([group_userfile, user_userfile])
         end
 
         it "should only display user's files if 'view all' is off" do
-          get :index, "userfiles" => { "view_all" => "off" }
+          get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>false}}}
           expect(assigns[:userfiles].to_a).to match_array([user_userfile])
         end
       end
@@ -208,27 +205,9 @@ RSpec.describe UserfilesController, :type => :controller do
 
 
 
-    describe "new_parent_child" do
-      before(:each) do
-        session[:user_id] = admin.id
-      end
-
-      it "should render error message if no files are selected" do
-        get :new_parent_child
-        expect(response.body).to match(/warning/)
-      end
-
-       it "should render the parent-child selection template" do
-         get :new_parent_child, "file_ids" => [admin_userfile.id.to_s, user_userfile.id.to_s]
-         expect(response).to render_template("new_parent_child")
-       end
-    end
-
-
-
     describe "create_parent_child" do
       before(:each) do
-        session[:user_id] = admin.id
+        allow(controller).to    receive(:current_user).and_return(admin)
       end
 
       it "should render an error message if no files selected" do
@@ -255,10 +234,10 @@ RSpec.describe UserfilesController, :type => :controller do
       let(:mock_status) {double("status", :status => "ProvNewer")}
 
       before(:each) do
-        session[:user_id] = admin.id
+        allow(controller).to    receive(:current_user).and_return(admin)
         allow(mock_userfile).to receive(:local_sync_status).and_return(mock_status)
-        allow(Userfile).to receive(:find_accessible_by_user).and_return([mock_userfile])
-        allow(CBRAIN).to receive(:spawn_with_active_records).and_yield
+        allow(Userfile).to      receive(:find_accessible_by_user).and_return([mock_userfile])
+        allow(CBRAIN).to        receive(:spawn_with_active_records).and_yield
       end
 
       it "should sync the file to the cache if it is in a valid state" do
@@ -279,9 +258,9 @@ RSpec.describe UserfilesController, :type => :controller do
       let(:mock_upload_stream) {mock_upload_file_param}
 
       before(:each) do
-        session[:user_id] = admin.id
-        allow(Message).to receive(:send_message)
-        allow(File).to receive(:delete)
+        allow(controller).to receive(:current_user).and_return(admin)
+        allow(Message).to    receive(:send_message)
+        allow(File).to       receive(:delete)
         allow(controller).to receive(:system)
       end
 
@@ -511,60 +490,59 @@ RSpec.describe UserfilesController, :type => :controller do
 
     describe "update_multiple" do
       before(:each) do
-        session[:user_id] = user.id
-        allow(Userfile).to receive_message_chain(:find_all_accessible_by_user, :where, :all).and_return([mock_userfile])
+        allow(controller).to    receive(:current_user).and_return(admin)
       end
 
       context "when no operation is selected" do
 
         it "should display an error message" do
-          post :update_multiple, :file_ids => [1]
-          expect(flash[:error]).to match("Unknown operation")
+          post :update_multiple, :file_ids => [user_userfile.id]
+          expect(flash[:notice]).to match("Nothing to update.")
         end
 
         it "should redirect to the index" do
-          post :update_multiple, :file_ids => [1]
-          expect(response).to redirect_to(:action => :index, :format => :html)
+          post :update_multiple, :file_ids => [user_userfile.id]
+          expect(response).to redirect_to(:action => :index)
         end
       end
 
       it "should update tags when requested" do
-        expect(mock_userfile).to receive(:set_tags_for_user)
-        post :update_multiple, :file_ids => [1], :update_tags => true
+        tag = create(:tag, :userfiles => [admin_userfile], :user => admin)
+        allow(admin).to receive_message_chain(:available_tags, :raw_first_column).and_return([tag.id])
+        post :update_multiple, :file_ids => [user_userfile.id], :tags => [tag.id]
+        expect(user_userfile.tags).to match_array([tag])
       end
 
       it "should fail to update project when user does not have access" do
-        group_id_hash = {:group_id => 4}
-        post :update_multiple, :file_ids => [1], :update_projects => true, :userfile => group_id_hash
+        post :update_multiple, :file_ids => [user_userfile.id], :update_projects => true, :group_id => 4
         expect(flash[:error]).to match(/project/)
       end
 
       it "should update permissions when requested" do
-        permission_hash = {:group_writable => true}
-        expect(mock_userfile).to receive(:update_attributes_with_logging)
-        post :update_multiple, :file_ids => [1], :update_permissions => true, :userfile => permission_hash
+        post :update_multiple, :file_ids => [user_userfile.id], :group_writable => true
+        user_userfile.reload
+        expect(user_userfile.group_writable).to be_truthy
       end
 
       it "should update the file type when requested" do
-        expect(mock_userfile).to receive(:update_file_type)
-        post :update_multiple, :file_ids => [1], :update_file_type => true
+        post :update_multiple, :file_ids => [user_userfile.id], :type => "TextFile"
+        user_userfile.reload
+        expect(user_userfile.type).to match("TextFile")
       end
 
       it "should display the number of succesful updates" do
-        allow(mock_userfile).to receive(:send).and_return(true)
-        post :update_multiple, :file_ids => [1], :update_tags => true
+        post :update_multiple, :file_ids => [user_userfile.id], :type => "TextFile"
         expect(flash[:notice]).to match(" successful ")
       end
 
-      it "should display the number of failed updates" do
-        allow(mock_userfile).to receive(:send).and_return(false)
-        post :update_multiple, :file_ids => [1], :update_tags => true
-        expect(flash[:error]).to match(" unsuccessful ")
+      it "should display the 'failed' updates" do
+        post :update_multiple, :file_ids => [user_userfile.id], :type => "FileCollection"
+        expect(flash[:error]).to match(" failed ")
       end
 
       it "should redirect to the index" do
-        post :update_multiple, :file_ids => [1], :update_tags => true
-        expect(response).to redirect_to(:action => :index, :format => :html)
+        post :update_multiple, :file_ids => [user_userfile.id], :type => "TextFile"
+        expect(response).to redirect_to(:action => :index)
       end
     end
 
@@ -572,7 +550,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
     describe "quality_control" do
       before(:each) do
-        session[:user_id] = admin.id
+        allow(controller).to    receive(:current_user).and_return(admin)
       end
 
       it "should set the filelist variable" do
@@ -589,8 +567,8 @@ RSpec.describe UserfilesController, :type => :controller do
 
       before(:each) do
         allow(controller).to receive(:current_user).and_return(admin)
-        allow(admin).to receive(:available_tags).and_return(available_tags)
-        allow(Userfile).to receive(:find_accessible_by_user).and_return(mock_userfile)
+        allow(admin).to      receive(:available_tags).and_return(available_tags)
+        allow(Userfile).to   receive(:find_accessible_by_user).and_return(mock_userfile)
       end
 
       it "should find or create a 'PASS' tag" do
@@ -640,13 +618,13 @@ RSpec.describe UserfilesController, :type => :controller do
 
     describe "create_collection" do
       before(:each) do
-        allow(controller).to receive(:current_user).and_return(admin)
+        allow(controller).to     receive(:current_user).and_return(admin)
         allow(FileCollection).to receive(:new).and_return(mock_userfile)
-        allow(CBRAIN).to receive(:spawn_with_active_records).and_yield
-        allow(Userfile).to receive(:find_accessible_by_user).and_return(mock_userfile)
-        allow(DataProvider).to receive(:find_accessible_by_user).and_return([data_provider])
-        allow(Message).to receive(:send_message)
-        allow(DataProvider).to receive(:find)
+        allow(CBRAIN).to         receive(:spawn_with_active_records).and_yield
+        allow(Userfile).to       receive(:find_accessible_by_user).and_return(mock_userfile)
+        allow(DataProvider).to   receive(:find_accessible_by_user).and_return([data_provider])
+        allow(Message).to        receive(:send_message)
+        allow(DataProvider).to   receive(:find)
       end
 
       it "should create a new collection" do
@@ -684,7 +662,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
       it "should redirect to the index" do
         post :create_collection, :file_ids => [1], :data_provider_id_for_collection => data_provider.id
-        expect(response).to redirect_to(:action => :index, :format => :html)
+        expect(response).to redirect_to(:action => :index)
       end
     end
 
@@ -692,12 +670,12 @@ RSpec.describe UserfilesController, :type => :controller do
 
     describe "change_provider" do
       before(:each) do
-        allow(controller).to receive(:current_user).and_return(admin)
-        allow(admin).to receive(:license_agreement_set).and_return([])
-        allow(admin).to receive(:unsigned_license_agreements).and_return([])
-        allow(DataProvider).to receive_message_chain(:find_all_accessible_by_user, :where, :first).and_return(mock_model(DataProvider).as_null_object)
-        allow(CBRAIN).to receive(:spawn_with_active_records).and_yield
-        allow(Userfile).to receive(:find_accessible_by_user).and_return(mock_userfile)
+        allow(controller).to    receive(:current_user).and_return(admin)
+        allow(admin).to         receive(:license_agreement_set).and_return([])
+        allow(admin).to         receive(:unsigned_license_agreements).and_return([])
+        allow(DataProvider).to  receive_message_chain(:find_all_accessible_by_user, :where, :first).and_return(mock_model(DataProvider).as_null_object)
+        allow(CBRAIN).to        receive(:spawn_with_active_records).and_yield
+        allow(Userfile).to      receive(:find_accessible_by_user).and_return(mock_userfile)
         allow(mock_userfile).to receive(:provider_move_to_otherprovider)
         allow(mock_userfile).to receive(:provider_copy_to_otherprovider)
       end
@@ -714,7 +692,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should redirect to the index" do
           post :change_provider, :file_ids => [1]
-          expect(response).to redirect_to(:action => :index, :format => :html)
+          expect(response).to redirect_to(:action => :index)
         end
       end
 
@@ -762,55 +740,6 @@ RSpec.describe UserfilesController, :type => :controller do
 
       it "should redirect to the index" do
         post :change_provider, :file_ids => [1]
-        expect(response).to redirect_to(:action => :index, :format => :html)
-      end
-    end
-
-
-
-    describe "manage_persistent" do
-      let(:current_session) {double("current_session", :persistent_userfile_ids_list => [1]).as_null_object}
-
-      before(:each) do
-        allow(controller).to receive(:current_user).and_return(admin)
-        allow(controller).to receive(:current_session).and_return(current_session)
-      end
-
-      it "should clear the persistent ids if the operation is 'clear'" do
-        expect(current_session).to receive(:persistent_userfile_ids_clear).and_return(1)
-        post :manage_persistent, :file_ids => [1], :operation => "clear"
-      end
-
-      it "should clear and then add the persistent ids if the operation is 'replace'" do
-        expect(current_session).to receive(:persistent_userfile_ids_clear).ordered.and_return(1)
-        expect(current_session).to receive(:persistent_userfile_ids_add).ordered.and_return(1)
-        post :manage_persistent, :file_ids => [1], :operation => "replace"
-      end
-
-      it "should add the persistent ids if the operation is 'add'" do
-        expect(current_session).to receive(:persistent_userfile_ids_add).ordered.and_return(1)
-        post :manage_persistent, :file_ids => [1], :operation => "add"
-      end
-
-      it "should remove the persistent ids if the operation is 'remove'" do
-        expect(current_session).to receive(:persistent_userfile_ids_remove).ordered.and_return(1)
-        post :manage_persistent, :file_ids => [1], :operation => "remove"
-      end
-
-      it "should display a report if the persistent file ids changed" do
-        allow(current_session).to receive(:persistent_userfile_ids_list).and_return([1])
-        post :manage_persistent, :file_ids => [1], :operation => "remove"
-        expect(flash[:notice]).to match(/Total of .* now in the persistent list of files/)
-      end
-
-      it "should display a message saying no file ids were changed if that is the case" do
-        allow(current_session).to receive(:persistent_userfile_ids_remove).and_return(0)
-        post :manage_persistent, :file_ids => [1], :operation => "remove"
-        expect(flash[:notice]).to match("No changes made to the persistent list of userfiles")
-      end
-
-      it "should redirect to the index" do
-        post :manage_persistent, :file_ids => [1], :operation => "remove"
         expect(response).to redirect_to(:action => :index)
       end
     end
@@ -819,10 +748,10 @@ RSpec.describe UserfilesController, :type => :controller do
 
     describe "delete_files" do
       before(:each) do
-        allow(controller).to receive(:current_user).and_return(admin)
+        allow(controller).to    receive(:current_user).and_return(admin)
         allow(mock_userfile).to receive(:id).and_return(1)
-        allow(Userfile).to receive_message_chain(:accessible_for_user, :where).and_return([mock_userfile])
-        allow(CBRAIN).to receive(:spawn_with_active_records).and_yield
+        allow(Userfile).to      receive_message_chain(:accessible_for_user, :where).and_return([mock_userfile])
+        allow(CBRAIN).to        receive(:spawn_with_active_records).and_yield
       end
 
       it "should display error message if userfiles is not accessible by user" do
@@ -853,13 +782,13 @@ RSpec.describe UserfilesController, :type => :controller do
 
     describe "download" do
       before(:each) do
-        allow(controller).to receive(:current_user).and_return(admin)
-        allow(controller).to receive(:send_file)
-        allow(controller).to receive(:sleep)
-        allow(controller).to receive(:render)
-        allow(Userfile).to receive(:find_accessible_by_user).and_return([mock_userfile])
+        allow(controller).to    receive(:current_user).and_return(admin)
+        allow(controller).to    receive(:send_file)
+        allow(controller).to    receive(:sleep)
+        allow(controller).to    receive(:render)
+        allow(Userfile).to      receive(:find_accessible_by_user).and_return([mock_userfile])
         allow(mock_userfile).to receive(:size).and_return(5)
-        allow(CBRAIN).to receive(:spawn_fully_independent)
+        allow(CBRAIN).to        receive(:spawn_fully_independent)
       end
 
       context "when an illegal file name is given" do
@@ -935,31 +864,30 @@ RSpec.describe UserfilesController, :type => :controller do
 
 
     describe "compress" do
-      let(:mock_singlefile) {mock_model(SingleFile, :name => "file_name").as_null_object}
-
       before(:each) do
         allow(controller).to      receive(:current_user).and_return(admin)
-        allow(Userfile).to        receive(:find_accessible_by_user).and_return([mock_singlefile])
-        allow(mock_singlefile).to receive_message_chain(:data_provider, :read_only?).and_return(false)
-        allow(Userfile).to        receive_message_chain(:where, :first).and_return(nil)
-        allow(CBRAIN).to          receive(:spawn_with_active_records)
-      end
-
-      it "should display an error message if the file is not a SingleFile" do
-        allow(Userfile).to receive(:find_accessible_by_user).and_return([mock_model(FileCollection).as_null_object])
-        post :compress, :file_ids => [1]
-        expect(flash[:error]).to match("Not a SingleFile")
       end
 
       it "should display an error message if the data provider is not writable" do
-        allow(mock_singlefile).to receive_message_chain(:data_provider, :read_only?).and_return(true)
-        post :compress, :file_ids => [1]
+        data_provider           = DataProvider.find(user_userfile.data_provider_id)
+        data_provider.read_only = true
+        data_provider.save
+        post :compress, :file_ids => [user_userfile.id]
         expect(flash[:error]).to match("Data Provider not writable")
       end
 
+
+
       it "should display an error message file name already exists" do
-        allow(Userfile).to receive_message_chain(:where, :exists?).and_return(true)
-        post :compress, :file_ids => [1]
+        data_provider           = DataProvider.find(user_userfile.data_provider_id)
+        data_provider.read_only = false
+        data_provider.save
+        user_userfile_duplicate_name   = create(:single_file,
+                                              :name => "#{user_userfile.name}.gz",
+                                              :user => user_userfile.user,
+                                              :data_provider_id => data_provider.id
+                                             )
+        post :compress, :file_ids => [user_userfile.id]
         expect(flash[:error]).to match("Filename collision")
       end
 
@@ -967,60 +895,18 @@ RSpec.describe UserfilesController, :type => :controller do
 
       context "when compressing" do
         before(:each) do
-          allow(Userfile).to   receive_message_chain(:where, :exists?).and_return(false)
           allow(CBRAIN).to     receive(:spawn_with_active_records).and_yield
-          allow(SyncStatus).to receive(:ready_to_modify_cache).and_yield
-          allow(controller).to receive(:system)
-          allow(File).to       receive(:rename)
-          allow(Message).to    receive(:send_message)
         end
 
-        it "should rename the file on the provider" do
-          expect(mock_singlefile).to receive(:provider_rename)
-          post :compress, :file_ids => [mock_singlefile.id]
+        it "should call gzip_file method" do
+          data_provider           = DataProvider.find(user_userfile.data_provider_id)
+          data_provider.read_only = false
+          data_provider.save
+          expect(controller).to receive(:gzip_file)
+          post :compress, :file_ids => [user_userfile.id]
         end
 
-        it "should sync the file to the cache" do
-          expect(mock_singlefile).to receive(:sync_to_cache)
-          post :compress, :file_ids => [1]
-        end
-
-        it "should ensure that the cache is ready to be modified" do
-          expect(SyncStatus).to receive(:ready_to_modify_cache)
-          post :compress, :file_ids => [1]
-        end
-
-        it "should compress the file if it is uncompressed" do
-          expect(controller).to receive(:system).with(/^gzip/)
-          post :compress, :file_ids => [1]
-        end
-
-        it "should uncompress the file if it is compressed" do
-          allow(mock_singlefile).to receive(:name).and_return("file_name.gz")
-          expect(controller).to receive(:system).with(/^gunzip/)
-          post :compress, :file_ids => [1]
-        end
-
-        it "should crush the original file" do
-          expect(File).to receive(:rename)
-          post :compress, :file_ids => [1]
-        end
-
-        it "should sync the file to the provider" do
-          expect(mock_singlefile).to receive(:sync_to_provider)
-          post :compress, :file_ids => [1]
-        end
-
-        it "should send a message to the user" do
-          expect(Message).to receive(:send_message)
-          post :compress, :file_ids => [1]
-        end
-      end
-
-      it "should redirect to the index" do
-        allow(Userfile).to receive_message_chain(:where, :exists?).and_return(true)
-        post :compress, :file_ids => [1]
-        expect(response).to redirect_to(:action => :index, :format => :html)
+        it "Really tricky part to test since the method do lot of stuff!"
       end
     end
   end
@@ -1029,7 +915,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
   context "member action" do
     before(:each) do
-      session[:user_id] = admin.id
+      allow(controller).to    receive(:current_user).and_return(admin)
     end
 
 
@@ -1067,8 +953,8 @@ RSpec.describe UserfilesController, :type => :controller do
         type    = :text
         content = "content"
         allow(content_loader).to receive(:type).and_return(type)
-        allow(mock_userfile).to receive(:content_loader_method).and_return(content)
-        expect(controller).to receive(:render).with(type => content)
+        allow(mock_userfile).to  receive(:content_loader_method).and_return(content)
+        expect(controller).to    receive(:render).with(type => content)
         get :content, :id => 1
       end
 
@@ -1177,10 +1063,8 @@ RSpec.describe UserfilesController, :type => :controller do
       end
 
       it "it should display an error message when attempting to update to an invalid type" do
-        text_file = create(:text_file)
-        allow(Userfile).to receive_message_chain(:find_all_accessible_by_user, :where, :all).and_return([text_file])
-        put :update_multiple, :update_file_type => true, :file_ids => [text_file.id], :file_type => "InvalidType"
-        expect(flash[:error]).to match("unsuccessful for 1")
+        post :update_multiple, :update_type => true, :file_ids => [user_userfile.id], :type => "FileCollection"
+        expect(flash[:error]).to match(" failed ")
       end
 
       it "should set tags" do

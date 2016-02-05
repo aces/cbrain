@@ -22,7 +22,7 @@
 
 # Helpers to apply user-specified scopes on CBRAIN's models or collections for
 # viewing purposes. Scopes are a flexible and safe way to define which filtering
-# and sorting rules to apply on a given collection before display and keep 
+# and sorting rules to apply on a given collection before display and keep
 # track of custom view options and pagination information.
 #
 # Scopes currently in use are usually stored in Rails' session, and can easily
@@ -1261,7 +1261,7 @@ module ViewScopes
 
       # Then decompress, if required
       scopes = scopes.map do |n, s|
-        return [n, s] if s.is_a?(Hash)
+        next [n, s] if s.is_a?(Hash)
         [ n, ViewScopes.decompress_scope(s) ]
       end.to_h
 
