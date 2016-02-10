@@ -30,10 +30,9 @@ class UserfilesController < ApplicationController
   api_available
 
   before_filter :login_required
-  before_filter :auto_add_persistent_userfile_ids, :except => [ :manage_persistent ]
   around_filter :permission_check, :only => [
-      :download, :update_multiple, :delete_files, :create_collection, :change_provider, :quality_control,
-      :manage_persistent
+      :download, :update_multiple, :delete_files,
+      :create_collection, :change_provider, :quality_control
   ]
 
   MAX_DOWNLOAD_MEGABYTES = 400
@@ -86,16 +85,19 @@ class UserfilesController < ApplicationController
 
     # Prepare the Pagination object
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
-    @scope.pagination.per_page = 999_999_999 unless
-      [:html, :js].include?(request.format.to_sym)
     @current_offset = (@scope.pagination.page - 1) * @scope.pagination.per_page
+    api_request     = ! [:html, :js].include?(request.format.to_sym)
+
+    # Special case; only userfile IDs are required (API request)
+    if params[:ids_only] && api_request
+      @userfiles = @view_scope.raw_first_column(:id)
 
     # Tree sort
-    if @scope.custom[:tree_sort]
+    elsif @scope.custom[:tree_sort]
       # Sort using just IDs and parent IDs then paginate, giving the final
       # userfiles list in tuple (see +tree_sort_by_pairs+) form.
-      tuples = tree_sort_by_pairs(@view_scope.raw_rows(["userfiles.id", "userfiles.parent_id"]))
-      tuples = @scope.pagination.apply(tuples)
+      tuples = tree_sort_by_pairs(@view_scope.raw_rows(['userfiles.id', 'userfiles.parent_id']))
+      tuples = @scope.pagination.apply(tuples) unless api_request
 
       # Keep just ID and depth/level; there is no need for the parent ID,
       # children list, original index, etc.
@@ -120,8 +122,10 @@ class UserfilesController < ApplicationController
       # and conversion).
       @userfiles.compact!
 
+    # General case
     else
-      @userfiles = @scope.pagination.apply(@view_scope)
+      @userfiles = @view_scope
+      @userfiles = @scope.pagination.apply(@userfiles) unless api_request
     end
 
     # Save the modified scope object
@@ -218,7 +222,7 @@ class UserfilesController < ApplicationController
     viewer_name           = params[:viewer]
     viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
 
-    # Try to find out viewer aming those registered in the classes
+    # Try to find out viewer among those registered in the classes
     @viewer      = viewer_userfile_class.find_viewer(viewer_name)
     @viewer    ||= (viewer_name.camelcase.constantize rescue nil).try(:find_viewer, viewer_name) rescue nil
 
@@ -233,7 +237,9 @@ class UserfilesController < ApplicationController
     end
 
     # Ok, some viewers are invalid for some specific userfiles, so reject it if it's the case.
-    @viewer      = nil if @viewer && ! @viewer.valid_for?(@userfile)
+    if (params[:content_viewer] != 'off')
+      @viewer      = nil if @viewer && ! @viewer.valid_for?(@userfile)
+    end
 
     begin
       if @viewer
@@ -924,46 +930,6 @@ class UserfilesController < ApplicationController
     end
   end
 
-  # Adds the selected userfile IDs to the session's persistent list
-  def manage_persistent
-
-    @scope     = scope_from_session('userfiles')
-    operation  = (params[:operation] || 'clear').downcase
-    persistent = Set.new(current_session[:persistent_userfiles])
-
-    if operation =~ /select/
-      files = filtered_scope
-        .select(&:available?)
-        .map(&:id)
-        .map(&:to_s)
-    else
-      files = params[:file_ids] || []
-    end
-
-    case operation
-    when /add/, /select/
-      persistent += files
-
-    when /remove/
-      persistent -= files
-
-    when /clear/
-      persistent.clear
-
-    when /replace/
-      persistent.replace(files)
-    end
-
-    if persistent.size > 0
-      flash[:notice] = "#{view_pluralize(persistent.size, 'file')} now persistently selected."
-    else
-      flash[:notice] = "Peristent selection list now empty."
-    end
-
-    current_session[:persistent_userfiles] = persistent.to_a
-    redirect_to :action => :index, :page => params[:page]
-  end
-
   #Delete the selected files.
   def delete_files #:nodoc:
     filelist    = params[:file_ids] || []
@@ -1337,19 +1303,11 @@ class UserfilesController < ApplicationController
 
   private
 
-  # Adds the persistent userfile ids to the params[:file_ids] argument
-  def auto_add_persistent_userfile_ids #:nodoc:
-    params[:file_ids] ||= []
-    params[:file_ids]  |= current_session[:persistent_userfiles].to_a if
-      params[:ignore_persistent].blank? &&
-      current_session[:persistent_userfiles].present?
-  end
-
   # Verify that all files selected for an operation
   # are accessible by the current user.
   def permission_check #:nodoc:
     action_name = params[:action].to_s
-    if params[:file_ids].blank? && action_name != 'manage_persistent'
+    if params[:file_ids].blank?
       flash[:error] = "No files selected? Selection cleared.\n"
       redirect_to :action => :index, :format => request.format.to_sym
       return

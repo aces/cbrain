@@ -35,6 +35,7 @@ class ApplicationController < ActionController::Base
   include AuthenticatedSystem
   include SessionHelpers
   include ViewScopes
+  include PersistentSelection
   include ViewHelpers
   include ApiHelpers
   include PermissionHelpers

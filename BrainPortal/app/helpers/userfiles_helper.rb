@@ -78,7 +78,7 @@ module UserfilesHelper
 
   # Generates links to pretty file content for userfiles
   # of type TextFile or ImageFile; this method is going to
-  # be replaced by a proper generic framework in 4.2.0 !
+  # be replaced by a proper generic framework in 4.3.0 !
   def data_link(file_name, userfile)
     display_name  = Pathname.new(file_name).basename.to_s
     return h(display_name) unless userfile.is_locally_synced?
