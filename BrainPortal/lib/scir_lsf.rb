@@ -32,7 +32,7 @@ class ScirLsf < Scir
       # on the implementation of bstat.  This method is supposed to
       # list all the statuses of the running tasks, and to keep it in
       # the @job_info_cache array.
-      out, err = bash_this_and_capture_out_err("bjobs -a -noheader")
+      out, err = bash_this_and_capture_out_err("bjobs -a -noheader -J #{shell_escape(self.name)}")
       raise "Cannot get output of 'bjobs -a' ?!?" if out.blank? && ! err.blank?
       jid = 'Dummy'
       @job_info_cache = {}
