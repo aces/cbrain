@@ -1308,7 +1308,7 @@ class DataProvider < ActiveRecord::Base
   def rr_allowed_syncing?(rr = RemoteResource.current_resource, check_dp = self)
     rr ||= RemoteResource.current_resource
     meta_key_disabled = "rr_no_sync_#{rr.id}"
-    self.meta[meta_key_disabled].blank?
+    check_dp.meta[meta_key_disabled].blank?
   end
 
   # Works like rr_allowed_syncing? but raise an exception when the
@@ -1329,7 +1329,7 @@ class DataProvider < ActiveRecord::Base
     self.meta[meta_key_disabled].blank?
   end
 
-  # Works like dp_allows_copy? but raises an exception of the
+  # Works like dp_allows_copy? but raises an exception if the
   # copy or move operation is not allowed.
   def dp_allows_copy!(other_dp)
     cb_error "Error: provider #{self.name} is not allowed to send data to provider #{other_dp.name}." unless

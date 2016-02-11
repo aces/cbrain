@@ -191,8 +191,9 @@ module ScopeHelper
   def pretty_scope_filter(filter, model: nil)
     # UI names for certain associations.
     association_names = {
-      'group'    => 'project',
-      'bourreau' => 'server'
+      'group'       => 'project',
+      'bourreau'    => 'server',
+      'tool_config' => 'version'
     }
 
     # Explanatory flag (boolean attributes) value names to use instead of
@@ -205,7 +206,8 @@ module ScopeHelper
 
     # Model methods/attributes to use as representation of a model record
     naming_methods = {
-      :user => :login
+      :user        => :login,
+      :tool_config => :version_name
     }
 
     # In the best case, +filter+ has its own +to_s+ to generate a nice string

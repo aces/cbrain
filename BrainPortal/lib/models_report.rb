@@ -132,7 +132,7 @@ class ModelsReport
   end
 
   # This method implements the 'search for anything' for the controller portal action +search+
-  # It's also used in the rails console's shortcuts.
+  # It's also used in the rails console's shortcut 'fff'.
   #
   # If +token+ looks like an ID, the models are searched by ID only.
   # Otherwise, models are searched by name, version_name, description, etc.
@@ -152,8 +152,8 @@ class ModelsReport
   #   }
   def self.search_for_token(token, user=current_user) #:nodoc:
 
-    token       = token.to_s.presence || "-999"
-    is_numeric  = token =~ /^\d+$/    || token == "-999"
+    token       = token.to_s.presence || "-9998877"          # -9998877 is a way to ensure we find nothing ...
+    is_numeric  = token =~ /^\d+$/    || token == "-9998877" # ... because we'll find by ID
 
 
     file_scope  = Userfile      .find_all_accessible_by_user(user) .order(:name)
@@ -184,6 +184,7 @@ class ModelsReport
     else
       ptoken = "%#{token}%"
       {
+        # Use a wide window to edit this code! Keep it clean!
         :users  => user_scope  .where( [ "login like ? OR full_name like ? OR email like ?", ptoken, ptoken, ptoken ] ).all ,
         :tasks  => task_scope  .where( [ "description like ?"                              , ptoken                 ] ).all ,
         :groups => group_scope .where( [ "name like ?"                                     , ptoken                 ] ).all ,

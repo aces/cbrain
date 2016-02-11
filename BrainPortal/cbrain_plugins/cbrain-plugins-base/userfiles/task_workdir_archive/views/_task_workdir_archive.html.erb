@@ -22,7 +22,8 @@
 #
 -%>
 
-Archived content of task <%= link_to_task_if_accessible(@userfile.meta[:original_task_id], current_user, :name_method => :fullname ) %>
+Archived content of task
+  <%= link_to_task_if_accessible( (@userfile.archived_task rescue nil), current_user, :name_method => :fullname ) %>
 
 <p>
 

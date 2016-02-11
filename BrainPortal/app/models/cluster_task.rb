@@ -1268,8 +1268,6 @@ class ClusterTask < CbrainTask
       file.save!
       file.cache_copy_from_local_file(tar_file)
       file.cache_erase
-      file.meta[:original_task_id]       = self.id
-      file.meta[:original_task_fullname] = self.fullname
       file.save
       self.workdir_archive_userfile_id = file.id
       self.addlog_to_userfiles_created(file)
