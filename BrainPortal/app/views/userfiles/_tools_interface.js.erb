@@ -161,10 +161,8 @@ $(document).ready(function() {
   $('#tool_version_selector').delegate('input.launch_tool', 'click', function (event) {
     event.preventDefault();
 
-    $('#toolsDialog').dialog('close');
-
     $('#userfiles_menus_and_filelist').children('form')
-      .append($('#tool_version_selector'))
+      .append($('#tool_version_selector').hide())
       .attr('action', $(this).data('url'))
       .attr('method', 'POST')
       .submit();
