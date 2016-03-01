@@ -34,7 +34,7 @@
 <div id="upload-dialog"
   class="dlg-dialog"
   title="Upload - Single file"
-  data-max-upload-size="" <%# TODO %>
+  data-max-upload-size="<%= RemoteResource.current_resource.meta[:upload_size_limit].to_i.megabytes %>"
   data-type-detect-url="<%= detect_file_type_userfiles_path %>"
 >
   <form action="<%= userfiles_path %>" method="post" enctype="multipart/form-data">
