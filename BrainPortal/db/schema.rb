@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20151120212700) do
+ActiveRecord::Schema.define(:version => 20160218173528) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
