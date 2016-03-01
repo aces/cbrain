@@ -111,10 +111,19 @@ class EnCbrainSshDataProvider < SshDataProvider
   def impl_provider_report #:nodoc:
     issues         = []
     userfile_paths = self.userfiles.map { |u| [u, self.provider_full_path(u).to_s] }
-    all_paths      = remote_bash_this("( find #{remote_dir.bash_escape} -empty -type d; find #{remote_dir.bash_escape} -type f )").split("\n")
+
+    # Potential (valid) userfile paths
+    valid_paths = remote_bash_this(<<-"FIND").split("\n")
+      ( find #{remote_dir.bash_escape} -mindepth 4 -maxdepth 4 )
+    FIND
+
+    # Other (invalid) files and directories
+    invalid_paths = remote_bash_this(<<-"FIND").split("\n")
+      ( find #{remote_dir.bash_escape} -maxdepth 3 \\( -type f -o -type d -empty \\) )
+    FIND
 
     # Make sure all registered files exist
-    userfile_paths.reject { |u,p| all_paths.include?(p) }.each do |miss,p|
+    userfile_paths.reject { |u,p| valid_paths.include?(p) }.each do |miss,p|
       issues << {
         :type        => :missing,
         :message     => "Missing userfile '#{miss.name}'",
@@ -125,8 +134,8 @@ class EnCbrainSshDataProvider < SshDataProvider
     end
 
     # Search the provider's root directory for unknown directories and/or files
-    base_regex     = Regexp.new('^' + Regexp.quote(remote_dir) + '/?')
-    (all_paths - userfile_paths.map { |u,p| p }).each do |unk|
+    base_regex = Regexp.new('^' + Regexp.quote(remote_dir) + '/?')
+    (invalid_paths + (valid_paths - userfile_paths.map { |u,p| p })).each do |unk|
       issues << {
         :type      => :unknown,
         :message   => "Unknown file or directory '#{unk.sub(base_regex, '')}'",
