@@ -523,7 +523,10 @@ class DataProvidersController < ApplicationController
 
       file_group_id   = params[:other_group_id].to_i unless params[:other_group_id].blank?
       file_group_id ||= current_project.try(:id) || current_user.own_group.id
-      file_group_id   = current_user.own_group.id unless current_user.available_groups.map(&:id).include?(file_group_id)
+      if file_group_id == Group.everyone.id ||          # We won't register a file in group 'everyone'
+         ! current_user.available_groups.where(:id => file_group_id).exists? # or that is not in one of our groups
+         file_group_id = current_user.own_group.id
+      end
 
       subclass = Class.const_get(subtype)
       userfile = subclass.new( :name             => basename,
