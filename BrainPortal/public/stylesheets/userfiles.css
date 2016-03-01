@@ -129,7 +129,11 @@
   width: 100%;
 }
 
-.additionalToolInfo {
+#tool_version_selector #showAdditionalToolInfo {
+  display: inline;
+}
+
+#tool_version_selector .additionalToolInfo {
   display: none;
 }
 

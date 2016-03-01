@@ -1879,6 +1879,11 @@ img {
   background-color: #fee5ec;
 }
 
+/* FIXME the tool selection dialog shouldn't encroach load_info... */
+#showAdditionalToolInfo {
+  display: none;
+}
+
 /* % ######################################################### */
 /* % Styles for Data Provider Browse page */
 /* % ######################################################### */

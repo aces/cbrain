@@ -237,22 +237,16 @@ class BourreauxController < ApplicationController
     bourreau_id = params[:bourreau_id] || ToolConfig.find(params[:tool_config_id]).bourreau_id
     bourreau    = Bourreau.find(bourreau_id)
 
-    @latest_in_queue_delay    = bourreau.meta[:latest_in_queue_delay]
-    @time_of_last_queue_delay = bourreau.meta[:time_of_latest_in_queue_delay]
-    @num_active               = CbrainTask.status(:active).where(:bourreau_id => bourreau.id).count
-    @num_queued               = CbrainTask.status(:queued).where(:bourreau_id => bourreau.id).count
-    @num_processing           = CbrainTask.status(:processing).where(:bourreau_id => bourreau.id).count
-
-    info = { :latest_in_queue_delay    => @time_of_latest_in_queue_delay,
-             :time_of_last_queue_delay => @time_of_last_queue_delay,
-             :num_active               => @num_active,
-             :num_queued               => @num_queued,
-             :num_processing           => @num_processing
-           }
-
+    info = {
+      :latest_in_queue_delay    => bourreau.meta[:latest_in_queue_delay],
+      :time_of_last_queue_delay => bourreau.meta[:time_of_latest_in_queue_delay],
+      :num_active               => bourreau.cbrain_tasks.status(:active).count,
+      :num_queued               => bourreau.cbrain_tasks.status(:queued).count,
+      :num_processing           => bourreau.cbrain_tasks.status(:processing).count
+    }
 
     respond_to do |format|
-      format.html { render :partial => 'load_info' }
+      format.html { render :partial => 'load_info', :locals => info.merge({ :bourreau => bourreau }) }
       format.xml  { render :xml     => info   }
       format.json { render :json    => info   }
     end
