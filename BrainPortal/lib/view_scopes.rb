@@ -1208,19 +1208,28 @@ module ViewScopes
   #  instead of the full version required by the +_scopes+ parameter.
   #
   #  To specify which scope to update, have +_simple_filters+'s value be the
-  #  name of the target scope. If such a scope is not found (+_simple_filters+
-  #  is '1' or 'true', for example), +update_session_scopes+ will fall back
-  #  to the controller's name (common convention for index pages) then to
-  #  +default_scope_name+. For example, doing:
+  #  name of the target scope. If such a scope is not found,
+  #  +update_session_scopes+ will then try the controller's name (common
+  #  convention for index pages) and +default_scope_name+. If none of these are
+  #  present (on a new CBRAIN session, for example), a new scope named after
+  #  +_simple_filters+'s value will be created, unless +_simple_filters+'s value
+  #  is empty or a true-like value (1, 't', 'true', 'TRUE', ...), in which
+  #  case the new scope's name will fall back to +default_scope_name+. For
+  #  example, doing (with an active session):
   #    http://portal.cbrain.ca/userfiles?_simple_filters=tasks&...
   #  would update the 'tasks' scope, if it exists, while:
   #    http://portal.cbrain.ca/userfiles?_simple_filters=1&...
   #  would try to update the 'userfiles' scope, falling back to
-  #  +default_scope_name+ if there is no 'userfiles' scope.
+  #  +default_scope_name+ if there is no 'userfiles' scope. On a blank/new
+  #  session, doing:
+  #    http://portal.cbrain.ca/userfiles?_simple_filters=1&...
+  #  would create a new scope named +default_scope_name+, while:
+  #    http://portal.cbrain.ca/userfiles?_simple_filters=tasks&...
+  #  would create a scope named 'tasks'.
   #
   #  Note that this option cannot be used in conjunction with +_scopes+ or
   #  +_default_scope+, and that every query parameter (other than
-  #  +_simple_filters+, +_scope_mode+ and pagination parameters) is considered
+  #  +_simple_filters+, +_scope_mode+, and pagination parameters) is considered
   #  to be a filter.
   #
   # Note that the scopes in +_default_scope+ and +_scopes+ can be in
@@ -1233,12 +1242,15 @@ module ViewScopes
 
     # Special _simple_filters filter syntax
     if (simple = params['_simple_filters'])
-      # Determine which scope to update
       known      = (current_session['scopes'] ||= {})
+      default    = default_scope_name
       controller = params[:controller].to_s.downcase
+
+      # Determine which scope to update (or create)
       name   = simple     if known.has_key?(simple)
       name ||= controller if known.has_key?(controller)
-      name ||= default_scope_name
+      name ||= default    if known.has_key?(default)
+      name ||= (simple =~ /^(1|t|true)$/i ? default : simple)
 
       # Then convert other query parameters to Scope::Filter hashes
       excluded = [
