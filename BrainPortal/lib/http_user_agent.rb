@@ -84,7 +84,11 @@ class HttpUserAgent
     end
 
     # Identify the browser
-    priority_list = [ 'WebPositive', 'Konqueror', 'Chrome', 'Safari', 'Opera', 'SeaMonkey', 'Firefox', 'MSIE', "CbrainPerlAPI", "CbrainRubyAPI", "CbrainJavaAPI", lastname ]
+    priority_list = [ 'WebPositive', 'Konqueror',
+                      'Edge', # stupid microsoft pretends to be safari and chrome too
+                      'Chrome', 'Safari', 'Opera',
+                      'SeaMonkey', 'Firefox', 'MSIE',
+                      'CbrainPerlAPI', 'CbrainRubyAPI', 'CbrainJavaAPI', lastname ]
     priority_list.each do |name|
       lcname = name.downcase
       next unless keyvals.has_key?(lcname)
@@ -98,6 +102,8 @@ class HttpUserAgent
       when /iPad/                       ; 'iPad'
       when /iPod/                       ; 'iPod'
       when /iPhone/                     ; 'iPhone'
+      when /xbox.?one/                  ; 'Xbox One'
+      when /xbox/                       ; 'Xbox'
       when /windows nt 6\.[2-9]/i       ; 'Windows 8'
       when /windows nt 6\.1/i           ; 'Windows 7'
       when /windows nt 6\.0/i           ; 'Windows Vista'
