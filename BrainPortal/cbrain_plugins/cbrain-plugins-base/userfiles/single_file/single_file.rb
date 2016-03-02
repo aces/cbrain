@@ -35,6 +35,10 @@ class SingleFile < Userfile
     @valid_file_classes ||= [SingleFile] + SingleFile.descendants
   end
 
+  def pretty_type #:nodoc:
+    self.class.pretty_type + (name =~ /(\.gz|\.Z|\.gz2)$/i ? " (compressed)" : "")
+  end
+
   # Forces calculation and setting of the size attribute.
   def set_size!
     self.size = self.list_files.inject(0){ |total, file_entry|  total += file_entry.size }
