@@ -59,7 +59,14 @@
         <% end %>
       </td>
       <td rowspan="2" class="centered">
-        <%= external_submit_button("Register the files!", "browse_form", :name => :register, :class => "button" ) %> 
+        <%= hijacker_submit_button(
+          "Register the files!",
+          :name     => :register,
+          :url      => url_for(:action => :register),
+          :method   => :post,
+          :datatype => :script,
+          :class    => "button"
+        ) %>
       </td>
     </tr>
     <tr>
