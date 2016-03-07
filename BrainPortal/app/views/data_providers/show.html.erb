@@ -211,7 +211,7 @@
         <% t.row(:class => 'subheader') { "<strong>Portals<strong>".html_safe } %>
         <% rrs_by_category[:portal].sort_by(&:name).each do |rr| %>
           <% meta_key = "rr_no_sync_#{rr.id}" %>
-          <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "disabled", :header => "#{rr.name}", :class => 'checkbox_label') %>
+          <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "#{rr.name} cannot sync #{@provider.name}", :header => "#{rr.name}", :class => 'checkbox_label') %>
         <% end%>
       <% end%>
 
@@ -221,7 +221,7 @@
         <% t.row(:class => 'subheader') { "<strong>Execution Servers<strong>".html_safe } %>
         <% rrs_by_category[:bourreau].sort_by(&:name).each do |rr| %>
           <% meta_key = "rr_no_sync_#{rr.id}" %>
-          <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "disabled", :header => "#{rr.name}", :class => 'checkbox_label') %>
+          <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "#{rr.name} cannot sync #{@provider.name}", :header => "#{rr.name}", :class => 'checkbox_label') %>
         <% end%>
       <% end%>
     <% end%>

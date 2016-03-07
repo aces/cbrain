@@ -42,15 +42,17 @@
     :class      => [ :resource_list ],
     :render     => false,
     :order_map  => {
-      :owner        => { :a => 'users.login',           :j => User     },
-      :project      => { :a => 'groups.name',           :j => Group    },
-      :server       => { :a => 'remote_resources.name', :j => [Bourreau, 'id', 'bourreau_id'] },
-      :workdir_size => { :a => 'cluster_workdir_size' }
+      :owner        => { :a => 'users.login',               :j =>  User                                },
+      :project      => { :a => 'groups.name',               :j =>  Group                               },
+      :server       => { :a => 'remote_resources.name',     :j => [Bourreau,   'id', 'bourreau_id']    },
+      :version      => { :a => 'tool_configs.version_name', :j => [ToolConfig, 'id', 'tool_config_id'] },
+      :workdir_size => { :a => 'cluster_workdir_size'                                                  },
     },
     :filter_map => {
-      :owner   => { :a => 'user_id'     },
-      :project => { :a => 'group_id'    },
-      :server  => { :a => 'bourreau_id' }
+      :owner   => { :a => 'user_id'        },
+      :project => { :a => 'group_id'       },
+      :server  => { :a => 'bourreau_id'    },
+      :version => { :a => 'tool_config_id' },
     }
   ) do |t|
 %>
@@ -136,6 +138,20 @@
       <%= task.pretty_name %>
     <% end %>
   <% end %>
+
+  <%
+    t.column("Version", :version,
+      :sortable => true,
+      :filters  => scoped_filters_for(
+        @base_scope, @custom_scope, :tool_config_id,
+        scope: @scope,
+        label: 'tool_configs.version_name',
+        association: [ToolConfig, 'id', 'tool_config_id']
+      )
+    ) do |type,id,count,task|
+      task.tool_config.try(:version_name)
+    end
+  %>
 
   <%
     t.column("Description", :description,

@@ -48,7 +48,7 @@ class InteractiveBourreauControl
   #
   # We maintain the state of the interactive session in a bunch of
   # instance variables.
-  def initialize(bourreaux_list = Bourreau.order(:id).all, term_width = 120)
+  def initialize(bourreaux_list = Bourreau.order(:id).all, term_width = nil)
     @bourreaux = bourreaux_list
     @width     = term_width
     if term_width.blank? || term_width.to_i < 1
@@ -136,7 +136,7 @@ Operations Mode : #{@mode == "each_command" ?
   def process_user_letter(letter) #:nodoc:
 
     # Validate the user input
-    if letter !~ /^([haombwitukygsrczqx]|\d+)$/
+    if letter !~ /^([haombwitukygsrczqx]|\d+|exit|quit)$/
       puts "Unknown command: #{letter} (ignored)"
       return false
     end
@@ -187,7 +187,7 @@ Operations Mode : #{@mode == "each_command" ?
     end
 
     # Quit
-    if letter =~ /^[qex]$/
+    if letter =~ /^[qex]$|^(exit|quit)$/
       @got_stop = true
       return false
     end

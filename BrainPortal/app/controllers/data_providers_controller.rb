@@ -430,20 +430,33 @@ class DataProvidersController < ApplicationController
       return
     end
 
-    # Prepare a few values required for registration
+    # Provided file types for the file(s) to register. If a file is present
+    # in 'basenames' (to be registered) but *not* in 'filetypes', a default
+    # of 'SingleFile' is used.
     filetypes = Array(params[:filetypes])
       .map { |v| [$2, $1] if v.match(/^(\w+)-(\S+)$/) }
       .compact
       .to_h
 
+    # Known userfile types, used to validate the values extracted above
     valid_types = Userfile.descendants
       .map(&:name)
 
+    # The new file(s)'s default project is the currently active project, if
+    # available.
     group_id = current_project.try(:id) || current_user.own_group.id
+
+    # Unless one was specified explicitly via :other_group_id
     group_id = params[:other_group_id].to_i unless
       params[:other_group_id].blank?
-    group_id = current_user.own_group.id unless
-      current_user.available_groups.map(&:id).include?(group_id)
+
+    # Fallback to the user's own project if the one selected above is invalid
+    # (the everyone project, under which no file is ever registered, or a
+    # project the user doesn't have access to).
+    group_id = current_user.own_group.id if (
+      group_id == Group.everyone.id ||
+      ! current_user.available_groups.map(&:id).include?(group_id)
+    )
 
     # Register the given userfiles in background.
     userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames])

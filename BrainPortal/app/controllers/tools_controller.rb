@@ -127,7 +127,8 @@ class ToolsController < ApplicationController
     @tool = current_user.available_tools.find(params[:id])
 
     respond_to do |format|
-      if @tool.update_attributes_with_logging(params[:tool], current_user, %w( category cbrain_task_class select_menu_text ) )
+      if @tool.update_attributes_with_logging(params[:tool], current_user,
+           %w( category cbrain_task_class select_menu_text url application_package_name application_type application_tags ) )
         flash[:notice] = 'Tool was successfully updated.'
         format.html { redirect_to(tools_path) }
         format.xml  { head :ok }
