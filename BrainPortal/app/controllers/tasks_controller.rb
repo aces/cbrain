@@ -970,9 +970,15 @@ class TasksController < ApplicationController
       preset.share_wd_tid         = nil
       preset.workdir_archived     = false
       preset.workdir_archive_userfile_id = nil
+
+      # Clean up params that are saved in the preset
       preset.wrapper_untouchable_params_attributes.each_key do |untouch|
         preset.params.delete(untouch) # no need to save these eh?
       end
+      preset.wrapper_unpresetable_params_attributes.each_key do |unpreset|
+        preset.params.delete(unpreset) # no need to save these either eh?
+      end
+
       preset.save!
 
       flash[:notice] += "Saved preset '#{preset.short_description}'.\n"
