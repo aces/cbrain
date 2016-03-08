@@ -471,7 +471,7 @@ class DataProvidersController < ApplicationController
     registered_files = registered_files.where( :user_id => @as_user.id ) if ! @provider.allow_file_owner_change?
     registered_files = registered_files.all.index_by(&:name)
 
-    basenames.each do |basename|
+    basenames.shuffle.each do |basename|
 
       # Unregister files
 
@@ -612,7 +612,7 @@ class DataProvidersController < ApplicationController
       success_list  = []
       failed_list   = {}
       CBRAIN.spawn_with_active_records(:admin, "#{move_or_copy} Registered Files") do
-        to_operate.each_with_index do |u,idx|
+        to_operate.shuffle.each_with_index do |u,idx|
           $0="#{move_or_copy} Registered Files ID=#{u.id} #{idx+1}/#{to_operate.size}\0\0\0\0"
           begin
             if move_or_copy == "MOVE"

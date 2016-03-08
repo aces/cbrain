@@ -349,7 +349,7 @@ class UserfilesController < ApplicationController
 
     # Sync files to the portal's cache
     CBRAIN.spawn_with_active_records(current_user, "Synchronization of #{@userfiles.size} files.") do
-      @userfiles.each do |userfile|
+      @userfiles.shuffle.each do |userfile|
         state = userfile.local_sync_status
         sync_status = 'ProvNewer'
         sync_status = state.status if state
@@ -738,7 +738,7 @@ class UserfilesController < ApplicationController
       # Extract tags, as they require special handling
       tags = changes.delete(:tags)
 
-      userfiles.all.each do |userfile|
+      userfiles.all.shuffle.each do |userfile|
         failure = "cannot update tags" if
           tags && ! userfile.set_tags_for_user(current_user, tags)
 
@@ -933,11 +933,11 @@ class UserfilesController < ApplicationController
       return
     end
 
-    # Spawn subprocess to perform the move operations
+    # Spawn subprocess to perform the move or copy operations
     success_list  = []
     failed_list   = {}
     CBRAIN.spawn_with_active_records_if(request.format.to_sym != :json, current_user, "#{word_move.capitalize} To Other Data Provider") do
-      filelist.each_with_index do |id,count|
+      filelist.shuffle.each_with_index do |id,count|
         $0 = "#{word_move.capitalize} ID=#{id} #{count+1}/#{filelist.size} To #{new_provider.name}\0"
         begin
           u = Userfile.find_accessible_by_user(id, current_user, :access_requested => (task == :copy ? :read : :write) )
@@ -948,7 +948,7 @@ class UserfilesController < ApplicationController
           if task == :move
             raise "not owner" unless u.has_owner_access?(current_user)
             res = u.provider_move_to_otherprovider(new_provider, :crush_destination => crush_destination)
-          else
+          else # task is :copy
             my_group_id  = current_project ? current_project.id : current_user.own_group.id
             res = u.provider_copy_to_otherprovider(new_provider,
                      :user_id           => current_user.id,
@@ -984,13 +984,13 @@ class UserfilesController < ApplicationController
     end
   end
 
-  #Delete the selected files.
+  # Delete the selected files.
   def delete_files #:nodoc:
     filelist    = params[:file_ids] || []
 
     # Select all accessible files with write acces by the user.
     to_delete = Userfile.accessible_for_user(current_user, :access_requested => :write).where(:id => filelist)
-    not_accessible_count = filelist.size - to_delete.size
+    not_accessible_count = filelist.size - to_delete.count
 
     flash[:error] = "You do not have access to #{not_accessible_count} of #{filelist.size} file(s)." if not_accessible_count > 0
 
@@ -999,8 +999,11 @@ class UserfilesController < ApplicationController
     unregistered_success_list = []
     failed_list               = {}
     CBRAIN.spawn_with_active_records_if(request.format.to_sym != :json, current_user, "Delete files") do
-      to_delete.each_with_index do |userfile,count|
-        $0 = "Delete ID=#{userfile.id} #{count+1}/#{to_delete.size}\0"
+      idlist = to_delete.raw_first_column(:id).shuffle
+      idlist.each_with_index do |userfile_id,count|
+        userfile = Userfile.find(userfile_id) rescue nil # that way we instanciate one record at a time
+        next unless userfile # in case it was destroyed externally
+        $0 = "Delete ID=#{userfile.id} #{count+1}/#{idlist.size}\0"
         begin
           userfile.destroy
           deleted_success_list << userfile
@@ -1025,14 +1028,14 @@ class UserfilesController < ApplicationController
     if request.format.to_sym == :json
       json_failed_list = {}
       failed_list.each do |error_message, userfiles|
-        json_failed_list[error_message] = userfiles.map(&:id)
+        json_failed_list[error_message] = userfiles.map(&:id).sort
       end
     end
 
     respond_to do |format|
       format.html { redirect_to :action => :index }
-      format.json { render :json => { :unregistered_list => unregistered_success_list.map(&:id),
-                                      :deleted_list      => deleted_success_list.map(&:id),
+      format.json { render :json => { :unregistered_list => unregistered_success_list.map(&:id).sort,
+                                      :deleted_list      => deleted_success_list.map(&:id).sort,
                                       :failed_list       => json_failed_list,
                                       :error             => flash[:error]
                                     }
@@ -1211,9 +1214,9 @@ class UserfilesController < ApplicationController
     collisions = userfiles
       .joins(<<-"SQL".strip_heredoc)
         INNER JOIN userfiles AS collisions ON (
-          collisions.user_id = userfiles.user_id AND
+          collisions.user_id          = userfiles.user_id AND
           collisions.data_provider_id = userfiles.data_provider_id AND
-          collisions.name = #{collide}
+          collisions.name             = #{collide}
         )
       SQL
       .where(match)
@@ -1241,10 +1244,12 @@ class UserfilesController < ApplicationController
     CBRAIN.spawn_with_active_records(current_user, operation.to_s.humanize) do
       succeeded, failed = [], {}
 
-      userfiles.all.each do |userfile|
+      userfiles_list = userfiles.all.shuffle # real array of all records
+      count_todo     = userfiles_list.size
+      userfiles_list.each_with_index do |userfile,idx|
         begin
           if userfile.is_a?(SingleFile)
-            $0 = "GzipFile ID=#{userfile.id}"
+            $0 = "GzipFile ID=#{userfile.id} #{idx+1}/#{count_todo}\0"
             gzip_file(userfile, operation) if (
               (  compressing && userfile.name !~ /\.gz$/) ||
               (! compressing && userfile.name =~ /\.gz$/)
@@ -1252,11 +1257,11 @@ class UserfilesController < ApplicationController
 
           else
             if compressing && ! userfile.archived?
-              $0 = "ArchiveFile ID=#{userfile.id}"
+              $0 = "ArchiveFile ID=#{userfile.id} #{idx+1}/#{count_todo}\0"
               failure = userfile.provider_archive
 
             elsif ! compressing && userfile.archived?
-              $0 = "UnarchiveFile ID=#{userfile.id}"
+              $0 = "UnarchiveFile ID=#{userfile.id} #{idx+1}/#{count_todo}\0"
               failure = userfile.provider_unarchive
             end
 
