@@ -22,105 +22,78 @@
 -%>
 
 <%
-  tags_for = lambda do |attr|
-    current_user.available_tools
-      .select(["tools.#{attr.to_s}", :id])
-      .where("tools.category != 'background'")
-      .where("tools.#{attr.to_s} IS NOT NULL")
-      .where("tools.#{attr.to_s} != ''")
-      .all
-      .map(&attr)
-      .flatten
-      .uniq
-  end
-
-  types    = tags_for.(:application_type)
-  packages = tags_for.(:application_package_name)
-  tags     = tags_for.(:application_tags)
+  types    = @my_tools.map { |t| t.application_type         :array  }.flatten.uniq
+  packages = @my_tools.map { |t| t.application_package_name :array  }.flatten.uniq
+  tags     = @my_tools.map { |t| t.application_tags         :array  }.flatten.uniq
 %>
+
 <div id="toolsDialog" title="Select Tool" >
 
-  <div class="userfiles_bourreau_selector" id="tool_version_selector">
-  </div>
-
-  <br/>
+  <div class="userfiles_bourreau_selector" id="tool_version_selector"></div>
 
   <div id="toolsDialogWrapper">
-
     <div id="toolsDialogLeftCol">
       <div>
-        <b>Search: </b><input type="text" id="searchToolSelectionBox">
+        <span class="toolsDialogLabel">Search:</span><input type="text" id="searchToolSelectionBox" size="20">
       </div>
+      <p>
 
+      <% if types.present? || packages.present? || tags.present? %>
+        <div>
+          <label><input type="checkbox" class="tag_checkbox" id="showAllTools"/>All tools</label>
+        </div>
+        <p>
+      <% end %>
 
-      <% unless types.empty? && packages.empty? && tags.empty? %>
-      <br/>
-      <div>
-        <label><input type="checkbox" class="tag_checkbox" id="showAllTools"/>All tools</label><br/>
-      </div>
-      <br/>
-
-      <% unless types.empty? %>
-        <b>Type:</b>
-        <br/>
+      <% if types.present? %>
+        <span class="toolsDialogLabel">Type:</span><br>
         <% types.each do |type| %>
-
-          <label><input type="checkbox" class="tag_checkbox" name="tooltags-<%= type %>"/><%= type %></label>
-              <br/>
-
+          <label>
+            <input type="checkbox" class="tag_checkbox" data-tagname="<%= type %>"/>
+            <%= type %>
+          </label>
+          <br>
         <% end %>
-        <br/>
+        <p>
       <% end %>
 
-      <% unless packages.empty? %>
-        <b>Sofware Package:</b><br/>
+      <% if packages.present? %>
+        <span class="toolsDialogLabel">Sofware Package:</span><br>
         <% packages.each do |package| %>
-            <label><input type="checkbox" class="tag_checkbox" name="tooltags-<%= package %>"/><%= package %></label><br/>
+          <label>
+            <input type="checkbox" class="tag_checkbox" data-tagname="<%= package %>"/>
+            <%= package %>
+          </label>
+          <br>
         <% end %>
-        <br/>
+        <p>
       <% end %>
 
-      <% unless tags.empty? %>
-        <b>Tags:</b><br/>
+      <% if tags.present? %>
+        <span class="toolsDialogLabel">Tags:</span><br>
         <% tags.each do |tag|%>
-            <label><input type="checkbox" class="tag_checkbox" name="tooltags-<%= tag %>"/><%= tag %></label><br/>
+          <label>
+            <input type="checkbox" class="tag_checkbox" data-tagname="<%= tag %>"/>
+            <%= tag %>
+          </label>
+          <br>
         <% end %>
-        <br/>
-      <% end %>
+        <p>
       <% end %>
 
-    </div>
+    </div> <%# toolsDialogLeftCol %>
+
+
+
 
     <div id="toolsDialogRightCol">
-        <b>Tools:</b>
-        <div class="tools-container">
 
-          <table id="toolSelectTable" >
+      <span class="toolsDialogLabel">Tools:</span>
 
-            <% if @tools_to_pick.present? %>
+      <div class="tools-container">
+        <table id="toolSelectTable">
 
-              <% @tools_to_pick.each do |tool| %>
-
-              <tr
-              <%tool.get_all_tags.each do |tool_tag|%>
-              data-tooltags-<%= tool_tag %> = 'true'
-              <%end%>
-              >
-                <td id="tool_<%= tool.id %>">
-
-                  <b><a href= "#" data-tool-id=<%=tool.id%> class="toolsLink"><%= tool.name %></a></b><br/>
-                   Tags:       <%=tool.get_all_tags.join(' ')%><br/>
-
-
-                   <%= link_to( "Tool Website", tool.url, :target => "_blank") if tool.url.present? %>
-
-                 </td>
-               </tr>
-
-               <%end%>
-
-          <% else %>
-
+        <% if @my_tools.empty? %>
           <tr>
             <td>
               <% if current_user.has_role? :admin_user %>
@@ -130,14 +103,37 @@
               <% end %>
             </td>
           </tr>
+        <% end %>
 
-          <% end %>
+        <% # Render each of the tool info boxes %>
+        <% @my_tools.each do |tool| %>
+          <%
+             # We build a simple hash table to generate a HTML
+             # attribute to the TR element, e.g.
+             #     <tr data-taglist="tag1,tag2,etc">
+             taglist     = tool.get_all_tags || []
+             taglisthash = {}
+             taglisthash['data-taglist'] = taglist.join(",") if taglist.present?
+          %>
+          <tr <%= taglisthash.to_html_attributes.html_safe %>>
+            <td id="tool_<%= tool.id %>">
+              <span data-tool-id="<%= tool.id %>" class="toolsLink"><%= tool.name %></span><br>
+              <% if taglist.present? %>
+                Tags: <%= tool.get_all_tags.join(', ') %><br>
+              <% end %>
+              <%= link_to( "Tool Website", tool.url, :target => "_blank") if tool.url.present? %>
+            </td>
+          </tr>
+        <% end # each @my_tools %>
 
-        </table>
-      </div>
+        </table> <%# toolSelectTable %>
+      </div> <%# tools-container %>
 
-    </div>
+    </div> <%# toolsDialogRightCol %>
 
-  </div>
 
-</div>
+
+
+  </div> <%# toolsDialogWrapper %>
+
+</div> <%# toolsDialog %>

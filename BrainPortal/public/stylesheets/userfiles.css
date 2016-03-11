@@ -146,6 +146,14 @@
   background: #05a3d6;
 }
 
+.toolsDialogLabel {
+  font-weight: bold;
+}
+
+.toolsLink {
+  font-weight: bold;
+}
+
 /* Menus */
 
 .act-icon {

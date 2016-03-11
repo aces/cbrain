@@ -28,9 +28,11 @@ $(document).delegate('div#tool_version_selector', 'new_content', function (event
   /* Only trigger when the main div is loaded */
   if (event.target != this) return;
 
-  var userfile_checkboxes = $("input[name='file_ids[]']"),
-      launch_button       = $(this).find('input.launch_tool'),
-      tool_name           = launch_button.val().replace("Launch ", "");
+  var launch_button       = $(this).find('input.launch_tool');
+  if (launch_button.length === 0) return;
+
+  var userfile_checkboxes = $("input[name='file_ids[]']");
+  var tool_name           = launch_button.val().replace("Launch ", "");
 
   /* Do we have some files selected to launch the task on? */
   function have_selection() {
@@ -66,7 +68,7 @@ $(document).delegate('div#tool_version_selector', 'new_content', function (event
       /* Launch the task when the launch bar's button is clicked */
       $('.launch_bar button').click(function () {
         $('#userfiles_menus_and_filelist').children('form')
-          .append($('#tool_version_selector'))
+          .append($('#tool_version_selector').hide())
           .attr('action', launch_button.data('url'))
           .attr('method', 'POST')
           .submit();
