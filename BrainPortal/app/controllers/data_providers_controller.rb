@@ -401,20 +401,19 @@ class DataProvidersController < ApplicationController
   # The files' meta data will be saved as Userfile resources.
   def register
     # Extract key parameters & make sure the provider is browsable
-    @provider   = DataProvider.find_accessible_by_user(params[:id], current_user)
-    @as_user    = browse_as(params['as_user_id'])
-
-    flash[:notice] ||= ''
-    api_request = [:json, :xml].include?(request.format.to_sym)
-
-    ensure_browsable(@provider, 'delete', proc do |html, data, status|
+    @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
+    @as_user  = browse_as(params['as_user_id'])
+    unless @provider.is_browsable?(current_user)
+      flash[:error] = "You cannot register files from this provider."
       respond_to do |format|
-        format.html(&html)
-        format.xml  { render :xml  => data, :status => status }
-        format.json { render :json => data, :status => status }
+        format.html { redirect_to :action => :index }
+        format.xml  { render :xml  => { :error => flash[:error] }, :status => :forbidden }
+        format.json { render :json => { :error => flash[:error] }, :status => :forbidden }
       end
       return
-    end)
+    end
+
+    flash[:notice] ||= ''
 
     # Is there an automatic copy/move operation to do afterwards?
     post_action = :copy if params[:auto_do] == "COPY"
@@ -466,14 +465,14 @@ class DataProvidersController < ApplicationController
     succeeded, failed = [], {}
 
     CBRAIN.spawn_with_active_records_if(
-      api_request,
+      [:html, :js].include?(request.format.to_sym),
       current_user,
       "Register files (data_provider: #{@provider.id})"
     ) do
       userfiles.keys.each do |basename|
         begin
           # Is the file already registered?
-          unless userfiles[basename].blank?
+          if userfiles[basename].present?
             already_registered << userfiles[basename]
             (failed["Already registered"] ||= []) << basename
             next
@@ -586,17 +585,17 @@ class DataProvidersController < ApplicationController
     # Extract key parameters & make sure the provider is browsable
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
     @as_user  = browse_as(params['as_user_id'])
-
-    flash[:notice] ||= ''
-
-    ensure_browsable(@provider, 'unregister', proc do |html, data, status|
+    unless @provider.is_browsable?(current_user)
+      flash[:error] = "You cannot unregister files from this provider."
       respond_to do |format|
-        format.html(&html)
-        format.xml  { render :xml  => data, :status => status }
-        format.json { render :json => data, :status => status }
+        format.html { redirect_to :action => :index }
+        format.xml  { render :xml  => { :error => flash[:error] }, :status => :forbidden }
+        format.json { render :json => { :error => flash[:error] }, :status => :forbidden }
       end
       return
-    end)
+    end
+
+    flash[:notice] ||= ''
 
     # Unregister the given userfiles in background.
     userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames])
@@ -651,17 +650,17 @@ class DataProvidersController < ApplicationController
     # Extract key parameters & make sure the provider is browsable
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
     @as_user  = browse_as(params['as_user_id'])
-
-    flash[:notice] ||= ''
-
-    ensure_browsable(@provider, 'delete', proc do |html, data, status|
+    unless @provider.is_browsable?(current_user)
+      flash[:error] = "You cannot delete files from this provider."
       respond_to do |format|
-        format.html(&html)
-        format.xml  { render :xml  => data, :status => status }
-        format.json { render :json => data, :status => status }
+        format.html { redirect_to :action => :index }
+        format.xml  { render :xml  => { :error => flash[:error] }, :status => :forbidden }
+        format.json { render :json => { :error => flash[:error] }, :status => :forbidden }
       end
       return
-    end)
+    end
+
+    flash[:notice] ||= ''
 
     # Erase the given userfiles in background.
     userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames])
@@ -815,19 +814,6 @@ class DataProvidersController < ApplicationController
       ))
       .first
     @as_user ||= current_user
-  end
-
-  # Ensure that the given +provider+ is browsable for +operation+. Complete
-  # the request early (via a continuation +cont+) otherwise.
-  def ensure_browsable(provider, operation, cont) #:nodoc:
-    return if provider.is_browsable?(current_user)
-
-    flash[:error] = "You cannot #{operation} files from this provider."
-    cont.(
-      proc { redirect_to :action => :index },
-      { :error => flash[:error] },
-      :forbidden
-    )
   end
 
   # Fetch the userfiles corresponding to the given +basenames+ for
