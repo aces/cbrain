@@ -469,7 +469,7 @@ class DataProvidersController < ApplicationController
       current_user,
       "Register files (data_provider: #{@provider.id})"
     ) do
-      userfiles.keys.each do |basename|
+      userfiles.keys.shuffle.each do |basename|
         begin
           # Is the file already registered?
           if userfiles[basename].present?
@@ -540,7 +540,7 @@ class DataProvidersController < ApplicationController
       end
 
       # Copy/move each file
-      userfiles.each_with_index do |userfile, ix|
+      userfiles.shuffle.each_with_index do |userfile, ix|
         $0 = "#{post_action.to_s.humanize} registered files ID=#{userfile.id} #{ix + 1}/#{userfiles.size}\0\0\0\0"
 
         begin
@@ -607,7 +607,7 @@ class DataProvidersController < ApplicationController
       current_user,
       "Unregister files (data_provider: #{@provider.id})"
     ) do
-      userfiles.reject { |b,u| u.blank? }.each do |basename, userfile|
+      userfiles.reject { |b,u| u.blank? }.shuffle.each do |basename, userfile|
         begin
           # Make sure the current user can unregister the file
           unless userfile.has_owner_access?(current_user)
@@ -671,7 +671,7 @@ class DataProvidersController < ApplicationController
       current_user,
       "Delete files (data_provider: #{@provider.id})"
     ) do
-      userfiles.each do |basename, userfile|
+      userfiles.shuffle.each do |basename, userfile|
         begin
           # Is the userfile registered?
           if userfile.present?
