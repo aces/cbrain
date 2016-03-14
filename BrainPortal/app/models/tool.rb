@@ -85,14 +85,14 @@ class Tool < ActiveRecord::Base
   # Overloading assignment operator to accept arrays and strings for application_tag
   def application_tags=(val)
     array = val.is_a?(String) ? val.split(',') : val
-    clean = (array.presence || []).map(&:presence).compact.map(&:strip).uniq.sort # clean up
+    clean = (array.presence || []).select(&:present?).map(&:strip).uniq.sort # clean up
     write_attribute(:application_tags, clean.join(','))
   end
 
   # Oveloading the getter method to return current tags,
   # in an array by default or if :string is passed as
   # an argument the return type will be of class String
-  def application_tags(return_class = :array)
+  def application_tags(return_class = :string)
     get_tag_attribute(:application_tags, return_class)
   end
 
@@ -121,7 +121,7 @@ class Tool < ActiveRecord::Base
   # a clean version of the content
   def get_tag_attribute(attribute_name, return_class) #:nodoc:
     tags_s = read_attribute(attribute_name).presence || ""
-    tags_a = tags_s.split(',').map(&:presence).compact.map(&:strip).uniq.sort # clean up
+    tags_a = tags_s.split(',').select(&:present?).map(&:strip).uniq.sort # clean up
     return tags_a           if return_class == :array
     return tags_a.join(',') #                  :string
   end

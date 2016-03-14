@@ -59,11 +59,7 @@ $(document).ready(function() {
   $("#showAllTools").change(function() {
     $(".tag_checkbox").not("#showAllTools").attr("checked",false);
     selected_tags = {};
-    if ($(this).is(":checked")){
-      $('#toolSelectTable tr').show();
-    }else{
-      $('#toolSelectTable tr').hide();
-    }
+    $('#toolSelectTable tr').toggle($(this).is(":checked"));
   });
 
   // This function is called when a tag checkbox changes state
@@ -83,8 +79,7 @@ $(document).ready(function() {
   // This function applies the tags and search word that are currently in the tools table
   function applyTagsAndSearch(){
 
-    var searchBox   = $("#searchToolSelectionBox");
-    var searchval   = searchBox.val().replace(/^\s+/g,"").replace(/\s+$/g,"").toLowerCase();
+    var searchval   = $("#searchToolSelectionBox").val().trim().toLowerCase()
 
     $('#tool_version_selector').empty();
 
@@ -129,9 +124,9 @@ $(document).ready(function() {
 
     if (e.target != this && e.target != link[0]) return;
 
-    var loading_message = $('<span>').attr('class','loading_message').html("Loading...");
-    $("#tool_version_selector").empty().append(loading_message);
-    $("#tool_version_selector").appendTo("#tool_" + link.data("toolId"));
+    $("#tool_version_selector")
+      .html('<span class="loading_message">Loading...</span>')
+      .appendTo("#tool_" + link.data("toolId"));
 
     $.ajax({
       type: "GET",

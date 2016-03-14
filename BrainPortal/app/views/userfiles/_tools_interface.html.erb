@@ -119,7 +119,7 @@
             <td id="tool_<%= tool.id %>">
               <span data-tool-id="<%= tool.id %>" class="toolsLink"><%= tool.name %></span><br>
               <% if taglist.present? %>
-                Tags: <%= tool.get_all_tags.join(', ') %><br>
+                Tags: <%= taglist.join(', ') %><br>
               <% end %>
               <%= link_to( "Tool Website", tool.url, :target => "_blank") if tool.url.present? %>
             </td>
