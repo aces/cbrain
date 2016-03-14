@@ -204,11 +204,6 @@
 
 <% unless request.xhr? %>
   <% content_for :scripts do %>
-    <%=
-      javascript_tag (render(
-        :partial => 'shared/selection_database.js.erb',
-        :formats => [:js]
-      )).to_s
-    %>
+    <%= javascript_include_tag 'cbrain/shared/selection_database' %>
   <% end %>
 <% end %>

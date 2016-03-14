@@ -339,7 +339,7 @@
   </div>
 
   <% content_for :scripts do %>
-    <% javascript_tag (render :partial => "batch_list.js.erb", :formats => [:js]).to_s %>
+    <%= javascript_include_tag 'cbrain/tasks/batch_list' %>
   <% end %>
 
   <%= table.render %>

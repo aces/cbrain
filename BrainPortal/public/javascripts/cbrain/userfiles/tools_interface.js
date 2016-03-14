@@ -1,4 +1,5 @@
-<%-
+
+/*
 #
 # CBRAIN Project
 #
@@ -19,11 +20,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
+*/
 
 $(document).ready(function() {
 
-  var tagArray = [];
+  var selected_tags = {}; // this object has the list of currently selected tags
 
   $("#toolsDialog").dialog({
     autoOpen:    false,
@@ -41,7 +42,7 @@ $(document).ready(function() {
 
     $(".tag_checkbox").removeAttr('checked');
     $("#showAllTools").attr('checked', true);
-    $('#tool_version_selector').html("");
+    $('#tool_version_selector').empty();
     $("#searchToolSelectionBox").val("");
     $('#toolSelectTable tr').show();
     $("#toolsDialog").dialog( "open");
@@ -56,81 +57,62 @@ $(document).ready(function() {
 
   // This function is called when the all tools checkbox changes state
   $("#showAllTools").change(function() {
-
-    $(".tag_checkbox").not( "#showAllTools" ).attr("checked",false);
-    tagArray = [];
-
-    if ($(this).is(":checked")){
-      $('#toolSelectTable tr').show();
-    }else{
-      $('#toolSelectTable tr').hide();
-    }
-
+    $(".tag_checkbox").not("#showAllTools").attr("checked",false);
+    selected_tags = {};
+    $('#toolSelectTable tr').toggle($(this).is(":checked"));
   });
 
   // This function is called when a tag checkbox changes state
   $(".tag_checkbox:not(#showAllTools)").change(function() {
-
     var selectedCheckBox = $(this);
+    var tagname          = selectedCheckBox.data('tagname');
 
     if (selectedCheckBox.is(":checked")){
-
       $("#showAllTools").attr('checked', false);
-      tagArray.push(selectedCheckBox.attr('name'));
-
-    }else{
-
-      var index = tagArray.indexOf(selectedCheckBox.attr('name'));
-      if (index > -1) tagArray.splice(index, 1);
-
+      selected_tags[tagname]=true;
+    } else {
+      delete selected_tags[tagname];
     }
-
     applyTagsAndSearch();
-
   });
 
-  // This function applys the tags and search word that are currently in the tools table
+  // This function applies the tags and search word that are currently in the tools table
   function applyTagsAndSearch(){
 
-    var arrayLength = tagArray.length,
-        searchBox   = $("#searchToolSelectionBox");
+    var searchval   = $("#searchToolSelectionBox").val().trim().toLowerCase()
 
-    $('#tool_version_selector').html("");
+    $('#tool_version_selector').empty();
 
-    if(searchBox.val().length == 0){ //If there search box is empty
+    // Filter by active tags
+    applyTags();
 
-      // If there are no tags
-      if (arrayLength == 0){
-        $('#toolSelectTable tr').show();
-        $("#showAllTools").attr('checked', true);
-        return;
-      }
-
-      applyTags(arrayLength);
-
-    }else{ //If there search box is not empty
-
-      var key = searchBox.val().toLowerCase();
-
-      if (arrayLength == 0)
-        $('#toolSelectTable tr').show();
-      else
-        applyTags(arrayLength);
-
+    // Filter further by what's in the search box
+    if (searchval.length > 0) {
       $('#toolSelectTable tr:visible').each(function () {
-        if ($(this).find('.toolsLink').text().toLowerCase().indexOf(key) == -1)
+        if ($(this).find('.toolsLink').text().toLowerCase().indexOf(searchval) == -1)
           $(this).hide();
       });
     }
+
   }
 
-  // This function applys the tags that are currently selected in the table
-  function applyTags(arrayLength){
-
+  // This function applies the tags that are currently selected in the table
+  // If no tags are selected, shows all the tools.
+  function applyTags(){
+    if (jQuery.isEmptyObject(selected_tags)) { // if there are no selected tags...
+      $('#toolSelectTable tr').show();
+      $("#showAllTools").attr('checked', true);
+      return;
+    }
     $('#toolSelectTable tr').hide();
-    $('#toolSelectTable tr').filter(function() {
-      for (var i = 0; i < arrayLength; i++) {
-        if($(this).data(tagArray[i].toLowerCase()) !== undefined) $(this).show();
+    $('#toolSelectTable tr[data-taglist]').filter(function() {
+      var tr_element = $(this);
+      var taglist    = tr_element.data('taglist').split(',');
+      for (var i = 0; i < taglist.length; i++) {
+        if (selected_tags[taglist[i]]) {
+          tr_element.show();
+          break;
+        }
       }
     });
   }
@@ -141,6 +123,10 @@ $(document).ready(function() {
     var link = $(this).find('.toolsLink');
 
     if (e.target != this && e.target != link[0]) return;
+
+    $("#tool_version_selector")
+      .html('<span class="loading_message">Loading...</span>')
+      .appendTo("#tool_" + link.data("toolId"));
 
     $.ajax({
       type: "GET",
@@ -154,7 +140,6 @@ $(document).ready(function() {
       }
     });
 
-    $("#tool_version_selector").appendTo("#tool_" + link.data("toolId"));
     return false;
   });
 

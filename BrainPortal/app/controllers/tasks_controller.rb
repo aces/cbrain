@@ -474,13 +474,11 @@ class TasksController < ApplicationController
     flash[:notice] += "\n"            unless messages.blank? || messages =~ /\n$/
     flash[:notice] += messages + "\n" unless messages.blank?
 
+    # Increment the number of times the user has launched this particular tool
     tool_id                           = params[:tool_id]
-    top_tool_ids                      = current_user.meta[:top_tool_ids] ||
-                                        Hash.new
-    top_tool_ids[tool_id]             = top_tool_ids[tool_id] ?
-                                          top_tool_ids[tool_id] + 1 : 1
+    top_tool_ids                      = current_user.meta[:top_tool_ids] || {}
+    top_tool_ids[tool_id]             = (top_tool_ids[tool_id].presence || 0) + 1
     current_user.meta[:top_tool_ids]  = top_tool_ids
-
 
     respond_to do |format|
       format.html { redirect_to :controller => :tasks, :action => :index }
