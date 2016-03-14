@@ -1205,16 +1205,11 @@ class ClusterTask < CbrainTask
       File.unlink(tar_file) rescue true
     end
 
-    # Keep updated_at value in order to reset it at the end of method.
-    updated_at_value = self.updated_at
-
-    # Mark task not archived
+    # Mark task not archived; this also sets the updated_at timestamp
+    # so that a task recently unarchived is considered 'updated'
     self.workdir_archived = false
     self.save!
     self.update_size_of_cluster_workdir
-
-    # Reset update timestamp
-    self.update_column(:updated_at, updated_at_value)
 
     true
   rescue => ex
