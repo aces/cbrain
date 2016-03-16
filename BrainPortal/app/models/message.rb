@@ -314,9 +314,9 @@ class Message < ActiveRecord::Base
   end
 
   # Parses a string and replaces special markup with HTML links:
-  #    "abcde [[name][/my/path]] def"
+  #    'abcde [[name][/my/path]] def'
   # will return
-  #    "abcde <a href="/my/path" class="action_link">name</a>"
+  #    'abcde <a href="/my/path" class="action_link">name</a> def'
   def self.parse_markup(string) #:nodoc:
     arr = ERB::Util.html_escape(string).split(/(\[\[.*?\]\])/)
     arr.each_with_index do |str,i|

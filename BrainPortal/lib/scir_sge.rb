@@ -31,7 +31,7 @@ class ScirSge < Scir
   class Session < Scir::Session #:nodoc:
 
     def update_job_info_cache #:nodoc:
-      out, err = bash_this_and_capture_out_err("qstat -xml")
+      out, err = bash_this_and_capture_out_err("qstat -xml -u #{CBRAIN::Rails_UserName.to_s.bash_escape}")
       raise "Cannot get output of 'qstat -xml' ?!?" if out.blank? && ! err.blank?
       @job_info_cache = {}
       paragraphs = out.split(/(<\/?job_list)/)

@@ -95,6 +95,8 @@ CbrainRailsPortal::Application.routes.draw do
     member do
       get  'browse'
       post 'register'
+      post 'unregister'
+      post 'delete'
       get  'is_alive'
       get  'disk_usage'
       get  'report'
@@ -114,6 +116,7 @@ CbrainRailsPortal::Application.routes.draw do
       post 'extract_from_collection'
     end
     collection do
+      post   'download'
       get    'download'
       get    'new_parent_child'
       post   'create_parent_child'
@@ -122,11 +125,11 @@ CbrainRailsPortal::Application.routes.draw do
       put    'update_multiple'
       post   'change_provider'
       post   'compress'
-      post   'archive_management'
+      post   'uncompress'
       post   'quality_control'
       post   'quality_control_panel'
-      post   'manage_persistent'
       post   'sync_multiple'
+      post   'detect_file_type'
     end
   end
 
@@ -162,7 +165,6 @@ CbrainRailsPortal::Application.routes.draw do
   get   '/session_status'         => 'sessions#show'
   get   '/session_data'           => 'session_data#show'
   post  '/session_data'           => 'session_data#update'
-  get   '/filter_proxy'           => 'application#filter_proxy'
 
   # Report Maker
   get   "/report",                :controller => :portal, :action => :report

@@ -50,8 +50,8 @@ class ToolsController < ApplicationController
       return
     end
 
-    tool_id       = params[:tool_id]
-    @tool         = current_user.available_tools.find(tool_id)
+    tool_id = params[:tool_id]
+    @tool   = current_user.available_tools.find(tool_id)
 
     # All accessible bourreaux for this tool
     bourreau_ids  = @tool.bourreaux.map(&:id)
@@ -65,8 +65,10 @@ class ToolsController < ApplicationController
 
     # Select a specific tool_config
     selected_by_default = current_user.meta["pref_bourreau_id"]
-    @tool_config        = bourreaux_ids.include?(selected_by_default) && @bourreaux.detect? { |b| b.id == selected_by_default && b.online? } ?
-                          @tool_configs.where(:bourreau_id => selected_by_default).last : nil
+    @tool_config = @tool_configs.where(:bourreau_id => selected_by_default).last if (
+      bourreaux_ids.include?(selected_by_default) &&
+      @bourreaux.detect? { |b| b.id == selected_by_default && b.online? }
+    )
 
     respond_to do |format|
       format.html { render :partial => 'tools/tool_config_select' }
@@ -123,8 +125,10 @@ class ToolsController < ApplicationController
   # PUT /tools/1.xml
   def update #:nodoc:
     @tool = current_user.available_tools.find(params[:id])
+
     respond_to do |format|
-      if @tool.update_attributes_with_logging(params[:tool], current_user, %w( category cbrain_task_class select_menu_text ) )
+      if @tool.update_attributes_with_logging(params[:tool], current_user,
+           %w( category cbrain_task_class select_menu_text url application_package_name application_type application_tags ) )
         flash[:notice] = 'Tool was successfully updated.'
         format.html { redirect_to(tools_path) }
         format.xml  { head :ok }

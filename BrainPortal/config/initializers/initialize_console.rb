@@ -24,5 +24,5 @@
 #=================================================================
 
 if defined?(Rails::Console)
-  IRB.conf[:RC_NAME_GENERATOR] = lambda { |ext| (Rails.root + "config/console_rc.rb").to_s }
+  IRB.conf[:RC_NAME_GENERATOR] = lambda { |ext| (Rails.root + "config/console_rc/init_rc.rb").to_s }
 end

@@ -159,6 +159,7 @@ FactoryGirl.define do
     association     :data_provider
   end
 
+  Userfile.nil? # force pre-load of all constants under Userfile
   factory :text_file, parent: :userfile, class: TextFile do
     sequence(:name) { |n| "text_file_#{n}" }
   end

@@ -35,6 +35,7 @@ class ApplicationController < ActionController::Base
   include AuthenticatedSystem
   include SessionHelpers
   include ViewScopes
+  include PersistentSelection
   include ViewHelpers
   include ApiHelpers
   include PermissionHelpers
@@ -49,20 +50,12 @@ class ApplicationController < ActionController::Base
   before_filter :prepare_messages
   before_filter :adjust_system_time_zone
   around_filter :activate_user_time_zone
-  after_filter  :action_counter # depends on log_user_info to compute client_type in session
+  after_filter  :action_counter
   after_filter  :log_user_info
-  before_filter :login_required, :only => :filter_proxy
 
   # See ActionController::RequestForgeryProtection for details
   # Uncomment the :secret if you're not using the cookie session store
   protect_from_forgery :secret => 'b5e7873bd1bd67826a2661e01621334b'
-
-
-  def filter_proxy #:nodoc:
-    redirect_to(:controller  => params[:proxy_destination_controller],
-                :action      => params[:proxy_destination_action] || "index",
-                :id          => params[:proxy_destination_id])
-  end
 
   ########################################################################
   # Controller Filters
@@ -183,15 +176,24 @@ class ApplicationController < ActionController::Base
 
   # 'After' callback: logs in the Rails logger information about the user who
   # just performed the request.
+  #
+  # The message looks like
+  #
+  #  "User: tsmith on instance C4044 from example.com (256.0.0.9) using FireChrome 99.9"
   def log_user_info #:nodoc:
-    reqenv = request.env
+    reqenv = request.env || {}
+
+    # Short username for the message
     login  = current_user ? current_user.login : "(none)"
 
-    # Get some info from session (when logged in)
+    # Find out the instance name
+    instname = CBRAIN::Instance_Name rescue "(?)"
+
+    # Get host and IP from session (when logged in)
     ip     = current_session["guessed_remote_ip"]
     host   = current_session["guessed_remote_host"] # only set when logged in
 
-    # Compute the info from the request (when not logged in)
+    # Compute the host and IP from the request (when not logged in)
     ip   ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
     if host.blank? && ip =~ /^[\d\.]+$/
       addrinfo = Rails.cache.fetch("host_addr/#{ip}") do
@@ -201,33 +203,30 @@ class ApplicationController < ActionController::Base
     end
 
     # Pretty user agent string
-    rawua = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'
-    ua    = HttpUserAgent.new(rawua)
-    brow  = ua.browser_name           || "(UnknownClient)"
-    current_session["client_type"]     = brow  # used by action_counter() below
-    b_ver = ua.browser_version
-
-    # Find out the instance name
-    instname = CBRAIN::Instance_Name rescue "(?)"
+    brow  = parsed_http_user_agent.browser_name.presence    || "(UnknownClient)"
+    b_ver = parsed_http_user_agent.browser_version.presence
 
     # Create final message
-    from  = (host.presence && host != ip) ? "#{host} (#{ip})" : ip
-    mess  = "User: #{login} on instance #{instname} from #{from} using #{brow} #{b_ver.presence}"
+    from  = (host.present? && host != ip) ? "#{host} (#{ip})" : ip
+    mess  = "User: #{login} on instance #{instname} from #{from} using #{brow} #{b_ver}"
     Rails.logger.info mess
     true
-  rescue
+  rescue # anything bad we ignore, as we did the best we could and all this is optional
     true
+  end
+
+  # Returns a HttpUserAgent object with the parsed info from ENV['HTTP_USER_AGENT']
+  def parsed_http_user_agent #:nodoc:
+    @_http_user_agent_ ||= HttpUserAgent.new((request.env || {})['HTTP_USER_AGENT'] || 'unknown/unknown')
   end
 
   # 'After' callback: store a hash in the metadata of the session, in order
   # to keep the count of each action by controller and by client_type.
   def action_counter #:nodoc:
     # Extract information about controller and action
-    client_type            = current_session["client_type"] # this is set in log_user_info() above.
-    return true if client_type.blank?
-
-    controller             = params[:controller].to_s.presence   || "UnknownController"
-    action                 = params[:action].to_s.presence       || "UnknownAction"
+    client_type            = parsed_http_user_agent.browser_name.presence || "(UnknownClient)"
+    controller             = params[:controller].to_s.presence            || "UnknownController"
+    action                 = params[:action].to_s.presence                || "UnknownAction"
     success                = response.code.to_s =~ /^[123]\d\d$/
 
     # Fetch the stats structure from meta data

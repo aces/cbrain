@@ -185,11 +185,11 @@ class SessionsController < ApplicationController
   end
 
   def create_from_user(user) #:nodoc:
+
     # Bad login/password?
     unless user
       flash.now[:error] = 'Invalid user name or password.'
       Kernel.sleep 3 # Annoying, as it blocks the instance for other users too. Sigh.
-
       self.current_user = nil
       auth_failed
       return
@@ -200,9 +200,8 @@ class SessionsController < ApplicationController
       .split(',')
       .map { |ip| IPAddr.new(ip.strip) rescue nil }
       .reject(&:blank?)
-    if whitelist.present? && ! whitelist.any? { |ip| ip.include?request.remote_ip }
+    if whitelist.present? && ! whitelist.any? { |ip| ip.include? request.remote_ip }
       flash.now[:error] = 'Untrusted source IP address.'
-
       self.current_user = nil
       auth_failed
       return
@@ -220,7 +219,7 @@ class SessionsController < ApplicationController
     end
 
     # Everything OK
-    user_tracking(portal)
+    user_tracking(portal) # Figures out IP address, user agent, etc, once.
 
     respond_to do |format|
       format.html { redirect_back_or_default(start_page_path) }
@@ -241,7 +240,7 @@ class SessionsController < ApplicationController
     # Account locked?
     if self.current_user.account_locked?
       self.current_user = nil
-      return "This account is locked, please write to #{User.admin.email || "the support staff"} to get this account unlocked."
+      return "This account is locked, please write to #{User.admin.email.presence || "the support staff"} to get this account unlocked."
     end
 
     return ""
@@ -250,8 +249,6 @@ class SessionsController < ApplicationController
   def user_tracking(portal) #:nodoc:
     current_session.activate
     user   = current_user
-
-    current_session.load_preferences
 
     # Record the best guess for browser's remote host name
     reqenv  = request.env

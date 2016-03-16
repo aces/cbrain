@@ -44,7 +44,7 @@
   color: inherit;
   font-family: inherit;
   padding: 0.2em 0em 0.2em 0.9em;
-  text-align: inherit;
+  text-align: left;
   white-space: nowrap;
 }
 
@@ -194,6 +194,11 @@
 .dt-sel-check:checked + .dt-sel-lbl > .dt-sel-icon,
 .dt-sel-check[checked=checked] + .dt-sel-lbl > .dt-sel-icon {
   visibility: visible;
+}
+
+td.dt-sel,
+th.dt-sel {
+  width: 18px;
 }
 
 th.dt-sel > .dt-sel-check + .dt-sel-lbl {
@@ -389,6 +394,6 @@ td.dt-sel > .dt-sel-lbl > .dt-sel-icon {
   border: 1px solid #dddddd;
   font: inherit;
   text-align: right;
-  width: 2.5em;
+  width: 3em;
   padding: 0.2em;
 }

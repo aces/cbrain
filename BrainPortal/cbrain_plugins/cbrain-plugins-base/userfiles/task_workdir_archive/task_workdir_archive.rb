@@ -25,6 +25,11 @@ class TaskWorkdirArchive < TarArchive
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # The association linking back to the task itself.
+  has_one        :archived_task, :class_name  => 'CbrainTask',
+                                 :foreign_key => :workdir_archive_userfile_id,
+                                 :dependent   => :nullify
+
   has_viewer     :name => 'CBRAIN Workdir Task Archive', :partial => :task_workdir_archive
 
   before_destroy :before_destroy_adjust_task
@@ -39,14 +44,11 @@ class TaskWorkdirArchive < TarArchive
 
   def before_destroy_adjust_task #:nodoc:
     # Find original task
-    task_id  = self.meta[:original_task_id].presence.try(:to_i)
-    return true unless task_id
-    task     = CbrainTask.where(:id => task_id).first
+    task     = self.archived_task rescue nil
     return true unless task
 
     # Adjust/save task ; use update_column in order not to change the updated_at value
     task.update_column(:workdir_archived, false)
-    task.update_column(:workdir_archive_userfile_id, nil)
     return true
   end
 

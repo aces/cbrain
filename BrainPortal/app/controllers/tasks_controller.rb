@@ -84,7 +84,6 @@ class TasksController < ApplicationController
 
     # Save the modified scope object
     scope_to_session(@scope, 'tasks')
-    current_session.save_preferences
 
     respond_to do |format|
       format.html
@@ -111,6 +110,8 @@ class TasksController < ApplicationController
   # Renders a set of tasks associated with a batch.
   def batch_list
     @scope = scope_from_session('tasks')
+    @scope.order.clear
+
     @base_scope = custom_scope(user_scope(
       current_user
         .available_tasks
@@ -118,6 +119,7 @@ class TasksController < ApplicationController
         .where(:batch_id => params[:batch_id])
         .includes([:bourreau, :user, :group])
     ))
+
     @tasks = @scope.apply(@base_scope)
       .order(['cbrain_tasks.rank', 'cbrain_tasks.level', 'cbrain_tasks.id'])
       .map { |task| { :batch => task.batch_id, :first => task, :count => 1 } }
@@ -205,8 +207,9 @@ class TasksController < ApplicationController
     @tool_config = @task.tool_config # for acces in view
 
     # Filter list of files as provided by the get request
-    file_ids = (params[:file_ids] || []) | (current_session[:persistent_userfiles] || [])
-    @files            = Userfile.find_accessible_by_user(file_ids, current_user, :access_requested => :write) rescue []
+    file_ids = params[:file_ids] || []
+    access   = @task.class.properties[:readonly_input_files] ? :read : :write
+    @files   = Userfile.find_accessible_by_user(file_ids, current_user, :access_requested => access) rescue []
     if @files.empty?
       flash[:error] = "You must select at least one file to which you have write access."
       redirect_to :controller  => :userfiles, :action  => :index
@@ -471,13 +474,11 @@ class TasksController < ApplicationController
     flash[:notice] += "\n"            unless messages.blank? || messages =~ /\n$/
     flash[:notice] += messages + "\n" unless messages.blank?
 
+    # Increment the number of times the user has launched this particular tool
     tool_id                           = params[:tool_id]
-    top_tool_ids                      = current_user.meta[:top_tool_ids] ||
-                                        Hash.new
-    top_tool_ids[tool_id]             = top_tool_ids[tool_id] ?
-                                          top_tool_ids[tool_id] + 1 : 1
+    top_tool_ids                      = current_user.meta[:top_tool_ids] || {}
+    top_tool_ids[tool_id]             = (top_tool_ids[tool_id].presence || 0) + 1
     current_user.meta[:top_tool_ids]  = top_tool_ids
-
 
     respond_to do |format|
       format.html { redirect_to :controller => :tasks, :action => :index }
@@ -739,7 +740,7 @@ class TasksController < ApplicationController
     batch_ids  = params[:batch_ids] || []
     batch_ids  = [ batch_ids ] unless batch_ids.is_a?(Array)
     batch_ids << nil if batch_ids.delete('nil')
-    tasklist  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).select(:id).raw_first_column
+    tasklist  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).raw_first_column("cbrain_tasks.id")
     tasklist   = tasklist.map(&:to_i).uniq
 
     flash[:error]  ||= ""
@@ -967,9 +968,15 @@ class TasksController < ApplicationController
       preset.share_wd_tid         = nil
       preset.workdir_archived     = false
       preset.workdir_archive_userfile_id = nil
+
+      # Clean up params that are saved in the preset
       preset.wrapper_untouchable_params_attributes.each_key do |untouch|
         preset.params.delete(untouch) # no need to save these eh?
       end
+      preset.wrapper_unpresetable_params_attributes.each_key do |unpreset|
+        preset.params.delete(unpreset) # no need to save these either eh?
+      end
+
       preset.save!
 
       flash[:notice] += "Saved preset '#{preset.short_description}'.\n"
@@ -997,7 +1004,8 @@ class TasksController < ApplicationController
   # custom filters. +base+ is expected to be the initial scope to apply custom
   # filters to. Requires a valid @scope object.
   def custom_scope(base)
-    ((@scope.custom[:custom_filters] || []) & current_user.custom_filter_ids)
+    (@scope.custom[:custom_filters] ||= []).map!(&:to_i)
+    (@scope.custom[:custom_filters] &= current_user.custom_filter_ids)
       .map { |id| TaskCustomFilter.find_by_id(id) }
       .compact
       .inject(base) { |scope, filter| filter.filter_scope(scope) }

@@ -36,19 +36,10 @@ RSpec.describe DataProvidersController, :type => :controller do
 
     context "collection action" do
       describe "index" do
-        before(:each) do
-          allow(DataProvider).to receive(:find_all_accessible_by_user).and_return(double("provider_scope", :includes => "includes"))
-          allow(controller).to   receive(:base_filtered_scope)
-          allow(controller).to   receive(:base_sorted_scope).and_return([data_provider])
-
-        end
-        it "should use the basic filtered scope" do
-          expect(controller).to receive(:base_filtered_scope)
-          get :index
-        end
+        let!(:local_dp) { create(:local_data_provider) }
         it "should assign @data_providers" do
           get :index
-          expect(assigns[:data_providers]).to eq([data_provider])
+          expect(assigns[:data_providers]).to eq([local_dp])
         end
         it "should render the index page" do
          get :index
@@ -239,13 +230,15 @@ RSpec.describe DataProvidersController, :type => :controller do
         end
       end
       describe "browse" do
-        let(:file_info_list) {[double("file_info").as_null_object]}
+        let(:file1) { double("file_info1", :name => "hi").as_null_object }
+        let(:file2) { double("file_info2", :name => "bye").as_null_object }
+        let(:file_info_list) {[ file1, file2 ]}
 
         before(:each) do
-          allow(DataProvider).to receive(:find_accessible_by_user).and_return(data_provider)
+          allow(DataProvider).to  receive(:find_accessible_by_user).and_return(data_provider)
           allow(data_provider).to receive(:is_browsable?).and_return(true)
           allow(data_provider).to receive(:online?).and_return(true)
-          allow(controller).to receive(:get_recent_provider_list_all).and_return(file_info_list)
+          allow(data_provider).to receive(:provider_list_all).and_return(file_info_list)
         end
         context "provider is not browsable" do
           before(:each) do
@@ -278,16 +271,17 @@ RSpec.describe DataProvidersController, :type => :controller do
           get :browse, :id => 1
         end
         it "should iterate over the file list" do
+          allow(controller).to    receive(:get_recent_provider_list_all).and_return(file_info_list)
           expect(file_info_list).to receive(:each)
           get :browse, :id => 1
         end
         it "should check that the filenames are legal" do
-          expect(Userfile).to receive(:is_legal_filename?)
+          expect(Userfile).to receive(:is_legal_filename?).at_least(:once)
           get :browse, :id => 1
         end
-        it "should do the search if a parameter is given" do
-          expect(file_info_list).to receive(:select).and_return([])
+        it "should retrieve the list of file with name_like 'hi'" do
           get :browse, :id => 1, :name_like => "hi", :update_filter => :browse_hash
+          expect(assigns(:files)).to eq([file1])
         end
         it "should paginate the list" do
           expect(WillPaginate::Collection).to receive(:create)

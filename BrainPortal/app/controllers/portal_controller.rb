@@ -52,7 +52,7 @@ class PortalController < ApplicationController
       @active_users.unshift(current_user) unless @active_users.include?(current_user)
       if request.post?
         CbrainSession.clean_sessions
-        CbrainSession.purge_sessions(params[:session_clear].to_i.seconds.ago) unless
+        CbrainSession.purge_sessions(since: params[:session_clear].to_i.seconds.ago) unless
           params[:session_clear].blank?
 
         if params[:lock_portal] == "lock"
@@ -349,8 +349,9 @@ class PortalController < ApplicationController
     @table_col_values.reject! { |x| x == 0 } if col_type =~ /_id$/ # remove 0 values for IDs
 
     # For making filter links inside the table
-    @filter_model      = @model.to_s.pluralize.underscore
-    @filter_model      = "tasks" if @filter_model == 'cbrain_tasks'
+    @filter_controller = @model.to_s.pluralize.underscore
+    @filter_controller = "tasks"     if @filter_model == 'cbrain_tasks'
+    @filter_controller = "bourreaux" if @filter_model == 'remote_resources'
     @filter_row_key    = row_type
     @filter_col_key    = col_type
     @filter_show_proc  = (table_op =~ /sum.*size/) ? (Proc.new { |vector| colored_pretty_size(vector[0]) }) : nil

@@ -1,0 +1,112 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<li id="down-ctx"
+  class="act-item"
+  data-url="<%= download_userfiles_path %>"
+  data-method="POST"
+  data-empty-selection="0"
+>
+  Download
+  <span class="ui-icon ui-icon-arrowthickstop-1-s"></span>
+</li>
+
+<li id="copy-ctx"
+  class="act-item"
+  data-dialog="cpmv-dialog"
+>
+  Copy
+  <span class="ui-icon ui-icon-copy"></span>
+</li>
+
+<li id="move-ctx"
+  class="act-item"
+  data-dialog="cpmv-dialog"
+>
+  Move
+  <span class="ui-icon ui-icon-arrowreturnthick-1-e"></span>
+</li>
+
+<li id="ren-ctx"
+  class="act-item"
+>
+  Rename
+  <span class="ui-icon ui-icon-pencil"></span>
+</li>
+
+<li id="comp-ctx"
+  class="act-item"
+  data-url="<%= compress_userfiles_path() %>"
+  data-method="POST"
+>
+  Compress
+  <span class="ui-icon ui-icon-suitcase"></span>
+</li>
+
+<li id="ucomp-ctx"
+  class="act-item"
+  data-url="<%= uncompress_userfiles_path() %>"
+  data-method="POST"
+>
+  Uncompress
+  <span class="ui-icon ui-icon-folder-open"></span>
+</li>
+
+<li id="del-ctx"
+  class="act-item"
+  data-url="<%= delete_files_userfiles_path %>"
+  data-method="DELETE"
+  data-confirm-dlg="delete-confirm"
+  data-confirm-act="Delete"
+>
+  Delete
+  <span class="ui-icon ui-icon-trash"></span>
+</li>
+<li class="menu-separator">-</li>
+
+<li id="prop-ctx"
+  class="act-item"
+  data-dialog="prop-dialog"
+>
+  Properties
+  <span class="ui-icon ui-icon-document-b"></span>
+</li>
+<li id="sync-ctx"
+  class="act-item"
+  data-url="<%= sync_multiple_userfiles_path(:operation => 'sync_local') %>"
+  data-method="POST"
+  data-empty-selection="0"
+>
+  Synchronize
+  <span class="ui-icon ui-icon-refresh"></span>
+</li>
+<li id="mnew-ctx"
+  class="act-item"
+  data-url="<%= sync_multiple_userfiles_path(:operation => 'all_newer') %>"
+  data-method="POST"
+  data-empty-selection="0"
+>
+  Mark as newer
+  <span class="ui-icon ui-icon-flag"></span>
+</li>

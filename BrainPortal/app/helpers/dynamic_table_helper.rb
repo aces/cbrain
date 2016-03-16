@@ -1030,9 +1030,7 @@ module DynamicTableHelper
 
       ({
         :controller => params[:controller],
-        :action     => params[:action],
-        :page            => 1,
-        :_pag_scope_name => scope.name
+        :action     => params[:action]
       }).merge(scope_filter_params(scope, :set, filter))
     end
 

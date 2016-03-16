@@ -24,20 +24,39 @@
 (function() {
   "use strict";
 
-  var loading_image = $("#loading_image");
+  /* Generic AJAX error handler */
+  $(document).ajaxError(function (event, xhr, settings, error) {
+    var flash = $('.flash_error'),
+        xml   = $(xhr.responseXML);
 
-  //General ajax error handler
-  $(document).ajaxError(function(evt, req, set) {
-    if (req.status !== 0) {
-      $('.flash_error').remove();
-      var message = "<div class=\"flash_error\">Error sending background request."; 
-      message += "<BR> Status: " + req.status + " " + req.statusText;
-      message += "<BR>The CBRAIN administrators have been alerted about this problem.</div>";
-      $("#main").prepend(message);
-    }
+    if (xhr.status === 0) return true;
+
+    if (!flash.length)
+      flash = $('<div class="flash_error">')
+        .prependTo('#main');
+
+    if (xhr.responseXML && xml.find('errors > error').length)
+      flash.html(
+        'Error performing request: <br />' +
+        xml.find('errors > error')
+          .map(function () { return $(this).text(); })
+          .get()
+          .join('<br />')
+      );
+    else
+      flash.html(
+        'Error sending background request: <br />' +
+        'HTTP ' + xhr.status + ' ' + xhr.statusText + '<br />' +
+        'The CBRAIN administrators have been alerted about this problem.'
+      );
 
     return true;
   });
+
+  /* Generic AJAX loading indicator */
+  $(document)
+    .ajaxStart(function () { $('#loading_image').show(); })
+    .ajaxStop( function () { $('#loading_image').hide(); });
 
   function modify_target(data, target, options) {
     options = options || {};
@@ -52,8 +71,8 @@
         height = parseInt(options["height"], 10); // || 500);
         $("<div class='overlay_content'></div>").html(new_content).appendTo($("body")).dialog({
           position: 'center',
-          width: width,
-          height: height,
+          width:  width  || 'auto',
+          height: height || 'auto',
           close: function() {
             $(this).remove();
           }
@@ -152,13 +171,7 @@
         type: method,
         dataType: data_type,
         success: function(data) {
-          modify_target(data, target);     
-        },
-        beforeSend: function() {
-          loading_image.show();
-        },
-        complete: function() {
-          loading_image.hide();
+          modify_target(data, target);
         }
       });
       
@@ -320,12 +333,6 @@
             current_element.html(error_message);
           }
         },
-        beforeSend: function() {
-          loading_image.show();
-        },
-        complete: function() {
-          loading_image.hide();
-        },
         timeout: 50000
       });
     }
@@ -382,13 +389,7 @@
       jQuery.ajax({
         dataType: 'script',
         url: url,
-        timeout: 50000,
-        beforeSend: function() {
-          loading_image.show();
-        },
-        complete: function() {
-          loading_image.hide();
-        }
+        timeout: 50000
       });
     });
 
@@ -419,11 +420,7 @@
           }
           current_element.html(error_message);
         },
-        beforeSend: function() {
-           loading_image.show();
-        },
         complete: function(e) {
-          loading_image.hide();
           staggered_loading(index+1, element_array);
         }
       });
@@ -441,8 +438,8 @@
       dialog.dialog({ 
         autoOpen: false,
         position: "center",
-        width: content_width,
-        height: content_height
+        width:  content_width  || 'auto',
+        height: content_height || 'auto'
       });
     
       dialog_link.click(function() {
@@ -534,13 +531,7 @@
       history.pushState({"paginating" : true}, "", url);
       $.ajax({
         url: url,
-        dataType: "script",
-        beforeSend: function() {
-          loading_image.show();
-        },
-        complete: function() {
-          loading_image.hide();
-        }
+        dataType: "script"
       });
       
       return false;
@@ -556,14 +547,8 @@
         url = window.location.protocol + "//" + window.location.host + window.location.pathname + "?" + page_param;
         $.ajax({
           url: url,
-          dataType: "script",
-          beforeSend: function() {
-            loading_image.show();
-          },
-          complete: function() {
-            loading_image.hide();
-          }
-        }); 
+          dataType: "script"
+        });
       }
     });
     
@@ -723,7 +708,6 @@
         modify_target(data, target, other_options);
       }
     }).delegate(".ajax_link", "ajax:beforeSend", function(event, data, status, xhr) {
-      loading_image.show();
       var link = $(this);
       var loading_message = link.attr("data-loading-message");
       var target = link.attr("data-target");
@@ -732,8 +716,6 @@
         if (!loading_message_target) loading_message_target = target;
         $(loading_message_target).html(loading_message);
       }
-    }).delegate(".ajax_link", "ajax:complete", function() {
-      loading_image.hide();
     });
 
     $(document).delegate(".select_all", "click", function() {
@@ -792,12 +774,6 @@
         url       : url,
         type      : method,
         dataType  : data_type,
-        beforeSend: function() {
-          loading_image.show();
-        },
-        complete: function() {
-          loading_image.hide();
-        },
         success: function(data) {
           modify_target(data, target);     
         },
@@ -864,13 +840,9 @@
       if (reset_form !== "false") {
         current_form.resetForm();
       }
-      
-      modify_target(data, target, {scroll_bottom : scroll_bottom});  
-       
-     }).delegate(".ajax_form", "ajax:beforeSend", function() {
-      loading_image.show();
-     }).delegate(".ajax_form", "ajax:complete", function() {
-      loading_image.hide();
+
+      modify_target(data, target, {scroll_bottom : scroll_bottom});
+
      });
 
     //Allows a textfield to submit an ajax request independently of
@@ -894,12 +866,6 @@
         dataType: data_type,
         success: function(data) {
           modify_target(data, target);
-        },
-        beforeSend: function() {
-          loading_image.show();
-        },
-        complete: function() {
-          loading_image.hide();
         },
         data: parameters
       });
@@ -940,12 +906,6 @@
           dataType: data_type,
           success: function(data) {
             modify_target(data, target, other_options);
-          },
-          beforeSend: function() {
-            loading_image.show();
-          },
-          complete: function() {
-            loading_image.hide(); 
           },
           data: data,
           resetForm: false
@@ -1042,12 +1002,6 @@
           new_data.trigger("new_content");
           onclick_elem.find(".ajax_onclick_show_child").hide();
           onclick_elem.find(".ajax_onclick_hide_child").show();
-        },
-        beforeSend: function() {
-          loading_image.show();
-        },
-        complete: function() {
-          loading_image.hide();
         },
         async: true,
         timeout: 50000

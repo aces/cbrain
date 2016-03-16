@@ -24,17 +24,25 @@ class TagsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  api_available
+
   before_filter :login_required
   before_filter :validate_params, :only => [:update, :create]
-  layout false
 
-  def new #:nodoc:
-    @tag = Tag.new(:group_id => current_user.own_group.id)
+  # GET /tags
+  # GET /tags.xml
+  def index #:nodoc:
+    respond_to do |format|
+      format.xml { render :xml => current_user.tags }
+    end
   end
 
-  # GET /tags/1/edit
-  def edit #:nodoc:
-    @tag = current_user.tags.find(params[:id])
+  # GET /tags/1
+  # GET /tags/1.xml
+  def show #:nodoc:
+    respond_to do |format|
+      format.xml { render :xml => current_user.tags.find(params[:id]) }
+    end
   end
 
   # POST /tags
@@ -45,11 +53,9 @@ class TagsController < ApplicationController
     respond_to do |format|
       if @tag.save
         flash[:notice] = 'Tag was successfully created.'
-        format.html { redirect_to userfiles_path }
-        format.xml  { render :xml => @tag, :status => :created, :location => @tag }
+        format.xml { render :xml => @tag, :status => :created, :location => @tag }
       else
-        format.html { redirect_to userfiles_path }
-        format.xml  { render :xml => @tag.errors, :status => :unprocessable_entity }
+        format.xml { render :xml => @tag.errors, :status => :unprocessable_entity }
       end
       format.js
     end
@@ -63,13 +69,10 @@ class TagsController < ApplicationController
     respond_to do |format|
       if @tag.update_attributes(params[:tag])
         flash[:notice] = 'Tag was successfully updated.'
-        format.html { redirect_to userfiles_path }
-        format.xml  { head :ok }
+        format.xml  { head :ok, :content_type => 'text/plain' }
       else
-        format.html { render :action => "edit" }
         format.xml  { render :xml => @tag.errors, :status => :unprocessable_entity }
       end
-      format.js
     end
   end
 
@@ -77,15 +80,10 @@ class TagsController < ApplicationController
   # DELETE /tags/1.xml
   def destroy #:nodoc:
     @tag = current_user.tags.find(params[:id])
-    if current_session[:userfiles]["filter_tags_array"]
-      current_session[:userfiles]["filter_tags_array"].delete @tag.id.to_s
-    end
     @tag.destroy
 
     respond_to do |format|
-      format.html { redirect_to userfiles_path }
-      format.js {render :partial  => "update_tag_table"}
-      format.xml  { head :ok }
+      format.xml  { head :ok, :content_type => 'text/plain' }
     end
   end
 
@@ -99,7 +97,5 @@ class TagsController < ApplicationController
     params[:tag][:user_id]  = current_user.id           if !current_user.available_users.raw_first_column(:id).include?(user_id.to_i)
     params[:tag][:group_id] = current_user.own_group.id if !current_user.available_groups.raw_first_column(:id).include?(group_id.to_i)
   end
-
-
 
 end

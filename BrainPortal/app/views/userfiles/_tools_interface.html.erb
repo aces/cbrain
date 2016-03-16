@@ -1,0 +1,139 @@
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+  types    = @my_tools.map { |t| t.application_type         :array  }.flatten.uniq
+  packages = @my_tools.map { |t| t.application_package_name :array  }.flatten.uniq
+  tags     = @my_tools.map { |t| t.application_tags         :array  }.flatten.uniq
+%>
+
+<div id="toolsDialog" title="Select Tool" >
+
+  <div class="userfiles_bourreau_selector" id="tool_version_selector"></div>
+
+  <div id="toolsDialogWrapper">
+    <div id="toolsDialogLeftCol">
+      <div>
+        <span class="toolsDialogLabel">Search:</span><input type="text" id="searchToolSelectionBox" size="20">
+      </div>
+      <p>
+
+      <% if types.present? || packages.present? || tags.present? %>
+        <div>
+          <label><input type="checkbox" class="tag_checkbox" id="showAllTools"/>All tools</label>
+        </div>
+        <p>
+      <% end %>
+
+      <% if types.present? %>
+        <span class="toolsDialogLabel">Type:</span><br>
+        <% types.each do |type| %>
+          <label>
+            <input type="checkbox" class="tag_checkbox" data-tagname="<%= type %>"/>
+            <%= type %>
+          </label>
+          <br>
+        <% end %>
+        <p>
+      <% end %>
+
+      <% if packages.present? %>
+        <span class="toolsDialogLabel">Sofware Package:</span><br>
+        <% packages.each do |package| %>
+          <label>
+            <input type="checkbox" class="tag_checkbox" data-tagname="<%= package %>"/>
+            <%= package %>
+          </label>
+          <br>
+        <% end %>
+        <p>
+      <% end %>
+
+      <% if tags.present? %>
+        <span class="toolsDialogLabel">Tags:</span><br>
+        <% tags.each do |tag|%>
+          <label>
+            <input type="checkbox" class="tag_checkbox" data-tagname="<%= tag %>"/>
+            <%= tag %>
+          </label>
+          <br>
+        <% end %>
+        <p>
+      <% end %>
+
+    </div> <%# toolsDialogLeftCol %>
+
+
+
+
+    <div id="toolsDialogRightCol">
+
+      <span class="toolsDialogLabel">Tools:</span>
+
+      <div class="tools-container">
+        <table id="toolSelectTable">
+
+        <% if @my_tools.empty? %>
+          <tr>
+            <td>
+              <% if current_user.has_role? :admin_user %>
+                <h1 class="warning">No tools available. New tools may be registered from the Tools index.</h1>
+              <% else %>
+                <h1 class="warning">No tools available. Contact your admin to have them registered.</h1>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+
+        <% # Render each of the tool info boxes %>
+        <% @my_tools.each do |tool| %>
+          <%
+             # We build a simple hash table to generate a HTML
+             # attribute to the TR element, e.g.
+             #     <tr data-taglist="tag1,tag2,etc">
+             taglist     = tool.get_all_tags || []
+             taglisthash = {}
+             taglisthash['data-taglist'] = taglist.join(",") if taglist.present?
+          %>
+          <tr <%= taglisthash.to_html_attributes.html_safe %>>
+            <td id="tool_<%= tool.id %>">
+              <span data-tool-id="<%= tool.id %>" class="toolsLink"><%= tool.name %></span><br>
+              <% if taglist.present? %>
+                Tags: <%= taglist.join(', ') %><br>
+              <% end %>
+              <%= link_to( "Tool Website", tool.url, :target => "_blank") if tool.url.present? %>
+            </td>
+          </tr>
+        <% end # each @my_tools %>
+
+        </table> <%# toolSelectTable %>
+      </div> <%# tools-container %>
+
+    </div> <%# toolsDialogRightCol %>
+
+
+
+
+  </div> <%# toolsDialogWrapper %>
+
+</div> <%# toolsDialog %>

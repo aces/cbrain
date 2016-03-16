@@ -33,17 +33,10 @@ RSpec.describe FeedbacksController, :type => :controller do
 
     context "collection action" do
       describe "index" do
-        before(:each) do
-          allow(controller).to receive(:base_filtered_scope).and_return(double("feedback_scope", :includes => "includes"))
-          allow(controller).to receive(:base_sorted_scope).and_return([feedback])
-        end
-        it "should use the basic filtered scope" do
-          expect(controller).to receive(:base_filtered_scope)
-          get :index
-        end
+        let!(:fb) { create(:feedback) }
         it "should assign @feedbacks" do
           get :index
-          expect(assigns[:feedbacks]).to eq([feedback])
+          expect(assigns[:feedbacks]).to eq([fb])
         end
         it "should render the index page" do
          get :index
@@ -53,7 +46,7 @@ RSpec.describe FeedbacksController, :type => :controller do
       describe "create" do
         before(:each) do
           allow(Feedback).to receive(:new).and_return(feedback)
-          allow(Message).to receive(:send_message)
+          allow(Message).to  receive(:send_message)
         end
         it "should create a new feedback object with given params" do
           expect(Feedback).to receive(:new).with("summary" => "summary", "details" => "details")

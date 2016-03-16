@@ -49,6 +49,8 @@ class Tool < ActiveRecord::Base
   validates_uniqueness_of :name, :select_menu_text, :cbrain_task_class
   validates_presence_of   :name, :cbrain_task_class, :user_id, :group_id, :category, :select_menu_text, :description
   validates_inclusion_of  :category, :in => Categories
+  validates_format_of :url, :with => URI::regexp(%w(http https)), :if => :url_present?
+
 
   belongs_to              :user
   belongs_to              :group
@@ -56,7 +58,9 @@ class Tool < ActiveRecord::Base
   has_many                :bourreaux, :through => :tool_configs, :uniq => true
 
   attr_accessible         :name, :user_id, :group_id, :category, :license_agreements,
-                          :cbrain_task_class, :select_menu_text, :description
+                          :cbrain_task_class, :select_menu_text, :description, :url,
+                          :application_type, :application_tags, :application_package_name
+
 
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
@@ -78,11 +82,53 @@ class Tool < ActiveRecord::Base
     @global_tool_config_cache ||= ToolConfig.where( :tool_id => self.id, :bourreau_id => nil ).first
   end
 
+  # Overloading assignment operator to accept arrays and strings for application_tag
+  def application_tags=(val)
+    array = val.is_a?(String) ? val.split(',') : val
+    clean = (array.presence || []).select(&:present?).map(&:strip).uniq.sort # clean up
+    write_attribute(:application_tags, clean.join(','))
+  end
+
+  # Oveloading the getter method to return current tags,
+  # in an array by default or if :string is passed as
+  # an argument the return type will be of class String
+  def application_tags(return_class = :string)
+    get_tag_attribute(:application_tags, return_class)
+  end
+
+  # Returns package_name tags associated with a tool
+  def application_package_name(return_class = :string)
+    get_tag_attribute(:application_package_name, return_class)
+  end
+
+  # Returns application_type tags associated with a tool
+  def application_type(return_class = :string)
+    get_tag_attribute(:application_type, return_class)
+  end
+
+  # Returns all tags associated with a tool, as an array
+  def get_all_tags
+    application_type(:array) + application_package_name(:array) + application_tags(:array)
+  end
+
   private
+
+  def url_present? #:nodoc:
+    url.present?
+  end
+
+  # Reads one of the tag attributes, parses it and returns
+  # a clean version of the content
+  def get_tag_attribute(attribute_name, return_class) #:nodoc:
+    tags_s = read_attribute(attribute_name).presence || ""
+    tags_a = tags_s.split(',').select(&:present?).map(&:strip).uniq.sort # clean up
+    return tags_a           if return_class == :array
+    return tags_a.join(',') #                  :string
+  end
 
   def set_default_attributes #:nodoc:
     self.select_menu_text ||= "Launch #{self.name}"
-    self.description ||= "#{self.name}"
+    self.description      ||= "#{self.name}"
   end
 
 end

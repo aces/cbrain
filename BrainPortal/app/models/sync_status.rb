@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #
@@ -41,7 +41,7 @@
 #                but content on DP side is known to be newer.
 # CacheNewer::   Content on cache side known to be newer than on DP
 # InSync::       Cache contains a sync'ed version of DP's content
-# ToCache::      DP content is being copied to cache 
+# ToCache::      DP content is being copied to cache
 # ToProvider::   Cache content is being copied to DP
 # Corrupted::    Some transfer ToProvider never completed
 #
@@ -71,6 +71,9 @@ class SyncStatus < ActiveRecord::Base
 
   belongs_to              :userfile
   belongs_to              :remote_resource
+
+  validates_presence_of   :userfile_id
+  validates_presence_of   :remote_resource_id
 
   # This uniqueness restriction is VERY IMPORTANT.
   # It's expected to make the create!() method return
@@ -494,7 +497,7 @@ class SyncStatus < ActiveRecord::Base
   def status_transition(from_state, to_state)
     SyncStatus.transaction do
       self.lock!
-      return false if self.status != from_state 
+      return false if self.status != from_state
       return true  if from_state == to_state # NOOP
       self.status = to_state
       return self.save

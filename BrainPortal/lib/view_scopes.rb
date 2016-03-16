@@ -22,8 +22,8 @@
 
 # Helpers to apply user-specified scopes on CBRAIN's models or collections for
 # viewing purposes. Scopes are a flexible and safe way to define which filtering
-# and sorting rules to apply on a given collection before display and keep 
-# track of item selection and pagination information.
+# and sorting rules to apply on a given collection before display and keep
+# track of custom view options and pagination information.
 #
 # Scopes currently in use are usually stored in Rails' session, and can easily
 # be converted to and from hashes. For example, a scope to filter by an
@@ -64,9 +64,9 @@
 # see +Scope+'s +compact_hash+ method for more information.
 #
 # NOTE: While similar to ActiveRecord's scoping mechanism, the scopes defined in
-# this module mainly target views, by taking concerns such as selection and
-# pagination, and are expected to be 'closer' to the user than ActiveRecord's
-# scopes (which would pose a security risk if they could be directly accessed).
+# this module mainly target views and are expected to be 'closer' to the user
+# than ActiveRecord's scopes (which would pose a security risk if they could be
+# directly accessed).
 module ViewScopes
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -85,10 +85,9 @@ module ViewScopes
     end
   end
 
-  # Represents a scope to filter and sort a given model or collection
-  # (via +apply+) and hold selection and pagination information. This object is
-  # typically created from an hash representation (see +from_hash+ and
-  # +scope_from_session+).
+  # Represents a scope filtering/sorting/paginating a given model or collection
+  # (via +apply+). This object is typically created from an hash representation
+  # (see +from_hash+ and +scope_from_session+).
   class Scope
 
     # Name of this scope in Rails' session. This attribute is transient, not
@@ -138,14 +137,6 @@ module ViewScopes
     # collection or model before it can be displayed (and thus belongs in Scope)
     attr_accessor :pagination
 
-    # List of record IDs (models) and collection keys (or indices, if there is
-    # no such thing) selected by the user in the model or collection.
-    #
-    # While a UI concern, keeping selection in scopes allows any component of
-    # the application to access and alter user selection and allows persisting
-    # selection information with scopes in the session or DB.
-    attr_accessor :selection
-
     # An indifferent hash of extra scoping/filtering/sorting parameters specific
     # to the Scope instance. These extra parameters can be used to store extra
     # view-specific options that would otherwise have to be persisted and set
@@ -161,7 +152,6 @@ module ViewScopes
     def initialize
       @filters   = []
       @order     = []
-      @selection = []
       @custom    = HashWithIndifferentAccess.new
     end
 
@@ -176,7 +166,6 @@ module ViewScopes
       @filters    = other.filters.map(&hash_dup)
       @order      = other.order.map(&hash_dup)
       @pagination = hash_dup.(other.pagination) if other.pagination
-      @selection  = other.selection.dup
       @custom     = other.custom.dup
     end
 
@@ -270,10 +259,6 @@ module ViewScopes
     # [+pagination+ or +p+]
     #  *pagination* attribute: a Scope::Pagination instance.
     #
-    # [+selection+ or +s+]
-    #  *selection* attribute: an array of selected IDs or keys inside the
-    #  collection.
-    #
     # [+custom+ or +c+]
     #  *custom* attribute: an arbitrary Ruby hash of custom view options.
     #
@@ -303,9 +288,8 @@ module ViewScopes
         .map { |order| Order.from_hash(order) }
         .compact
 
-      # Pagination, selection and other properties
+      # Pagination, custom options and other properties
       scope.pagination = Pagination.from_hash(hash['pagination'] || hash['p'])
-      scope.selection  =  hash['selection'] || hash['s'] || []
       scope.custom     = (hash['custom']    || hash['c'] || {}).with_indifferent_access
       scope.filter_combination = (hash['filter_combination'] || hash['fc'] || 'and').to_s
 
@@ -323,7 +307,6 @@ module ViewScopes
         'filters'    => @filters.map(&:to_hash),
         'order'      => @order.map(&:to_hash),
         'pagination' => @pagination.try(:to_hash),
-        'selection'  => @selection,
         'custom'     => @custom.stringify_keys.to_h,
         'filter_combination' => @filter_combination.to_s,
       }
@@ -357,7 +340,6 @@ module ViewScopes
         'p' => Pagination.compact_hash(hash['pagination'] || hash['p']),
 
         # Include other attributes
-        's'  =>  hash['s']  || hash['selection'],
         'c'  => (hash['c']  || hash['custom'] || {}).stringify_keys.to_h,
         'fc' => (hash['fc'] || hash['filter_combination']).to_s,
       }
@@ -1002,22 +984,21 @@ module ViewScopes
         collection = collection.to_a unless
           (collection <= ActiveRecord::Base rescue nil)
 
-        # Clamp @page and @per_page to a sane range
-        page     = [1,  [@page.to_i,     99_999].min].max
-        per_page = [25, [@per_page.to_i, 1000  ].min].max
+        # Validate @total and clamp @page and @per_page to a sane range
+        total    = (@total || collection.size).to_i
+        per_page = [25, @per_page.to_i, 1000].sort[1]
+        page     = [1, @page.to_i, (total + per_page - 1) / per_page].sort[1]
 
         # Is there a native paginate method available?
         if collection.respond_to?(:paginate)
           collection.paginate(
             :page          => page,
             :per_page      => per_page,
-            :total_entries => @total
+            :total_entries => total
           )
 
         # Otherwise, just manually create a WillPaginate::Collection
         else
-          total = @total || collection.length
-
           WillPaginate::Collection.create(page, per_page, total) do |pager|
             pager.replace(collection[pager.offset, pager.per_page].to_a)
           end
@@ -1227,19 +1208,28 @@ module ViewScopes
   #  instead of the full version required by the +_scopes+ parameter.
   #
   #  To specify which scope to update, have +_simple_filters+'s value be the
-  #  name of the target scope. If such a scope is not found (+_simple_filters+
-  #  is '1' or 'true', for example), +update_session_scopes+ will fall back
-  #  to the controller's name (common convention for index pages) then to
-  #  +default_scope_name+. For example, doing:
+  #  name of the target scope. If such a scope is not found,
+  #  +update_session_scopes+ will then try the controller's name (common
+  #  convention for index pages) and +default_scope_name+. If none of these are
+  #  present (on a new CBRAIN session, for example), a new scope named after
+  #  +_simple_filters+'s value will be created, unless +_simple_filters+'s value
+  #  is empty or a true-like value (1, 't', 'true', 'TRUE', ...), in which
+  #  case the new scope's name will fall back to +default_scope_name+. For
+  #  example, doing (with an active session):
   #    http://portal.cbrain.ca/userfiles?_simple_filters=tasks&...
   #  would update the 'tasks' scope, if it exists, while:
   #    http://portal.cbrain.ca/userfiles?_simple_filters=1&...
   #  would try to update the 'userfiles' scope, falling back to
-  #  +default_scope_name+ if there is no 'userfiles' scope.
+  #  +default_scope_name+ if there is no 'userfiles' scope. On a blank/new
+  #  session, doing:
+  #    http://portal.cbrain.ca/userfiles?_simple_filters=1&...
+  #  would create a new scope named +default_scope_name+, while:
+  #    http://portal.cbrain.ca/userfiles?_simple_filters=tasks&...
+  #  would create a scope named 'tasks'.
   #
   #  Note that this option cannot be used in conjunction with +_scopes+ or
   #  +_default_scope+, and that every query parameter (other than
-  #  +_simple_filters+, +_scope_mode+ and pagination parameters) is considered
+  #  +_simple_filters+, +_scope_mode+, and pagination parameters) is considered
   #  to be a filter.
   #
   # Note that the scopes in +_default_scope+ and +_scopes+ can be in
@@ -1252,12 +1242,15 @@ module ViewScopes
 
     # Special _simple_filters filter syntax
     if (simple = params['_simple_filters'])
-      # Determine which scope to update
       known      = (current_session['scopes'] ||= {})
+      default    = default_scope_name
       controller = params[:controller].to_s.downcase
+
+      # Determine which scope to update (or create)
       name   = simple     if known.has_key?(simple)
       name ||= controller if known.has_key?(controller)
-      name ||= default_scope_name
+      name ||= default    if known.has_key?(default)
+      name ||= (simple =~ /^(1|t|true)$/i ? default : simple)
 
       # Then convert other query parameters to Scope::Filter hashes
       excluded = [
@@ -1280,7 +1273,7 @@ module ViewScopes
 
       # Then decompress, if required
       scopes = scopes.map do |n, s|
-        return [n, s] if s.is_a?(Hash)
+        next [n, s] if s.is_a?(Hash)
         [ n, ViewScopes.decompress_scope(s) ]
       end.to_h
 

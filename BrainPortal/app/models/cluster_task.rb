@@ -350,13 +350,29 @@ class ClusterTask < CbrainTask
   #
   #     make_available(6, "mincfiles/")
   #
-  # Will make userfile with ID 6 available at
+  # will make userfile with ID 6 available at
   # <workdir>/mincfiles/<name of userfile with ID 6>
   #
-  # +userfile+ can either be an ID or an userfile
+  # +userfile+ can either be an ID or a Userfile
   # object. Note that just like safe_symlink, this method
   # will silently replace an existing symlink at +file_path+
-  def make_available(userfile, file_path)
+  #
+  # In the case where +userfile+ is a FileCollection, an optional
+  # +userfile_sub_path+ can be provided to specify that the
+  # symlink will point not to the +userfile+ itself, but to
+  # a relative path in it. E.g. if userfile ID 99 points
+  # to a FileCollection named "Abcd" with content:
+  #
+  #   Abcd/hello.txt
+  #   Abcd/subdir/goodbye.txt
+  #
+  # then
+  #
+  #     make_available(99, "mygoodbye.txt", "subdir/goodbye.txt")
+  #
+  # will create a link 'mygoodbye.txt' that points deeper in the
+  # directory structure.
+  def make_available(userfile, file_path, userfile_sub_path = nil)
     cb_error "File path argument must be relative" if
       file_path.blank? || file_path.to_s =~ /^\//
 
@@ -370,9 +386,10 @@ class ClusterTask < CbrainTask
     full_path     = Pathname.new(self.full_cluster_workdir) + file_path
 
     # Pathname objects for the userfile and bourreau directories
-    workdir_path  = Pathname.new(self.cluster_shared_dir)
-    dp_cache_path = Pathname.new(self.bourreau.dp_cache_dir)
-    userfile_path = Pathname.new(userfile.cache_full_path)
+    workdir_path   = Pathname.new(self.cluster_shared_dir)
+    dp_cache_path  = Pathname.new(self.bourreau.dp_cache_dir)
+    userfile_path  = Pathname.new(userfile.cache_full_path)
+    userfile_path += Pathname.new(userfile_sub_path) if userfile_sub_path.present?
 
     # Figure out the two parts of the new symlink target; from file_path to
     # the DP cache symlink, and from the DP symlink to the userfile
@@ -1188,16 +1205,11 @@ class ClusterTask < CbrainTask
       File.unlink(tar_file) rescue true
     end
 
-    # Keep updated_at value in order to reset it at the end of method.
-    updated_at_value = self.updated_at
-
-    # Mark task not archived
+    # Mark task not archived; this also sets the updated_at timestamp
+    # so that a task recently unarchived is considered 'updated'
     self.workdir_archived = false
     self.save!
     self.update_size_of_cluster_workdir
-
-    # Reset update timestamp
-    self.update_column(:updated_at, updated_at_value)
 
     true
   rescue => ex
@@ -1251,8 +1263,6 @@ class ClusterTask < CbrainTask
       file.save!
       file.cache_copy_from_local_file(tar_file)
       file.cache_erase
-      file.meta[:original_task_id]       = self.id
-      file.meta[:original_task_fullname] = self.fullname
       file.save
       self.workdir_archive_userfile_id = file.id
       self.addlog_to_userfiles_created(file)

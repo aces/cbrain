@@ -256,7 +256,7 @@
   %>
 
   <% content_for :scripts do %>
-    <% javascript_tag (render :partial => "fetch_row.js.erb", :formats => [:js]).to_s %>
+    <%= javascript_include_tag 'cbrain/bourreaux/fetch_row' %>
   <% end %>
 
   <%= table.render %>

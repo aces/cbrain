@@ -30,17 +30,17 @@
 %>
 
 <div class="pagination">
-  <% if current_session[:persistent_userfiles].present? %>
-    <div class="pagination_left_side">
-      <blink>
-        <%=
-          html_colorize(
-            "(#{pluralize(current_session[:persistent_userfiles].size," file")} persistently selected)"
-          )
-        %>
-      </blink>
-    </div>
-  <% end %>
+  <div class="pagination_left_side">
+    <%=
+      render(:partial => 'shared/persistent_selection', :locals => {
+        :name      => 'userfiles',
+        :param     => 'file_ids[]',
+        :watch     => 'th.dt-sel > .dt-sel-check',
+        :item_name => 'file',
+        :all_url   => userfiles_path(:ids_only => 1)
+      })
+    %>
+  </div>
   <div class="page_links">
     (
       <%
@@ -49,11 +49,16 @@
             total.present? && (total.is_a?(String) || total > 0)
         end
       %>
-      <%= pluralize(@userfiles_total," entry") %> ,
+
+      <%= pluralize(@userfiles_total," entry") %>
+      <% unless @scope.custom[:view_all] %>
+        <span class="own_files">(own files only)</span>
+      <% end %>,
+
       <%= colored_pretty_size(@userfiles_total_size) %>
-      <%= show_total.(@hidden_total,    'hidden',    hidden_icon) %>
-      <%= show_total.(@archived_total,  'archived',  archived_icon) %>
-      <%= show_total.(@immutable_total, 'immutable', immutable_icon) %>
+      <%= show_total.(@hidden_total,    'hidden',   hidden_icon) %>
+      <%= show_total.(@archived_total,  'archived', archived_icon) %>
+      <%= show_total.(@immutable_total, 'locked',   immutable_icon) %>
     )
   </div>
   <div class="pagination_right_side">
@@ -83,9 +88,9 @@
 
     t.row do |u|
       {
-        :selected     => current_session[:persistent_userfiles].try(:include?, u.id.to_s),
         :select_param => 'file_ids[]',
-        :select_value => u.id
+        :select_value => u.id,
+        :html => { 'data-id' => u.id }
       } if u.available?
     end
   %>

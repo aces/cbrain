@@ -29,6 +29,16 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     Kernel.puts(*args)
   end
 
+  def self.print_intro_info #:nodoc:
+    #-----------------------------------------------------------------------------
+    puts "C> CBRAIN System Checks starting, " + Time.now.to_s
+    puts "C> Rails environment is set to '#{Rails.env}'"
+    puts "C> RAILS_ENV variable is set to '#{ENV['RAILS_ENV']}'" if (! ENV['RAILS_ENV'].blank?) && (Rails.env != ENV['RAILS_ENV'])
+    puts "C> CBRAIN instance is named '#{CBRAIN::Instance_Name}'"
+    puts "C> Hostname is '#{Socket.gethostname rescue "(Exception)"}'"
+    #-----------------------------------------------------------------------------
+  end
+
   # First thing first: identify which RemoteResource object
   # represents the current Rails application.
   def self.a002_ensure_Rails_can_find_itself
@@ -275,7 +285,8 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
             :header        => "Report of cache crud removal on #{myself.is_a?(BrainPortal) ? "Portal" : "Execution Server"} '#{myself.name}'",
             :description   => "These relative paths in the local Data Provider cache were\n" +
                               "removed as there are no longer any userfiles matching them.\n",
-            :variable_text => "#{wiped.size} cache subpaths:\n" + wiped.sort.join("\n"),
+            :variable_text => "#{wiped.size} cache subpaths:\n" + wiped.sort
+                              .each_slice(10).map { |pp| pp.join(" ") }.join("\n"),
             :critical      => true,
             :send_email    => false
           ) rescue true

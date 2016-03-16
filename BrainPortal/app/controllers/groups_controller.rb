@@ -63,7 +63,6 @@ class GroupsController < ApplicationController
     end
 
     scope_to_session(@scope)
-    current_session.save_preferences
 
     respond_to do |format|
       format.js
@@ -216,8 +215,6 @@ class GroupsController < ApplicationController
       scope.filters.reject! { |f| f.attribute.to_s == 'group_id' }
       scope_to_session(scope)
     end
-
-    current_session[:persistent_userfiles].clear rescue nil
 
     redirect_path = { :controller => redirect_controller, :action => redirect_action }
     redirect_path[:id] = redirect_id unless redirect_id.blank?

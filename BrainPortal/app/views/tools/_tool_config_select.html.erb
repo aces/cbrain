@@ -48,13 +48,11 @@ uniq_id = rand(100000).to_s
                                              select_attributes %>
 
   <% if num_online > 0 %>
-    <%= submit_tag "Launch Tool",
+    <%= submit_tag "Launch #{@tool.name}",
       "class"       => "button launch_tool",
-      "data-url"    => url_for(:controller => :tasks, :action => :new),
-      "data-method" => "POST"
+      "data-url"    => url_for(:controller => :tasks, :action => :new, :tool_id => @tool.id)
     %>
   <% end %>
-
 
   <br/>
 

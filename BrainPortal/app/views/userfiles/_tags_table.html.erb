@@ -1,0 +1,83 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+  user_tags, available_tags = current_user
+    .available_tags
+    .partition { |tag| tag.user_id == current_user.id }
+%>
+
+<% tag_row = lambda do |tag| %>
+  <tr class="tag-row" data-id="<%= tag.id %>">
+    <td class="tag-name">
+      <span class="tag-txt-name"><%= tag.name %></span>
+    </td>
+    <td class="tag-prj">
+      <span class="tag-txt-prj" data-value="<%= tag.group.id %>">
+        <%= tag.group.name %>
+      </span>
+    </td>
+    <td class="tag-files">
+      <%= tag.userfiles.count %>
+    </td>
+    <td class="tag-act">
+      <% if tag.user_id == current_user.id %>
+        <button class="ui-icon ui-icon-minusthick"></button>
+      <% end %>
+    </td>
+  </tr>
+<% end %>
+
+<thead>
+  <tr id="tag-hdr" class="tag-row">
+    <th class="tag-name">Tag</th>
+    <th class="tag-prj">Project</th>
+    <th class="tag-files">Files</th>
+    <th class="tag-act"></th>
+  </tr>
+</thead>
+<tbody class="tag-available">
+  <% available_tags.each(&tag_row) %>
+</tbody>
+<tbody class="tag-body">
+  <% user_tags.each(&tag_row) %>
+</tbody>
+<tfoot class="tag-add">
+  <tr class="tag-row">
+    <td class="tag-name">
+      <input class="tag-in-name" name="name" type="text" />
+    </td>
+    <td class="tag-prj">
+      <%=
+        group_select('group_id', {}, {
+          :id    => 'tag-add-prj',
+          :class => 'tag-in-prj',
+          :'data-placeholder' => "A project..."
+        })
+      %>
+    </td>
+    <td class="tag-ind"><span class="ui-icon ui-icon-refresh"></span></td>
+    <td class="tag-act"><button class="ui-icon ui-icon-plusthick" disabled></button></td>
+  </tr>
+</tfoot>

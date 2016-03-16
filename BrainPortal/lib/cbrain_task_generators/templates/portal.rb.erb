@@ -31,7 +31,7 @@
 % # generated code as legible as possible.
 
 # Portal-side CbrainTask subclass to launch <%= name %>
-class CbrainTask::<%= name %> < PortalTask
+class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 'PortalTask' %>
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
@@ -51,7 +51,7 @@ class CbrainTask::<%= name %> < PortalTask
 %
 % # Special case; we only have one file input parameter and it only
 % # allows single files.
-% single_file  = files.first if files.count == 1 && file_lists.empty?
+% single_file = files.first if files.count == 1 && file_lists.empty?
 % if single_file
 %   # The parameter's validation is made in final_task_list and is no longer
 %   # optional if it was.
@@ -60,6 +60,48 @@ class CbrainTask::<%= name %> < PortalTask
 %   optional.delete(single_file)
 % end
 %
+  # Task properties are special boolean properties of your task, returned as a
+  # hash table. Used internally by CBRAIN to enable/disable special task
+  # handling. All properties are unset (false) by default.
+  #
+  # Both generated task classes (ClusterTask for the Bourreau, PortalTask for
+  # the Portal) have different properties as they have different use cases.
+  # The properties below are for the Portal-side class (PortalTask).
+  def self.properties #:nodoc:
+    super.merge({
+      # The task's parameter view doesn't have a submit button, and one should
+      # be added automatically. Note that the views automatically generated
+      # along with this template *do* have a submit button.
+      :no_submit_button => false,
+
+      # Disable the use of presets (saved parameters). If enabled, the preset
+      # panel is shown above the task's parameter view and allows users to
+      # save a task's parameters and re-use them later to launch another similar
+      # task.
+      :no_presets => false,
+
+      # Allow CBRAIN to parallelize multiple instances of this task/job on a
+      # single cluster node; each job's generated shell script will be run
+      # as a background job on the node at the same time and CBRAIN will wait
+      # for all tasks to be done before moving to the data processing stage.
+      :use_parallelizer => false,
+
+      # Indicate that this task may alter its input files, and thus the task's
+      # owner must have write access to the input files to be allowed to launch
+      # the task. Most tasks do not alter their input files, but this is a safe
+      # default.
+      :readonly_input_files => <%=
+        if descriptor.has_key?('cbrain:readonly-input-files')
+          !!descriptor['cbrain:readonly-input-files']
+        elsif descriptor.has_key?('cbrain:alters-input-files')
+          !descriptor['cbrain:alters-input-files']
+        else
+          false
+        end
+      %>,
+    })
+  end
+
 % unless defaults.empty?
   # Default values for some (all?) of <%= name %>'s parameters. Those values
   # reflect the defaults taken by the tool's developer; feel free to change

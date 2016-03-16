@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -27,10 +27,10 @@
 <!-- *********************** -->
 
 <div class="footer">
-  Powered by CBRAIN<br>
+  <%= link_to "Powered by CBRAIN", "https://github.com/aces/cbrain", :target => '_blank' %><br>
   <% if current_user %>
     <%= link_to 'Feedback', feedbacks_path %>
   <% end %>
-  <%= link_to "Credits", "/credits" %>  
+  <%= link_to "Credits", "/credits" %>
 </div>
 

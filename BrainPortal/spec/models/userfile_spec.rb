@@ -194,34 +194,25 @@ describe Userfile do
     end
   end
 
-  describe "#self.valid_file_types" do
+  describe "#self.valid_sti_types" do
 
     it "should call valid_file_classes.map" do
       userfile
       return_array  = ["class1","class2"]
       expect(Userfile).to receive(:valid_file_classes).and_return(return_array)
       expect(return_array).to receive(:map)
-      Userfile.valid_file_types
+      Userfile.valid_sti_types
     end
   end
 
-  describe "#valid_file_types" do
+  describe "#valid_file_classes" do
 
     it "should call class.valid_file_types" do
+      userfile
       userfile_class = double("userfile")
       expect(userfile).to receive(:class).and_return(userfile_class)
-      expect(userfile_class).to receive(:valid_file_types).and_return([])
-      userfile.valid_file_types
-    end
-  end
-
-  describe "#is_valid_file_type?(type)" do
-
-    it "should call valid_file_types.include?" do
-      return_array  = ["type1","type2"]
-      expect(userfile).to receive(:valid_file_types).and_return(return_array)
-      expect(return_array).to receive(:include?)
-      userfile.is_valid_file_type?("type")
+      expect(userfile_class).to receive(:valid_file_classes).and_return([])
+      userfile.valid_file_classes
     end
   end
 
@@ -235,28 +226,7 @@ describe Userfile do
     end
   end
 
-  describe "#update_file_type" do
-    before(:each) do
-      allow(userfile).to receive(:save_with_logging)
-    end
 
-    it "should call is_valid_file_type" do
-      expect(userfile).to receive(:is_valid_file_type?)
-      userfile.update_file_type("type")
-    end
-
-    it "should save type if is_valid_file_type? return true" do
-      allow(userfile).to receive(:is_valid_file_type?).and_return(true)
-      userfile.update_file_type("new_type")
-      expect(userfile.type).to eq("new_type")
-    end
-
-    it "should return false if is_valid_file_type? return false" do
-      allow(userfile).to receive(:is_valid_file_type?).and_return(false)
-      expect(userfile.update_file_type("new_type")).to be_falsey
-    end
-  end
-  
   #Testing the get_tags_for_user method
   describe "#get_tags_for_user" do
 

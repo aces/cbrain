@@ -45,20 +45,19 @@ class UsersController < ApplicationController
     })
 
     @base_scope = current_user.available_users.includes(:groups, :site)
-    @view_scope = @scope.apply(@base_scope)
+    @users = @view_scope = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
     @users = @scope.pagination.apply(@view_scope) if
       [:html, :js].include?(request.format.to_sym)
 
     # Precompute file, task and locked/unlocked counts.
-    @users_file_counts  = Userfile.where(:user_id => @view_scope).group(:user_id).count
-    @users_task_counts  = CbrainTask.real_tasks.where(:user_id => @view_scope).group(:user_id).count
+    @users_file_counts    = Userfile.where(:user_id => @view_scope).group(:user_id).count
+    @users_task_counts    = CbrainTask.real_tasks.where(:user_id => @view_scope).group(:user_id).count
     @locked_users_count   = @view_scope.where(:account_locked => true).count
     @unlocked_users_count = @view_scope.count - @locked_users_count
 
     scope_to_session(@scope)
-    current_session.save_preferences
 
     respond_to do |format|
       format.html # index.html.erb

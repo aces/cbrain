@@ -22,34 +22,40 @@
 #
 -%>
 
-<h4>Latest load information about this Execution Server</h4>
-
-<% unless @latest_in_queue_delay.blank? %>
 <%
-    @latest_in_queue_delay = @latest_in_queue_delay.to_i
+  latest_in_queue_delay    ||= bourreau.meta[:latest_in_queue_delay]
+  time_of_last_queue_delay ||= bourreau.meta[:time_of_latest_in_queue_delay]
+  num_active               ||= bourreau.cbrain_tasks.status(:active).count
+  num_queued               ||= bourreau.cbrain_tasks.status(:queued).count
+  num_processing           ||= bourreau.cbrain_tasks.status(:processing).count
+%>
+
+<% unless latest_in_queue_delay.blank? %>
+<%
+    latest_in_queue_delay = latest_in_queue_delay.to_i
     rating = case
-      when @latest_in_queue_delay <  1.minute
+      when latest_in_queue_delay <  1.minute
         html_colorize("instant",  'green')
-      when @latest_in_queue_delay <  2.minute
+      when latest_in_queue_delay <  2.minute
         html_colorize("superb",   'blue')
-      when @latest_in_queue_delay < 15.minutes
+      when latest_in_queue_delay < 15.minutes
         html_colorize("good",     'black')
-      when @latest_in_queue_delay <  1.hour
+      when latest_in_queue_delay <  1.hour
         html_colorize("mediocre", 'orange')
-      when @latest_in_queue_delay <  2.hours
+      when latest_in_queue_delay <  2.hours
         html_colorize("bad",      'purple')
       else
         html_colorize("awful",    'red')
-      end
+    end
 %>
-  Most recent wait time before execution starts: <%= pretty_elapsed(@latest_in_queue_delay.to_i, :num_components => 2) %> (<%= rating %>)<br/>
-  <% unless @time_of_last_queue_delay.blank? %>
-    <small>(This happened <%= pretty_elapsed(Time.now.to_i - @time_of_last_queue_delay.to_i, :num_components => 2) %> ago)</small><br/>
+  <b>Last wait time:</b> <%= pretty_elapsed(latest_in_queue_delay.to_i, :num_components => 2) %> (<%= rating %>)<br/>
+  <% unless time_of_last_queue_delay.blank? %>
+    <small>(This happened <%= pretty_elapsed(Time.now.to_i - time_of_last_queue_delay.to_i, :num_components => 2) %> ago)</small>&nbsp;
+    <a href="#" id="showAdditionalToolInfo">more info</a><br/>
   <% end %>
-  <br/>
 <% end %>
-
-Number of active tasks (all users):  <%= @num_active %><br/>
-Number of queued tasks (all users):  <%= @num_queued %><br/>
-Number of running tasks (all users): <%= @num_processing %><br/>
-
+<div class="additionalToolInfo">
+Number of active tasks (all users):  <%= num_active %><br/>
+Number of queued tasks (all users):  <%= num_queued %><br/>
+Number of running tasks (all users): <%= num_processing %>
+</div>

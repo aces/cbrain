@@ -580,19 +580,18 @@ describe User do
 
 
   describe "#destroy_user_sessions" do
-    let!(:session)    { {:user_id => normal_user.id} }
-    let!(:sess_model) { double("sess_model").as_null_object }
-    let!(:cb_session) { mock_model(ActiveRecord::SessionStore::Session).as_null_object }
 
     it "should return true if user have no id" do
       normal_user.id = nil
       expect(normal_user.destroy_user_sessions).to be_truthy
     end
 
-    it "should call destroy on user session" do
-      allow(CbrainSession).to receive(:all).and_return(double'all_session', :select => [cb_session])
-      expect(cb_session).to receive(:destroy)
+    it "should call destroy user session" do
+      user_id = CbrainSession.all.map(&:user_id).first
+      nb_session_after_delete = (CbrainSession.all.count - CbrainSession.where(:user_id => user_id).count)
+      normal_user.id = user_id
       normal_user.destroy_user_sessions
+      expect(CbrainSession.all.count).to eq(nb_session_after_delete)
     end
 
   end
