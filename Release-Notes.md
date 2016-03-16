@@ -1,5 +1,15 @@
 ## CBRAIN Release Notes
 
+#### Version 4.3.0 Released 2016-03-16
+
+- There is a new tools launching interface.
+- Tools can have tags set up by the administrator.
+- The new launch interface allow filtering tools by these tags.
+- Tasks running on a cluster's node now have a framework
+  that allows them to tell CBRAIN to launch new tasks.
+- Console utilities for the administrator.
+- Bug fixes, small improvements in performance, etc.
+
 #### Version 4.2.1 Released 2015-10-30
 
 Hot bug fixes in the previous release, related to bad files on
@@ -44,8 +54,6 @@ In the near future, we plan to:
 
 Currently available plugins packages are:
 
-- [cbrain-plugins-mni](https://github.com/aces/cbrain-plugins-mni)
-- [cbrain-plugins-fsl](https://github.com/aces/cbrain-plugins-fsl)
-- [cbrain-plugins-freesurfer](https://github.com/aces/cbrain-plugins-freesurfer)
+- [cbrain-plugins-neuro](https://github.com/aces/cbrain-plugins-neuro)
 - [cbrain-plugins-fmri-psom](https://github.com/aces/cbrain-plugins-fmri-psom)
 
