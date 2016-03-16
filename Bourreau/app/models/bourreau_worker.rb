@@ -279,13 +279,13 @@ class BourreauWorker < Worker
 
       worker_log.debug "Updated #{task.bname_tid} to state #{new_status}"
 
-      # Mechanism for tasks to submit other tasks: tasks that were not in a status 
+      # Mechanism for tasks to submit other tasks: tasks that were not in a status
       # in COMPLETED_STATUS or FAILED_STATUS at the previous iteration may submit new
       # tasks provided that they have the can_submit_new_tasks
       # property.
       handle_tasks_submitted_by(task) if task.class.properties[:can_submit_new_tasks] &&
                                          !(CbrainTask::COMPLETED_STATUS.include?(task.status) || CbrainTask::FAILED_STATUS.include?(task.status))
-      
+
       return if initial_status == 'On CPU' && new_status == 'On CPU'; # nothing else to do
 
       # Record bourreau delay time for Queued -> On CPU
@@ -548,13 +548,13 @@ class BourreauWorker < Worker
 
   # Handles new tasks submitted by "task". To submit a new task, a
   # task must create a new-task-*.json JSON file at the root of its
-  # work directory.  Once a JSON file has been handled, it is deleted.
+  # work directory. Once a JSON file has been handled, it is deleted.
   #
   # Method parameter:
   # * "task" is the submitter task. JSON files will be searched in the
   # work dir of "task".  New tasks are submitted on the same Bourreau
-  # than "task".  New tasks belong to the same user than "task".
-  # 
+  # than "task". New tasks belong to the same user than "task".
+  #
   def handle_tasks_submitted_by task
     workdir = task.full_cluster_workdir
     return if workdir.blank? # in case workdir doesn't exist yet
@@ -568,11 +568,11 @@ class BourreauWorker < Worker
                                                     # http://www.codegnome.com/blog/2013/05/26/locking-files-with-ruby
           file_content = file.read
           submit_task_from_string(filename,file_content,task)
-          file.close # This also releases the lock. 
+          file.close # This also releases the lock.
           File.delete(filename)
         else
           worker_log.info("Another worker is working on this file: ignoring it.")
-          file.close # In case the lock was not obtained, still close the file. 
+          file.close # In case the lock was not obtained, still close the file.
         end
       rescue => ex
         message="Error while submitting new task: #{ex.message}."
@@ -598,7 +598,7 @@ class BourreauWorker < Worker
   # * current_task: The current task from which the new task is submitted.
   #                 Used to set the user, bourreau id and results data provider id
   #                 for the new task.
-  # 
+  #
   def submit_task_from_string filename,json_string,current_task
 
     # Parses JSON string and checks format
@@ -609,10 +609,12 @@ class BourreauWorker < Worker
     message = "Submitting new #{new_task_hash["tool-class"]} task."
     worker_log.info(message)
     current_task.addlog(message)
-        
+
     # Creates task
     task_class_name      = new_task_hash["tool-class"]
+    share_wd_tid         = new_task_hash["share_wd_tid"]
     new_task             = CbrainTask.const_get(task_class_name).new # Raises an exception if tool class is not found
+    new_task.share_wd_tid = share_wd_tid if share_wd_tid.present?
     new_task.batch_id    = current_task.id
     new_task.launch_time = Time.now
     current_task.level   = 0 if current_task.level.nil?
@@ -646,15 +648,15 @@ class BourreauWorker < Worker
         new_task.add_prerequisites_for_setup(parent_task,'Completed')
       end
     end
-    
+
     # Sets other task attributes
     # In the future, we could allow to register results to another data provider
     # or to submit the task to another bourreau. This would require to carefully
     # check permissions of current_task.user
     new_task.description              = new_task_hash["description"] || "Task submitted by task #{current_task.id}"
-    new_task.user                     = current_task.user 
-    new_task.results_data_provider_id = current_task.results_data_provider_id 
-    new_task.bourreau_id              = current_task.bourreau_id   
+    new_task.user                     = current_task.user
+    new_task.results_data_provider_id = current_task.results_data_provider_id
+    new_task.bourreau_id              = current_task.bourreau_id
 
     # Submits the task
     new_task.status = "New"
@@ -683,13 +685,13 @@ class BourreauWorker < Worker
     # accessible tool config id will be selected.
     schema = {
       "type"       => "object",
-      "required" => ["tool-class","parameters"], 
+      "required" => ["tool-class","parameters"],
       "properties" => {
         "tool-class"     => {"type"  => "string"},                                         # Class of the new task
         "tool-config-id" => {"type"  => "number"},                                         # Tool config id of the new task
         "description"    => {"type"  => "string"},                                         # Description of the new task
         "parameters"     => {"type"  => "object", "properties" => {"type" => "string" }},  # Parameters of the new task
-        "prerequisites"  => {"type"  => "string"},                                         # List of task ids that are a prerequisite to setup the new task 
+        "prerequisites"  => {"type"  => "string"},                                         # List of task ids that are a prerequisite to setup the new task
         "required-to-post-process" =>  {"type"  => "boolean"}                          # If true, the current task will not post-process before the new task is completed
       }
     }
