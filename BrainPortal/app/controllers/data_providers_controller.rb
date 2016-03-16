@@ -397,8 +397,14 @@ class DataProvidersController < ApplicationController
 
   end
 
-  # Register a list of files into the system.
-  # The files' meta data will be saved as Userfile resources.
+  # Register a list of files (+basenames+) into CBRAIN from a given data
+  # provider (parameter +id+), with types +filetypes+ under group +group_id+.
+  # An optional action can be taken once registration is complete; if +auto_do+
+  # is 'COPY' or 'MOVE', the newly registered files will be copied (or moved)
+  # to the given alternate data provider +other_data_provider_id+. If the
+  # special parameter +as_user_id+ is given, the files will be registered
+  # under that user instead of the current user. Note that registration
+  # happens in background for HTML & JS requests.
   def register
     # Extract key parameters & make sure the provider is browsable
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
@@ -454,8 +460,12 @@ class DataProvidersController < ApplicationController
     # project the user doesn't have access to).
     group_id = current_user.own_group.id if (
       group_id == Group.everyone.id ||
-      ! current_user.available_groups.map(&:id).include?(group_id)
+      ! current_user.available_groups.raw_first_column('groups.id').include?(group_id)
     )
+
+    # Remind the user if browsing as another user
+    flash[:notice] += "Important note! Since you were browsing as user '#{@as_user.login}', the files will be registered as belonging to that user instead of you!\n" if
+      @as_user != current_user
 
     # Register the given userfiles in background.
     userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames])
@@ -507,10 +517,6 @@ class DataProvidersController < ApplicationController
         end
       end
 
-      # Remind the user if browsing as another user
-      flash[:notice] += "Important note! Since you were browsing as user '#{@as_user.login}', the files were registered as belonging to that user instead of you!\n" if
-        succeeded.present? && @as_user != current_user
-
       # If files actually got registered, clear the browsing cache
       clear_browse_provider_local_cache_file(@as_user, @provider) if
         succeeded.present? && [:html, :js].include?(request.format.to_sym)
@@ -527,11 +533,14 @@ class DataProvidersController < ApplicationController
       succeeded, failed = [], {}
 
       # Will some of the file names collide?
-      collisions = Userfile.where(
-        :name             => registered.map(&:name),
-        :user_id          => current_user.id,
-        :data_provider_id => target_dp.id
-      ).map(&:name)
+      collisions = Userfile
+        .where(
+          :name             => registered.raw_first_column('userfiles.name'),
+          :user_id          => @as_user.id,
+          :data_provider_id => target_dp.id
+        )
+        .raw_first_column('userfiles.name')
+        .to_set
 
       userfiles = registered.reject { |r| collisions.include?(r.name) }
       if collisions.present?
@@ -552,7 +561,7 @@ class DataProvidersController < ApplicationController
             new = userfile.provider_copy_to_otherprovider(target_dp)
             userfile.delete rescue true # Not destroy(), as the contents must be kept.
             userfile.destroy_log rescue true
-            (userfile = new).set_size!
+            userfile = new
           end
 
           userfile.set_size!
@@ -580,7 +589,11 @@ class DataProvidersController < ApplicationController
     end
   end
 
-  # Unregister a list of files from CBRAIN
+  # Unregister (and optionally delete) a list of files (+basenames+) from a given
+  # CBRAIN data provider (parameter +id+). This action accepts 2 optional parameters;
+  # +as_user_id+ to unregister as a given user rather than as the current user, and
+  # +delete+, if files are to be deleted once unregistered.
+  # Note that unregistration will happen in background for HTML & JS requests.
   def unregister
     # Extract key parameters & make sure the provider is browsable
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
@@ -607,7 +620,7 @@ class DataProvidersController < ApplicationController
       current_user,
       "Unregister files (data_provider: #{@provider.id})"
     ) do
-      userfiles.reject { |b,u| u.blank? }.shuffle.each do |basename, userfile|
+      userfiles.reject { |b,u| u.blank? }.to_a.shuffle.each do |basename, userfile|
         begin
           # Make sure the current user can unregister the file
           unless userfile.has_owner_access?(current_user)
@@ -645,7 +658,11 @@ class DataProvidersController < ApplicationController
     end
   end
 
-  # Directly delete a list of files from a browsable DP
+  # Delete a list of files (+basenames+) from a given CBRAIN data provider
+  # (parameter +id+). This action differs from +unregister+ (with +delete+
+  # option) by not requiring the files to be registered in CBRAIN. As with
+  # +register+ and +unregister+, a +as_user_id+ parameter is supported and
+  # the deletion occurs in background.
   def delete
     # Extract key parameters & make sure the provider is browsable
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
@@ -671,7 +688,7 @@ class DataProvidersController < ApplicationController
       current_user,
       "Delete files (data_provider: #{@provider.id})"
     ) do
-      userfiles.shuffle.each do |basename, userfile|
+      userfiles.to_a.shuffle.each do |basename, userfile|
         begin
           # Is the userfile registered?
           if userfile.present?
@@ -682,7 +699,6 @@ class DataProvidersController < ApplicationController
             end
 
             result = userfile.destroy
-            userfile.destroy_log rescue true
 
           # Otherwise, create a temporary userfile for provider_erase
           else
