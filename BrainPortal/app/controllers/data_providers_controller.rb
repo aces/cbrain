@@ -397,265 +397,346 @@ class DataProvidersController < ApplicationController
 
   end
 
-  # Register a list of files into the system.
-  # The files' meta data will be saved as Userfile resources.
-  # This method is (unfortunately) also used to unregister files, and delete them (on the browsable side)
+  # Register a list of files (+basenames+) into CBRAIN from a given data
+  # provider (parameter +id+), with types +filetypes+ under group +group_id+.
+  # An optional action can be taken once registration is complete; if +auto_do+
+  # is 'COPY' or 'MOVE', the newly registered files will be copied (or moved)
+  # to the given alternate data provider +other_data_provider_id+. If the
+  # special parameter +as_user_id+ is given, the files will be registered
+  # under that user instead of the current user. Note that registration
+  # happens in background for HTML & JS requests.
   def register
-    # TODO: refactor completely!
+    # Extract key parameters & make sure the provider is browsable
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
-
-    scope      = scope_from_session('data_providers#browse')
-    @as_user   = current_user
-      .available_users
-      .where(:id => scope.custom['as_user_id'] ||= (
-        params['as_user_id'] || current_user.id
-      ))
-      .first
-    @as_user ||= current_user
-
+    @as_user  = browse_as(params['as_user_id'])
     unless @provider.is_browsable?(current_user)
       flash[:error] = "You cannot register files from this provider."
       respond_to do |format|
         format.html { redirect_to :action => :index }
-        format.xml  { render :xml   => { :error  =>  flash[:error] }, :status  => :forbidden }
-        format.json { render :json  => { :error  =>  flash[:error] }, :status  => :forbidden }
+        format.xml  { render :xml  => { :error => flash[:error] }, :status => :forbidden }
+        format.json { render :json => { :error => flash[:error] }, :status => :forbidden }
       end
       return
     end
 
-    basenames = params[:basenames] || []
-    filetypes = params[:filetypes] || []
-    basenames = [basenames] unless basenames.is_a? Array
-    filetypes = [filetypes] unless filetypes.is_a? Array
+    flash[:notice] ||= ''
 
-    # Find out what we'll do with all these files
-    do_unreg  = params.has_key?(:unregister)
-    do_erase  = params.has_key?(:delete)
-
-    # Automatic MOVE or COPY operation?
-    move_or_copy = params[:auto_do]                || ""
-    other_provid = params[:other_data_provider_id] || nil
-    new_dp       = DataProvider.find_accessible_by_user(other_provid,current_user) rescue nil
-    past_tense   = move_or_copy == "MOVE" ? "moved" : "copied"
-    if (move_or_copy == "MOVE" || move_or_copy == "COPY") && !new_dp && !(do_unreg || do_erase)
-      flash[:error] = "Error: you selected to automatically #{move_or_copy} your files but did not specify a destination Data Provider."
-      redirect_to :action => :browse
+    # Is there an automatic copy/move operation to do afterwards?
+    post_action = :copy if params[:auto_do] == "COPY"
+    post_action = :move if params[:auto_do] == "MOVE"
+    target_dp   = DataProvider.find_accessible_by_user(params[:other_data_provider_id], current_user) rescue nil
+    if post_action && ! target_dp
+      flash[:error] = "Missing destination data provider for copy or move."
+      respond_to do |format|
+        format.html { redirect_to :action => :browse }
+        format.xml  { render :xml  => { :error => flash[:error] }, :status => :unprocessable_entity }
+        format.json { render :json => { :error => flash[:error] }, :status => :unprocessable_entity }
+      end
       return
     end
 
-    # Create an association { basename => type } as provided by the form
-    base2type = {}
-    filetypes.select { |typebase| ! typebase.empty? }.each do |typebase|
-      next unless typebase.match(/^(\w+)-(\S+)$/)
-      type = $1
-      base = $2
-      base2type[base] = type
-    end
+    # Provided file types for the file(s) to register. If a file is present
+    # in 'basenames' (to be registered) but *not* in 'filetypes', a default
+    # of 'SingleFile' is used.
+    filetypes = Array(params[:filetypes])
+      .map { |v| [$2, $1] if v.match(/^(\w+)-(\S+)$/) }
+      .compact
+      .to_h
 
-    # Counters and stats
-    newly_registered_userfiles      = []
-    previously_registered_userfiles = []
-    num_unregistered = 0
-    num_erased       = 0
-    num_skipped      = 0
+    # Known userfile types, used to validate the values extracted above
+    valid_types = Userfile.descendants
+      .map(&:name)
 
-    flash[:error]  = ""
-    flash[:notice] = ""
+    # The new file(s)'s default project is the currently active project, if
+    # available.
+    group_id = current_project.try(:id) || current_user.own_group.id
 
-    legal_subtypes = Userfile.descendants.map(&:name).index_by { |x| x }
+    # Unless one was specified explicitly via :other_group_id
+    group_id = params[:other_group_id].to_i unless
+      params[:other_group_id].blank?
 
-    # NOTE: next paragraph for initializing registered_files is also in browse() action
-    registered_files = Userfile.where( :data_provider_id => @provider.id )
-    # On data providers where files are stored in a per user subdir, we limit our
-    # search of what's registered to only those belonging to @as_user
-    registered_files = registered_files.where( :user_id => @as_user.id ) if ! @provider.allow_file_owner_change?
-    registered_files = registered_files.all.index_by(&:name)
+    # Fallback to the user's own project if the one selected above is invalid
+    # (the everyone project, under which no file is ever registered, or a
+    # project the user doesn't have access to).
+    group_id = current_user.own_group.id if (
+      group_id == Group.everyone.id ||
+      ! current_user.available_groups.raw_first_column('groups.id').include?(group_id)
+    )
 
-    basenames.shuffle.each do |basename|
+    # Remind the user if browsing as another user
+    flash[:notice] += "Important note! Since you were browsing as user '#{@as_user.login}', the files will be registered as belonging to that user instead of you!\n" if
+      @as_user != current_user
 
-      # Unregister files
+    # Register the given userfiles in background.
+    userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames])
+    userfiles_count = userfiles.count # Avoids a cute race condition
 
-      if do_unreg || do_erase
-        userfile = registered_files[basename]
-        if userfile.blank?
-          num_skipped += 1 unless do_erase
-        elsif ! userfile.has_owner_access?(current_user)
-          flash[:error] += "Error: file #{basename} is not registered such that you have the necessary permissions to unregister it. File not unregistered.\n"
-          num_skipped += 1
-          next
-        else
-          num_unregistered += Userfile.delete(userfile.id) # NOT destroy()! We don't want to delete the content!
-          userfile.destroy_log rescue true
+    registered, already_registered = [], []
+    succeeded, failed = [], {}
+
+    CBRAIN.spawn_with_active_records_if(
+      [:html, :js].include?(request.format.to_sym),
+      current_user,
+      "Register files (data_provider: #{@provider.id})"
+    ) do
+      userfiles.keys.shuffle.each do |basename|
+        begin
+          # Is the file already registered?
+          if userfiles[basename].present?
+            already_registered << userfiles[basename]
+            (failed["Already registered"] ||= []) << basename
+            next
+          end
+
+          # Determine the filetype of the new file
+          subtype = filetypes[basename] || "SingleFile"
+          unless valid_types.include?(subtype)
+            (failed["Unknown type #{subtype}"] ||= []) << basename
+            next
+          end
+
+          # Create the new userfile
+          userfile = subtype.constantize.new(
+            :name             => basename,
+            :user_id          => @as_user.id,
+            :group_id         => group_id,
+            :data_provider_id => @provider.id
+          )
+
+          # And save it
+          if userfile.save
+            userfile.addlog_context(self, "Registered on DataProvider '#{@provider.name}' as '#{userfile.name}' by #{current_user.login}.")
+            registered << (userfiles[basename] = userfile)
+            succeeded << basename
+          else
+            (failed["Unspecified error"] ||= []) << basename
+          end
+
+        rescue => e
+          (failed[e.message] ||= []) << basename
         end
-        next unless do_erase
       end
 
-      # Erase unregistered files
+      # If files actually got registered, clear the browsing cache
+      clear_browse_provider_local_cache_file(@as_user, @provider) if
+        succeeded.present? && [:html, :js].include?(request.format.to_sym)
 
-      if do_erase
-        temp_class    = FileCollection   # erasing should work whether or not target really is a directory or not; if not change this
-        temp_userfile = temp_class.new(
-           :name          => basename,
-           :data_provider => @provider,
-           :user_id       => @as_user.id, # cannot use current_user, since it might be a vault_ssh dp
-           :group_id      => current_user.own_group.id
-        ).freeze # do not save this file! it's only used temporarily to delete the content on the DP
-        erase_ok = @provider.provider_erase(temp_userfile) rescue nil
-        if erase_ok
-          num_erased += 1
-        else
-          num_skipped += 1
-        end
+      # No need to move or copy? Just set the file sizes and exit.
+      unless post_action
+        registered.each { |userfile| userfile.set_size! rescue true }
+        generic_notice_messages('register', succeeded, failed)
         next
       end
 
-      # Register new files
+      # Prepare to copy/move the files to the new DP
+      generic_notice_messages('register', succeeded, failed)
+      succeeded, failed = [], {}
 
-      subtype = "SingleFile"
-      if base2type.has_key?(basename)
-        subtype = base2type[basename]
-        if subtype == "Unset" || ( ! legal_subtypes[subtype] )
-          flash[:error] += "Error: entry #{basename} not provided with a proper type. File not registered.\n"
-          num_skipped += 1
-          next
-        end
+      # Will some of the file names collide?
+      collisions = Userfile
+        .where(
+          :name             => registered.raw_first_column('userfiles.name'),
+          :user_id          => @as_user.id,
+          :data_provider_id => target_dp.id
+        )
+        .raw_first_column('userfiles.name')
+        .to_set
+
+      userfiles = registered.reject { |r| collisions.include?(r.name) }
+      if collisions.present?
+        failed["Filename collision"] ||= []
+        failed["Filename collision"]  += collisions
       end
 
-      file_group_id   = params[:other_group_id].to_i unless params[:other_group_id].blank?
-      file_group_id ||= current_project.try(:id) || current_user.own_group.id
-      if file_group_id == Group.everyone.id ||          # We won't register a file in group 'everyone'
-         ! current_user.available_groups.where(:id => file_group_id).exists? # or that is not in one of our groups
-         file_group_id = current_user.own_group.id
-      end
+      # Copy/move each file
+      userfiles.shuffle.each_with_index do |userfile, ix|
+        $0 = "#{post_action.to_s.humanize} registered files ID=#{userfile.id} #{ix + 1}/#{userfiles.size}\0\0\0\0"
 
-      subclass = Class.const_get(subtype)
-      userfile = subclass.new( :name             => basename,
-                               :user_id          => @as_user.id, # cannot use current_user, since it might be a vault_ssh dp
-                               :group_id         => file_group_id,
-                               :data_provider_id => @provider.id )
+        begin
+          case post_action
+          when :move
+            userfile.provider_move_to_otherprovider(target_dp)
 
-      registered_file = registered_files[basename]
-      if registered_file
-        previously_registered_userfiles << registered_file
-      elsif userfile.save
-        newly_registered_userfiles << userfile
-        userfile.addlog_context(self, "Registered on DataProvider '#{@provider.name}' as '#{userfile.name}' by #{current_user.login}.")
-      else
-        flash[:error] += "Error: could not register #{subtype} '#{basename}'... maybe the file exists already?\n"
-        num_skipped += 1
-      end
-
-    end # loop to register/unregister files
-
-    if num_skipped > 0
-      flash[:notice] += "Skipped #{num_skipped} files.\n"
-    end
-
-    if newly_registered_userfiles.size > 0
-      clear_browse_provider_local_cache_file(@as_user, @provider) unless request.format.to_sym == :xml || request.format.to_sym == :json
-      flash[:notice] += "Registered #{newly_registered_userfiles.size} files.\n"
-      if @as_user != current_user
-        flash[:notice] += "Important note! Since you were browsing as user '#{@as_user.login}', the files were registered as belonging to that user instead of you!\n"
-      end
-    elsif num_erased > 0
-      clear_browse_provider_local_cache_file(@as_user, @provider) unless request.format.to_sym == :xml || request.format.to_sym == :json
-      flash[:notice] += "Erased #{num_erased} files.\n"
-    elsif num_unregistered > 0
-      flash[:notice] += "Unregistered #{num_unregistered} files.\n"
-    else
-      flash[:notice] += "No files affected.\n"
-    end
-
-    # Nothing else do to if no automatic operation required.
-    if (move_or_copy != "MOVE" && move_or_copy != "COPY") || !new_dp || newly_registered_userfiles.size == 0
-      if newly_registered_userfiles.size > 0
-        CBRAIN.spawn_with_active_records(:admin, "Set Sizes After Register") do
-          newly_registered_userfiles.each do |userfile|
-            userfile.set_size! rescue true
+          when :copy
+            new = userfile.provider_copy_to_otherprovider(target_dp)
+            userfile.delete rescue true # Not destroy(), as the contents must be kept.
+            userfile.destroy_log rescue true
+            userfile = new
           end
+
+          userfile.set_size!
+          succeeded << userfile
+        rescue => e
+          (failed[e.message] ||= []) << userfile
         end
       end
 
-      api_response = {  :notice                                => flash[:notice],
-                        :error                                 => flash[:error],
-                        :newly_registered_userfiles            => newly_registered_userfiles,
-                        :previously_registered_userfiles       => previously_registered_userfiles,
-                        :userfiles_in_transit                  => [],
-                        :num_unregistered                      => num_unregistered,
-                        :num_erased                            => num_erased,
-                      } if request.format.to_s =~ /xml|json/i
+      mangled_action = (post_action == :move ? 'mov' : 'copy')
+      generic_notice_messages(mangled_action, succeeded, failed)
+    end
 
+    # Generate a complete response matching the old API
+    flash[:notice] += "Registering #{userfiles_count} userfile(s) in background.\n"
+    api_response = generate_register_response.merge({
+      :newly_registered_userfiles      => registered,
+      :previously_registered_userfiles => already_registered
+    })
+
+    respond_to do |format|
+      format.html { redirect_to :action => :browse }
+      format.json { render :json => api_response }
+      format.json { render :xml  => api_response }
+    end
+  end
+
+  # Unregister (and optionally delete) a list of files (+basenames+) from a given
+  # CBRAIN data provider (parameter +id+). This action accepts 2 optional parameters;
+  # +as_user_id+ to unregister as a given user rather than as the current user, and
+  # +delete+, if files are to be deleted once unregistered.
+  # Note that unregistration will happen in background for HTML & JS requests.
+  def unregister
+    # Extract key parameters & make sure the provider is browsable
+    @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
+    @as_user  = browse_as(params['as_user_id'])
+    unless @provider.is_browsable?(current_user)
+      flash[:error] = "You cannot unregister files from this provider."
       respond_to do |format|
-        format.html { redirect_to :action => :browse }
-        format.xml  { render      :xml    => api_response }
-        format.json { render      :json   => api_response }
+        format.html { redirect_to :action => :index }
+        format.xml  { render :xml  => { :error => flash[:error] }, :status => :forbidden }
+        format.json { render :json => { :error => flash[:error] }, :status => :forbidden }
       end
       return
     end
 
-    # Alright, we need to move or copy the files
-    collisions = newly_registered_userfiles.select do |u|
-      found = Userfile.where(:name => u.name, :user_id => current_user.id, :data_provider_id => new_dp.id).first
-      found ? true : false
-    end
-    to_operate = newly_registered_userfiles - collisions
+    flash[:notice] ||= ''
 
-    if collisions.size > 0
-      flash[:error] += "Could not #{move_or_copy.downcase} some files, as files with the same names already exist:\n" +
-                         collisions.map(&:name).sort.join(", ")
-    end
+    # Unregister the given userfiles in background.
+    userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames])
+    succeeded, failed = [], {}
+    erasing = params.has_key?(:delete)
 
-    if to_operate.size == 0
-      flash[:error] += "No files are left to #{move_or_copy.downcase} !\n"
-    else
-      flash[:notice] += "Warning! #{to_operate.size} files are now being #{past_tense} in background.\n"
-      success_list  = []
-      failed_list   = {}
-      CBRAIN.spawn_with_active_records(:admin, "#{move_or_copy} Registered Files") do
-        to_operate.shuffle.each_with_index do |u,idx|
-          $0="#{move_or_copy} Registered Files ID=#{u.id} #{idx+1}/#{to_operate.size}\0\0\0\0"
-          begin
-            if move_or_copy == "MOVE"
-              u.provider_move_to_otherprovider(new_dp)
-              u.set_size!
-            elsif move_or_copy == "COPY" # and no ELSE !
-              new = u.provider_copy_to_otherprovider(new_dp)
-              u.delete rescue true # NOT destroy()! We don't want to delete the content!
-              u.destroy_log rescue true
-              new.set_size!
-            end
-            success_list << u
-          rescue => ex
-            (failed_list[ex.message] ||= []) << u
+    CBRAIN.spawn_with_active_records_if(
+      [:html, :js].include?(request.format.to_sym),
+      current_user,
+      "Unregister files (data_provider: #{@provider.id})"
+    ) do
+      userfiles.reject { |b,u| u.blank? }.to_a.shuffle.each do |basename, userfile|
+        begin
+          # Make sure the current user can unregister the file
+          unless userfile.has_owner_access?(current_user)
+            (failed["Insufficient permissions"] ||= []) << basename
+            next
           end
-        end # each file
 
-        # Message for successful actions
-        if success_list.present?
-          notice_message_sender("Files #{past_tense} during registration", success_list)
-        end
-        # Message for failed actions
-        if failed_list.present?
-          error_message_sender("Files FAILED to be #{past_tense} during registration", failed_list)
-        end
-      end # spawn
-    end # if move or copy
+          # Userfile.delete will not delete the contents, but destroy will
+          result = (erasing ? userfile.destroy : Userfile.delete(userfile.id))
+          userfile.destroy_log rescue true
 
-    api_response = {  :notice                                => flash[:notice],
-                      :error                                 => flash[:error],
-                      :newly_registered_userfiles            => newly_registered_userfiles,
-                      :previously_registered_userfiles       => previously_registered_userfiles,
-                      :userfiles_in_transit                  => to_operate,
-                      :num_unregistered                      => num_unregistered,
-                      :num_erased                            => num_erased,
-                    } if request.format.to_s =~ /xml|json/i
+          (result ? succeeded : (failed["Unspecified error"] ||= [])) << basename
+        rescue => e
+          (failed[e.message] ||= []) << basename
+        end
+      end
+
+      # If files actually got erased, clear the browsing cache
+      clear_browse_provider_local_cache_file(@as_user, @provider) if
+        erasing && succeeded.present? && [:html, :js].include?(request.format.to_sym)
+
+      generic_notice_messages('unregister', succeeded, failed)
+    end
+
+    # Generate a complete response matching the old API
+    flash[:notice] += "Unregistering #{userfiles.size} userfile(s) in background.\n"
+
+    api_response = generate_register_response
+    api_response[erasing ? :num_erased : :num_unregistered] = succeeded.size
 
     respond_to do |format|
       format.html { redirect_to :action => :browse }
-      format.xml  { render      :xml    => api_response }
-      format.json { render      :json   => api_response }
+      format.json { render :json => api_response }
+      format.json { render :xml  => api_response }
+    end
+  end
+
+  # Delete a list of files (+basenames+) from a given CBRAIN data provider
+  # (parameter +id+). This action differs from +unregister+ (with +delete+
+  # option) by not requiring the files to be registered in CBRAIN. As with
+  # +register+ and +unregister+, a +as_user_id+ parameter is supported and
+  # the deletion occurs in background.
+  def delete
+    # Extract key parameters & make sure the provider is browsable
+    @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
+    @as_user  = browse_as(params['as_user_id'])
+    unless @provider.is_browsable?(current_user)
+      flash[:error] = "You cannot delete files from this provider."
+      respond_to do |format|
+        format.html { redirect_to :action => :index }
+        format.xml  { render :xml  => { :error => flash[:error] }, :status => :forbidden }
+        format.json { render :json => { :error => flash[:error] }, :status => :forbidden }
+      end
+      return
     end
 
+    flash[:notice] ||= ''
+
+    # Erase the given userfiles in background.
+    userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames])
+    succeeded, failed = [], {}
+
+    CBRAIN.spawn_with_active_records_if(
+      [:html, :js].include?(request.format.to_sym),
+      current_user,
+      "Delete files (data_provider: #{@provider.id})"
+    ) do
+      userfiles.to_a.shuffle.each do |basename, userfile|
+        begin
+          # Is the userfile registered?
+          if userfile.present?
+            # Make sure the current user can delete the file
+            unless userfile.has_owner_access?(current_user)
+              (failed["Insufficient permissions"] ||= []) << basename
+              next
+            end
+
+            result = userfile.destroy
+
+          # Otherwise, create a temporary userfile for provider_erase
+          else
+            # FileCollection's deletion handling should support both regular files and directories
+            temporary = FileCollection.new(
+              :name          => basename,
+              :data_provider => @provider,
+              :user_id       => @as_user.id,
+              :group_id      => current_user.own_group.id
+            ).freeze
+
+            result = @provider.provider_erase(temporary)
+          end
+
+          (result ? succeeded : (failed["Unspecified error"] ||= [])) << basename
+        rescue => e
+          (failed[e.message] ||= []) << basename
+        end
+      end
+
+      # If files actually got erased, clear the browsing cache
+      clear_browse_provider_local_cache_file(@as_user, @provider) if
+        succeeded.present? && [:html, :js].include?(request.format.to_sym)
+
+      generic_notice_messages('delet', succeeded, failed)
+    end
+
+    # Generate a complete response matching the old API
+    flash[:notice] += "Deleting #{userfiles.count} userfile(s) in background.\n"
+    api_response = generate_register_response.merge({
+      :num_erased => succeeded.size
+    })
+
+    respond_to do |format|
+      format.html { redirect_to :action => :browse }
+      format.json { render :json => api_response }
+      format.json { render :xml  => api_response }
+    end
   end
 
   # Report inconsistencies in the data provider.
@@ -734,6 +815,86 @@ class DataProvidersController < ApplicationController
     grouped_options = data_provider_list.hashed_partitions { |name| name.constantize.pretty_category_name }
     grouped_options.delete(nil) # data providers that can not be on this list return a category name of nil, so we remove them
     grouped_options.to_a
+  end
+
+  # Quick/small methods to avoid duplication in register/unregister/delete
+
+  # Fetch the user the browse the DP as, based on the provided +as_user_id+
+  # and the 'data_providers#browse' scope.
+  def browse_as(as_user_id) #:nodoc:
+    scope      = scope_from_session('data_providers#browse')
+    @as_user   = current_user
+      .available_users
+      .where(:id => scope.custom['as_user_id'] ||= (
+        params['as_user_id'] || current_user.id
+      ))
+      .first
+    @as_user ||= current_user
+  end
+
+  # Fetch the userfiles corresponding to the given +basenames+ for
+  # +user+ on +provider+.
+  def userfiles_from_basenames(provider, user, basenames) #:nodoc:
+    userfiles = provider.userfiles.where(:name => basenames)
+    userfiles = userfiles.where(:user_id => user.id) unless provider.allow_file_owner_change?
+    userfiles = userfiles.index_by(&:name)
+
+    Array(basenames).map { |name| [name, userfiles[name]] }.to_h
+  end
+
+  # Send generic success/failure notice messages for +operation+,
+  # given the list of failures (+failed+) and successes (+succeeded+).
+  #
+  # Note that +operation+ is solely used to formulate the message, and 'ing'
+  # is tackled at the end. This method is also purely meant to be used for
+  # register/unregister/delete and assumes to be working with lists
+  # of Userfiles or file names.
+  def generic_notice_messages(operation, succeeded, failed) #:nodoc:
+    return unless succeeded.present? || failed.present?
+
+    if succeeded.present?
+      # *_message_sender only works on record-like objects
+      if succeeded.first.class.respond_to?(:pretty_type)
+        notice_message_sender("Finished #{operation}ing file(s)", succeeded)
+      else
+        Message.send_message(current_user,
+          :message_type  => :notice,
+          :header        => "Finished #{operation}ing file(s)",
+          :variable_text => "For #{view_pluralize(succeeded.count, 'file')}"
+        )
+      end
+    end
+
+    if failed.present?
+      if failed.first.last.first.class.respond_to?(:pretty_type)
+        error_message_sender("Error when #{operation}ing file(s)", failed)
+      else
+        report = failed.map do |message, values|
+          ["For #{view_pluralize(values.size, 'file')}, #{message}:", values.sort.map { |v| "[#{v}]" }]
+        end
+
+        Message.send_message(current_user,
+          :message_type  => :error,
+          :header        => "Error when #{operation}ing file(s)",
+          :variable_text => report.flatten.join("\n")
+        )
+      end
+    end
+  end
+
+  # Generate a complete API response from a register-like action
+  # following the old format. Mainly used to avoid duplication
+  # in register/unregister/delete.
+  def generate_register_response #:nodoc:
+    {
+      :notice                          => flash[:notice],
+      :error                           => flash[:error],
+      :newly_registered_userfiles      => [],
+      :previously_registered_userfiles => [],
+      :userfiles_in_transit            => [],
+      :num_unregistered                => 0,
+      :num_erased                      => 0,
+    }
   end
 
   # Note: the following methods should all be part of one of the subclasses of DataProvider, probably.

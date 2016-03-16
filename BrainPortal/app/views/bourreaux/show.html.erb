@@ -110,13 +110,13 @@
       <% end %>
 
       <% t.edit_cell 'meta[upload_size_limit]',
-                     :header => "File upload size limit",
+                     :header => "File upload size limit (MB)",
                      :content => (@bourreau.meta[:upload_size_limit].blank? ? "(None)" : @bourreau.meta[:upload_size_limit]),
                      :show_width => 2 do %>
         <%= text_field_tag "meta[upload_size_limit]", @bourreau.meta[:upload_size_limit], :size => 20 %><br/>
         <div class="field_explanation">
-          If set, the portal will show a warning when uploading files about the maximum allowed file size for uploads.
-          Note that this limit needs to be manually enforced on the web server hosting this portal.
+          If set (and numeric), the portal will show a warning when uploading files about the maximum allowed file
+          size for uploads. Note that this limit needs to be manually enforced on the web server hosting this portal.
         </div>
       <% end %>
 

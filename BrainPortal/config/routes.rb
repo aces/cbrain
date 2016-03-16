@@ -95,6 +95,8 @@ CbrainRailsPortal::Application.routes.draw do
     member do
       get  'browse'
       post 'register'
+      post 'unregister'
+      post 'delete'
       get  'is_alive'
       get  'disk_usage'
       get  'report'

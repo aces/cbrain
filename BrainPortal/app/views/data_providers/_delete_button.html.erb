@@ -31,7 +31,14 @@
   </p>
 
   <p class="centered">
-    <%= external_submit_button("Delete the files!", "browse_form", :name => :delete, :class  => "button") %>
+    <%= hijacker_submit_button(
+      "Delete the files",
+      :name     => :register,
+      :url      => url_for(:action => :delete),
+      :method   => :post,
+      :datatype => :script,
+      :class    => "button"
+    ) %>
   </p>
 <% end %>
 

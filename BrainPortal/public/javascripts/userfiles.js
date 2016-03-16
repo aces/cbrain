@@ -734,14 +734,16 @@ $(function() {
         $('#upload-dialog ~ .ui-dialog-buttonpane')
           .prepend('<span id="up-alt-help">Large datasets?</span>');
 
-      if (window.FileReader)
+      if (window.FileReader && $('#upload-dialog').data('max-upload-size'))
         /* check selected files against upload limit */
         $('#upload-dialog')
           .undelegate('#up-file', 'change.uf.up-limit')
           .delegate(  '#up-file', 'change.uf.up-limit', function () {
+            var max = parseInt($('#upload-dialog').data('max-upload-size'));
+
             var visible = (
               this.files && this.files[0] &&
-              this.files[0].size > parseInt($(this).data('max-upload-size'))
+              max && this.files[0].size > max
             );
 
             $('#up-file-warn').css({

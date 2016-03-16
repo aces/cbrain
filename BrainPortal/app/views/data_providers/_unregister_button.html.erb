@@ -36,7 +36,14 @@
   </p>
 
   <p class="centered">
-  <%= external_submit_button("Unregister the files!", "browse_form", :name => :unregister, :class  => "button") %>
+    <%= hijacker_submit_button(
+      "Unregister the files!",
+      :name     => :register,
+      :url      => url_for(:action => :unregister),
+      :method   => :post,
+      :datatype => :script,
+      :class    => "button"
+    ) %>
   </p>
 
 <% end %>
