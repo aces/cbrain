@@ -118,9 +118,9 @@
         userfile = f.userfile
         next 'No' unless userfile
 
-        owner = "(as user #{userfile.user.login})" unless
-          [@as_user.id, current_user.id].include?(userfile.user_id)
-        link_to("Registered #{owner}", { :controller => 'userfiles', :action => 'show', :id => userfile.id })
+        owner = "(belongs to user #{userfile.user.login})" unless
+          userfile.user_id == current_user.id
+        link_to("Registered", { :controller => 'userfiles', :action => 'show', :id => userfile.id }) + " #{owner}"
       end
 
       t.column('Note', :message)

@@ -528,14 +528,18 @@ class DataProvidersController < ApplicationController
         next
       end
 
+      # Notify user of registration successes and failures.
+      mangled_action = (post_action == :move ? 'mov' : 'copi')
+      generic_notice_messages('register', succeeded, failed,
+        "Files will now be #{mangled_action}ed in background.")
+
       # Prepare to copy/move the files to the new DP
-      generic_notice_messages('register', succeeded, failed)
       succeeded, failed = [], {}
 
       # Will some of the file names collide?
       collisions = Userfile
         .where(
-          :name             => registered.raw_first_column('userfiles.name'),
+          :name             => registered.map(&:name),
           :user_id          => @as_user.id,
           :data_provider_id => target_dp.id
         )
@@ -571,7 +575,6 @@ class DataProvidersController < ApplicationController
         end
       end
 
-      mangled_action = (post_action == :move ? 'mov' : 'copy')
       generic_notice_messages(mangled_action, succeeded, failed)
     end
 
@@ -849,17 +852,18 @@ class DataProvidersController < ApplicationController
   # is tackled at the end. This method is also purely meant to be used for
   # register/unregister/delete and assumes to be working with lists
   # of Userfiles or file names.
-  def generic_notice_messages(operation, succeeded, failed) #:nodoc:
+  def generic_notice_messages(operation, succeeded, failed, additional_ok_text = "") #:nodoc:
     return unless succeeded.present? || failed.present?
 
     if succeeded.present?
       # *_message_sender only works on record-like objects
+      ok_message = "Finished #{operation}ing file(s)\n" + additional_ok_text
       if succeeded.first.class.respond_to?(:pretty_type)
-        notice_message_sender("Finished #{operation}ing file(s)", succeeded)
+        notice_message_sender(ok_message, succeeded)
       else
         Message.send_message(current_user,
           :message_type  => :notice,
-          :header        => "Finished #{operation}ing file(s)",
+          :header        => ok_message,
           :variable_text => "For #{view_pluralize(succeeded.count, 'file')}"
         )
       end

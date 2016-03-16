@@ -30,7 +30,8 @@ require 'set'
 # to add additional reporting/monitoring logic, to cleanly support partial
 # updates and to validate certain session attributes.
 #
-# NOTE: This model is not database-backed
+# NOTE: This model is not database-backed, but the attribute 'session'
+# in it is the real Rails session object.
 class CbrainSession
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
