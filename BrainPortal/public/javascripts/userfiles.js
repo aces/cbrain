@@ -730,9 +730,14 @@ $(function() {
           $('#up-file').trigger('click');
         });
 
-      if (!$('#up-alt-help').length)
-        $('#upload-dialog ~ .ui-dialog-buttonpane')
-          .prepend('<span id="up-alt-help">Large datasets?</span>');
+      if (!$('#up-alt-help').length) {
+        var helplink = $('#up-alt-help-link').data('link');
+        if (helplink !== undefined) {
+           helplink = $('<a>').attr('href',helplink).html('Large datasets?');
+           $('#upload-dialog ~ .ui-dialog-buttonpane')
+             .prepend( $('<span id="up-alt-help">').append(helplink) )
+        }
+      }
 
       if (window.FileReader && $('#upload-dialog').data('max-upload-size'))
         /* check selected files against upload limit */

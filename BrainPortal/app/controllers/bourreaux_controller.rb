@@ -160,6 +160,9 @@ class BourreauxController < ApplicationController
     # File upload size limit (portal only)
     add_meta_data_from_form(@bourreau, [ :upload_size_limit ])
 
+    # Help link for large uploads (shows up in the upload panel)
+    add_meta_data_from_form(@bourreau, [ :large_upload_url ])
+
     # Clean up all file synchronization stuff if the DP cache dir has changed.
     if old_dp_cache_dir != @bourreau.dp_cache_dir
       old_ss = SyncStatus.where( :remote_resource_id => @bourreau.id )

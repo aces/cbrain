@@ -479,12 +479,13 @@
   display: block;
 }
 
-#up-alt-help {
+#up-alt-help a {
   color: #0471b4;
   cursor: pointer;
   display: inline-block;
   font-weight: bold;
   padding: 0.7em;
+  text-decoration: none;
 }
 
 /* Upload progress popup */
