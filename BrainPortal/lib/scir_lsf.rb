@@ -113,9 +113,10 @@ class ScirLsf < Scir
 
       command  = "bsub "      
       command += "-J #{shell_escape(self.name)} "   if self.name
+      command += "-u #{shell_escape(self.name)} "   if self.name
       command += "-cwd #{shell_escape(self.wd)} "     if self.wd
-      command += "-oo #{shell_escape(self.stdout)} " if self.stdout
-      command += "-e #{shell_escape(self.stderr)} " if self.stderr      
+      command += "-o #{shell_escape(self.stdout).tr(':', '')} " if self.stdout
+      command += "-e #{shell_escape(self.stderr).tr(':', '')} " if self.stderr 
       command += "-q #{shell_escape(self.queue)} "  unless self.queue.blank?
       command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
       command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?      
