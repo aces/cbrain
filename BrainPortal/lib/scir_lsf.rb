@@ -111,16 +111,22 @@ class ScirLsf < Scir
         self.command == "/bin/bash" && self.arg.size == 1
       raise "Error: stdin not supported" if self.stdin
 
+      script = self.wd + '/' +self.arg[0]
+      stdout = self.stdout.sub(':', '') if self.stdout
+      stderr = self.stderr.sub(':', '') if self.stderr
+
+      File.chmod(0755, script)
+
       command  = "bsub "      
       command += "-J #{shell_escape(self.name)} "   if self.name
       command += "-u #{shell_escape(self.name)} "   if self.name
       command += "-cwd #{shell_escape(self.wd)} "     if self.wd
-      command += "-o #{shell_escape(self.stdout).tr(':', '')} " if self.stdout
-      command += "-e #{shell_escape(self.stderr).tr(':', '')} " if self.stderr 
+      command += "-o #{shell_escape(stdout)} " if stdout
+      command += "-e #{shell_escape(stderr)} " if stderr 
       command += "-q #{shell_escape(self.queue)} "  unless self.queue.blank?
       command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
       command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?      
-      command += "#{shell_escape(self.arg[0])}"
+      command += "#{shell_escape(script)}"
       command += " 2>&1"
 
       return command
