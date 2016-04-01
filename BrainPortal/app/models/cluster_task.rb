@@ -1767,7 +1767,7 @@ chmod 755 ./.dockerjob.sh\n
 
     # Sets tool config among tool configs accessible by user of current task
     new_tool                = new_task.tool
-    accessible_tool_configs = ToolConfig.find_all_accessible_by_user(self.user).where(:tool_id => new_tool.id)
+    accessible_tool_configs = ToolConfig.find_all_accessible_by_user(self.user).where(:tool_id => new_tool.id, :bourreau_id => self.bourreau_id)
     new_tcid                = accessible_tool_configs.limit(1).raw_first_column(:id)[0] if new_tcid.blank?
     if new_tcid.blank? || ! accessible_tool_configs.where(:id => new_tcid).exists?
       raise "Cannot find an acceptable tool config ID for this user, tool, and bourreau.\n"
