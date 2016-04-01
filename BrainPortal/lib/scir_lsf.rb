@@ -40,6 +40,7 @@ class ScirLsf < Scir
         bjob_stat = line.gsub(/\s+/m, ' ').strip.split(" ")
         jid = bjob_stat[0]
         stat = bjob_stat[2]
+        stat = statestring_to_stateconst(stat)
         @job_info_cache[jid] = { :drmaa_state => stat }
       end
       true
