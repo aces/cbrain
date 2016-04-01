@@ -434,7 +434,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   #   ) => 'f -z 5'
   def apply_template(template, keys, flags: {}, strip: [])
     keys.inject(template) do |template, (key, value)|
-      flag = flags[key]
+      flag = flags[key].presence
       next template.gsub(key, flag) if flag && value == true
 
       value = (value.is_a?(Enumerable) ? value.dup : [value])

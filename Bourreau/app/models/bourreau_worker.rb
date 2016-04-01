@@ -24,10 +24,8 @@
 
 #= Bourreau Worker Class
 #
-#This class implements a worker that manages the CBRAIN queue of tasks.
-#This model is not an ActiveRecord class.
-require 'json'
-require 'json-schema'
+# This class implements a worker that manages the CBRAIN queue of tasks.
+# This model is not an ActiveRecord class.
 
 class BourreauWorker < Worker
 
@@ -279,12 +277,12 @@ class BourreauWorker < Worker
 
       worker_log.debug "Updated #{task.bname_tid} to state #{new_status}"
 
-      # Mechanism for tasks to submit other tasks: tasks that were not in a status
-      # in COMPLETED_STATUS or FAILED_STATUS at the previous iteration may submit new
-      # tasks provided that they have the can_submit_new_tasks
+      # Mechanism for tasks to submit other tasks: tasks that are active
+      # may submit new tasks dynamically provided that they have the :can_submit_new_tasks
       # property.
-      handle_tasks_submitted_by(task) if task.class.properties[:can_submit_new_tasks] &&
-                                         !(CbrainTask::COMPLETED_STATUS.include?(task.status) || CbrainTask::FAILED_STATUS.include?(task.status))
+      if task.class.properties[:can_submit_new_tasks].present?
+        task.submit_subtasks_from_json
+      end
 
       return if initial_status == 'On CPU' && new_status == 'On CPU'; # nothing else to do
 
@@ -546,155 +544,4 @@ class BourreauWorker < Worker
     end
   end
 
-  # Handles new tasks submitted by "task". To submit a new task, a
-  # task must create a new-task-*.json JSON file at the root of its
-  # work directory. Once a JSON file has been handled, it is deleted.
-  #
-  # Method parameter:
-  # * "task" is the submitter task. JSON files will be searched in the
-  # work dir of "task".  New tasks are submitted on the same Bourreau
-  # than "task". New tasks belong to the same user than "task".
-  #
-  def handle_tasks_submitted_by task
-    workdir = task.full_cluster_workdir
-    return if workdir.blank? # in case workdir doesn't exist yet
-    Dir.glob(File.join(workdir,"new-task-*.json")).each do |filename|
-      worker_log.info("Found new task file: #{filename}.")
-      begin
-        file = File.open(filename, "r")
-        if(file.flock(File::LOCK_NB|File::LOCK_EX)) # Here we ensure that only 1 worker can access the file at
-                                                    # the same time. Otherwise, the new task may be submitted
-                                                    # by several workers. See nice examples at:
-                                                    # http://www.codegnome.com/blog/2013/05/26/locking-files-with-ruby
-          file_content = file.read
-          submit_task_from_string(filename,file_content,task)
-          file.close # This also releases the lock.
-          File.delete(filename)
-        else
-          worker_log.info("Another worker is working on this file: ignoring it.")
-          file.close # In case the lock was not obtained, still close the file.
-        end
-      rescue => ex
-        message="Error while submitting new task: #{ex.message}."
-        worker_log.info(message)
-        task.addlog(message)
-        File.delete(filename) if File.exists?(filename)
-      end
-    end
-  end
-
-  # Creates and submits a task defined by a JSON object.
-  # Parameters:
-  # * json_string: A string containing a JSON object defining the task.
-  #                Example:
-  #                  {
-  #                    "tool-class": "CbrainTask::TestTool",
-  #                    "description": "A task running TestTool",
-  #                    "parameters": {
-  #                       "important_number": "123",
-  #                       "dummy_paramet4er": "432"
-  #                    }
-  #                  }
-  # * current_task: The current task from which the new task is submitted.
-  #                 Used to set the user, bourreau id and results data provider id
-  #                 for the new task.
-  #
-  def submit_task_from_string filename,json_string,current_task
-
-    # Parses JSON string and checks format
-    validate_json_string(json_string) # Raises an exception if string is not valid
-    new_task_hash = JSON.parse(json_string)
-
-    # Prints log message in worker and current_task logs
-    message = "Submitting new #{new_task_hash["tool-class"]} task."
-    worker_log.info(message)
-    current_task.addlog(message)
-
-    # Creates task
-    task_class_name      = new_task_hash["tool-class"]
-    share_wd_tid         = new_task_hash["share_wd_tid"]
-    new_task             = CbrainTask.const_get(task_class_name).new # Raises an exception if tool class is not found
-    new_task.share_wd_tid = share_wd_tid if share_wd_tid.present?
-    new_task.batch_id    = current_task.id
-    new_task.launch_time = Time.now
-    current_task.level   = 0 if current_task.level.nil?
-    new_task.level       = current_task.level + 1       # New task will be one level up its "parent" task in the task table.
-    raise "Invalid tool class: #{task_class_name }" unless new_task.is_a? ClusterTask
-
-    # Sets tool config among tool configs accessible by user of current task
-    tool                    = Tool.where(:cbrain_task_class => "#{task_class_name}").first
-    accessible_tool_configs = ToolConfig.find_all_accessible_by_user(current_task.user)
-    tool_config_id          = new_task_hash["tool-config-id"]
-    if tool_config_id.blank?
-      # Sets tool config as the first one we find for class task_class_name
-      tool_config = accessible_tool_configs.where(:tool_id => tool.id).first
-    else
-      tool_config = accessible_tool_configs.find(tool_config_id)
-      raise "Tool config #{tool_config_id} doesn't belong to tool #{task_class_name}" unless tool_config.tool_id == tool.id
-    end
-    raise "Cannot find accessible tool config for class #{task_class_name}" if tool_config.blank?
-    new_task.tool_config = tool_config
-
-    # Sets task parameters
-    new_task.params = Hash.new
-    new_task_hash["parameters"].each do |param|
-      new_task.params[param[0].to_sym] = param[1]
-    end
-
-    # Sets task prerequisites
-    if new_task_hash["prerequisites"]
-      new_task_hash["prerequisites"].split(",").each do |id|
-        parent_task = CbrainTask.find(id)
-        new_task.add_prerequisites_for_setup(parent_task,'Completed')
-      end
-    end
-
-    # Sets other task attributes
-    # In the future, we could allow to register results to another data provider
-    # or to submit the task to another bourreau. This would require to carefully
-    # check permissions of current_task.user
-    new_task.description              = new_task_hash["description"] || "Task submitted by task #{current_task.id}"
-    new_task.user                     = current_task.user
-    new_task.results_data_provider_id = current_task.results_data_provider_id
-    new_task.bourreau_id              = current_task.bourreau_id
-
-    # Submits the task
-    new_task.status = "New"
-    new_task.save!
-
-    # Returns task id to application
-    taskid_filename = File.join(File.dirname(filename),File.basename(filename,".json"))+".cbid"
-    File.write(taskid_filename,new_task.id.to_s+"\n")
-
-    # Add new task as a pre-requisite of the current task if requested
-    if new_task_hash["required-to-post-process"]
-      current_task.add_prerequisites_for_post_processing(new_task,'Completed')
-      current_task.save!
-    end
-
-  end
-
-  # Validates a JSON string against
-  # the schema used to define new tasks.
-  def validate_json_string json_string
-    # The JSON schema could be extended with bourreau id and results
-    # data provider id but that would require careful permission
-    # checks. tool-config-id is not mandatory because it's specific
-    # to a CBRAIN installation and cannot be easily obtained by an
-    # external agent. In case no tool config id is provided, the first
-    # accessible tool config id will be selected.
-    schema = {
-      "type"       => "object",
-      "required" => ["tool-class","parameters"],
-      "properties" => {
-        "tool-class"     => {"type"  => "string"},                                         # Class of the new task
-        "tool-config-id" => {"type"  => "number"},                                         # Tool config id of the new task
-        "description"    => {"type"  => "string"},                                         # Description of the new task
-        "parameters"     => {"type"  => "object", "properties" => {"type" => "string" }},  # Parameters of the new task
-        "prerequisites"  => {"type"  => "string"},                                         # List of task ids that are a prerequisite to setup the new task
-        "required-to-post-process" =>  {"type"  => "boolean"}                          # If true, the current task will not post-process before the new task is completed
-      }
-    }
-    JSON::Validator.validate!(schema,json_string) # raises an exception if json_string is not valid
-  end
 end

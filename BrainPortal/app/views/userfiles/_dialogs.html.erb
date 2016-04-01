@@ -147,11 +147,11 @@
   %>
   <% large_upload_help_link_url = RemoteResource.current_resource.meta[:large_upload_url].presence.try(:strip) %>
   <% if large_upload_help_link_url %>
-    <span <%= { :style      => "display: none",
-              :id         => "up-alt-help-link",
-              "data-link" => large_upload_help_link_url,
-            }.to_html_attributes.html_safe %>
-    ></span>
+    <span <%= { :id         => "up-alt-help-link",
+                :style      => "display: none",
+                "data-link" => large_upload_help_link_url,
+              }.to_html_attributes.html_safe %> >
+    </span>
   <% end %>
 
 </div>
