@@ -32,7 +32,7 @@ class ScirLsf < Scir
       # on the implementation of bstat.  This method is supposed to
       # list all the statuses of the running tasks, and to keep it in
       # the @job_info_cache array.
-      out, err = bash_this_and_capture_out_err("bjobs -a -noheader -J #{shell_escape(self.name)}")
+      out, err = bash_this_and_capture_out_err("bjobs -a -noheader -u #{CBRAIN::Rails_UserName.to_s.bash_escape}")
       raise "Cannot get output of 'bjobs -a' ?!?" if out.blank? && ! err.blank?
       jid = 'Dummy'
       @job_info_cache = {}
@@ -119,7 +119,6 @@ class ScirLsf < Scir
 
       command  = "bsub "      
       command += "-J #{shell_escape(self.name)} "   if self.name
-      command += "-u #{shell_escape(self.name)} "   if self.name
       command += "-cwd #{shell_escape(self.wd)} "     if self.wd
       command += "-o #{shell_escape(stdout)} " if stdout
       command += "-e #{shell_escape(stderr)} " if stderr 
