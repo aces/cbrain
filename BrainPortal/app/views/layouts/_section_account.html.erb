@@ -51,7 +51,7 @@
       <% end %>
       <% help_url = RemoteResource.current_resource.help_url %>
       <% if help_url.present? %>
-        <%= link_to "User Manual", help_url, :target => '_blank' %>
+        <%= link_to "Help Site", help_url, :target => '_blank' %>
       <% end %>
       <% support_email = RemoteResource.current_resource.support_email %>
       <% if support_email.present? %>

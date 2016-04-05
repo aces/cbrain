@@ -826,9 +826,9 @@ class TasksController < ApplicationController
       end # foreach bourreaux' tasklist
 
       if do_in_spawn
-        if success_list.present?
-          notice_message_sender("Finished sending '#{operation}' to your tasks.",success_list)
-        end
+        #if success_list.present?
+        #  notice_message_sender("Finished sending '#{operation}' to your tasks.",success_list)
+        #end
         if skipped_list.present?
           error_message_sender("Task skipped when sending '#{operation}' to your tasks.",skipped_list)
         end
