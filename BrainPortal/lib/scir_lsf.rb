@@ -28,73 +28,64 @@ class ScirLsf < Scir
 
   class Session < Scir::Session #:nodoc:
 
-    def update_job_info_cache #:nodoc:
-      # FIXME: modify this method based
+    def update_job_info_cache #:nodoc:      
       # on the implementation of bstat.  This method is supposed to
       # list all the statuses of the running tasks, and to keep it in
       # the @job_info_cache array.
-      out, err = bash_this_and_capture_out_err("bstat -f -u #{CBRAIN::Rails_UserName.to_s.bash_escape}")
-      raise "Cannot get output of 'bstat -f' ?!?" if out.blank? && ! err.blank?
+      out, err = bash_this_and_capture_out_err("bjobs -a -noheader -u #{CBRAIN::Rails_UserName.to_s.bash_escape}")
+      raise "Cannot get output of 'bjobs -a' ?!?" if out.blank? && ! err.blank?
       jid = 'Dummy'
       @job_info_cache = {}
       out.split(/\s*\n\s*/).each do |line|
-        line.force_encoding('ASCII-8BIT')  # some pbs 'qstat' commands output junk binary data!
-        if line =~ /^Job\s+id\s*:\s*(\S+)/i
-          jid = Regexp.last_match[1]
-          if jid =~ /^(\d+)/
-            jid = Regexp.last_match[1]
-          end
-          next
-        end
-        next unless line =~ /^\s*job_state\s*=\s*(\S+)/i
-        state = statestring_to_stateconst(Regexp.last_match[1])
-        @job_info_cache[jid.to_s] = { :drmaa_state => state }
+        bjob_stat = line.gsub(/\s+/m, ' ').strip.split(" ")
+        jid = bjob_stat[0]
+        stat = bjob_stat[2]
+        stat = statestring_to_stateconst(stat)	
+        @job_info_cache[jid] = { :drmaa_state => stat } unless stat == Scir::STATE_DONE #Do not add tasks to job_info_cache if they are done so CBRAIN moves them to post-processing
       end
       true
+
     end
 
-    def statestring_to_stateconst(state) #:nodoc:
-      # FIXME. Assign proper
+    def statestring_to_stateconst(state) #:nodoc:      
       # CBRAIN statuses to status strings parsed from the output of
       # bstat -f in method update_job_info_cache
-      return Scir::STATE_RUNNING        if state.match(/R/i)
-      return Scir::STATE_QUEUED_ACTIVE  if state.match(/Q/i)
-      return Scir::STATE_USER_ON_HOLD   if state.match(/H/i)
-      return Scir::STATE_USER_SUSPENDED if state.match(/S/i)
+      return Scir::STATE_RUNNING        if state.match(/RUN/i)
+      return Scir::STATE_QUEUED_ACTIVE  if state.match(/PEND/i)
+      return Scir::STATE_USER_SUSPENDED if state.match(/USUSP/i)
+      return Scir::STATE_SYSTEM_SUSPENDED if state.match(/SSUSP/i)
+      return Scir::STATE_DONE           if state.match(/DONE/i)
+      return Scir::STATE_DONE           if state.match(/EXIT/i)
       return Scir::STATE_UNDETERMINED
     end
 
     def hold(jid) #:nodoc:
-      # FIXME. If LSF supports holding jobs, insert the right command here.
-      # Otherwise, just raise an exception. 
-      IO.popen("qhold #{shell_escape(jid)} 2>&1","r") do |i|
-        p = i.readlines
-        raise "Error holding: #{p.join("\n")}" if p.size > 0
-        return
-      end
+      raise "There is no 'hold' action available for LSF clusters"
     end
 
     def release(jid) #:nodoc:
-      # FIXME. If LSF supports releasing jobs, insert the right command here.
-      # Otherwise, just raise an exception. 
-      IO.popen("qrls #{shell_escape(jid)} 2>&1","r") do |i|
+      raise "There is no 'release' action available for LSF clusters"
+    end
+
+    def suspend(jid) #:nodoc:
+      IO.popen("bstop #{shell_escape(jid)} 2>&1","r") do |i|
         p = i.readlines
-        raise "Error releasing: #{p.join("\n")}" if p.size > 0
+        raise "Error suspending: #{p.join("\n")}" if p.size > 0
         return
       end
     end
 
-    def suspend(jid) #:nodoc:
-      raise "There is no 'suspend' action available for LSF clusters"
-    end
-
     def resume(jid) #:nodoc:
-      raise "There is no 'resume' action available for LSF clusters"
+      IO.popen("bresume #{shell_escape(jid)} 2>&1","r") do |i|
+        p = i.readlines
+        raise "Error resuming: #{p.join("\n")}" if p.size > 0
+        return
+      end
     end
 
     def terminate(jid) #:nodoc:
       # FIXME. Insert the command used in LSF to kill a job.
-      IO.popen("bdel #{shell_escape(jid)} 2>&1","r") do |i|
+      IO.popen("bkill #{shell_escape(jid)} 2>&1","r") do |i|
         p = i.readlines
         raise "Error deleting: #{p.join("\n")}" if p.size > 0
         return
@@ -106,7 +97,7 @@ class ScirLsf < Scir
     # FIXME: this is a util method used in update_job_info_cache. You
     # may want to remove it or to implement your own.
     def qsubout_to_jid(txt) #:nodoc:
-      if txt && txt =~ /^(\d+)/
+      if txt && txt =~ /Job <(\d+)>/
         return Regexp.last_match[1]
       end
       raise "Cannot find job ID from qsub output.\nOutput: #{txt}"
@@ -116,25 +107,27 @@ class ScirLsf < Scir
 
   class JobTemplate < Scir::JobTemplate #:nodoc:
 
-    # FIXME: modify this to pass the proper bsub arguments.
+    # Modify this to pass the proper bsub arguments.
     def qsub_command #:nodoc:
       raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless
         self.command == "/bin/bash" && self.arg.size == 1
       raise "Error: stdin not supported" if self.stdin
 
-      command  = "bsub "
-      command += "-S /bin/bash "                    # Always
-      command += "-r n "                            # Always
-      command += "-d #{shell_escape(self.wd)} "     if self.wd 
-      command += "-N #{shell_escape(self.name)} "   if self.name
-      command += "-o #{shell_escape(self.stdout)} " if self.stdout
-      command += "-e #{shell_escape(self.stderr)} " if self.stderr
-      command += "-j oe "                           if self.join
+      script = self.wd + '/' +self.arg[0]
+      stdout = self.stdout.sub(':', '') if self.stdout
+      stderr = self.stderr.sub(':', '') if self.stderr
+
+      File.chmod(0755, script)
+
+      command  = "bsub "      
+      command += "-J #{shell_escape(self.name)} "   if self.name
+      command += "-cwd #{shell_escape(self.wd)} "     if self.wd
+      command += "-o #{shell_escape(stdout)} " if stdout
+      command += "-e #{shell_escape(stderr)} " if stderr 
       command += "-q #{shell_escape(self.queue)} "  unless self.queue.blank?
       command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
-      command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?
-      command += "-l walltime=#{self.walltime.to_i} "       unless self.walltime.blank?
-      command += "#{shell_escape(self.arg[0])}"
+      command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?      
+      command += "#{shell_escape(script)}"
       command += " 2>&1"
 
       return command
