@@ -40,10 +40,11 @@ class ScirLsf < Scir
         bjob_stat = line.gsub(/\s+/m, ' ').strip.split(" ")
         jid = bjob_stat[0]
         stat = bjob_stat[2]
-        stat = statestring_to_stateconst(stat)
-        @job_info_cache[jid] = { :drmaa_state => stat }
+        stat = statestring_to_stateconst(stat)	
+        @job_info_cache[jid] = { :drmaa_state => stat } unless stat == Scir::STATE_DONE #Do not add tasks to job_info_cache if they are done so CBRAIN moves them to post-processing
       end
       true
+
     end
 
     def statestring_to_stateconst(state) #:nodoc:      
