@@ -158,7 +158,7 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
     WorkerPool.create_or_find_pool(PortalAgentLocker, 1,
       { :check_interval => 60,
         :worker_log     => al_logger,
-        :name           => 'AgentLocker',
+        :name           => 'CBRAIN AgentLocker',
       }
     )
   end

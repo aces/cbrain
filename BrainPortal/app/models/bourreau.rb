@@ -426,6 +426,11 @@ class Bourreau < RemoteResource
     myself = RemoteResource.current_resource
     cb_error "Got control command #{command.command} but I'm not a Bourreau!" unless
       myself.is_a?(Bourreau)
+
+    # 'taskids' is an array of tasks to process.
+    # 'newstatus', as received in the command object, is not
+    # necessarily an official legal task status name, it can be a
+    # description of an action to perform here (e.g. RemoveWorkDir)
     taskids   = command.task_ids.split(/,/)
     newstatus = command.new_task_status
 
@@ -433,7 +438,7 @@ class Bourreau < RemoteResource
 
     CBRAIN.spawn_with_active_records(:admin, "AlterTask #{newstatus}") do
 
-    taskids.each_with_index do |task_id,count|
+    taskids.shuffle.each_with_index do |task_id,count|
       $0 = "AlterTask #{newstatus} ID=#{task_id} #{count+1}/#{taskids.size}\0"
       begin
         task       = CbrainTask.find(task_id.to_i)
@@ -506,7 +511,7 @@ class Bourreau < RemoteResource
         task.restart(Regexp.last_match[1]) if newstatus =~ /^Restart (\S+)/ # For 'Completed' or 'Terminated' tasks only
 
         # OK now, if something has changed (based on status), we proceed we the update.
-        next unless task.status != old_status
+        next if task.status == old_status
         task.addlog_current_resource_revision("New status: #{task.status}")
         task.save
         tasks_affected += 1 if task.bourreau_id == myself.id
