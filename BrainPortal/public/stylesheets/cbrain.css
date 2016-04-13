@@ -722,10 +722,7 @@ a {
 pre {
   overflow-x: auto; /* Use horizontal scroller if needed; for Firefox 2, not needed in Firefox 3 */
   white-space: pre-wrap; /* css-3 */
-  white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
-  white-space: -pre-wrap; /* Opera 4-6 */
   text-align: left;
-  white-space: -o-pre-wrap; /* Opera 7 */
   word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
 
@@ -1039,7 +1036,6 @@ pre {
   height: 9em;
   border: 0.4em gray solid;
   border-radius: 1em;
-  -moz-border-radius: 1em;
   cursor: pointer;
 }
 
@@ -1555,7 +1551,7 @@ pre {
 
 .current_filters_item {
   color: #0471B4;
-  margin-right: 0.5em;
+  margin-left: 1em;
 }
 
 /* current_filters is an ID because the element is modified with AJAX */
@@ -1897,7 +1893,6 @@ img {
   width: 2em;
   height: 2em;
   border-radius: 4px;
-  -moz-border-radius: 4px;
 }
 
 
@@ -2152,7 +2147,7 @@ img {
 
 .button.grayed-out {
   opacity: 0.6;
-  filter: alpha(opacity=60);
+  filter: alpha(opacity=60);  /* darn IE */
 }
 
 /* % ######################################################### */
