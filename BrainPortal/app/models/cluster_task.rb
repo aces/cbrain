@@ -1720,8 +1720,6 @@ chmod 755 ./.dockerjob.sh\n
       end # each new json descriptor
       self.status_transition("Subtasking", current_status)
     end
-  rescue  # TODO log error?
-    nil
   end
 
   protected
