@@ -1744,7 +1744,7 @@ chmod 755 ./.dockerjob.sh\n
 
     # Extract the main info about this new task
     new_task_class_name  = new_task_hash["tool-class"].presence    || "ErrorNoSuchClassMyFriend"
-    new_share_wd_tid     = new_task_hash["share_wd_tid"].presence     # optional
+    new_share_wd_tid     = new_task_hash["share-wd-tid"].presence     # optional
     new_tcid             = new_task_hash["tool-config-id"].presence   # optional
     new_params           = new_task_hash["parameters"].presence    || {}
     new_description      = new_task_hash["description"].presence   || "Task submitted by task #{self.id}"
@@ -1820,7 +1820,7 @@ chmod 755 ./.dockerjob.sh\n
       "properties" => {
         "tool-class"     => { "type" => "string" },                                         # Class of the new task
         "tool-config-id" => { "type" => "number" },                                         # Tool config id of the new task
-        "share_wd_tid"   => { "type" => "string" },                                         # ID of other task to share workdir
+        "share-wd-tid"   => { "type" => "string" },                                         # ID of other task to share workdir
         "description"    => { "type" => "string" },                                         # Description of the new task
         "parameters"     => { "type" => "object", "properties" => {"type" => "string" } },  # Parameters of the new task
         "prerequisites"  => { "type" => "string" },                                         # List of task ids that are a prerequisite to setup the new task
