@@ -99,7 +99,6 @@ class UsersController < ApplicationController
 
   def new #:nodoc:
     @user = User.new
-    render :partial => "new"
   end
 
   def create #:nodoc:
@@ -145,13 +144,13 @@ class UsersController < ApplicationController
         CbrainMailer.registration_confirmation(@user,params[:user][:password],no_password_reset_needed).deliver rescue nil
       end
       respond_to do |format|
-        format.js   { redirect_to :action => :index, :format => :js }
+        format.html { redirect_to :action => :index, :format => :html }
         format.xml  { render :xml  => @user }
         format.json { render :json => @user }
       end
     else
       respond_to do |format|
-        format.js   { render :partial  => 'shared/failed_create', :locals  => { :model_name  => 'user' } }
+        format.html { render :action => :new }
         format.xml  { render :xml  => @user.errors, :status => :unprocessable_entity }
         format.json { render :json => @user.errors, :status => :unprocessable_entity }
       end

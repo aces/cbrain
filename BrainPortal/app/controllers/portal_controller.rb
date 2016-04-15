@@ -350,8 +350,8 @@ class PortalController < ApplicationController
 
     # For making filter links inside the table
     @filter_controller = @model.to_s.pluralize.underscore
-    @filter_controller = "tasks"     if @filter_model == 'cbrain_tasks'
-    @filter_controller = "bourreaux" if @filter_model == 'remote_resources'
+    @filter_controller = "tasks"     if @filter_controller == 'cbrain_tasks'
+    @filter_controller = "bourreaux" if @filter_controller == 'remote_resources'
     @filter_row_key    = row_type
     @filter_col_key    = col_type
     @filter_show_proc  = (table_op =~ /sum.*size/) ? (Proc.new { |vector| colored_pretty_size(vector[0]) }) : nil

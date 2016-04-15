@@ -160,7 +160,7 @@ in a tabular layout. Proceed as follow:
              @filter_fixed.merge(td_filters).map do |attr, value|
                { :a => attr, :v => value }
              end,
-             url: { :controller => @filter_controller.to_s }
+             url: { :controller => @filter_controller.to_s, :action => :index }
            )
          end
       %>

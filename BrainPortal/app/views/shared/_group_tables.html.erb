@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -38,22 +38,39 @@
     class_name   = model.class.sti_root_class.to_s.underscore
 %>
 
+<%
+  # Convenience helper to render a single checkbox and a group name
+  group_check_box = lambda do |group|
+    check_box_tag( "#{class_name}[group_ids][]",                 # name
+                   group.id.to_s,                                # value
+                   model.groups.include?(group),                 # checked or not
+                   :id => "#{class_name}_group_ids_#{group.id}"  # unique DOM id
+                 ).html_safe +
+    h(group.name)
+  end
+%>
 
-<label>Work Projects</label>
-<%= hidden_field_tag "#{class_name}[group_ids][]", [] %>
-<%= array_to_table(work_groups, :cols => 4, :td_class => 'left_align no_wrap') do |group,r,c| %>
-  <%= check_box_tag("#{class_name}[group_ids][]", group.id.to_s, model.groups.include?(group) ) %>
-  <%= group.name %>
+
+
+<%= hidden_field_tag "#{class_name}[group_ids][]", [], :id => "#{class_name}_group_ids_unchecked" %>
+
+<% if work_groups.present? %>
+
+  <label>Work Projects</label>
+  <%= array_to_table(work_groups, :cols => 4, :td_class => 'left_align no_wrap') do |group,r,c| %>
+    <%= group_check_box.(group) %>
+  <% end %>
+
 <% end %>
 
-<% unless invis_groups.blank? %>
 
-  <br/>
 
+<% if invis_groups.present? %>
+
+  <br>
   <label>Invisible Projects</label>
   <%= array_to_table(invis_groups, :cols => 4, :td_class => 'left_align no_wrap') do |group,r,c| %>
-    <%= check_box_tag("#{class_name}[group_ids][]", group.id.to_s, model.groups.include?(group) ) %>
-    <%= group.name %>
+    <%= group_check_box.(group) %>
   <% end %>
 
 <% end %>
