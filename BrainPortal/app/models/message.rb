@@ -139,9 +139,11 @@ class Message < ActiveRecord::Base
 
     if send_email
       begin
+        body = (description.presence || "") + ( var_text.blank? ? "" : "\n#{var_text.strip}" )
+        body = "This CBRAIN email message has no further content.\n" if body.blank?
         CbrainMailer.cbrain_message(allusers,
           :subject  => header.strip,
-          :body     => description + ( var_text.blank? ? "" : "\n#{var_text.strip}" )
+          :body     => body
         ).deliver
       rescue => ex
         logger.error "Cannot send email. Exception: #{ex.class} #{ex.message}"
