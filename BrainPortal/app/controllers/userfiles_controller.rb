@@ -292,7 +292,7 @@ class UserfilesController < ApplicationController
     @log                = @userfile.getlog        rescue nil
 
     # Add some information for json
-    if request.format =~ "json"
+    if request.format.to_sym == :json
       rr_ids_accessible   = RemoteResource.find_all_accessible_by_user(current_user).map(&:id)
       @remote_sync_status = SyncStatus.where(:userfile_id => @userfile.id, :remote_resource_id => rr_ids_accessible)
       @children_ids       = @userfile.children_ids  rescue []

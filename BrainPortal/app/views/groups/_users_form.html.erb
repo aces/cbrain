@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -30,7 +30,9 @@
 
 <%
     @other_work_groups = WorkGroup.all.select { |g| g != @group && g.can_be_accessed_by?(current_user) }
+    @other_work_groups = @other_work_groups.reject { |g| g.invisible? } if ! current_user.has_role?(:admin_user)
     @other_work_groups.sort! { |a,b| a.name.casecmp(b.name) }
+
     @other_site_groups = SiteGroup.all.select { |g| g != @group && g.can_be_accessed_by?(current_user) }
     @other_site_groups.sort! { |a,b| a.name.casecmp(b.name) }
 
@@ -51,7 +53,7 @@
         @users_multi_select_classes[u]  += "sitegroup_#{group.id}"
       end
     end
-    
+
     parameter_name ||= "group[user_ids]"
 %>
 
@@ -64,7 +66,7 @@
 %>
 
 <!-- Separation between active and locked users -->
-<% 
+<%
   user_by_lock_status_hash = @users
     .sort { |a,b| a.login.casecmp(b.login) }
     .hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users" }
@@ -86,7 +88,7 @@
       <%= link_to_user_with_tooltip(user) %>
     <% end %>
   </div>
-</fiedset>
+</fieldset>
 
 <% show_locked = true if show_locked.nil?%>
 
@@ -109,8 +111,8 @@
         <%= link_to_user_with_tooltip(user) %>
       <% end %>
     </div>
-  </fiedset>
-<%end%>
+  </fieldset>
+<% end %>
 
 <%
 #######################################
