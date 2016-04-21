@@ -54,14 +54,21 @@
 
 <p>
 
-<select name="tag_ids[]" multiple="multiple" style="width:150px" >
-  <%= options_from_collection_for_select current_user.available_tags, 'id', 'name',
-      @userfile.get_tags_for_user(current_user).raw_first_column(:id) %>
-</select>
-
-<br>
-
-<%= submit_tag "Update Tags", :name => :tags %>
+<div class="display_table">
+  <div class="display_cell">
+  Tags:<br>
+    <select name="tag_ids[]" multiple="multiple" style="width:150px" >
+      <%= options_from_collection_for_select current_user.available_tags, 'id', 'name',
+          @userfile.get_tags_for_user(current_user).raw_first_column(:id) %>
+    </select>
+  </div>
+  <div class="display_cell">
+  Description:<br>
+    <%= text_area_tag "userfile[description]", @userfile.description, :rows => 3, :cols => 40 %><br>
+  </div>
+</div>
+<p>
+<%= submit_tag "Update", :name => :update %>
 
 <p>
 

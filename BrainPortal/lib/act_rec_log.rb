@@ -366,7 +366,7 @@ module ActRecLog
   # or is invalid.
   #
   # The method doesn't have to be the only one to change the attributes
-  # we want logged; you can change the attibutes beforehand using
+  # we want logged; you can change the attributes beforehand using
   # standard ActiveRecord assignements, and then call the method
   # with an empty hash to get them logged and saved.
   #
