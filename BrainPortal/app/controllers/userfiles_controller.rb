@@ -791,7 +791,7 @@ class UserfilesController < ApplicationController
     fail_tag    = current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_FAIL", admin_user.id, everyone_group.id)
     unknown_tag = current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_UNKNOWN", admin_user.id, everyone_group.id)
 
-    commit_name     = extract_params_key([ :next, :previous, :pass, :fail, :unknown, :tags ])
+    commit_name  = extract_params_key([ :next, :previous, :pass, :fail, :unknown, :update ])
     if @current_index >=  0 && commit_name && commit_name != :next && commit_name != :previous
       @current_userfile = Userfile.find_accessible_by_user(@filelist[@current_index], current_user, :access_requested => :read)
       tag_ids = params[:tag_ids] || []
@@ -804,6 +804,8 @@ class UserfilesController < ApplicationController
           tag_ids |= [unknown_tag.id.to_s]
       end
       @current_userfile.set_tags_for_user(current_user, tag_ids)
+      # Only update description
+      @current_userfile.update_attributes_with_logging( { "description" => params[:userfile][:description] }, current_user) if params[:userfile][:description]
     end
 
     if commit_name == :previous && @current_index > 0

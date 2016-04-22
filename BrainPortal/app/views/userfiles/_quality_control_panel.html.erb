@@ -30,38 +30,44 @@
 
 <%= hidden_field_tag :index, @current_index %>
 
+<h3>
+  Quality Control Tagging for: <%= @userfile.name %> (Dataset <%= @current_index + 1 %> out of <%= @filelist.size %>)
+</h3>
 
+<div class="menubar">
 
-<h2>
-  Quality Control Tagging for: <%= @userfile.name %>
-</h2>
+  Quick tags:
+  <%= submit_button "Pass",    :name => :pass %>
+  <%= submit_button "Fail",    :name => :fail %>
+  <%= submit_button "Unknown", :name => :unknown %>
 
-(Dataset <%= @current_index + 1 %> out of <%= @filelist.size %>)
+  &nbsp;&nbsp;|&nbsp;&nbsp;
 
+  <% if @current_index > 0 %>
+    <%= submit_button "Previous", :name => :previous %>
+  <% end %>
+
+  <% if @current_index < @filelist.size - 1 %>
+    <%= submit_button "Next", :name => :next %>
+  <% end %>
+
+</div>
+
+<div class="display_table">
+  <div class="display_cell">
+  Full list of tags:<br>
+    <select name="tag_ids[]" multiple="multiple" style="width: 15em" size="4" >
+      <%= options_from_collection_for_select current_user.available_tags, 'id', 'name',
+          @userfile.get_tags_for_user(current_user).raw_first_column(:id) %>
+    </select>
+  </div>
+  <div class="display_cell">
+  Description:<br>
+    <%= text_area_tag "userfile[description]", @userfile.description, :rows => 3, :cols => 40 %><br>
+  </div>
+</div>
 <p>
-
-<% if @current_index > 0 %>
-  <%= submit_button "Previous", :name => :previous %>
-<% end %>
-
-<%= submit_button "Pass",    :name => :pass %>
-<%= submit_button "Fail",    :name => :fail %>
-<%= submit_button "Unknown", :name => :unknown %>
-
-<% if @current_index < @filelist.size - 1 %>
-  <%= submit_button "Next", :name => :next %>
-<% end %>
-
-<p>
-
-<select name="tag_ids[]" multiple="multiple" style="width:150px" >
-  <%= options_from_collection_for_select current_user.available_tags, 'id', 'name',
-      @userfile.get_tags_for_user(current_user).raw_first_column(:id) %>
-</select>
-
-<br>
-
-<%= submit_tag "Update Tags", :name => :tags %>
+<%= submit_tag "Update", :name => :update %>
 
 <p>
 
@@ -80,4 +86,3 @@
 <% end %>
 
 <br>
-

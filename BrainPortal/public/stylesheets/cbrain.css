@@ -2188,7 +2188,7 @@ img {
 }
 
 .qc_panel {
-  padding: 1em;
+  padding: 0em 1em 1em 1em;
   border: 0.2em solid #05A3D6;
 }
 
