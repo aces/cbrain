@@ -1677,11 +1677,14 @@ class ClusterTask < CbrainTask
     cache_dir=RemoteResource.current_resource.dp_cache_dir;
     task_dir=self.bourreau.cms_shared_dir;
     docker_commands = "cat << \"DOCKERJOB\" > .dockerjob.sh
-#!/bin/bash -l\n
-#{commands_joined}\n
-DOCKERJOB\n
-chmod 755 ./.dockerjob.sh\n
-#{docker_executable_name} run --rm -v ${PWD}:${PWD} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w ${PWD} #{self.tool_config.docker_image} ${PWD}/.dockerjob.sh \n
+#!/bin/bash -l
+#{commands_joined}
+DOCKERJOB
+chmod 755 ./.dockerjob.sh
+# Pull the Docker image to avoid inconsistencies coming from different image versions on worker nodes
+#{docker_executable_name} pull #{self.tool_config.docker_image.bash_escape}
+# Run the task commands
+#{docker_executable_name} run --rm -v ${PWD}:${PWD} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w ${PWD} #{self.tool_config.docker_image.bash_escape} ${PWD}/.dockerjob.sh
 "
     return docker_commands
   end
