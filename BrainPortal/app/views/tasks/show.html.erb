@@ -25,28 +25,25 @@
 <% title(@task.name + ' Task Information') %>
 
 <!-- PROGRESS BAR -->
-<% if @task.respond_to?("progress_info") %>
-<!-- Calls method 'progress_info' of the task if it is defined. 
-     This method returns an array with the following elements:
-       * color: a string containing the color to use in the progress bar.
-       * percentage: an int between 0 and 100 that represents the progression percentage.
-       * message: a string that contains an information message.
-       * show_percentage: a boolean that indicates if the percentage has to be shown.
-     Examples of returned array:
-       ["blue",27,"Everything looks good",true]
-       ["rgb(12,44,255)",73,"Be careful with the results produced by this task",false]
--->
-  <% color,percentage,message,show_percentage = @task.progress_info %>
-  <strong>Progress</strong>: <% if show_percentage %><%= percentage.to_i %>% - <% end %><%= message %>
+<% if @task.show_progress_bar? %>
+  <% progress_info = @task.progress_info %>
+  <strong>Progress</strong>
+  <% if progress_info[:message].present? || progress_info[:show_percentage] %>
+:
+  <% end %>
+  <% if progress_info[:show_percentage] %>
+    <%= progress_info[:percentage].to_i %>%
+  <% end %>
+  <%= progress_info[:message] %>
   <div id="container" style="width:40%; height:20px; border:1px solid black;">
-        <div id="progress-bar" style="width:<%= percentage %>%;
-				        background-color:<%= color %>;
+        <div id="progress-bar" style="width:<%= progress_info[:percentage] %>%;
+				        background-color:<%= progress_info[:color] %>;
 					height:20px">
 	  <br>
 	</div>
   </div>
 <% end %>
-
+  
 <% if @task.bourreau.online? %>
 
   <div class="menu_bar">
