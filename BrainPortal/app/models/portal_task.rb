@@ -334,7 +334,8 @@ class PortalTask < CbrainTask
     return {:color => color, :progress => progress, :message => nil, :show_percentage => false }
   end
 
-  # Returns true if progress bar has to be shown.
+  # Returns true if progress bar has to be shown. Task must override this method
+  # when the progress bar has to be shown.
   def show_progress_bar?
     false
   end
