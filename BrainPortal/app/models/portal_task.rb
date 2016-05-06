@@ -288,6 +288,58 @@ class PortalTask < CbrainTask
     {}
   end
 
+  #######################################################
+  # Task View API
+  #######################################################
+
+  # This method is used to display a progress bar in the task view
+  # interface. It returns a hash with the following content:
+  #   * :color: a string containing the color to use in the progress bar.
+  #   * :progress: an int between 0 and 100 that represents the progression percentage.
+  #   * :message: a string that contains an information message.
+  #   * :show_percentage: a boolean that indicates if the percentage has to be shown.
+  # Examples of returned hashes:
+  #     {
+  #      :color=>"blue",
+  #      :progress => 27,
+  #      :message => "Everything looks good",
+  #      :show_percentage => true
+  #     }
+  #     {
+  #      :color => "rgb(12,44,255)",
+  #      :progress => 42,
+  #      :message => "Oh no your data is corrupted",
+  #      :show_percentage => false
+  #     }
+  #
+  # This is a default implementation where the bar progresses based on
+  # the task status. Tasks may override it to show some task-specific
+  # progression. It is recommended to keep the following color
+  # convention: red is for failed tasks, blue for active ones, green
+  # for completed ones.
+  def progress_info
+    progress=15
+    color="blue"
+    if CbrainTask::RUNNING_STATUS.include?(self.status)
+      progress=15*(1+CbrainTask::RUNNING_STATUS.index(self.status))
+    end
+    if CbrainTask::COMPLETED_STATUS.include?(self.status)
+      color="green"
+      progress=100
+    end
+    if CbrainTask::FAILED_STATUS.include?(self.status)
+      color="red"
+      progress=100
+    end
+    return {:color => color, :progress => progress, :message => nil, :show_percentage => false }
+  end
+
+  # Returns true if progress bar has to be shown. Task must override this method
+  # when the progress bar has to be shown.
+  def show_progress_bar?
+    false
+  end
+  
   ######################################################
   # Task properties directives
   ######################################################
