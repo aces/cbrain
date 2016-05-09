@@ -199,12 +199,8 @@ $(function() {
     copy: function (form) {
       var uform = userfiles.children('form');
 
-      uform
-        .attr('action', urls.copy)
-        .attr('method', 'POST')
-        .append($(form).find(':input'))
-        .append($('<input type="hidden" name="_method" value="POST" />'))
-        .append($('<input type="hidden" name="copy"    value="1"    />'));
+      uform.append($('<input type="hidden" name="copy" value="1" />'));
+      setup_form(uform, urls.copy, 'POST', form);
 
       clear_selection(true);
 
@@ -218,12 +214,8 @@ $(function() {
     move: function (form) {
       var uform = userfiles.children('form');
 
-      uform
-        .attr('action', urls.move)
-        .attr('method', 'POST')
-        .append($(form).find(':input'))
-        .append($('<input type="hidden" name="_method" value="POST" />'))
-        .append($('<input type="hidden" name="move"    value="1"    />'));
+      uform.append($('<input type="hidden" name="move" value="1" />'));
+      setup_form(uform, urls.move, 'POST', form);
 
       clear_selection(true);
 
@@ -287,12 +279,7 @@ $(function() {
           check.prop('checked', true).val('');
       });
 
-      uform
-        .attr('action', urls.update)
-        .attr('method', 'POST')
-        .append($(form).find(':input'))
-        .append($('<input type="hidden" name="_method" value="PUT" />'));
-
+      setup_form(uform, urls.update, 'PUT', form);
       clear_selection(true);
 
       return userfiles.tags.add_selected(uform.find('#pp-tag')[0])
@@ -307,11 +294,7 @@ $(function() {
     create_collection: function (form) {
       var uform = userfiles.children('form');
 
-      uform
-        .attr('action', urls.create_collection)
-        .attr('method', 'POST')
-        .append($(form).find(':input'));
-
+      setup_form(uform, urls.create_collection, 'POST', form);
       clear_selection(true);
 
       return defer(function () { uform.submit(); }).promise();
@@ -1259,6 +1242,34 @@ $(function() {
     }));
 
     return deferred;
+  };
+
+  /*
+   * Prepare/setup an HTML form +form+ to be sent to the server, notably
+   * setting its +url+ and +method+ and importing other fields from +source+,
+   * if required. This utility function is mainly used to avoid duplication,
+   * and does not play a significant role in the interface's design.
+   * Note that +method+, if supplied, must be in upper case.
+   */
+  function setup_form(form, url, method, source) {
+    if (url) form.attr('action', url);
+
+    if (method === 'GET')
+      form.attr('method', method);
+    else if (method)
+      form.attr('method', 'POST')
+        .append(
+          $('<input type="hidden" name="_method" />')
+            .val(method)
+        );
+
+    if (source)
+      form
+        .append(
+          $('<div>')
+            .css({ visibility: 'hidden', position: 'absolute' })
+            .append($(source).find(':input'))
+        );
   };
 
   /* Extremely crude and simplistic XML serializer */
