@@ -76,26 +76,33 @@
     <br />
 
     <div id="up-ex-container">
-      <input id="up-ex" class="dlg-chk" type="checkbox" />
+
+      <input id="up-ex" class="dlg-chk" type="checkbox" name="_do_extract" value="on" />
       <label for="up-ex" class="dlg-chk-icon">
         <span class="ui-icon ui-icon-check"></span>
       </label>
       <label for="up-ex" class="dlg-chk-lbl">Extract</label>
-      <br />
-      <div id="up-ex-mode">
-        <input id="up-mul" class="dlg-rad" type="radio" name="_up_ex_mode" value="multiple" checked="" />
-        <label for="up-mul" class="dlg-rad-icon">
-          <span class="round-icon"></span>
-        </label>
-        <label for="up-mul" class="dlg-rad-lbl">As multiple files</label>
-        <br />
 
-        <input id="up-col" class="dlg-rad" type="radio" name="_up_ex_mode" value="collection" />
+      <br />
+
+      <div id="up-ex-mode">
+
+        <input id="up-col" class="dlg-rad" type="radio" name="_up_ex_mode" value="collection" checked />
         <label for="up-col" class="dlg-rad-icon">
           <span class="round-icon"></span>
         </label>
         <label for="up-col" class="dlg-rad-lbl">As a single collection</label>
+
+        <br />
+
+        <input id="up-mul" class="dlg-rad" type="radio" name="_up_ex_mode" value="multiple" />
+        <label for="up-mul" class="dlg-rad-icon">
+          <span class="round-icon"></span>
+        </label>
+        <label for="up-mul" class="dlg-rad-lbl">As multiple files</label>
+
       </div>
+
     </div>
     <br />
 
@@ -121,9 +128,10 @@
       <label for="up-type" class="dlg-fld-lbl">Detect as</label>
       <%=
         userfile_type_select(:file_type, {}, {
-          :id    => 'up-type',
-          :class => 'dlg-fld',
-          :'data-placeholder' => "A file type..."
+          :id                 => 'up-type',
+          :class              => 'dlg-fld',
+          :'data-placeholder' => "A file type...",
+          # :include_blank      => "(Detect during autoextract)",  # doesn't work
         })
       %>
       <span id="up-type-auto">(autodetected)</span>

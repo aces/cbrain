@@ -393,6 +393,12 @@ class UserfilesController < ApplicationController
     flash[:notice]    ||= ""
     params[:userfile] ||= {}
 
+    # Mode of upload; this is determined by the values of the
+    # params :archive, :_do_extract, and :_up_ex_mode
+    mode = :save           # standard upload of one file
+    mode = :collection if  params[:_do_extract] == "on" && params[:_up_ex_mode] == "collection" # create a single collection
+    mode = :extract    if  params[:_do_extract] == "on" && params[:_up_ex_mode] == "multiple"   # create many many files
+
     redirect_path = params[:redirect_to] || {:action  => :index}
 
     # Get the upload stream object
@@ -425,9 +431,8 @@ class UserfilesController < ApplicationController
     tmpcontentfile     = "/tmp/#{Process.pid}-#{rand(10000).to_s}-#{basename}" # basename's extension is used later on
 
     # Decide what to do with the raw data
-    if params[:archive] == 'save'  # the simplest case first
+    if mode == :save  # the simplest case first
 
-      file_type = SingleFile unless file_type <= SingleFile
       userfile  = file_type.new(
                       params[:userfile].merge(
                      :name             => basename,
@@ -475,6 +480,8 @@ class UserfilesController < ApplicationController
       return
     end # save
 
+    # At this point the controller implements mode == :collection, or mode == :extract.
+
     # We will be processing some archive file.
     # First, check for supported extensions
     if basename !~ /(\.tar|\.tgz|\.tar.gz|\.zip)$/i
@@ -487,7 +494,7 @@ class UserfilesController < ApplicationController
     end
 
     # Create a collection
-    if params[:archive] =~ /collection/
+    if mode == :collection
 
       collection_name = basename.split('.')[0]  # "abc"
       if current_user.userfiles.exists?(:name => collection_name, :data_provider_id => data_provider_id)
@@ -546,7 +553,7 @@ class UserfilesController < ApplicationController
     end
 
     # At this point, create a bunch of userfiles from the archive
-    cb_error "Unknown action #{params[:archive]}" if params[:archive] != 'extract'
+    cb_error "Unknown upload mode '#{mode}'" if mode != :extract
 
     # Common attributes to all files
     attributes = params[:userfile].merge({
@@ -559,7 +566,7 @@ class UserfilesController < ApplicationController
     system("cp #{rack_tempfile_path.to_s.bash_escape} #{tmpcontentfile.to_s.bash_escape}") # fast, hopefully; maybe 'mv' would work?
     CBRAIN.spawn_with_active_records(current_user,"Archive extraction") do
       begin
-        extract_from_archive(tmpcontentfile, params[:file_type].presence, attributes) # generates its own Messages
+        extract_from_archive(tmpcontentfile, nil, attributes) # generates its own Messages
       ensure
         File.delete(tmpcontentfile) rescue true
       end
@@ -1345,7 +1352,7 @@ class UserfilesController < ApplicationController
   #they must contain at least user_id and data_provider_id
   def extract_from_archive(archive_file_name, file_type = nil, attributes = {}) #:nodoc:
 
-    file_type = SingleFile if file_type && ! file_type <= SingleFile # just protect from classes outside of Userfile
+    file_type = SingleFile if file_type.present? && ! (file_type <= SingleFile) # just protect from classes outside of Userfile
     escaped_archivefile = archive_file_name.to_s.bash_escape # bash escaping
 
     # Check for required attributes
