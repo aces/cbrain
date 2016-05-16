@@ -435,7 +435,10 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   def apply_template(template, keys, flags: {}, strip: [])
     keys.inject(template) do |template, (key, value)|
       flag = flags[key].presence
-      next template.gsub(key, flag) if flag && value == true
+  
+      # Flag type
+      isBool = (value.is_a?(TrueClass) || value.is_a?(FalseClass))
+      next template.gsub(key, (flag && value==true)  ? flag : '') if flag && isBool
 
       value = (value.is_a?(Enumerable) ? value.dup : [value])
         .reject(&:nil?)
