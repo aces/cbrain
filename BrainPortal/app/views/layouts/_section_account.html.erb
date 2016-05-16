@@ -36,9 +36,7 @@
 
   <span class="home_credits">
     <% if current_user %>
-      <% unless current_user.try(:has_role?, :normal_user) %>
-        <%= link_to "Dashboard", home_path %>
-      <% end %>
+      <%= link_to "Dashboard", home_path %>
       <%= link_to 'My Account', user_path(current_user) %>
       <%= link_to 'Projects', groups_path %>
       <%= link_to 'Messages', messages_path, :title  => pluralize(@unread_message_count, "unread message"), :id  => "message_menu_tab" %>

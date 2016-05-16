@@ -117,13 +117,13 @@
       <%= select_tag("userfile[group_writable]", options_for_select([['Read Only', false],['Read/Write', true]])) %>
     <% end %>
 
-    <% t.edit_cell("Hidden file", :content => check_box_tag(nil ,nil, @userfile.hidden?, :disabled => true) + "&nbsp;".html_safe + hidden_icon) do %>
+    <% t.edit_cell("Hidden file", :content => check_box_tag(nil ,nil, @userfile.hidden?, :disabled => true) + "&nbsp;".html_safe + hidden_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do %>
       <%= hidden_field_tag "userfile[hidden]", "0" %>
       <%= check_box_tag("userfile[hidden]",    "1", @userfile.hidden?) %>
       <%= hidden_icon %>
     <% end %>
 
-    <% t.edit_cell("Immutable file", :content => check_box_tag(nil ,nil, @userfile.immutable?, :disabled => true) + "&nbsp;".html_safe + immutable_icon ) do %>
+    <% t.edit_cell("Immutable file", :content => check_box_tag(nil ,nil, @userfile.immutable?, :disabled => true) + "&nbsp;".html_safe + immutable_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do %>
       <%= hidden_field_tag "userfile[immutable]", "0" %>
       <%= check_box_tag("userfile[immutable]",    "1", @userfile.immutable?) %>
       <%= immutable_icon %>
@@ -152,7 +152,7 @@
       <% end %>
     <% end %>
 
-    <% t.edit_cell(:description, :content => simple_format(@userfile.description, :sanitize => true), :show_width => 2) do %>
+    <% t.edit_cell(:description, :content => simple_format(@userfile.description, :sanitize => true), :show_width => 2, :disabled => (!@userfile.has_owner_access?(current_user))) do %>
       <%= text_area_tag "userfile[description]", @userfile.description, :rows => 10, :cols => 80 %>
     <% end %>
 
@@ -188,10 +188,17 @@
         (This file cannot be viewed as it is stored on Data Provider
         <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
         which is configured to <strong>not allow synchronization</strong> <em>at all</em>)
-		
-  	  <% elsif @sync_status == "Corrupted" %>
-  	
-		<span style="background-color: pink;">(The content of this file seems to be corrupted. This might be the result of a bad data transfer while it was being created or a filesystem failure. There isn't much you can do about this, although if the file was produced by a task, consider restarting the task's Post Processing stage.)</span>
+
+      <% elsif @sync_status == "Corrupted" %>
+
+        <span style="background-color: pink;">
+          (The content of this file seems to be corrupted.
+          This might be the result of a bad data transfer while
+          it was being created or a filesystem failure. There isn't
+          much you can do about this, although if the file was
+          produced by a task, consider restarting the task's
+          Post Processing stage.)
+        </span>
 
       <% elsif ! @userfile.data_provider.rr_allowed_syncing? %>
 
@@ -209,7 +216,7 @@
 
         (The contents of this file cannot be viewed: no viewer code available at this moment
         for files of type '<%= @userfile.pretty_type %>')
-	  
+
       <% else %>
 
         <% if ! @userfile.is_locally_synced? %>

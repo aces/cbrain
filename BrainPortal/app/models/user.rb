@@ -193,7 +193,7 @@ class User < ActiveRecord::Base
        (password_type(crypted_password) == :pbkdf2 && plain_crypted_password == encrypt_in_pbkdf2(password))
       self.password = password # not a real attribute; only used by encrypt_password() below
       self.encrypt_password()  # explicit call to compute the crypted password (stored as a real rails attribute)
-      self.password   = nil    # zap pseudo-attribute for security
+      self.password = nil      # zap pseudo-attribute for security
       self.save
       true
     # This is now the default CBRAIN encryption mode
@@ -202,6 +202,8 @@ class User < ActiveRecord::Base
     else
       false
     end
+  ensure
+    0.upto(password.size-1) { |i| password[i]='x' } # mutate password in memory, hopefully
   end
 
   # Create a random password (to be sent for resets).

@@ -87,12 +87,12 @@ module ExceptionHelpers
       format.xml  { render :xml => {:error  => exception.message}, :status => 500 }
     end
   end
-  
+
   # Redirect to the index page if available and wasn't the source of
   # the exception, otherwise to welcome page.
   def default_redirect
     final_resting_place = start_page_params
-    if self.respond_to?(:index) && params[:action] != "index"
+    if self.respond_to?(:index) && params[:action].to_s != "index"
       { :action => :index }
     elsif final_resting_place.keys.all? { |k| params[k].to_s == final_resting_place[k].to_s }
       "/500.html" # in case there's an error in the welcome page itself

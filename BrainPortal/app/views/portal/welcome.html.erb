@@ -197,6 +197,7 @@
           <tr>
             <td><%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau) %></td>
             <td><%= link_to_user_if_accessible(task.user) %></td>
+            <td><%= link_to_group_if_accessible(task.group) %></td>
             <td><%= colored_status(task.status) %></td>
             <td><%= to_localtime(task.updated_at,:datetime) %></td>
           </tr>
@@ -218,6 +219,7 @@
           <tr>
             <td><%= link_to_userfile_if_accessible(file, nil) %></td>
             <td><%= link_to_user_if_accessible(file.user) %></td>
+            <td><%= link_to_group_if_accessible(file.group) %></td>
             <td><%= colored_pretty_size(file.size) %></td>
             <td><%= to_localtime(file.updated_at,:datetime) %></td>
           </tr>
