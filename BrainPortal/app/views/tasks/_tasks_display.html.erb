@@ -280,9 +280,9 @@
             .where(:batch_id => id)
             .order('cbrain_tasks.updated_at desc')
             .first
-            .updated_at,
+            .try(:updated_at),
           :datetime
-        )
+        ) rescue ""
       end
     end
   %>

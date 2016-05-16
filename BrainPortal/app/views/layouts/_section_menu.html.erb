@@ -47,8 +47,7 @@
 
   <%= image_tag "ajax-loader.gif", :style => "display:none", :id => "loading_image" %>
 
-  <% if current_user && current_user.has_role?(:admin_user) &&
-     ! (params[:controller] == 'portal' && params[:action] == 'search') %>
+  <% if current_user && ! (params[:controller] == 'portal' && params[:action] == 'search') %>
     <div id="cbsearch">
       <%= form_tag search_path, :method => :get do %>
         <%= text_field_tag :search, nil, :placeholder => 'Search for anything' %>
