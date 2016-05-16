@@ -108,7 +108,7 @@
   <ul class="tsk-prm-list">
     <li>
       <%%
-        input.(id, name,
+        input.(id, name+"[]",
           value:       first,
           optional:    optional,
           placeholder: placeholder
@@ -454,7 +454,7 @@ $(function () {
   parameters.delegate('.tsk-prm-add', 'click', function () {
     var name = $(this)
       .siblings('.tsk-prm-in')
-      .data('name');
+      .attr('name');
 
     $(this)
       .closest('ul')
