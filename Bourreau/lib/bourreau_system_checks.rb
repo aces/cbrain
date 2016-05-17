@@ -31,7 +31,18 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     Kernel.puts(*args)
   end
 
-  def self.a050_ensure_proper_cluster_management_layer_is_loaded
+
+
+  def self.a000_ensure_models_are_preloaded #:nodoc:
+    # There's a piece of code at the end of each of these models
+    # which forces the pre-load of all their subclasses.
+    Userfile
+    ClusterTask # not PortalTask, which is only on the BrainPortal rails app
+  end
+
+
+
+  def self.a050_ensure_proper_cluster_management_layer_is_loaded #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Loading cluster management SCIR layers..."
@@ -69,7 +80,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.a060_ensure_bourreau_worker_processes_are_reported
+  def self.a060_ensure_bourreau_worker_processes_are_reported #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Reporting Bourreau Worker processes (if any)..."
@@ -99,7 +110,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.a070_ensure_task_workdirs_are_in_subtrees
+  def self.a070_ensure_task_workdirs_are_in_subtrees #:nodoc:
 
     myself        = RemoteResource.current_resource
     gridshare_dir = myself.cms_shared_dir
@@ -183,7 +194,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.a075_ensure_task_workdirs_still_exist
+  def self.a075_ensure_task_workdirs_still_exist #:nodoc:
 
     myself        = RemoteResource.current_resource
     gridshare_dir = myself.cms_shared_dir
@@ -232,7 +243,9 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
   end
 
-  def self.a076_ensure_task_archived_status_is_consistent
+
+
+  def self.a076_ensure_task_archived_status_is_consistent #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Verifying CbrainTasks with inconsistent archiving information..."
@@ -321,7 +334,9 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
   end
 
-  def self.a080_ensure_tasks_have_workdir_sizes
+
+
+  def self.a080_ensure_tasks_have_workdir_sizes #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Refreshing the disk sizes for workdirs of CbrainTasks..."
@@ -377,7 +392,9 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
   end
 
-  def self.a090_check_for_spurious_task_workdirs
+
+
+  def self.a090_check_for_spurious_task_workdirs #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Trying to see if there are any spurious task work directories..."
@@ -432,7 +449,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.a100_ensure_dp_cache_symlink_exists
+  def self.a100_ensure_dp_cache_symlink_exists #:nodoc:
 
     myself        = RemoteResource.current_resource
     gridshare_dir = myself.cms_shared_dir
@@ -456,7 +473,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.z000_ensure_we_have_a_forwarded_ssh_agent
+  def self.z000_ensure_we_have_a_forwarded_ssh_agent #:nodoc:
 
     #----------------------------------------------------------------------------
     puts "C> Making sure the portal is forwarding a SSH agent to us..."

@@ -29,6 +29,8 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     Kernel.puts(*args)
   end
 
+
+
   def self.print_intro_info #:nodoc:
     #-----------------------------------------------------------------------------
     puts "C> CBRAIN System Checks starting, " + Time.now.to_s
@@ -39,9 +41,11 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     #-----------------------------------------------------------------------------
   end
 
+
+
   # First thing first: identify which RemoteResource object
   # represents the current Rails application.
-  def self.a002_ensure_Rails_can_find_itself
+  def self.a002_ensure_Rails_can_find_itself #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Ensuring that this CBRAIN app is registered in the DB..."
@@ -91,7 +95,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
 
   # Checks for a proper timezone configuration in Rails' environment.
-  def self.a009_check_time_zone_configuration
+  def self.a009_check_time_zone_configuration #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Setting time zone for application..."
@@ -120,7 +124,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.a040_ensure_file_revision_system_is_active
+  def self.a040_ensure_file_revision_system_is_active #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Making sure we can track file revision numbers."
@@ -140,7 +144,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
 
   # Cleans up old syncstatus that are left in the database
-  def self.a045_ensure_syncstatus_is_clean
+  def self.a045_ensure_syncstatus_is_clean #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Cleaning up old SyncStatus objects..."
@@ -170,7 +174,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.a050_check_data_provider_cache_wipe
+  def self.a050_check_data_provider_cache_wipe #:nodoc:
 
     #-----------------------------------------------------------------------------
     puts "C> Checking to see if Data Provider cache is valid..."
@@ -298,12 +302,14 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
 
 
-  def self.a080_ensure_set_starttime_revision
+  def self.a080_ensure_set_starttime_revision #:nodoc:
     #-----------------------------------------------------------------------------
     puts  "C> Current application tag or revision: #{CBRAIN::CBRAIN_StartTime_Revision}"
     puts  "C> Current Git branch: #{CBRAIN::CBRAIN_Git_Branch.presence || "unknown"}"
     #-----------------------------------------------------------------------------
   end
+
+
 
   private
 

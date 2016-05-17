@@ -180,7 +180,7 @@
             url: { :controller => :tasks, :action => :index }
           )
         %>
-        <% active_count = CbrainTask.active.count rescue 0 %>
+        <% active_count = CbrainTask.find_all_accessible_by_user(current_user).active.count rescue 0 %>
         <% if active_count > 0 %>
           <%=
             scope_filter_link("(#{active_count} active)",
