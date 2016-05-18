@@ -53,6 +53,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % in_keys  = inputs.select  { |i| i['command-line-key'] }
 % out_keys = outputs.select { |o| o['command-line-key'] }
 % flags    = (inputs + outputs).select { |p| p['command-line-flag'] }
+% seps     = inputs.select { |i| i['command-line-flag-separator'] }  # ta
 %
   # Task properties are special boolean properties of your task, returned as a
   # hash table. Used internally by CBRAIN to enable/disable special task
@@ -199,8 +200,8 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %       end
 %     end
     })
-
 %   end
+
 %   unless flags.empty?
     # Input/output command-line flags used with keys in command-line
     # substitution.
@@ -215,8 +216,25 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
       %>
 %     end
     }
-
 %   end
+
+%   unless seps.empty?
+    # Input command-line separators (with flags) used with keys in command-line
+    # substitution.
+    seps = {
+%     key_width = max_width.(seps, 'command-line-key')  + "''".length
+%     seps.each do |sep|
+      <%=
+        "%-#{key_width}s => %s" % [
+          "'#{sep['command-line-key']}'",
+          "'#{sep['command-line-flag-separator']}',"
+        ]
+      %>
+%     end
+    }
+%   end
+
+
 %   unless outputs.empty?
     # Generate output filenames
     params.merge!({
@@ -235,12 +253,12 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %   end
 %   if descriptor['cbrain:ignore-exit-status']
     # Generate the final command-line to run <%= name %>
-    [ apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %>) ]
+    [ apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %>) ]
       <%= descriptor['command-line'] %>
     CMD
 %   else
     # Generate the final command-line to run <%= name %>
-    command = apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %>)
+    command = apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %>)
       <%= descriptor['command-line'] %>
     CMD
 
@@ -432,10 +450,11 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   #     flags: { '[1]' => '-z' },
   #     strip: [ '.z' ]
   #   ) => 'f -z 5'
-  def apply_template(template, keys, flags: {}, strip: [])
+  def apply_template(template, keys, flags: {}, strip: [], separators: {})
     keys.inject(template) do |template, (key, value)|
-      flag = flags[key].presence
-  
+      flag = flags[key]
+      sep_init = separators[key]
+
       # Flag type
       isBool = (value.is_a?(TrueClass) || value.is_a?(FalseClass))
       next template.gsub(key, (flag && value==true)  ? flag : '') if flag && isBool
@@ -453,8 +472,8 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
           v.to_s.bash_escape
         end
         .join(' ')
-
-      template.gsub(key, flag && value.present? ? "#{flag} #{value}" : value)
+      sep = (sep_init.nil?) ? ' ' : sep_init # Default separator is space
+      template.gsub(key, flag && value.present? ? "#{flag}#{sep}#{value}" : value)
     end
   end
 
