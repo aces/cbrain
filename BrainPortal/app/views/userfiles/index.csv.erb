@@ -20,7 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
-<% delimeter    = params[:delimeter] || "," -%>
+<% delimiter    = params[:delimiter] || "," -%>
+<!-- Should escape the quote_marker in description,
+maybe buggy when quote_marker is not a double quote.
+It is a secret option, for the moment it only handle double quote.
+-->
 <% quote_marker = params[:quote]     || "\"" -%>
 <% @userfiles.each do |u| -%>
   <%= [u.name,
@@ -28,7 +32,7 @@
        u.data_provider.try(:name),
        u.user.try(:login),
        u.group.try(:name),
-       quote_marker + u.tags.map(&:name).join(delimeter) + quote_marker,
-       quote_marker + u.description.to_s + quote_marker,
-      ].join(delimeter).html_safe %>
+       quote_marker + u.tags.map(&:name).join(delimiter) + quote_marker,
+       quote_marker + u.description.to_s.gsub(/\"/, "\"\"") + quote_marker,
+      ].join(delimiter).html_safe %>
 <% end -%>
