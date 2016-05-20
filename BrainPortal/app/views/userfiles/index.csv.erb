@@ -17,11 +17,18 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 <% delimeter    = params[:delimeter] || "," -%>
-<% quote_marker = params[:quote] || "\"" -%>
+<% quote_marker = params[:quote]     || "\"" -%>
 <% @userfiles.each do |u| -%>
-<%= [u.name, u.type, u.data_provider.try(:name), u.user.try(:login), u.group.try(:name), quote_marker + u.tags.map(&:name).join(delimeter) + quote_marker ].join(delimeter).html_safe %>
+  <%= [u.name,
+       u.type,
+       u.data_provider.try(:name),
+       u.user.try(:login),
+       u.group.try(:name),
+       quote_marker + u.tags.map(&:name).join(delimeter) + quote_marker,
+       quote_marker + u.description.to_s + quote_marker,
+      ].join(delimeter).html_safe %>
 <% end -%>
