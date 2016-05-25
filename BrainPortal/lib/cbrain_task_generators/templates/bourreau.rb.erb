@@ -53,7 +53,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % in_keys  = inputs.select  { |i| i['command-line-key'] }
 % out_keys = outputs.select { |o| o['command-line-key'] }
 % flags    = (inputs + outputs).select { |p| p['command-line-flag'] }
-% seps     = inputs.select { |i| i['command-line-flag-separator'] }  # ta
+% seps     = inputs.select { |i| i['command-line-flag-separator'] } 
 %
   # Task properties are special boolean properties of your task, returned as a
   # hash table. Used internally by CBRAIN to enable/disable special task
@@ -473,7 +473,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
         end
         .join(' ')
       sep = (sep_init.nil?) ? ' ' : sep_init # Default separator is space
-      template.gsub(key, flag && value.present? ? "#{flag}#{sep}#{value}" : value)
+      template.gsub(key){ (flag && value.present?) ? "#{flag}#{sep}#{value}" : value }
     end
   end
 
