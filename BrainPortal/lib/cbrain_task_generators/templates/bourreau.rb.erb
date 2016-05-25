@@ -394,7 +394,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   # with the job to the cluster management system for scheduling purposes.
   def job_walltime_estimate
     (<%= (descriptor['cbrain:walltime-estimate']) ? 
-					descriptor['cbrain:walltime-estimate'].to_s : descriptor['walltime-estimate'].to_s  %>).seconds
+          descriptor['cbrain:walltime-estimate'].to_s : descriptor['walltime-estimate'].to_s  %>).seconds
   end
 
 % end
