@@ -101,9 +101,9 @@ class RemoteResource < ActiveRecord::Base
                         :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
                         :allow_blank => true
 
-  belongs_to            :user
-  belongs_to            :group
-  has_many              :sync_status
+  belongs_to  :user
+  belongs_to  :group
+  has_many    :sync_status
 
   after_destroy         :after_destroy_clean_sync_status
 
@@ -117,9 +117,9 @@ class RemoteResource < ActiveRecord::Base
                         :time_zone, :site_url_prefix, :dp_cache_dir, :dp_ignore_patterns, :cms_class,
                         :cms_default_queue, :cms_extra_qsub_args, :cms_shared_dir, :workers_instances,
                         :workers_chk_time, :workers_log_to, :workers_verbose, :help_url, :rr_timeout, :proxied_host,
-                        :spaced_dp_ignore_patterns, :license_agreements, :support_email, :system_from_email, :external_status_page_url, :docker_executable_name
-
-
+                        :spaced_dp_ignore_patterns, :license_agreements, :support_email, :system_from_email, :external_status_page_url, :docker_executable_name,
+                        :ssh_tunnel_port,
+                        :amazon_ec2_region, :amazon_ec2_access_key_id, :amazon_ec2_secret_access_key
 
   ############################################################################
   # Pseudo-attributes Access
@@ -376,8 +376,6 @@ class RemoteResource < ActiveRecord::Base
     false
   end
 
-
-
   ############################################################################
   # Remote Shell Command methods
   #
@@ -490,7 +488,7 @@ class RemoteResource < ActiveRecord::Base
       host = "localhost"
       port = 3090+self.id  # see also in start_tunnels()
     end
-    "http://" + host + (port && port > 0 ? ":#{port}" : "") + dir
+    "http://" + ( host != nil ? host : "localhost" ) + (port && port > 0 ? ":#{port}" : "") + dir
   end
 
   # Returns a RemoteResourceInfo object describing the

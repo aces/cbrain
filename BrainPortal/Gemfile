@@ -46,6 +46,8 @@ group :development do
   gem "pry-doc"
 end
 
+gem 'aws-sdk'
+
 group :test do
   gem "rspec",                    "~> 3.4"
   gem "rspec-rails",              "~> 3.2"

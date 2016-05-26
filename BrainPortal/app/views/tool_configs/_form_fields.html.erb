@@ -98,7 +98,7 @@
   <span title="Docker image">
     <p><%= f.label :docker_image, "Docker image:" %><br/>
       <%= f.text_field :docker_image %><br/>
-      <div class="field_explanation">The name and tag of the Docker image in which the tool is installed, for instance "centos:latest". This name refers to the Docker index accessed by the Bourreau, which is configured manually in the Bourreau for now.</div>
+      <div class="field_explanation">The name and tag of the Docker image in which the tool is installed, for instance "centos:latest". This name refers to the Docker index accessed by the Bourreau, which is configured manually in the Bourreau for now. If left empty, tool will run on the bare resources, without any docker image.</div>
     </p>
   </span>
 

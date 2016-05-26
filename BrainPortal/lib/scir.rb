@@ -74,6 +74,9 @@ class Scir
     @config = {
       :extra_qsub_args => rr.cms_extra_qsub_args || "",
       :default_queue   => rr.cms_default_queue   || "",
+      :amazon_ec2_region => rr.amazon_ec2_region || "",
+      :amazon_ec2_access_key_id => rr.amazon_ec2_access_key_id || "",
+      :amazon_ec2_secret_access_key => rr.amazon_ec2_secret_access_key || "",
     }
   end
 
@@ -112,6 +115,8 @@ class Scir
 
   class Session #:nodoc:
 
+    @state_if_missing = Scir::STATE_UNDETERMINED
+
     public
 
     def revision_info #:nodoc:
@@ -146,10 +151,10 @@ class Scir
       if @job_info_cache.nil? || @cache_last_updated < @job_ps_cache_delay.ago || caller_updated_at > @job_ps_cache_delay.ago
         update_job_info_cache
         @cache_last_updated = Time.now
+        jinfo = @job_info_cache[jid.to_s]
+        return jinfo[:drmaa_state] if jinfo
+        @state_if_missing
       end
-      jinfo = @job_info_cache[jid.to_s]
-      return jinfo[:drmaa_state] if jinfo
-      Scir::STATE_UNDETERMINED
     end
 
     def hold(jid) #:nodoc:

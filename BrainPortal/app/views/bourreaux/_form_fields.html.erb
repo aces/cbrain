@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 -%>
 
@@ -38,9 +38,9 @@
   <p><%= f.label :site_url_prefix, "Site URL Home Page" %><br/>
   <%= f.text_field :site_url_prefix %>
 
-  <p><%= f.label :help_url, "URL for local support page" %><br/>
+  <p><%= f.label :help_url, "URL for local documentation" %><br/>
   <%= f.text_field :help_url %><br/>
-  <div class="field_explanation">If set, the portal will show a link called 'Help Site' in the account bar at the top.</div>
+  <div class="field_explanation">If set, the portal will show a link called 'User Manual' in the account bar at the top.</div>
 
   <p><%= f.label :support_email, "Support email address" %><br/>
   <%= f.text_field :support_email %></br>
@@ -77,8 +77,8 @@
     %>
   </span>
 
-<% if is_bourreau %>
 
+  <% if is_bourreau %>
   <p>
 
   <fieldset class="groupentry">
@@ -101,7 +101,6 @@
       <div class="field_explanation">This is an experimental field for advanced and non-standard setups
              where the remote hostname, above, is actually just a login node and
              the real host where we run the server is one step further.</div>
-
   </fieldset>
 
   <p>
@@ -186,9 +185,9 @@
             [ "Sun GridEngine",  "ScirSge" ],
             [ "PBS",             "ScirPbs" ],
             [ "MOAB",            "ScirMoab" ],
-            [ "LSF",             "ScirLsf" ],
             [ "Sharcnet custom", "ScirSharcnet" ],
-            [ "UNIX processes",  "ScirUnix" ]
+            [ "UNIX processes",  "ScirUnix" ],
+	    [ "Amazon EC2 (StartVM tasks only)",  "ScirAmazon" ]
         ]
     %>
 
@@ -205,6 +204,7 @@
     <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
     <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
 
+       
   </fieldset>
 
   <p>

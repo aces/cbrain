@@ -47,8 +47,8 @@ module CBRAINExtensions #:nodoc:
           comps[idx] = idx % 2 == 0 ? comp.bash_escape(always_quote, true) : ("\\'" * comp.size)
         end
         comps.join
-      end
-
+      end      
+      
       # This method is mostly used on text file content;
       # it attempts to detect and validate different original
       # encodings then record it in UTF8. The returned value
@@ -151,6 +151,24 @@ module CBRAINExtensions #:nodoc:
         final.join
       end
 
+      # Check if a String contains the textual representation of an integer.
+      # Useful for form validation.
+      def is_an_integer?
+        Integer(self)
+        return true 
+      rescue => ex
+        return false
+      end
+
+      # Check if a String contains the textual representation of a float.
+      # Useful for form validation.
+      def is_a_float?
+        Float(self)
+        return true 
+      rescue => ex
+        return false
+      end
+    
     end
   end
 end
