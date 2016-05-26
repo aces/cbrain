@@ -33,13 +33,6 @@ class CbrainTask::StartVM < ClusterTask
   #to follow the boot process of the VM 
   after_status_transition '*', 'On CPU', :starting
 
-  #to make sure no more task in the VM is active 
-  after_status_transition '*', 'Completed', :clean_up_tasks
-  after_status_transition '*', 'Failed To PostProcess', :clean_up_tasks
-  after_status_transition '*', 'Failed On Cluster', :clean_up_tasks
-  after_status_transition '*', 'Failed PostProcess Prerequisites', :clean_up_tasks
-  after_status_transition '*', 'Terminated', :clean_up_tasks
-
   def setup #:nodoc:
     validate_params # defined in common, will raise an exception if params aren't valid.
     true
@@ -221,12 +214,4 @@ class CbrainTask::StartVM < ClusterTask
     return "#{a};;;#{b}"
   end
 
-  # Hook method called whenever the VM enters a final status.
-  # Makes sure that tasks executed by this VM are terminated. 
-  def clean_up_tasks(init_status)
-    CbrainTask.where(:vm_id => id).each do |t| 
-      addlog "Terminating task #{t.id} which is still in this shutting-down VM. This is not supposed to happen, you should investigate what happened."
-      t.terminate
-    end
-  end
 end      

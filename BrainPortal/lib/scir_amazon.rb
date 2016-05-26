@@ -79,7 +79,10 @@ class ScirAmazon < ScirCloud
 
     def update_job_info_cache #:nodoc:
       @job_info_cache = {}
-      ec2 = ScirAmazon.get_amazon_ec2_connection(Scir)
+      ec2 = ScirAmazon.get_amazon_ec2_connection(
+                       Scir.cbrain_config[:amazon_ec2_access_key_id],
+                       Scir.cbrain_config[:amazon_ec2_secret_access_key],
+                       Scir.cbrain_config[:amazon_ec2_region])
       ec2.instances.each do |s|
         # get status
         state = statestring_to_stateconst(s.status)
@@ -142,7 +145,10 @@ class ScirAmazon < ScirCloud
     end
 
     def submit_VM(vm_name,image_id,key_pair,instance_type,tag_value)
-      ec2 = get_amazon_ec2_connection(Scir)
+      ec2 = ScirAmazon.get_amazon_ec2_connection(
+                       Scir.cbrain_config[:amazon_ec2_access_key_id],
+                       Scir.cbrain_config[:amazon_ec2_secret_access_key],
+                       Scir.cbrain_config[:amazon_ec2_region])
       security_groups=ec2.security_groups
       security_group_name="cbrain worker"
       if ec2.security_groups.map{ |c| c.name }.include? security_group_name
@@ -183,7 +189,10 @@ class ScirAmazon < ScirCloud
     end
 
     def get_vm_instance(id)
-      ec2 = get_amazon_ec2_connection(bourreau)
+      ec2 = ScirAmazon.get_amazon_ec2_connection(
+                       Scir.cbrain_config[:amazon_ec2_access_key_id],
+                       Scir.cbrain_config[:amazon_ec2_secret_access_key],
+                       Scir.cbrain_config[:amazon_ec2_region])
       instance = ec2.instances.detect { |x| x.id == id }
       return instance
     end

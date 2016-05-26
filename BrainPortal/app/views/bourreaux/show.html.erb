@@ -240,7 +240,7 @@
                   [ "MOAB",            "ScirMoab" ],
                   [ "Sharcnet custom", "ScirSharcnet" ],
                   [ "LSF",             "ScirLsf" ],
-                  [ "Amazon EC2 (StartVM tasks only)",  "ScirAmazon" ]
+                  [ "Amazon EC2 (StartVM tasks only)",  "ScirAmazon" ],
                   [ "UNIX processes",  "ScirUnix" ]
               ], :selected => @bourreau.cms_class)
           %>
@@ -275,8 +275,18 @@
           <% end %>
 
 	  <% t.edit_cell(:amazon_ec2_region, :header => "Amazon EC2 Region") do %>
-            <%= text_field_tag "bourreau[amazon_ec2_region]", @bourreau.amazon_ec2_region, :size => 60 %><br/>
-            <div class="field_explanation">One of eu-central-1, sa-east-1, ap-northeast-1, eu-west-1, us-east-1, us-west-1, us-west-2, ap-southeast-2, ap-southeast-1.</div>
+            <%= select_tag "bourreau[amazon_ec2_region]", options_for_select([
+                  [ "eu-central-1" ],
+                  [ "sa-east-1" ],
+                  [ "ap-northeast-1" ],
+                  [ "eu-west-1" ],
+                  [ "us-east-1" ],
+                  [ "us-west-1" ],
+                  [ "us-west-2" ],
+                  [ "ap-southeast-2" ],
+                  [ "ap-southeast-1" ]
+              ], :selected => @bourreau.amazon_ec2_region)
+            %><br/>
           <% end %>
 	<% end %>
 
