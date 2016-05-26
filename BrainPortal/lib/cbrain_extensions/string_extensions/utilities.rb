@@ -47,8 +47,8 @@ module CBRAINExtensions #:nodoc:
           comps[idx] = idx % 2 == 0 ? comp.bash_escape(always_quote, true) : ("\\'" * comp.size)
         end
         comps.join
-      end      
-      
+      end
+
       # This method is mostly used on text file content;
       # it attempts to detect and validate different original
       # encodings then record it in UTF8. The returned value

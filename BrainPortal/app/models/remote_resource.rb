@@ -101,9 +101,9 @@ class RemoteResource < ActiveRecord::Base
                         :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
                         :allow_blank => true
 
-  belongs_to  :user
-  belongs_to  :group
-  has_many    :sync_status
+  belongs_to            :user
+  belongs_to            :group
+  has_many              :sync_status
 
   after_destroy         :after_destroy_clean_sync_status
 

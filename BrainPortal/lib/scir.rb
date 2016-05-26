@@ -151,10 +151,10 @@ class Scir
       if @job_info_cache.nil? || @cache_last_updated < @job_ps_cache_delay.ago || caller_updated_at > @job_ps_cache_delay.ago
         update_job_info_cache
         @cache_last_updated = Time.now
-        jinfo = @job_info_cache[jid.to_s]
-        return jinfo[:drmaa_state] if jinfo
-        @state_if_missing
       end
+      jinfo = @job_info_cache[jid.to_s]
+      return jinfo[:drmaa_state] if jinfo
+      @state_if_missing
     end
 
     def hold(jid) #:nodoc:
