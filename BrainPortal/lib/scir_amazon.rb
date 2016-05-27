@@ -24,31 +24,22 @@
 # of class Scir implements a dummy cluster interface that still runs
 # jobs locally as standard unix subprocesses.
 
-
 require 'aws-sdk'
 
-# A Scir class to handle VMs on Amazon EC2
-# This class can only handle tasks of type CBRAIN::StartVM.
-
+# A ScirCloud class to handle VMs on Amazon EC2. 
+# This type of Scir can only handle tasks of type CBRAIN::StartVM.
 class ScirAmazon < ScirCloud
  
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
- 
-  def self.get_available_instance_types 
+
+  # Overrides the abstract method defined in ScirCloud.  
+  def self.get_available_instance_types(bourreau)
     # no, there's no method in the API to return such an array!
     # yes, the available instance types change over time!
     return [ "t2.micro","t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m3.medium","m3.large","m3.xlarge","m3.2xlarge","m4.large","m4.xlarge","m4.2xlarge","m4.4xlarge","m4.10xlarge","t2.nano","t2.small","t2.medium","t2.large","m2.xlarge","m2.2xlarge","m2.4xlarge","cr1.8xlarge","i2.xlarge","i2.2xlarge","i2.4xlarge","i2.8xlarge","hi1.4xlarge","hs1.8xlarge","c1.medium","c1.xlarge","c3.large","c3.xlarge","c3.2xlarge","c3.4xlarge","c3.8xlarge","c4.large","c4.xlarge","c4.2xlarge","c4.4xlarge","c4.8xlarge","cc1.4xlarge","cc2.8xlarge","g2.2xlarge","g2.8xlarge","cg1.4xlarge","r3.large","r3.xlarge","r3.2xlarge","r3.4xlarge","r3.8xlarge","d2.xlarge","d2.2xlarge","d2.4xlarge","d2.8xlarge" ]
   end
-  
-  def self.get_available_key_pairs(bourreau)
-    ec2 = get_amazon_ec2_connection(bourreau[:amazon_ec2_access_key_id],
-                                    bourreau[:amazon_ec2_secret_access_key],
-                                    bourreau[:amazon_ec2_region])
-    keys = []
-    ec2.describe_key_pairs.key_pairs.each { |key| keys << [key.key_name] }
-    return keys
-  end
-  
+
+  # Overrides the abstract method defined in ScirCloud.
   def self.get_available_disk_images(bourreau)
     images = Array.new
     ec2 = get_amazon_ec2_connection(bourreau[:amazon_ec2_access_key_id],
@@ -57,11 +48,24 @@ class ScirAmazon < ScirCloud
     ec2.describe_images(owners: [ "self" ]).images.each { |image| images << [image.name,image.image_id] }
     return images
   end
-  
+
+  # Overrides the abstract method defined in ScirCloud
+  def self.get_available_key_pairs(bourreau)
+    ec2 = get_amazon_ec2_connection(bourreau[:amazon_ec2_access_key_id],
+                                    bourreau[:amazon_ec2_secret_access_key],
+                                    bourreau[:amazon_ec2_region])
+    keys = []
+    ec2.describe_key_pairs.key_pairs.each { |key| keys << [key.key_name] }
+    return keys
+  end
+
   private
-  
+
+  # Returns an Aws::EC2::Client object connected with the corresponding properties.
+  # * access_key_id: a string containing the access key id as configured in the Amazon account (see 'IAM' service).
+  # * secret_access_key: a string containing the secret access key as configured in the Amazon account (see 'IAM' service).
+  # * amazon_ec2_region: a string containing the Amazon region to use, e.g. "us-west-1".
   def self.get_amazon_ec2_connection(access_key_id, secret_access_key, amazon_ec2_region)
-    # get connection
     ec2 = Aws::EC2::Client.new(access_key_id: access_key_id,
                                secret_access_key: secret_access_key,
                                region: amazon_ec2_region)
@@ -72,8 +76,14 @@ class ScirAmazon < ScirCloud
 
     @state_if_missing = Scir::STATE_RUNNING
 
-    def update_job_info_cache #:nodoc:
+    # Returns the local IP address of the VM associated to the
+    # CBRAIN task with id 'jid'.
+    def get_local_ip(jid)
+      return get_instance_from_cbrain_job_id(jid).private_ip_address
+    end
 
+    # Overrides the default Scir method.
+    def update_job_info_cache #:nodoc:
       @job_info_cache = {}
       ec2 = get_amazon_ec2_connection
       ec2.describe_instance_status.instance_statuses.each do |instance_status|
@@ -83,6 +93,7 @@ class ScirAmazon < ScirCloud
       true
     end
 
+    # Convert an Amazon state string to a Scir status.
     def statestring_to_stateconst(state) #:nodoc:
       return Scir::STATE_RUNNING        if state == "running"
       return Scir::STATE_DONE           if state == "stopped"
@@ -91,59 +102,65 @@ class ScirAmazon < ScirCloud
       return Scir::STATE_UNDETERMINED
     end
 
+    # Not supported
     def hold(jid)
       raise "Not supported"
     end
 
+    # Not supported
     def release(jid)
       raise "Note supported"
     end
 
+    # Not supported
     def suspend(jid)
       raise "Not supported"
     end
 
+    # Not supported
     def resume(jid)
       raise "Not supported"
     end
 
+    # Terminates the VM.
     def terminate(jid)
       ec2 = get_amazon_ec2_connection
       ec2.terminate_instances({:instance_ids => [ jid ]})
     end
-    
-    def get_local_ip(jid)
-      return get_instance_from_cbrain_job_id(jid).private_ip_address
+
+    # Overrides the 'run' method of class Scir. Instead of running a
+    # script generated by the task, it submits a VM with the
+    # parameters defined in the task.
+    def run(job)
+      task = CbrainTask.find(job.task_id)
+      vm = submit_VM("CBRAIN Worker", task.params[:disk_image], task.params[:ssh_key_pair],task.params[:instance_type], "CBRAIN worker") 
+      return vm.instance_id.to_s
     end
 
-    def queue_tasks_tot_max
-      loadav = `uptime`.strip
-      loadav.match(/averages?:\s*([\d\.]+)/i)
-      loadtxt = Regexp.last_match[1] || "unknown"
-      case CBRAIN::System_Uname
-      when /Linux/i
-        cpuinfo = `cat /proc/cpuinfo 2>&1`.split("\n")
-        proclines = cpuinfo.select { |i| i.match(/^processor\s*:\s*/i) }
-        return [ loadtxt , proclines.size.to_s ]
-      when /Darwin/i
-        hostinfo = `hostinfo 2>&1`.strip
-        hostinfo.match(/^(\d+) processors are/)
-        numproc = Regexp.last_match[1] || "unknown"
-        [ loadtxt, numproc ]
-      else
-        [ "unknown", "unknown" ]
-      end
-    rescue => e
-      [ "exception", "exception" ]
+    private
+
+    # A utility method to get the Amazon EC2 connection from the Scir
+    # configuration parameters.
+    def get_amazon_ec2_connection
+      return ScirAmazon.get_amazon_ec2_connection(
+               Scir.cbrain_config[:amazon_ec2_access_key_id],
+               Scir.cbrain_config[:amazon_ec2_secret_access_key],
+               Scir.cbrain_config[:amazon_ec2_region])
     end
 
+    # Submits a VM to Amazon EC2.
+    # Parameters:
+    # * vm_name: name of the VM to create (currently ignored)
+    # * image_id: image id used by the VM
+    # * key_name: ssh key name that will be authorized in the VM
+    # * instance_type: instance type used by the VM
+    # * tag_value: a string used to tag the VM
     def submit_VM(vm_name,image_id,key_name,instance_type,tag_value)
       ec2 = get_amazon_ec2_connection
-
-      # finds the cbrain security group, or creates it if it doesn't exit.
+      
+      # Finds the cbrain security group, or creates it if it doesn't exit.
       cbrain_security_group_name="cbrain worker"
       if(ec2.describe_security_groups.security_groups.detect{|g| g.group_name == cbrain_security_group_name}.nil?)
-        # cbrain security group doesn't exist, let's create it.
         ec2.create_security_group({
                                     :group_name => cbrain_security_group_name,
                                     :description => "Security group for CBRAIN workers"})
@@ -158,6 +175,8 @@ class ScirAmazon < ScirCloud
                                                                     } ]
                                              })
       end
+      
+      # Submits the instance
       resp = ec2.run_instances({
                                  :image_id => image_id,
                                  :instance_type => instance_type,
@@ -167,6 +186,8 @@ class ScirAmazon < ScirCloud
                                  :max_count => 1
                                })
       raise "Submitted 1 VM instance but obtained #{resp.instances.length} objects." if(resp.instances.length !=1)
+
+      # Tags the instance
       instance = resp.instances[0]
       (1..30).each do |i| # poor man's timer
         begin
@@ -186,27 +207,15 @@ class ScirAmazon < ScirCloud
       # name through the EC2 web portal, it doesn't look like there is
       # an API method to do this.
     end
-    
-    def run(job)
-      task = CbrainTask.find(job.task_id)
-      vm = submit_VM("CBRAIN Worker", task.params[:disk_image], task.params[:ssh_key_pair],task.params[:instance_type], "CBRAIN worker") 
-      return vm.instance_id.to_s
-    end
 
-    private
-
-    def get_amazon_ec2_connection
-      return ScirAmazon.get_amazon_ec2_connection(
-                       Scir.cbrain_config[:amazon_ec2_access_key_id],
-                       Scir.cbrain_config[:amazon_ec2_secret_access_key],
-                       Scir.cbrain_config[:amazon_ec2_region])
-    end
-
+    # Returns the VM instance associated to the CBRAIN task with id
+    # 'jid'.
     def get_instance_from_cbrain_job_id(jid)
       cluster_jobid = CbrainTask.where(:id => jid).first.cluster_jobid
       return get_vm_instance(cluster_jobid)
     end
 
+    # Returns the VM instance with Amazon id 'id'.
     def get_vm_instance(id)
       ec2 = get_amazon_ec2_connection
       ec2.describe_instances.reservations.each do |r| 
@@ -216,23 +225,13 @@ class ScirAmazon < ScirCloud
       end
       return nil
     end
-
-    def qsubout_to_jid(txt)
-      raise "Not used in this implementation."
-    end
-
-    def get_security_group(security_groups,security_group_name)
-      security_groups.each do |g|
-        return g if g.name == security_group_name
-      end
-      return false
-    end
     
   end
-  
-  # This method seems required
-  class JobTemplate < Scir::JobTemplate #:nodoc
-    # NOTE: We use a custom 'run' method in the Session, instead of Scir's version.
+
+  # The JobTemplate class.
+  class JobTemplate < Scir::JobTemplate
+    # This method seems required, although in a ScirCloud the
+    # qsub_command is never used.
     def qsub_command
       return "echo This is never executed"
     end    

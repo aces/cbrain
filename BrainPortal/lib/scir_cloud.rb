@@ -25,19 +25,31 @@
 # jobs locally as standard unix subprocesses.
 
 
-# An abstract Scir class to handle VMs clouds (see https://www.openstack.org).
-
+# An abstract Scir class to access clouds.
 class ScirCloud < Scir
+  
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  def self.get_available_instance_types
+  # An abstract method that returns an array containing instance types
+  # available on this cloud, for instance:
+  #     ["m1.small", "m2.large"]  
+  def self.get_available_instance_types(bourreau)
     raise "Not implemented"
   end
 
+  # An abstract method that returns an array containing arrays of size
+  # 2 with the ids and names of disk images available to the bourreau,
+  # for instance:
+  #     [ ["CentOS7","ami-12345"], ["CentOS6","ami-6789"] ]
   def self.get_available_disk_images(bourreau)
     raise "Not implemented"
   end
-
+  
+  # An abstract method that returns an array containing arrays of size
+  # 1 with the ids the key pairs available to the bourreau,
+  # for instance:
+  #     [ ["id_rsa_cbrain_portal"], ["personal_key"] ]
+  #
   def self.get_available_key_pairs(bourreau)
     raise "Not implemented"
   end

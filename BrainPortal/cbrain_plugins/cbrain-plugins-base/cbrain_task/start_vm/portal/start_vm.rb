@@ -41,24 +41,20 @@ class CbrainTask::StartVM < PortalTask
     }
   end
   
-  def self.pretty_params_names #:nodoc:
-    @_ppn ||= {}
-  end
-
   def before_form #:nodoc:
     params = self.params
-    params[:available_disk_images] = bourreau.scir_class.get_available_disk_images(bourreau)
-    params[:available_instance_types] = bourreau.scir_class.get_available_instance_types
-    params[:available_ssh_key_pairs] = bourreau.scir_class.get_available_key_pairs(bourreau)
+    params[:available_disk_images]    = bourreau.scir_class.get_available_disk_images(bourreau)
+    params[:available_instance_types] = bourreau.scir_class.get_available_instance_types(bourreau)
+    params[:available_ssh_key_pairs]  = bourreau.scir_class.get_available_key_pairs(bourreau)
     ""
   end
   
   def final_task_list #:nodoc:
-    task_list = [ ]
+    task_list = []
     params[:number_of_vms].to_i.times{
       task_list << self.dup
     }
-    return task_list,""
+    return task_list
   end
 
   def after_form #:nodoc:
@@ -72,17 +68,14 @@ class CbrainTask::StartVM < PortalTask
       cb_error "#{ex.message}"
     end
     
-    #params[:vm_status] is the status of the VM embedded in the task.
-    #For now we use a task param, maybe we'll create a VM object
+    # params[:vm_status] is the status of the VM started by the task.
     params[:vm_status] = "absent"
 
-    #params[:vm_status_time] is the status timestamp
-    #For now we use a task param, maybe we'll create a VM object
+    # params[:vm_status_time] is the status timestamp
     params[:vm_status_time] = Time.now
 
-    #params[:vm_local_ip] is the local IP of the worker node where the VM runs 
-    #It will be used by the Bourreau worker to ssh to the VM
-    #For now we use a task param, maybe we'll create a VM object
+    # params[:vm_local_ip] is the local IP of the worker node where the VM runs 
+    # It will be used by the Bourreau worker to ssh to the VM
     params[:vm_local_ip]= nil 
     ""
   end
