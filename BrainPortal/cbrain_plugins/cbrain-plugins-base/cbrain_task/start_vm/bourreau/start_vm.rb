@@ -63,7 +63,6 @@ class CbrainTask::StartVM < ClusterTask
   # Hook called when the VM task gets on CPU. 
   # Monitors the VM until it boots. Then mounts shared directories with sshfs. 
   def starting(init_status) #:nodoc:
-    addlog("VM task #{id} is on CPU")
     params = self.params
 
     #update VM params
@@ -124,8 +123,7 @@ class CbrainTask::StartVM < ClusterTask
   # Checks if the VM has booted. 
   def booted? 
     addlog("Trying to ssh #{params[:vm_user]}@#{params[:vm_local_ip]}")
-    s = ScirVM.new
-    master = s.get_ssh_master self
+    master = get_ssh_master_for_vm
     return true
   rescue => ex
     addlog "Error: #{ex.message}"
@@ -164,14 +162,11 @@ class CbrainTask::StartVM < ClusterTask
   # remote_dir is the directory on the Bourreau machine.
   def mount_dir(remote_dir,local_dir)
     return unless !is_mounted? remote_dir,local_dir
-    scir = ScirVM.new
     user = ENV['USER'] #quite unix-specific...
     
-    # Port 2222 of localhost is bound to the ssh port of the host.  
-    # See ScirVM.get_ssh_master
     sshfs_command = "mkdir #{local_dir} -p ; umount #{local_dir} ; sshfs -p #{params[:vm_ssh_tunnel_port]} -C -o nonempty -o follow_symlinks -o reconnect -o ServerAliveInterval=15 -o StrictHostKeyChecking=no #{user}@localhost:#{remote_dir} #{local_dir}"
     addlog "Mounting dir: #{sshfs_command}"
-    addlog scir.run_command(sshfs_command,self) 
+    addlog run_command_in_vm(sshfs_command) 
     # leave time to fuse to mount the dir
     sleep 5
     raise "Couldn't mount local directory #{local_dir} as #{remote_dir} in VM" unless is_mounted?(remote_dir,local_dir)
@@ -190,7 +185,6 @@ class CbrainTask::StartVM < ClusterTask
       end
     end
     
-    scir = ScirVM.new
     addlog "Checking if local directory #{remote_dir} is mounted in #{local_dir} in VM"
     begin
       file = File.open(remote_dir+"/"+file_name, "w")
@@ -200,7 +194,7 @@ class CbrainTask::StartVM < ClusterTask
     ensure
       file.close unless file == nil
     end                  
-    time_read = scir.run_command("cat #{local_dir}/#{file_name}",self)
+    time_read = run_command_in_vm("cat #{local_dir}/#{file_name}")
     result = ( t.to_s == time_read.to_s ) ? true : false
     @last_checks[combine(remote_dir,local_dir)] = result
     return result
@@ -213,5 +207,26 @@ class CbrainTask::StartVM < ClusterTask
   def combine(a,b) #:nodoc:
     return "#{a};;;#{b}"
   end
+
+  def get_ssh_master_for_vm
+    user   = params[:vm_user]
+    ip     = params[:vm_local_ip]
+    port   = params[:ssh_port]
+    master = SshMaster.find_or_create(user,ip,port)
+
+    # Tunnel used to sshfs from the VM to the host.
+    master.add_tunnel(:reverse,params[:vm_ssh_tunnel_port].to_i,'localhost',22) unless ( master.get_tunnels(:reverse).size !=0) 
+    CBRAIN.with_unlocked_agent 
+    master.start
+    raise "Cannot establish connection with VM id #{id} (#{master.ssh_shared_options})" unless master.is_alive?
+    return master
+  end
+
+  def run_command_in_vm(command)
+    master = self.get_ssh_master_for_vm
+    result = master.remote_shell_command_reader(command) {|io| io.read}
+    return result 
+  end
+
 
 end      

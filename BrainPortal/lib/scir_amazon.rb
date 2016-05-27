@@ -37,40 +37,35 @@ class ScirAmazon < ScirCloud
   def self.get_available_instance_types 
     # no, there's no method in the API to return such an array!
     # yes, the available instance types change over time!
-    return [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m3.medium","m3.large","m3.xlarge","m3.2xlarge","m4.large","m4.xlarge","m4.2xlarge","m4.4xlarge","m4.10xlarge","t2.nano","t2.micro","t2.small","t2.medium","t2.large","m2.xlarge","m2.2xlarge","m2.4xlarge","cr1.8xlarge","i2.xlarge","i2.2xlarge","i2.4xlarge","i2.8xlarge","hi1.4xlarge","hs1.8xlarge","c1.medium","c1.xlarge","c3.large","c3.xlarge","c3.2xlarge","c3.4xlarge","c3.8xlarge","c4.large","c4.xlarge","c4.2xlarge","c4.4xlarge","c4.8xlarge","cc1.4xlarge","cc2.8xlarge","g2.2xlarge","g2.8xlarge","cg1.4xlarge","r3.large","r3.xlarge","r3.2xlarge","r3.4xlarge","r3.8xlarge","d2.xlarge","d2.2xlarge","d2.4xlarge","d2.8xlarge" ]
+    return [ "t2.micro","t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m3.medium","m3.large","m3.xlarge","m3.2xlarge","m4.large","m4.xlarge","m4.2xlarge","m4.4xlarge","m4.10xlarge","t2.nano","t2.small","t2.medium","t2.large","m2.xlarge","m2.2xlarge","m2.4xlarge","cr1.8xlarge","i2.xlarge","i2.2xlarge","i2.4xlarge","i2.8xlarge","hi1.4xlarge","hs1.8xlarge","c1.medium","c1.xlarge","c3.large","c3.xlarge","c3.2xlarge","c3.4xlarge","c3.8xlarge","c4.large","c4.xlarge","c4.2xlarge","c4.4xlarge","c4.8xlarge","cc1.4xlarge","cc2.8xlarge","g2.2xlarge","g2.8xlarge","cg1.4xlarge","r3.large","r3.xlarge","r3.2xlarge","r3.4xlarge","r3.8xlarge","d2.xlarge","d2.2xlarge","d2.4xlarge","d2.8xlarge" ]
   end
-
+  
   def self.get_available_key_pairs(bourreau)
-    ec2 = get_amazon_ec2_connection_bourreau(bourreau)
+    ec2 = get_amazon_ec2_connection(bourreau[:amazon_ec2_access_key_id],
+                                    bourreau[:amazon_ec2_secret_access_key],
+                                    bourreau[:amazon_ec2_region])
     keys = []
     ec2.describe_key_pairs.key_pairs.each { |key| keys << [key.key_name] }
     return keys
   end
-
+  
   def self.get_available_disk_images(bourreau)
     images = Array.new
-    ec2 = get_amazon_ec2_connection_bourreau(bourreau)
+    ec2 = get_amazon_ec2_connection(bourreau[:amazon_ec2_access_key_id],
+                                    bourreau[:amazon_ec2_secret_access_key],
+                                    bourreau[:amazon_ec2_region])
     ec2.describe_images(owners: [ "self" ]).images.each { |image| images << [image.name,image.image_id] }
     return images
   end
-
+  
   private
-
+  
   def self.get_amazon_ec2_connection(access_key_id, secret_access_key, amazon_ec2_region)
-     # get connection
-     ec2 = Aws::EC2::Client.new(access_key_id: access_key_id,
-                                secret_access_key: secret_access_key,
-                                region: amazon_ec2_region)
-     return ec2
-  end
-
-  def self.get_amazon_ec2_connection_bourreau(bourreau)
-    # connection parameters, defined in the portal
-    access_key_id = bourreau[:amazon_ec2_access_key_id]
-    secret_access_key = bourreau[:amazon_ec2_secret_access_key]
-    amazon_ec2_region = bourreau[:amazon_ec2_region]
-    
-    return get_amazon_ec2_connection(access_key_id, secret_access_key, amazon_ec2_region)
+    # get connection
+    ec2 = Aws::EC2::Client.new(access_key_id: access_key_id,
+                               secret_access_key: secret_access_key,
+                               region: amazon_ec2_region)
+    return ec2
   end
   
   class Session < Scir::Session #:nodoc:
@@ -78,24 +73,21 @@ class ScirAmazon < ScirCloud
     @state_if_missing = Scir::STATE_RUNNING
 
     def update_job_info_cache #:nodoc:
+
       @job_info_cache = {}
-      ec2 = ScirAmazon.get_amazon_ec2_connection(
-                       Scir.cbrain_config[:amazon_ec2_access_key_id],
-                       Scir.cbrain_config[:amazon_ec2_secret_access_key],
-                       Scir.cbrain_config[:amazon_ec2_region])
-      ec2.instances.each do |s|
-        # get status
-        state = statestring_to_stateconst(s.status)
-        @job_info_cache[s.id.to_s] = { :drmaa_state => state }
+      ec2 = get_amazon_ec2_connection
+      ec2.describe_instance_status.instance_statuses.each do |instance_status|
+          state = statestring_to_stateconst(instance_status.instance_state.name)
+          @job_info_cache[instance_status.instance_id.to_s] = { :drmaa_state => state }
       end
       true
     end
 
     def statestring_to_stateconst(state) #:nodoc:
-      return Scir::STATE_RUNNING        if state == :running
-      return Scir::STATE_DONE           if state == :stopped 
-      return Scir::STATE_QUEUED_ACTIVE  if state == :pending
-      return Scir::STATE_FAILED         if state == :terminated
+      return Scir::STATE_RUNNING        if state == "running"
+      return Scir::STATE_DONE           if state == "stopped"
+      return Scir::STATE_QUEUED_ACTIVE  if state == "pending"
+      return Scir::STATE_FAILED         if state == "terminated"
       return Scir::STATE_UNDETERMINED
     end
 
@@ -116,7 +108,8 @@ class ScirAmazon < ScirCloud
     end
 
     def terminate(jid)
-      get_vm_instance(jid).terminate
+      ec2 = get_amazon_ec2_connection
+      ec2.terminate_instances({:instance_ids => [ jid ]})
     end
     
     def get_local_ip(jid)
@@ -144,57 +137,84 @@ class ScirAmazon < ScirCloud
       [ "exception", "exception" ]
     end
 
-    def submit_VM(vm_name,image_id,key_pair,instance_type,tag_value)
-      ec2 = ScirAmazon.get_amazon_ec2_connection(
-                       Scir.cbrain_config[:amazon_ec2_access_key_id],
-                       Scir.cbrain_config[:amazon_ec2_secret_access_key],
-                       Scir.cbrain_config[:amazon_ec2_region])
-      security_groups=ec2.security_groups
-      security_group_name="cbrain worker"
-      if ec2.security_groups.map{ |c| c.name }.include? security_group_name
-        security_group = get_security_group security_groups,security_group_name
-      else
-        security_group = ec2.security_groups.create(security_group_name) 
-        ip_addresses=['0.0.0.0/0']
-        security_group.authorize_ingress :tcp, 22, *ip_addresses
+    def submit_VM(vm_name,image_id,key_name,instance_type,tag_value)
+      ec2 = get_amazon_ec2_connection
+
+      # finds the cbrain security group, or creates it if it doesn't exit.
+      cbrain_security_group_name="cbrain worker"
+      if(ec2.describe_security_groups.security_groups.detect{|g| g.group_name == cbrain_security_group_name}.nil?)
+        # cbrain security group doesn't exist, let's create it.
+        ec2.create_security_group({
+                                    :group_name => cbrain_security_group_name,
+                                    :description => "Security group for CBRAIN workers"})
+        
+        ec2.authorize_security_group_ingress({ # authorize incoming ssh connections, from any source
+                                               :group_name => cbrain_security_group_name,
+                                               :ip_permissions => [ { 
+                                                                      :ip_protocol => "tcp",
+                                                                      :from_port => 22,
+                                                                      :to_port => 22,
+                                                                      :ip_ranges => [ :cidr_ip => "0.0.0.0/0" ]
+                                                                    } ]
+                                             })
       end
-      instance = ec2.instances.create(:image_id => image_id, :instance_type => instance_type, :key_pair => ec2.key_pairs[key_pair], :security_groups => [security_group])
+      resp = ec2.run_instances({
+                                 :image_id => image_id,
+                                 :instance_type => instance_type,
+                                 :key_name => key_name,
+                                 :security_groups => [cbrain_security_group_name],
+                                 :min_count => 1,
+                                 :max_count => 1
+                               })
+      raise "Submitted 1 VM instance but obtained #{resp.instances.length} objects." if(resp.instances.length !=1)
+      instance = resp.instances[0]
       (1..30).each do |i| # poor man's timer
-        puts "Tagging instance"
         begin
           # may raise an exception
-          instance.tag('Service', :value => tag_value)
-          puts "Instance tagged"
+          ec2.create_tags({
+                            :resources => [ instance.instance_id ],
+                            :tags => [ { :key => "Service" , :value => tag_value } ]
+                          })
           break
         rescue => e
-          puts e.message
+          nil
         end
         sleep 1
       end
       return instance
-      #TODO instance name is not used
+      # Note: vm_name is not used. Although we can change an instance
+      # name through the EC2 web portal, it doesn't look like there is
+      # an API method to do this.
     end
     
     def run(job)
       task = CbrainTask.find(job.task_id)
       vm = submit_VM("CBRAIN Worker", task.params[:disk_image], task.params[:ssh_key_pair],task.params[:instance_type], "CBRAIN worker") 
-      return vm.id.to_s
+      return vm.instance_id.to_s
     end
 
     private
-    
+
+    def get_amazon_ec2_connection
+      return ScirAmazon.get_amazon_ec2_connection(
+                       Scir.cbrain_config[:amazon_ec2_access_key_id],
+                       Scir.cbrain_config[:amazon_ec2_secret_access_key],
+                       Scir.cbrain_config[:amazon_ec2_region])
+    end
+
     def get_instance_from_cbrain_job_id(jid)
       cluster_jobid = CbrainTask.where(:id => jid).first.cluster_jobid
       return get_vm_instance(cluster_jobid)
     end
 
     def get_vm_instance(id)
-      ec2 = ScirAmazon.get_amazon_ec2_connection(
-                       Scir.cbrain_config[:amazon_ec2_access_key_id],
-                       Scir.cbrain_config[:amazon_ec2_secret_access_key],
-                       Scir.cbrain_config[:amazon_ec2_region])
-      instance = ec2.instances.detect { |x| x.id == id }
-      return instance
+      ec2 = get_amazon_ec2_connection
+      ec2.describe_instances.reservations.each do |r| 
+        r.instances.each do |x|
+          return x if x.instance_id == id
+        end
+      end
+      return nil
     end
 
     def qsubout_to_jid(txt)
@@ -215,8 +235,7 @@ class ScirAmazon < ScirCloud
     # NOTE: We use a custom 'run' method in the Session, instead of Scir's version.
     def qsub_command
       return "echo This is never executed"
-    end
-    
+    end    
   end
 
 end
