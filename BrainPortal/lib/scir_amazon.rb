@@ -74,7 +74,7 @@ class ScirAmazon < ScirCloud
   
   class Session < Scir::Session #:nodoc:
 
-    @state_if_missing = Scir::STATE_RUNNING
+    @@state_if_missing = Scir::STATE_RUNNING
 
     # Returns the local IP address of the VM associated to the
     # CBRAIN task with id 'jid'.
@@ -87,8 +87,8 @@ class ScirAmazon < ScirCloud
       @job_info_cache = {}
       ec2 = get_amazon_ec2_connection
       ec2.describe_instance_status.instance_statuses.each do |instance_status|
-          state = statestring_to_stateconst(instance_status.instance_state.name)
-          @job_info_cache[instance_status.instance_id.to_s] = { :drmaa_state => state }
+        state = statestring_to_stateconst(instance_status.instance_state.name)
+        @job_info_cache[instance_status.instance_id.to_s] = { :drmaa_state => state }
       end
       true
     end

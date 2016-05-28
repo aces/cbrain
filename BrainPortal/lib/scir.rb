@@ -115,7 +115,7 @@ class Scir
 
   class Session #:nodoc:
 
-    @state_if_missing = Scir::STATE_UNDETERMINED
+    @@state_if_missing = Scir::STATE_UNDETERMINED
 
     public
 
@@ -154,7 +154,7 @@ class Scir
       end
       jinfo = @job_info_cache[jid.to_s]
       return jinfo[:drmaa_state] if jinfo
-      @state_if_missing
+      return @@state_if_missing
     end
 
     def hold(jid) #:nodoc:
