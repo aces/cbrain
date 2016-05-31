@@ -507,7 +507,7 @@ describe Userfile do
     it "should call class.pretty_type" do
       userfile_class = double("userfile")
       expect(userfile).to receive(:class).and_return(userfile_class)
-      expect(userfile_class).to receive(:pretty_type).and_return([])
+      expect(userfile_class).to receive(:pretty_type).and_return("")
       userfile.pretty_type
     end
   end

@@ -36,9 +36,9 @@ RSpec.describe ToolsController, :type => :controller do
 
       describe "index", :current => true do
 
-        it "should assign @tools with all tools when no params" do
+        it "should assign @tools with all tools included new one" do
           get :index
-          expect(assigns[:tools]).to eq([real_tool_1, real_tool_2])
+          expect(assigns[:tools]).to include(real_tool_1, real_tool_2)
         end
         it "should render the index page" do
           get :index
