@@ -364,12 +364,12 @@ RSpec.describe UserfilesController, :type => :controller do
           end
 
           it "should redirect to the index" do
-            post :create, :upload_file => mock_upload_stream, :archive => "file_collection"
+            post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "collection"
             expect(response).to redirect_to(:action => :index)
           end
 
           it "should display an error message" do
-            post :create, :upload_file => mock_upload_stream, :archive => "file_collection"
+            post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "collection"
             expect(flash[:error]).to match(/Error: file .+ does not have one of the supported extensions:/)
           end
         end
@@ -382,19 +382,19 @@ RSpec.describe UserfilesController, :type => :controller do
             let(:collision_file) {create(:userfile, :name => mock_upload_stream.original_filename.split('.')[0], :user => admin )}
 
             it "should redirect to index" do
-              post :create, :upload_file => mock_upload_stream, :archive => "file_collection", :data_provider_id => collision_file.data_provider_id
+              post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "collection", :data_provider_id => collision_file.data_provider_id
               expect(response).to redirect_to(:action => :index)
             end
 
             it "should display an error message" do
-              post :create, :upload_file => mock_upload_stream, :archive => "file_collection", :data_provider_id => collision_file.data_provider_id
+              post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "collection", :data_provider_id => collision_file.data_provider_id
               expect(flash[:error]).to match(/Collection '.+' already exists/)
             end
           end
 
           it "should create a FileCollection" do
             expect(FileCollection).to receive(:new).and_return(mock_userfile)
-            post :create, :upload_file => mock_upload_stream, :archive => "file_collection"
+            post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "collection"
           end
 
 
@@ -407,26 +407,26 @@ RSpec.describe UserfilesController, :type => :controller do
 
             it "should extract the collection from the archive" do
               expect(mock_userfile).to receive(:extract_collection_from_archive_file)
-              post :create, :upload_file => mock_upload_stream, :archive => "file_collection"
+              post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "collection"
             end
 
             it "should send a message" do
               expect(Message).to receive(:send_message)
-              post :create, :upload_file => mock_upload_stream, :archive => "file_collection"
+              post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "collection"
             end
 
             it "should attempt to delete the tmp file" do
               expect(File).to receive(:delete)
-              post :create, :upload_file => mock_upload_stream, :archive => "file_collection"
+              post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "collection"
             end
 
             it "should display a flash message" do
-              post :create, :upload_file => mock_upload_stream, :archive => "file_collection"
+              post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "collection"
               expect(flash[:notice]).to match(/Collection '.+' created/)
             end
 
             it "should redirect to index" do
-              post :create, :upload_file => mock_upload_stream, :archive => "file_collection"
+              post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "collection"
               expect(response).to redirect_to(:action => :index)
             end
           end
@@ -439,23 +439,16 @@ RSpec.describe UserfilesController, :type => :controller do
             end
 
             it "should display and error message" do
-              post :create, :upload_file => mock_upload_stream, :archive => "file_collection"
+              post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "collection"
               expect(flash[:error]).to match(/Collection '.+' could not be created/)
             end
 
             it "should redirect to index" do
-              post :create, :upload_file => mock_upload_stream, :archive => "file_collection"
+              post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "collection"
               expect(response).to redirect_to(:action => :index)
             end
           end
         end
-
-        it "should display an error message if the archive parameters has an invalid value" do
-          post :create, :upload_file => mock_upload_stream, :archive => "invalid_parameter"
-          expect(flash[:error]).to match(/Unknown action/)
-        end
-
-
 
         context "to create single files" do
           before(:each) do
@@ -465,21 +458,21 @@ RSpec.describe UserfilesController, :type => :controller do
 
           it "should extract the collection from the archive" do
             expect(controller).to receive(:extract_from_archive)
-            post :create, :upload_file => mock_upload_stream, :archive => "extract"
+            post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "multiple"
           end
 
           it "should attempt to delete the tmp file" do
             expect(File).to receive(:delete)
-            post :create, :upload_file => mock_upload_stream, :archive => "extract"
+            post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "multiple"
           end
 
           it "should display a flash message" do
-            post :create, :upload_file => mock_upload_stream, :archive => "extract"
+            post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "multiple"
             expect(flash[:notice]).to match(/Your files are being extracted/)
           end
 
           it "should redirect to the index" do
-            post :create, :upload_file => mock_upload_stream, :archive => "extract"
+            post :create, :upload_file => mock_upload_stream, :_do_extract => "on", :_up_ex_mode => "multiple"
             expect(response).to redirect_to(:action => :index)
           end
         end
@@ -745,24 +738,22 @@ RSpec.describe UserfilesController, :type => :controller do
     end
 
 
-
     describe "delete_files" do
       before(:each) do
         allow(controller).to    receive(:current_user).and_return(admin)
-        allow(mock_userfile).to receive(:id).and_return(1)
-        allow(Userfile).to      receive_message_chain(:accessible_for_user, :where).and_return([mock_userfile])
         allow(CBRAIN).to        receive(:spawn_with_active_records).and_yield
       end
 
       it "should display error message if userfiles is not accessible by user" do
-        allow(Userfile).to receive_message_chain(:accessible_for_user, :where).and_return([])
-        delete :delete_files, :file_ids => [1]
+        allow(controller).to    receive(:current_user).and_return(user)
+        delete :delete_files, :file_ids => [admin_userfile.id]
         expect(flash[:error]).to match("not have acces")
       end
 
       it "should destroy the userfiles" do
-        expect(mock_userfile).to receive(:destroy)
-        delete :delete_files, :file_ids => [1]
+        allow(Userfile).to receive(:find).and_return(admin_userfile)
+        expect(admin_userfile).to receive(:destroy)
+        delete :delete_files, :file_ids => [admin_userfile.id]
       end
 
       it "should announce that files are being deleted in the background" do

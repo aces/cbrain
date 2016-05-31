@@ -24,8 +24,7 @@ require 'rails_helper'
 
 describe User do
 
-  let(:normal_user) { create(:normal_user, :encrypted_password) }
-
+  let(:normal_user) { create(:normal_user, :encrypted_password, password: "1Password!", password_confirmation: "1Password!") }
 
   describe "#validate" do
 
@@ -132,7 +131,7 @@ describe User do
 
 
   describe "#self.all_admins" do
-    let!(:admin) {create(:admin_user, :login => "admin_user2")}
+    let!(:admin)      {create(:admin_user, :login => "admin_user2")}
     let!(:admin_user) {create(:admin_user, :login => "admin_user")}
 
     it "should return all users with role admin" do
