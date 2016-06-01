@@ -51,7 +51,7 @@
     ) { |s| overlay_description(s.description) }
 
     t.column("Projects", :projects) do |s|
-      (s.groups.sort_by(&:name).map { |g| link_to_group_if_accessible(g) }.join(", ").html_safe.presence) || "(none)"
+      (s.groups.sort_by(&:name).map { |g| link_to_group_if_accessible(g) }.join(", ").html_safe.presence) || "(None)"
     end
 
     t.column("Users", :users) do |s|
