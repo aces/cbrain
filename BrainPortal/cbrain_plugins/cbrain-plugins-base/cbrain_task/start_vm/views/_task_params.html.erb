@@ -22,8 +22,14 @@
 #
 -%>
 
+<% bourreau = Bourreau.find(@task.bourreau_id)
+   available_disk_images    = bourreau.scir_class.get_available_disk_images(bourreau)
+   available_instance_types = bourreau.scir_class.get_available_instance_types(bourreau)
+   available_ssh_key_pairs  = bourreau.scir_class.get_available_key_pairs(bourreau)
+ %>
+
 <strong>Disk image: </strong><br/>
-<%=  select_tag :disk_image.to_la, options_for_select(params[:available_disk_images], params[:disk_image]) %>
+<%=  select_tag :disk_image.to_la, options_for_select(available_disk_images, params[:disk_image]) %>
 <br/><br/>
 
 <strong>VM username:</strong><br/>
@@ -32,12 +38,12 @@
 <br/>
 
 <strong>SSH key pair:</strong><br/>
-<%=  select_tag :ssh_key_pair.to_la, options_for_select(params[:available_ssh_key_pairs], params[:ssh_key_pair]) %>
+<%=  select_tag :ssh_key_pair.to_la, options_for_select(available_ssh_key_pairs, params[:ssh_key_pair]) %>
 <br/>
 <br/>
 
 <strong>Instance type: </strong><br/>
-<%=  select_tag :instance_type.to_la, options_for_select(params[:available_instance_types], params[:instance_type]) %>
+<%=  select_tag :instance_type.to_la, options_for_select(available_instance_types, params[:instance_type]) %>
 <br/><br/>
 
 <strong>VM job slots:</strong><br/>

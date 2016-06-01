@@ -41,6 +41,7 @@ class ScirCloud < Scir
   # 2 with the ids and names of disk images available to the bourreau,
   # for instance:
   #     [ ["CentOS7","ami-12345"], ["CentOS6","ami-6789"] ]
+  # This (weird) data structure is used to pass the result of this method in a Rails select tag.
   def self.get_available_disk_images(bourreau)
     raise "Not implemented"
   end
@@ -49,7 +50,7 @@ class ScirCloud < Scir
   # 1 with the ids the key pairs available to the bourreau,
   # for instance:
   #     [ ["id_rsa_cbrain_portal"], ["personal_key"] ]
-  #
+  # This (weird) data structure is used to pass the result of this method in a Rails select tag.
   def self.get_available_key_pairs(bourreau)
     raise "Not implemented"
   end

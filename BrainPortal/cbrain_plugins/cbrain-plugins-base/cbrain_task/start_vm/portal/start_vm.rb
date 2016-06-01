@@ -42,10 +42,6 @@ class CbrainTask::StartVM < PortalTask
   end
   
   def before_form #:nodoc:
-    params = self.params
-    params[:available_disk_images]    = bourreau.scir_class.get_available_disk_images(bourreau)
-    params[:available_instance_types] = bourreau.scir_class.get_available_instance_types(bourreau)
-    params[:available_ssh_key_pairs]  = bourreau.scir_class.get_available_key_pairs(bourreau)
     ""
   end
   
@@ -58,6 +54,7 @@ class CbrainTask::StartVM < PortalTask
   end
 
   def after_form #:nodoc:
+
     params = self.params
 
     # Note: bash escapes should be performed on bourreau side. Don't do them here because x.bash_escape.bash_escape != x.bash_escape

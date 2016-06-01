@@ -41,6 +41,7 @@ class CbrainTask::StartVM #:nodoc:
     message+= "Missing cloud instance type!" if params[:instance_type].blank?
 
     message+= "Missing VM user!" if params[:vm_user].blank?
+
     raise message unless message == ""
   end
 
