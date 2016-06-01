@@ -1,0 +1,68 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<div class="menu_bar">
+  <%= link_to 'Create Access Profile', new_access_profile_path, :class => "button menu_button" %>
+  <%= overlay_ajax_link "Help", "/doc/access_profiles/access_profiles.html", :class  => "button" %>
+</div>
+
+<%=
+  render(:partial => 'shared/active_filters', :locals  => {
+    :scope => @scope,
+    :model => AccessProfile
+  })
+%>
+
+<div class="centered">(<%= pluralize @access_profiles.count, "access profile" %>)</div>
+
+<%=
+  dynamic_scoped_table(@access_profiles,
+    :id    => 'access_profiles_table',
+    :class => [ :resource_list ],
+    :scope => @scope
+  ) do |t|
+%>
+  <%
+    t.column("Name", :name,
+      :sortable => true,
+    ) { |s| access_profile_label(s, :with_link => true) }
+
+    t.column("Color", :color,
+      :sortable => true,
+    ) { |s| s.color.presence || "white" }
+
+
+    t.column("Description", :description,
+      :sortable => true,
+    ) { |s| overlay_description(s.description) }
+
+    t.column("Projects", :projects) do |s|
+      s.groups.map(&:name).sort.join(", ").presence || "(none)"
+    end
+
+    t.column("Users", :users) do |s|
+      s.users.map(&:login).sort.join(", ").presence || "(none)"
+    end
+  %>
+<% end %>

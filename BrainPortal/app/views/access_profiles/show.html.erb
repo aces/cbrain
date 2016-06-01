@@ -1,0 +1,117 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title "Access Profile" %>
+
+<div class="menu_bar">
+  <%= overlay_ajax_link "Help", "/doc/access_profiles/access_profile_info.html", :class  => "button" %>
+  <%= link_to 'Delete', access_profile_path(@access_profile),  {
+        :confirm => "Are you sure you want to delete '#{@access_profile.name}' ?",
+        :method  => :delete,
+        :class => "button"
+        }
+  %>
+</div>
+
+<br>
+
+<%= error_messages_for @acces_profile, :header_message => "Access profile could not be updated." %>
+
+<div class="display_inline_block" style="min-width: 50%">
+
+  <%= show_table(@access_profile, :edit_condition => check_role(:admin_user)) do |t| %>
+
+    <% t.edit_cell(:name, :content => access_profile_label(@access_profile)) do %>
+      <%= text_field_tag "access_profile[name]", @access_profile.name %>
+    <% end %>
+
+    <% t.edit_cell(:color) do %>
+      <%= text_field_tag "access_profile[color]", @access_profile.color %><br>
+      <span class="field_explanation">Use a CSS-compliant <strong>pale</strong> color:<br>
+      e.g. <em>#ff0</em> or <em>yellow</em> etc.</span>
+    <% end %>
+
+    <% t.edit_cell(:description, :content => overlay_description(@access_profile.description), :show_width => 2 ) do %>
+      <%= text_area_tag "access_profile[description]", @access_profile.description, :rows => 6, :cols => 60 %><br/>
+      <span class="field_explanation">These are your private notes about this profile.</span>
+    <% end %>
+
+  <% end %>
+
+  <% myusers = @access_profile.users.all %>
+
+  <%= show_table(@access_profile, :edit_condition => check_role(:admin_user), :header => 'Projects In This Profile') do |t| %>
+    <% group_names = @access_profile.groups.raw_first_column(:name).sort.join(", ").presence || "(None)" %>
+    <% t.edit_cell(:group_ids, :show_width => 2, :no_header => "Projects", :content => group_names) do %>
+
+      <%= render :partial => 'shared/group_tables', :locals => { :model => @access_profile } %>
+
+      <% if myusers.present? %>
+        <p>
+        <hr>
+        <p>
+          When adding or removing projects, apply the change to the users:
+          <%= select_all_checkbox "all_affected_users", :id => "togall", :checked => "1" %>
+          <%= render :partial => 'shared/users_checkbox_table',
+                     :locals => {
+                                :users         => myusers,
+                                :checked       => myusers,
+                                :variable_name => "affected_user_ids[]",
+                                :html_class    => "all_affected_users",
+                              }
+          %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%= show_table(@access_profile, :edit_condition => check_role(:admin_user), :header => 'Users With This Profile') do |t| %>
+    <% user_names = myusers.map(&:login).sort.join(", ").presence || "(None)" %>
+    <% t.edit_cell(:user_ids, :show_width => 2, :no_header => "Users", :content => user_names) do %>
+
+      Normal Users<br>
+      <%= render :partial => 'shared/users_checkbox_table',
+                 :locals => {
+                              :users         => User.where(:account_locked => false).order(:login).all,
+                              :checked       => myusers,
+                              :variable_name => "access_profile[user_ids][]",
+                            }
+      %>
+
+      <br>
+      Locked Users<br>
+      <%= render :partial => 'shared/users_checkbox_table',
+                 :locals => {
+                              :users         => User.where(:account_locked => true).order(:login).all,
+                              :checked       => myusers,
+                              :variable_name => "access_profile[user_ids][]",
+                            }
+      %>
+
+    <% end %>
+  <% end %>
+
+  <P>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @access_profile.getlog, :title => 'Access Profile Log' } %>
+
+</div>

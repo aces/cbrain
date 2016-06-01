@@ -28,7 +28,7 @@ class ScirLsf < Scir
 
   class Session < Scir::Session #:nodoc:
 
-    def update_job_info_cache #:nodoc:      
+    def update_job_info_cache #:nodoc:
       # on the implementation of bstat.  This method is supposed to
       # list all the statuses of the running tasks, and to keep it in
       # the @job_info_cache array.
@@ -40,14 +40,14 @@ class ScirLsf < Scir
         bjob_stat = line.gsub(/\s+/m, ' ').strip.split(" ")
         jid = bjob_stat[0]
         stat = bjob_stat[2]
-        stat = statestring_to_stateconst(stat)	
+        stat = statestring_to_stateconst(stat)
         @job_info_cache[jid] = { :drmaa_state => stat } unless stat == Scir::STATE_DONE #Do not add tasks to job_info_cache if they are done so CBRAIN moves them to post-processing
       end
       true
 
     end
 
-    def statestring_to_stateconst(state) #:nodoc:      
+    def statestring_to_stateconst(state) #:nodoc:
       # CBRAIN statuses to status strings parsed from the output of
       # bstat -f in method update_job_info_cache
       return Scir::STATE_RUNNING        if state.match(/RUN/i)
@@ -119,14 +119,14 @@ class ScirLsf < Scir
 
       File.chmod(0755, script)
 
-      command  = "bsub "      
+      command  = "bsub "
       command += "-J #{shell_escape(self.name)} "   if self.name
       command += "-cwd #{shell_escape(self.wd)} "     if self.wd
       command += "-o #{shell_escape(stdout)} " if stdout
-      command += "-e #{shell_escape(stderr)} " if stderr 
+      command += "-e #{shell_escape(stderr)} " if stderr
       command += "-q #{shell_escape(self.queue)} "  unless self.queue.blank?
       command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
-      command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?      
+      command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?
       command += "#{shell_escape(script)}"
       command += " 2>&1"
 

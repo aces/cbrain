@@ -11,7 +11,25 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160218173528) do
+ActiveRecord::Schema.define(:version => 20160522180234) do
+
+  create_table "access_profiles", :force => true do |t|
+    t.string   "name",        :null => false
+    t.string   "description"
+    t.string   "color"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+  end
+
+  create_table "access_profiles_groups", :id => false, :force => true do |t|
+    t.integer "access_profile_id"
+    t.integer "group_id"
+  end
+
+  create_table "access_profiles_users", :id => false, :force => true do |t|
+    t.integer "access_profile_id"
+    t.integer "user_id"
+  end
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"

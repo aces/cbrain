@@ -42,10 +42,10 @@ CbrainRailsPortal::Application.routes.draw do
   resources :custom_filters
   resources :tool_configs
   resources :tags
-
-  # Standard CRUD resources, with extra methods
-
+  resources :access_profiles
   resources :feedbacks
+
+  # Standard CRUD resources, with extra actions
 
   resources :messages do
     collection do

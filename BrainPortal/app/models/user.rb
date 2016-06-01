@@ -94,6 +94,7 @@ class User < ActiveRecord::Base
   has_many                :remote_resources,  :dependent => :restrict
   has_many                :cbrain_tasks,      :dependent => :restrict
 
+  has_and_belongs_to_many :access_profiles
   has_and_belongs_to_many :groups
   belongs_to              :site
 

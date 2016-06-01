@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Helpers for making tables
@@ -66,7 +66,7 @@ module TableMakerHelper
   #   :td_class    => class(es) for the HTML TD elements
   #   :tr_callback => a Proc which will receive |row| number,
   #                   and is expected to generate the full TR element
-  #   :tr_callback => a Proc which will receive |elem,row,col|
+  #   :td_callback => a Proc which will receive |elem,row,col|
   #                   and is expected to generate the full TD element
   #
   # For small arrays that don't need a full table generated,
@@ -122,12 +122,12 @@ module TableMakerHelper
       0.upto(cols-1) do |col|
 
         idx = options[:fill_by_columns] ? row+col*rows : col+row*cols
-   
+
         if col == 0
           result += "  " + tr_callback.call(row) + "\n"
         end
 
-        if idx < array.size 
+        if idx < array.size
           elem = array[idx]
           formatted_elem = block_given? ? capture { h(yield(elem,row,col)) } : h(elem)
           result += "    " + td_callback.call(formatted_elem,row,col) + "\n"
@@ -139,13 +139,13 @@ module TableMakerHelper
             result  += "<td #{spanatt}=\"#{num_cells - array.size}\"></td>".html_safe
           end
         end
-        
+
         if col + 1 == cols
           result += "  </tr>\n"
         end
       end
     end
-    
+
     result += "</table>\n"
 
     result.html_safe

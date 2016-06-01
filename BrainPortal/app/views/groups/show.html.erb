@@ -55,7 +55,7 @@
     <% t.cell("Creator") { @group.creator.try(:login)} %>
 
     <% t.edit_cell(:site_id, :content => link_to_site_if_accessible(@group.site), :disabled => !current_user.has_role?(:admin_user)) do %>
-	  <%= site_select "group[site_id]", @group.site_id, :prompt => "(Select a site)" %>
+      <%= site_select "group[site_id]", @group.site_id, :prompt => "(Select a site)" %>
     <% end %>
 
     <% t.cell("Type") { @group.pretty_category_name(current_user) } %>
@@ -101,8 +101,8 @@
     <% default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) } %>
 
     <% t.edit_cell(:user_id, :show_width => 2,
-                             :header  => 'Members',
-                             :content => default_text) do %>
+                             :no_header  => 'Members',
+                             :content    => default_text) do %>
       <% if current_user.has_role? :normal_user %>
         <% group_members.each do |u| %>
           <%= link_to_user_with_tooltip u %><%= link_to(": Remove", group_path(@group, "group[user_ids]" => (@group.user_ids - [u.id]), update_users: true ), :method => :put, :class => "action_link") unless u == current_user %>
@@ -119,8 +119,8 @@
       <% default_text = array_to_table(open_invites.map(&:user).sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| u.login } %>
 
       <% t.edit_cell(:invites, :show_width => 2,
-                               :header  => 'Pending Invitations',
-                               :content => default_text) do %>
+                               :header     => 'Pending Invitations',
+                               :content    => default_text) do %>
         <% open_invites.each do |i| %>
           <%= link_to_user_with_tooltip i.user %>: <%= link_to("Cancel", invitation_path(i), :method => :delete, :class => "action_link") %>
           <br>
