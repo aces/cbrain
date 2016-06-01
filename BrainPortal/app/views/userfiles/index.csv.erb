@@ -17,11 +17,25 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
-<% delimeter    = params[:delimeter] || "," -%>
-<% quote_marker = params[:quote] || "\"" -%>
+<% delimiter    = params[:delimiter] || "," -%>
+<%-
+# Should escape the quote_marker in description.
+# Maybe buggy when quote_marker is not a double quote.
+-%>
+<% quote_marker = params[:quote]     || "\"" -%>
 <% @userfiles.each do |u| -%>
-<%= [u.name, u.type, u.data_provider.try(:name), u.user.try(:login), u.group.try(:name), quote_marker + u.tags.map(&:name).join(delimeter) + quote_marker ].join(delimeter).html_safe %>
+  <%= [u.name,
+       u.size,
+       u.type,
+       u.user.try(:login),
+       quote_marker + u.group.try(:name)                    + quote_marker,
+       quote_marker + to_localtime(u.created_at, :datetime) + quote_marker,
+       quote_marker + to_localtime(u.updated_at, :datetime) + quote_marker,
+       quote_marker + u.data_provider.try(:name)            + quote_marker,
+       quote_marker + u.tags.map(&:name).join(delimiter)    + quote_marker,
+       quote_marker + u.description.to_s.gsub(/\"/, "\"\"") + quote_marker,
+      ].join(delimiter).html_safe %>
 <% end -%>

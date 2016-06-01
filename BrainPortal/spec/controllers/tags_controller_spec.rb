@@ -35,12 +35,10 @@ RSpec.describe TagsController, :type => :controller do
     describe "create" do
       it "should assign the tag to the current user" do
         post :create, params
-        puts assigns[:tag].inspect
         expect(assigns[:tag].user_id).to eq(current_user.id)
       end
       it "should assign the tag to the own group of the current user" do
         post :create, params
-        puts assigns[:tag].inspect
         expect(assigns[:tag].group_id).to eq(current_user.own_group.id)
       end
       it "should save the record" do

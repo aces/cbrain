@@ -117,13 +117,13 @@
       <%= select_tag("userfile[group_writable]", options_for_select([['Read Only', false],['Read/Write', true]])) %>
     <% end %>
 
-    <% t.edit_cell("Hidden file", :content => check_box_tag(nil ,nil, @userfile.hidden?, :disabled => true) + "&nbsp;".html_safe + hidden_icon) do %>
+    <% t.edit_cell("Hidden file", :content => check_box_tag(nil ,nil, @userfile.hidden?, :disabled => true) + "&nbsp;".html_safe + hidden_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do %>
       <%= hidden_field_tag "userfile[hidden]", "0" %>
       <%= check_box_tag("userfile[hidden]",    "1", @userfile.hidden?) %>
       <%= hidden_icon %>
     <% end %>
 
-    <% t.edit_cell("Immutable file", :content => check_box_tag(nil ,nil, @userfile.immutable?, :disabled => true) + "&nbsp;".html_safe + immutable_icon ) do %>
+    <% t.edit_cell("Immutable file", :content => check_box_tag(nil ,nil, @userfile.immutable?, :disabled => true) + "&nbsp;".html_safe + immutable_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do %>
       <%= hidden_field_tag "userfile[immutable]", "0" %>
       <%= check_box_tag("userfile[immutable]",    "1", @userfile.immutable?) %>
       <%= immutable_icon %>
@@ -152,7 +152,7 @@
       <% end %>
     <% end %>
 
-    <% t.edit_cell(:description, :content => simple_format(@userfile.description, :sanitize => true), :show_width => 2) do %>
+    <% t.edit_cell(:description, :content => simple_format(@userfile.description, :sanitize => true), :show_width => 2, :disabled => (!@userfile.has_owner_access?(current_user))) do %>
       <%= text_area_tag "userfile[description]", @userfile.description, :rows => 10, :cols => 80 %>
     <% end %>
 

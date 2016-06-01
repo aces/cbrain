@@ -37,11 +37,6 @@ class PortalController < ApplicationController
       return
     end
 
-    if current_user.has_role?(:normal_user)
-      redirect_to start_page_path
-      return
-    end
-
     @num_files              = current_user.userfiles.count
     @groups                 = current_user.has_role?(:admin_user) ? current_user.groups.order(:name) : current_user.available_groups.order(:name)
     @default_data_provider  = DataProvider.find_by_id(current_user.meta["pref_data_provider_id"])

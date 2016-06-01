@@ -329,7 +329,7 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
           it "should display that registration was a success" do
             post :register, :id => 1, :basenames => ["a_file"]
-            expect(flash[:notice]).to match(/\bregistered\b/i)
+            expect(flash[:notice]).to match(/\bRegistering\b/i)
           end
           it "should redirect to browse" do
             post :register, :id => 1, :basenames => ["a_file"]
@@ -337,6 +337,10 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
         end
         context "doing move or copy" do
+          before(:each) do
+            allow(CBRAIN).to receive(:spawn_with_active_records).and_yield
+          end
+
           it "should check for collisions" do
             expect(Userfile).to receive(:where).and_return(double("registered files").as_null_object)
             post :register, :id => 1, :basenames => ["a_file"], :auto_do => "MOVE"
@@ -350,14 +354,14 @@ RSpec.describe DataProvidersController, :type => :controller do
             expect(response).to redirect_to(:action => :browse)
           end
           it "should move the file if a move is requested" do
-            allow(CBRAIN).to receive(:spawn_with_active_records).and_yield
+            allow(controller).to receive(:userfiles_from_basenames).and_return({"b_file" => nil})
             expect(registered_file).to receive(:provider_move_to_otherprovider)
-            post :register, :id => 1, :basenames => ["a_file"], :auto_do => "MOVE"
+            post :register, :id => 1, :basenames => ["b_file"], :auto_do => "MOVE"
           end
           it "should copy the file if a copy is requested" do
-            allow(CBRAIN).to receive(:spawn_with_active_records).and_yield
+            allow(controller).to receive(:userfiles_from_basenames).and_return({"b_file" => nil})
             expect(registered_file).to receive(:provider_copy_to_otherprovider)
-            post :register, :id => 1, :basenames => ["a_file"], :auto_do => "COPY"
+            post :register, :id => 1, :basenames => ["b_file"], :auto_do => "COPY"
           end
         end
 

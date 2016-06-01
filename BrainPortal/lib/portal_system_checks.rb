@@ -34,6 +34,15 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
 
 
 
+  def self.a000_ensure_models_are_preloaded #:nodoc:
+    # There's a piece of code at the end of each of these models
+    # which forces the pre-load of all their subclasses.
+    Userfile
+    PortalTask # not ClusterTask, which is only on the Bourreau rails app
+  end
+
+
+
   # Checks for pending migrations, stops the boot if it detects a problem. Must be run first
   def self.a010_check_if_pending_database_migrations #:nodoc:
 

@@ -812,7 +812,7 @@ class UserfilesController < ApplicationController
       end
       @current_userfile.set_tags_for_user(current_user, tag_ids)
       # Only update description
-      @current_userfile.update_attributes_with_logging( { "description" => params[:userfile][:description] }, current_user) if params[:userfile][:description]
+      @current_userfile.update_attributes_with_logging( { "description" => params[:userfile][:description] }, current_user) if params[:userfile] && params[:userfile][:description]
     end
 
     if commit_name == :previous && @current_index > 0
