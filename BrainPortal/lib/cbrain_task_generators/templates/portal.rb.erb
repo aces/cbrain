@@ -41,14 +41,18 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % end
 %
 % # Parameter groups
-% params     = descriptor['inputs'].dup
-% outputs    = descriptor['output-files'].dup
-% required   = params.select { |i| ! i['optional']     }
-% optional   = params.select { |i| i['optional']       }
-% defaults   = params.select { |i| i['default-value']  }
-% files      = params.select { |i| i['type'] == 'File' }
-% file_lists = files.select  { |i| i['list']           }
+% params       = descriptor['inputs'].dup
+% outputs      = descriptor['output-files'].dup
+% required     = params.select { |i| ! i['optional']     }
+% optional     = params.select { |i| i['optional']       }
+% defaults     = params.select { |i| i['default-value']  }
+% files        = params.select { |i| i['type'] == 'File' }
+% file_lists   = files.select  { |i| i['list']           }
 %
+% # Parameter Maps: ids => [ target_ids ] for disables/requires
+% disables_map = params.inject({}){ |hmap,i| (res=i["disables-inputs"]) ? hmap.merge(i["id"]=>res) : hmap }  
+% requires_map = params.inject({}){ |hmap,i| (res=i["requires-inputs"]) ? hmap.merge(i["id"]=>res) : hmap }
+
 % # Special case; we only have one file input parameter and it only
 % # allows single files.
 % single_file = files.first if files.count == 1 && file_lists.empty?
@@ -200,8 +204,58 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %     end
 
 %   end
+%#
+%#
+%#  Do the checks for requires-inputs and disables-inputs. 
+%#  Indentation is to preserve pretty output
+%#
+%   # Helper for getting name associated to a given id
+%   nameForId = lambda { |id| (params.find { |x| x["id"]==id } || {})["name"] }
+%   # Helper for checking for flag-type parameters (which are sent even when inactive)
+%   isFlag = lambda { |id| (params.find { |x| x["id"]==id } || {})["type"] == 'Flag' }
+%#
+% unless requires_map.empty?
+    # Check that requires-inputs is not violated
+%  requires_map.each do |id, reqs|
+%  req_name = nameForId.(id) # Requirer name        
+   unless <%= ( isFlag.(id) ? "params[:'%s']==false" : "params[:'%s'].nil?" ) % id %>
+%      # If the param is filled in, the ones it requires must be too
+%    reqs.each do |req|
+%     fcheck = isFlag.(req) ? ("params[:'%s']==false" % [req]) : ("params[:'%s'].nil?" % [req]) 
+      <%= ("params_errors.add(:'%s', 'is required for %s') if %s") % [req,req_name,fcheck] %>  
+%    end # End reqs.each
+    end
+%  end # End requires_map.each
+
+% end # End unless requires_map.empty?   
+% unless disables_map.empty?
+    # Check that disables-inputs is not violated
+%  disables_map.each do |id, disableds|
+%   disber_name = nameForId.(id) # Disabler name    
+    unless <%= ( isFlag.(id) ? "params[:'%s']==false" : "params[:'%s'].nil?" ) % id %>
+%     # If the param is filled in, the ones it disables must be nil
+%     # Note: we permit empty strings to be valid strings
+%    disableds.each do |d|
+%     fcheck = isFlag.(d) ? ("params[:'%s']==false" % [d]) : ("params[:'%s'].nil?" % [d])       
+      <%= "params_errors.add(:'%s', 'is disabled by %s') unless %s" % [d,disber_name,fcheck] %>
+%    end
+    end
+%  end # End disables_map.each
+% end # End unless disables_map.empty?   
+
 % end
     ""
+  end
+
+  # Add pretty parameter names for the error messages to use
+  # Associates the id symbol with the name field
+  def self.pretty_params_names
+    {
+%     id_width = max_width.(params,"id") + "''".length  
+%     for param in params
+      <%= ":%-#{id_width}s => '%s'," % ["'" + param["id"] + "'", param["name"]]  %>
+%     end     
+    }
   end
 
   # Final set of tasks to be launched based on this task's parameters. Only
