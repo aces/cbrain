@@ -27,13 +27,6 @@
   <%= overlay_ajax_link "Help", "/doc/access_profiles/access_profiles.html", :class  => "button" %>
 </div>
 
-<%=
-  render(:partial => 'shared/active_filters', :locals  => {
-    :scope => @scope,
-    :model => AccessProfile
-  })
-%>
-
 <div class="centered">(<%= pluralize @access_profiles.count, "access profile" %>)</div>
 
 <%=

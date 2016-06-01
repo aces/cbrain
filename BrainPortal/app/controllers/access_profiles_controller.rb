@@ -137,7 +137,18 @@ class AccessProfilesController < ApplicationController
 
   def destroy #:nodoc:
     @access_profile = AccessProfile.find(params[:id])
+    orig_user_ids   = @access_profile.user_ids
+    orig_group_ids =  @access_profile.group_ids
     @access_profile.destroy
+    User.find(orig_user_ids).each do |user|
+      # Find the union of all group_ids for all the APs the user is still associated with
+      ap_group_ids   = user.access_profiles.inject([]) { |tot,ap| tot += ap.group_ids; tot }
+      remove_gids    = orig_group_ids - ap_group_ids
+      orig_user_gids = user.group_ids
+      user.group_ids = orig_user_gids - remove_gids
+      user.addlog_object_list_updated("Destroyed Access Profile '#{@access_profile.name}', Projects",
+                                      Group, orig_user_gids, user.group_ids, current_user)
+    end
 
     respond_to do |format|
       format.html { redirect_to :action => :index, :status => 303 }

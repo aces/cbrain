@@ -25,13 +25,13 @@
 <% title "Access Profile" %>
 
 <div class="menu_bar">
-  <%= overlay_ajax_link "Help", "/doc/access_profiles/access_profile_info.html", :class  => "button" %>
   <%= link_to 'Delete', access_profile_path(@access_profile),  {
         :confirm => "Are you sure you want to delete '#{@access_profile.name}' ?",
         :method  => :delete,
         :class => "button"
         }
   %>
+  <%= overlay_ajax_link "Help", "/doc/access_profiles/access_profiles.html", :class  => "button" %>
 </div>
 
 <br>
