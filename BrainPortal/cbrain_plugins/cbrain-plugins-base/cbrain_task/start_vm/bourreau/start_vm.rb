@@ -33,9 +33,12 @@ class CbrainTask::StartVM < ClusterTask
   after_status_transition '*', 'On CPU', :starting
 
   def setup #:nodoc:
-    validate_params # Defined in common, will raise an exception if
-                    # params aren't valid.
-    true
+    errors = param_validation_errors
+    return true if errors.empty?
+    errors.each_key do |key|
+      addlog(errors[key])
+    end
+    return false
   end
   
   def cluster_commands #:nodoc:

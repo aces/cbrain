@@ -26,7 +26,7 @@ require "resolv-replace.rb"
 class CbrainTask::StartVM < PortalTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   def self.properties #:nodoc:
     { :use_parallelizer => false }
   end  
@@ -57,14 +57,15 @@ class CbrainTask::StartVM < PortalTask
 
     params = self.params
 
+    errors = param_validation_errors
+    unless errors.empty?
+      errors.each_key do |key|
+        params_errors.add(key,errors[key])
+      end
+    end
+
     # Note: bash escapes should be performed on bourreau side. Don't do them here because x.bash_escape.bash_escape != x.bash_escape
 
-    begin
-    validate_params # defined in common
-    rescue => ex
-      cb_error "#{ex.message}"
-    end
-    
     # params[:vm_status] is the status of the VM started by the task.
     params[:vm_status] = "absent"
 
@@ -74,6 +75,7 @@ class CbrainTask::StartVM < PortalTask
     # params[:vm_local_ip] is the local IP of the worker node where the VM runs 
     # It will be used by the Bourreau worker to ssh to the VM
     params[:vm_local_ip]= nil 
+
     ""
   end
   
