@@ -102,7 +102,7 @@
 <%% input_list = lambda do |id, name, values: nil, optional: false, placeholder: nil| %>
   <%%
     values = @task.params[name.to_sym] if name && values.nil?
-    values = ([values] unless values.is_a?(Enumerable)).compact
+    values = values.is_a?(Enumerable) ? values.compact : [values].compact
     first = values.pop
   %>
   <ul class="tsk-prm-list">

@@ -206,44 +206,64 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %   end
 %#
 %#
-%#  Do the checks for requires-inputs and disables-inputs. 
+%#  Write the checks for requires-inputs and disables-inputs. 
 %#  Indentation is to preserve pretty output
 %#
-%   # Helper for getting name associated to a given id
-%   nameForId = lambda { |id| (params.find { |x| x["id"]==id } || {})["name"] }
-%   # Helper for checking for flag-type parameters (which are sent even when inactive)
-%   isFlag = lambda { |id| (params.find { |x| x["id"]==id } || {})["type"] == 'Flag' }
+%   # Helper for writing out a dictionary to a literal
+%   writeLiteralMap = lambda do |name,inmap|
+%     lenLongestKey = inmap.keys.map{ |x| x.to_s.length }.max + "''".length     
+    <%= "%s = {" % name %>     
+%     inmap.each do |key,valArr|
+%       vals = valArr.map{ |s| ":'%s'" % s }.join(", ")
+      <%= ":%-#{lenLongestKey}s => [%s]," % [ "'" + key + "'" , vals ] %> 
+%     end
+    <%= "}" %>
+%   end  
+%#  
+%   # Helper for writing out the checker loops
+%   # Can write a loop checking either disables (base="disable") or requires (base="require") violations
+%   generateCheckerLoop = lambda do |base|
+%     key, vals, req = base + 'r', base + 'ds', base == "require" 
+    <%= base + "sMap.each do |"+key+", "+vals+"|" %>   
+      unless isInactive.(<%= key %>)
+        for <%= base+'d' %> in <%= vals %>
+          msg = <%='\'is %s \' + %s.pretty_params_names[%s]' % [base + 'd ' + (req ? 'for' : 'by'), name, key] %> 
+          params_errors.add(<%= base+'d' %>, msg) <%= req ? 'if' : 'unless' %> isInactive.(<%= base+'d' %>)
+        end
+      end
+    end
+%#
+%   end
+%
+
+%#  ### Output to template ###
+% unless requires_map.empty? and disables_map.empty?
+    # Helper function for detecting inactive parameters (or false for flag-type parameters)
+    # Note that empty strings are allowed and no parameter types except flags pass booleans
+    isInactive = lambda { |x| params[x].nil? || (params[x]==false) }
+%   comment = "# A Map: id -> [ids] where ids are the parameters %s by the input id"
+
+    <%= (comment % "required") unless requires_map.empty? %>
+%   writeLiteralMap.("requiresMap",requires_map) unless requires_map.empty?
+
+    <%= (comment % "disabled") unless disables_map.empty? %>
+%   writeLiteralMap.("disablesMap",disables_map) unless disables_map.empty?
+
+% end
 %#
 % unless requires_map.empty?
     # Check that requires-inputs is not violated
-%  requires_map.each do |id, reqs|
-%  req_name = nameForId.(id) # Requirer name        
-   unless <%= ( isFlag.(id) ? "params[:'%s']==false" : "params[:'%s'].nil?" ) % id %>
-%      # If the param is filled in, the ones it requires must be too
-%    reqs.each do |req|
-%     fcheck = isFlag.(req) ? ("params[:'%s']==false" % [req]) : ("params[:'%s'].nil?" % [req]) 
-      <%= ("params_errors.add(:'%s', 'is required for %s') if %s") % [req,req_name,fcheck] %>  
-%    end # End reqs.each
-    end
-%  end # End requires_map.each
+    # If the parameter is filled in, the ones it requires must be too
+%    generateCheckerLoop.("require")
+% end    
 
-% end # End unless requires_map.empty?   
 % unless disables_map.empty?
     # Check that disables-inputs is not violated
-%  disables_map.each do |id, disableds|
-%   disber_name = nameForId.(id) # Disabler name    
-    unless <%= ( isFlag.(id) ? "params[:'%s']==false" : "params[:'%s'].nil?" ) % id %>
-%     # If the param is filled in, the ones it disables must be nil
-%     # Note: we permit empty strings to be valid strings
-%    disableds.each do |d|
-%     fcheck = isFlag.(d) ? ("params[:'%s']==false" % [d]) : ("params[:'%s'].nil?" % [d])       
-      <%= "params_errors.add(:'%s', 'is disabled by %s') unless %s" % [d,disber_name,fcheck] %>
-%    end
-    end
-%  end # End disables_map.each
-% end # End unless disables_map.empty?   
+    # If the parameter is active, the ones it disables must not be
+%    generateCheckerLoop.("disable")
+% end   
 
-% end
+% end # End unless params.empty?
     ""
   end
 
