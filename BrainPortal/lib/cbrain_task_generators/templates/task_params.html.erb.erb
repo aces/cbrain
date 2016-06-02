@@ -375,7 +375,7 @@ $(function () {
 %   end
 % end
 % #   
-% # The actual maps: idIn -> [ids disabled/required by idIn]
+% # The actual maps: idIn -> [ids that disable or are required by idIn]
 % disabledBy_map = makeReceiverActionMap.("disables-inputs")
 % requires_map = makeActorActionMap.("requires-inputs")
 % #
@@ -441,7 +441,7 @@ $(function () {
       else {
         target.find( iconClasses ).removeClass('ui-state-disabled') // put icons in enabled state
       }
-    } // TODO combine commands using multiple class selections syntax
+    }  
 
     // Function to map ids to names to make the messages a little prettier
     var idToName = function(x){ return namesMap[x]; }
@@ -458,7 +458,7 @@ $(function () {
       return targ.find('.tsk-prm-opt').prop('checked'); // Non-flag case
     }
 
-    // Iterate over parameters, enabling and disabling as needed
+    // Iterate over potentially disablable parameters, enabling and disabling as needed
     affectedIds.forEach( function( key ) {
       
       // Handle targeted disabling
@@ -467,8 +467,8 @@ $(function () {
         var vals = disabledByMap[key], len = vals.length;
         // Look for disabling parameters
         for(var i = 0; i < len; ++i){
-          if( isActiveParam(vals[i]) ){
-            disablers.push(vals[i]);
+          if( isActiveParam(vals[i]) ){ // If a disabling parameter is active
+            disablers.push(vals[i]); // Add it to our list of parameters disabling 'key' 
           }
         }
       }
