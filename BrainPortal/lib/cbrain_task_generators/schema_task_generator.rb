@@ -121,7 +121,7 @@ module SchemaTaskGenerator
     # encapsulated CbrainTask in a version switcher class to allow different
     # CbrainTask classes for each tool version.
     # Returns the newly generated CbrainTask subclass.
-    def integrate(register: true, create_tool_config:false, multi_version: false)
+    def integrate(register: true, create_tool_config: false, multi_version: false)
       # Make sure the task class about to be generated does not already exist,
       # to avoid mixing the classes up.
       name = SchemaTaskGenerator.classify(@name)
