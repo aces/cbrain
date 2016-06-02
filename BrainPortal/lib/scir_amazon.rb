@@ -80,7 +80,7 @@ class ScirAmazon < ScirCloud
     return ec2
   end
   
-  class Session < Scir::Session #:nodoc:
+  class Session < ScirCloud::Session #:nodoc:
 
     @@state_if_missing = Scir::STATE_RUNNING
 
@@ -111,17 +111,12 @@ class ScirAmazon < ScirCloud
     end
 
     # Terminates the VM.
-    def terminate_vm(jid)
+    def terminate_vm(jid)      
       ec2 = get_amazon_ec2_connection
       ec2.terminate_instances({:instance_ids => [ jid ]})
     end
 
     private
-
-    # Returns true of task is a VM
-    def is_vm_task?(task)
-      return task.is_a?(CbrainTask::StartVM)
-    end
 
     # A utility method to get the Amazon EC2 connection from the Scir
     # configuration parameters.

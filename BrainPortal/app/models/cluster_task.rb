@@ -1543,10 +1543,26 @@ class ClusterTask < CbrainTask
       # Queue the job on the cluster and return true, at this point
       # it's not our 'job' to figure out if it worked or not.
       self.addlog("Cluster command: #{job.qsub_command}") if self.user.has_role? :admin_user
-      jobid              = scir_session.run(job)
-      self.cluster_jobid = jobid
-      self.status_transition(self.status, "Queued")
-      self.addlog("Queued as job ID '#{jobid}'.")
+      begin
+        jobid              = scir_session.run(job)
+        self.cluster_jobid = jobid
+        self.status_transition(self.status, "Queued")
+        self.addlog("Queued as job ID '#{jobid}'.")
+      rescue => ex
+        # Masks the exception if the task couldn't be matched to a VM
+        # since this may change when new VMs are started.
+        raise ex unless ex.message.include?("Cannot match task to VM.") 
+        addlog(ex.message)
+        addlog("Putting task back to status \"New\"")
+        # This is unfortunate but we have to move back to status 'New'
+        # to give a chance to the task to be submitted again when
+        # there are VMs available. It shouldn't be too annoying
+        # though, since caches will avoid useless file transfers. To
+        # avoid this status transition, a new status should be
+        # introduced between "Setting Up" and "Queued"
+        # (e.g. "Submitting").
+        self.status_transition("Setting Up","New")
+      end
     end
     self.save
 
