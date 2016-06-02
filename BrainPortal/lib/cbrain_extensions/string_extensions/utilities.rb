@@ -154,19 +154,13 @@ module CBRAINExtensions #:nodoc:
       # Check if a String contains the textual representation of an integer.
       # Useful for form validation.
       def is_an_integer?
-        Integer(self)
-        return true 
-      rescue => ex
-        return false
+        Integer(self) && true rescue false
       end
 
       # Check if a String contains the textual representation of a float.
       # Useful for form validation.
       def is_a_float?
-        Float(self)
-        return true 
-      rescue => ex
-        return false
+        Float(self) && true rescue false
       end
     
     end

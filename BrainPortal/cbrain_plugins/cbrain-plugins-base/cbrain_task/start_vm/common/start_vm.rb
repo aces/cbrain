@@ -22,27 +22,24 @@
 
 class CbrainTask::StartVM #:nodoc:
   
-  def validate_params #:nodoc:
-    message = ""
+  def param_validation_errors #:nodoc:
+    errors = Hash.new
 
-    message += "Missing VM boot timeout! "  if params[:vm_boot_timeout].blank?
-    message += "Boot timeout has to be an integer! " if !is_integer? params[:vm_boot_timeout]
+    errors[:disk_image]         = "Missing disk image."                                               unless params[:disk_image].presence
+    errors[:vm_user]            = "Missing VM user."                                                  unless params[:vm_user].presence   
+    errors[:ssh_key_pair]       = "Missing ssh key pair."                                             unless params[:ssh_key_pair].presence
+    errors[:instance_type]      = "Missing cloud instance type."                                      unless params[:instance_type].presence
+    errors[:job_slots]          = "Missing number of job slots."                                      unless params[:job_slots].presence
+    errors[:job_slots]          = "Number of job slots has to be an integer."                         unless is_integer? params[:job_slots]
+    errors[:vm_boot_timeout]    = "Missing VM boot timeout."                                          unless params[:vm_boot_timeout].presence
+    errors[:vm_boot_timeout]    = "Boot timeout has to be an integer."                                unless is_integer? params[:vm_boot_timeout]
+    errors[:vm_ssh_tunnel_port] = "Missing ssh tunnel port."                                          unless params[:vm_ssh_tunnel_port].presence
+    errors[:vm_ssh_tunnel_port] = "ssh tunnel port has to be an integer."                             unless is_integer? params[:vm_ssh_tunnel_port]
+    errors[:number_of_vms]      = "Missing number of instances."                                      unless params[:number_of_vms].presence
+    errors[:number_of_vms]      = "Number of instances has to be an integer."                         unless is_integer? params[:number_of_vms]
+    errors[:number_of_vms]      = "Please don't try to start more than 20 instances at once."         if params[:number_of_vms].to_i > 20
 
-    message += "Missing ssh tunnel port! "  if params[:vm_ssh_tunnel_port].blank?
-    message += "ssh tunnel port has to be an integer! " if !is_integer? params[:vm_ssh_tunnel_port]
-    
-    message += "Missing number of instances! " if params[:number_of_vms].blank? 
-    message += "Please don't try to start more than 20 instances at once for now. " if params[:number_of_vms].to_i > 20
-    message += "Number of instances has to be an integer! " if !is_integer? params[:number_of_vms]
-    
-    message += "Missing number of job slots! " if params[:job_slots].blank? 
-    message += "Number of job slots has to be an integer! " if !is_integer? params[:job_slots]
-    
-    message+= "Missing cloud instance type!" if params[:instance_type].blank?
-
-    message+= "Missing VM user!" if params[:vm_user].blank?
-
-    raise message unless message == ""
+    return errors
   end
 
   def is_integer?(a) #:nodoc:
