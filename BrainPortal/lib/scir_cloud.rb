@@ -164,6 +164,24 @@ class ScirCloud < Scir
       end
     end
 
+    def job_ps(jid,caller_updated_at = nil) #:nodoc:
+      cbrain_task = CbrainTask.where(:cluster_jobid => jid).first
+      return super if ScirCloud.is_vm_task?(cbrain_task) # VMs can be monitored with
+                                        # the cache mechanism implemented in Scir
+                                        # (update_job_info_cache is of course overriden
+                                        # in the children classes of ScirCloud). 
+      # Monitoring of tasks running in VMs
+      pid = get_pid(jid)
+      vm_id = get_vm_id(jid)
+      vm_task = CbrainTask.find(vm_id)
+      vm_task.mount_directories # raises an exception if directories cannot be mounted
+      command = "ps -p #{pid} -o pid,state | awk '$1 == \"#{pid}\" {print $2}'"
+      status_letter = vm_task.run_command_in_vm(command).gsub("\n","")
+      return Scir::STATE_DONE if status_letter == ""
+      return Scir::STATE_RUNNING if status_letter.match(/[srzu]/i)
+      return Scir::STATE_USER_SUSPENDED if status_letter.match(/[t]/i)
+      return Scir::STATE_UNDETERMINED
+    end
 
     # TODO: doc. Overrides the 'run' method of class Scir. 
     def run(job)
@@ -182,8 +200,36 @@ class ScirCloud < Scir
       pid = vm_task.run_command_in_vm(command).gsub("\n","")  
       return create_job_id(vm_task.id,pid)
     end
+    
+    private 
+
+    def get_pid(jid) #:nodoc:
+      raise "Invalid job id" unless is_valid_jobid?(jid)
+      s = jid.split(":")
+      return s[2]
+    end
+    
+    def get_vm_id(jid) #:nodoc:
+      raise "Invalid job id" unless is_valid_jobid?(jid)
+      s = jid.split(":")
+      return s[1]
+    end
+    
+    def is_valid_jobid?(job_id) #:nodoc:
+      s=job_id.split(":")
+      return false if s.size != 3
+      return false if s[0] != "VM"
+      return true
+    end
+    
+    def create_job_id(vm_id,pid) #:nodoc:
+      raise "Error submissing job to VM #{vm_task.id}" if pid.to_s==""
+      raise "\"#{pid}\" doesn't look like a valid PID" unless pid.to_s.is_an_integer?
+      return "VM:#{vm_id}:#{pid}"
+    end
 
     def schedule_task_on_vm(task)
+      # TODO: make this method "synchronized" to avoid race conditions between workers
       vms = CbrainTask.where(:type=>"CbrainTask::StartVM", :bourreau_id => task.bourreau_id).all
       tool_config = ToolConfig.find(task.tool_config_id)
       suitable_vms = vms.select { |x| 
@@ -198,17 +244,18 @@ class ScirCloud < Scir
         x[1] > 0 # removes the VMs with no free slots
       }.sort!{ |a,b| b[1] <=> a[1] } # sorts VMs by increasing order of free slots
       raise "Cannot match task to VM." if suitable_vms.empty?
-      vm_id = suitable_vms[0].id 
+      vm_id = suitable_vms[0][0].id 
       task.params[:vm_id] = vm_id
+      task.save!
       return vm_id
     end
 
     def get_number_of_free_slots_in_vm(vm_task)
-      all_tasks = CbrainTask.where(:status => ActiveTasks , :bourreau_id => vm_task.bourreau_id).all
+      all_tasks = CbrainTask.where(:status => BourreauWorker::ActiveTasks , :bourreau_id => vm_task.bourreau_id).all
       n_tasks_in_vm = all_tasks.select { |x| 
         x.params[:vm_id] == vm_task.id
       }.count
-      return vm_task.params[:job_slots] - n_tasks_in_vm
+      return vm_task.params[:job_slots].to_i - n_tasks_in_vm
     end
   end
 
@@ -255,23 +302,5 @@ class ScirCloud < Scir
     
   end
 
-  private
-
-  def create_job_id(vm_id,pid) #:nodoc:
-    raise "Error submissing job to VM #{vm_task.id}" if pid.to_s==""
-    raise "\"#{pid}\" doesn't look like a valid PID" unless pid.to_s.is_an_integer?
-    return "VM:#{vm_id}:#{pid}"
-  end
-  def get_pid(jid) #:nodoc:
-    raise "Invalid job id" unless is_valid_jobid?(jid)
-    s = jid.split(":")
-    return s[2]
-  end
-  def is_valid_jobid?(job_id) #:nodoc:
-    s=job_id.split(":")
-    return false if s.size != 3
-    return false if s[0] != "VM"
-    return true
-  end
 end
 
