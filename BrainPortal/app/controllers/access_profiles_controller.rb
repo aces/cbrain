@@ -87,7 +87,7 @@ class AccessProfilesController < ApplicationController
     # Group list has changed? Apply to each affected user
     if old_group_ids != new_group_ids
       ap_removed_gids = old_group_ids - new_group_ids # what disappeared in the current AP
-      affected_users = User.where(:id => params[:affected_user_ids])
+      affected_users = User.where(:id => params[:affected_user_ids]).all
       affected_users.each do |user|
         orig_user_gids = user.group_ids
         user.apply_access_profiles(remove_group_ids: ap_removed_gids) # (re)add all groups from all APs of the user, minus lost groups
@@ -132,11 +132,8 @@ class AccessProfilesController < ApplicationController
     orig_group_ids =  @access_profile.group_ids
     @access_profile.destroy
     User.find(orig_user_ids).each do |user|
-      # Find the union of all group_ids for all the APs the user is still associated with
-      ap_group_ids   = user.access_profiles.inject([]) { |tot,ap| tot += ap.group_ids; tot }
-      remove_gids    = orig_group_ids - ap_group_ids
       orig_user_gids = user.group_ids
-      user.group_ids = orig_user_gids - remove_gids
+      user.apply_access_profiles(remove_group_ids: orig_group_ids) # try removing all groups in current AP
       user.addlog_object_list_updated("Destroyed Access Profile '#{@access_profile.name}', Projects",
                                       Group, orig_user_gids, user.group_ids, current_user)
     end
