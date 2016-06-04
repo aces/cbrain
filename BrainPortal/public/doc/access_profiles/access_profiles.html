@@ -24,35 +24,83 @@
 
 <h1>Introduction To Access Profiles</h1>
 
-Access Profiles are way to simplify user access management to sets of projects.
-<p>
-An Access Profile is basically a set of arbitrary projects. When users are created<br>
-or modified, they can be assigned to one (or several) Access Profiles, and thus<br>
-they become a member of all their projects immediately.
-<p>
-Access Profiles and all their properties are never visible to normal users.
+<p class="medium_paragraphs">
 
-<h2>Creating an Access Profile</h2>
+Access profiles are way to simplify how users are assigned to projects.
 
-When creating a new Access Profile, the admin can set a color to help<br>
-differentiate it from other Access Profiles. Projects can also immediately<br>
+<p class="medium_paragraphs">
+
+An access profile is basically a set of arbitrary projects. When a user is created
+or modified, it can be assigned to one (or several) access profiles, and thus
+it becomes a member of all the projects in these access profiles.
+
+<p class="medium_paragraphs">
+
+For the sake of clarity, let's use three terms to link the three concepts
+of <em>users</em>, <em>projects</em> and <em>access profiles</em>.
+
+<ul>
+  <li><em>Users</em> are <strong>members</strong> of <em>projects</em></li>
+  <li><em>Projects</em> are <strong>assigned</strong> to <em>access profiles</em></li>
+  <li><em>Users</em> are <strong>linked</strong> to <em>access profiles</em></li>
+</ul>
+
+<p class="medium_paragraphs">
+
+It is possible for a project to be assigned to several access profiles,
+and for a user to be linked to these profiles with the redundant project.
+In that case, the user stays a member of the project as long as that project
+is assigned to at least one of these profiles. In other words, the set
+of projects that the user is a member of is the <strong>union</strong>
+of all the projects of all his linked access profiles.
+
+<p class="medium_paragraphs">
+
+Access profiles and all their properties are never visible to normal users.
+As far as they are concerned, they are members of projects, and that is all.
+
+<h4>Creating an Access Profile</h4>
+
+<p class="medium_paragraphs">
+
+When creating a new access profile, the admin can set a color to help
+differentiate it from other access profiles. Projects can also immediately
 be assigned to it.
 
-<h2>Deleting an Access Profile</h2>
-Removing an Access Profile from a user will remove all the projects at once<br>
-(except those that may be part of other Access Profiles).
+<h4>Deleting an Access Profile</h4>
 
-<h2>Adjusting an Access Profile: adjusting the projects</h2>
-Adjusting the set of project in an Access Profile will (by default) immediately<br>
-affect all users associated with that Access Profile; however the<br>
-admin can select which users will be affected by the change using the checkboxes<br>
-at the bottom of the project list.
+<p class="medium_paragraphs">
 
-<h2>Adjusting an Access Profile: adjusting the users</h2>
-Adjusting the list of users associated with an Access Profile will affect<br>
-all those users: they will either become members of all the projects in<br>
-the profile (if the user is added) or might lose access to the project<br>
-(if removed, and the project is in no other access profile that the<br>
-user has access to).
-<p>
+Removing an access profile will not delete the projects assigned to it.
+However, all users who were linked to the profile will no longer
+be members of the projects assigned to that profile
+(except those projects that may be assigned to other access profiles).
+
+<h4>Adjusting an Access Profile: adjusting the projects</h4>
+
+<p class="medium_paragraphs">
+
+Adjusting the set of project assigned to an access profile will (by default) immediately
+affect all users linked to that access profile. If new projects are
+assigned to the profiles, the users will become members of them. If projects
+are de-assigned to the profile, the users MAY lose membership of them.
+
+<p class="medium_paragraphs">
+
+When using the form, the admin can select which users will be affected by
+the changes using the checkboxes at the bottom of the project list. If
+a checkbox is not checked for a user, that user's project memberships
+will not be changed at all no matter what modifications are made
+to the access profile.
+
+<h4>Adjusting an Access Profile: adjusting the users</h4>
+
+<p class="medium_paragraphs">
+
+Adjusting the list of users linked to an access profile will affect
+all those users: they will either become members of all the projects in
+the profile (if the user is added) or might lose access to all these
+projects.
+
+<p class="medium_paragraphs">
 

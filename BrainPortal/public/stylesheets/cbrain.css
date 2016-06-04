@@ -2087,6 +2087,7 @@ img {
   box-shadow: 0px 0px 4px black inset;
   padding: 0.5em;
   margin: 0.5em;
+  display: table-cell;
 }
 
 /* % ######################################################### */

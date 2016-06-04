@@ -91,6 +91,17 @@
 
   <% end %>
 
+  <% # Access Profile List %>
+  <% if current_user.has_role?(:admin_user) && @group.access_profiles.count > 0 %>
+    <%= show_table(@group, :header => 'Access profiles') do |t| %>
+      <% t.cell("Access Profiles", :no_header => true) do %>
+        <%= array_to_table(@group.access_profiles.order(:name).all, :table_class => "simple", :cols => 4) do |access_profile| %>
+          <%= access_profile_label(access_profile, :with_link => true) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
   <%
     group_members  = @group.users
     open_invites   = Invitation.where(sender_id: current_user.id, group_id: @group.id, active: true)
