@@ -189,6 +189,10 @@ module ViewScopes
     #
     # Note that pagination is not applied by default; specify +paginate+ to
     # paginate +collection+.
+    #
+    # If +sorting+ is set to true (the default), both filtering rules
+    # and sorting will be applied; when this option is set to false
+    # only the filtering rules will be applied.
     def apply(collection, on_failure: :ignore, paginate: false, sorting: true)
       # Wrap a filtering or sorting rule application to handle exceptions,
       # using +fallback+ as a fall-back value for :ignore.
