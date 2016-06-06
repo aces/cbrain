@@ -277,8 +277,8 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % getGroupsWith = lambda { |prop| groups.select{ |g| g[prop] }.map{ |g| ":'"+g["id"]+"'" }.join(", ") }
 % mutexGrps     = getGroupsWith.("mutually-exclusive") 
 % oneReqGrps    = getGroupsWith.("one-is-required")
-% hasMutex    = (mutexGrps != "")
-% hasOneReq   = (oneReqGrps != "")
+% hasMutex      = (mutexGrps != "")
+% hasOneReq     = (oneReqGrps != "")
 %#
 % if (hasMutex || hasOneReq)
    
