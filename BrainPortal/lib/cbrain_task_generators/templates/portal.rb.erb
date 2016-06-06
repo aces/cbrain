@@ -50,8 +50,8 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % file_lists   = files.select  { |i| i['list']           }
 %
 % # Parameter groups
-% groups = descriptor['groups'].dup rescue []
-% noGroups = (groups.length == 0)
+% groups    = descriptor['groups'].dup rescue []
+% noGroups  = (groups.length == 0)
 % gIdToMbrs = groups.inject({}){ |m,v| m.merge( v["id"] => v["members"] ) }
 % gIdToPrms = gIdToMbrs.map { |k,v| [k, params.select{ |p| v.include? p["id"] }] }.to_h
 %
@@ -275,36 +275,36 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % unless noGroups
 %# Check if any groups require checking
 % getGroupsWith = lambda { |prop| groups.select{ |g| g[prop] }.map{ |g| ":'"+g["id"]+"'" }.join(", ") }
-% mutexGrps = getGroupsWith.("mutually-exclusive") 
-% oneReqGrps = getGroupsWith.("one-is-required")
-% hasNoMutex = (mutexGrps == "")
-% hasNoOneReq = (oneReqGrps == "")
+% mutexGrps     = getGroupsWith.("mutually-exclusive") 
+% oneReqGrps    = getGroupsWith.("one-is-required")
+% hasMutex    = (mutexGrps != "")
+% hasOneReq   = (oneReqGrps != "")
 %#
-% unless (hasNoMutex && hasNoOneReq)
+% if (hasMutex || hasOneReq)
    
     # Groups with the mutually exclusive or one-is-required
-    <%= 'mutexGroups = [%s]'  % mutexGrps  unless hasNoMutex %>
-    <%= 'oneReqGroups = [%s]' % oneReqGrps unless hasNoOneReq %>
+    <%= 'mutexGroups = [%s]'  % mutexGrps  if hasMutex %>
+    <%= 'oneReqGroups = [%s]' % oneReqGrps if hasOneReq %>
     # Mapping from groupId to members list
 %   writeLiteralMap.("gidToMbrs", gIdToMbrs)
     # Mapping from groupId to group name
     grpName = {<%= groups.map{ |g| ":'" + g["id"] + "\' => \'" + g["name"] + "'" }.join(", ") %>}
-%  unless hasNoMutex
+%  if hasMutex
     # Lambda for checking mutual exclusivity
     isMutex = lambda { |gid| gidToMbrs[gid].select{ |m| ! isInactive.(m.to_sym) }.count <= 1 }
 %  end
-%  unless hasNoOneReq
+%  if hasOneReq
     # Lambda for checking one-is-required (at least one is active)
     hasOneActive = lambda { |gid| gidToMbrs[gid].select{ |m| ! isInactive.(m.to_sym) }.count > 0 }
 %  end
     # Check for violations of group properties
-%  unless hasNoMutex  
+%  if hasMutex  
     mutexGroups.each do |group|
       errMsg = "violates group mutual exclusivity requirement"
       params_errors.add(grpName[group],errMsg) unless isMutex.(group)
     end
 %  end
-%  unless hasNoOneReq
+%  if hasOneReq
     oneReqGroups.each do |group|
       errMsg = "violates group one-is-required specification"
       params_errors.add(grpName[group],errMsg) unless hasOneActive.(group)

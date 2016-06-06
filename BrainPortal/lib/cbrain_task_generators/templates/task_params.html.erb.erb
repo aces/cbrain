@@ -368,8 +368,9 @@
         <%= groupDescription %> 
       </h5> 
     </div><%%= "<br>".html_safe %>
-    <%# Write group parameters %>
-    <%- groupParams.each { |p| parameter.(p, true) } -%> 
+    <%# Write group parameters (required ones first) %>
+    <%- groupParams.each { |p| parameter.(p, true) if required.any? { |r| p["id"]==r["id"] } } -%>
+    <%- groupParams.each { |p| parameter.(p, true) if optional.any? { |t| p["id"]==t["id"] } } -%>
   </div>
   
 <%- end -%>
