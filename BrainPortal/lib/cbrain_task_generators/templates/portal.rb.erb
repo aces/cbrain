@@ -41,14 +41,18 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % end
 %
 % # Parameter groups
-% params     = descriptor['inputs'].dup
-% outputs    = descriptor['output-files'].dup
-% required   = params.select { |i| ! i['optional']     }
-% optional   = params.select { |i| i['optional']       }
-% defaults   = params.select { |i| i['default-value']  }
-% files      = params.select { |i| i['type'] == 'File' }
-% file_lists = files.select  { |i| i['list']           }
+% params       = descriptor['inputs'].dup
+% outputs      = descriptor['output-files'].dup
+% required     = params.select { |i| ! i['optional']     }
+% optional     = params.select { |i| i['optional']       }
+% defaults     = params.select { |i| i['default-value']  }
+% files        = params.select { |i| i['type'] == 'File' }
+% file_lists   = files.select  { |i| i['list']           }
 %
+% # Parameter Maps: ids => [ target_ids ] for disables/requires
+% disables_map = params.inject({}){ |hmap,i| (res=i["disables-inputs"]) ? hmap.merge(i["id"]=>res) : hmap }  
+% requires_map = params.inject({}){ |hmap,i| (res=i["requires-inputs"]) ? hmap.merge(i["id"]=>res) : hmap }
+
 % # Special case; we only have one file input parameter and it only
 % # allows single files.
 % single_file = files.first if files.count == 1 && file_lists.empty?
@@ -200,8 +204,78 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %     end
 
 %   end
+%#
+%#
+%#  Write the checks for requires-inputs and disables-inputs. 
+%#  Indentation is to preserve pretty output
+%#
+%   # Helper for writing out a dictionary to a literal
+%   writeLiteralMap = lambda do |name,inmap|
+%     lenLongestKey = inmap.keys.map{ |x| x.to_s.length }.max + "''".length     
+    <%= "%s = {" % name %>     
+%     inmap.each do |key,valArr|
+%       vals = valArr.map{ |s| ":'%s'" % s }.join(", ")
+      <%= ":%-#{lenLongestKey}s => [%s]," % [ "'" + key + "'" , vals ] %> 
+%     end
+    <%= "}" %>
+%   end  
+%#  
+%   # Helper for writing out the checker loops
+%   # Can write a loop checking either disables (base="disable") or requires (base="require") violations
+%   generateCheckerLoop = lambda do |base|
+%     key, vals, req = base + 'r', base + 'ds', base == "require" 
+    <%= base + "sMap.each do |"+key+", "+vals+"|" %>   
+      unless isInactive.(<%= key %>)
+        for <%= base+'d' %> in <%= vals %>
+          msg = <%='\'is %s \' + %s.pretty_params_names[%s]' % [base + 'd ' + (req ? 'for' : 'by'), name, key] %> 
+          params_errors.add(<%= base+'d' %>, msg) <%= req ? 'if' : 'unless' %> isInactive.(<%= base+'d' %>)
+        end
+      end
+    end
+%#
+%   end
+%
+
+%#  ### Output to template ###
+% unless requires_map.empty? and disables_map.empty?
+    # Helper function for detecting inactive parameters (or false for flag-type parameters)
+    # Note that empty strings are allowed and no parameter types except flags pass booleans
+    isInactive = lambda { |x| params[x].nil? || (params[x]==false) }
+%   comment = "# A Map: id -> [ids] where ids are the parameters %s by the input id"
+
+    <%= (comment % "required") unless requires_map.empty? %>
+%   writeLiteralMap.("requiresMap",requires_map) unless requires_map.empty?
+
+    <%= (comment % "disabled") unless disables_map.empty? %>
+%   writeLiteralMap.("disablesMap",disables_map) unless disables_map.empty?
+
 % end
+%#
+% unless requires_map.empty?
+    # Check that requires-inputs is not violated
+    # If the parameter is filled in, the ones it requires must be too
+%    generateCheckerLoop.("require")
+% end    
+
+% unless disables_map.empty?
+    # Check that disables-inputs is not violated
+    # If the parameter is active, the ones it disables must not be
+%    generateCheckerLoop.("disable")
+% end   
+
+% end # End unless params.empty?
     ""
+  end
+
+  # Add pretty parameter names for the error messages to use
+  # Associates the id symbol with the name field
+  def self.pretty_params_names
+    {
+%     id_width = max_width.(params,"id") + "''".length  
+%     for param in params
+      <%= ":%-#{id_width}s => '%s'," % ["'" + param["id"] + "'", param["name"]]  %>
+%     end     
+    }
   end
 
   # Final set of tasks to be launched based on this task's parameters. Only
