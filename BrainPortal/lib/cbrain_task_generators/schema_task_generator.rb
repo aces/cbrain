@@ -165,6 +165,20 @@ module SchemaTaskGenerator
         })[partial]
       end
 
+      # Write out a help file for this Boutiques task
+      helpFileName = name + "_help.html" 
+      helpFileDir = "cbrain_plugins/cbrain_tasks/help_files/"
+      basePath = Rails.root.join('public/' + helpFileDir) 
+      FileUtils.mkdir_p basePath.to_s # creates directory if needed
+      helpfilePath = basePath.join(helpFileName).to_s
+      File.open( helpfilePath , "w" ){ |f|
+        f.write( generated.source[:edit_help] )
+      }
+      FileUtils.chmod 0775, helpfilePath
+
+      # Add a helper method for accessing the help file (for use on the tools page) 
+      task.define_singleton_method(:get_boutiques_help_filepath){ helpFileDir + helpFileName }
+
       # If multi-versioning is enabled, replace the task class object constant
       # in CbrainTask (or Object) by a version switcher wrapper class.
       if multi_version
@@ -198,7 +212,7 @@ module SchemaTaskGenerator
       version      = @descriptor['tool-version'] || '(unknown)'
       description  = @descriptor['description']  || ''
       docker_image = @descriptor['docker-image']
-      resource     = RemoteResource.current_resource
+      resource     = RemoteResource.current_resource 
 
       # Create and save a new Tool for the task, unless theres already one.
       Tool.new(
