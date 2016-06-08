@@ -121,7 +121,7 @@ module SchemaTaskGenerator
     # encapsulated CbrainTask in a version switcher class to allow different
     # CbrainTask classes for each tool version.
     # Returns the newly generated CbrainTask subclass.
-    def integrate(register: true, create_tool_config: false, multi_version: false)
+    def integrate(register: true, create_tool_config: true, multi_version: false)
       # Make sure the task class about to be generated does not already exist,
       # to avoid mixing the classes up.
       name = SchemaTaskGenerator.classify(@name)
@@ -231,6 +231,11 @@ module SchemaTaskGenerator
       # theres already one. Only applies to Bourreaux (as it would make no
       # sense on the portal).
       return if Rails.root.to_s =~ /BrainPortal$/
+
+      # Create a ToolConfig iff 
+      #   (1) the Bourreau has a docker executable and 
+      #   (2) the descriptor specifies a docker image
+      return if docker_image.nil? || resource.docker_executable_name.nil?
 
       ToolConfig.new(
         :tool_id      => task.tool.id,
