@@ -113,14 +113,15 @@ module SchemaTaskGenerator
 
     # Integrates the encapsulated CbrainTask in this CBRAIN installation.
     # Unless +register+ is specified to be false, this method will add the
-    # required Tool and ToolConfig if necessary for the CbrainTask to be
+    # required Tool if necessary for the CbrainTask to be
     # useable right away (since almost all information required to make the
-    # Tool and ToolConfig objects is available in the spec).
+    # Tool and ToolConfig objects is available in the spec). The ToolConfig
+    # will also be created unless +create_tool_config+ is false.
     # Also, if +multi_version+ is specified, this method will wrap the
     # encapsulated CbrainTask in a version switcher class to allow different
     # CbrainTask classes for each tool version.
     # Returns the newly generated CbrainTask subclass.
-    def integrate(register: true, multi_version: false)
+    def integrate(register: true, create_tool_config: false, multi_version: false)
       # Make sure the task class about to be generated does not already exist,
       # to avoid mixing the classes up.
       name = SchemaTaskGenerator.classify(@name)
@@ -198,16 +199,17 @@ module SchemaTaskGenerator
 
       # With the task class and descriptor, we have enough information to
       # generate a Tool and ToolConfig to register the tool into CBRAIN.
-      register(task) if register
+      register(task,create_tool_config) if register
 
       task
     end
 
     # Register a newly generated CbrainTask subclass (+task+) in this CBRAIN
-    # installation, creating the appropriate Tool and ToolConfig objects from
-    # the information contained in the descriptor. The newly created Tool and
-    # ToolConfig will initially belong to the core admin.
-    def register(task)
+    # installation, creating the appropriate Tool object from the information 
+    # contained in the descriptor. A ToolConfig is also created, unless 
+    # +create_tool_config+ is false. The newly created Tool and ToolConfig 
+    # will initially belong to the core admin.
+    def register(task,create_tool_config)
       name         = @descriptor['name']
       version      = @descriptor['tool-version'] || '(unknown)'
       description  = @descriptor['description']  || ''
@@ -237,7 +239,7 @@ module SchemaTaskGenerator
         :version_name => version,
         :description  => "#{name} #{version} on #{resource.name}",
         :docker_image => docker_image
-      ).save! unless
+      ).save! unless !create_tool_config ||
         ToolConfig.exists?(
           :tool_id      => task.tool.id,
           :bourreau_id  => resource.id,
