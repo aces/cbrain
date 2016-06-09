@@ -235,7 +235,7 @@ module SchemaTaskGenerator
       # Create a ToolConfig iff 
       #   (1) the Bourreau has a docker executable and 
       #   (2) the descriptor specifies a docker image
-      return if docker_image.nil? || resource.docker_executable_name.nil?
+      return if docker_image.nil? || !resource.docker_present
 
       ToolConfig.new(
         :tool_id      => task.tool.id,
