@@ -40,7 +40,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %   list.map { |i| i[key].to_s.length rescue 0 }.max
 % end
 %
-% # Parameter groups
+% # Parameter types
 % params       = descriptor['inputs'].dup
 % outputs      = descriptor['output-files'].dup
 % required     = params.select { |i| ! i['optional']     }
@@ -48,6 +48,12 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % defaults     = params.select { |i| i['default-value']  }
 % files        = params.select { |i| i['type'] == 'File' }
 % file_lists   = files.select  { |i| i['list']           }
+%
+% # Parameter groups
+% groups    = descriptor['groups'].dup rescue []
+% noGroups  = (groups.length == 0)
+% gIdToMbrs = groups.inject({}){ |m,v| m.merge( v["id"] => v["members"] ) }
+% gIdToPrms = gIdToMbrs.map { |k,v| [k, params.select{ |p| v.include? p["id"] }] }.to_h
 %
 % # Parameter Maps: ids => [ target_ids ] for disables/requires
 % disables_map = params.inject({}){ |hmap,i| (res=i["disables-inputs"]) ? hmap.merge(i["id"]=>res) : hmap }  
@@ -205,11 +211,11 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 
 %   end
 %#
-%#
+%####
 %#  Write the checks for requires-inputs and disables-inputs. 
 %#  Indentation is to preserve pretty output
 %#
-%   # Helper for writing out a dictionary to a literal
+%   # Helper for writing out a dictionary of keys to value arrays to a literal
 %   writeLiteralMap = lambda do |name,inmap|
 %     lenLongestKey = inmap.keys.map{ |x| x.to_s.length }.max + "''".length     
     <%= "%s = {" % name %>     
@@ -234,9 +240,8 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     end
 %#
 %   end
-%
-
-%#  ### Output to template ###
+%#
+%# Output to template 
 % unless requires_map.empty? and disables_map.empty?
     # Helper function for detecting inactive parameters (or false for flag-type parameters)
     # Note that empty strings are allowed and no parameter types except flags pass booleans
@@ -261,7 +266,55 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     # Check that disables-inputs is not violated
     # If the parameter is active, the ones it disables must not be
 %    generateCheckerLoop.("disable")
-% end   
+% end
+%#
+%####
+%# Check for violations pertaining to parameter groups
+%# In particular, check that mutual exclusivity and one-is-required are satisfied 
+%#
+% unless noGroups
+%# Check if any groups require checking
+% getGroupsWith = lambda { |prop| groups.select{ |g| g[prop] }.map{ |g| ":'"+g["id"]+"'" }.join(", ") }
+% mutexGrps     = getGroupsWith.("mutually-exclusive") 
+% oneReqGrps    = getGroupsWith.("one-is-required")
+% hasMutex      = (mutexGrps != "")
+% hasOneReq     = (oneReqGrps != "")
+%#
+% if (hasMutex || hasOneReq)
+   
+    # Groups with the mutually exclusive or one-is-required
+    <%= 'mutexGroups = [%s]'  % mutexGrps  if hasMutex %>
+    <%= 'oneReqGroups = [%s]' % oneReqGrps if hasOneReq %>
+    # Mapping from groupId to members list
+%   writeLiteralMap.("gidToMbrs", gIdToMbrs)
+    # Mapping from groupId to group name
+    grpName = {<%= groups.map{ |g| ":'" + g["id"] + "\' => \'" + g["name"] + "'" }.join(", ") %>}
+%  if hasMutex
+    # Lambda for checking mutual exclusivity
+    isMutex = lambda { |gid| gidToMbrs[gid].select{ |m| ! isInactive.(m.to_sym) }.count <= 1 }
+%  end
+%  if hasOneReq
+    # Lambda for checking one-is-required (at least one is active)
+    hasOneActive = lambda { |gid| gidToMbrs[gid].select{ |m| ! isInactive.(m.to_sym) }.count > 0 }
+%  end
+    # Check for violations of group properties
+%  if hasMutex  
+    mutexGroups.each do |group|
+      errMsg = "violates group mutual exclusivity requirement"
+      params_errors.add(grpName[group],errMsg) unless isMutex.(group)
+    end
+%  end
+%  if hasOneReq
+    oneReqGroups.each do |group|
+      errMsg = "violates group one-is-required specification"
+      params_errors.add(grpName[group],errMsg) unless hasOneActive.(group)
+    end
+%  end
+%#
+% end # No mutex/one-req check
+% end # No groups check
+%#  
+%# End parameter group properties check
 
 % end # End unless params.empty?
     ""

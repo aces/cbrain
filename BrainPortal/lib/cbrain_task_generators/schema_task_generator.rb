@@ -121,7 +121,7 @@ module SchemaTaskGenerator
     # encapsulated CbrainTask in a version switcher class to allow different
     # CbrainTask classes for each tool version.
     # Returns the newly generated CbrainTask subclass.
-    def integrate(register: true, create_tool_config: false, multi_version: false)
+    def integrate(register: true, create_tool_config: true, multi_version: false)
       # Make sure the task class about to be generated does not already exist,
       # to avoid mixing the classes up.
       name = SchemaTaskGenerator.classify(@name)
@@ -166,6 +166,20 @@ module SchemaTaskGenerator
         })[partial]
       end
 
+      # Write out a help file for this Boutiques task
+      helpFileName = name + "_help.html" 
+      helpFileDir = "cbrain_plugins/cbrain_tasks/help_files/"
+      basePath = Rails.root.join('public/' + helpFileDir) 
+      FileUtils.mkdir_p basePath.to_s # creates directory if needed
+      helpfilePath = basePath.join(helpFileName).to_s
+      File.open( helpfilePath , "w" ){ |f|
+        f.write( generated.source[:edit_help] )
+      }
+      FileUtils.chmod 0775, helpfilePath
+
+      # Add a helper method for accessing the help file (for use on the tools page) 
+      task.define_singleton_method(:get_boutiques_help_filepath){ helpFileDir + helpFileName }
+
       # If multi-versioning is enabled, replace the task class object constant
       # in CbrainTask (or Object) by a version switcher wrapper class.
       if multi_version
@@ -191,16 +205,16 @@ module SchemaTaskGenerator
     end
 
     # Register a newly generated CbrainTask subclass (+task+) in this CBRAIN
-    # installation, creating the appropriate Tool object from
-    # the information contained in the descriptor. A ToolConfig is also created,
-    # unless +create_tool_config+ is false. The newly created Tool and ToolConfig
+    # installation, creating the appropriate Tool object from the information 
+    # contained in the descriptor. A ToolConfig is also created, unless 
+    # +create_tool_config+ is false. The newly created Tool and ToolConfig 
     # will initially belong to the core admin.
     def register(task, create_tool_config)
       name         = @descriptor['name']
       version      = @descriptor['tool-version'] || '(unknown)'
       description  = @descriptor['description']  || ''
       docker_image = @descriptor['docker-image']
-      resource     = RemoteResource.current_resource
+      resource     = RemoteResource.current_resource 
 
       # Create and save a new Tool for the task, unless theres already one.
       Tool.new(
@@ -217,6 +231,11 @@ module SchemaTaskGenerator
       # theres already one. Only applies to Bourreaux (as it would make no
       # sense on the portal).
       return if Rails.root.to_s =~ /BrainPortal$/
+
+      # Create a ToolConfig iff 
+      #   (1) the Bourreau has a docker executable and 
+      #   (2) the descriptor specifies a docker image
+      return if docker_image.nil? || !resource.docker_present
 
       ToolConfig.new(
         :tool_id      => task.tool.id,
