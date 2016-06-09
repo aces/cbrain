@@ -37,16 +37,27 @@
 -%>
 
 <%-
-  # Parameter groups
+  # Parameter types
   params   = descriptor['inputs'].dup
   required = params.select { |i| ! i['optional'] }
   optional = params.select { |i|   i['optional'] }
+
+  # Parameter groups and maps
+  groups = descriptor['groups'].dup rescue []
+  noGroups = (groups.length == 0)
+  gIdToMbrs = groups.inject({}){ |m,v| m.merge( v["id"] => v["members"] ) }
+  gIdToPrms = gIdToMbrs.map { |k,v| [k, params.select{ |p| v.include? p["id"] }] }.to_h
 
   # Single input file case
   files       = params.select { |i| i['type'] == 'File' }
   single_file = files.first if files.count == 1 && ! files.any? { |f| f['list'] }
 -%>
 <%% input_files = Userfile.find_all_by_id(params[:interface_userfile_ids]) rescue [] %>
+
+<%-
+  # Lambda for checking group membership
+  whichGroup = lambda { |s| gIdToMbrs.select{ |v| gIdToMbrs[v].include? s }.first[0] rescue nil }
+-%>
 
 <%%#
   Generate a parameter label for HTML input with id +id+.
@@ -219,10 +230,20 @@
   </div>
 <%% end %>
 
+<%%# Generate a checkbox for a parameter grouping %>
+<%% groupCheckbox = lambda do |id, defaultChecked = false| %>
+  <input class='group-toggler' 
+    type='checkbox' 
+    id='<%%= id %>_chk' 
+    <%%= 'checked=\'checked\'' if defaultChecked %> 
+  />
+  <label for="<%%= id %>_chk"></label>
+<%% end %>
+
 <%%# Generate a parameter's description block for +desc+ %>
-<%% description = lambda do |desc| %>
+<%% description = lambda do |desc, isGroupMember = false| %>
   <span class="tsk-prm-desc">
-    <%%= desc %>
+    <%%= desc %><%%= "<br><br>".html_safe if isGroupMember %>
   </span>
 <%% end %>
 
@@ -235,7 +256,7 @@
 %%>
 
 <%# Generate a complete HTML block for a given parameter +param+ -%>
-<%- parameter = lambda do |param| -%>
+<%- parameter = lambda do |param, isGroupMember = false| -%>
   <%-
     id    = param['id']
     type  = param['type'].downcase.to_sym
@@ -245,6 +266,7 @@
   <%-
     classes  = [ 'tsk-prm', type.to_s ]
     classes << 'list' if list
+    classes << 'prm-grp-mbr' if isGroupMember
   -%>
     <%% id = '<%= id %>' %>
     <li class="<%%= id %> <%= classes.join(' ') %>">
@@ -318,24 +340,88 @@
   <%- end -%>
   <%- if param['description'] -%>
         # Description
-        description.(<<-'DESC')
+        description.(<<-'DESC',<%= isGroupMember %>)
           <%= param['description'] %>
         DESC
   <%- end -%>
-      %>
+     %> 
     </li>
-
+<%- end -%>
+<%# Generate HTML for a group -%>
+<%- writeGroup = lambda do |group| -%>
+  <%-
+    # Get group parameters 
+    id = group['id']
+    name = group['name']
+    groupDescription = group['description']
+    groupParams = gIdToPrms[id]
+    mbrs = gIdToMbrs[id]
+    defaultChecked = group['one-is-required'] || required.any? { |p| mbrs.include? p["id"] }  
+  -%>
+  <div class="group <%= id %>"> 
+    <%# Write group header %> 
+    <div style="border-bottom: 2px solid #bbbbbb; padding-bottom: 2px;">
+      <h3 style="border-width: 0px; margin: 0px; padding: 1px; padding-left: 0px;">
+        <%= name %> <%% groupCheckbox.('<%= id %>',<%= defaultChecked %>) %>  
+      </h3>
+      <h5 style="font-size : 9.5pt; font-weight: normal; padding-top: 2px;" class="grp-desc"> 
+        <%= groupDescription %> 
+      </h5> 
+    </div><%%= "<br>".html_safe %>
+    <%# Write group parameters (required ones first) %>
+    <%- groupParams.each { |p| parameter.(p, true) if required.any? { |r| p["id"]==r["id"] } } -%>
+    <%- groupParams.each { |p| parameter.(p, true) if optional.any? { |t| p["id"]==t["id"] } } -%>
+  </div>
+  
 <%- end -%>
 <div class="task-params">
   <%- if params.empty? -%>
   <%= name %> has no parameters.
   <%- else -%>
   <ul>
-    <%- required.each(&parameter) -%>
-    <%- optional.each(&parameter) -%>
+%   # Write info for ungrouped parameters
+    <%- for param in required do parameter.(param) if whichGroup.(param["id"]).nil? end -%>
+    <%- for param in optional do parameter.(param) if whichGroup.(param["id"]).nil? end -%>
+%   # Write info for grouped parameters
+    <%- groups.each(&writeGroup) unless noGroups  -%>
   </ul>
   <%- end -%>
 </div>
+
+%# Style block for group toggling checkbox
+<style>
+.group-toggler {
+    display: none; 
+} 
+.group-toggler + label {
+  background-color: #fafafa;
+  border: 1px solid #cacece;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05);
+  padding: 9px;
+  border-radius: 3px;
+  display: inline-block;
+  position: relative;
+  float: right;
+  margin-right: 9pt;
+}
+.group-toggler + label:active, .group-toggler:checked + label:active {
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px 1px 3px rgba(0,0,0,0.1);
+}
+.group-toggler:checked + label {
+  background-color: #0471b4;
+  border: 1px solid #adb8c0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05), inset 15px 10px -12px rgba(255,255,255,0.1);
+  color: #99a1a7;
+}
+.group-toggler:checked + label:after {
+  content: '\2714';
+  font-size: 14px;
+  position: absolute;
+  top: 0px;
+  left: 3px;
+  color: #ffffff;
+}
+</style>
 
 <script type="application/javascript">
 $(function () {
@@ -375,10 +461,21 @@ $(function () {
 %   end
 % end
 % #   
-% # The actual maps: idIn -> [ids that disable or are required by idIn]
+% # The actual maps: idIn -> [ids disabled/required by idIn]
 % disabledBy_map = makeReceiverActionMap.("disables-inputs")
 % requires_map = makeActorActionMap.("requires-inputs")
 % #
+% # Implement dynamic mutual exclusion within a group by pairwise adding to the disables map
+% for group in groups
+%   if group['mutually-exclusive']
+%     for mId in group['members']
+%       # Add all members of the group, except this one and ones already disabling it
+%       alreadyDisables = lambda { |id| (disabledBy_map[mId] || []).include? id }
+%       toAdd = group['members'].select{ |id| (id!=mId) && (! alreadyDisables.(id) ) }
+%       disabledBy_map[mId] = ( (disabledBy_map[mId] + toAdd) rescue toAdd )
+%     end
+%   end
+% end
 % #
   /* Javascript dictionaries for names, disabledBy, and requires */
 % # Produces a javascript version of the ruby map
@@ -441,7 +538,7 @@ $(function () {
       else {
         target.find( iconClasses ).removeClass('ui-state-disabled') // put icons in enabled state
       }
-    }  
+    } 
 
     // Function to map ids to names to make the messages a little prettier
     var idToName = function(x){ return namesMap[x]; }
@@ -458,7 +555,7 @@ $(function () {
       return targ.find('.tsk-prm-opt').prop('checked'); // Non-flag case
     }
 
-    // Iterate over potentially disablable parameters, enabling and disabling as needed
+    // Iterate over parameters, enabling and disabling as needed
     affectedIds.forEach( function( key ) {
       
       // Handle targeted disabling
@@ -467,8 +564,8 @@ $(function () {
         var vals = disabledByMap[key], len = vals.length;
         // Look for disabling parameters
         for(var i = 0; i < len; ++i){
-          if( isActiveParam(vals[i]) ){ // If a disabling parameter is active
-            disablers.push(vals[i]); // Add it to our list of parameters disabling 'key' 
+          if( isActiveParam(vals[i]) ){
+            disablers.push(vals[i]);
           }
         }
       }
@@ -630,6 +727,17 @@ $(function () {
       .siblings('.tsk-prm-opt')
       .prop('checked', true)
       .trigger('activate.tsk-prm');
+  });
+
+  /* Toggling groups */
+  (function (fcn) {
+    $('.group-toggler').each(fcn).change(fcn);
+  })(function () {
+    $(this)
+      .parent() // header (3)
+      .parent() // inner div
+      .siblings('.prm-grp-mbr, .grp-desc')
+      .toggle( $(this).prop('checked') );
   });
 
   /* Clicking on a '-' button removes the row */

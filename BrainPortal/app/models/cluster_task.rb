@@ -1668,6 +1668,11 @@ class ClusterTask < CbrainTask
     return RemoteResource.current_resource.docker_executable_name.presence || "docker"
   end
 
+  # Return whether the Bourreau has docker present or not
+  def docker_exec_present?
+    return RemoteResource.current_resource.docker_present
+  end
+
   # Returns the command line(s) associated with the task, wrapped in
   # a Docker call if a Docker image has to be used.
   def docker_commands
