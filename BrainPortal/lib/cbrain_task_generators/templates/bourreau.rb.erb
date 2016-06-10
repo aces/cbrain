@@ -368,12 +368,25 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
           next
         end
 
-        self.addlog("Saving result file #{path}")
-        name = File.basename(path)
-        
+        # Get name and filetype
+        self.addlog("Attempting to save result file #{path}")
+        name = File.basename(path)         
         userfile_class = Userfile.suggested_file_type(name)
-        userfile_class ||= ( File.directory?(path) ? FileCollection : SingleFile )
+        userfile_class ||= ( File.directory?(path) ? FileCollection : SingleFile ) 
+       
+        # If the file already exists, add a tag (task id + ns time) to the name
+        if userfile_exists(userfile_class, :name => name)
+          tag = '-' + (self.id.to_s || 'unk') + '-' + Time.now.nsec.to_s
+          newName = name + tag if (userfile_class == FileCollection) && name.rindex(".").nil?
+          ext = File.extname( name ) 
+          newName ||= name.gsub( /#{ext}$/, "#{tag + ext}" )
+          self.addlog("File with same name found. Renaming to #{newName} before saving.")
+          name = newName
+        end
+
+        # Save the file (possible overwrite if race condition)
         output = safe_userfile_find_or_new(userfile_class, :name => name)
+        
         unless output.save
           self.addlog("Failed to save file #{path}")
           succeeded &&= false

@@ -329,6 +329,26 @@ class ClusterTask < CbrainTask
     return klass.new(attlist)
   end
 
+  # Returns whether or not the specified userfile exists
+  # Should at least specify the :name and :data_provider_id attributes.
+  # But the latter is given a default value if not.
+  def userfile_exists(klass,attlist)
+    # Add default provider id
+    attlist = attlist.dup
+    attlist[:data_provider_id] ||= self.results_data_provider_id.presence
+    attlist[:data_provider_id] ||= Userfile.find(self.params[:interface_userfile_ids].first).data_provider_id
+    # Checks input type and attribute list is appropriate
+    cb_error "Class for file must be a subclass of Userfile." unless klass < Userfile
+    cb_error "Attribute list missing a required attribute." if
+      [ :name, :data_provider_id ].any? { |i| attlist[i].blank? }
+    # Fetch file
+    results = klass.where( attlist ).all
+    cb_error "Found more than one file that match attribute list: '#{attlist.inspect}'." if results.size > 1
+    # Return whether we found one or not
+    return (results.size == 1)
+  end
+  
+
   def we_are_in_workdir #:nodoc:
     full = self.full_cluster_workdir
     return false if full.blank?
