@@ -363,7 +363,7 @@ ActiveRecord::Schema.define(:version => 20160811141815) do
     t.string   "category"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "cbrain_task_class"
+    t.string   "cbrain_task_class_name"
     t.string   "select_menu_text"
     t.text     "description"
     t.string   "url"
@@ -373,7 +373,7 @@ ActiveRecord::Schema.define(:version => 20160811141815) do
   end
 
   add_index "tools", ["category"], :name => "index_tools_on_category"
-  add_index "tools", ["cbrain_task_class"], :name => "index_tools_on_cbrain_task_class"
+  add_index "tools", ["cbrain_task_class_name"], :name => "index_tools_on_cbrain_task_class"
   add_index "tools", ["group_id"], :name => "index_tools_on_group_id"
   add_index "tools", ["user_id"], :name => "index_tools_on_user_id"
 
@@ -387,11 +387,11 @@ ActiveRecord::Schema.define(:version => 20160811141815) do
     t.string   "type"
     t.integer  "group_id"
     t.integer  "data_provider_id"
-    t.boolean  "group_writable",                                  :default => false, :null => false
+    t.boolean  "group_writable",   :default => false, :null => false
     t.integer  "num_files"
-    t.boolean  "hidden",                                          :default => false
-    t.boolean  "immutable",                                       :default => false
-    t.boolean  "archived",                                        :default => false
+    t.boolean  "hidden",           :default => false
+    t.boolean  "immutable",        :default => false
+    t.boolean  "archived",         :default => false
     t.text     "description"
   end
 

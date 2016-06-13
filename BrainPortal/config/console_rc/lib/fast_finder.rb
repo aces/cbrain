@@ -163,7 +163,7 @@ class Tool
       self.class.to_s, self.id,
       user.login,      group.name,
       name,
-      cbrain_task_class
+      cbrain_task_class_name
   end
 end
 
