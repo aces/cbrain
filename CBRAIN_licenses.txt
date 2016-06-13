@@ -4,6 +4,8 @@
 =  and acknowledgements of source code samples  =
 =================================================
 
+test
+
 - RESTFUL authentication
   Rails' (MIT) License
   http://github.com/technoweenie/restful-authentication/tree/master
