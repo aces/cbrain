@@ -639,39 +639,39 @@ ToolConfig.seed_record!(
 
 Bourreau.all.each do |bourreau|
 
-# para_diag
-ToolConfig.seed_record!(
-  {
-    :tool_id     => para_tool.id,
-    :description => 'Latest CBRAIN Parallelizer',
-    :bourreau_id => bourreau.id
-  },
-  {
-    :group_id    => Group.everyone.id,
-    :env_array   => [ ],
-    :script_prologue => "",
-    :ncpus       => 1,
-    :version_name     => "#{version_name += 1}"
-  },
-  { :info_name_method => :description }
-)
+  # para_diag
+  ToolConfig.seed_record!(
+    {
+      :tool_id     => para_tool.id,
+      :description => 'Latest CBRAIN Parallelizer',
+      :bourreau_id => bourreau.id
+    },
+    {
+      :group_id    => Group.everyone.id,
+      :env_array   => [ ],
+      :script_prologue => "",
+      :ncpus       => 1,
+      :version_name     => "#{version_name += 1}"
+    },
+    { :info_name_method => :description }
+  )
 
-# seri_diag
-ToolConfig.seed_record!(
-  {
-    :tool_id     => seri_tool.id,
-    :description => 'Latest CBRAIN Serializer',
-    :bourreau_id => bourreau.id
-  },
-  {
-    :group_id    => Group.everyone.id,
-    :env_array   => [ ],
-    :script_prologue => "",
-    :ncpus       => 1,
-    :version_name     => "#{version_name += 1}"
-  },
-  { :info_name_method => :description }
-)
+  # seri_diag
+  ToolConfig.seed_record!(
+    {
+      :tool_id     => seri_tool.id,
+      :description => 'Latest CBRAIN Serializer',
+      :bourreau_id => bourreau.id
+    },
+    {
+      :group_id    => Group.everyone.id,
+      :env_array   => [ ],
+      :script_prologue => "",
+      :ncpus       => 1,
+      :version_name     => "#{version_name += 1}"
+    },
+    { :info_name_method => :description }
+  )
 
 end # each bourreau
 
@@ -806,7 +806,7 @@ PortalTask.nil? # force pre-load of all constants under CbrainTask, e.g. CbrainT
 User.all.each do |user|
   groups = [ user.own_group ] + user.groups.where( :type => 'WorkGroup' ).all
   groups.each do |group|
-    Bourreau.all.each do |bourreau|
+    [ main_bourreau, pember_bourreau, longbourne_bourreau ].each do |bourreau|
       next unless bourreau.can_be_accessed_by?(user)
       [ diag_tool ].each do |tool|
         howlong = rand(10) + 5
