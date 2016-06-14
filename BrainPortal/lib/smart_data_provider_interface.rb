@@ -74,6 +74,11 @@ module SmartDataProviderInterface
   # This method returns the real data provider used
   # for implementing the behavior of all the methods
   # in the provider API. It is useful for debugging.
+  # Attempts to save() the real provider will be prevented   
+  # by special intercept code when setting up the current    
+  # provider; this is for security reasons, as saving    
+  # the real provider object should never be needed    
+  # in any way.
   def real_provider
     @real_provider
   end
