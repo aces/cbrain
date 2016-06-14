@@ -55,7 +55,7 @@ module SmartDataProviderInterface
 
     @real_provider.make_all_accessible!
     @real_provider.attributes = self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! @real_provider.class.columns_hash[k] }
-    @real_provider.id = self.id
+    @real_provider.id = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
 
     # These methods are used to intercept and prevent calls to 'save' on the two internal providers objects    
     [ :save, :save!, :update_attribute, :update_attributes, :update_attributes! ].each do |bad_method|
@@ -74,10 +74,10 @@ module SmartDataProviderInterface
   # This method returns the real data provider used
   # for implementing the behavior of all the methods
   # in the provider API. It is useful for debugging.
-  # Attempts to save() the real provider will be prevented   
-  # by special intercept code when setting up the current    
-  # provider; this is for security reasons, as saving    
-  # the real provider object should never be needed    
+  # Attempts to save() the real provider will be prevented
+  # by special intercept code when setting up the current
+  # provider; this is for security reasons, as saving
+  # the real provider object should never be needed
   # in any way.
   def real_provider
     @real_provider
