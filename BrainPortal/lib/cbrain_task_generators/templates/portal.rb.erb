@@ -289,29 +289,24 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %   writeLiteralMap.("gidToMbrs", gIdToMbrs)
     # Mapping from groupId to group name
     grpName = {<%= groups.map{ |g| ":'" + g["id"] + "\' => \'" + g["name"] + "'" }.join(", ") %>}
-%  if hasMutex
+% end
+% if hasMutex
     # Lambda for checking mutual exclusivity
     isMutex = lambda { |gid| gidToMbrs[gid].select{ |m| ! isInactive.(m.to_sym) }.count <= 1 }
-%  end
-%  if hasOneReq
+    mutexGroups.each do |group| # Check for violations of group mutex properties
+      errMsg = "violates group mutual exclusivity requirement"
+      params_errors.add(grpName[group], errMsg) unless isMutex.(group)
+    end
+% end
+% if hasOneReq
     # Lambda for checking one-is-required (at least one is active)
     hasOneActive = lambda { |gid| gidToMbrs[gid].select{ |m| ! isInactive.(m.to_sym) }.count > 0 }
-%  end
-    # Check for violations of group properties
-%  if hasMutex  
-    mutexGroups.each do |group|
-      errMsg = "violates group mutual exclusivity requirement"
-      params_errors.add(grpName[group],errMsg) unless isMutex.(group)
-    end
-%  end
-%  if hasOneReq
-    oneReqGroups.each do |group|
+    oneReqGroups.each do |group| # Check for violations of group one-is-required properties
       errMsg = "violates group one-is-required specification"
-      params_errors.add(grpName[group],errMsg) unless hasOneActive.(group)
+      params_errors.add(grpName[group], errMsg) unless hasOneActive.(group)
     end
-%  end
+% end
 %#
-% end # No mutex/one-req check
 % end # No groups check
 %#  
 %# End parameter group properties check

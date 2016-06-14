@@ -1689,7 +1689,7 @@ class ClusterTask < CbrainTask
   end
 
   # Return whether the Bourreau has docker present or not
-  def docker_exec_present?
+  def docker_present?
     return RemoteResource.current_resource.docker_present
   end
 
