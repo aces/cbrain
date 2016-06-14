@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160218173528) do
+ActiveRecord::Schema.define(:version => 20160609145038) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -237,6 +237,7 @@ ActiveRecord::Schema.define(:version => 20160218173528) do
     t.string   "system_from_email"
     t.string   "external_status_page_url"
     t.string   "docker_executable_name"
+    t.boolean  "docker_present"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
