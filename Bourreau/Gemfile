@@ -33,6 +33,7 @@ gem "log4r"
 gem "thin"
 gem "pbkdf2-ruby"
 gem "json-schema"
+gem 'eventmachine', '< 1.2'
 
 group :development, :test do
   gem "wirble"
