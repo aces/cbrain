@@ -56,10 +56,10 @@ module SmartDataProviderInterface
     @real_provider.make_all_accessible!
     @real_provider.attributes = self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! @real_provider.class.columns_hash[k] }
     @real_provider.id = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
+    @real_provider.readonly!
 
     # These methods are used to intercept and prevent calls to 'save' on the two internal providers objects    
     [ :save, :save!, :update_attribute, :update_attributes, :update_attributes! ].each do |bad_method|
-      @real_provider.readonly!    
       @real_provider.class_eval do    
         define_method(bad_method) do |*args|   
           cb_error "Internal error: attempt to invoke method '#{bad_method}' on internal #{@real_provider.class == localclass ? "local" : "network"} provider object for SmartDataProvider '#{@real_provider.name}'"   
