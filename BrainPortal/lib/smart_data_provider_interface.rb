@@ -59,8 +59,8 @@ module SmartDataProviderInterface
     @real_provider.readonly!
 
     # These methods are used to intercept and prevent calls to 'save' on the two internal providers objects    
-    [ :save, :save!, :update_attribute, :update_attributes, :update_attributes! ].each do |bad_method|
-      @real_provider.class_eval do    
+    @real_provider.class_eval do
+      [ :save, :save!, :update_attribute, :update_attributes, :update_attributes! ].each do |bad_method|
         define_method(bad_method) do |*args|   
           cb_error "Internal error: attempt to invoke method '#{bad_method}' on internal #{@real_provider.class == localclass ? "local" : "network"} provider object for SmartDataProvider '#{@real_provider.name}'"   
         end    
