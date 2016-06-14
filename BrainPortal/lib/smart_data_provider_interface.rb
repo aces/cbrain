@@ -41,39 +41,23 @@ module SmartDataProviderInterface
     dp_hostnames  = self.alternate_host.split(',').select { |host| host && ! host.blank? } rescue []
     dp_hostnames << self.remote_host rescue nil
     if dp_hostnames.empty? || dp_remote_dir.blank? # special case : usually when doing special select() on DPs with missing columns
-      @provider = @local_provider = @network_provider = nil
+      @provider = nil
       return @provider
     end
 
-    # Create two internal provider objects, only one of which will be used to provide the
-    # behavior we want (the other one could be useful too, in provider_full_path() below, for instance)
-    @local_provider   = localclass.new
-    @network_provider = networkclass.new
-    @local_provider.make_all_accessible!
-    @network_provider.make_all_accessible!
-    @local_provider.attributes     = self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! localclass.columns_hash[k] }
-    @network_provider.attributes   = self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! networkclass.columns_hash[k] }
-    @local_provider.id   = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
-    @network_provider.id = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
-
-    # These methods are used to intercept and prevent calls to 'save' on the two internal providers objects
-    [ :save, :save!, :update_attribute, :update_attributes, :update_attributes! ].each do |bad_method|
-      [ @local_provider, @network_provider ].each do |internal_prov|
-        internal_prov.readonly!
-        internal_prov.class_eval do
-          define_method(bad_method) do |*args|
-            cb_error "Internal error: attempt to invoke method '#{bad_method}' on internal #{internal_prov.class == localclass ? "local" : "network"} provider object for SmartDataProvider '#{internal_prov.name}'"
-          end
-        end
-      end
-    end
-
-    # Now select the real provider for all intercepts defined below.
+    # Create only one provider object, depending on whether we want a network provider
+    # or a local provider
     if dp_hostnames.include?(Socket.gethostname) && File.directory?(dp_remote_dir)
-      @provider = @local_provider
+      @provider = localclass.new
+      @provider.make_all_accessible!
+      @provider.attributes = self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! localclass.columns_hash[k] }
     else
-      @provider = @network_provider
+      @provider = networkclass.new
+      @provider.make_all_accessible!
+      @provider.attributes = self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! networkclass.columns_hash[k] }
     end
+
+    @provider.id = self.id
 
     @provider
   end
@@ -81,11 +65,6 @@ module SmartDataProviderInterface
   # This method returns the real data provider used
   # for implementing the behavior of all the methods
   # in the provider API. It is useful for debugging.
-  # Attempts to save() the real provider will be prevented
-  # by special intercept code when setting up the current
-  # provider; this is for security reasons, as saving
-  # the real provider object should never be needed
-  # in any way.
   def real_provider
     @provider
   end
@@ -200,8 +179,8 @@ module SmartDataProviderInterface
   # class, even when the current smart provider is actually
   # configured to be local.
   def provider_full_path(userfile) #:nodoc:
-    if @network_provider.respond_to?(:provider_full_path)
-      @network_provider.provider_full_path(userfile)
+    if @provider.respond_to?(:provider_full_path)
+      @provider.provider_full_path(userfile)
     else
       "(unknown remote path)"
     end
