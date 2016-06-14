@@ -435,7 +435,7 @@ class DataProvider < ActiveRecord::Base
   # The value returned is a Pathname object, so be careful
   # to call to_s() on it, when necessary.
   def cache_full_path(userfile)
-    cache_full_pathname(userfile)
+    cache_full_pathname(userfile) # this is the internal private version with a REAL path to the REAL cache
   end
 
   # Executes a block on a filehandle open in +read+ mode for the

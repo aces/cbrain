@@ -20,29 +20,31 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This class implements a 'wrapper' data provider that
-# acts either as a EnCbrainLocalDataProvider or a EnCbrainSshDataProvider
-# depending on whether or not the current hostname matches
-# the value of the attribute remote_host.
+# The provider's files are stored in a flat directory, one
+# level deep, directly specified by the object's +remote_dir+
+# attribute. The file "hello" is thus stored in a path like this:
 #
-# This means that in the case where the current Rails application
-# runs on the same machine as the data provider, the faster
-# and more efficient EnCbrainLocalDataProvider will be used.
-class EnCbrainSmartDataProvider < DataProvider
+#     /remote_dir/hello
+#
+# There is no caching in this provider: all caching methods
+# access the direct path to the local file.
+#
+# This provider is "browsable".
+#
+# For the list of API methods, see the DataProvider superclass.
+class FlatDirLocalDataProvider < LocalDataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  include SmartDataProviderInterface
-
-  after_initialize :after_initialize_select_provider
-
-  def after_initialize_select_provider #:nodoc:
-    self.select_local_or_network_provider(EnCbrainLocalDataProvider,EnCbrainSshDataProvider)
-  end
-
   # This returns the category of the data provider
   def self.pretty_category_name #:nodoc:
-    "Enhanced CBRAIN"
+    "Single Level"
+  end
+
+  def is_browsable?(by_user = nil) #:nodoc:
+    return true if by_user.blank? || self.meta[:browse_gid].blank?
+    return true if by_user.is_a?(AdminUser) || by_user.id == self.user_id
+    by_user.is_member_of_group(self.meta[:browse_gid].to_i)
   end
 
 end

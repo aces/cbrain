@@ -21,14 +21,14 @@
 #
 
 # This class implements a 'wrapper' data provider that
-# acts either as a EnCbrainLocalDataProvider or a EnCbrainSshDataProvider
+# acts either as a FlatDirLocalDataProvider or a FlatDirSshDataProvider
 # depending on whether or not the current hostname matches
 # the value of the attribute remote_host.
 #
 # This means that in the case where the current Rails application
 # runs on the same machine as the data provider, the faster
-# and more efficient EnCbrainLocalDataProvider will be used.
-class EnCbrainSmartDataProvider < DataProvider
+# and more efficient FlatDirLocalDataProvider will be used.
+class FlatDirSmartDataProvider < DataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
@@ -37,12 +37,12 @@ class EnCbrainSmartDataProvider < DataProvider
   after_initialize :after_initialize_select_provider
 
   def after_initialize_select_provider #:nodoc:
-    self.select_local_or_network_provider(EnCbrainLocalDataProvider,EnCbrainSshDataProvider)
+    self.select_local_or_network_provider(FlatDirLocalDataProvider,FlatDirSshDataProvider)
   end
 
   # This returns the category of the data provider
   def self.pretty_category_name #:nodoc:
-    "Enhanced CBRAIN"
+    "Single Level"
   end
 
 end
