@@ -81,6 +81,9 @@
            </li>
          <% end %>
          <% if current_user.has_role?(:admin_user) %>
+           <li <%= set_selected(params[:controller], :access_profiles) %>>
+             <%= link_to 'Profiles', access_profiles_path %>
+           </li>
            <li <%= set_selected(params[:controller], :sites) %>>
              <%= link_to 'Sites', sites_path %>
            </li>

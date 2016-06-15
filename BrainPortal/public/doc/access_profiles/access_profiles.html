@@ -1,0 +1,106 @@
+
+<!--
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-->
+
+<h1>Introduction To Access Profiles</h1>
+
+<p class="medium_paragraphs">
+
+Access profiles are way to simplify how users are assigned to projects.
+
+<p class="medium_paragraphs">
+
+An access profile is basically a set of arbitrary projects. When a user is created
+or modified, it can be assigned to one (or several) access profiles, and thus
+it becomes a member of all the projects in these access profiles.
+
+<p class="medium_paragraphs">
+
+For the sake of clarity, let's use three terms to link the three concepts
+of <em>users</em>, <em>projects</em> and <em>access profiles</em>.
+
+<ul>
+  <li><em>Users</em> are <strong>members</strong> of <em>projects</em></li>
+  <li><em>Projects</em> are <strong>assigned</strong> to <em>access profiles</em></li>
+  <li><em>Users</em> are <strong>linked</strong> to <em>access profiles</em></li>
+</ul>
+
+<p class="medium_paragraphs">
+
+It is possible for a project to be assigned to several access profiles,
+and for a user to be linked to these profiles with the redundant project.
+In that case, the user stays a member of the project as long as that project
+is assigned to at least one of these profiles. In other words, the set
+of projects that the user is a member of is the <strong>union</strong>
+of all the projects of all his linked access profiles.
+
+<p class="medium_paragraphs">
+
+Access profiles and all their properties are never visible to normal users.
+As far as they are concerned, they are members of projects, and that is all.
+
+<h4>Creating an Access Profile</h4>
+
+<p class="medium_paragraphs">
+
+When creating a new access profile, the admin can set a color to help
+differentiate it from other access profiles. Projects can also immediately
+be assigned to it.
+
+<h4>Deleting an Access Profile</h4>
+
+<p class="medium_paragraphs">
+
+Removing an access profile will not delete the projects assigned to it.
+However, all users who were linked to the profile will no longer
+be members of the projects assigned to that profile
+(except those projects that may be assigned to other access profiles).
+
+<h4>Adjusting an Access Profile: adjusting the projects</h4>
+
+<p class="medium_paragraphs">
+
+Adjusting the set of project assigned to an access profile will (by default) immediately
+affect all users linked to that access profile. If new projects are
+assigned to the profiles, the users will become members of them. If projects
+are de-assigned to the profile, the users MAY lose membership of them.
+
+<p class="medium_paragraphs">
+
+When using the form, the admin can select which users will be affected by
+the changes using the checkboxes at the bottom of the project list. If
+a checkbox is not checked for a user, that user's project memberships
+will not be changed at all no matter what modifications are made
+to the access profile.
+
+<h4>Adjusting an Access Profile: adjusting the users</h4>
+
+<p class="medium_paragraphs">
+
+Adjusting the list of users linked to an access profile will affect
+all those users: they will either become members of all the projects in
+the profile (if the user is added) or might lose access to all these
+projects.
+
+<p class="medium_paragraphs">
+

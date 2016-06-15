@@ -40,7 +40,7 @@
       <% if current_user.has_role?(:admin_user) %>
         <p>
           <%= f.label :site_id, "Site:" %>
-		  <%= site_select "group[site_id]",{}, :prompt => "(Select a site)" %>
+          <%= site_select "group[site_id]",{}, :prompt => "(Select a site)" %>
         </p>
         <p>
         Make this a system group invisible to normal users:
