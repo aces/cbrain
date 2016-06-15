@@ -22,8 +22,16 @@
 
 # Model representing access profiles, a sort of
 # record where pre-defined profiles for users are created
-# by the admin. Later on, access restrictions will be
-# recorded here too.
+# by the admin.
+#
+# For the moment the model only contains:
+#
+# A list of group_ids (a profile can have many of these)
+# A list of user_ids  (a profile is 'applied' to these users)
+#
+# Later on, access restrictions will be
+# recorded here too. For instance, restrictions and
+# limits of launching tasks, number of files, etc etc.
 class AccessProfile < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:

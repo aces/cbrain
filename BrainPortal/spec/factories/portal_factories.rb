@@ -272,7 +272,7 @@ FactoryGirl.define do
     association     :group
   end
 
- factory :site do
+  factory :site do
     sequence(:name) { |n| "site_#{n}" }
   end
 
@@ -287,6 +287,11 @@ FactoryGirl.define do
   end
 
   factory :cbrain_session do
+  end
+
+  factory :access_profile do
+    sequence(:name)        { |n| "ap_#{n}" }
+    sequence(:description) { |n| "description for ap_#{n}" }
   end
 
 end
