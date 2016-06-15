@@ -23,7 +23,6 @@
 require 'rails_helper'
 
 RSpec.describe AccessProfilesController, :type => :controller do
-  #let(:access_profile) { mock_model(AccessProfiles).as_null_object }
 
   #==========================================
   # Admin User
@@ -54,19 +53,12 @@ RSpec.describe AccessProfilesController, :type => :controller do
 
     before(:each) do
       session[:user_id] = current_user.id
-    #  user_a  ; user_b
-    #  group_a ; group_b ; group_o
-    #  ap_a    ; ap_b    ; ap_ab
     end
 
     #----------------
     # INDEX
     #----------------
     describe "index" do
-      #before(:each) do
-      #  allow(controller).to receive(:current_user).and_return(current_user)
-      #end
-
       it "should return all access_profiles" do
         ap_a ; ap_b ; ap_ab
         get :index
@@ -184,7 +176,7 @@ RSpec.describe AccessProfilesController, :type => :controller do
     # DESTROY
     #----------------
     describe "destroy" do
-      it "should destroy a the access profile" do
+      it "should destroy the access profile" do
         post :destroy, :id => ap_a.id
         expect(AccessProfile.where(:id => ap_a.id).all).to match_array([])
       end
