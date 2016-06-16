@@ -329,9 +329,12 @@ class ClusterTask < CbrainTask
     return klass.new(attlist)
   end
 
-  # Returns whether or not the specified userfile exists
-  # Should at least specify the :name and :data_provider_id attributes.
-  # But the latter is given a default value if not.
+  # Returns whether or not the specified userfile exists.
+  # This is a utility method for developers to use in the creation of safe code,
+  # when creating output files. Permits smarter searching by using default
+  # values taken from the attributes of the task itself.
+  # One should at least specify the :name and :data_provider_id attributes,
+  # but the latter is given a default value if not.
   def userfile_exists(klass,attlist)
     # Add default provider id
     attlist = attlist.dup
@@ -1688,7 +1691,7 @@ class ClusterTask < CbrainTask
     return RemoteResource.current_resource.docker_executable_name.presence || "docker"
   end
 
-  # Return whether the Bourreau has docker present or not
+  # Return whether the Bourreau of the task has docker present or not
   def docker_present?
     return RemoteResource.current_resource.docker_present
   end

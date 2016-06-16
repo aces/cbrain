@@ -165,18 +165,10 @@ module SchemaTaskGenerator
         })[partial]
       end
 
-      # Write out a help file for this Boutiques task
+      # Add a helper method for accessing the help file (for use on the tools page)
+      # Written by the rake task cbrain:plugins:install, within the subtask public_assets
       helpFileName = name + "_help.html" 
       helpFileDir  = File.join( "cbrain_plugins", "cbrain_tasks", "help_files/" )
-      basePath     = Rails.root.join( File.join('public/', helpFileDir) )
-      FileUtils.mkdir_p( basePath.to_s ) # creates directory if needed
-      helpfilePath = basePath.join(helpFileName).to_s
-      File.open( helpfilePath , "w" ){ |f|
-        f.write( generated.source[:edit_help] )
-      }
-      FileUtils.chmod(0775, helpfilePath)
-
-      # Add a helper method for accessing the help file (for use on the tools page) 
       task.define_singleton_method(:help_filepath){ File.join(helpFileDir, helpFileName) }
 
       # If multi-versioning is enabled, replace the task class object constant
