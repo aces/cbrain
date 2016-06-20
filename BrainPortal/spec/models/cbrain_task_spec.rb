@@ -165,14 +165,14 @@ describe CbrainTask do
 
       it "should raise an error if task have no bourreau" do
         allow(cb_diagnostic).to receive(:bourreau).and_return(nil)
-        expect{cb_diagnostic.cluster_shared_dir}.to raise_error
+        expect{cb_diagnostic.cluster_shared_dir}.to raise_error(CbrainError, /No Bourreau associated/)
       end
 
       it "should raise an error if cluster shared directory not defined for Bourreau" do
         mybourreau = double("mybourreau")
         allow(cb_diagnostic).to receive(:bourreau).and_return(mybourreau)
         allow(mybourreau).to receive(:cms_shared_dir).and_return("")
-        expect{cb_diagnostic.cluster_shared_dir}.to raise_error
+        expect{cb_diagnostic.cluster_shared_dir}.to raise_error(RSpec::Mocks::MockExpectationError, /received unexpected message/)
       end
 
       it  "should return shared directory in other case" do
@@ -190,7 +190,7 @@ describe CbrainTask do
 
       it "should raise an error if we only have a new line" do
         allow(cb_diagnostic).to receive(:description).and_return("\n")
-        expect{cb_diagnostic.short_description}.to raise_error
+        expect{cb_diagnostic.short_description}.to raise_error(RuntimeError, /Internal error/)
       end
 
       it "should return only the last line" do

@@ -475,7 +475,7 @@ describe Userfile do
   describe "#set_size!" do
 
     it "should always raise an error" do
-      expect{userfile.set_size!}.to raise_error
+      expect{userfile.set_size!}.to raise_error(CbrainError)
     end
   end
 
@@ -516,12 +516,12 @@ describe Userfile do
     let(:userfile1) {create(:userfile)}
 
     it "should raise error if self.id == userfile.id" do
-      expect{userfile.move_to_child_of(userfile)}.to raise_error
+      expect{userfile.move_to_child_of(userfile)}.to raise_error(ActiveRecord::ActiveRecordError, /userfile cannot become the child/)
     end
 
     it "should raise error if self.descendants.include?(userfile)" do
       allow(userfile).to receive_message_chain(:descendants, :include?).and_return(true)
-      expect{userfile.move_to_child_of(userfile1)}.to raise_error
+      expect{userfile.move_to_child_of(userfile1)}.to raise_error(ActiveRecord::ActiveRecordError, /userfile cannot become the child/)
     end
 
     it "should set parent.id to userfile.id if no error was raised" do

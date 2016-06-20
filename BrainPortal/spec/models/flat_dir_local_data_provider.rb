@@ -71,7 +71,7 @@ describe FlatDirLocalDataProvider do
   describe "#impl_provider_list_all" do
 
     it "should always raise a cb_error" do
-      expect{local_data_provider.impl_provider_list_all}.to raise_error
+      expect{local_data_provider.impl_provider_list_all}.to raise_error(NoMethodError, /undefined method/)
     end
   end
 
