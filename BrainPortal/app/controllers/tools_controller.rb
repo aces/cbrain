@@ -82,7 +82,6 @@ class ToolsController < ApplicationController
 
   def new #:nodoc:
     @tool = Tool.new
-    render :partial => "new"
   end
 
   # GET /tools/1/edit
@@ -112,11 +111,11 @@ class ToolsController < ApplicationController
       if @tool.save
         @tool.addlog_context(self,"Created by #{current_user.login}")
         flash[:notice] = 'Tool was successfully created.'
-        format.js  { redirect_to :action => :index, :format => :js }
-        format.xml { render :xml => @tool, :status => :created, :location => @tool }
+        format.html { redirect_to :action => :index, :format => :html}
+        format.xml  { render :xml => @tool, :status => :created, :location => @tool }
       else
-        format.js  { render :partial  => 'shared/failed_create', :locals  => {:model_name  => 'tool' } }
-        format.xml { render :xml => @tool.errors, :status => :unprocessable_entity }
+        format.html { render :action => :new }
+        format.xml  { render :xml => @tool.errors, :status => :unprocessable_entity }
       end
     end
   end
