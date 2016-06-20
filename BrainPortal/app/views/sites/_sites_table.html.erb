@@ -23,7 +23,7 @@
 -%>
 
 <div class="menu_bar">
-  <%= new_model_button 'Create New Site', new_site_path %>
+  <%= link_to 'Create New Site', new_site_path, :class => "button" %>
   <%= overlay_ajax_link "Help", "/doc/sites/site_info.html", :class  => "button" %>
 </div>
 
