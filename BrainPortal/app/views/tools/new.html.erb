@@ -22,21 +22,19 @@
 #
 -%>
 
-<span id="new_model">
-  <%= button_with_dropdown_menu("Create New Server", :open => true) do %>
-    <%= ajax_form_for @bourreau, :as => :bourreau, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+<% title 'Add New Tool' %>
 
-       <%= error_messages_for(@bourreau, :object_name => "server") %>
+<h2>Add New Tool</h2>
 
-       <%= render :partial => 'form_fields', :locals => { :f => f }  %>
+<%= error_messages_for @tool %>
 
-       <p><%= submit_tag 'Create' %></p>
+<%= form_for @tool, :as => :tool, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
-    <% end -%>
+	<% @bourreaux ||= Bourreau.find_all_accessible_by_user(current_user).all %>
 
-    <%= render :partial => "notes" %>
-  <% end %>
-</span>
+	<%= render :partial => 'form_fields', :locals  => {:f  => f} %>
+	<p><%= f.submit "Create new tool" %></p>
 
+<% end %>
 
 

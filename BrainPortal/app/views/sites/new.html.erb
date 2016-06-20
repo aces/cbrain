@@ -22,12 +22,16 @@
 #
 -%>
 
-<span id="new_model">
-  <%= button_with_dropdown_menu('Create New Site', :open => true) do %>
-    <%= ajax_form_for @site, :as => :site, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+<% title 'Add New Site' %>
 
-      <%= error_messages_for(@site) %>
+<h2>Add New Site</h2>
 
+<%= error_messages_for @site %>
+
+<%= form_for @site, :as => :site, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+
+  <div class="generalbox">
+    
       <div>
         <%= f.label :name %><br/>
         <%= f.text_field :name %>
@@ -122,8 +126,4 @@
         <P/>
         <%= f.submit "Create" %>
       </div>
-
-    <% end %>
-  <% end %>
-</span>
-
+<% end %>

@@ -89,8 +89,6 @@ class DataProvidersController < ApplicationController
                                 )
 
     @typelist = get_type_list
-
-    render :partial => "new"
   end
 
   def create #:nodoc:
@@ -103,16 +101,16 @@ class DataProvidersController < ApplicationController
       @provider.addlog_context(self,"Created by #{current_user.login}")
       flash[:notice] = "Provider successfully created."
       respond_to do |format|
-        format.js   { redirect_to :action => :index, :format => :js  }
+        format.html { redirect_to :action => :index, :format => :html}
         format.xml  { render :xml   => @provider }
         format.json { render :json  => @provider }
       end
     else
       @typelist = get_type_list
       respond_to do |format|
-        format.js   { render :partial  => "shared/failed_create", :locals => {:model_name => "data_provider"} }
-        format.xml  { render :xml      => @provider.errors, :status  => :unprocessable_entity }
-        format.json { render :json     => @provider.errors, :status  => :unprocessable_entity }
+        format.html { render :action => :new }
+        format.xml  { render :xml  => @provider.errors, :status => :unprocessable_entity }
+        format.json { render :json => @provider.errors, :status => :unprocessable_entity }
       end
     end
   end

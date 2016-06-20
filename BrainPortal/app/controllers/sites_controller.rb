@@ -57,7 +57,6 @@ class SitesController < ApplicationController
 
   def new #:nodoc:
     @site = Site.new
-    render :partial => "new"
   end
 
   # POST /sites
@@ -69,11 +68,11 @@ class SitesController < ApplicationController
       if @site.save
         @site.addlog_context(self,"Created by '#{current_user.login}'")
         flash[:notice] = 'Site was successfully created.'
-        format.js  { redirect_to :action => :index, :format => :js }
-        format.xml { render :xml => @site, :status => :created, :location => @site }
+        format.html { redirect_to :action => :index, :format => :html }
+        format.xml  { render :xml => @site, :status => :created, :location => @site }
       else
-        format.js  {render :partial  => 'shared/failed_create', :locals  => {:model_name  => 'site' }}
-        format.xml { render :xml => @site.errors, :status => :unprocessable_entity }
+        format.html { render :action  => :new }
+        format.xml  { render :xml => @site.errors, :status => :unprocessable_entity }
       end
     end
   end
