@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -29,7 +29,7 @@
 <%= error_messages_for(@provider) %>
 
 <%= form_for @provider, :as => :data_provider, :url => { :action => "create" }, :datatype => "script" do |f| -%>
-  
+
   <div class="generalbox">
 
     <span title="The name of the data provider.">
@@ -164,7 +164,7 @@
       <%= check_box_tag 'meta[no_viewers]', "on", @provider.new_record? ? false : !@provider.meta[:no_viewers].blank? %>
     </fieldset>
 
-    
+
   </div>
   <p><%= submit_tag 'Create New Data Provider' %></p>
 

@@ -27,23 +27,6 @@ module AjaxWidgetHelper
 
   include JavascriptOptionSetup
 
-  # Create a button for displaying an
-  # ajax-loaded new panel
-  def new_model_button(text, path)
-    html =  "<span id=\"new_model\">\n"
-    html +=  ajax_link text, path, :class => "button menu_button",
-                                   :target => "#new_model",
-                                   :id => "new_model_button",
-                                   :replace => true,
-                                   :datatype => "html",
-                                   :loading_message => "<span class=\"ui-button-text\" style=\"color: red\">Loading...</span>",
-                                   :loading_message_target => "#new_model_button"
-
-    html +="\n</span>\n"
-
-    html.html_safe
-  end
-
   ###############################################################
   # Creates an html element which will have its content updated
   # with an ajax call to the url specified in the options hash

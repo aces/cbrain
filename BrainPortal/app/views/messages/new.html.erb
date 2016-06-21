@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -31,7 +31,7 @@
 <%= form_for @message, :as => :message, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
   <div class="generalbox">
-     
+
      <p>
      To users of project: <%= group_select(:group_id,
            {
@@ -68,15 +68,15 @@
       </p>
       <p>
         <%= f.label :expiry_date, "Expiration date (current time: #{to_localtime(Time.now, :datetime)})" %><br>
-        <%= 
-          text_field_tag :expiry_date, 
+        <%=
+          text_field_tag :expiry_date,
                          (@message.expiry ? "#{@message.expiry.strftime("%d/%m/%G")}" : ""),
                          :class => "datepicker"
          %>
-        <%= 
+        <%=
            select_tag :expiry_hour, options_for_select((0..23).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%H") : "")
         %>
-        <%= 
+        <%=
           select_tag :expiry_min,  options_for_select((0..59).step(15).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%M") : "")
         %>
         </p>
