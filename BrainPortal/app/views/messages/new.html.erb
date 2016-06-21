@@ -22,21 +22,25 @@
 #
 -%>
 
-<span id="new_model">
-  <%= button_with_dropdown_menu("Leave Message", :open => true) do %>
-    <%= ajax_form_for @message, :as => :message, :url => { :action => "create" }, :datatype => "script" do |f| %>
 
-      <%= error_messages_for(@message) %>
+<% title 'Add New Message' %>
 
-      <p>
-        To users of project: <%= group_select(:group_id,
-                {
-                  :groups  => current_user.available_groups.order(:name),
-                  :selector => @group_id, # :group_id is not an attribute of Message.
-                },
-                { :include_blank => true }
-                )
-            %>
+<h2>Add New Message</h2>
+<%= error_messages_for(@message) %>
+
+<%= form_for @message, :as => :message, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+
+  <div class="generalbox">
+     
+     <p>
+     To users of project: <%= group_select(:group_id,
+           {
+             :groups  => current_user.available_groups.order(:name),
+             :selector => @group_id, # :group_id is not an attribute of Message.
+           },
+           { :include_blank => true }
+           )
+      %>
       </p>
       <p>
         <%= f.label :critical %>
@@ -63,24 +67,22 @@
         <%= f.select :message_type, ["system", "notice", "error"] %>
       </p>
       <p>
-      <%= f.label :expiry_date, "Expiration date (current time: #{to_localtime(Time.now, :datetime)})" %><br>
-      <%= 
-        text_field_tag :expiry_date, 
-                       (@message.expiry ? "#{@message.expiry.strftime("%d/%m/%G")}" : ""),
-                       :class => "datepicker"
-      %>
-      <%= 
-        select_tag :expiry_hour, options_for_select((0..23).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%H") : "")
-      %>
-      <%= 
-        select_tag :expiry_min,  options_for_select((0..59).step(15).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%M") : "")
-      %>
-      </p>
-      <br>
-      <p>
-        <%= f.submit "Create" %>
-      </p>
-    <% end %>
-  <% end %>
-</span>
-
+        <%= f.label :expiry_date, "Expiration date (current time: #{to_localtime(Time.now, :datetime)})" %><br>
+        <%= 
+          text_field_tag :expiry_date, 
+                         (@message.expiry ? "#{@message.expiry.strftime("%d/%m/%G")}" : ""),
+                         :class => "datepicker"
+         %>
+        <%= 
+           select_tag :expiry_hour, options_for_select((0..23).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%H") : "")
+        %>
+        <%= 
+          select_tag :expiry_min,  options_for_select((0..59).step(15).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%M") : "")
+        %>
+        </p>
+        <br>
+        <p>
+      <%= f.submit "Submit" %>
+    </p>
+  </div>
+<% end %>

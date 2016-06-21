@@ -55,7 +55,6 @@ class FeedbacksController < ApplicationController
 
   def new #:nodoc:
     @feedback = Feedback.new
-    render :partial => "new"
   end
 
   # POST /feedbacks
