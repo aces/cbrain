@@ -258,9 +258,9 @@ class UserfilesController < ApplicationController
     begin
       if @viewer
         if params[:apply_div] == "false"
-          render :file   => @viewer.partial_path.to_s, :layout => false
+          render :file   => @viewer.partial_path.to_s, :layout => params[:apply_layout].present?
         else
-          render :action => :display,                  :layout => false
+          render :action => :display,                  :layout => params[:apply_layout].present?
         end
       else
         render :text => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>", :status  => "404"

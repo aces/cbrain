@@ -36,7 +36,7 @@ RSpec.describe DataProvidersController, :type => :controller do
 
     context "collection action" do
       describe "index" do
-        let!(:local_dp) { create(:local_data_provider) }
+        let!(:local_dp) { create(:flat_dir_local_data_provider) }
         it "should assign @data_providers" do
           get :index
           expect(assigns[:data_providers]).to eq([local_dp])

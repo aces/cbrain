@@ -39,10 +39,10 @@ class IncomingVaultSmartDataProvider < DataProvider
   def after_initialize_select_provider #:nodoc:
     self.select_local_or_network_provider(IncomingVaultLocalDataProvider,IncomingVaultSshDataProvider)
   end
-  
-  # this returns the category of the data provider -- used in view for admins
-  def self.pretty_category_name
-    "Incoming Vault Types"
+
+  # This returns the category of the data provider
+  def self.pretty_category_name #:nodoc:
+    "Incoming Vault"
   end
 
 end

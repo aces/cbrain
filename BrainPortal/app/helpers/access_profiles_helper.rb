@@ -20,30 +20,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This class implements a 'wrapper' data provider that
-# acts either as a EnCbrainLocalDataProvider or a EnCbrainSshDataProvider
-# depending on whether or not the current hostname matches
-# the value of the attribute remote_host.
-#
-# This means that in the case where the current Rails application
-# runs on the same machine as the data provider, the faster
-# and more efficient EnCbrainLocalDataProvider will be used.
-class EnCbrainSmartDataProvider < DataProvider
+# Helper methods for Access Profile views.
+module AccessProfilesHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  include SmartDataProviderInterface
-
-  after_initialize :after_initialize_select_provider
-
-  def after_initialize_select_provider #:nodoc:
-    self.select_local_or_network_provider(EnCbrainLocalDataProvider,EnCbrainSshDataProvider)
-  end
-
-  # This returns the category of the data provider
-  def self.pretty_category_name #:nodoc:
-    "Enhanced CBRAIN"
+  # Generates a pretty colored label for an access profile
+  def access_profile_label(access_profile, options={})
+    color  = access_profile.color.presence || "white";
+    label  = "<span class=\"access_profile_label\" style=\"background: #{color}\">"
+    label += options[:with_link] ? link_to_access_profile_if_accessible(access_profile) : access_profile.name
+    label += "</span>"
+    label.html_safe
   end
 
 end
-

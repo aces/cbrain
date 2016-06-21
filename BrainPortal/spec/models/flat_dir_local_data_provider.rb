@@ -22,8 +22,8 @@
 
 require 'rails_helper'
 
-describe LocalDataProvider do
-  let(:local_data_provider) {create(:local_data_provider)}
+describe FlatDirLocalDataProvider do
+  let(:local_data_provider) {create(:flat_dir_local_data_provider)}
   let(:userfile) {create(:userfile, :data_provider => local_data_provider)}
 
   describe "#is_fast_syncing?" do

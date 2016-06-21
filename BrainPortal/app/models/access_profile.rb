@@ -20,30 +20,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This class implements a 'wrapper' data provider that
-# acts either as a EnCbrainLocalDataProvider or a EnCbrainSshDataProvider
-# depending on whether or not the current hostname matches
-# the value of the attribute remote_host.
+# Model representing access profiles, a sort of
+# record where pre-defined profiles for users are created
+# by the admin.
 #
-# This means that in the case where the current Rails application
-# runs on the same machine as the data provider, the faster
-# and more efficient EnCbrainLocalDataProvider will be used.
-class EnCbrainSmartDataProvider < DataProvider
+# For the moment the model only contains:
+#
+# A list of group_ids (a profile can have many of these)
+# A list of user_ids  (a profile is 'applied' to these users)
+#
+# Later on, access restrictions will be
+# recorded here too. For instance, restrictions and
+# limits of launching tasks, number of files, etc etc.
+class AccessProfile < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  include SmartDataProviderInterface
+  validates_presence_of   :name
+  validates_uniqueness_of :name
 
-  after_initialize :after_initialize_select_provider
+  has_and_belongs_to_many :groups
+  has_and_belongs_to_many :users
 
-  def after_initialize_select_provider #:nodoc:
-    self.select_local_or_network_provider(EnCbrainLocalDataProvider,EnCbrainSshDataProvider)
-  end
-
-  # This returns the category of the data provider
-  def self.pretty_category_name #:nodoc:
-    "Enhanced CBRAIN"
-  end
+  attr_accessible         :name, :color, :description, :group_ids, :user_ids
 
 end
 

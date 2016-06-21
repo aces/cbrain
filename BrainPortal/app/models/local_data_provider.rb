@@ -38,16 +38,31 @@ class LocalDataProvider < DataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # this returns the category of the data provider -- used in view for admins
+  cbrain_abstract_model! # objects of this class are not to be instantiated
+
+  # This returns the category of the data provider -- used in view for admins
   # Returning a nil is the convention that we'll use to HIDE a data provider class from the interface.
   # So we'll return nil if the data_provider class is not appriopriate for the users to view
-  def self.pretty_category_name
+  def self.pretty_category_name #:nodoc:
     nil
   end
-  
+
+  def is_browsable?(by_user = nil) #:nodoc:
+    false
+  end
+
+  def allow_file_owner_change? #:nodoc:
+    true
+  end
+
   # Returns true: local data providers are considered fast syncing.
   def is_fast_syncing?
     true
+  end
+
+  # The remote dir is actually a local directory here.
+  def browse_remote_dir(user=nil) #:nodoc:
+    self.remote_dir
   end
 
   def provider_full_path(userfile) #:nodoc:
@@ -64,6 +79,24 @@ class LocalDataProvider < DataProvider
   end
 
   def impl_sync_to_provider(userfile) #:nodoc:
+    true
+  end
+
+  def impl_provider_erase(userfile)  #:nodoc:
+    fullpath = cache_full_path(userfile) # actually real path on DP
+    begin
+      FileUtils.remove_entry(fullpath.to_s, true)
+    rescue Errno::ENOENT, Errno::ENOTEMPTY
+      # It's OK if any of the rmdir fails, and we simply ignore that.
+    end
+    true
+  end
+
+  def impl_provider_rename(userfile,newname)  #:nodoc:
+    oldpath   = cache_full_path(userfile)
+    oldparent = oldpath.parent
+    newpath   = oldparent + newname
+    return false unless FileUtils.move(oldpath.to_s,newpath.to_s)
     true
   end
 
@@ -141,34 +174,23 @@ class LocalDataProvider < DataProvider
     issues
   end
 
-  protected
-
-  # This method intercepts any attempts to use the protected
-  # method used by the caching system. Typically, this would
-  # be the result of a bad subclass implementation.
-  def mkdir_cache_subdirs(userfile) #:nodoc:
-    cb_error "No caching in this provider!"
+  # Returns the real path on the DP, since there is no caching here.
+  def cache_full_path(userfile)
+    Pathname.new(remote_dir) + userfile.name
   end
 
-  # This method intercepts any attempts to use the protected
-  # method used by the caching system. Typically, this would
-  # be the result of a bad subclass implementation.
-  def cache_subdirs_path(userfile) #:nodoc:
-    cb_error "No caching in this provider!"
+  # We need to override this to not do anything.
+  def cache_prepare(userfile) #:nodoc:
+    SyncStatus.ready_to_modify_cache(userfile) do
+      true
+    end
   end
 
-  # This method intercepts any attempts to use the protected
-  # method used by the caching system. Typically, this would
-  # be the result of a bad subclass implementation.
-  def cache_full_dirname(userfile) #:nodoc:
-    cb_error "No caching in this provider!"
-  end
-
-  # This method intercepts any attempts to use the protected
-  # method used by the caching system. Typically, this would
-  # be the result of a bad subclass implementation.
-  def cache_full_pathname(userfile) #:nodoc:
-    cb_error "No caching in this provider!"
+  # Will actually not do anything except record that all is 'fine' with the SyncStatus entry of the file.
+  def cache_erase(userfile)
+    SyncStatus.ready_to_modify_cache(userfile,:destroy) do
+      true
+    end
   end
 
 end

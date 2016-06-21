@@ -814,10 +814,13 @@ class DataProvidersController < ApplicationController
   private
 
   def get_type_list #:nodoc:
-    data_provider_list = (check_role(:site_manager) || check_role(:admin_user)) ? DataProvider.descendants.map(&:name).sort : %w{ SshDataProvider }     
+    data_provider_list = [ "FlatDirSshDataProvider" ]
+    if check_role(:site_manager) || check_role(:admin_user)
+      data_provider_list = DataProvider.descendants.map(&:name)
+    end
     grouped_options = data_provider_list.hashed_partitions { |name| name.constantize.pretty_category_name }
     grouped_options.delete(nil) # data providers that can not be on this list return a category name of nil, so we remove them
-    grouped_options.to_a
+    grouped_options.keys.sort.map { |type| [ type, grouped_options[type].sort ] }
   end
 
   # Quick/small methods to avoid duplication in register/unregister/delete

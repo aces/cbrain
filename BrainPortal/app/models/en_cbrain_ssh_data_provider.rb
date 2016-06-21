@@ -38,6 +38,11 @@ class EnCbrainSshDataProvider < SshDataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # This returns the category of the data provider
+  def self.pretty_category_name #:nodoc:
+    "Enhanced CBRAIN"
+  end
+
   def is_browsable?(by_user = nil) #:nodoc:
     false
   end
@@ -101,11 +106,6 @@ class EnCbrainSshDataProvider < SshDataProvider
     basename = userfile.name
     subdirs  = cache_subdirs_from_id(userfile.id)
     Pathname.new(remote_dir) + subdirs[0] + subdirs[1] + subdirs[2] + basename
-  end
-  
-  # this returns the category of the data provider -- used in view for admins
-  def self.pretty_category_name
-    "Enhanced CBRAIN Types"
   end
 
   def impl_provider_report #:nodoc:
