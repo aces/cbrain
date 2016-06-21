@@ -362,6 +362,7 @@
           <%= text_field_tag "bourreau[docker_executable_name]", @bourreau.docker_executable_name, :size => 60 %><br/>
            <div class="field_explanation">Name of the Docker executable available on the machines where tasks will run. Defaults to "docker" if left empty.</div>
         <% end %>
+        <% t.boolean_edit_cell( 'bourreau[docker_present]', !!@bourreau.docker_present, true, false, :header => "Docker Present?" ) %>
       <% end %>
     <% end %>
 

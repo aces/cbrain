@@ -255,6 +255,7 @@ ActiveRecord::Schema.define(:version => 20160522180234) do
     t.string   "system_from_email"
     t.string   "external_status_page_url"
     t.string   "docker_executable_name"
+    t.boolean  "docker_present"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"

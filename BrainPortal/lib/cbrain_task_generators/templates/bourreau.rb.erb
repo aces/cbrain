@@ -350,18 +350,43 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     end
 
 %   end
+    # Helper for checking whether outputs are optional
+%   optionalFiles = outputs.select { |o| o['optional'] }
+    isOptional = lambda do |f| 
+      [<%= optionalFiles.map{ |x| ":'"+x['id']+"'" }.join(",") %>].include?(f) 
+    end
+
     # Save (and register) all generated files to the results data provider
     outputs.each do |param, paths|
       paths = [paths] unless paths.is_a?(Enumerable)
       paths.each do |path|
-        next unless path.present? && File.exists?(path)
-
-        self.addlog("Saving result file #{path}")
-        name = File.basename(path)
         
-	userfile_class = Userfile.suggested_file_type(name)
-        userfile_class ||= ( File.directory?(path) ? FileCollection : SingleFile )
+        # Print a warning if the file is not present
+        # Note that, since the output may be optional, the process may still be successful
+        unless path.present? && File.exists?(path)
+          self.addlog("Unable to find optional output file: #{path}") if isOptional.(param)
+          next
+        end
+
+        # Get name and filetype
+        self.addlog("Attempting to save result file #{path}")
+        name = File.basename(path)         
+        userfile_class = Userfile.suggested_file_type(name)
+        userfile_class ||= ( File.directory?(path) ? FileCollection : SingleFile ) 
+       
+        # If the file already exists, add a tag (task id + ns time) to the name
+        if userfile_exists(userfile_class, :name => name)
+          tag = '-' + (self.id.to_s || 'unk') + '-' + Time.now.nsec.to_s
+          newName = name + tag if name.rindex(".").nil?
+          ext = File.extname( name ) 
+          newName ||= name.gsub( /#{ext}$/, "#{tag + ext}" )
+          self.addlog("File with same name found. Renaming to #{newName} before saving.")
+          name = newName
+        end
+
+        # Save the file (possible overwrite if race condition)
         output = safe_userfile_find_or_new(userfile_class, :name => name)
+        
         unless output.save
           self.addlog("Failed to save file #{path}")
           succeeded &&= false
