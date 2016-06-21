@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160522180234) do
+ActiveRecord::Schema.define(:version => 20160609145038) do
 
   create_table "access_profiles", :force => true do |t|
     t.string   "name",        :null => false
