@@ -18,15 +18,19 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<span id="new_model">
-  <%= button_with_dropdown_menu('Create New Site', :open => true) do %>
-    <%= ajax_form_for @site, :as => :site, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+<% title 'Add New Site' %>
 
-      <%= error_messages_for(@site) %>
+<h2>Add New Site</h2>
+
+<%= error_messages_for @site %>
+
+<%= form_for @site, :as => :site, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+
+  <div class="generalbox">
 
       <div>
         <%= f.label :name %><br/>
@@ -44,12 +48,12 @@
 
       <div class="button_div">
         <!-- Separation between active and locked users -->
-        <% 
-        user_by_lock_status_hash = User.all.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"} 
+        <%
+        user_by_lock_status_hash = User.all.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"}
         active_users = user_by_lock_status_hash["Active users"] || []
         locked_users = user_by_lock_status_hash["Locked users"] || []
         %>
-        
+
         <!-- Active Users -->
         <div style="margin:0px">
           Active users
@@ -71,7 +75,7 @@
             </table>
           </div>
         </div>
-        
+
       </div>
 
       <!-- Projects -->
@@ -91,13 +95,13 @@
           </div>
         </div>
       </div>
-      
+
       <%if !locked_users.empty? %>
       <div>
         <!-- Locked Users -->
         <br/>
             Locked users
-            <%= show_hide_toggle "(Show)", "#locked_users", :class  => 'action_link', :alternate_text => "(Hide)" %>            
+            <%= show_hide_toggle "(Show)", "#locked_users", :class  => 'action_link', :alternate_text => "(Hide)" %>
           <div id="locked_users" style="display:none" class="button_inner_div">
             <table class="button_table" style="border:0px;">
               <tr>
@@ -115,15 +119,11 @@
             </table>
           </div>
       </div>
-        
+
       <% end %>
 
       <div class="display_row">
         <P/>
         <%= f.submit "Create" %>
       </div>
-
-    <% end %>
-  <% end %>
-</span>
-
+<% end %>
