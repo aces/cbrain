@@ -76,12 +76,12 @@ module ViewScopes
 
       it "should throw an exception if the filter has no operator" do
         filter.operator = nil
-        expect { filter.apply(NormalUser) }.to raise_error
+        expect { filter.apply(NormalUser) }.to raise_error(RuntimeError, /no operator/)
       end
 
       it "should throw an exception if the filter has no attribute" do
         filter.attribute = nil
-        expect { filter.apply(NormalUser) }.to raise_error
+        expect { filter.apply(NormalUser) }.to raise_error(RuntimeError, /no attribute/)
       end
 
       it "should validate the attribute name" do
@@ -177,12 +177,12 @@ module ViewScopes
 
       it "should throw an exception if the filter has no operator" do
         filter.operator = nil
-        expect { filter.apply(collection) }.to raise_error
+        expect { filter.apply(collection) }.to raise_error(RuntimeError, /no operator/)
       end
 
       it "should throw an exception if the filter has no attribute" do
         filter.attribute = nil
-        expect { filter.apply(collection) }.to raise_error
+        expect { filter.apply(collection) }.to raise_error(RuntimeError, /no attribute/)
       end
 
       it "should support hash collections (list of hashes)" do
@@ -437,12 +437,12 @@ module ViewScopes
 
       it "should throw an exception if the ordering rule has no direction" do
         order.direction = nil
-        expect { order.apply(NormalUser) }.to raise_error
+        expect { order.apply(NormalUser) }.to raise_error(RuntimeError, /no direction/)
       end
 
       it "should throw an exception if the ordering rule has no attribute" do
         order.attribute = nil
-        expect { order.apply(NormalUser) }.to raise_error
+        expect { order.apply(NormalUser) }.to raise_error(RuntimeError, /no attribute/)
       end
 
       it "should validate the attribute name" do
@@ -477,12 +477,12 @@ module ViewScopes
 
       it "should throw an exception if the ordering rule has no direction" do
         order.direction = nil
-        expect { order.apply(collection) }.to raise_error
+        expect { order.apply(collection) }.to raise_error(RuntimeError, /no direction/)
       end
 
       it "should throw an exception if the ordering rule has no attribute" do
         order.attribute = nil
-        expect { order.apply(collection) }.to raise_error
+        expect { order.apply(collection) }.to raise_error(RuntimeError, /no attribute/)
       end
 
       it "should support hash collections (list of hashes)" do

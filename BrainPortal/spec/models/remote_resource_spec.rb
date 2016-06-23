@@ -266,11 +266,11 @@ describe RemoteResource do
     end
     it "should raise an exception if there is no ssh control info" do
       allow(remote_resource).to receive(:has_ssh_control_info?).and_return(false)
-      expect{ remote_resource.read_from_remote_shell_command("bash_command") }.to raise_error
+      expect{ remote_resource.read_from_remote_shell_command("bash_command") }.to raise_error(CbrainError, /No proper SSH/)
     end
     it "should raise an exception if ssh master is not alive" do
       allow(ssh_master).to receive(:is_alive?).and_return(false)
-      expect{ remote_resource.read_from_remote_shell_command("bash_command") }.to raise_error
+      expect{ remote_resource.read_from_remote_shell_command("bash_command") }.to raise_error(CbrainError, /No SSH master/)
     end
     it "should prepare the bash command" do
       expect(remote_resource).to receive(:prepend_source_cbrain_bashrc)
@@ -290,11 +290,11 @@ describe RemoteResource do
     end
     it "should raise an exception if there is no ssh control info" do
       allow(remote_resource).to receive(:has_ssh_control_info?).and_return(false)
-      expect{ remote_resource.write_to_remote_shell_command("bash_command") }.to raise_error
+      expect{ remote_resource.write_to_remote_shell_command("bash_command") }.to raise_error(CbrainError, /No proper SSH/)
     end
     it "should raise an exception if ssh master is not alive" do
       allow(ssh_master).to receive(:is_alive?).and_return(false)
-      expect{ remote_resource.write_to_remote_shell_command("bash_command") }.to raise_error
+      expect{ remote_resource.write_to_remote_shell_command("bash_command") }.to raise_error(CbrainError, /No SSH master/)
     end
     it "should prepare the bash command" do
       expect(remote_resource).to receive(:prepend_source_cbrain_bashrc)

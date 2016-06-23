@@ -293,7 +293,7 @@ describe SshAgent do
     let!(:agent) { SshAgent.new('test','/tmp/abcd/wrong/socket','1234567') }
 
     it "should raise an exception if the key file is invalid" do
-      expect { agent.add_key_file('/tmp/does/not/exist') }.to raise_error
+      expect { agent.add_key_file('/tmp/does/not/exist') }.to raise_error(RuntimeError, /file doesn't exist/)
     end
 
     it "should return true if the identify was added" do
@@ -334,7 +334,7 @@ describe SshAgent do
     it "should raise an exception if ssh-add doesn't output a key" do
       expect(IO).to receive(:popen).with(/ssh-add/,anything()).and_return ""
       agent = SshAgent.new('whatever','/path/to/socket',nil)
-      expect { agent.list_keys }.to raise_error
+      expect { agent.list_keys }.to raise_error(RuntimeError, /Agent doesn't seem to exist/)
     end
 
     it "should invoke ssh-add -l by default" do
@@ -421,7 +421,7 @@ describe SshAgent do
 
     it "should raise an exception if the agent is '_current'" do
       agent = SshAgent.new('_current','/tmp/path/to_socket','12345678')
-      expect { agent.write_agent_config_file }.to raise_error
+      expect { agent.write_agent_config_file }.to raise_error(RuntimeError, /Cannot write config/)
     end
 
     it "should write the config file" do
@@ -454,7 +454,7 @@ describe SshAgent do
   describe ".read_agent_config_file" do
 
     it "should raise an exception if the file doesn't exist" do
-      expect { SshAgent.send(:read_agent_config_file,'/tmp/a/b/c/d2121/e/f/g/h') }.to raise_error
+      expect { SshAgent.send(:read_agent_config_file,'/tmp/a/b/c/d2121/e/f/g/h') }.to raise_error(Errno::ENOENT, /No such file/)
     end
 
     it "should invoke parse_agent_config_file" do

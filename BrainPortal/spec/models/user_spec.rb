@@ -376,7 +376,7 @@ describe User do
     end
 
     it "should raise exception if role isn't equal self.type" do
-      expect { normal_user.has_role?(normal_user.type + "other") }.to raise_error
+      expect { normal_user.has_role?(normal_user.type + "other") }.to raise_error(NameError, /uninitialized constant/)
     end
 
   end
@@ -612,7 +612,7 @@ describe User do
 
     it "should raise error if when try to destroy admin" do
       admin = User.admin
-      expect{ admin.destroy }.to raise_error
+      expect{ admin.destroy }.to raise_error(ActiveRecord::DeleteRestrictionError, /Cannot delete record/)
     end
 
   end
