@@ -33,12 +33,20 @@ module TestHelpers
   end
 
   # JSON validation
-  def runJsonValidator
+  def runAndCheckJsonValidator
     validator  = File.join(__dir__, ValidationScriptLocation)
     schema     = File.join(__dir__, BoutiquesSchemaLocation)
     descriptor = File.join(__dir__, TestScriptDescriptor) 
     stdout     = `ruby #{validator} #{schema} #{descriptor}`
     return stdout.start_with?( '["OK"]' )
+  end
+
+  # Destroy output files of the mock program
+  def destroyOutputFiles
+    # Send the deletion request per output file that exists
+    PotenOutFiles.each { |f| File.delete(f) if File.exist?(f) }
+    # Ensure file is destroyed, so flow-through files do not confound following tests
+    PotenOutFiles.each { |f| sleep(0.05) while File.exist?(f) }
   end
 
   ### RSpec Tests ###
@@ -138,9 +146,9 @@ module TestHelpers
 
   # Helper method for internally generating an argument dictionary similar to the "parameters" hash from a string
   # This is used to test the after_form method of the portal_task, in isolation
-  # i.e. {'a' => val_a, ...} when -a val_a appears in the string  
-  # Occurences with lists after the flag become arrays
-  # Note: may wish to replace with a more general parser
+  # Occurences with lists after the flag become arrays. Lone flags become booleans indicating their presence.
+  # e.g. {'a' => val_a, '-l' => [1,2], ...} when "-a val_a -l 1 2" appears in the string
+  # Note: may wish to replace with a more general parser; this one is brittle and specific
   ArgumentDictionary = lambda do |args|
     # Helper function for finding the end of an argument
     nextCmdFlagIndex = lambda { |a| i=1; (i+=1) until a[i].start_with?('-'); i }
@@ -170,12 +178,8 @@ module TestHelpers
     hash.keys.each { |k| hash[k] = xarg[2..-1] if k==:x } unless xarg.nil?
     hash[:x] = false if hash.keys.include?(:x) and xarg.nil?
     # Return
-#    print( hash.to_s + "\n" )
     hash
   end
 
 end
-
-
-
 

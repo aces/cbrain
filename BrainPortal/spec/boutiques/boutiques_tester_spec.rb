@@ -37,7 +37,7 @@ describe "BrainPortal Boutiques Tests" do
   # Validate correctness of JSON descriptor
   describe "JSON descriptor" do
     it "validates" do
-      expect( runJsonValidator() ).to eql(true)
+      expect( runAndCheckJsonValidator() ).to eql(true)
     end  
   end
 
@@ -46,10 +46,7 @@ describe "BrainPortal Boutiques Tests" do
     
     # After each local test, destroy the output files
     after(:each) do
-      # Send the deletion request per output file that exists
-      PotenOutFiles.each { |f| File.delete(f) if File.exist?(f) }
-      # Ensure file is destroyed, so flow-through files do not confound following tests
-      PotenOutFiles.each { |f| sleep(0.05) while File.exist?(f) }
+      destroyOutputFiles
     end
     
     # Perform the local tests
@@ -151,17 +148,15 @@ describe "BrainPortal Boutiques Tests" do
           next true if !t[3].nil? || t[2]==10 || t[0].include?("unrecognized")
           # Perform after_form test
           it "after_form #{t[0]}" do
-            @task.params_errors.clear          
+            @task.params_errors.clear # Reset to having no errors
             @task.params = ArgumentDictionary.( t[1].dup )          
             @task.params[:f] ||= [] # after_form expects [], not nil, for empty file lists
             @task.after_form
             errMsgs = @task.params_errors.full_messages
             # Cannot check userfile existence and so on in this isolated test, so ignore those errors
             errMsgs.delete_if { |m| ignoredMsgs.any? { |e| m.include?(e) } }
-#            print( errMsgs ) unless errMsgs.empty?
             expect( 
-              (errMsgs.length == 0 && t[2] == 0) ||
-              (errMsgs.length > 0 && t[2] != 0)
+              (errMsgs.length == 0 && t[2] == 0) || (errMsgs.length > 0 && t[2] != 0)
             ).to be true
             @task.params = {} # Clean up 
           end
@@ -173,14 +168,6 @@ describe "BrainPortal Boutiques Tests" do
 
   end
 
-  # Look for bugs e.g. filename overwrite/renaming, trailing spaces in input names
-  # TODO
-
-  # Check for API existence
-  # TODO
-
-  # Runs tests via the CBrain API
-  # TODO
 
 end
 
