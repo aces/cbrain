@@ -55,7 +55,6 @@ class FeedbacksController < ApplicationController
 
   def new #:nodoc:
     @feedback = Feedback.new
-    render :partial => "new"
   end
 
   # POST /feedbacks
@@ -74,11 +73,11 @@ class FeedbacksController < ApplicationController
                               :variable_text  => "#{current_user.full_name} : [[View][/feedbacks/#{@feedback.id}]]"
                               }
                             )
-        format.js  { redirect_to :action => :index, :format => :js }
-        format.xml { render :xml => @feedback, :status => :created, :location => @feedback }
+        format.html { redirect_to :action => :index, :format => :html }
+        format.xml  { render :xml => @feedback, :status => :created, :location => @feedback }
       else
-        format.js  { render :partial  => 'shared/failed_create', :locals  => {:model_name  => 'feedback' } }
-        format.xml { render :xml => @feedback.errors, :status => :unprocessable_entity }
+        format.html { render :new }
+        format.xml  { render :xml => @feedback.errors, :status => :unprocessable_entity }
       end
     end
   end

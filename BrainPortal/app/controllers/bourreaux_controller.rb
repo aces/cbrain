@@ -103,7 +103,6 @@ class BourreauxController < ApplicationController
                               :online    => true
                             )
     sensible_defaults(@bourreau)
-    render :partial => "new"
   end
 
   def create #:nodoc:
@@ -116,13 +115,13 @@ class BourreauxController < ApplicationController
       flash[:notice] = "Execution Server successfully created."
 
       respond_to do |format|
-        format.js  { redirect_to :action => :index, :format => :js }
-        format.xml { render      :xml    => @bourreau }
+        format.html { redirect_to :action => :index, :format => :html }
+        format.xml  { render      :xml    => @bourreau }
       end
     else
       respond_to do |format|
-        format.js  { render :partial => "shared/failed_create",  :locals => { :model_name => "bourreau" } }
-        format.xml { render :xml     => @bourreau.errors.to_xml, :status =>   :unprocessable_entity       }
+        format.html  { render :action => :new}
+        format.xml   { render :xml    => @bourreau.errors.to_xml, :status => :unprocessable_entity }
       end
     end
   end

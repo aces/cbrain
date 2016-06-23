@@ -82,7 +82,6 @@ class GroupsController < ApplicationController
   def new  #:nodoc:
     @group = WorkGroup.new
     @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
-    render :partial => "new"
   end
 
   # POST /groups
@@ -106,11 +105,11 @@ class GroupsController < ApplicationController
       if @group.save
         @group.addlog_context(self,"Created by #{current_user.login}")
         flash[:notice] = 'Project was successfully created.'
-        format.js   { redirect_to :action => :index, :format => :js}
+        format.html { redirect_to :action => :index, :format => :html}
         format.xml  { render :xml => @group, :status => :created, :location => @group }
       else
         @users = current_user.available_users.where( "users.login<>'admin'" ).order( :login )
-        format.js   { render :partial  => 'shared/failed_create', :locals  => {:model_name  => 'group' } }
+        format.html { render :new  }
         format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
       end
     end
