@@ -1,0 +1,20 @@
+version: '2'
+services:
+  cbrain_portal:
+    image: mcin/cbrain:dev
+    command: config development 3000
+    ports:
+     - "3000:3000"
+    depends_on:
+     - mysql
+    environment:
+      MYSQL_USER: "cbrain_test"
+      MYSQL_DATABASE: "cbrain"
+      MYSQL_PASSWORD: "cbrain4567"
+  mysql:
+    image: mariadb:10.0
+    environment:
+      MYSQL_ROOT_PASSWORD: "my-secret-pw"
+      MYSQL_DATABASE: "cbrain"
+      MYSQL_USER: "cbrain_test"
+      MYSQL_PASSWORD: "cbrain4567"
