@@ -22,7 +22,7 @@ module TestHelpers
   reqArgs      = "-A a -B 9 -C c "            # Required args with values
   baseArgs     = "-A a -B 9 -C c -v s -n 7 "  # Basic minimal argument set
   baseArgs2    = "-p 7 s1 s2 -A a -B 9 -C c " # Alternate basic minimal arg set
-  # Whether to print verbosely or not
+  # Whether to print verbosely or not (helpful for debugging tests)
   Verbose = false
 
   # Execute program with given options
@@ -136,7 +136,7 @@ module TestHelpers
     ["fails if group mutex is violated (group 3)", reqArgs + "-n 7 -v s -w", 8],
     # Superfluous argument failures
     ["fails with unrecognized flagged arguments", baseArgs + "-z", 1],
-    ["fails with unrecognized non-flagged arguments", baseArgs + "z", 2],
+    ["fails with unrecognized non-flagged arguments", baseArgs + "z", 1],
     # Non-existent input arguments
     ["fails with non-existent input file (-C)", "-n 7 -A a -B 2 -C cc -v s -b 7", 10],
     ["fails with non-existent input file for list (-f)", baseArgs + "-f f1 f3 f2", 10],
@@ -179,6 +179,13 @@ module TestHelpers
     hash[:x] = false if hash.keys.include?(:x) and xarg.nil?
     # Return
     hash
+  end
+
+  #
+  def symKeyToCmdLineKey(dict)
+    dict.keys.reduce({}) do |hash,k|
+      hash.merge( { '['+k.to_s+']' => dict[k] } )
+    end
   end
 
 end

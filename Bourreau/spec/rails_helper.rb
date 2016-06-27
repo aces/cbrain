@@ -26,7 +26,7 @@ require 'yaml'
   database      = config["database"] || "nodatabase"
   password    &&= ":#{password}"
   url           = "#{adapter}://#{username}#{password}@#{host}/#{database}"
-  ENV["DATABASE_URL"] = url
+  ENV["DATABASE_URL"] = URI.escape url
   ENV["CBRAIN_RAILS_APP_NAME"] = "Test_Bourreau_Exec" # This is initialized by rake db:seed:test:bourreau
 end
 

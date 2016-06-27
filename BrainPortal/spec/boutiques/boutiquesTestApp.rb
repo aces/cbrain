@@ -105,12 +105,10 @@ op = OptionParser.new do |opt|
   opt.on('-r','--arg_r fname',      'A required outfile name',  String) { |o| options[:r] = o }
   
   # Help display
-  opt.on('-h','--help', "Displays help") do
-    puts(opt.to_s + "\n"); exit 
-  end
+  opt.on('-h','--help', "Displays help") { puts(opt.to_s + "\n"); exit }
 
   # Verbose mode
-  opt.on('--verbose', "Prints more info") { verbose = true }
+  opt.on('--verbose', "Prints more info during execution") { verbose = true }
 
 end # End parser definition
 
@@ -125,7 +123,7 @@ end
 
 # Ensure that all the arguments were parsed
 if ARGV != []
-  leave.("ERROR: leftover arguments " + ARGV.to_s, 2)
+  leave.("ERROR: leftover arguments " + ARGV.to_s, 1)
 end
 
 # Check input types
