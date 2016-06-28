@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -76,15 +76,19 @@
   %>
 
   <% t.column("Alive?", :alive) do |dp| %>
-    <% if dp.online? %>
-      <%= staggered_loading "span", url_for(:action  => :is_alive, :id  => dp.id), :error_message  => "<span class=\"warning\">???</span>" do %>
-        <span class="loading_message"><%= html_colorize("(...)","magenta") %></span>
+    <%= on_click_ajax_replace( { :element  => "div",
+                                                :url      => url_for(:controller => :data_providers, :action  => :is_alive, :id => dp.id)
+                                             },
+                                             {
+                                               :before   => "<div class='loading_message'>Loading...</div>",
+                                               :class => "dp_alive"
+                                             }
+                                            ) do %>
+      <a>check</a>
       <% end %>
-    <% else %>
-      No
-    <% end %>
-  <% end %>
 
+
+  <% end %>
   <%
     t.column("Files", :files) do |dp|
       file_count = Userfile.find_all_accessible_by_user(current_user, :conditions => { :data_provider_id => dp.id }).count
