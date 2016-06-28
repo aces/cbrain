@@ -26,7 +26,7 @@ describe "Bourreau Boutiques Tests" do
   # Post-test cleanup via after block
   after(:all) do
     # Delete the input and output files when they exist
-    File.delete('c','f','jf','f1','f2')
+    ['c','f','jf','f1','f2'].each{ |f| File.delete(f) if File.exist?(f) }
     PotenOutFiles.each { |f| File.delete(f) if File.exist?(f) }
   end
 
@@ -159,120 +159,137 @@ describe "Bourreau Boutiques Tests" do
 
   # TODO test file overwrite + renaming, trailing spaces
   describe 'Cbrain Internal' do
+
+    context 'Output File Handling' do
     
-    # Test file saving behaviour
-    describe 'Output file handling' do
-
-#      let!(:provider) { create(:data_provider, :online => true, :read_only => false) }
-#      let!(:user) { create(:normal_user, :encrypted_password, password: "1Password!", password_confirmation: "1Password!") }
-#      let!(:group) { create(:group) }
-
-      # Before each test, set up the necessary environment. 
-      # Note: before(:each) is better than before(:all) here because it automatically rolls back db changes
+      # TODO FactoryGirl methods should be used, but only if they get rolled back in the before(:each)
       before(:each) do
-        # Pretend to run the program to generate the required output file
+#        puts FlatDirLocalDataProvider.all.inspect
+#        FlatDirLocalDataProvider.all[0].remote_dir = '.'
+
+        puts '\nBefore: '+Userfile.all.inspect
+#        Userfile.all[0].remote_dir = '.'
+        Userfile.all.each{ |uf| uf.destroy }
+        puts '\nAfter: '+Userfile.all.inspect
+      
+
         @fname = 'r.txt'
         FileUtils.touch(@fname)
         ftype = lambda { |fname| Userfile.suggested_file_type(fname) || SingleFile }
         @userfileClass = ftype.(@fname)
-        # Create mock users and groups
-        # Note: using factory girl create here does not get rolled back, though it is supposed to. May be a version issue.
-#        user = NormalUser.new
-#        user.id = 7
-#        user.login = 'Login'
-#        user.password = 'Password1'
-#        user.full_name = 'Full Name'
-#        user.password_confirmation = user.password
-#        user.save! rescue nil
-#        group = UserGroup.new
-#        group.name = "GroupName"
-#        group.id = 13
-#        group.save! rescue nil
-        # Create a data provider to play with
-#        @provider      = VaultLocalDataProvider.new({ :online => true, :read_only => false })
-#        @provider.id   = 9
-#        @provider.name = 'test_provider'
-#        @provider.user_id  = user.id
-#        @provider.group_id = group.id
-#        @provider.save! rescue nil
+
+#        puts FlatDirLocalDataProvider.where(:id => 1).inspect
         # Get the schema and json descriptor
         descriptor     = File.join(__dir__, 'descriptor_test.json')
         # Generate a new task class via the Boutiques framework and integrate it into cbrain
         @boutiquesTask = SchemaTaskGenerator.generate(SchemaTaskGenerator.default_schema, descriptor)
-        @boutiquesTask.integrate 
-        # Create a new instance of the generated task class
-#        @task          = CbrainTask::BoutiquesTest.new
-#        @task.params   = {:ro => @fname}
-#        @task.user_id  = user.id
-#        @task.group_id = group.id
+        ClassName = 'CbrainTask::BoutiquesTest'
+        raise "Class already defined!" if defined?(ClassName) == 'constant' && ClassName.class == Class
+        @boutiquesTask.integrate
+        @task          = CbrainTask::BoutiquesTest.new
+#        @task_const = "CbrainTask::#{SchemaTaskGenerator.classify(@task.name)}".constantize
+#        raise "Class not defined!" unless defined?(ClassName) == 'constant' && ClassName.class == Class
+        # Look for a data provider
+        puts "Pre deletion: "+FlatDirLocalDataProvider.all.inspect
+        DataProvider.all.each { |dp| dp.destroy }
+        puts "Post deletion: "+FlatDirLocalDataProvider.all.inspect
+
+        @provider      = FlatDirLocalDataProvider.new({ :online => true, :read_only => false, :remote_dir => '.' })
+        @provider.id   = 9
+        @provider.name = 'test_provider'
+        @provider.user_id  = User.admin.id
+        @provider.group_id = Group.everyone.id
+        @provider.save! 
+        
+        puts "Post-creation: "+FlatDirLocalDataProvider.all.inspect
+
         # Add a local input file to it (allows smarter lookup in userfile_exists)
-#        file_c = 'c'    
-#        newFile = @task.safe_userfile_find_or_new(ftype.(file_c), :name => file_c, :data_provider_id => provider.id, :user_id => user.id)    
-#        newFile.save
-#        newFile.cache_copy_from_local_file( file_c )    
+        file_c, ft  = 'c', ftype.(file_c)
+        
+        puts "PRE File existence check " + @task.userfile_exists( ft ,{:name => file_c, :data_provider_id => @provider.id}).to_s
+
+        puts "\n\nUF pre" + Userfile.all.inspect    
+        newFile = @task.safe_userfile_find_or_new( ft  , :name => file_c, :data_provider_id => @provider.id, :user_id => User.admin.id, :group_id => Group.everyone.id)    
+        newFile.save!
+        puts "\nUF post" + Userfile.all.inspect
+ #       puts "newFile name: "+newFile.name.to_s
+
+        puts "\nID = " + Userfile.all.first.id.to_s
+
+        @task.params   = {:ro => @fname, :interface_userfile_ids => [Userfile.all.first.id]}
+        @task.user_id  = User.admin.id
+        @task.group_id = Group.everyone.id
+         
+#       newFile.cache_copy_from_local_file( file_c )    
         # Generate a simulated exit file, as if the task had run
-#        @simExitFile = @task.exit_cluster_filename
-#        FileUtils.touch( @simExitFile )
+        @simExitFile = @task.exit_cluster_filename
+
+        FileUtils.touch( @simExitFile )
         # Give access to the generated task class itself
-#        @task_const = "CbrainTask::#{SchemaTaskGenerator.classify(@task.name)}".constantize 
+#        @task_const = "CbrainTask::#{SchemaTaskGenerator.classify(@task.name)}".constantize
+
+#        provider = FlatDirLocalDataProvider.where( :name => "dataprovider_1").first  
+#        provider = FactoryGirl.create(:data_provider, :online => true, :read_only => false)
+
+        puts "File existence check " + @task.userfile_exists( ft ,{:name => file_c, :data_provider_id => @provider.id}).to_s
+
+#        puts @provider.inspect
+#        dp = DataProvider.all
+#        puts dp.inspect
       end
 
       after(:each) do
+        # Delete any generated output files
         destroyOutputFiles
         # Also need to get rid of the exit file
         fname = '.qsub.exit.BoutiquesTest.-1'
         File.delete( fname ) if File.exists?( fname )
+        # Destroy the registered userfiles and the data_provider, so as not to affect downstream tests
+        # Necessary for tests that create and/or register userfiles in the it block
+        Userfile.all.each{ |uf| uf.destroy }
+        DataProvider.all.each { |dp| dp.destroy }
       end
 
-      after(:all) do
+      it "can save results files" do
         # 
-        puts "Entering after(:all)"
-#        provider.destroy
-#        user.destroy
-#        group.destroy
-      end
-
-      # Output files are saved correctly when they don't exist
-      it 'should correctly save files' do
-        
-        DataProvider.where( :type => "FlatDirLocalDataProvider" ).destroy_all
-        User.where( :password => "1Password!" ).destroy_all
-
-        provider = FactoryGirl.create(:data_provider, :online => true, :read_only => false)
-        user = FactoryGirl.create(:normal_user, :encrypted_password, password: "1Password!", password_confirmation: "1Password!")
-        group = FactoryGirl.create(:group)
-       
-        @task          = CbrainTask::BoutiquesTest.new
-        @task.params   = {:ro => @fname}
-        @task.user_id  = user.id
-        @task.group_id = group.id
-
-        # Add a local input file to it (allows smarter lookup in userfile_exists)
-        file_c = 'c'
-        newFile = @task.safe_userfile_find_or_new(ftype.(file_c), :name => file_c, :data_provider_id => provider.id, :user_id => user.id)
-        newFile.save
-        newFile.cache_copy_from_local_file( file_c )
-        # Generate a simulated exit file, as if the task had run
-        @simExitFile = @task.exit_cluster_filename
-        FileUtils.touch( @simExitFile )
-        # Give access to the generated task class itself
-        @task_const = "CbrainTask::#{SchemaTaskGenerator.classify(@task.name)}".constantize
-        DataProvider.where( :type => "FlatDirLocalDataProvider" ).destroy_all
-        
-
-        # Make sure the file is on the file system
         expect( File.exists? @fname ).to be true
-        puts @provider.impl_provider_list_all
-        # Check that it is not registered though
-        expect( @task.userfile_exists(@userfileClass,{:name => @fname, :data_provider_id => @provider.id}) ).to be false
-        # Try to save it via the ClusterTask
-        @task.save_results
-        # Check that it worked
+        #
+        expect( @task.userfile_exists(@userfileClass,{:name => @fname, :data_provider_id => @provider.id}) ).to be false        
+        #
+        puts "\nSave Results: " +  @task.save_results.to_s
+        #
         expect( @task.userfile_exists(@userfileClass,{:name => @fname, :data_provider_id => @provider.id}) ).to be true
       end
 
-      it 'should not be a permanent effect' do
+      # Ensure the files do not survive between tests
+      it 'should destroy results files between tests' do
         expect( @task.userfile_exists(@userfileClass,{:name => @fname, :data_provider_id => @provider.id}) ).to be false
+      end
+
+      it "renames results files" do
+        puts "\n\nthird test\n"
+        # 
+        expect( File.exists? @fname ).to be true
+        #
+        expect( @task.userfile_exists(@userfileClass,{:name => @fname, :data_provider_id => @provider.id}) ).to be false
+        #
+        puts "\nSave Results: " +  @task.save_results.to_s
+        #
+        expect( @task.userfile_exists(@userfileClass,{:name => @fname, :data_provider_id => @provider.id}) ).to be true
+        # Create a new task and have it save results as well
+        task2 = CbrainTask::BoutiquesTest.new
+        task2.params   = {:ro => @fname, :interface_userfile_ids => [Userfile.all.first.id]}
+        task2.user_id  = User.admin.id
+        task2.group_id = Group.everyone.id
+        puts "\nSave Results: " +  task2.save_results.to_s
+        puts "task2 post ufs : " + Userfile.all.inspect
+        # Initial file should still be there with the correct name
+        expect( @task.userfile_exists(@userfileClass,{:name => @fname, :data_provider_id => @provider.id}) ).to be true
+        puts "orig entry: " + Userfile.where( :name => @fname ).first.inspect
+        expect( Userfile.where( :name => @fname ).first.nil? ).not_to be true
+        # New file should be renamed appropriately
+        puts "second entry" + Userfile.all.last.inspect
+        expect( Userfile.all.last.name =~ /^r-.*-\d{9}\.txt$/ ).to eq(0)
       end
 
     end
