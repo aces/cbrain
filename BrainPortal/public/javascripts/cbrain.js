@@ -993,7 +993,9 @@
     $(document).delegate(".ajax_onclick_show_element", "click", ajax_onclick_show);
     $(document).delegate(".ajax_onclick_hide_element", "click", ajax_onclick_hide);
 
-
+    // For checking the alive status of all DataProviders
+    // The staggered_loading function is called sequentially
+    // with the id of each DataProvider that is online
     $(document).delegate(".check_all_dp", "click", function (event) {
       var dp_status_elems = $("body").find(".dp_alive");
 
@@ -1008,10 +1010,11 @@
       var url = current_element.attr("data-url");
       var error_message = current_element.attr("data-error");
       var replace = current_element.attr("data-replace");
+      var target = current_element.attr("data-target")
       jQuery.ajax({
         dataType: 'html',
         url: url,
-        target: current_element,
+        target: target,
         timeout: 50000,
         success: function(data) {
             var new_content = $(data);
@@ -1033,8 +1036,6 @@
         }
       });
     }
-
-
 
     // Allows to submit an interval of two dates, uses
     // datepicker of jquery-ui, see:

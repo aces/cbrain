@@ -773,6 +773,20 @@ $(function() {
             $('#up-type').val(data).trigger('change.uf');
           });
         })
+        .undelegate('#up-file', 'change.uf.up-file-space')
+        .delegate('#up-file', 'change.uf.up-file-space', function (event) {
+          var file_name = $(this).val();
+          var includes_space = file_name.includes(" ");
+
+          $('#up-file-warn').text("Filename cannot contain spaces!")
+          $('#up-file-warn').css({
+            visibility: includes_space ? 'visible' : 'hidden'
+          })
+
+          upload_button
+            .prop('ui-state-disabled', includes_space)
+            .prop('disabled', includes_space);
+        })
         /* only activate the upload button if a file is selected */
         .undelegate('#up-file', 'change.uf.toggle-up-btn')
         .delegate(  '#up-file', 'change.uf.toggle-up-btn', function () {
