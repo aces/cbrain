@@ -181,12 +181,5 @@ module TestHelpers
     hash
   end
 
-  #
-  def symKeyToCmdLineKey(dict)
-    dict.keys.reduce({}) do |hash,k|
-      hash.merge( { '['+k.to_s+']' => dict[k] } )
-    end
-  end
-
 end
 

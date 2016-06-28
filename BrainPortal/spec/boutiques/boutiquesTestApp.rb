@@ -35,7 +35,7 @@ DefaultRequiredOutputName = "r.txt"
 verbose = false
 
 # Helper for exiting and printing error message (puts does not print arrays well)
-leave = lambda { |msg,code| print ( (verbose ? "\n" : '') + msg.to_s + "\n").red if verbose; exit code }
+leave = lambda { |msg,code| print ( "\n" + msg.to_s + "\n").red if verbose; exit code }
 
 # The Ruby argument parser cannot nicely handle space-separated lists, so it is done now
 toDel, listPos = [], [] 
