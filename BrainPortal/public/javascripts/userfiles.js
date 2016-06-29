@@ -722,25 +722,42 @@ $(function() {
         }
       }
 
-      if (window.FileReader && $('#upload-dialog').data('max-upload-size'))
-        /* check selected files against upload limit */
+      if (window.FileReader)
+        /* check selected files against upload limit  and for spaces in filename*/
         $('#upload-dialog')
-          .undelegate('#up-file', 'change.uf.up-limit')
-          .delegate(  '#up-file', 'change.uf.up-limit', function () {
+          .undelegate('#up-file', 'change.uf.file-problem')
+          .delegate(  '#up-file', 'change.uf.file-problem', function () {
+            var warning_text = "";
             var max = parseInt($('#upload-dialog').data('max-upload-size'));
+            var bad_file;
 
-            var visible = (
-              this.files && this.files[0] &&
-              max && this.files[0].size > max
-            );
+            var spaces_in_filename = $(this).val().includes(" ");
+            var file_too_big;
+            if ( max > 0 ){
+              file_too_big = this.files && this.files[0] && max && this.files[0].size > max
+            } else {
+              file_too_big = false;
+            }
+
+            bad_file = ( spaces_in_filename || file_too_big );
+
+            if ( spaces_in_filename ) {
+              warning_text += "Spaces in filename not allowed! ";
+            }
+            if ( file_too_big ) {
+              warning_text += "Too large! (> 1 MB) "
+            }
+
+            $('#up-file-warn').text(warning_text)
 
             $('#up-file-warn').css({
-              visibility: visible ? 'visible' : 'hidden'
+              visibility: bad_file ? 'visible' : 'hidden'
             });
 
+            alert(bad_file);
             upload_button
-              .toggleClass('ui-state-disabled', visible)
-              .prop('disabled', visible);
+              .toggleClass('ui-state-disabled', bad_file)
+              .prop('disabled', bad_file);
           });
 
       $('#upload-dialog')
