@@ -56,7 +56,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % gIdToPrms = gIdToMbrs.map { |k,v| [k, params.select{ |p| v.include? p["id"] }] }.to_h
 %
 % # Parameter Maps: ids => [ target_ids ] for disables/requires
-% disables_map = params.inject({}){ |hmap,i| (res=i["disables-inputs"]) ? hmap.merge(i["id"]=>res) : hmap }  
+% disables_map = params.inject({}){ |hmap,i| (res=i["disables-inputs"]) ? hmap.merge(i["id"]=>res) : hmap }
 % requires_map = params.inject({}){ |hmap,i| (res=i["requires-inputs"]) ? hmap.merge(i["id"]=>res) : hmap }
 
 % # Special case; we only have one file input parameter and it only
@@ -133,7 +133,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % end
   # Callback called just before the task's form is rendered. At this point,
   # the task's params hash contains at least the default list of input
-  # userfiles under the key :interface_userfile_ids. 
+  # userfiles under the key :interface_userfile_ids.
   def before_form #:nodoc:
 % file_types = descriptor['inputs']
 %   .select { |i| ! i['optional'] && i['type'] == 'File' }
@@ -212,28 +212,28 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %   end
 %#
 %####
-%#  Write the checks for requires-inputs and disables-inputs. 
+%#  Write the checks for requires-inputs and disables-inputs.
 %#  Indentation is to preserve pretty output
 %#
 %   # Helper for writing out a dictionary of keys to value arrays to a literal
 %   writeLiteralMap = lambda do |name,inmap|
-%     lenLongestKey = inmap.keys.map{ |x| x.to_s.length }.max + "''".length     
-    <%= "%s = {" % name %>     
+%     lenLongestKey = inmap.keys.map{ |x| x.to_s.length }.max + "''".length
+    <%= "%s = {" % name %>
 %     inmap.each do |key,valArr|
 %       vals = valArr.map{ |s| ":'%s'" % s }.join(", ")
-      <%= ":%-#{lenLongestKey}s => [%s]," % [ "'" + key + "'" , vals ] %> 
+      <%= ":%-#{lenLongestKey}s => [%s]," % [ "'" + key + "'" , vals ] %>
 %     end
     <%= "}" %>
-%   end  
-%#  
+%   end
+%#
 %   # Helper for writing out the checker loops
 %   # Can write a loop checking either disables (base="disable") or requires (base="require") violations
 %   generateCheckerLoop = lambda do |base|
-%     key, vals, req = base + 'r', base + 'ds', base == "require" 
-    <%= base + "sMap.each do |"+key+", "+vals+"|" %>   
+%     key, vals, req = base + 'r', base + 'ds', base == "require"
+    <%= base + "sMap.each do |"+key+", "+vals+"|" %>
       unless isInactive.(<%= key %>)
         for <%= base+'d' %> in <%= vals %>
-          msg = <%='\'is %s \' + %s.pretty_params_names[%s]' % [base + 'd ' + (req ? 'for' : 'by'), name, key] %> 
+          msg = <%='\'is %s \' + %s.pretty_params_names[%s]' % [base + 'd ' + (req ? 'for' : 'by'), name, key] %>
           params_errors.add(<%= base+'d' %>, msg) <%= req ? 'if' : 'unless' %> isInactive.(<%= base+'d' %>)
         end
       end
@@ -241,7 +241,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %#
 %   end
 %#
-%# Output to template 
+%# Output to template
 % unless requires_map.empty? and disables_map.empty?
     # Helper function for detecting inactive parameters (or false for flag-type parameters)
     # Note that empty strings are allowed and no parameter types except flags pass booleans
@@ -260,7 +260,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     # Check that requires-inputs is not violated
     # If the parameter is filled in, the ones it requires must be too
 %    generateCheckerLoop.("require")
-% end    
+% end
 
 % unless disables_map.empty?
     # Check that disables-inputs is not violated
@@ -270,18 +270,18 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %#
 %####
 %# Check for violations pertaining to parameter groups
-%# In particular, check that mutual exclusivity and one-is-required are satisfied 
+%# In particular, check that mutual exclusivity and one-is-required are satisfied
 %#
 % unless noGroups
 %# Check if any groups require checking
 % getGroupsWith = lambda { |prop| groups.select{ |g| g[prop] }.map{ |g| ":'"+g["id"]+"'" }.join(", ") }
-% mutexGrps     = getGroupsWith.("mutually-exclusive") 
+% mutexGrps     = getGroupsWith.("mutually-exclusive")
 % oneReqGrps    = getGroupsWith.("one-is-required")
 % hasMutex      = (mutexGrps != "")
 % hasOneReq     = (oneReqGrps != "")
 %#
 % if (hasMutex || hasOneReq)
-   
+
     # Groups with the mutually exclusive or one-is-required
     <%= 'mutexGroups = [%s]'  % mutexGrps  if hasMutex %>
     <%= 'oneReqGroups = [%s]' % oneReqGrps if hasOneReq %>
@@ -308,7 +308,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % end
 %#
 % end # No groups check
-%#  
+%#
 %# End parameter group properties check
 
 % end # End unless params.empty?
@@ -319,10 +319,10 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   # Associates the id symbol with the name field
   def self.pretty_params_names
     {
-%     id_width = max_width.(params,"id") + "''".length  
+%     id_width = max_width.(params,"id") + "''".length
 %     for param in params
       <%= ":%-#{id_width}s => '%s'," % ["'" + param["id"] + "'", param["name"]]  %>
-%     end     
+%     end
     }
   end
 

@@ -47,8 +47,8 @@
   optional = params.select { |i|   i['optional'] }
 
   # Parameter groups and maps
-  groups = descriptor['groups'].dup rescue []
-  noGroups = (groups.length == 0)
+  groups    = descriptor['groups'].dup rescue []
+  noGroups  = (groups.length == 0)
   gIdToMbrs = groups.inject({}){ |m,v| m.merge( v["id"] => v["members"] ) }
   gIdToPrms = gIdToMbrs.map { |k,v| [k, params.select{ |p| v.include? p["id"] }] }.to_h
 
@@ -236,10 +236,10 @@
 
 <%%# Generate a checkbox for a parameter grouping %>
 <%% groupCheckbox = lambda do |id, defaultChecked = false| %>
-  <input class='group-toggler' 
-    type='checkbox' 
-    id='<%%= id %>_chk' 
-    <%%= 'checked=\'checked\'' if defaultChecked %> 
+  <input class='group-toggler'
+    type='checkbox'
+    id='<%%= id %>_chk'
+    <%%= 'checked=\'checked\'' if defaultChecked %>
   />
   <label for="<%%= id %>_chk"></label>
 <%% end %>
@@ -340,7 +340,13 @@
           optional: <%= opt.to_s %>
     <%- end -%>
         )
-
+  <%- elsif type == :enum -%>
+    <% enumVals = param["enum-value-choices"] %>
+        # Enum value dropdown
+        dropdown.(id, id,
+          <%= enumVals.map { |v| [v, v] } %>,
+          optional: <%= opt %>
+        )
   <%- end -%>
   <%- if param['description'] -%>
         # Description
@@ -348,35 +354,35 @@
           <%= param['description'] %>
         DESC
   <%- end -%>
-     %> 
+     %>
     </li>
 <%- end -%>
 <%# Generate HTML for a group -%>
 <%- writeGroup = lambda do |group| -%>
   <%-
-    # Get group parameters 
+    # Get group parameters
     id = group['id']
     name = group['name']
     groupDescription = group['description']
     groupParams = gIdToPrms[id]
     mbrs = gIdToMbrs[id]
-    defaultChecked = group['one-is-required'] || required.any? { |p| mbrs.include? p["id"] }  
+    defaultChecked = group['one-is-required'] || required.any? { |p| mbrs.include? p["id"] }
   -%>
-  <div class="group <%= id %>"> 
-    <%# Write group header %> 
+  <div class="group <%= id %>">
+    <%# Write group header %>
     <div style="border-bottom: 2px solid #bbbbbb; padding-bottom: 2px;">
       <h3 style="border-width: 0px; margin: 0px; padding: 1px; padding-left: 0px;">
-        <%= name %> <%% groupCheckbox.('<%= id %>',<%= defaultChecked %>) %>  
+        <%= name %> <%% groupCheckbox.('<%= id %>',<%= defaultChecked %>) %>
       </h3>
-      <h5 style="font-size : 9.5pt; font-weight: normal; padding-top: 2px;" class="grp-desc"> 
-        <%= groupDescription %> 
-      </h5> 
+      <h5 style="font-size : 9.5pt; font-weight: normal; padding-top: 2px;" class="grp-desc">
+        <%= groupDescription %>
+      </h5>
     </div><%%= "<br>".html_safe %>
     <%# Write group parameters (required ones first) %>
     <%- groupParams.each { |p| parameter.(p, true) if required.any? { |r| p["id"]==r["id"] } } -%>
     <%- groupParams.each { |p| parameter.(p, true) if optional.any? { |t| p["id"]==t["id"] } } -%>
   </div>
-  
+
 <%- end -%>
 <div class="task-params">
   <%- if params.empty? -%>
@@ -407,7 +413,7 @@ $(function () {
       .removeAttr('checked')
       .prop('checked', true);
   });
-  
+
 
   /*** Handle disables and requires relations between parameters ***/
 
@@ -429,7 +435,7 @@ $(function () {
 %     map
 %   end
 % end
-% #   
+% #
 % # The actual maps: idIn -> [ids disabled/required by idIn]
 % disabledBy_map = makeReceiverActionMap.("disables-inputs")
 % requires_map = makeActorActionMap.("requires-inputs")
@@ -452,9 +458,9 @@ $(function () {
 %   n = hmap.size
 %   hmap.each_with_index do |(k,v),i|
 %    if v.is_a? Array
-      <%= "\"#{k}\" : [" + v.map{ |s| "\"#{s}\"" }.join(',') + "]" + ((i == n-1) ? '' : ',') %>    
+      <%= "\"#{k}\" : [" + v.map{ |s| "\"#{s}\"" }.join(',') + "]" + ((i == n-1) ? '' : ',') %>
 %    else
-      <%= "\"#{k}\" : \"" + v + "\"" + ((i == n-1) ? '' : ',') %>      
+      <%= "\"#{k}\" : \"" + v + "\"" + ((i == n-1) ? '' : ',') %>
 %    end
 %   end
 % end
@@ -463,7 +469,7 @@ $(function () {
 %   jsMapOf.( params.inject({}){ |hmap,x| hmap.merge( x["id"] => x["name"] ) } )
   }
   var requiresMap = {
-%   jsMapOf.(requires_map)      
+%   jsMapOf.(requires_map)
   };
   var disabledByMap = {
 %   jsMapOf.(disabledBy_map)
@@ -472,21 +478,21 @@ $(function () {
 %# Generate JS functions for handling disables/requires
 %#
   /*
-   * Disables the targets of every active parameter within its disables list 
-   * Also disables parameters whose required parameters are inactive, unless it 
+   * Disables the targets of every active parameter within its disables list
+   * Also disables parameters whose required parameters are inactive, unless it
    * is a mutual required relation.
    */
   function handleDisablesAndRequires() {
 
     // Function for disabling/enabling parameters
     var toggleFunctionality = function(target, shouldDisable, greyOutMsg){
-      var lightGrey = '#d3d3d3'; // Firefox does not grey out disabled html elements        
+      var lightGrey   = '#d3d3d3'; // Firefox does not grey out disabled html elements
       // Selector classes
-      var toGreyOut = '.tsk-prm-in, .tsk-prm-opt-lbl, .tsk-prm-chk-lbl, .tsk-prm-sel';
-      var toDisable = '.tsk-prm-in, .tsk-prm-opt, .tsk-prm-chk';
+      var toGreyOut   = '.tsk-prm-in, .tsk-prm-opt-lbl, .tsk-prm-chk-lbl, .tsk-prm-sel';
+      var toDisable   = '.tsk-prm-in, .tsk-prm-opt, .tsk-prm-chk';
       var iconClasses = '.tsk-prm-opt-icon.ui-icon-check, .tsk-prm-sel-icon, .tsk-prm-add.ui-icon';
       // Disable and grey out text, file, & flag inputs, as well as their checkboxes
-      target.find( toGreyOut ).css('background-color', shouldDisable ? lightGrey : '');      
+      target.find( toGreyOut ).css('background-color', shouldDisable ? lightGrey : '');
       target.find( toDisable ).attr('disabled', shouldDisable);
       // For lists and files, toggle the ability to add more entries or change selections
       target.find('.tsk-prm-add.ui-icon,.tsk-prm-sel').css("pointer-events",shouldDisable?"none":"auto");
@@ -499,34 +505,34 @@ $(function () {
         target.find('.tsk-prm-in').val(''); // wipe textbox input areas
         target.find('ul.tsk-prm-list').find('li').has('.ui-icon-minus').remove(); // rm list subitems
         // Write warning message
-        var style = 'style="display: block; float: right; font-style: normal; font-weight: normal; ' + 
+        var style = 'style="display: block; float: right; font-style: normal; font-weight: normal; ' +
                     'font-size: 0.95em; color: rgb(255,50,50); margin-right: 17pt"';
-        var msg = '<label class="disable-msg" ' + style + '>' + greyOutMsg  + '</label>';
+        var msg   = '<label class="disable-msg" ' + style + '>' + greyOutMsg  + '</label>';
         target.find('.tsk-prm-lbl').append( msg );
       }
       else {
         target.find( iconClasses ).removeClass('ui-state-disabled') // put icons in enabled state
       }
-    } 
+    }
 
     // Function to map ids to names to make the messages a little prettier
     var idToName = function(x){ return namesMap[x]; }
-    
+
     // Get combined keyset of potentially affected parameters
     var affectedIds = $.unique(Object.keys(disabledByMap).concat(Object.keys(requiresMap)));
 
     // Helper function that checks whether a given parameter is active
     var isActiveParam = function(id) {
-      var targ = $( 'li.' + id + '.tsk-prm' );    
+      var targ = $( 'li.' + id + '.tsk-prm' );
       if( targ.hasClass( 'flag' ) ){ // Flag case
-        return targ.find('.tsk-prm-chk').prop('checked'); 
+        return targ.find('.tsk-prm-chk').prop('checked');
       }
       return targ.find('.tsk-prm-opt').prop('checked'); // Non-flag case
     }
 
     // Iterate over parameters, enabling and disabling as needed
     affectedIds.forEach( function( key ) {
-      
+
       // Handle targeted disabling
       var disablers = [];
       if( key in disabledByMap ){
@@ -543,15 +549,15 @@ $(function () {
       var missingReqs = [];
       if( key in requiresMap ){
         var vals = requiresMap[key], n = vals.length;
-        for(var i = 0; i < n; ++i){      
-          // If the required parameter is not checked (active) 
+        for(var i = 0; i < n; ++i){
+          // If the required parameter is not checked (active)
           if( ! isActiveParam(vals[i]) ){
             // If the required parameter does not require the current target parameter
-            if( ( ! (vals[i] in requiresMap) ) || requiresMap[vals[i]].indexOf(key) == -1 ){ 
+            if( ( ! (vals[i] in requiresMap) ) || requiresMap[vals[i]].indexOf(key) == -1 ){
               missingReqs.push( vals[i] ); // Then add it to our set of missing requirements
             }
-          }    
-        } 
+          }
+        }
       }
 
       /* Perform disablings/enablings */
@@ -559,7 +565,7 @@ $(function () {
       var target = $( 'li.' + key + '.tsk-prm' );
       if(disablers.length != 0){
         toggleFunctionality(target, true, "Disabled by " + disablers.map(idToName).join(", "));
-      }  
+      }
       // Disable the parameter if it is missing any of its requirements
       else if(missingReqs.length != 0){
         toggleFunctionality(target, true, "Requires " + missingReqs.map(idToName).join(", "));
