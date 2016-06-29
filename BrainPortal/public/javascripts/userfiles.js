@@ -723,13 +723,17 @@ $(function() {
       }
 
       if (window.FileReader)
-        /* check selected files against upload limit  and for spaces in filename*/
+        // Checks the file for problems, and disables the upload button if:
+        //   - no file selected
+        //   - spaces in filename
+        //   - filesize greater than maximum allowed by server
         $('#upload-dialog')
           .undelegate('#up-file', 'change.uf.file-problem')
           .delegate(  '#up-file', 'change.uf.file-problem', function () {
             var warning_text = "";
             var max = parseInt($('#upload-dialog').data('max-upload-size'));
             var bad_file;
+            var selected = !!$(this).val();
 
             var spaces_in_filename = $(this).val().includes(" ");
             var file_too_big;
@@ -754,10 +758,9 @@ $(function() {
               visibility: bad_file ? 'visible' : 'hidden'
             });
 
-            alert(bad_file);
             upload_button
-              .toggleClass('ui-state-disabled', bad_file)
-              .prop('disabled', bad_file);
+              .toggleClass('ui-state-disabled', bad_file || !selected)
+              .prop('disabled', bad_file || !selected);
           });
 
       $('#upload-dialog')
@@ -790,15 +793,6 @@ $(function() {
             $('#up-type').val(data).trigger('change.uf');
           });
         })
-        /* only activate the upload button if a file is selected */
-        .undelegate('#up-file', 'change.uf.toggle-up-btn')
-        .delegate(  '#up-file', 'change.uf.toggle-up-btn', function () {
-          var selected = !!$(this).val();
-
-          upload_button
-            .toggleClass('ui-state-disabled', !selected)
-            .prop('disabled', !selected);
-        });
     })();
 
     /* Copy/Move dialog */
