@@ -994,48 +994,52 @@
     $(document).delegate(".ajax_onclick_hide_element", "click", ajax_onclick_hide);
 
     // For checking the alive status of all DataProviders
-    // The staggered_loading function is called sequentially
+    // The sequential_loading function is called recursively
     // with the id of each DataProvider that is online
+    // The url and DataProvider id are stored in the button
     $(document).delegate(".check_all_dp", "click", function (event) {
-      var dp_status_elems = $("body").find(".dp_alive");
+      var dp_check_btns = $("body").find(".dp_alive_btn");
 
-      staggered_loading(0, dp_status_elems);
+      sequential_loading(0, dp_check_btns);
+
       event.preventDefault();
     });
 
-    function staggered_loading(index, element_array) {
+    function sequential_loading(index, element_array) {
       if (index >= element_array.length) return;
 
       var current_element = $(element_array[index]);
       var url = current_element.attr("data-url");
       var error_message = current_element.attr("data-error");
-      var replace = current_element.attr("data-replace");
-      var target = current_element.attr("data-target")
+      var replace_elem = $("#" + current_element.attr("data-replace"));
+
       jQuery.ajax({
         dataType: 'html',
         url: url,
-        target: target,
         timeout: 50000,
         success: function(data) {
-            var new_content = $(data);
-            if (replace === "true") {
-              current_element.replaceWith(new_content);
-            } else {
-              current_element.html(new_content);
-            }
-            new_content.trigger("new_content");
+          replace_elem.html(data);
+          replace_elem.trigger("new_content");
+          current_element.removeClass("dp_alive_btn");
+          current_element.hide();
         },
         error: function(e) {
           if (!error_message) {
-            error_message = "<span class='loading_message'>Error loading element</span>";
+            error_message = "<span class='loading_message'>???</span>";
           }
-          current_element.html(error_message);
+          replace_elem.html(error_message);
         },
         complete: function(e) {
-          staggered_loading(index+1, element_array);
+          sequential_loading(index+1, element_array);
         }
       });
     }
+
+    // Hides "Check" btn so that "Check All" doesn't re-check it
+    $(document).delegate(".dp_alive_btn", "click", function(event){
+      $(this).removeClass("dp_alive_btn");
+      $(this).hide();
+    });
 
     // Allows to submit an interval of two dates, uses
     // datepicker of jquery-ui, see:

@@ -77,7 +77,7 @@
 
   <% t.column("Alive?", :alive) do |dp| %>
     <% if dp.online? %>
-      <div class="dp_alive" data-url=<%=url_for(:controller => :data_providers, :action  => :is_alive, :id => dp.id) %> id=<%= "alive" + h(dp.id) %>><%= html_colorize("(...)","magenta") %></div>
+      <div id="<%= "alive" + h(dp.id) %>"><%= html_colorize("(...)","magenta") %></div>
     <% else %>
       No
     <% end %>
@@ -107,24 +107,25 @@
       :sortable => true
     ) { |dp| overlay_description(dp.description) }
 
-    t.column("Operations", :operations) do |dp|
-      if dp.is_browsable?(current_user) && dp.can_be_accessed_by?(current_user) && dp.online?
-        link_to 'Browse', browse_data_provider_path(dp), :class => 'action_link'
-      end
+    %>
+    <% t.column("Operations", :operations) do |dp| %>
+      <% if dp.is_browsable?(current_user) && dp.can_be_accessed_by?(current_user) && dp.online? %>
+        <%= link_to 'Browse', browse_data_provider_path(dp), :class => 'action_link' %>
+      <% end %>
 
-      if dp.online?
-        on_click_ajax_replace( { :element   => "div",
-                                            :url          => url_for(:controller => :data_providers, :action  => :is_alive, :id => dp.id),
-                                            :replace   => "alive" + h(dp.id)
-                                          },
-                                          {
-                                            :before  => "<div class='loading_message'>Loading...</div>",
-                                            :class     => 'action_link'
-                                          }
-                                        ) do
-          %><a class="action_link">check</a><%
+      <% if dp.online? %>
+        <%= on_click_ajax_replace( { :element   => "div",
+                                                   :url           => url_for(:controller => :data_providers, :action  => :is_alive, :id => dp.id),
+                                                   :replace   => "alive" + h(dp.id)
+                                                 },
+                                                 {
+                                                   :before  => "<div class='loading_message'>Loading...</div>",
+                                                   :class     => "dp_alive_btn"
+                                                 }
+                                                ) do %>
+          <a href="#" class="action_link">Check</a>
 
-      end
-    end
-  end
-end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

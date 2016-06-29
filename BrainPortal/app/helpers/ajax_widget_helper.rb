@@ -106,30 +106,6 @@ module AjaxWidgetHelper
     "<div #{atts}></div>".html_safe
   end
 
-  # Staggered load elements request their content one at a time.
-  #
-  # Options:
-  # [:error_message] HTML to display if the request fails.
-  # [:replace] whether the entire element should be replaced (as
-  #            opposed to just the content).
-  def staggered_loading(element, url, options={}, &block)
-    options_setup("staggered_loader", options)
-    options["data-url"] = url
-
-    atts = options.to_html_attributes
-    if block_given?
-      initial_content=capture(&block)
-    else
-      initial_content = ""
-    end
-
-    html = "<#{element} #{atts}>"
-    html += h(initial_content)
-    html += "</#{element}>"
-
-    html.html_safe
-  end
-
   ###############################################################
   # Creates an html element which will have its or another element's
   # content updated when it is clicked on
@@ -149,8 +125,7 @@ module AjaxWidgetHelper
   # and the body will be replaced with the content of the html at /data_providers
   # when you click on the span
   #
-  # replace can be used to specify a selector (jQuery) to find the element(s)
-  # replace
+  # replace can be used to specify an id of an html element to replace
   ###############################################################
   def on_click_ajax_replace(options,html_opts={},&block)
     url = options[:url]
