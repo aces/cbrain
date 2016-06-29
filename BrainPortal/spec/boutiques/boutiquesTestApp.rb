@@ -1,11 +1,17 @@
 #!/usr/bin/env ruby
 
+# This is the mock application used to test the Boutiques framework in cbrain.
+# It tries to cover as many Boutiques features as possible.
+# In essence, it takes a command line string as input and merely checks that the
+# implied input parameters match the specifications (as in the json descriptor).
+# The exit code of the script is used to test correctness in the unit tests of Boutiques.
+
 require 'optparse'
 require 'fileutils'
 
 # Colours
 class String
-  def colour(code) "\e[#{code}m#{self}\e[0m" end 
+  def colour(code) "\e[#{code}m#{self}\e[0m" end
   def red() colour(31) end
   def green() colour(32) end
   def blue() colour(34) end
@@ -17,7 +23,7 @@ print("\nRunning Boutiqes simple test app\nRaw Input=#{ARGV.to_s}".blue) if ARGV
 # Dictionary of inputs to be filled
 options = {}
 
-# Lists of potential input symbols 
+# Lists of potential input symbols
 symbolize = lambda { |a| a.map{ |s| s.to_sym } }
 Strings     = symbolize.( %w(a k q A v o x r) )
 Flags       = symbolize.( %w(c u w y) )
@@ -38,7 +44,7 @@ verbose = false
 leave = lambda { |msg,code| print ( "\n" + msg.to_s + "\n").red if verbose; exit code }
 
 # The Ruby argument parser cannot nicely handle space-separated lists, so it is done now
-toDel, listPos = [], [] 
+toDel, listPos = [], []
 listArgs = Lists.map{ |s| '-'+s.to_s} + Lists.map{ |s| "--arg_" + s.to_s }      # Potential list-type args
 ARGV.each_with_index { |arg,ind| listPos << ind if listArgs.include?(arg) }     # Get list positions
 nextEnd = lambda { |a,i| (i+=1) until i==a.length || a[i].start_with?('-'); i } # Helper to obtain list end
@@ -65,16 +71,16 @@ end
 # Does not test all possible combinations; could potentially use erb for this if desired
 op = OptionParser.new do |opt|
   opt.banner = "\nSimple Test Application for Boutiques in CBrain\n"
-  
+
   # Basic required inputs
   opt.on('-A','--arg_r1 S',         'A required string input',  String) { |o| options[:A] = o }
   opt.on('-B','--arg_r2 N',         'A required number input',  Float ) { |o| options[:B] = o }
   opt.on('-C','--arg_r3 F',         'A required file input',    String) { |o| options[:C] = o }
-  
+
   # Basic optional inputs
   opt.on('-a','--arg_a a_string',   'A string input',           String) { |o| options[:a] = o }
   opt.on('-b','--arg_b a_number',   'A numerical input',        Float ) { |o| options[:b] = o }
-  opt.on('-c','--arg_c',            'A flag input'                    ) { |o| options[:c] = o } 
+  opt.on('-c','--arg_c',            'A flag input'                    ) { |o| options[:c] = o }
   opt.on('-d','--arg_d a_filename', 'A file input',             String) { |o| options[:d] = o }
   opt.on('-e','--arg_e S1 S2',      'A string list input',      Array ) { |o| options[:e] = o }
   opt.on('-f','--arg_f F1 F2',      'A file list input',        Array ) { |o| options[:f] = o }
@@ -87,23 +93,23 @@ op = OptionParser.new do |opt|
   opt.on('-l','--arg_l N1 N2',      'A number list input',      Array ) { |o| options[:l] = o }
   opt.on('-m','--arg_m S1 S2',      'A string list input',      Array ) { |o| options[:m] = o }
   opt.on('-y','--arg_y',            'A flag input',                   ) { |o| options[:y] = o }
-    
+
   # Groups (mutex/one-req)
   opt.on('-n','--arg_n n',          'A number input',           Float ) { |o| options[:n] = o }
   opt.on('-p','--arg_p S1 S2',      'A string list input',      Array ) { |o| options[:p] = o }
   opt.on('-q','--arg_q s',          'A string input',           String) { |o| options[:q] = o }
   opt.on('-u','--arg_u',            'A flag input',                   ) { |o| options[:u] = o }
   opt.on('-v','--arg_v a_str',      'A string input',           String) { |o| options[:v] = o }
-  opt.on('-w','--arg_w',            'A flag input',                   ) { |o| options[:w] = o }  
+  opt.on('-w','--arg_w',            'A flag input',                   ) { |o| options[:w] = o }
 
   # Non-space flag separator using '='
   opt.on('-x','--arg_x S',          'A string input',           String) { |o| options[:x] = o }
 
   # Optional and required output
-  # Note: -r is a required output file, not a required input. It defaults writing out to r.txt. 
+  # Note: -r is a required output file, not a required input. It defaults writing out to r.txt.
   opt.on('-o','--arg_o fname',      'The output name string',   String) { |o| options[:o] = o }
   opt.on('-r','--arg_r fname',      'A required outfile name',  String) { |o| options[:r] = o }
-  
+
   # Help display
   opt.on('-h','--help', "Displays help") { puts(opt.to_s + "\n"); exit }
 
@@ -117,7 +123,7 @@ end # End parser definition
 # Errors here usually destroy the proper assignment of the other arguments, so such errors are fast-fail
 begin
   op.parse!
-rescue 
+rescue
   leave.( "ERROR: " + $!.to_s , 1)
 end
 
@@ -127,7 +133,8 @@ if ARGV != []
 end
 
 # Check input types
-# The automatic parser already does this, but since we also rely on some manual parsing, we check it again
+# The automatic parser already does this to an extent, but since it is incomplete and
+# we also rely on some manual parsing, we check it again
 AllParams = Strings + Flags + Files + Numbers + NumLists + FileLists + StringLists
 options.each do |key, value|
   if Strings.include?(key)      && ! (String===value)
@@ -136,7 +143,7 @@ options.each do |key, value|
   elsif Flags.include?(key)     && ! (value==true || value==false)
     leave.( "ERROR: input (-#{key.to_s}, #{value}) is not a boolean", 3)
   elsif Files.include?(key)     && !( String===value && File.exist?(value) )
-    leave.( "ERROR: input (-#{key.to_s}, #{value}) is not an existent filename", 10) 
+    leave.( "ERROR: input (-#{key.to_s}, #{value}) is not an existent filename", 10)
   elsif Numbers.include?(key)   && ( Float(value) rescue nil )==nil
     leave.( "ERROR: input (-#{key.to_s}, #{value}) is not a number", 3)
   elsif (NumLists + FileLists + StringLists).include?(key) && ! (Array===value)
@@ -160,14 +167,14 @@ end
 
 # Check disables/requires
 unless options[:i].nil? # i -d-> j,k
-  leave.("ERROR: -i disables -j", 6) unless options[:j].nil? 
+  leave.("ERROR: -i disables -j", 6) unless options[:j].nil?
   leave.("ERROR: -i disables -k", 6) unless options[:k].nil?
   leave.("ERROR: -i disables -y", 6) unless options[:y].nil?
 end
 unless options[:y].nil? # y -d-> j
   leave.("ERROR: -y disables -j", 6) unless options[:j].nil?
 end
-unless options[:y].nil? # y -d-> l 
+unless options[:y].nil? # y -d-> l
   leave.("ERROR: -y requires -l", 7) if options[:l].nil?
 end
 unless options[:k].nil? # k -r-> l,m
@@ -188,7 +195,7 @@ leave.("ERROR: {-v,-w} are mutually exclusive, but one is required", 8) unless (
 leave.("ERROR: -A, -B, and -C are required", 9) if [:A,:B,:C].any? { |k| ! options.key?(k) }
 
 # Write output files
-(newName = options[:r]) ? FileUtils.touch(newName) : FileUtils.touch(DefaultRequiredOutputName) 
+(newName = options[:r]) ? FileUtils.touch(newName) : FileUtils.touch(DefaultRequiredOutputName)
 FileUtils.touch( options[:o] ) unless options[:o].nil?
 
 # Print information about the command-line input
@@ -200,10 +207,4 @@ end
 # It survived!
 puts "Task completed!".green if verbose
 exit 0
-
-
-
-
-
-
 

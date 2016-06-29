@@ -1,15 +1,14 @@
 
-# This module provides helper methods and constants to avoid cluttering the 
+# This module provides helper methods and constants to avoid cluttering the
 # actual Rspec test files too much. It is shared by the Boutiques tests
-# on both the Bourreau and the Portal side. Note that it is specific to the 
-# mocked Boutques test application boutiquesTestApp.rb.
+# on both the Bourreau and the Portal side. Note that it is specific to the
+# mocked Boutiques test application boutiquesTestApp.rb.
 module TestHelpers
 
-  # External helper constants 
+  # External helper constants
   TestScriptName           = 'boutiquesTestApp.rb'
   TestScriptDescriptor     = 'descriptor_test.json'
   ValidationScriptLocation = 'validator.rb'
-  BoutiquesSchemaLocation  = '../../lib/cbrain_task_generators/schemas/boutiques.schema.json'
 
   ### Helper script argument-specific constants ###
   # Local name variables for outfile arguments
@@ -33,10 +32,10 @@ module TestHelpers
   end
 
   # JSON validation
-  def runAndCheckJsonValidator
+  def runAndCheckJsonValidator(boutiquesSchemaLocation)
     validator  = File.join(__dir__, ValidationScriptLocation)
-    schema     = File.join(__dir__, BoutiquesSchemaLocation)
-    descriptor = File.join(__dir__, TestScriptDescriptor) 
+    schema     = boutiquesSchemaLocation.to_s
+    descriptor = File.join(__dir__, TestScriptDescriptor)
     stdout     = `ruby #{validator} #{schema} #{descriptor}`
     return stdout.start_with?( '["OK"]' )
   end
@@ -50,7 +49,7 @@ module TestHelpers
   end
 
   ### RSpec Tests ###
-  # We test the JSON descriptor 
+  # We test the mock tool described by its JSON descriptor
   # Not all possible combinations of types for each situation are tested
   # Short tool description:
   #   Requirements
@@ -76,7 +75,7 @@ module TestHelpers
   ###
 
   # Test program symbols
-  TestArgs = [*'a'..'g',*'i'..'r',*'u'..'y',*'A'..'C'].map{ |s| s.to_sym } 
+  TestArgs = [*'a'..'g',*'i'..'r',*'u'..'y',*'A'..'C'].map{ |s| s.to_sym }
 
   # Basic tests used to test mock program functionality
   BasicTests = [
@@ -145,17 +144,17 @@ module TestHelpers
   ]
 
   # Helper method for internally generating an argument dictionary similar to the "parameters" hash from a string
-  # This is used to test the after_form method of the portal_task, in isolation
+  # This is used to unit test the after_form method of the portal_task, in isolation.
+  # It is also used to simulate argument "parsing" when the portal arguments are sent for execution (see Bourreau-side tests).
   # Occurences with lists after the flag become arrays. Lone flags become booleans indicating their presence.
-  # e.g. {'a' => val_a, '-l' => [1,2], ...} when "-a val_a -l 1 2" appears in the string
-  # Note: may wish to replace with a more general parser; this one is brittle and specific
+  # e.g. {:a => val_a, :l => [1,2], :v => true, ...} when "-a val_a -l 1 2 -v" appears in the string
   ArgumentDictionary = lambda do |args|
-    # Helper function for finding the end of an argument
+    # Helper function for finding the end of an argument (an issue to due the presence of lists)
     nextCmdFlagIndex = lambda { |a| i=1; (i+=1) until a[i].start_with?('-'); i }
     # Read through the argument string and turn it into a hash
     copy = args.dup; hash = {}
     while args != ""
-      arr = args.split()   
+      arr = args.split()
       i = nextCmdFlagIndex.(arr) rescue nil
       if i == 1 # Flag case
         hash[arr[0][1].to_sym] = true
