@@ -214,17 +214,41 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %####
 %# Constraint and type checks
 %#
+%# Helpers
+% idsym    = lambda { |param| ":'#{param['id']}'" }
+% nilcheck = lambda { |param| "params[#{idsym.(param)}].nil?" }
+%#
 % hasEnumVars = params.any?{ |p| p['type'].downcase == 'enum' }
 % if hasEnumVars
     # Check that any enum parameters have been given allowable values
     errmsg = "was not given an acceptable value!"
 %  for param in params
 %   next unless param['type'].downcase == 'enum'
-%   check = '[' + param['enum-value-choices'].map{ |s| "'#{s}'" }.join(',') + "].include?(params[:'#{param['id']}'])"
-    params_errors.add(:<%="'#{param['id']}'"%>,errmsg) unless params[:<%="'#{param['id']}'"%>].nil? || <%= check %>
+%   check = '[' + param['enum-value-choices'].map{ |s| "'#{s}'" }.join(',') + "].include?(params[#{idsym.(param)}])"
+    params_errors.add(<%=idsym.(param)%>,errmsg) unless <%= nilcheck.(param) %> || <%= check %>
 %  end
 
 % end # hasEnumVars check
+%#
+% if params.any? { |p| p['minimum'] || p['maximum'] || p['integer'] }
+    # Check that number parameters with contraints have been given permissable values
+% nerrmsg = lambda { |prm,str| "\"violates #{prm['exclusive-'+str] ? 'exclusive' : 'inclusive'} #{str} value #{prm[str].to_s}\"" }
+% for p in params.select{ |q| q['type'].downcase == 'number'} # since we support arbitrary fields regardless of type
+%  if p['minimum']
+%   ncheck = "params[#{idsym.(p)}].to_f %s #{p["minimum"]}" % (p['exclusive-minimum'] ? '>' : '>=')
+    params_errors.add(<%=idsym.(p)+','+nerrmsg.(p,"minimum")%>) unless <%= nilcheck.(p) %> || <%= ncheck %>
+%  end
+%  if p['maximum']
+%   ncheck = "params[#{idsym.(p)}].to_f %s #{p["maximum"]}" % (p['exclusive-maximum'] ? '<' : '<=')
+    params_errors.add(<%=idsym.(p)+','+nerrmsg.(p,"maximum")%>) unless <%= nilcheck.(p) %> || <%= ncheck %>
+%  end
+%  if p['integer']
+%   ncheck = "(Integer(params[#{idsym.(p)}].to_s) rescue false)"
+    params_errors.add(<%=idsym.(p)%>,'must be an integer!') unless <%= nilcheck.(p) %> || <%= ncheck %>
+%  end
+% end
+
+% end # min/max/int checks for numbers
 %#
 %####
 %#  Write the checks for requires-inputs and disables-inputs.
