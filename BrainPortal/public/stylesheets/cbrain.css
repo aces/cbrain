@@ -1113,19 +1113,27 @@ pre {
 }
 
 .project_select_dropdown {
-  border: 3px solid #05A3D6;
+  border: 5px solid #05A3D6;
+  border-top-style: none;
+  border-right-style: none;
+  border-bottom-style: none;
   background-color: #F1F1F1;
-  padding: 0.2em 1em 1em 1em;
-  margin-top: 0.2em;
-  text-align: left;
   max-height: 15em;
   overflow-y: auto;
   white-space: nowrap;
 }
 
 .project_select_dropdown a{
-  font-size: 0.7em;
+  font-size: 0.5em;
   color: #222!important;
+  padding: 0.5em 0em 0.5em 0.5em;
+  margin: 0em, 0.1em, 0em, 0.1em;
+  min-width: 160px;
+  text-align: left;
+}
+
+.project_select_dropdown:hover {
+    background-color: #F1F1F1;
 }
 
 
