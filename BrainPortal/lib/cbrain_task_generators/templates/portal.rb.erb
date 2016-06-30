@@ -212,6 +212,21 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %   end
 %#
 %####
+%# Constraint and type checks
+%#
+% hasEnumVars = params.any?{ |p| p['type'].downcase == 'enum' }
+% if hasEnumVars
+    # Check that any enum parameters have been given allowable values
+    errmsg = "was not given an acceptable value!"
+%  for param in params
+%   next unless param['type'].downcase == 'enum'
+%   check = '[' + param['enum-value-choices'].map{ |s| "'#{s}'" }.join(',') + "].include?(params[:'#{param['id']}'])"
+    params_errors.add(:<%="'#{param['id']}'"%>,errmsg) unless params[:<%="'#{param['id']}'"%>].nil? || <%= check %>
+%  end
+
+% end # hasEnumVars check
+%#
+%####
 %#  Write the checks for requires-inputs and disables-inputs.
 %#  Indentation is to preserve pretty output
 %#
@@ -277,7 +292,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % getGroupsWith = lambda { |prop| groups.select{ |g| g[prop] }.map{ |g| ":'"+g["id"]+"'" }.join(", ") }
 % mutexGrps     = getGroupsWith.("mutually-exclusive")
 % oneReqGrps    = getGroupsWith.("one-is-required")
-% hasMutex      = (mutexGrps != "")
+% hasMutex      = (mutexGrps  != "")
 % hasOneReq     = (oneReqGrps != "")
 %#
 % if (hasMutex || hasOneReq)
@@ -307,7 +322,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     end
 % end
 %#
-% end # No groups check
+% end # noGroups check
 %#
 %# End parameter group properties check
 

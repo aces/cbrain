@@ -45,6 +45,7 @@
   params   = descriptor['inputs'].dup
   required = params.select { |i| ! i['optional'] }
   optional = params.select { |i|   i['optional'] }
+  defaults = params.select { |i|   i['default-value']  }
 
   # Parameter groups and maps
   groups    = descriptor['groups'].dup rescue []
@@ -204,7 +205,7 @@
   +nothing+ corresponds to the text displayed if +options+ is empty and
   +optional+ indicates if the parameter is optional (or not)
 %%>
-<%% dropdown = lambda do |id, name, options = [], nothing: '(Nothing to select)', optional: false| %>
+<%% dropdown = lambda do |id, name, options = [], nothing: '(Nothing to select)', optional: false, default: nil| %>
   <%% value = @task.params[name.to_sym] if name %>
   <%%
     input.(id, name,
@@ -227,7 +228,12 @@
       </span>
       <ul class="tsk-prm-sel-opt">
         <%% options.each do |value, label| %>
+         <%% if default.nil? %>
           <li data-value="<%%= value %>"><%%= label %></li>
+         <%% else %>
+          <%% dval = (default==value) ? " data-selected=\"true\"" : "" %>
+          <li data-value="<%%= value %>"<%%= dval %>><%%= label %></li>
+         <%% end %>
         <%% end %>
       </ul>
     <%% end %>
@@ -345,7 +351,8 @@
         # Enum value dropdown
         dropdown.(id, id,
           <%= enumVals.map { |v| [v, v] } %>,
-          optional: <%= opt %>
+          optional: <%= opt %>,
+          default:  <%= "\"#{defaults.find { |d| d['id']==id }['default-value']}\"" rescue "nil" %>
         )
   <%- end -%>
   <%- if param['description'] -%>
