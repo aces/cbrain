@@ -99,14 +99,25 @@ class CbrainFileRevision
     self.new(fullpath)
   end
 
-  # Returns the revision info in a fake 'svn' format:
-  #   "$Id: en_cbrain_local_data_provider.rb 12ab34 2010-03-25 17:26:05Z prioux $"
-  # Note that this triggers a self_update() call, if necessary, the first time.
-  def to_s
-    return @fake_svn_id_string if ! @fake_svn_id_string.nil? # Cached; no need to fetch git info every time.
-    self_update()
-    @fake_svn_id_string = "$Id: #{@basename} #{@short_commit} #{@date} #{@time} #{@author} $"
-    @fake_svn_id_string
+  def pretty(rev_fields)
+    # check if the requested info is available, if not we have to update from git
+    if (rev_fields.key?(:file) && @basename == nil) || (rev_fields.key?(:commit) && @commit == nil) || (rev_fields.key?(:author) && @author == nil) || (rev_fields.key?(:date) && @date == nil) || (rev_fields.key?(:time) && @time == nil)
+      self_update()
+    end
+
+    if ( rev_fields.key?(:file) && rev_fields.key?(:commit) && rev_fields.key?(:author) && rev_fields.key?(:date))
+      pretty_string = @basename + " " + @commit + " " + @author + " " + @date
+    elsif ( rev_fields.key?(:commit) && rev_fields.key?(:author) && rev_fields.key?(:date) )
+      pretty_string = @commit + " " + @author + " " + @date
+    elsif ( rev_fields.key?(:commit) && rev_fields.key?(:date) && rev_fields.key?(:time) )
+      pretty_string = @commit + " " + @date + " " + @time
+    elsif ( rev_fields.key?(:author) && rev_fields.key?(:commit) )
+      pretty_string  = @author + " " + @commit
+    elsif ( rev_fields.key?(:date) && rev_fields.key?(:time) )
+      pretty_string = @date + " " + @time
+    end
+
+    return pretty_string
   end
 
   # Returns the date and time of the revision info, separated by a space.
@@ -236,7 +247,7 @@ class CbrainFileRevision
 
     self
   rescue => oops # this method should be as resilient as possible
-    puts "Exception in get_git_rev_info: #{oops.class} #{oops.message}"
+    puts "Exception in get_git_rev_info: #{oops.class} #{oops.message} #{oops.backtrace.join("\n")}"
     self
   ensure
     self.adjust_short_commit
@@ -314,6 +325,7 @@ class CbrainFileRevision
     self.class.load_static_revision_file
 
     cbrain_root = Pathname.new(Rails.root).parent
+puts "CBROOT=#{cbrain_root} FUKLLPATH=#{@fullpath}"
     relpath     = @fullpath ; relpath["#{cbrain_root}/"] = ""  # transforms /path/to/root/a/b/c -> /a/b/c"
     revinfo     = self.class.static_revision_for_relpath(relpath)
 

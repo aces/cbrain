@@ -96,8 +96,8 @@ class ClusterTask < CbrainTask
   def record_cbraintask_revs(caller_level=1) #:nodoc:
     baserev = ClusterTask::Revision_info
     subrev  = self.revision_info
-    self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}", :caller_level => caller_level + 1)
-    self.addlog("#{subrev.svn_id_file} rev. #{subrev.svn_id_rev}",   :caller_level => caller_level + 1)
+    self.addlog("#{baserev.file} rev. #{baserev.commit}", :caller_level => caller_level + 1)
+    self.addlog("#{subrev.file} rev. #{subrev.commit}",   :caller_level => caller_level + 1)
   end
 
 
@@ -350,7 +350,7 @@ class ClusterTask < CbrainTask
     # Return whether we found one or not
     return (results.size == 1)
   end
-  
+
 
   def we_are_in_workdir #:nodoc:
     full = self.full_cluster_workdir
@@ -1544,11 +1544,11 @@ class ClusterTask < CbrainTask
     self.addlog("Using Scir for '#{drm}' version '#{version}' implementation '#{impl}'.")
 
     impl_revinfo = scir_session.revision_info
-    impl_file    = impl_revinfo.svn_id_file
-    impl_rev     = impl_revinfo.svn_id_rev
-    impl_author  = impl_revinfo.svn_id_author
-    impl_date    = impl_revinfo.svn_id_date
-    impl_time    = impl_revinfo.svn_id_time
+    impl_file    = impl_revinfo.file
+    impl_rev     = impl_revinfo.commit
+    impl_author  = impl_revinfo.author
+    impl_date    = impl_revinfo.date
+    impl_time    = impl_revinfo.time
     self.addlog("Implementation in file '#{impl_file}' by '#{impl_author}' rev. '#{impl_rev}' from '#{impl_date + " " + impl_time}'.")
 
     # Erase leftover STDOUT and STDERR files; necessary

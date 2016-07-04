@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Simple Cluster Interface in Ruby
 # This is a replacement for the drmaa.rb library; it's more or less compatible
 # but a lot less feature rich. It's also pure ruby. More specific cluster-dependent
 # details are implemented in subclasses.
@@ -29,7 +30,7 @@ class Scir
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # Returns the full revision info string as created by SVN;
+  # Returns the full revision info string as created by git
   # the value returned is for the current class or subclass.
   def self.revision_info
     self.const_get("Revision_info")
@@ -51,12 +52,12 @@ class Scir
 
   # Returns the file name for the implementation.
   def self.drmaa_implementation
-    Scir.revision_info.svn_id_file
+    Scir.revision_info.file
   end
 
   # Returns the revision number for the implementation.
   def self.version
-    self.revision_info.svn_id_rev
+    self.revision_info.file
   end
 
   # Returns the class name for the implementation.

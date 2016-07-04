@@ -247,7 +247,7 @@ class Bourreau < RemoteResource
     info.merge!(
       # Bourreau info
       :bourreau_cms              => myself.cms_class || "Unconfigured",
-      :bourreau_cms_rev          => (myself.scir_session.revision_info.to_s rescue Object.revision_info.to_s),
+      :bourreau_cms_rev          => (myself.scir_session.revision_info rescue Object.revision_info),
       :tasks_max                 => queue_tasks_max,
       :tasks_tot                 => queue_tasks_tot,
 
@@ -307,7 +307,7 @@ class Bourreau < RemoteResource
     yml = "\n" +
           "#\n" +
           "# File created automatically on Portal Side\n" +
-          "# by " + self.revision_info.svn_id_pretty_file_rev_author_date + "\n" +
+          "# by " + self.revision_info.pretty({:file => true, :commit => true, :author => true, :date => true}) + "\n" +
           "#\n" +
           "\n" +
           "#{railsenv}:\n"

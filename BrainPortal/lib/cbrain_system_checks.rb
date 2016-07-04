@@ -131,6 +131,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     #-----------------------------------------------------------------------------
 
     rev = DataProvider.revision_info.self_update
+    puts rev
     # Invalid rev dates are 0000-00-00 or before 1971
     if (rev.date !~ /(\d\d\d\d)/ || Regexp.last_match[1].to_i < 1971)
       puts "C> \t- Error: We don't have a working mechanism for tracking revision numbers."
