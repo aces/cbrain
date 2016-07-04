@@ -421,7 +421,6 @@ $(function () {
       .prop('checked', true);
   });
 
-
   /*** Handle disables and requires relations between parameters ***/
 
 % #
@@ -445,7 +444,7 @@ $(function () {
 % #
 % # The actual maps: idIn -> [ids disabled/required by idIn]
 % disabledBy_map = makeReceiverActionMap.("disables-inputs")
-% requires_map = makeActorActionMap.("requires-inputs")
+% requires_map   = makeActorActionMap.("requires-inputs")
 % #
 % # Implement dynamic mutual exclusion within a group by pairwise adding to the disables map
 % for group in groups
@@ -460,12 +459,14 @@ $(function () {
 % end
 % #
   /* Javascript dictionaries for names, disabledBy, and requires */
-% # Produces a javascript version of the ruby map
-% jsMapOf = lambda do |hmap|
+% # Helper for producing a javascript version of the ruby map
+% jsMapOf = lambda do |hmap, numbers: false|
 %   n = hmap.size
 %   hmap.each_with_index do |(k,v),i|
 %    if v.is_a? Array
       <%= "\"#{k}\" : [" + v.map{ |s| "\"#{s}\"" }.join(',') + "]" + ((i == n-1) ? '' : ',') %>
+%    elsif numbers # Don't quote numbers
+      <%= "\"#{k}\" : " + v.to_s + ((i == n-1) ? '' : ',') %>
 %    else
       <%= "\"#{k}\" : \"" + v + "\"" + ((i == n-1) ? '' : ',') %>
 %    end
@@ -484,6 +485,27 @@ $(function () {
 
 %# Generate JS functions for handling disables/requires
 %#
+  // Function to map ids to names to make the messages a little prettier
+  var idToName = function(x){ return namesMap[x]; }
+
+  // Helper function that checks whether a given parameter is active
+  var isActiveParam = function(id) {
+    var targ = $( 'li.' + id + '.tsk-prm' );
+    if( targ.hasClass( 'flag' ) ){ // Flag case
+      return targ.find('.tsk-prm-chk').prop('checked');
+    }
+    return targ.find('.tsk-prm-opt').prop('checked'); // Non-flag case
+  }
+
+  // Helper for checking array containment because JS won't let you use 'in' for arrays in a useful way
+  var arrHas = function(arr,val){
+    return ($.inArray(val,arr) > -1)
+  }
+
+  // Warning message style written to tell the user when/why something is disabled or wrong
+  var warningStyle = 'style="display: block; float: right; font-style: normal; font-weight: normal; ' +
+                     'font-size: 0.95em; color: rgb(255,50,50); margin-right: 17pt"';
+
   /*
    * Disables the targets of every active parameter within its disables list
    * Also disables parameters whose required parameters are inactive, unless it
@@ -512,9 +534,7 @@ $(function () {
         target.find('.tsk-prm-in').val(''); // wipe textbox input areas
         target.find('ul.tsk-prm-list').find('li').has('.ui-icon-minus').remove(); // rm list subitems
         // Write warning message
-        var style = 'style="display: block; float: right; font-style: normal; font-weight: normal; ' +
-                    'font-size: 0.95em; color: rgb(255,50,50); margin-right: 17pt"';
-        var msg   = '<label class="disable-msg" ' + style + '>' + greyOutMsg  + '</label>';
+        var msg   = '<label class="disable-msg" ' + warningStyle + '>' + greyOutMsg  + '</label>';
         target.find('.tsk-prm-lbl').append( msg );
       }
       else {
@@ -522,20 +542,8 @@ $(function () {
       }
     }
 
-    // Function to map ids to names to make the messages a little prettier
-    var idToName = function(x){ return namesMap[x]; }
-
     // Get combined keyset of potentially affected parameters
     var affectedIds = $.unique(Object.keys(disabledByMap).concat(Object.keys(requiresMap)));
-
-    // Helper function that checks whether a given parameter is active
-    var isActiveParam = function(id) {
-      var targ = $( 'li.' + id + '.tsk-prm' );
-      if( targ.hasClass( 'flag' ) ){ // Flag case
-        return targ.find('.tsk-prm-chk').prop('checked');
-      }
-      return targ.find('.tsk-prm-opt').prop('checked'); // Non-flag case
-    }
 
     // Iterate over parameters, enabling and disabling as needed
     affectedIds.forEach( function( key ) {
@@ -586,7 +594,93 @@ $(function () {
 
   }
 
-  /* Optional parameters */
+  /*** Handle constraints on numerical parameters ***/
+% #
+% # Make lists of which parameters are affected by which constraints
+% mins = params.select { |p| p['type'] == 'Number' && p['minimum'] }
+% maxs = params.select { |p| p['type'] == 'Number' && p['maximum'] }
+% ints = params.select { |p| p['type'] == 'Number' && p['integer'] }
+  /* Maps and lists of constrained parameters */
+  var mins = {
+%   jsMapOf.( mins.inject({}){ |hmap,x| hmap.merge( x["id"] => x["minimum"] ) }, numbers: true )
+  };
+  var maxs = {
+%   jsMapOf.( maxs.inject({}){ |hmap,x| hmap.merge( x["id"] => x["maximum"] ) }, numbers: true )
+  };
+
+  var ints     = [<%= ints.map{ |v| "\"#{v['id']}\"" }.join(",") %>];
+  var exclMins = [<%= mins.select{ |p| p['exclusive-minimum'] }.map{ |v| "\"#{v['id']}\"" }.join(",") %>];
+  var exclMaxs = [<%= maxs.select{ |p| p['exclusive-maximum'] }.map{ |v| "\"#{v['id']}\"" }.join(",") %>];
+
+
+  /* Adds warnings to number parameters that violate number constraints */
+  function handleNumberConstraints() {
+
+    // Helper for adding or removing warnings
+    var toggleNumberConstraintWarning = function(target, shouldAdd, msg){
+      // Warning message properties
+      var cssType = 'num-warning-msg';
+      // Remove the (old) warning message
+      target.find('.tsk-prm-lbl').find('label.' + cssType).remove();
+      // Add a warning message
+      if( shouldAdd ) {
+        var formattedMsg = '<label class="'+ cssType + '" ' + warningStyle + '>' + msg  + '</label>';
+        target.find('.tsk-prm-lbl').append( formattedMsg );
+      }
+    }
+
+    // Helper for checking whether strings are integers
+    var isInt = function( n ){ return /^[-]?[0-9]+$/.test(n+''); }
+
+    // Get combined keyset of potentially affected parameters
+    var targs = $.unique(Object.keys(mins).concat(Object.keys(maxs).concat( ints )));
+
+    // Handle min and max violations
+    targs.forEach( function( key ) {
+
+      // Parse the current target value
+      var target  = $( 'li.' + key + '.tsk-prm' );
+      var currval = parseFloat( target.find('.tsk-prm-in').val() );
+
+      // Remove warnings from inactive parameters
+      if( ! isActiveParam( key ) ){
+        toggleNumberConstraintWarning( target, false, "" );
+        return;
+      }
+
+      // Handle min violations
+      if( arrHas(exclMins,key) && currval <= mins[ key ] ){
+        toggleNumberConstraintWarning( target, true, "Warning! Exclusive min parameter value is " + mins[ key ] );
+      }
+      else if( key in mins && currval < mins[ key ] ){
+        toggleNumberConstraintWarning( target, true, "Warning! Min parameter value is " + mins[ key ] );
+      }
+      // Handle max violations
+      else if( arrHas(exclMaxs,key) && currval >= maxs[ key ] ){
+        toggleNumberConstraintWarning( target, true, "Warning! Exclusive max parameter value is " + maxs[ key ] );
+      }
+      else if( key in maxs && currval > maxs[ key ] ){
+        toggleNumberConstraintWarning( target, true, "Warning! Max parameter value is " + maxs[ key ] );
+      }
+      // Handle integer violations
+      else if( arrHas(ints,key) && ! isInt( target.find('.tsk-prm-in').val() ) ){
+        toggleNumberConstraintWarning( target, true, "Warning! Parameter value must be an integer" );
+      }
+      else{
+        toggleNumberConstraintWarning( target, false, "" );
+      }
+
+    });
+
+  }
+
+  /* Permit real-time updates to the number warnings */
+  parameters.delegate('.tsk-prm-in', 'keyup', function() {
+    handleNumberConstraints();
+  })
+
+
+  /*** Optional parameters ***/
 
   /* Clicking on the parameter's checkbox toggles the parameter's state */
   parameters.delegate('.tsk-prm-opt, .tsk-prm-chk', 'change activate.tsk-prm', function () {
@@ -632,6 +726,9 @@ $(function () {
 
     /* Check for disables/requires updates */
     handleDisablesAndRequires();
+
+    /* Add warnings for violations of number constraints */
+    handleNumberConstraints();
 
   });
 
