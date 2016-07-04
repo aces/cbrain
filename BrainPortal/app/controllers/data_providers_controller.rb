@@ -190,13 +190,7 @@ class DataProvidersController < ApplicationController
   def is_alive
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
 
-    if @provider.alive_cached_valid?
-      is_alive = @provider.meta[:alive_cached]
-    else
-      is_alive = @provider.is_alive?
-      @provider.meta[:alive_cached_time] = Time.now.to_i
-      @provider.meta[:alive_cached] = is_alive
-    end
+    is_alive = @provider.is_alive_with_caching?
 
     respond_to do |format|
       format.html { render :text => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }
