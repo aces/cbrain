@@ -33,9 +33,19 @@ rails_command = $LOADED_FEATURES.detect { |path| path =~ /rails\/commands\/\w+\.
 program_name = Pathname.new(rails_command).basename(".rb").to_s if rails_command
 
 #puts_cyan "Program=#{program_name} ARGV=(#{ARGV.join(" | ")})"
+#puts_cyan "FirstArg=#{first_arg} RailsCommand=#{rails_command}"
+
+#
+# Exceptions By Program Name
+#
 
 if program_name == 'rake' # script/generate or script/destroy
   puts "C> \t- Running Rake '#{first_arg}'."
+elsif program_name == "rails" # probably 'generate', 'destroy', 'plugin' etc, but we can't tell!
+  puts "C> \t- Running Rails utility."
+elsif program_name == 'rspec' # test suite
+  puts "C> \t- Testing with 'rspec'."
+  CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
 else
   if ENV['CBRAIN_SKIP_VALIDATIONS']
     puts "C> \t- Warning: environment variable 'CBRAIN_SKIP_VALIDATIONS' is set, so we\n"

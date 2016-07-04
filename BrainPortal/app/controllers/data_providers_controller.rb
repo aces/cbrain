@@ -185,10 +185,12 @@ class DataProvidersController < ApplicationController
     end
   end
 
-  # Returns information about the aliveness of +dataprovider+.
+  # Returns information about the aliveness of +dataprovider+. First checks if a result for this
+  #+dataprovider+ has been cached, if not it checks directly and updates the cache
   def is_alive
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
-    is_alive =  @provider.is_alive?
+
+    is_alive = @provider.is_alive_with_caching?
 
     respond_to do |format|
       format.html { render :text => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }

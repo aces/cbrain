@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -77,8 +77,22 @@
 
   <% t.column("Alive?", :alive) do |dp| %>
     <% if dp.online? %>
-      <%= staggered_loading "span", url_for(:action  => :is_alive, :id  => dp.id), :error_message  => "<span class=\"warning\">???</span>" do %>
-        <span class="loading_message"><%= html_colorize("(...)","magenta") %></span>
+      <% if dp.alive_cached_valid? %>
+        <%= red_if( !dp.is_alive_with_caching?, "Yes", "No") %>
+      <% else %>
+        <span class="dp_alive_btn" id="<%= "alive" + h(dp.id) %>">
+          <%= on_click_ajax_replace( { :element   => "span",
+                                       :url       => url_for(:controller => :data_providers, :action  => :is_alive, :id => dp.id),
+                                       :replace   => "alive" + h(dp.id)
+                                     },
+                                     {
+                                       :before  => "<span class='loading_message'>Loading...</span>",
+                                       :class     => "dp_alive_btn"
+                                     }
+                                   ) do %>
+            <a href="#" class="action_link">Check</a>
+          <% end %>
+        </span>
       <% end %>
     <% else %>
       No
@@ -109,10 +123,10 @@
       :sortable => true
     ) { |dp| overlay_description(dp.description) }
 
-    t.column("Operations", :operations) do |dp|
-      if dp.is_browsable?(current_user) && dp.can_be_accessed_by?(current_user) && dp.online?
-        link_to 'Browse', browse_data_provider_path(dp), :class => 'action_link'
-      end
-    end
-  %>
+    %>
+    <% t.column("Operations", :operations) do |dp| %>
+      <% if dp.is_browsable?(current_user) && dp.can_be_accessed_by?(current_user) && dp.online? %>
+        <%= link_to 'Browse', browse_data_provider_path(dp), :class => 'action_link' %>
+      <% end %>
+    <% end %>
 <% end %>
