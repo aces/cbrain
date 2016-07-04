@@ -76,8 +76,24 @@
   %>
 
   <% t.column("Alive?", :alive) do |dp| %>
-    <% if dp.online? %>
-      <div id="<%= "alive" + h(dp.id) %>"><%= html_colorize("(...)","magenta") %></div>
+      <% if dp.online? %>
+        <% if dp.alive_cached_valid? %>
+          <%= red_if( !dp.meta[:alive_cached], "Yes", "No") %>
+        <% else %>
+          <span class="dp_alive_btn" id="<%= "alive" + h(dp.id) %>">
+          <%= on_click_ajax_replace( { :element   => "span",
+                                                     :url           => url_for(:controller => :data_providers, :action  => :is_alive, :id => dp.id),
+                                                     :replace   => "alive" + h(dp.id)
+                                                   },
+                                                   {
+                                                     :before  => "<span class='loading_message'>Loading...</span>",
+                                                     :class     => "dp_alive_btn"
+                                                   }
+                                                  ) do %>
+            <a href="#" class="action_link">Check</a>
+          <% end %>
+          </span>
+        <% end %>
     <% else %>
       No
     <% end %>
@@ -113,19 +129,6 @@
         <%= link_to 'Browse', browse_data_provider_path(dp), :class => 'action_link' %>
       <% end %>
 
-      <% if dp.online? %>
-        <%= on_click_ajax_replace( { :element   => "div",
-                                                   :url           => url_for(:controller => :data_providers, :action  => :is_alive, :id => dp.id),
-                                                   :replace   => "alive" + h(dp.id)
-                                                 },
-                                                 {
-                                                   :before  => "<div class='loading_message'>Loading...</div>",
-                                                   :class     => "dp_alive_btn"
-                                                 }
-                                                ) do %>
-          <a href="#" class="action_link">Check</a>
 
-      <% end %>
-    <% end %>
   <% end %>
 <% end %>

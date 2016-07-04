@@ -331,10 +331,25 @@ class DataProvider < ActiveRecord::Base
   #################################################################
 
   # This method must not block, and must respond quickly.
+  # Caches alive status for one minute
   # Returns +true+ or +false+.
-  def is_alive?
+  def is_alive?(check_cache = true)
     return false unless self.online?
+
+    # checks cache
+    if check_cache && self.alive_cached_valid?
+      return self.meta[:alive_cached]
+    end
+
+    # real check, cache result
+    alive = impl_is_alive?
+    self.meta[:alive_cached] = alive
+    self.meta[:alive_cached_time] = Time.now.to_i
     return impl_is_alive? ? true : false
+  end
+
+  def alive_cached_valid?
+    Time.now.to_i - self.meta[:alive_cached_time] <= 60 rescue false
   end
 
   # Raises an exception if is_alive? is +false+, otherwise

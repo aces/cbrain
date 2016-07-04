@@ -1019,9 +1019,6 @@
         timeout: 50000,
         success: function(data) {
           replace_elem.html(data);
-          replace_elem.trigger("new_content");
-          current_element.removeClass("dp_alive_btn");
-          current_element.hide();
         },
         error: function(e) {
           if (!error_message) {
@@ -1034,12 +1031,6 @@
         }
       });
     }
-
-    // Hides "Check" btn so that "Check All" doesn't re-check it
-    $(document).delegate(".dp_alive_btn", "click", function(event){
-      $(this).removeClass("dp_alive_btn");
-      $(this).hide();
-    });
 
     // Allows to submit an interval of two dates, uses
     // datepicker of jquery-ui, see:
