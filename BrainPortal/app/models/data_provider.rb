@@ -1023,6 +1023,31 @@ class DataProvider < ActiveRecord::Base
     header
   end
 
+  # Checks whether DP is alive, but hits the cache first if it's good
+  def is_alive_with_caching?
+    if self.alive_cached_valid?
+      return self.meta[:alive_cached]
+    else
+      # real check, cache result
+      alive = self.is_alive?
+      self.meta[:alive_cached] = alive
+      self.meta[:alive_cached_time] = Time.now.to_i
+      return alive
+    end
+  end
+
+  # This method checks whether cache is still good, lasts 1 minute
+  def alive_cached_valid?
+    valid = (Time.now.to_i - self.meta[:alive_cached_time] <= 60)
+    # Check that the alive cache is actually a boolean
+    if !(self.meta[:alive_cached] == true || self.meta[:alive_cached] == false)
+      valid = false
+    end
+    valid
+  rescue
+    false
+  end
+
 
 
   #################################################################
