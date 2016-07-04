@@ -215,6 +215,16 @@
                         "id": "http://github.com/boutiques/boutiques-schema/input/exclusive-maximum",
                         "description": "Specify whether the maximum is exclusive or not. May only be used with Number type inputs.",
                         "type": "boolean"
+                    },
+                    "min-list-entries": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/min-list-entries",
+                        "description": "Specify the minimum number of entries in the list. May only be used with List type inputs.",
+                        "type": "number"
+                    },
+                    "max-list-entries": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/max-list-entries",
+                        "description": "Specify the maximum number of entries in the list. May only be used with List type inputs.",
+                        "type": "number"
                     }
                 },
                 "required": [
@@ -222,8 +232,11 @@
                     "id",
                     "type"
                 ],
+                "additionalProperties": true,
                 "dependencies": {
                     "command-line-flag-separator": ["command-line-flag"],
+                    "min-list-entries": ["list"],
+                    "max-list-entries": ["list"],
                     "enum-value-choices": {
                         "properties": {
                             "type": {"enum": ["Enum"]}

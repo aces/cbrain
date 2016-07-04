@@ -172,7 +172,10 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   def after_form #:nodoc:
 % unless params.empty?
     params = self.params
-
+params.keys.each do |k|
+params_errors.add(k,params[k].to_s)
+end
+return ""
 %   unless file_lists.empty?
     # Assign the default input file list from interface_userfile_ids to unset
     # file list parameters.
@@ -218,6 +221,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % idsym    = lambda { |param| ":'#{param['id']}'" }
 % nilcheck = lambda { |param| "params[#{idsym.(param)}].nil?" }
 %#
+%# Enum Check
 % hasEnumVars = params.any?{ |p| p['type'].downcase == 'enum' }
 % if hasEnumVars
     # Check that any enum parameters have been given allowable values
@@ -225,30 +229,55 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %  for param in params
 %   next unless param['type'].downcase == 'enum'
 %   check = '[' + param['enum-value-choices'].map{ |s| "'#{s}'" }.join(',') + "].include?(params[#{idsym.(param)}])"
-    params_errors.add(<%=idsym.(param)%>,errmsg) unless <%= nilcheck.(param) %> || <%= check %>
+    params_errors.add(<%=idsym.(param)%>, errmsg) unless <%= nilcheck.(param) %> || <%= check %>
 %  end
 
 % end # hasEnumVars check
 %#
+%# Min/max/int Number check
 % if params.any? { |p| p['minimum'] || p['maximum'] || p['integer'] }
     # Check that number parameters with contraints have been given permissable values
 % nerrmsg = lambda { |prm,str| "\"violates #{prm['exclusive-'+str] ? 'exclusive' : 'inclusive'} #{str} value #{prm[str].to_s}\"" }
 % for p in params.select{ |q| q['type'].downcase == 'number'} # since we support arbitrary fields regardless of type
 %  if p['minimum']
 %   ncheck = "params[#{idsym.(p)}].to_f %s #{p["minimum"]}" % (p['exclusive-minimum'] ? '>' : '>=')
-    params_errors.add(<%=idsym.(p)+','+nerrmsg.(p,"minimum")%>) unless <%= nilcheck.(p) %> || <%= ncheck %>
+    params_errors.add(<%=idsym.(p) + ', ' + nerrmsg.(p,"minimum")%>) unless <%= nilcheck.(p) %> || <%= ncheck %>
 %  end
 %  if p['maximum']
 %   ncheck = "params[#{idsym.(p)}].to_f %s #{p["maximum"]}" % (p['exclusive-maximum'] ? '<' : '<=')
-    params_errors.add(<%=idsym.(p)+','+nerrmsg.(p,"maximum")%>) unless <%= nilcheck.(p) %> || <%= ncheck %>
+    params_errors.add(<%=idsym.(p) + ', ' + nerrmsg.(p,"maximum")%>) unless <%= nilcheck.(p) %> || <%= ncheck %>
 %  end
 %  if p['integer']
 %   ncheck = "(Integer(params[#{idsym.(p)}].to_s) rescue false)"
-    params_errors.add(<%=idsym.(p)%>,'must be an integer!') unless <%= nilcheck.(p) %> || <%= ncheck %>
+    params_errors.add(<%=idsym.(p)%>, 'must be an integer!') unless <%= nilcheck.(p) %> || <%= ncheck %>
 %  end
 % end
 
 % end # min/max/int checks for numbers
+%#
+%# List properties check
+% if params.any? { |p| p['list'] == true && (p['max-list-entries'] || p['min-list-entries']) }
+% maxMap  = params.inject({}){ |hm,p| (mle = p['max-list-entries']) ? hm.merge(p['id'] => mle) : hm }
+% minMap  = params.inject({}){ |hm,p| (mle = p['min-list-entries']) ? hm.merge(p['id'] => mle) : hm }
+% lerrmsg = lambda { |m,val| "\"violates #{m} list length requirement (#{val})\"" }
+% if maxMap.keys.length > 0
+    # Check that max list lengths are not violated
+%  params.select{ |p| p['list'] == true && p['max-list-entries'] }.each do |p|
+%   lcheck = "( params[#{idsym.(p)}].length <= #{maxMap[p['id']]} )"
+    params_errors.add(<%= idsym.(p) + ', ' + lerrmsg.("max", maxMap[p['id']]) %>) unless <%= nilcheck.(p) %> || <%= lcheck %>
+%  end
+
+% end
+% if minMap.keys.length > 0
+    # Check that min list lengths are not violated
+%  params.select{ |p| p['list'] == true && p['min-list-entries'] }.each do |p|
+%   lcheck = "( params[#{idsym.(p)}].length >= #{minMap[p['id']]} )"
+    params_errors.add(<%= idsym.(p) + ', ' + lerrmsg.("min", minMap[p['id']]) %>) unless <%= nilcheck.(p) %> || <%= lcheck %>
+%  end
+
+% end
+% end # min/max list length check
+%#
 %#
 %####
 %#  Write the checks for requires-inputs and disables-inputs.
