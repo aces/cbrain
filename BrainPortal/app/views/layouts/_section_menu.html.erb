@@ -29,17 +29,25 @@
 <div id="header">
 
   <h1>
-    <%= link_to_if(current_user, RemoteResource.current_resource.name.presence || "CBRAIN", start_page_path) %>
-    <% if current_user && current_project && !(params[:controller] == "groups" && params[:action] == "index") %>
+    <%= link_to_if(current_user.present?, RemoteResource.current_resource.name.presence || "CBRAIN", start_page_path) %>
+
+    <% if current_user && !(params[:controller] == "groups" && params[:action] == "index") %>
       -
-      <%= hover_dropdown(link_to(current_project.name, group_path(current_project)), :dropdown_class => "project_select_dropdown") do %>
-          <% current_user.groups.where(:type => "WorkGroup", :invisible => false).limit(20).all.each do |g| %>
-            <%= link_to h(crop_text_to(15, g.name)), {:controller => :groups, :action => :switch, :id  => g.id}, {:method => :post, :class => "button"} %><br>
+      <%= hover_dropdown(link_to(current_project.try(:name) || "All", current_project ? group_path(current_project) : groups_path), :dropdown_class => "project_select_dropdown") do %>
+          <div class="title">Quick Project Switcher</div>
+
+          <% current_user.groups.where(:type => "WorkGroup", :invisible => false).order(:name).limit(20).all.each do |g| %>
+            <%= link_to h(crop_text_to(95, g.name)),
+                {:controller => :groups, :action => :switch, :id  => g.id}, {:method => :post, :class => "button"} %>
           <% end %>
-          <%= link_to "All Projects", {:controller => :groups, :action => :switch, :id  => "all"}, {:method => :post, :class => "button"} %><br>
-          <%= link_to "More Projects", groups_path, :class => "button" %>
+
+          <div class="box_spacer"></div>
+          <%= link_to "All (no specific project: see all files and tasks)", {:controller => :groups, :action => :switch, :id  => "all"}, {:method => :post, :class => "button"} %>
+          <%= link_to "(Full project list)", groups_path, :class => "button" %>
       <% end %>
+
     <% end %>
+
     <%= yield(:title) %>
   </h1>
 

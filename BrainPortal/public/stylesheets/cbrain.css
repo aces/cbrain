@@ -1112,24 +1112,32 @@ pre {
   font-size: 4em;
 }
 
+.project_select_dropdown .title {
+  font-size: 18px;
+  width: 100%;
+  color: white;
+  background: #0471b4;
+  margin: 0;
+  text-align: center;
+  padding: 0 0 0.3em 0;
+}
+
 .project_select_dropdown {
-  border: 5px solid #05A3D6;
-  border-top-style: none;
-  border-right-style: none;
-  border-bottom-style: none;
-  background-color: #F1F1F1;
+  border: 0.2em solid #0471b4;
+  background-color: white;
   max-height: 15em;
-  overflow-y: auto;
   white-space: nowrap;
 }
 
-.project_select_dropdown a{
+.project_select_dropdown a {
   font-size: 0.5em;
   color: #222!important;
   padding: 0.5em 0em 0.5em 0.5em;
-  margin: 0em, 0.1em, 0em, 0.1em;
   min-width: 160px;
   text-align: left;
+  display: block;
+  margin: 0;
+  border-radius: 0;
 }
 
 .project_select_dropdown:hover {
