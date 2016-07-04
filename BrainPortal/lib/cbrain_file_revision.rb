@@ -101,7 +101,7 @@ class CbrainFileRevision
 
   def pretty(rev_fields)
     # check if the requested info is available, if not we have to update from git
-    if (rev_fields.key?(:file) && @basename == nil) || (rev_fields.key?(:commit) && @commit == nil) || (rev_fields.key?(:author) && @author == nil) || (rev_fields.key?(:date) && @date == nil) || (rev_fields.key?(:time) && @time == nil)
+    if (rev_fields.key?(:file) && @basename.nil?) || (rev_fields.key?(:commit) && @commit.nil?) || (rev_fields.key?(:author) && @author.nil?) || (rev_fields.key?(:date) && @date.nil?) || (rev_fields.key?(:time) && @time.nil?)
       self_update()
     end
 
