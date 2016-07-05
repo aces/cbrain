@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 ###################################################################
@@ -26,6 +26,25 @@
 class Object #:nodoc:
 
   include CBRAINExtensions::ObjectExtensions::DeepClone
-  
+
+  # This method returns the value of the class constant
+  # named 'Revision_info', if it exists; otherwise it
+  # returns a default string in the same format
+  def self.revision_info
+    if self.const_defined?("Revision_info")
+      self.const_get("Revision_info")
+    else
+      CbrainFileRevision.new("") # dummy info object with dummy attributes
+    end
+  end
+
+  # This method returns the value of the object's class constant
+  # named 'Revision_info', just like the class method of the
+  # same name.
+  def revision_info
+    self.class.revision_info
+  end
+
+
 end
 

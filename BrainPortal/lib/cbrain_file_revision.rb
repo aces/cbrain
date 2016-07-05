@@ -80,9 +80,6 @@ class CbrainFileRevision
   # Official attributes
   attr_accessor :author, :commit, :short_commit, :date, :time
 
-  # Fake SVN ID
-  attr_accessor :fake_svn_id_string
-
   def initialize(fullpath) #:nodoc:
     @fullpath = fullpath.to_s
   end
@@ -99,11 +96,18 @@ class CbrainFileRevision
     self.new(fullpath)
   end
 
+  def to_s
+    self.pretty({:commit => true, :author => true, :date => true})
+  end
+
   def pretty(rev_fields)
-    # check if the requested info is available, if not we have to update from git
+    # check if info is available, if not we have to update
     if (rev_fields.key?(:file) && @basename.nil?) || (rev_fields.key?(:commit) && @short_commit.nil?) || (rev_fields.key?(:author) && @author.nil?) || (rev_fields.key?(:date) && @date.nil?) || (rev_fields.key?(:time) && @time.nil?)
       self_update()
     end
+
+    # default
+    pretty_string = @short_commit + " " + @author + " " + @date
 
     if ( rev_fields.key?(:file) && rev_fields.key?(:commit) && rev_fields.key?(:author) && rev_fields.key?(:date))
       pretty_string = @basename + " " + @short_commit + " " + @author + " " + @date
@@ -117,6 +121,7 @@ class CbrainFileRevision
       pretty_string = @date + " " + @time
     end
 
+    p pretty_string
     return pretty_string
   end
 
