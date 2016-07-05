@@ -695,9 +695,6 @@ $(function () {
       param.find('.tsk-prm-in').each(function () {
         var name = $(this).data('name');
 
-        /* Lists need to be sent with [] for proper server-side handling */
-//        if (param.hasClass('list')) name += '[]';
-
         $(this).attr('name', name);
       });
 
@@ -785,7 +782,7 @@ $(function () {
   /* Add/remove buttons for list parameters */
 
   /* Clicking on a '+' button adds a new value row and enables the parameter */
-  parameters.delegate('.tsk-prm-add', 'click', function () {
+  parameters.delegate('.tsk-prm-add.ui-icon-plus', 'click', function () {
     var name = $(this)
       .siblings('.tsk-prm-in')
       .attr('name');
@@ -820,7 +817,7 @@ $(function () {
   });
 
   /* Clicking on a '-' button removes the row */
-  parameters.delegate('.tsk-prm-rm', 'click', function () {
+  parameters.delegate('.tsk-prm-rm, .ui-icon-minus', 'click', function () {
     $(this)
       .closest('li')
       .remove();
