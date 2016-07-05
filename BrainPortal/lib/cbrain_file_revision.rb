@@ -101,18 +101,18 @@ class CbrainFileRevision
 
   def pretty(rev_fields)
     # check if the requested info is available, if not we have to update from git
-    if (rev_fields.key?(:file) && @basename.nil?) || (rev_fields.key?(:commit) && @commit.nil?) || (rev_fields.key?(:author) && @author.nil?) || (rev_fields.key?(:date) && @date.nil?) || (rev_fields.key?(:time) && @time.nil?)
+    if (rev_fields.key?(:file) && @basename.nil?) || (rev_fields.key?(:commit) && @short_commit.nil?) || (rev_fields.key?(:author) && @author.nil?) || (rev_fields.key?(:date) && @date.nil?) || (rev_fields.key?(:time) && @time.nil?)
       self_update()
     end
 
     if ( rev_fields.key?(:file) && rev_fields.key?(:commit) && rev_fields.key?(:author) && rev_fields.key?(:date))
-      pretty_string = @basename + " " + @commit + " " + @author + " " + @date
+      pretty_string = @basename + " " + @short_commit + " " + @author + " " + @date
     elsif ( rev_fields.key?(:commit) && rev_fields.key?(:author) && rev_fields.key?(:date) )
-      pretty_string = @commit + " " + @author + " " + @date
+      pretty_string = @short_commit + " " + @author + " " + @date
     elsif ( rev_fields.key?(:commit) && rev_fields.key?(:date) && rev_fields.key?(:time) )
-      pretty_string = @commit + " " + @date + " " + @time
+      pretty_string = @short_commit + " " + @date + " " + @time
     elsif ( rev_fields.key?(:author) && rev_fields.key?(:commit) )
-      pretty_string  = @author + " " + @commit
+      pretty_string  = @author + " " + @short_commit
     elsif ( rev_fields.key?(:date) && rev_fields.key?(:time) )
       pretty_string = @date + " " + @time
     end
@@ -325,7 +325,6 @@ class CbrainFileRevision
     self.class.load_static_revision_file
 
     cbrain_root = Pathname.new(Rails.root).parent
-puts "CBROOT=#{cbrain_root} FUKLLPATH=#{@fullpath}"
     relpath     = @fullpath ; relpath["#{cbrain_root}/"] = ""  # transforms /path/to/root/a/b/c -> /a/b/c"
     revinfo     = self.class.static_revision_for_relpath(relpath)
 

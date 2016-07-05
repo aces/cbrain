@@ -272,7 +272,7 @@ module ActRecLog
     class_name     = context.class.to_s
     class_name     = context.to_s if class_name == "Class"
     rev_info       = context.revision_info
-    pretty_info    = rev_info.commit
+    pretty_info    = rev_info.short_commit
 
     full_message   = "#{class_name} rev. #{pretty_info}"
     full_message  += " #{message}" unless message.blank?

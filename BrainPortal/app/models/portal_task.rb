@@ -131,8 +131,8 @@ class PortalTask < CbrainTask
     super(arguments)
     baserev = Revision_info
     subrev  = self.revision_info
-    self.addlog("#{baserev.basename} rev. #{baserev.commit}", :caller_level => 2)
-    self.addlog("#{subrev.basename} rev. #{subrev.commit}",   :caller_level => 2)
+    self.addlog("#{baserev.basename} rev. #{baserev.short_commit}", :caller_level => 2)
+    self.addlog("#{subrev.basename} rev. #{subrev.short_commit}",   :caller_level => 2)
   end
 
   # Backwards compatibility auto adaptation:

@@ -235,7 +235,7 @@ class Bourreau < RemoteResource
     worker_pids  = workers.map(&:pid).join(",")
 
     worker_revinfo    = BourreauWorker.revision_info.self_update
-    worker_lc_rev     = worker_revinfo.commit
+    worker_lc_rev     = worker_revinfo.short_commit
     worker_lc_author  = worker_revinfo.author
     worker_lc_date    = worker_revinfo.datetime
 
