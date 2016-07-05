@@ -737,25 +737,29 @@ $(function() {
 
             // same regex as the userfiles model validation
             var file_pattern = /^[a-zA-Z0-9][\w\~\!\@\#\%\^\&\*\(\)\-\+\=\:\[\]\{\}\|\<\>\,\.\?]*$/;
-            var illegal_filename = file_pattern.test($(this).val());
+            var bad_chars = file_pattern.test($(this).val());
+            var spaces_in_name = ($(this).val()).includes(" ");
 
             var file_too_big;
             if ( max > 0 ){
-              file_too_big = this.files && this.files[0] && max && this.files[0].size > max
+              file_too_big = this.files && this.files[0] && max && this.files[0].size > max;
             } else {
               file_too_big = false;
             }
 
-            bad_file = ( illegal_filename || file_too_big );
+            bad_file = ( bad_chars || file_too_big || spaces_in_name );
 
-            if ( illegal_filename ) {
-              warning_text += "Illegal filename: must start with letter/digit and no spaces, slashes, or ASCII nulls allowed. ";
+            if ( bad_chars ) {
+              warning_text += "Illegal filename: must start with letter/digit, and no slashes, or ASCII nulls allowed. ";
+            }
+            if ( spaces_in_name ) {
+              warning_text += "No spaces allowed in filename! ";
             }
             if ( file_too_big ) {
-              warning_text += "Too large! (> 1 MB) "
+              warning_text += "Too large! (> 1 MB) ";
             }
 
-            $('#up-file-warn').text(warning_text)
+            $('#up-file-warn').text(warning_text);
 
             $('#up-file-warn').css({
               visibility: bad_file ? 'visible' : 'hidden'
