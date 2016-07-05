@@ -725,7 +725,7 @@ $(function() {
       if (window.FileReader)
         // Checks the file for problems, and disables the upload button if:
         //   - no file selected
-        //   - spaces in filename
+        //   - illegal characters in file name
         //   - filesize greater than maximum allowed by server
         $('#upload-dialog')
           .undelegate('#up-file', 'change.uf.file-problem')
@@ -735,7 +735,10 @@ $(function() {
             var bad_file;
             var selected = !!$(this).val();
 
-            var spaces_in_filename = $(this).val().includes(" ");
+            // same regex as the userfiles model validation
+            var file_pattern = /^[a-zA-Z0-9][\w\~\!\@\#\%\^\&\*\(\)\-\+\=\:\[\]\{\}\|\<\>\,\.\?]*$/;
+            var illegal_filename = file_pattern.test($(this).val());
+
             var file_too_big;
             if ( max > 0 ){
               file_too_big = this.files && this.files[0] && max && this.files[0].size > max
@@ -743,10 +746,10 @@ $(function() {
               file_too_big = false;
             }
 
-            bad_file = ( spaces_in_filename || file_too_big );
+            bad_file = ( illegal_filename || file_too_big );
 
-            if ( spaces_in_filename ) {
-              warning_text += "Spaces in filename not allowed! ";
+            if ( illegal_filename ) {
+              warning_text += "Illegal filename: must start with letter/digit and no spaces, slashes, or ASCII nulls allowed. ";
             }
             if ( file_too_big ) {
               warning_text += "Too large! (> 1 MB) "
