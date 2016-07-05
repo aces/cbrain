@@ -680,7 +680,7 @@ $(function () {
           toggleNumberConstraintWarning( target, false, "" );
         }
         // Leave if an error is present (avoid list error suppression)
-        if( target.find( cssType ).length > 0 ){ return; }
+        if( target.find( 'label.' + cssType ).length > 0 ){ return; }
       }
 
     });
