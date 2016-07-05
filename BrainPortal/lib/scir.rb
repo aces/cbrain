@@ -52,12 +52,12 @@ class Scir
 
   # Returns the file name for the implementation.
   def self.drmaa_implementation
-    Scir.revision_info.file
+    Scir.revision_info.basename
   end
 
   # Returns the revision number for the implementation.
   def self.version
-    self.revision_info.file
+    self.revision_info.basename
   end
 
   # Returns the class name for the implementation.

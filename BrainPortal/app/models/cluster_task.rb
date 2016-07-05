@@ -96,8 +96,8 @@ class ClusterTask < CbrainTask
   def record_cbraintask_revs(caller_level=1) #:nodoc:
     baserev = ClusterTask::Revision_info
     subrev  = self.revision_info
-    self.addlog("#{baserev.file} rev. #{baserev.short_commit}", :caller_level => caller_level + 1)
-    self.addlog("#{subrev.file} rev. #{subrev.short_commit}",   :caller_level => caller_level + 1)
+    self.addlog("#{baserev.basename} rev. #{baserev.short_commit}", :caller_level => caller_level + 1)
+    self.addlog("#{subrev.basename} rev. #{subrev.short_commit}",   :caller_level => caller_level + 1)
   end
 
 
@@ -1544,7 +1544,7 @@ class ClusterTask < CbrainTask
     self.addlog("Using Scir for '#{drm}' version '#{version}' implementation '#{impl}'.")
 
     impl_revinfo = scir_session.revision_info
-    impl_file    = impl_revinfo.file
+    impl_file    = impl_revinfo.basename
     impl_rev     = impl_revinfo.short_commit
     impl_author  = impl_revinfo.author
     impl_date    = impl_revinfo.date

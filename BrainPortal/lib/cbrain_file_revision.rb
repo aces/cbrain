@@ -100,7 +100,7 @@ class CbrainFileRevision
     self.pretty({:commit => true, :author => true, :date => true})
   end
 
-  def pretty(rev_fields)
+  def pretty(rev_fields = {})
     # check if info is available, if not we have to update
     if (rev_fields.key?(:file) && @basename.nil?) || (rev_fields.key?(:commit) && @short_commit.nil?) || (rev_fields.key?(:author) && @author.nil?) || (rev_fields.key?(:date) && @date.nil?) || (rev_fields.key?(:time) && @time.nil?)
       self_update()
@@ -121,7 +121,6 @@ class CbrainFileRevision
       pretty_string = @date + " " + @time
     end
 
-    p pretty_string
     return pretty_string
   end
 
@@ -252,7 +251,7 @@ class CbrainFileRevision
 
     self
   rescue => oops # this method should be as resilient as possible
-    puts "Exception in get_git_rev_info: #{oops.class} #{oops.message} #{oops.backtrace.join("\n")}"
+    puts "Exception in get_git_rev_info: #{oops.class} #{oops.message}"
     self
   ensure
     self.adjust_short_commit
