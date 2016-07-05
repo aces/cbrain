@@ -124,7 +124,7 @@
   <ul class="tsk-prm-list">
     <li>
       <%%
-        input.(id, name+"[]",
+        input.(id, name + "[]",
           value:       first,
           optional:    optional,
           placeholder: placeholder
@@ -696,7 +696,7 @@ $(function () {
         var name = $(this).data('name');
 
         /* Lists need to be sent with [] for proper server-side handling */
-        if (param.hasClass('list')) name += '[]';
+//        if (param.hasClass('list')) name += '[]';
 
         $(this).attr('name', name);
       });

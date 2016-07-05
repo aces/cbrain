@@ -172,10 +172,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   def after_form #:nodoc:
 % unless params.empty?
     params = self.params
-params.keys.each do |k|
-params_errors.add(k,params[k].to_s)
-end
-return ""
+
 %   unless file_lists.empty?
     # Assign the default input file list from interface_userfile_ids to unset
     # file list parameters.
@@ -217,9 +214,11 @@ return ""
 %####
 %# Constraint and type checks
 %#
-%# Helpers
+    # Helpers
 % idsym    = lambda { |param| ":'#{param['id']}'" }
 % nilcheck = lambda { |param| "params[#{idsym.(param)}].nil?" }
+    list = lambda { |sym| (s = params[sym]).is_a?(Enumerable) ? s : [s] }
+
 %#
 %# Enum Check
 % hasEnumVars = params.any?{ |p| p['type'].downcase == 'enum' }
@@ -240,16 +239,16 @@ return ""
 % nerrmsg = lambda { |prm,str| "\"violates #{prm['exclusive-'+str] ? 'exclusive' : 'inclusive'} #{str} value #{prm[str].to_s}\"" }
 % for p in params.select{ |q| q['type'].downcase == 'number'} # since we support arbitrary fields regardless of type
 %  if p['minimum']
-%   ncheck = "params[#{idsym.(p)}].to_f %s #{p["minimum"]}" % (p['exclusive-minimum'] ? '>' : '>=')
+%   ncheck = "list.(#{idsym.(p)}).all? { |v| v.to_f %s #{p["minimum"]} }" % (p['exclusive-minimum'] ? '>' : '>=')
     params_errors.add(<%=idsym.(p) + ', ' + nerrmsg.(p,"minimum")%>) unless <%= nilcheck.(p) %> || <%= ncheck %>
 %  end
 %  if p['maximum']
-%   ncheck = "params[#{idsym.(p)}].to_f %s #{p["maximum"]}" % (p['exclusive-maximum'] ? '<' : '<=')
+%   ncheck = "list.(#{idsym.(p)}).all? { |v| v.to_f %s #{p["maximum"]} }" % (p['exclusive-maximum'] ? '<' : '<=')
     params_errors.add(<%=idsym.(p) + ', ' + nerrmsg.(p,"maximum")%>) unless <%= nilcheck.(p) %> || <%= ncheck %>
 %  end
 %  if p['integer']
-%   ncheck = "(Integer(params[#{idsym.(p)}].to_s) rescue false)"
-    params_errors.add(<%=idsym.(p)%>, 'must be an integer!') unless <%= nilcheck.(p) %> || <%= ncheck %>
+%   ncheck = "( list.(#{idsym.(p)}).all? { |x| Integer(x.to_s) } rescue false )"
+    params_errors.add(<%=idsym.(p)%>, "must be an integer") unless <%= nilcheck.(p) %> || <%= ncheck %>
 %  end
 % end
 
@@ -263,7 +262,7 @@ return ""
 % if maxMap.keys.length > 0
     # Check that max list lengths are not violated
 %  params.select{ |p| p['list'] == true && p['max-list-entries'] }.each do |p|
-%   lcheck = "( params[#{idsym.(p)}].length <= #{maxMap[p['id']]} )"
+%   lcheck = "( list.(#{idsym.(p)}).length <= #{maxMap[p['id']]} )"
     params_errors.add(<%= idsym.(p) + ', ' + lerrmsg.("max", maxMap[p['id']]) %>) unless <%= nilcheck.(p) %> || <%= lcheck %>
 %  end
 
@@ -271,7 +270,7 @@ return ""
 % if minMap.keys.length > 0
     # Check that min list lengths are not violated
 %  params.select{ |p| p['list'] == true && p['min-list-entries'] }.each do |p|
-%   lcheck = "( params[#{idsym.(p)}].length >= #{minMap[p['id']]} )"
+%   lcheck = "( list.(#{idsym.(p)}).length >= #{minMap[p['id']]} )"
     params_errors.add(<%= idsym.(p) + ', ' + lerrmsg.("min", minMap[p['id']]) %>) unless <%= nilcheck.(p) %> || <%= lcheck %>
 %  end
 
