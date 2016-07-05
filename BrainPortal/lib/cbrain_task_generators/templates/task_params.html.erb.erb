@@ -544,6 +544,9 @@ $(function () {
 
     // Get combined keyset of potentially affected parameters
     var affectedIds = $.unique(Object.keys(disabledByMap).concat(Object.keys(requiresMap)));
+    // Run twice because the order matters: a param can be wrongly disabled if it is processed before its
+    // disabler is deactivated
+    affectedIds = affectedIds.concat( affectedIds.slice() )
 
     // Iterate over parameters, enabling and disabling as needed
     affectedIds.forEach( function( key ) {
@@ -616,10 +619,11 @@ $(function () {
   /* Adds warnings to number parameters that violate number constraints */
   function handleNumberConstraints() {
 
+    // Warning message properties
+    var cssType = 'num-warning-msg';
+
     // Helper for adding or removing warnings
     var toggleNumberConstraintWarning = function(target, shouldAdd, msg){
-      // Warning message properties
-      var cssType = 'num-warning-msg';
       // Remove the (old) warning message
       target.find('.tsk-prm-lbl').find('label.' + cssType).remove();
       // Add a warning message
@@ -638,36 +642,45 @@ $(function () {
     // Handle min and max violations
     targs.forEach( function( key ) {
 
-      // Parse the current target value
-      var target  = $( 'li.' + key + '.tsk-prm' );
-      var currval = parseFloat( target.find('.tsk-prm-in').val() );
+      // Read in the current target value(s)
+      var target   = $( 'li.' + key + '.tsk-prm' );
+      var subtargs = target.find('.tsk-prm-in').map( function(){ return $(this).val(); } );
+      var targNum  = subtargs.length;
 
-      // Remove warnings from inactive parameters
+      // Remove warnings and leave for inactive parameters
       if( ! isActiveParam( key ) ){
         toggleNumberConstraintWarning( target, false, "" );
         return;
       }
 
-      // Handle min violations
-      if( arrHas(exclMins,key) && currval <= mins[ key ] ){
-        toggleNumberConstraintWarning( target, true, "Warning! Exclusive min parameter value is " + mins[ key ] );
-      }
-      else if( key in mins && currval < mins[ key ] ){
-        toggleNumberConstraintWarning( target, true, "Warning! Min parameter value is " + mins[ key ] );
-      }
-      // Handle max violations
-      else if( arrHas(exclMaxs,key) && currval >= maxs[ key ] ){
-        toggleNumberConstraintWarning( target, true, "Warning! Exclusive max parameter value is " + maxs[ key ] );
-      }
-      else if( key in maxs && currval > maxs[ key ] ){
-        toggleNumberConstraintWarning( target, true, "Warning! Max parameter value is " + maxs[ key ] );
-      }
-      // Handle integer violations
-      else if( arrHas(ints,key) && ! isInt( target.find('.tsk-prm-in').val() ) ){
-        toggleNumberConstraintWarning( target, true, "Warning! Parameter value must be an integer" );
-      }
-      else{
-        toggleNumberConstraintWarning( target, false, "" );
+      // Loop over possible targets (allows this approach to work for checking lists)
+      for( var i = 0; i < targNum; ++i ) {
+        // Get current value
+        var currval = parseFloat( subtargs[i] );
+        // Handle min violations
+        if( arrHas(exclMins,key) && currval <= mins[ key ] ){
+          toggleNumberConstraintWarning( target, true, "Warning! Exclusive min parameter value is " + mins[ key ] );
+        }
+        else if( key in mins && currval < mins[ key ] ){
+          toggleNumberConstraintWarning( target, true, "Warning! Min parameter value is " + mins[ key ] );
+        }
+        // Handle max violations
+        else if( arrHas(exclMaxs,key) && currval >= maxs[ key ] ){
+          toggleNumberConstraintWarning( target, true, "Warning! Exclusive max parameter value is " + maxs[ key ] );
+        }
+        else if( key in maxs && currval > maxs[ key ] ){
+          toggleNumberConstraintWarning( target, true, "Warning! Max parameter value is " + maxs[ key ] );
+        }
+        // Handle integer violations
+        else if( arrHas(ints,key) && ! isInt( subtargs[i] ) ){
+          toggleNumberConstraintWarning( target, true, "Warning! Parameter value must be an integer" );
+        }
+        // If no errors occurred, destroy any prior existing errors
+        else{
+          toggleNumberConstraintWarning( target, false, "" );
+        }
+        // Leave if an error is present (avoid list error suppression)
+        if( target.find( cssType ).length > 0 ){ return; }
       }
 
     });
