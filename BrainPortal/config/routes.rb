@@ -45,6 +45,8 @@ CbrainRailsPortal::Application.routes.draw do
   resources :access_profiles
   resources :feedbacks
 
+  #post "demands/create" => "users#create"
+
   # Standard CRUD resources, with extra actions
 
   resources :messages do
@@ -146,6 +148,17 @@ CbrainRailsPortal::Application.routes.draw do
     collection do
       get    'tool_config_select'
       post   'assign_tools'
+    end
+  end
+
+  resources :demands do
+    member do
+      post 'approve'
+      post 'resend_confirm'
+      get  'confirm'
+    end
+    collection do
+      post 'multi_action'
     end
   end
 

@@ -1,0 +1,183 @@
+
+body {
+  margin: 0;
+  padding: 0.5em 1em 1em 1em;
+  font-family: Georgia, serif;
+  font-size: 10pt;
+  background: white;
+}
+
+h1 {
+  font-family: Gill Sans, sans-serif !important;
+  font-size: 175%;
+  color: #348b8d; 
+  margin: 0.5em auto 0.5em auto;
+  white-space: nowrap;
+}
+
+.no_wrap {
+  white-space: nowrap;
+}
+
+#mcgill_logo {
+   width: auto;
+   padding: 0 0 0 3em;
+}
+
+#neuro_logo {
+   padding: 0 0 13px 1em;
+}
+
+.mainheader {
+}
+
+.warning {
+  color: #bf2d3b;
+}
+
+.errorExplanation {
+  border: 1px solid #bf2d3b;
+  background: #dba1a0;
+  padding: 1em;
+}
+
+.field_with_errors {
+  background: #dba1a0;
+  border: 1px solid #bf2d3b;
+  /*padding: 2px;*/
+  display: table-cell;
+}
+
+.flash_notice {
+  background: #eeffee;
+  border: none;  /* 3px solid #00ff00; */
+  /*padding: 2px 1em;*/
+  display: table;
+  padding: 0.2em 2em;
+  margin: 0px auto;
+  color: #bf2d3b;
+}
+
+.flash_error {
+  background: #ffeeee;
+  border: none; /* 3px solid #bf2d3b; */
+/*  padding: 2px 1em;*/
+  display: table;
+  color: #bf2d3b;
+  padding: 0.2em 2em;
+  margin: 0px auto;
+}
+
+.form_container {
+  display: table;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1em;
+  background: #ededed;
+  border: 3px solid #348b8d; /*black;*/
+  border-radius: 4px;
+  -moz-border-radius: 4px; 
+}
+
+.form_table {
+  
+}
+
+.form_table td {
+}
+
+.form_table td h1 {
+  text-align: center;
+}
+
+.form_table th {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.field_note {
+  font-size: 9pt;
+  color: #555555;
+}
+
+.section_separator {
+  background-color: #97c4c8; /*55cccc;*/
+}
+
+.comment {
+   border: 1px solid black;
+   margin: 2px;
+   padding: 2px;
+   background: white;
+}
+
+textarea {
+    width: 35em;
+    height: 5em;
+}
+
+.index_table {
+  border: 2px solid #348b8d; /*black;*/
+}
+
+.index_table th {
+  background: #eeeeee;
+  border: 1px solid black;
+  padding: 1px 1em;
+  white-space: nowrap;
+}
+
+.index_table td {
+  padding: 1px 1em;
+  white-space: nowrap;
+}
+
+tr .pagelist {
+  white-space: normal;
+}
+
+.index_even {
+  background: #ffffff;
+}
+
+.index_odd {
+  background: #eeeeee;
+}
+
+.suspicious {
+  background: #ffdddd;
+}
+.suspicious1 {
+  background: #ffcccc;
+}
+.suspicious2 {
+  background: #ff8888;
+}
+.suspicious3 {
+  background: #ff4444;
+}
+
+.note {
+ font-size: 8pt;
+ text-align: center;
+
+}
+.footer {
+  margin-top: 1em;
+  padding-top: 2px;
+  border-top: 1px solid #888888;
+  color: #888888;
+  font-size: 80%;
+  text-align: center;
+}
+
+.footer a:link {
+  text-decoration: none;
+  color: #888888;
+}
+
+.footer a:visited {
+  text-decoration: none;
+  color: #888888;
+}
+

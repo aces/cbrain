@@ -1,0 +1,42 @@
+
+<h1>Request Approval Result:<h1>
+
+<% if @exception_trace.present? %>
+
+  <h3>Here is a trace of the error.</h3>
+
+  You might want to check the code of demands.rb, in method after_approval().<p>
+
+  <div class="flash_error"><pre><%= @exception_trace %></pre></div>
+
+<% elsif @info.present? %>
+
+  <h3>Information provided by custom method after_approval()</h3>
+
+  Some sort of report or trace was produced by your custom method:<p>
+
+  <pre class="comment"><%= @info %></pre>
+
+<% elsif @demand.respond_to?(:after_approval) %>
+
+  <h3>The request was marked as 'approved' and custom code invoked.</h3>
+
+  And some automatic operation was performed by your
+  custom method after_approval(), which did not
+  produce any more information that we can show here.
+
+<% else %>
+
+  <h3>The request was marked only as 'approved'.</h3>
+
+  No further automatic action was taken. If you would like
+  to automate further what happens, consider customizing the
+  method after_approval() in the model demands.rb.
+
+<% end %>
+
+<p>
+
+You can go <%= link_to "back to see the request", demand_path(@demand) %>.<br/>
+You can go <%= link_to "back to the index", :action => :index %> too.
+

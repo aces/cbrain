@@ -1,0 +1,21 @@
+Someone is asking for a new account:
+
+Full name:   <%= @demand.full %>
+Email:       <%= @demand.email %>
+Institution: <%= @demand.institution.presence || "(None provided)" %>
+<% if @demand.comment.present? %>
+
+The requester provided some comments:
+
+=================================================
+<%= @demand.comment %>
+=================================================
+<% end %>
+
+As an administrator, you can review the full application here:
+<%= @show_url %>
+
+Thank you,
+
+<%= the_organization %>.
+

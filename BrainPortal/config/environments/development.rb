@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 CbrainRailsPortal::Application.configure do
@@ -37,6 +37,9 @@ CbrainRailsPortal::Application.configure do
 
   # Don't care if the mailer can't send
   config.action_mailer.raise_delivery_errors = true
+
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = { :address => 'mailhost.mcgill.ca' }
 
   # Print deprecation notices to the Rails logger
   config.active_support.deprecation = :log

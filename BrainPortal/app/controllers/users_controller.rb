@@ -107,6 +107,9 @@ class UsersController < ApplicationController
     # request forgery protection.
     # uncomment at your own risk
     # reset_session
+
+    logger.debug(params)
+
     params[:user] ||= {}
 
     no_password_reset_needed = params[:no_password_reset_needed] == "1"
@@ -138,9 +141,9 @@ class UsersController < ApplicationController
       current_user.addlog_context(self,"Created account for user '#{@user.login}'")
       @user.addlog_context(self,"Account created by '#{current_user.login}'")
       if @user.email.blank? || @user.email =~ /example/i || @user.email !~ /@/
-        flash[:notice] += "Since this user has no proper E-Mail address, no welcome E-Mail was sent."
+        flash[:notice] += "Since this user has no proper email address, no welcome email was sent."
       else
-        flash[:notice] += "\nA welcome E-Mail is being sent to '#{@user.email}'."
+        flash[:notice] += "\nA welcome email is being sent to '#{@user.email}'."
         CbrainMailer.registration_confirmation(@user,params[:user][:password],no_password_reset_needed).deliver rescue nil
       end
       respond_to do |format|
