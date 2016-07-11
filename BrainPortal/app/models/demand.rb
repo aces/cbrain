@@ -192,7 +192,10 @@ class Demand < ActiveRecord::Base
 
   def account_exists?
     return nil if self.email.blank?
-    userlist = User.find_by_email_and_login( self.email, self.login )
+    userlist = []
+    userlist << User.find_by_email(self.email)
+    userlist << User.find_by_login(self.login)
+    #userlist += User.find_by_login(self.login)
     return nil if userlist.blank?
     return userlist[0]
   end
