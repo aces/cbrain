@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Controller helpers to elegantly handle and log runtime exceptions.
@@ -26,12 +26,12 @@ module ExceptionHelpers
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.included(includer) #:nodoc:
-    includer.class_eval do 
-      rescue_from Exception,                       :with => :generic_exception
-      rescue_from ActiveRecord::RecordNotFound,    :with => :record_not_found
-      rescue_from ActionController::UnknownAction, :with => :unknown_action
-      rescue_from CbrainException,                 :with => :cb_exception
-    end 
+    includer.class_eval do
+      rescue_from Exception,                            :with => :generic_exception
+      rescue_from ActiveRecord::RecordNotFound,         :with => :record_not_found
+      rescue_from ::AbstractController::ActionNotFound, :with => :unknown_action
+      rescue_from CbrainException,                      :with => :cb_exception
+    end
   end
 
   protected
@@ -41,7 +41,7 @@ module ExceptionHelpers
     flash[:error] = "The object you requested does not exist or is not accessible to you."
     respond_to do |format|
       format.html { redirect_to default_redirect }
-      format.js   { render :partial  => "shared/flash_update",     :status => 404 } 
+      format.js   { render :partial  => "shared/flash_update",     :status => 404 }
       format.xml  { render :xml => {:error  => exception.message}, :status => 404 }
     end
   end
@@ -52,11 +52,11 @@ module ExceptionHelpers
     flash[:error] = "The page you requested does not exist."
     respond_to do |format|
       format.html { redirect_to default_redirect }
-      format.js   { render :partial  => "shared/flash_update",     :status => 400 } 
+      format.js   { render :partial  => "shared/flash_update",     :status => 400 }
       format.xml  { render :xml => {:error  => exception.message}, :status => 400 }
     end
   end
-  
+
   # Internal CBRAIN errors.
   def cb_exception(exception)
     if exception.is_a? CbrainNotice
@@ -67,7 +67,7 @@ module ExceptionHelpers
     logger.error "CbrainException for controller #{params[:controller]}, action #{params[:action]}: #{exception.class} #{exception.message}"
     respond_to do |format|
       format.html { redirect_to exception.redirect || default_redirect }
-      format.js   { render :partial  => "shared/flash_update",     :status => exception.status } 
+      format.js   { render :partial  => "shared/flash_update",     :status => exception.status }
       format.xml  { render :xml => {:error  => exception.message}, :status => exception.status }
     end
   end
@@ -83,7 +83,7 @@ module ExceptionHelpers
     logger.error "Exception for controller #{params[:controller]}, action #{params[:action]}: #{exception.class} #{exception.message}"
     respond_to do |format|
       format.html { redirect_to default_redirect }
-      format.js   { render :partial  => "shared/flash_update",     :status => 500 } 
+      format.js   { render :partial  => "shared/flash_update",     :status => 500 }
       format.xml  { render :xml => {:error  => exception.message}, :status => 500 }
     end
   end
