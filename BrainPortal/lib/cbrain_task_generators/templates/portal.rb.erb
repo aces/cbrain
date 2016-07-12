@@ -168,7 +168,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 
   # Callback called just after the task's form has been submitted by the user.
   # At this point, all the task's params will be filled. This is where most
-  # validations happens.
+  # validations happen.
   def after_form #:nodoc:
 % unless params.empty?
     params = self.params
@@ -218,6 +218,10 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % idsym    = lambda { |param| ":'#{param['id']}'" }
 % nilcheck = lambda { |param| "params[#{idsym.(param)}].nil?" }
     list = lambda { |sym| (s = params[sym]).is_a?(Enumerable) ? s : [s] }
+
+    # Helper function for detecting inactive parameters (or false for flag-type parameters)
+    # Note that empty strings are allowed and no parameter types except flags pass booleans
+    isInactive = lambda { |x| params[x].nil? || (params[x]==false) }
 
 %#
 %# Enum Check
@@ -310,9 +314,6 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %#
 %# Output to template
 % unless requires_map.empty? and disables_map.empty?
-    # Helper function for detecting inactive parameters (or false for flag-type parameters)
-    # Note that empty strings are allowed and no parameter types except flags pass booleans
-    isInactive = lambda { |x| params[x].nil? || (params[x]==false) }
 %   comment = "# A Map: id -> [ids] where ids are the parameters %s by the input id"
 
     <%= (comment % "required") unless requires_map.empty? %>
