@@ -73,8 +73,8 @@ RSpec.describe FeedbacksController, :type => :controller do
             post :create
           end
           it "should redirect to the index" do
-            post :create, :format => "js"
-            expect(response).to redirect_to(:action => :index, :format => :js)
+            post :create, :format => :html
+            expect(response).to redirect_to(:action => :index, :format => :html)
           end
         end
         context "when save is unsuccesful" do
@@ -84,10 +84,6 @@ RSpec.describe FeedbacksController, :type => :controller do
           it "should not send a message to admin" do
             expect(Message).not_to receive(:send_message)
             post :create
-          end
-          it "should render the failed create partial" do
-            post :create, :format => "js"
-            expect(response).to render_template("shared/_failed_create")
           end
         end
       end

@@ -84,8 +84,8 @@ RSpec.describe ToolsController, :type => :controller do
             expect(flash[:notice]).to  be_truthy
           end
           it "should redirect to the index" do
-            post(:create, :tool => {:name => "name"}, :format => "js")
-            expect(response).to redirect_to(:action => :index, :format => :js)
+            post(:create, :tool => {:name => "name"}, :format => :html)
+            expect(response).to redirect_to(:action => :index, :format => :html)
           end
         end
 
@@ -97,10 +97,6 @@ RSpec.describe ToolsController, :type => :controller do
             allow(mock_tool).to receive_message_chain(:errors, :empty?).and_return(false)
           end
 
-          it "should render 'failed create' partial" do
-            post(:create, :tool => {:name => "name"},:format => "js")
-            expect(response).to render_template("shared/_failed_create")
-          end
         end
 
       end

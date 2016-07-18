@@ -57,7 +57,7 @@ RSpec.describe DataProvidersController, :type => :controller do
         end
         it "should render the new page" do
           get :new
-          expect(response).to render_template(:partial => "_new")
+          expect(response).to render_template(:new)
         end
       end
       describe "create" do
@@ -80,8 +80,8 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
 
           it "should redirect to index" do
-            post :create, :format => :js
-            expect(response).to redirect_to(:action => :index, :format => :js)
+            post :create, :format => :html
+            expect(response).to redirect_to(:action => :index, :format => :html)
           end
         end
         context "when save fails" do
@@ -93,10 +93,9 @@ RSpec.describe DataProvidersController, :type => :controller do
             expect(controller).not_to receive(:add_meta_data_from_form)
             post :create, :format => :js
           end
-
-          it "should render failed creation partial" do
-            post :create, :format => :js
-            expect(response).to render_template(:partial => "shared/_failed_create")
+          it "should render new page again" do
+            post :create, :format => :html
+            expect(response).to render_template(:new)
           end
         end
       end
@@ -215,16 +214,16 @@ RSpec.describe DataProvidersController, :type => :controller do
           allow(DataProvider).to receive(:find_accessible_by_user).and_return(data_provider)
         end
         it "should check if the data provider is alive" do
-          expect(data_provider).to receive(:is_alive?)
+          expect(data_provider).to receive(:is_alive_with_caching?)
           get :is_alive, :id => 1
         end
         it "should return yes if provider is alive" do
-          allow(data_provider).to receive(:is_alive?).and_return(true)
+          allow(data_provider).to receive(:is_alive_with_caching?).and_return(true)
           get :is_alive, :id => 1
           expect(response.body).to match(/yes/i)
         end
         it "should return no if provider is not alive" do
-          allow(data_provider).to receive(:is_alive?).and_return(false)
+          allow(data_provider).to receive(:is_alive_with_caching?).and_return(false)
           get :is_alive, :id => 1
           expect(response.body).to match(/no/i)
         end
