@@ -737,7 +737,7 @@ $(function() {
 
             // same regex as the userfiles model validation
             var file_pattern = /^[a-zA-Z0-9][\w\~\!\@\#\%\^\&\*\(\)\-\+\=\:\[\]\{\}\|\<\>\,\.\?]*$/;
-            var bad_chars = file_pattern.test($(this).val());
+            var bad_chars = $(this).val().match(file_pattern);
             var spaces_in_name = ($(this).val()).includes(" ");
 
             var file_too_big;
@@ -756,7 +756,7 @@ $(function() {
               warning_text += "No spaces allowed in filename! ";
             }
             if ( file_too_big ) {
-              warning_text += "Too large! (> 1 MB) ";
+              warning_text += "Too large! (> " + str(max) + " B) ";
             }
 
             $('#up-file-warn').text(warning_text);
