@@ -6,6 +6,12 @@
 #   (1) Validates the JSON descriptor
 #   (2) Tests that the local script behaviour is as expected
 #   (3) Tests the generated portal task class (including the after_form method)
+#
+# The following should be done before testing
+#   bundle exec rake db:test:prepare
+#   rake db:seed RAILS_ENV=test
+# Then run via: rspec spec/boutiques/boutiques_tester_spec.rb --colour
+
 
 # Helper testing methods
 require_relative 'test_helpers'

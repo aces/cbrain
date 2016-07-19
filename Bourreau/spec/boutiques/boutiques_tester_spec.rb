@@ -3,6 +3,11 @@
 # Tests the generated cluster task by using it to create cluster commands that test against
 # the mock tool and its expected output for each set of input parameters.
 #
+# Running the tests requires running (on the BrainPortal side):
+#   bundle exec rake db:test:prepare
+#   rake db:seed RAILS_ENV=test
+#   RAILS_ENV=test rake db:seed:test:bourreau
+# Then run via: rspec spec/boutiques/boutiques_tester_spec.rb --colour
 
 # Required files for inclusion
 require 'rails_helper'
