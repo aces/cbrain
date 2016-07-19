@@ -57,7 +57,7 @@ class Scir
 
   # Returns the revision number for the implementation.
   def self.version
-    self.revision_info.basename
+    self.revision_info.short_commit
   end
 
   # Returns the class name for the implementation.

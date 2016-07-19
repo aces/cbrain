@@ -105,9 +105,9 @@ class CbrainFileRevision
   # Defaults to: <commit> <author> <date>
   def pretty(rev_fields = {})
     # check if info is available, if not we have to update
-    if (rev_fields.key?(:file) && @basename.nil?) || (rev_fields.key?(:commit) && @short_commit.nil?) || (rev_fields.key?(:author) && @author.nil?) || (rev_fields.key?(:date) && @date.nil?) || (rev_fields.key?(:time) && @time.nil?)
+    #if (rev_fields.key?(:file) && @basename.nil?) || (rev_fields.key?(:commit) && @short_commit.nil?) || (rev_fields.key?(:author) && @author.nil?) || (rev_fields.key?(:date) && @date.nil?) || (rev_fields.key?(:time) && @time.nil?)
       self_update()
-    end
+    #end
 
     # default
     pretty_string = @short_commit + " " + @author + " " + @date
