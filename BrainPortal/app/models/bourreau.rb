@@ -247,7 +247,7 @@ class Bourreau < RemoteResource
     info.merge!(
       # Bourreau info
       :bourreau_cms              => myself.cms_class || "Unconfigured",
-      :bourreau_cms_rev          => (myself.scir_session.revision_info rescue Object.revision_info),
+      :bourreau_cms_rev          => (myself.scir_session.revision_info.to_s rescue Object.revision_info.to_s),
       :tasks_max                 => queue_tasks_max,
       :tasks_tot                 => queue_tasks_tot,
 

@@ -51,7 +51,7 @@ class BourreauWorker < Worker
     sleep 1+rand(15) # to prevent several workers from colliding
     @zero_task_found = 0 # count the normal scan cycles with no tasks
     @rr = RemoteResource.current_resource
-    worker_log.info "#{@rr.class.to_s} code rev. #{@rr.revision_info.svn_id_rev} start rev. #{@rr.info.starttime_revision}"
+    worker_log.info "#{@rr.class.to_s} code rev. #{@rr.revision_info.short_commit} start rev. #{@rr.info.starttime_revision}"
     @rr_id = @rr.id
     @last_ruby_stuck_check = 20.minutes.ago
     @process_task_list_pid = nil

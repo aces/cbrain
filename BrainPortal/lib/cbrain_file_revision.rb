@@ -55,11 +55,9 @@
 #   end
 #
 #   # Then later on, all these calls are similar:
-#   puts Abcd::Revision_info.to_s # in SVN-like format
-#   puts Abcd::Revision_info.svn_id_rev # using CBRAIN's svn_id_rev parser
-#   puts Abcd.revision_info.svn_id_rev  # using CBRAIN's revision_info method
-#   x = Abcd.new
-#   puts x.revision_info.svn_id_rev
+#   puts Abcd::Revision_info.to_s # <commit> <author> <date> by default
+#   puts Abcd::Revision_info.pretty({:attribute => true}) # selects which of the revision's attributes to include in string
+#   puts Abcd.revision_info.to_s  # using CBRAIN's revision_info method
 #   puts x.revision_info.short_commit # using attributes
 #
 #   # If at least once to_s() or self_update() has been called,
@@ -96,10 +94,15 @@ class CbrainFileRevision
     self.new(fullpath)
   end
 
+  # Returns a formatted string representing the last change to the file in git
+  # Format: <commit> <author> <date>
   def to_s
     self.pretty({:commit => true, :author => true, :date => true})
   end
 
+  # Returns a formatted string representing the last change to the file in git
+  # Format is determined by pasing attributes that you want as a hash.
+  # Defaults to: <commit> <author> <date>
   def pretty(rev_fields = {})
     # check if info is available, if not we have to update
     if (rev_fields.key?(:file) && @basename.nil?) || (rev_fields.key?(:commit) && @short_commit.nil?) || (rev_fields.key?(:author) && @author.nil?) || (rev_fields.key?(:date) && @date.nil?) || (rev_fields.key?(:time) && @time.nil?)
