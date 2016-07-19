@@ -9,18 +9,23 @@ module TestHelpers
   TestScriptName           = 'boutiquesTestApp.rb'
   TestScriptDescriptor     = 'descriptor_test.json'
   ValidationScriptLocation = 'validator.rb'
+  TempStore                = 'spec/fixtures/' # Site for temp file creation, as in other specs
 
   ### Helper script argument-specific constants ###
   # Local name variables for outfile arguments
-  DefReqOutName = 'r.txt' # Default name for required output
-  AltReqOutName = 'r.csv' # Alternate name for required output
-  OptOutName    = 'o.txt' # Optional output file name
+  DefReqOutName = TempStore + 'r.txt' # Default name for required output
+  AltReqOutName = TempStore + 'r.csv' # Alternate name for required output
+  OptOutName    = TempStore + 'o.txt' # Optional output file name
   PotenOutFiles = [AltReqOutName, OptOutName, DefReqOutName]
+  # Input file helper variables
+  c_file, d_file, j_file  = TempStore + 'c', TempStore + 'f', TempStore + 'jf'
+  f1_file, f2_file = TempStore + 'f1', TempStore + 'f2'
+  f_files = f1_file + ' ' + f2_file
   # Argument helper variables
   r_arg, o_arg = "-r #{AltReqOutName} ", "-o #{OptOutName} "
-  reqArgs      = "-A a -B 9 -C c "            # Required args with values
-  baseArgs     = "-A a -B 9 -C c -v s -n 7 "  # Basic minimal argument set
-  baseArgs2    = "-p 7 s1 s2 -A a -B 9 -C c " # Alternate basic minimal arg set
+  reqArgs      = "-A a -B 9 -C #{c_file} "            # Required args with values
+  baseArgs     = "-A a -B 9 -C #{c_file} -v s -n 7 "  # Basic minimal argument set
+  baseArgs2    = "-p 7 s1 s2 -A a -B 9 -C #{c_file} " # Alternate basic minimal arg set
   # Whether to print verbosely or not (helpful for debugging tests)
   Verbose = false
 
@@ -38,6 +43,19 @@ module TestHelpers
     descriptor = File.join(__dir__, TestScriptDescriptor)
     stdout     = `ruby #{validator} #{schema} #{descriptor}`
     return stdout.start_with?( '["OK"]' )
+  end
+
+  # Create mock input files
+  define_method :createInputFiles do # Avoids new scope creation
+    FileUtils.touch(c_file)  # For -C
+    FileUtils.touch(d_file)  # For -d
+    FileUtils.touch(j_file)  # For -j
+    [1,2].each { |i| FileUtils.touch(TempStore + "f#{i}") } # For -f
+  end
+
+  # Destroy Input files
+  def destroyInputFiles
+    ['c','f','jf','f1','f2'].map{|f| TempStore + f }.each { |f| File.delete(f) if File.exist?(f) }
   end
 
   # Destroy output files of the mock program
@@ -91,17 +109,17 @@ module TestHelpers
     ["works with optional string", baseArgs2 + "-a s -w", 0],
     ["works with optional flag", baseArgs2 + "-c -w", 0],
     ["works with optional string list", baseArgs2 + "-e s1 s2 -w", 0],
-    ["works with optional file list", baseArgs2 + "-f f1 f2 -w", 0],
-    ["works with optional file", baseArgs2 + "-d f  -w", 0],
+    ["works with optional file list", baseArgs2 + "-f #{f_files} -w", 0],
+    ["works with optional file", baseArgs2 + "-d #{d_file} -w", 0],
     ["works with optional number list", baseArgs2 + "-g 1 2 3 -w", 0],
     # Disables & Requires
-    ["works with inactive disabler", baseArgs + "-j jf", 0],
+    ["works with inactive disabler", baseArgs + "-j #{j_file}", 0],
     ["works with disabler alone" , baseArgs + "-i 1", 0],
     ["works with requirement alone", baseArgs + "-l 9 7", 0],
     ["works with requirer's (y) requirements met + disabler alone", baseArgs + "-l 9 9 -y", 0],
     ["works with requirers' (m & k) requirements met", baseArgs + "-l 9 9 -k s -m t1 t2 -y", 0],
     # Group characteristics testing
-    ["works with both members in one-is-required group (1)", baseArgs + "-j jf", 0],
+    ["works with both members in one-is-required group (1)", baseArgs + "-j #{j_file}", 0],
     ["works with one member in mutex group (group 2 - with q)", baseArgs + "-q s", 0],
     ["works with one member in mutex group (group 2 - with u)", baseArgs + "-u", 0],
     # Output files testing
@@ -111,10 +129,10 @@ module TestHelpers
     ["outputs optional file", baseArgs + o_arg, 0, [DefReqOutName, OptOutName] ],
     ### Tests that should result in the program failing ###
     # Argument requirement failures
-    ["fails when a required argument is missing (A: flag + value)", "-n 7 -B 7 -C c -v s", 9],
-    ["fails when a required argument is missing (A: value)", "-n 7 -B 7 -C c -v s -A", 1],
+    ["fails when a required argument is missing (A: flag + value)", "-n 7 -B 7 -C #{c_file} -v s", 9],
+    ["fails when a required argument is missing (A: value)", "-n 7 -B 7 -C #{c_file} -v s -A", 1],
     # Argument type failures
-    ["fails when number (-B) is non-numeric (required)", "-n 7 -A a -B q -C c -v s -b 7", 1],
+    ["fails when number (-B) is non-numeric (required)", "-n 7 -A a -B q -C #{c_file} -v s -b 7", 1],
     ["fails when number (-b) is non-numeric (optional)", baseArgs + "-b u", 1],
     ["fails when number in list (-l) is non-numeric (optional)", baseArgs + "-l 2 u 2", 4],
     # Special separator failures
@@ -122,7 +140,7 @@ module TestHelpers
     ["fails when special separator is wrong", baseArgs + "-x~7", 5],
     # Disables/requires failures
     ["fails if both disabler and target present (k)", baseArgs + "-i 9 -k s", 6],
-    ["fails if both disabler and target present (k+s)", baseArgs + "-i 9 -j jf -k s", 6],
+    ["fails if both disabler and target present (k+s)", baseArgs + "-i 9 -j #{j_file} -k s", 6],
     ["fails if both disabler and target present (flag: y)", baseArgs + "-i 9 -y", 6],
     ["fails when requirement missing (k: no m [number])", baseArgs + "-k s -l 1 2", 7],
     ["fails when requirement missing (k: no l [string])", baseArgs + "-k s -m s1 s2", 7],
@@ -138,7 +156,7 @@ module TestHelpers
     ["fails with unrecognized non-flagged arguments", baseArgs + "z", 1],
     # Non-existent input arguments
     ["fails with non-existent input file (-C)", "-n 7 -A a -B 2 -C cc -v s -b 7", 10],
-    ["fails with non-existent input file for list (-f)", baseArgs + "-f f1 f3 f2", 10],
+    ["fails with non-existent input file for list (-f)", baseArgs + "-f #{f1_file} f3 #{f2_file}", 10],
     # Output file failures
     ["fails if the optional output file is specified but unnamed", baseArgs + "-o", 1]
   ]

@@ -9,6 +9,9 @@
 require 'optparse'
 require 'fileutils'
 
+require_relative 'test_helpers' # To ensure files are written to the write temp place
+include TestHelpers
+
 # Colours
 class String
   def colour(code) "\e[#{code}m#{self}\e[0m" end
@@ -35,7 +38,7 @@ StringLists = symbolize.( %w(p e m) )
 Lists = NumLists + FileLists + StringLists
 
 # Default required output name (override with -r)
-DefaultRequiredOutputName = "r.txt"
+DefaultRequiredOutputName = DefReqOutName # From helper module
 
 # Verbose printing (set by command argument)
 verbose = false

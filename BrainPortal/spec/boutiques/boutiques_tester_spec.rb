@@ -22,16 +22,13 @@ describe "BrainPortal Boutiques Tests" do
 
   # Run before block to create required input files
   before(:all) do
-    FileUtils.touch('c')  # For -C
-    FileUtils.touch('f')  # For -d
-    FileUtils.touch('jf') # For -j
-    [1,2].each { |i| FileUtils.touch("f#{i}") } # For -f
+    createInputFiles
   end
 
   # Post-test cleanup via after block
   after(:all) do
-    File.delete('c','f','jf','f1','f2')
-    PotenOutFiles.each { |f| File.delete(f) if File.exist?(f) }
+    destroyInputFiles
+    destroyOutputFiles
   end
 
   # Validate correctness of JSON descriptor

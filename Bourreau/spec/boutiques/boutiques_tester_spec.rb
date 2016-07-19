@@ -17,17 +17,13 @@ describe "Bourreau Boutiques Tests" do
 
   # Run before block to create required input files
   before(:all) do
-    FileUtils.touch('c')  # For -C
-    FileUtils.touch('f')  # For -d
-    FileUtils.touch('jf') # For -j
-    [1,2].each { |i| FileUtils.touch("f#{i}") } # For -f
+    createInputFiles
   end
 
   # Post-test cleanup via after block
   after(:all) do
-    # Delete the input and output files when they exist
-    ['c','f','jf','f1','f2'].each{ |f| File.delete(f) if File.exist?(f) }
-    PotenOutFiles.each { |f| File.delete(f) if File.exist?(f) }
+    destroyInputFiles
+    destroyOutputFiles
   end
 
   context "Cbrain external" do
@@ -172,6 +168,8 @@ describe "Bourreau Boutiques Tests" do
         GID, UID, DPID = Group.everyone.id, User.admin.id, 9
         # The warning message used when unable to find optional output files
         OptOutFileNotFoundWarning = "Unable to find optional output file: "
+        # Current rails pwd
+        PWD = Dir.pwd
       end
 
       # Note: FactoryGirl methods should be used instead, but only if their db changes get rolled back in the before(:each) block
@@ -181,6 +179,7 @@ describe "Bourreau Boutiques Tests" do
         Userfile.all.each{ |uf| uf.destroy }
         # Create a mock task required output file
         @fname = DefReqOutName
+        @fname_base = File.basename(@fname) # Need because we will have to change to the temp dir
         FileUtils.touch(@fname)
         # Helper method for getting filetype classes
         ftype = lambda { |fname| Userfile.suggested_file_type(fname) || SingleFile }
@@ -199,20 +198,24 @@ describe "Bourreau Boutiques Tests" do
         @provider.id, @provider.name = DPID, 'test_provider'
         @provider.user_id, @provider.group_id = UID, GID
         @provider.save!
+        # Change base directory so checks for simulated files go to the right temp storage place
+        # This is because some checks by e.g. save_results expect files from the task to be in the pwd
+        # Passing a block to chdir would be preferable but then one would have to do it in every test
+        Dir.chdir TempStore
         # Add a local input file to the data provider (allows smarter lookup in userfile_exists)
         @file_c, @ft   = 'c', ftype.(@file_c)
         newFile = @task.safe_userfile_find_or_new(@ft, name: @file_c, data_provider_id: DPID, user_id: UID, group_id: GID)
         newFile.save!
         # Fill in data necessary for the task to check for and save the output file '@fname'
-        @task.params   = {:ro => @fname, :interface_userfile_ids => [Userfile.all.first.id]}
+        @task.params   = {:ro => @fname_base, :interface_userfile_ids => [Userfile.all.first.id]}
         @task.user_id, @task.group_id = UID, GID
         # Generate a simulated exit file, as if the task had run
         @simExitFile   = @task.exit_cluster_filename
         FileUtils.touch( @simExitFile )
         # The basic properties for the required output file
-        @reqOutfileProps = {:name => @fname, :data_provider_id => @provider.id}
+        @reqOutfileProps = {:name => @fname_base, :data_provider_id => @provider.id}
         # Optional output file properties
-        @optOutFileName  = OptOutName
+        @optOutFileName  = File.basename(OptOutName) # Implicitly in temp storage
         @optFileClass    = ftype.( @optOutFileName )
       end
 
@@ -227,6 +230,8 @@ describe "Bourreau Boutiques Tests" do
         # Necessary for tests that create and/or register userfiles in the it block
         Userfile.all.each{ |uf| uf.destroy }
         DataProvider.all.each { |dp| dp.destroy }
+        # Return to rails base dir
+        Dir.chdir PWD
       end
 
       # Check that the input file could be properly registered
@@ -237,7 +242,7 @@ describe "Bourreau Boutiques Tests" do
       # Check that save_results works as expected for existent files
       it "can save results files" do
         # Make sure the file on the filesystem exists
-        expect( File.exists? @fname ).to be true
+        expect( File.exists? @fname_base ).to be true
         # Ensure the file has not been registered/created yet
         expect( @task.userfile_exists(@userfileClass, @reqOutfileProps) ).to be false
         # Ensure that saving the results occurs error-free
@@ -249,9 +254,9 @@ describe "Bourreau Boutiques Tests" do
       # Check that, when a required output file is not present, the task fails gracefully
       it "fails non-catastrophically when a required output file is not there" do
         # The output file should exist
-        expect( File.exists? @fname ).to be true
+        expect( File.exists? @fname_base ).to be true
         # Destroy the required output file
-        File.delete( @fname )
+        File.delete( @fname_base )
         # Attempting to save_results should return a 'failure' error code
         expect( @task.save_results ).to be false
       end
@@ -297,7 +302,7 @@ describe "Bourreau Boutiques Tests" do
       # This test ensures that when a naming collision occurs, the second file is renamed appropriately
       it "renames results files" do
         # First ensure the file exists on the system
-        expect( File.exists? @fname ).to be true
+        expect( File.exists? @fname_base ).to be true
         # However, the file must not already exist in the data_provider
         expect( @task.userfile_exists(@userfileClass, @reqOutfileProps) ).to be false
         # Saving the output files via the generated task should occur error-free
@@ -306,16 +311,16 @@ describe "Bourreau Boutiques Tests" do
         expect( @task.userfile_exists(@userfileClass, @reqOutfileProps) ).to be true
         # Create a new task and have it save results as well (with the same name for the output file)
         task2        = CbrainTask::BoutiquesTest.new
-        task2.params = {:ro => @fname, :interface_userfile_ids => [Userfile.all.first.id]}
+        task2.params = {:ro => @fname_base, :interface_userfile_ids => [Userfile.all.first.id]}
         task2.user_id, task2.group_id = UID, GID
         # Check that there are no files that match the renamed filename pattern
-        renamedFileRegex = /^#{@fname.split(".")[0]}-.*-\d{9}\.txt$/
+        renamedFileRegex = /^#{@fname_base.split(".")[0]}-.*-\d{9}\.txt$/
         expect( Userfile.all.any? { |f| (f.name.to_s =~ renamedFileRegex) == 0 } ).to be false
         # Saving the second output file should be error free
         expect( task2.save_results ).to be true
         # Initial file should still be there with the correct, original name
         expect( @task.userfile_exists(@userfileClass, @reqOutfileProps) ).to be true
-        expect( Userfile.where( :name => @fname ).first.nil? ).not_to be true
+        expect( Userfile.where( :name => @fname_base ).first.nil? ).not_to be true
         # New file should exist and have been renamed appropriately
         expect( Userfile.all.one? { |f| (f.name.to_s =~ renamedFileRegex) == 0 } ).to be true
       end
