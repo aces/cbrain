@@ -733,12 +733,14 @@ $(function() {
             var warning_text = "";
             var max = parseInt($('#upload-dialog').data('max-upload-size'));
             var bad_file;
+            var filename = $(this).prop('files')[0].name;
             var selected = !!$(this).val();
 
             // same regex as the userfiles model validation
-            var file_pattern = /^[a-zA-Z0-9][\w\~\!\@\#\%\^\&\*\(\)\-\+\=\:\[\]\{\}\|\<\>\,\.\?]*$/;
-            var bad_chars = $(this).val().match(file_pattern);
-            var spaces_in_name = ($(this).val()).includes(" ");
+            var allowed_file_pattern = /^[a-zA-Z0-9][\w\~\!\@\#\%\^\&\*\(\)\-\+\=\:\[\]\{\}\|\<\>\,\.\?]*$/;
+            var bad_chars = !allowed_file_pattern.test(filename);
+
+            var spaces_in_name = filename.includes(" ");
 
             var file_too_big;
             if ( max > 0 ){
@@ -749,11 +751,12 @@ $(function() {
 
             bad_file = ( bad_chars || file_too_big || spaces_in_name );
 
-            if ( bad_chars ) {
-              warning_text += "Illegal filename: must start with letter/digit, and no slashes, or ASCII nulls allowed. ";
-            }
-            if ( spaces_in_name ) {
+            if ( bad_chars && spaces_in_name) {
               warning_text += "No spaces allowed in filename! ";
+
+            }
+            else if ( spaces_in_name ) {
+              warning_text += "Illegal filename: must start with letter/digit, and no slashes, or ASCII nulls allowed. ";
             }
             if ( file_too_big ) {
               warning_text += "Too large! (> " + str(max) + " B) ";
