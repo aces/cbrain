@@ -278,14 +278,25 @@ module SchemaTaskGenerator
   # and +generate+ will abort at any validation error. Set +strict_validation+
   # to false if you wish for the generator to try and generate the task despite
   # validation issues.
-  def self.generate(schema, descriptor, strict_validation = true)
-    descriptor = self.expand_json(descriptor)
+  def self.generate(schema, descriptorInput, strict_validation = true)
+    descriptor = self.expand_json(descriptorInput)
     name       = self.classify(descriptor['name'])
     schema     = Schema.new(schema) unless schema.is_a?(Schema)
-    errors     = schema.send(
-      strict_validation ? :'validate!' : :validate,
-      descriptor
-    ) || []
+    errors     = []
+
+    # Check for validation errors, but don't let them implode the whole cbrain app
+    begin
+      errors = schema.send(
+        strict_validation ? :'validate!' : :validate,
+        descriptor
+      ) || []
+    rescue StandardError => e
+      Rails.logger.warn(
+        "WARNING: Boutiques application descriptor #{descriptor['name']} failed validation!\n" +
+        "\tSkipping task generation. Check " + descriptorInput + "."
+      )
+      return
+    end
 
     apply_template = lambda do |template|
       ERB.new(IO.read(

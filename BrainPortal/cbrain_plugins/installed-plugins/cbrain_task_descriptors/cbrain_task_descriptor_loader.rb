@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #
@@ -35,7 +35,13 @@
   schema     = SchemaTaskGenerator.default_schema
   descriptor = __FILE__.sub(/.rb$/,'.json')
 
-  SchemaTaskGenerator.generate(schema, descriptor).integrate if
-    File.exists?(descriptor)
+  begin
+    SchemaTaskGenerator.generate(schema, descriptor).integrate if
+      File.exists?(descriptor)
+  rescue StandardError => e
+    puts "Failed to generate or integrate task from descriptor #{descriptor}"
+    puts "\tNil errors are common for descriptors that fail to validate"
+    puts "\tError Message: #{e.message}"
+  end
 
 end
