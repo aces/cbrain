@@ -232,9 +232,8 @@ describe "Bourreau Boutiques Tests" do
         fename = '.qsub.exit.BoutiquesTest.-1'
         File.delete( fename ) if File.exists?( fename )
         # Destroy the registered userfiles and the data_provider, so as not to affect downstream tests
-        # Necessary for tests that create and/or register userfiles in the it block
+        # Needed to destroy actual output files written to the filesystem
         Userfile.all.each{ |uf| uf.destroy }
-        DataProvider.all.each { |dp| dp.destroy }
         # Return to rails base dir
         Dir.chdir PWD
       end

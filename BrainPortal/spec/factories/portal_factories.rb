@@ -206,15 +206,21 @@ FactoryGirl.define do
     association :user, factory: :normal_user
   end
 
-  factory :userfile_custom_filter, parent: :custom_filter, class: UserfileCustomFilter do
-    sequence(:name) { |n| "ucf_#{n}"}
+  begin
+    factory :userfile_custom_filter, parent: :custom_filter, class: UserfileCustomFilter do
+      sequence(:name) { |n| "ucf_#{n}"}
+    end
+  rescue
+    puts "For the Bourreau-side tests, Userfile custom_filter objects are not required"
   end
 
-  factory :task_custom_filter, parent: :custom_filter, class: TaskCustomFilter do
-    sequence(:name) { |n| "tcf_#{n}"}
+  begin
+    factory :task_custom_filter, parent: :custom_filter, class: TaskCustomFilter do
+      sequence(:name) { |n| "tcf_#{n}"}
+    end
+  rescue
+    puts "For the Bourreau-side tests, Task custom_filter objects are not required"
   end
-
-
 
   ###################
   # Task            #
