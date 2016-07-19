@@ -753,7 +753,6 @@ $(function() {
 
             if ( bad_chars && spaces_in_name) {
               warning_text += "No spaces allowed in filename! ";
-
             }
             else if ( spaces_in_name ) {
               warning_text += "Illegal filename: must start with letter/digit, and no slashes, or ASCII nulls allowed. ";
