@@ -198,5 +198,11 @@ module TestHelpers
     hash
   end
 
+  # Helper for cleaning spaces after key subsitution, to make it easier to write the correct test result
+  NormedTaskCmd = lambda do |task|
+    task.cluster_commands[0].split.join(' ')
+  end
+
+
 end
 

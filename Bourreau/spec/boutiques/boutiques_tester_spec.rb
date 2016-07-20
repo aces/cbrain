@@ -105,6 +105,11 @@ describe "Bourreau Boutiques Tests" do
           expect( s.strip ).to eq( "cmd one.txt 2 t.csv -f" )
         end
 
+        it "handles substitution with list-type inputs" do
+          s = @task.apply_template(@template, @def_keys.merge({'[4]' => ['a', 'b', 'c']}), flags: {'[4]' => '-l'})
+          expect( s.strip ).to eq( "cmd one.txt 2 t.csv -l a b c" )
+        end
+
         it "handles special flag separator substitution" do
           s = @task.apply_template(@template,
                 @def_keys.merge({'[4]' => true}),
@@ -127,7 +132,14 @@ describe "Bourreau Boutiques Tests" do
       # Test that creating a basic cluster command in isolation works
       it "can create cluster commands" do
         @task.params[:A] = "A_VAL"
-        expect( @task.cluster_commands[0].strip ).to eq( './' + TestScriptName + ' -A A_VAL' )
+        expect( NormedTaskCmd.(@task) ).to eq( './' + TestScriptName + ' -A A_VAL' )
+      end
+
+      # Test that creating cluster commands with string lists works
+      it "can create cluster commands with lists" do
+        @task.params[:A] = "A_VAL"
+        @task.params[:p] = ['e1', 'e2', 'e3']
+        expect( NormedTaskCmd.(@task) ).to eq( './' + TestScriptName + ' -A A_VAL -p e1 e2 e3' )
       end
 
     end
