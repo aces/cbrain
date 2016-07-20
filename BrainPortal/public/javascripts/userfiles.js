@@ -758,7 +758,7 @@ $(function() {
               warning_text += "Illegal filename: must start with letter/digit, and no slashes, or ASCII nulls allowed. ";
             }
             if ( file_too_big ) {
-              warning_text += "Too large! (> " + str(max) + " B) ";
+              warning_text += "Too large! (> " + max/1048576 + " MB) ";
             }
 
             $('#up-file-warn').text(warning_text);
