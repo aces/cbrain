@@ -1,4 +1,24 @@
 #
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 # Bourreau-side tests for the Boutiques framework, using a mock tool (boutiquesTestApp.rb).
 # Tests the generated cluster task by using it to create cluster commands that test against
 # the mock tool and its expected output for each set of input parameters.
@@ -62,7 +82,7 @@ describe "Bourreau Boutiques Tests" do
         expect( Tool.exists?( :cbrain_task_class => @task_const.to_s ) ).to be true
       end
 
-      it "makes the tool accessible" do
+      it "makes the tool accessible as a Cbrain Task object" do
         expect( @task_const.tool ).not_to be_nil
       end
 
@@ -100,9 +120,14 @@ describe "Bourreau Boutiques Tests" do
           expect( s.strip ).to eq( "cmd -1 one.txt --long-flag 2 -t t.csv" )
         end
 
-        it "handles substitution with flag-type inputs" do
+        it "handles substitution with flag-type inputs (when true)" do
           s = @task.apply_template(@template, @def_keys.merge({'[4]' => true}), flags: {'[4]' => '-f'})
           expect( s.strip ).to eq( "cmd one.txt 2 t.csv -f" )
+        end
+
+        it "handles substitution with flag-type inputs (when false)" do
+          s = @task.apply_template(@template, @def_keys.merge({'[4]' => false}), flags: {'[4]' => '-f'})
+          expect( s.strip ).to eq( "cmd one.txt 2 t.csv" )
         end
 
         it "handles substitution with list-type inputs" do
@@ -344,7 +369,7 @@ describe "Bourreau Boutiques Tests" do
     end # End output file handling tests
 
     # Test that a Tool Config is created iff both the bourreau and the descriptor specify docker
-    context 'Default ToolConfig creation' do
+    context 'Default ToolConfig' do
 
       before(:each) do
         # Ensure the Bourreau does not have docker installed by default
@@ -373,20 +398,20 @@ describe "Bourreau Boutiques Tests" do
         resource.save!
       end
 
-      it "is not done with only docker in task" do
+      it "is not created when Bourreau does not support Docker" do
         @boutiquesTask.descriptor['docker-image'] = 'placeholder_string'
         @boutiquesTask.integrate if File.exists?(@descriptor)
         expect( ToolConfig.exists?( :tool_id => @task_const_name.constantize.tool.id ) ).to be false
       end
 
-      it "is not done with only docker in bourreau" do
+      it "is not created when descriptor has no Docker image" do
         RemoteResource.current_resource.docker_present = true
         RemoteResource.current_resource.save!
         @boutiquesTask.integrate if File.exists?(@descriptor)
         expect( ToolConfig.exists?( :tool_id => @task_const_name.constantize.tool.id ) ).to be false
       end
 
-      it "is done with docker in both task and bourreau" do
+      it "is created when descriptor has Docker image and Bourreau has Docker" do
         @boutiquesTask.descriptor['docker-image'] = 'placeholder_string'
         resource       = RemoteResource.current_resource
         resource.docker_present = true
@@ -397,7 +422,7 @@ describe "Bourreau Boutiques Tests" do
 
       # When neither criteria is met, check that a ToolConfig is not made
       # Also checks that the integration changes were rolled back
-      it "is not done without docker in task and bourreau" do
+      it "is not created when Bourreau does not support Docker and descriptor has no Docker image" do
         @boutiquesTask.integrate if File.exists?(@descriptor)
         expect( ToolConfig.exists?( :tool_id => @task_const_name.constantize.tool.id ) ).to be false
       end

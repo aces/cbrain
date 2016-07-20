@@ -1,5 +1,26 @@
 #!/usr/bin/env ruby
 
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 # This is the mock application used to test the Boutiques framework in cbrain.
 # It tries to cover as many Boutiques features as possible.
 # In essence, it takes a command line string as input and merely checks that the
@@ -21,7 +42,7 @@ class String
 end
 
 # Print raw input string
-print("\nRunning Boutiqes simple test app\nRaw Input=#{ARGV.to_s}".blue) if ARGV.include? "--verbose"
+print("\nRunning Boutiques simple test app\nRaw Input=#{ARGV.to_s}".blue) if ARGV.include? "--verbose"
 
 # Dictionary of inputs to be filled
 options = {}
