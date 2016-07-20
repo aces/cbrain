@@ -56,7 +56,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % gIdToPrms = gIdToMbrs.map { |k,v| [k, params.select{ |p| v.include? p["id"] }] }.to_h
 %
 % # Parameter Maps: ids => [ target_ids ] for disables/requires
-% disables_map = params.inject({}){ |hmap,i| (res=i["disables-inputs"]) ? hmap.merge(i["id"]=>res) : hmap }  
+% disables_map = params.inject({}){ |hmap,i| (res=i["disables-inputs"]) ? hmap.merge(i["id"]=>res) : hmap }
 % requires_map = params.inject({}){ |hmap,i| (res=i["requires-inputs"]) ? hmap.merge(i["id"]=>res) : hmap }
 
 % # Special case; we only have one file input parameter and it only
@@ -133,7 +133,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % end
   # Callback called just before the task's form is rendered. At this point,
   # the task's params hash contains at least the default list of input
-  # userfiles under the key :interface_userfile_ids. 
+  # userfiles under the key :interface_userfile_ids.
   def before_form #:nodoc:
 % file_types = descriptor['inputs']
 %   .select { |i| ! i['optional'] && i['type'] == 'File' }
@@ -168,7 +168,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 
   # Callback called just after the task's form has been submitted by the user.
   # At this point, all the task's params will be filled. This is where most
-  # validations happens.
+  # validations happen.
   def after_form #:nodoc:
 % unless params.empty?
     params = self.params
@@ -212,28 +212,99 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %   end
 %#
 %####
-%#  Write the checks for requires-inputs and disables-inputs. 
+%# Constraint and type checks
+%#
+    # Helpers
+% idsym    = lambda { |param| ":'#{param['id']}'" }
+% nilcheck = lambda { |param| "params[#{idsym.(param)}].nil?" }
+    list = lambda { |sym| (s = params[sym]).is_a?(Enumerable) ? s : [s] }
+
+    # Helper function for detecting inactive parameters (or false for flag-type parameters)
+    # Note that empty strings are allowed and no parameter types except flags pass booleans
+    isInactive = lambda { |x| params[x].nil? || (params[x]==false) }
+
+%#
+%# Enum Check
+% hasEnumVars = params.any?{ |p| p['type'].downcase == 'enum' }
+% if hasEnumVars
+    # Check that any enum parameters have been given allowable values
+    errmsg = "was not given an acceptable value!"
+%  for param in params
+%   next unless param['type'].downcase == 'enum'
+%   check = '[' + param['enum-value-choices'].map{ |s| "'#{s}'" }.join(',') + "].include?(params[#{idsym.(param)}])"
+    params_errors.add(<%=idsym.(param)%>, errmsg) unless <%= nilcheck.(param) %> || <%= check %>
+%  end
+
+% end # hasEnumVars check
+%#
+%# Min/max/int Number check
+% if params.any? { |p| p['minimum'] || p['maximum'] || p['integer'] }
+    # Check that number parameters with contraints have been given permissable values
+% nerrmsg = lambda { |prm,str| "\"violates #{prm['exclusive-'+str] ? 'exclusive' : 'inclusive'} #{str} value #{prm[str].to_s}\"" }
+% for p in params.select{ |q| q['type'].downcase == 'number'} # since we support arbitrary fields regardless of type
+%  if p['minimum']
+%   ncheck = "list.(#{idsym.(p)}).all? { |v| v.to_f %s #{p["minimum"]} }" % (p['exclusive-minimum'] ? '>' : '>=')
+    params_errors.add(<%=idsym.(p) + ', ' + nerrmsg.(p,"minimum")%>) unless <%= nilcheck.(p) %> || <%= ncheck %>
+%  end
+%  if p['maximum']
+%   ncheck = "list.(#{idsym.(p)}).all? { |v| v.to_f %s #{p["maximum"]} }" % (p['exclusive-maximum'] ? '<' : '<=')
+    params_errors.add(<%=idsym.(p) + ', ' + nerrmsg.(p,"maximum")%>) unless <%= nilcheck.(p) %> || <%= ncheck %>
+%  end
+%  if p['integer']
+%   ncheck = "( list.(#{idsym.(p)}).all? { |x| Integer(x.to_s) } rescue false )"
+    params_errors.add(<%=idsym.(p)%>, "must be an integer") unless <%= nilcheck.(p) %> || <%= ncheck %>
+%  end
+% end
+
+% end # min/max/int checks for numbers
+%#
+%# List properties check
+% if params.any? { |p| p['list'] == true && (p['max-list-entries'] || p['min-list-entries']) }
+% maxMap  = params.inject({}){ |hm,p| (mle = p['max-list-entries']) ? hm.merge(p['id'] => mle) : hm }
+% minMap  = params.inject({}){ |hm,p| (mle = p['min-list-entries']) ? hm.merge(p['id'] => mle) : hm }
+% lerrmsg = lambda { |m,val| "\"violates #{m} list length requirement (#{val})\"" }
+% if maxMap.keys.length > 0
+    # Check that max list lengths are not violated
+%  params.select{ |p| p['list'] == true && p['max-list-entries'] }.each do |p|
+%   lcheck = "( list.(#{idsym.(p)}).length <= #{maxMap[p['id']]} )"
+    params_errors.add(<%= idsym.(p) + ', ' + lerrmsg.("max", maxMap[p['id']]) %>) unless <%= nilcheck.(p) %> || <%= lcheck %>
+%  end
+
+% end
+% if minMap.keys.length > 0
+    # Check that min list lengths are not violated
+%  params.select{ |p| p['list'] == true && p['min-list-entries'] }.each do |p|
+%   lcheck = "( list.(#{idsym.(p)}).length >= #{minMap[p['id']]} )"
+    params_errors.add(<%= idsym.(p) + ', ' + lerrmsg.("min", minMap[p['id']]) %>) unless <%= nilcheck.(p) %> || <%= lcheck %>
+%  end
+
+% end
+% end # min/max list length check
+%#
+%#
+%####
+%#  Write the checks for requires-inputs and disables-inputs.
 %#  Indentation is to preserve pretty output
 %#
 %   # Helper for writing out a dictionary of keys to value arrays to a literal
 %   writeLiteralMap = lambda do |name,inmap|
-%     lenLongestKey = inmap.keys.map{ |x| x.to_s.length }.max + "''".length     
-    <%= "%s = {" % name %>     
+%     lenLongestKey = inmap.keys.map{ |x| x.to_s.length }.max + "''".length
+    <%= "%s = {" % name %>
 %     inmap.each do |key,valArr|
 %       vals = valArr.map{ |s| ":'%s'" % s }.join(", ")
-      <%= ":%-#{lenLongestKey}s => [%s]," % [ "'" + key + "'" , vals ] %> 
+      <%= ":%-#{lenLongestKey}s => [%s]," % [ "'" + key + "'" , vals ] %>
 %     end
     <%= "}" %>
-%   end  
-%#  
+%   end
+%#
 %   # Helper for writing out the checker loops
 %   # Can write a loop checking either disables (base="disable") or requires (base="require") violations
 %   generateCheckerLoop = lambda do |base|
-%     key, vals, req = base + 'r', base + 'ds', base == "require" 
-    <%= base + "sMap.each do |"+key+", "+vals+"|" %>   
+%     key, vals, req = base + 'r', base + 'ds', base == "require"
+    <%= base + "sMap.each do |"+key+", "+vals+"|" %>
       unless isInactive.(<%= key %>)
         for <%= base+'d' %> in <%= vals %>
-          msg = <%='\'is %s \' + %s.pretty_params_names[%s]' % [base + 'd ' + (req ? 'for' : 'by'), name, key] %> 
+          msg = <%='\'is %s \' + %s.pretty_params_names[%s]' % [base + 'd ' + (req ? 'for' : 'by'), name, key] %>
           params_errors.add(<%= base+'d' %>, msg) <%= req ? 'if' : 'unless' %> isInactive.(<%= base+'d' %>)
         end
       end
@@ -241,11 +312,8 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %#
 %   end
 %#
-%# Output to template 
+%# Output to template
 % unless requires_map.empty? and disables_map.empty?
-    # Helper function for detecting inactive parameters (or false for flag-type parameters)
-    # Note that empty strings are allowed and no parameter types except flags pass booleans
-    isInactive = lambda { |x| params[x].nil? || (params[x]==false) }
 %   comment = "# A Map: id -> [ids] where ids are the parameters %s by the input id"
 
     <%= (comment % "required") unless requires_map.empty? %>
@@ -260,7 +328,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     # Check that requires-inputs is not violated
     # If the parameter is filled in, the ones it requires must be too
 %    generateCheckerLoop.("require")
-% end    
+% end
 
 % unless disables_map.empty?
     # Check that disables-inputs is not violated
@@ -270,18 +338,18 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %#
 %####
 %# Check for violations pertaining to parameter groups
-%# In particular, check that mutual exclusivity and one-is-required are satisfied 
+%# In particular, check that mutual exclusivity and one-is-required are satisfied
 %#
 % unless noGroups
 %# Check if any groups require checking
 % getGroupsWith = lambda { |prop| groups.select{ |g| g[prop] }.map{ |g| ":'"+g["id"]+"'" }.join(", ") }
-% mutexGrps     = getGroupsWith.("mutually-exclusive") 
+% mutexGrps     = getGroupsWith.("mutually-exclusive")
 % oneReqGrps    = getGroupsWith.("one-is-required")
-% hasMutex      = (mutexGrps != "")
+% hasMutex      = (mutexGrps  != "")
 % hasOneReq     = (oneReqGrps != "")
 %#
 % if (hasMutex || hasOneReq)
-   
+
     # Groups with the mutually exclusive or one-is-required
     <%= 'mutexGroups = [%s]'  % mutexGrps  if hasMutex %>
     <%= 'oneReqGroups = [%s]' % oneReqGrps if hasOneReq %>
@@ -307,8 +375,8 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     end
 % end
 %#
-% end # No groups check
-%#  
+% end # noGroups check
+%#
 %# End parameter group properties check
 
 % end # End unless params.empty?
@@ -319,10 +387,10 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   # Associates the id symbol with the name field
   def self.pretty_params_names
     {
-%     id_width = max_width.(params,"id") + "''".length  
+%     id_width = max_width.(params,"id") + "''".length
 %     for param in params
       <%= ":%-#{id_width}s => '%s'," % ["'" + param["id"] + "'", param["name"]]  %>
-%     end     
+%     end
     }
   end
 
