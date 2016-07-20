@@ -29,8 +29,8 @@ class NewAccountOfferings
    # who will receive a message each time someone makes
    # a request for a service. You can put more than one
    # address in the string, each separated by commas.
-#   AdminNotificationEmail = 'cbrain-support.mni@mcgill.ca'
-   AdminNotificationEmail = 'doyle.andrew@gmail.com'
+   AdminNotificationEmail = 'cbrain-support.mni@mcgill.ca'
+#   AdminNotificationEmail = 'doyle.andrew@gmail.com'
 
    # The encrypted password to enter admin mode.
    # You can generated it by choosing RANDOMLY some
@@ -46,12 +46,7 @@ class NewAccountOfferings
    AdminPassword = 'P7,f9c1bd7df146d0fa2349e6113252414e'
 
    # List of usernames you accept as 'admins'
-   AdminUsernames = [ 'prioux', 'mero', 'adoyle' ]
-
-   # Persistent agent for the connection
-
-   #CbrainApiAgent.login('cbrain_reqserv', 'todo') or raise("Cannot authenticate with CBRAIN?")
-   #CbrainApiAgent = CbrainRubyAPI.new( 'http://localhost:3000' )
+   AdminUsernames = [ 'prioux', 'mero' ]
 
 end
 
