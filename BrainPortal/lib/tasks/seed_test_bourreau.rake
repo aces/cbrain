@@ -20,6 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Seeds the database for use in Bourreau rspec tests
+# Should run on the BrainPortal side with: RAILS_ENV=test rake db:seed:test:bourreau
 namespace :db do
   namespace :seed do
     namespace :test do

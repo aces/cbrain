@@ -1,0 +1,276 @@
+{
+	"name" : "BoutiquesTest",
+	"tool-version" : "9.7.13",
+	"description" : "Simple test task for Boutiques",
+	"command-line" : "./boutiquesTestApp.rb [A] [B] [C] [a] [b] [c] [d] [e] [f] [g] [i] [j] [k] [l] [m] [n] [p] [q] [u] [v] [w] [x] [o] [r] [y]",
+	"schema-version" : "0.2",
+	"inputs" : [{
+		"id" : "A",
+		"name" : "A",
+		"type" : "String",
+		"description" : "Required string",
+		"optional" : false,
+		"list" : false,
+		"command-line-flag" : "-A",
+		"command-line-key" : "[A]"
+	}, {
+		"id" : "B",
+		"name" : "B",
+		"type" : "Number",
+		"description" : "Required number",
+		"optional" : false,
+		"list" : false,
+		"command-line-flag" : "-B",
+		"command-line-key" : "[B]"
+	}, {
+		"id" : "C",
+		"name" : "C",
+		"type" : "File",
+		"description" : "Required File",
+		"optional" : false,
+		"list" : false,
+		"command-line-key" : "[C]",
+		"command-line-flag" : "-C"
+	}, {
+		"id" : "a",
+		"name" : "a",
+		"type" : "String",
+		"description" : "Optional String",
+		"optional" : true,
+		"list" : false,
+		"command-line-key" : "[a]",
+		"command-line-flag" : "-a"
+	}, {
+		"id" : "b",
+		"name" : "b",
+		"type" : "Number",
+		"description" : "Optional Number",
+		"optional" : true,
+		"list" : false,
+		"command-line-key" : "[b]",
+		"command-line-flag" : "-b"
+		}, {
+		"id" : "c",
+		"name" : "c",
+		"type" : "Flag",
+		"description" : "Optional Flag",
+		"optional" : true,
+		"list" : false,
+		"command-line-key" : "[c]",
+		"command-line-flag" : "-c"
+	}, {
+		"id" : "d",
+		"name" : "d",
+		"type" : "File",
+		"description" : "Optional File",
+		"optional" : true,
+		"list" : false,
+		"command-line-key" : "[d]",
+		"command-line-flag" : "-d"
+	}, {
+		"id" : "e",
+		"name" : "e",
+		"type" : "String",
+		"description" : "Optional String List",
+		"optional" : true,
+		"list" : true,
+		"command-line-key" : "[e]",
+		"command-line-flag" : "-e"
+	}, {
+		"id" : "f",
+		"name" : "f",
+		"type" : "File",
+		"description" : "Optional File List",
+		"optional" : true,
+		"list" : true,
+		"command-line-key" : "[f]",
+		"command-line-flag" : "-f"
+	}, {
+		"id" : "g",
+		"name" : "g",
+		"type" : "Number",
+		"description" : "Optional Number List",
+		"optional" : true,
+		"list" : true,
+		"command-line-key" : "[g]",
+		"command-line-flag" : "-g"
+	}, {
+		"id" : "i",
+		"name" : "i",
+		"type" : "Number",
+		"description" : "A number disabler",
+		"optional" : true,
+		"list" : false,
+		"disables-inputs" : [ "j", "k", "y" ],
+		"command-line-key" : "[i]",
+		"command-line-flag" : "-i"
+	}, {
+		"id" : "j",
+		"name" : "j",
+		"type" : "File",
+		"description" : "A file disablee",
+		"optional" : true,
+		"list" : false,
+		"command-line-key" : "[j]",
+		"command-line-flag" : "-j"
+	}, {
+		"id" : "k",
+		"name" : "k",
+		"type" : "String",
+		"description" : "A string disablee",
+		"optional" : true,
+		"list" : false,
+		"requires-inputs" : [ "l", "m", "y" ],
+		"command-line-key" : "[k]",
+		"command-line-flag" : "-k"
+	}, {
+		"id" : "l",
+		"name" : "l",
+		"type" : "Number",
+		"description" : "A number list requirement",
+		"optional" : true,
+		"list" : true,
+		"command-line-key" : "[l]",
+		"command-line-flag" : "-l"
+	}, {
+		"id" : "m",
+		"name" : "m",
+		"type" : "String",
+		"description" : "A string list (mutually requires k)",
+		"optional" : true,
+		"list" : false,
+		"requires-inputs" : [ "k" ],
+		"command-line-key" : "[m]",
+		"command-line-flag" : "-m"
+	}, {
+		"id" : "y",
+		"name" : "y",
+		"type" : "Flag",
+		"description" : "A Flag (testing disables/requires)",
+		"optional" : true,
+		"list" : false,
+		"requires-inputs" : [ "l" ],
+		"disables-inputs" : [ "j" ],
+		"command-line-key" : "[y]",
+		"command-line-flag" : "-y"
+	}, {
+		"id" : "n",
+		"name" : "n",
+		"type" : "Number",
+		"description" : "Number (group 1)",
+		"optional" : true,
+		"list" : false,
+		"command-line-key" : "[n]",
+		"command-line-flag" : "-n"
+	}, {
+		"id" : "p",
+		"name" : "p",
+		"type" : "String",
+		"description" : "String list (group 1)",
+		"optional" : true,
+		"list" : true,
+		"command-line-key" : "[p]",
+		"command-line-flag" : "-p"
+	}, {
+		"id" : "q",
+		"name" : "q",
+		"type" : "String",
+		"description" : "String (group 2)",
+		"optional" : true,
+		"list" : false,
+		"command-line-key" : "[q]",
+		"command-line-flag" : "-q"
+	}, {
+		"id" : "u",
+		"name" : "u",
+		"type" : "Flag",
+		"description" : "Flag (group 2)",
+		"optional" : true,
+		"list" : false,
+		"command-line-key" : "[u]",
+		"command-line-flag" : "-u"
+	}, {
+		"id" : "v",
+		"name" : "v",
+		"type" : "String",
+		"description" : "String (group 3)",
+		"optional" : true,
+		"list" : false,
+		"command-line-key" : "[v]",
+		"command-line-flag" : "-v"
+	}, {
+		"id" : "w",
+		"name" : "w",
+		"type" : "Flag",
+		"description" : "Flag (group 3)",
+		"optional" : true,
+		"list" : false,
+		"command-line-key" : "[w]",
+		"command-line-flag" : "-w"
+	}, {
+		"id" : "x",
+		"name" : "x",
+		"type" : "String",
+		"description" : "String input with special separator",
+		"optional" : true,
+		"list" : false,
+		"command-line-flag-separator" : "=",
+		"command-line-key" : "[x]",
+		"command-line-flag" : "-x"
+	}, {
+		"id" : "o",
+		"name" : "o",
+		"type" : "String",
+		"description" : "Optional output filename for optional output",
+		"optional" : true,
+		"list" : false,
+		"command-line-key" : "[o]",
+		"command-line-flag" : "-o"
+	}, {
+		"id" : "r",
+		"name" : "r",
+		"type" : "String",
+		"description" : "Optional output filename for required output",
+		"optional" : true,
+		"list" : false,
+		"default-value" : "r",
+		"command-line-key" : "[r]",
+		"command-line-flag" : "-r"
+	}],
+	"output-files" :  [{
+		"id" : "ro",
+		"name" : "Required output file",
+		"description" : "Output file (required)",
+		"path-template" : "[r]",
+		"list" : false,
+		"optional" : false
+	}, {
+		"id" : "oo",
+		"name" : "Optional output file",
+		"description" : "Output file (optional)",
+		"path-template" : "[o]",
+		"list" : false,
+		"optional" : true
+	}],
+	"groups" : [{
+		"id" : "group_1",
+		"name" : "First Group",
+		"description" : "The first group",
+		"members" : ["n","p"],
+		"one-is-required" : true
+	}, {
+		"id" : "group_2",
+		"name" : "Second Group",
+		"description" : "The second group",
+		"members" : ["q","u"],
+		"mutually-exclusive" : true
+	}, {
+		"id" : "group_3",
+		"name" : "Third group",
+		"description" : "The third group",
+		"members" : ["v","w"],
+		"one-is-required" : true,
+		"mutually-exclusive" : true
+	}]
+
+}
