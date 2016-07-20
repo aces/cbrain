@@ -97,22 +97,21 @@ class CbrainFileRevision
   # Returns a formatted string representing the last change to the file in git
   # Format: <commit> <author> <date>
   def to_s
-    self.pretty({:commit => true, :author => true, :date => true})
+    self.pretty({:file => true, :commit => true, :author => true, :date => true, :time => true})
   end
 
   # Returns a formatted string representing the last change to the file in git
   # Format is determined by pasing attributes that you want as a hash.
   # Defaults to: <commit> <author> <date>
   def pretty(rev_fields = {})
-    # check if info is available, if not we have to update
-    #if (rev_fields.key?(:file) && @basename.nil?) || (rev_fields.key?(:commit) && @short_commit.nil?) || (rev_fields.key?(:author) && @author.nil?) || (rev_fields.key?(:date) && @date.nil?) || (rev_fields.key?(:time) && @time.nil?)
-      self_update()
-    #end
+    self_update()
 
     # default
     pretty_string = @short_commit + " " + @author + " " + @date
 
-    if ( rev_fields.key?(:file) && rev_fields.key?(:commit) && rev_fields.key?(:author) && rev_fields.key?(:date))
+    if (rev_fields.key?(:file) && rev_fields.key?(:commit) && rev_fields.key?(:author) && rev_fields.key?(:date) && rev_fields.key?(:time))
+      pretty_string = @basename + " " + @short_commit + " " + @date + " " + @time + " " + @author
+    elsif ( rev_fields.key?(:file) && rev_fields.key?(:commit) && rev_fields.key?(:author) && rev_fields.key?(:date))
       pretty_string = @basename + " " + @short_commit + " " + @author + " " + @date
     elsif ( rev_fields.key?(:commit) && rev_fields.key?(:author) && rev_fields.key?(:date) )
       pretty_string = @short_commit + " " + @author + " " + @date
@@ -123,6 +122,7 @@ class CbrainFileRevision
     elsif ( rev_fields.key?(:date) && rev_fields.key?(:time) )
       pretty_string = @date + " " + @time
     end
+
 
     return pretty_string
   end
