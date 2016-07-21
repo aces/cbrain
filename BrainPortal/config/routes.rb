@@ -45,8 +45,6 @@ CbrainRailsPortal::Application.routes.draw do
   resources :access_profiles
   resources :feedbacks
 
-  #post "demands/create" => "users#create"
-
   # Standard CRUD resources, with extra actions
 
   resources :messages do

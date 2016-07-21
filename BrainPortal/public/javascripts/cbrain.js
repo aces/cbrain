@@ -233,8 +233,6 @@
       }
     });
 
-    // From NewAccount application, this probably needs reviewing
-
      $(document).delegate(".select_all", "click", function(){
        var header_box = $(this);
        var checkbox_class = header_box.attr("data-checkbox-class");
