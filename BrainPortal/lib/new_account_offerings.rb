@@ -46,7 +46,7 @@ class NewAccountOfferings
    AdminPassword = 'P7,f9c1bd7df146d0fa2349e6113252414e'
 
    # List of usernames you accept as 'admins'
-   AdminUsernames = [ 'prioux', 'mero' ]
+   AdminUsernames = [ 'prioux', 'mero', 'adoyle' ]
 
 end
 

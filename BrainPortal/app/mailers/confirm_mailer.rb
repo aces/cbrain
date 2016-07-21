@@ -1,4 +1,6 @@
 
+require 'new_account_offerings'
+
 class ConfirmMailer < ActionMailer::Base
 
   helper  :demands
