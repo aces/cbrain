@@ -115,13 +115,12 @@ module SchemaTaskGenerator
     # Unless +register+ is specified to be false, this method will add the
     # required Tool if necessary for the CbrainTask to be
     # useable right away (since almost all information required to make the
-    # Tool and ToolConfig objects is available in the spec). The ToolConfig
-    # will also be created unless +create_tool_config+ is false.
+    # Tool and ToolConfig objects is available in the spec).
     # Also, if +multi_version+ is specified, this method will wrap the
     # encapsulated CbrainTask in a version switcher class to allow different
     # CbrainTask classes for each tool version.
     # Returns the newly generated CbrainTask subclass.
-    def integrate(register: true, create_tool_config: false, multi_version: false)
+    def integrate(register: true, multi_version: false)
       # Make sure the task class about to be generated does not already exist,
       # to avoid mixing the classes up.
       name = SchemaTaskGenerator.classify(@name)
@@ -166,6 +165,12 @@ module SchemaTaskGenerator
         })[partial]
       end
 
+      # Add a helper method for accessing the help file (for use on the tools page)
+      # Written by the rake task cbrain:plugins:install, within the subtask public_assets
+      helpFileName = name + "_help.html" 
+      helpFileDir  = File.join( "cbrain_plugins", "cbrain_tasks", "help_files/" )
+      task.define_singleton_method(:help_filepath){ File.join(helpFileDir, helpFileName) }
+
       # If multi-versioning is enabled, replace the task class object constant
       # in CbrainTask (or Object) by a version switcher wrapper class.
       if multi_version
@@ -185,17 +190,16 @@ module SchemaTaskGenerator
 
       # With the task class and descriptor, we have enough information to
       # generate a Tool and ToolConfig to register the tool into CBRAIN.
-      register(task,create_tool_config) if register
+      register(task) if register
 
       task
     end
 
     # Register a newly generated CbrainTask subclass (+task+) in this CBRAIN
-    # installation, creating the appropriate Tool object from
-    # the information contained in the descriptor. A ToolConfig is also created,
-    # unless +create_tool_config+ is false. The newly created Tool and ToolConfig
+    # installation, creating the appropriate Tool object from the information 
+    # contained in the descriptor. The newly created Tool and ToolConfig
     # will initially belong to the core admin.
-    def register(task, create_tool_config)
+    def register(task)
       name         = @descriptor['name']
       version      = @descriptor['tool-version'] || '(unknown)'
       description  = @descriptor['description']  || ''
@@ -218,6 +222,11 @@ module SchemaTaskGenerator
       # sense on the portal).
       return if Rails.root.to_s =~ /BrainPortal$/
 
+      # Create a ToolConfig iff 
+      #   (1) the Bourreau has a docker executable and 
+      #   (2) the descriptor specifies a docker image
+      return if docker_image.nil? || !resource.docker_present
+
       ToolConfig.new(
         :tool_id      => task.tool.id,
         :bourreau_id  => resource.id,
@@ -225,7 +234,7 @@ module SchemaTaskGenerator
         :version_name => version,
         :description  => "#{name} #{version} on #{resource.name}",
         :docker_image => docker_image
-      ).save! unless !create_tool_config ||
+      ).save! unless
         ToolConfig.exists?(
           :tool_id      => task.tool.id,
           :bourreau_id  => resource.id,

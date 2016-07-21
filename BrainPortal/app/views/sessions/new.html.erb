@@ -60,8 +60,13 @@
 
     <tr>
       <td></td>
-      <td class="field"><%= submit_tag 'Sign in', tabindex: 3 %></td>
+      <td class="field">
+      <%= submit_tag 'Sign in', tabindex: 3 %>
+      <%= link_to 'Register', url_for(:controller => 'demands', :action => 'new'), tabindex: 4 %>
+      </td>
     </tr>
+
+
 
     <tr>
       <td></td>

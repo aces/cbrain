@@ -74,16 +74,15 @@ describe CbrainSession do
 
 
   describe "self.recent_activity" do
+
     1.upto(15) do |i|
       sess = ActiveRecord::SessionStore::Session.create!( :updated_at => (i*10).seconds.ago, :session_id => "xyz#{i}", :data => {})
       sess.user_id = i
       sess.active  = true
-      sess.save
-      let!(:name) { CbrainSession.new(sess, sess_model) }
+      sess.save!
     end
 
     it "should return an array containning recent activity (max n)" do
-      allow(CbrainSession).to receive(:clean_sessions).and_return(true)
       allow(User).to receive(:find_by_id).and_return(current_user)
       n = 9
       expect(CbrainSession.recent_activity(n).size).to eq(n)

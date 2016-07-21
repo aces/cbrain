@@ -41,41 +41,34 @@ module SmartDataProviderInterface
     dp_hostnames  = self.alternate_host.split(',').select { |host| host && ! host.blank? } rescue []
     dp_hostnames << self.remote_host rescue nil
     if dp_hostnames.empty? || dp_remote_dir.blank? # special case : usually when doing special select() on DPs with missing columns
-      @provider = @local_provider = @network_provider = nil
-      return @provider
+      @real_provider = nil
+      return @real_provider
     end
 
-    # Create two internal provider objects, only one of which will be used to provide the
-    # behavior we want (the other one could be useful too, in provider_full_path() below, for instance)
-    @local_provider   = localclass.new
-    @network_provider = networkclass.new
-    @local_provider.make_all_accessible!
-    @network_provider.make_all_accessible!
-    @local_provider.attributes     = self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! localclass.columns_hash[k] }
-    @network_provider.attributes   = self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! networkclass.columns_hash[k] }
-    @local_provider.id   = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
-    @network_provider.id = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
-
-    # These methods are used to intercept and prevent calls to 'save' on the two internal providers objects
-    [ :save, :save!, :update_attribute, :update_attributes, :update_attributes! ].each do |bad_method|
-      [ @local_provider, @network_provider ].each do |internal_prov|
-        internal_prov.readonly!
-        internal_prov.class_eval do
-          define_method(bad_method) do |*args|
-            cb_error "Internal error: attempt to invoke method '#{bad_method}' on internal #{internal_prov.class == localclass ? "local" : "network"} provider object for SmartDataProvider '#{internal_prov.name}'"
-          end
-        end
-      end
-    end
-
-    # Now select the real provider for all intercepts defined below.
+    # Create only one provider object, depending on whether we want a network provider
+    # or a local provider
     if dp_hostnames.include?(Socket.gethostname) && File.directory?(dp_remote_dir)
-      @provider = @local_provider
+      @real_provider = localclass.new
     else
-      @provider = @network_provider
+      @real_provider = networkclass.new
     end
 
-    @provider
+    @real_provider.make_all_accessible!
+    @real_provider.attributes = self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! @real_provider.class.columns_hash[k] }
+    @real_provider.id = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
+    @real_provider.readonly!
+
+    # These methods are used to intercept and prevent calls to 'save' on the two internal providers objects    
+    @real_provider.class_eval do
+      [ :save, :save!, :update_attribute, :update_attributes, :update_attributes! ].each do |bad_method|
+        define_method(bad_method) do |*args|   
+          cb_error "Internal error: attempt to invoke method '#{bad_method}' on internal #{@real_provider.class == localclass ? "local" : "network"} provider object for SmartDataProvider '#{@real_provider.name}'"   
+        end    
+      end    
+    end
+
+
+    @real_provider
   end
 
   # This method returns the real data provider used
@@ -87,7 +80,7 @@ module SmartDataProviderInterface
   # the real provider object should never be needed
   # in any way.
   def real_provider
-    @provider
+    @real_provider
   end
 
   ####################################
@@ -95,104 +88,104 @@ module SmartDataProviderInterface
   ####################################
 
   def is_alive? #:nodoc:
-    @provider && @provider.is_alive?
+    @real_provider && @real_provider.is_alive?
   end
 
   def is_alive! #:nodoc:
-    @provider && @provider.is_alive!
+    @real_provider && @real_provider.is_alive!
   end
 
   def is_browsable?(by_user = nil) #:nodoc:
-    @provider && @provider.is_browsable?(by_user)
+    @real_provider && @real_provider.is_browsable?(by_user)
   end
 
   def is_fast_syncing? #:nodoc:
-    @provider && @provider.is_fast_syncing?
+    @real_provider && @real_provider.is_fast_syncing?
   end
 
   def allow_file_owner_change? #:nodoc:
-    @provider && @provider.allow_file_owner_change?
+    @real_provider && @real_provider.allow_file_owner_change?
   end
 
   def sync_to_cache(userfile) #:nodoc:
-    @provider.sync_to_cache(userfile)
+    @real_provider.sync_to_cache(userfile)
   end
 
   def sync_to_provider(userfile) #:nodoc:
-    @provider.sync_to_provider(userfile)
+    @real_provider.sync_to_provider(userfile)
   end
 
   def cache_prepare(userfile) #:nodoc:
-    @provider.cache_prepare(userfile)
+    @real_provider.cache_prepare(userfile)
   end
 
   def cache_full_path(userfile) #:nodoc:
-    @provider.cache_full_path(userfile)
+    @real_provider.cache_full_path(userfile)
   end
 
   def provider_readhandle(userfile, *args, &block) #:nodoc:
-    @provider.provider_readhandle(userfile, *args, &block)
+    @real_provider.provider_readhandle(userfile, *args, &block)
   end
 
   def cache_readhandle(userfile, *args, &block) #:nodoc:
-    @provider.cache_readhandle(userfile, *args, &block)
+    @real_provider.cache_readhandle(userfile, *args, &block)
   end
 
   def cache_writehandle(userfile, *args, &block) #:nodoc:
-    @provider.cache_writehandle(userfile, *args, &block)
+    @real_provider.cache_writehandle(userfile, *args, &block)
   end
 
   def cache_copy_from_local_file(userfile,localfilename) #:nodoc:
-    @provider.cache_copy_from_local_file(userfile,localfilename)
+    @real_provider.cache_copy_from_local_file(userfile,localfilename)
   end
 
   def cache_copy_to_local_file(userfile,localfilename) #:nodoc:
-    @provider.cache_copy_to_local_file(userfile,localfilename)
+    @real_provider.cache_copy_to_local_file(userfile,localfilename)
   end
 
   def cache_erase(userfile) #:nodoc:
-    @provider.cache_erase(userfile)
+    @real_provider.cache_erase(userfile)
   end
 
   def cache_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
-    @provider.cache_collection_index(userfile, directory, allowed_types)
+    @real_provider.cache_collection_index(userfile, directory, allowed_types)
   end
 
   def provider_erase(userfile) #:nodoc:
-    @provider.provider_erase(userfile)
+    @real_provider.provider_erase(userfile)
   end
 
   def provider_rename(userfile, newname) #:nodoc:
-    @provider.provider_rename(userfile, newname)
+    @real_provider.provider_rename(userfile, newname)
   end
 
   def provider_move_to_otherprovider(userfile, otherprovider, options = {}) #:nodoc:
-    @provider.provider_move_to_otherprovider(userfile, otherprovider, options)
+    @real_provider.provider_move_to_otherprovider(userfile, otherprovider, options)
   end
 
   def provider_copy_to_otherprovider(userfile, otherprovider, options = {}) #:nodoc:
-    @provider.provider_copy_to_otherprovider(userfile, otherprovider, options)
+    @real_provider.provider_copy_to_otherprovider(userfile, otherprovider, options)
   end
 
   def provider_list_all(user=nil) #:nodoc:
-    @provider.provider_list_all(user)
+    @real_provider.provider_list_all(user)
   end
 
   def provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
-    @provider.provider_collection_index(userfile, directory, allowed_types)
+    @real_provider.provider_collection_index(userfile, directory, allowed_types)
   end
 
   def provider_report(force_reload=nil) #:nodoc:
-    @provider.provider_report(force_reload)
+    @real_provider.provider_report(force_reload)
   end
 
   def provider_repair(issue) #:nodoc:
-    @provider.provider_repair(issue)
+    @real_provider.provider_repair(issue)
   end
 
   # This method is specific to SSH data providers subclasses and not part of the official API
   def browse_remote_dir(user=nil) #:nodoc:
-    @provider.browse_remote_dir(user)
+    @real_provider.browse_remote_dir(user)
   end
 
   # This method is a utility method allowing access to
@@ -200,8 +193,8 @@ module SmartDataProviderInterface
   # class, even when the current smart provider is actually
   # configured to be local.
   def provider_full_path(userfile) #:nodoc:
-    if @network_provider.respond_to?(:provider_full_path)
-      @network_provider.provider_full_path(userfile)
+    if @real_provider.respond_to?(:provider_full_path)
+      @real_provider.provider_full_path(userfile)
     else
       "(unknown remote path)"
     end

@@ -31,10 +31,10 @@ class S3DataProvider < DataProvider
   validates_presence_of :cloud_storage_client_identifier, :cloud_storage_client_token
 
   attr_accessor :s3_connection
-  
-  # this returns the category of the data provider -- used in view for admins
-  def self.pretty_category_name
-    "Other Types"
+
+  # This returns the category of the data provider
+  def self.pretty_category_name #:nodoc:
+    "Cloud"
   end
 
   # Connects to the S3 service using :cloud_storage_client_identifier and :cloud_storage_client_token;

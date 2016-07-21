@@ -41,7 +41,7 @@ RSpec.describe UserfilesController, :type => :controller do
   let(:child_userfile)        { create(:single_file, :user => admin, :parent_id => admin_userfile.id) }
   let(:group_userfile)        { create(:single_file, :group_id => user.group_ids.last, :data_provider => data_provider) }
   let(:mock_userfile)         { mock_model(TextFile, :id => 1).as_null_object }
-  let(:data_provider)         { create(:local_data_provider, :user => user, :online => true, :read_only => false) }
+  let(:data_provider)         { create(:flat_dir_local_data_provider, :user => user, :online => true, :read_only => false) }
 
   after(:all) do
     FileUtils.rm(Dir.glob("spec/fixtures/cbrain_test_file_*"))

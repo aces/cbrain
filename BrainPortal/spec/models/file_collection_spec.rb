@@ -105,7 +105,7 @@ describe FileCollection do
     it "should raise an exception if archive have an unknown extension" do
       expect{
         file_collection.extract_collection_from_archive_file("dir.unknown")
-      }.to raise_error
+      }.to raise_error(CbrainError, /Cannot extract files/)
     end
   end
 

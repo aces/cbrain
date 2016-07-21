@@ -1,5 +1,4 @@
 
-<%-
 #
 # CBRAIN Project
 #
@@ -18,25 +17,21 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<span id="new_model">
-  <%= button_with_dropdown_menu("Create New Server", :open => true) do %>
-    <%= ajax_form_for @bourreau, :as => :bourreau, :url => { :action => "create" }, :datatype => "script" do |f| -%>
-
-       <%= error_messages_for(@bourreau, :object_name => "server") %>
-
-       <%= render :partial => 'form_fields', :locals => { :f => f }  %>
-
-       <p><%= submit_tag 'Create' %></p>
-
-    <% end -%>
-
-    <%= render :partial => "notes" %>
-  <% end %>
-</span>
-
-
+namespace :db do
+  namespace :seed do
+    namespace :test do
+      desc "Seed CBRAIN test DB for Bourreau testing"
+      task :bourreau => :environment do
+        raise "Error: this task must be run in a TEST environment!" unless
+          (ENV["RAILS_ENV"].presence || "Unk") =~ /test/
+        CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
+        #PortalSystemChecks.check(PortalSystemChecks.all - [:a020_check_database_sanity])
+        load "db/seeds_test_bourreau.rb"
+      end
+    end
+  end
+end
 

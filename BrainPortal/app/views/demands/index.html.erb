@@ -1,0 +1,254 @@
+
+<h1>List of new account requests:</h1>
+
+<% numpages = (((@tot > 0 ? @tot : 1)-1)/@page_size)+1 %>
+<% start_i    = (@page-1)*@page_size + 1 %>
+<% end_i      = start_i + @demands.size - 1 %>
+
+<%= form_tag({:action => :multi_action}, :method => :post) do %>
+
+<table class="index_table">
+
+<tr>
+  <th colspan="9">
+    <% if @demands.count > 0 %>
+      Showing records <%= start_i %> to <%= end_i %> of <%= @tot %>
+      <% if @real_tot > @tot %>
+        (out of <%= @real_tot %>)
+      <% end %>
+    <% else %>
+      (No records to show)
+    <% end %>
+  </th>
+</tr>
+
+<% if numpages > 1 %>
+  <tr><td colspan="9" class="pagelist">
+  Pages: <% 1.upto(numpages) do |p| %>
+    <% if @page == p %>
+      <strong><%= p * @page_size %></strong>
+    <% else %>
+      <%= link_to "#{p * @page_size}", :page => "#{p}" %>
+    <% end %>
+  <% end %>
+  </td></tr>
+<% end %>
+
+<tr>
+  <th>Full Name</th>
+  <th><%= select_all_checkbox('app_reqid') %></th>
+  <th>Email</th>
+  <th>Institution</th>
+  <th>Country</th>
+  <th><%= select_all_checkbox('log_reqid') %>&nbsp;Username</th>
+  <th>Comments?</th>
+  <th>Action</th>
+  <th>Status
+      | Not Conf: <%= select_all_checkbox('notconf_reqid') %>
+      | Not Notif: <%= select_all_checkbox('notnotif_reqid') %>
+  </th>
+</tr>
+
+<% email_cnts = Demand.uniq_email_cnts %>
+<% login_cnts = Demand.uniq_login_cnts %>
+
+<% prev_email = "" %>
+<% @demands.each_with_index do |req,idx| %>
+
+<% dup_email   = email_cnts[req.email.downcase] > 1 %>
+<% dup_login   = login_cnts[req.login.downcase] > 1 %>
+<% # dest_exists = req.account_exists? %>
+
+<% if session[:dupemail_filter].present? && prev_email != "" && req.email.downcase != prev_email.downcase%>
+  <tr><td colspan="9" style="background: black"></td></tr>
+<% end %>
+<% prev_email = req.email %>
+
+<% susp_type = req.is_suspicious? %>
+<% if susp_type %>
+<tr class="suspicious<%= susp_type %>">
+<% elsif idx % 2 == 0 %>
+<tr class="index_even">
+<% else %>
+<tr class="index_odd">
+<% end %>
+
+  <td><%= crop_text(req.full) %></td>
+
+  <td>
+    <% if req.confirmed? && !req.approved_by.presence && !dup_email && !dup_login %>
+      <%= check_box_tag 'app_reqids[]', req.id.to_s, false, :class => 'app_reqid' %>
+    <% end %>
+  </td>
+
+  <td>
+    <% if ! dup_email %>
+      <%= crop_text(req.email) %>
+    <% else %>
+      <%= link_to "*", :action => :index,
+         :institution_filter => "",
+         :email_filter       => req.email,
+         :country_filter     => "",
+         :login_filter       => "",
+         :approved_filter    => "",
+         :confirmed_filter   => ""
+      %>
+      <span style="color: red"><%= crop_text(req.email) %></span>
+    <% end %>
+  </td>
+
+  <td><%= crop_text(req.institution) %></td>
+  <td><%= crop_text(req.country) %></td>
+
+  <td>
+    <% if ! dup_login %>
+      <%= req.login %>
+    <% else %>
+      <%= link_to "*", :action => :index,
+         :institution_filter => "",
+         :email_filter       => "",
+         :country_filter     => "",
+         :login_filter       => req.login,
+         :approved_filter    => "",
+         :confirmed_filter   => ""
+      %>
+      <%= dup_email ? "" : check_box_tag('log_reqids[]', req.id.to_s, false, :class => 'log_reqid') %>
+      <span style="color: red"><%= req.login %></span>
+    <% end %>
+  </td>
+
+  <td><%= crop_text(req.comment,15) %></td>
+
+  <td>
+      <%= link_to "Show", { :action => :show, :id => req.id } , :title => "Dept: #{req.department} Pos: #{req.position}" %>
+      /
+      <%= link_to "Edit", :action => :edit, :id => req.id %>
+      /
+      <%= link_to "Del", demand_path(req), :action => :destroy, :method => :delete, :confirm => "Are you sure you want to delete the request of \"#{req.full}\" ?" %>
+      <%= check_box_tag('del_reqids[]', req.id.to_s, false, :class => 'del_reqid') %>
+  </td>
+
+  <td>
+
+     <% if req.approved_by.presence && req.approved_at.presence %>
+       <%= check_box_tag 'undoapp_reqids[]', req.id.to_s, false, :class => 'undoapp_reqid' %>
+       OK by: <%= req.approved_by %> at <%= req.approved_at %>
+     <% elsif ! req.confirmed? %>
+       <%= dup_email ? "" : check_box_tag('notconf_reqids[]', req.id.to_s, false, :class => 'notconf_reqid') %>
+       (Waiting for confirmation)
+     <% elsif dup_login %>
+       <span style="color: red">(Conflicting name)</span>
+     <% elsif dup_email %>
+       <span style="color: #ff00ff">(Conflicting email)</span>
+     <% elsif req.account_exists? %>
+       <%= check_box_tag 'notnotif_reqids[]', req.id.to_s, false, :class => 'notnotif_reqid' %>
+       <span style="color: orange">(Exist yet not notified)</span>
+     <% else %>
+       <%= link_to "(Approve this)", approve_demand_path(req), :method => :post,
+           :confirm => "Approve the application of \"#{req.full}\" for service \"#{req.service}\" ?" %>
+     <% end %>
+
+     <% if false && (req.approved_by.blank? || req.approved_at.blank?) && dest_exists %>
+        <span style="color: red">EXISTS!</span>
+     <% end %>
+
+  </td>
+
+</tr>
+
+<% end %>
+
+<tr style="background: #ffffcc">
+  <td colspan="3"><center><%= submit_tag "Approve Checked" %><center></td>
+  <td colspan="2"></td>
+  <td colspan="1"><%= submit_tag "Fix Login" %></td>
+  <td colspan="1"></td>
+  <td colspan="1"><%= submit_tag "Delete" %></td>
+  <td colspan="1">
+    <%= submit_tag "Resend Conf" %>
+    <%= submit_tag "Clean Not Notified" %>
+  </td>
+</tr>
+
+</table>
+
+
+<% end %>
+
+<p>
+
+<h3>Filter table</h3>
+
+Presets:
+   <%= link_to "Clear", :action => :index,
+       :institution_filter => "",
+       :email_filter       => "",
+       :country_filter     => "",
+       :login_filter       => "",
+       :approved_filter    => "",
+       :confirmed_filter   => "",
+       :dupemail_filter    => ""
+   %>
+   |
+   <%= link_to "Conf but Not App", :action => :index,
+       :institution_filter => "",
+       :email_filter       => "",
+       :country_filter     => "",
+       :login_filter       => "",
+       :approved_filter    => "0",
+       :confirmed_filter   => "1",
+       :dupemail_filter    => ""
+   %>
+   |
+   <%= link_to "Not Conf Not App", :action => :index,
+       :institution_filter => "",
+       :email_filter       => "",
+       :country_filter     => "",
+       :login_filter       => "",
+       :approved_filter    => "0",
+       :confirmed_filter   => "0",
+       :dupemail_filter    => ""
+   %>
+   <%= link_to "+ Duplicate Emails", :action => :index,
+       :dupemail_filter    => "1"
+   %>
+<p>
+Page sizes:
+  <% %w( 50 100 200 500 700 1000 2000 ).each do |ps| %>
+    <%= link_to ps, :action => :index,  :page_size => ps %>
+  <% end %>
+<p>
+
+<%= form_tag({:action => :index}, :method => :get) do %>
+<table>
+<tr><td>Institution: </td><td><%= text_field_tag :institution_filter, session[:institution_filter] %> </td></tr>
+<tr><td>Email:       </td><td><%= text_field_tag :email_filter,       session[:email_filter] %>       </td></tr>
+<tr><td>Country:     </td><td><%= text_field_tag :country_filter,     session[:country_filter] %>     </td></tr>
+<tr><td>Username:    </td><td><%= text_field_tag :login_filter,       session[:login_filter] %>       </td></tr>
+
+<tr><td>Confirmed:</td>
+  <td>
+  Yes: <%= radio_button_tag :confirmed_filter, "1", session[:confirmed_filter] == '1' %>
+  No:  <%= radio_button_tag :confirmed_filter, "0", session[:confirmed_filter] == '0'%>
+  Any: <%= radio_button_tag :confirmed_filter, "",  session[:confirmed_filter] == '' %>
+  </td>
+</tr>
+
+<tr><td>Approved:</td>
+  <td>
+  Yes: <%= radio_button_tag :approved_filter, "1", session[:approved_filter] == '1' %>
+  No:  <%= radio_button_tag :approved_filter, "0", session[:approved_filter] == '0'%>
+  Any: <%= radio_button_tag :approved_filter, "",  session[:approved_filter] == '' %>
+  </td>
+</tr>
+
+<tr><th colspan="2"><%= submit_tag "Filter" %></th></tr>
+
+</table>
+
+<% end %>
+
+<p>
+<%= link_to "Create a new Account Request", :action => :new %>
+&nbsp; &nbsp; &nbsp;
+

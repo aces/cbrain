@@ -196,7 +196,7 @@ describe DataProvider do
         expect(provider.cache_prepare(userfile)).to be_truthy
       end
       it "should raise an exception if passed a string argument" do
-        expect{provider.cache_prepare("userfile")}.to raise_error
+        expect{provider.cache_prepare("userfile")}.to raise_error(RuntimeError, /internal API change incompatibility/)
       end
       it "should create the subdirectory if it does not exist" do
         expect(Dir).to receive(:mkdir).at_least(:once)
@@ -212,7 +212,7 @@ describe DataProvider do
 
   describe "#cache_full_path" do
     it "should raise an exception if called with a string argument" do
-      expect{provider.cache_full_path("userfile")}.to raise_error
+      expect{provider.cache_full_path("userfile")}.to raise_error(RuntimeError, /internal API change incompatibility/)
     end
     context "building a cache directory" do
       before(:each) do
@@ -844,13 +844,13 @@ describe DataProvider do
 
       it "should raise an exception if the file cannot be created" do
         allow(File).to receive(:exist?).and_return(false)
-        expect {DataProvider.create_cache_md5}.to raise_error
+        expect {DataProvider.create_cache_md5}.to raise_error(RuntimeError, /could not create/)
       end
 
       it "should raise an exception if there is no token" do
         allow(File).to receive(:exist?).and_return(true)
         allow(File).to receive(:read).and_return('')
-        expect {DataProvider.create_cache_md5}.to raise_error
+        expect {DataProvider.create_cache_md5}.to raise_error(RuntimeError, /could not read/)
       end
     end
   end
@@ -908,7 +908,7 @@ describe DataProvider do
         end
         it "should raise an exception if the file does not exist" do
           allow(File).to receive(:exist?).and_return(false)
-          expect {DataProvider.cache_revision_of_last_init}.to raise_error
+          expect {DataProvider.cache_revision_of_last_init}.to raise_error(RuntimeError, /could not create/)
         end
         context "because the file was just created" do
           before(:each) do
@@ -921,7 +921,7 @@ describe DataProvider do
           end
           it "should raise an exception if the revision info is blank" do
             allow(cache_rev).to receive(:blank?).and_return(true)
-            expect {DataProvider.cache_revision_of_last_init}.to raise_error
+            expect {DataProvider.cache_revision_of_last_init}.to raise_error(RuntimeError, /could not read/)
           end
         end
       end
@@ -941,10 +941,10 @@ describe DataProvider do
       expect(DataProvider.this_is_a_proper_cache_dir!(cache_root)).to be_truthy
     end
     it "should raise an exception if the cache root is blank" do
-      expect {DataProvider.this_is_a_proper_cache_dir!("")}.to raise_error
+      expect {DataProvider.this_is_a_proper_cache_dir!("")}.to raise_error(CbrainError, /blank DP cache directory/)
     end
     it "should raise an exception if the cache root is a system tmp directory" do
-      expect {DataProvider.this_is_a_proper_cache_dir!("/tmp")}.to raise_error
+      expect {DataProvider.this_is_a_proper_cache_dir!("/tmp")}.to raise_error(CbrainError, /cache directory configured cannot be a system temp dir/)
     end
     it "should return true if told not to check the file system, even if cache root doesn't exist" do
       allow(File).to receive(:directory?).and_return(false)
@@ -952,15 +952,15 @@ describe DataProvider do
     end
     it "should raise an exception if the cache root doesn't exist" do
       allow(File).to receive(:directory?).and_return(false)
-      expect {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.to raise_error
+      expect {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.to raise_error(CbrainError, /cache directory doesn't exist/)
     end
     it "should raise an exception if the cache root isn't readable" do
       allow(File).to receive(:readable?).and_return(false)
-      expect {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.to raise_error
+      expect {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.to raise_error(CbrainError, /cache directory not accessible/)
     end
     it "should raise an exception if the cache root isn't writable" do
       allow(File).to receive(:writable?).and_return(false)
-      expect {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.to raise_error
+      expect {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.to raise_error(CbrainError, /cache directory not accessible/)
     end
     it "should return true if the revision file exists" do
       allow(File).to receive(:exists?).and_return(true)
@@ -968,11 +968,11 @@ describe DataProvider do
     end
     it "should raise an exception if unable to read the contents of the cache root" do
       allow(Dir).to receive(:entries).and_return(nil)
-      expect {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.to raise_error
+      expect {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.to raise_error(CbrainError, /Cannot inspect content of DP cache directory/)
     end
     it "should raise an exception if the cache root is not empty" do
       allow(Dir).to receive(:entries).and_return(["file1", "file2"])
-      expect {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.to raise_error
+      expect {DataProvider.this_is_a_proper_cache_dir!(cache_root)}.to raise_error(CbrainError, /contains data/)
     end
   end
 
@@ -992,11 +992,11 @@ describe DataProvider do
     end
     it "should raise an exception if the cache directory is blank" do
       allow(RemoteResource).to receive_message_chain(:current_resource, :dp_cache_dir).and_return("")
-      expect {DataProvider.cache_rootdir}.to raise_error
+      expect {DataProvider.cache_rootdir}.to raise_error(CbrainError, /No cache directory/)
     end
     it "should raise an exception if the cache directory is not a string or a path" do
       allow(RemoteResource).to receive_message_chain(:current_resource, :dp_cache_dir).and_return(123)
-      expect {DataProvider.cache_rootdir}.to raise_error
+      expect {DataProvider.cache_rootdir}.to raise_error(TypeError, /no implicit conversion/)
     end
   end
 

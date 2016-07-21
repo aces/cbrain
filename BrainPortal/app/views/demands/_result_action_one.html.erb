@@ -1,0 +1,33 @@
+
+<%
+#
+# Partial with these locals:
+#
+# demand          : demand object
+# sym_res         : a result symbol
+# info            : info message
+# exception_trace : stack trace when error
+#
+%>
+
+<h3>Result for <%= crop_text(demand.full_name) %>, <%= crop_text(demand.institution) %></h3>
+
+
+<% if info.present? %>
+
+  <% if info =~ /^error/i %>
+    <div class="flash_error"><pre><%= info.to_s %></pre></div>
+  <% else %>
+    <pre class="comment"><%= info.to_s %></pre>
+  <% end %>
+
+<% end %>
+
+
+
+<% if exception_trace.present? %>
+
+  <div class="flash_error"><pre><%= exception_trace %></pre></div>
+
+<% end %>
+

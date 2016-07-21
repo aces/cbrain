@@ -56,7 +56,7 @@
 
     <%
       t.edit_cell(:site_id, :content => link_to_site_if_accessible(@user.site), :disabled => !current_user.has_role?(:admin_user)) do
-		  site_select "user[site_id]", @user.site_id, :prompt => "(Select a site)"
+        site_select("user[site_id]", @user.site_id, :prompt => "(Select a site)")
       end
     %>
 
@@ -115,13 +115,15 @@
     <% end %>
 
   <% end %>
-  <% unless @user.signed_license_agreements.empty? %>
+
+  <% if @user.signed_license_agreements.present? %>
     <%= show_table(@user, :header => "License Agreements", :width => 3) do |t| %>
       <% @user.signed_license_agreements.each  do |la| %>
         <% t.cell("", :no_header => true) { link_to la, "/show_license/#{la}" } %>
       <% end  %>
     <% end %>
   <% end %>
+
   <%= show_table(@user, :header => 'Resources') do |t| %>
 
     <% t.cell("Files") do
@@ -151,6 +153,18 @@
 
   <% end %>
 
+  <% # Access Profile List %>
+  <% if current_user.has_role?(:admin_user) && @user.access_profiles.count > 0 %>
+    <%= show_table(@user, :header => 'Access profiles') do |t| %>
+      <% t.cell("Access Profiles", :no_header => true) do %>
+        <%= array_to_table(@user.access_profiles.order(:name).all, :table_class => "simple", :cols => 4) do |access_profile| %>
+          <%= access_profile_label(access_profile, :with_link => true) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% # Admin users have access to ALL groups, so no need to show them all here %>
   <% unless @user.has_role? :admin_user %>
 
     <div>

@@ -11,7 +11,25 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160218173528) do
+ActiveRecord::Schema.define(:version => 20160706130342) do
+
+  create_table "access_profiles", :force => true do |t|
+    t.string   "name",        :null => false
+    t.string   "description"
+    t.string   "color"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+  end
+
+  create_table "access_profiles_groups", :id => false, :force => true do |t|
+    t.integer "access_profile_id"
+    t.integer "group_id"
+  end
+
+  create_table "access_profiles_users", :id => false, :force => true do |t|
+    t.integer "access_profile_id"
+    t.integer "user_id"
+  end
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -100,6 +118,35 @@ ActiveRecord::Schema.define(:version => 20160218173528) do
   add_index "data_providers", ["group_id"], :name => "index_data_providers_on_group_id"
   add_index "data_providers", ["type"], :name => "index_data_providers_on_type"
   add_index "data_providers", ["user_id"], :name => "index_data_providers_on_user_id"
+
+  create_table "demands", :force => true do |t|
+    t.string   "title"
+    t.string   "first",         :null => false
+    t.string   "middle"
+    t.string   "last",          :null => false
+    t.string   "institution",   :null => false
+    t.string   "department"
+    t.string   "position"
+    t.string   "email",         :null => false
+    t.string   "website"
+    t.string   "street1"
+    t.string   "street2"
+    t.string   "city"
+    t.string   "province"
+    t.string   "country"
+    t.string   "postal_code"
+    t.string   "time_zone"
+    t.string   "service"
+    t.string   "login"
+    t.string   "comment"
+    t.string   "session_id"
+    t.string   "confirm_token"
+    t.boolean  "confirmed"
+    t.string   "approved_by"
+    t.datetime "approved_at"
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
+  end
 
   create_table "exception_logs", :force => true do |t|
     t.string   "exception_class"
@@ -237,6 +284,7 @@ ActiveRecord::Schema.define(:version => 20160218173528) do
     t.string   "system_from_email"
     t.string   "external_status_page_url"
     t.string   "docker_executable_name"
+    t.boolean  "docker_present"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
