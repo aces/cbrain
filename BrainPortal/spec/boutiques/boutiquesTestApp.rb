@@ -50,6 +50,7 @@ options = {}
 # Lists of potential input symbols
 symbolize = lambda { |a| a.map{ |s| s.to_sym } }
 Strings     = symbolize.( %w(a k q A v o x r) )
+Enums       = symbolize.( %w(E) )
 Flags       = symbolize.( %w(c u w y) )
 Files       = symbolize.( %w(C d j) )
 Numbers     = symbolize.( %w(B b n i) )
@@ -109,6 +110,7 @@ op = OptionParser.new do |opt|
   opt.on('-e','--arg_e S1 S2',      'A string list input',      Array ) { |o| options[:e] = o }
   opt.on('-f','--arg_f F1 F2',      'A file list input',        Array ) { |o| options[:f] = o }
   opt.on('-g','--arg_g G1 G2',      'A number list input',      Array ) { |o| options[:g] = o }
+  opt.on('-E','--arg_E val',        'An enum input [a,b,c]',    String) { |o| options[:E] = o }
 
   # Disables/Requires
   opt.on('-i','--arg_i a_number',   'A number input',           Float ) { |o| options[:i] = o }
@@ -159,13 +161,15 @@ end
 # Check input types
 # The automatic parser already does this to an extent, but since it is incomplete and
 # we also rely on some manual parsing, we check it again
-AllParams = Strings + Flags + Files + Numbers + NumLists + FileLists + StringLists
+AllParams = Strings + Flags + Files + Numbers + Enums + NumLists + FileLists + StringLists
 options.each do |key, value|
   if Strings.include?(key)      && ! (String===value)
     print("\n Handling String type error: #{key.to_s}, #{Strings.include? key}, #{value.class} \n")
     leave.( "ERROR: input (-#{key.to_s}, #{value}) is not a string", 3)
   elsif Flags.include?(key)     && ! (value==true || value==false)
     leave.( "ERROR: input (-#{key.to_s}, #{value}) is not a boolean", 3)
+  elsif Enums.include?(key)     && ! String===value
+    leave.( "ERROR: input (-#{key.to_s}, #{value}) should be a string", 3)
   elsif Files.include?(key)     && !( String===value && File.exist?(value) )
     leave.( "ERROR: input (-#{key.to_s}, #{value}) is not an existent filename", 10)
   elsif Numbers.include?(key)   && ( Float(value) rescue nil )==nil
@@ -217,6 +221,9 @@ leave.("ERROR: {-v,-w} are mutually exclusive, but one is required", 8) unless (
 
 # Required arguments must be present
 leave.("ERROR: -A, -B, and -C are required", 9) if [:A,:B,:C].any? { |k| ! options.key?(k) }
+
+# Check enum has a reasonable input choice
+leave.("ERROR: -E must be one of 'a', 'b', or 'c'", 11) unless (options[:E].nil? || ['a','b','c'].include?(options[:E]))
 
 # Write output files
 (newName = options[:r]) ? FileUtils.touch(newName) : FileUtils.touch(DefaultRequiredOutputName)

@@ -110,10 +110,11 @@ module TestHelpers
   #     {C,d,j} are Files & {f} is a File List (arguments must exist)
   #     {B,b,n,i} are Numbers & {g,l} are Number Lists
   #     {c,u,w,y} are Flag type inputs
+  #     {E} is an Enum type input
   ###
 
   # Test program symbols
-  TestArgs = [*'a'..'g',*'i'..'r',*'u'..'y',*'A'..'C'].map{ |s| s.to_sym }
+  TestArgs = [*'a'..'g',*'i'..'r',*'u'..'y',*'A'..'C','E'].map{ |s| s.to_sym }
 
   # Basic tests used to test mock program functionality
   BasicTests = [
@@ -147,6 +148,7 @@ module TestHelpers
     ["has mutable required output file name", baseArgs + r_arg, 0, [AltReqOutName] ],
     ["should not find the default required file when renamed", baseArgs + r_arg, 11, [DefReqOutName] ],
     ["outputs optional file", baseArgs + o_arg, 0, [DefReqOutName, OptOutName] ],
+    ["works with a correctly specified enum", baseArgs + '-E c', 0],
     ### Tests that should result in the program failing ###
     # Argument requirement failures
     ["fails when a required argument is missing (A: flag + value)", "-n 7 -B 7 -C #{c_file} -v s", 9],
@@ -155,6 +157,7 @@ module TestHelpers
     ["fails when number (-B) is non-numeric (required)", "-n 7 -A a -B q -C #{c_file} -v s -b 7", 1],
     ["fails when number (-b) is non-numeric (optional)", baseArgs + "-b u", 1],
     ["fails when number in list (-l) is non-numeric (optional)", baseArgs + "-l 2 u 2", 4],
+    ["fails when enum is not given a reasonable value", baseArgs + '-E d', 11],
     # Special separator failures
     ["fails when special separator is missing", baseArgs + "-x 7", 5],
     ["fails when special separator is wrong", baseArgs + "-x~7", 5],
