@@ -40,9 +40,7 @@
   <form action="<%= userfiles_path %>" method="post" enctype="multipart/form-data">
     <label for="up-file" class="dlg-fld-lbl">Upload</label>
     <input id="up-file" class="dlg-fld" type="file" name="upload_file" />
-    <span id="up-file-warn" class="dlg-msg-err">
-      &#9888; Too large! (&gt; 1 MB) <%# TODO %>
-    </span>
+    <span id="up-file-warn" class="dlg-msg-err"></span>
     <br />
 
     <label for="up-dp" class="dlg-fld-lbl">To</label>
