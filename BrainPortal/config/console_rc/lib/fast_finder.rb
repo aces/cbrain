@@ -178,3 +178,11 @@ class ToolConfig
   end
 end
 
+print <<FEATURES
+
+========================================================
+Feature: fast finder for anything
+========================================================
+  Activate with: fff 'string' ; fff id
+FEATURES
+
