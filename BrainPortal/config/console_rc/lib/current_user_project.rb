@@ -76,6 +76,16 @@ def cp(group='show me')
   puts "Current project is now: #{$_current_project.try(:name) || "(nil)"}"
 end
 
+print <<FEATURES
+
+========================================================
+Feature: changing the current_user and current_group
+========================================================
+  Change user with      : cu 'name' ; cu id ; cu regex
+  Change group with     : cp 'name' ; cp id ; cp regex
+  Show current settings : cu ; cp
+FEATURES
+
 cu User.admin
 cp nil
 
