@@ -55,15 +55,15 @@
 #   end
 #
 #   # Then later on, all these calls are similar:
-#   puts Abcd::Revision_info.to_s # <commit> <author> <date> by default
-#   puts Abcd::Revision_info.pretty({:attribute => true}) # selects which of the revision's attributes to include in string
+#   puts Abcd::Revision_info.to_s # <short_commit> <author> <date> by default
+#   puts Abcd::Revision_info.format("%s %a %d") # selects <short_commit> <author> <date> to put in the string
 #   puts Abcd.revision_info.to_s  # using CBRAIN's revision_info method
 #   puts x.revision_info.short_commit # using attributes
 #
-#   # If at least once to_s() or self_update() has been called,
+#   # If at least once to_s(), format(), or self_update() has been called,
 #   # the the attributes can also be accessed directly:
 #   Abcd::Revision_info.self_update
-#   puts Abcd::Revision_info.author  # faster than svn_id_author()
+#   puts Abcd::Revision_info.author
 #
 
 require 'csv'
@@ -95,36 +95,35 @@ class CbrainFileRevision
   end
 
   # Returns a formatted string representing the last change to the file in git
-  # Format: <commit> <author> <date>
+  # Format: <short_commit> <author> <date>
   def to_s
-    self.pretty({:file => true, :commit => true, :author => true, :date => true, :time => true})
+    self.format("%f %s %d %t %a")
   end
 
   # Returns a formatted string representing the last change to the file in git
-  # Format is determined by pasing attributes that you want as a hash.
-  # Defaults to: <commit> <author> <date>
-  def pretty(rev_fields = {})
+  # Format is determined by passing the desired details you want in the returned string
+  # as a string:
+  # %a = author
+  # %f = filename
+  # %c = commit
+  # %s = short_commit
+  # %d = date
+  # %t = time
+  # Defaults to: <short_commit> <author> <date>
+  def format(rev_info = "%s %a %d")
     self_update()
 
-    # default
-    pretty_string = @short_commit + " " + @author + " " + @date
+    #rev_info.gsub("/%a/", @author).gsub("/%f/", @basename).gsub("/%c/", @commit).gsub("/%s/", @short_commit).gsub("/%d/", @date).gsub("/%t/", @time)
+    rev_info.gsub(/(%[afcsdt])/, {
+        "%a" => @author,
+        "%f" => @basename,
+        "%c" => @commit,
+        "%s" => @short_commit,
+        "%d" => @date,
+        "%t" => @time
+    })
 
-    if (rev_fields.key?(:file) && rev_fields.key?(:commit) && rev_fields.key?(:author) && rev_fields.key?(:date) && rev_fields.key?(:time))
-      pretty_string = @basename + " " + @short_commit + " " + @date + " " + @time + " " + @author
-    elsif ( rev_fields.key?(:file) && rev_fields.key?(:commit) && rev_fields.key?(:author) && rev_fields.key?(:date))
-      pretty_string = @basename + " " + @short_commit + " " + @author + " " + @date
-    elsif ( rev_fields.key?(:commit) && rev_fields.key?(:author) && rev_fields.key?(:date) )
-      pretty_string = @short_commit + " " + @author + " " + @date
-    elsif ( rev_fields.key?(:commit) && rev_fields.key?(:date) && rev_fields.key?(:time) )
-      pretty_string = @short_commit + " " + @date + " " + @time
-    elsif ( rev_fields.key?(:author) && rev_fields.key?(:commit) )
-      pretty_string  = @author + " " + @short_commit
-    elsif ( rev_fields.key?(:date) && rev_fields.key?(:time) )
-      pretty_string = @date + " " + @time
-    end
-
-
-    return pretty_string
+    return rev_info
   end
 
   # Returns the date and time of the revision info, separated by a space.

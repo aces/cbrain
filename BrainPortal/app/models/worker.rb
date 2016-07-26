@@ -381,7 +381,7 @@ class Worker
   def main_loop #:nodoc:
     self.validate_I_am_a_worker
     self.worker_log.info "Starting main worker loop."
-    self.worker_log.info "#{self.class} rev. " + self.revision_info.pretty()
+    self.worker_log.info "#{self.class} rev. " + self.revision_info.format()
 
     # Custom initialization method supplied by subclass.
     self.setup

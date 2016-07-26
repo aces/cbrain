@@ -503,7 +503,7 @@ module ActRecLog
     mytable = self.class.table_name
     return nil unless myid
     message = Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + "#{self.class} revision " +
-              self.revision_info.pretty() + "\n"
+              self.revision_info.format() + "\n"
 
     arl = ActiveRecordLog.create( :ar_id         => myid,
                                   :ar_table_name => mytable,

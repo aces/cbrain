@@ -307,7 +307,7 @@ class Bourreau < RemoteResource
     yml = "\n" +
           "#\n" +
           "# File created automatically on Portal Side\n" +
-          "# by " + self.revision_info.pretty({:file => true, :commit => true, :author => true, :date => true}) + "\n" +
+          "# by " + self.revision_info.format("%f %s %a %d") + "\n" +
           "#\n" +
           "\n" +
           "#{railsenv}:\n"
