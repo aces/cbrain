@@ -30,7 +30,7 @@
 require 'optparse'
 require 'fileutils'
 
-require_relative 'test_helpers' # To ensure files are written to the write temp place
+require_relative 'test_helpers'
 include TestHelpers
 
 # Colours
@@ -44,42 +44,14 @@ end
 # Print raw input string
 print("\nRunning Boutiques simple test app\nRaw Input=#{ARGV.to_s}".blue) if ARGV.include? "--verbose"
 
-# Dictionary of inputs to be filled
-options = {}
-
-# Lists of potential input symbols
-symbolize = lambda { |a| a.map{ |s| s.to_sym } }
-Strings     = symbolize.( %w(a k q A v o x r) )
-Enums       = symbolize.( %w(E) )
-Flags       = symbolize.( %w(c u w y) )
-Files       = symbolize.( %w(C d j) )
-Numbers     = symbolize.( %w(B b n i N I) )
-NumLists    = symbolize.( %w(g l) )
-FileLists   = symbolize.( %w(f) )
-StringLists = symbolize.( %w(p e m) )
-Lists = NumLists + FileLists + StringLists
-
-# Default required output name (override with -r)
-DefaultRequiredOutputName = DefReqOutName # From helper module
-
-# Verbose printing (set by command argument)
-verbose = false
+# Dictionary of inputs and verbosity to be filled
+options, verbose = {}, false
 
 # Helper for exiting and printing error message (puts does not print arrays well)
-leave = lambda { |msg,code| print ( "\n" + msg.to_s + "\n").red if verbose; exit code }
+leave = lambda { |msg,code| print ( "\n" + msg.to_s + " [#{code}]" + "\n").red if verbose; exit code }
 
 # The Ruby argument parser cannot nicely handle space-separated lists, so it is done now
-toDel, listPos = [], []
-listArgs = Lists.map{ |s| '-'+s.to_s} + Lists.map{ |s| "--arg_" + s.to_s }      # Potential list-type args
-ARGV.each_with_index { |arg,ind| listPos << ind if listArgs.include?(arg) }     # Get list positions
-nextEnd = lambda { |a,i| (i+=1) until i==a.length || a[i].start_with?('-'); i } # Helper to obtain list end
-listPos.each do |i|
-  toDel << i    # Store the parameter location for deletion
-  strArray = [] # Holds the list elements
-  ( (i+1)...nextEnd.(ARGV,i+1) ).each{ |j| strArray << ARGV[j]; toDel << j } # Grabs the list elements
-  options[ ARGV[i].gsub(/^-*/,"").to_sym ] = strArray # Store them
-end
-toDel.sort.reverse.each { |i| ARGV.delete_at(i) } # Delete list arguments
+HandleSpaceSeparatedLists.( ARGV, options )
 
 # Check special flag separation argument (should be '=')
 # Must check before read-in, since parser cannot differentiate "-x =p" & "-x=p"
@@ -96,6 +68,10 @@ end
 # Does not test all possible combinations; could potentially use erb for this if desired
 op = GenerateOptionParser.(options)
 
+print("\n")
+print(ARGV)
+print("\n")
+
 # Perform the parsing
 # Handle errors in the command line structure itself
 # Errors here usually destroy the proper assignment of the other arguments, so such errors are fast-fail
@@ -108,16 +84,16 @@ end
 # Ensure that all the arguments were parsed
 leave.("ERROR: leftover arguments " + ARGV.to_s, 1) if ARGV != []
 
-print("\n")
-print( options )
-print("\n")
-
 # Set verbosity
 verbose = true if options.delete(:verbose)
 
+print("\n")
+print(options)
+print("\n")
+
 # Check input types
 # The automatic parser already does this to an extent, but since it is incomplete and
-# we also rely on some manual parsing, we check it again
+# we also rely on some manual parsing, we have to check it again
 AllParams = Strings + Flags + Files + Numbers + Enums + NumLists + FileLists + StringLists
 options.each do |key, value|
   if Strings.include?(key)      && ! (String===value)
@@ -189,7 +165,7 @@ leave.("ERROR: -I must be in [-7,9)", 12) unless (I_arg.nil? || (I_arg >= -7 && 
 leave.("ERROR: -I must be an int", 12) unless ( I_arg.nil? || ( Integer(options[:I].to_s) rescue false ) )
 
 # Write output files
-(newName = options[:r]) ? FileUtils.touch(newName) : FileUtils.touch(DefaultRequiredOutputName)
+(newName = options[:r]) ? FileUtils.touch(newName) : FileUtils.touch(DefReqOutName)
 FileUtils.touch( options[:o] ) unless options[:o].nil?
 
 # Print information about the command-line input

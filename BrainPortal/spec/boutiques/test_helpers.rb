@@ -27,6 +27,7 @@ module TestHelpers
 
   # Used to help in custom argument parsing
   require 'shellwords'
+  require 'optparse'
 
   # External helper constants
   TestScriptName           = 'boutiquesTestApp.rb'
@@ -51,6 +52,18 @@ module TestHelpers
   baseArgs2    = "-p 7 s1 s2 -A a -B 9 -C #{c_file} " # Alternate basic minimal arg set
   # Whether to print verbosely or not (helpful for debugging tests)
   Verbose = true
+
+  # Useful descriptive variables
+  symbolize = lambda { |a| a.map{ |s| s.to_sym } }
+  Strings     = symbolize.( %w(a k q A v o x r) )
+  Enums       = symbolize.( %w(E) )
+  Flags       = symbolize.( %w(c u w y) )
+  Files       = symbolize.( %w(C d j) )
+  Numbers     = symbolize.( %w(B b n i N I) )
+  NumLists    = symbolize.( %w(g l) )
+  FileLists   = symbolize.( %w(f) )
+  StringLists = symbolize.( %w(p e m) )
+  Lists = NumLists + FileLists + StringLists
 
   # Execute program with given options
   def runTestScript(cmdOptions, outfileNamesToCheckFor = [])
@@ -111,7 +124,7 @@ module TestHelpers
   #   Argument types
   #     {a,k,q,A,v,o,x} are String inputs & {p,e,m} are String Lists
   #     {C,d,j} are Files & {f} is a File List (arguments must exist)
-  #     {B,b,n,i} are Numbers & {g,l} are Number Lists
+  #     {B,b,n,i,N,I} are Numbers & {g,l} are Number Lists
   #     {c,u,w,y} are Flag type inputs
   #     {E} is an Enum type input
   ###
@@ -162,16 +175,17 @@ module TestHelpers
     ["fails when a required argument is missing (A: flag + value)", "-n 7 -B 7 -C #{c_file} -v s", 9],
     ["fails when a required argument is missing (A: value)", "-n 7 -B 7 -C #{c_file} -v s -A", 1],
     # Argument type failures
-    ["fails when number (-B) is non-numeric (required)", "-n 7 -A a -B q -C #{c_file} -v s -b 7", 1],
-    ["fails when number (-b) is non-numeric (optional)", baseArgs + "-b u", 1],
+    ["fails when number (-B) is non-numeric (required)", "-n 7 -A a -B q -C #{c_file} -v s -b 7", 3],
+    ["fails when number (-b) is non-numeric (optional)", baseArgs + "-b u", 3],
     ["fails when number in list (-l) is non-numeric (optional)", baseArgs + "-l 2 u 2", 4],
+    ["fails when number in list (-l) is non-numeric (optional, first position)", baseArgs + "-l u 1 2", 4],
     ["fails when enum is not given a reasonable value", baseArgs + '-E d', 11],
     # Special separator failures
     ["fails when special separator is missing", baseArgs + "-x 7", 5],
     ["fails when special separator is wrong", baseArgs + "-x~7", 5],
     # Numeric constraints satisfied
     ["fails when float is under min", baseArgs + "-N 7", 12],
-    ["fails when float is under max", baseArgs + "-N 13", 12],
+    ["fails when float is over max", baseArgs + "-N 13", 12],
     ["fails when float is on prohibited boundary", baseArgs + "-N 7.7", 12],
     ["fails when int is not an int", baseArgs + "-I 7.9", 12],
     ["fails when int is under min", baseArgs + "-I -9", 12],
@@ -195,7 +209,7 @@ module TestHelpers
     ["fails with unrecognized non-flagged arguments", baseArgs + "z", 1],
     # Non-existent input arguments
     ["fails with non-existent input file (-C)", "-n 7 -A a -B 2 -C cc -v s -b 7", 10],
-    ["fails with non-existent input file for list (-f)", baseArgs + "-f #{f1_file} f3 #{f2_file}", 10],
+    ["fails with non-existent input file for list (-f)", baseArgs + "-f '#{f1_file} f3 #{f2_file}'", 10],
     # Output file failures
     ["fails if the optional output file is specified but unnamed", baseArgs + "-o", 1]
   ]
@@ -206,28 +220,28 @@ module TestHelpers
       opt.banner = "\nSimple Test Application for Boutiques in CBrain\n"
       # Basic required inputs
       opt.on('-A','--arg_r1 S',         'A required string input',  String) { |o| options[:A] = o }
-      opt.on('-B','--arg_r2 N',         'A required number input',  Float ) { |o| options[:B] = o }
+      opt.on('-B','--arg_r2 N',         'A required number input',  String) { |o| options[:B] = o }
       opt.on('-C','--arg_r3 F',         'A required file input',    String) { |o| options[:C] = o }
       # Basic optional inputs
       opt.on('-a','--arg_a a_string',   'A string input',           String) { |o| options[:a] = o }
-      opt.on('-b','--arg_b a_number',   'A numerical input',        Float ) { |o| options[:b] = o }
+      opt.on('-b','--arg_b a_number',   'A numerical input',        String) { |o| options[:b] = o }
       opt.on('-c','--arg_c',            'A flag input'                    ) { |o| options[:c] = o }
       opt.on('-d','--arg_d a_filename', 'A file input',             String) { |o| options[:d] = o }
       opt.on('-e','--arg_e S1 S2',      'A string list input',      Array ) { |o| options[:e] = o }
       opt.on('-f','--arg_f F1 F2',      'A file list input',        Array ) { |o| options[:f] = o }
       opt.on('-g','--arg_g G1 G2',      'A number list input',      Array ) { |o| options[:g] = o }
       opt.on('-E','--arg_E val',        'An enum input in {a,b,c}', String) { |o| options[:E] = o }
-      opt.on('-N','--arg_N num',        'A number in (7.7, 9.9]',   Float ) { |o| options[:N] = o }
+      opt.on('-N','--arg_N num',        'A number in (7.7, 9.9]',   String) { |o| options[:N] = o }
       opt.on('-I','--arg_I num',        'A integer in [-7,9)',      String) { |o| options[:I] = o }
       # Disables/Requires
-      opt.on('-i','--arg_i a_number',   'A number input',           Float ) { |o| options[:i] = o }
+      opt.on('-i','--arg_i a_number',   'A number input',           String) { |o| options[:i] = o }
       opt.on('-j','--arg_j a_file',     'A file input',             String) { |o| options[:j] = o }
       opt.on('-k','--arg_k a_string',   'A string input',           String) { |o| options[:k] = o }
       opt.on('-l','--arg_l N1 N2',      'A number list input',      Array ) { |o| options[:l] = o }
       opt.on('-m','--arg_m S1 S2',      'A string list input',      Array ) { |o| options[:m] = o }
       opt.on('-y','--arg_y',            'A flag input',                   ) { |o| options[:y] = o }
       # Groups (mutex/one-req)
-      opt.on('-n','--arg_n n',          'A number input',           Float ) { |o| options[:n] = o }
+      opt.on('-n','--arg_n n',          'A number input',           String) { |o| options[:n] = o }
       opt.on('-p','--arg_p S1 S2',      'A string list input',      Array ) { |o| options[:p] = o }
       opt.on('-q','--arg_q s',          'A string input',           String) { |o| options[:q] = o }
       opt.on('-u','--arg_u',            'A flag input',                   ) { |o| options[:u] = o }
@@ -246,40 +260,36 @@ module TestHelpers
     end # Parser definition
   end
 
+  # The Ruby Option Parser cannot nicely handle space-separated lists, so it is done manually
+  # We detect lists in args, add them to options, and then delete them from args
+  HandleSpaceSeparatedLists = lambda do |args,options|
+    toDel, listPos = [], []
+    listArgs = Lists.map{ |s| '-'+s.to_s} + Lists.map{ |s| "--arg_" + s.to_s }      # Potential list-type args
+    args.each_with_index { |arg,ind| listPos << ind if listArgs.include?(arg) }     # Get list positions
+    nextEnd = lambda { |a,i| (i+=1) until i==a.length || a[i].start_with?('-'); i } # Helper to obtain list end
+    listPos.each do |i|
+      toDel << i    # Store the parameter location for deletion
+      strArray = [] # Holds the list elements
+      ( (i+1)...nextEnd.(args,i+1) ).each{ |j| strArray << args[j]; toDel << j } # Grabs the list elements
+      options[args[i].gsub(/^-*/,"").to_sym ] = strArray # Store them
+    end
+    toDel.sort.reverse.each { |i| args.delete_at(i) } # Delete list arguments
+  end
 
   # Helper method for internally generating an argument dictionary similar to the "parameters" hash from a string
   # This is used to unit test the after_form method of the portal_task, in isolation.
   # It is also used to simulate argument "parsing" when the portal arguments are sent for execution (see Bourreau-side tests).
   # Occurences with lists after the flag become arrays. Lone flags become booleans indicating their presence.
   # e.g. {:a => val_a, :l => [1,2], :v => true, ...} when "-a val_a -l 1 2 -v" appears in the string
-  ArgumentDictionary = lambda do |args|
+  ArgumentDictionary = lambda do |argsIn|
     # This will hold the output hash arguments
-    hash, copy = {}, args.dup
+    hash, copy = {}, argsIn.dup
+    # Shellify the input string
+    args = Shellwords.shellwords(argsIn)
+    # Must handle space-separated lists separately
+    HandleSpaceSeparatedLists.( args, hash )
     # This will generate a parser and run it on the input args
-    GenerateOptionParser.( hash ).parse( Shellwords.shellwords(args) )
-
-    # Helper function for finding the end of an argument (an issue to due the presence of lists)
-#    nextCmdFlagIndex = lambda { |a| i=1; (i+=1) until a[i].start_with?('-'); i }
-    # Read through the argument string and turn it into a hash
-#    copy = args.dup; hash = {}
-#    while args != ""
-#      arr = args.split()
-#      i = nextCmdFlagIndex.(arr) rescue nil
-#      if i == 1 # Flag case
-#        hash[arr[0][1].to_sym] = true
-#        args = arr[1..-1].join(" ")
-#      elsif i == 2 # Single argument case
-#        hash[arr[0][1].to_sym] = arr[1]
-#        args = arr[2..-1].join(" ")
-#      elsif i == nil # Last argument case
-#        v = (arr.size==1) ? true : (arr.size==2 ? arr[1] : arr[1...arr.length])
-#        hash[arr[0][1].to_sym] = v
-#        args = ""
-#      else # List case
-#        hash[arr[0][1].to_sym] = arr[1...i]
-#        args = arr[i..-1].join(" ")
-#      end
-#    end
+    GenerateOptionParser.( hash ).parse( args )
     # Fix issues with special separator argument -x
     # We put a boolean there if the wrong separator is used, so the after_form test fails properly
     xarg = copy.split.find { |a| a.start_with? "-x=" }

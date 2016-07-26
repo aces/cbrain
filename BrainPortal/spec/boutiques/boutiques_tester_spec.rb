@@ -175,7 +175,12 @@ describe "BrainPortal Boutiques Tests" do
           # Perform after_form test
           it "after_form #{t[0]}" do
             @task.params_errors.clear # Reset to having no errors
-            @task.params = ArgumentDictionary.( t[1].dup )
+            begin
+              @task.params = ArgumentDictionary.( t[1].dup )
+            rescue OptionParser::MissingArgument => e
+              next # after_form does not need to check this, since rails puts a value in the hash
+            end
+            print(@task.params)
             @task.params[:f] ||= [] # after_form expects [], not nil, for empty file lists
             @task.after_form # Run the method
             errMsgs = @task.params_errors.full_messages
