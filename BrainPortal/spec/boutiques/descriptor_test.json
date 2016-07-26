@@ -2,7 +2,7 @@
 	"name" : "BoutiquesTest",
 	"tool-version" : "9.7.13",
 	"description" : "Simple test task for Boutiques",
-	"command-line" : "./boutiquesTestApp.rb [A] [B] [C] [a] [b] [c] [d] [e] [f] [g] [i] [j] [k] [l] [m] [n] [p] [q] [u] [v] [w] [x] [o] [r] [y] [E]",
+	"command-line" : "./boutiquesTestApp.rb [A] [B] [C] [a] [b] [c] [d] [e] [f] [g] [i] [j] [k] [l] [m] [n] [p] [q] [u] [v] [w] [x] [o] [r] [y] [E] [I] [N]",
 	"schema-version" : "0.2",
 	"inputs" : [{
 		"id" : "A",
@@ -236,6 +236,33 @@
 		"enum-value-choices" : ["a", "b", "c"],
 		"command-line-key" : "[E]",
 		"command-line-flag" : "-E"
+	}, {
+		"id" : "N",
+		"name" : "N",
+		"type" : "Number",
+		"description" : "A number limited to (7.7, 9.9]",
+		"optional" : true,
+		"list" : false,
+		"command-line-key" : "[N]",
+		"minimum" : 7.7,
+		"maximum" : 9.9,
+		"exclusive-minimum" : true,
+		"exclusive-maximum" : false,
+		"command-line-flag" : "-N"
+	}, {
+		"id" : "I",
+		"name" : "I",
+		"type" : "Number",
+		"description" : "An integer limited to [-7,9)",
+		"optional" : true,
+		"list" : false,
+		"integer" : true,
+		"minimum" : -7,
+		"maximum" : 9,
+		"exclusive-minimum" : false,
+		"exclusive-maximum" : true,
+		"command-line-key" : "[I]",
+		"command-line-flag" : "-I"	
 	}, {
 		"id" : "r",
 		"name" : "r",

@@ -179,6 +179,7 @@ describe "BrainPortal Boutiques Tests" do
             @task.params[:f] ||= [] # after_form expects [], not nil, for empty file lists
             @task.after_form # Run the method
             errMsgs = @task.params_errors.full_messages
+            print(errMsgs)
             # Cannot check userfile existence and so on in this isolated test, so ignore those errors
             errMsgs.delete_if { |m| ignoredMsgs.any? { |e| m.include?(e) } }
             # When there is an error, the exit code should be non-zero; no errors should be present otherwise

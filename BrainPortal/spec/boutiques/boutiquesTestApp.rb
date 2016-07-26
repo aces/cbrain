@@ -53,7 +53,7 @@ Strings     = symbolize.( %w(a k q A v o x r) )
 Enums       = symbolize.( %w(E) )
 Flags       = symbolize.( %w(c u w y) )
 Files       = symbolize.( %w(C d j) )
-Numbers     = symbolize.( %w(B b n i) )
+Numbers     = symbolize.( %w(B b n i N I) )
 NumLists    = symbolize.( %w(g l) )
 FileLists   = symbolize.( %w(f) )
 StringLists = symbolize.( %w(p e m) )
@@ -94,69 +94,26 @@ end
 
 # Use the built-in Ruby option parser to handle regular arguments
 # Does not test all possible combinations; could potentially use erb for this if desired
-op = OptionParser.new do |opt|
-  opt.banner = "\nSimple Test Application for Boutiques in CBrain\n"
-
-  # Basic required inputs
-  opt.on('-A','--arg_r1 S',         'A required string input',  String) { |o| options[:A] = o }
-  opt.on('-B','--arg_r2 N',         'A required number input',  Float ) { |o| options[:B] = o }
-  opt.on('-C','--arg_r3 F',         'A required file input',    String) { |o| options[:C] = o }
-
-  # Basic optional inputs
-  opt.on('-a','--arg_a a_string',   'A string input',           String) { |o| options[:a] = o }
-  opt.on('-b','--arg_b a_number',   'A numerical input',        Float ) { |o| options[:b] = o }
-  opt.on('-c','--arg_c',            'A flag input'                    ) { |o| options[:c] = o }
-  opt.on('-d','--arg_d a_filename', 'A file input',             String) { |o| options[:d] = o }
-  opt.on('-e','--arg_e S1 S2',      'A string list input',      Array ) { |o| options[:e] = o }
-  opt.on('-f','--arg_f F1 F2',      'A file list input',        Array ) { |o| options[:f] = o }
-  opt.on('-g','--arg_g G1 G2',      'A number list input',      Array ) { |o| options[:g] = o }
-  opt.on('-E','--arg_E val',        'An enum input [a,b,c]',    String) { |o| options[:E] = o }
-
-  # Disables/Requires
-  opt.on('-i','--arg_i a_number',   'A number input',           Float ) { |o| options[:i] = o }
-  opt.on('-j','--arg_j a_file',     'A file input',             String) { |o| options[:j] = o }
-  opt.on('-k','--arg_k a_string',   'A string input',           String) { |o| options[:k] = o }
-  opt.on('-l','--arg_l N1 N2',      'A number list input',      Array ) { |o| options[:l] = o }
-  opt.on('-m','--arg_m S1 S2',      'A string list input',      Array ) { |o| options[:m] = o }
-  opt.on('-y','--arg_y',            'A flag input',                   ) { |o| options[:y] = o }
-
-  # Groups (mutex/one-req)
-  opt.on('-n','--arg_n n',          'A number input',           Float ) { |o| options[:n] = o }
-  opt.on('-p','--arg_p S1 S2',      'A string list input',      Array ) { |o| options[:p] = o }
-  opt.on('-q','--arg_q s',          'A string input',           String) { |o| options[:q] = o }
-  opt.on('-u','--arg_u',            'A flag input',                   ) { |o| options[:u] = o }
-  opt.on('-v','--arg_v a_str',      'A string input',           String) { |o| options[:v] = o }
-  opt.on('-w','--arg_w',            'A flag input',                   ) { |o| options[:w] = o }
-
-  # Non-space flag separator using '='
-  opt.on('-x','--arg_x S',          'A string input',           String) { |o| options[:x] = o }
-
-  # Optional and required output
-  # Note: -r is a required output file, not a required input. It defaults writing out to r.txt.
-  opt.on('-o','--arg_o fname',      'The output name string',   String) { |o| options[:o] = o }
-  opt.on('-r','--arg_r fname',      'A required outfile name',  String) { |o| options[:r] = o }
-
-  # Help display
-  opt.on('-h','--help', "Displays help") { puts(opt.to_s + "\n"); exit }
-
-  # Verbose mode
-  opt.on('--verbose', "Prints more info during execution") { verbose = true }
-
-end # End parser definition
+op = GenerateOptionParser.(options)
 
 # Perform the parsing
 # Handle errors in the command line structure itself
 # Errors here usually destroy the proper assignment of the other arguments, so such errors are fast-fail
 begin
-  op.parse!
+  op.parse!(ARGV)
 rescue
   leave.( "ERROR: " + $!.to_s , 1)
 end
 
 # Ensure that all the arguments were parsed
-if ARGV != []
-  leave.("ERROR: leftover arguments " + ARGV.to_s, 1)
-end
+leave.("ERROR: leftover arguments " + ARGV.to_s, 1) if ARGV != []
+
+print("\n")
+print( options )
+print("\n")
+
+# Set verbosity
+verbose = true if options.delete(:verbose)
 
 # Check input types
 # The automatic parser already does this to an extent, but since it is incomplete and
@@ -224,6 +181,12 @@ leave.("ERROR: -A, -B, and -C are required", 9) if [:A,:B,:C].any? { |k| ! optio
 
 # Check enum has a reasonable input choice
 leave.("ERROR: -E must be one of 'a', 'b', or 'c'", 11) unless (options[:E].nil? || ['a','b','c'].include?(options[:E]))
+
+# Check numerical type constraints
+N_arg, I_arg = options[:N].nil? ? nil : options[:N].to_f, options[:I].nil? ? nil : options[:I].to_i
+leave.("ERROR: -N must be in (7.7, 9.9]", 12) unless (N_arg.nil? || (N_arg > 7.7 && N_arg <= 9.9))
+leave.("ERROR: -I must be in [-7,9)", 12) unless (I_arg.nil? || (I_arg >= -7 && I_arg < 9))
+leave.("ERROR: -I must be an int", 12) unless ( I_arg.nil? || ( Integer(options[:I].to_s) rescue false ) )
 
 # Write output files
 (newName = options[:r]) ? FileUtils.touch(newName) : FileUtils.touch(DefaultRequiredOutputName)
