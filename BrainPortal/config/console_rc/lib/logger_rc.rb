@@ -59,8 +59,7 @@ def set_log_level(level) #:nodoc:
   end
 end
 
-print <<FEATURES
-
+(CbrainConsoleFeatures ||= []) << <<FEATURES
 ========================================================
 Feature: Toggling ActiveRecord logging messages
 ========================================================

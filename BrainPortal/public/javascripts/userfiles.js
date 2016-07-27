@@ -103,9 +103,13 @@ $(function() {
         ? truthy.test(settings.emptySelection)
         : withSelection;
 
-      var form = withSelection
-        ? userfiles.children('form')
-        : $('<form>');
+      var form = undefined;
+      if (withSelection) {
+        form = userfiles.children('form');
+      } else {
+        form = $('<form>');
+        form.appendTo("body");
+      }
 
       if (ajax) {
         return (
