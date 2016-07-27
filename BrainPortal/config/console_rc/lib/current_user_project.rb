@@ -76,8 +76,7 @@ def cp(group='show me')
   puts "Current project is now: #{$_current_project.try(:name) || "(nil)"}"
 end
 
-print <<FEATURES
-
+(CbrainConsoleFeatures ||= []) << <<FEATURES
 ========================================================
 Feature: changing the current_user and current_group
 ========================================================

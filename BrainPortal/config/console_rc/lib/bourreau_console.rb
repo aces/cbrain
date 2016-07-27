@@ -45,8 +45,7 @@ class Bourreau
   end
 end
 
-print <<FEATURES
-
+(CbrainConsoleFeatures ||= []) << <<FEATURES
 ========================================================
 Feature: invoking a console on a bourreau, for debugging
 ========================================================

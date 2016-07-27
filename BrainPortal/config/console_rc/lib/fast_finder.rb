@@ -178,8 +178,7 @@ class ToolConfig
   end
 end
 
-print <<FEATURES
-
+(CbrainConsoleFeatures ||= []) << <<FEATURES
 ========================================================
 Feature: fast finder for anything
 ========================================================

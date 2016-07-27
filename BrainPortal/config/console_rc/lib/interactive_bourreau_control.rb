@@ -417,8 +417,7 @@ Operations Mode : #{@mode == "each_command" ?
 
 end
 
-print <<FEATURES
-
+(CbrainConsoleFeatures ||= []) << <<FEATURES
 ========================================================
 Feature: Interactive Bourreau Control
 ========================================================

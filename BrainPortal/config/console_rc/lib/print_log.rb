@@ -33,8 +33,7 @@ def plog(*args)
   true
 end
 
-print <<FEATURES
-
+(CbrainConsoleFeatures ||= []) << <<FEATURES
 ========================================================
 Feature: print ActiveRecordLog of some objects
 ========================================================
