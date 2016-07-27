@@ -20,35 +20,24 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Adds two wrapper commands to connect to the Rails Console
-# of remote Bourreaux:
-#
-# bourreau.console  # connects to the console of object 'bourreau'
-# Bourreau.console(id_or_name_or_regex) # finds a bourreau and connects
-Bourreau.nil? # does nothing but loads the class
-class Bourreau
-
-  def console #:nodoc:
-    start_remote_console
-  end
-
-  def self.console(id) #:nodoc:
-    b   = self.find(id)         rescue nil
-    b ||= self.find_by_name(id) rescue nil
-    b ||= self.all.detect { |x| x.name =~ id } if id.is_a?(Regexp)
-    unless b
-      puts "Can't find a Bourreau that match '#{id.inspect}'"
-      return
+def plog(*args)
+  args.each do |obj|
+    if obj.respond_to?(:getlog)
+      log = obj.getlog rescue "(Exception getting log)"
+      puts "==== Log for #{obj.inspect} ====" if args.size > 1
+      puts log.to_s
+    else
+      puts "==== Object does not respond to getlog(): #{obj.inspect} ===="
     end
-    puts "Starting console for Bourreau '#{b.name}'"
-    b.console
   end
+  true
 end
 
 print <<FEATURES
 
 ========================================================
-Feature: invoking a console on a bourreau, for debugging
+Feature: print ActiveRecordLog of some objects
 ========================================================
-  Activate with: bourreau.console ; Bourreau.console(id)
+  Activate with: plog obj [, obj , ...]
 FEATURES
+

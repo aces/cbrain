@@ -416,3 +416,12 @@ Operations Mode : #{@mode == "each_command" ?
   end
 
 end
+
+print <<FEATURES
+
+========================================================
+Feature: Interactive Bourreau Control
+========================================================
+  Activate with: ibc
+FEATURES
+
