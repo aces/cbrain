@@ -130,7 +130,7 @@ module TestHelpers
   ###
 
   # Test program symbols
-  TestArgs = [*'a'..'g',*'i'..'r',*'u'..'y',*'A'..'C','E','N','I'].map{ |s| s.to_sym }
+  TestArgs = [*'a'..'g',*'i'..'r',*'u'..'y',*'A'..'C','E','N','I','L'].map{ |s| s.to_sym }
 
   # Basic tests used to test mock program functionality
   BasicTests = [
@@ -149,6 +149,7 @@ module TestHelpers
     ["works with optional file list", baseArgs2 + "-f #{f_files} -w", 0],
     ["works with optional file", baseArgs2 + "-d #{d_file} -w", 0],
     ["works with optional number list", baseArgs2 + "-g 1 2 3 -w", 0],
+    ["works with negative numbers in numerical list", baseArgs + "-g -1 -2.1 -3", 0],
     # Disables & Requires
     ["works with inactive disabler", baseArgs + "-j #{j_file}", 0],
     ["works with disabler alone" , baseArgs + "-i 1", 0],
@@ -279,9 +280,11 @@ module TestHelpers
   # We detect lists in args, add them to options, and then delete them from args
   HandleSpaceSeparatedLists = lambda do |args,options|
     toDel, listPos = [], []
-    listArgs = Lists.map{ |s| '-'+s.to_s} + Lists.map{ |s| "--arg_" + s.to_s }      # Potential list-type args
-    args.each_with_index { |arg,ind| listPos << ind if listArgs.include?(arg) }     # Get list positions
-    nextEnd = lambda { |a,i| (i+=1) until i==a.length || a[i].start_with?('-'); i } # Helper to obtain list end
+    listArgs = Lists.map{ |s| '-'+s.to_s} + Lists.map{ |s| "--arg_" + s.to_s }  # Potential list-type args
+    args.each_with_index { |arg,ind| listPos << ind if listArgs.include?(arg) } # Get list positions
+    nextEnd = lambda do |a,i| # Helper to obtain list end
+      (i+=1) until i==a.length || (a[i].start_with?('-') && TestArgs.map{ |s| '-'+s.to_s }.include?(a[i])); i
+    end
     listPos.each do |i|
       toDel << i    # Store the parameter location for deletion
       strArray = [] # Holds the list elements
