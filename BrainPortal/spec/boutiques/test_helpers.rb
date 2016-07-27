@@ -51,7 +51,7 @@ module TestHelpers
   baseArgs     = "-A a -B 9 -C #{c_file} -v s -n 7 "  # Basic minimal argument set
   baseArgs2    = "-p 7 s1 s2 -A a -B 9 -C #{c_file} " # Alternate basic minimal arg set
   # Whether to print verbosely or not (helpful for debugging tests)
-  Verbose = true
+  Verbose = false
 
   # Useful descriptive variables
   symbolize = lambda { |a| a.map{ |s| s.to_sym } }
@@ -60,7 +60,7 @@ module TestHelpers
   Flags       = symbolize.( %w(c u w y) )
   Files       = symbolize.( %w(C d j) )
   Numbers     = symbolize.( %w(B b n i N I) )
-  NumLists    = symbolize.( %w(g l) )
+  NumLists    = symbolize.( %w(g l L) )
   FileLists   = symbolize.( %w(f) )
   StringLists = symbolize.( %w(p e m) )
   Lists = NumLists + FileLists + StringLists
@@ -124,7 +124,7 @@ module TestHelpers
   #   Argument types
   #     {a,k,q,A,v,o,x} are String inputs & {p,e,m} are String Lists
   #     {C,d,j} are Files & {f} is a File List (arguments must exist)
-  #     {B,b,n,i,N,I} are Numbers & {g,l} are Number Lists
+  #     {B,b,n,i,N,I} are Numbers & {g,l,L} are Number Lists
   #     {c,u,w,y} are Flag type inputs
   #     {E} is an Enum type input
   ###
@@ -160,6 +160,10 @@ module TestHelpers
     ["works with appropriately constrained float on boundary", baseArgs + "-N 9.9", 0],
     ["works with appropriately constrained int", baseArgs + "-I 0", 0],
     ["works with appropriately constrained int on boundary", baseArgs + "-I -7", 0],
+    ["works with value in int list on numeric boundary", baseArgs + "-L 9 7 12", 0],
+    # List constraints satisfied
+    ["works with string list having the right number of entries", baseArgs + "-e s1 s2 s3", 0],
+    ["works with number list having the right number of entries", baseArgs + "-L 11 8 9 10",  0],
     # Group characteristics testing
     ["works with both members in one-is-required group (1)", baseArgs + "-j #{j_file}", 0],
     ["works with one member in mutex group (group 2 - with q)", baseArgs + "-q s", 0],
@@ -177,13 +181,23 @@ module TestHelpers
     # Argument type failures
     ["fails when number (-B) is non-numeric (required)", "-n 7 -A a -B q -C #{c_file} -v s -b 7", 3],
     ["fails when number (-b) is non-numeric (optional)", baseArgs + "-b u", 3],
-    ["fails when number in list (-l) is non-numeric (optional)", baseArgs + "-l 2 u 2", 4],
-    ["fails when number in list (-l) is non-numeric (optional, first position)", baseArgs + "-l u 1 2", 4],
+    ["fails when number in list (-l) is non-numeric (optional, pos 2)", baseArgs + "-l 2 u 2", 4],
+    ["fails when number in list (-l) is non-numeric (optional, pos 1)", baseArgs + "-l u 1 2", 4],
     ["fails when enum is not given a reasonable value", baseArgs + '-E d', 11],
     # Special separator failures
     ["fails when special separator is missing", baseArgs + "-x 7", 5],
     ["fails when special separator is wrong", baseArgs + "-x~7", 5],
-    # Numeric constraints satisfied
+    # Number constraints on lists
+    ["fails when int list contains non-int", baseArgs + "-L 9 9.1 12", 12],
+    ["fails when list entry is too low", baseArgs + "-L 9 6 12", 12],
+    ["fails when list entry is too high", baseArgs + "-L 9 15 12", 12],
+    ["fails when list entry is on excluded boundary", baseArgs + "-L 9 13 12", 12],
+    # List constraint failures
+    ["fails when string list entries are too few", baseArgs + "-e hi", 13],
+    ["fails when string list entries are too many", baseArgs + "-e a b c d", 13],
+    ["fails when number list entries are too few", baseArgs + "-L 11 12", 13],
+    ["fails when number list entries are too many", baseArgs + "-L 7 8 9 10 11 12", 13],
+    # Numeric constraints failures
     ["fails when float is under min", baseArgs + "-N 7", 12],
     ["fails when float is over max", baseArgs + "-N 13", 12],
     ["fails when float is on prohibited boundary", baseArgs + "-N 7.7", 12],
@@ -232,7 +246,8 @@ module TestHelpers
       opt.on('-g','--arg_g G1 G2',      'A number list input',      Array ) { |o| options[:g] = o }
       opt.on('-E','--arg_E val',        'An enum input in {a,b,c}', String) { |o| options[:E] = o }
       opt.on('-N','--arg_N num',        'A number in (7.7, 9.9]',   String) { |o| options[:N] = o }
-      opt.on('-I','--arg_I num',        'A integer in [-7,9)',      String) { |o| options[:I] = o }
+      opt.on('-I','--arg_I num',        'An integer in [-7,9)',     String) { |o| options[:I] = o }
+      opt.on('-L','--arg_L x y',        'An int list in [7,13)',    Array ) { |o| options[:L] = o }
       # Disables/Requires
       opt.on('-i','--arg_i a_number',   'A number input',           String) { |o| options[:i] = o }
       opt.on('-j','--arg_j a_file',     'A file input',             String) { |o| options[:j] = o }
@@ -302,6 +317,34 @@ module TestHelpers
   # Helper for cleaning spaces after key subsitution, to make it easier to write the correct test result
   NormedTaskCmd = lambda do |task|
     task.cluster_commands[0].split.join(' ')
+  end
+
+  # A mock json task object, to test possible problems that the full mock app cannot be used to reproduce
+  # e.g. a bug incurred when group constraints were present without any disables-inputs/requires-inputs being so
+  # Note the method generates a new task each time
+  NewMinimalTask = -> {
+    {
+      'name'           => "MinimalTest",
+      'tool-version'   => "9.7.13",
+      'description'    => "Minimal test task for Boutiques",
+      'command-line'   => '/minimalApp [A]',
+      'schema-version' => '0.2',
+      'inputs'         => [GenerateJsonInputDefault.('a','String','A String arg')],
+      'output-files'   => [{'id' => 'u', 'name' => 'U', 'path-template' => '[A]'}],
+    }
+  }
+
+  # Helper to generate simple json inputs with default values
+  GenerateJsonInputDefault = lambda do |id,type,desc,otherParams = {}|
+    return {
+      'id'                => id,
+      'name'              => id.upcase,
+      'type'              => type,
+      'description'       => desc,
+      'command-line-flag' => "-#{id}",
+      'command-line-key'  => "[#{id.upcase}]",
+      'optional'          => true
+    }.merge( otherParams )
   end
 
 end

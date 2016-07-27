@@ -167,7 +167,7 @@ module SchemaTaskGenerator
 
       # Add a helper method for accessing the help file (for use on the tools page)
       # Written by the rake task cbrain:plugins:install, within the subtask public_assets
-      helpFileName = name + "_help.html" 
+      helpFileName = name + "_help.html"
       helpFileDir  = File.join( "cbrain_plugins", "cbrain_tasks", "help_files/" )
       task.define_singleton_method(:help_filepath){ File.join(helpFileDir, helpFileName) }
 
@@ -196,7 +196,7 @@ module SchemaTaskGenerator
     end
 
     # Register a newly generated CbrainTask subclass (+task+) in this CBRAIN
-    # installation, creating the appropriate Tool object from the information 
+    # installation, creating the appropriate Tool object from the information
     # contained in the descriptor. The newly created Tool and ToolConfig
     # will initially belong to the core admin.
     def register(task)
@@ -206,7 +206,7 @@ module SchemaTaskGenerator
       docker_image = @descriptor['docker-image']
       resource     = RemoteResource.current_resource
 
-      # Create and save a new Tool for the task, unless theres already one.
+      # Create and save a new Tool for the task, unless there's already one.
       Tool.new(
         :name              => name,
         :user_id           => User.admin.id,
@@ -222,8 +222,8 @@ module SchemaTaskGenerator
       # sense on the portal).
       return if Rails.root.to_s =~ /BrainPortal$/
 
-      # Create a ToolConfig iff 
-      #   (1) the Bourreau has a docker executable and 
+      # Create a ToolConfig iff
+      #   (1) the Bourreau has a docker executable and
       #   (2) the descriptor specifies a docker image
       return if docker_image.nil? || !resource.docker_present
 
@@ -291,10 +291,19 @@ module SchemaTaskGenerator
         descriptor
       ) || []
     rescue StandardError => e
-      Rails.logger.warn(
-        "WARNING: Boutiques application descriptor #{descriptor['name']} failed validation!\n" +
-        "\tSkipping task generation. Check " + descriptorInput + "."
-      )
+      errors = [e] # Thrown exceptions form the error list in that case
+    end
+
+    # This lets us skip the task generation if a validation error occurred regardless of whether
+    # we were in strict or non-strict mode.
+    if (errors.length rescue 0) > 0
+      # Error message
+      msg = 'Encountered validation error(s) ' + errors.to_s + "\n\n" +
+            "WARNING: Boutiques application descriptor #{descriptor['name']} failed validation!\n" +
+            "\tSkipping task generation. Check " + descriptorInput.to_s + "."
+      # Log it
+      Rails.logger.warn( msg )
+      # Return now to skip task generation (prevent catastrophic failure of cbrain)
       return
     end
 

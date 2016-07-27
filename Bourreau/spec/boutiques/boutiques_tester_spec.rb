@@ -185,12 +185,11 @@ describe "Bourreau Boutiques Tests" do
         next if test[0].include?( "fails when special separator" )
         # Run the test
         it "#{test[0]}" do
-          # Convert string argument to params dict
-          begin
+          begin # Convert string arg to params dict
             @task.params = ArgumentDictionary.( test[1] )
           rescue OptionParser::MissingArgument => e
-              next # after_form does not need to check this here, since rails puts a value in the hash
-            end
+            next # after_form does not need to check this here, since rails puts a value in the hash
+          end
           # Run the generated command line from cluster_commands
           exit_code = runTestScript( @task.cluster_commands[0].gsub('./'+TestScriptName,''), test[3] || [] )
           # Check that the exit code is appropriate

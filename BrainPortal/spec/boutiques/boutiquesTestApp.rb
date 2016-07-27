@@ -29,11 +29,10 @@
 
 require 'optparse'
 require 'fileutils'
-
 require_relative 'test_helpers'
 include TestHelpers
 
-# Colours
+# Colours for more readable verbose text
 class String
   def colour(code) "\e[#{code}m#{self}\e[0m" end
   def red() colour(31) end
@@ -68,10 +67,6 @@ end
 # Does not test all possible combinations; could potentially use erb for this if desired
 op = GenerateOptionParser.(options)
 
-print("\n")
-print(ARGV)
-print("\n")
-
 # Perform the parsing
 # Handle errors in the command line structure itself
 # Errors here usually destroy the proper assignment of the other arguments, so such errors are fast-fail
@@ -86,10 +81,6 @@ leave.("ERROR: leftover arguments " + ARGV.to_s, 1) if ARGV != []
 
 # Set verbosity
 verbose = true if options.delete(:verbose)
-
-print("\n")
-print(options)
-print("\n")
 
 # Check input types
 # The automatic parser already does this to an extent, but since it is incomplete and
@@ -120,9 +111,9 @@ end
 NumLists.each do |key|
   value = options[key]
   unless value.nil?
-    options[key] = value.map { |n| Float(n) rescue nil }
+    curr = value.map { |n| Float(n) rescue nil }
     msg = "ERROR: input list (-#{key.to_s}, #{value}) contained non-numeric elements"
-    leave.(msg, 4) if options[key].include? nil
+    leave.(msg, 4) if curr.include? nil
   end
 end
 
@@ -163,6 +154,14 @@ N_arg, I_arg = options[:N].nil? ? nil : options[:N].to_f, options[:I].nil? ? nil
 leave.("ERROR: -N must be in (7.7, 9.9]", 12) unless (N_arg.nil? || (N_arg > 7.7 && N_arg <= 9.9))
 leave.("ERROR: -I must be in [-7,9)", 12) unless (I_arg.nil? || (I_arg >= -7 && I_arg < 9))
 leave.("ERROR: -I must be an int", 12) unless ( I_arg.nil? || ( Integer(options[:I].to_s) rescue false ) )
+(options[:L] || []).each do |v|
+  leave.("ERROR: -L must be in [7,13)", 12) unless (v.to_i >= 7 && v.to_i < 13)
+  leave.("ERROR: -L must be an int", 12) unless ( Integer(v.to_s) rescue false )
+end
+
+# Min and max list entries
+leave.("ERROR: -e must have 2<=|v|<= 3", 13) unless (options[:e].nil? || (options[:e].length <= 3 && options[:e].length >= 2))
+leave.("ERROR: -L must have 3<=|v|<= 5", 13) unless (options[:L].nil? || (options[:L].length <= 5 && options[:L].length >= 3))
 
 # Write output files
 (newName = options[:r]) ? FileUtils.touch(newName) : FileUtils.touch(DefReqOutName)
