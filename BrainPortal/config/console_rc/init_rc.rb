@@ -27,6 +27,8 @@ puts "C> CBRAIN Rails Console Initalization starting"
 # Load CBRAIN console utilities
 #####################################################
 
+CbrainConsoleFeatures ||= []  # where we store help documents
+
 # Adds "no_log" and "do_log"
 require __dir__ + "/lib/logger_rc.rb"
 
@@ -48,6 +50,17 @@ require __dir__ + "/lib/print_log.rb"
 
 # A set of old utilities mostly made obsolete by "ibc" above
 require __dir__ + "/lib/old_bourreau_control.rb"
+
+#####################################################
+# Initial help message for user
+#####################################################
+print <<HELLO
+
+Welcome the the CBRAIN Rails Console
+To get a summary of the extra CBRAIN features, type 'cbhelp'.
+
+HELLO
+def cbhelp ; print CbrainConsoleFeatures.join("\n") ; end
 
 #####################################################
 # Custom prompt: insert the name of the
