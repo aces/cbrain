@@ -378,6 +378,50 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % end # noGroups check
 %#
 %# End parameter group properties check
+%#
+%#
+    ### Perform validation checks on cbcsv files, if any are present ###
+    # Get all the input cbcsv files
+    cbcsvs = self.cbcsv_files
+    # If a cbcsv file is present, generate a task for each entry
+    # Note they should have been validate in after_form
+    if (cbcsvs || []).length > 0
+      numRows = nil
+      # Validate each cbcsv (all columns match per row, user has access to the file)
+      for id,cbcsv in cbcsvs
+        # Error if the type is wrong
+        # Current implementation will output an error here if a person uploads their cbcsv
+        # but forgets to change its type to cbcsv. I.e. we assume it is an error to use
+        # a .cbcsv for anything except generating a CbrainFileList object.
+        # TODO may want to consider automatically converting such cases to CbrainFileLists
+        unless cbcsv.is_a?(CbrainFileList)
+          msg = " is not of type CbrainFileList! Please convert it with the file manager. (Type: #{cbcsv.class})"
+          params_errors.add(id, msg) unless cbcsv.is_a?(CbrainFileList)
+          next # This entry has enough problems
+        end
+        # Error if any of the files are not accessible or are non-existent
+        begin
+          fs = cbcsv.userfiles_accessibles_by!(self.user)
+          for i in cbcsv.ordered_raw_ids.select{ |r| ! r.nil? }
+            msg = " - unable to find file with id #{i}. Please check for correctness."
+            params_errors.add(id, msg) if ( Userfile.find_accessible_by_user( i, self.user ) rescue nil ).nil?
+          end
+        rescue => e
+          params_errors.add(id, " has inaccessible files! Ensure you own all the given files. (Received error: #{e.inspect})")
+          next # No need to check other issues
+        end
+        # If the number of rows does not match, error
+        currNumRows = (cbcsv.ordered_raw_ids || []).length
+        numRows = numRows.nil? ? currNumRows : numRows
+        params_errors.add(id, " does not match expected number of files (#{currNumRows} vs #{numRows})") unless currNumRows==numRows
+        # Error if the rest of the cbcsv file has a problem
+        # TODO this method does nothing right now
+        allGood = cbcsv.validate_extra_attributes rescue false
+        allGood ||= true
+        params_errors.add(id, "has attributes that are invalid") unless allGood
+      end
+    end
+%# End cbcsv validations
 
 % end # End unless params.empty?
     ""
@@ -394,47 +438,45 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     }
   end
 
+  # Returns all the cbcsv files present, as tuples (id, Userfile)
+  def cbcsv_files
+    <%= "files = [%s]" % files.map { |f| ":'#{f['id']}'" }.join( ', ' ) %>
+    return [] if files.nil? || files.length == 0
+    files.select { |f| ! self.params[f].nil? }
+         .map    { |f| [f, Userfile.find_accessible_by_user(self.params[f], self.user)] }
+         .select { |f| f[1].name.end_with?('.cbcsv') || f[1].suggested_file_type == CbrainFileList }
+  end
+
   # Final set of tasks to be launched based on this task's parameters. Only
   # useful if the parameters set for this task represent a set of tasks
   # instead of just one.
   def final_task_list #:nodoc:
 
-    # File type inputs
-    <%= "files = [%s]" % files.map { |f| ":'#{f['id']}'" }.join( ',' ) %>
-
     # TODO note: this assumes self.params[f] is a scalar i.e. not a File-type input with list : true
-
-    # FIXME
-    # TODO modify the single file case below to handle any cbcsv files it gets appropriately
-    # TODO I dont think find_accessible by user is safe from crashes if they dont own the cbcsv file? It isn't checked elsewhere though. (e.g. sanitize params)
-    # TODO If the file ends with cbcsv, but is not literally of that type, I dont know what will happen
-    # TODO use params_errors instead of cb_error
+    # TODO modify the single file case below to handle any cbcsv files it gets appropriately? <- right now it would not be run
 
     # Grab all the cbcsv input files
-    cbcsvs = files.select { |f| ! self.params[f].nil? }
-                  .map {    |f| Userfile.find_accessible_by_user(self.params[f], self.user) }
-                  .select { |f| f.name.end_with?('.cbcsv') || f.suggested_file_type == CbrainFileList }
-
-    # If a cbcsv file is present, generate a task for each entry
-    if cbcsvs.length > 0
-      taskList = [], numRows = nil
-      # Validate each cbcsv (all columns match per row, user has access to the file)
-      for cbcsv in cbcsvs
-        # Explode if the type is wrong
-        cb_error "Error: #{cbcsv} is not a cbcsv!" unless cbcsv.is_a? CbrainFileList
-        # Explode if any of the files are not accessible
-        fs = cbcsv.userfiles_accessible_by!(self.user) rescue nil
-        cb_error "Error: #{cbcsv} has inaccessible files!" if fs.nil?
-        # If the number of rows does not match, explode
-        currentNumRows, numRows = fs.length, numRows.nil? ? currentNumRows : numRows
-        cb_error "Error: #{cbcsv} does not match expected number of files" unless currentNumRows==numRows
-        # Explode if the rest of the file has a problem
-        # TODO this method does nothing right now
-        cb_error "Error: #{cbcsv} descriptive attributes are invalid" unless cbcsv.validate_extra_attributes
+    cbcsvs = self.cbcsv_files
+    # If one or more cbcsv files is present, generate a task for each entry
+    # Note they should have been validated in after_form
+    if (cbcsvs || []).length > 0
+      # Array with the actual userfiles corresponding to the cbcsv
+      mapCbcsvToUserfiles = cbcsvs.map { |f| f[1].ordered_raw_ids }
+      # Task list to fill and total number of tasks to output
+      taskList, nTasks = [], mapCbcsvToUserfiles[0].length
+      # Iterate over each task that needs to be generated
+      for i in 0..(nTasks - 1)
+        # Clone this task
+        currTask = self.dup
+        # Replace each cbcsv with an entry
+        cbcsvs.map{ |f| f[0] }.each_with_index do |id,j|
+          currId = mapCbcsvToUserfiles[j][i]
+          currTask.params[:interface_userfile_ids] << mapCbcsvToUserfiles unless currId.nil?
+          currTask.params[id] = currId
+        end
+        # Add the new task to our tasklist
+        taskList << currTask
       end
-      # Duplicate the tasks as much as needed
-      taskList << self
-
       # Return the final set of tasks
       return taskList
     end
