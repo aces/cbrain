@@ -398,6 +398,47 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   # useful if the parameters set for this task represent a set of tasks
   # instead of just one.
   def final_task_list #:nodoc:
+
+    # File type inputs
+    <%= "files = [%s]" % files.map { |f| ":'#{f['id']}'" }.join( ',' ) %>
+
+    # TODO note: this assumes self.params[f] is a scalar i.e. not a File-type input with list : true
+
+    # FIXME
+    # TODO modify the single file case below to handle any cbcsv files it gets appropriately
+    # TODO I dont think find_accessible by user is safe from crashes if they dont own the cbcsv file? It isn't checked elsewhere though. (e.g. sanitize params)
+    # TODO If the file ends with cbcsv, but is not literally of that type, I dont know what will happen
+    # TODO use params_errors instead of cb_error
+
+    # Grab all the cbcsv input files
+    cbcsvs = files.select { |f| ! self.params[f].nil? }
+                  .map {    |f| Userfile.find_accessible_by_user(self.params[f], self.user) }
+                  .select { |f| f.name.end_with?('.cbcsv') || f.suggested_file_type == CbrainFileList }
+
+    # If a cbcsv file is present, generate a task for each entry
+    if cbcsvs.length > 0
+      taskList = [], numRows = nil
+      # Validate each cbcsv (all columns match per row, user has access to the file)
+      for cbcsv in cbcsvs
+        # Explode if the type is wrong
+        cb_error "Error: #{cbcsv} is not a cbcsv!" unless cbcsv.is_a? CbrainFileList
+        # Explode if any of the files are not accessible
+        fs = cbcsv.userfiles_accessible_by!(self.user) rescue nil
+        cb_error "Error: #{cbcsv} has inaccessible files!" if fs.nil?
+        # If the number of rows does not match, explode
+        currentNumRows, numRows = fs.length, numRows.nil? ? currentNumRows : numRows
+        cb_error "Error: #{cbcsv} does not match expected number of files" unless currentNumRows==numRows
+        # Explode if the rest of the file has a problem
+        # TODO this method does nothing right now
+        cb_error "Error: #{cbcsv} descriptive attributes are invalid" unless cbcsv.validate_extra_attributes
+      end
+      # Duplicate the tasks as much as needed
+      taskList << self
+
+      # Return the final set of tasks
+      return taskList
+    end
+
 % if single_file
     # Create a list of tasks out of the default input file list
     # (interface_userfile_ids), each file going into parameter '<%= single_file['id'] %>'
