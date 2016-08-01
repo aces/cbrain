@@ -453,7 +453,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   def final_task_list #:nodoc:
 
     # TODO note: this assumes self.params[f] is a scalar i.e. not a File-type input with list : true
-    # TODO modify the single file case below to handle any cbcsv files it gets appropriately? <- right now it would not be run
+    # TODO modify the single file case below to handle any cbcsv files it gets appropriately? <- right now it would not be run, so the other files would be skipped
 
     # Grab all the cbcsv input files
     cbcsvs = self.cbcsv_files
