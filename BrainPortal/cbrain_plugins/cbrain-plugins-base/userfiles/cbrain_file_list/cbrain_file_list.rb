@@ -20,7 +20,30 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Model for a list of CBRAIN files as a plain text CSV file
+# Model for a list of CBRAIN files as a plain text CSV file.
+#
+# The CSV file has a particular list of attributes as defined in
+# the constant ATTRIBUTES_LIST ; when an attribute is an ID to
+# another model through association, the name of the target
+# object is stored in the CSV, not the ID.
+#
+# Rows can contain placeholders meaning "no file", in that case
+# the ID should be 0 (zero) and the remaining attributes left blank.
+#
+# Only the first column, the ID, is really needed for processing.
+# All other columns are there for information only, in particular
+# when users want to download the list and reorder the rows or
+# zero-out some of them.
+#
+# There is no header row in the CSV.
+#
+# Example of file content:
+#
+#   232123,"myfile.txt",425,"TextFile","MainStoreProvider","jsmith","mygroup"
+#   112233,"plan.pdf",3894532,"SingleFile","SomeDP","jsmith","secretproject"
+#   0,,,,,,
+#   933,"hello.txt",3433434,"TextFile","SomeDP","jsmith","mygroup"
+#
 class CbrainFileList < CSVFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -40,9 +63,9 @@ class CbrainFileList < CSVFile
     "CBRAIN List of files"
   end
 
-  #def self.file_name_pattern #:nodoc:
-  #  /\.csv$/i
-  #end
+  def self.file_name_pattern #:nodoc:
+    /\.cbcsv$/i
+  end
 
   # Returns an array of arrays with the parsed content of the CSV file.
   # No validation is done outside of having the proper general format.
@@ -50,7 +73,12 @@ class CbrainFileList < CSVFile
   #
   #  [ [ 12, "filename1.txt", 2324, "TextFile"  ],
   #    [ "", "",               222, ""          ],
+  #    [ 0 , "hello",         8242, "DummyFile" ],
   #    [ 45, "image.jpg",    13121, "ImageFile" ]  ]
+  #
+  # Note that this method caches internally its result. To clear the
+  # cache (if the userfile's content has changed for instance) call
+  # the method flush_internal_caches().
   def cached_csv_array
     @rows ||= create_csv_array(QUOTING_CHARACTER, FIELD_SEPARATOR)
   end
@@ -60,8 +88,12 @@ class CbrainFileList < CSVFile
   # missing rows, will contain nils. IDs can be zero.
   #
   #  [ 12, 0, 45, nil nil, 433 ]
+  #
+  # Note that this method caches internally its result. To clear the
+  # cache (if the userfile's content has changed for instance) call
+  # the method flush_internal_caches().
   def ordered_raw_ids
-    ids_with_zeros_and_nils = cached_csv_array.map do |row|
+    @ids_with_zeros_and_nils ||= cached_csv_array.map do |row|
       myid = row[0] # can be nil
       if (myid.present?) && (myid =~ /^\s*\d+\s*$/)
         myid.strip.to_i
@@ -69,7 +101,7 @@ class CbrainFileList < CSVFile
         nil
       end
     end
-    ids_with_zeros_and_nils  # [ 1234, 0, nil, 533, 243, nil, nil ] etc
+    @ids_with_zeros_and_nils  # [ 1234, 0, nil, 533, 243, nil, nil ] etc
   end
 
   # Returns the userfiles accessible to +user+, fetched by ID in the
@@ -78,12 +110,23 @@ class CbrainFileList < CSVFile
   # to files that are inaccessible to the user will be replaced by +invalid+
   # (also defaults to nil). This method will raise an exception if
   # the content of the CSV file is invalid.
-  def userfiles_accessibles_by!(user, missing=nil, invalid=nil)
+  #
+  # Note that this method caches internally its result. To clear the
+  # cache (if the userfile's content has changed for instance) call
+  # the method flush_internal_caches().
+  def userfiles_accessible_by_user!(user, missing=nil, invalid=nil)
+
+    # Caching system, since this method is expensive
+    @userfiles ||= {}
+    cache_key = [user.id,missing,invalid]
+    return @userfiles[cache_key] if @userfiles[cache_key]
+
+    # Compute everything
     ids_with_zeros_and_nils = self.ordered_raw_ids
     just_ids                = ordered_raw_ids.reject { |v| v.blank? || v == 0 }
     unsorted_files          = Userfile.find_all_accessible_by_user(user).where( 'userfiles.id' => just_ids ).all
     hashed_files            = unsorted_files.index_by { |f| f.id }
-    userfiles               = ids_with_zeros_and_nils.map do |idzn|
+    @userfiles[cache_key]   = ids_with_zeros_and_nils.map do |idzn|
       if idzn.nil?
         invalid
       elsif idzn.zero?
@@ -94,22 +137,95 @@ class CbrainFileList < CSVFile
         hashed_files[idzn]
       end
     end
-    return userfiles
+
+    # Return cached result
+    return @userfiles[cache_key]
   end
 
-  # Returns the userfiles accessible to +user+, fetched by ID in the
-  # same order as from ordered_raw_ids(). Entries with a numeric ID of 0
-  # will be replaced by +missing+, (defaults to nil) and numeric entries pointing
-  # to files that are inaccessible to the user will be replaced by +invalid+
-  # (also defaults to nil). If the content of the CSV file is invalid,
-  # this method will return an empty array.
-  def userfiles_accessible_by(user, *args)
-    userfiles_accessibles_by!(user, *args)
-  rescue
-    []
+  # Checks the content of the CSV file and compares the optional attributes
+  # to what is found in the userfile described by the ID in the first column.
+  # This method will store its warnings and errors in the Rails +errors+
+  # for the object. Since we are validating the content of the file, not the
+  # Rails attributes, this will not prevent the object from being updated or
+  # saved, but it can be used to display information to the user.
+  #
+  # The errors are stored in +errors+ using keys in the form :row_123 (where
+  # 123 is a row number, starting at 0).
+  #
+  # When +strict+ is true, missing rows (rows with ID set to 0 or empty) will also be
+  # checked, and expected to contain empty entries for all other columns; e.g.
+  #
+  #    0,,,,,,
+  #
+  # When +strict+ is false, missing rows will not generate any error no matter
+  # what the content of the remaining columns.
+  #
+  # Since a CbrainFileList file can contains thousands of rows, you can limit
+  # the number of erroneous rows that are reported using +max_errors+
+  #
+  # Returns true if no rows were found in error.
+  def validate_extra_attributes(as_user = User.admin, max_errors=5, strict=false)
+    userfiles = userfiles_accessible_by_user!(as_user, nil, "INVALID") # sets @rows as side-effect
+    @rows.each_with_index do |row,idx|
+      break if self.errors.size >= max_errors
+      userfile  = userfiles[idx]
+      error_key = "row_#{idx}"
+
+      # INVALID ENTRIES
+      if userfile.is_a?(String) && userfile == "INVALID"
+        self.errors[error_key] = "has invalid file ID in first column"
+        next
+      end
+
+      # MISSING ENTRIES
+      if userfile.nil? # presumably, ID is zero
+        next unless strict
+        other_atts = row[1 .. -1].map(&:to_s).join("") # join them all in a single string
+        if other_atts.present? # not all blank
+          self.errors[error_key] = "has spurious column values after ID"
+        end
+        next
+      end
+
+      # USERFILE ENTRIES
+      bad_message = validate_row_attributes(userfile, row)
+      self.errors[error_key] = bad_message if bad_message.present?
+    end
+    self.errors.size == 0
   end
 
-  def validate_extra_attributes
+  # Used internally by validate_extra_attributes.
+  # +row+ is an array of attributes from the CSV file;
+  # the method assumes row[0] contains the proper (and same) ID as +userfile+
+  # Returns an error message with the list of bad attributes, or
+  # an empty string if all is OK.
+  def validate_row_attributes(userfile, row) #:nodoc:
+    bad_atts = []
+    ATTRIBUTES_LIST.each_with_index do |att,idx|
+      next if idx == 0 # skip ID column
+      att_no_id    = att.to_s.sub(/_id$/,"")
+      val          = row[idx].to_s
+      expected_val = userfile.send(att_no_id)
+      expected_val = expected_val.try(att == :user_id ? :login : :name).to_s if att.to_s =~ /_id$/
+      next if val.to_s == expected_val.to_s
+      bad_atts << att_no_id.to_s
+    end
+    return "" if bad_atts.empty?
+    "has column values that do not match: " + bad_atts.map { |a| a.classify.gsub(/(.+)([A-Z])/, '\1 \2') }.join(", ")
+  end
+
+  # Many methods of this class cache their result internally
+  # to avoid reduplicating costly work. If the content of
+  # the CSV file change, calling flush_internal_caches() will
+  # clean these caches so they return new, accurate results.
+  #
+  # Methods that currently cache information are:
+  #
+  # cached_csv_array, ordered_raw_ids, userfiles_accessible_by_user!
+  def flush_internal_caches
+    @ids_with_zeros_and_nils = nil
+    @userfiles               = nil
+    @rows                    = nil
   end
 
   # Create the plain text of a CSV file representing the CbrainFileList
