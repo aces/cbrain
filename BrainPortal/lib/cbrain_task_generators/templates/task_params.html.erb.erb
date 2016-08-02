@@ -885,7 +885,6 @@ $(function () {
     // Helper for extracting value lists
     var getVals = function( id, join ) {
       var vals = $('li.' + id + '.tsk-prm').find('.tsk-prm-in').map( function(){ return $(this).val(); } );
-//      console.log("Printing vals " + vals[0])
       // If not joining, leave
       if( ! join ){ return vals; }
       // join does not work here (yes, really) so I do it myself
@@ -893,7 +892,6 @@ $(function () {
       for( var j = 0; j < n; ++j){
         out += String(vals[j]) + ((j == n-1) ? '' : ', ');
       }
-//      console.log("Printing 2 " + out)
       return out;
     }
 
@@ -904,14 +902,11 @@ $(function () {
       var id = ids[i];
       // Look at active file type parameters
       if( (isActiveParam( id ) || $.inArray(id, reqed) != -1) && $.inArray(id,files) != -1 ){
-//        console.log("HERE")
         // Get filename; use ext to determine type correctness
         var targets = getVals( id, false );
         // TODO file lists are not currently supported in Cbrain-Boutiques; when they are, this may become inaccurate
         var targ = String( targets[0] );
-//        console.log( targ );
         if( $.inArray(targ,cids) != -1 ){
-//          console.log("Found cbcsv " + targ);
           activeCbcsvs.push( targ );
         }
       }
@@ -937,20 +932,23 @@ $(function () {
     var tableTextClass = "\"preview-table-text\""
     var addTableRow = function(prm,val){
       return "<tr>" +
-               "<td class="+tableTextClass+">"+prm+"</td>" +
-               "<td class="+tableTextClass+">"+val+"</td>" +
-             "<tr>";
+               "<td class="+tableTextClass+">" + prm + "</td>" +
+               "<td class="+tableTextClass+">" + val + "</td>" +
+             "</tr>";
     }
     var startTable = function(head = false){
       var htags = "<thead class=\"preview-table-head\">"+
-                  "<tr><th class=\"preview-th\" colspan=\"2\"> " + head + "</th></tr>"+
+                    "<tr>" +
+                      "<th class=\"preview-th\" colspan=\"2\"> " + head + "</th>" +
+                    "</tr>" +
                   "</thead>"
       modalText += "<table class=\"preview-table-fill\">" +
                    ( (head==false) ? "" : htags ) +
                    "<tbody class=\"preview-table-hover\">"
-    }//"<thead class=\"preview-table-head\"><tr><th class=\"preview-th\">TASK " + (t + 1) + "</th></tr></thead>"
-    var endTable = function(){ modalText += "</tbody> </table>" }
-    var generateTaskEntries = function(singleTask, dynamic, t = -1){
+    }
+    var generateTaskEntries = function(singleTask, dynamic, t = -1, head = false){
+      // Start the table
+      startTable( head )
       // Loop over possible entries (i.e. parameter ids)
       for( var i = 0; i < numIds; ++i ) {
         var id = ids[i];
@@ -971,46 +969,33 @@ $(function () {
             if( $.inArray(vals, cids) == -1 ){ continue; }
             // Get the current value by reading from the cbcsv
             vals = cfmap[ cbcsvs[ cids.indexOf( vals ) ] ][t]
-            // Add the new entry
-//            modalText += addTableRow(prmName,vals); //names[i] + " - " + vals + "<br>";
           }
           // Single task case (static section also ends here)
           else {
             // For files, get their names instead of their ids
             vals = ($.inArray(id, files) == -1) ? vals : fileIdsToNames[vals]
-//            modalText += addTable
-//            if( $.inArray(id, files) == -1 ){
- //             modalText += names[i] + " - " + vals + "<br>";
-//            } else {
-//              modalText += names[i] + " - " + fileIdsToNames[vals] + "<br>";
-            //}
           }
           modalText += addTableRow(prmName,vals);
         }
       }
+      // End the table
+      modalText += "</tbody> </table> <br>"
     }
-    // TODO better styling, but maybe that can wait until the Bootstrap version is ready
     // Special case: single task present
     if( nTasks == 1 ){
       modalText += "<strong>Parameters for current task:</strong><br>";
-      startTable();
       generateTaskEntries(true, false);
-      endTable();
     }
     // Otherwise, have static and dynamic sections to the preview
     else {
       // Generate text for static parameters
       modalText += "<strong>Parameter values that are constant across tasks:</strong><br>";
-      startTable();
       generateTaskEntries(false, false);
-      endTable();
       // Generate text for the dynamic parameters
       // TODO may want to limit number of tasks shown in the preview, in case it is very large
       modalText += "<br><strong>Parameter values that change across tasks:</strong><br><br>";
       for( var t = 0; t < nTasks; ++t ) {
-        startTable("TASK " + (t+1));
-        generateTaskEntries(false, true, t);
-        endTable();
+        generateTaskEntries(false, true, t, "TASK " + (t+1));
       }
     }
     // Attach modal to preview button and display it
