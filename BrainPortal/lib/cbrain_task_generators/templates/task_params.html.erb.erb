@@ -856,61 +856,62 @@ $(function () {
   $("#previewer").click(function () {
     // Classes
     var mdiv = 'preview-modal', mcont = 'preview-modal-content', mclose = 'preview-modal-close';
-    // Input parameters (fetch ids and data from cbcsvs)
-    var ids    = [<%= params.map    { |p| "\"#{p['id']}\""   }.join(", ") %>];
-    var names  = [<%= params.map    { |p| "\"#{p['name']}\"" }.join(", ") %>];
-    var reqed  = [<%= params.select { |p| ! p['optional']    }.map { |u| "\"#{u['id']}\"" }.join(", ") %>];
-    var files  = [<%= files.map     { |p| "\"#{p['id']}\""   }.join(", ") %>];
-    var cbcsvs = [<%%= cbcsvs.map   { |c| "\"#{c.name}\""    }.join(", ").html_safe %>];
-    var cids   = [<%%= cbcsvs.map   { |c| "\"#{c.id}\""      }.join(", ").html_safe %>];
-    // TODO flags
-    console.log(ids)
-    console.log(cbcsvs)
-    console.log(files)
-    console.log(cids)
-
+    // Input parameters (fetch ids and data from cbcsvs and json descriptor)
+    var ids    = [<%= params.map    { |p| "\"#{p['id']}\""    }.join(", ") %>];
+    var names  = [<%= params.map    { |p| "\"#{p['name']}\""  }.join(", ") %>];
+    var reqed  = [<%= params.select { |p| ! p['optional']     }.map { |u| "\"#{u['id']}\"" }.join(", ") %>];
+    var files  = [<%= files.map     { |p| "\"#{p['id']}\""    }.join(", ") %>];
+    var cbcsvs = [<%%= cbcsvs.map   { |c| "\"#{c.name}\""     }.join(", ").html_safe %>];
+    var cids   = [<%%= cbcsvs.map   { |c| "\"#{c.id}\""       }.join(", ").html_safe %>];
+    var flags  = [<%= params.select { |p| p['type'] == 'Flag' }.map { |u| "\"#{u['id']}\"" }.join(", ") %>];
 <%% unk        = '?unknown?' %>
 <%% maxNameLen = cbcsvs.map { |p| p.name }.max_by { |v| v.length }.length %>
 <%% safeName   = lambda { |n| "\"#{n.nil? ? unk : n.name}\"" } %>
     var cfmap  = {
 %   # Generate a list of the files associated to each cbcsv
 <%% for cbcsv in cbcsvs %>
-      <%% cn = cbcsv.name || unk %>
-      <%% cbList = "\"#{cn.ljust(maxNameLen)}\"" %>
-      <%% assocFiles = cbcsvToFiles[cn].map{ |f| safeName.(f) }.join(", ") %>
+      <%% cn = "\"" + (cbcsv.name || unk) + "\"" %>
+      <%% cbList = "#{cn.ljust(maxNameLen + 2)}" %>
+      <%% assocFiles = cbcsvToFiles[ cn[1...-1] ].map{ |f| safeName.(f) }.join(", ") %>
       <%%= "#{cbList} : [#{assocFiles}],".html_safe %>
 <%% end %>
     };
+    var fileIdsToNames = {
+%   # Give javascript access to the file id to name mapping
+<%% for f in input_files %>
+      <%%= "\"#{f.id}\" : \"#{f.name}\",".html_safe %>
+<%% end %>
+    }
     // Helper for extracting value lists
     var getVals = function( id, join ) {
       var vals = $('li.' + id + '.tsk-prm').find('.tsk-prm-in').map( function(){ return $(this).val(); } );
-      console.log("Printing vals " + vals[0])
+//      console.log("Printing vals " + vals[0])
       // If not joining, leave
       if( ! join ){ return vals; }
       // join does not work here (yes, really) so I do it myself
       var out = "", n = vals.length;
       for( var j = 0; j < n; ++j){
-        out += JSON.stringify(vals[j]) + ((j == n-1) ? '' : ', ');
+        out += String(vals[j]) + ((j == n-1) ? '' : ', ');
       }
-      console.log("Printing 2 " + out)
+//      console.log("Printing 2 " + out)
       return out;
     }
 
-    // TODO single file case, with an attached cbcsv, which has been by default placed into the file entry (along with other files)
+    // TODO single file case, with an attached cbcsv, which has been by default placed into the file entry (along with other files) [this has to be fixed in final task list too]
     // Get which cbcsvs are in use, if any
     var activeCbcsvs = [], numIds = ids.length;
     for( var i = 0; i < numIds; ++i ){
       var id = ids[i];
       // Look at active file type parameters
       if( (isActiveParam( id ) || $.inArray(id, reqed) != -1) && $.inArray(id,files) != -1 ){
-        console.log("HERE")
+//        console.log("HERE")
         // Get filename; use ext to determine type correctness
         var targets = getVals( id, false );
         // TODO file lists are not currently supported in Cbrain-Boutiques; when they are, this may become inaccurate
         var targ = String( targets[0] );
-        console.log( targ );
+//        console.log( targ );
         if( $.inArray(targ,cids) != -1 ){
-          console.log("Found cbcsv " + targ);
+//          console.log("Found cbcsv " + targ);
           activeCbcsvs.push( targ );
         }
       }
@@ -918,39 +919,100 @@ $(function () {
     // Store any warnings
     var modalText = '';
     // Compute how many tasks are going to be generated
-    var nTasks = 1, nCbcsvs = activeCbcsvs.length;
+    var nTasks = 1, nCbcsvs = activeCbcsvs.length, lens = [];
     for( var t = 0; t < nCbcsvs; ++t ){
       // Note: here I prevent the code from breaking by taking the smallest active cbcsv
       // If someone attempts to launch with any of the sizes not matching, the after_form check will stop it, so don't worry
       // Hence, here, I give a warning to the user and choose the smallest size to ensure there is no error
       var plen = cfmap[ cbcsvs[ cids.indexOf(activeCbcsvs[t]) ] ].length; // id -> name -> filenames
+      lens.push(plen)
       nTasks = (nTasks==1 || nTasks > plen) ? plen : nTasks;
-      // Warning TODO
+      // Warning if the cbcsvs do not seem to be the right length
+      if( lens.some(function(e,i,a){ return plen != e }) ){
+        modalText += "<font color=\"red\">Warning: cbcsvs with multiple unequal lengths detected</font><br><br>";
+        break;
+      }
     }
-    // Generate text
-    // TODO may want to limit number of tasks shown in the preview, in case it is very large (?)
-    for( var t = 0; t < nTasks; ++t ) {
-      modalText += "TASK "+t+"<br>";
+    // Helpers for generating preview tables
+    var tableTextClass = "\"preview-table-text\""
+    var addTableRow = function(prm,val){
+      return "<tr>" +
+               "<td class="+tableTextClass+">"+prm+"</td>" +
+               "<td class="+tableTextClass+">"+val+"</td>" +
+             "<tr>";
+    }
+    var startTable = function(head = false){
+      var htags = "<thead class=\"preview-table-head\">"+
+                  "<tr><th class=\"preview-th\" colspan=\"2\"> " + head + "</th></tr>"+
+                  "</thead>"
+      modalText += "<table class=\"preview-table-fill\">" +
+                   ( (head==false) ? "" : htags ) +
+                   "<tbody class=\"preview-table-hover\">"
+    }//"<thead class=\"preview-table-head\"><tr><th class=\"preview-th\">TASK " + (t + 1) + "</th></tr></thead>"
+    var endTable = function(){ modalText += "</tbody> </table>" }
+    var generateTaskEntries = function(singleTask, dynamic, t = -1){
+      // Loop over possible entries (i.e. parameter ids)
       for( var i = 0; i < numIds; ++i ) {
         var id = ids[i];
+        // Only consider active or required parameters
         if( isActiveParam( id ) || $.inArray(id, reqed) != -1 ) {
-          var vals = getVals( id, true ); // maybe just use [0]?
-          console.log(vals);
-//          console.log( String(vals) );
-//          vals = ( (vals instanceof Array) ? vals : [vals] ).map( function(v) { return String(v) } );
-//          console.log( JSON.stringify( vals ) );
-//          console.log( vals[0] );
-//          console.log( JSON.stringify( vals[0] ) );
-          modalText += names[i] + " - " + vals + "<br>";
+          // Extract the values associated to that parameter (flags are given true)
+          var vals = ($.inArray(id, flags) != -1) ? "True" : getVals( id, true );
+          // Parameter name to put in the table
+          var prmName = names[i];
+          // Static section, multitask case
+          if( !singleTask && !dynamic ){
+            // Ignore cbcsvs
+            if( $.inArray(vals, cids) != -1 ){ continue; }
+          }
+          // Dynamic section, multitask case
+          if( !singleTask && dynamic){
+            // Ignore non-cbcsvs
+            if( $.inArray(vals, cids) == -1 ){ continue; }
+            // Get the current value by reading from the cbcsv
+            vals = cfmap[ cbcsvs[ cids.indexOf( vals ) ] ][t]
+            // Add the new entry
+//            modalText += addTableRow(prmName,vals); //names[i] + " - " + vals + "<br>";
+          }
+          // Single task case (static section also ends here)
+          else {
+            // For files, get their names instead of their ids
+            vals = ($.inArray(id, files) == -1) ? vals : fileIdsToNames[vals]
+//            modalText += addTable
+//            if( $.inArray(id, files) == -1 ){
+ //             modalText += names[i] + " - " + vals + "<br>";
+//            } else {
+//              modalText += names[i] + " - " + fileIdsToNames[vals] + "<br>";
+            //}
+          }
+          modalText += addTableRow(prmName,vals);
         }
       }
-      modalText += '<br>';
     }
-
-%# modalText += "<br>"
-%# modalText += "<%%= cbcsvs.map {|c| c.name }.join(',') %><br><br>"
-%# modalText += "<%%= cbcsvToFiles.values.map{ |l| l.map { |f| f.nil? ? '?nil?' : f.name } } %>"
-
+    // TODO better styling, but maybe that can wait until the Bootstrap version is ready
+    // Special case: single task present
+    if( nTasks == 1 ){
+      modalText += "<strong>Parameters for current task:</strong><br>";
+      startTable();
+      generateTaskEntries(true, false);
+      endTable();
+    }
+    // Otherwise, have static and dynamic sections to the preview
+    else {
+      // Generate text for static parameters
+      modalText += "<strong>Parameter values that are constant across tasks:</strong><br>";
+      startTable();
+      generateTaskEntries(false, false);
+      endTable();
+      // Generate text for the dynamic parameters
+      // TODO may want to limit number of tasks shown in the preview, in case it is very large
+      modalText += "<br><strong>Parameter values that change across tasks:</strong><br><br>";
+      for( var t = 0; t < nTasks; ++t ) {
+        startTable("TASK " + (t+1));
+        generateTaskEntries(false, true, t);
+        endTable();
+      }
+    }
     // Attach modal to preview button and display it
     $('.preview-div').append(
       '<div class="' + mdiv + ' modal">' +
@@ -960,6 +1022,8 @@ $(function () {
         '</div>' +
       '</div>'
     );
+    // Resize it so the height does not go offscreen
+    $('.' + mcont).css('height', Math.round(window.innerHeight * 0.8) + 'px');
     // Attach closing listeners to it
     $('.' + mclose).click(function () {
       $('.' + mdiv).remove(); // Removal if 'x' is clicked
