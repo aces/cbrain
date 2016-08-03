@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This model encapsulates a record with a precise list
@@ -89,6 +89,9 @@ class RemoteCommand < RestrictedHash
 
     # Not really used right now
     :group_ids,
+
+    # Userfile types, single string with commas.
+    :types,
 
     # Date of effect; for clean_cache it means cleans files older than this..
     :before_date,  # Time object
