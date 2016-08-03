@@ -401,7 +401,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
         end
         # Error if any of the files are not accessible or are non-existent
         begin
-          fs = cbcsv.userfiles_accessible_by!(self.user)
+          fs = cbcsv.userfiles_accessible_by_user!(self.user)
           for i in cbcsv.ordered_raw_ids.select{ |r| ! r.nil? }
             msg = " - unable to find file with id #{i}. Please check for correctness."
             params_errors.add(id, msg) if ( Userfile.find_accessible_by_user( i, self.user ) rescue nil ).nil?
@@ -413,11 +413,12 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
         # If the number of rows does not match, error
         currNumRows = (cbcsv.ordered_raw_ids || []).length
         numRows = numRows.nil? ? currNumRows : numRows
-        params_errors.add(id, " does not match expected number of files (#{currNumRows} vs #{numRows})") unless (currNumRows == numRows)
+        params_errors.add(id, " does not have the same number of files (#{currNumRows}) as in other present cbcsvs (#{numRows})") unless (currNumRows == numRows)
         # Error if the rest of the cbcsv file has a problem
         # Error-check the remainder of the file with max_errors = 1 and non-strict (so zero rows can have anything in them)
-        allGood = cbcsv.validate_extra_attributes(self.user, 1, false) rescue false
-        params_errors.add(id, "has attributes that are invalid (Received error: #{allGood.inspect} )") unless (allGood == true)
+        allGood = cbcsv.validate_extra_attributes(self.user, 1, false) rescue false # returns true if no errors
+        allGood ||= cbcsv.errors # If there were errors, we want to look at them
+        params_errors.add(id, "has attributes that are invalid (Received error: #{allGood.messages} )") unless (allGood == true)
       end
     end
 %# End cbcsv validations
