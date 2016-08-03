@@ -143,7 +143,7 @@ class SyncStatus < ActiveRecord::Base
 
     if ! allok # means timeout occured
       oldstate = state.status
-      state.update_attributes( :status => "ProvNewer" )
+      #state.status_transition(oldstate, "ProvNewer") # do our best; not needed?
       raise "Sync error: timeout waiting for file '#{userfile_id}' " +
             "in '#{oldstate}' for operation 'ToCache'."
     end
@@ -161,7 +161,7 @@ class SyncStatus < ActiveRecord::Base
 
     # Adjust state to let all other processes know what
     # WE want to do now. This will lock out other clients.
-    state.update_attributes( :status => "ToCache" )
+    state.status_transition!(state.status, "ToCache") # if we fail here, race condition
     puts "SYNC: ToCache: #{state.pretty} Update" if DebugMessages
 
     # Wait until all other clients out there are done
@@ -175,28 +175,33 @@ class SyncStatus < ActiveRecord::Base
     end
 
     if ! allok # means timeout occured
-      state.update_attributes( :status => "ProvNewer" )
+      state.status_transition("ToCache", "ProvNewer") # checked OK
       raise "Sync error: timeout waiting for other clients for " +
             "file '#{userfile_id}' for operation 'ToCache'."
     end
 
     # Now, perform the sync_to_cache operation.
     self.wrap_block(
+
+      # BEFORE cache-modifying operation
       lambda do
         puts "SYNC: ToCache: #{state.pretty} YIELD" if DebugMessages
       end,
 
+      # AFTER successful cache-modifying operation
       lambda do |implstatus|
-        state.update_attributes( :status => "InSync", :accessed_at => Time.now, :synced_at => Time.now )
+        state.status_transition("ToCache", "InSync") # checked OK
+        state.update_attributes( :accessed_at => Time.now, :synced_at => Time.now )
         puts "SYNC: ToCache: #{state.pretty} Finish" if DebugMessages
         implstatus
       end,
 
+      # AFTER failed cache-modifying operation
       lambda do |implerror|
-        state.update_attributes( :status => "ProvNewer" ) # cache is no good
+        state.status_transition("ToCache", "ProvNewer") # checked OK; cache is no good
         puts "SYNC: ToCache: #{state.pretty} Except" if DebugMessages
       end
-    ) { yield }
+    ) { yield } # cache-modifying code
   end
 
 
@@ -232,7 +237,7 @@ class SyncStatus < ActiveRecord::Base
 
     if ! allok # means timeout occured
       oldstate = state.status
-      state.update_attributes( :status => "CacheNewer" )
+      #state.status_transition(oldstate, "CacheNewer") # do our best; not needed?
       raise "Sync error: timeout waiting for file '#{userfile_id}' " +
             "in '#{oldstate}' for operation 'ToProvider'."
     end
@@ -245,7 +250,7 @@ class SyncStatus < ActiveRecord::Base
 
     # Adjust state to let all other processes know what
     # WE want to do now. This will lock out other clients.
-    state.update_attributes( :status => "ToProvider" )
+    state.status_transition!(state.status, "ToProvider") # if we fail, race condition
     puts "SYNC: ToProv: #{state.pretty} Update" if DebugMessages
 
     # Wait until all other clients out there are done
@@ -258,37 +263,42 @@ class SyncStatus < ActiveRecord::Base
     end
 
     if ! allok # means timeout occured
-      state.update_attributes( :status => "CacheNewer" )
+      state.status_transition("ToProvider", "CacheNewer") # checked OK
       raise "Sync error: timeout waiting for other clients for " +
             "file '#{userfile_id}' for operation 'ToProvider'."
     end
 
     # Now, perform the ToProvider operation.
     self.wrap_block(
+
+      # BEFORE provider-modifying operation
       lambda do
         # Let's tell every other clients that their cache is now
         # obsolete.
         puts "SYNC: ToProv: #{state.pretty} Others => ProvNewer" if DebugMessages
         others = self.get_status_of_other_caches(userfile_id)
-        others.each { |o| o.update_attributes( :status => "ProvNewer" ) }
+        others.each { |o| o.update_attributes( :status => "ProvNewer" ) } # your cache is out of date
         # Call the provider's implementation of the sync operation.
         puts "SYNC: ToProv: #{state.pretty} YIELD" if DebugMessages
       end,
 
+      # AFTER successful provider-modifying operation
       lambda do |implstatus|
-        state.update_attributes( :status => "InSync", :accessed_at => Time.now, :synced_at => Time.now )
+        state.status_transition("ToProvider", "InSync") # checked OK
+        state.update_attributes( :accessed_at => Time.now, :synced_at => Time.now )
         puts "SYNC: ToProv: #{state.pretty} Finish" if DebugMessages
         implstatus
       end,
 
+      # AFTER failed provider-modifying operation
       lambda do |implerror|
         # Provider side is no good as far as we know
         others = self.get_status_of_other_caches(userfile_id) rescue []
         others.each { |o| o.update_attributes( :status => "Corrupted" ) rescue nil }
-        state.update_attributes( :status => "Corrupted" )
+        state.status_transition("ToProvider", "Corrupted") # checked OK
         puts "SYNC: ToProv: #{state.pretty} Except" if DebugMessages
       end
-    ) { yield }
+    ) { yield } # provider-modifying code
   end
 
 
@@ -334,30 +344,34 @@ class SyncStatus < ActiveRecord::Base
     # true, as we are not copying from the DP, but it will
     # still lock out other processes trying to start data
     # operations, which is what we want.
-    state.update_attributes( :status => "ToCache" ) # TODO not exactly true
+    state.status_transition!(state.status, "ToCache") # if we fail, race condition
     puts "SYNC: ModCache: #{state.pretty} Update" if DebugMessages
 
     # Now, perform the ModifyCache operation
     self.wrap_block(
+
+      # BEFORE cache-modifying operation
       lambda do
         puts "SYNC: ModCache: #{state.pretty} YIELD" if DebugMessages
       end,
 
+      # AFTER successful cache-modifying operation
       lambda do |implstatus|
         if final_status == :destroy
           state.destroy
         else
-          state.update_attributes( :status => final_status )
+          state.status_transition("ToCache", final_status) # checked OK
         end
         puts "SYNC: ModCache: #{state.pretty} Finish" if DebugMessages
         implstatus
       end,
 
+      # AFTER failed cache-modifying operation
       lambda do |implerror|
-        state.update_attributes( :status => "ProvNewer" ) # cache is no longer good
+        state.status_transition("ToCache", "ProvNewer") # checked OK; cache is no longer good
         puts "SYNC: ModCache: #{state.pretty} Except" if DebugMessages
       end
-    ) { yield }
+    ) { yield } # cache-modifying code
   end
 
 
@@ -393,7 +407,7 @@ class SyncStatus < ActiveRecord::Base
 
     if ! allok # means timeout occured
       oldstate = state.status
-      state.update_attributes( :status => "CacheNewer" )
+      #state.status_transition(oldstate, "CacheNewer") # do our best; not needed?
       raise "Sync error: timeout waiting for file '#{userfile_id}' " +
             "in '#{oldstate}' for operation 'ModifyProvider'."
     end
@@ -403,7 +417,7 @@ class SyncStatus < ActiveRecord::Base
     # exactly true, as we are not copying to the DP, but it will
     # still lock out other processes trying to start data
     # operations, which is what we want.
-    state.update_attributes( :status => "ToProvider" ) # TODO not exactly true
+    state.status_transition!(state.status, "ToProvider") # if we fail, race condition
     puts "SYNC: ModProv: #{state.pretty} Update" if DebugMessages
 
     # Wait until all other clients out there are done
@@ -422,23 +436,27 @@ class SyncStatus < ActiveRecord::Base
 
     # Now, perform the ModifyProvider operation.
     self.wrap_block(
+
+      # BEFORE provider-modifying operation
       lambda do
         puts "SYNC: ModProv: #{state.pretty} YIELD" if DebugMessages
       end,
 
+      # AFTER successful provider-modifying operation
       lambda do |implstatus|
         others = self.get_status_of_other_caches(userfile_id)
         others.each { |o| o.update_attributes( :status => "ProvNewer" ) } # Mark all other status fields...
-        state.update_attributes( :status => "ProvNewer" )                 # ... then mark ours.
+        state.status_transition("ToProvider", "ProvNewer") # checked OK
         puts "SYNC: ModProv: ProvNewer ALL" if DebugMessages
         implstatus
       end,
 
+      # AFTER failed provider-modifying operation
       lambda do |implerror|
-        state.update_attributes( :status => "Corrupted" ) # dp is no longer good
+        state.status_transition("ToProvider", "Corrupted") # checked OK; dp is no longer good
         puts "SYNC: ModProv: #{state.pretty} Except" if DebugMessages
       end
-    ) { yield }
+    ) { yield } # provider-modifying code
   end
 
 
@@ -464,18 +482,18 @@ class SyncStatus < ActiveRecord::Base
     # "InSync" state is too old for current RemoteResource
     myself = RemoteResource.current_resource
     expire = myself.cache_trust_expire # in seconds before now
-    expire = nil if expire && expire < 3600 # we don't accept thresholds less than one hour
-    expire = 2.years.to_i if expire and expire > 2.years.to_i
+    expire = nil          if expire && expire < 3600 # we don't accept thresholds less than one hour
+    expire = 2.years.to_i if expire && expire > 2.years.to_i
     if expire and self.status == "InSync" && self.synced_at < Time.now - expire
       puts "SYNC: Invalid: #{self.pretty} InSync Is Too Old" if DebugMessages
-      self.update_attributes( :status => "ProvNewer" )
+      self.status_transition(self.status, "ProvNewer")
       return
     end
 
     # ToProvider or ToCache states are too old (aborted?)
     if self.updated_at && self.updated_at < Time.now - TransferTimeout
-      self.update_attributes( :status => "Corrupted" ) if self.status == "ToProvider"
-      self.update_attributes( :status => "ProvNewer" ) if self.status == "ToCache"
+      self.status_transition(self.status, "Corrupted") if self.status == "ToProvider"
+      self.status_transition(self.status, "ProvNewer") if self.status == "ToCache"
       return
     end
 
@@ -495,13 +513,28 @@ class SyncStatus < ActiveRecord::Base
   # true if the transition was successful, and false
   # if anything went wrong.
   def status_transition(from_state, to_state)
-    SyncStatus.transaction do
-      self.lock!
+    self.with_lock do
       return false if self.status != from_state
       return true  if from_state == to_state # NOOP
       self.status = to_state
       return self.save
     end
+  end
+
+  # This method acts like status_transition(),
+  # but it raises a CbrainTransitionException
+  # on failures.
+  def status_transition!(from_state, to_state)
+    return true if status_transition(from_state, to_state)
+    ohno = CbrainTransitionException.new(
+      "Sync status was changed before lock was acquired for sync object '#{self.id}'.\n" +
+      "Expected: '#{from_state}' found: '#{self.status}'."
+    )
+    ohno.original_object = self
+    ohno.from_state      = from_state
+    ohno.to_state        = to_state
+    ohno.found_state     = self.status
+    raise ohno
   end
 
 
@@ -511,20 +544,26 @@ class SyncStatus < ActiveRecord::Base
   # Fetch (or create if necessary) the SyncStatus object
   # that tracks the particular pair ( +userfile_id+ , +remote_resource_id+ ).
   def self.get_or_create_status(userfile_id)
-    state = self.create!(
-      :userfile_id        => userfile_id,
-      :remote_resource_id => CBRAIN::SelfRemoteResourceId,
-      :status             => "ProvNewer",
-      :accessed_at        => Time.now,
-      :synced_at          => 2.years.ago
-    ) rescue nil
-    puts "SYNC: Status: #{state.pretty} Create" if   state && DebugMessages
-    puts "SYNC: Status: Exist"                  if ! state && DebugMessages
-    # if we can't create it (because of validation rules), it already exists
-    state ||= self.where(
-                     :userfile_id        => userfile_id,
-                     :remote_resource_id => CBRAIN::SelfRemoteResourceId,
-                   ).first
+    state = nil
+    3.times do # several tries might be needed, but unlikely
+      state = self.create!(
+        :userfile_id        => userfile_id,
+        :remote_resource_id => CBRAIN::SelfRemoteResourceId,
+        :status             => "ProvNewer",
+        :accessed_at        => Time.now,
+        :synced_at          => 2.years.ago
+      ) rescue nil
+      puts "SYNC: Status: #{state.pretty} Create" if   state && DebugMessages
+      puts "SYNC: Status: Exist"                  if ! state && DebugMessages
+      # if we can't create it (because of validation rules), it already exists
+      state ||= self.where(
+                       :userfile_id        => userfile_id,
+                       :remote_resource_id => CBRAIN::SelfRemoteResourceId,
+                     ).first
+      break if state.present? # otherwise try again 3 times
+      puts "SYNC: Status: TryAgain" if DebugMessages
+    end
+    raise "Internal error: Cannot create or find SyncStatus object for userfile ##{userfile_id}" if !state
     state.invalidate_old_status
     state
   end
@@ -561,24 +600,6 @@ class SyncStatus < ActiveRecord::Base
     stopnow
   end
 
-  # This method acts like status_transition(),
-  # but it raises a CbrainTransitionException
-  # on failures.
-  def status_transition!(from_state, to_state)
-    unless status_transition(from_state,to_state)
-      ohno = CbrainTransitionException.new(
-        "Sync status was changed before lock was acquired for sync object '#{self.id}'.\n" +
-        "Expected: '#{from_state}' found: '#{self.status}'."
-      )
-      ohno.original_object = self
-      ohno.from_state      = from_state
-      ohno.to_state        = to_state
-      ohno.found_state     = self.status
-      raise ohno
-    end
-    true
-  end
-
   # Wraps a code block to ensure execution of before and after callbacks even
   # if the block throws an exception or returns. Preserves the block's call
   # stack if it returns. +before+, +after+ and +except+ are expected to
@@ -602,4 +623,6 @@ class SyncStatus < ActiveRecord::Base
     value = after.call(value) if after && ! ex
     return value unless returned
   end
+
 end
+
