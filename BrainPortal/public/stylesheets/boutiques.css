@@ -1,6 +1,9 @@
+/******************************************************/
 /* Handle styling for group toggling box in Boutiques */
+/******************************************************/
+
 .group-toggler {
-    display: none;
+  display: none;
 }
 .group-toggler + label {
   background-color: #fafafa;
@@ -31,42 +34,47 @@
   color: #ffffff;
 }
 
+/******************************************************************/
 /* Styling for modal preview popup for listing tasks in Boutiques */
+/******************************************************************/
+
 .preview-modal {
-    display: block;
-    position: fixed;
-    z-index: 1;
-    padding-top: 100px;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.4);
+  display: block;
+  position: fixed;
+  z-index: 1;
+  padding-top: 100px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4);
 }
 .preview-modal-content {
-    background-color: #fefefe;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    overflow: scroll;
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  overflow: scroll;
 }
 .preview-modal-close {
-    color: #aaaaaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
 }
 .preview-modal-close:hover,
 .preview-modal-close:focus {
-    color: #000;
-    text-decoration: none;
-    cursor: pointer;
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
 }
 
-/* Preview table styling within the modal */
+/**********************************************/
+/*** Preview table styling within the modal ***/
+/**********************************************/
+
 .preview-table-text {
   text-align: left;
 }
@@ -75,14 +83,14 @@
   background: #0471b4;
   vertical-align: middle;
   padding: 4px;
+  border: 1px solid #0471b4;
 }
-tr:hover td {
+tr.preview-tr:hover td.preview-table-text {
   background:#4E5066;
   color:#FFFFFF;
   border-top: 1px solid #22262e;
   border-bottom: 1px solid #22262e;
 }
-
 .preview-table-fill {
   background: white;
   border-radius:3px;
@@ -96,69 +104,24 @@ tr:hover td {
   border-style: none;
   table-layout: fixed;
 }
-
-th {
-  color:#D5DDE5;;
-  background:#1b1e24;
-  border-bottom:4px solid #9ea7af;
-  border-right: 1px solid #343a45;
-  font-size:23px;
-  font-weight: 100;
-  padding:24px;
-  text-align:left;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-  vertical-align:middle;
-}
-
-th:first-child {
-  border-top-left-radius:3px;
-}
-
-th:last-child {
-  border-top-right-radius:3px;
-  border-right:none;
-}
-
-tr {
+.preview-tr {
   border-top: 1px solid #C1C3D1;
-  border-bottom-: 1px solid #C1C3D1;
+  border-bottom: 1px solid #C1C3D1;
   color:#666B85;
   font-size:16px;
   font-weight:normal;
   text-shadow: 0 1px 1px rgba(256, 256, 256, 0.1);
 }
-
-tr:hover td {
+tr.preview-tr:hover td.preview-table-text {
   background:#4E5066;
   color:#FFFFFF;
   border-top: 1px solid #22262e;
   border-bottom: 1px solid #22262e;
 }
-
-tr:nth-child(odd) td {
+tr.preview-tr:nth-child(odd) td.preview-table-text {
   background:#EBEBEB;
 }
-
-tr:nth-child(odd):hover td {
+tr.preview-tr:nth-child(odd):hover td.preview-table-text {
   background:#4E5066;
-}
-
-tr:last-child td:first-child {
-  border-bottom-left-radius:3px;
-}
-
-tr:last-child td:last-child {
-  border-bottom-right-radius:3px;
-}
-
-td {
-  background:#FFFFFF;
-  padding:20px;
-  text-align:left;
-  vertical-align:middle;
-  font-weight:300;
-  font-size:18px;
-  text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1);
-  border-right: 1px solid #C1C3D1;
 }
 
