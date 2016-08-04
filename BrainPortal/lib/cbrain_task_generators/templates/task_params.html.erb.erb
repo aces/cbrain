@@ -867,7 +867,6 @@ $(function () {
     var cbcsvs = [<%%= cbcsvs.map   { |c| "\"#{c.name}\""     }.join(", ").html_safe %>];
     var cids   = [<%%= cbcsvs.map   { |c| "\"#{c.id}\""       }.join(", ").html_safe %>];
     var flags  = [<%= params.select { |p| p['type'] == 'Flag' }.map { |u| "\"#{u['id']}\"" }.join(", ") %>];
-
 <%% unk        = '?unknown?' %>
 <%% maxNameLen = cbcsvs.map { |p| p.name }.max_by { |v| v.length }.length %>
 <%% safeName   = lambda { |n| "\"#{n.nil? ? unk : n.name}\"" } %>
@@ -885,13 +884,14 @@ $(function () {
 <%% for f in input_files %>
       <%%= "\"#{f.id}\" : \"#{f.name}\",".html_safe %>
 <%% end %>
-    }
+    };
+
     // Helper for extracting value lists
     var getVals = function( id, join ) {
       var vals = $('li.' + id + '.tsk-prm').find('.tsk-prm-in').map( function(){ return $(this).val(); } );
       // If not joining, leave
       if( ! join ){ return vals; }
-      // join does not work here (yes, really) so I do it myself
+      // Join the array if desired
       var out = "", n = vals.length;
       for( var j = 0; j < n; ++j){
         out += String(vals[j]) + ((j == n-1) ? '' : ', ');
@@ -946,7 +946,7 @@ $(function () {
     if( single != false){
       nTasks = files.length - cbcsvs.length;
       Object.keys(cfmap).forEach( function (k) {
-        nTasks += ( cfmap[k] ).length
+        nTasks += ( cfmap[k] ).length;
       });
     } else {
       for( var t = 0; t < nCbcsvs; ++t ) {
@@ -954,7 +954,7 @@ $(function () {
         // If someone attempts to launch with any of the sizes not matching, the after_form check will stop it, so don't worry
         // Hence, here, I give a warning to the user and choose the smallest size to ensure there is no error
         var plen = cfmap[ cbcsvs[ cids.indexOf(activeCbcsvs[t]) ] ].length; // id -> name -> filenames
-        lens.push( plen )
+        lens.push( plen );
         nTasks = (nTasks==1 || nTasks > plen) ? plen : nTasks;
         // Warning if the cbcsvs do not seem to be the right length
         if( lens.some(function(e,i,a){ return plen != e }) ) {
@@ -963,6 +963,7 @@ $(function () {
         }
       }
     }
+
     // Helpers for generating preview tables
     var tableTextClass = "\"preview-table-text\"", tableRowClass = "\"preview-tr\""
     var addTableRow = function(prm,val){
@@ -981,6 +982,8 @@ $(function () {
                    ( (head==false) ? "" : htags ) +
                    "<tbody class=\"preview-table-hover\">"
     }
+
+    // Function that builds a table corresponding to a task
     var generateTaskEntries = function(singleTask, dynamic, t = -1, head = false, ignoreFiles = false, onlySingleFile = false) {
       // Start the table
       startTable( head )
@@ -1041,6 +1044,7 @@ $(function () {
         generateTaskEntries(false, true, t, "TASK " + (t+1), false, single != false);
       }
     }
+
     // Attach modal to preview button and display it
     $('.preview-div').append(
       '<div class="' + mdiv + ' modal">' +
@@ -1050,6 +1054,7 @@ $(function () {
         '</div>' +
       '</div>'
     );
+
     // Resize it so the height does not go offscreen
     $('.' + mcont).css('height', Math.round(window.innerHeight * 0.8) + 'px');
     // Attach closing listeners to it
@@ -1062,6 +1067,7 @@ $(function () {
     $('.' + mcont).click(function (event) {
       event.stopPropagation(); // Prevent removal if click inside
     });
+
   });
 
 });
