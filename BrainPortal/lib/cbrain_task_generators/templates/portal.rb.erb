@@ -498,26 +498,26 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     self.params[:interface_userfile_ids].map do |id|
       task = self.dup
       # Helper for filling in the changing task parameters
-      fillTask = lambda do |id|
-        task.params[:'<%= single_file['id']%>'] = id
+      fillTask = lambda do |id,tsk|
+        tsk.params[:'<%= single_file['id']%>'] = id
 %   if single_file['cbrain-file-type']
-        task.sanitize_param(:'<%= single_file['id'] %>', :file, :file_type => '<%= single_file['cbrain-file-type']%>')
+        tsk.sanitize_param(:'<%= single_file['id'] %>', :file, :file_type => '<%= single_file['cbrain-file-type']%>')
 %   else
-        task.sanitize_param(:'<%= single_file['id'] %>', :file)
+        tsk.sanitize_param(:'<%= single_file['id'] %>', :file)
 %   end
-        task.description ||= ''
-        task.description  += " <%= single_file['id']%>: #{Userfile.find(id).name}"
-        task.description.strip!
-        task
+        tsk.description ||= ''
+        tsk.description  += " <%= single_file['id']%>: #{Userfile.find(id).name}"
+        tsk.description.strip!
+        tsk
       end
       # Expand cbcsvs and generate tasks from them
       f = Userfile.find_accessible_by_user( id, self.user )
       if f.is_a?( CbrainFileList )
         ufiles = f.userfiles_accessible_by_user!( self.user )
-        tasks = ufiles.select { |u| ! u.nil? }.map{ |a| fillTask.( a.id ) }
+        tasks = ufiles.select { |u| ! u.nil? }.map{ |a| fillTask.( a.id, task.dup ) }
       # Set and sanitize the one file parameter for each id for regular files
       else
-        fillTask.( id )
+        fillTask.( id, task )
       end
     end.flatten
 % else
@@ -527,7 +527,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     # Note they should have been validated in after_form
     if (cbcsvs || []).length > 0
       # Array with the actual userfiles corresponding to the cbcsv
-      mapCbcsvToUserfiles = cbcsvs.map { |f| f[1].ordered_raw_ids }.map { |i| (i==0) ? nil : i }
+      mapCbcsvToUserfiles = cbcsvs.map { |f| f[1].ordered_raw_ids.map { |i| (i==0) ? nil : i } }
       # Task list to fill and total number of tasks to output
       taskList, nTasks = [], mapCbcsvToUserfiles[0].length
       # Iterate over each task that needs to be generated
@@ -539,6 +539,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
           currId = mapCbcsvToUserfiles[j][i]
           currTask.params[:interface_userfile_ids] << mapCbcsvToUserfiles unless currId.nil?
           currTask.params[id] = currId # If id = 0 or nil, currId = nil
+          currTask.params.delete(id) if currId.nil?
         end
         # Add the new task to our tasklist
         taskList << currTask
