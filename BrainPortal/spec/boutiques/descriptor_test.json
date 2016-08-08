@@ -2,7 +2,7 @@
 	"name" : "BoutiquesTest",
 	"tool-version" : "9.7.13",
 	"description" : "Simple test task for Boutiques",
-	"command-line" : "./boutiquesTestApp.rb [A] [B] [C] [a] [b] [c] [d] [e] [f] [g] [i] [j] [k] [l] [m] [n] [p] [q] [u] [v] [w] [x] [o] [r] [y]",
+	"command-line" : "./boutiquesTestApp.rb [A] [B] [C] [a] [b] [c] [d] [e] [f] [g] [i] [j] [k] [l] [m] [n] [p] [q] [u] [v] [w] [x] [o] [r] [y] [E] [I] [N] [L]",
 	"schema-version" : "0.2",
 	"inputs" : [{
 		"id" : "A",
@@ -75,7 +75,9 @@
 		"optional" : true,
 		"list" : true,
 		"command-line-key" : "[e]",
-		"command-line-flag" : "-e"
+		"command-line-flag" : "-e",
+		"min-list-entries" : 2,
+		"max-list-entries" : 3
 	}, {
 		"id" : "f",
 		"name" : "f",
@@ -226,6 +228,60 @@
 		"list" : false,
 		"command-line-key" : "[o]",
 		"command-line-flag" : "-o"
+	}, {
+		"id" : "E",
+		"name" : "E",
+		"type" : "Enum",
+		"description" : "An enum parameter (one of a, b, or c)",
+		"optional" : true,
+		"list" : false,
+		"enum-value-choices" : ["a", "b", "c"],
+		"command-line-key" : "[E]",
+		"command-line-flag" : "-E"
+	}, {
+		"id" : "N",
+		"name" : "N",
+		"type" : "Number",
+		"description" : "A number limited to (7.7, 9.9]",
+		"optional" : true,
+		"list" : false,
+		"command-line-key" : "[N]",
+		"integer" : false,
+		"minimum" : 7.7,
+		"maximum" : 9.9,
+		"exclusive-minimum" : true,
+		"exclusive-maximum" : false,
+		"command-line-flag" : "-N"
+	}, {
+		"id" : "I",
+		"name" : "I",
+		"type" : "Number",
+		"description" : "An integer limited to [-7,9)",
+		"optional" : true,
+		"list" : false,
+		"integer" : true,
+		"minimum" : -7,
+		"maximum" : 9,
+		"exclusive-minimum" : false,
+		"exclusive-maximum" : true,
+		"command-line-key" : "[I]",
+		"command-line-flag" : "-I"
+	}, {
+		"id" : "L",
+		"name" : "L",
+		"type" : "Number",
+		"description" : "An integer list, all limited to [7,13)",
+		"optional" : true,
+		"list" : true,
+		"integer" : true,
+		"minimum" : 7,
+		"maximum" : 13,
+		"exclusive-minimum" : false,
+		"exclusive-maximum" : true,
+		"min-list-entries" : 3,
+		"max-list-entries" : 5,
+		"command-line-key" : "[L]",
+		"command-line-flag" : "-L"
 	}, {
 		"id" : "r",
 		"name" : "r",
