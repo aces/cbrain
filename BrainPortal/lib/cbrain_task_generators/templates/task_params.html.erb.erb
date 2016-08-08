@@ -63,7 +63,7 @@
     # Handling for multi-task generation via CBCSVs
     cbcsvs       = input_files.select { |f| f.is_a?( CbrainFileList ) }
     cbcsvToFiles = cbcsvs.inject({}) do |m,f|              # Only used for preview button
-      m.merge(f.name => f.ordered_raw_ids.map{ |r| (r==0 || r.nil?) ? nil :
+      m.merge(f.name => f.ordered_raw_ids.map{ |r| (r==0 || r.nil?) ? ' ' : # Space can't be a filename in cbrain
         (Userfile.find_all_accessible_by_user(current_user).where('userfiles.id' => r).first rescue nil) }
       )
     end
@@ -418,10 +418,8 @@
 
 <div class="preview-div">
   <p>
-<!--    <form action=""> -->
       <input class="ui-button ui-widget ui-state-default ui-corner-all" id="previewer"
               type="button" value="Preview" style="float:right">
-<!--    </form> -->
   </p>
 </div>
 
@@ -857,7 +855,7 @@ $(function () {
 
   /* Preview Button */
   $("#previewer").click(function () {
-    // Classes
+    // Classes for the modal (popup)
     var mdiv = 'preview-modal', mcont = 'preview-modal-content', mclose = 'preview-modal-close';
     // Input parameters (fetch ids and data from cbcsvs and json descriptor)
     var ids    = [<%= params.map    { |p| "\"#{p['id']}\""    }.join(", ") %>];
@@ -869,7 +867,8 @@ $(function () {
     var flags  = [<%= params.select { |p| p['type'] == 'Flag' }.map { |u| "\"#{u['id']}\"" }.join(", ") %>];
 <%% unk        = '?unknown?' %>
 <%% maxNameLen = cbcsvs.map { |p| p.name }.max_by { |v| v.length }.length %>
-<%% safeName   = lambda { |n| "\"#{n.nil? ? unk : n.name}\"" } %>
+<%%# Replace unrecognized files with unk and "blanks" (i.e. the user wants no file present) with '' %>
+<%% safeName   = lambda { |n| "\"#{n.nil? ? unk : ((n == ' ') ? '' : n.name)}\"" } %>
     var cfmap  = {
 %   # Generate a list of the files associated to each cbcsv
 <%% for cbcsv in cbcsvs %>
@@ -904,7 +903,7 @@ $(function () {
     // We wish to launch a task for each file, but if the file is a cbcsv, it should launch each of its subfiles as a task.
     // The preview table should reflect this.
     var single     = <%= single_file.nil? ? 'false' : "\"#{single_file['id']}\"" %>
-    var singleName = (single==false) ? null : names[ ids.indexOf( single ) ]
+    var singleName = (single == false) ? null : names[ ids.indexOf( single ) ]
 
     // Get which cbcsvs are in use, if any
     var activeCbcsvs = [], numIds = ids.length;
@@ -915,7 +914,7 @@ $(function () {
         var id = ids[i];
         // Look at active file type parameters
         if( (isActiveParam( id ) || $.inArray(id, reqed) != -1) && $.inArray(id,files) != -1 ) {
-          // Get filename; use ext to determine type correctness
+          // Get filename; use id to determine type correctness
           var targets = getVals( id, false );
           var targ = String( targets[0] );
           if( $.inArray(targ,cids) != -1 ){
@@ -964,137 +963,51 @@ $(function () {
       }
     }
 
-    // Build an upper table for the static parameters across tasks
-//    modalText += "<table class=\"preview-table-fill\">" + "<tbody class=\"preview-table-hover\">"
-//    modalText += "</tbody> </table> <br>"
-    // Build another table, if there are multiple tasks to launch
-    // Each row is a task, each column is an input file
-    // A blank cell indicates when an input has no entry
-
-
-    // Helpers for generating preview tables
-    var tableTextClass = "\"preview-table-text\"", tableRowClass = "\"preview-tr\""
+    /* Helpers for generating preview tables */
+    // CSS classes used
+    var tableTextClass = "\"preview-table-text\"",  tableRowClass  = "\"preview-tr\"",         tableFillClass = "\"preview-table-fill\"";
+    var tableBodyClass = "\"preview-table-hover\"", tableHeadClass = "\"preview-table-head\"", tableThClass   = "\"preview-th\"";
+    // Adds a single row to a two-column table
     var addTableRow = function(prm, val) {
-      return "<tr class=" + tableRowClass + ">" +
+      return "<tr class="   + tableRowClass  + ">" +
                "<td class=" + tableTextClass + ">" + prm + "</td>" +
                "<td class=" + tableTextClass + ">" + val + "</td>" +
              "</tr>";
     }
-    var startTable = function(head = false){
-      var htags = "<thead class=\"preview-table-head\">"+
-                    "<tr class = " + tableRowClass + ">" +
-                      "<th class=\"preview-th\" colspan=\"2\"> " + head + "</th>" +
-                    "</tr>" +
-                  "</thead>"
-      modalText += "<table class=\"preview-table-fill\">" +
-                   ( (head==false) ? "" : htags ) +
-                   "<tbody class=\"preview-table-hover\">"
-    }
-
-/*
-    // Function that builds a table corresponding to a task
-    var generateTaskEntries = function(singleTask, dynamic, t = -1, head = false, ignoreFiles = false, onlySingleFile = false) {
+    // Generate table for invariant parameters
+    var generateStaticTable = function( singleFileCase = false, genericCase = false) {
+      // Generate the title
+      modalText += "<strong>Parameters " +
+                     ((!singleFileCase && !genericCase) ? "for current task" : "that are constant across tasks") +
+                   "</strong><br>";
       // Start the table
-      startTable( head )
-      // Special case: only consider files in the 'single-file' entry (for the case where the task has only one file input)
-      if( onlySingleFile ){
-        modalText += addTableRow(singleName, allFiles[t])
-      } else {
-        // Loop over possible entries (i.e. parameter ids)
-        for( var i = 0; i < numIds; ++i ) {
-          var id = ids[i];
-          // Only consider active or required parameters
-          if( isActiveParam( id ) || $.inArray(id, reqed) != -1 ) {
-            // Need to ignore files for single case
-            if( ignoreFiles && ($.inArray(id, files) != -1) ){ continue; }
-            // Extract the values associated to that parameter (flags are given true)
-            var vals = ($.inArray(id, flags) != -1) ? "True" : getVals( id, true );
-            // Parameter name to put in the table
-            var prmName = names[i];
-            // Static section, multitask case
-            if( !singleTask && !dynamic ){
-              // Ignore cbcsvs
-              if( $.inArray(vals, cids) != -1 ){ continue; }
-            }
-            // Dynamic section, multitask case
-            if( !singleTask && dynamic){
-              // Ignore non-cbcsvs
-              if( $.inArray(vals, cids) == -1 ){ continue; }
-              // Get the current value by reading from the cbcsv
-              vals = cfmap[ cbcsvs[ cids.indexOf( vals ) ] ][t]
-            }
-            // Single task case (static section also ends here)
-            else {
-              // For files, get their names instead of their ids
-              vals = ($.inArray(id, files) == -1) ? vals : fileIdsToNames[vals]
-            }
-            modalText += addTableRow(prmName,vals);
-          }
-        }
-      }
-      // End the table
-      modalText += "</tbody> </table> <br>"
-    }
-*/
-// TODO special case with single input file
-
-    // Special case: single task present (no cbcsvs and more than one file input)
-    if( nTasks == 1 ) {
-      modalText += "<strong>Parameters for current task:</strong><br>";
-      // Start the table
-      startTable()
+      modalText += "<table class=" + tableFillClass + ">" + "<tbody class=" + tableBodyClass + ">";
       // Loop over possible entries (i.e. parameter ids)
       for( var i = 0; i < numIds; ++i ) {
         var id = ids[i];
         // Only consider active or required parameters
         if( isActiveParam( id ) || $.inArray(id, reqed) != -1 ) {
-          // Need to ignore files for single case
-//          if( ignoreFiles && ($.inArray(id, files) != -1) ){ continue; }
+          // Skip files in the single file special case
+          if( singleFileCase && ($.inArray(id, files) != -1) ) { continue; }
           // Extract the values associated to that parameter (flags are given true)
           var vals = ($.inArray(id, flags) != -1) ? "True" : getVals( id, true );
+          // Ignore cbcsvs in the generic case (they will be in the dynamic table)
+          if( genericCase && ($.inArray(vals, cids) != -1) ) { continue; }
           // Parameter name to put in the table
           var prmName = names[i];
-          // Single task case (static section also ends here)
           // For files, get their names instead of their ids
           vals = ($.inArray(id, files) == -1) ? vals : fileIdsToNames[vals]
           modalText += addTableRow(prmName, vals);
         }
       }
       // End the table
-      modalText += "</tbody> </table> <br>"
+      modalText += "</tbody> </table> <br>";
     }
-    // Otherwise, have static and dynamic sections to the preview
-    // Handles the single file multitask launch case or the cbcsv case
-    else {
-      // Generate text for static parameters
-      modalText += "<strong>Parameter values that are constant across tasks:</strong><br>";
-//      generateTaskEntries(false, false, -1, false, single != false, false);
-      // Start the table
-      startTable()
-      // Loop over possible entries (i.e. parameter ids)
-      for( var i = 0; i < numIds; ++i ) {
-        var id = ids[i];
-        // Only consider active or required parameters
-        if( isActiveParam( id ) || $.inArray(id, reqed) != -1 ) {
-          // Need to ignore files for single case
-//        if( ignoreFiles && ($.inArray(id, files) != -1) ){ continue; }
-          // Extract the values associated to that parameter (flags are given true)
-          var vals = ($.inArray(id, flags) != -1) ? "True" : getVals( id, true );
-          // Parameter name to put in the table
-          var prmName = names[i];
-          // Single task case (static section also ends here)
-          // For files, get their names instead of their ids
-          vals = ($.inArray(id, files) == -1) ? vals : fileIdsToNames[vals]
-          modalText += addTableRow(prmName, vals);
-        }
-      }
-      // End the table
-      modalText += "</tbody> </table> <br>"
-
-
-      // Generate text for the dynamic parameters
+    // Generate table for inter-task varying parameters
+    var generateDynamicTable = function( singleFileCase = true ) {
+      // Add the title
       modalText += "<strong>Parameter values that change across tasks:</strong><br><br>";
-      // Get the parameters with cbcsv entries
+      // Get parameters with cbcsv entries
       var iteratedParams = [];
       for( var i = 0; i < numIds; ++i ) {
         var id = ids[i];
@@ -1108,37 +1021,69 @@ $(function () {
           }
         }
       }
-      // Make the table header first
-      modalText += "<table class=\"preview-table-fill\">";
-      var head = "<thead class=\"preview-table-head\"><tr class = " + tableRowClass + ">", np = iteratedParams.length;
-      head += "<th class=\"preview-th\" colspan=\"1\">" + "Task" + "</th>";
-      for( var i = 0; i < np; ++i ){
-        head += "<th class=\"preview-th\" colspan=\"1\"> " + iteratedParams[i][1] + "</th>";
-      }
-      head += "</tr></thead><tbody>";
-      modalText += head;
-
-      // Fill in the dynamic table
-      var ncols = nCbcsvs, nrows = nTasks;
-      for( var i = 0; i < nrows; ++i ) {   // For each row,
-        modalText += "<tr class=" + tableRowClass + "><td class=" + tableTextClass + ">" + i + "</td>";
-        for( var j = 0; j < ncols; ++j ) { // generate a column per input
-          // Associated id
-          var currId  = iteratedParams[j][0];
-          // Get cbcsv in that id
-          var cbcsvId = getVals( currId, false )[0];
-          // Get cbcsv object and its associated files for that id
-          var cbcsvfs = cfmap[ fileIdsToNames[ cbcsvId ] ];
-          var currVal = cbcsvfs[i];
-          // Add column to current row
-          modalText  += "<td class=" + tableTextClass + ">" + currVal + "</td>";
+      // Now for the table head
+      modalText += "<table class=" + tableFillClass + "><thead class=" + tableHeadClass + ">" +
+                   "<tr class=" + tableRowClass + "><th class=" + tableThClass + ">Task</th>";
+      if( singleFileCase ) { // Only one parameter is being iterated over
+        modalText += "<th class=" + tableThClass + ">" + singleName + "</th>";
+      } else { // Need to generate a column for each parameter with a cbcsv
+        for( var i = 0; i < iteratedParams.length; ++i ) {
+          modalText += "<th class=" + tableThClass + ">" + iteratedParams[i][1] + "</th>";
         }
-        modalText += "</tr>"; // End current table row
       }
+      // And now the table body
+      modalText += "</tr></thead><tbody class=" + tableBodyClass + ">";
+      // Generate a table row per task (i.e. per file)
+      if( singleFileCase ) {
+        for( var t = 0, k = 0; t < allFiles.length; ++t ) {
+          // Skip rows that have a nil entry (they will not be launched)
+          if( allFiles[t] == '' ){ continue; }
+          // Otherwise, add a row for the task
+          modalText += addTableRow( ++k, allFiles[t] );
+        }
+      } else { // generic case
+        var ncols = nCbcsvs, nrows = nTasks;
+        for( var i = 0; i < nrows; ++i ) {   // For each row,
+          modalText += "<tr class=" + tableRowClass + "><td class=" + tableTextClass + ">" + i + "</td>";
+          for( var j = 0; j < ncols; ++j ) { // generate a column per input
+            // Associated id
+            var currId  = iteratedParams[j][0];
+            // Get cbcsv in that id
+            var cbcsvId = getVals( currId, false )[0];
+            // Get cbcsv object and its associated files for that id
+            var cbcsvfs = cfmap[ fileIdsToNames[ cbcsvId ] ];
+            // Add column to current row
+            modalText += "<td class=" + tableTextClass + ">" + cbcsvfs[i] + "</td>";
+          }
+          modalText += "</tr>"; // End current table row
+        }
+      }
+      // Close off the table
+      modalText += "</tbody> </table> <br>";
     }
 
-    // End the dynamic table
-    modalText += "</tbody> </table> <br>"; // "<tbody class=\"preview-table-hover\">";
+    ////* Actually draw the table now *////
+
+    /* Special case: single task present (no cbcsvs, with more than one file input) */
+    if( nTasks == 1 ) {
+      generateStaticTable();
+    }
+    /* Special case: single File-type input parameter present (all files are placed into that input and a task is launched for each). */
+    // Any cbcsv files present in that input are expanded to launch a task for each of their entries instead.
+    else if( single != false ) {
+      // Draw the static table, ignoring the cbcsvs among the inputs of the single file parameter
+      generateStaticTable( true )
+      // Draw the dynamic table, with a task (row) for each file in allFiles
+      generateDynamicTable();
+    }
+    /* Generic case: otherwise, add static and dynamic sections to the preview */
+    // Handles the single file multitask launch case or the cbcsv case
+    else {
+      // Generate table for static parameters, ignoring cbcsvs
+      generateStaticTable( false, true );
+      // Generate text for the dynamic parameters (i.e. with input cbcsvs)
+      generateDynamicTable( false );
+    }
 
     // Attach modal to preview button and display it
     $('.preview-div').append(
@@ -1154,10 +1099,10 @@ $(function () {
     $('.' + mcont).css('height', Math.round(window.innerHeight * 0.8) + 'px');
     // Attach closing listeners to it
     $('.' + mclose).click(function () {
-      $('.' + mdiv).remove(); // Removal if 'x' is clicked
+      $('.' + mdiv).remove();  // Removal if 'x' is clicked
     });
     $('.' + mdiv).click(function () {
-      $('.' + mdiv).remove(); // Removal if click outside
+      $('.' + mdiv).remove();  // Removal if click outside
     });
     $('.' + mcont).click(function (event) {
       event.stopPropagation(); // Prevent removal if click inside
@@ -1167,3 +1112,4 @@ $(function () {
 
 });
 </script>
+
