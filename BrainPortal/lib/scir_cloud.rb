@@ -153,6 +153,7 @@ class ScirCloud < Scir
       cbrain_task = CbrainTask.where(:cluster_jobid => jid).first
       if ScirCloud.is_vm_task?(cbrain_task)
         terminate_vm(cbrain_task.cluster_jobid)
+        # TODO terminate all the tasks in this VM and write a message in their log
       else
         pid = get_pid(jid)
         command = "kill -TERM #{pid}"
@@ -223,14 +224,15 @@ class ScirCloud < Scir
     end
     
     def create_job_id(vm_id,pid) #:nodoc:
-      raise "Error submissing job to VM #{vm_task.id}" if pid.to_s==""
       raise "\"#{pid}\" doesn't look like a valid PID" unless pid.to_s.is_an_integer?
       return "VM:#{vm_id}:#{pid}"
     end
 
     def schedule_task_on_vm(task)
       # TODO: make this method "synchronized" to avoid race conditions between workers
-      vms = CbrainTask.where(:type=>"CbrainTask::StartVM", :bourreau_id => task.bourreau_id).all
+      vms = CbrainTask.where(:type => "CbrainTask::StartVM",
+                             :bourreau_id => task.bourreau_id,
+                             :status => "On CPU").all
       tool_config = ToolConfig.find(task.tool_config_id)
       suitable_vms = vms.select { |x| 
         x.params[:disk_image ]   == tool_config.cloud_disk_image    &&
@@ -245,16 +247,21 @@ class ScirCloud < Scir
       }.sort!{ |a,b| b[1] <=> a[1] } # sorts VMs by increasing order of free slots
       raise "Cannot match task to VM." if suitable_vms.empty?
       vm_id = suitable_vms[0][0].id 
-      task.params[:vm_id] = vm_id
-      task.save!
+      tvma = TaskVmAllocation.new 
+      tvma.vm_id = vm_id
+      tvma.task_id = task.id
+      tvma.save!
       return vm_id
     end
 
     def get_number_of_free_slots_in_vm(vm_task)
-      all_tasks = CbrainTask.where(:status => BourreauWorker::ActiveTasks , :bourreau_id => vm_task.bourreau_id).all
-      n_tasks_in_vm = all_tasks.select { |x| 
-        x.params[:vm_id] == vm_task.id
+      active_tasks = CbrainTask.where(:status => BourreauWorker::ReadyTasks , :bourreau_id => vm_task.bourreau_id).all
+      active_task_ids = active_tasks.map { |x| x.id }
+      n_tasks_in_vm = TaskVmAllocation.all.select { |x| 
+        x.vm_id == vm_task.id &&
+        active_task_ids.include?(x.task_id)
       }.count
+      File.open("/tmp/vms.log", 'a') { |file| file.write("VM, id: #{vm_task.id}, active tasks: #{n_tasks_in_vm}\n") }
       return vm_task.params[:job_slots].to_i - n_tasks_in_vm
     end
   end

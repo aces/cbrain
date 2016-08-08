@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160218173528) do
+ActiveRecord::Schema.define(:version => 20160603192316) do
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -203,8 +203,8 @@ ActiveRecord::Schema.define(:version => 20160218173528) do
     t.string   "actres_host"
     t.integer  "actres_port"
     t.string   "actres_dir"
-    t.boolean  "online",                   :default => false, :null => false
-    t.boolean  "read_only",                :default => false, :null => false
+    t.boolean  "online",                       :default => false, :null => false
+    t.boolean  "read_only",                    :default => false, :null => false
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -215,8 +215,8 @@ ActiveRecord::Schema.define(:version => 20160218173528) do
     t.integer  "tunnel_mysql_port"
     t.integer  "tunnel_actres_port"
     t.string   "cache_md5"
-    t.boolean  "portal_locked",            :default => false, :null => false
-    t.integer  "cache_trust_expire",       :default => 0
+    t.boolean  "portal_locked",                :default => false, :null => false
+    t.integer  "cache_trust_expire",           :default => 0
     t.datetime "time_of_death"
     t.string   "time_zone"
     t.string   "site_url_prefix"
@@ -237,6 +237,9 @@ ActiveRecord::Schema.define(:version => 20160218173528) do
     t.string   "system_from_email"
     t.string   "external_status_page_url"
     t.string   "docker_executable_name"
+    t.string   "amazon_ec2_region"
+    t.string   "amazon_ec2_access_key_id"
+    t.string   "amazon_ec2_secret_access_key"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
@@ -305,6 +308,13 @@ ActiveRecord::Schema.define(:version => 20160218173528) do
   add_index "tags_userfiles", ["tag_id"], :name => "index_tags_userfiles_on_tag_id"
   add_index "tags_userfiles", ["userfile_id"], :name => "index_tags_userfiles_on_userfile_id"
 
+  create_table "task_vm_allocations", :force => true do |t|
+    t.string   "vm_id"
+    t.string   "task_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
   create_table "tool_configs", :force => true do |t|
     t.string   "version_name"
     t.text     "description"
@@ -318,6 +328,13 @@ ActiveRecord::Schema.define(:version => 20160218173528) do
     t.integer  "ncpus"
     t.string   "docker_image"
     t.string   "extra_qsub_args"
+    t.string   "cloud_disk_image"
+    t.string   "cloud_vm_user"
+    t.string   "cloud_ssh_key_pair"
+    t.string   "cloud_instance_type"
+    t.integer  "cloud_job_slots"
+    t.integer  "cloud_vm_boot_timeout"
+    t.integer  "cloud_vm_ssh_tunnel_port"
   end
 
   add_index "tool_configs", ["bourreau_id"], :name => "index_tool_configs_on_bourreau_id"

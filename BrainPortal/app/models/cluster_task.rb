@@ -1553,7 +1553,7 @@ class ClusterTask < CbrainTask
         # since this may change when new VMs are started.
         raise ex unless ex.message.include?("Cannot match task to VM.") 
         addlog(ex.message)
-        addlog("Putting task back to status \"New\"")
+        addlog("Putting task back to status \"New\".")
         # This is unfortunate but we have to move back to status 'New'
         # to give a chance to the task to be submitted again when
         # there are VMs available. It shouldn't be too annoying
