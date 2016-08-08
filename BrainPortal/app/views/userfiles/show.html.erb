@@ -231,7 +231,7 @@
 
         <% if @userfile.viewers.size > 1 %>
             Change view:
-            <%= select_tag "viewer", options_for_select(@userfile.viewers.map { |v| [v.name, v.name] }, @userfile.class.name.underscore),
+            <%= select_tag "viewer", options_for_select(@userfile.viewers.map { |v| [v.name, v.name] }, (@viewer.try(:name) || @userfile.class.name.underscore)),
                            :class        => :request_on_change,
                            "data-target" => "#userfile_viewer",
                            "data-url"    => display_userfile_path(@userfile)
