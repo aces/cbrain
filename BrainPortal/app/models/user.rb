@@ -94,6 +94,7 @@ class User < ActiveRecord::Base
   has_many                :remote_resources,  :dependent => :restrict
   has_many                :cbrain_tasks,      :dependent => :restrict
 
+  has_and_belongs_to_many :access_profiles
   has_and_belongs_to_many :groups
   belongs_to              :site
 
@@ -372,6 +373,61 @@ class User < ActiveRecord::Base
     end
     true
   end
+
+
+
+  ##############################################
+  # Access Profiles Adjustments
+  ##############################################
+
+  # Returns the list of group IDs
+  # from all the AccessProfiles associated with
+  # the current user.
+  def union_group_ids_from_access_profiles
+    aps = self.access_profiles
+    aps.inject([]) do |group_ids,ap|
+      group_ids += ap.group_ids  # union of all
+      group_ids
+    end
+  end
+
+  # Scans the list of AccessProfiles associated
+  # with the current user, and makes sure the user
+  # is a member of all the groups in all these profiles.
+  # If a list of +remove_group_ids+ is supplied,
+  # the user will be removed from these groups as
+  # long as they are not also in any of the AccessProfiles.
+  #
+  #
+  # Ex: given two access profiles with these (overlapping) group IDs:
+  #
+  #   ap1.group_ids = [ 11, 12, 13, 99,            ]
+  #   ap2.group_ids = [             99, 21, 22, 23 ]
+  #
+  # then assigning these two AccessProfiles and invoking the method:
+  #
+  #   user.access_profile_ids = [ ap1.id, ap2.id ]
+  #   user.apply_access_profiles()
+  #
+  # will result in the user being added to all 7 groups, exactly as
+  # if an assignement was performed like this:
+  #
+  #   user.group_ids += [ 11, 12, 13, 99, 21, 22, 23 ]
+  #
+  # To handle the case of AccessProfiles having LOST some group_ids,
+  # we can supply a list of removed group_ids in +remove_group_ids+ :
+  #
+  #   ap1.group_ids = [ 12, 13 ]  # we removed 11 and 99
+  #   user.apply_access_profiles( [ 11, 99 ] )
+  #
+  # will result in the user's list of groups to lose group 11 but NOT
+  # group 99, because it's present in ap2.
+  def apply_access_profiles(remove_group_ids: [])
+    gids = union_group_ids_from_access_profiles
+    self.group_ids = self.group_ids - remove_group_ids + gids # - and + are NOT COMMUTATIVE!
+  end
+
+
 
   protected
 

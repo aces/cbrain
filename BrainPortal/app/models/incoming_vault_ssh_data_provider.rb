@@ -29,6 +29,11 @@ class IncomingVaultSshDataProvider < VaultSshDataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # This returns the category of the data provider
+  def self.pretty_category_name #:nodoc:
+    "Incoming Vault"
+  end
+
   def is_browsable?(by_user = nil) #:nodoc:
     return true if by_user.blank? || self.meta[:browse_gid].blank?
     return true if by_user.is_a?(AdminUser) || by_user.id == self.user_id
@@ -56,11 +61,6 @@ class IncomingVaultSshDataProvider < VaultSshDataProvider
       remote_bash_this(mkdir_command)
       retry
     end
-  end
-  
-  # this returns the category of the data provider -- used in view for admins
-  def self.pretty_category_name
-    "Incoming Vault Types"
   end
 
 end

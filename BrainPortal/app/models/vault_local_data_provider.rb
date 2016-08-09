@@ -43,6 +43,11 @@ class VaultLocalDataProvider < LocalDataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # This returns the category of the data provider
+  def self.pretty_category_name #:nodoc:
+    "Vault"
+  end
+
   def cache_prepare(userfile) #:nodoc:
     SyncStatus.ready_to_modify_cache(userfile) do
       username  = userfile.user.login
@@ -56,12 +61,6 @@ class VaultLocalDataProvider < LocalDataProvider
     basename  = userfile.name
     username  = userfile.user.login
     Pathname.new(remote_dir) + username + basename
-  end
-
-  def cache_erase(userfile) #:nodoc:
-    SyncStatus.ready_to_modify_cache(userfile,:destroy) do
-      true
-    end
   end
 
   def impl_provider_list_all(user=nil) #:nodoc:
@@ -84,11 +83,6 @@ class VaultLocalDataProvider < LocalDataProvider
     rescue
       return false
     end
-  end
-  
-  # this returns the category of the data provider -- used in view for admins
-  def self.pretty_category_name
-    "Vault Types"
   end
 
   def impl_provider_report #:nodoc:
@@ -130,5 +124,6 @@ class VaultLocalDataProvider < LocalDataProvider
 
     super(issue)
   end
+
 end
 

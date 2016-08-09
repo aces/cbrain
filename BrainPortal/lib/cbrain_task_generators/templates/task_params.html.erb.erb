@@ -22,6 +22,10 @@
 #
 -%>
 
+<%% content_for :head do %>
+  <link href="/stylesheets/boutiques.css" media="all" rel="stylesheet" type="text/css" />
+<%% end %>
+
 <%%-
 # NOTE: This is a working template generated from a descriptor:
 # [Schema]         <%= schema['id'] %>
@@ -37,16 +41,28 @@
 -%>
 
 <%-
-  # Parameter groups
+  # Parameter types
   params   = descriptor['inputs'].dup
   required = params.select { |i| ! i['optional'] }
   optional = params.select { |i|   i['optional'] }
+  defaults = params.select { |i|   i['default-value']  }
+
+  # Parameter groups and maps
+  groups    = descriptor['groups'].dup rescue []
+  noGroups  = (groups.length == 0)
+  gIdToMbrs = groups.inject({}){ |m,v| m.merge( v["id"] => v["members"] ) }
+  gIdToPrms = gIdToMbrs.map { |k,v| [k, params.select{ |p| v.include? p["id"] }] }.to_h
 
   # Single input file case
   files       = params.select { |i| i['type'] == 'File' }
   single_file = files.first if files.count == 1 && ! files.any? { |f| f['list'] }
 -%>
 <%% input_files = Userfile.find_all_by_id(params[:interface_userfile_ids]) rescue [] %>
+
+<%-
+  # Lambda for checking group membership
+  whichGroup = lambda { |s| gIdToMbrs.select{ |v| gIdToMbrs[v].include? s }.first[0] rescue nil }
+-%>
 
 <%%#
   Generate a parameter label for HTML input with id +id+.
@@ -102,13 +118,13 @@
 <%% input_list = lambda do |id, name, values: nil, optional: false, placeholder: nil| %>
   <%%
     values = @task.params[name.to_sym] if name && values.nil?
-    values = ([values] unless values.is_a?(Enumerable)).compact
+    values = values.is_a?(Enumerable) ? values.compact : [values].compact
     first = values.pop
   %>
   <ul class="tsk-prm-list">
     <li>
       <%%
-        input.(id, name+"[]",
+        input.(id, name + "[]",
           value:       first,
           optional:    optional,
           placeholder: placeholder
@@ -189,7 +205,7 @@
   +nothing+ corresponds to the text displayed if +options+ is empty and
   +optional+ indicates if the parameter is optional (or not)
 %%>
-<%% dropdown = lambda do |id, name, options = [], nothing: '(Nothing to select)', optional: false| %>
+<%% dropdown = lambda do |id, name, options = [], nothing: '(Nothing to select)', optional: false, default: nil| %>
   <%% value = @task.params[name.to_sym] if name %>
   <%%
     input.(id, name,
@@ -212,17 +228,32 @@
       </span>
       <ul class="tsk-prm-sel-opt">
         <%% options.each do |value, label| %>
+         <%% if default.nil? %>
           <li data-value="<%%= value %>"><%%= label %></li>
+         <%% else %>
+          <%% dval = (default==value) ? " data-selected=\"true\"" : "" %>
+          <li data-value="<%%= value %>"<%%= dval %>><%%= label %></li>
+         <%% end %>
         <%% end %>
       </ul>
     <%% end %>
   </div>
 <%% end %>
 
+<%%# Generate a checkbox for a parameter grouping %>
+<%% groupCheckbox = lambda do |id, defaultChecked = false| %>
+  <input class='group-toggler'
+    type='checkbox'
+    id='<%%= id %>_chk'
+    <%%= 'checked=\'checked\'' if defaultChecked %>
+  />
+  <label for="<%%= id %>_chk"></label>
+<%% end %>
+
 <%%# Generate a parameter's description block for +desc+ %>
-<%% description = lambda do |desc| %>
+<%% description = lambda do |desc, isGroupMember = false| %>
   <span class="tsk-prm-desc">
-    <%%= desc %>
+    <%%= desc %><%%= "<br><br>".html_safe if isGroupMember %>
   </span>
 <%% end %>
 
@@ -235,7 +266,7 @@
 %%>
 
 <%# Generate a complete HTML block for a given parameter +param+ -%>
-<%- parameter = lambda do |param| -%>
+<%- parameter = lambda do |param, isGroupMember = false| -%>
   <%-
     id    = param['id']
     type  = param['type'].downcase.to_sym
@@ -245,6 +276,7 @@
   <%-
     classes  = [ 'tsk-prm', type.to_s ]
     classes << 'list' if list
+    classes << 'prm-grp-mbr' if isGroupMember
   -%>
     <%% id = '<%= id %>' %>
     <li class="<%%= id %> <%= classes.join(' ') %>">
@@ -314,16 +346,49 @@
           optional: <%= opt.to_s %>
     <%- end -%>
         )
-
+  <%- elsif type == :enum -%>
+    <% enumVals = param["enum-value-choices"] %>
+        # Enum value dropdown
+        dropdown.(id, id,
+          <%= enumVals.map { |v| [v, v] } %>,
+          optional: <%= opt %>,
+          default:  <%= "\"#{defaults.find { |d| d['id']==id }['default-value']}\"" rescue "nil" %>
+        )
   <%- end -%>
   <%- if param['description'] -%>
         # Description
-        description.(<<-'DESC')
+        description.(<<-'DESC',<%= isGroupMember %>)
           <%= param['description'] %>
         DESC
   <%- end -%>
-      %>
+     %>
     </li>
+<%- end -%>
+<%# Generate HTML for a group -%>
+<%- writeGroup = lambda do |group| -%>
+  <%-
+    # Get group parameters
+    id = group['id']
+    name = group['name']
+    groupDescription = group['description']
+    groupParams = gIdToPrms[id]
+    mbrs = gIdToMbrs[id]
+    defaultChecked = group['one-is-required'] || required.any? { |p| mbrs.include? p["id"] }
+  -%>
+  <div class="group <%= id %>">
+    <%# Write group header %>
+    <div style="border-bottom: 2px solid #bbbbbb; padding-bottom: 2px;">
+      <h3 style="border-width: 0px; margin: 0px; padding: 1px; padding-left: 0px;">
+        <%= name %> <%% groupCheckbox.('<%= id %>',<%= defaultChecked %>) %>
+      </h3>
+      <h5 style="font-size : 9.5pt; font-weight: normal; padding-top: 2px;" class="grp-desc">
+        <%= groupDescription %>
+      </h5>
+    </div><%%= "<br>".html_safe %>
+    <%# Write group parameters (required ones first) %>
+    <%- groupParams.each { |p| parameter.(p, true) if required.any? { |r| p["id"]==r["id"] } } -%>
+    <%- groupParams.each { |p| parameter.(p, true) if optional.any? { |t| p["id"]==t["id"] } } -%>
+  </div>
 
 <%- end -%>
 <div class="task-params">
@@ -331,8 +396,11 @@
   <%= name %> has no parameters.
   <%- else -%>
   <ul>
-    <%- required.each(&parameter) -%>
-    <%- optional.each(&parameter) -%>
+%   # Write info for ungrouped parameters
+    <%- for param in required do parameter.(param) if whichGroup.(param["id"]).nil? end -%>
+    <%- for param in optional do parameter.(param) if whichGroup.(param["id"]).nil? end -%>
+%   # Write info for grouped parameters
+    <%- groups.each(&writeGroup) unless noGroups  -%>
   </ul>
   <%- end -%>
 </div>
@@ -353,10 +421,282 @@ $(function () {
       .prop('checked', true);
   });
 
-  /* Optional parameters */
+  /*** Handle disables and requires relations between parameters ***/
+
+% #
+% # Make maps for which parameters disable/require each other
+% #
+% # Generates a map from id to [ids affected by the key id] for a given action name
+% makeActorActionMap = lambda do |action|
+%   params.inject({}){ |hmap,i| (res=i[action]) ? hmap.merge(i["id"]=>res) : hmap }
+% end
+% #
+% # Generates a map from id to [ids affecting the key id] for a given action name
+% makeReceiverActionMap = lambda do |action|
+%   doesMap = makeActorActionMap.(action)
+%   doneMap = doesMap.inject({}) do |map,(key,val)| # invert the relation above (active->passive)
+%     for v in val do
+%       if map[v].nil? then map[v] = [key] else map[v] << key end
+%     end
+%     map
+%   end
+% end
+% #
+% # The actual maps: idIn -> [ids disabled/required by idIn]
+% disabledBy_map = makeReceiverActionMap.("disables-inputs")
+% requires_map   = makeActorActionMap.("requires-inputs")
+% #
+% # Implement dynamic mutual exclusion within a group by pairwise adding to the disables map
+% for group in groups
+%   if group['mutually-exclusive']
+%     for mId in group['members']
+%       # Add all members of the group, except this one and ones already disabling it
+%       alreadyDisables = lambda { |id| (disabledBy_map[mId] || []).include? id }
+%       toAdd = group['members'].select{ |id| (id!=mId) && (! alreadyDisables.(id) ) }
+%       disabledBy_map[mId] = ( (disabledBy_map[mId] + toAdd) rescue toAdd )
+%     end
+%   end
+% end
+% #
+  /* Javascript dictionaries for names, disabledBy, and requires */
+% # Helper for producing a javascript version of the ruby map
+% jsMapOf = lambda do |hmap, numbers: false|
+%   n = hmap.size
+%   hmap.each_with_index do |(k,v),i|
+%    if v.is_a? Array
+      <%= "\"#{k}\" : [" + v.map{ |s| "\"#{s}\"" }.join(',') + "]" + ((i == n-1) ? '' : ',') %>
+%    elsif numbers # Don't quote numbers
+      <%= "\"#{k}\" : " + v.to_s + ((i == n-1) ? '' : ',') %>
+%    else
+      <%= "\"#{k}\" : \"" + v + "\"" + ((i == n-1) ? '' : ',') %>
+%    end
+%   end
+% end
+% #
+  var namesMap = {
+%   jsMapOf.( params.inject({}){ |hmap,x| hmap.merge( x["id"] => x["name"] ) } )
+  }
+  var requiresMap = {
+%   jsMapOf.(requires_map)
+  };
+  var disabledByMap = {
+%   jsMapOf.(disabledBy_map)
+  };
+
+%# Generate JS functions for handling disables/requires
+%#
+  // Function to map ids to names to make the messages a little prettier
+  var idToName = function(x){ return namesMap[x]; }
+
+  // Helper function that checks whether a given parameter is active
+  var isActiveParam = function(id) {
+    var targ = $( 'li.' + id + '.tsk-prm' );
+    if( targ.hasClass( 'flag' ) ){ // Flag case
+      return targ.find('.tsk-prm-chk').prop('checked');
+    }
+    return targ.find('.tsk-prm-opt').prop('checked'); // Non-flag case
+  }
+
+  // Helper for checking array containment because JS won't let you use 'in' for arrays in a useful way
+  var arrHas = function(arr,val){
+    return ($.inArray(val,arr) > -1)
+  }
+
+  // Warning message style written to tell the user when/why something is disabled or wrong
+  var warningStyle = 'style="display: block; float: right; font-style: normal; font-weight: normal; ' +
+                     'font-size: 0.95em; color: rgb(255,50,50); margin-right: 17pt"';
+
+  /*
+   * Disables the targets of every active parameter within its disables list
+   * Also disables parameters whose required parameters are inactive, unless it
+   * is a mutual required relation.
+   */
+  function handleDisablesAndRequires() {
+
+    // Function for disabling/enabling parameters
+    var toggleFunctionality = function(target, shouldDisable, greyOutMsg){
+      var lightGrey   = '#d3d3d3'; // Firefox does not grey out disabled html elements
+      // Selector classes
+      var toGreyOut   = '.tsk-prm-in, .tsk-prm-opt-lbl, .tsk-prm-chk-lbl, .tsk-prm-sel';
+      var toDisable   = '.tsk-prm-in, .tsk-prm-opt, .tsk-prm-chk';
+      var iconClasses = '.tsk-prm-opt-icon.ui-icon-check, .tsk-prm-sel-icon, .tsk-prm-add.ui-icon';
+      // Disable and grey out text, file, & flag inputs, as well as their checkboxes
+      target.find( toGreyOut ).css('background-color', shouldDisable ? lightGrey : '');
+      target.find( toDisable ).attr('disabled', shouldDisable);
+      // For lists and files, toggle the ability to add more entries or change selections
+      target.find('.tsk-prm-add.ui-icon,.tsk-prm-sel').css("pointer-events",shouldDisable?"none":"auto");
+      // Erase the warning message: if one is needed it will be rewritten below
+      target.find('.tsk-prm-lbl').find('label.disable-msg').remove();
+      // Handle properties treated differently in each toggle case
+      if( shouldDisable ){
+        target.find( iconClasses ).addClass('ui-state-disabled'); // disable icons
+        target.find('.tsk-prm-opt, .tsk-prm-chk').prop('checked', false); // uncheck checkboxes
+        target.find('.tsk-prm-in').val(''); // wipe textbox input areas
+        target.find('ul.tsk-prm-list').find('li').has('.ui-icon-minus').remove(); // rm list subitems
+        // Write warning message
+        var msg   = '<label class="disable-msg" ' + warningStyle + '>' + greyOutMsg  + '</label>';
+        target.find('.tsk-prm-lbl').append( msg );
+      }
+      else {
+        target.find( iconClasses ).removeClass('ui-state-disabled') // put icons in enabled state
+      }
+    }
+
+    // Get combined keyset of potentially affected parameters
+    var affectedIds = $.unique(Object.keys(disabledByMap).concat(Object.keys(requiresMap)));
+    // Run twice because the order matters: a param can be wrongly disabled if it is processed before its
+    // disabler is deactivated
+    affectedIds = affectedIds.concat( affectedIds.slice() )
+
+    // Iterate over parameters, enabling and disabling as needed
+    affectedIds.forEach( function( key ) {
+
+      // Handle targeted disabling
+      var disablers = [];
+      if( key in disabledByMap ){
+        var vals = disabledByMap[key], len = vals.length;
+        // Look for disabling parameters
+        for(var i = 0; i < len; ++i){
+          if( isActiveParam(vals[i]) ){
+            disablers.push(vals[i]);
+          }
+        }
+      }
+
+      // Handle parameter requirements (excludes parameters with mutual requirement)
+      var missingReqs = [];
+      if( key in requiresMap ){
+        var vals = requiresMap[key], n = vals.length;
+        for(var i = 0; i < n; ++i){
+          // If the required parameter is not checked (active)
+          if( ! isActiveParam(vals[i]) ){
+            // If the required parameter does not require the current target parameter
+            if( ( ! (vals[i] in requiresMap) ) || requiresMap[vals[i]].indexOf(key) == -1 ){
+              missingReqs.push( vals[i] ); // Then add it to our set of missing requirements
+            }
+          }
+        }
+      }
+
+      /* Perform disablings/enablings */
+      // Disable the parameter is any of its disablers are on
+      var target = $( 'li.' + key + '.tsk-prm' );
+      if(disablers.length != 0){
+        toggleFunctionality(target, true, "Disabled by " + disablers.map(idToName).join(", "));
+      }
+      // Disable the parameter if it is missing any of its requirements
+      else if(missingReqs.length != 0){
+        toggleFunctionality(target, true, "Requires " + missingReqs.map(idToName).join(", "));
+      }
+      // Otherwise, enable the parameter
+      else {
+        toggleFunctionality(target, false, "");
+      }
+
+    });
+
+  }
+
+  /*** Handle constraints on numerical parameters ***/
+% #
+% # Make lists of which parameters are affected by which constraints
+% mins = params.select { |p| p['type'] == 'Number' && p['minimum'] }
+% maxs = params.select { |p| p['type'] == 'Number' && p['maximum'] }
+% ints = params.select { |p| p['type'] == 'Number' && p['integer'] }
+  /* Maps and lists of constrained parameters */
+  var mins = {
+%   jsMapOf.( mins.inject({}){ |hmap,x| hmap.merge( x["id"] => x["minimum"] ) }, numbers: true )
+  };
+  var maxs = {
+%   jsMapOf.( maxs.inject({}){ |hmap,x| hmap.merge( x["id"] => x["maximum"] ) }, numbers: true )
+  };
+
+  var ints     = [<%= ints.map{ |v| "\"#{v['id']}\"" }.join(",") %>];
+  var exclMins = [<%= mins.select{ |p| p['exclusive-minimum'] }.map{ |v| "\"#{v['id']}\"" }.join(",") %>];
+  var exclMaxs = [<%= maxs.select{ |p| p['exclusive-maximum'] }.map{ |v| "\"#{v['id']}\"" }.join(",") %>];
+
+
+  /* Adds warnings to number parameters that violate number constraints */
+  function handleNumberConstraints() {
+
+    // Warning message properties
+    var cssType = 'num-warning-msg';
+
+    // Helper for adding or removing warnings
+    var toggleNumberConstraintWarning = function(target, shouldAdd, msg){
+      // Remove the (old) warning message
+      target.find('.tsk-prm-lbl').find('label.' + cssType).remove();
+      // Add a warning message
+      if( shouldAdd ) {
+        var formattedMsg = '<label class="'+ cssType + '" ' + warningStyle + '>' + msg  + '</label>';
+        target.find('.tsk-prm-lbl').append( formattedMsg );
+      }
+    }
+
+    // Helper for checking whether strings are integers
+    var isInt = function( n ){ return /^[-]?[0-9]+$/.test(n+''); }
+
+    // Get combined keyset of potentially affected parameters
+    var targs = $.unique(Object.keys(mins).concat(Object.keys(maxs).concat( ints )));
+
+    // Handle min and max violations
+    targs.forEach( function( key ) {
+
+      // Read in the current target value(s)
+      var target   = $( 'li.' + key + '.tsk-prm' );
+      var subtargs = target.find('.tsk-prm-in').map( function(){ return $(this).val(); } );
+      var targNum  = subtargs.length;
+
+      // Remove warnings and leave for inactive parameters
+      if( ! isActiveParam( key ) ){
+        toggleNumberConstraintWarning( target, false, "" );
+        return;
+      }
+
+      // Loop over possible targets (allows this approach to work for checking lists)
+      for( var i = 0; i < targNum; ++i ) {
+        // Get current value
+        var currval = parseFloat( subtargs[i] );
+        // Handle min violations
+        if( arrHas(exclMins,key) && currval <= mins[ key ] ){
+          toggleNumberConstraintWarning( target, true, "Warning! Exclusive min parameter value is " + mins[ key ] );
+        }
+        else if( key in mins && currval < mins[ key ] ){
+          toggleNumberConstraintWarning( target, true, "Warning! Min parameter value is " + mins[ key ] );
+        }
+        // Handle max violations
+        else if( arrHas(exclMaxs,key) && currval >= maxs[ key ] ){
+          toggleNumberConstraintWarning( target, true, "Warning! Exclusive max parameter value is " + maxs[ key ] );
+        }
+        else if( key in maxs && currval > maxs[ key ] ){
+          toggleNumberConstraintWarning( target, true, "Warning! Max parameter value is " + maxs[ key ] );
+        }
+        // Handle integer violations
+        else if( arrHas(ints,key) && ! isInt( subtargs[i] ) ){
+          toggleNumberConstraintWarning( target, true, "Warning! Parameter value must be an integer" );
+        }
+        // If no errors occurred, destroy any prior existing errors
+        else{
+          toggleNumberConstraintWarning( target, false, "" );
+        }
+        // Leave if an error is present (avoid list error suppression)
+        if( target.find( 'label.' + cssType ).length > 0 ){ return; }
+      }
+
+    });
+
+  }
+
+  /* Permit real-time updates to the number warnings */
+  parameters.delegate('.tsk-prm-in', 'keyup', function() {
+    handleNumberConstraints();
+  })
+
+
+  /*** Optional parameters ***/
 
   /* Clicking on the parameter's checkbox toggles the parameter's state */
-  parameters.delegate('.tsk-prm-opt', 'change activate.tsk-prm', function () {
+  parameters.delegate('.tsk-prm-opt, .tsk-prm-chk', 'change activate.tsk-prm', function () {
     var opt   = $(this),
         param = opt.parent();
 
@@ -367,9 +707,6 @@ $(function () {
     if (opt.prop('checked')) {
       param.find('.tsk-prm-in').each(function () {
         var name = $(this).data('name');
-
-        /* Lists need to be sent with [] for proper server-side handling */
-        if (param.hasClass('list')) name += '[]';
 
         $(this).attr('name', name);
       });
@@ -396,6 +733,13 @@ $(function () {
         .slice(1)
         .remove();
     }
+
+    /* Check for disables/requires updates */
+    handleDisablesAndRequires();
+
+    /* Add warnings for violations of number constraints */
+    handleNumberConstraints();
+
   });
 
   /* Changing a parameter's value automatically marks it as active */
@@ -451,7 +795,7 @@ $(function () {
   /* Add/remove buttons for list parameters */
 
   /* Clicking on a '+' button adds a new value row and enables the parameter */
-  parameters.delegate('.tsk-prm-add', 'click', function () {
+  parameters.delegate('.tsk-prm-add.ui-icon-plus', 'click', function () {
     var name = $(this)
       .siblings('.tsk-prm-in')
       .attr('name');
@@ -474,8 +818,19 @@ $(function () {
       .trigger('activate.tsk-prm');
   });
 
+  /* Toggling groups */
+  (function (fcn) {
+    $('.group-toggler').each(fcn).change(fcn);
+  })(function () {
+    $(this)
+      .parent() // header (3)
+      .parent() // inner div
+      .siblings('.prm-grp-mbr, .grp-desc')
+      .toggle( $(this).prop('checked') );
+  });
+
   /* Clicking on a '-' button removes the row */
-  parameters.delegate('.tsk-prm-rm', 'click', function () {
+  parameters.delegate('.tsk-prm-rm, .ui-icon-minus', 'click', function () {
     $(this)
       .closest('li')
       .remove();

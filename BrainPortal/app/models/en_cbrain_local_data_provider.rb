@@ -48,8 +48,9 @@ class EnCbrainLocalDataProvider < LocalDataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  def allow_file_owner_change? #:nodoc:
-    true
+  # This returns the category of the data provider
+  def self.pretty_category_name #:nodoc:
+    "Enhanced CBRAIN"
   end
 
   def cache_prepare(userfile) #:nodoc:
@@ -76,13 +77,6 @@ class EnCbrainLocalDataProvider < LocalDataProvider
     Pathname.new(remote_dir) + threelevels[0] + threelevels[1] + threelevels[2] + basename
   end
 
-  # Will actually not do anything except record that all is 'fine' with the SyncStatus entry of the file.
-  def cache_erase(userfile)
-    SyncStatus.ready_to_modify_cache(userfile,:destroy) do
-      true
-    end
-  end
-
   def impl_provider_erase(userfile)  #:nodoc:
     fullpath = cache_full_path(userfile) # actually real path on DP
     parent1  = fullpath.parent
@@ -104,11 +98,6 @@ class EnCbrainLocalDataProvider < LocalDataProvider
     newpath   = oldparent + newname
     return false unless FileUtils.move(oldpath.to_s,newpath.to_s)
     true
-  end
-  
-  # this returns the category of the data provider -- used in view for admins
-  def self.pretty_category_name
-    "Enhanced CBRAIN Types"
   end
 
   def impl_provider_report #:nodoc:

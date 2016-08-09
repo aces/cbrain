@@ -110,7 +110,7 @@ namespace :cbrain do
     ##########################################################################
     desc "Create the symbolic links for public assets of installed CBRAIN tasks and userfiles."
     ##########################################################################
-    task :public_assets do
+    task :public_assets => :environment do
 
       puts "Adjusting paths to public assets for tasks and userfiles..."
 
@@ -122,10 +122,11 @@ namespace :cbrain do
       # Unfortunately we don't have access to cbrain.rb where some useful constants are defined in the
       # CBRAIN class, such as CBRAIN::TasksPlugins_Dir ; if we ever change where plugins are stored, we
       # have to update this here and the cbrain.rb file too.
-      plugins_dir           = Rails.root            + "cbrain_plugins"
-      installed_plugins_dir = plugins_dir           + "installed-plugins"
-      tasks_plugins_dir     = installed_plugins_dir + "cbrain_task"
-      userfiles_plugins_dir = installed_plugins_dir + "userfiles"
+      plugins_dir             = Rails.root            + "cbrain_plugins"
+      installed_plugins_dir   = plugins_dir           + "installed-plugins"
+      tasks_plugins_dir       = installed_plugins_dir + "cbrain_task"
+      userfiles_plugins_dir   = installed_plugins_dir + "userfiles"
+      descriptors_plugins_dir = installed_plugins_dir + "cbrain_task_descriptors"
 
       Dir.chdir(public_userfiles) do
         userfiles_public_dirs = Dir.glob(userfiles_plugins_dir + "*/views/public")
@@ -164,6 +165,30 @@ namespace :cbrain do
           end
           puts "-> Creating assets symbolic link for task '#{taskname}'."
           File.symlink(relpath,taskname)  # "diagnostics" -> "../(...)/cbrain_plugins/installed-plugins/cbrain_tasks/diagnostics/views/public"
+        end
+      end
+
+      # Generate help files for Boutiques tasks
+      # Note: changes here should be synced with SchemaTaskGenerator if necessary
+      Dir.chdir(descriptors_plugins_dir) do
+        helpFileDir = File.join( "cbrain_plugins", "cbrain_tasks", "help_files/" )
+        basePath    = Rails.root.join( File.join('public/', helpFileDir) )
+        FileUtils.mkdir_p( basePath.to_s ) # creates directory if needed
+        schema = SchemaTaskGenerator.default_schema # read in the Boutiques schema
+        # For each JSON decriptor of a tool, write a help file
+        Dir.glob("*").select { |f| f.end_with? '.json' }.each do |f|
+          absFile = File.absolute_path(f.to_s)
+          # Generate the task from the templates and JSON descriptor
+          generatedTask = SchemaTaskGenerator.generate(schema, absFile)
+          helpFileName  = SchemaTaskGenerator.classify(generatedTask.name) + "_help.html"
+          helpFilePath  = basePath.join(helpFileName).to_s
+          # Prevent broken symlinks from stopping the whole rake task
+          next unless File.exist?(File.realpath( absFile ))
+          # Write the help file
+          File.open( helpFilePath , "w" ){ |h|
+            h.write( generatedTask.source[:edit_help] )
+          }
+          FileUtils.chmod(0775, helpFilePath)
         end
       end
 

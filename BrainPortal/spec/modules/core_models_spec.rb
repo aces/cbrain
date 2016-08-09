@@ -29,7 +29,7 @@ describe "CoreModels" do
 
   describe "#core_model!" do
     it "should not allow model to be destroyed if called" do
-      expect { core_model.destroy }.to raise_error
+      expect { core_model.destroy }.to raise_error(CbrainDeleteRestrictionError)
     end
 
     it "should allow model to be destroyed if not called" do

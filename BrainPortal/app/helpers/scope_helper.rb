@@ -480,7 +480,7 @@ module ScopeHelper
     # hash (<value> => [<filter>]) and append the generated counts to each
     # value in the base filter set
     view_filters = filter_values_for(
-      scopes.inject(view) { |v, s| s.apply(v) },
+      scopes.inject(view) { |v, s| s.apply(v, sorting: false) },
       attribute,
       association: association,
       format: lambda { |x| x }
@@ -681,13 +681,10 @@ module ScopeHelper
     # Fetch the main filter values as an array of arrays:
     # [[value, label, count], [...]]
     model
-      .where("#{attribute} IS NOT NULL")
       .order(label, attribute)
       .group(attribute, label)
       .raw_rows(attribute, "#{label} AS #{label_alias}", "COUNT(#{attribute})")
       .reject { |r| r.first.blank? }
-      .map(&:to_a)
-      .to_a
   end
 
   # Fetch the possible values (and their count) for +attribute+ within

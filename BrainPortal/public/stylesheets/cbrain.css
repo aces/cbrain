@@ -246,7 +246,6 @@ div.vertical_text {
   height: auto;
   margin: auto;
   text-align: left;
-/* background-color: pink; */
   transform:                translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
   transform-origin:         0% 0%;
   -webkit-transform:        translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
@@ -272,7 +271,6 @@ div.down_vertical_text {
   height: auto;
   margin: auto;
   text-align: left;
-/* background-color: pink; */
   transform:                translate(0%, -100%) rotate(90deg) translate(0%, 0%);
   transform-origin:         0% 100%;
   -webkit-transform:        translate(0%, -100%) rotate(90deg) translate(0%, 0%);
@@ -293,7 +291,6 @@ div.down_vertical_text2 {
   margin: auto;
   text-align: right;
   direction: rtl;
-/* background-color: pink; */
   transform:                translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
   transform-origin:         100% 0%;
   -webkit-transform:        translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
@@ -1115,20 +1112,36 @@ pre {
   font-size: 4em;
 }
 
+.project_select_dropdown .title {
+  font-size: 18px;
+  width: 100%;
+  color: white;
+  background: #0471b4;
+  margin: 0;
+  text-align: center;
+  padding: 0 0 0.3em 0;
+}
+
 .project_select_dropdown {
-  border: 3px solid #05A3D6;
-  background-color: #F1F1F1;
-  padding: 0.2em 1em 1em 1em;
-  margin-top: 0.2em;
-  text-align: left;
+  border: 0.2em solid #0471b4;
+  background-color: white;
   max-height: 15em;
-  overflow-y: auto;
   white-space: nowrap;
 }
 
-.project_select_dropdown a{
-  font-size: 0.7em;
+.project_select_dropdown a {
+  font-size: 0.5em;
   color: #222!important;
+  padding: 0.5em 0em 0.5em 0.5em;
+  min-width: 160px;
+  text-align: left;
+  display: block;
+  margin: 0;
+  border-radius: 0;
+}
+
+.project_select_dropdown:hover {
+    background-color: #F1F1F1;
 }
 
 
@@ -2081,6 +2094,19 @@ img {
 }
 
 /* % ######################################################### */
+/* % Access Profiles styling */
+/* % ######################################################### */
+
+.access_profile_label {
+  border: none;
+  border-radius: 0.5em;
+  box-shadow: 0px 0px 4px black inset;
+  padding: 0.5em;
+  margin: 0.5em;
+  display: table-cell;
+}
+
+/* % ######################################################### */
 /* % Table for user checkboxes for Groups and Sites  */
 /* % ######################################################### */
 
@@ -2171,14 +2197,6 @@ img {
   width: 30em;
 }
 
-#new_model .ui-button-icon-secondary {
-  display: none;
-}
-
-#new_model .ui-button-text {
-  padding: .4em 1em;
-}
-
 /* % ######################################################### */
 /* % QC styling */
 /* % ######################################################### */
@@ -2190,6 +2208,28 @@ img {
 .qc_panel {
   padding: 0em 1em 1em 1em;
   border: 0.2em solid #05A3D6;
+}
+
+/* % ######################################################### */
+/* % Color picker styling */
+/* % ######################################################### */
+
+#cb_colorpick {
+  border: none;
+  padding: 0;
+}
+
+#cb_colorpick tr {
+  border: none;
+  padding: 0;
+}
+
+#cb_colorpick tr td {
+  border: none;
+  width: 1.5em;
+  height: 1.5em;
+  padding: 0;
+  margin: 0;
 }
 
 /* % ######################################################### */

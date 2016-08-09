@@ -89,8 +89,6 @@ class DataProvidersController < ApplicationController
                                 )
 
     @typelist = get_type_list
-
-    render :partial => "new"
   end
 
   def create #:nodoc:
@@ -103,16 +101,16 @@ class DataProvidersController < ApplicationController
       @provider.addlog_context(self,"Created by #{current_user.login}")
       flash[:notice] = "Provider successfully created."
       respond_to do |format|
-        format.js   { redirect_to :action => :index, :format => :js  }
+        format.html { redirect_to :action => :index, :format => :html}
         format.xml  { render :xml   => @provider }
         format.json { render :json  => @provider }
       end
     else
       @typelist = get_type_list
       respond_to do |format|
-        format.js   { render :partial  => "shared/failed_create", :locals => {:model_name => "data_provider"} }
-        format.xml  { render :xml      => @provider.errors, :status  => :unprocessable_entity }
-        format.json { render :json     => @provider.errors, :status  => :unprocessable_entity }
+        format.html { render :action => :new }
+        format.xml  { render :xml  => @provider.errors, :status => :unprocessable_entity }
+        format.json { render :json => @provider.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -187,10 +185,12 @@ class DataProvidersController < ApplicationController
     end
   end
 
-  # Returns information about the aliveness of +dataprovider+.
+  # Returns information about the aliveness of +dataprovider+. First checks if a result for this
+  #+dataprovider+ has been cached, if not it checks directly and updates the cache
   def is_alive
     @provider = DataProvider.find_accessible_by_user(params[:id], current_user)
-    is_alive =  @provider.is_alive?
+
+    is_alive = @provider.is_alive_with_caching?
 
     respond_to do |format|
       format.html { render :text => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }
@@ -814,10 +814,13 @@ class DataProvidersController < ApplicationController
   private
 
   def get_type_list #:nodoc:
-    data_provider_list = (check_role(:site_manager) || check_role(:admin_user)) ? DataProvider.descendants.map(&:name).sort : %w{ SshDataProvider }     
+    data_provider_list = [ "FlatDirSshDataProvider" ]
+    if check_role(:site_manager) || check_role(:admin_user)
+      data_provider_list = DataProvider.descendants.map(&:name)
+    end
     grouped_options = data_provider_list.hashed_partitions { |name| name.constantize.pretty_category_name }
     grouped_options.delete(nil) # data providers that can not be on this list return a category name of nil, so we remove them
-    grouped_options.to_a
+    grouped_options.keys.sort.map { |type| [ type, grouped_options[type].sort ] }
   end
 
   # Quick/small methods to avoid duplication in register/unregister/delete

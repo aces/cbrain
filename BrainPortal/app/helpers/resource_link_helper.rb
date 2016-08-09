@@ -17,14 +17,14 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Helpers for resource links.
 module ResourceLinkHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   # Creates a link to the show page of a +userfile+, as long
   # as the +cur_user+ has access to it. By default, +cur_user+ is
   # current_user.
@@ -136,7 +136,7 @@ module ResourceLinkHelper
   end
 
   # This method works like link_to_group_if_accessible() except that
-  # the link is created only if the group is a WorkGroup. 
+  # the link is created only if the group is a WorkGroup.
   # The first argument MUST be an actual group.
   # The link created will be to the edit page of the group.
   def link_to_group_if_editable(group, cur_user = current_user, options = {})
@@ -187,6 +187,27 @@ module ResourceLinkHelper
   # :path (the default is the show path).
   def link_to_task_if_accessible(task, cur_user = current_user, options = {})
     link_to_model_if_accessible(CbrainTask,task,:name,cur_user,options)
+  end
+
+  # Creates a link to the show page of an +access_profile+, as long
+  # as the +cur_user+ has access to it. By default, +cur_user+ is
+  # current_user.
+  #
+  # +access_profile+ can be provided as an ID too.
+  #
+  # If the ID is nil, then the string
+  #   "(None)"
+  # will be returned.
+  #
+  # If the ID is invalid, the string
+  #   "(Deleted/Non-existing)"
+  # will be returned.
+  #
+  # +options+ can contain a :name for
+  # the link (the default is the profile's name) and a
+  # :path (the default is the show path).
+  def link_to_access_profile_if_accessible(access_profile, cur_user = current_user, options = {})
+    link_to_model_if_accessible(AccessProfile,access_profile,:name,cur_user,options)
   end
 
   # Implements the link_to_{SOMETHING}_if_available() methods

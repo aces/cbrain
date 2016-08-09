@@ -51,6 +51,7 @@ class Group < ActiveRecord::Base
 
   has_many                :tools
   has_and_belongs_to_many :users
+  has_and_belongs_to_many :access_profiles
   has_many                :userfiles
   has_many                :data_providers
   has_many                :remote_resources

@@ -24,8 +24,7 @@ require 'rails_helper'
 
 describe User do
 
-  let(:normal_user) { create(:normal_user, :encrypted_password) }
-
+  let(:normal_user) { create(:normal_user, :encrypted_password, password: "1Password!", password_confirmation: "1Password!") }
 
   describe "#validate" do
 
@@ -132,7 +131,7 @@ describe User do
 
 
   describe "#self.all_admins" do
-    let!(:admin) {create(:admin_user, :login => "admin_user2")}
+    let!(:admin)      {create(:admin_user, :login => "admin_user2")}
     let!(:admin_user) {create(:admin_user, :login => "admin_user")}
 
     it "should return all users with role admin" do
@@ -306,7 +305,7 @@ describe User do
 
 
 
-  describe "#autheticated?" do
+  describe "#authenticated?" do
 
     it "should changed the password encryption if crypted_password is in SHA1" do
         normal_user.crypted_password = User.encrypt_in_sha1(normal_user.password,normal_user.salt)
@@ -377,7 +376,7 @@ describe User do
     end
 
     it "should raise exception if role isn't equal self.type" do
-      expect { normal_user.has_role?(normal_user.type + "other") }.to raise_error
+      expect { normal_user.has_role?(normal_user.type + "other") }.to raise_error(NameError, /uninitialized constant/)
     end
 
   end
@@ -613,7 +612,7 @@ describe User do
 
     it "should raise error if when try to destroy admin" do
       admin = User.admin
-      expect{ admin.destroy }.to raise_error
+      expect{ admin.destroy }.to raise_error(ActiveRecord::DeleteRestrictionError, /Cannot delete record/)
     end
 
   end
@@ -693,6 +692,46 @@ describe User do
       expect(site_users).to receive(:<<).with(normal_user)
       normal_user.save!
     end
+  end
+
+  context "access profiles" do
+
+    # User 'A', Group 'A' and AP 'A' all link together
+    let(:user_a)  { create(:normal_user,    :login => "U_A") }
+    let(:group_a) { create(:work_group,     :name  => "G_A",  :user_ids => [ user_a.id ] ) }
+    let(:ap_a)    { create(:access_profile, :name  => "AP_A", :user_ids => [ user_a.id ], :group_ids => [ group_a.id ] ) }
+
+    # User 'A', Group 'B' and AP 'B' all link together
+    let(:group_b) { create(:work_group,     :name  => "G_B",  :user_ids => [ user_a.id ] ) }
+    let(:ap_b)    { create(:access_profile, :name  => "AP_B", :user_ids => [ user_a.id ], :group_ids => [ group_b.id ] ) }
+
+    # User A is in Group O, not in any AP
+    let(:group_o) { create(:work_group,     :name  => "G_Oth", :user_ids  => [ user_a.id ] ) }
+
+    describe "#union_group_ids_from_access_profiles" do
+      it "should iterate over all access_profiles" do
+        expect(user_a).to receive(:access_profiles).and_return([ ap_a, ap_b ])
+        expect(ap_a).to   receive(:group_ids).and_return([ group_a.id ])
+        expect(ap_b).to   receive(:group_ids).and_return([ group_b.id ])
+        expect(user_a.union_group_ids_from_access_profiles).to match_array( [ group_a.id, group_b.id ] )
+      end
+    end
+
+    describe "#apply_access_profiles" do
+      it "should build a list of all groups IDs of all profiles" do
+        allow(user_a).to receive(:union_group_ids_from_access_profiles).and_return( [ group_a.id, group_b.id ] )
+        user_a.apply_access_profiles(remove_group_ids: [])
+        expect(user_a.group_ids - [ Group.everyone.id, user_a.own_group.id ]).to match_array( [ group_a.id, group_b.id ] )
+      end
+      it "should remove groups IDs unless they are in a profile" do
+        allow(user_a).to receive(:union_group_ids_from_access_profiles).and_return( [ group_a.id, group_b.id ] )
+        user_a.group_ids          = [ group_a.id, group_o.id ]
+        user_a.access_profile_ids = [ ap_a.id, ap_b.id ]
+        user_a.apply_access_profiles(remove_group_ids: [ group_a.id, group_o.id ])
+        expect(user_a.group_ids).to match_array( [ group_a.id, group_b.id ] )
+      end
+    end
+
   end
 
 end

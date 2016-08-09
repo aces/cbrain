@@ -1,0 +1,93 @@
+
+<%
+  # This partial renders a simple color picker
+  #
+  # It has the ability to change elements in the current page
+  # when users click on the color boxes. Elements to change
+  # simply need to be assigned one of four classes:
+  #
+  # Class                        Effect
+  # ---------------------------- -------------------------------------
+  # cb_colorpick_fg_target       text color adjusted
+  # cb_colorpick_bg_target       bacground color adjusted
+  # cb_colorpick_html_target     inner HTML replaced with color
+  # cb_colorpick_val_target      attribute 'value' gets color as value
+  #
+  # Behavior control:
+  #
+  # Some ruby local variables can be set to control the layout:
+  #
+  #   step   = 30    # hues steps over 360 degrees; 30 means 12 hues
+  #   pale   = true  # show the 'pale' rows of colors
+  #   normal = true  # show the 'normal' rows of colors
+  #   dark   = true  # show the 'dark' rows of colors
+  #   greys  = true  # show the 'greyscale' rows of colors
+  #
+  # Test code:
+  #
+  # <input class="cb_colorpick_val_target" type="text" value="InputValue" name="dummy">
+  # <br>
+  # <span class="cb_colorpick_fg_target">Foreground</span>
+  # <br>
+  # <span class="cb_colorpick_bg_target">Background</span>
+  # <br>
+  # <span class="cb_colorpick_html_target">HtmlContent</span>
+  # <br>
+%>
+
+<%
+   step     = 30   if ! defined?(step)   || step.nil?
+   pale     = true if ! defined?(pale)   || pale.nil?
+   normal   = true if ! defined?(normal) || normal.nil?
+   dark     = true if ! defined?(dark)   || dark.nil?
+   greys    = true if ! defined?(greys)  || greys.nil?
+
+   hues = (0..359).step(step).to_a
+   sls  = []
+   sls  <<  [ 100, 85 ] if pale
+   sls  <<  [ 100, 50 ] if normal
+   sls  <<  [  50, 50 ] if dark
+%>
+
+<table id="cb_colorpick">
+
+<% sls.each do |sl| %>
+<% s = sl[0] ; l = sl[1] %>
+  <tr>
+<% hues.each do |h| %>
+    <td style="background: hsl(<%= h %>, <%= s %>%, <%= l %>%)"></td>
+<% end %>
+  </tr>
+<% end %>
+
+<% if greys %>
+  <tr>
+  <% hues.each do |h| %>
+    <td style="background: hsl(0, 0%, <%= h*100/360 %>%)"></td>
+  <% end %>
+  </tr>
+<% end %>
+
+</table>
+
+<script type="text/javascript">
+  (function() {
+    // Build a list of things to adjust when user clicks...
+    var fg_toset   = $('.cb_colorpick_fg_target');
+    var bg_toset   = $('.cb_colorpick_bg_target');
+    var html_toset = $('.cb_colorpick_html_target');
+    var val_toset  = $('.cb_colorpick_val_target');
+
+    // Bind a click event to each color
+    $('#cb_colorpick td').each(function (index, elem) {
+      $(elem).click(function() {
+        var color = $(this).css('background-color');
+        fg_toset.each(  function(i,e) { $(e).css('color', color); });
+        bg_toset.each(  function(i,e) { $(e).css('background-color', color); });
+        html_toset.each(function(i,e) { $(e).html(color); });
+        val_toset.each( function(i,e) { $(e).attr('value',color); });
+      });
+    });
+  })();
+</script>
+

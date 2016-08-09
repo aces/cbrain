@@ -35,9 +35,10 @@ RSpec.describe PortalController, :type => :controller do
     end
 
     describe "welcome" do
-      it "should redirect to the login page" do
+      it "should redirect to the login page if no current_user" do
+        session[:user_id] = nil
         get :welcome
-        expect(response.status).to redirect_to(start_path)
+        expect(response).to redirect_to(controller.send(:login_path))
       end
     end
     describe "portal_log" do

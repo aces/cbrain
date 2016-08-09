@@ -99,11 +99,11 @@ describe SshDataProvider do
     end
     it "should raise an error if the bash command returns something" do
       allow(provider).to receive(:bash_this).and_return("Error")
-      expect { provider.impl_sync_to_cache(single_file) }.to raise_error
+      expect { provider.impl_sync_to_cache(single_file) }.to raise_error(CbrainError, /syncing userfile/)
     end
     it "should raise an error if the file wasn't created" do
       allow(File).to receive(:exist?).and_return(false)
-      expect { provider.impl_sync_to_cache(single_file) }.to raise_error
+      expect { provider.impl_sync_to_cache(single_file) }.to raise_error(CbrainError, /syncing userfile/)
     end
     it "should return true if everything goes well" do
       expect(provider.impl_sync_to_cache(single_file)).to be_truthy
@@ -117,7 +117,7 @@ describe SshDataProvider do
     end
     it "should raise an error if the file doesn't exist" do
       allow(File).to receive(:exist?).and_return(false)
-      expect { provider.impl_sync_to_provider(single_file) }.to raise_error
+      expect { provider.impl_sync_to_provider(single_file) }.to raise_error(CbrainError, /does not exist/)
     end
     it "should execute an rsync command" do
       expect(provider).to receive(:bash_this).and_return("")
@@ -125,11 +125,11 @@ describe SshDataProvider do
     end
     it "should raise an error if rsync returns something" do
       allow(provider).to receive(:bash_this).and_return("Error")
-      expect { provider.impl_sync_to_provider(single_file) }.to raise_error
+      expect { provider.impl_sync_to_provider(single_file) }.to raise_error(CbrainError, /syncing userfile/)
     end
     it "should raise an error the file doesn't exist on the provider" do
       allow(provider).to receive(:provider_file_exists?).and_return("")
-      expect { provider.impl_sync_to_provider(single_file) }.to raise_error
+      expect { provider.impl_sync_to_provider(single_file) }.to raise_error(CbrainError, /syncing userfile/)
     end
     it "should return true if everything goes well" do
       expect(provider.impl_sync_to_provider(single_file)).to be_truthy
@@ -182,7 +182,7 @@ describe SshDataProvider do
     end
     it "should raise an exception if the file handle is invalid" do
       allow(IO).to receive(:popen).and_yield(double("fh", :eof? => true))
-      expect { provider.impl_provider_readhandle(single_file) }.to raise_error
+      expect { provider.impl_provider_readhandle(single_file) }.to raise_error(LocalJumpError, /no block given/)
     end
   end
   describe "#impl_provider_list_all" do

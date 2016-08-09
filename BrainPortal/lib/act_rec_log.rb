@@ -392,7 +392,7 @@ module ActRecLog
   # he changes in the lists. +message+ should be a description of the
   # meaning of these lists. Example:
   #
-  #   mysite.addlog_object_list_updated("Managers", User, :login, [1,2,3], [2,3,4,5], adminuser)
+  #   mysite.addlog_object_list_updated("Managers", User, [1,2,3], [2,3,4,5], adminuser, :login)
   #
   # will add a log entry like this
   #

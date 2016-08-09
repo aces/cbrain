@@ -59,3 +59,13 @@ def set_log_level(level) #:nodoc:
   end
 end
 
+(CbrainConsoleFeatures ||= []) << <<FEATURES
+========================================================
+Feature: Toggling ActiveRecord logging messages
+========================================================
+  (These things: "User Load (0.8ms) SELECT `users`...")
+  Turn on or off permanently with: do_log ; no_log
+  Note: these two methods can take a block and apply the
+  log setting restriction while running it.
+FEATURES
+

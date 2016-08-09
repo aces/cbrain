@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This class implements a 'wrapper' data provider that
@@ -39,10 +39,10 @@ class VaultSmartDataProvider < DataProvider
   def after_initialize_select_provider #:nodoc:
     self.select_local_or_network_provider(VaultLocalDataProvider,VaultSshDataProvider)
   end
-  
-  # this returns the category of the data provider -- used in view for admins
-  def self.pretty_category_name
-    "Vault Types"
+
+  # This returns the category of the data provider
+  def self.pretty_category_name #:nodoc:
+    "Vault"
   end
 
 end

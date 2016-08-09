@@ -18,20 +18,10 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<span id="new_model">
-  <%= button_with_dropdown_menu('Create New Tool', :open => true) do %>
-    <% @bourreaux ||= Bourreau.find_all_accessible_by_user(current_user).all %>
-
-    <%= ajax_form_for @tool, :as => :tool, :url => { :action => "create" }, :datatype => "script" do |f| -%>
-
-      <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
-      <p><%= f.submit "Create new tool" %></p>
-
-    <% end %>
-  <% end %>
-</span>
+<%= render :partial  => "shared/flash_update" %>
+jQuery("#acces_profile_table").html(<%= html_for_js(render(:partial => 'acces_profiles_table')) %>).trigger("new_content")
 

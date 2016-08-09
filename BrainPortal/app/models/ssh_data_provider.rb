@@ -39,9 +39,9 @@ class SshDataProvider < DataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # This returns the category of the data provider -- used in view for admins
-  def self.pretty_category_name
-    "Single Level Types"
+  # This returns the category of the data provider
+  def self.pretty_category_name #:nodoc:
+    "Single Level"
   end
 
   def impl_is_alive? #:nodoc:

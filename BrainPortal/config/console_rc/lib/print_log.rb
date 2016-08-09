@@ -1,5 +1,4 @@
 
-<%-
 #
 # CBRAIN Project
 #
@@ -18,10 +17,26 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-jQuery('#new_model').replaceWith(<%= html_for_js(render :partial  => "#{model_name.pluralize}/new") %>)
-jQuery('#new_model').trigger("new_content")
+def plog(*args)
+  args.each do |obj|
+    if obj.respond_to?(:getlog)
+      log = obj.getlog rescue "(Exception getting log)"
+      puts "==== Log for #{obj.inspect} ====" if args.size > 1
+      puts log.to_s
+    else
+      puts "==== Object does not respond to getlog(): #{obj.inspect} ===="
+    end
+  end
+  true
+end
+
+(CbrainConsoleFeatures ||= []) << <<FEATURES
+========================================================
+Feature: print ActiveRecordLog of some objects
+========================================================
+  Activate with: plog obj [, obj , ...]
+FEATURES
 
