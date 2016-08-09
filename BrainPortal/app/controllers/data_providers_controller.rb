@@ -52,7 +52,11 @@ class DataProvidersController < ApplicationController
       end
       format.json do
         @data_providers.each { |dp| dp.hide_attributes(API_HIDDEN_ATTRIBUTES) }
-        render :json => @data_providers.to_json(methods: [:type, :is_browsable?, :is_fast_syncing?, :allow_file_owner_change?])
+        render :json => @data_providers.to_json(
+                          :methods => [
+                            :type, :is_browsable?, :is_fast_syncing?,
+                            :allow_file_owner_change?, :content_storage_shared_between_users?,
+                          ] )
       end
       format.js
     end
@@ -334,8 +338,8 @@ class DataProvidersController < ApplicationController
     registered_files = Userfile.where( :data_provider_id => @provider.id )
     # On data providers where files are stored in a per user subdir, we limit our
     # search of what's registered to only those belonging to @as_user;
-    # otherwise we must report when files are registered by other users.
-    registered_files = registered_files.where( :user_id => @as_user.id ) if ! @provider.allow_file_owner_change?
+    # otherwise we must report when files are registered by other users too.
+    registered_files = registered_files.where( :user_id => @as_user.id ) if ! @provider.content_storage_shared_between_users?
     registered_files = registered_files.all.index_by(&:name)
 
     @fileinfolist.each do |fi|
@@ -837,10 +841,15 @@ class DataProvidersController < ApplicationController
   end
 
   # Fetch the userfiles corresponding to the given +basenames+ for
-  # +user+ on +provider+.
+  # +user+ on +provider+. If the data provider's storage puts
+  # files of multiple users together, then the fetched list will
+  # also include files from other users! This is to detect and prevent
+  # registration of files with clashing names by different users.
+  #
+  # Returns a hash with a basename for key, and a userfile as value.
   def userfiles_from_basenames(provider, user, basenames) #:nodoc:
     userfiles = provider.userfiles.where(:name => basenames)
-    userfiles = userfiles.where(:user_id => user.id) unless provider.allow_file_owner_change?
+    userfiles = userfiles.where(:user_id => user.id) if ! provider.content_storage_shared_between_users?
     userfiles = userfiles.index_by(&:name)
 
     Array(basenames).map { |name| [name, userfiles[name]] }.to_h

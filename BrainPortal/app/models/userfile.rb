@@ -494,6 +494,13 @@ class Userfile < ActiveRecord::Base
     self.data_provider.allow_file_owner_change?
   end
 
+  # Can two users each own a file with the same
+  # name on the associated DataProvider? Returns
+  # true of they cannot!
+  def content_storage_shared_between_users?
+    self.data_provider.content_storage_shared_between_users?
+  end
+
   # See the description in class DataProvider
   def sync_to_cache
     self.data_provider.sync_to_cache(self)
@@ -932,13 +939,12 @@ class Userfile < ActiveRecord::Base
   # cannot be registered or created such that the same filename is
   # used by two entries in the DB.
   def flat_dir_dp_name_uniqueness #:nodoc:
-    return true if self.data_provider_id.blank?   # no check to make
-    dp_class_name = self.data_provider.class.to_s # must compare as strings... :-(
-    return true if dp_class_name !~ /^FlatDir|^SshDataProvider$/ # ... the FlatDir classes are not in a hierarchy :-(
+    return true if self.data_provider_id.blank? # no check to make
+    return true if ! self.data_provider.content_storage_shared_between_users?
     check_dup = Userfile.where(:name => self.name, :data_provider_id => self.data_provider_id)
     check_dup = check_dup.where(["id <> ?", self.id]) if self.id # if current file is registered, ignore that one
     return true unless check_dup.exists?
-    errors.add(:name, "already exists on data provider")
+    errors.add(:name, "already exists on data provider (and may belong to another user)")
     false
   end
 
