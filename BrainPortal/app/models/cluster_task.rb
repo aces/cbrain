@@ -1632,7 +1632,7 @@ class ClusterTask < CbrainTask
   def remove_cluster_workdir
     raise "Tried to remove a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
-    return true if ! self.share_wd_tid.blank?  # Do not erase if using some other task's workdir.
+    return true if self.share_wd_tid.present?  # Do not erase if using some other task's workdir.
     full=self.full_cluster_workdir
     return if full.blank?
     self.addlog("Removing workdir '#{full}'.")

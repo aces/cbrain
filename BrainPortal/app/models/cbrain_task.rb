@@ -148,7 +148,7 @@ class CbrainTask < ActiveRecord::Base
   #  - 'Completed'
   #  - 'Failed' (which covers all failures)
   #
-  # As an aide, note that in a way, a task ID 'n' in the CbrainTask attribute
+  # As an aside, note that in a way, a task ID 'n' in the CbrainTask attribute
   # :share_wd_tid also implies this prerequisite:
   #
   #     :for_setup => { "T#{n}" => "Queued" }

@@ -327,13 +327,14 @@ class DataProvidersController < ApplicationController
     # - the state_ok flag that tell whether or not it's OK to register/unregister
     # - a message.
     if @fileinfolist.size > 0
-       @fileinfolist[0].class.class_eval("attr_accessor :userfile, :state_ok, :message, :userfile_id")
+       @fileinfolist[0].class.class_eval("attr_accessor :userfile, :userfile_id, :state_ok, :message")
     end
 
     # NOTE: next paragraph for initializing registered_files is also in register() action
     registered_files = Userfile.where( :data_provider_id => @provider.id )
     # On data providers where files are stored in a per user subdir, we limit our
-    # search of what's registered to only those belonging to @as_user
+    # search of what's registered to only those belonging to @as_user;
+    # otherwise we must report when files are registered by other users.
     registered_files = registered_files.where( :user_id => @as_user.id ) if ! @provider.allow_file_owner_change?
     registered_files = registered_files.all.index_by(&:name)
 
@@ -341,31 +342,28 @@ class DataProvidersController < ApplicationController
       fi_name  = fi.name
       fi_type  = fi.symbolic_type
 
-      fi.userfile = nil
-      fi.message  = ""
-      fi.state_ok = false
+      # Special local attributes
+      fi.userfile    = nil
+      fi.userfile_id = nil
+      fi.message     = ""
+      fi.state_ok    = true
 
+      # Add additional info if file is already registered
       registered = registered_files[fi_name]
       if registered
         fi.userfile    = registered # the userfile object itself
         fi.userfile_id = registered.id
-        if ((fi_type == :symlink)                                    ||
-            (fi_type == :regular    && registered.is_a?(SingleFile)) ||
-            (fi_type == :directory  && registered.is_a?(FileCollection)))
-          fi.message = ""
-          fi.state_ok = true
-        else
-          fi.message = "Conflicting types!"
+        unless ((fi_type == :symlink)                                    ||
+                (fi_type == :regular    && registered.is_a?(SingleFile)) ||
+                (fi_type == :directory  && registered.is_a?(FileCollection)))
+          fi.message  = "Conflicting types!"
           fi.state_ok = false
         end
         next
       end
 
-      # Unregistered.
-      if Userfile.is_legal_filename?(fi_name)
-        fi.message = ""
-        fi.state_ok = true
-      else
+      # Otherwise, if not registered, check filename's validity
+      if ! Userfile.is_legal_filename?(fi_name)
         fi.message = "Illegal characters in filename."
         fi.state_ok = false
       end

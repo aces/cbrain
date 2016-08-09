@@ -52,6 +52,9 @@ class Userfile < ActiveRecord::Base
                           :uniqueness =>  { :scope => [ :user_id, :data_provider_id ] },
                           :filename_format => true
 
+  before_create           :flat_dir_dp_name_uniqueness # this method is also used as a validator (see below)
+  validate                :flat_dir_dp_name_uniqueness # this method is also used as a before_create callback (see above)
+
   validates_presence_of   :user_id
   validates_presence_of   :data_provider_id
   validates_presence_of   :group_id
@@ -902,24 +905,41 @@ class Userfile < ActiveRecord::Base
 
   def validate_associations #:nodoc:
     unless DataProvider.where( :id => self.data_provider_id ).first
-      errors.add(:data_provider, "does not exist.")
+      errors.add(:data_provider, "does not exist")
     end
     unless User.where( :id => self.user_id ).first
-      errors.add(:user, "does not exist.")
+      errors.add(:user, "does not exist")
     end
     unless Group.where( :id => self.group_id ).first
-      errors.add(:group, "does not exist.")
+      errors.add(:group, "does not exist")
     end
   end
 
+  # before_destroy callback
   def erase_data_provider_content_and_cache #:nodoc:
     self.cache_erase rescue true
     self.provider_erase
     true
   end
 
+  # before_destroy callback
   def nullify_children #:nodoc:
     self.children.each(&:remove_parent)
+  end
+
+  # This method is used as a validator, and as a before_create callback.
+  # Files on data providers where all files are in the same directory
+  # cannot be registered or created such that the same filename is
+  # used by two entries in the DB.
+  def flat_dir_dp_name_uniqueness #:nodoc:
+    return true if self.data_provider_id.blank?   # no check to make
+    dp_class_name = self.data_provider.class.to_s # must compare as strings... :-(
+    return true if dp_class_name !~ /^FlatDir|^SshDataProvider$/ # ... the FlatDir classes are not in a hierarchy :-(
+    check_dup = Userfile.where(:name => self.name, :data_provider_id => self.data_provider_id)
+    check_dup = check_dup.where(["id <> ?", self.id]) if self.id # if current file is registered, ignore that one
+    return true unless check_dup.exists?
+    errors.add(:name, "already exists on data provider")
+    false
   end
 
 end
