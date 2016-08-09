@@ -266,12 +266,12 @@
         <% if @bourreau.cms_class == "ScirAmazon" %>
 	  <% t.edit_cell(:amazon_ec2_access_key_id, :header => "Amazon EC2 Access Key Id") do %>
             <%= text_field_tag "bourreau[amazon_ec2_access_key_id]", @bourreau.amazon_ec2_access_key_id, :size => 60 %><br/>
-            <div class="field_explanation">See <a href="http://docs.aws.amazon.com/AWSSdkDocsRuby/latest/DeveloperGuide/ruby-dg-setup.html">Amazon SDK documentation</a>.</div>
+            <div class="field_explanation">See <a href="http://docs.aws.amazon.com/AWSSdkDocsRuby/latest/DeveloperGuide/ruby-dg-setup.html" target="_blank">Amazon SDK documentation</a>.</div>
           <% end %>
 
 	  <% t.edit_cell(:amazon_ec2_secret_access_key, :header => "Amazon EC2 Secret Access Key") do %>
             <%= text_field_tag "bourreau[amazon_ec2_secret_access_key]", @bourreau.amazon_ec2_secret_access_key, :size => 60 %><br/>
-            <div class="field_explanation">See <a href="http://docs.aws.amazon.com/AWSSdkDocsRuby/latest/DeveloperGuide/ruby-dg-setup.html">Amazon SDK documentation</a>.</div>
+            <div class="field_explanation">See <a href="http://docs.aws.amazon.com/AWSSdkDocsRuby/latest/DeveloperGuide/ruby-dg-setup.html" target="_blank">Amazon SDK documentation</a>.</div>
           <% end %>
 
 	  <% t.edit_cell(:amazon_ec2_region, :header => "Amazon EC2 Region") do %>

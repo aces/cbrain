@@ -487,7 +487,7 @@ class RemoteResource < ActiveRecord::Base
       host = "localhost"
       port = 3090+self.id  # see also in start_tunnels()
     end
-    "http://" + ( host != nil ? host : "localhost" ) + (port && port > 0 ? ":#{port}" : "") + dir
+    "http://" + ( host.presence || "localhost" ) + (port && port > 0 ? ":#{port}" : "") + dir
   end
 
   # Returns a RemoteResourceInfo object describing the
