@@ -866,7 +866,7 @@ $(function () {
     var cids   = [<%%= cbcsvs.map   { |c| "\"#{c.id}\""       }.join(", ").html_safe %>];
     var flags  = [<%= params.select { |p| p['type'] == 'Flag' }.map { |u| "\"#{u['id']}\"" }.join(", ") %>];
 <%% unk        = '?unknown?' %>
-<%% maxNameLen = cbcsvs.map { |p| p.name }.max_by { |v| v.length }.length %>
+<%% maxNameLen = cbcsvs.map { |p| p.name }.max_by { |v| v.length }.length rescue nil %>
 <%%# Replace unrecognized files with unk and "blanks" (i.e. the user wants no file present) with '' %>
 <%% safeName   = lambda { |n| "\"#{n.nil? ? unk : ((n == ' ') ? '' : n.name)}\"" } %>
     var cfmap  = {

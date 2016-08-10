@@ -229,6 +229,9 @@ module TestHelpers
     ["fails if the optional output file is specified but unnamed", baseArgs + "-o", 1]
   ]
 
+  # Minimal arguments that could be used to run the task
+  MinArgs = baseArgs.dup
+
   # Creates the option parser object used by the mock app to parse the input command line
   GenerateOptionParser = lambda do |options|
     return OptionParser.new do |opt|
