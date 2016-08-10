@@ -20,8 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-#require "resolv-replace.rb" 
-
 # A task starting a VM from a disk image.
 class CbrainTask::StartVM < PortalTask
 
@@ -63,8 +61,6 @@ class CbrainTask::StartVM < PortalTask
         params_errors.add(key,errors[key])
       end
     end
-
-    # Note: bash escapes should be performed on bourreau side. Don't do them here because x.bash_escape.bash_escape != x.bash_escape
 
     # params[:vm_status] is the status of the VM started by the task.
     params[:vm_status] = "absent"
