@@ -74,9 +74,9 @@ class Scir
     @config = {
       :extra_qsub_args => rr.cms_extra_qsub_args || "",
       :default_queue   => rr.cms_default_queue   || "",
-      :amazon_ec2_region => rr.amazon_ec2_region || "",
-      :amazon_ec2_access_key_id => rr.amazon_ec2_access_key_id || "",
-      :amazon_ec2_secret_access_key => rr.amazon_ec2_secret_access_key || "",
+      :amazon_ec2_region => rr.meta[:amazon_ec2_region] || "",
+      :amazon_ec2_access_key_id => rr.meta[:amazon_ec2_access_key_id] || "",
+      :amazon_ec2_secret_access_key => rr.meta[:amazon_ec2_secret_access_key] || "",
     }
   end
 

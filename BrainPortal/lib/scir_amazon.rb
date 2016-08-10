@@ -50,18 +50,18 @@ class ScirAmazon < ScirCloud
   # Overrides the abstract method defined in ScirCloud.
   def self.get_available_disk_images(bourreau)
     images = Array.new
-    ec2 = get_amazon_ec2_connection(bourreau[:amazon_ec2_access_key_id],
-                                    bourreau[:amazon_ec2_secret_access_key],
-                                    bourreau[:amazon_ec2_region])
+    ec2 = get_amazon_ec2_connection(bourreau.meta[:amazon_ec2_access_key_id],
+                                    bourreau.meta[:amazon_ec2_secret_access_key],
+                                    bourreau.meta[:amazon_ec2_region])
     ec2.describe_images(owners: [ "self" ]).images.each { |image| images << [image.name,image.image_id] }
     return images
   end
 
   # Overrides the abstract method defined in ScirCloud
   def self.get_available_key_pairs(bourreau)
-    ec2 = get_amazon_ec2_connection(bourreau[:amazon_ec2_access_key_id],
-                                    bourreau[:amazon_ec2_secret_access_key],
-                                    bourreau[:amazon_ec2_region])
+    ec2 = get_amazon_ec2_connection(bourreau.meta[:amazon_ec2_access_key_id],
+                                    bourreau.meta[:amazon_ec2_secret_access_key],
+                                    bourreau.meta[:amazon_ec2_region])
     keys = []
     ec2.describe_key_pairs.key_pairs.each { |key| keys << [key.key_name] }
     return keys

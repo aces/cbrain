@@ -118,8 +118,7 @@ class RemoteResource < ActiveRecord::Base
                         :cms_default_queue, :cms_extra_qsub_args, :cms_shared_dir, :workers_instances,
                         :workers_chk_time, :workers_log_to, :workers_verbose, :help_url, :rr_timeout, :proxied_host,
                         :spaced_dp_ignore_patterns, :license_agreements, :support_email, :system_from_email, :external_status_page_url, 
-                        :docker_executable_name, :docker_present,
-                        :amazon_ec2_region, :amazon_ec2_access_key_id, :amazon_ec2_secret_access_key
+                        :docker_executable_name, :docker_present
 
   ############################################################################
   # Pseudo-attributes Access
