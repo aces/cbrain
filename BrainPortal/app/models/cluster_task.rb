@@ -483,23 +483,47 @@ class ClusterTask < CbrainTask
   # another array of userfiles +createdlist+ (or a single one)
   # and records for each created file what were the creators, and for
   # each creator file what files were created, along with a link
-  # to the task itself. An optional comment can be appended to all the messages.
+  # to the task itself. An optional comment can be appended to the header message.
   def addlog_to_userfiles_these_created_these(creatorlist, createdlist, comment = "")
-    creatorlist = [ creatorlist ] unless creatorlist.is_a?(Array)
-    createdlist = [ createdlist ] unless createdlist.is_a?(Array)
+
+    # Two lists of userfiles. Make sure their contents are OK.
+    creatorlist = Array(creatorlist).select { |u| u.is_a?(Userfile) && u.id }
+    createdlist = Array(createdlist).select { |u| u.is_a?(Userfile) && u.id }
+
+    # Info about myself, a task.
     myname   = self.fullname
     mylink   = "/tasks/#{self.id}"  # can't use show_task_path() on Bourreau side
     mymarkup = "[[#{myname}][#{mylink}]]"
+
+    # Arrays of markups. Can't use userfile_path() on Bourreau side, so path is hardcoded
+    creatorMarkups = creatorlist.map { |creator| "[[#{creator.name}][/userfiles/#{creator.id}]]" }
+    createdMarkups = createdlist.map { |created| "[[#{created.name}][/userfiles/#{created.id}]]" }
+
+    # Add an entry to each creator files, listing created files
     creatorlist.each do |creator|
-      next unless creator.is_a?(Userfile) && creator.id
-      creatormarkup = "[[#{creator.name}][/userfiles/#{creator.id}]]" # can't use userfile_path() on Bourreau side
-      createdlist.each do |created|
-        next unless created.is_a?(Userfile) && created.id
-        createdmarkup = "[[#{created.name}][/userfiles/#{created.id}]]" # can't use userfile_path() on Bourreau side
-        creator.addlog_context(self, "Used by task #{mymarkup} to create #{createdmarkup} #{comment}", 5)
-        created.addlog_context(self, "Created by task #{mymarkup} from #{creatormarkup} #{comment}",   5)
+      if createdlist.size == 1 # a common case; create shorter log entry then.
+        creator.addlog_context(self, "Used by task #{mymarkup} to create #{createdMarkups[0]}. #{comment}", 4)
+      else
+        creator.addlog_context(self, "Used by task #{mymarkup}, list of #{createdlist.size} created files follow. #{comment}", 4)
+        createdMarkups.each_slice(5).each do |files_4|
+          creator.addlog(files_4.join(", "))
+        end
       end
-    end
+    end # creators done
+
+    # Add an entry to each created files, listing creators
+    createdlist.each do |created|
+      if creatorlist.size == 1 # a common case; create shorter log entry then.
+        created.addlog_context(self, "Created/updated by task #{mymarkup} from file #{creatorMarkups[0]}. #{comment}", 4)
+      else
+        created.addlog_context(self, "Created/updated by task #{mymarkup}, list of #{creatorlist.size} used files follow. #{comment}", 4)
+        creatorMarkups.each_slice(5).each do |files_4|
+          created.addlog(files_4.join(", "))
+        end
+      end
+    end # created done
+
+    true # well it's less costly to return than e^pi
   end
 
   # This method is the equivalent of running a system() call
