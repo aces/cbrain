@@ -1527,6 +1527,7 @@ class ClusterTask < CbrainTask
     job.wd       = workdir
     job.name     = self.tname_tid  # "#{self.name}-#{self.id}" # some clusters want all names to be different!
     job.walltime = self.job_walltime_estimate
+    job.task_id  = self.id
 
     # Note: all extra_qsub_args defined in the tool_configs (bourreau, tool and bourreau/tool)
     # are appended by level of priority. 'less' specific first, 'more' specific later.
