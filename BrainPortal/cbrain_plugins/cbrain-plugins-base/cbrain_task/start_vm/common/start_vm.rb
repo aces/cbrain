@@ -21,25 +21,30 @@
 #
 
 class CbrainTask::StartVM #:nodoc:
+
+  # This method is used both on the portal and on the bourreau
+  # side. The portal populates the params_errors object from the hash
+  # returned by this method (Rails API). The bourreau uses it to print
+  # messages in the task log.
   
   def param_validation_errors #:nodoc:
-    errors = Hash.new
+    my_errors = Hash.new
 
-    errors[:disk_image]         = "Missing disk image."                                               unless params[:disk_image].presence
-    errors[:vm_user]            = "Missing VM user."                                                  unless params[:vm_user].presence   
-    errors[:ssh_key_pair]       = "Missing ssh key pair."                                             unless params[:ssh_key_pair].presence
-    errors[:instance_type]      = "Missing cloud instance type."                                      unless params[:instance_type].presence
-    errors[:job_slots]          = "Missing number of job slots."                                      unless params[:job_slots].presence
-    errors[:job_slots]          = "Number of job slots has to be an integer."                         unless is_integer? params[:job_slots]
-    errors[:vm_boot_timeout]    = "Missing VM boot timeout."                                          unless params[:vm_boot_timeout].presence
-    errors[:vm_boot_timeout]    = "Boot timeout has to be an integer."                                unless is_integer? params[:vm_boot_timeout]
-    errors[:vm_ssh_tunnel_port] = "Missing ssh tunnel port."                                          unless params[:vm_ssh_tunnel_port].presence
-    errors[:vm_ssh_tunnel_port] = "ssh tunnel port has to be an integer."                             unless is_integer? params[:vm_ssh_tunnel_port]
-    errors[:number_of_vms]      = "Missing number of instances."                                      unless params[:number_of_vms].presence
-    errors[:number_of_vms]      = "Number of instances has to be an integer."                         unless is_integer? params[:number_of_vms]
-    errors[:number_of_vms]      = "Please don't try to start more than 20 instances at once."         if params[:number_of_vms].to_i > 20
+    my_errors[:disk_image]         = "Missing disk image."                                               unless params[:disk_image].presence
+    my_errors[:vm_user]            = "Missing VM user."                                                  unless params[:vm_user].presence   
+    my_errors[:ssh_key_pair]       = "Missing ssh key pair."                                             unless params[:ssh_key_pair].presence
+    my_errors[:instance_type]      = "Missing cloud instance type."                                      unless params[:instance_type].presence
+    my_errors[:job_slots]          = "Missing number of job slots."                                      unless params[:job_slots].presence
+    my_errors[:job_slots]          = "Number of job slots has to be an integer."                         unless is_integer? params[:job_slots]
+    my_errors[:vm_boot_timeout]    = "Missing VM boot timeout."                                          unless params[:vm_boot_timeout].presence
+    my_errors[:vm_boot_timeout]    = "Boot timeout has to be an integer."                                unless is_integer? params[:vm_boot_timeout]
+    my_errors[:vm_ssh_tunnel_port] = "Missing ssh tunnel port."                                          unless params[:vm_ssh_tunnel_port].presence
+    my_errors[:vm_ssh_tunnel_port] = "ssh tunnel port has to be an integer."                             unless is_integer? params[:vm_ssh_tunnel_port]
+    my_errors[:number_of_vms]      = "Missing number of instances."                                      unless params[:number_of_vms].presence
+    my_errors[:number_of_vms]      = "Number of instances has to be an integer."                         unless is_integer? params[:number_of_vms]
+    my_errors[:number_of_vms]      = "Please don't try to start more than 20 instances at once."         if params[:number_of_vms].to_i > 20
 
-    return errors
+    return my_errors
   end
 
   def is_integer?(a) #:nodoc:

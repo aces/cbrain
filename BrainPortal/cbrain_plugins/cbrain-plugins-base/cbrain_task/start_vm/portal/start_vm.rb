@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-require "resolv-replace.rb" 
+#require "resolv-replace.rb" 
 
 # A task starting a VM from a disk image.
 class CbrainTask::StartVM < PortalTask
