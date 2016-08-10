@@ -18,38 +18,37 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<span id="new_model">
-  <%= button_with_dropdown_menu("Leave Feedback", :open => true) do %>
-    You can use this form to leave feedback for the developers.
 
-    <P>
+<% title 'Leave Feedback' %>
+
+<h2>Leave Feedback</h2>
+
+<%= error_messages_for @feedback %>
+
+<%= form_for @feedback, :as => :feedback, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+
+  <div class="generalbox">
+    You can use this form to leave feedback for the developers.
+    <p>
 
     <strong>Important Note:</strong>
     Any and all feedback you leave is <em>public</em>, and can be seen
     by all the other users too!
 
-    <P>
+    <p>
+    <%= f.label :summary %><br/>
+    <%= f.text_field :summary, :size => 80 %>
+    </p>
+    <p>
+      <%= f.label :details %><br/>
+      <%= f.text_area :details, :rows => 20, :cols => 80 %>
+    </p>
+    <p>
+    <%= f.submit "Submit" %>
+    </p>
 
-    <%= ajax_form_for @feedback, :as => :feedback, :url => { :action => "create" }, :datatype => "script"  do |f| -%>
-
-      <%= error_messages_for(@feedback) %>
-      <p>
-        <%= f.label :summary %><br/>
-        <%= f.text_field :summary, :size => 80 %>
-      </p>
-      <p>
-        <%= f.label :details %><br/>
-        <%= f.text_area :details, :rows => 20, :cols => 80 %>
-      </p>
-      <p>
-        <%= f.submit "Create" %>
-      </p>
-
-    <% end %>
-  <% end %>
-</span>
-
+<% end %>

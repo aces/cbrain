@@ -57,7 +57,6 @@ class MessagesController < ApplicationController
   def new #:nodoc:
     @message  = Message.new # blank object for new() form.
     @group_id = nil         # for new() form
-    render :partial => "new"
   end
 
   # POST /messages
@@ -95,11 +94,11 @@ class MessagesController < ApplicationController
     respond_to do |format|
       if @message.errors.empty?
         flash.now[:notice] = 'Message was successfully sent.'
-        format.xml { render :xml => @message, :status => :created, :location => @message }
-        format.js  { redirect_to :action => :index }
+        format.xml  { render :xml => @message, :status => :created, :location => @message }
+        format.html { redirect_to :action => :index }
       else
-        format.xml { render :xml => @message.errors, :status => :unprocessable_entity }
-        format.js  {  render :partial  => 'shared/failed_create', :locals  => {:model_name  => 'message' } }
+        format.xml  { render :xml => @message.errors, :status => :unprocessable_entity }
+        format.html { render :action => :new  }
       end
     end
   end

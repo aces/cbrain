@@ -178,3 +178,10 @@ class ToolConfig
   end
 end
 
+(CbrainConsoleFeatures ||= []) << <<FEATURES
+========================================================
+Feature: fast finder for anything
+========================================================
+  Activate with: fff 'string' ; fff id
+FEATURES
+

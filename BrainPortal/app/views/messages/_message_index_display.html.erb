@@ -24,7 +24,7 @@
 
 <div class="menu_bar">
   <% if current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user) %>
-    <%= new_model_button "Leave Message", new_message_path %>
+    <%= link_to "Leave Message", new_message_path, :class => "button" %>
   <% end %>
   <%= overlay_ajax_link "Help", "/doc/messages/message_info.html", :class  => "button" %>
 

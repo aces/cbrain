@@ -103,9 +103,13 @@ $(function() {
         ? truthy.test(settings.emptySelection)
         : withSelection;
 
-      var form = withSelection
-        ? userfiles.children('form')
-        : $('<form>');
+      var form = undefined;
+      if (withSelection) {
+        form = userfiles.children('form');
+      } else {
+        form = $('<form>');
+        form.appendTo("body");
+      }
 
       if (ajax) {
         return (
@@ -722,25 +726,54 @@ $(function() {
         }
       }
 
-      if (window.FileReader && $('#upload-dialog').data('max-upload-size'))
-        /* check selected files against upload limit */
+      if (window.FileReader)
+        // Checks the file for problems, and disables the upload button if:
+        //   - no file selected
+        //   - illegal characters in file name
+        //   - filesize greater than maximum allowed by server
         $('#upload-dialog')
-          .undelegate('#up-file', 'change.uf.up-limit')
-          .delegate(  '#up-file', 'change.uf.up-limit', function () {
+          .undelegate('#up-file', 'change.uf.file-problem')
+          .delegate(  '#up-file', 'change.uf.file-problem', function () {
+            var warning_text = "";
             var max = parseInt($('#upload-dialog').data('max-upload-size'));
+            var bad_file;
+            var filename = $(this).prop('files')[0].name;
+            var selected = !!$(this).val();
 
-            var visible = (
-              this.files && this.files[0] &&
-              max && this.files[0].size > max
-            );
+            // same regex as the userfiles model validation
+            var allowed_file_pattern = /^[a-zA-Z0-9][\w\~\!\@\#\%\^\&\*\(\)\-\+\=\:\[\]\{\}\|\<\>\,\.\?]*$/;
+            var bad_chars = !allowed_file_pattern.test(filename);
+
+            var spaces_in_name = filename.includes(" ");
+
+            var file_too_big;
+            if ( max > 0 ){
+              file_too_big = this.files && this.files[0] && max && this.files[0].size > max;
+            } else {
+              file_too_big = false;
+            }
+
+            bad_file = ( bad_chars || file_too_big || spaces_in_name );
+
+            if ( bad_chars && spaces_in_name) {
+              warning_text += "No spaces allowed in filename! ";
+            }
+            else if ( bad_chars ) {
+              warning_text += "Illegal filename: must start with letter/digit, and no slashes, or ASCII nulls allowed. ";
+            }
+            if ( file_too_big ) {
+              warning_text += "Too large! (> " + max/1048576 + " MB) ";
+            }
+
+            $('#up-file-warn').text(warning_text);
 
             $('#up-file-warn').css({
-              visibility: visible ? 'visible' : 'hidden'
+              visibility: bad_file ? 'visible' : 'hidden'
             });
 
             upload_button
-              .toggleClass('ui-state-disabled', visible)
-              .prop('disabled', visible);
+              .toggleClass('ui-state-disabled', bad_file || !selected)
+              .prop('disabled', bad_file || !selected);
           });
 
       $('#upload-dialog')
@@ -773,15 +806,6 @@ $(function() {
             $('#up-type').val(data).trigger('change.uf');
           });
         })
-        /* only activate the upload button if a file is selected */
-        .undelegate('#up-file', 'change.uf.toggle-up-btn')
-        .delegate(  '#up-file', 'change.uf.toggle-up-btn', function () {
-          var selected = !!$(this).val();
-
-          upload_button
-            .toggleClass('ui-state-disabled', !selected)
-            .prop('disabled', !selected);
-        });
     })();
 
     /* Copy/Move dialog */

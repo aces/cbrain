@@ -1,5 +1,4 @@
 
-<%-
 #
 # CBRAIN Project
 #
@@ -18,25 +17,21 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<span id="new_model">
-  <%= button_with_dropdown_menu("Create New Server", :open => true) do %>
-    <%= ajax_form_for @bourreau, :as => :bourreau, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+# Helper methods for Access Profile views.
+module AccessProfilesHelper
 
-       <%= error_messages_for(@bourreau, :object_name => "server") %>
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-       <%= render :partial => 'form_fields', :locals => { :f => f }  %>
+  # Generates a pretty colored label for an access profile
+  def access_profile_label(access_profile, options={})
+    color  = access_profile.color.presence || "white";
+    label  = "<span class=\"access_profile_label\" style=\"background: #{color}\">"
+    label += options[:with_link] ? link_to_access_profile_if_accessible(access_profile) : access_profile.name
+    label += "</span>"
+    label.html_safe
+  end
 
-       <p><%= submit_tag 'Create' %></p>
-
-    <% end -%>
-
-    <%= render :partial => "notes" %>
-  <% end %>
-</span>
-
-
-
+end

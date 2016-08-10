@@ -42,10 +42,10 @@ CbrainRailsPortal::Application.routes.draw do
   resources :custom_filters
   resources :tool_configs
   resources :tags
-
-  # Standard CRUD resources, with extra methods
-
+  resources :access_profiles
   resources :feedbacks
+
+  # Standard CRUD resources, with extra actions
 
   resources :messages do
     collection do
@@ -130,6 +130,7 @@ CbrainRailsPortal::Application.routes.draw do
       post   'quality_control_panel'
       post   'sync_multiple'
       post   'detect_file_type'
+      post   'export_file_list'
     end
   end
 

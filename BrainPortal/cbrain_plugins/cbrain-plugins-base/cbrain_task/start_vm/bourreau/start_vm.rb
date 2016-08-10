@@ -43,8 +43,11 @@ class CbrainTask::StartVM < ClusterTask
   
   def cluster_commands #:nodoc:
     [ "echo This will never execute" ]  # If the cluster commands are
-    # empty, task will jump directly
-    # to state data ready.
+                                        # empty, task will jump directly
+                                        # to state data ready, which we don't want to happen.
+                                        # In a StartVM task, the cluster_commands are never executed.
+                                        # The task is implemented by starting a new VM using the cloud API.
+                                        # No bash script execution is involved.
   end
   
   def save_results #:nodoc:
@@ -92,7 +95,7 @@ class CbrainTask::StartVM < ClusterTask
   end
 
   # Mounts cache and task directories.
-  def mount_directories 
+  def mount_directories #:nodoc:
     addlog("Mounting shared directories")
     mount_cache_dir
     mount_task_dir
@@ -115,7 +118,7 @@ class CbrainTask::StartVM < ClusterTask
   end
 
   # Checks if the VM has booted by trying to connect with ssh.
-  def booted? 
+  def booted? #:nodoc:
     addlog("Trying to ssh #{params[:vm_user]}@#{params[:vm_local_ip]}")
     master = get_ssh_master_for_vm
     return true
@@ -125,7 +128,7 @@ class CbrainTask::StartVM < ClusterTask
   end
 
   # Mounts the cache directory in the VM.
-  def mount_cache_dir
+  def mount_cache_dir #:nodoc:
     full_cache_dir = RemoteResource.current_resource.dp_cache_dir
     if full_cache_dir.blank? 
       addlog("No cache directory configured")
@@ -141,7 +144,7 @@ class CbrainTask::StartVM < ClusterTask
   end
 
   # Mounts the task directory in the VM. 
-  def mount_task_dir
+  def mount_task_dir #:nodoc:
     bourreau_shared_dir = bourreau.cms_shared_dir
     mount_dir bourreau_shared_dir,File.basename(bourreau_shared_dir)
     return true
@@ -154,7 +157,7 @@ class CbrainTask::StartVM < ClusterTask
   # Mounts a directory in the VM.
   # local_dir is the VM directory.
   # remote_dir is the directory on the Bourreau machine.
-  def mount_dir(remote_dir,local_dir)
+  def mount_dir(remote_dir,local_dir) #:nodoc:
     return unless !is_mounted? remote_dir,local_dir
     user = ENV['USER'] #quite unix-specific, sorry...
 
@@ -175,7 +178,7 @@ class CbrainTask::StartVM < ClusterTask
   # the file content propagates to the directory in the VM. local_dir
   # is the directory in the VM. remote_dir is the directory on the
   # Bourreau machine.
-  def is_mounted?(remote_dir,local_dir)
+  def is_mounted?(remote_dir,local_dir) #:nodoc:
     @result_cache = Hash.new unless !@result_cache.blank? # this hash will contain the results of
                                                           # the last mount tests.
     timestamp_written = Time.now
@@ -220,7 +223,7 @@ class CbrainTask::StartVM < ClusterTask
   # the Bourreau host by doing ssh -p #{param[:vm_ssh_tunnel_port]
   # [user]@localhost. This tunnel is used to mount Bourreau
   # directories in the VM using sshfs (see method mount_dir).
-  def get_ssh_master_for_vm
+  def get_ssh_master_for_vm #:nodoc:
     user   = params[:vm_user]
     ip     = params[:vm_local_ip]
     port   = params[:ssh_port]
@@ -235,7 +238,7 @@ class CbrainTask::StartVM < ClusterTask
   end
 
   # Runs command 'command' in the VM, through ssh.
-  def run_command_in_vm(command)
+  def run_command_in_vm(command) #:nodoc:
     master = self.get_ssh_master_for_vm
     result = master.remote_shell_command_reader(command) {|io| io.read}
     return result 

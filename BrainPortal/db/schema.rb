@@ -11,7 +11,25 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160603192316) do
+ActiveRecord::Schema.define(:version => 20160609145038) do
+
+  create_table "access_profiles", :force => true do |t|
+    t.string   "name",        :null => false
+    t.string   "description"
+    t.string   "color"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+  end
+
+  create_table "access_profiles_groups", :id => false, :force => true do |t|
+    t.integer "access_profile_id"
+    t.integer "group_id"
+  end
+
+  create_table "access_profiles_users", :id => false, :force => true do |t|
+    t.integer "access_profile_id"
+    t.integer "user_id"
+  end
 
   create_table "active_record_logs", :force => true do |t|
     t.integer  "ar_id"
@@ -237,9 +255,7 @@ ActiveRecord::Schema.define(:version => 20160603192316) do
     t.string   "system_from_email"
     t.string   "external_status_page_url"
     t.string   "docker_executable_name"
-    t.string   "amazon_ec2_region"
-    t.string   "amazon_ec2_access_key_id"
-    t.string   "amazon_ec2_secret_access_key"
+    t.boolean  "docker_present"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"

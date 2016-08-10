@@ -45,3 +45,9 @@ class Bourreau
   end
 end
 
+(CbrainConsoleFeatures ||= []) << <<FEATURES
+========================================================
+Feature: invoking a console on a bourreau, for debugging
+========================================================
+  Activate with: bourreau.console ; Bourreau.console(id)
+FEATURES

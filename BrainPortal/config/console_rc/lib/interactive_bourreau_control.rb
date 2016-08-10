@@ -416,3 +416,11 @@ Operations Mode : #{@mode == "each_command" ?
   end
 
 end
+
+(CbrainConsoleFeatures ||= []) << <<FEATURES
+========================================================
+Feature: Interactive Bourreau Control
+========================================================
+  Activate with: ibc
+FEATURES
+

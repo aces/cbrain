@@ -40,7 +40,7 @@ describe Bourreau do
   describe "#scir_class" do
     it "should raise an exception if cluster management class invalid" do
       bourreau.cms_class = "invalid"
-      expect{bourreau.scir_class}.to raise_error
+      expect{bourreau.scir_class}.to raise_error(CbrainError, /Bourreau record invalid/)
     end
     it "should return the Scir class" do
       bourreau.cms_class = "ScirSge"
@@ -131,7 +131,7 @@ describe Bourreau do
       allow(RemoteResourceInfo).to receive(:new).and_return(bourreau_info)
     end
     it "should raise an exception (not meant to be used on the portal side)" do
-      expect{Bourreau.remote_resource_info}.to raise_error
+      expect{Bourreau.remote_resource_info}.to raise_error(ActiveRecord::RecordNotFound, /Couldn't find Bourreau/)
     end
   end
   describe "#send_command_get_task_outputs" do

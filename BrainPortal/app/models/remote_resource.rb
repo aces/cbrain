@@ -117,7 +117,8 @@ class RemoteResource < ActiveRecord::Base
                         :time_zone, :site_url_prefix, :dp_cache_dir, :dp_ignore_patterns, :cms_class,
                         :cms_default_queue, :cms_extra_qsub_args, :cms_shared_dir, :workers_instances,
                         :workers_chk_time, :workers_log_to, :workers_verbose, :help_url, :rr_timeout, :proxied_host,
-                        :spaced_dp_ignore_patterns, :license_agreements, :support_email, :system_from_email, :external_status_page_url, :docker_executable_name,
+                        :spaced_dp_ignore_patterns, :license_agreements, :support_email, :system_from_email, :external_status_page_url, 
+                        :docker_executable_name, :docker_present,
                         :amazon_ec2_region, :amazon_ec2_access_key_id, :amazon_ec2_secret_access_key
 
   ############################################################################
@@ -703,7 +704,7 @@ class RemoteResource < ActiveRecord::Base
 
   # Utility method to send a clean_cache command to a
   # RemoteResource, whether local or not.
-  def send_command_clean_cache(userlist,older_than,younger_than)
+  def send_command_clean_cache(userlist,typelist,older_than,younger_than)
     if older_than.is_a?(Fixnum)
        time_older = older_than.seconds.ago
     elsif older_than.is_a?(Time)
@@ -723,6 +724,7 @@ class RemoteResource < ActiveRecord::Base
     command = RemoteCommand.new(
       :command     => 'clean_cache',
       :user_ids    => useridlist,
+      :types       => Array(typelist).join(","),
       :before_date => time_older,
       :after_date  => time_younger
     )
@@ -903,17 +905,21 @@ class RemoteResource < ActiveRecord::Base
   # last accessed before the +before_date+ ; the task
   # is started in background, as it can be long.
   def self.process_command_clean_cache(command)
-    user_ids    = command.user_ids    || 'all'
-    before_date = command.before_date
-    after_date  = command.after_date
+    user_ids    = command.user_ids.presence
+    before_date = command.before_date.presence
+    after_date  = command.after_date.presence
+    types       = command.types.presence
 
-    user_id_list = (user_ids =~ /all/) ? nil : user_ids.split(/,/)
+    user_id_list = user_ids ? user_ids.split(",") : nil
+    types_list   = types    ? types.split(",")    : nil
 
     CBRAIN.spawn_with_active_records(:admin, "Cache Cleanup") do
       syncs = SyncStatus.where( :remote_resource_id => RemoteResource.current_resource.id )
-      syncs = syncs.where([ "sync_status.accessed_at < ?", before_date])          if before_date.present?
-      syncs = syncs.where([ "sync_status.accessed_at > ?", after_date])           if after_date.present?
-      syncs = syncs.joins(:userfile).where( 'userfiles.user_id' => user_id_list ) if user_id_list
+      syncs = syncs.where([ "sync_status.accessed_at < ?", before_date])          if before_date
+      syncs = syncs.where([ "sync_status.accessed_at > ?", after_date])           if after_date
+      syncs = syncs.joins(:userfile)                                              if user_id_list || types_list
+      syncs = syncs.where( 'userfiles.user_id' => user_id_list )                  if user_id_list
+      syncs = syncs.where( 'userfiles.type'    => types_list )                    if types_list
 
       syncs = syncs.all
       syncs.each_with_index do |ss,i|

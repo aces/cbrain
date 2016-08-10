@@ -179,6 +179,8 @@ Step 2: Users
 
 STEP
 
+seeded_users = []
+
 [ "Mr", "Jane", "Elizabeth", "Catherine", "Mary", "Lydia" ].each do |first|
   login = first == "Mr" ? "mrbennet" : "#{first[0].downcase}bennet"
   User.seed_record!(
@@ -198,6 +200,7 @@ STEP
   ) do |u|
     u.password              = u.login + "_123"
     u.password_confirmation = u.login + "_123"
+    seeded_users << u
   end
 end
 
@@ -223,6 +226,7 @@ end
   ) do |u|
     u.password              = u.login + "_123"
     u.password_confirmation = u.login + "_123"
+    seeded_users << u
   end
 end
 
@@ -248,6 +252,7 @@ end
   ) do |u|
     u.password              = u.login + "_123"
     u.password_confirmation = u.login + "_123"
+    seeded_users << u
   end
 end
 
@@ -273,6 +278,7 @@ end
   ) do |u|
     u.password              = u.login + "_123"
     u.password_confirmation = u.login + "_123"
+    seeded_users << u
   end
 end
 
@@ -316,7 +322,7 @@ Step 4: Data Providers
 ----------------------------
 
 STEP
-
+seeded_dp = []
 #---------------------------------------------------
 cache_ok = DataProvider.this_is_a_proper_cache_dir!(myself.dp_cache_dir, :for_remote_resource_id => myself.id) rescue nil
 if !cache_ok
@@ -351,7 +357,7 @@ Dir.mkdir(en_dp_dir) unless Dir.exists?(en_dp_dir)
 #---------------------------------------------------
 ssh_dp_dir = "#{seeds_dev_support_dir}/dp_browsable"
 # ssh_dp
-SshDataProvider.seed_record!({
+ssh_dp = SshDataProvider.seed_record!({
     :remote_dir => ssh_dp_dir
   },
   {
@@ -362,11 +368,12 @@ SshDataProvider.seed_record!({
     :not_syncable => false
   })
 Dir.mkdir(ssh_dp_dir) unless Dir.exists?(ssh_dp_dir)
+seeded_dp << ssh_dp
 
 #---------------------------------------------------
 lb_dp_dir = "#{seeds_dev_support_dir}/dp_lb_browsable"
 # lb_dp
-SshDataProvider.seed_record!({
+lb_dp = SshDataProvider.seed_record!({
     :remote_dir => lb_dp_dir
   },
   {
@@ -377,11 +384,12 @@ SshDataProvider.seed_record!({
     :not_syncable => false
   })
 Dir.mkdir(lb_dp_dir) unless Dir.exists?(lb_dp_dir)
+seeded_dp << lb_dp
 
 #---------------------------------------------------
 nether_dp_dir = "#{seeds_dev_support_dir}/dp_nether_official"
 # nether_dp
-EnCbrainSmartDataProvider.seed_record!({
+nether_dp = EnCbrainSmartDataProvider.seed_record!({
     :remote_dir => nether_dp_dir
   },
   {
@@ -392,11 +400,12 @@ EnCbrainSmartDataProvider.seed_record!({
     :not_syncable => false
   })
 Dir.mkdir(nether_dp_dir) unless Dir.exists?(nether_dp_dir)
+seeded_dp << nether_dp
 
 #---------------------------------------------------
 pember_dp_dir = "#{seeds_dev_support_dir}/dp_pember_official"
 # pember_dp
-EnCbrainSmartDataProvider.seed_record!({
+pember_dp = EnCbrainSmartDataProvider.seed_record!({
     :remote_dir => pember_dp_dir
   },
   {
@@ -407,11 +416,12 @@ EnCbrainSmartDataProvider.seed_record!({
     :not_syncable => false
   })
 Dir.mkdir(pember_dp_dir) unless Dir.exists?(pember_dp_dir)
+seeded_dp << pember_dp
 
 #---------------------------------------------------
 collins_dp_dir = "#{seeds_dev_support_dir}/dp_collins_browsable"
 # collins_dp
-SshDataProvider.seed_record!({
+collins_dp = SshDataProvider.seed_record!({
     :remote_dir => collins_dp_dir
   },
   {
@@ -422,7 +432,7 @@ SshDataProvider.seed_record!({
     :not_syncable => false
   })
 Dir.mkdir(collins_dp_dir) unless Dir.exists?(collins_dp_dir)
-
+seeded_dp << collins_dp
 
 
 puts <<STEP
@@ -544,6 +554,7 @@ File.open("#{longbourne_bourreau_dir}/config/initializers/config_bourreau.rb","w
   INIT
 end
 
+seeded_bourreaux = [main_bourreau, pember_bourreau, longbourne_bourreau]
 
 
 puts <<STEP
@@ -553,6 +564,8 @@ Step 6: Tools
 ----------------------------
 
 STEP
+
+seeded_tools = []
 
 diag_tool = Tool.seed_record!(
   {
@@ -566,6 +579,7 @@ diag_tool = Tool.seed_record!(
     :description => "Cluster Diagnostics\n\nAvailable to everyone."
   }
 )
+seeded_tools << diag_tool
 
 para_tool = Tool.seed_record!(
   {
@@ -579,6 +593,7 @@ para_tool = Tool.seed_record!(
     :description => "Standard CBRAIN Task Parallelizer"
   }
 )
+seeded_tools << para_tool
 
 seri_tool = Tool.seed_record!(
   {
@@ -592,6 +607,7 @@ seri_tool = Tool.seed_record!(
     :description => "Standard CBRAIN Task Serializer"
   }
 )
+seeded_tools << seri_tool
 
 puts <<STEP
 
@@ -637,46 +653,46 @@ ToolConfig.seed_record!(
   { :info_name_method => :description }
 )
 
-Bourreau.all.each do |bourreau|
+seeded_bourreaux.each do |bourreau|
 
-# para_diag
-ToolConfig.seed_record!(
-  {
-    :tool_id     => para_tool.id,
-    :description => 'Latest CBRAIN Parallelizer',
-    :bourreau_id => bourreau.id
-  },
-  {
-    :group_id    => Group.everyone.id,
-    :env_array   => [ ],
-    :script_prologue => "",
-    :ncpus       => 1,
-    :version_name     => "#{version_name += 1}"
-  },
-  { :info_name_method => :description }
-)
+  # para_diag
+  ToolConfig.seed_record!(
+    {
+      :tool_id     => para_tool.id,
+      :description => 'Latest CBRAIN Parallelizer',
+      :bourreau_id => bourreau.id
+    },
+    {
+      :group_id    => Group.everyone.id,
+      :env_array   => [ ],
+      :script_prologue => "",
+      :ncpus       => 1,
+      :version_name     => "#{version_name += 1}"
+    },
+    { :info_name_method => :description }
+  )
 
-# seri_diag
-ToolConfig.seed_record!(
-  {
-    :tool_id     => seri_tool.id,
-    :description => 'Latest CBRAIN Serializer',
-    :bourreau_id => bourreau.id
-  },
-  {
-    :group_id    => Group.everyone.id,
-    :env_array   => [ ],
-    :script_prologue => "",
-    :ncpus       => 1,
-    :version_name     => "#{version_name += 1}"
-  },
-  { :info_name_method => :description }
-)
+  # seri_diag
+  ToolConfig.seed_record!(
+    {
+      :tool_id     => seri_tool.id,
+      :description => 'Latest CBRAIN Serializer',
+      :bourreau_id => bourreau.id
+    },
+    {
+      :group_id    => Group.everyone.id,
+      :env_array   => [ ],
+      :script_prologue => "",
+      :ncpus       => 1,
+      :version_name     => "#{version_name += 1}"
+    },
+    { :info_name_method => :description }
+  )
 
 end # each bourreau
 
 diag_all_tcs = []
-[ main_bourreau, pember_bourreau, longbourne_bourreau ].each do |bourreau|
+seeded_bourreaux.each do |bourreau|
   [ 1, 2, 3].each do |version|
     diag_all_tcs << ToolConfig.seed_record!(
       {
@@ -717,7 +733,7 @@ def seeds_dev_tmp_file(content)
   end
 end
 
-User.all.each do |user|
+seeded_users.each do |user|
   tf = TextFile.seed_record!(
     {
       :name => "diary_for_#{user.login}.txt",
@@ -731,7 +747,7 @@ User.all.each do |user|
     tf.cache_copy_from_local_file(fn) if tf.size.blank?
   end
 
-  DataProvider.all.each do |dp|
+  seeded_dp.each do |dp|
     next unless dp.can_be_accessed_by?(user)
     user.groups.each do |group|
       ingroup = LogFile.seed_record!(
@@ -775,7 +791,7 @@ Userfile.all.each do |f|
   f.save
 end
 
-User.all.each do |user|
+seeded_users.each do |user|
   mydiarytag = Tag.seed_record!(
     {
       :name     => "Dia_#{user.login}",
@@ -803,10 +819,10 @@ STEP
 
 PortalTask.nil? # force pre-load of all constants under CbrainTask, e.g. CbrainTask::Diagnostics etc
 
-User.all.each do |user|
+seeded_users.each do |user|
   groups = [ user.own_group ] + user.groups.where( :type => 'WorkGroup' ).all
   groups.each do |group|
-    Bourreau.all.each do |bourreau|
+    seeded_bourreaux.each do |bourreau|
       next unless bourreau.can_be_accessed_by?(user)
       [ diag_tool ].each do |tool|
         howlong = rand(10) + 5

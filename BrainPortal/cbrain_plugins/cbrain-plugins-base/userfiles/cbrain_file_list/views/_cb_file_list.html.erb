@@ -1,0 +1,105 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% if @userfile.is_locally_synced? %>
+
+    <p class="medium_paragraphs">
+    This type of file contains a list of other CBRAIN files that can be used as input
+    or output to tasks within CBRAIN. <strong>The only information that the system cares
+    about are the file IDs in the first column</strong>; the other columns are normally repeats
+    of the information already recorded within CBRAIN for each of these IDs. It is
+    possible that the information will not match, if the file has been manually edited
+    for instance.
+    <p class="medium_paragraphs">
+    The content of this list is stored as a standard CSV file in plain text. In the
+    table below, the names of the files are repeated: the first one is the name as
+    known within CBRAIN, and the second one is whatever name was in the CSV file (which
+    can be missing or wrong).
+    </p>
+
+    <%
+      csv_array     = @userfile.cached_csv_array
+      per_page      = 500
+      nb_row        = csv_array.size
+      page          = (params[:page] || 1).to_i
+      page          = 1 if page < 1
+      csv_array     = WillPaginate::Collection.create(page, per_page) do |pager|
+        pager.replace(csv_array[(page-1)*per_page, per_page] || [])
+        pager.total_entries = csv_array.size
+        pager
+      end
+    %>
+
+    <div class="no_ajax_pagination">
+      <span>
+        <%= will_paginate csv_array,
+          :params => { :controller => :userfiles, :action => :show, :sort_index => @sort_index },
+          :container => false
+        %>
+        (<%= pluralize nb_row, "file" %> in this list)
+      </span>
+    </div>
+
+    <table id="report_table">
+
+      <%
+        ################################
+        # Top headers of table
+        ################################
+      %>
+
+      <tr>
+        <% attlist = @userfile.class.const_get('ATTRIBUTES_LIST') %>
+        <% attlist.each do |att| %>
+          <% att = :project if att == :group_id %>
+          <th><%= att.to_s.sub(/_id$/,"").classify.gsub(/(.+)([A-Z])/, '\1 \2') %></th>
+        <% end %>
+      </tr>
+
+      <%
+        ################################
+        # Main body of table
+        ################################
+      %>
+
+      <% csv_array.each do |cvs_row| %>
+        <tr>
+          <% cur_file = nil %>
+          <% attlist.each_with_index do |att,idx|%>
+            <% val = cvs_row[idx] %>
+            <td class="left_align">
+              <% if att == :id %>
+                <% cur_file = Userfile.find_all_accessible_by_user(current_user).where(:id => val).first %>
+                <%= val %> : <%= link_to_userfile_if_accessible(cur_file) %>
+              <% else %>
+                <%= val.nil? ? "-" : val %>
+              <% end %>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+
+    </table>
+
+<% end%>

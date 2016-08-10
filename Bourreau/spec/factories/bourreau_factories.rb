@@ -1,0 +1,1 @@
+../../../BrainPortal/spec/factories/portal_factories.rb

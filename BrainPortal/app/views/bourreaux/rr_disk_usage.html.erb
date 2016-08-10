@@ -128,10 +128,14 @@
       </tr>
     </table>
 
-    <p/><%= disk_usage_legend %>
+    <p>
+    <%= disk_usage_legend %>
 
     <%= hidden_field_tag "cleanup_older",    @cache_older %>
     <%= hidden_field_tag "cleanup_younger",  @cache_younger %>
+    <% (params[:types] || []).each do |type| %>
+      <%= hidden_field_tag "types[]", type  %>
+    <% end %>
 
     <% end %> <!-- form -->
   </span>
@@ -143,14 +147,23 @@
 <!-- *********************************** -->
 
 <%= form_tag({ :action  => :rr_disk_usage }, :method => :get) do %>
-  Files reported in the <em>Caches</em> report were last accessed:
-  <div class="display_table">
-  <% params[:date_range] ||= {} %>
-  <% params[:date_range]["relative_from"] ||= 50.years.to_i.to_s %>
-  <% params[:date_range]["relative_to"]   ||= 1.week.to_i.to_s %>
-  <%= date_range_panel(params[:date_range], "date_range", :date_attributes => [], :without_abs => true) %>
+  <h4>Filter this report: files reported above...</h4>
+  <div class="display_cell">
+    ... are of type:<br>
+    <%= userfile_type_select :types, {:selector => params[:types]} , :multiple => true, :size => 10 %>
+    <br>(None selected means <em>any</em>)
   </div>
-  </p>
-  <%= submit_tag 'Refresh' %>
+  <div class="box_spacer"></div>
+  <div class="display_cell">
+    ... were last accessed:<br>
+    <% params[:date_range] ||= {} %>
+    <% params[:date_range]["relative_from"] ||= 50.years.to_i.to_s %>
+    <% params[:date_range]["relative_to"]   ||= 1.week.to_i.to_s %>
+    <%= date_range_panel(params[:date_range], "date_range", :date_attributes => [], :without_abs => true) %>
+    <p>
+    <center>
+      <%= submit_tag 'Refresh Report' %>
+    </center>
+  </div>
 <% end %>
 

@@ -36,7 +36,7 @@ RSpec.describe DataProvidersController, :type => :controller do
 
     context "collection action" do
       describe "index" do
-        let!(:local_dp) { create(:local_data_provider) }
+        let!(:local_dp) { create(:flat_dir_local_data_provider) }
         it "should assign @data_providers" do
           get :index
           expect(assigns[:data_providers]).to eq([local_dp])
@@ -57,7 +57,7 @@ RSpec.describe DataProvidersController, :type => :controller do
         end
         it "should render the new page" do
           get :new
-          expect(response).to render_template(:partial => "_new")
+          expect(response).to render_template(:new)
         end
       end
       describe "create" do
@@ -80,8 +80,8 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
 
           it "should redirect to index" do
-            post :create, :format => :js
-            expect(response).to redirect_to(:action => :index, :format => :js)
+            post :create, :format => :html
+            expect(response).to redirect_to(:action => :index, :format => :html)
           end
         end
         context "when save fails" do
@@ -93,10 +93,9 @@ RSpec.describe DataProvidersController, :type => :controller do
             expect(controller).not_to receive(:add_meta_data_from_form)
             post :create, :format => :js
           end
-
-          it "should render failed creation partial" do
-            post :create, :format => :js
-            expect(response).to render_template(:partial => "shared/_failed_create")
+          it "should render new page again" do
+            post :create, :format => :html
+            expect(response).to render_template(:new)
           end
         end
       end
@@ -215,16 +214,16 @@ RSpec.describe DataProvidersController, :type => :controller do
           allow(DataProvider).to receive(:find_accessible_by_user).and_return(data_provider)
         end
         it "should check if the data provider is alive" do
-          expect(data_provider).to receive(:is_alive?)
+          expect(data_provider).to receive(:is_alive_with_caching?)
           get :is_alive, :id => 1
         end
         it "should return yes if provider is alive" do
-          allow(data_provider).to receive(:is_alive?).and_return(true)
+          allow(data_provider).to receive(:is_alive_with_caching?).and_return(true)
           get :is_alive, :id => 1
           expect(response.body).to match(/yes/i)
         end
         it "should return no if provider is not alive" do
-          allow(data_provider).to receive(:is_alive?).and_return(false)
+          allow(data_provider).to receive(:is_alive_with_caching?).and_return(false)
           get :is_alive, :id => 1
           expect(response.body).to match(/no/i)
         end
@@ -329,7 +328,7 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
           it "should display that registration was a success" do
             post :register, :id => 1, :basenames => ["a_file"]
-            expect(flash[:notice]).to match(/\bregistered\b/i)
+            expect(flash[:notice]).to match(/\bRegistering\b/i)
           end
           it "should redirect to browse" do
             post :register, :id => 1, :basenames => ["a_file"]
@@ -337,6 +336,10 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
         end
         context "doing move or copy" do
+          before(:each) do
+            allow(CBRAIN).to receive(:spawn_with_active_records).and_yield
+          end
+
           it "should check for collisions" do
             expect(Userfile).to receive(:where).and_return(double("registered files").as_null_object)
             post :register, :id => 1, :basenames => ["a_file"], :auto_do => "MOVE"
@@ -350,14 +353,14 @@ RSpec.describe DataProvidersController, :type => :controller do
             expect(response).to redirect_to(:action => :browse)
           end
           it "should move the file if a move is requested" do
-            allow(CBRAIN).to receive(:spawn_with_active_records).and_yield
+            allow(controller).to receive(:userfiles_from_basenames).and_return({"b_file" => nil})
             expect(registered_file).to receive(:provider_move_to_otherprovider)
-            post :register, :id => 1, :basenames => ["a_file"], :auto_do => "MOVE"
+            post :register, :id => 1, :basenames => ["b_file"], :auto_do => "MOVE"
           end
           it "should copy the file if a copy is requested" do
-            allow(CBRAIN).to receive(:spawn_with_active_records).and_yield
+            allow(controller).to receive(:userfiles_from_basenames).and_return({"b_file" => nil})
             expect(registered_file).to receive(:provider_copy_to_otherprovider)
-            post :register, :id => 1, :basenames => ["a_file"], :auto_do => "COPY"
+            post :register, :id => 1, :basenames => ["b_file"], :auto_do => "COPY"
           end
         end
 

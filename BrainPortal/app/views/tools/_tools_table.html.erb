@@ -24,7 +24,7 @@
 
 <div class="menu_bar">
   <% if current_user.has_role?(:admin_user) %>
-    <%= new_model_button 'Create New Tool', new_tool_path %>
+    <%= link_to 'Create New Tool', new_tool_path, :class => "button menu_button" %>
     <%= link_to 'Autoload Tools', { :action  => :create, :autoload  => true}, :method  => :post, :class => "button menu_button", :title => "Registers all subclasses of PortalTask as Tools" %>
     <%= link_to 'Access Reports', { :controller => :tool_configs, :action => :index }, :class => "button menu_button" %>
   <% end %>
@@ -112,7 +112,8 @@
     end
 
     t.column("Help", :help) do |tool|
-      path = tool.cbrain_task_class.constantize.public_path("edit_params_help.html") rescue nil
+      path   = tool.cbrain_task_class.constantize.public_path("edit_params_help.html") rescue nil
+      path ||= tool.cbrain_task_class.constantize.help_filepath rescue nil # Boutiques help-page
       overlay_ajax_link "Help", path.to_s if path
     end
 

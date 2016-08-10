@@ -435,7 +435,7 @@ class DataProvider < ActiveRecord::Base
   # The value returned is a Pathname object, so be careful
   # to call to_s() on it, when necessary.
   def cache_full_path(userfile)
-    cache_full_pathname(userfile)
+    cache_full_pathname(userfile) # this is the internal private version with a REAL path to the REAL cache
   end
 
   # Executes a block on a filehandle open in +read+ mode for the
@@ -1021,6 +1021,31 @@ class DataProvider < ActiveRecord::Base
     raise "Internal error: can't parse description!?!" unless description =~ /^(.+\n?)/ # the . doesn't match \n
     header = Regexp.last_match[1].strip
     header
+  end
+
+  # Checks whether DP is alive, but hits the cache first if it's good
+  def is_alive_with_caching?
+    if self.alive_cached_valid?
+      return self.meta[:alive_cached]
+    else
+      # real check, cache result
+      alive = self.is_alive?
+      self.meta[:alive_cached] = alive
+      self.meta[:alive_cached_time] = Time.now.to_i
+      return alive
+    end
+  end
+
+  # This method checks whether cache is still good, lasts 1 minute
+  def alive_cached_valid?
+    valid = (Time.now.to_i - self.meta[:alive_cached_time] <= 60)
+    # Check that the alive cache is actually a boolean
+    if !(self.meta[:alive_cached] == true || self.meta[:alive_cached] == false)
+      valid = false
+    end
+    valid
+  rescue
+    false
   end
 
 

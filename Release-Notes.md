@@ -1,5 +1,18 @@
 ## CBRAIN Release Notes
 
+#### Version 4.4.0 Released 2016-05-31
+
+- SCIR class for LSF batch manager.
+- New subtasking mechanism, improved.
+- Fixed filter links in report maker.
+- Fixed and extend _qc_panel.
+- Added an interface for tasks to create a progress bar showing their status.
+- Fixed bug in UI (example: avoid auto-focusing tag selection).
+- Fixed upload with auto-extraction.
+- Dashboard and search available for all users.
+- Improved boutique support.
+- Improved csv format of userfiles index page.
+
 #### Version 4.3.0 Released 2016-03-16
 
 - There is a new tools launching interface.

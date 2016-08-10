@@ -113,7 +113,7 @@ module SchemaTaskGenerator
 
     # Integrates the encapsulated CbrainTask in this CBRAIN installation.
     # Unless +register+ is specified to be false, this method will add the
-    # required Tool and ToolConfig if necessary for the CbrainTask to be
+    # required Tool if necessary for the CbrainTask to be
     # useable right away (since almost all information required to make the
     # Tool and ToolConfig objects is available in the spec).
     # Also, if +multi_version+ is specified, this method will wrap the
@@ -165,6 +165,12 @@ module SchemaTaskGenerator
         })[partial]
       end
 
+      # Add a helper method for accessing the help file (for use on the tools page)
+      # Written by the rake task cbrain:plugins:install, within the subtask public_assets
+      helpFileName = name + "_help.html"
+      helpFileDir  = File.join( "cbrain_plugins", "cbrain_tasks", "help_files/" )
+      task.define_singleton_method(:help_filepath){ File.join(helpFileDir, helpFileName) }
+
       # If multi-versioning is enabled, replace the task class object constant
       # in CbrainTask (or Object) by a version switcher wrapper class.
       if multi_version
@@ -190,9 +196,9 @@ module SchemaTaskGenerator
     end
 
     # Register a newly generated CbrainTask subclass (+task+) in this CBRAIN
-    # installation, creating the appropriate Tool and ToolConfig objects from
-    # the information contained in the descriptor. The newly created Tool and
-    # ToolConfig will initially belong to the core admin.
+    # installation, creating the appropriate Tool object from the information
+    # contained in the descriptor. The newly created Tool and ToolConfig
+    # will initially belong to the core admin.
     def register(task)
       name         = @descriptor['name']
       version      = @descriptor['tool-version'] || '(unknown)'
@@ -200,7 +206,7 @@ module SchemaTaskGenerator
       docker_image = @descriptor['docker-image']
       resource     = RemoteResource.current_resource
 
-      # Create and save a new Tool for the task, unless theres already one.
+      # Create and save a new Tool for the task, unless there's already one.
       Tool.new(
         :name              => name,
         :user_id           => User.admin.id,
@@ -215,6 +221,11 @@ module SchemaTaskGenerator
       # theres already one. Only applies to Bourreaux (as it would make no
       # sense on the portal).
       return if Rails.root.to_s =~ /BrainPortal$/
+
+      # Create a ToolConfig iff
+      #   (1) the Bourreau has a docker executable and
+      #   (2) the descriptor specifies a docker image
+      return if docker_image.nil? || !resource.docker_present
 
       ToolConfig.new(
         :tool_id      => task.tool.id,
@@ -267,14 +278,34 @@ module SchemaTaskGenerator
   # and +generate+ will abort at any validation error. Set +strict_validation+
   # to false if you wish for the generator to try and generate the task despite
   # validation issues.
-  def self.generate(schema, descriptor, strict_validation = true)
-    descriptor = self.expand_json(descriptor)
+  def self.generate(schema, descriptorInput, strict_validation = true)
+    descriptor = self.expand_json(descriptorInput)
     name       = self.classify(descriptor['name'])
     schema     = Schema.new(schema) unless schema.is_a?(Schema)
-    errors     = schema.send(
-      strict_validation ? :'validate!' : :validate,
-      descriptor
-    ) || []
+    errors     = []
+
+    # Check for validation errors, but don't let them implode the whole cbrain app
+    begin
+      errors = schema.send(
+        strict_validation ? :'validate!' : :validate,
+        descriptor
+      ) || []
+    rescue StandardError => e
+      errors = [e] # Thrown exceptions form the error list in that case
+    end
+
+    # This lets us skip the task generation if a validation error occurred regardless of whether
+    # we were in strict or non-strict mode.
+    if (errors.length rescue 0) > 0
+      # Error message
+      msg = 'Encountered validation error(s) ' + errors.to_s + "\n\n" +
+            "WARNING: Boutiques application descriptor #{descriptor['name']} failed validation!\n" +
+            "\tSkipping task generation. Check " + descriptorInput.to_s + "."
+      # Log it
+      Rails.logger.warn( msg )
+      # Return now to skip task generation (prevent catastrophic failure of cbrain)
+      return
+    end
 
     apply_template = lambda do |template|
       ERB.new(IO.read(

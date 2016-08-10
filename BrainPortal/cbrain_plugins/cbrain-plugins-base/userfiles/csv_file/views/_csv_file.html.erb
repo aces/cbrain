@@ -59,6 +59,7 @@
       <span class="no_wrap">
         <%= check_box_tag "with_header", "1", with_header %> First row contains header labels.
         <%= hidden_field_tag :page, page %>
+        <%= hidden_field_tag :viewer, @viewer.name %>
         <%= submit_tag "Refresh" %>
       </span>
     <% end %>
@@ -66,9 +67,9 @@
     </br>
 
     <div class="no_ajax_pagination">
-      <span class="page_links">
+      <span>
         <%= will_paginate csv_array,
-          :params => { :controller => :userfiles, :action => :show },
+          :params => { :controller => :userfiles, :action => :show, :sort_index => @sort_index },
           :container => false
         %>
         (<%= pluralize nb_row, "rows" %>)

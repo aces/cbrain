@@ -152,7 +152,7 @@ RSpec.describe UsersController, :type => :controller do
             allow(User).to receive(:new).and_return(mock_user)
             allow(mock_user).to receive(:save).and_return(false)
             post :create, :user => {}, :format => :js
-            expect(response).to render_template("shared/_failed_create")
+            expect(response.status).to eq(406)
           end
 
         end

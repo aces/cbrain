@@ -189,7 +189,11 @@ module ViewScopes
     #
     # Note that pagination is not applied by default; specify +paginate+ to
     # paginate +collection+.
-    def apply(collection, on_failure: :ignore, paginate: false)
+    #
+    # If +sorting+ is set to true (the default), both filtering rules
+    # and sorting will be applied; when this option is set to false
+    # only the filtering rules will be applied.
+    def apply(collection, on_failure: :ignore, paginate: false, sorting: true)
       # Wrap a filtering or sorting rule application to handle exceptions,
       # using +fallback+ as a fall-back value for :ignore.
       empty = (collection <= ActiveRecord::Base rescue nil) ?
@@ -212,13 +216,15 @@ module ViewScopes
       end
 
       # Apply sorting rules
-      if (collection <= ActiveRecord::Base rescue nil)
-        collection = @order.inject(collection) do |collection, order|
-          wrap.(collection) { order.apply(collection) }
+      if sorting
+        if (collection <= ActiveRecord::Base rescue nil)
+          collection = @order.inject(collection) do |collection, order|
+            wrap.(collection) { order.apply(collection) }
+          end
+        else
+          collection = wrap.(collection) { @order.first.apply(collection) } unless
+            @order.empty?
         end
-      else
-        collection = wrap.(collection) { @order.first.apply(collection) } unless
-          @order.empty?
       end
 
       # Paginate
@@ -1029,8 +1035,8 @@ module ViewScopes
           hash.is_a?(HashWithIndifferentAccess)
 
         pagination = self.new
-        pagination.page     = Integer(hash['i'] || hash['page'] || 1) rescue nil
-        pagination.per_page = Integer(hash['p'] || hash['per_page'])  rescue nil
+        pagination.page     = Integer(hash['i'] || hash['page'] || 1) rescue 1
+        pagination.per_page = Integer(hash['p'] || hash['per_page'])  rescue 25
         pagination.total    = Integer(hash['t'] || hash['total'])     rescue nil
         pagination
       end

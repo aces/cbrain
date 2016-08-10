@@ -22,8 +22,8 @@
 
 require 'rails_helper'
 
-describe LocalDataProvider do
-  let(:local_data_provider) {create(:local_data_provider)}
+describe FlatDirLocalDataProvider do
+  let(:local_data_provider) {create(:flat_dir_local_data_provider)}
   let(:userfile) {create(:userfile, :data_provider => local_data_provider)}
 
   describe "#is_fast_syncing?" do
@@ -71,7 +71,7 @@ describe LocalDataProvider do
   describe "#impl_provider_list_all" do
 
     it "should always raise a cb_error" do
-      expect{local_data_provider.impl_provider_list_all}.to raise_error
+      expect{local_data_provider.impl_provider_list_all}.to raise_error(NoMethodError, /undefined method/)
     end
   end
 

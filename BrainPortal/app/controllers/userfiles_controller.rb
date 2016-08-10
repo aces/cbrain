@@ -32,7 +32,8 @@ class UserfilesController < ApplicationController
   before_filter :login_required
   around_filter :permission_check, :only => [
       :download, :update_multiple, :delete_files,
-      :create_collection, :change_provider, :quality_control
+      :create_collection, :change_provider, :quality_control,
+      :export_file_list
   ]
 
   MAX_DOWNLOAD_MEGABYTES = 400
@@ -258,9 +259,9 @@ class UserfilesController < ApplicationController
     begin
       if @viewer
         if params[:apply_div] == "false"
-          render :file   => @viewer.partial_path.to_s, :layout => false
+          render :file   => @viewer.partial_path.to_s, :layout => params[:apply_layout].present?
         else
-          render :action => :display,                  :layout => false
+          render :action => :display,                  :layout => params[:apply_layout].present?
         end
       else
         render :text => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>", :status  => "404"
@@ -287,7 +288,8 @@ class UserfilesController < ApplicationController
     @sync_status        = 'ProvNewer' # same terminology as in SyncStatus
     state               = @userfile.local_sync_status
     @sync_status        = state.status if state
-    @viewer             = @userfile.viewers.first
+    @viewer             = @userfile.find_viewer(params[:viewer]) if params[:viewer].present?
+    @viewer           ||= @userfile.viewers.first
 
     @log                = @userfile.getlog        rescue nil
 
@@ -812,7 +814,7 @@ class UserfilesController < ApplicationController
       end
       @current_userfile.set_tags_for_user(current_user, tag_ids)
       # Only update description
-      @current_userfile.update_attributes_with_logging( { "description" => params[:userfile][:description] }, current_user) if params[:userfile][:description]
+      @current_userfile.update_attributes_with_logging( { "description" => params[:userfile][:description] }, current_user) if params[:userfile] && params[:userfile][:description]
     end
 
     if commit_name == :previous && @current_index > 0
@@ -1182,6 +1184,54 @@ class UserfilesController < ApplicationController
   def uncompress #:nodoc:
     manage_compression(params[:file_ids] || [], :uncompress)
     redirect_to(:action => :index)
+  end
+
+  # Given a set of files selected by the user, creates a new
+  # file of type CbrainFileList the describe them; the file is
+  # added automatically to the user's workspace.
+  def export_file_list
+    file_ids = params[:file_ids] || []
+
+    dest_dp_id   = DataProvider.find_by_id(current_user.meta["pref_data_provider_id"]).try(:id)
+    dest_dp_id ||= DataProvider.find_all_accessible_by_user(current_user).where(:online => true).first.try(:id)
+
+    if !dest_dp_id
+      flash[:error] = "For this feature to work you need access to an online Data Provider; you can select " +
+                      "your favorite one in your account preferences."
+      redirect_to(:action => :index)
+      return
+    end
+
+    # Find the files
+    userfiles = Userfile
+      .find_all_accessible_by_user(current_user, :access_requested => :read)
+      .where(:id => file_ids).all
+
+    if userfiles.empty?
+      flash[:error] = "You need to select some files first."
+      redirect_to(:action => :index)
+      return
+    end
+
+    # Create the new file list
+    file_list = CbrainFileList.new(
+      :user_id          => current_user.id,
+      :group_id         => current_project.try(:id) || current_user.own_group.id,
+      :name             => "file_list.#{Process.pid}.#{Time.now.to_i}.cbcsv",
+      :data_provider_id => dest_dp_id,
+    )
+
+    # Save it and set its content.
+    if file_list.save
+      csv_text = CbrainFileList.create_csv_file_from_userfiles(userfiles)
+      file_list.cache_writehandle { |fh| fh.write(csv_text) }
+      flash[:notice] = "Created file list named '#{file_list.name}'."
+      redirect_to(:controller => :userfiles, :action => :show, :id => file_list.id)
+    else
+      flash[:error] = "Could not create file list. Contact the admins."
+      redirect_to(:action => :index)
+    end
+
   end
 
   # Compress/uncompress single files (SingleFile) and archive/unarchive
