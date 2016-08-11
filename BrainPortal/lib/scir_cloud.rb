@@ -261,7 +261,6 @@ class ScirCloud < Scir
         x.vm_id == vm_task.id &&
         active_task_ids.include?(x.task_id)
       }.count
-      File.open("/tmp/vms.log", 'a') { |file| file.write("VM, id: #{vm_task.id}, active tasks: #{n_tasks_in_vm}\n") }
       return vm_task.params[:job_slots].to_i - n_tasks_in_vm
     end
   end
