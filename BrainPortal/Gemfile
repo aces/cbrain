@@ -36,6 +36,7 @@ gem "rails_autolink"
 gem "pbkdf2-ruby"
 gem "json-schema"
 gem "test-unit",    "~> 3.1"
+gem "aws-sdk"
 
 group :development do
   gem "wirble"
@@ -45,8 +46,6 @@ group :development do
   gem "pry-byebug"
   gem "pry-doc"
 end
-
-gem 'aws-sdk'
 
 group :test do
   gem "rspec",                    "~> 3.4"

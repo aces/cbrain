@@ -440,8 +440,10 @@ class Bourreau < RemoteResource
 
     taskids.shuffle.each_with_index do |task_id,count|
       $0 = "AlterTask #{newstatus} ID=#{task_id} #{count+1}/#{taskids.size}\0"
+      task = CbrainTask.where(:id => task_id, :bourreau_id => myself.id).first
+      next unless task # doesn't even exist? just ignore it
+
       begin
-        task       = CbrainTask.find(task_id.to_i)
         old_status = task.status # so we can detect if the operation did anything.
         task.update_status
 

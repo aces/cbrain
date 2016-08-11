@@ -162,6 +162,9 @@ class BourreauxController < ApplicationController
     # Help link for large uploads (shows up in the upload panel)
     add_meta_data_from_form(@bourreau, [ :large_upload_url ])
 
+    # Amazon EC2 properties
+    add_meta_data_from_form(@bourreau, [:amazon_ec2_access_key_id, :amazon_ec2_secret_access_key, :amazon_ec2_region] )
+
     # Clean up all file synchronization stuff if the DP cache dir has changed.
     if old_dp_cache_dir != @bourreau.dp_cache_dir
       old_ss = SyncStatus.where( :remote_resource_id => @bourreau.id )
