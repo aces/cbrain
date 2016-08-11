@@ -74,6 +74,9 @@ class Scir
     @config = {
       :extra_qsub_args => rr.cms_extra_qsub_args || "",
       :default_queue   => rr.cms_default_queue   || "",
+      :amazon_ec2_region => rr.meta[:amazon_ec2_region] || "",
+      :amazon_ec2_access_key_id => rr.meta[:amazon_ec2_access_key_id] || "",
+      :amazon_ec2_secret_access_key => rr.meta[:amazon_ec2_secret_access_key] || "",
     }
   end
 
@@ -112,6 +115,8 @@ class Scir
 
   class Session #:nodoc:
 
+    @@state_if_missing = Scir::STATE_UNDETERMINED
+
     public
 
     def revision_info #:nodoc:
@@ -149,7 +154,7 @@ class Scir
       end
       jinfo = @job_info_cache[jid.to_s]
       return jinfo[:drmaa_state] if jinfo
-      Scir::STATE_UNDETERMINED
+      return @@state_if_missing
     end
 
     def hold(jid) #:nodoc:
@@ -203,7 +208,7 @@ class Scir
   class JobTemplate #:nodoc:
 
     # We only support a subset of DRMAA's job template
-    attr_accessor :name, :command, :arg, :wd, :stdin, :stdout, :stderr, :join, :queue, :walltime, :tc_extra_qsub_args
+    attr_accessor :name, :command, :arg, :wd, :stdin, :stdout, :stderr, :join, :queue, :walltime, :tc_extra_qsub_args, :task_id
 
     def revision_info #:nodoc:
       Class.const_get(self.class.to_s.sub(/::JobTemplate/,"")).revision_info

@@ -491,7 +491,7 @@ class RemoteResource < ActiveRecord::Base
       host = "localhost"
       port = 3090+self.id  # see also in start_tunnels()
     end
-    "http://" + host + (port && port > 0 ? ":#{port}" : "") + dir
+    "http://" + ( host.presence || "localhost" ) + (port && port > 0 ? ":#{port}" : "") + dir
   end
 
   # Returns a RemoteResourceInfo object describing the
@@ -707,7 +707,7 @@ class RemoteResource < ActiveRecord::Base
 
   # Utility method to send a clean_cache command to a
   # RemoteResource, whether local or not.
-  def send_command_clean_cache(userlist,older_than,younger_than)
+  def send_command_clean_cache(userlist,typelist,older_than,younger_than)
     if older_than.is_a?(Fixnum)
        time_older = older_than.seconds.ago
     elsif older_than.is_a?(Time)
@@ -727,6 +727,7 @@ class RemoteResource < ActiveRecord::Base
     command = RemoteCommand.new(
       :command     => 'clean_cache',
       :user_ids    => useridlist,
+      :types       => Array(typelist).join(","),
       :before_date => time_older,
       :after_date  => time_younger
     )
@@ -907,17 +908,21 @@ class RemoteResource < ActiveRecord::Base
   # last accessed before the +before_date+ ; the task
   # is started in background, as it can be long.
   def self.process_command_clean_cache(command)
-    user_ids    = command.user_ids    || 'all'
-    before_date = command.before_date
-    after_date  = command.after_date
+    user_ids    = command.user_ids.presence
+    before_date = command.before_date.presence
+    after_date  = command.after_date.presence
+    types       = command.types.presence
 
-    user_id_list = (user_ids =~ /all/) ? nil : user_ids.split(/,/)
+    user_id_list = user_ids ? user_ids.split(",") : nil
+    types_list   = types    ? types.split(",")    : nil
 
     CBRAIN.spawn_with_active_records(:admin, "Cache Cleanup") do
       syncs = SyncStatus.where( :remote_resource_id => RemoteResource.current_resource.id )
-      syncs = syncs.where([ "sync_status.accessed_at < ?", before_date])          if before_date.present?
-      syncs = syncs.where([ "sync_status.accessed_at > ?", after_date])           if after_date.present?
-      syncs = syncs.joins(:userfile).where( 'userfiles.user_id' => user_id_list ) if user_id_list
+      syncs = syncs.where([ "sync_status.accessed_at < ?", before_date])          if before_date
+      syncs = syncs.where([ "sync_status.accessed_at > ?", after_date])           if after_date
+      syncs = syncs.joins(:userfile)                                              if user_id_list || types_list
+      syncs = syncs.where( 'userfiles.user_id' => user_id_list )                  if user_id_list
+      syncs = syncs.where( 'userfiles.type'    => types_list )                    if types_list
 
       syncs = syncs.all
       syncs.each_with_index do |ss,i|

@@ -33,6 +33,7 @@ gem "log4r"
 gem "thin"
 gem "pbkdf2-ruby"
 gem "json-schema"
+gem 'aws-sdk'
 
 group :development, :test do
   gem "rspec",                    "~> 3.4"
