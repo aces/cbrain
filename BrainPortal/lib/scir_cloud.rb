@@ -62,26 +62,23 @@ class ScirCloud < Scir
   
   class Session < Scir::Session
 
+    # Returns the local IP of the (VM) task in the cloud.
     def get_local_ip(jid)
       raise "Needs to be provided in a sub-class"
     end
 
-    # Not supported
     def hold_vm(jid)
       raise "Needs to be implemented in a sub-class"
     end
     
-    # Not supported
     def release_vm(jid)
       raise "Needs to be implemented in a sub-class"
     end
     
-    # Not supported
     def suspend_vm(jid)
       raise "Needs to be implemented in a sub-class"
     end
     
-    # Not supported
     def resume(jid)
       raise "Needs to be implemented in a sub-class"
     end
@@ -91,22 +88,36 @@ class ScirCloud < Scir
       raise "Needs to be implemented in a sub-class"
     end
 
-    # TODO: doc todo, based on the doc in scir_amazon
+    # Submits a VM to the cloud.
+    # Parameters:
+    # * vm_name: name of the VM to create, e.g "CBRAIN worker".
+    # * image_id: image id used by the VM. Specific to the cloud
+    #             backend. Example: "ami-03cc9133".
+    # * key_name: ssh key name that will be authorized in the VM.
+    #             The corresponding key pair has to be configured
+    #             in the cloud. Usually, the key name corresponds
+    #             to the ssh portal key of the CBRAIN portal.
+    #             Example: "id_cbrain_portal_scir_amazon".
+    # * instance_type: instance type used by the VM. Example:
+    #                  "t2_small".
+    # * tag_value: a string used to tag the VM in the cloud.
     def submit_vm(vm_name,image_id,key_name,instance_type,tag_value)
       raise "Needs to be implemented in a sub-class"
     end
     
-    # Not supported
+    # All the subsequent methods handle two types of tasks: (1) VM
+    # tasks, identified using ScirCloud.is_vm_task?, and regular tasks
+    # that run inside VMs.
+
     def hold(jid)
       cbrain_task = CbrainTask.where(:cluster_jobid => jid).first
       if ScirCloud.is_vm_task?(cbrain_task)
-        hold_vm(cbrain_task.cluster_jobid)
+          hold_vm(cbrain_task.cluster_jobid)
       else
         true # as in scir_unix
       end
     end
     
-    # Not supported
     def release(jid)
       cbrain_task = CbrainTask.where(:cluster_jobid => jid).first
       if ScirCloud.is_vm_task?(cbrain_task)
@@ -116,7 +127,6 @@ class ScirCloud < Scir
       end
     end
     
-    # Not supported
     def suspend(jid)
       cbrain_task = CbrainTask.where(:cluster_jobid => jid).first
       if ScirCloud.is_vm_task?(cbrain_task)
@@ -127,12 +137,15 @@ class ScirCloud < Scir
         begin
           vm_task.run_command_in_vm(command)
         rescue => ex
-          raise ex unless ex.message.include? "Cannot establish connection with VM" #if the VM executing this task cannot be reached, then the task should be put in status terminated. Otherwise, if VM shuts down and the task is still in there, it could never be terminated.
+          # if the VM executing this task cannot be reached,
+          # then the task should be put in status terminated. Otherwise, if VM
+          # shuts down and the task is still in there, it will never be
+          # terminated.
+          raise ex unless ex.message.include? "Cannot establish connection with VM"
         end
       end
     end
     
-    # Not supported
     def resume(jid)
       cbrain_task = CbrainTask.where(:cluster_jobid => jid).first
       if ScirCloud.is_vm_task?(cbrain_task)
@@ -143,7 +156,10 @@ class ScirCloud < Scir
         begin
           vm_task.run_command_in_vm(command)
         rescue => ex
-          raise ex unless ex.message.include? "Cannot establish connection with VM" #if the VM executing this task cannot be reached, then the task should be put in status terminated. Otherwise, if VM shuts down and the task is still in there, it could never be terminated.
+          raise ex unless ex.message.include? "Cannot establish connection with VM"
+          #if the VM executing this task cannot be reached, then the task should
+          #be put in status terminated. Otherwise, if VM shuts down and the task
+          #is still in there, it could never be terminated.
         end
       end
     end
@@ -160,22 +176,30 @@ class ScirCloud < Scir
         begin
           vm_task.run_command_in_vm(command)
         rescue => ex
-          raise ex unless ex.message.include? "Cannot establish connection with VM" #if the VM executing this task cannot be reached, then the task should be put in status terminated. Otherwise, if VM shuts down and the task is still in there, it could never be terminated.
+          raise ex unless ex.message.include? "Cannot establish connection with VM"
+          #if the VM executing this task cannot be reached, then the task should
+          #be put in status terminated. Otherwise, if VM shuts down and the task
+          #is still in there, it could never be terminated.
         end
       end
     end
 
     def job_ps(jid,caller_updated_at = nil) #:nodoc:
       cbrain_task = CbrainTask.where(:cluster_jobid => jid).first
-      return super if ScirCloud.is_vm_task?(cbrain_task) # VMs can be monitored with
-                                        # the cache mechanism implemented in Scir
-                                        # (update_job_info_cache is of course overriden
-                                        # in the children classes of ScirCloud). 
+
+      # VM tasks can be monitored with the regular cache mechanism
+      # implemented in Scir (update_job_info_cache is of course
+      # overriden in the children classes of ScirCloud).
+      return super if ScirCloud.is_vm_task?(cbrain_task)
+
       # Monitoring of tasks running in VMs
       pid = get_pid(jid)
       vm_id = get_vm_id(jid)
       vm_task = CbrainTask.find(vm_id)
-      vm_task.mount_directories # raises an exception if directories cannot be mounted
+      # The following statement raises an exception if directories
+      # cannot be mounted. It is not costly due to the caching
+      # mechanism implemented in StartVM.is_mounted?
+      vm_task.mount_directories 
       command = "ps -p #{pid} -o pid,state | awk '$1 == \"#{pid}\" {print $2}'"
       status_letter = vm_task.run_command_in_vm(command).gsub("\n","")
       return Scir::STATE_DONE if status_letter == ""
@@ -184,7 +208,7 @@ class ScirCloud < Scir
       return Scir::STATE_UNDETERMINED
     end
 
-    # TODO: doc. Overrides the 'run' method of class Scir. 
+    # Overrides the 'run' method of class Scir. 
     def run(job)
       cbrain_task = CbrainTask.find(job.task_id)
       # The task is a VM, it must be submitted to the cloud
@@ -193,7 +217,7 @@ class ScirCloud < Scir
         return vm.instance_id.to_s
       end
       # The task needs to be executed in a VM
-      vm_id = cbrain_task.params[:vm_id].presence || schedule_task_on_vm(cbrain_task)
+      vm_id = schedule_task_on_vm(cbrain_task)
       vm_task = CbrainTask.find(vm_id)
       raise "VM task #{vm_task.id} is not a VM task (it is a #{vm_task.class.name})." unless ScirCloud.is_vm_task?(vm_task)
       vm_task.mount_directories # raises an exception if directories cannot be mounted
@@ -204,54 +228,81 @@ class ScirCloud < Scir
     
     private 
 
-    def get_pid(jid) #:nodoc:
+    # The job id of a task executed in a VM is PID:VMID where VMID is
+    # the CBRAIN task id of the VM task, and PID is the PID of the
+    # task running in this VM. The following methods are helpers to
+    # manipulate such strings.
+
+    # Returns the task PID from the job id.
+    def get_pid(jid)
       raise "Invalid job id" unless is_valid_jobid?(jid)
       s = jid.split(":")
       return s[2]
     end
     
-    def get_vm_id(jid) #:nodoc:
+    # Returns the VM id from the job id.
+    def get_vm_id(jid)
       raise "Invalid job id" unless is_valid_jobid?(jid)
       s = jid.split(":")
       return s[1]
     end
     
-    def is_valid_jobid?(job_id) #:nodoc:
+    # Returns true if the job id is valid.
+    def is_valid_jobid?(job_id)
       s=job_id.split(":")
       return false if s.size != 3
       return false if s[0] != "VM"
       return true
     end
     
-    def create_job_id(vm_id,pid) #:nodoc:
+    # Create a job id from VMID and PID.
+    def create_job_id(vm_id,pid)
       raise "\"#{pid}\" doesn't look like a valid PID" unless pid.to_s.is_an_integer?
       return "VM:#{vm_id}:#{pid}"
     end
 
     def schedule_task_on_vm(task)
-      # TODO: make this method "synchronized" to avoid race conditions between workers
-      vms = CbrainTask.where(:type => "CbrainTask::StartVM",
-                             :bourreau_id => task.bourreau_id,
-                             :status => "On CPU").all
       tool_config = ToolConfig.find(task.tool_config_id)
-      suitable_vms = vms.select { |x| 
-        x.params[:disk_image ]   == tool_config.cloud_disk_image    &&
-        x.params[:vm_user ]      == tool_config.cloud_vm_user       &&
-        x.params[:instance_type] == tool_config.cloud_instance_type &&
-        x.params[:vm_status]     == "booted"                        
-        # do not filter on ssh parameters and boot timeout as long as the image is booted
-      }.map { |x| 
-        [ x , get_number_of_free_slots_in_vm(x) ] # computes the number of free slot in each VM
-      }.select { |x|
-        x[1] > 0 # removes the VMs with no free slots
-      }.sort!{ |a,b| b[1] <=> a[1] } # sorts VMs by increasing order of free slots
-      raise "Cannot match task to VM." if suitable_vms.empty?
-      vm_id = suitable_vms[0][0].id 
-      tvma = TaskVmAllocation.new 
-      tvma.vm_id = vm_id
-      tvma.task_id = task.id
-      tvma.save!
-      return vm_id
+
+      # We use a lock here to avoid concurrency issues between
+      # workers, which could lead to violations of the number of job
+      # slots in VMs (and we really don't want this as it may slow
+      # down or even crash a VM). 
+      File.open("#{Rails.root}/tmp/VMScheduler.lock", File::RDWR|File::CREAT, 0644) {|f| 
+        f.flock(File::LOCK_EX) # this will block until the lock is available.
+        vms = CbrainTask.where(:type => "CbrainTask::StartVM",
+                               :bourreau_id => task.bourreau_id,
+                               :status => "On CPU").all
+        suitable_vms = vms.select { |x| 
+          x.params[:disk_image ]   == tool_config.cloud_disk_image    &&
+          x.params[:vm_user ]      == tool_config.cloud_vm_user       &&
+          x.params[:instance_type] == tool_config.cloud_instance_type &&
+          x.params[:vm_status]     == "booted"                        
+          # do not filter on ssh parameters and boot timeout as long as the image is booted
+        }.map { |x| 
+          [ x , get_number_of_free_slots_in_vm(x) ] # computes the number of free slot in each VM
+        }.select { |x|
+          x[1] > 0 # removes the VMs with no free slots
+        }.sort!{ |a,b| b[1] <=> a[1] } # sorts VMs by increasing order of free slots
+        raise "Cannot match task to VM." if suitable_vms.empty? # don't modify this exception message,
+        # it is used in cluster_task
+        vm_id = suitable_vms[0][0].id 
+        tvma = TaskVmAllocation.new 
+        tvma.vm_id = vm_id # yes, if the VM has been terminated since
+                           # this method started, we are doomed (this
+                           # is a race condition). To avoid that, a
+                           # lock should be taken on the VM (using a
+                           # status transition as implemented in
+                           # ClusterTask.submit_subtasks_from_json)
+                           # and the status of the VM should be
+                           # checked within the protected section. If
+                           # the status is terminated (or on hold, or
+                           # suspended), we should fall back on the
+                           # next available VM.
+        tvma.task_id = task.id
+        tvma.save!
+        return vm_id
+      }
     end
 
     def get_number_of_free_slots_in_vm(vm_task)

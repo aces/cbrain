@@ -1572,8 +1572,13 @@ class ClusterTask < CbrainTask
         self.status_transition(self.status, "Queued")
         self.addlog("Queued as job ID '#{jobid}'.")
       rescue => ex
-        # Masks the exception if the task couldn't be matched to a VM
-        # since this may change when new VMs are started.
+        # When the task is executed in a VM, it may not be submitted
+        # right away when no VMs are available. In such a case, method
+        # scir_cloud.run will raise an exception. We need to mask this
+        # exception and put the task back to status "New" so that
+        # submission will be attempted again by the Bourreau later
+        # on. VMs may become available for the task when other tasks
+        # complete or new VMs are started.
         raise ex unless ex.message.include?("Cannot match task to VM.") 
         addlog(ex.message)
         addlog("Putting task back to status \"New\".")
@@ -1581,9 +1586,11 @@ class ClusterTask < CbrainTask
         # to give a chance to the task to be submitted again when
         # there are VMs available. It shouldn't be too annoying
         # though, since caches will avoid useless file transfers. To
-        # avoid this status transition, a new status should be
+        # avoid this status transition, a new status could be
         # introduced between "Setting Up" and "Queued"
-        # (e.g. "Submitting").
+        # (e.g. "Scheduling"). That would require some more
+        # modifications in the bourreau worker logic though, so that
+        # tasks in status "Scheduling" are also picked up. 
         self.status_transition("Setting Up","New")
       end
     end

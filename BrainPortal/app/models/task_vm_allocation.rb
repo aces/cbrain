@@ -20,6 +20,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# This object keeps track of the allocations of tasks in VMs. The
+# reason for creating a separate object rather than just adding a
+# 'vm_id' attribute to ClusterTask is that task allocations are
+# created during the task submission process, in method
+# scir_cloud.schedule_task_on_vm which is called from scir_cloud.run
+# when the task is transitioning from "New" to "Setting Up". The
+# bourreau_worker, however, reads the task at the beginning of the
+# transitioning process (bourreau_worker.process_task) and saves it at
+# the end, which means that the modifications saved on the task during
+# the transitioning process are either lost or they just crash
+# Rails. The task transitioning mechanism in bourreau_worker may be
+# updatable to allow for such task modifications during task
+# transitions, but that would be complex and error-prone. Instead,
+# creating a simple table to store these allocations sounds simple and
+# efficient.
 class TaskVmAllocation < ActiveRecord::Base
   
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
