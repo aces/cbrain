@@ -168,8 +168,12 @@ class ScirCloud < Scir
     def terminate(jid)
       cbrain_task = CbrainTask.where(:cluster_jobid => jid).first
       if ScirCloud.is_vm_task?(cbrain_task)
+        # Terminates all the tasks that may be running in the VM
+        TaskVmAllocation.where(:vm_id => cbrain_task.id).all.each { |alloc|
+          CbrainTask.find(alloc.task_id).terminate
+        }
+        # Terminates the VM
         terminate_vm(cbrain_task.cluster_jobid)
-        # TODO terminate all the tasks in this VM and write a message in their log
       else
         pid = get_pid(jid)
         command = "kill -TERM #{pid}"
@@ -326,8 +330,6 @@ class ScirCloud < Scir
 
       # The task will be executed in a VM
       command = qsub_command_scir_unix
-      command.sub!(cbrain_task.full_cluster_workdir,File.join(File.basename(RemoteResource.current_resource.cms_shared_dir),cbrain_task.cluster_workdir)) #TODO (VM tristan) fix these awful substitutions #4769
-      command.gsub!(cbrain_task.full_cluster_workdir,"./")  
       command+=" & echo \$!" #so that the command is backgrounded and its PID is returned
     end    
 
@@ -335,8 +337,8 @@ class ScirCloud < Scir
       "'" + s.gsub(/'/,"'\\\\''") + "'"
     end
 
-    # TODO: call the method from scir unix instead of copying it here.
     def qsub_command_scir_unix #:nodoc:
+      # This method is copied from scir unix, maybe there is a way to mutualize this code.
       raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless
         self.command == "/bin/bash" && self.arg.size == 1
       raise "Error: stdin not supported" if self.stdin
