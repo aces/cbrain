@@ -188,6 +188,7 @@ class ScirCloud < Scir
       end
     end
 
+    # Overrides the 'job_ps' method of class Scir. 
     def job_ps(jid,caller_updated_at = nil) #:nodoc:
       cbrain_task = CbrainTask.where(:cluster_jobid => jid).first
 
@@ -265,6 +266,7 @@ class ScirCloud < Scir
       return "VM:#{vm_id}:#{pid}"
     end
 
+    # Assigns a VM to task and returns the task id of the VM. 
     def schedule_task_on_vm(task)
       tool_config = ToolConfig.find(task.tool_config_id)
 
@@ -274,6 +276,12 @@ class ScirCloud < Scir
       # down or even crash a VM). 
       File.open("#{Rails.root}/tmp/VMScheduler.lock", File::RDWR|File::CREAT, 0644) {|f| 
         f.flock(File::LOCK_EX) # this will block until the lock is available.
+        
+        # The strategy implemented below is very basic and could be
+        # improved in a number of ways. It basically aims at packing
+        # all the tasks in as few VMs as possible so that idle VMs can
+        # be shut down. 
+
         vms = CbrainTask.where(:type => "CbrainTask::StartVM",
                                :bourreau_id => task.bourreau_id,
                                :status => "On CPU").all
@@ -287,7 +295,8 @@ class ScirCloud < Scir
           [ x , get_number_of_free_slots_in_vm(x) ] # computes the number of free slot in each VM
         }.select { |x|
           x[1] > 0 # removes the VMs with no free slots
-        }.sort!{ |a,b| b[1] <=> a[1] } # sorts VMs by increasing order of free slots
+        }.sort!{ |a,b| b[1] <=> a[1] } # sorts VMs by increasing order of free slots so that we increase
+                                       # the amount of idle VMs that we could shut down.
         raise "Cannot match task to VM." if suitable_vms.empty? # don't modify this exception message,
         # it is used in cluster_task
         vm_id = suitable_vms[0][0].id 
@@ -309,6 +318,9 @@ class ScirCloud < Scir
       }
     end
 
+    # Computes the number of free job slots in a VM as the difference
+    # between the number of job slots in the VM and the number of
+    # active tasks in the VM. 
     def get_number_of_free_slots_in_vm(vm_task)
       active_tasks = CbrainTask.where(:status => BourreauWorker::ReadyTasks , :bourreau_id => vm_task.bourreau_id).all
       active_task_ids = active_tasks.map { |x| x.id }
@@ -322,13 +334,13 @@ class ScirCloud < Scir
 
   # The JobTemplate class.
   class JobTemplate < Scir::JobTemplate
-    # This method seems required, although in a ScirCloud the
-    # qsub_command is never used.
+
     def qsub_command
       cbrain_task = CbrainTask.find(task_id)
+      # The method needs to return a string even if it is never used for a VM task.
       return "echo This is never executed" if ScirCloud.is_vm_task?(cbrain_task)
 
-      # The task will be executed in a VM
+      # The task will be executed in a VM.
       command = qsub_command_scir_unix
       command+=" & echo \$!" #so that the command is backgrounded and its PID is returned
     end    
