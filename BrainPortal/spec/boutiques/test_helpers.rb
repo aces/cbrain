@@ -33,7 +33,7 @@ module TestHelpers
   TestScriptName           = 'boutiquesTestApp.rb'
   TestScriptDescriptor     = 'descriptor_test.json'
   ValidationScriptLocation = 'validator.rb'
-  TempStore                = 'spec/fixtures/' # Site for temp file creation, as in other specs
+  TempStore                = File.join('spec','fixtures') # Site for temp file creation, as in other specs
 
   ### Helper script argument-specific constants ###
   # Local name variables for outfile arguments
@@ -101,6 +101,9 @@ module TestHelpers
     # Ensure file is destroyed, so flow-through files do not confound following tests
     PotenOutFiles.each { |f| sleep(0.05) while File.exist?(f) }
   end
+
+  # Path used by data providers to save temporary files
+#  SAVE_DIR = Rails.root.join(TempStore)
 
   ### RSpec Tests ###
   # We test the mock tool described by its JSON descriptor
