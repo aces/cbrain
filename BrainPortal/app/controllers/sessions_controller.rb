@@ -91,87 +91,6 @@ class SessionsController < ApplicationController
 
   ###############################################
   #
-  # Mozilla Persona authentication
-  #
-  ###############################################
-
-  # This method handles the Mozilla Persona assertion posted by the JavaScript login function
-  def mozilla_persona_auth #:nodoc:
-    assertion = params[:assertion]
-    data = verify_assertion(assertion)
-    if data["status"] == "okay"
-      auth_success(data["email"])
-    else
-      flash[:error] = 'Authentication failed.'
-      auth_failed
-    end
-    return
-  end
-
-  # Mozilla currently recommend to use their remote validation service
-  # Ultimately this should be built in the code
-  # Do NOT send the assertion on a non HTTP*S* connection
-  # Adapted the code of this method from https://github.com/chilts/browserid-verify-ruby
-  def verify_assertion(assertion)
-
-    # TODO put this in config file
-    url      = "https://verifier.login.persona.org/verify"
-    audience = "#{request.protocol}#{request.host_with_port}#{request.fullpath}"
-    uri      = URI.parse(url)
-
-    # make a new request
-    request = Net::HTTP::Post.new(uri.path)
-    request.set_form_data({"audience" => audience, "assertion" => assertion})
-
-    # send the request
-    https         = Net::HTTP.new(uri.host,uri.port)
-    https.use_ssl = true
-    response      = https.request(request)
-
-    # if we have a non-200 response
-    if ! response.kind_of? Net::HTTPSuccess
-      return {
-        "status" => "failure",
-        "reason" => "Cannot verify request",
-        "body"   => response.body
-      }
-    end
-
-    # process the response
-    data = JSON.parse(response.body) || nil
-    if data.nil?
-      # JSON parsing error
-      return  {"status" => "failure", "reason" => "Received invalid JSON from the remote verifier"}
-    end
-
-    return data
-  end
-
-  # We could authenticate the email
-  # Now, let's check if there is a user associated to it
-  # Be careful NOT to grant admin access based on Mozilla Persona.
-  def auth_success(email)
-    user = NormalUser.where(:email => email).first
-    if user.blank?
-      flash[:error] = 'Cannot find CBRAIN user associated to this email address.'
-      auth_failed
-    else
-      user[:authentication_mechanism] = "Persona" # not a real attribute
-      create_from_user(user)
-    end
-  end
-
-  # Send a proper HTTP error code
-  def auth_failed
-    respond_to do |format|
-      format.html { render :action => 'new' }
-      format.json { render :nothing => true, :status  => 401 }
-      format.xml  { render :nothing => true, :status  => 401 }
-    end
-  end
-
-  ###############################################
-  #
   # Private methods
   #
   ###############################################
@@ -286,7 +205,7 @@ class SessionsController < ApplicationController
 
     # The authentication_mechanism is a string stored temporarily in the current_user object as a pseudo attribute;
     # it's supposed to describe which mechanism was used by the user to log in.
-    authentication_mechanism = user[:authentication_mechanism] || "(Unknown)" # should be 'password' || 'Persona'
+    authentication_mechanism = user[:authentication_mechanism] || "(Unknown)"
     user.addlog("Logged in with #{authentication_mechanism} from #{pretty_host} using #{pretty_brow}")
     portal.addlog("User #{user.login} logged in with #{authentication_mechanism} from #{pretty_host} using #{pretty_brow}")
     user.update_attribute(:last_connected_at, Time.now)
