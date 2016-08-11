@@ -128,4 +128,19 @@ tr.preview-tr:nth-child(odd):hover td.preview-table-text {
 table.preview-table-fill tr.preview-tr th.preview-th:nth-child(1) {
   width: 7em;
 }
+.static-preview-table tr.preview-tr td.preview-table-text:nth-child(1) {
+  font-family: Verdana;
+  font-weight: bold;
+  ponter-events: none;
+  color: #D5DDE5;
+  background: #0471b4;
+  vertical-align: middle;
+  padding: 2px;
+  border: 1px solid #0471b4;
+  font-size: 12px;
+  border-bottom-color: #dddddd;
+}
+.static-preview-table tr.preview-tr:last-child td.preview-table-text:nth-child(1) {
+  border-bottom-color: #0471b4;
+}
 

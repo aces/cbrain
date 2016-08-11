@@ -967,6 +967,7 @@ $(function () {
     // CSS classes used
     var tableTextClass = "\"preview-table-text\"",  tableRowClass  = "\"preview-tr\"",         tableFillClass = "\"preview-table-fill\"";
     var tableBodyClass = "\"preview-table-hover\"", tableHeadClass = "\"preview-table-head\"", tableThClass   = "\"preview-th\"";
+    var staticTblClass = "\"static-preview-table\"";
     // Adds a single row to a two-column table
     var addTableRow = function(prm, val) {
       return "<tr class="   + tableRowClass  + ">" +
@@ -981,7 +982,7 @@ $(function () {
                      ((!singleFileCase && !genericCase) ? "for current task" : "that are constant across tasks") +
                    "</strong><br>";
       // Start the table
-      modalText += "<table class=" + tableFillClass + ">" + "<tbody class=" + tableBodyClass + ">";
+      modalText += "<table class=" + tableFillClass.slice(0,-1) + " " + staticTblClass.slice(1) + ">" + "<tbody class=" + tableBodyClass + ">";
       // Loop over possible entries (i.e. parameter ids)
       for( var i = 0; i < numIds; ++i ) {
         var id = ids[i];

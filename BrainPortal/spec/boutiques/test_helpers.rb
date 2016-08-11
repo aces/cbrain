@@ -102,9 +102,6 @@ module TestHelpers
     PotenOutFiles.each { |f| sleep(0.05) while File.exist?(f) }
   end
 
-  # Path used by data providers to save temporary files
-#  SAVE_DIR = Rails.root.join(TempStore)
-
   ### RSpec Tests ###
   # We test the mock tool described by its JSON descriptor
   # Not all possible combinations of types for each situation are tested
