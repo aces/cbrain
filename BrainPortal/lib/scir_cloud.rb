@@ -297,8 +297,7 @@ class ScirCloud < Scir
           x[1] > 0 # removes the VMs with no free slots
         }.sort!{ |a,b| b[1] <=> a[1] } # sorts VMs by increasing order of free slots so that we increase
                                        # the amount of idle VMs that we could shut down.
-        raise "Cannot match task to VM." if suitable_vms.empty? # don't modify this exception message,
-        # it is used in cluster_task
+        raise(NoVmAvailableError, "Cannot match task #{task.id} to VM.") if suitable_vms.empty?
         vm_id = suitable_vms[0][0].id 
         tvma = TaskVmAllocation.new 
         tvma.vm_id = vm_id # yes, if the VM has been terminated since
@@ -375,3 +374,6 @@ class ScirCloud < Scir
 
 end
 
+# Exception raised when no VM is available to execute a task
+class NoVmAvailableError < Exception
+end

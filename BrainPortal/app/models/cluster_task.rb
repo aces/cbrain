@@ -1571,15 +1571,15 @@ class ClusterTask < CbrainTask
         self.cluster_jobid = jobid
         self.status_transition(self.status, "Queued")
         self.addlog("Queued as job ID '#{jobid}'.")
-      rescue => ex
+      rescue NoVmAvailableError => ex
         # When the task is executed in a VM, it may not be submitted
         # right away when no VMs are available. In such a case, method
         # scir_cloud.run will raise an exception. We need to mask this
         # exception and put the task back to status "New" so that
         # submission will be attempted again by the Bourreau later
         # on. VMs may become available for the task when other tasks
-        # complete or new VMs are started.
-        raise ex unless ex.message.include?("Cannot match task to VM.") 
+        # complete or new VMs are started. Exceptions that are not of
+        # class NoVMAvailableError will not be rescued.
         addlog(ex.message)
         addlog("Putting task back to status \"New\".")
         # This is unfortunate but we have to move back to status 'New'
