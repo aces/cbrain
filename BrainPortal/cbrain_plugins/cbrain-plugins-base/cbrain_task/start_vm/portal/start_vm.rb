@@ -35,7 +35,8 @@ class CbrainTask::StartVM < PortalTask
       :vm_boot_timeout => 600,
       :number_of_vms => 1,
       :vm_ssh_tunnel_port => 1234,
-      :job_slots => 2
+      :job_slots => 2,
+      :tag => "CBRAIN worker"
     }
   end
   

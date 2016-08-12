@@ -218,7 +218,7 @@ class ScirCloud < Scir
       cbrain_task = CbrainTask.find(job.task_id)
       # The task is a VM, it must be submitted to the cloud
       if ScirCloud.is_vm_task?(cbrain_task)
-        vm = submit_vm("CBRAIN Worker", cbrain_task.params[:disk_image], cbrain_task.params[:ssh_key_pair],cbrain_task.params[:instance_type], "CBRAIN worker") 
+        vm = submit_vm("CBRAIN Worker", cbrain_task.params[:disk_image], cbrain_task.params[:ssh_key_pair],cbrain_task.params[:instance_type], cbrain_task.params[:tag]) 
         return vm.instance_id.to_s
       end
       # The task needs to be executed in a VM

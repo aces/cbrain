@@ -30,19 +30,20 @@ class CbrainTask::StartVM #:nodoc:
   def param_validation_errors #:nodoc:
     my_errors = Hash.new
 
-    my_errors[:disk_image]         = "Missing disk image."                                               unless params[:disk_image].presence
-    my_errors[:vm_user]            = "Missing VM user."                                                  unless params[:vm_user].presence   
-    my_errors[:ssh_key_pair]       = "Missing ssh key pair."                                             unless params[:ssh_key_pair].presence
-    my_errors[:instance_type]      = "Missing cloud instance type."                                      unless params[:instance_type].presence
-    my_errors[:job_slots]          = "Missing number of job slots."                                      unless params[:job_slots].presence
-    my_errors[:job_slots]          = "Number of job slots has to be an integer."                         unless is_integer? params[:job_slots]
-    my_errors[:vm_boot_timeout]    = "Missing VM boot timeout."                                          unless params[:vm_boot_timeout].presence
-    my_errors[:vm_boot_timeout]    = "Boot timeout has to be an integer."                                unless is_integer? params[:vm_boot_timeout]
-    my_errors[:vm_ssh_tunnel_port] = "Missing ssh tunnel port."                                          unless params[:vm_ssh_tunnel_port].presence
-    my_errors[:vm_ssh_tunnel_port] = "ssh tunnel port has to be an integer."                             unless is_integer? params[:vm_ssh_tunnel_port]
-    my_errors[:number_of_vms]      = "Missing number of instances."                                      unless params[:number_of_vms].presence
-    my_errors[:number_of_vms]      = "Number of instances has to be an integer."                         unless is_integer? params[:number_of_vms]
-    my_errors[:number_of_vms]      = "Please don't try to start more than 20 instances at once."         if params[:number_of_vms].to_i > 20
+    my_errors[:disk_image]         = "Missing disk image."                                       unless params[:disk_image].presence
+    my_errors[:vm_user]            = "Missing VM user."                                          unless params[:vm_user].presence   
+    my_errors[:ssh_key_pair]       = "Missing ssh key pair."                                     unless params[:ssh_key_pair].presence
+    my_errors[:instance_type]      = "Missing cloud instance type."                              unless params[:instance_type].presence
+    my_errors[:job_slots]          = "Missing number of job slots."                              unless params[:job_slots].presence
+    my_errors[:job_slots]          = "Number of job slots has to be an integer."                 unless is_integer? params[:job_slots]
+    my_errors[:vm_boot_timeout]    = "Missing VM boot timeout."                                  unless params[:vm_boot_timeout].presence
+    my_errors[:vm_boot_timeout]    = "Boot timeout has to be an integer."                        unless is_integer? params[:vm_boot_timeout]
+    my_errors[:vm_ssh_tunnel_port] = "Missing ssh tunnel port."                                  unless params[:vm_ssh_tunnel_port].presence
+    my_errors[:vm_ssh_tunnel_port] = "ssh tunnel port has to be an integer."                     unless is_integer? params[:vm_ssh_tunnel_port]
+    my_errors[:number_of_vms]      = "Missing number of instances."                              unless params[:number_of_vms].presence
+    my_errors[:number_of_vms]      = "Number of instances has to be an integer."                 unless is_integer? params[:number_of_vms]
+    my_errors[:number_of_vms]      = "Please don't try to start more than 20 instances at once." if params[:number_of_vms].to_i > 20
+    my_errors[:tag]                = "Missing tag value"                                         unless params[:tag].presence
 
     return my_errors
   end
