@@ -1591,7 +1591,7 @@ class ClusterTask < CbrainTask
         # (e.g. "Scheduling"). That would require some more
         # modifications in the bourreau worker logic though, so that
         # tasks in status "Scheduling" are also picked up. 
-        self.status_transition("Setting Up","New")
+        self.status_transition(self.status,"New")
       end
     end
     self.save
