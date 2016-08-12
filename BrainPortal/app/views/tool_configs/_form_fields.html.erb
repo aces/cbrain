@@ -115,8 +115,8 @@
     </p>
   </span>
 
-  <% bourreau = Bourreau.find(@tool_config.bourreau_id) %>
-  <% if bourreau.scir_class < ScirCloud %>
+  <% bourreau = @tool_config.bourreau %>
+  <% if !bourreau.nil? && bourreau.scir_class < ScirCloud %>
   <% available_disk_images    = bourreau.scir_class.get_available_disk_images(bourreau)
      available_instance_types = bourreau.scir_class.get_available_instance_types(bourreau)
      available_ssh_key_pairs  = bourreau.scir_class.get_available_key_pairs(bourreau)

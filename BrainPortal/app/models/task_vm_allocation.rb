@@ -41,11 +41,4 @@ class TaskVmAllocation < ActiveRecord::Base
 
   attr_accessible :task_id, :vm_id
 
-  # Automatically register the task's version when new() is invoked.
-  def initialize(arguments = {}) #:nodoc:
-    super(arguments)
-    baserev = Revision_info
-    self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}", :caller_level => 3)
-  end
-
 end
