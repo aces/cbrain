@@ -85,12 +85,43 @@ after the NEP program is completed.</p>
 <br>
 
 <div class="display_cell credit_box">
-  <h3>Revision Information</h3>
-  <p><strong>CBRAIN Revision:</strong> <%= @revinfo['Revision'] %></p>
-  <p><strong>Portal Last Changed Author:</strong> <%= @revinfo['Last Changed Author'] %></p>
-  <p><strong>Portal Last Changed Revision:</strong> <%= @revinfo['Last Changed Rev'] %></p>
-  <p><strong>Portal Last Changed Date:</strong> <%= to_localtime(@revinfo['Last Changed Date'],:datetime) %></p>
-  <p><strong>Portal Up Since:</strong> <%= to_localtime(CBRAIN::Startup_LocalTime,:datetime) %> (for: <%= pretty_elapsed((Time.now.localtime - CBRAIN::Startup_LocalTime).to_i) %>)</p>
+
+  <h3>Platform Revision Information</h3>
+  <strong>Version:</strong> <%= @revinfo['Revision'] %>
+  <br>
+  <strong>Portal Last Changed Author:</strong> <%= @revinfo['Last Changed Author'] %>
+  <br>
+  <strong>Portal Last Changed Revision:</strong> <%= @revinfo['Last Changed Rev'] %>
+  <br>
+  <strong>Portal Last Changed Date:</strong> <%= to_localtime(@revinfo['Last Changed Date'],:datetime) %>
+  <br>
+  <strong>Portal Up Since:</strong> <%= to_localtime(CBRAIN::Startup_LocalTime,:datetime) %> (for: <%= pretty_elapsed((Time.now.localtime - CBRAIN::Startup_LocalTime).to_i) %>)
+
+  <% plugins_basenames = Dir.glob(Pathname.new(CBRAIN::Plugins_Dir) + "cbrain-plugins-*")
+                         .map { |x| Pathname.new(x).basename.to_s }
+                         .reject { |x| x =~ /^cbrain-plugins-base$/ } %>
+
+  <% if plugins_basenames.present? %>
+    <h3>CBRAIN Plugins Revision Information
+    <%= show_hide_toggle "(Show)", "#plugins_panel", :class  => 'action_link' %>
+    </h3>
+    <div id="plugins_panel" style="display: none">
+    <% plugins_basenames.sort.each do |plugin| %>
+      <% revtag  = CbrainFileRevision.cbrain_head_tag(plugin)                 rescue CbrainFileRevision::DEFAULT_TAG %>
+      <% revinfo = CbrainFileRevision.cbrain_head_revinfo(plugin).self_update rescue nil %>
+      <h5>Plugins Package: <%= plugin.sub("cbrain-plugins-","").capitalize %></h5>
+      <strong>Version:</strong> <%= revtag %>
+      <br>
+      <strong>Last Changed Author:</strong> <%= revinfo.try(:author) || "?" %>
+      <br>
+      <strong>Last Changed Revision:</strong> <%= revinfo.try(:commit) || "?" %>
+      <br>
+      <strong>Last Changed Date:</strong> <%= revinfo ? to_localtime(revinfo.datetime) : "?" %>
+      <p>
+    <% end %>
+    </div>
+  <% end %>
+
   <% if current_user && current_user.has_role?(:admin_user) %>
     <h3>Platform Information
     <%= show_hide_toggle "(Show)", "#platform_panel", :class  => 'action_link' %>

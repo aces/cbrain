@@ -65,15 +65,15 @@ class RemoteCommand < RestrictedHash
     :task_ids,
 
     # A new task status for the tasks affected by 'alter_tasks'
-    # Most be one of 'Suspended', "On Hold', 'Queued', 'Recover', etc.
-    # Only some statuses are valid on these only when the tasks
-    # are already in some other states. See process_command_alter_tasks().
+    # Must be one of 'Suspended', "On Hold', 'Queued', 'Recover', etc.
+    # Only some statuses are valid, and these only when the tasks
+    # are already in some particular states. See process_command_alter_tasks().
     :new_task_status,
     :new_bourreau_id,  # for when new_task_status is 'Duplicate'
     :archive_data_provider_id, # when new_task_status is 'ArchiveWorkdirAsFile'
 
     # -------- GET TASK OUTPUTS PARAMETERS --------
-    # Uses :task_ids with a single ID expected in it
+    # For these, :task_ids is expected to contain a single ID
     :run_number,      # supplied by queryier
     :stdout_lim,      # number of lines to return
     :stderr_lim,      # number of lines to return
@@ -126,6 +126,7 @@ class RemoteCommand < RestrictedHash
     elsif self.command.to_s == 'clean_cache'
       report += "    User-IDs: #{self.user_ids}\n"
       report += "    Group-IDs: #{self.group_ids}\n"
+      report += "    Types: #{self.types}\n"
       report += "    Before-Date: #{self.before_date}\n"
       report += "    After-Date: #{self.after_date}\n"
     elsif self.command.to_s == 'check_data_providers'

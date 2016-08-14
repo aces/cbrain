@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # ---------------------------------------------
@@ -27,11 +27,11 @@
 # ---------------------------------------------
 
 echo "This script will generate or refresh a local directory"
-echo "of HTML pages containing the CBRAIN APIs."
+echo "of HTML pages describing the CBRAIN APIs."
 echo ""
 
 if test ! -d BrainPortal ; then
-  echo "Please run this script in the directory above BrainPortal and Bourreau."
+  echo "Please run this script in the CBRAIN root directory, the one containing 'BrainPortal/' and 'Bourreau/'."
   exit 10
 fi
 
