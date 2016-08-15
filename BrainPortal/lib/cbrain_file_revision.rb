@@ -113,7 +113,6 @@ class CbrainFileRevision
   def format(rev_info = "%s %a %d")
     self_update()
 
-    #rev_info = rev_info.gsub("/%a/", @author).gsub("/%f/", @basename).gsub("/%c/", @commit).gsub("/%s/", @short_commit).gsub("/%d/", @date).gsub("/%t/", @time)
     rev_info = rev_info.gsub(/(%[afcsdt])/, {
         "%a" => @author,
         "%f" => @basename,

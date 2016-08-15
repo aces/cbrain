@@ -51,7 +51,8 @@ module CBRAINExtensions #:nodoc:
           if self.const_defined?("Revision_info")
            self.const_get("Revision_info")
           else
-            CbrainFileRevision.new("") # dummy info object with dummy attributes
+            rev_info = CbrainFileRevision.new("") # dummy info object with dummy attributes
+            rev_info.self_update()
           end
         end
 
