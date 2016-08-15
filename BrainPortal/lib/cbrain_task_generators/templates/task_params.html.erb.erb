@@ -492,7 +492,7 @@ $(function () {
 % end
 % #
   var namesMap = {
-%   jsMapOf.( params.inject({}){ |hmap,x| hmap.merge( x["id"] => x["name"] ) } )
+%   jsMapOf.( params.inject({}){ |hmap,x| hmap.merge( x["id"] => x["name"].gsub(/\"/,"\\\"") ) } )
   }
   var requiresMap = {
 %   jsMapOf.(requires_map)
@@ -858,13 +858,13 @@ $(function () {
     // Classes for the modal (popup)
     var mdiv = 'preview-modal', mcont = 'preview-modal-content', mclose = 'preview-modal-close';
     // Input parameters (fetch ids and data from cbcsvs and json descriptor)
-    var ids    = [<%= params.map    { |p| "\"#{p['id']}\""    }.join(", ") %>];
-    var names  = [<%= params.map    { |p| "\"#{p['name']}\""  }.join(", ") %>];
-    var reqed  = [<%= params.select { |p| ! p['optional']     }.map { |u| "\"#{u['id']}\"" }.join(", ") %>];
-    var files  = [<%= files.map     { |p| "\"#{p['id']}\""    }.join(", ") %>];
-    var cbcsvs = [<%%= cbcsvs.map   { |c| "\"#{c.name}\""     }.join(", ").html_safe %>];
-    var cids   = [<%%= cbcsvs.map   { |c| "\"#{c.id}\""       }.join(", ").html_safe %>];
-    var flags  = [<%= params.select { |p| p['type'] == 'Flag' }.map { |u| "\"#{u['id']}\"" }.join(", ") %>];
+    var ids    = [<%= params.map    { |p| "\"#{p['id']}\""       }.join(", ") %>];
+    var names  = [<%= params.map    { |p| "#{p['name'].inspect}" }.join(", ") %>];
+    var reqed  = [<%= params.select { |p| ! p['optional']        }.map { |u| "\"#{u['id']}\"" }.join(", ") %>];
+    var files  = [<%= files.map     { |p| "\"#{p['id']}\""       }.join(", ") %>];
+    var cbcsvs = [<%%= cbcsvs.map   { |c| "#{c.name.inspect}"    }.join(", ").html_safe %>];
+    var cids   = [<%%= cbcsvs.map   { |c| "\"#{c.id}\""          }.join(", ").html_safe %>];
+    var flags  = [<%= params.select { |p| p['type'] == 'Flag'    }.map { |u| "\"#{u['id']}\"" }.join(", ") %>];
 <%% unk        = '?unknown?' %>
 <%% maxNameLen = cbcsvs.map { |p| p.name }.max_by { |v| v.length }.length rescue nil %>
 <%%# Replace unrecognized files with unk and "blanks" (i.e. the user wants no file present) with '' %>
@@ -872,7 +872,7 @@ $(function () {
     var cfmap  = {
 %   # Generate a list of the files associated to each cbcsv
 <%% for cbcsv in cbcsvs %>
-      <%% cn = "\"" + (cbcsv.name || unk) + "\"" %>
+      <%% cn = "\"" + (cbcsv.name.gsub(/\"/,"\\\"") || unk) + "\"" %>
       <%% cbList = "#{cn.ljust(maxNameLen + 2)}" %>
       <%% assocFiles = cbcsvToFiles[ cn[1...-1] ].map{ |f| safeName.(f) }.join(", ") %>
       <%%= "#{cbList} : [#{assocFiles}],".html_safe %>
@@ -881,7 +881,7 @@ $(function () {
     var fileIdsToNames = {
 %   # Give javascript access to the file id to name mapping
 <%% for f in input_files %>
-      <%%= "\"#{f.id}\" : \"#{f.name}\",".html_safe %>
+      <%%= "\"#{f.id}\" : #{f.name.inspect},".html_safe %>
 <%% end %>
     };
 

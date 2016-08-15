@@ -97,7 +97,7 @@ describe "BrainPortal Boutiques Tests" do
       fs, rt, n = CbrainFileList::FIELD_SEPARATOR, CbrainFileList::RECORD_TERMINATOR, CbrainFileList::ATTRIBUTES_LIST.length
       splitTxt  = text.split( rt )
       nilRow    = '0' + fs*(n - 1)
-      splitTxt  << nilRow
+      splitTxt  << nilRow << ""
       splitTxt.join( rt )
     }
   end
