@@ -167,6 +167,11 @@ class CbrainFileRevision
     @time
   end
 
+  def basename #:nodoc:
+    self_update
+    @basename
+  end
+
   # Inspect the revision object but will not trigger a self_update(),
   # so the returned string might contain all blank fields.
   def inspect
