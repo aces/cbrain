@@ -51,6 +51,10 @@ class EnCbrainSshDataProvider < SshDataProvider
     true
   end
 
+  def content_storage_shared_between_users? #:nodoc:
+    false
+  end
+
   def impl_sync_to_provider(userfile) #:nodoc:
     threelevels = cache_subdirs_from_id(userfile.id)
     userdir = Pathname.new(remote_dir)

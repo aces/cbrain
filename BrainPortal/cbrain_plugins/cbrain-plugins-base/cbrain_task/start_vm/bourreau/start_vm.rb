@@ -244,5 +244,4 @@ class CbrainTask::StartVM < ClusterTask
     return result 
   end
 
-
 end      

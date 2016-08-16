@@ -74,7 +74,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
       myself.save(true)
     end
     session = myself.scir_session
-    rev = session.revision_info.svn_id_pretty_file_rev_author_date # loads it?
+    rev = session.revision_info.format("%f %s %a %d") # loads it?
     puts "C> \t- Layer for '#{cluster_class}' #{rev} loaded."
   end
 

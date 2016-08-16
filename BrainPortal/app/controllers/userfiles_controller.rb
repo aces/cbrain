@@ -451,7 +451,7 @@ class UserfilesController < ApplicationController
         end
         respond_to do |format|
           format.html { redirect_to redirect_path }
-          format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
+          format.json { render :json => { :notice => flash[:error] } }
         end
         return
       end

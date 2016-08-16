@@ -88,6 +88,10 @@ class S3DataProvider < DataProvider
     true
   end
 
+  def content_storage_shared_between_users? #:nodoc:
+    false
+  end
+
   def impl_sync_to_cache(userfile) #:nodoc:
     init_connection  # s3 connection
 

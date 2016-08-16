@@ -235,7 +235,7 @@ class Bourreau < RemoteResource
     worker_pids  = workers.map(&:pid).join(",")
 
     worker_revinfo    = BourreauWorker.revision_info.self_update
-    worker_lc_rev     = worker_revinfo.commit
+    worker_lc_rev     = worker_revinfo.short_commit
     worker_lc_author  = worker_revinfo.author
     worker_lc_date    = worker_revinfo.datetime
 
@@ -307,7 +307,7 @@ class Bourreau < RemoteResource
     yml = "\n" +
           "#\n" +
           "# File created automatically on Portal Side\n" +
-          "# by " + self.revision_info.svn_id_pretty_file_rev_author_date + "\n" +
+          "# by " + self.revision_info.format("%f %s %a %d") + "\n" +
           "#\n" +
           "\n" +
           "#{railsenv}:\n"

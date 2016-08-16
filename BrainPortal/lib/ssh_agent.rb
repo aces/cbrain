@@ -317,7 +317,7 @@ class SshAgent
     filename = self.class.agent_config_file_path(self.name)
     File.open(filename,"w") do |fh|
       fh.write(<<-AGENT_CONF)
-# File created automatically by SshAgent rev. #{self.revision_info.to_s.svn_id_pretty_rev_author_date}
+# File created automatically by SshAgent rev. #{self.revision_info.format()}
 # This script is in bash format and corresponds more or less to
 # the output of the 'ssh-agent -s' command.
 # This agent is named '#{self.name}'.
