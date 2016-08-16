@@ -29,14 +29,14 @@ gem "net-ssh",       :require => 'net/ssh'
 gem "net-sftp",      :require => 'net/sftp'
 gem "sys-proctable", :git     => 'https://github.com/djberg96/sys-proctable.git', :ref => "ac047b6"
 gem "mysql2",        "<0.4"
-gem "will_paginate"
 gem "log4r"
 gem "thin"
-gem "rails_autolink"
 gem "pbkdf2-ruby"
 gem "json-schema"
-gem "test-unit",    "~> 3.1"
 gem "aws-sdk"
+
+gem "rails_autolink"
+gem "will_paginate"
 
 group :development do
   gem "wirble"
@@ -56,6 +56,8 @@ group :test do
   gem 'rspec-activemodel-mocks',  "~> 1.0"
   gem 'rspec-collection_matchers',"~> 1.1"
   gem "database_cleaner",         "~> 1.5"
+  gem "test-unit",    "~> 3.1"
+
   gem "sqlite3" # this is not normally needed outside of CBRAIN's nightly test website
   gem "syntax"  # this is not normally needed outside of CBRAIN's nightly test website
 end
