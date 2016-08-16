@@ -134,37 +134,27 @@ class CbrainFileRevision
   end
 
   def short_commit #:nodoc:
-    if @short_commit.nil?
-      self_update
-    end
+    self_update
     @short_commit
   end
 
   def commit #:nodoc:
-    if @commit.nil?
-      self_update
-    end
+    self_update
     @commit
   end
 
   def author #:nodoc:
-    if @author.nil?
-      self_update
-    end
+    self_update
     @author
   end
 
   def date #:nodoc:
-    if @date.nil?
-      self_update
-    end
+    self_update
     @date
   end
 
   def time #:nodoc:
-    if @date.nil?
-      self_update
-    end
+    self_update
     @time
   end
 

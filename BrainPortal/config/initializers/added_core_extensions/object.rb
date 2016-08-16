@@ -25,7 +25,7 @@
 ###################################################################
 class Object #:nodoc:
 
-  Revision_info=CbrainFileRevision.unknown_rev_info
+  Revision_info=CbrainFileRevision.unknown_rev_info #:nodoc:
 
   include CBRAINExtensions::ObjectExtensions::DeepClone
   include CBRAINExtensions::ObjectExtensions::RevisionTracking
