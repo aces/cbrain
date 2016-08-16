@@ -133,6 +133,41 @@ class CbrainFileRevision
     "#{@date} #{@time}"
   end
 
+  def short_commit #:nodoc:
+    if @short_commit.nil?
+      self_update
+    end
+    @short_commit
+  end
+
+  def commit #:nodoc:
+    if @commit.nil?
+      self_update
+    end
+    @commit
+  end
+
+  def author #:nodoc:
+    if @author.nil?
+      self_update
+    end
+    @author
+  end
+
+  def date #:nodoc:
+    if @date.nil?
+      self_update
+    end
+    @date
+  end
+
+  def time #:nodoc:
+    if @date.nil?
+      self_update
+    end
+    @time
+  end
+
   # Inspect the revision object but will not trigger a self_update(),
   # so the returned string might contain all blank fields.
   def inspect
@@ -225,20 +260,28 @@ class CbrainFileRevision
     rev
   end
 
+  # Populates the @commit, @date, @time and @author fields with default values
+  def self.unknown_rev_info
+    @dummy ||= self.new("").self_update
+  end
+
   # mode is :git, :static, or :auto
   def get_git_rev_info(mode = :auto) #:nodoc:
-    return self unless @commit.nil? # don't do anything if we already cached the info
+    return self if @commit.present? # don't do anything if we already cached the info
 
     # Alright, here's a set of default values in case anything goes wrong.
-    @commit   = "UnknownId"
-    @date     = "1970-01-01"
-    @time     = "00:00:00"
-    @author   = "UnknownAuthor"
+    @commit       = "UnknownId"
+    @date         = "1970-01-01"
+    @time         = "00:00:00"
+    @author       = "UnknownAuthor"
+    @short_commit = "UnknownId"
 
     # We need to fetch the info of the REAL file if the original
     # target was a symlink, because symlink don't change much in GIT!
     @fullpath = File.exists?(@fullpath) ? Pathname.new(@fullpath).realpath.to_s : @fullpath.to_s
     @basename = File.basename(@fullpath)
+
+    return self if @basename.blank?
 
     if mode == :auto
       mode = self.class.git_available? ? :git : :static
