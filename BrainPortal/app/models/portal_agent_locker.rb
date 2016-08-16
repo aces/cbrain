@@ -40,7 +40,7 @@ class PortalAgentLocker < Worker
 
     # Who am I within CBRAIN?
     rr = RemoteResource.current_resource
-    worker_log.info "#{rr.class.to_s} code rev. #{rr.revision_info.svn_id_rev} start rev. #{rr.info.starttime_revision}"
+    worker_log.info "#{rr.class.to_s} code rev. #{rr.revision_info.short_commit} start rev. #{rr.info.starttime_revision}"
 
     @time_unlocked = nil # last time it was observed to be unlocked.
 

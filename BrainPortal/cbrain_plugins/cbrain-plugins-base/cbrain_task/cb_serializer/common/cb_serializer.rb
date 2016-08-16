@@ -104,7 +104,7 @@ class CbrainTask::CbSerializer
         :description =>
           "Standard CBRAIN Serializer\n" +
           "\n" +
-          "Automatically created by #{self} rev. #{self.revision_info.svn_id_rev}.\n" +
+          "Automatically created by #{self} rev. #{self.revision_info.short_commit}.\n" +
           "Note that the suggested number of CPUs defined here is not in fact used.\n" +
           "Instead, the serialization factor is determined by the Serializer program's\n" +
           "creation context.\n"
