@@ -18,10 +18,13 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Pure ruby, no rails or active support
+
+# Only one option, "-z" means to default to "0.1.0" if no tags found
+default_tag = (ARGV.size == 1 && ARGV[0] == "-z") ? "0.1.0" : nil
 
 top = `git rev-parse --show-toplevel`.chomp
 if top.nil? || top =~ /^\s*$/
@@ -44,6 +47,11 @@ end
       end
       if git_tag
         num_new_commits = `git rev-list '#{git_tag}..HEAD'`.split.size
+      elsif default_tag # fallback for plugins, when -z used
+        num_new_commits = `git rev-list HEAD`.split.size
+        git_tag = default_tag
+      end
+      if git_tag
         git_tag += "-#{num_new_commits}" if num_new_commits > 0
         puts git_tag
         Kernel.exit(0)

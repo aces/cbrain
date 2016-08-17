@@ -71,6 +71,15 @@ require 'pathname'
 
 class CbrainFileRevision
 
+  # Basename of flatfiles for revision info, which are
+  # fallbacks when the app is not installed with GIT.
+  # One such file is found at the top of the CBRAIN platform,
+  # and one can optionally be found in each plugin package.
+  FLATFILE_BASENAME="cbrain_file_revisions.csv" #:nodoc:
+
+  # Default tag reporting value for plugins
+  DEFAULT_TAG="0.1.0" #:nodoc:
+
   # Attributes for linking the object to a disk file
   attr_accessor :fullpath # this one is filled when the object is initialized
   attr_accessor :basename
@@ -198,24 +207,46 @@ class CbrainFileRevision
     self.get_git_rev_info(mode)
   end
 
-  # Class method. Slurps a static file of revision info
-  # and caches it.
-  def self.load_static_revision_file(path=nil) #:nodoc:
-    return true unless @_static_revision_hash.blank?
-    cbrain_root   = Pathname.new(Rails.root).parent
-    path        ||= cbrain_root + "cbrain_file_revisions.csv"
+  # Loads the flatfiles ; one of them in the root of
+  # the main CBRAIN repo, and one in each plugins package.
+  def self.load_all_static_revision_files #:nodoc:
+    return true if @_static_revision_hash.present? # already done
     @_static_revision_hash = {}
 
+    # Main platform flatfile
+    rails_root         = Pathname.new(Rails.root)
+    cbrain_root        = rails_root.parent
+    rails_app_basename = rails_root.basename
+    main_path          = cbrain_root + FLATFILE_BASENAME
+    self.load_static_revision_file(main_path)
+
+    # Each plugin package now
+    Dir.chdir(rails_root + "cbrain_plugins") do # TODO use CBRAIN::Plugins_Dir ?
+      Dir.glob("cbrain-plugins-*").each do |package|
+        Dir.chdir(package) do
+          if File.exists?(FLATFILE_BASENAME)
+            self.load_static_revision_file(FLATFILE_BASENAME, rails_app_basename + "cbrain_plugins" + package)
+          end
+        end
+      end
+    end
+    true
+  end
+
+  # Class method. Slurps a static file of revision info
+  # and caches it.
+  def self.load_static_revision_file(path,relprefix="") #:nodoc:
+    relprefix = Pathname.new(relprefix) if relprefix.present?
     CSV.foreach(path.to_s, :col_sep => ' -#- ') do |row|
       # 7f6bb2f24f6afb3d3b355d6c0ad630cdf353e1fe -#- 2011-07-18 17:16:57 -0400 -#- Pierre Rioux -#- Bourreau/README
       commit   = row[0]
       datetime = row[1]
       author   = row[2]
       relpath  = row[3]
+      relpath  = (relprefix + relpath).to_s if relprefix.present? && relpath !~ /^__/ # adds plugins relative prefix if needed
       @_static_revision_hash[relpath] = [ commit, datetime, author ] unless relpath.blank?
       #puts_blue "-> #{@_static_revision_hash[relpath].inspect}"
     end
-
     true
   end
 
@@ -303,21 +334,32 @@ class CbrainFileRevision
     self
   end
 
-  def self.cbrain_head_revinfo #:nodoc:
+  # Returns the artifical revision info for
+  # the head of the CBRAIN code base (internally known
+  # as __CBRAIN_HEAD__) or of one of the plugins packages
+  # (known as e.g. __cbrain-plugins-xyz_HEAD__)
+  # The keyword 'what' indicates what to fetch, either
+  # the string 'CBRAIN' or the name of a plugins package.
+  def self.cbrain_head_revinfo(what = 'CBRAIN') #:nodoc:
+
+    @_head_info ||= {} # cache
+    head_key = "__#{what}_HEAD__"
 
     # Static value
-    return @_head_info if @_head_info
+    return @_head_info[what] if @_head_info[what]
     if ! self.git_available?
-      @_head_info = self.for_relpath('__CBRAIN_HEAD__', :static)
-      return @_head_info
+      @_head_info[what] = self.for_relpath(head_key, :static)
+      return @_head_info[what]
     end
 
     # Live value
-    cbrain_root = Pathname.new(Rails.root).parent
-    Dir.chdir(cbrain_root) do
+    rails_root = Pathname.new(Rails.root)
+    what_root  = what == 'CBRAIN' ? rails_root.parent : Pathname.new(CBRAIN::Plugins_Dir) + what
+    Dir.chdir(what_root.to_s) do
+      head_rev = self.new("#{what_root}/#{head_key}")
+      return head_rev if `git rev-parse --show-toplevel 2>/dev/null`.strip != what_root.to_s
       head_info = `git log -n1 --format="%H -#- %ai -#- %an"`.strip.split(' -#- ')
-      head_rev = self.new("#{cbrain_root}/__CBRAIN_HEAD__")
-      head_rev.basename = '__CBRAIN_HEAD__'
+      head_rev.basename = head_key
       head_rev.commit   = head_info[0]
       head_rev.author   = head_info[2]
       if head_info[1] =~ /(\d\d\d\d-\d\d-\d\dT?)\s*(\d\d:\d\d:\d\dZ?)(\s*[+-][\d:]+)?/
@@ -326,24 +368,43 @@ class CbrainFileRevision
         head_rev.time = "#{head_rev.time}#{Regexp.last_match[3]}" if ! Regexp.last_match[3].blank?
       end
       head_rev.adjust_short_commit
-      return head_rev
+      return head_rev # not cached, so it's live
     end
   end
 
-  def self.cbrain_head_tag #:nodoc:
+  # Returns the artifical tag name info for
+  # the CBRAIN code base (internally known
+  # as __CBRAIN_TAG__) or of one of the plugins packages
+  # (known as e.g. __cbrain-plugins-xyz_TAG__)
+  # The keyword 'what' indicates what to fetch, either
+  # the string 'CBRAIN' or the name of a plugins package.
+  #
+  # The tag name looks likes "1.2.3-456" where the 1.2.3
+  # part is the GIT tag closest the the HEAD, and the
+  # 456 is the numebr of commits between that tag and HEAD.
+  # If the string returned is in parenthesis, it means the
+  # value was not fetched live using GIT commands, but was
+  # instead obtained from a flatfile of revision info.
+  def self.cbrain_head_tag(what = 'CBRAIN') #:nodoc:
+
+    @_cbrain_tag ||= {} # cache
+    head_key = "__#{what}_TAG__"
 
     # Static value
-    return @_cbrain_tag if @_cbrain_tag
+    return @_cbrain_tag[what] if @_cbrain_tag[what]
     if ! self.git_available?
-      tag_info = self.for_relpath('__CBRAIN_TAG__', :static)
-      @_cbrain_tag = "(#{tag_info.commit})" # parentheses mean it's not live!
-      return @_cbrain_tag
+      tag_info = self.for_relpath(head_key, :static)
+      @_cbrain_tag[what] = "(#{tag_info.try(:short_commit) || "???"})" # parentheses mean it's not live!
+      return @_cbrain_tag[what]
     end
 
     # Live value
-    git_tag = nil
-    seen = {}
-    Dir.chdir(Rails.root.to_s) do
+    git_tag    = nil
+    seen       = {}
+    rails_root = Pathname.new(Rails.root)
+    what_root  = what == 'CBRAIN' ? rails_root.parent : Pathname.new(CBRAIN::Plugins_Dir) + what
+    Dir.chdir(what_root.to_s) do
+      return DEFAULT_TAG if `git rev-parse --show-toplevel 2>/dev/null`.strip != what_root.to_s
       tags_set = `git tag -l`.split.shuffle # initial list: all tags we can find
       git_tag = tags_set.shift unless tags_set.empty? # extract one as a starting point
       seen[git_tag] = true
@@ -353,22 +414,27 @@ class CbrainFileRevision
         seen[git_tag] = true
       end
       if git_tag
-        num_new_commits = `git rev-list #{git_tag.bash_escape}..HEAD`.split.size
+        num_new_commits = `git rev-list '#{git_tag}..HEAD'`.split.size
+      elsif DEFAULT_TAG # fallback for plugins
+        num_new_commits = `git rev-list HEAD`.split.size
+        git_tag = DEFAULT_TAG
+      end
+      if git_tag
         git_tag += "-#{num_new_commits}" if num_new_commits > 0
       end
     end
 
-    git_tag
+    git_tag # not cached, so it's really live
 
   end
 
   protected
 
   def get_git_rev_info_from_static_file #:nodoc:
-    self.class.load_static_revision_file
+    self.class.load_all_static_revision_files
 
     cbrain_root = Pathname.new(Rails.root).parent
-    relpath     = @fullpath ; relpath["#{cbrain_root}/"] = ""  # transforms /path/to/root/a/b/c -> /a/b/c"
+    relpath     = @fullpath ; relpath["#{cbrain_root}/"] = ""  # transforms "/path/to/root/a/b/c" -> "a/b/c"
     revinfo     = self.class.static_revision_for_relpath(relpath)
 
     if !revinfo # if the root of the app has been renamed... try BrainPortal

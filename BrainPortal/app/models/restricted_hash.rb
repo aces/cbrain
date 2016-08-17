@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This model encapsulates a record with a precise list
@@ -33,6 +33,24 @@
 #   obj[:myattr] = value
 #   value = obj.myattr
 #   value = obj[:myattr]
+#
+# A subclass of RestrictedHash can be created and its set of
+# allowed keys can be specified with code like this:
+#
+#   class MyColors < RestrictedHash
+#     allowed_keys :blue, :red, :yellow, :green
+#   end
+#   x = MyColors.new
+#   x[:blue] = 3       # all ok
+#   x[:name] = "hello" # will raise a CbrainError exception
+#
+# A shortcut for creating both the class and an object of that
+# class is to use the class method builder() :
+#
+#   x = RestrictedHash.builder( [ :blue, :red, :yellow, :green ] )
+#
+# In that case the class that x belongs to is an anonymous
+# subclass of RestrictedHash.
 class RestrictedHash < Hash
 
    Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -105,6 +123,10 @@ class RestrictedHash < Hash
    # names, just as well:
    #
    #   my_special_hash = RestrictedHash.builder( :abc, :def )
+   #
+   # Creating a new hash with the same restrictions can be done with
+   #
+   #   new_hash = my_special_hash.class.new
    def self.builder(*keys_list)
      cb_error "Need non_empty key list." unless keys_list.is_a?(Array) && keys_list.size > 0
      built_class = Class.new(self)
