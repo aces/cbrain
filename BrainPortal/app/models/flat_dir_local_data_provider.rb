@@ -47,5 +47,9 @@ class FlatDirLocalDataProvider < LocalDataProvider
     by_user.is_member_of_group(self.meta[:browse_gid].to_i)
   end
 
+  def content_storage_shared_between_users? #:nodoc:
+    true
+  end
+
 end
 

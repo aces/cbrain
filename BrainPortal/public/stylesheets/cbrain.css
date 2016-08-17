@@ -2211,6 +2211,28 @@ img {
 }
 
 /* % ######################################################### */
+/* % Color picker styling */
+/* % ######################################################### */
+
+#cb_colorpick {
+  border: none;
+  padding: 0;
+}
+
+#cb_colorpick tr {
+  border: none;
+  padding: 0;
+}
+
+#cb_colorpick tr td {
+  border: none;
+  width: 1.5em;
+  height: 1.5em;
+  padding: 0;
+  margin: 0;
+}
+
+/* % ######################################################### */
 /* % Calendar styling */
 /* % ######################################################### */
 

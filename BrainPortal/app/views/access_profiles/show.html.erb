@@ -43,13 +43,14 @@
   <%= show_table(@access_profile, :edit_condition => check_role(:admin_user)) do |t| %>
 
     <% t.edit_cell(:name, :content => access_profile_label(@access_profile)) do %>
-      <%= text_field_tag "access_profile[name]", @access_profile.name %>
+      <%= text_field_tag "access_profile[name]", @access_profile.name, :class => "cb_colorpick_bg_target" %>
     <% end %>
 
     <% t.edit_cell(:color) do %>
-      <%= text_field_tag "access_profile[color]", @access_profile.color %><br>
+      <%= text_field_tag "access_profile[color]", @access_profile.color, :class => "cb_colorpick_val_target" %><br>
       <span class="field_explanation">Use a CSS-compliant <strong>pale</strong> color:<br>
-      e.g. <em>#ff0</em> or <em>yellow</em> etc.</span>
+      e.g. <em>#ff0</em> or <em>yellow</em> etc.</span><br>
+      <%= render :partial => 'shared/color_picker', :locals => { :step => 30, :greys => false, :dark => false } %>
     <% end %>
 
     <% t.edit_cell(:description, :content => overlay_description(@access_profile.description), :show_width => 2 ) do %>

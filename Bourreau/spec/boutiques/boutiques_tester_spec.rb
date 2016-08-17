@@ -185,8 +185,11 @@ describe "Bourreau Boutiques Tests" do
         next if test[0].include?( "fails when special separator" )
         # Run the test
         it "#{test[0]}" do
-          # Convert string argument to params dict
-          @task.params = ArgumentDictionary.( test[1] )
+          begin # Convert string arg to params dict
+            @task.params = ArgumentDictionary.( test[1] )
+          rescue OptionParser::MissingArgument => e
+            next # after_form does not need to check this here, since rails puts a value in the hash
+          end
           # Run the generated command line from cluster_commands
           exit_code = runTestScript( @task.cluster_commands[0].gsub('./'+TestScriptName,''), test[3] || [] )
           # Check that the exit code is appropriate
@@ -220,39 +223,38 @@ describe "Bourreau Boutiques Tests" do
         # Destroy any pre-existing userfiles
         Userfile.all.each{ |uf| uf.destroy }
         # Create a mock task required output file
-        @fname = DefReqOutName
-        @fname_base = File.basename(@fname) # Need because we will have to change to the temp dir
+        @fname           = DefReqOutName
+        @fname_base      = File.basename(@fname) # Need because we will have to change to the temp dir
         FileUtils.touch(@fname)
         # Helper method for getting filetype classes
-        ftype = lambda { |fname| Userfile.suggested_file_type(fname) || SingleFile }
-        @userfileClass = ftype.(@fname)
+        ftype            = lambda { |fname| Userfile.suggested_file_type(fname) || SingleFile }
+        @userfileClass   = ftype.(@fname)
         # Get the schema and json descriptor
-        descriptor     = File.join(__dir__, TestScriptDescriptor)
+        descriptor       = File.join(__dir__, TestScriptDescriptor)
         # Generate a new task class via the Boutiques framework and integrate it into cbrain
-        @boutiquesTask = SchemaTaskGenerator.generate(SchemaTaskGenerator.default_schema, descriptor)
+        @boutiquesTask   = SchemaTaskGenerator.generate(SchemaTaskGenerator.default_schema, descriptor)
         @boutiquesTask.integrate
         # Instantiate an object of the new class type
-        @task          = CbrainTask::BoutiquesTest.new
+        @task            = CbrainTask::BoutiquesTest.new
         # Destroy any prior existing data providers (so we use a clean, lone one)
         DataProvider.all.each { |dp| dp.destroy }
         # Create a local data_provider to hold our files
-        @provider      = FlatDirLocalDataProvider.new({ :online => true, :read_only => false, :remote_dir => '.' })
-        @provider.id, @provider.name = DPID, 'test_provider'
-        @provider.user_id, @provider.group_id = UID, GID
+        @provider        = FlatDirLocalDataProvider.new({ :online => true, :read_only => false, :remote_dir => '.' })
+        @provider.id, @provider.name, @provider.user_id, @provider.group_id = DPID, 'test_provider', UID, GID
         @provider.save!
         # Change base directory so checks for simulated files go to the right temp storage place
         # This is because some checks by e.g. save_results expect files from the task to be in the pwd
         # Passing a block to chdir would be preferable but then one would have to do it in every test
         Dir.chdir TempStore
         # Add a local input file to the data provider (allows smarter lookup in userfile_exists)
-        @file_c, @ft   = 'c', ftype.(@file_c)
-        newFile = @task.safe_userfile_find_or_new(@ft, name: @file_c, data_provider_id: DPID, user_id: UID, group_id: GID)
+        @file_c, @ft     = 'c', ftype.(@file_c)
+        newFile          = @task.safe_userfile_find_or_new(@ft, name: @file_c, data_provider_id: DPID, user_id: UID, group_id: GID)
         newFile.save!
         # Fill in data necessary for the task to check for and save the output file '@fname'
-        @task.params   = {:ro => @fname_base, :interface_userfile_ids => [Userfile.all.first.id]}
+        @task.params     = {:ro => @fname_base, :interface_userfile_ids => [Userfile.all.first.id]}
         @task.user_id, @task.group_id = UID, GID
         # Generate a simulated exit file, as if the task had run
-        @simExitFile   = @task.exit_cluster_filename
+        @simExitFile     = @task.exit_cluster_filename
         FileUtils.touch( @simExitFile )
         # The basic properties for the required output file
         @reqOutfileProps = {:name => @fname_base, :data_provider_id => @provider.id}
@@ -413,7 +415,7 @@ describe "Bourreau Boutiques Tests" do
 
       it "is created when descriptor has Docker image and Bourreau has Docker" do
         @boutiquesTask.descriptor['docker-image'] = 'placeholder_string'
-        resource       = RemoteResource.current_resource
+        resource = RemoteResource.current_resource
         resource.docker_present = true
         resource.save!
         @boutiquesTask.integrate if File.exists?(@descriptor)

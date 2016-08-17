@@ -49,6 +49,10 @@ class VaultSshDataProvider < SshDataProvider
     false # nope, because files are stored in subdirectories named after the owner's name.
   end
 
+  def content_storage_shared_between_users? #:nodoc:
+    false # each user has a private subdir
+  end
+
   def impl_sync_to_provider(userfile) #:nodoc:
     username = userfile.user.login
     userdir = Pathname.new(remote_dir) + username

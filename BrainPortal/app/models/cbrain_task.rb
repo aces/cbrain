@@ -148,7 +148,7 @@ class CbrainTask < ActiveRecord::Base
   #  - 'Completed'
   #  - 'Failed' (which covers all failures)
   #
-  # As an aide, note that in a way, a task ID 'n' in the CbrainTask attribute
+  # As an aside, note that in a way, a task ID 'n' in the CbrainTask attribute
   # :share_wd_tid also implies this prerequisite:
   #
   #     :for_setup => { "T#{n}" => "Queued" }
@@ -207,7 +207,7 @@ class CbrainTask < ActiveRecord::Base
   def initialize(arguments = {}) #:nodoc:
     super(arguments)
     baserev = Revision_info
-    self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}", :caller_level => 3)
+    self.addlog("#{baserev.basename} rev. #{baserev.short_commit}", :caller_level => 3)
   end
 
   # Same as the standard ActiveRecord's to_xml, except that
@@ -226,7 +226,7 @@ class CbrainTask < ActiveRecord::Base
   #######################################################
   # Task Launch API
   #######################################################
-  
+
   # Special boolean properties of your task, returned as a
   # hash table. Used by CBRAIN rendering code to control
   # default elements. Advanced feature. The defaults
@@ -244,7 +244,7 @@ class CbrainTask < ActiveRecord::Base
     }
   end
 
-  
+
   ##################################################################
   # Utility Methods
   ##################################################################

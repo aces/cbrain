@@ -35,13 +35,14 @@
   <div class="generalbox">
 
     <%= f.label :name %><br>
-    <%= f.text_field :name %>
+    <%= f.text_field :name, :class => "cb_colorpick_bg_target" %>
     <p>
 
     <%= f.label :color %><br>
-    <%= f.text_field :color %><br>
+    <%= f.text_field :color, :class => "cb_colorpick_val_target" %><br>
     <span class="field_explanation">Use a CSS-compliant <strong>pale</strong> color:<br>
-    e.g. <em>#ff0</em> or <em>yellow</em> etc.</span>
+    e.g. <em>#ff0</em> or <em>yellow</em> etc.</span><br>
+    <%= render :partial => 'shared/color_picker', :locals => { :step => 30, :greys => false, :dark => false } %>
     <p>
 
     <span title="Brief description of the profile.">

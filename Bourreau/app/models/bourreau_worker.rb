@@ -51,7 +51,7 @@ class BourreauWorker < Worker
     sleep 1+rand(15) # to prevent several workers from colliding
     @zero_task_found = 0 # count the normal scan cycles with no tasks
     @rr = RemoteResource.current_resource
-    worker_log.info "#{@rr.class.to_s} code rev. #{@rr.revision_info.svn_id_rev} start rev. #{@rr.info.starttime_revision}"
+    worker_log.info "#{@rr.class.to_s} code rev. #{@rr.revision_info.short_commit} start rev. #{@rr.info.starttime_revision}"
     @rr_id = @rr.id
     @last_ruby_stuck_check = 20.minutes.ago
     @process_task_list_pid = nil
@@ -513,13 +513,23 @@ class BourreauWorker < Worker
       end
     end
 
-
   # A CbrainTransitionException can occur just before we try
   # setup_and_submit_job() or post_process(); it's allowed, it means
   # some other worker has beaten us to the punch. So we just ignore it.
   rescue CbrainTransitionException => te
     worker_log.debug "Transition Exception: task '#{task.bname_tid}' FROM='#{te.from_state}' TO='#{te.to_state}' FOUND='#{te.found_state}'"
     return
+
+  # Our task might have disappeared. Rare.
+  # This is most likely during the reload() at the top of the method.
+  rescue ActiveRecord::RecordNotFound => gone_ex
+    if gone_ex.message["Couldn't find #{task.class} with id=#{task.id}"] # our own task?
+      worker_log.debug "Task '#{task.bname_tid}' has disappeared. Skipping."
+      return # nothing else to do
+    else
+      worker_log.fatal "Some object has disappeared while processing task '#{task.bname_tid}': #{gone_ex.class.to_s} #{gone_ex.message}\n" + gone_ex.backtrace[0..10].join("\n")
+      raise gone_ex # something ELSE than a task disappeared?
+    end
 
   # Any other error is critical and fatal; we're already
   # trapping all exceptions in setup_and_submit_job() and post_process(),
@@ -528,7 +538,8 @@ class BourreauWorker < Worker
   rescue Exception => e
     worker_log.fatal "Exception processing task #{task.bname_tid}: #{e.class.to_s} #{e.message}\n" + e.backtrace[0..10].join("\n")
     raise e
-  end
+
+  end # process_task which is way too long.
 
   # As a side effect of the regular checks, detect some
   # tasks stuck in Ruby code and mark them as failed.

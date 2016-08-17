@@ -272,7 +272,7 @@ module ActRecLog
     class_name     = context.class.to_s
     class_name     = context.to_s if class_name == "Class"
     rev_info       = context.revision_info
-    pretty_info    = rev_info.svn_id_rev
+    pretty_info    = rev_info.short_commit
 
     full_message   = "#{class_name} rev. #{pretty_info}"
     full_message  += " #{message}" unless message.blank?
@@ -299,8 +299,7 @@ module ActRecLog
     class_name     = anobject.class.to_s
     class_name     = anobject.to_s if class_name == "Class"
     rev_info       = anobject.revision_info
-    #pretty_info    = rev_info.svn_id_pretty_rev_author_date
-    pretty_info    = rev_info.svn_id_rev
+    pretty_info    = rev_info.short_commit
 
     full_message   = "#{class_name} rev. #{pretty_info}"
     full_message   += " #{message}" unless message.blank?
@@ -504,7 +503,7 @@ module ActRecLog
     mytable = self.class.table_name
     return nil unless myid
     message = Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + "#{self.class} revision " +
-              self.revision_info.svn_id_pretty_rev_author_date + "\n"
+              self.revision_info.format() + "\n"
 
     arl = ActiveRecordLog.create( :ar_id         => myid,
                                   :ar_table_name => mytable,

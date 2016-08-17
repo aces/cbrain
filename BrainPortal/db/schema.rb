@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160609145038) do
+ActiveRecord::Schema.define(:version => 20160811141815) do
 
   create_table "access_profiles", :force => true do |t|
     t.string   "name",        :null => false
@@ -324,6 +324,13 @@ ActiveRecord::Schema.define(:version => 20160609145038) do
   add_index "tags_userfiles", ["tag_id"], :name => "index_tags_userfiles_on_tag_id"
   add_index "tags_userfiles", ["userfile_id"], :name => "index_tags_userfiles_on_userfile_id"
 
+  create_table "task_vm_allocations", :force => true do |t|
+    t.integer  "vm_id"
+    t.integer  "task_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
   create_table "tool_configs", :force => true do |t|
     t.string   "version_name"
     t.text     "description"
@@ -337,6 +344,13 @@ ActiveRecord::Schema.define(:version => 20160609145038) do
     t.integer  "ncpus"
     t.string   "docker_image"
     t.string   "extra_qsub_args"
+    t.string   "cloud_disk_image"
+    t.string   "cloud_vm_user"
+    t.string   "cloud_ssh_key_pair"
+    t.string   "cloud_instance_type"
+    t.integer  "cloud_job_slots"
+    t.integer  "cloud_vm_boot_timeout"
+    t.integer  "cloud_vm_ssh_tunnel_port"
   end
 
   add_index "tool_configs", ["bourreau_id"], :name => "index_tool_configs_on_bourreau_id"

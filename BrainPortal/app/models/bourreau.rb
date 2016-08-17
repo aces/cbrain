@@ -235,7 +235,7 @@ class Bourreau < RemoteResource
     worker_pids  = workers.map(&:pid).join(",")
 
     worker_revinfo    = BourreauWorker.revision_info.self_update
-    worker_lc_rev     = worker_revinfo.commit
+    worker_lc_rev     = worker_revinfo.short_commit
     worker_lc_author  = worker_revinfo.author
     worker_lc_date    = worker_revinfo.datetime
 
@@ -307,7 +307,7 @@ class Bourreau < RemoteResource
     yml = "\n" +
           "#\n" +
           "# File created automatically on Portal Side\n" +
-          "# by " + self.revision_info.svn_id_pretty_file_rev_author_date + "\n" +
+          "# by " + self.revision_info.format("%f %s %a %d") + "\n" +
           "#\n" +
           "\n" +
           "#{railsenv}:\n"
@@ -440,8 +440,10 @@ class Bourreau < RemoteResource
 
     taskids.shuffle.each_with_index do |task_id,count|
       $0 = "AlterTask #{newstatus} ID=#{task_id} #{count+1}/#{taskids.size}\0"
+      task = CbrainTask.where(:id => task_id, :bourreau_id => myself.id).first
+      next unless task # doesn't even exist? just ignore it
+
       begin
-        task       = CbrainTask.find(task_id.to_i)
         old_status = task.status # so we can detect if the operation did anything.
         task.update_status
 

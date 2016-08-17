@@ -162,6 +162,9 @@ class BourreauxController < ApplicationController
     # Help link for large uploads (shows up in the upload panel)
     add_meta_data_from_form(@bourreau, [ :large_upload_url ])
 
+    # Amazon EC2 properties
+    add_meta_data_from_form(@bourreau, [:amazon_ec2_access_key_id, :amazon_ec2_secret_access_key, :amazon_ec2_region] )
+
     # Clean up all file synchronization stuff if the DP cache dir has changed.
     if old_dp_cache_dir != @bourreau.dp_cache_dir
       old_ss = SyncStatus.where( :remote_resource_id => @bourreau.id )
@@ -368,6 +371,7 @@ class BourreauxController < ApplicationController
   # with date filtering if wanted.
   def rr_disk_usage
     date_filtering = params[:date_range] || {}
+    type_filtering = params[:types]      || []
 
     # Time:     Present ............................................................ Past
     # In Words: now .......... older_limit ..... younger_limit ................. long ago
@@ -398,7 +402,8 @@ class BourreauxController < ApplicationController
     stats_options  = { :users            => userlist,
                        :remote_resources => rrlist,
                        :accessed_before  => accessed_before,
-                       :accessed_after   => accessed_after
+                       :accessed_after   => accessed_after,
+                       :types            => type_filtering
                     }
 
     @report_stats    = ModelsReport.rr_usage_statistics(stats_options)
@@ -504,6 +509,9 @@ class BourreauxController < ApplicationController
       clean_cache = [ clean_cache ]
     end
 
+    # The fourth params is a list of Userfile types (strings)
+    typeslist        = Array(params[:types].presence || []) # Array(nil) is []
+
     # List of acceptable users
     userlist         = current_user.available_users.all
 
@@ -534,7 +542,7 @@ class BourreauxController < ApplicationController
       userids = userlist.keys.each { |uid| uid.to_s }.join(",")  # "uid,uid,uid"
       flash[:notice] += "\n" unless flash[:notice].blank?
       begin
-        remote_resource.send_command_clean_cache(userids,cleanup_older.ago,cleanup_younger.ago)
+        remote_resource.send_command_clean_cache(userids,typeslist,cleanup_older.ago,cleanup_younger.ago)
         flash[:notice] += "Sending cleanup command to #{remote_resource.name}."
       rescue
         flash[:notice] += "Could not contact #{remote_resource.name}."
@@ -545,7 +553,7 @@ class BourreauxController < ApplicationController
     date_filtering["relative_from"]             = cleanup_younger
     date_filtering["relative_to"]               = cleanup_older
 
-    redirect_to :action => :rr_disk_usage, :date_range => date_filtering
+    redirect_to :action => :rr_disk_usage, :date_range => date_filtering, :types => typeslist
 
   end
 

@@ -93,7 +93,7 @@
     <% t.cell("Site") { link_to_site_if_accessible(@provider.site) } %>
 
     <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-      <% t.cell("Revision Info (DataProvider)") { DataProvider.revision_info.svn_id_pretty_rev_author_date } %>
+      <% t.cell("Revision Info (DataProvider)") { DataProvider.revision_info.format() } %>
     <% else %>
       <% t.empty_cell %>
     <% end %>
@@ -109,7 +109,7 @@
     <% end %>
 
     <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-      <% t.cell("Revision Info (#{@provider.type})") { @provider.revision_info.svn_id_pretty_rev_author_date } %>
+      <% t.cell("Revision Info (#{@provider.type})") { @provider.revision_info.format() } %>
     <% else %>
       <% t.empty_cell %>
     <% end %>

@@ -97,7 +97,7 @@ class CbrainTask::Parallelizer #:nodoc:
         :description =>
           "Standard CBRAIN Parallelizer\n" +
           "\n" +
-          "Automatically created by #{self} rev. #{self.revision_info.svn_id_rev}.\n" +
+          "Automatically created by #{self} rev. #{self.revision_info.short_commit}.\n" +
           "Note that the suggested number of CPUs defined here is not in fact used.\n" +
           "Instead, the parallelism factor is determined by the parallelized program's\n" +
           "own configuration.\n"

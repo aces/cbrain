@@ -62,7 +62,11 @@ class SshDataProvider < DataProvider
   end
 
   def allow_file_owner_change? #:nodoc:
-    true
+    true # some subclasses reset this to false
+  end
+
+  def content_storage_shared_between_users? #:nodoc:
+    true # this class stores all in a flat directory; some subclasses reset this to false
   end
 
   def impl_sync_to_cache(userfile) #:nodoc:

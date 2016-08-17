@@ -32,7 +32,8 @@ class UserfilesController < ApplicationController
   before_filter :login_required
   around_filter :permission_check, :only => [
       :download, :update_multiple, :delete_files,
-      :create_collection, :change_provider, :quality_control
+      :create_collection, :change_provider, :quality_control,
+      :export_file_list
   ]
 
   MAX_DOWNLOAD_MEGABYTES = 400
@@ -287,7 +288,8 @@ class UserfilesController < ApplicationController
     @sync_status        = 'ProvNewer' # same terminology as in SyncStatus
     state               = @userfile.local_sync_status
     @sync_status        = state.status if state
-    @viewer             = @userfile.viewers.first
+    @viewer             = @userfile.find_viewer(params[:viewer]) if params[:viewer].present?
+    @viewer           ||= @userfile.viewers.first
 
     @log                = @userfile.getlog        rescue nil
 
@@ -449,7 +451,7 @@ class UserfilesController < ApplicationController
         end
         respond_to do |format|
           format.html { redirect_to redirect_path }
-          format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
+          format.json { render :json => { :notice => flash[:error] } }
         end
         return
       end
@@ -1181,6 +1183,54 @@ class UserfilesController < ApplicationController
   def uncompress #:nodoc:
     manage_compression(params[:file_ids] || [], :uncompress)
     redirect_to(:action => :index)
+  end
+
+  # Given a set of files selected by the user, creates a new
+  # file of type CbrainFileList the describe them; the file is
+  # added automatically to the user's workspace.
+  def export_file_list
+    file_ids = params[:file_ids] || []
+
+    dest_dp_id   = DataProvider.find_by_id(current_user.meta["pref_data_provider_id"]).try(:id)
+    dest_dp_id ||= DataProvider.find_all_accessible_by_user(current_user).where(:online => true).first.try(:id)
+
+    if !dest_dp_id
+      flash[:error] = "For this feature to work you need access to an online Data Provider; you can select " +
+                      "your favorite one in your account preferences."
+      redirect_to(:action => :index)
+      return
+    end
+
+    # Find the files
+    userfiles = Userfile
+      .find_all_accessible_by_user(current_user, :access_requested => :read)
+      .where(:id => file_ids).all
+
+    if userfiles.empty?
+      flash[:error] = "You need to select some files first."
+      redirect_to(:action => :index)
+      return
+    end
+
+    # Create the new file list
+    file_list = CbrainFileList.new(
+      :user_id          => current_user.id,
+      :group_id         => current_project.try(:id) || current_user.own_group.id,
+      :name             => "file_list.#{Process.pid}.#{Time.now.to_i}.cbcsv",
+      :data_provider_id => dest_dp_id,
+    )
+
+    # Save it and set its content.
+    if file_list.save
+      csv_text = CbrainFileList.create_csv_file_from_userfiles(userfiles)
+      file_list.cache_writehandle { |fh| fh.write(csv_text) }
+      flash[:notice] = "Created file list named '#{file_list.name}'."
+      redirect_to(:controller => :userfiles, :action => :show, :id => file_list.id)
+    else
+      flash[:error] = "Could not create file list. Contact the admins."
+      redirect_to(:action => :index)
+    end
+
   end
 
   # Compress/uncompress single files (SingleFile) and archive/unarchive

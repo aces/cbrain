@@ -175,9 +175,9 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 
 %   unless file_lists.empty?
     # Assign the default input file list from interface_userfile_ids to unset
-    # file list parameters.
+    # file list parameters (unless they are optional).
     [
-%     file_lists.each do |param|
+%     file_lists.select{ |f| ! f['optional'] }.each do |param|
       :'<%= param['id'] %>',
 %     end
     ].each do |list|

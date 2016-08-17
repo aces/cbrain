@@ -1035,8 +1035,8 @@ module ViewScopes
           hash.is_a?(HashWithIndifferentAccess)
 
         pagination = self.new
-        pagination.page     = Integer(hash['i'] || hash['page'] || 1) rescue nil
-        pagination.per_page = Integer(hash['p'] || hash['per_page'])  rescue nil
+        pagination.page     = Integer(hash['i'] || hash['page'] || 1) rescue 1
+        pagination.per_page = Integer(hash['p'] || hash['per_page'])  rescue 25
         pagination.total    = Integer(hash['t'] || hash['total'])     rescue nil
         pagination
       end

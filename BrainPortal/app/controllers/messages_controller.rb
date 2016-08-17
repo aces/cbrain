@@ -129,9 +129,9 @@ class MessagesController < ApplicationController
   def delete_messages
     id_list = params[:message_ids] || []
     if current_user.has_role?(:admin_user)
-      message_list = Message.find(id_list)
+      message_list = Message.where(:id => id_list).all
     else
-      message_list = current_user.messages.find(id_list)
+      message_list = current_user.messages.where(:id => id_list).all
     end
     deleted_count = 0
 
@@ -148,13 +148,11 @@ class MessagesController < ApplicationController
   # DELETE /messages/1.xml
   def destroy #:nodoc:
     if current_user.has_role?(:admin_user)
-      @message = Message.find(params[:id])
+      @message = Message.find(params[:id]) rescue nil
     else
-      @message = current_user.messages.find(params[:id])
+      @message = current_user.messages.find(params[:id]) rescue nil
     end
-    unless @message.destroy
-      flash.now[:error] = "Could not delete message."
-    end
+    @message && @message.destroy
 
     head :ok
   end

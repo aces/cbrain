@@ -96,8 +96,8 @@ class ClusterTask < CbrainTask
   def record_cbraintask_revs(caller_level=1) #:nodoc:
     baserev = ClusterTask::Revision_info
     subrev  = self.revision_info
-    self.addlog("#{baserev.svn_id_file} rev. #{baserev.svn_id_rev}", :caller_level => caller_level + 1)
-    self.addlog("#{subrev.svn_id_file} rev. #{subrev.svn_id_rev}",   :caller_level => caller_level + 1)
+    self.addlog("#{baserev.basename} rev. #{baserev.short_commit}", :caller_level => caller_level + 1)
+    self.addlog("#{subrev.basename} rev. #{subrev.short_commit}",   :caller_level => caller_level + 1)
   end
 
 
@@ -350,7 +350,7 @@ class ClusterTask < CbrainTask
     # Return whether we found one or not
     return (results.size == 1)
   end
-  
+
 
   def we_are_in_workdir #:nodoc:
     full = self.full_cluster_workdir
@@ -1527,6 +1527,7 @@ class ClusterTask < CbrainTask
     job.wd       = workdir
     job.name     = self.tname_tid  # "#{self.name}-#{self.id}" # some clusters want all names to be different!
     job.walltime = self.job_walltime_estimate
+    job.task_id  = self.id
 
     # Note: all extra_qsub_args defined in the tool_configs (bourreau, tool and bourreau/tool)
     # are appended by level of priority. 'less' specific first, 'more' specific later.
@@ -1543,11 +1544,11 @@ class ClusterTask < CbrainTask
     self.addlog("Using Scir for '#{drm}' version '#{version}' implementation '#{impl}'.")
 
     impl_revinfo = scir_session.revision_info
-    impl_file    = impl_revinfo.svn_id_file
-    impl_rev     = impl_revinfo.svn_id_rev
-    impl_author  = impl_revinfo.svn_id_author
-    impl_date    = impl_revinfo.svn_id_date
-    impl_time    = impl_revinfo.svn_id_time
+    impl_file    = impl_revinfo.basename
+    impl_rev     = impl_revinfo.short_commit
+    impl_author  = impl_revinfo.author
+    impl_date    = impl_revinfo.date
+    impl_time    = impl_revinfo.time
     self.addlog("Implementation in file '#{impl_file}' by '#{impl_author}' rev. '#{impl_rev}' from '#{impl_date + " " + impl_time}'.")
 
     # Erase leftover STDOUT and STDERR files; necessary
@@ -1565,10 +1566,33 @@ class ClusterTask < CbrainTask
       # Queue the job on the cluster and return true, at this point
       # it's not our 'job' to figure out if it worked or not.
       self.addlog("Cluster command: #{job.qsub_command}") if self.user.has_role? :admin_user
-      jobid              = scir_session.run(job)
-      self.cluster_jobid = jobid
-      self.status_transition(self.status, "Queued")
-      self.addlog("Queued as job ID '#{jobid}'.")
+      begin
+        jobid              = scir_session.run(job)
+        self.cluster_jobid = jobid
+        self.status_transition(self.status, "Queued")
+        self.addlog("Queued as job ID '#{jobid}'.")
+      rescue NoVmAvailableError => ex
+        # When the task is executed in a VM, it may not be submitted
+        # right away when no VMs are available. In such a case, method
+        # scir_cloud.run will raise an exception. We need to mask this
+        # exception and put the task back to status "New" so that
+        # submission will be attempted again by the Bourreau later
+        # on. VMs may become available for the task when other tasks
+        # complete or new VMs are started. Exceptions that are not of
+        # class NoVMAvailableError will not be rescued.
+        addlog(ex.message)
+        addlog("Putting task back to status \"New\".")
+        # This is unfortunate but we have to move back to status 'New'
+        # to give a chance to the task to be submitted again when
+        # there are VMs available. It shouldn't be too annoying
+        # though, since caches will avoid useless file transfers. To
+        # avoid this status transition, a new status could be
+        # introduced between "Setting Up" and "Queued"
+        # (e.g. "Scheduling"). That would require some more
+        # modifications in the bourreau worker logic though, so that
+        # tasks in status "Scheduling" are also picked up. 
+        self.status_transition(self.status,"New")
+      end
     end
     self.save
 
@@ -1632,7 +1656,7 @@ class ClusterTask < CbrainTask
   def remove_cluster_workdir
     raise "Tried to remove a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
-    return true if ! self.share_wd_tid.blank?  # Do not erase if using some other task's workdir.
+    return true if self.share_wd_tid.present?  # Do not erase if using some other task's workdir.
     full=self.full_cluster_workdir
     return if full.blank?
     self.addlog("Removing workdir '#{full}'.")

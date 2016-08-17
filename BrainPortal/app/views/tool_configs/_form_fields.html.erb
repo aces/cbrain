@@ -98,7 +98,13 @@
   <span title="Docker image">
     <p><%= f.label :docker_image, "Docker image:" %><br/>
       <%= f.text_field :docker_image %><br/>
-      <div class="field_explanation">The name and tag of the Docker image in which the tool is installed, for instance "centos:latest". This name refers to the Docker index accessed by the Bourreau, which is configured manually in the Bourreau for now.</div>
+      <div class="field_explanation">
+        The name and tag of the Docker image in which the tool is installed,
+        for instance "centos:latest". This name refers to the Docker index
+        accessed by the Bourreau, which is configured manually in the Bourreau
+        for now. If left empty, tool will run on the bare resources, without
+        any docker image.
+      </div>
     </p>
   </span>
 
@@ -108,6 +114,54 @@
       <div class="field_explanation"><b>Note:</b> This option will be appended to the extra 'qsub' option defined at the bourreau level.</div>
     </p>
   </span>
+
+  <% bourreau = @tool_config.bourreau %>
+  <% if !bourreau.nil? && bourreau.scir_class < ScirCloud %>
+  <% available_disk_images    = bourreau.scir_class.get_available_disk_images(bourreau)
+     available_instance_types = bourreau.scir_class.get_available_instance_types(bourreau)
+     available_ssh_key_pairs  = bourreau.scir_class.get_available_key_pairs(bourreau)
+  %>
+
+  <span title="Cloud configuration">
+    <h4>Cloud configuration</h4>
+    <p><%= f.label :cloud_disk_image, "Disk image:" %><br/>
+      <%= f.select :cloud_disk_image,  available_disk_images %><br/>
+      <div class="field_explanation">
+      </div>
+    </p>
+    <p><%= f.label :cloud_vm_user, "VM user:" %><br/>
+      <%= f.text_field :cloud_vm_user%><br/>
+      <div class="field_explanation">
+      </div>
+    </p>
+    <p><%= f.label :cloud_ssh_key_pair, "SSH key pair:" %><br/>
+      <%= f.select :cloud_ssh_key_pair,  available_ssh_key_pairs %><br/>
+      <div class="field_explanation">
+      </div>
+    </p>
+    <p><%= f.label :cloud_instance_type, "Instance type:" %><br/>
+      <%= f.select :cloud_instance_type,  available_instance_types %><br/>
+    <div class="field_explanation">
+    </div>
+    </p>
+    <p><%= f.label :cloud_job_slots, "Job slots:" %><br/>
+      <%= f.text_field :cloud_job_slots%><br/>
+    <div class="field_explanation">
+    </div>
+    </p>
+    <p><%= f.label :cloud_vm_boot_timeout, "VM boot timeout (s):" %><br/>
+      <%= f.text_field :cloud_vm_boot_timeout%><br/>
+    <div class="field_explanation">
+    </div>
+    </p>
+    <p><%= f.label :cloud_vm_ssh_tunnel_port, "VM SSH tunnel port:" %><br/>
+      <%= f.text_field :cloud_vm_ssh_tunnel_port%><br/>
+    <div class="field_explanation">
+    </div>
+    </p>
+  </span>
+  <% end %>
+
 
 </div>
 

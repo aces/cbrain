@@ -58,7 +58,7 @@
       <% t.cell("Cluster Management System Type")     { red_if(@bourreau.cms_class != @info.bourreau_cms, @info.bourreau_cms) } %>
 
       <% t.cell("Workers Last Change Revision")       { @info.worker_lc_rev } %>
-      <% t.cell("Cluster Management System Revision") { @info.bourreau_cms_rev.svn_id_pretty_rev_author_date } %>
+      <% t.cell("Cluster Management System Revision") { @info.bourreau_cms_rev} %>
 
       <% t.cell("Workers Last Change Date")           { @info.worker_lc_date } %>
       <% t.empty_cell %>

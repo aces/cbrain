@@ -44,6 +44,7 @@ class ModelsReport
     remote_resources = options[:remote_resources]
     accessed_before  = options[:accessed_before]
     accessed_after   = options[:accessed_after]
+    types            = options[:types]
 
     # Internal constants
     all_users_label = "TOTAL" # used as a key in the table's hash
@@ -66,9 +67,10 @@ class ModelsReport
     base_rel = SyncStatus.joins(:userfile).group([ 'userfiles.user_id', 'sync_status.remote_resource_id'])
 #    base_rel = base_rel.where(:status => [ 'InSync', 'Corrupted', 'CacheNewer', 'ToCache', 'ToProvider' ])
     base_rel = base_rel.where("userfiles.user_id" => userlist.map(&:id)) if users.present?
+    base_rel = base_rel.where("userfiles.type"    => types)              if types.present?
     base_rel = base_rel.where(:remote_resource_id => rrlist.map(&:id))   if remote_resources.present?
-    base_rel = base_rel.where([ "accessed_at < ?", accessed_before])     if accessed_before.present?
-    base_rel = base_rel.where([ "accessed_at > ?", accessed_after])      if accessed_after.present?
+    base_rel = base_rel.where( ["accessed_at < ?", accessed_before] )    if accessed_before.present?
+    base_rel = base_rel.where( ["accessed_at > ?", accessed_after] )     if accessed_after.present?
 
     # The four queries with the stats
     num_entries_hash = base_rel.count

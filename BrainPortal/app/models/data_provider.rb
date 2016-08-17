@@ -120,6 +120,7 @@ require 'digest/md5'
 # * is_browsable?(by_user = nil)
 # * is_fast_syncing?
 # * allow_file_owner_change?
+# * content_storage_shared_between_users?
 #
 # == Access restriction methods:
 #
@@ -373,6 +374,26 @@ class DataProvider < ActiveRecord::Base
   # problem, the files are stored in hashes subdirectories with
   # only the ID used for the component paths.
   def allow_file_owner_change?
+    false
+  end
+
+  # This predicate returns +true+ if the content storage
+  # of the data provider share files between users, meaning
+  # that if a file named X belong to a user, no other user
+  # can have a file named X too. Typically, this is the
+  # same as as saying 'files are all in the same directory'.
+  #
+  # In such a case, it means the Userfile assumption that
+  # two files with the same name can coexist on the
+  # same DP if they belong to different users is FALSE.
+  # Normally, the Userfile model is not so strict
+  # (see the Userfile validation rule for names' uniqueness).
+  # The value returned by this method is used by
+  # another Userfile callback, flat_dir_dp_name_uniqueness().
+  #
+  # This true/false value of this method is to be redefined
+  # in subclasses to trigger the proper Userfile behavior.
+  def content_storage_shared_between_users?
     false
   end
 

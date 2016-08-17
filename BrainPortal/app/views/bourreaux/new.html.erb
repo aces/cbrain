@@ -157,13 +157,14 @@
 	  <legend>Cluster Management System Configuration</legend>
 	  <p><%= f.label :cms_class, "Type of cluster" %><br/>
 	  <%= f.select :cms_class, [
-	            [ "(Unconfigured)",  "" ],
-	            [ "Sun GridEngine",  "ScirSge" ],
-	            [ "PBS",             "ScirPbs" ],
-	            [ "MOAB",            "ScirMoab" ],
-	            [ "LSF",             "ScirLsf" ],
-	            [ "Sharcnet custom", "ScirSharcnet" ],
-	            [ "UNIX processes",  "ScirUnix" ]
+                    [ "(Unconfigured)",  "" ],
+                    [ "Sun GridEngine",  "ScirSge" ],
+                    [ "PBS",             "ScirPbs" ],
+                    [ "MOAB",            "ScirMoab" ],
+                    [ "LSF",             "ScirLsf" ],
+                    [ "Sharcnet custom", "ScirSharcnet" ],
+                    [ "UNIX processes",  "ScirUnix" ],
+                    [ "Amazon EC2",  "ScirAmazon" ]
 	          ]
 	  %>
 

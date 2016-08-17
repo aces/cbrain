@@ -53,20 +53,20 @@ module SmartDataProviderInterface
       @real_provider = networkclass.new
     end
 
+    # Copy attributes to the internal real provider object
     @real_provider.make_all_accessible!
-    @real_provider.attributes = self.attributes.reject{ |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! @real_provider.class.columns_hash[k] }
+    @real_provider.attributes = self.attributes.reject { |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! @real_provider.class.columns_hash[k] }
     @real_provider.id = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
     @real_provider.readonly!
 
-    # These methods are used to intercept and prevent calls to 'save' on the two internal providers objects    
+    # These methods are used to intercept and prevent calls to 'save' on the two internal providers objects
     @real_provider.class_eval do
       [ :save, :save!, :update_attribute, :update_attributes, :update_attributes! ].each do |bad_method|
-        define_method(bad_method) do |*args|   
-          cb_error "Internal error: attempt to invoke method '#{bad_method}' on internal #{@real_provider.class == localclass ? "local" : "network"} provider object for SmartDataProvider '#{@real_provider.name}'"   
-        end    
-      end    
+        define_method(bad_method) do |*args|
+          cb_error "Internal error: attempt to invoke method '#{bad_method}' on internal #{@real_provider.class == localclass ? "local" : "network"} provider object for SmartDataProvider '#{@real_provider.name}'"
+        end
+      end
     end
-
 
     @real_provider
   end
@@ -88,23 +88,27 @@ module SmartDataProviderInterface
   ####################################
 
   def is_alive? #:nodoc:
-    @real_provider && @real_provider.is_alive?
+    @real_provider.is_alive?
   end
 
   def is_alive! #:nodoc:
-    @real_provider && @real_provider.is_alive!
+    @real_provider.is_alive!
   end
 
   def is_browsable?(by_user = nil) #:nodoc:
-    @real_provider && @real_provider.is_browsable?(by_user)
+    @real_provider.is_browsable?(by_user)
   end
 
   def is_fast_syncing? #:nodoc:
-    @real_provider && @real_provider.is_fast_syncing?
+    @real_provider.is_fast_syncing?
   end
 
   def allow_file_owner_change? #:nodoc:
-    @real_provider && @real_provider.allow_file_owner_change?
+    @real_provider.allow_file_owner_change?
+  end
+
+  def content_storage_shared_between_users? #:nodoc:
+    @real_provider.content_storage_shared_between_users?
   end
 
   def sync_to_cache(userfile) #:nodoc:

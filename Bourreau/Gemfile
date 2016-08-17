@@ -33,8 +33,21 @@ gem "log4r"
 gem "thin"
 gem "pbkdf2-ruby"
 gem "json-schema"
+gem "aws-sdk"
 
-group :development, :test do
+
+
+
+group :development do
+  gem "wirble"
+  gem "looksee"
+  gem "hirb"
+end
+
+
+
+
+group :test do
   gem "rspec",                    "~> 3.4"
   gem "rspec-rails",              "~> 3.2"
   gem "factory_girl_rails",       "~> 4.5"
@@ -43,9 +56,6 @@ group :development, :test do
   gem 'rspec-activemodel-mocks',  "~> 1.0"
   gem 'rspec-collection_matchers',"~> 1.1"
   gem "database_cleaner",         "~> 1.5"
-  gem "wirble"
-  gem "looksee"
-  gem "hirb"
   gem "test-unit",    "~> 3.1"
 end
 

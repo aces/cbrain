@@ -55,6 +55,10 @@ class LocalDataProvider < DataProvider
     true
   end
 
+  def content_storage_shared_between_users? #:nodoc:
+    false
+  end
+
   # Returns true: local data providers are considered fast syncing.
   def is_fast_syncing?
     true

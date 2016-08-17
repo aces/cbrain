@@ -130,6 +130,7 @@ CbrainRailsPortal::Application.routes.draw do
       post   'quality_control_panel'
       post   'sync_multiple'
       post   'detect_file_type'
+      post   'export_file_list'
     end
   end
 

@@ -55,17 +55,15 @@
 #   end
 #
 #   # Then later on, all these calls are similar:
-#   puts Abcd::Revision_info.to_s # in SVN-like format
-#   puts Abcd::Revision_info.svn_id_rev # using CBRAIN's svn_id_rev parser
-#   puts Abcd.revision_info.svn_id_rev  # using CBRAIN's revision_info method
-#   x = Abcd.new
-#   puts x.revision_info.svn_id_rev
+#   puts Abcd::Revision_info.to_s # <short_commit> <author> <date> by default
+#   puts Abcd::Revision_info.format("%s %a %d") # selects <short_commit> <author> <date> to put in the string
+#   puts Abcd.revision_info.to_s  # using CBRAIN's revision_info method
 #   puts x.revision_info.short_commit # using attributes
 #
-#   # If at least once to_s() or self_update() has been called,
+#   # If at least once to_s(), format(), or self_update() has been called,
 #   # the the attributes can also be accessed directly:
 #   Abcd::Revision_info.self_update
-#   puts Abcd::Revision_info.author  # faster than svn_id_author()
+#   puts Abcd::Revision_info.author
 #
 
 require 'csv'
@@ -79,9 +77,6 @@ class CbrainFileRevision
 
   # Official attributes
   attr_accessor :author, :commit, :short_commit, :date, :time
-
-  # Fake SVN ID
-  attr_accessor :fake_svn_id_string
 
   def initialize(fullpath) #:nodoc:
     @fullpath = fullpath.to_s
@@ -99,14 +94,35 @@ class CbrainFileRevision
     self.new(fullpath)
   end
 
-  # Returns the revision info in a fake 'svn' format:
-  #   "$Id: en_cbrain_local_data_provider.rb 12ab34 2010-03-25 17:26:05Z prioux $"
-  # Note that this triggers a self_update() call, if necessary, the first time.
+  # Returns a formatted string representing the last change to the file in git
+  # Format: <short_commit> <author> <date>
   def to_s
-    return @fake_svn_id_string if ! @fake_svn_id_string.nil? # Cached; no need to fetch git info every time.
+    self.format("%f %s %d %t %a")
+  end
+
+  # Returns a formatted string representing the last change to the file in git
+  # Format is determined by passing the desired details you want in the returned string
+  # as a string:
+  # %a = author
+  # %f = filename
+  # %c = commit
+  # %s = short_commit
+  # %d = date
+  # %t = time
+  # Defaults to: <short_commit> <author> <date>
+  def format(rev_info = "%s %a %d")
     self_update()
-    @fake_svn_id_string = "$Id: #{@basename} #{@short_commit} #{@date} #{@time} #{@author} $"
-    @fake_svn_id_string
+
+    rev_info = rev_info.gsub(/(%[afcsdt])/, {
+        "%a" => @author,
+        "%f" => @basename,
+        "%c" => @commit,
+        "%s" => @short_commit,
+        "%d" => @date,
+        "%t" => @time
+    })
+
+    return rev_info
   end
 
   # Returns the date and time of the revision info, separated by a space.
@@ -115,6 +131,36 @@ class CbrainFileRevision
   def datetime
     self_update()
     "#{@date} #{@time}"
+  end
+
+  def short_commit #:nodoc:
+    self_update
+    @short_commit
+  end
+
+  def commit #:nodoc:
+    self_update
+    @commit
+  end
+
+  def author #:nodoc:
+    self_update
+    @author
+  end
+
+  def date #:nodoc:
+    self_update
+    @date
+  end
+
+  def time #:nodoc:
+    self_update
+    @time
+  end
+
+  def basename #:nodoc:
+    self_update
+    @basename
   end
 
   # Inspect the revision object but will not trigger a self_update(),
@@ -209,20 +255,28 @@ class CbrainFileRevision
     rev
   end
 
+  # Populates the @commit, @date, @time and @author fields with default values
+  def self.unknown_rev_info
+    @dummy ||= self.new("").self_update
+  end
+
   # mode is :git, :static, or :auto
   def get_git_rev_info(mode = :auto) #:nodoc:
-    return self unless @commit.nil? # don't do anything if we already cached the info
+    return self if @commit.present? # don't do anything if we already cached the info
 
     # Alright, here's a set of default values in case anything goes wrong.
-    @commit   = "UnknownId"
-    @date     = "1970-01-01"
-    @time     = "00:00:00"
-    @author   = "UnknownAuthor"
+    @commit       = "UnknownId"
+    @date         = "1970-01-01"
+    @time         = "00:00:00"
+    @author       = "UnknownAuthor"
+    @short_commit = "UnknownId"
 
     # We need to fetch the info of the REAL file if the original
     # target was a symlink, because symlink don't change much in GIT!
     @fullpath = File.exists?(@fullpath) ? Pathname.new(@fullpath).realpath.to_s : @fullpath.to_s
     @basename = File.basename(@fullpath)
+
+    return self if @basename.blank?
 
     if mode == :auto
       mode = self.class.git_available? ? :git : :static
