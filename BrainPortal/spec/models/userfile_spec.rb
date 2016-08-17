@@ -810,6 +810,7 @@ describe Userfile do
       end
 
       it "should call data_provider.cache_writehandle" do
+        expect(userfile).to receive(:save!)
         expect(userfile).to receive(:data_provider).and_return(data_provider)
         expect(data_provider).to receive(:cache_writehandle)
         allow(userfile).to receive(:set_size!)
@@ -817,6 +818,7 @@ describe Userfile do
       end
 
       it "should call set_size!" do
+        expect(userfile).to receive(:save!)
         expect(userfile).to receive(:data_provider).and_return(data_provider)
         allow(data_provider).to receive(:cache_writehandle)
         expect(userfile).to receive(:set_size!)
@@ -835,6 +837,7 @@ describe Userfile do
       end
 
       it "should call data_provider.cache_copy_from_local_file" do
+        expect(userfile).to receive(:save!)
         expect(userfile).to receive(:data_provider).and_return(data_provider)
         expect(data_provider).to receive(:cache_copy_from_local_file)
         allow(userfile).to receive(:set_size!)
@@ -842,6 +845,7 @@ describe Userfile do
       end
 
       it "should call set_size!" do
+        expect(userfile).to receive(:save!)
         expect(userfile).to receive(:data_provider).and_return(data_provider)
         expect(data_provider).to receive(:cache_copy_from_local_file)
         expect(userfile).to receive(:set_size!)
@@ -861,6 +865,7 @@ describe Userfile do
       end
 
       it "should call data_provider.cache_copy_to_local_file" do
+        expect(userfile).to receive(:save!)
         expect(userfile).to receive(:data_provider).and_return(data_provider)
         expect(data_provider).to receive(:cache_copy_to_local_file)
         userfile.cache_copy_to_local_file("filename")

@@ -46,6 +46,7 @@ class Userfile < ActiveRecord::Base
   cbrain_abstract_model! # objects of this class are not to be instanciated
 
   before_destroy          :erase_data_provider_content_and_cache, :nullify_children
+  after_destroy           :remove_spurious_sync_status
 
   validates               :name,
                           :presence => true,
@@ -911,18 +912,18 @@ class Userfile < ActiveRecord::Base
   private
 
   def validate_associations #:nodoc:
-    unless DataProvider.where( :id => self.data_provider_id ).first
+    unless DataProvider.where( :id => self.data_provider_id ).exists?
       errors.add(:data_provider, "does not exist")
     end
-    unless User.where( :id => self.user_id ).first
+    unless User.where( :id => self.user_id ).exists?
       errors.add(:user, "does not exist")
     end
-    unless Group.where( :id => self.group_id ).first
+    unless Group.where( :id => self.group_id ).exists?
       errors.add(:group, "does not exist")
     end
   end
 
-  # before_destroy callback
+  # Before destroy callback
   def erase_data_provider_content_and_cache #:nodoc:
     self.cache_erase rescue true
     self.provider_erase
@@ -932,6 +933,12 @@ class Userfile < ActiveRecord::Base
   # before_destroy callback
   def nullify_children #:nodoc:
     self.children.each(&:remove_parent)
+  end
+
+  # after_destroy callback
+  def remove_spurious_sync_status #:nodoc:
+    SyncStatus.where(:userfile_id => self.id).delete_all
+    true
   end
 
   # This method is used as a validator, and as a before_create callback.

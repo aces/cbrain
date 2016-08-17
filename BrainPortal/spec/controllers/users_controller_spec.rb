@@ -66,7 +66,6 @@ RSpec.describe UsersController, :type => :controller do
         end
         it "should sort by country" do
           get :index, "_scopes"=>{"users" => {"o" =>[{"a"=>"country"}]}}
-          puts User.all.inspect
           expect(assigns[:users]).to eq(User.all(:order => "users.country"))
         end
       end
