@@ -155,7 +155,7 @@ describe ToolConfig do
 
   describe "#to_bash_prologue" do
 
-   let(:tool) {create(:tool, :cbrain_task_class_name => "CbrainTask::Civet")}
+   let(:tool) {create(:tool, :cbrain_task_class_name => "CbrainTask::Diagnostics")}
 
    context "fill HEADER" do
       it "should print 'Configuration: tool_config.id'" do
