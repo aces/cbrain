@@ -25,7 +25,7 @@
 #
 #=Attributes:
 #[*name*] The name of the tool.
-#[*cbrain_task_class*] CbrainTask subclass associated with this tool.
+#[*cbrain_task_class_name*] The name of the CbrainTask subclass associated with this tool.
 #[*user_id*] The owner of the tool.
 #[*group_id*] The group that the tool belongs to.
 #[*category*]  The category that the tool belongs to.
@@ -46,8 +46,8 @@ class Tool < ActiveRecord::Base
 
   before_validation :set_default_attributes
 
-  validates_uniqueness_of :name, :select_menu_text, :cbrain_task_class
-  validates_presence_of   :name, :cbrain_task_class, :user_id, :group_id, :category, :select_menu_text, :description
+  validates_uniqueness_of :name, :select_menu_text, :cbrain_task_class_name
+  validates_presence_of   :name, :cbrain_task_class_name, :user_id, :group_id, :category, :select_menu_text, :description
   validates_inclusion_of  :category, :in => Categories
   validates_format_of :url, :with => URI::regexp(%w(http https)), :if => :url_present?
 
@@ -58,28 +58,23 @@ class Tool < ActiveRecord::Base
   has_many                :bourreaux, :through => :tool_configs, :uniq => true
 
   attr_accessible         :name, :user_id, :group_id, :category, :license_agreements,
-                          :cbrain_task_class, :select_menu_text, :description, :url,
+                          :cbrain_task_class_name, :select_menu_text, :description, :url,
                           :application_type, :application_tags, :application_package_name
 
 
   # CBRAIN extension
   force_text_attribute_encoding 'UTF-8', :description
 
-  # Find a random bourreau on which this tool is available and to which +user+ has access.
-  def select_random_bourreau_for(user)
-    available_group_ids = user.group_ids
-    bourreau_list = Bourreau.where( :group_id => available_group_ids, :online => true ).select(&:is_alive?)
-    bourreau_list = bourreau_list & self.bourreaux
-    if bourreau_list.empty?
-      cb_error("Unable to find an execution server. Please notify your administrator of the problem.")
-    end
-    bourreau_list.slice(rand(bourreau_list.size)).id
-  end
-
   # Returns the single ToolConfig object that describes the configuration
   # for this tool for all Bourreaux, or nil if it doesn't exist.
   def global_tool_config
     @global_tool_config_cache ||= ToolConfig.where( :tool_id => self.id, :bourreau_id => nil ).first
+  end
+
+  # Returns the CbrainTask subclass associated with this tool.
+  # This is basically a constantize() on the string attribute +cbrain_task_class_name+
+  def cbrain_task_class
+    cbrain_task_class_name.constantize
   end
 
   # Overloading assignment operator to accept arrays and strings for application_tag

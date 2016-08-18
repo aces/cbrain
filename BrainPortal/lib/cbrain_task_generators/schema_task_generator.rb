@@ -208,14 +208,14 @@ module SchemaTaskGenerator
 
       # Create and save a new Tool for the task, unless there's already one.
       Tool.new(
-        :name              => name,
-        :user_id           => User.admin.id,
-        :group_id          => User.admin.own_group.id,
-        :category          => "scientific tool",
-        :cbrain_task_class => task.to_s,
-        :description       => description
+        :name                   => name,
+        :user_id                => User.admin.id,
+        :group_id               => User.admin.own_group.id,
+        :category               => "scientific tool",
+        :cbrain_task_class_name => task.to_s,
+        :description            => description
       ).save! unless
-        Tool.exists?(:cbrain_task_class => task.to_s)
+        Tool.exists?(:cbrain_task_class_name => task.to_s)
 
       # Create and save a new ToolConfig for the task on this server, unless
       # theres already one. Only applies to Bourreaux (as it would make no

@@ -191,7 +191,7 @@ describe "BrainPortal Boutiques Tests" do
         expect( @task_const.to_s ).to eq( "CbrainTask::BoutiquesTest" )
       end
       it "should have a tool" do
-        expect( Tool.exists?(:cbrain_task_class => @task_const) ).to be true
+        expect( Tool.exists?(:cbrain_task_class_name => @task_const) ).to be true
       end
       it "should have no public path" do # Just test the help file
         expect( @task_const.public_path("edit_params_help.html") ).to eq( nil )

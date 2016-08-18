@@ -18,16 +18,16 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
 <% custom_filter ||= @custom_filter %>
 
 Task<br>
-<%= task_type_select("data[type]", {:task_types => current_user.available_tools.map(&:cbrain_task_class).sort, :selector => custom_filter.data["type"], :include_top => true }, :multiple => true, :size => 10) %>
+<%= task_type_select("data[type]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name).sort, :selector => custom_filter.data["type"], :include_top => true }, :multiple => true, :size => 10) %>
 
-<p>                                                                                                                                                     
+<p>
 Status<br>
 <%= task_status_select("data[status]", {:selector => custom_filter.data["status"]}, :multiple => true, :size => 10) %>
 

@@ -257,11 +257,11 @@ FactoryGirl.define do
   ###################
 
   factory :tool do
-    sequence(:name)   { |n| "tool_#{n}" }
-    category          "scientific tool"
-    cbrain_task_class { |n| "CbrainTask::Snoozer#{n}"}
-    association       :user, factory: :normal_user
-    association       :group
+    sequence(:name)        { |n| "tool_#{n}" }
+    category               "scientific tool"
+    cbrain_task_class_name { |n| "CbrainTask::Snoozer#{n}"}
+    association            :user, factory: :normal_user
+    association            :group
   end
 
   factory :tool_config do

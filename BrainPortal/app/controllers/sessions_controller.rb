@@ -89,6 +89,15 @@ class SessionsController < ApplicationController
     end
   end
 
+  # Send a proper HTTP error code
+  def auth_failed
+    respond_to do |format|
+      format.html { render :action => 'new' }
+      format.json { render :nothing => true, :status  => 401 }
+      format.xml  { render :nothing => true, :status  => 401 }
+    end
+  end
+
   ###############################################
   #
   # Private methods

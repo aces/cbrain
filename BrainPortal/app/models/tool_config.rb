@@ -301,7 +301,7 @@ class ToolConfig < ActiveRecord::Base
 
   # Return the Ruby class associated with the tool associated with this tool_config.
   def cbrain_task_class
-    self.tool.cbrain_task_class.constantize
+    self.tool.cbrain_task_class
   end
 
 end

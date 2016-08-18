@@ -100,11 +100,11 @@ class ToolsController < ApplicationController
 
     @tool = Tool.new(params[:tool])
 
-    task_class = @tool.cbrain_task_class || "CbrainTask::Object"
+    task_class = @tool.cbrain_task_class_name || "CbrainTask::Object"
     task_class = task_class.demodulize
     subclass = CbrainTask.const_get(task_class) rescue Object
     unless subclass < CbrainTask # strictly subclass
-      @tool.errors.add(:cbrain_task_class, "doesn't seem to be a code subclass of CbrainTask.")
+      @tool.errors.add(:cbrain_task_class_name, "doesn't seem to be a code subclass of CbrainTask.")
     end
 
     respond_to do |format|
@@ -127,7 +127,7 @@ class ToolsController < ApplicationController
 
     respond_to do |format|
       if @tool.update_attributes_with_logging(params[:tool], current_user,
-           %w( category cbrain_task_class select_menu_text url application_package_name application_type application_tags ) )
+           %w( category cbrain_task_class_name select_menu_text url application_package_name application_type application_tags ) )
         flash[:notice] = 'Tool was successfully updated.'
         format.html { redirect_to(tools_path) }
         format.xml  { head :ok }
@@ -159,20 +159,20 @@ class ToolsController < ApplicationController
     successes = []
     failures  = ""
 
-    PortalTask.descendants.map(&:name).sort.each do |tool|
-      next if current_user.available_tools.find_by_cbrain_task_class(tool) # already exists
+    PortalTask.descendants.map(&:name).sort.each do |cbrain_task_class_name|
+      next if current_user.available_tools.find_by_cbrain_task_class_name(cbrain_task_class_name) # already exists
       @tool = Tool.new(
-                  :name               => tool.demodulize,
-                  :cbrain_task_class  => tool,
-                  :user_id            => User.admin.id,
-                  :group_id           => User.admin.own_group.id,
-                  :category           => "scientific tool"
+                  :name                    => cbrain_task_class_name.demodulize,
+                  :cbrain_task_class_name  => cbrain_task_class_name,
+                  :user_id                 => User.admin.id,
+                  :group_id                => User.admin.own_group.id,
+                  :category                => "scientific tool"
                 )
       success = @tool.save
       if success
         successes << @tool
       else
-        failures += "#{tool} could not be added.\n"
+        failures += "#{cbrain_task_class_name} could not be added.\n"
       end
     end
 
@@ -180,7 +180,7 @@ class ToolsController < ApplicationController
       if successes.size > 0
         flash[:notice] = "#{view_pluralize(successes.size, "tool")} successfully registered:\n"
         successes.each do |tool|
-          flash[:notice] += "Name: #{tool.name} Class: #{tool.cbrain_task_class}\n"
+          flash[:notice] += "Name: #{tool.name} Class: #{tool.cbrain_task_class_name}\n"
         end
       else
         flash[:notice] = "No unregistered tools found."

@@ -569,7 +569,7 @@ seeded_tools = []
 
 diag_tool = Tool.seed_record!(
   {
-    :cbrain_task_class => 'CbrainTask::Diagnostics'
+    :cbrain_task_class_name => 'CbrainTask::Diagnostics'
   },
   {
     :name => 'Diagnostics',
@@ -583,7 +583,7 @@ seeded_tools << diag_tool
 
 para_tool = Tool.seed_record!(
   {
-    :cbrain_task_class => 'CbrainTask::Parallelizer'
+    :cbrain_task_class_name => 'CbrainTask::Parallelizer'
   },
   {
     :name => 'Parallelizer',
@@ -597,7 +597,7 @@ seeded_tools << para_tool
 
 seri_tool = Tool.seed_record!(
   {
-    :cbrain_task_class => 'CbrainTask::CbSerializer'
+    :cbrain_task_class_name => 'CbrainTask::CbSerializer'
   },
   {
     :name => 'Serializer',
@@ -828,7 +828,7 @@ seeded_users.each do |user|
         howlong = rand(10) + 5
         tc = ToolConfig.find_by_tool_id_and_bourreau_id(tool.id, bourreau.id)
         next unless tc.can_be_accessed_by?(user)
-        taskclass = tool.cbrain_task_class.demodulize
+        taskclass = tool.cbrain_task_class_name.demodulize
         CbrainTask.const_get(taskclass).seed_record!(
           { :user_id                  => user.id,
             :group_id                 => group.id,

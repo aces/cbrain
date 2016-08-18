@@ -181,7 +181,7 @@ class TasksController < ApplicationController
       return
     end
 
-    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.demodulize
+    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class_name.demodulize
 
     @task             = CbrainTask.const_get(@toolname).new
 
@@ -307,7 +307,7 @@ class TasksController < ApplicationController
     @tool_config = tool_config # for acces in view
 
     # A brand new task object!
-    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class.demodulize
+    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class_name.demodulize
     @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
     @task.user_id   ||= current_user.id
     @task.group_id  ||= current_project.try(:id) || current_user.own_group.id
