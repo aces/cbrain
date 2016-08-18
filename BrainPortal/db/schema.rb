@@ -387,11 +387,11 @@ ActiveRecord::Schema.define(:version => 20160811141815) do
     t.string   "type"
     t.integer  "group_id"
     t.integer  "data_provider_id"
-    t.boolean  "group_writable",   :default => false, :null => false
+    t.boolean  "group_writable",                                  :default => false, :null => false
     t.integer  "num_files"
-    t.boolean  "hidden",           :default => false
-    t.boolean  "immutable",        :default => false
-    t.boolean  "archived",         :default => false
+    t.boolean  "hidden",                                          :default => false
+    t.boolean  "immutable",                                       :default => false
+    t.boolean  "archived",                                        :default => false
     t.text     "description"
   end
 
