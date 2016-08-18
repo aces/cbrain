@@ -33,17 +33,17 @@ module TestHelpers
   TestScriptName           = 'boutiquesTestApp.rb'
   TestScriptDescriptor     = 'descriptor_test.json'
   ValidationScriptLocation = 'validator.rb'
-  TempStore                = 'spec/fixtures/' # Site for temp file creation, as in other specs
+  TempStore                = File.join('spec','fixtures') # Site for temp file creation, as in other specs
 
   ### Helper script argument-specific constants ###
   # Local name variables for outfile arguments
-  DefReqOutName = TempStore + 'r.txt' # Default name for required output
-  AltReqOutName = TempStore + 'r.csv' # Alternate name for required output
-  OptOutName    = TempStore + 'o.txt' # Optional output file name
+  DefReqOutName = File.join(TempStore, 'r.txt') # Default name for required output
+  AltReqOutName = File.join(TempStore, 'r.csv') # Alternate name for required output
+  OptOutName    = File.join(TempStore, 'o.txt') # Optional output file name
   PotenOutFiles = [AltReqOutName, OptOutName, DefReqOutName]
   # Input file helper variables
-  c_file, d_file, j_file  = TempStore + 'c', TempStore + 'f', TempStore + 'jf'
-  f1_file, f2_file = TempStore + 'f1', TempStore + 'f2'
+  c_file, d_file, j_file  = File.join(TempStore, 'c'), File.join(TempStore, 'f'), File.join(TempStore, 'jf')
+  f1_file, f2_file = File.join(TempStore, 'f1'), File.join(TempStore, 'f2')
   f_files = f1_file + ' ' + f2_file
   # Argument helper variables
   r_arg, o_arg = "-r #{AltReqOutName} ", "-o #{OptOutName} "
@@ -86,12 +86,12 @@ module TestHelpers
     FileUtils.touch(c_file)  # For -C
     FileUtils.touch(d_file)  # For -d
     FileUtils.touch(j_file)  # For -j
-    [1,2].each { |i| FileUtils.touch(TempStore + "f#{i}") } # For -f
+    [1,2].each { |i| FileUtils.touch(File.join(TempStore, "f#{i}")) } # For -f
   end
 
   # Destroy Input files
   def destroyInputFiles
-    ['c','f','jf','f1','f2'].map{|f| TempStore + f }.each { |f| File.delete(f) if File.exist?(f) }
+    ['c','f','jf','f1','f2'].map{|f| File.join(TempStore, f) }.each { |f| File.delete(f) if File.exist?(f) }
   end
 
   # Destroy output files of the mock program
@@ -229,6 +229,9 @@ module TestHelpers
     ["fails if the optional output file is specified but unnamed", baseArgs + "-o", 1]
   ]
 
+  # Minimal arguments that could be used to run the task
+  MinArgs = baseArgs.dup
+
   # Creates the option parser object used by the mock app to parse the input command line
   GenerateOptionParser = lambda do |options|
     return OptionParser.new do |opt|
@@ -280,10 +283,10 @@ module TestHelpers
   # We detect lists in args, add them to options, and then delete them from args
   HandleSpaceSeparatedLists = lambda do |args,options|
     toDel, listPos = [], []
-    listArgs = Lists.map{ |s| '-'+s.to_s} + Lists.map{ |s| "--arg_" + s.to_s }  # Potential list-type args
+    listArgs = Lists.map{ |s| '-' + s.to_s} + Lists.map{ |s| "--arg_" + s.to_s }  # Potential list-type args
     args.each_with_index { |arg,ind| listPos << ind if listArgs.include?(arg) } # Get list positions
     nextEnd = lambda do |a,i| # Helper to obtain list end
-      (i+=1) until i==a.length || (a[i].start_with?('-') && TestArgs.map{ |s| '-'+s.to_s }.include?(a[i])); i
+      (i+=1) until i==a.length || (a[i].start_with?('-') && TestArgs.map{ |s| '-' + s.to_s }.include?(a[i])); i
     end
     listPos.each do |i|
       toDel << i    # Store the parameter location for deletion
