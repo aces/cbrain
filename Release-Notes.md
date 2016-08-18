@@ -1,5 +1,19 @@
 ## CBRAIN Release Notes
 
+#### Version 4.5.0 Released 2016-08-18
+
+- Preliminary (alpha) support for Amazon clusters.
+- Added AccessProfiles, an administrative feature.
+- More Boutique support; test of boutique-generated code.
+- Refactoring: DataProvider classes and transactions.
+- Drop historical support for SVN IDs for internal provenance tracking.
+- Bourreau-side tests framework fixed; tests forthcoming.
+- Removed overlays for creating new resources.
+- Better console built-in help.
+- New CbrainFileList base file type.
+- Support for flatfile-based revision tracking in plugins.
+- Removed support for Mozilla Persona.
+
 #### Version 4.4.0 Released 2016-05-31
 
 - SCIR class for LSF batch manager.
