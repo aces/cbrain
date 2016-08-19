@@ -412,14 +412,26 @@ class ClusterTask < CbrainTask
 
     # Pathname objects for the userfile and bourreau directories
     workdir_path   = Pathname.new(self.cluster_shared_dir)
-    dp_cache_path  = Pathname.new(self.bourreau.dp_cache_dir)
+    dp_cache_path  = Pathname.new(RemoteResource.current_resource.dp_cache_dir)
     userfile_path  = Pathname.new(userfile.cache_full_path)
     userfile_path += Pathname.new(userfile_sub_path) if userfile_sub_path.present?
 
-    # Figure out the two parts of the new symlink target; from file_path to
-    # the DP cache symlink, and from the DP symlink to the userfile
-    to_dp_syml    = workdir_path.relative_path_from(full_path.dirname) + DataProvider::DP_CACHE_SYML
-    to_cached     = userfile_path.relative_path_from(dp_cache_path)
+    # Try to figure out if the DataProvider of userfile is local, or remote.
+    # SmartDataProviders supply the real implementation under a real_provider method;
+    # other providers don't have that.
+    userfile_real_dp = userfile.data_provider.real_provider rescue userfile.data_provider
+    is_local = userfile_real_dp.is_a?(LocalDataProvider)
+
+    # Files on local data providers are symlinked directly
+    if is_local
+      target = userfile_path # full path to filesystem location of local DP
+    else
+      # Figure out the two parts of the new symlink target; from file_path to
+      # the DP cache symlink, and from the DP symlink to the userfile
+      to_dp_syml    = workdir_path.relative_path_from(full_path.dirname) + DataProvider::DP_CACHE_SYML
+      to_cached     = userfile_path.relative_path_from(dp_cache_path)
+      target        = to_dp_syml + to_cached
+    end
 
     # Make sure the directory exists and there is no symlink already there
     FileUtils.mkpath(full_path.dirname) unless Dir.exists?(full_path.dirname)
@@ -427,7 +439,7 @@ class ClusterTask < CbrainTask
 
     # Create the symlink
     Dir.chdir(self.full_cluster_workdir) do
-      File.symlink((to_dp_syml + to_cached).to_s, file_path.to_s)
+      File.symlink(target.to_s, file_path.to_s)
     end
   end
 
