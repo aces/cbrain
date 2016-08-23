@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -76,7 +76,7 @@ symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
 <span class="display_cell">
 
   <table>
-    
+
     <tr>
       <th colspan="2" rowspan="2">&nbsp;&nbsp;&nbsp;&nbsp;&rarr;<br>&uarr;&nbsp;&nbsp;&nbsp;&nbsp;</th>
       <th colspan="<%= num_prov %>">Destination Data Provider</th>
@@ -84,7 +84,8 @@ symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
 
     <tr class="no_wrap">
       <% @providers.each do |dp| %>
-        <th>
+        <th class="vertical_text_container">
+          <div class="vertical_text" style="width: 3em">
            <%= nil and link_to_data_provider_if_accessible(dp, current_user, :html_options => { :class => dp.online? ? nil : 'error_link' }) %>
            <%= link_to_data_provider_if_accessible(dp, current_user) %>
            <br>
@@ -93,10 +94,11 @@ symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
            <% if ! dp.rr_allowed_syncing? %>
              <%= html_colorize("(portal has no access)", "purple") %>
            <% end %>
+          </div>
         </th>
       <% end %>
     </tr>
-      
+
     <% @providers.each_with_index do |dp_row,idx| %>
       <tr class="no_wrap">
         <% if idx == 0 %>
@@ -113,13 +115,13 @@ symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
         <% @providers.each do |dp_col| %>
           <%
              dp2dp_ok     = dp_row.dp_allows_copy?(dp_col)
-             portal_dp_ok = 
+             portal_dp_ok =
                 (dp_row.rr_allowed_syncing? && dp_col.rr_allowed_syncing? &&
                  dp_row.online?             && dp_col.online? &&
                  ! dp_col.read_only?)
           %>
           <%
-             bgcolor   = nil 
+             bgcolor   = nil
              bgcolor ||= '#ddffdd' if dp2dp_ok && portal_dp_ok
              bgcolor ||= '#eeeeee' if dp_row == dp_col
              #bgcolor ||= '#ffdddd'
@@ -131,11 +133,11 @@ symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
         <% end %>
       </tr>
     <% end %>
-  
+
   </table>
-  
+
   <%= center_legend("Copying or moving files:", [ [o_icon, "allowed"], [times_icon, "not allowed"] ] ) %>
-  
+
 </span>
 
 <% end %>
