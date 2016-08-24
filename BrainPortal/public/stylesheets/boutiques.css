@@ -104,6 +104,7 @@ tr.preview-tr:hover td.preview-table-text {
   animation: float 5s infinite;
   border-style: none;
   table-layout: fixed;
+  word-wrap: break-word;
 }
 .preview-tr {
   border-top: 1px solid #C1C3D1;
