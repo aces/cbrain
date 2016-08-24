@@ -1125,7 +1125,6 @@ pre {
 .project_select_dropdown {
   border: 0.2em solid #0471b4;
   background-color: white;
-  max-height: 15em;
   white-space: nowrap;
 }
 
