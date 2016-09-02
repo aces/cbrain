@@ -917,17 +917,27 @@ pre {
   color: white;
   display: inline-block;
   margin: 0;
-  padding: 0.5em;
+  padding: 0.3em 0.5em 0.3em 0.5em;
   vertical-align: top;
 }
 
 #header h1 a {
   color: white;
+  display: inline-block;
 }
 
 #header a:hover {
   color: #222;
   background: #F1F1F1;
+}
+
+#header h1 span {
+  display: inline-block;
+}
+
+#header_logo {
+  height: 1.3em;
+  vertical-align: -0.3em;
 }
 
 #loading_image {
@@ -1223,19 +1233,24 @@ pre {
 .credits_footer a {
   color: white;
   text-decoration: none;
+  margin: 1em 0 0 0;
 }
 
-.site_logos {
+#canarie_logo {
+  float: left;
+  margin-left: 2em;
+  height: 100px;
+}
+
+#neuro_logo {
+  height: 100px;
+}
+
+#site_logos {
   float: right;
   margin-right: 2em;
   height: 100px;
   border: 0;
-}
-
-.canarie_logo {
-  float: left;
-  margin-left: 2em;
-  height: 100px;
 }
 
 
