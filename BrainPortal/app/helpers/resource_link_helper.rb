@@ -109,6 +109,7 @@ module ResourceLinkHelper
   # the link (the default is the bourreau's name) and a
   # :path (the default is the show path).
   def link_to_bourreau_if_accessible(bourreau, cur_user = current_user, options = {})
+    (options[:html_options] ||= {})[:class] = 'error_link' if bourreau.is_a?(Bourreau) && ! bourreau.online?
     link_to_model_if_accessible(Bourreau,bourreau,:name,cur_user,options)
   end
 

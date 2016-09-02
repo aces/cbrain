@@ -183,7 +183,9 @@
         association: [Bourreau, 'id', 'bourreau_id']
       )
     ) do |type,id,count,task|
-      link_to_bourreau_if_accessible(task.bourreau) unless type == :loaded_batch
+      @_bid_to_bourreau_cache                   ||= {}
+      @_bid_to_bourreau_cache[task.bourreau_id] ||= task.bourreau
+      link_to_bourreau_if_accessible(@_bid_to_bourreau_cache[task.bourreau_id]) unless type == :loaded_batch
     end
   %>
 
