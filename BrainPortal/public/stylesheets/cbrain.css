@@ -1228,12 +1228,12 @@ pre {
 .credits_footer {
   clear: both;
   vertical-align: bottom;
+  margin: 1em 0 0 0;
 }
 
 .credits_footer a {
   color: white;
   text-decoration: none;
-  margin: 1em 0 0 0;
 }
 
 #canarie_logo {
