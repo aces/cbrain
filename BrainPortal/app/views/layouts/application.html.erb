@@ -27,13 +27,14 @@
     <title><%= RemoteResource.current_resource.name.presence || "CBRAIN" %><%= yield :title %></title>
     <link rel="shortcut icon" type="image/png" href="/images/neuro.png" />
 
-    <% id_csrf_meta_tag = csrf_meta_tag
-       id_csrf_meta_tag.sub!('name="csrf-token"', 'name="csrf-token" id="csrf-token"')
-       id_csrf_meta_tag.sub!('name="csrf-param"', 'name="csrf-param" id="csrf-param"')
+    <%
+        # Get the CSRF meta tags, but add IDs to them
+        id_csrf_meta_tag = csrf_meta_tag || ""
+        id_csrf_meta_tag.sub!('name="csrf-token"', 'name="csrf-token" id="csrf-token"')
+        id_csrf_meta_tag.sub!('name="csrf-param"', 'name="csrf-param" id="csrf-param"')
     %>
-
-
     <%= id_csrf_meta_tag.html_safe %>
+
     <%= stylesheet_link_tag  "cbrain", "dynamic-table", "jquery-ui", :media => "all" %>
     <%= javascript_include_tag "jquery", "jquery-ui", "jquery.form" %>
 

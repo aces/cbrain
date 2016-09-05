@@ -66,7 +66,6 @@ class CbrainSession
   def self.internal_keys
     @internal_keys ||= Set.new([
       :_csrf_token,
-      :cbrain_toggle,
       :user_id,
     ].map(&:to_s) + self.tracking_keys.to_a)
   end
