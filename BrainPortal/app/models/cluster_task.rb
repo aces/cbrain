@@ -970,7 +970,7 @@ class ClusterTask < CbrainTask
     return :go if prereqs.empty?
     final_action = :go
     prereqs.keys.each do |t_taskid|  # taskid is a string like "T62"
-      cb_error "Invalid prereq key '#{t_taskid}'." unless t_taskid =~ /\AT(\d+)\Z/
+      cb_error "Invalid prereq key '#{t_taskid}'." unless t_taskid =~ /\AT(\d+)\z/
       task_id = Regexp.last_match[1].to_i
       cb_notice "Task depends on itself!" if task_id == self.id # Cannot depend on yourself!!!
       task = CbrainTask.find(task_id) rescue nil

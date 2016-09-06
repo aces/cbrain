@@ -330,7 +330,7 @@ class CbrainFileRevision
   def adjust_short_commit #:nodoc:
     return unless @commit
     @short_commit = @commit
-    @short_commit = @commit[0..7] if @commit =~ /\A[0-9a-f]{40}\Z/i # if it a SHA-1 hash
+    @short_commit = @commit[0..7] if @commit =~ /\A[0-9a-f]{40}\z/i # if it a SHA-1 hash
     self
   end
 
@@ -481,7 +481,7 @@ class CbrainFileRevision
       end
     end
 
-    if git_last_commit_info =~ /\A(\S+) (\d\d\d\d-\d\d-\d\dT?)\s*(\d\d:\d\d:\d\dZ?)(\s*[+-][\d:]+)? (\S.*\S)\s*\Z/
+    if git_last_commit_info =~ /\A(\S+) (\d\d\d\d-\d\d-\d\dT?)\s*(\d\d:\d\d:\d\dZ?)(\s*[+-][\d:]+)? (\S.*\S)\s*\z/
       @commit = Regexp.last_match[1]
       @date   = Regexp.last_match[2]
       @time   = Regexp.last_match[3] + (Regexp.last_match[4] || "")

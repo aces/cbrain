@@ -116,8 +116,8 @@ class SshMaster
     category = options[:category]
     uniq     = options[:uniq]
     key = "#{remote_user}@#{remote_host}:#{remote_port}"
-    key = "#{category}/#{key}" if category && category.to_s =~ /\A\w+\Z/
-    key = "#{key}/#{uniq}"     if uniq     && uniq.to_s     =~ /\A\w+\Z/
+    key = "#{category}/#{key}" if category && category.to_s =~ /\A\w+\z/
+    key = "#{key}/#{uniq}"     if uniq     && uniq.to_s     =~ /\A\w+\z/
     ssh_masters = self.ssh_master_cache
     ssh_masters[key]
   end
@@ -191,15 +191,15 @@ class SshMaster
     @nomaster   = !!options[:nomaster]
 
     raise "SSH master's \"user\" is not a simple identifier." unless
-      @user =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\Z/
+      @user =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\z/
     raise "SSH master's \"host\" is not a simple host name." unless
-      @host =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\Z/
+      @host =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\z/
     raise "SSH master's \"port\" is not a port number." unless
       @port > 0 && @port < 65535
     raise "SSH master's \"category\" is not a simple identifer." unless
-      @category.nil? || (@category.is_a?(String) && @category =~ /\A\w+\Z/)
+      @category.nil? || (@category.is_a?(String) && @category =~ /\A\w+\z/)
     raise "SSH master's \"uniq\" is not a simple identifer." unless
-      @uniq.nil? || (@uniq.is_a?(String) && @uniq =~ /\A\w+\Z/)
+      @uniq.nil? || (@uniq.is_a?(String) && @uniq =~ /\A\w+\z/)
 
     raise "This master spec is already registered with the class." if
       self.class.find(@user,@host,@port, :category => @category, :uniq => @uniq )
@@ -210,8 +210,8 @@ class SshMaster
 
     # Register it
     @simple_key = @key = "#{@user}@#{@host}:#{@port}"
-    @key        = "#{@category}/#{@key}" if @category && @category.to_s =~ /\A\w+\Z/
-    @key        = "#{@key}/#{@uniq}"     if @uniq     && @uniq.to_s     =~ /\A\w+\Z/
+    @key        = "#{@category}/#{@key}" if @category && @category.to_s =~ /\A\w+\z/
+    @key        = "#{@key}/#{@uniq}"     if @uniq     && @uniq.to_s     =~ /\A\w+\z/
     ssh_masters = self.ssh_master_cache
     ssh_masters[@key] = self
     debugTrace("Registering SSH master: #{@key}")
@@ -249,7 +249,7 @@ class SshMaster
     raise "'dest_port' must be a port number." unless
       dest_port.is_a?(Fixnum) && dest_port > 0 && dest_port < 65535
     raise "'dest_host' is not a simple host name." unless
-      dest_host =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\Z/
+      dest_host =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\z/
 
     tunnel_spec = [ accept_port, dest_host, dest_port ]
     if direction == :forward
@@ -312,7 +312,7 @@ class SshMaster
 
     sshcmd = "ssh -q -n -N -x -M "
 
-    if ! label.blank? && label.to_s =~ /\A[\w\-\.\+]+\Z/
+    if ! label.blank? && label.to_s =~ /\A[\w\-\.\+]+\z/
       sshcmd += "-o SendEnv=#{label.to_s} "
     end
 
@@ -631,7 +631,7 @@ class SshMaster
 
   def diag_path #:nodoc:
     return "/dev/null" if @no_diag
-    self.pidfile_path.sub(/\.pid\Z/,".oer")
+    self.pidfile_path.sub(/\.pid\z/,".oer")
   end
 
   def write_pidfile(pid,action) #:nodoc:

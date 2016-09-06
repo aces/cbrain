@@ -126,7 +126,7 @@ class Userfile < ActiveRecord::Base
   # Return the file extension (the last '.' in the name and
   # the characters following it).
   def self.file_extension(name)
-    name.scan(/\.[^\.]+\Z/).last
+    name.scan(/\.[^\.]+\z/).last
   end
 
   # Return the level of the calling userfile in
@@ -140,7 +140,7 @@ class Userfile < ActiveRecord::Base
   # to contain printable characters only, with no slashes
   # or ASCII nulls, and they must start with a letter or digit.
   def self.is_legal_filename?(basename)
-    return true if basename && basename.match(/\A[a-zA-Z0-9][\w\~\!\@\#\%\^\&\*\(\)\-\+\=\:\[\]\{\}\|\<\>\,\.\?]*\Z/)
+    return true if basename && basename.match(/\A[a-zA-Z0-9][\w\~\!\@\#\%\^\&\*\(\)\-\+\=\:\[\]\{\}\|\<\>\,\.\?]*\z/)
     false
   end
 
@@ -709,7 +709,7 @@ class Userfile < ActiveRecord::Base
     return base if partial_name.blank?
     partial_name = Pathname.new(partial_name.to_s).cleanpath
     raise "View partial path outside of userfile plugin." if partial_name.absolute? || partial_name.to_s =~ /\A\.\./
-    base = base + partial_name.to_s.sub(/([^\/]+)\Z/,'_\1')
+    base = base + partial_name.to_s.sub(/([^\/]+)\z/,'_\1')
     base
   end
 

@@ -32,9 +32,9 @@
     break
   end
 
-  myshorttype = Rails.root.to_s =~ /BrainPortal\Z/ ? "portal" : "bourreau"
+  myshorttype = Rails.root.to_s =~ /BrainPortal\z/ ? "portal" : "bourreau"
   dirname     = File.dirname(__FILE__)
-  model       = basename.sub(/.rb\Z/,"")
+  model       = basename.sub(/.rb\z/,"")
   bytype_code = "#{dirname}/#{model}/#{myshorttype}/#{model}.rb"
   common_code = "#{dirname}/#{model}/common/#{model}.rb"
 

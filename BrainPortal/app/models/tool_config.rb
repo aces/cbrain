@@ -48,7 +48,7 @@ class ToolConfig < ActiveRecord::Base
   # must be unique per pair [tool, server]
   validates       :version_name,
                   :presence   => true,
-                  :format     => { :with    => /\A\w[\w\.\-\:\@]*\Z/,
+                  :format     => { :with    => /\A\w[\w\.\-\:\@]*\z/,
                                    :message => "must begin with alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'" },
                   :uniqueness => { :scope   => [ :tool_id, :bourreau_id ],
                                    :message => "must be unique per pair [tool, server]" },
@@ -217,7 +217,7 @@ class ToolConfig < ActiveRecord::Base
     SCRIPT_HEADER
     prologue.gsub!(/\r\n/,"\n")
     prologue.gsub!(/\r/,"\n")
-    prologue += "\n" unless prologue =~ /\n\Z/
+    prologue += "\n" unless prologue =~ /\n\z/
 
     script += prologue
 
@@ -240,7 +240,7 @@ class ToolConfig < ActiveRecord::Base
     return false if (self.env_array || []).size > 0
     text = self.script_prologue
     return true if text.blank?
-    text_array = text.split(/\n/).reject { |line| line =~ /\A\s*#|\A\s*\Z/ }
+    text_array = text.split(/\n/).reject { |line| line =~ /\A\s*#|\A\s*\z/ }
     return true if text_array.size == 0
     false
   end

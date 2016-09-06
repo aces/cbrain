@@ -112,7 +112,7 @@ class SshAgent
   attr_reader :socket
 
   def initialize(name,socket=nil,pid=nil) #:nodoc:
-    raise "Invalid name" unless name =~ /\A[a-z]\w*\Z/i || name == '_forwarded' || name == '_current'
+    raise "Invalid name" unless name =~ /\A[a-z]\w*\z/i || name == '_forwarded' || name == '_current'
     @name   = name
     @socket = socket.present? ? socket.to_s : nil
     @pid    = pid.present?    ? pid.to_s    : nil
@@ -331,7 +331,7 @@ echo Agent pid #{self.pid};
   end
 
   def self.agent_config_file_path(name) #:nodoc:
-    raise "Agent name is not a simple identifier." unless name.present? && (name =~ /\A[a-z]\w*\Z/i || name == '_forwarded')
+    raise "Agent name is not a simple identifier." unless name.present? && (name =~ /\A[a-z]\w*\z/i || name == '_forwarded')
     Pathname.new(CONFIG[:agent_bashrc_dir]) + "#{name}@#{CONFIG[:hostname]}.agent.bashrc"
   end
 

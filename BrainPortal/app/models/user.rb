@@ -75,7 +75,7 @@ class User < ActiveRecord::Base
   validates_presence_of     :password_confirmation,      :if => :password_required?
 
   validates                 :email,
-                            :format => { :with => /\A(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}\Z|\A\w+@localhost\Z/i },
+                            :format => { :with => /\A(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}\z|\A\w+@localhost\z/i },
                             :allow_blank => true
 
   validate                  :immutable_login,            :on => :update

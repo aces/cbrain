@@ -26,7 +26,7 @@ class YAMLFile < TextFile
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.file_name_pattern #:nodoc:
-    /\.yml\Z/i
+    /\.yml\z/i
   end
 
 end

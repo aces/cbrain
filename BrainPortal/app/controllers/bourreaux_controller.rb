@@ -525,7 +525,7 @@ class BourreauxController < ApplicationController
     # Extract what caches are asked to be cleaned up
     rrid_to_userids = {}  # rr_id => { uid => true , uid => true , uid => true ...}
     clean_cache.each do |pair|
-      next unless pair.to_s.match(/\A(\d+),(\d+)\Z/)
+      next unless pair.to_s.match(/\A(\d+),(\d+)\z/)
       user_id            = Regexp.last_match[1].to_i
       remote_resource_id = Regexp.last_match[2].to_i
       # Make sure we're allowed

@@ -333,7 +333,7 @@ module ActRecLog
       elsif old.size > 60 || new.size > 60
         message = ": size(#{old.size} -> #{new.size})"
       else
-        if att =~ /\A(\w+)_id\Z/
+        if att =~ /\A(\w+)_id\z/
           model = Regexp.last_match[1].classify.constantize rescue nil
           if model
             oldobj = model.find_by_id(old) rescue nil

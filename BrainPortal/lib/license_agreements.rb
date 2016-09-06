@@ -53,7 +53,7 @@ module LicenseAgreements
     unless agrs.is_a? Array
       agrs = agrs.to_s.split(/[,\s]+/)
     end
-    agrs = agrs.map { |a| a.sub(/\.html\Z/, "").gsub(/[^\w-]+/, "") }.uniq.sort
+    agrs = agrs.map { |a| a.sub(/\.html\z/, "").gsub(/[^\w-]+/, "") }.uniq.sort
     @license_agreements = agrs
   end
 

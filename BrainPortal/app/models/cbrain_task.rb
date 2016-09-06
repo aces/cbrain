@@ -813,7 +813,7 @@ class CbrainTask < ActiveRecord::Base
   # in other cases so a programmer can investigate the problem.
   def addlog_exception(exception,message="Exception raised:",backtrace_lines=15)
     message = "Exception raised:" if message.blank?
-    message.sub!(/[\s:]*\Z/,":")
+    message.sub!(/[\s:]*\z/,":")
     self.addlog("#{message} #{exception.class}: #{exception.message}", :caller_level => 1)
     if backtrace_lines > 0 && ! exception.is_a?(CbrainException)
       backtrace_lines = exception.backtrace.size if backtrace_lines >= exception.backtrace.size

@@ -81,23 +81,23 @@ class RemoteResource < ActiveRecord::Base
   validate              :proper_dp_ignore_patterns
   validate              :dp_cache_path_valid
 
-  validates_format_of   :cms_shared_dir, :with => /\A[\w\-\.\=\+\/]*\Z/,
+  validates_format_of   :cms_shared_dir, :with => /\A[\w\-\.\=\+\/]*\z/,
                         :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
                         :allow_blank => true
 
-  validates_format_of   :dp_cache_dir, :with => /\A[\w\-\.\=\+\/]*\Z/,
+  validates_format_of   :dp_cache_dir, :with => /\A[\w\-\.\=\+\/]*\z/,
                         :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
                         :allow_blank => true
 
-  validates_format_of   :ssh_control_user, :with => /\A\w[\w\-\.]*\Z/,
+  validates_format_of   :ssh_control_user, :with => /\A\w[\w\-\.]*\z/,
                         :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
                         :allow_blank => true
 
-  validates_format_of   :ssh_control_host, :with => /\A\w[\w\-\.]*\Z/,
+  validates_format_of   :ssh_control_host, :with => /\A\w[\w\-\.]*\z/,
                         :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
                         :allow_blank => true
 
-  validates_format_of   :ssh_control_rails_dir, :with => /\A[\w\-\.\=\+\/]*\Z/,
+  validates_format_of   :ssh_control_rails_dir, :with => /\A[\w\-\.\=\+\/]*\z/,
                         :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
                         :allow_blank => true
 
@@ -207,7 +207,7 @@ class RemoteResource < ActiveRecord::Base
         ! pattern.is_a?(String) ||
         pattern =~ /\*\*/ ||
         pattern =~ /\// ||
-        pattern !~ /\A[\w\-\.\+\=\@\%\&\:\,\~\*\?]+\Z/ # very strict! other special characters can cause shell side-effects!
+        pattern !~ /\A[\w\-\.\+\=\@\%\&\:\,\~\*\?]+\z/ # very strict! other special characters can cause shell side-effects!
         errors.add(:spaced_dp_ignore_patterns, "has unacceptable pattern: '#{pattern}'." )
         all_ok = false
       end

@@ -242,7 +242,7 @@ class PortalController < ApplicationController
       submit = :refresh
     end
 
-    if table_name =~ /\A(\w+)\.(\S+)\Z/
+    if table_name =~ /\A(\w+)\.(\S+)\z/
       table_name = Regexp.last_match[1]
       table_op   = Regexp.last_match[2]   # e.g. "sum(size)" or "combined_file_rep"
     end
@@ -340,8 +340,8 @@ class PortalController < ApplicationController
     @table_col_values = raw_table_col_values.compact.sort # sorted non-nil values ; TODO: sort values better?
     @table_row_values.unshift(nil) if raw_table_row_values.size > @table_row_values.size # reinsert nil if needed
     @table_col_values.unshift(nil) if raw_table_col_values.size > @table_col_values.size # reinsert nil if needed
-    @table_row_values.reject! { |x| x == 0 } if row_type =~ /_id\Z/ # remove 0 values for IDs
-    @table_col_values.reject! { |x| x == 0 } if col_type =~ /_id\Z/ # remove 0 values for IDs
+    @table_row_values.reject! { |x| x == 0 } if row_type =~ /_id\z/ # remove 0 values for IDs
+    @table_col_values.reject! { |x| x == 0 } if col_type =~ /_id\z/ # remove 0 values for IDs
 
     # For making filter links inside the table
     @filter_controller = @model.to_s.pluralize.underscore

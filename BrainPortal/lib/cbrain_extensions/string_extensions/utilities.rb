@@ -104,7 +104,7 @@ module CBRAINExtensions #:nodoc:
       # params hashes, although there are already a nice collection of
       # helper methods defined in CbrainTaskFormBuilder .
       def to_la_id
-        self.to_la.gsub(/\W+/,"_").sub(/_+\Z/,"").sub(/\A_+/,"")
+        self.to_la.gsub(/\W+/,"_").sub(/_+\z/,"").sub(/\A_+/,"")
       end
 
       # Considers self as a pattern to which substitutions

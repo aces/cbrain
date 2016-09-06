@@ -30,7 +30,7 @@ class RubySourceFile < TextFile
   end
 
   def self.file_name_pattern #:nodoc:
-    /\.rb\Z/i
+    /\.rb\z/i
   end
 
 end

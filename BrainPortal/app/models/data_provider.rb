@@ -224,15 +224,15 @@ class DataProvider < ActiveRecord::Base
   validates_presence_of   :user_id, :group_id
   validates_inclusion_of  :read_only, :in => [true, false]
 
-  validates_format_of     :remote_user, :with => /\A\w[\w\-\.]*\Z/,
+  validates_format_of     :remote_user, :with => /\A\w[\w\-\.]*\z/,
                           :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
                           :allow_blank => true
 
-  validates_format_of     :remote_host, :with => /\A\w[\w\-\.]*\Z/,
+  validates_format_of     :remote_host, :with => /\A\w[\w\-\.]*\z/,
                           :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
                           :allow_blank => true
 
-  validates_format_of     :remote_dir, :with => /\A[\w\-\.\=\+\/]*\Z/,
+  validates_format_of     :remote_dir, :with => /\A[\w\-\.\=\+\/]*\z/,
                           :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
                           :allow_blank => true
 
@@ -1296,7 +1296,7 @@ class DataProvider < ActiveRecord::Base
       IO.popen("find . -mindepth 3 -maxdepth 3 -type d -print","r") { |fh| dirlist = fh.readlines rescue [] }
       uids2path = {} # this is the main list of what to delete (preliminary)
       dirlist.each do |path|  # path should be  "./01/23/45\n"
-        next unless path =~ /\A\.\/(\d+)\/(\d+)\/(\d+)\s*\Z/ # make sure
+        next unless path =~ /\A\.\/(\d+)\/(\d+)\/(\d+)\s*\z/ # make sure
         idstring = Regexp.last_match[1..3].join("")
         uids2path[idstring.to_i] = path.strip.sub(/\A\.\//,"") #  12345 => "01/23/45"
       end
@@ -1329,8 +1329,8 @@ class DataProvider < ActiveRecord::Base
           $0="Cache Spurious PATH=#{path} #{i+1}/#{uids2path.size}\0" if options[:update_dollar_zero]
           system("chmod","-R","u+rwX",path)   # uppercase X affects only directories
           FileUtils.remove_entry(path, true) rescue true
-          maybe_spurious_parents[path.sub(/\/\d+\Z/,"")]      = 1  # "01/23"
-          maybe_spurious_parents[path.sub(/\/\d+\/\d+\Z/,"")] = 1  # "01"
+          maybe_spurious_parents[path.sub(/\/\d+\z/,"")]      = 1  # "01/23"
+          maybe_spurious_parents[path.sub(/\/\d+\/\d+\z/,"")] = 1  # "01"
         end
         maybe_spurious_parents.keys.sort { |a,b| b <=> a }.each { |parent| Dir.rmdir(parent) rescue true }
       end

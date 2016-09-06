@@ -62,7 +62,7 @@ module NumericalSubdirTree
     def numerical_subdir_tree_components(number)
       cb_error "Did not get a proper numeric ID? Got: '#{number.inspect}'." unless number.is_a?(Integer)
       sid = "000000" + number.to_s
-      unless sid =~ /\A0*(\d*\d\d)(\d\d)(\d\d)\Z/
+      unless sid =~ /\A0*(\d*\d\d)(\d\d)(\d\d)\z/
         raise "Can't create subpath for '#{number}'."
       end
       lower  = Regexp.last_match[1] # 123456 -> 12

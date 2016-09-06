@@ -30,7 +30,7 @@ class PerlSourceFile < TextFile
   end
 
   def self.file_name_pattern #:nodoc:
-    /\.(pl|pm)\Z/i
+    /\.(pl|pm)\z/i
   end
 
 end

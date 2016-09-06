@@ -30,7 +30,7 @@ class BashSourceFile < TextFile
   end
 
   def self.file_name_pattern #:nodoc:
-    /\.sh\Z/i
+    /\.sh\z/i
   end
 
 end

@@ -30,7 +30,7 @@ class TsvFile < CSVFile
   end
 
   def self.file_name_pattern #:nodoc:
-    /\.(tsv|tab)\Z/i
+    /\.(tsv|tab)\z/i
   end
 
 end

@@ -25,7 +25,7 @@ class DatFile < TextFile
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.file_name_pattern #:nodoc:
-    /\.dat\Z/i
+    /\.dat\z/i
   end
 
 end

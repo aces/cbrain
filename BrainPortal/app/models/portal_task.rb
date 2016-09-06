@@ -534,7 +534,7 @@ class PortalTask < CbrainTask
       stringpath = stringpath[brackets.size .. -1]
       if foundvalue.is_a?(Hash)
         foundvalue = foundvalue[key.to_sym] || foundvalue[key]
-      elsif foundvalue.is_a?(Array) && key =~ /\A\d+\Z/
+      elsif foundvalue.is_a?(Array) && key =~ /\A\d+\z/
         foundvalue = foundvalue[key.to_i]
       else
         cb_error "Can't access params structure for '#{paramspath}' (stopped at '#{key}' with current structure a '#{foundvalue.class}'."
@@ -785,7 +785,7 @@ end
         'cbrain_task_descriptor_loader.rb'
       ].include?(model)
 
-      model.sub!(/.rb\Z/, '')
+      model.sub!(/.rb\z/, '')
       require_dependency "#{dir}/#{model}.rb" unless
         [ model.classify, model.camelize ].any? { |m| CbrainTask.const_defined?(m) rescue nil }
     end

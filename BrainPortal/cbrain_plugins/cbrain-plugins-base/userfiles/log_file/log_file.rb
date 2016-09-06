@@ -26,7 +26,7 @@ class LogFile < TextFile
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.file_name_pattern #:nodoc:
-    /\.log\Z/i
+    /\.log\z/i
   end
 
 end

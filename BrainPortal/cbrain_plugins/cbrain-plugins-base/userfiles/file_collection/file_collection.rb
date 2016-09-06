@@ -58,11 +58,11 @@ class FileCollection < Userfile
 
     Dir.chdir(directory) do
       escaped_tmparchivefile = archive_file_name.to_s.bash_escape
-      if archive_file_name =~ /(\.tar.gz|\.tgz)\Z/i
+      if archive_file_name =~ /(\.tar.gz|\.tgz)\z/i
         system("gunzip < #{escaped_tmparchivefile} | tar xf -")
-      elsif archive_file_name =~ /\.tar\Z/i
+      elsif archive_file_name =~ /\.tar\z/i
         system("tar -xf #{escaped_tmparchivefile}")
-      elsif archive_file_name =~ /\.zip\Z/i
+      elsif archive_file_name =~ /\.zip\z/i
         system("unzip #{escaped_tmparchivefile}")
       else
         cb_error "Cannot extract files from archive with unknown extension '#{archive_file_name}'"

@@ -30,7 +30,7 @@ class DotGraphFile < TextFile
   end
 
   def self.file_name_pattern #:nodoc:
-    /\.dot\Z/i
+    /\.dot\z/i
   end
 
 end

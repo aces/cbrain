@@ -48,7 +48,7 @@ class Bourreau < RemoteResource
   def scir_class
     return @scir_class if @scir_class
     cms_class = self.cms_class || "Unset"
-    if cms_class !~ /\AScir\w+\Z/ # old keyword convention?!?
+    if cms_class !~ /\AScir\w+\z/ # old keyword convention?!?
       cb_error "Value of cms_class in Bourreau record invalid: '#{cms_class}'"
     end
     @scir_class = Class.const_get(cms_class)
@@ -386,7 +386,7 @@ class Bourreau < RemoteResource
     cb_error "Cannot start workers: improper check interval in config (must be 5..3600)." unless
        chk_time && chk_time >= 5 && chk_time <= 3600
     cb_error "Cannot start workers: improper log destination keyword in config (must be none, separate, stdout|stderr, combined, or bourreau)." unless
-       (! log_to.blank? ) && log_to =~ /\A(none|separate|combined|bourreau|stdout|stderr|stdout\|stderr|stderr\|stdout)\Z/
+       (! log_to.blank? ) && log_to =~ /\A(none|separate|combined|bourreau|stdout|stderr|stdout\|stderr|stderr\|stdout)\z/
 
     # Returns a logger object or the symbol :auto
     logger = self.initialize_worker_logger(log_to,verbose)

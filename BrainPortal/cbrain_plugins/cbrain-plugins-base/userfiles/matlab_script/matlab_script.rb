@@ -26,7 +26,7 @@ class MatlabScript < TextFile
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def self.file_name_pattern #:nodoc:
-    /\.m\Z/i
+    /\.m\z/i
   end
 
 end

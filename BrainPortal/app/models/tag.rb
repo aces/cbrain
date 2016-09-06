@@ -35,7 +35,7 @@ class Tag < ActiveRecord::Base
 
   validates_presence_of   :name, :user_id, :group_id
   validates_uniqueness_of :name, :scope => :group_id
-  validates_format_of     :name,  :with => /\A[\w\-\=\.\+\?\!\s]*\Z/,
+  validates_format_of     :name,  :with => /\A[\w\-\=\.\+\?\!\s]*\z/,
                                   :message  => 'only the following characters are valid: alphanumeric characters, spaces, _, -, =, +, ., ?, !'
 
   has_and_belongs_to_many :userfiles
