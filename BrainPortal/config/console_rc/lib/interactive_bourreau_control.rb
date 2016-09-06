@@ -88,7 +88,7 @@ class InteractiveBourreauControl
   end
 
   # Interactive loop, asking command input from user.
-  def interactive_control
+  def interactive_control(initial_command = nil)
     @operations = ""
     @mode       = "each_bourreau"  # "Each Bourreau in turn run all commands"
                  #"each_operation" # "Each command in turn is run on all Bourreau"
@@ -108,7 +108,8 @@ Operations Mode : #{@mode == "each_command" ?
 
       OPERATIONS
 
-      userinput     = Readline.readline("Do something (h for help): ",false)
+      userinput     = initial_command.presence
+      userinput   ||= Readline.readline("Do something (h for help): ",false)
       userinput     = "Q" if userinput.nil?
       inputkeywords = userinput.downcase.split(/\W+/).map(&:presence).compact
 
@@ -118,10 +119,11 @@ Operations Mode : #{@mode == "each_command" ?
         dowait |= process_user_letter(letter)
       end
       puts ""
-      if dowait
+      if dowait && initial_command.blank?
         Readline.readline("Press RETURN to continue: ",false)
         puts ""
       end
+      initial_command = nil
     end
     puts "Exiting.\n"
   end
