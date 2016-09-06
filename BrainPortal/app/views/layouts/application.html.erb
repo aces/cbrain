@@ -25,7 +25,8 @@
 
   <head>
     <title><%= RemoteResource.current_resource.name.presence || "CBRAIN" %><%= yield :title %></title>
-    <link rel="shortcut icon" type="image/png" href="/images/neuro.png" />
+    <link rel="shortcut icon" type="image/png" href="/images/custom_logos/cb_small_square_icon.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="/images/custom_logos/cb_small_square_icon.png">
 
     <% id_csrf_meta_tag = csrf_meta_tag
        id_csrf_meta_tag.sub!('name="csrf-token"', 'name="csrf-token" id="csrf-token"')
