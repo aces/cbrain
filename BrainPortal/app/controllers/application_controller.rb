@@ -195,7 +195,7 @@ class ApplicationController < ActionController::Base
 
     # Compute the host and IP from the request (when not logged in)
     ip   ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
-    if host.blank? && ip =~ /^[\d\.]+$/
+    if host.blank? && ip =~ /\A[\d\.]+\Z/
       addrinfo = Rails.cache.fetch("host_addr/#{ip}") do
         Socket.gethostbyaddr(ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ ip ]
       end
@@ -227,7 +227,7 @@ class ApplicationController < ActionController::Base
     client_type            = parsed_http_user_agent.browser_name.presence || "(UnknownClient)"
     controller             = params[:controller].to_s.presence            || "UnknownController"
     action                 = params[:action].to_s.presence                || "UnknownAction"
-    success                = response.code.to_s =~ /^[123]\d\d$/
+    success                = response.code.to_s =~ /\A[123]\d\d\Z/
 
     # Fetch the stats structure from meta data
     current_resource       = RemoteResource.current_resource

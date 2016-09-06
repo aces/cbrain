@@ -74,7 +74,7 @@
 
       no_version_summary << ", "
     end
-    no_version_summary.gsub!(/,\s$/,".")
+    no_version_summary.gsub!(/,\s*$/,".")
   end
 
   # resource access precomputing (caching)

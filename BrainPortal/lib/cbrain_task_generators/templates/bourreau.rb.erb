@@ -379,7 +379,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
           tag = '-' + (self.id.to_s || 'unk') + '-' + Time.now.nsec.to_s
           newName = name + tag if name.rindex(".").nil?
           ext = File.extname( name )
-          newName ||= name.gsub( /#{ext}$/, "#{tag + ext}" )
+          newName ||= name.gsub( /#{ext}\Z/, "#{tag + ext}" )
           self.addlog("File with same name found. Renaming to #{newName} before saving.")
           name = newName
         end
@@ -492,7 +492,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
           v = v.dup  if v.is_a?(String)
 
           strip.find do |e|
-            v.sub!(/#{Regexp.quote(e)}$/, '')
+            v.sub!(/#{Regexp.quote(e)}\Z/, '')
           end if v.is_a?(String)
 
           v.to_s.bash_escape

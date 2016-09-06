@@ -80,9 +80,9 @@ module CBRAINExtensions #:nodoc:
       # helper methods defined in CbrainTaskFormBuilder .
       def to_la
         key = self
-        if key =~ /^(\w+)/
+        if key =~ /\A(\w+)/
           newcomp = "[" + Regexp.last_match[1] + "]"
-          key = key.sub(/^(\w+)/,newcomp) # not sub!() !
+          key = key.sub(/\A(\w+)/,newcomp) # not sub!() !
         end
         "cbrain_task[params]#{key}"
       end
@@ -104,7 +104,7 @@ module CBRAINExtensions #:nodoc:
       # params hashes, although there are already a nice collection of
       # helper methods defined in CbrainTaskFormBuilder .
       def to_la_id
-        self.to_la.gsub(/\W+/,"_").sub(/_+$/,"").sub(/^_+/,"")
+        self.to_la.gsub(/\W+/,"_").sub(/_+\Z/,"").sub(/\A_+/,"")
       end
 
       # Considers self as a pattern to which substitutions
@@ -162,7 +162,7 @@ module CBRAINExtensions #:nodoc:
       def is_a_float?
         Float(self) && true rescue false
       end
-    
+
     end
   end
 end

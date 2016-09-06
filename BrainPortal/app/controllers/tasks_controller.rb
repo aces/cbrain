@@ -502,7 +502,7 @@ class TasksController < ApplicationController
     # Save old attributes and update the current task to reflect
     # the form's content.
     new_att          = params[:cbrain_task] || {} # not the TASK's params[], the REQUEST's params[]
-    new_att          = new_att.reject { |k,v| k =~ /^(cluster_jobid|cluster_workdir|status|batch_id|launch_time|prerequisites|share_wd_tid|run_number|level|rank|cluster_workdir_size|workdir_archived|workdir_archive_userfile_id)$/ } # some attributes cannot be changed through the controller
+    new_att          = new_att.reject { |k,v| k =~ /\A(cluster_jobid|cluster_workdir|status|batch_id|launch_time|prerequisites|share_wd_tid|run_number|level|rank|cluster_workdir_size|workdir_archived|workdir_archive_userfile_id)\Z/ } # some attributes cannot be changed through the controller
     old_tool_config  = @task.tool_config
     old_bourreau     = @task.bourreau
     @task.attributes = new_att # just updates without saving

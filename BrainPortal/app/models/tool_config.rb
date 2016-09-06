@@ -48,15 +48,17 @@ class ToolConfig < ActiveRecord::Base
   # must be unique per pair [tool, server]
   validates       :version_name,
                   :presence   => true,
-                  :format     => { with: /^\w[\w\.\-\:\@]*$/ , message: "must begin with alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'" },
-                  :uniqueness => { :scope => [ :tool_id, :bourreau_id ], message: "must be unique per pair [tool, server]" },
+                  :format     => { :with    => /\A\w[\w\.\-\:\@]*\Z/,
+                                   :message => "must begin with alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'" },
+                  :uniqueness => { :scope   => [ :tool_id, :bourreau_id ],
+                                   :message => "must be unique per pair [tool, server]" },
                   :if         => :applies_to_bourreau_and_tool?
 
   cb_scope        :global_for_tools     , where( { :bourreau_id => nil } )
   cb_scope        :global_for_bourreaux , where( { :tool_id => nil } )
   cb_scope        :specific_versions    , where( "bourreau_id is not null and tool_id is not null" )
 
-  attr_accessible :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue, 
+  attr_accessible :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue,
                   :group_id, :ncpus, :docker_image, :extra_qsub_args,
                   # The configuration of a tool in a VM managed by a
                   # ScirCloud Bourreau is defined by the following
@@ -101,7 +103,7 @@ class ToolConfig < ActiveRecord::Base
   # This is used to represent the 'name' of the version.
   def short_description
     description = self.description || ""
-    raise "Internal error: can't parse description!?!" unless description =~ /^(.+\n?)/ # the . doesn't match \n
+    raise "Internal error: can't parse description!?!" unless description =~ /\A(.+\n?)/ # the . doesn't match \n
     header = Regexp.last_match[1].strip
     header
   end
@@ -215,7 +217,7 @@ class ToolConfig < ActiveRecord::Base
     SCRIPT_HEADER
     prologue.gsub!(/\r\n/,"\n")
     prologue.gsub!(/\r/,"\n")
-    prologue += "\n" unless prologue =~ /\n$/
+    prologue += "\n" unless prologue =~ /\n\Z/
 
     script += prologue
 
@@ -238,7 +240,7 @@ class ToolConfig < ActiveRecord::Base
     return false if (self.env_array || []).size > 0
     text = self.script_prologue
     return true if text.blank?
-    text_array = text.split(/\n/).reject { |line| line =~ /^\s*#|^\s*$/ }
+    text_array = text.split(/\n/).reject { |line| line =~ /\A\s*#|\A\s*\Z/ }
     return true if text_array.size == 0
     false
   end
