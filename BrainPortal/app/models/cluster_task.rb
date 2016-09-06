@@ -686,7 +686,7 @@ class ClusterTask < CbrainTask
         end
       end
       self.update_size_of_cluster_workdir
-    rescue Exception => e
+    rescue => e
       self.addlog_exception(e,"Exception raised while setting up:")
       self.status_transition(self.status, "Failed To Setup")
     end
@@ -725,7 +725,7 @@ class ClusterTask < CbrainTask
           self.status_transition(self.status, "Completed")
         end
       end
-    rescue Exception => e
+    rescue => e
       self.addlog_exception(e,"Exception raised while post processing results:")
       self.status_transition(self.status, "Failed To PostProcess")
     end
