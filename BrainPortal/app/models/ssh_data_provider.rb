@@ -223,7 +223,7 @@ class SshDataProvider < DataProvider
         next if is_excluded?(entry.name) # in DataProvider
 
         fileinfo               = FileInfo.new
-        if entry.name[0..userfile.name.size-1] == userfile.name
+        if entry.name =~ /\A#{Regexp.quote(userfile.name)}/ # this is actually BUGGY if a subdir has same name as userfile!
           # (This entire method is such awful code)
           fileinfo.name          = entry.name
         else
