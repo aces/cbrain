@@ -79,7 +79,7 @@ describe "Bourreau Boutiques Tests" do
 
       # Test some basic properties
       it "creates a tool" do
-        expect( Tool.exists?( :cbrain_task_class => @task_const.to_s ) ).to be true
+        expect( Tool.exists?( :cbrain_task_class_name => @task_const.to_s ) ).to be true
       end
 
       it "makes the tool accessible as a Cbrain Task object" do
@@ -387,13 +387,13 @@ describe "Bourreau Boutiques Tests" do
         @task_const_name = "CbrainTask::#{SchemaTaskGenerator.classify(@boutiquesTask.name)}"
         # Destroy any tools/toolconfigs for the tool, if any exist
         ToolConfig.where(tool_id: CbrainTask::BoutiquesTest.tool.id).destroy_all rescue nil
-        Tool.where(:cbrain_task_class => @task_const_name).destroy_all rescue nil
+        Tool.where(:cbrain_task_class_name => @task_const_name).destroy_all rescue nil
       end
 
       after(:each) do
         # Destroy any tools/toolconfigs for the tool, if any exist
         ToolConfig.where(tool_id: @task_const_name.constantize.tool.id).destroy_all
-        Tool.where(:cbrain_task_class => @task_const_name).destroy_all
+        Tool.where(:cbrain_task_class_name => @task_const_name).destroy_all
         # Ensure the Bourreau does not have docker installed by default
         resource = RemoteResource.current_resource
         resource.docker_present = false
