@@ -28,7 +28,6 @@ module SessionHelpers
   def self.included(includer) #:nodoc:
     includer.class_eval do
       helper_method :current_session,   :current_project
-      before_filter :always_activate_session
     end
   end
 
@@ -48,11 +47,6 @@ module SessionHelpers
     end
 
     @current_project
-  end
-
-  def always_activate_session #:nodoc:
-    session[:cbrain_toggle] = (1 - (session[:cbrain_toggle] || 0))
-    true
   end
 
 end
