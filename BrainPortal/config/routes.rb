@@ -166,6 +166,9 @@ CbrainRailsPortal::Application.routes.draw do
   # Report Maker
   get   "/report",                :controller => :portal, :action => :report
 
+  # API description, by Swagger
+  get   "/swagger",               :controller => :portal, :action => :swagger
+
   # Licence handling
   get   '/show_license/:license', :controller => :portal, :action => :show_license
   post  '/sign_license/:license', :controller => :portal, :action => :sign_license
