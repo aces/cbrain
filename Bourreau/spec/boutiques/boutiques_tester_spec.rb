@@ -167,6 +167,17 @@ describe "Bourreau Boutiques Tests" do
         expect( NormedTaskCmd.(@task) ).to eq( './' + TestScriptName + ' -A A_VAL -p e1 e2 e3' )
       end
 
+      # Test that export commands work and are in the right place
+      it "exports environment variables" do
+        expect( @task.cluster_commands[0] ).to eq("export ev1='nice_value'")
+      end
+
+      # It properly escapes environment variables
+      # Note that we only have to worry about inappropriate values that are still valid JSON
+      it "escapes environment variables" do
+        expect( @task.cluster_commands[1] ).to eq("export ev2='ta- 9\"'\\''_%^&$@]['")
+      end
+
     end
 
     # Testing Boutiques via the mock 'submission' of a local script, using the output of cluster_commands
@@ -190,8 +201,8 @@ describe "Bourreau Boutiques Tests" do
           rescue OptionParser::MissingArgument => e
             next # after_form does not need to check this here, since rails puts a value in the hash
           end
-          # Run the generated command line from cluster_commands
-          exit_code = runTestScript( @task.cluster_commands[0].gsub('./'+TestScriptName,''), test[3] || [] )
+          # Run the generated command line from cluster_commands (-2 to ignore export lines and the echo log at -1)
+          exit_code = runTestScript( @task.cluster_commands[-2].gsub('./'+TestScriptName,''), test[3] || [] )
           # Check that the exit code is appropriate
           expect( exit_code ).to eq( test[2] )
         end
