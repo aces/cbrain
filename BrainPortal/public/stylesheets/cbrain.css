@@ -923,7 +923,6 @@ pre {
 
 #header h1 a {
   color: white;
-  display: inline-block;
 }
 
 #header a:hover {
@@ -1150,9 +1149,13 @@ pre {
 }
 
 .project_select_dropdown:hover {
-    background-color: #F1F1F1;
+  background-color: #F1F1F1;
 }
 
+.project_select_spacer {
+  background-color: #0471b4;
+  height: 0.2em;
+}
 
 .project_button_header {
   border: 0px;
