@@ -51,7 +51,9 @@ class SessionsController < ApplicationController
   end
 
   def create #:nodoc:
-    user = User.authenticate(params[:login], params[:password]) # can be nil if it fails
+    # If the csrf token is blank, it was reset by Rails' request forgery protection
+    # and we want to prevent login
+    user = current_session["_csrf_token"].presence && User.authenticate(params[:login], params[:password]) # can be nil if it fails
     create_from_user(user)
   end
 

@@ -58,7 +58,7 @@ class ApplicationController < ActionController::Base
 
   # This overrides the forgery protection method of
   # the same name; in most situations where a session has already
-  # been created, it just invoke the real method. It's
+  # been created, it just invokes the real method. It's
   # also the case if we are are at the login page of the app,
   # since we need to initialize a new session for sure.
   #
@@ -67,7 +67,7 @@ class ApplicationController < ActionController::Base
   # would create the session object).
   #
   # The problem this solves is that we no longer create empty session
-  # objects for requests that don't need a user to be logged in, sucj
+  # objects for requests that don't need a user to be logged in, such
   # as the service controller, or the credits page, etc.
   def form_authenticity_token
     if session.present? || (params["controller"] == "sessions" && params["action"] == "new")

@@ -110,7 +110,9 @@ module AuthenticatedSystem #:nodoc:
     #
     # We can return to this location by calling #redirect_back_or_default.
     def store_location
-      session[:return_to] = request.fullpath #request.request_uri
+      if request.method == :get
+        session[:return_to] = request.fullpath #request.request_uri
+      end
     end
 
     # Redirect to the URI stored by the most recent store_location call or
