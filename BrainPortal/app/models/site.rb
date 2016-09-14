@@ -53,9 +53,6 @@ class Site < ActiveRecord::Base
   has_many        :users,  :dependent => :nullify, :after_remove  => [:user_system_group_remove, :remove_user_from_site_group]
   has_many        :groups, :dependent => :nullify
 
-  # CBRAIN extension
-  force_text_attribute_encoding 'UTF-8', :description
-
   attr_accessor           :manager_ids
 
   attr_accessible :name, :description, :user_ids, :manager_ids, :group_ids
@@ -150,7 +147,7 @@ class Site < ActiveRecord::Base
       user.update_attribute(:type, "SiteManager")
     end
   end
-  
+
   # Returns true if +user+ can access this resource.
   # The +access_requested+ params is not used right now (reserved for future extension).
   def can_be_accessed_by?(user, access_requested = :read)

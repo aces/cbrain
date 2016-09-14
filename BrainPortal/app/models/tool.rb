@@ -61,10 +61,6 @@ class Tool < ActiveRecord::Base
                           :cbrain_task_class_name, :select_menu_text, :description, :url,
                           :application_type, :application_tags, :application_package_name
 
-
-  # CBRAIN extension
-  force_text_attribute_encoding 'UTF-8', :description
-
   # Returns the single ToolConfig object that describes the configuration
   # for this tool for all Bourreaux, or nil if it doesn't exist.
   def global_tool_config

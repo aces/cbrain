@@ -56,7 +56,7 @@ class ToolConfig < ActiveRecord::Base
   cb_scope        :global_for_bourreaux , where( { :tool_id => nil } )
   cb_scope        :specific_versions    , where( "bourreau_id is not null and tool_id is not null" )
 
-  attr_accessible :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue, 
+  attr_accessible :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue,
                   :group_id, :ncpus, :docker_image, :extra_qsub_args,
                   # The configuration of a tool in a VM managed by a
                   # ScirCloud Bourreau is defined by the following
@@ -66,9 +66,6 @@ class ToolConfig < ActiveRecord::Base
                   # CPU requirements) to use.
                   :cloud_disk_image, :cloud_vm_user, :cloud_ssh_key_pair, :cloud_instance_type,
                   :cloud_job_slots, :cloud_vm_boot_timeout, :cloud_vm_ssh_tunnel_port
-
-  # CBRAIN extension
-  force_text_attribute_encoding 'UTF-8', :description, :version_name
 
   # To make it somewhat compatible with the ResourceAccess module,
   # here's this model's own method for checking if it's visible to a user.
