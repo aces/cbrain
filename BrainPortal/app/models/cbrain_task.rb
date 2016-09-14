@@ -70,9 +70,6 @@ class CbrainTask < ActiveRecord::Base
   # as necessary.
   serialize_as_indifferent_hash :params
 
-  # CBRAIN extension
-  force_text_attribute_encoding 'UTF-8', :description
-
   cb_scope :status, lambda { |s|
                          case s.to_sym
                          when :completed

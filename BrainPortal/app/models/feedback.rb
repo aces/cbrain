@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #Model representing the user feedback resource.
@@ -34,12 +34,8 @@ class Feedback < ActiveRecord::Base
 
   belongs_to :user
   validates_presence_of     :details, :summary
-  
+
   attr_accessible :summary, :details, :user_id
-  
-  # CBRAIN extension
-  force_text_attribute_encoding 'UTF-8', :summary
-  force_text_attribute_encoding 'UTF-8', :details
 
 end
 
