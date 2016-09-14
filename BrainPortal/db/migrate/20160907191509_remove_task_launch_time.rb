@@ -1,13 +1,9 @@
 class RemoveTaskLaunchTime < ActiveRecord::Migration
   def self.up
-    change_table :cbrain_tasks do |t|
-      t.remove :launch_time
-    end
+    remove_column :cbrain_tasks, :launch_time
   end
 
   def self.down
-    change_table :cbrain_tasks do |t|
-      t.add :launch_time
-    end
+    add_column :cbrain_tasks, :launch_time, :datetime
   end
 end
