@@ -261,13 +261,8 @@
     t.column("Time Submitted", :created_at,
       :sortable => true
     ) do |type,id,count,task|
-      case type
-      when :task
         to_localtime(task.created_at, :datetime)
-      when :batch, :loaded_batch
-        to_localtime(task.launch_time, :datetime)
       end
-    end
 
     t.column("Last Updated", :updated_at,
       :sortable => true
