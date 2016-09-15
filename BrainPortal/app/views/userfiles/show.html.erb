@@ -31,6 +31,15 @@
   <% if @userfile.can_be_accessed_by?(current_user, requested_access = :read) %>
     <%= link_to(@userfile.is_a?(FileCollection) ? "Download Collection" : "Download File", { :action => 'download', :file_ids => [@userfile.id] }, :class => "button menu_button", :method  => :get) %>
   <% end %>
+
+  <% if @userfile.can_be_accessed_by?(current_user, requested_access = :write) && @userfile.is_a?(SingleFile) %>
+    <% if @userfile.compressed? %>
+      <%= link_to "Uncompress", { :action => 'uncompress', :file_ids => [@userfile.id] }, { :method => "POST", :class => 'button menu_button' } %>
+    <% else %>
+      <%= link_to "Compress", { :action => 'compress', :file_ids => [@userfile.id] }, { :method => "POST", :class => 'button menu_button' } %>
+    <% end %>
+
+  <% end %>
 </div>
 
 <br>

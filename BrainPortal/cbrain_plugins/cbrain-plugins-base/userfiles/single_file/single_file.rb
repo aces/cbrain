@@ -36,7 +36,12 @@ class SingleFile < Userfile
   end
 
   def pretty_type #:nodoc:
-    self.class.pretty_type + (name =~ /(\.gz|\.Z|\.gz2)$/i ? " (compressed)" : "")
+    self.class.pretty_type + (compressed? ? " (compressed)" : "")
+  end
+
+  def compressed? #:nodoc:
+    gz_extension_pos = (name =~ /(\.gz|\.Z|\.gz2)$/i)
+    !gz_extension_pos.blank?  # if no .gz (or other) extension found, file not zipped
   end
 
   # Forces calculation and setting of the size attribute.

@@ -43,7 +43,7 @@
 	</div>
   </div>
 <% end %>
-  
+
 <% if @task.bourreau.online? %>
 
   <div class="menu_bar">
@@ -56,6 +56,26 @@
       <% confirm  = "Are you sure you want to remove this task?" %>
       <% confirm += "\n\nIMPORTANT NOTE: This will also remove its archived work directory." if @task.workdir_archive %>
       <%= link_to 'Remove Task',  { :action => 'operation', :operation => 'delete', 'tasklist[]' => @task.id }, :confirm => confirm, :class  => "button menu_button", :method => :post %>
+    <% end %>
+    <% if @task.status =~ /Failed*|Completed/ %>
+      <%= link_to "Remove Work Directory", url_for(:action  => :operation, :operation => 'zap_wd', 'tasklist[]' => @task.id),
+                                                  :method  => :post,
+                                                  :datatype => :script,
+                                                  :class => "button",
+                                                  :confirm =>
+                  "Are you sure you want to remove the task's work directory?"
+      %>
+    <% end %>
+
+    <!-- ARCHIVING -->
+    <% if @task.status =~ /Completed/ && @task.full_cluster_workdir.blank? == false && @task.archived_status.nil? %>
+      <%= link_to "Archive on Cluster", url_for(:action  => :operation, :operation => 'archive', 'tasklist[]' => @task.id), :method  => :post, :datatype => :script, :class => "button" %>
+      <% if @task.results_data_provider_id %>
+        <%= link_to "Archive as File", url_for(:action  => :operation, :operation => 'archive_file', 'tasklist[]' => @task.id, 'archive_dp_id' => @task.results_data_provider_id), :method  => :post, :datatype => :script, :class => "button" %>
+      <% end %>
+    <% end %>
+    <% if @task.status =~ /Completed/ && @task.archived_status.nil? == false %>
+      <%= link_to "Unarchive", url_for(:action  => :operation, :operation => 'unarchive', 'tasklist[]' => @task.id), :method  => :post, :datatype => :script, :class => "button" %>
     <% end %>
 
     <!-- FAILURE RECOVERY -->
