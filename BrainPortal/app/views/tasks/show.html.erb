@@ -71,7 +71,7 @@
     <% if @task.status =~ /Completed/ && @task.full_cluster_workdir.blank? == false && @task.archived_status.nil? %>
       <%= link_to "Archive on Cluster", url_for(:action  => :operation, :operation => 'archive', 'tasklist[]' => @task.id), :method  => :post, :datatype => :script, :class => "button" %>
       <% if @task.results_data_provider_id %>
-        <%= link_to "Archive as File", url_for(:action  => :operation, :operation => 'archive_file', 'tasklist[]' => @task.id, 'archive_dp_id' => @task.results_data_provider_id), :method  => :post, :datatype => :script, :class => "button" %>
+        <%= link_to "Archive as File", url_for(:action  => :operation, :operation => 'archive_file', 'tasklist[]' => @task.id, 'archive_dp_id' => @task.results_data_provider_id), :method  => :post, :datatype => :script, :class => "button", :confirm => "Are you sure you wish to archive this task as a file? The file will appear on the #{DataProvider.find_by_id(@task.results_data_provider_id).name} data provider" %>
       <% end %>
     <% end %>
     <% if @task.status =~ /Completed/ && @task.archived_status.nil? == false %>
