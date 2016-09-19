@@ -33,7 +33,7 @@
        # Old link based on portal name; to be made customizable soon.
        # link_to_if(current_user.present?, RemoteResource.current_resource.name.presence || "CBRAIN", start_page_path)
     %>
-    <%= link_to_if(current_user.present?, image_tag("custom_logos/CBRAIN_cartouche_alpha.png", :id => "header_logo").html_safe , start_page_path) %>
+    <%= link_to_if(current_user.present?, image_tag("custom_logos/cbrain-large_white_alpha.png", :id => "header_logo").html_safe , start_page_path) %>
 
     <% if current_user && !(params[:controller] == "groups" && params[:action] == "index") %>
       <span>-</span>

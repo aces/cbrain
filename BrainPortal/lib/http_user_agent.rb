@@ -104,6 +104,7 @@ class HttpUserAgent
       when /iPhone/                     ; 'iPhone'
       when /xbox.?one/                  ; 'Xbox One'
       when /xbox/                       ; 'Xbox'
+      when /windows nt 10/i             ; 'Windows 10'
       when /windows nt 6\.[2-9]/i       ; 'Windows 8'
       when /windows nt 6\.1/i           ; 'Windows 7'
       when /windows nt 6\.0/i           ; 'Windows Vista'
