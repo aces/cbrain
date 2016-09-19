@@ -1239,6 +1239,7 @@ pre {
   display: table-cell;
   text-align: center;
   vertical-align: middle;
+  width: 25%;
 }
 
 .logobar {
@@ -1255,10 +1256,11 @@ pre {
 }
 
 #neuro_logo {
-  height: 60px;
+  height: 70px;
 }
 
 #mcin_logo {
+  height: 40px;
 }
 
 #bc_logo {
@@ -1269,6 +1271,10 @@ pre {
 }
 
 #mcgill_logo {
+  height: 40px;
+}
+
+#ludmer_logo {
 }
 
 
