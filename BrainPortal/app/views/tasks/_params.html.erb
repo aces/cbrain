@@ -29,22 +29,37 @@
   end
 %>
 
-<h2>Task Parameters
-  <% if raw_partial.(:edit_help) %>
-    <%= overlay_content_link "(Help)", :class => "task_help_link", :enclosing_element => "span" do %>
-      <%= render :inline => raw_partial.(:edit_help), :locals => locals %>
-    <% end %>
-  <% elsif (public_path = @task.public_path("edit_params_help.html")) %>
-    <%= overlay_ajax_link "(Help)", public_path.to_s, :class  => "task_help_link" %>
-  <% end %>
-  :
-</h2>
 
-<div class="generalbox">
-<%= error_messages_for(@task) %>
-<% if raw_partial.(:task_params) %>
-  <%= render :inline => raw_partial.(:task_params), :locals => locals %>
-<% else %>
-  <%= render :partial => task_partial('task_params'), :locals => locals %>
-<% end %>
+<div class="panel panel-primary">
+  <div class="panel-heading">
+    Task Parameters
+
+  <% if raw_partial.(:edit_help) %>
+    <span class="glyphicon glyphicon-question-sign" rel="popover" data-toggle="popover" data-placement="right" title="Task Help" data-content="<%= raw_partial.(:edit_help) %>" data-html="true"></span>
+  <% elsif (public_path = @task.public_path("edit_params_help.html")) %>
+    <a href="<%= public_path.to_s %>" target="_blank"><span class="glyphicon glyphicon-question-sign"></span></a>
+  <% end %>
+
+  <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#task-params"></span></div>
+  <div class="panel-body collapse in" id="task-params">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-xs-12">
+          <%= error_messages_for(@task) %>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-12">
+          <% if raw_partial.(:task_params) %>
+            <%= render :inline => raw_partial.(:task_params), :locals => locals %>
+          <% else %>
+            <%= render :partial => task_partial('task_params'), :locals => locals %>
+          <% end %>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
 </div>

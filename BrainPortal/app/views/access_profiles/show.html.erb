@@ -24,95 +24,107 @@
 
 <% title "Access Profile" %>
 
-<div class="menu_bar">
-  <%= link_to 'Delete', access_profile_path(@access_profile),  {
-        :confirm => "Are you sure you want to delete '#{@access_profile.name}' ?",
-        :method  => :delete,
-        :class => "button"
-        }
-  %>
-  <%= overlay_ajax_link "Help", "/doc/access_profiles/access_profiles.html", :class  => "button" %>
-</div>
+<div class="container-fluid">
+  <div class="row menu_bar">
+    <div class="col-xs-12">
+      <div class="well well-sm">
+        <a href="<%= access_profile_path(@access_profile) %>" data-type="script" data-method="DELETE" data-confirm="Are you sure you want to delete '<%= @access_profile.name %>' ?" class="btn btn-primary"><span class="glyphicon glyphicon-trash"></span> Delete</a>
+        <a href="#" class="btn btn-primary help-btn" data-toggle="modal" data-target="#help-modal" data-url="/doc/access_profiles/access_profiles.html"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
+      </div>
+    </div>
+  </div>
 
-<br>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= error_messages_for @acces_profile, :header_message => "Access profile could not be updated." %>
+    </div>
+  </div>
 
-<%= error_messages_for @acces_profile, :header_message => "Access profile could not be updated." %>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= show_table(@access_profile, :edit_condition => check_role(:admin_user)) do |t| %>
 
-<div class="display_inline_block" style="min-width: 50%">
+        <% t.edit_cell(:name, :content => access_profile_label(@access_profile)) do %>
+          <%= text_field_tag "access_profile[name]", @access_profile.name, :class => "form-control" %>
+        <% end %>
 
-  <%= show_table(@access_profile, :edit_condition => check_role(:admin_user)) do |t| %>
+        <% t.edit_cell(:color) do %>
+          <%= text_field_tag "access_profile[color]", @access_profile.color, :class => "cb_colorpick_val_target form-control" %>
+          Use a CSS-compliant <strong>pale</strong> color:
+          e.g. <em>#ff0</em> or <em>yellow</em> etc.
+          <%= render :partial => 'shared/color_picker', :locals => { :step => 30, :greys => false, :dark => false } %>
+        <% end %>
 
-    <% t.edit_cell(:name, :content => access_profile_label(@access_profile)) do %>
-      <%= text_field_tag "access_profile[name]", @access_profile.name, :class => "cb_colorpick_bg_target" %>
-    <% end %>
+        <% t.edit_cell(:description, :content => overlay_description(@access_profile.description), :show_width => 2 ) do %>
+          <%= text_area_tag "access_profile[description]", @access_profile.description, :rows => 6, :class => "form-control" %><br/>
+          These are your private notes about this profile.
+        <% end %>
 
-    <% t.edit_cell(:color) do %>
-      <%= text_field_tag "access_profile[color]", @access_profile.color, :class => "cb_colorpick_val_target" %><br>
-      <span class="field_explanation">Use a CSS-compliant <strong>pale</strong> color:<br>
-      e.g. <em>#ff0</em> or <em>yellow</em> etc.</span><br>
-      <%= render :partial => 'shared/color_picker', :locals => { :step => 30, :greys => false, :dark => false } %>
-    <% end %>
+      <% end %>
 
-    <% t.edit_cell(:description, :content => overlay_description(@access_profile.description), :show_width => 2 ) do %>
-      <%= text_area_tag "access_profile[description]", @access_profile.description, :rows => 6, :cols => 60 %><br/>
-      <span class="field_explanation">These are your private notes about this profile.</span>
-    <% end %>
+      <% myusers = @access_profile.users.all %>
+    </div>
+  </div>
 
-  <% end %>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= show_table(@access_profile, :edit_condition => check_role(:admin_user), :header => 'Projects In This Profile') do |t| %>
+        <% group_names = (@access_profile.groups.sort_by(&:name).map { |g| link_to_group_if_accessible(g) }.join(", ").html_safe.presence) || "(None)" %>
+        <% t.edit_cell(:group_ids, :show_width => 2, :no_header => "Projects", :content => group_names) do %>
 
-  <% myusers = @access_profile.users.all %>
+          <%= render :partial => 'shared/group_tables', :locals => { :model => @access_profile } %>
 
-  <%= show_table(@access_profile, :edit_condition => check_role(:admin_user), :header => 'Projects In This Profile') do |t| %>
-    <% group_names = (@access_profile.groups.sort_by(&:name).map { |g| link_to_group_if_accessible(g) }.join(", ").html_safe.presence) || "(None)" %>
-    <% t.edit_cell(:group_ids, :show_width => 2, :no_header => "Projects", :content => group_names) do %>
+          <% if myusers.present? %>
+              When adding or removing projects, apply the change to the users:
+              <%= select_all_checkbox "all_affected_users", :id => "togall", :checked => "1" %>
+              <%= render :partial => 'shared/users_checkbox_table',
+                         :locals => {
+                                    :users         => myusers,
+                                    :checked       => myusers,
+                                    :variable_name => "affected_user_ids[]",
+                                    :html_class    => "all_affected_users",
+                                  }
+              %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
 
-      <%= render :partial => 'shared/group_tables', :locals => { :model => @access_profile } %>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= show_table(@access_profile, :edit_condition => check_role(:admin_user), :header => 'Users With This Profile') do |t| %>
+        <% user_names = (myusers.sort_by(&:login).map { |u| link_to_user_if_accessible(u) }.join(", ").html_safe.presence) || "(None)" %>
+        <% t.edit_cell(:user_ids, :show_width => 2, :no_header => "Users", :content => user_names) do %>
 
-      <% if myusers.present? %>
-        <p>
-        <hr>
-        <p>
-          When adding or removing projects, apply the change to the users:
-          <%= select_all_checkbox "all_affected_users", :id => "togall", :checked => "1" %>
+          Normal Users<br>
           <%= render :partial => 'shared/users_checkbox_table',
                      :locals => {
-                                :users         => myusers,
-                                :checked       => myusers,
-                                :variable_name => "affected_user_ids[]",
-                                :html_class    => "all_affected_users",
-                              }
+                                  :users         => User.where(:account_locked => false).order(:login).all,
+                                  :checked       => myusers,
+                                  :variable_name => "access_profile[user_ids][]",
+                                }
           %>
+
+          <br>
+          Locked Users<br>
+          <%= render :partial => 'shared/users_checkbox_table',
+                     :locals => {
+                                  :users         => User.where(:account_locked => true).order(:login).all,
+                                  :checked       => myusers,
+                                  :variable_name => "access_profile[user_ids][]",
+                                }
+          %>
+
+        <% end %>
       <% end %>
-    <% end %>
-  <% end %>
+    </div>
+  </div>
 
-  <%= show_table(@access_profile, :edit_condition => check_role(:admin_user), :header => 'Users With This Profile') do |t| %>
-    <% user_names = (myusers.sort_by(&:login).map { |u| link_to_user_if_accessible(u) }.join(", ").html_safe.presence) || "(None)" %>
-    <% t.edit_cell(:user_ids, :show_width => 2, :no_header => "Users", :content => user_names) do %>
-
-      Normal Users<br>
-      <%= render :partial => 'shared/users_checkbox_table',
-                 :locals => {
-                              :users         => User.where(:account_locked => false).order(:login).all,
-                              :checked       => myusers,
-                              :variable_name => "access_profile[user_ids][]",
-                            }
-      %>
-
-      <br>
-      Locked Users<br>
-      <%= render :partial => 'shared/users_checkbox_table',
-                 :locals => {
-                              :users         => User.where(:account_locked => true).order(:login).all,
-                              :checked       => myusers,
-                              :variable_name => "access_profile[user_ids][]",
-                            }
-      %>
-
-    <% end %>
-  <% end %>
-
-  <P>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @access_profile.getlog, :title => 'Access Profile Log' } %>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= render :partial => "layouts/log_report", :locals  => { :log  => @access_profile.getlog, :title => 'Access Profile Log' } %>
+    </div>
+  </div>
 
 </div>

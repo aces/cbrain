@@ -18,91 +18,91 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<%= button_with_dropdown_menu("Register Files") do %>
+<div class="btn-group">
+  <a href="javascript:;" class="btn btn-primary dropdown-toggle mega-dropdown" role="dropdown" aria-haspopup="true" aria-expanded="false">Register Files<span class="caret"></span></a>
+    <ul class="dropdown-menu">
+      <div class="container-fluid">
+        <li>
+          This panel allows you to <strong>register</strong> files that are present on
+          the remote Data Provider, but not yet known by the CBRAIN
+          interface. Once registered, a file will be visible in
+          the <strong>Files</strong> manager, and can be used for launching
+          tasks.
+        </li>
+        <li role="separator" class="divider"></li>
+        <li>
+          We recommend that you use this Data Provider only to
+          transfer data in and out of CBRAIN. When registering files,
+          as you can see below, you can have them automatically moved
+          or copied to another official CBRAIN Data Provider.
+          <% if @provider.meta[:must_move].present? %>
+          <strong>In fact, this particular Data Provider leaves you no choice</strong>
+          and you MUST select another Data Provider where your files will be copied or moved.
+          <% end %>
+          Once files are copied to another official Data Provider, we recommand you
+          clean up the files here using the <strong>Delete Files</strong> panel, further right.
+        </li>
+        <li>
+          <div class="well">
+            <table class="table table-condensed table-striped">
+              <tr>
+                <td class="text-center">&darr; ... assign them to project ... &darr;</td>
+                <td class="text-center">&darr; ... move or copy them ... &darr;</td>
+                <td class="text-center">&darr; ... to ... &darr;
+                  <% main_dp_set = DataProvider.find_all_accessible_by_user(current_user).all.select { |dp| ! dp.is_browsable? } %>
+                  <%= html_tool_tip("(info)", :offset_y => 25, :offset_x => -200 ) do %>
+                    <%= data_providers_descriptions(main_dp_set) %>
+                  <% end %>
+                </td>
+              </tr>
+              <tr>
+                <td><%= group_select :other_group_id, {}, { :include_blank => "(Select a project)", :class => "form-control" } %></td>
+                <td>
+                <% auto_do_options = [
+                                        [ "... MOVE the files to Data Provider ->", "MOVE" ],
+                                        [ "... COPY the files to Data Provider ->", "COPY" ]
+                                     ]
+                  auto_do_options.unshift( ["... do nothing else!", "" ] ) unless @provider.meta[:must_move].present?
+                %>
+                <%= select_tag :auto_do, options_for_select( auto_do_options ), :class => "form-control" %>
+                </td>
 
-  <p class="medium_paragraphs">
-  This panel allows you to <strong>register</strong> files that are present on
-  the remote Data Provider, but not yet known by the CBRAIN
-  interface. Once registered, a file will be visible in
-  the <strong>Files</strong> manager, and can be used for launching
-  tasks.
-  </p>
-
-  <p class="medium_paragraphs">
-  We recommand that you use this Data Provider only to
-  transfer data in and out of CBRAIN. When registering files,
-  as you can see below, you can have them automatically moved
-  or copied to another official CBRAIN Data Provider.
-  <% if @provider.meta[:must_move].present? %>
-  <strong>In fact, this particular Data Provider leaves you no choice</strong>
-  and you MUST select another Data Provider where your files will be copied or moved.
-  <% end %>
-  Once files are copied to another official Data Provider, we recommand you
-  clean up the files here using the <strong>Delete Files</strong> panel, further right.
-  </p>
-
-  <strong>When registering, automatically...</strong>
-  <br/>
-
-  <table class="simple">
-    <tr>
-      <td class="centered">&darr; ... assign them to project ... &darr;</td>
-      <td class="centered">&darr; ... move or copy them ... &darr;</td>
-      <td class="centered">&darr; ... to ... &darr;
-        <% main_dp_set = DataProvider.find_all_accessible_by_user(current_user).all.select { |dp| ! dp.is_browsable? } %>
-        <%= html_tool_tip("(info)", :offset_y => 25, :offset_x => -200 ) do %>
-          <%= data_providers_descriptions(main_dp_set) %>
-        <% end %>
-      </td>
-      <td rowspan="2" class="centered">
-        <%= hijacker_submit_button(
-          "Register the files!",
-          :name     => :register,
-          :url      => url_for(:action => :register),
-          :method   => :post,
-          :datatype => :script,
-          :class    => "button"
-        ) %>
-      </td>
-    </tr>
-    <tr>
-      <td><%= group_select :other_group_id, {}, { :include_blank => "(Select a project)" } %></td>
-  
-    <td>
-    <% auto_do_options = [
-                            [ "... MOVE the files to Data Provider ->", "MOVE" ],
-                            [ "... COPY the files to Data Provider ->", "COPY" ]
-                         ]
-      auto_do_options.unshift( ["... do nothing else!", "" ] ) unless @provider.meta[:must_move].present?
-    %>
-    <%= select_tag :auto_do, options_for_select( auto_do_options ) %>
-    </td>
-  
-    <td>
-    <%= data_provider_select :other_data_provider_id,
-        { :data_providers => main_dp_set },
-        { :include_blank => "(Select another Data Provider)" }
-    %>
-    </td>
-  </table>
-
-
-  <P>
-  <strong>Important notes about automatically copying and moving files:</strong>
-  </P>
-  
-  <UL>
-    <LI>The MOVE or COPY operation will start in background as soon as you click 'Register files'.</LI>
-    <LI>While the operation is in progress, do not modify the files on the remote Data Provider!</LI>
-    <LI>While a COPY operation is in progress, there will seem to be two registered versions of the file in the file manager (one on each Data Provider).</LI>
-    <LI>After a COPY operation is done, the files will still be visible here and will no longer seem to be registered.</LI>
-    <LI>After a MOVE operation is done, the files will have been erased from here.</LI>
-    <LI>Attempts to COPY or MOVE files to Data Providers where identically named files already exist will silently be ignored.</LI>
-  </UL>
-  
-<% end %>
+                <td>
+                <%= data_provider_select :other_data_provider_id,
+                    { :data_providers => main_dp_set },
+                    { :include_blank => "(Select another Data Provider)" , :class => "form-control"}
+                %>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </li>
+        <li>
+          <%= hijacker_submit_button(
+            "Register the files!",
+            :name     => :register,
+            :url      => url_for(:action => :register),
+            :method   => :post,
+            :datatype => :script,
+            :class    => "btn btn-primary mega-dropdown-closer btn-block"
+          ) %></li>
+        <li role="separator" class="divider"></li>
+        <li class="dropdown-header">Important notes about automatically copying and moving files:</li>
+        <li>
+          <ul>
+            <li>The MOVE or COPY operation will start in background as soon as you click 'Register files'.</li>
+            <li>While the operation is in progress, do not modify the files on the remote Data Provider!</li>
+            <li>While a COPY operation is in progress, there will seem to be two registered versions of the file in the file manager (one on each Data Provider).</li>
+            <li>After a COPY operation is done, the files will still be visible here and will no longer seem to be registered.</li>
+            <li>After a MOVE operation is done, the files will have been erased from here.</li>
+            <li>Attempts to COPY or MOVE files to Data Providers where identically named files already exist will silently be ignored.</li>
+        </ul>
+        </li>
+      </div>
+    </ul>
+  </div>
 

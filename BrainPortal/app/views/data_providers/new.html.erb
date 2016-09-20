@@ -24,156 +24,204 @@
 
 <% title 'Add New Data Provider' %>
 
-<h2>Add New Data Provider</h2>
-
-<%= error_messages_for(@provider) %>
-
-<%= form_for @provider, :as => :data_provider, :url => { :action => "create" }, :datatype => "script" do |f| -%>
-
-  <div class="generalbox">
-
-    <span title="The name of the data provider.">
-      <p><%= f.label :name, "Name" %><br/>
-      <%= f.text_field :name %></p>
-    </span>
-
-    <span title="Brief description of the data provider.">
-      <p><%= f.label :description, "Description" %><br/>
-      <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
-      <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div>
-      </p>
-    </span>
-
-    <span title="Time zone where this data provider is located.">
-      <p><%= f.label :time_zone, "Time Zone" %><br/>
-      <%= f.time_zone_select :time_zone,
-          ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
-          { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
-            :include_blank => true }
-      %></p>
-    </span>
-
-    <span title="Type of data provider.">
-
-      <p><%= f.label :type, "Type" %><br/>
-      <%= f.select :type, grouped_options_for_select(@typelist), { :prompt => "Select Provider Type" }, { :disabled => (params[:action].to_sym == :edit) } %><br/>
-      <div class="field_explanation"><%= show_hide_toggle "(Data Provider Type Information)", "#data_provider_classes", :class  => 'action_link' %></div>
-      </p>
-
-      <div id="data_provider_classes" style="display:none">
-        <%= render :partial => 'dp_types_explained' %>
-      </div>
-    </span>
-
-    <span title="Owner of this data provider. The owner has full rights to configure and use the data provider.">
-      <p><%= f.label :user_id, "Owner" %><br/>
-        <%= user_select("data_provider[user_id]", { :selector => @provider }, { :disabled => ! current_user.has_role?(:admin_user) } ) %>
-      </p>
-    </span>
-
-    <span title="Project ownership of this data provider. Project members will have access to the provider, but will not be able configure it.">
-      <p><%= f.label :group_id, "Project" %><br/>
-        <%= group_select("data_provider[group_id]", :selector => @provider) %>
-      </p>
-    </span>
-
-    <span title="Is this data provider currently available for use?">
-      <p><%= f.label :online, "Status" %><br/>
-      <%= f.select :online, { "Online" => true, "Offline" => false } %></p>
-    </span>
-
-    <span title="Is this data provider writable or read-only?">
-      <p><%= f.label :read_only, "Mode" %><br/>
-      <%= f.select :read_only, { "Read/Write" => false, "Read Only" => true } %></p>
-    </span>
-
-    <span title="Is this data provider syncable?">
-      <p><%= f.label :not_syncable, "Syncability" %><br/>
-      <%= f.select :not_syncable, { "Fully syncable" => false, "NOT syncable" => true } %></p>
-    </span>
-
-    <p>
-
-    <fieldset class="groupentry">
-      <legend>SSH parameters for remote Data Providers</legend>
-
-      <span title="Name of the remote machine on which the data provider is located (not required for VaultLocalDataProvider).">
-        <p><%= f.label :remote_host, "Remote Hostname" %><br/>
-        <%= f.text_field :remote_host %></p>
-      </span>
-
-      <span title="Alternate name(s) (comma-separated) of the remote machine on which the data provider is located (required only for Smart data providers).">
-        <p><%= f.label :alternate_host, "Alternate Hostname(s)" %><br/>
-        <%= f.text_field :alternate_host %></p>
-      </span>
-
-      <span title="Username on the remote machine where the data provider is located (not required for VaultLocalDataProvider).">
-        <p><%= f.label :remote_user, "Remote Username" %><br/>
-        <%= f.text_field :remote_user %></p>
-      </span>
-
-      <span title="Port number used to access remote machine on which the data provider is located (not required for VaultLocalDataProvider).">
-        <p><%= f.label :remote_port, "Remote Port Number" %><br/>
-        <%= f.text_field :remote_port, :size => 6 %></p>
-      </span>
-    </fieldset>
-
-    <p>
-
-    <fieldset class="groupentry">
-      <legend>Cloud Storage Configuration</legend>
-
-      <span title="Identifier for cloud storage service.">
-        <p><%= f.label :cloud_storage_client_identifier, "Client Identifier" %><br/>
-        <%= f.text_field :cloud_storage_client_identifier %></p>
-      </span>
-
-      <span title="Token or password for cloud storage service.">
-        <p><%= f.label :cloud_storage_client_token, "Client Token" %><br/>
-        <%= f.password_field :cloud_storage_client_token, :size => 80 %></p>
-      </span>
-    </fieldset>
-
-    <p>
-
-    <fieldset class="groupentry">
-    <legend>Physical data location</legend>
-
-      <span title="Directory used for storing files">
-        <p><%= f.label :remote_dir, "Full Directory Path" %><br/>
-        <%= f.text_field :remote_dir, :size => 60 %></p>
-      </span>
-
-    </fieldset>
-
-    <p>
-
-    <fieldset class="groupentry">
-      <legend>Other properties</legend>
-
-      <p><label for='meta_must_move'>Files must be copied/moved upon registration (browsable DPs only):</label>
-      <%= check_box_tag 'meta[must_move]',  "on", @provider.new_record? ? false : !@provider.meta[:must_move].blank? %>
-
-      <p><label for='meta_browse_gid'>Files can be browsed only by members of this project (browsable DPs only):</label>
-      <%= group_select 'meta[browse_gid]', { :selector => (@provider.new_record? ? nil : @provider.meta[:browse_gid]) }, { :include_blank => "(Any Users)" } %>
-
-      <p><label for='meta_no_uploads'>Cannot be used for uploading files from the file manager:</label>
-      <%= check_box_tag 'meta[no_uploads]', "on", @provider.new_record? ? false : !@provider.meta[:no_uploads].blank? %>
-
-      <p><label for='meta_no_viwers'>Files cannot be viewed in the file manager:</label>
-      <%= check_box_tag 'meta[no_viewers]', "on", @provider.new_record? ? false : !@provider.meta[:no_viewers].blank? %>
-    </fieldset>
-
-
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12">
+      <h2 class="text-center">New Data Provider</h2>
+    </div>
   </div>
-  <p><%= submit_tag 'Create New Data Provider' %></p>
 
-<% end %>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= error_messages_for(@provider) %>
+    </div>
+  </div>
 
-<div class="display_cell" style="padding-left: 1em;">
-  <table>
-    <tr><th colspan="2" class="supertitle">Public SSH Key for this CBRAIN Portal</th></tr>
-    <tr><td>This key should be installed on the host machines of SSH or Smart Data Providers to allow remote access.</td></tr>
-    <tr><td><PRE class="ssh_key"><%= pretty_ssh_key(RemoteResource.current_resource.get_ssh_public_key || 'Unknown! Talk to sysadmin!') %></PRE></td></tr>
-  </table>
+  <div class="row">
+    <div class="col-xs-6">
+      <div class="panel panel-primary" >
+        <div class="panel-heading">Basic Info <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#basic-info"></span></div>
+        <div class="panel-body collapse in" id="basic-info">
+          <%= form_for @provider, :as => :data_provider, :url => { :action => "create" }, :datatype => "script", :class => "form-horizontal" do |f| -%>
+
+            <div class="row">
+              <div class="col-xs-2"><%= f.label :name, "Name" %></div>
+              <div class="col-xs-10"><%= f.text_field :name, :class => "form-control" %></div>
+            </div>
+
+            <div class="row">
+              <div class="col-xs-2"><%= f.label :description, "Description" %></div>
+              <div class="col-xs-10"><%= f.text_area :description, :rows => 4, :class => "form-control" %>
+                <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-xs-2"><%= f.label :time_zone, "Time Zone" %></div>
+              <div class="col-xs-10">
+                <%= f.time_zone_select :time_zone,
+                    ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
+                    { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
+                    :include_blank => true }, :class => "form-control"
+                %></div>
+            </div>
+
+            <div class="row">
+              <div class="col-xs-2"><%= f.label :type, "Type" %></div>
+              <div class="col-xs-10">
+                <div class="input-group">
+                  <a href="#" data-target="#help-modal" data-toggle="modal" data-url="/doc/data_providers/types_explained.html" class="input-group-addon help-btn"><span class="glyphicon glyphicon-question-sign"></span></a>
+                  <%= f.select :type, grouped_options_for_select(@typelist), { :prompt => "Select Provider Type" }, { :disabled => (params[:action].to_sym == :edit), :class => "form-control" } %>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="row" title="Owner of this data provider. The owner has full rights to configure and use the data provider.">
+              <div class="col-xs-2"><%= f.label :user_id, "Owner" %></div>
+              <div class="col-xs-10"><%= user_select("data_provider[user_id]", { :selector => @provider }, { :disabled => ! current_user.has_role?(:admin_user), :class => "form-control" } ) %></div>
+            </div>
+
+            <div class="row" title="Project ownership of this data provider. Project members will have access to the provider, but will not be able configure it.">
+              <div class="col-xs-2"><%= f.label :group_id, "Project" %></div>
+              <div class="col-xs-10"><%= group_select("data_provider[group_id]", { :selector => @provider }, { :class => "form-control" }) %></div>
+            </div>
+
+            <div class="row" title="Is this data provider currently available for use?">
+              <div class="col-xs-2"><%= f.label :online, "Status" %></div>
+              <div class="col-xs-10"><%= f.select :online, { "Online" => true, "Offline" => false }, {}, { :class => "form-control" } %></div>
+            </div>
+
+            <div class="row" title="Is this data provider writable or read-only?">
+              <div class="col-xs-2"><%= f.label :read_only, "Mode" %></div>
+              <div class="col-xs-10"><%= f.select :read_only, { "Read/Write" => false, "Read Only" => true }, {}, { :class => "form-control" } %></div>
+            </div>
+
+            <div class="row" title="Is this data provider syncable?">
+              <div class="col-xs-2"><%= f.label :not_syncable, "Syncability" %></div>
+              <div class="col-xs-10"><%= f.select :not_syncable, { "Fully syncable" => false, "NOT syncable" => true }, {}, { :class => "form-control" } %></div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xs-6">
+      <div class="panel panel-primary">
+        <div class="panel-heading">SSH parameters for remote Data Providers <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#ssh-panel"></span></div>
+
+
+        <div class="panel-body collapse in" id="ssh-panel">
+          <div class="container-fluid">
+            <div class="row" title="Name of the remote machine on which the data provider is located (not required for VaultLocalDataProvider).">
+              <div class="col-xs-2"><%= f.label :remote_host, "Remote Hostname" %></div>
+              <div class="col-xs-10"><%= f.text_field :remote_host, :class => "form-control" %></div>
+            </div>
+
+            <div class="row" title="Alternate name(s) (comma-separated) of the remote machine on which the data provider is located (required only for Smart data providers).">
+              <div class="col-xs-2"><%= f.label :alternate_host, "Alternate Hostname(s)" %></div>
+              <div class="col-xs-10"><%= f.text_field :alternate_host, :class => "form-control" %></div>
+            </div>
+
+            <div class="row" title="Username on the remote machine where the data provider is located (not required for VaultLocalDataProvider).">
+              <div class="col-xs-2"><%= f.label :remote_user, "Remote Username" %></div>
+              <div class="col-xs-10"><%= f.text_field :remote_user, :class => "form-control" %></div>
+            </div>
+
+            <div class="row" title="Port number used to access remote machine on which the data provider is located (not required for VaultLocalDataProvider).">
+              <div class="col-xs-2"><%= f.label :remote_port, "Remote Port Number" %></div>
+              <div class="col-xs-10"><%= f.text_field :remote_port, :class => "form-control" %></div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="panel panel-primary">
+        <div class="panel-heading">Physical data location <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#data-panel"></span></div>
+        <div class="panel-body collapse in" id="data-panel">
+          <div class="container-fluid">
+            <div class="row" title="Directory used for storing files">
+              <div class="col-xs-2"><%= f.label :remote_dir, "Full Directory Path" %></div>
+              <div class="col-xs-10"><%= f.text_field :remote_dir, :class => "form-control" %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-6">
+      <div class="panel panel-primary">
+        <div class="panel-heading">Other Properties <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#other-panel"></span></div>
+        <div class="panel-body">
+          <div class="container-fluid collapse in" id="other-panel">
+            <div class="row">
+              <div class="col-xs-8"><label for='meta_must_move'>Files must be copied/moved upon registration (browsable DPs only):</label></div>
+              <div class="col-xs-4"><%= check_box_tag 'meta[must_move]',  "on", @provider.new_record? ? false : !@provider.meta[:must_move].blank?, :class => "form-control" %>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-xs-8"><label for='meta_browse_gid'>Files can be browsed only by members of this project (browsable DPs only):</label></div>
+              <div class="col-xs-4">
+                <%= group_select 'meta[browse_gid]', { :selector => (@provider.new_record? ? nil : @provider.meta[:browse_gid]) }, { :include_blank => "(Any Users)", :class => "form-control" } %>
+              </div>
+            </div>
+
+
+            <div class="row">
+              <div class="col-xs-8"><label for='meta_no_uploads'>Cannot be used for uploading files from the file manager:</label></div>
+              <div class="col-xs-4"><%= check_box_tag 'meta[no_uploads]', "on", @provider.new_record? ? false : !@provider.meta[:no_uploads].blank?, :class => "form-control" %></div>
+            </div>
+
+            <div class="row">
+              <div class="col-xs-8"><label for='meta_no_viwers'>Files cannot be viewed in the file manager:</label></div>
+              <div class="col-xs-4"><%= check_box_tag 'meta[no_viewers]', "on", @provider.new_record? ? false : !@provider.meta[:no_viewers].blank?, :class => "form-control" %></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xs-6">
+      <div class="panel panel-primary">
+        <div class="panel-heading">Cloud Storage Configuration <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#cloud-panel"></span></div>
+        <div class="panel-body collapse in" id="cloud-panel">
+          <div class="container-fluid">
+
+            <div class="row" title="Identifier for cloud storage service.">
+              <div class="col-xs-2"><%= f.label :cloud_storage_client_identifier, "Client Identifier" %></div>
+              <div class="col-xs-10"><%= f.text_field :cloud_storage_client_identifier, :class => "form-control" %></div>
+            </div>
+
+            <div class="row" title="Token or password for cloud storage service.">
+              <div class="col-xs-2"><%= f.label :cloud_storage_client_token, "Client Token" %></div>
+              <div class="col-xs-10"><%= f.password_field :cloud_storage_client_token, :size => 80, :class => "form-control" %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-12"><%= submit_tag 'Create New Data Provider', :class => "btn btn-primary btn-block" %></div>
+  </div>
+
+  <% end %>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <h4>Public SSH Key for this CBRAIN Portal</h4>
+      <div class="ssh_key text-left" display="table-cell">
+        <pre class="small" id="ssh_key"><%= pretty_ssh_key(RemoteResource.current_resource.get_ssh_public_key || 'Unknown! Talk to sysadmin!') %></pre>
+      </div>
+      This key should be installed on the host machines of SSH or Smart Data Providers to allow remote access.
+    </div>
+  </div>
 </div>

@@ -24,41 +24,76 @@
 
 <% title 'New Project' %>
 
-<h2>New Project</h2>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12">
+      <h3 class="text-center">New Project</h3>
+    </div>
+  </div>
 
-<%= error_messages_for @group %>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= error_messages_for @group %>
+    </div>
+  </div>
 
-<%= form_for @group, :as => :group, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+  <%= form_for @group, :as => :group, :url => { :action => "create" }, :datatype => "script", :class => "form-horizontal" do |f| -%>
+    <div class="row">
+      <div class="col-xs-6">
+          <div class="panel panel-primary">
+            <div class="panel-heading">Basic Info</div>
+            <div class="panel-body">
+              <div class="row">
+                <div class="col-xs-4"><%= f.label :name, "Name" %></div>
+                <div class="col-xs-8"><%= f.text_field :name, :class => "form-control" %></div>
+              </div>
 
-  <div class="generalbox">
+              <div class="row">
+                <div class="col-xs-4"><%= f.label :description, "Description" %></div>
+                <div class="col-xs-8">
+                  <%= f.text_area :description, :rows => 4, :class => "form-control" %>
+                  The first line should be a short summary, and the rest are for details.
+                </div>
+              </div>
 
-    <p>
-    <%= f.label :name, "Name" %><br />
-    <%= f.text_field :name %>
-    </p>
+              <% if current_user.has_role?(:admin_user) %>
+                <div class="row">
+                  <div class="col-xs-4"><%= f.label :site_id, "Site:" %></div>
+                  <div class="col-xs-8"><%= site_select "group[site_id]",{}, :prompt => "(Select a site)", :class => "form-control" %></div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-4"><label>System group, invisible to normal users:</label></div>
+                  <div class="col-xs-8"><%= f.check_box :invisible, :class => "form-control" %></div>
+                </div>
+              <% end %>
 
-    <p>
-    <%= f.label :description, "Description" %><br />
-    <%= f.text_area :description, :rows => 4, :cols => 40 %>
-    <div class="field_explanation">The first line should be a short summary, and the rest are for details.</div>
-    </p>
-    <% if current_user.has_role?(:admin_user) %>
-      <p>
-      <%= f.label :site_id, "Site:" %>
-      <%= site_select "group[site_id]",{}, :prompt => "(Select a site)" %>
-      </p>
-      <p>
-      Make this a system group invisible to normal users:
-      <%= f.check_box :invisible %>
-      <p/>
-    <% end %>
+            </div>
+          </div>
+      </div>
 
-    <% if current_user.has_role?(:normal_user) %>
-      <%= hidden_field_tag("group[user_ids][]", current_user.id.to_s) %>
-    <% else %>
-      <%= render :partial => 'users_form' %>
-    <% end %>
-    <p>
-    <%= f.submit "Create" %>
-    </p>
-<% end %>
+      <div class="col-xs-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">Project Membership</div>
+          <div class="panel-body">
+            <% if current_user.has_role?(:normal_user) %>
+              <%= hidden_field_tag("group[user_ids][]", current_user.id.to_s) %>
+            <% else %>
+              <%= render :partial => 'users_form' %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-12">
+        <%= f.submit "Create", :class => "btn btn-primary btn-block" %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+
+
+
+

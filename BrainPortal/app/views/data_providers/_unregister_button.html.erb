@@ -18,33 +18,39 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<%= button_with_dropdown_menu("Unregister Files") do %>
-
-  <p class="medium_paragraphs">
-  This panel allows you to <strong>unregister</strong> files that are present on
-  the remote Data Provider and have already been registered by
-  the CBRAIN interface. Once unregistered, a file will be no longer
-  be visible in the <strong>Files</strong> manager, but will still be left
-  on the disk at the remote site. It will be your responsability
-  to delete the data manually if you have an external access
-  to the remote files, or you can use the <strong>Delete Files</strong>
-  panel, further right.
-  </p>
-
-  <p class="centered">
-    <%= hijacker_submit_button(
-      "Unregister the files!",
-      :name     => :register,
-      :url      => url_for(:action => :unregister),
-      :method   => :post,
-      :datatype => :script,
-      :class    => "button"
-    ) %>
-  </p>
-
-<% end %>
-
+<div class="btn-group">
+  <a href="javascript:;" class="btn btn-primary dropdown-toggle mega-dropdown" role="dropdown" aria-haspopup="true" aria-expanded="false">Unregister Files<span class="caret"></span></a>
+  <ul class="dropdown-menu">
+    <div class="container-fluid">
+      <li>
+        This panel allows you to <strong>unregister</strong> files that are present on
+        the remote Data Provider and have already been registered by
+        the CBRAIN interface.
+      </li>
+      <li class="divider" role="separator"></li>
+      <li>
+        Once unregistered, a file will be no longer
+        be visible in the <strong>Files</strong> manager, but will still be left
+        on the disk at the remote site. It will be your responsability
+        to delete the data manually if you have an external access
+        to the remote files, or you can use the <strong>Delete Files</strong>
+        panel, further right.
+      </li>
+      <li class="divider" role="separator"></li>
+      <li>
+        <%= hijacker_submit_button(
+          "Unregister the files!",
+          :name     => :register,
+          :url      => url_for(:action => :unregister),
+          :method   => :post,
+          :datatype => :script,
+          :class    => "btn btn-primary btn-block"
+        ) %>
+      </li>
+    </div>
+  </ul>
+</div>

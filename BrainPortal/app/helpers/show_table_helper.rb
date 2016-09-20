@@ -324,12 +324,14 @@ module ShowTableHelper
       html << form_tag(url, :method => method)
     end
     html << "<fieldset>"
-    html << "<legend>#{header}"
+    html << "<div class=\"panel panel-primary\">"
+    html << "<div class=\"panel-heading\">"
+    html << "#{header}"
     if tb.editable?
       html << "<span class=\"show_table_edit\">(#{link_to "Edit", "#", :class => "show_table_edit_link inline_edit_field_link"})<span>"
     end
-    html << "</legend>"
-    html << "<table class=\"show_table\">"
+    html << "</div>"
+    html << "<table class=\"show_table table table-striped table-condensed\">"
     col_count = 0
     tb.cells.each do |cell|
       if col_count == 0
@@ -347,12 +349,12 @@ module ShowTableHelper
 
     if tb.editable?
       html << "<div class=\"inline_edit_field_input\" style=\"display:none\">"
-      html << "<BR>"
       if object.new_record?
         html << submit_button("Create")
       else
         html << submit_button("Update")
       end
+      html << "</div>"
       html << "</div>"
       html << "</fieldset>"
       html << "</form>"

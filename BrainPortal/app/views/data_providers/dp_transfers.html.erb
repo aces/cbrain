@@ -24,121 +24,128 @@
 
 <% title "Transfer Restrictions" %>
 
-<h2>Data Provider Transfer Restrictions Report</h2>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12">
+      <h2 class="text-center">Data Provider Transfer Restrictions Report</h2>
+    </div>
+  </div>
 
-<% if @providers.empty? || @providers.size < 2 %>
+  <div class="row">
+    <div class="col-xs-12">
+      <% if @providers.empty? || @providers.size < 2 %>
 
-There is no information to show at this time.
+        There is no information to show at this time.
 
-<% else %>
+      <% else %>
 
-<p class="medium_paragraphs">
-This table shows which file transfers are allowed
-between Data Providers. Each cell of the table
-has two symbols, where <%= o_icon %> means <em>allowed</em>
-and <%= times_icon %> means <em>not allowed</em>.
-Transfers will succeed if <strong>both</strong> symbols
-show up as <%= o_icon %>&nbsp;<%= o_icon %>.
-</p>
+      <p>
+      This table shows which file transfers are allowed
+      between Data Providers. Each cell of the table
+      has two symbols, where <%= o_icon %> means <em>allowed</em>
+      and <%= times_icon %> means <em>not allowed</em>.
+      Transfers will succeed if <strong>both</strong> symbols
+      show up as <%= o_icon %>&nbsp;<%= o_icon %>.
+      </p>
 
-<p class="medium_paragraphs">
-<strong>First symbol</strong>: This one indicate
-restrictions for transfering files between Data Provider
-pairs, independently of the states of any other resources.
-The restrictions are not necessarily symmetrical: it's possible
-to configure Data Providers A and B such that transfers from
-A &rarr; B are allowed (<%= o_icon %>) while transfers
-from B &rarr; A are not (<%= times_icon %>).
-</p>
+      <p>
+      <strong>First symbol</strong>: This one indicate
+      restrictions for transfering files between Data Provider
+      pairs, independently of the states of any other resources.
+      The restrictions are not necessarily symmetrical: it's possible
+      to configure Data Providers A and B such that transfers from
+      A &rarr; B are allowed (<%= o_icon %>) while transfers
+      from B &rarr; A are not (<%= times_icon %>).
+      </p>
 
-<p class="medium_paragraphs">
-<strong>Second symbol</strong>:
-Since transfers are performed by a CBRAIN Portal,
-there are three other factors to take into account:
-</p>
+      <p>
+      <strong>Second symbol</strong>:
+      Since transfers are performed by a CBRAIN Portal,
+      there are three other factors to take into account:
+      </p>
 
-<ul>
-<li>whether or not Data Providers are <em>online</em> or <em>offline</em>;</li>
-<li>whether or not Data Providers are <em>read/write</em> or <em>read only</em>;</li>
-<li>whether or not the current Portal has itself access to each Data Provider.</li>
-</ul>
+      <ul>
+      <li>whether or not Data Providers are <em>online</em> or <em>offline</em>;</li>
+      <li>whether or not Data Providers are <em>read/write</em> or <em>read only</em>;</li>
+      <li>whether or not the current Portal has itself access to each Data Provider.</li>
+      </ul>
 
-<p class="medium_paragraphs">
-In such cases, Data Providers will be annotated with
-<%= html_colorize("(offline)") %>, <%= html_colorize("(read only)", "purple") %> and/or
-<%= html_colorize("(portal has no access)", "purple") %>.
-If all three properties allow the file transfers, the second
-symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
-</p>
+      <p>
+      In such cases, Data Providers will be annotated with
+      <%= html_colorize("(offline)") %>, <%= html_colorize("(read only)", "purple") %> and/or
+      <%= html_colorize("(portal has no access)", "purple") %>.
+      If all three properties allow the file transfers, the second
+      symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
+      </p>
 
-<% num_prov = @providers.size %>
+      <% num_prov = @providers.size %>
 
-<span class="display_cell">
+      <span class="text-center">
 
-  <table>
+        <table class="table table-condensed">
 
-    <tr>
-      <th colspan="2" rowspan="2">&nbsp;&nbsp;&nbsp;&nbsp;&rarr;<br>&uarr;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-      <th colspan="<%= num_prov %>">Destination Data Provider</th>
-    </tr>
+          <tr>
+            <td colspan="2" rowspan="2">&nbsp;&nbsp;&nbsp;&nbsp;&rarr;<br>&uarr;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="<%= num_prov %>">Destination Data Provider</td>
+          </tr>
 
-    <tr class="no_wrap">
-      <% @providers.each do |dp| %>
-        <th class="vertical_text_container">
-          <div class="vertical_text" style="width: 3em">
-           <%= nil and link_to_data_provider_if_accessible(dp, current_user, :html_options => { :class => dp.online? ? nil : 'error_link' }) %>
-           <%= link_to_data_provider_if_accessible(dp, current_user) %>
-           <br>
-           <%= html_colorize("(offline)")             if ! dp.online? %>
-           <%= html_colorize("(read only)", "purple") if   dp.read_only? %>
-           <% if ! dp.rr_allowed_syncing? %>
-             <%= html_colorize("(portal has no access)", "purple") %>
-           <% end %>
-          </div>
-        </th>
+          <tr class="no_wrap">
+            <% @providers.each do |dp| %>
+              <th>
+                 <%= nil and link_to_data_provider_if_accessible(dp, current_user, :html_options => { :class => dp.online? ? nil : 'error_link' }) %>
+                 <%= link_to_data_provider_if_accessible(dp, current_user) %>
+                 <br>
+                 <%= html_colorize("(offline)")             if ! dp.online? %>
+                 <%= html_colorize("(read only)", "purple") if   dp.read_only? %>
+                 <% if ! dp.rr_allowed_syncing? %>
+                   <%= html_colorize("(portal has no access)", "purple") %>
+                 <% end %>
+              </th>
+            <% end %>
+          </tr>
+
+          <% @providers.each_with_index do |dp_row,idx| %>
+            <tr class="no_wrap">
+              <% if idx == 0 %>
+                <td rowspan="<%= num_prov %>" class="vertical_text_container"><div class="vertical_text" style="height: auto; min-height: 14em">Source Data Provider</div></td>
+              <% end %>
+              <th>
+                 <%= nil and link_to_data_provider_if_accessible(dp_row, current_user, :html_options => { :class => dp_row.online? ? nil : 'error_link' }) %>
+                 <%= link_to_data_provider_if_accessible(dp_row, current_user) %>
+                 <%= html_colorize("(offline)")   if ! dp_row.online? %>
+                 <% if ! dp_row.rr_allowed_syncing? %>
+                   <br><%= html_colorize("(portal has no access)", "purple") %>
+                 <% end %>
+              </th>
+              <% @providers.each do |dp_col| %>
+                <%
+                   dp2dp_ok     = dp_row.dp_allows_copy?(dp_col)
+                   portal_dp_ok =
+                      (dp_row.rr_allowed_syncing? && dp_col.rr_allowed_syncing? &&
+                       dp_row.online?             && dp_col.online? &&
+                       ! dp_col.read_only?)
+                %>
+                <%
+                   bgcolor   = nil
+                   bgcolor ||= '#ddffdd' if dp2dp_ok && portal_dp_ok
+                   bgcolor ||= '#eeeeee' if dp_row == dp_col
+                   #bgcolor ||= '#ffdddd'
+                %>
+                <td<%= " style=\"background-color: #{bgcolor}\"".html_safe if bgcolor %>>
+                  <%= dp2dp_ok     ? o_icon : times_icon %>
+                  <%= portal_dp_ok ? o_icon : times_icon %>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+
+        </table>
+
+        <%= center_legend("Copying or moving files:", [ [o_icon, "allowed"], [times_icon, "not allowed"] ] ) %>
+
+      </span>
+
       <% end %>
-    </tr>
-
-    <% @providers.each_with_index do |dp_row,idx| %>
-      <tr class="no_wrap">
-        <% if idx == 0 %>
-          <th rowspan="<%= num_prov %>" class="vertical_text_container"><div class="vertical_text" style="height: auto; min-height: 14em">Source Data Provider</div></th>
-        <% end %>
-        <th>
-           <%= nil and link_to_data_provider_if_accessible(dp_row, current_user, :html_options => { :class => dp_row.online? ? nil : 'error_link' }) %>
-           <%= link_to_data_provider_if_accessible(dp_row, current_user) %>
-           <%= html_colorize("(offline)")   if ! dp_row.online? %>
-           <% if ! dp_row.rr_allowed_syncing? %>
-             <br><%= html_colorize("(portal has no access)", "purple") %>
-           <% end %>
-        </th>
-        <% @providers.each do |dp_col| %>
-          <%
-             dp2dp_ok     = dp_row.dp_allows_copy?(dp_col)
-             portal_dp_ok =
-                (dp_row.rr_allowed_syncing? && dp_col.rr_allowed_syncing? &&
-                 dp_row.online?             && dp_col.online? &&
-                 ! dp_col.read_only?)
-          %>
-          <%
-             bgcolor   = nil
-             bgcolor ||= '#ddffdd' if dp2dp_ok && portal_dp_ok
-             bgcolor ||= '#eeeeee' if dp_row == dp_col
-             #bgcolor ||= '#ffdddd'
-          %>
-          <td<%= " style=\"background-color: #{bgcolor}\"".html_safe if bgcolor %>>
-            <%= dp2dp_ok     ? o_icon : times_icon %>
-            <%= portal_dp_ok ? o_icon : times_icon %>
-          </td>
-        <% end %>
-      </tr>
-    <% end %>
-
-  </table>
-
-  <%= center_legend("Copying or moving files:", [ [o_icon, "allowed"], [times_icon, "not allowed"] ] ) %>
-
-</span>
-
-<% end %>
-
+    </div>
+  </div>
+</div>

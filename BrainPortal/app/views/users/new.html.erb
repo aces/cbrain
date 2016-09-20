@@ -24,79 +24,115 @@
 
 <% title 'Add New User' %>
 
-<h2>Add New User</h2>
+<div class="container-fluid">
 
-<%= error_messages_for @user %>
-
-<%= form_for @user, :as => :user, :url => { :action => "create" }, :datatype => "script" do |f| -%>
-
-  <div class="generalbox">
-
-    <h5>Basic Information</h5>
-
-    <p><%= f.label :full_name, "Full Name" %><br/>
-    <%= f.text_field :full_name %>
-
-    <p><%= f.label :login, "Login" %><br/>
-    <%= f.text_field :login %><br>
-    <span class="field_explanation">For <strong>Tom Jones</strong>, use <strong>tjones</strong>, not 'tom' or 'jones'.</span>
-
-    <p><%= f.label :email, "Email" %><br/>
-    <%= f.text_field :email %>
-
-    <p>
-      <%= f.label :city, "City" %><br/>
-      <%= f.text_field :city %>
-
-    <p>
-      <%= f.label :country, "Country" %><br/>
-      <%= f.text_field :country %>
-
-    <p><%= f.label :time_zone, "Time Zone" %><br/>
-    <%= f.time_zone_select :time_zone,
-        ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
-        { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
-          :include_blank => true }
-    %>
-
-    <p><%= f.label :type, "Type" %><br/>
-    <%= f.select :type, roles_for_user(current_user) %>
-
-    <% if current_user.has_role? :admin_user %>
-      <p><%= f.label :site_id, "Site" %><br/>
-      <%= site_select "user[site_id]",{}, :prompt => "(Select a site)" %>
-    <% end %>
-
-    <p><%= f.label :password, "Password" %><br/>
-    <%= f.password_field :password %>
-
-    <p><%= f.label :password_confirmation, "Confirm Password" %><br/>
-    <%= f.password_field :password_confirmation %>
-
-    <p><label for="no_password_reset_needed">No need to reset initial password:</label>
-    <%= check_box_tag :no_password_reset_needed, "1", params[:no_password_reset_needed] == "1" %>
-
+  <div class="row">
+    <div class="col-xs-12">
+      <%= error_messages_for @user %>
+    </div>
   </div>
 
-  <div class="box_spacer"></div>
 
-  <div class="generalbox">
-    <h5>Project Membership</h5>
-    <%= render :partial => 'shared/group_tables', :locals => {:model => @user} %>
+  <%= form_for @user, :as => :user, :url => { :action => "create" }, :datatype => "script", :class => "form-horizontal" do |f| -%>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <h3 class="text-center">Add New User</h3>
+    </div>
   </div>
 
-  <div class="box_spacer"></div>
+  <div class="row">
+    <div class="col-xs-4">
+      <div class="panel panel-primary">
+        <div class="panel-heading">Basic Information <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#basic-panel"></span></div>
+        <div class="panel-body collapse in" id="basic-panel">
+          <div class="row">
+            <div class="col-xs-4"><%= f.label :full_name, "Full Name" %></div>
+            <div class="col-xs-8"><%= f.text_field :full_name, :class => "form-control"%></div>
+          </div>
+          <div class="row">
+            <div class="col-xs-4"><%= f.label :login, "Login" %></div>
+            <div class="col-xs-8">
+              <%= f.text_field :login, :class => "form-control"%>
+              For <strong>Tom Jones</strong>, use <strong>tjones</strong>, not 'tom' or 'jones'.
+            </div>
 
-  <div class="generalbox">
-    <h5>Access Profiles</h5>
-    <% AccessProfile.order(:name).all.each do |access_profile| %>
-      <%= check_box_tag "user[access_profile_ids][]", access_profile.id, false, :id => "ap_#{access_profile.id}" %>
-      <label for="<%= "ap_#{access_profile.id}" %>"><%= access_profile_label(access_profile) %></label>
-      <p>
-    <% end %>
+          </div>
+          <div class="row">
+            <div class="col-xs-4"><%= f.label :email, "Email" %></div>
+            <div class="col-xs-8"><%= f.text_field :email, :class => "form-control" %></div>
+          </div>
+          <div class="row">
+            <div class="col-xs-4"><%= f.label :city, "City" %></div>
+            <div class="col-xs-8"><%= f.text_field :city, :class => "form-control" %></div>
+          </div>
+          <div class="row">
+            <div class="col-xs-4"><%= f.label :country, "Country" %></div>
+            <div class="col-xs-8"><%= f.text_field :country, :class => "form-control" %></div>
+          </div>
+          <div class="row">
+            <div class="col-xs-4"><%= f.label :time_zone, "Time Zone" %></div>
+            <div class="col-xs-8">
+              <%= f.time_zone_select :time_zone,
+                  ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
+                  { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
+                    :include_blank => true }, { :class => "form-control" }
+              %>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-4"><%= f.label :type, "Type" %></div>
+            <div class="col-xs-8"><%= f.select :type, roles_for_user(current_user), {}, { :class => "form-control" } %></div>
+          </div>
+          <% if current_user.has_role? :admin_user %>
+            <div class="row">
+              <div class="col-xs-4"><%= f.label :site_id, "Site" %></div>
+              <div class="col-xs-8"><%= site_select "user[site_id]",{}, :prompt => "(Select a site)", :class => "form-control" %></div>
+            </div>
+          <% end %>
+          <div class="row">
+            <div class="col-xs-4"><%= f.label :password, "Password" %></div>
+            <div class="col-xs-8"><%= f.password_field :password, :class => "form-control" %></div>
+          </div>
+          <div class="row">
+            <div class="col-xs-4"><%= f.label :password_confirmation, "Confirm Password" %></div>
+            <div class="col-xs-8"><%= f.password_field :password_confirmation, :class => "form-control" %></div>
+          </div>
+          <div class="row">
+            <div class="col-xs-4"><label for="no_password_reset_needed">No need to reset initial password:</label></div>
+            <div class="col-xs-8"><%= check_box_tag :no_password_reset_needed, "1", params[:no_password_reset_needed] == "1", { :class => "form-control" } %></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xs-4">
+      <%= render :partial => 'shared/group_tables', :locals => {:model => @user} %>
+    </div>
+
+    <div class="col-xs-4">
+      <div class="panel panel-primary">
+          <div class="panel-heading">Access Profiles <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#profiles-panel"></span></div>
+          <div class="panel-body collapse in" id="profiles-panel">
+            <% AccessProfile.order(:name).all.each do |access_profile| %>
+              <div class="row">
+                <div class="col-xs-2"><%= check_box_tag "user[access_profile_ids][]", access_profile.id, false, :id => "ap_#{access_profile.id}", :class => "form-control" %></div>
+                <div class="col-xs-10"><label for="<%= "ap_#{access_profile.id}" %>"><%= access_profile_label(access_profile) %></label></div>
+              </div>
+
+
+            <% end %>
+          </div>
+        </div>
+    </div>
   </div>
 
-  <p><%= submit_tag 'Create User' %>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= f.submit "Create User", :class => "btn btn-primary btn-block" %>
+    </div>
+  </div>
+
+</div>
 
 <% end %>
-

@@ -25,259 +25,344 @@
 
 <% title 'Add New Server' %>
 
-<h2>Add New Server</h2>
+<div class="container-fluid">
+	<%= form_for @bourreau, :as => :bourreau, :url => { :action => "create" }, :datatype => "script", :class => "form-horizontal" do |f| -%>
+		<div class="row">
+			<div class="col-xs-12">
+				<h2 class="text-center">Add New Server <a href="<%= notes_bourreaux_path %>" target="_blank"><span class="glyphicon glyphicon-question-sign"></span></a></h2>
+			</div>
+		</div>
 
-<%= error_messages_for @bourreau, :object_name => "server" %>
+		<div class="row">
+			<div class="col-xs-12">
+				<%= error_messages_for @bourreau, :object_name => "server" %>
+			</div>
+		</div>
 
-<%= form_for @bourreau, :as => :bourreau, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+		<div class="row">
+			<div class="col-xs-4">
+				<div class="panel panel-primary">
+					<div class="panel-heading">Basic Info <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#basic-panel"></span></div>
+					<div class="panel-body dropdown in" id="basic-panel">
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :name %></div>
+							<div class="col-xs-8">
+								<%= f.text_field :name, :class => "form-control" %>
+								Important note: this name must also be changed accordingly in the config file <em>Bourreau/config/initializers/config_bourreau.rb</em> for this server to restart properly later on.
+							</div>
+						</div>
 
-  <div class="generalbox">
-      <p><%= f.label :name %><br/>
-      <%= f.text_field :name %><br/>
-      <div class="field_explanation">
-        Important note: this name must also be changed accordingly in the config file
-	  <em>Bourreau/config/initializers/config_bourreau.rb</em>
-	  for this server to restart properly later on.
-	</div>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :system_from_email, "System 'From' reply address" %></div>
+							<div class="col-xs-8">
+								<%= f.text_field :system_from_email, :class => "form-control" %>
+								If set, messages sent automatically by this system will contain this return address.
+							</div>
+						</div>
 
-	<p><%= f.label :system_from_email, "System 'From' reply address" %><br/>
-	<%= f.text_field :system_from_email %><br/>
-	<div class="field_explanation">If set, messages sent automatically by this system will contain this return address.</div>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :description %></div>
+							<div class="col-xs-8">
+								<%= f.text_area :description, :rows => 4, :class => "form-control" %>
+								The first line should be a short summary, and the rest are for any special notes for the users.
+							</div>
+						</div>
 
-	<p><%= f.label :description %><br/>
-	<%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
-	<div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :user_id, "Owner" %></div>
+							<div class="col-xs-8"><%= user_select("bourreau[user_id]", { :selector => @bourreau }, { :disabled => ! current_user.has_role?(:admin_user), :class => "form-control" } ) %></div>
+						</div>
 
-	<p><%= f.label :user_id, "Owner" %><br/>
-	<%= user_select("bourreau[user_id]", { :selector => @bourreau }, { :disabled => ! current_user.has_role?(:admin_user) } ) %>
-
-	<p><%= f.label :group_id, "Project" %><br/>
-	<%= group_select("bourreau[group_id]", :selector => @bourreau) %>
-
-	<p><%= f.label :online, "Status" %><br/>
-	<%= f.select :online, { "Online" => true, "Offline" => false }, :prompt => "Select status" %>
-
-	<p><%= f.label :rr_timeout, "Timeout for is alive check (seconds)" %><br/>
-	<%= f.text_field :rr_timeout, :size => 5 %>
-
-	<span title="Time zone where this server is located.">
-	  <p><%= f.label :time_zone, "Time Zone" %><br/>
-	  <%= f.time_zone_select :time_zone,
-	    ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
-	    { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
-	      :include_blank => true }
-	   %>
-	</span>
-
-	<p>
-	<fieldset class="groupentry">
-	  <legend>SSH Remote Control Configuration</legend>
-	  <p><%= f.label :ssh_control_host, "Hostname" %><br/>
-	         <%= f.text_field :ssh_control_host %>
-
-        <p><%= f.label :ssh_control_user, "Username" %><br/>
-               <%= f.text_field :ssh_control_user %>
-
-         <p><%= f.label :ssh_control_port, "Port Number" %><br/>
-		     <%= f.text_field :ssh_control_port, :size => 6 %>
-
-         <p><%= f.label :ssh_control_rails_dir, "Rails Server Directory" %><br/>
-		     <%= f.text_field :ssh_control_rails_dir, :size => 60 %>
-
-	    <p><%= f.label :proxied_host, "Second-level effective host" %><br/>
-		     <%= f.text_field :proxied_host %><br/>
-		<div class="field_explanation">This is an experimental field for advanced and non-standard setups
-		  where the remote hostname, above, is actually just a login node and
-		  the real host where we run the server is one step further.</div>
-	</fieldset>
-
-	<p>
-	<fieldset class="groupentry">
-	  <legend>Tunnelling Configuration</legend>
-
-	   <p><%= f.label :tunnel_mysql_port, "Database Server Remote Tunnel Port" %><br/>
-	          <%= f.text_field :tunnel_mysql_port, :size => 6 %>
-
-	    <p><%= f.label :tunnel_actres_port, "ActiveResource Remote Tunnel Port" %><br/>
-	           <%= f.text_field :tunnel_actres_port, :size => 6 %>
-	</fieldset>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :group_id, "Project" %></div>
+							<div class="col-xs-8"><%= group_select("bourreau[group_id]", { :selector => @bourreau }, { :class => "form-control" }) %></div>
+						</div>
 
 
-	<p>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :online, "Status" %></div>
+							<div class="col-xs-8"><%= f.select :online, { "Online" => true, "Offline" => false }, { :prompt => "Select status" } , :class => "form-control" %></div>
+						</div>
 
-	<fieldset class="groupentry">
-	  <legend>Cache Management Configuration</legend>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :rr_timeout, "Timeout for is alive check (seconds)" %></div>
+							<div class="col-xs-8"><%= f.text_field :rr_timeout, :class => "form-control" %></div>
+						</div>
 
-	  <p><%= f.label :dp_cache_dir, "Path to Data Provider caches" %><br/>
-	         <%= f.text_field :dp_cache_dir, :size => 60 %><br/>
-	  <div class="field_explanation">Warning! Changing this field will result in resetting the synchronization
-	      status of all files from all Data Providers! Also, the Rails app will have to
-	      be restarted, and all files in that directory will be erased!</div>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :time_zone, "Time Zone" %></div>
+							<div class="col-xs-8" title="Time zone where this server is located.">
+								<%= f.time_zone_select :time_zone,
+					    			ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
+					    			{ :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
+					      		:include_blank => true }, :class => "form-control"
+					   		%>
+					   	</div>
+						</div>
+					</div>
+				</div>
 
-	  <p><%= f.label :spaced_dp_ignore_patterns, "Patterns for filenames to ignore" %><br/>
-	         <%= f.text_field :spaced_dp_ignore_patterns, :size => 80 %><br/>
-	  <div class="field_explanation">Separate several patterns with spaces; each pattern can contain single '*'s, but no '/'s or special characters.</div>
+				<div class="panel panel-primary">
+					<div class="panel-heading">Cache Management Configuration <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#cache-panel"></span></div>
+					<div class="panel-body collapse in" id="cache-panel">
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :dp_cache_dir, "Path to Data Provider caches" %></div>
+							<div class="col-xs-8">
+								<%= f.text_field :dp_cache_dir, :class => "form-control" %>
+								Warning! Changing this field will result in resetting the synchronization status of all files from all Data Providers! Also, the Rails app will have to be restarted, and all files in that directory will be erased!
+								</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :spaced_dp_ignore_patterns, "Patterns for filenames to ignore" %></div>
+							<div class="col-xs-8"><%= f.text_field :spaced_dp_ignore_patterns, :class => "form-control" %></div>
+						</div>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :cache_trust_expire, "Cache Expiration Timeout" %></div>
+							<div class="col-xs-8">
+								<%= f.select :cache_trust_expire, [
+											            [ "Never",        "0"                  ],
+											            [ "Six hours",     6.hours.to_i.to_s   ],
+											            [ "Twelve hours", 12.hours.to_i.to_s   ],
+											            [ "One day",       1.day.to_i.to_s     ],
+											            [ "Three days",    3.days.to_i.to_s    ],
+											            [ "One week",      1.week.to_i.to_s    ],
+											            [ "Two weeks",     2.weeks.to_i.to_s   ],
+											            [ "One month",     1.month.to_i.to_s   ],
+											            [ "Two months",    2.months.to_i.to_s  ],
+											            [ "Three months",  3.months.to_i.to_s  ],
+											            [ "Six months",    6.months.to_i.to_s  ]
+				          																],
+				          						{}, :class => "form-control"
+				         %>
+				         This means that in the execution server's cache, files that have been recorded as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy and will be re-synchronized the next time they are accessed. Set this to a value less than <em>N</em> if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days.
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 
-        <p><%= f.label :cache_trust_expire, "Cache Expiration Timeout" %><br/>
-	          <%= f.select :cache_trust_expire, [
-	              [ "Never",        "0"                  ],
-	              [ "Six hours",     6.hours.to_i.to_s   ],
-	              [ "Twelve hours", 12.hours.to_i.to_s   ],
-	              [ "One day",       1.day.to_i.to_s     ],
-	              [ "Three days",    3.days.to_i.to_s    ],
-	              [ "One week",      1.week.to_i.to_s    ],
-	              [ "Two weeks",     2.weeks.to_i.to_s   ],
-	              [ "One month",     1.month.to_i.to_s   ],
-	              [ "Two months",    2.months.to_i.to_s  ],
-	              [ "Three months",  3.months.to_i.to_s  ],
-	              [ "Six months",    6.months.to_i.to_s  ]
-	          ]
-	          %></br>
-	   <div class="field_explanation">This means that in the execution server's cache, files that have been recorded
-	     as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy
-	     and will be re-synchronized the next time they are accessed. Set this to a value less than <em>N</em>
-	     if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days.</div>
-      </fieldset>
+			<div class="col-xs-4">
+				<div class="panel panel-primary">
+					<div class="panel-heading">SSH Remote Control Configuration <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#ssh-panel"></span></div>
+					<div class="panel-body collapse in" id="ssh-panel">
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :ssh_control_host, "Hostname" %></div>
+							<div class="col-xs-8"><%= f.text_field :ssh_control_host, :class => "form-control" %></div>
+						</div>
 
-      <p>
-	<fieldset class="groupentry">
-	  <legend>Tool Version Configuration</legend>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :ssh_control_user, "Username" %></div>
+							<div class="col-xs-8"><%= f.text_field :ssh_control_user, :class => "form-control" %></div>
+						</div>
 
-	  <% if @bourreau.new_record? %>
-         <p><label>A tool configuration for this Execution Server can be made once the server is created.</label>
-	  <% else %>
-	    <p><label>Common configuration for all tasks:</label> <%= link_to "Edit", new_tool_config_path( :bourreau_id => @bourreau.id ) %>
-	  <% end %>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :ssh_control_port, "Port Number" %></div>
+							<div class="col-xs-8"><%= f.text_field :ssh_control_port, :class => "form-control" %></div>
+						</div>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :ssh_control_rails_dir, "Rails Server Directory" %></div>
+							<div class="col-xs-8"><%= f.text_field :ssh_control_rails_dir, :class => "form-control" %></div>
+						</div>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :proxied_host, "Second-level effective host" %></div>
+							<div class="col-xs-8">
+								<%= f.text_field :proxied_host, :class => "form-control" %>
+								This is an experimental field for advanced and non-standard setups where the remote hostname, above, is actually just a login node and the real host where we run the server is one step further.
+							</div>
+						</div>
 
-     </fieldset>
+					</div>
+				</div>
 
-	<p>
 
-	<fieldset class="groupentry">
-	  <legend>Cluster Management System Configuration</legend>
-	  <p><%= f.label :cms_class, "Type of cluster" %><br/>
-	  <%= f.select :cms_class, [
-                    [ "(Unconfigured)",  "" ],
-                    [ "Sun GridEngine",  "ScirSge" ],
-                    [ "PBS",             "ScirPbs" ],
-                    [ "MOAB",            "ScirMoab" ],
-                    [ "LSF",             "ScirLsf" ],
-                    [ "Sharcnet custom", "ScirSharcnet" ],
-                    [ "UNIX processes",  "ScirUnix" ],
-                    [ "Amazon EC2",  "ScirAmazon" ]
-	          ]
-	  %>
+				<div class="panel panel-primary">
+					<div class="panel-heading">Tool Version Configuration <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#tool-panel"></span></div>
+					<div class="panel-body collapse in" id="tool-panel">
+						<% if @bourreau.new_record? %>
+		         <label>A tool configuration for this Execution Server can be made once the server is created.</label>
+			  		<% else %>
+			    		<label>Common configuration for all tasks:</label> <%= link_to "Edit", new_tool_config_path( :bourreau_id => @bourreau.id ) %>
+			  		<% end %>
+					</div>
+				</div>
 
-	  <p><%= f.label :cms_shared_dir, "Path to shared work directory" %><br/>
-	  <%= f.text_field :cms_shared_dir, :size => 60 %><br/>
-	  <div class="field_explanation">Mandatory. This directory must be visible and writable from all nodes.
-	         This is were the work subdirectories for all tasks will be created.</div>
 
-	  <p><%= f.label :cms_default_queue, "Default queue name" %><br/>
-	  <%= f.text_field :cms_default_queue %><br/>
-	  <div class="field_explanation">Optional.</div>
+				<div class="panel panel-primary">
+					<div class="panel-heading">Task Limits <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#task-panel"></span></div>
+					<div class="panel-body collapse in" id="task-panel">
+						<% if @bourreau.new_record? %>
+						  <label>Task limits can be set once the Execution Server is created.</label>
+						<% else %>
 
-	  <p><%= f.label :cms_extra_qsub_args, "Extra 'qsub' options" %><br/>
-	  <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
-	  <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
+							<div class="row">
+								<div class="col-xs-2"><label for="meta_task_limit_total">Maximum total number of active tasks:</label></div>
+								<div class="col-xs-10">
+								  <%= select_tag 'meta[task_limit_total]',
+								      options_for_select( [ [ "Unlimited", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
+								      	@bourreau.meta[:task_limit_total] )
+								  %>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-2"><label for="meta_task_limit_user">Default maximum number of active tasks for each user:</label></div>
+								<div class="col-xs-10">
+								  <%= select_tag 'meta[task_limit_user_default]',
+								      options_for_select( [ [ "Server's max", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
+								                          @bourreau.meta[:task_limit_user_default] )
+								  %>
+								  (Unless specified below)
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-2"><label>Override maximum number of active tasks per user:</label></div>
+								<div class="col-xs-10">
+								  <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'simple table', :td_class => 'right', :cols => 4, :fill_by_columns => true) do |user,r,c| %>
+								    <% metkey = "task_limit_user_#{user.id}".to_sym %>
+								    <%= link_to_user_with_tooltip(user) %>:
+								    <td class="some_left_right_padding">
+								    <%= select_tag "meta[#{metkey}]",
+								        options_for_select( [ [ "Default", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 150 200 250 300 400 500 750 1000 ) ,
+								                            @bourreau.meta[metkey] )
+								    %></td>
+								  <% end %>
+								</div>
+							</div>
+						<% end %>
+					</div>
 
-	</fieldset>
+				</div>
+			</div>
 
-	<p>
+			<div class="col-xs-4">
+				<div class="panel panel-primary">
+					<div class="panel-heading">Tunnelling Configuration <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#tunneling-panel"></span></div>
+					<div class="panel-body collapse in" id="tunneling-panel">
+						<div class="row">
+							<div class="col-xs-10"><%= f.label :tunnel_mysql_port, "Database Server Remote Tunnel Port" %></div>
+							<div class="col-xs-2"><%= f.text_field :tunnel_mysql_port, :class => "form-control" %></div>
+						</div>
+						<div class="row">
+							<div class="col-xs-10"><%= f.label :tunnel_actres_port, "ActiveResource Remote Tunnel Port" %></div>
+							<div class="col-xs-2"><%= f.text_field :tunnel_actres_port, :class => "form-control" %></div>
+						</div>
+					</div>
+				</div>
 
-	<fieldset class="groupentry">
-	  <legend>Bourreau Workers Configuration</legend>
+				<div class="panel panel-primary">
+					<div class="panel-heading">Cluster Management System Configuration <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#cluster-panel"></span></div>
+					<div class="panel-body collapse in" id="cluster-panel">
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :cms_class, "Type of cluster" %></div>
+							<div class="col-xs-8">
+								<%= f.select :cms_class, [
+							            [ "(Unconfigured)",  "" ],
+							            [ "Sun GridEngine",  "ScirSge" ],
+							            [ "PBS",             "ScirPbs" ],
+							            [ "MOAB",            "ScirMoab" ],
+							            [ "LSF",             "ScirLsf" ],
+							            [ "Sharcnet custom", "ScirSharcnet" ],
+							            [ "UNIX processes",  "ScirUnix" ],
+							            [ "Amazon EC2",  "ScirAmazon" ]
+							          ], {}, :class => "form-control"
+							  %>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :cms_shared_dir, "Path to shared work directory" %></div>
+							<div class="col-xs-8">
+								<%= f.text_field :cms_shared_dir, :class => "form-control" %>
+								Mandatory. This directory must be visible and writable from all nodes. This is were the work subdirectories for all tasks will be created.
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :cms_default_queue, "Default queue name" %></div>
+							<div class="col-xs-8">
+								<%= f.text_field :cms_default_queue, :class => "form-control" %>
+								Optional
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :cms_extra_qsub_args, "Extra 'qsub' options" %></div>
+							<div class="col-xs-8">
+								<%= f.text_field :cms_extra_qsub_args, :class => "form-control" %>
+								Optional. Careful, this is inserted as-is in the command-line for submitting jobs.
+							</div>
+						</div>
+					</div>
+				</div>
 
-	  <p><%= f.label :workers_instances, "Number of Workers" %><br/>
-	  <%= f.select :workers_instances, [
-	            [ "None (for debug)",  0 ],
-	            [ "1",                 1 ],
-	            [ "2",                 2 ],
-	            [ "3",                 3 ],
-	            [ "4",                 4 ],
-	            [ "5",                 5 ],
-	            [ "10",                10 ],
-	            [ "20",                20 ]
-	      ]
-	  %>
+				<div class="panel panel-primary">
+					<div class="panel-heading">Bourreau Workers Configuration <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#workers-panel"></span></div>
+					<div class="panel-body collapse in">
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :workers_instances, "Number of Workers" %></div>
+							<div class="col-xs-8">
+								<%= f.select :workers_instances, [
+							            [ "None (for debug)",  0 ],
+							            [ "1",                 1 ],
+							            [ "2",                 2 ],
+							            [ "3",                 3 ],
+							            [ "4",                 4 ],
+							            [ "5",                 5 ],
+							            [ "10",                10 ],
+							            [ "20",                20 ]
+							      ], {}, :class => "form-control"
+							  %>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :workers_chk_time, "Check interval" %></div>
+							<div class="col-xs-8">
+									  <%= f.select :workers_chk_time, [
+									            [ "5 seconds",               5 ],
+									            [ "10 seconds",              10 ],
+									            [ "30 seconds",              30 ],
+									            [ "1 minute (recommended)",  60 ],
+									            [ "2 minutes",               120 ],
+									            [ "5 minutes",               300 ],
+									            [ "15 minutes",              900 ],
+									            [ "1 hour",                  3600 ]
+									        ], {}, :class => "form-control"
+									  %>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :workers_log_to, "Log destination" %></div>
+							<div class="col-xs-8">
+							  <%= f.select :workers_log_to, [
+							            [ "Combined file (recommended)", "combined" ],
+							            [ "Separate files",              "separate" ],
+							            [ "RAILS log",                   "bourreau" ],
+							            [ "RAILS stdout",                "stdout" ],
+							            [ "RAILS stderr",                "stderr" ],
+							            [ "RAILS stdout and stderr",     "stdout|stderr" ],
+							            [ "No logging",                  "none" ]
+							        ], {}, :class => "form-control"
+							  %>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-4"><%= f.label :workers_verbose, "Log verbosity" %></div>
+							<div class="col-xs-8">
+							  <%= f.select :workers_verbose, [
+							            [ "Normal",      1 ],
+							            [ "Debug info",  2 ]
+							        ], {}, :class => "form-control"
+							  %>
+							  This option has no effect if the logs are sent to the RAILS log.
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 
-	  <p><%= f.label :workers_chk_time, "Check interval" %><br/>
-	  <%= f.select :workers_chk_time, [
-	            [ "5 seconds",               5 ],
-	            [ "10 seconds",              10 ],
-	            [ "30 seconds",              30 ],
-	            [ "1 minute (recommended)",  60 ],
-	            [ "2 minutes",               120 ],
-	            [ "5 minutes",               300 ],
-	            [ "15 minutes",              900 ],
-	            [ "1 hour",                  3600 ]
-	        ]
-	  %>
+		</div>
 
-	  <p><%= f.label :workers_log_to, "Log destination" %><br/>
-	  <%= f.select :workers_log_to, [
-	            [ "Combined file (recommended)", "combined" ],
-	            [ "Separate files",              "separate" ],
-	            [ "RAILS log",                   "bourreau" ],
-	            [ "RAILS stdout",                "stdout" ],
-	            [ "RAILS stderr",                "stderr" ],
-	            [ "RAILS stdout and stderr",     "stdout|stderr" ],
-	            [ "No logging",                  "none" ]
-	        ]
-	  %>
-
-	  <p><%= f.label :workers_verbose, "Log verbosity" %><br/>
-	  <%= f.select :workers_verbose, [
-	            [ "Normal",      1 ],
-	            [ "Debug info",  2 ]
-	        ]
-	  %><br/>
-	  <div class="field_explanation">This option has no affect if the logs are sent to the RAILS log.</div>
-
-	</fieldset>
-
-	<p>
-
-	<fieldset class="groupentry">
-	<legend>Task Limits</legend>
-
-	<% if @bourreau.new_record? %>
-
-	  <p><label>Task limits can be set once the Execution Server is created.</label>
-
-	<% else %>
-
-	  <p><label for="meta_task_limit_total">Maximum total number of active tasks:</label>
-	  <%= select_tag 'meta[task_limit_total]',
-	      options_for_select( [ [ "Unlimited", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
-	      	@bourreau.meta[:task_limit_total] )
-	  %>
-
-	  <p><label for="meta_task_limit_user">Default maximum number of active tasks for each user:</label>
-	  <%= select_tag 'meta[task_limit_user_default]',
-	      options_for_select( [ [ "Server's max", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
-	                          @bourreau.meta[:task_limit_user_default] )
-	  %>
-	  <div class="field_explanation">(Unless specified below)</div>
-
-	  <p><label>Override maximum number of active tasks per user:</label>
-	  <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'simple', :td_class => 'right', :cols => 4, :fill_by_columns => true) do |user,r,c| %>
-	    <% metkey = "task_limit_user_#{user.id}".to_sym %>
-	    <%= link_to_user_with_tooltip(user) %>:
-	    <td class="some_left_right_padding">
-	    <%= select_tag "meta[#{metkey}]",
-	        options_for_select( [ [ "Default", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 150 200 250 300 400 500 750 1000 ) ,
-	                            @bourreau.meta[metkey] )
-	    %></td>
-	  <% end %>
+		<div class="row">
+			<div class="col-xs-12">
+				<%= submit_tag 'Create New Server', :class => "btn btn-primary btn-block" %>
+			</div>
+		</div>
 
 	<% end %>
-
-	</fieldset>
-	</div>
-
-    <p><%= submit_tag 'Create New Server' %></p>
-
-    <% end -%>
-
-    <%= render :partial => "notes" %>
+</div>

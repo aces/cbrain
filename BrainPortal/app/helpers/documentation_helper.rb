@@ -34,9 +34,9 @@ module DocumentationHelper
   def help_button(key, display = "Help")
     doc = HelpDocument.find_by_key(key) || HelpDocument.from_existing_file!(key)
     if doc
-      overlay_ajax_link display, doc_path(doc), :class  => "button"
+      overlay_ajax_link display, doc_path(doc), :class  => "btn btn-primary"
     elsif HelpDocument.can_edit?(current_user)
-      overlay_ajax_link display, new_doc_path(:key => key), :class => "button grayed-out"
+      overlay_ajax_link display, new_doc_path(:key => key), :class => "btn btn-primary grayed-out"
     end
   end
 end

@@ -24,46 +24,60 @@
 
 <% custom_filter ||= @custom_filter %>
 
-Task<br>
-<%= task_type_select("data[type]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name).sort, :selector => custom_filter.data["type"], :include_top => true }, :multiple => true, :size => 10) %>
-
-<p>
-Status<br>
-<%= task_status_select("data[status]", {:selector => custom_filter.data["status"]}, :multiple => true, :size => 10) %>
-
-<p>
-Description<br>
-<%= select :data, :description_type, [["Don't filter description", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => custom_filter.data["description_type"] %> <%= text_field_tag "data[description_term]", custom_filter.data["description_term"] %>
-
-<p>
-Owner<br>
-<%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => custom_filter.data["user_id"] }, :include_blank => true %>
-
-<p>
-Execution Server<br>
-<%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => custom_filter.data["bourreau_id"] }, :include_blank => true %>
-</p>
-
-Filtering by date<br>
-<%= date_range_panel(custom_filter[:data] || {}, "data") %>
-
-<p>
-Archiving status<br>
-<%= select :data, :archiving_status,
-[
-  ["Don't filter by archiving status", ''        ],
-  ["Not archived",                     'none'    ],
-  ["Archived on cluster",              'cluster' ],
-  ["Archived as file",                 'file'    ]
-], :selected => custom_filter.data["archiving_status"] %>
-
-<p>
-Work Directory status<br>
-<%= select :data, :wd_status,
-[
-  [ "Don't filter by work directory status",    ''           ],
-  [ "Use another task's",                       'shared'     ],
-  [ "Have own Work Directory",                  'not_shared' ],
-  [ "Work Directory exists on cluster",         'exists'     ],
-  [ "Work Directory does not exist on cluster", 'none'       ]
-], :selected => custom_filter.data["wd_status"] %>
+<div class="row">
+  <div class="col-xs-4"><label>Task</label></div>
+  <div class="col-xs-8">
+    <%= task_type_select("data[type]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name)).sort, :selector => custom_filter.data["type"], :include_top => true }, :multiple => true, :class => "form-control") %>
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-4"><label>Status</label></div>
+  <div class="col-xs-8"><%= task_status_select("data[status]", {:selector => custom_filter.data["status"]}, :multiple => true, :class => "form-control") %></div>
+</div>
+<div class="row">
+  <div class="col-xs-4"><label>Description</label></div>
+  <div class="col-xs-4">
+    <%= select :data, :description_type, [["Don't filter description", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], { :selected => custom_filter.data["description_type"] }, { :class => "form-control" } %>
+  </div>
+  <div class="col-xs-4">
+    <%= text_field_tag "data[description_term]", custom_filter.data["description_term"], { :class => "form-control" } %>
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-4"><label>Owner</label></div>
+  <div class="col-xs-8">
+    <%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => custom_filter.data["user_id"] }, { :include_blank => true, :class => "form-control" } %>
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-4"><label>Execution Server</label></div>
+  <div class="col-xs-8"><%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => custom_filter.data["bourreau_id"] }, { :include_blank => true, :class => "form-control" } %></div>
+</div>
+<div class="row">
+  <div class="col-xs-4"><label>Filtering by date</label></div>
+  <div class="col-xs-8"><%= date_range_panel(custom_filter[:data] || {}, "data") %></div>
+</div>
+<div class="row">
+  <div class="col-xs-4"><label>Archiving status</label></div>
+  <div class="col-xs-8">
+    <%= select :data, :archiving_status,
+                [
+                  ["Don't filter by archiving status", ''        ],
+                  ["Not archived",                     'none'    ],
+                  ["Archived on cluster",              'cluster' ],
+                  ["Archived as file",                 'file'    ]
+                ], { :selected => custom_filter.data["archiving_status"] }, { :class => "form-control" } %>
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-4"><label>Work Directory status</label></div>
+  <div class="col-xs-8"><%= select :data, :wd_status,
+    [
+      [ "Don't filter by work directory status",    ''           ],
+      [ "Use another task's",                       'shared'     ],
+      [ "Have own Work Directory",                  'not_shared' ],
+      [ "Work Directory exists on cluster",         'exists'     ],
+      [ "Work Directory does not exist on cluster", 'none'       ]
+    ], { :selected => custom_filter.data["wd_status"] }, { :class => "form-control" } %>
+  </div>
+</div>

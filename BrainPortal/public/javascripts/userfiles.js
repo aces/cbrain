@@ -22,6 +22,65 @@
 #
 */
 
+
+$(function() {
+  // Moves Bootstrap modals to the end of the body, at the top level, where they will display properly
+  $('.modal').detach().appendTo('body');
+
+
+  // var params = {
+  //   url:      elem.data('url'),
+  //   method:   elem.data('method')    || 'GET',
+  //   dataType: elem.data('data-type') || 'script',
+  //   ajax:     elem.data('ajax')      || false,
+  //   withSelection:  elem.data('with-selection'),
+  //   emptySelection: elem.data('empty-selection')
+  // };
+
+
+  $('#delete-files').on('click', function(event){
+    var deleteURL = '/userfiles/delete_files';
+
+    var ids = JSON.parse($('.psel-val').attr('value'));
+
+    var authenticity_token_value  = $('#csrf-token').attr('content');
+
+    var data = { file_ids:                        ids,
+                      authenticity_token:         authenticity_token_value,
+                      _psel_val_file_ids:         ids,
+                      name_like:                  $('#name_like').val(),
+                      per_page:                   $('input[name=per_page]').val()
+                    };
+
+
+    alert(data.file_ids);
+    alert(data.authenticity_token);
+    alert(data._psel_val_file_ids);
+    alert(data.name_like);
+    alert(data.per_page);
+
+    $.ajax({
+      url:          deleteURL,
+      type:         'DELETE',
+      data:         data
+    });
+    alert('sent ajax request');
+
+  });
+
+  $('#move-files').on('click', function(event){
+    var moveURL = '/userfiles/change_provider/';
+
+    $.ajax({
+      url:                moveURL,
+      type:              'POST',
+      file_ids:           null,
+      crush_destination:  null
+
+    });
+  });
+});
+
 /*
  * Userfiles client-side behavior
  * Event namespace: .uf
@@ -302,38 +361,6 @@ $(function() {
       clear_selection(true);
 
       return defer(function () { uform.submit(); }).promise();
-    },
-
-    /*
-     * Custom filter operations; generic CRUD for custom filters using the
-     * corresponding custom filter form (+form+ argument). Note that these
-     * operations are rather bare and inflexible as they rely on +form+ to do
-     * most of their work.
-     */
-    filters: {
-      add: function (form) {
-        return ajax_submit($(form));
-      },
-
-      update: function (form) {
-        return ajax_submit($(form));
-      },
-
-      /*
-       * Note that this function expects the custom filter's 'edit' form, which
-       * contains, in particular, the filter's proper URL
-       */
-      remove: function (form) {
-        return $.ajax({
-          url:         $(form).attr('action'),
-          type:        'DELETE',
-          method:      'DELETE',
-          headers:     {
-            'Accept':       'application/xml, text/xml, text/plain, */*',
-            'Content-Type': 'application/xml'
-          }
-        });
-      }
     },
 
     /*
@@ -828,62 +855,6 @@ $(function() {
             userfiles[move ? 'move' : 'copy'](dialog.children('form')[0]);
             dialog.trigger('close.uf');
           };
-
-        dialog
-          .dialog('option', 'title', title)
-          .dialog('option', 'buttons', buttons);
-      });
-
-    /* Custom filters dialog */
-    $('#filter-dialog')
-      .unbind('open.uf.filter-open')
-      .bind(  'open.uf.filter-open', function (event, source) {
-        var edit    = !$(source).is('#filter-new'),
-            dialog  = $(this),
-            buttons = {},
-            title   = undefined;
-
-        /* fetch the matching custom filters form */
-        $.get($(source).data('overlay-url'), function (html) {
-          var contents = $(html);
-          contents.find('input[type="submit"]').remove();
-
-          dialog
-            .html(contents)
-            .dialog('option', 'position', {
-              my: 'center', at: 'center center+15%', of: window
-            });
-        });
-
-        title = (edit ? 'Edit custom filter' : 'New custom filter');
-
-        buttons['Cancel'] = function () {
-          dialog.trigger('close.uf');
-        };
-
-        /* generic filter action handler generator */
-        var handle = function (action) {
-          return function (event) {
-            var form = action === 'add'
-              ? 'form#new_custom_filter'
-              : 'form#edit_custom_filter';
-
-            dialog.trigger('close.uf');
-            userfiles.filters[action]($(form)[0])
-              .then(userfiles.refresh);
-          }
-        };
-
-        if (edit) {
-          buttons['Apply']  = handle('update');
-          buttons['Delete'] = {
-            text:    'Delete',
-            'class': 'dlg-left-button',
-            click: handle('remove')
-          };
-        } else {
-          buttons['Create'] = handle('add');
-        }
 
         dialog
           .dialog('option', 'title', title)

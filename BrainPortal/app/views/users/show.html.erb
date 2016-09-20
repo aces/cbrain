@@ -24,190 +24,197 @@
 
 <% title "Account Info" %>
 
-<div class="menu_bar">
-  <% if check_role(:admin_user) %>
-    <%= link_to 'Tool Access Reports', { :controller => :tool_configs, :user_id => @user.id }, :class => "button" %>
-    <%= link_to 'Switch To User',  switch_user_path(@user), :class => 'button', :method => 'POST' %>
-  <% end %>
+<div class="container-fluid">
+  <div class="row menu_bar">
+    <div class="col-xs-12">
+      <div class="well well-sm">
+        <% if check_role(:admin_user) %>
+          <a href="<%= url_for(:controller => :tool_configs, :user_id => @user.id) %>" class="btn btn-primary"><span class="glyphicon glyphicon-list-alt"></span> Tool Access Report</a>
+          <a href="<%= switch_user_path(@user) %>" class="btn btn-primary" data-type="script" data-method="POST"><span class="glyphicon glyphicon-user"></span> Switch To User</a>
+        <% end %>
 
-  <%= link_to 'Report Maker', report_path, :class => "button" %>
+        <a href="<%= report_path %>" class="btn btn-primary"><span class="glyphicon glyphicon-list-alt"></span> Report Maker</a>
 
-  <% if delete_permission?(@user) %>
-    <%= link_to 'Delete', user_path(@user), { :confirm => "Are you sure you want to delete '#{@user.name}' ?", :method => :delete, :class => "button" } %>
-  <% end %>
-</div>
+        <% if delete_permission?(@user) %>
+          <a href="<%= user_path(@user) %>" data-confirm="Are you sure you want to delete '<%= @user.name %>' ?" data-type="script" data-method="DELETE" class="btn btn-primary"><span class="glyphicon glyphicon-trash"></span> Delete</a>
+        <% end %>
+      </div>
+    </div>
+  </div>
 
-<br>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= error_messages_for @user, :header_message => "User could not be updated." %>
+    </div>
+  </div>
 
-<%= error_messages_for @user, :header_message => "User could not be updated." %>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= show_table(@user, :edit_condition => edit_permission?(@user)) do |t| %>
 
-<div class="display_inline_block" style="min-width: 50%">
-  <%= show_table(@user, :edit_condition => edit_permission?(@user)) do |t| %>
+        <% t.attribute_cell(:login) %>
 
-    <% t.attribute_cell(:login) %>
+        <%
+          t.edit_cell(:type, :content => @user.type.underscore.titleize, :disabled => !((current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)) && not_admin_user(@user))) do
+            select_tag "user[type]", options_for_select(roles_for_user(current_user), :selected => @user.type ), :class => "form-control"
+          end
+        %>
 
-    <%
-      t.edit_cell(:type, :content => @user.type.underscore.titleize, :disabled => !((current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)) && not_admin_user(@user))) do
-        select_tag "user[type]", options_for_select(roles_for_user(current_user), :selected => @user.type)
-      end
-    %>
+        <% t.edit_cell(:full_name) { text_field_tag "user[full_name]", @user.full_name, :class => "form-control" } %>
 
-    <% t.edit_cell(:full_name) { text_field_tag "user[full_name]", @user.full_name } %>
+        <%
+          t.edit_cell(:site_id, :content => link_to_site_if_accessible(@user.site), :disabled => !current_user.has_role?(:admin_user)) do
+            site_select("user[site_id]", @user.site_id, :prompt => "(Select a site)", :class => "form-control" )
+          end
+        %>
 
-    <%
-      t.edit_cell(:site_id, :content => link_to_site_if_accessible(@user.site), :disabled => !current_user.has_role?(:admin_user)) do
-        site_select("user[site_id]", @user.site_id, :prompt => "(Select a site)")
-      end
-    %>
+        <% t.edit_cell(:email, :content => mail_to(h(@user.email))) { text_field_tag "user[email]", @user.email, :class => "form-control" } %>
 
-    <% t.edit_cell(:email, :content => mail_to(h(@user.email))) { text_field_tag "user[email]", @user.email } %>
+        <%
+          t.cell("Last Connected") do
+            @user.last_connected_at ? "#{to_localtime(@user.last_connected_at, :datetime)} (#{pretty_elapsed(Time.now - @user.last_connected_at, :num_components => 3)} ago)" : "(Never)"
+          end
+        %>
 
-    <%
-      t.cell("Last Connected") do
-        @user.last_connected_at ? "#{to_localtime(@user.last_connected_at, :datetime)} (#{pretty_elapsed(Time.now - @user.last_connected_at, :num_components => 3)} ago)" : "(Never)"
-      end
-    %>
+        <% t.edit_cell(:city) { text_field_tag "user[city]", @user.city, :class => "form-control" } %>
 
-    <% t.edit_cell(:city) { text_field_tag "user[city]", @user.city } %>
+        <%
+          t.edit_cell("meta[pref_data_provider_id]", :header => "Default Data Provider", :content => link_to_data_provider_if_accessible(DataProvider.find_by_id(@user.meta["pref_data_provider_id"])) ) do
+            data_provider_select("meta[pref_data_provider_id]",
+                                     { :selector =>  @user.meta["pref_data_provider_id"] },
+                                     { :include_blank => true, :class => "form-control" } )
+          end
+        %>
 
-    <%
-      t.edit_cell("meta[pref_data_provider_id]", :header => "Default Data Provider", :content => link_to_data_provider_if_accessible(DataProvider.find_by_id(@user.meta["pref_data_provider_id"])) ) do
-        data_provider_select("meta[pref_data_provider_id]",
-                                 { :selector =>  @user.meta["pref_data_provider_id"] },
-                                 { :include_blank => true } )
-      end
-    %>
+        <% t.edit_cell(:country) { text_field_tag "user[country]", @user.country, :class => "form-control" } %>
 
-    <% t.edit_cell(:country) { text_field_tag "user[country]", @user.country } %>
+        <%
+          t.edit_cell("meta[pref_bourreau_id]", :header => "Default Execution Server", :content => link_to_bourreau_if_accessible(Bourreau.find_by_id(@user.meta["pref_bourreau_id"])) ) do
+            bourreau_select(     "meta[pref_bourreau_id]",
+                                     { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all,
+                                       :selector => @user.meta["pref_bourreau_id"] },
+                                     { :include_blank => true, :class => "form-control" } )
+          end
+        %>
 
-    <%
-      t.edit_cell("meta[pref_bourreau_id]", :header => "Default Execution Server", :content => link_to_bourreau_if_accessible(Bourreau.find_by_id(@user.meta["pref_bourreau_id"])) ) do
-        bourreau_select(     "meta[pref_bourreau_id]",
-                                 { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all,
-                                   :selector => @user.meta["pref_bourreau_id"] },
-                                 { :include_blank => true } )
-      end
-    %>
+        <%
+          t.edit_cell(:time_zone, :content => (@user.time_zone || "(Unset)") ) do
+            select_tag "user[time_zone]", time_zone_options_for_select(@user.time_zone, /canada/i), { :include_blank => true, :class => "form-control" }
+          end
+        %>
 
-    <%
-      t.edit_cell(:time_zone, :content => (@user.time_zone || "(Unset)") ) do
-        select_tag "user[time_zone]", time_zone_options_for_select(@user.time_zone, /canada/i), :include_blank => true
-      end
-    %>
+        <% t.edit_cell(:password, :content => "********") do %>
+          <%= link_to "Change Password", change_password_user_path(@user) %>
+        <% end %>
 
-    <% t.edit_cell(:password, :content => "********") do %>
-      <%= link_to "Change Password", change_password_user_path(@user) %>
-    <% end %>
+        <%
+          if (current_user.has_role?(:admin_user) || current_user.has_role?(:site_manager)) && not_admin_user(@user)
+            t.boolean_edit_cell('user[account_locked]', (@user.account_locked ? "1" : ""), "1", "0", :header => "Account Locked")
+          end
+        %>
 
-    <%
-      if (current_user.has_role?(:admin_user) || current_user.has_role?(:site_manager)) && not_admin_user(@user)
-        t.boolean_edit_cell('user[account_locked]', (@user.account_locked ? "1" : ""), "1", "0", :header => "Account Locked")
-      end
-    %>
+        <% if current_user.has_role?(:admin_user) %>
+          <% t.edit_cell('meta[ip_whitelist]', :header => 'Source IP Whitelist', :content => @user.meta['ip_whitelist'] || '') do %>
+            <%= text_field_tag "meta[ip_whitelist]", @user.meta['ip_whitelist'], :class => "form-control" %>
+              Comma-separated list of allowed source IPs (X.X.X.X/XX) for the user to connect from.
+          <% end %>
+        <% end %>
 
-    <% if current_user.has_role?(:admin_user) %>
-      <% t.edit_cell('meta[ip_whitelist]', :header => 'Source IP Whitelist', :content => @user.meta['ip_whitelist'] || '') do %>
-        <%= text_field_tag "meta[ip_whitelist]", @user.meta['ip_whitelist'], :size => 40 %><br />
-        <div class="field_explanation">
-          Comma-separated list of allowed source IPs (X.X.X.X/XX) for the user to connect from.
-        </div>
       <% end %>
-    <% end %>
 
-  <% end %>
-
-  <% if @user.signed_license_agreements.present? %>
-    <%= show_table(@user, :header => "License Agreements", :width => 3) do |t| %>
-      <% @user.signed_license_agreements.each  do |la| %>
-        <% t.cell("", :no_header => true) { link_to la, "/show_license/#{la}" } %>
-      <% end  %>
-    <% end %>
-  <% end %>
-
-  <%= show_table(@user, :header => 'Resources') do |t| %>
-
-    <% t.cell("Files") do
-         size = Userfile.where(:user_id => @user.id).sum(:size)
-         index_count_filter(@user.userfiles.count, :userfiles, { :user_id => @user.id }, :show_zeros => true ) +
-         ( (size > 0) ? " (#{colored_pretty_size(size)} used)" : "" ).html_safe
-       end
-    %>
-
-    <% t.cell("Tasks") do
-         size = CbrainTask.real_tasks.where(:user_id => @user.id).sum(:cluster_workdir_size)
-         unk  = CbrainTask.real_tasks.where(:user_id => @user.id, :cluster_workdir_size => nil).where("cluster_workdir IS NOT NULL").count
-         index_count_filter(@user.cbrain_tasks.real_tasks.count, :tasks, {:user_id => @user.id}, :show_zeros => true ) +
-         ( (size  > 0 && unk  > 0) ? " (#{colored_pretty_size(size)} used, #{unk} unkn)" :
-           (size  > 0 && unk == 0) ? " (#{colored_pretty_size(size)} used)" :
-           (size == 0 && unk  > 0) ? " (#{unk} unkn)" : ""
-         ).html_safe
-       end
-    %>
-
-    <% if current_user.has_role?(:admin_user) %>
-      <% t.cell("Tools")          { index_count_filter @user.tools.count,                             :tools,          {:user_id => @user.id} } %>
-      <% t.cell("Data Providers") { index_count_filter @user.data_providers.count,                    :data_providers, {:user_id => @user.id} } %>
-      <% t.cell("Portal")         { index_count_filter BrainPortal.where(:user_id => @user.id).count, :bourreaux,      {:user_id => @user.id, :type => "BrainPortal"} } %>
-      <% t.cell("Execution")      { index_count_filter Bourreau.where(:user_id => @user.id).count,    :bourreaux,      {:user_id => @user.id, :type => "Bourreau"} } %>
-    <% end %>
-
-  <% end %>
-
-  <% # Access Profile List %>
-  <% if current_user.has_role?(:admin_user) && @user.access_profiles.count > 0 %>
-    <%= show_table(@user, :header => 'Access profiles') do |t| %>
-      <% t.cell("Access Profiles", :no_header => true) do %>
-        <%= array_to_table(@user.access_profiles.order(:name).all, :table_class => "simple", :cols => 4) do |access_profile| %>
-          <%= access_profile_label(access_profile, :with_link => true) %>
+      <% if @user.signed_license_agreements.present? %>
+        <%= show_table(@user, :header => "License Agreements", :width => 3) do |t| %>
+          <% @user.signed_license_agreements.each  do |la| %>
+            <% t.cell("", :no_header => true) { link_to la, "/show_license/#{la}" } %>
+          <% end  %>
         <% end %>
       <% end %>
-    <% end %>
-  <% end %>
 
-  <% # Admin users have access to ALL groups, so no need to show them all here %>
-  <% unless @user.has_role? :admin_user %>
+      <%= show_table(@user, :header => 'Resources') do |t| %>
 
-    <div>
+        <% t.cell("Files") do
+             size = Userfile.where(:user_id => @user.id).sum(:size)
+             index_count_filter(@user.userfiles.count, :userfiles, { :user_id => @user.id }, :show_zeros => true ) +
+             ( (size > 0) ? " (#{colored_pretty_size(size)} used)" : "" ).html_safe
+           end
+        %>
 
-     <table class="resource_list">
-        <tr>
-          <th colspan="3">
-            Projects
+        <% t.cell("Tasks") do
+             size = CbrainTask.real_tasks.where(:user_id => @user.id).sum(:cluster_workdir_size)
+             unk  = CbrainTask.real_tasks.where(:user_id => @user.id, :cluster_workdir_size => nil).where("cluster_workdir IS NOT NULL").count
+             index_count_filter(@user.cbrain_tasks.real_tasks.count, :tasks, {:user_id => @user.id}, :show_zeros => true ) +
+             ( (size  > 0 && unk  > 0) ? " (#{colored_pretty_size(size)} used, #{unk} unkn)" :
+               (size  > 0 && unk == 0) ? " (#{colored_pretty_size(size)} used)" :
+               (size == 0 && unk  > 0) ? " (#{unk} unkn)" : ""
+             ).html_safe
+           end
+        %>
+
+        <% if current_user.has_role?(:admin_user) %>
+          <% t.cell("Tools")          { index_count_filter @user.tools.count,                             :tools,          {:user_id => @user.id} } %>
+          <% t.cell("Data Providers") { index_count_filter @user.data_providers.count,                    :data_providers, {:user_id => @user.id} } %>
+          <% t.cell("Portal")         { index_count_filter BrainPortal.where(:user_id => @user.id).count, :bourreaux,      {:user_id => @user.id, :type => "BrainPortal"} } %>
+          <% t.cell("Execution")      { index_count_filter Bourreau.where(:user_id => @user.id).count,    :bourreaux,      {:user_id => @user.id, :type => "Bourreau"} } %>
+        <% end %>
+
+      <% end %>
+
+      <% # Access Profile List %>
+      <% if current_user.has_role?(:admin_user) && @user.access_profiles.count > 0 %>
+        <%= show_table(@user, :header => 'Access profiles') do |t| %>
+          <% t.cell("Access Profiles", :no_header => true) do %>
+            <%= array_to_table(@user.access_profiles.order(:name).all, :table_class => "simple table", :cols => 4) do |access_profile| %>
+              <%= access_profile_label(access_profile, :with_link => true) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <% # Admin users have access to ALL groups, so no need to show them all here %>
+      <% unless @user.has_role? :admin_user %>
+
+        <div class="panel panel-primary">
+          <div class="panel-heading">Projects
             <% if current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user) %>
               <%= overlay_content_link "(Update)", :style => "text-decoration: underline; font-size: 0.9em", :enclosing_element => "span" do %>
                 <%= form_for @user, :as => :user, :url => { :action => "update" } do |f| -%>
                   <%= render :partial => 'shared/group_tables', :locals => {:model => @user} %><br>
-                  <%= submit_tag 'Update Projects' %>
+                  <%= submit_tag 'Update Projects', :class => "btn btn-primary" %>
                 <% end %>
               <% end %>
             <% end %>
-          </th>
-        </tr>
+          </div>
+         <table class="table table-condensed">
+            <tr>
+              <th>Project Name</th>
+              <th>Project Type</th>
+              <th>Members</th>
+            </tr>
 
-        <tr>
-          <th>Project Name</th>
-          <th>Project Type</th>
-          <th>Members</th>
-        </tr>
+         <% (@user.available_groups.sort { |g1,g2| g1.name.casecmp(g2.name) }).each do |group| %>
+           <% next if group.name == 'everyone' %>
+           <tr class=<%= cycle("list-even", "list-odd") %> >
+             <td><%= link_to_group_if_accessible(group) %></td>
+             <td><%= group.pretty_category_name(current_user) %></td>
+             <td><%= array_to_table(group.users, :table_class => "table table-condensed table-bordered", :fill_by_columns => true) {|u,r,c| link_to_user_with_tooltip(u)} %></td>
+           </tr>
+         <% end %>
 
-     <% (@user.available_groups.sort { |g1,g2| g1.name.casecmp(g2.name) }).each do |group| %>
-       <% next if group.name == 'everyone' %>
-       <tr class=<%= cycle("list-even", "list-odd") %> >
-         <td><%= link_to_group_if_accessible(group) %></td>
-         <td><%= group.pretty_category_name(current_user) %></td>
-         <td><%= array_to_table(group.users, :table_class => 'simple bordered', :fill_by_columns => true) {|u,r,c| link_to_user_with_tooltip(u)} %></td>
-       </tr>
-     <% end %>
+         </table>
 
-     </table>
+        </div>
 
+      <% end %>
     </div>
+  </div>
 
-    <P>
-
-  <% end %>
-
-  <P>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
+    </div>
+  </div>
 </div>
+
+
+
 

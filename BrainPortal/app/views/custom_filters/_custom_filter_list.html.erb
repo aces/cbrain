@@ -18,20 +18,36 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<h4>By Custom Filter</h4>
 
-<%= overlay_ajax_link 'Create Custom Filter', {:controller => :custom_filters, :action => :new, :filter_class => @custom_filter.class.name} %>
+<div class="col-xs-12">
+  <li><div><%= link_to 'Create Custom Filter', {:controller => :custom_filters, :action => :new, :filter_class => @custom_filter.class.name}, { :class => "btn btn-primary btn-xs" } %></div></li>
 
-<ul class="filter_menu">
-  <%  @custom_filter.class.all(:conditions  =>  {:user_id  => current_user.id}).each do |filter| %>
+  <% @custom_filter.class.all(:conditions  =>  {:user_id  => current_user.id}).each do |filter| %>
 
-    <li id="custom_filter_<%= filter.id %>" class="custom_filter">
-      <%= render :partial => 'custom_filters/custom_filter_li', :locals  => {:filter  => filter} %>
+    <li class="dropdown-header"><%= crop_text_to(15, filter.name) %></li>
+    <li>
+      <div class="btn-group btn-group-xs btn-group-justified">
+        <%=
+          scope_custom_link("Apply",
+            @scope, { 'custom_filters' => [filter.id] },
+            url:  {
+              'controller'  => @custom_filter.filtered_class_controller,
+              '_scope_mode' => 'append'
+            },
+            link: {
+              :ajax => true,
+              :class => 'btn btn-primary'
+            }
+          )
+        %>
+        <%= link_to "Edit", custom_filter_path(filter), :class => "btn btn-primary" %>
+        <%= ajax_link 'Delete', custom_filter_path(filter), :confirm => "Are you sure you want to delete filter '#{filter.name}' ?", :method => :delete, :datatype  => 'script', :class => "btn btn-primary" %>
+      </div>
     </li>
 
   <% end %>
-</ul>
+</div>

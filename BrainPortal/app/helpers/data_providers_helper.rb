@@ -55,12 +55,12 @@ module DataProvidersHelper
     paragraphs = data_providers.collect do |dp|
       <<-"HTML"
         <strong>#{h(dp.name)}</strong>
-        <br/>
-        <pre class="medium_paragraphs">#{dp.description.blank? ? "(No description)" : h(dp.description.strip)}</pre>
+        <p>
+        #{dp.description.blank? ? "(No description)" : h(dp.description.strip)}
+        </p>
       HTML
     end
     all_descriptions = <<-"HTML"
-      <h4>Data Providers Descriptions</h4>
       #{paragraphs.join("")}
     HTML
     return all_descriptions.html_safe

@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -28,43 +28,53 @@
 
 <% title "Execution Server Access" %>
 
-<h2>Execution Server Access Report</h2>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12">
+      <h2 class="text-center">Execution Server Access Report</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <% if @remote_r.empty? || @users.empty? %>
+        There is no information to show at this time.
+      <% else %>
 
-<% if @remote_r.empty? || @users.empty? %>
+        <table class="table table-striped table-condensed">
 
-There is no information to show at this time.
+          <tr>
+            <th class="blank"></th>
+            <% @remote_r.each do |bourreau| %>
+              <th class="text-center"><%= link_to_bourreau_if_accessible(bourreau, current_user) %>
+                <br/><small><%= bourreau.is_a?(Bourreau) ? "(Execution)" : "(Portal)" %></small>
+              </th>
+            <% end %>
+          </tr>
 
-<% else %>
+          <% @users.each do |user| %>
+            <%
+            accessible_rr = RemoteResource.find_all_accessible_by_user(user).all.index_by &:id || {}
+            %>
+            <tr>
+              <td class="text-left"><%= link_to_user_with_tooltip(user) %></td>
 
-<span class="display_cell">
-  <table>
+              <% @remote_r.each do |bourreau| %>
+                <td class="text-center"> <%= accessible_rr[bourreau.id]  ? o_icon : times_icon %></td>
+              <% end %>
+            </tr>
+          <% end %>
 
-    <tr>
-      <th class="blank"></th>
-      <% @remote_r.each do |bourreau| %>
-        <th><%= link_to_bourreau_if_accessible(bourreau, current_user) %>
-          <br/><small><%= bourreau.is_a?(Bourreau) ? "(Execution)" : "(Portal)" %></small>
-        </th>
+        </table>
+
+        <%= center_legend(nil, [ [o_icon, "accessible"], [times_icon, "not accessible"] ] ) %>
+
+
+
       <% end %>
-    </tr>
-    
-    <% @users.each do |user| %>
-      <% 
-      accessible_rr = RemoteResource.find_all_accessible_by_user(user).all.index_by &:id || {}
-      %>
-      <tr>
-        <td class="left_align"><%= link_to_user_with_tooltip(user) %></td>
-        
-        <% @remote_r.each do |bourreau| %>
-          <td> <%= accessible_rr[bourreau.id]  ? o_icon : times_icon %></td>
-        <% end %>
-      </tr>
-    <% end %>
-    
-  </table>
-  
-  <%= center_legend(nil, [ [o_icon, "accessible"], [times_icon, "not accessible"] ] ) %>
-  
-</span>
+    </div>
+  </div>
+</div>
 
-<% end %>
+
+
+

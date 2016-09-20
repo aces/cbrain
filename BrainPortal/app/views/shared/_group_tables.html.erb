@@ -41,37 +41,36 @@
 <%
   # Convenience helper to render a single checkbox and a group name
   group_check_box = lambda do |group|
+    "<label>&nbsp".html_safe +
     check_box_tag( "#{class_name}[group_ids][]",                 # name
                    group.id.to_s,                                # value
                    model.groups.include?(group),                 # checked or not
-                   :id => "#{class_name}_group_ids_#{group.id}"  # unique DOM id
+                   :id => "#{class_name}_group_ids_#{group.id}" # unique DOM id
                  ).html_safe +
-    h(group.name)
+    h(group.name) + "</label>&nbsp".html_safe
   end
 %>
-
-
 
 <%= hidden_field_tag "#{class_name}[group_ids][]", [], :id => "#{class_name}_group_ids_unchecked" %>
 
 <% if work_groups.present? %>
-
-  <label>Work Projects</label>
-  <%= array_to_table(work_groups, :cols => 4, :td_class => 'left_align no_wrap') do |group,r,c| %>
-    <%= group_check_box.(group) %>
-  <% end %>
-
+  <div class="panel panel-primary">
+    <div class="panel-heading">Work Projects <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#visible-panel"></span></div>
+    <div class="panel-body collapse in" id="visible-panel">
+      <%= array_to_table(work_groups, :cols => 8, :td_class => 'left_align no_wrap', :class => "table") do |group,r,c| %>
+        <%= group_check_box.(group) %>
+      <% end %>
+    </div>
+  </div>
 <% end %>
-
-
 
 <% if invis_groups.present? %>
-
-  <br>
-  <label>Invisible Projects</label>
-  <%= array_to_table(invis_groups, :cols => 4, :td_class => 'left_align no_wrap') do |group,r,c| %>
-    <%= group_check_box.(group) %>
-  <% end %>
-
+  <div class="panel panel-primary">
+    <div class="panel-heading">Invisible Projects <span class="pull-right glyphicon glyphicon-chevron-down clickable" data-toggle="collapse" data-target="#invisible-panel"></span></div>
+    <div class="panel-body collapse" id="invisible-panel">
+      <%= array_to_table(invis_groups, :cols => 4, :td_class => 'left_align no_wrap', :class => "table") do |group,r,c| %>
+        <%= group_check_box.(group) %>
+      <% end %>
+    </div>
+  </div>
 <% end %>
-

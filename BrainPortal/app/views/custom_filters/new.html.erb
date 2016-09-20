@@ -18,11 +18,52 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<div id="new_custom_filter">
-  <%= render :partial  => "custom_filters/new" %>
+<% custom_filter ||= @custom_filter %>
+<% filter_type = custom_filter.class.name.underscore %>
+
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12">
+      <h3 class="text-center">New Custom Filter</h3>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <%= error_messages_for(custom_filter, :object_name => "custom filter") %>
+    </div>
+  </div>
+
+  <%= hidden_field_tag :filter_class, filter_type %>
+  <div class="row">
+    <div class="col-xs-4 col-sm-offset-4">
+      <div class="panel panel-primary">
+        <div class="panel-heading">Filter Info</div>
+        <div class="panel-body">
+          <%= form_for custom_filter, :as => :custom_filter, :url => {:controller  => "custom_filters", :action => "create", :filter_class => filter_type }, :datatype  => "script", :method => "post", :class => "form-horizontal" do |f| %>
+
+            <div class="row">
+              <div class="col-xs-4"><%= f.label :name, "Filter name" %></div>
+              <div class="col-xs-8"><%= f.text_field :name, :class => "form-control" %></div>
+            </div>
+
+            <%= render :partial => "custom_filters/#{filter_type}" %>
+
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-12">
+          <%= f.submit "Create", :class => "btn btn-primary btn-block" %>
+        </div>
+      </div>
+
+    </div>
+  <% end %>
+
 </div>
 

@@ -18,39 +18,42 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<h2>Preset Management:
-<%= show_hide_toggle "(show/hide)", ".preset_box", :class => 'task_help_link', :slide_effect => true, :slide_duration => 'fast'  %>
-</h2>
+<div class="panel panel-primary">
+  <div class="panel-heading">Preset Management <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#presets"></span></div>
+  <div class="panel-body collapse in" id="presets">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-xs-2">Load Preset</div>
+        <div class="col-xs-10">
+          <%= select_tag :load_preset_id, "<option value=\"\">(Select a preset to load)</option>".html_safe + grouped_options_for_select(@all_presets), :class => "form-control" %>
+      </div>
+      </div>
 
-<table class="simple preset_box hidden">
+      <div class="row">
+        <div class="col-xs-2">Save Preset</div>
+        <div class="col-xs-10">
+          <%= select_tag :save_preset_id, "<option value=\"\">(Select a preset to save)</option>".html_safe + options_for_select(@own_presets), :class => "form-control" %>
 
-<tr>
-  <td><strong>Load a preset configuration:</strong></td>
-  <td><%= select_tag :load_preset_id, 
-    "<option value=\"\">(Select a preset to load)</option>".html_safe +
-    grouped_options_for_select(@all_presets)
-      %>
-  </td>
-  <td><%= submit_tag "Load Preset", :name => :load_preset %><%= submit_tag "Delete Preset", :name => :delete_preset %></td>
-</tr>
+          <%= text_field_tag :save_preset_name, "", :placeholder => "Or as new config", :class => "form-control" %>
 
-<tr>
-  <td><strong>Save as a preset configuration:</strong></td>
-  <td><%= select_tag :save_preset_id,
-          "<option value=\"\">(Select a preset to save)</option>".html_safe +
-          options_for_select(@own_presets)
-      %><strong> or as new name:</strong>
-      <%= text_field_tag :save_preset_name, "", :size => 20 %>
-      <% if @offer_site_preset %>
-        (Save as site preset: <%= check_box_tag :save_as_site_preset, 1 %>)
-      <% end %>
-  </td>
-  <td><%= submit_tag "Save Preset", :name => :save_preset %></td>
-</tr>
+          <% if @offer_site_preset %>
+            (Save as site preset: <%= check_box_tag :save_as_site_preset, 1 %>)
+          <% end %>
 
-</table>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-12"><%= submit_tag "Save Preset", :name => :save_preset, :class => "btn btn-primary btn-block" %></div>
+      </div>
+
+    </div>
+
+
+  </div>
+</div>
 

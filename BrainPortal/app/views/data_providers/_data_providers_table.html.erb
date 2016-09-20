@@ -27,51 +27,63 @@
    official_storage = @data_providers.select { |dp| ! dp.is_browsable? }
 %>
 
-<div class="menu_bar">
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="menu_bar">
+        <div class="well well-sm">
+          <% if check_role(:site_manager) || check_role(:admin_user) %>
+            <a href="<%= new_data_provider_path %>" role="button" class="btn btn-primary"><span class="glyphicon glyphicon-file"></span> New Data Provider</a>
+          <% end %>
 
-  <% if check_role(:site_manager) || check_role(:admin_user) %>
-    <%= link_to "Create New Data Provider", new_data_provider_path, :class => "button menu_button" %>
-  <% end %>
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+              <span class="glyphicon glyphicon-list-alt"></span> Reports <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+              <li><a href="<%= url_for(:controller  => :data_providers, :action  => :dp_access) %>" datatype="script"><span class="glyphicon glyphicon-user"></span> User Access</a></li>
+              <li><a href="<%= url_for(:controller  => :data_providers, :action  => :dp_transfers) %>" datatype="script"><span class="glyphicon glyphicon-transfer"></span> Transfer Restriction</a></li>
+              <li><a href="<%= report_path(
+                            :table_name => "userfiles.combined_file_rep",
+                            :row_type   => :user_id,
+                            :col_type   => :data_provider_id,
+                            :generate   => "ok"
+                          ) %>"
+                  ><span class="glyphicon glyphicon-hdd"></span> Disk Usage</a></li>
+            </ul>
+          </div>
 
-  <%= link_to "Check All", nil, {:class => "button check_all_dp",} %>
+          <a href="javascript:;" class="btn btn-primary check_all_dp"><span class="glyphicon glyphicon-refresh"></span> Check All</a>
 
-  <%= link_to "User Access Report",
-             {:controller  => :data_providers, :action  => :dp_access},
-              :datatype  => 'script', :class  => "button"
-  %>
+          <%= help_button("data_providers/info") %>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <%= link_to "Transfer Restrictions Report",
-             {:controller  => :data_providers, :action  => :dp_transfers},
-              :datatype  => 'script', :class  => "button"
-  %>
+  <div class="row">
+    <div class="col-xs-12">
+      <%=
+        render(:partial => 'shared/active_filters', :locals  => {
+          :scope => @scope,
+          :model => DataProvider
+        })
+      %>
+    </div>
+  </div>
 
-  <%= link_to "Disk Usage Report", report_path(
-                :table_name => "userfiles.combined_file_rep",
-                :row_type   => :user_id,
-                :col_type   => :data_provider_id,
-                :generate   => "ok"
-              ), :class  => "button"
-  %>
+  <div class="row">
+    <div class="col-xs-12">
+      <h3>Official Data Storage</h3>
+      <%= render :partial => 'one_data_provider_table', :locals => { :data_providers => official_storage, :id => 'official' } %>
+    </div>
+  </div>
 
-  <%= help_button("data_providers/info") %>
+  <div class="row">
+    <div class="col-xs-12">
+      <h3>User or Site Storage</h3>
+      <%= render :partial => 'one_data_provider_table', :locals => { :data_providers => user_storage, :id => 'user' } %>
+    </div>
+  </div>
+
 </div>
-
-<%=
-  render(:partial => 'shared/active_filters', :locals  => {
-    :scope => @scope,
-    :model => DataProvider
-  })
-%>
-
-<fieldset>
-<legend>Official Data Storage</legend>
-  <%= render :partial => 'one_data_provider_table', :locals => { :data_providers => official_storage, :id => 'official' } %>
-</fieldset>
-
-<P>
-
-<fieldset>
-<legend>User or Site Storage</legend>
-  <%= render :partial => 'one_data_provider_table', :locals => { :data_providers => user_storage, :id => 'user' } %>
-</fieldset>
-

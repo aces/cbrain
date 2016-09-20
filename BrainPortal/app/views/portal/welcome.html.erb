@@ -22,214 +22,252 @@
 #
 -%>
 
-<% title 'Welcome' %>
+<% title 'Home' %>
 
-<h1>Welcome to CBRAIN, <%= current_user.full_name %></h1>
-
-<% if current_user.has_role?(:admin_user) %>
-
-    <div class="generalbox no_wrap">
-
-      <h1><%= link_to_bourreau_if_accessible(RemoteResource.current_resource, current_user, :name => "System Info") %></h1>
-
-      <p>
-        <strong>Portal instance name:</strong> <%= link_to_bourreau_if_accessible(RemoteResource.current_resource) %>
-      </p>
-
-      <%= form_tag home_path do %>
-        <% if BrainPortal.current_resource.portal_locked? %>
-              <%= hidden_field_tag :lock_portal, "unlock" %>
-              <%= submit_tag "Unlock this Portal", {:confirm => "Are you sure you wish to unlock this portal?"} %>
-        <% else %>
-              <% message = BrainPortal.current_resource.meta[:portal_lock_message] %>
-              <% message = "(lock message)" if message.blank? %>
-              <%= hidden_field_tag :lock_portal, "lock" %>
-              <%= text_field_tag :message, message, :size => 30 %>
-              <%= submit_tag "Lock this Portal", {:confirm => "Are you sure you wish to lock this portal?"} %>
-        <% end %>
-      <% end %>
-
-      <% if @active_users %>
-        <p>
-          <strong>Users currently online:</strong><%= array_to_table(@active_users.map(&:login), :table_class => 'simple', :cols => 4) %>
-        </p>
-      <% end %>
-
-
-      <p>
-        <strong>Recent activity:</strong>
-        <%= link_to "(View logs)", url_for(:action => :portal_log, :hide_rendered => "1") %>
-      </p>
-
-      <%= array_to_table(CbrainSession.recent_activity, :table_class => 'simple', :cols => 1) do |entry,r,c| %>
-        <%= link_to_user_with_tooltip entry[:user] %><%= ", #{h entry[:user].city}" if entry[:user].city %>:
-        <%= entry[:active] ? "Active" : "Logged out" %>
-        <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago
-        <% if entry[:remote_host] || entry[:raw_user_agent] %>
-          <%
-             parsed   = HttpUserAgent.new(entry[:raw_user_agent] || 'unknown/unknown')
-             browser  = (parsed.browser_name    || 'unknown browser')
-             brow_ver = (parsed.browser_version || '?')
-             os       = (parsed.os_name         || 'unknown OS')
-             pretty = "#{browser} #{brow_ver} on #{os}"
-          %>
-          <br/>
-          <small>
-            From
-            <%= html_tool_tip(entry[:remote_host], :offset_x => 0, :offset_y => 12) do %>
-              <%= entry[:remote_ip] || entry[:remote_host] %>
-            <% end %>
-            with
-            <%= html_tool_tip(pretty, :offset_x => 0, :offset_y => 12) do %>
-              <%= entry[:raw_user_agent] || 'unknown' %>
-            <% end %>
-          </small>
-        <% end %>
-      <% end %>
-
-      <p>
-        <strong>Sessions</strong>
-      </p>
-
-      There are currently <%= CbrainSession.count %> entries in the sessions table.<br/>
-      <%= form_tag home_path do %>
-        Clear sessions older than
-        <%= select_tag :session_clear, options_for_select( [
-             [ "One month ago",     1.month.to_i   ],
-             [ "One week ago",      1.week.to_i    ],
-             [ "One day ago",       1.day.to_i     ],
-             [ "One hour ago",      1.hour.to_i    ]
-           ]) %>
-        <%= submit_tag "Clear", :confirm => "Are you sure you want to clear the sessions?" %>
-      <% end %>
-
-
-
-      <%
-        one_day_ex    = ExceptionLog.where([ "created_at > ?", 1.day.ago ]).count
-        three_day_ex  = ExceptionLog.where([ "created_at > ?", 3.day.ago ]).count
-        one_week_ex   = ExceptionLog.where([ "created_at > ?", 1.week.ago ]).count
-        all_ex        = ExceptionLog.count
-      %>
-      <% if all_ex > 0 %>
-        <p>
-          <strong>Exceptions</strong>
-        </p>
-
-        <div class="exception_report">
-          There are internal exceptions logged:<br/>
-          <ul>
-            <li><%= pluralize(one_day_ex,"exception") %> in the past day.<br/></li>
-            <li><%= pluralize(three_day_ex,"exception")%> in the past three days.<br/></li>
-            <li><%= pluralize(one_week_ex,"exception") %> in the past week.<br/></li>
-            <li><%= pluralize(all_ex,"exception") %> in total.<br/></li>
-          </ul>
-          <div class="centered"><%= link_to "Show Exceptions", :controller => :exception_logs, :action => :index %></div>
-        </div>
-      <% end %>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12">
+      <br>
+      <h2 class="text-center">Welcome to <img src="images/cbrain-logo.png" height="30em" style="vertical-align:middle">, <%= current_user.full_name %></h2>
+      <br>
     </div>
-
-
-
-    <div class="box_spacer"></div>
-
-<% end %>
-
-
-
-<div class="generalbox no_wrap">
-  <h1><%= link_to "Account Info", user_path(current_user) %></h1>
-    <p>
-      <strong>Your login name:</strong> <%= link_to_user_if_accessible(current_user) %>
-    </p>
-    <p>
-      <strong>Your full name:</strong> <%= current_user.full_name %>
-    </p>
-    <p>
-      <strong>Your site affiliation:</strong> <%= link_to_site_if_accessible(current_user.site) %>
-    </p>
-    <p>
-      <strong>Your time zone:</strong> <%= red_if(current_user.time_zone.blank?,h(current_user.time_zone),"(Unset)") %><BR>
-      <strong>Your current time:</strong> <%= to_localtime(Time.now, :datetime) %><BR>
-    </p>
-    <p>
-       <strong>Projects you belong to:</strong>  <%= array_to_table(@groups, :table_class => 'simple', :cols => 4) { |g,r,c| link_to_group_if_accessible(g) } %>
-    </p>
-    <p>
-      <strong>Tools available to you:</strong><br/>
-      <%= array_to_table(current_user.available_tools.where( "category <> 'background'" ).map(&:name).sort, :table_class => 'simple', :cols => 4) %>
-    </p>
-    <p>
-      <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>
-    </p>
-    <p>
-      <strong>Your default Execution Server:</strong> <%= link_to_bourreau_if_accessible(@default_bourreau) %>
-    </p>
-</div>
-
-<% if @tasks.size > 0 || @files.size > 0 %>
-  <div class="box_spacer"></div>
-
-  <div class="generalbox no_wrap">
-
-    <% if @tasks.size > 0 %>
-      <h1>
-        <%=
-          scope_link('Latest Updated Tasks',
-            'tasks', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
-            url: { :controller => :tasks, :action => :index }
-          )
-        %>
-        <% active_count = CbrainTask.find_all_accessible_by_user(current_user).active.count rescue 0 %>
-        <% if active_count > 0 %>
-          <%=
-            scope_filter_link("(#{active_count} active)",
-              'tasks', :replace, { :t => 't.sts', :v => 'active' },
-              url: { :controller => :tasks }
-            )
-          %>
-        <% else %>
-          (None active)
-        <% end %>
-      </h1>
-      <table class="latest_summary_table">
-        <% for task in @tasks %>
-          <tr>
-            <td><%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau) %></td>
-            <td><%= link_to_user_if_accessible(task.user) %></td>
-            <td><%= link_to_group_if_accessible(task.group) %></td>
-            <td><%= colored_status(task.status) %></td>
-            <td><%= to_localtime(task.updated_at,:datetime) %></td>
-          </tr>
-        <% end %>
-      </table>
-    <% end %>
-
-    <% if @files.size > 0 %>
-      <h1>
-        <%=
-          scope_link('Latest Updated Files',
-            'userfiles', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
-            url: { :controller => :userfiles, :action => :index }
-          )
-        %>
-      </h1>
-      <table class="latest_summary_table">
-        <% for file in @files %>
-          <tr>
-            <td><%= link_to_userfile_if_accessible(file, nil) %></td>
-            <td><%= link_to_user_if_accessible(file.user) %></td>
-            <td><%= link_to_group_if_accessible(file.group) %></td>
-            <td><%= colored_pretty_size(file.size) %></td>
-            <td><%= to_localtime(file.updated_at,:datetime) %></td>
-          </tr>
-        <% end %>
-      </table>
-    <% end %>
-
   </div>
 
-<% end %>
+      <div class="row">
+
+        <% if current_user.has_role?(:admin_user) %>
+        <div class="col-xs-3">
+          <div class="panel panel-primary">
+            <div class="panel-heading">
+              <h3 class="panel-title"><%= link_to_bourreau_if_accessible(RemoteResource.current_resource, current_user, :name => "System Info") %><span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#system-panel"></span></h3>
+
+            </div>
+            <div class="panel-body collapse in" id="system-panel">
+              <div class="well well-sm">
+                <p>
+                  <strong>Portal Instance:</strong> <%= link_to_bourreau_if_accessible(RemoteResource.current_resource) %>
+                </p>
+
+                <%= form_tag home_path do %>
+
+                    <% if BrainPortal.current_resource.portal_locked? %>
+                        <%= hidden_field_tag :lock_portal, "unlock" %>
+                        <%= submit_tag "Unlock", {:class => "btn btn-primary btn-block",:confirm => "Are you sure you wish to unlock this portal?"} %>
+                    <% else %>
+                        <% message = BrainPortal.current_resource.meta[:portal_lock_message] %>
+                        <% message = "(lock message)" if message.blank? %>
+                        <%= hidden_field_tag :lock_portal, "lock" %>
+                        <div class="input-group">
+                          <%= text_field_tag :message, nil, {:class => "form-control", :placeholder => message, :size => 30} %>
+                          <div class="input-group-btn">
+                            <%= submit_tag "Lock", {:class => "btn btn-primary", :confirm => "Are you sure you wish to lock this portal?"} %>
+                          </div>
+                        </div>
+                  <% end %>
+                <% end %>
+              </div>
+
+              <div class="well well-sm">
+                <% if @active_users %>
+                  <p>
+                    <strong>Users currently online:</strong><%= array_to_table(@active_users.map(&:login), :table_class => 'simple', :cols => 4) %>
+                  </p>
+                <% end %>
+              </div>
+
+              <div class="well well-sm">
+                <strong>Recent activity:</strong>
+                <%= link_to "(View logs)", url_for(:action => :portal_log, :hide_rendered => "1") %>
 
 
+                <%= array_to_table(CbrainSession.recent_activity, :table_class => 'simple', :cols => 1) do |entry,r,c| %>
+                  <%= link_to_user_with_tooltip entry[:user] %><%= ", #{h entry[:user].city}" if entry[:user].city %>:
+                  <%= entry[:active] ? "Active" : "Logged out" %>
+                  <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago
+                  <% if entry[:remote_host] || entry[:raw_user_agent] %>
+                    <%
+                       parsed   = HttpUserAgent.new(entry[:raw_user_agent] || 'unknown/unknown')
+                       browser  = (parsed.browser_name    || 'unknown browser')
+                       brow_ver = (parsed.browser_version || '?')
+                       os       = (parsed.os_name         || 'unknown OS')
+                       pretty = "#{browser} #{brow_ver} on #{os}"
+                    %>
+                    <br/>
+                    <small>
+                      From
+                      <%= html_tool_tip(entry[:remote_host], :offset_x => 0, :offset_y => 12) do %>
+                        <%= entry[:remote_ip] || entry[:remote_host] %>
+                      <% end %>
+                      with
+                      <%= html_tool_tip(pretty, :offset_x => 0, :offset_y => 12) do %>
+                        <%= entry[:raw_user_agent] || 'unknown' %>
+                      <% end %>
+                    </small>
+                  <% end %>
+                <% end %>
+              </div>
 
+              <div class="well well-sm">
+                <strong>Sessions: </strong>
+                There are currently <%= CbrainSession.count %> entries in the sessions table.<br/>
+                <%= form_tag home_path do %>
+                  <div class="input-group">
+                    <div class="input-group-btn">
+                      <%= submit_tag "Clear sessions older than", {:class => "btn btn-primary btn-block", :confirm => "Are you sure you want to clear the sessions?"} %>
+                    </div>
+                  <%= select_tag :session_clear, options_for_select( [
+                       [ "one month ago",     1.month.to_i   ],
+                       [ "one week ago",      1.week.to_i    ],
+                       [ "one day ago",       1.day.to_i     ],
+                       [ "one hour ago",      1.hour.to_i    ]
+                     ]), :class => "form-control" %>
+                    </div>
+                  <br>
+
+                <% end %>
+
+                <%
+                  one_day_ex    = ExceptionLog.where([ "created_at > ?", 1.day.ago ]).count
+                  three_day_ex  = ExceptionLog.where([ "created_at > ?", 3.day.ago ]).count
+                  one_week_ex   = ExceptionLog.where([ "created_at > ?", 1.week.ago ]).count
+                  all_ex        = ExceptionLog.count
+                %>
+
+              </div>
+
+
+              <% if all_ex > 0 %>
+                <div class="well well-sm">
+                  <p>
+                    <strong>Exceptions</strong>
+                  </p>
+
+                  <div class="exception_report">
+                    There are internal exceptions logged:<br/>
+                    <ul>
+                      <li><%= pluralize(one_day_ex,"exception") %> in the past day.<br/></li>
+                      <li><%= pluralize(three_day_ex,"exception")%> in the past three days.<br/></li>
+                      <li><%= pluralize(one_week_ex,"exception") %> in the past week.<br/></li>
+                      <li><%= pluralize(all_ex,"exception") %> in total.<br/></li>
+                    </ul>
+                    <%= link_to "Show Exceptions", :controller => :exception_logs, :action => :index, :class => "btn btn-primary btn-block" %>
+                  </div>
+                </div>
+              <% end %>
+
+            </div>
+
+            </div>
+          </div>
+
+        <% end %>
+        <div class="col-xs-3">
+          <div class="panel panel-primary">
+            <div class="panel-heading">
+              <h3 class="panel-title"><%= link_to "Account Info", user_path(current_user) %><span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#account-panel"></span></h3>
+            </div>
+            <div class="panel-body collapse in" id="account-panel">
+            <p>
+              <strong>Your login name:</strong> <%= link_to_user_if_accessible(current_user) %>
+            </p>
+            <p>
+              <strong>Your full name:</strong> <%= current_user.full_name %>
+            </p>
+            <p>
+              <strong>Your site affiliation:</strong> <%= link_to_site_if_accessible(current_user.site) %>
+            </p>
+            <p>
+              <strong>Your time zone:</strong> <%= red_if(current_user.time_zone.blank?,h(current_user.time_zone),"(Unset)") %><br>
+              <strong>Your current time:</strong> <%= to_localtime(Time.now, :datetime) %><br>
+            </p>
+            <p>
+               <strong>Projects you belong to:</strong>  <%= array_to_table(@groups, :table_class => 'table table-striped table-condensed', :cols => 4) { |g,r,c| link_to_group_if_accessible(g) } %>
+            </p>
+            <p>
+              <strong>Tools available to you:</strong><br>
+              <%= array_to_table(current_user.available_tools.where( "category <> 'background'" ).map(&:name).sort, :table_class => 'table table-striped table-condensed', :cols => 4) %>
+            </p>
+            <p>
+              <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>
+            </p>
+            <p>
+              <strong>Your default Execution Server:</strong> <%= link_to_bourreau_if_accessible(@default_bourreau) %>
+            </p>
+            </div>
+            </div>
+        </div>
+
+        <div class="col-xs-6">
+          <% if @tasks.size > 0 %>
+          <div class="panel panel-primary">
+            <div class="panel-heading">
+              <h3 class="panel-title">
+                <%=
+                scope_link('Latest Updated Tasks',
+                  'tasks', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
+                  url: { :controller => :tasks, :action => :index }
+                )
+                %>
+                <% active_count = CbrainTask.find_all_accessible_by_user(current_user).active.count rescue 0 %>
+                <% if active_count > 0 %>
+                  <%=
+                    scope_filter_link("(#{active_count} active)",
+                      'tasks', :replace, { :t => 't.sts', :v => 'active' },
+                      url: { :controller => :tasks }
+                    )
+                  %>
+                <% else %>
+                  (None active)
+                <% end %>
+                <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#tasks-panel"></span>
+              </h3>
+            </div>
+            <div class="collapse in" id="tasks-panel">
+              <table class="table table-striped table-condensed">
+                <% for task in @tasks %>
+                  <tr>
+                    <td><%= link_to_task_if_accessible(task, nil, :name_method => :name_and_bourreau) %></td>
+                    <td><%= link_to_user_if_accessible(task.user) %></td>
+                    <td><%= link_to_group_if_accessible(task.group) %></td>
+                    <td><%= colored_status(task.status) %></td>
+                    <td><%= to_localtime(task.updated_at,:datetime) %></td>
+                  </tr>
+                <% end %>
+              </table>
+            </div>
+          </div>
+          <% end %>
+
+        <% if @files.size > 0 %>
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <%=
+                scope_link('Latest Updated Files',
+                  'userfiles', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
+                  url: { :controller => :userfiles, :action => :index }
+                )
+              %>
+              <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#files-panel"></span>
+            </h3>
+          </div>
+          <div class="collapse in" id="files-panel">
+            <table class="table table-striped table-condensed">
+              <% for file in @files %>
+                <tr>
+                  <td><%= link_to_userfile_if_accessible(file, nil) %></td>
+                  <td><%= link_to_user_if_accessible(file.user) %></td>
+                  <td><%= link_to_group_if_accessible(file.group) %></td>
+                  <td><%= colored_pretty_size(file.size) %></td>
+                  <td><%= to_localtime(file.updated_at,:datetime) %></td>
+                </tr>
+              <% end %>
+            </table>
+          </div>
+        </div>
+        <% end %>
+
+        </div>
+
+      </div>
+    </div>

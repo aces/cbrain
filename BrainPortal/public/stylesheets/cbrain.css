@@ -34,92 +34,85 @@
 
 
 
+
+
+.glyphicon-chevron-up {
+  padding-bottom: 15px;
+}
+
+.glyphicon-chevron-down {
+  padding-bottom: 15px;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
 /* Main BODY of the HTML document */
 
 body {
   background: white;
   color: #484848;
-  font-family: Verdana, sans-serif;
-  font-size: 12px;
-  margin: 0;
-  min-width: 90em;
-  padding: 0;
-  max-height: 100%;
-  line-height: 18px;
+  padding: 50px 0 0 0;
 }
 
-
-
-/* % ######################################################### */
-/* % Heading formats */
-/* % ######################################################### */
-
-h1, h2, h3, h4 {
-    font-family: "Trebuchet MS", Verdana, sans-serif;
+.selected a {
+  background-color: rgb(0, 51, 102);
 }
 
-h1 {
-  margin-top: 5px;
-  margin-bottom: 5px;
-  margin-left: 2px;
-  margin-right: 2px;
-  padding: 1em;
-  text-align: center;
-  font-size: 24px;
+.unselected a {
+  color: white;
 }
 
-h2 {
-  font-size: 20px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  padding-left: 15px;
-  margin-bottom: 15px;
-  margin-top: 10px;
-  margin-right: 0em;
-  margin-left: 0em;
-  border-bottom: 2px solid #bbbbbb;
-  color: #444;
+thead {
+  vertical-align: middle;
 }
 
-h3 {
-  font-size: 16px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  padding-left: 15px;
-  margin-bottom: 15px;
-  margin-top: 10px;
-  margin-right: 0em;
-  margin-left: 0em;
-  border-bottom: 2px solid #bbbbbb;
-  color: #444;
+.btn-primary > a {
+  color: white;
+  text-decoration: none;
 }
 
-h4 {
-  font-size: 12px;
-  padding-left: 0px;
-  margin-top: 0em;
-  margin-bottom: 0.5em;
-  margin-right: 0em;
-  margin-left: 0em;
-  padding-bottom: 0em;
-  padding-top: 0em;
-  color: #000;
-  border-bottom: 1px solid #666;
+/*Panel tabs*/
+.panel-tabs {
+    position: relative;
+    bottom: 10px;
+    clear:both;
+    border-bottom: 1px solid transparent;
 }
 
-h5 {
-  font-size: 11px;
-  padding-left: 0px;
-  margin-top: 0em;
-  margin-bottom: 0.5em;
-  margin-right: 0em;
-  margin-left: 0em;
-  padding-bottom: 0em;
-  padding-top: 0em;
-  color: #000;
+.panel-tabs > li {
+    float: left;
+    margin-bottom: -1px;
 }
 
+.panel-tabs > li > a {
+    margin-right: 2px;
+    margin-top: 4px;
+    line-height: .85;
+    border: 1px solid transparent;
+    border-radius: 4px 4px 0 0;
+    color: #ffffff;
+    text-decoration: none;
+}
 
+.panel-tabs > li > a:hover {
+    border-color: transparent;
+    color: #ffffff;
+    background-color: transparent;
+}
+
+.panel-tabs > li.active > a,
+.panel-tabs > li.active > a:hover,
+.panel-tabs > li.active > a:focus {
+    color: #fff;
+    cursor: default;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    background-color: rgba(255,255,255, .23);
+    border-bottom-color: transparent;
+}
 
 /* % ######################################################### */
 /* % Structural classes; allows placing DIV elements so that
@@ -151,267 +144,6 @@ h5 {
 }
 
 
-/* % ######################################################### */
-/* % General tables for reports, etc, with CBRAIN colors  */
-/* % ######################################################### */
-
-table {
-  border-spacing: 0em;
-  border: 2px solid black;
-}
-
-table th {
-  border: 2px solid white;
-  color: #333333;
-  background: #eeeeee;
-  padding-left: 0.5em;
-  padding-right: 0.5em;
-  text-align: center;
-  text-indent: 0px;
-  font-family: Verdana;
-  font-weight: bold;
-  font-size: 11px;
-}
-
-table td {
-  border: 1px solid #dddddd;
-  /* background: white; */
-  color: #404040;
-  padding-top: 0px;
-  padding-bottom: 0px;
-  padding-left: 2px;
-  padding-right: 2px;
-  text-align: center;
-  font-family: Verdana, sans-serif, Arial;
-  font-weight: normal;
-  font-size: 11px;
-}
-
-th.supertitle {
-  background-color: #05A3D6;
-  color: #ffffff;
-}
-
-th.blank {
-  background-color: inherit;
-}
-
-tr.list-even {
-  background-color: white;
-}
-
-tr.list-odd {
-  background-color: #F1F1F1;
-}
-
-tr.list-unavailable {
-  background-color: #ffebe5;
-}
-
-tr.selected_row {
-  background-color: yellow;
-}
-
-
-
-/* % ############################################################ */
-/* % Support for vertical text labels.                            */
-/* % The following styles proudly brought to you by Pierre Rioux, */
-/* % after MUCH trial and error!                                  */
-/* % ############################################################ */
-
-
-/*
-   Use this on whatever contains the DIV with .vertical_text
-   The DIV's height is set to 20em, which is just enough for
-   a name such as "Failed PostProcess Prerequisites".
-   You can override the vertical size of the DIV using
-     style="height: 35em"
-   in the DIV element's attributes.
-*/
-.vertical_text_container {
-  vertical-align: bottom; /* will position the .vertical_text DIV at the bottom */
-  height: 20em;
-}
-
-/*
-   Use this to encapsulate text written from bottom up, sideways.
-   The DIV's width is set to 1.5 em, which is just enough
-   for one line of text.
-*/
-div.vertical_text {
-  display: block;
-  white-space: nowrap;
-  width: 1.5em;
-  height: auto;
-  margin: auto;
-  text-align: left;
-  transform:                translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
-  transform-origin:         0% 0%;
-  -webkit-transform:        translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
-  -webkit-transform-origin: 0% 0%;
-  -moz-transform:           translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
-  -moz-transform-origin:    0% 0%;
-  -o-transform:             translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
-  -o-transform-origin:      0% 0%;
-  -ms-transform:            translate(0%, 100%) rotate(-90deg) translate(0%, 0%);
-  -ms-transform-origin:     0% 0%;
-}
-
-/* Use this on whatever contains the DIV with .down_vertical_text */
-.down_vertical_text_container {
-  vertical-align: top; /* will position the DIV at the top */
-  height: 20em;
-}
-
-div.down_vertical_text {
-  display: block;
-  white-space: nowrap;
-  width: 1.5em;
-  height: auto;
-  margin: auto;
-  text-align: left;
-  transform:                translate(0%, -100%) rotate(90deg) translate(0%, 0%);
-  transform-origin:         0% 100%;
-  -webkit-transform:        translate(0%, -100%) rotate(90deg) translate(0%, 0%);
-  -webkit-transform-origin: 0% 100%;
-  -moz-transform:           translate(0%, -100%) rotate(90deg) translate(0%, 0%);
-  -moz-transform-origin:    0% 100%;
-  -o-transform:             translate(0%, -100%) rotate(90deg) translate(0%, 0%);
-  -o-transform-origin:      0% 100%;
-  -ms-transform:            translate(0%, -100%) rotate(90deg) translate(0%, 0%);
-  -ms-transform-origin:     0% 100%;
-}
-
-div.down_vertical_text2 {
-  display: block;
-  white-space: nowrap;
-  width: 1.5em;
-  height: auto;
-  margin: auto;
-  text-align: right;
-  direction: rtl;
-  transform:                translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
-  transform-origin:         100% 0%;
-  -webkit-transform:        translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
-  -webkit-transform-origin: 100% 0%;
-  -moz-transform:           translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
-  -moz-transform-origin:    100% 0%;
-  -o-transform:             translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
-  -o-transform-origin:      100% 0%;
-  -ms-transform:            translate(-100%, 0%) rotate(-90deg) translate(0%, 0%);
-  -ms-transform-origin:     100% 0%;
-}
-
-
-
-/* % ######################################################### */
-/* % Resource List Table Styles */
-/* % These are usually used on pretty tables of data */
-/* % These will add up to or override the default table layout above */
-/* % ######################################################### */
-
-.resource_list {
-  border: 0px;
-  border-collapse: collapse;
-  margin-top: 0.8em;
-  width: 100%;
-}
-
-.resource_list th {
-  border: 0px;
-  background-color: #0471B4;
-  text-align: center;
-  text-indent: 0px;
-  font-family: Verdana;
-  font-weight: bold;
-  font-size: 11px;
-  color: #ffffff;
-  white-space: nowrap;
-}
-
-.resource_list th a {
-  color: #ffffff;
-  text-decoration: none;
-}
-
-.resource_list th a:link {
-  color: #ffffff;
-  text-decoration: none;
-}
-
-.resource_list td {
-  border: 0px;
-  text-align: center;
-  padding-left: 1em;
-  padding-right: 1em;
-  white-space: nowrap;
-}
-
-table.resource_list td.checkbox {
-  text-align: center;
-}
-
-table.resource_list td.left_align {
-  text-align: left;
-}
-
-table.resource_list tr.subtitle {
-  background-color: #05A3D6;
-}
-
-table.resource_list th.subtitle {
-  background-color: #E7E7E7;
-  color: #444444;
-}
-
-table.resource_list td.subtitle {
-  background-color: #05A3D6;
-}
-
-table.resource_list tr.subtitle_bordered {
-  background-color: #0471B4;
-  border: 2px solid #0471B4;
-}
-
-.index_block {
-  display: inline-block;
-}
-
-.sort_header {
-  border-bottom: thin solid white;
-}
-
-.order_icon {
-  color: #ffffff;
-}
-
-
-
-/* % ############################################## */
-/* % Simpler table than the default; used mostly */
-/* % in tasks forms, for historical reasons. */
-/* % ############################################## */
-
-table.simple {
-  border: 0px;
-}
-
-table.simple tr {
-  border: 1px;
-  text-align: left;
-}
-
-table.simple td {
-  border: 0px;
-  text-align: left;
-  padding: 1px 0.5em 1px 0.5em;
-}
-
-table.bordered {
-  border: solid 1px black;
-  margin: 2px;
-}
 
 /* % ######################################################### */
 /* % Styles for exception logs */
@@ -435,126 +167,6 @@ table.bordered {
 }
 
 
-/* % ######################################################### */
-/* % General styles for text */
-/* % ######################################################### */
-
-.warning {
-  color: red;
-}
-
-h1.warning {
-  font-size: 14px;
-  line-height: 1.1em;
-  padding: 0;
-  margin: 0;
-}
-
-.loading_message {
-  text-align: center;
-  color: red;
-}
-
-.no_wrap {
-  white-space: nowrap !important;
-}
-
-.wrap {
-  white-space: normal !important;
-}
-
-.some_left_right_padding {
-  padding-left: 1em !important;
-  padding-right: 1em !important;
-}
-
-.left {
-  text-align: left !important;
-}
-
-.right {
-  text-align: right !important;
-}
-
-.left_align {
-  text-align: left;
-}
-
-.right_align {
-  text-align: right;
-}
-
-.centered {
-  text-align: center !important;
-}
-
-.small {
-  font-size: 0.8em;
-}
-
-.alone_per_line {
-  display: block;
-  clear: both;
-}
-
-.hidden {
-  display: none;
-}
-
-.short_paragraphs {
-  max-width: 30em;
-  white-space: normal;
-}
-
-.medium_paragraphs {
-  max-width: 60em;
-  white-space: normal;
-}
-
-.field_explanation {
-  font-size: 0.8em;
-  line-height: 1.5em;
-  max-width: 30em;
-  white-space: normal;
-}
-
-.delete_icon {
-  color: red;
-  font-weight: bold;
-  text-decoration: none;
-}
-
-.bold_icon {
-  font-weight: bold;
-  text-decoration: none;
-}
-
-.highlight_in_situ {
-  font-weight: bold;
-  color: purple;
-}
-
-.float_left {
-  float: left;
-}
-
-.cmd-flag {
-  color: #0471b4;
-}
-
-/* % ######################################################### */
-/* % General styles for definition lists */
-/* % ######################################################### */
-
-dt {
-  font-weight: bold;
-}
-
-dd {
-  width: 60em;
-}
-
-
 
 /* % ######################################################### */
 /* % General Links formatting */
@@ -563,6 +175,15 @@ dd {
 a {
   color: #000;
   text-decoration: underline;
+}
+
+/* For show/edit table panels */
+.panel-heading > span > a {
+    color: white;
+}
+
+.dropdown-menu a, a.btn, nav a {
+  text-decoration: none;
 }
 
 .action_link {
@@ -584,58 +205,6 @@ a {
 .no_decorations {
   text-decoration: none;
 }
-
-/* % ######################################################### */
-/* % General box layouts for miscellaneous content */
-/* % ######################################################### */
-
-.whole_width {
-  width: 100%;
-}
-
-.whole_width > table {
-  width: 100%;
-}
-
-.generalbox {
-  display: table-cell;
-  width: auto;
-  margin-left: 1em;
-  margin-right: 1em;
-  margin-bottom: 1em;
-  padding: 1em;
-  background-color: #F6F6F6;
-  color: #505050;
-  line-height: 1.5em;
-  border: 1px solid #E4E4E4;
-}
-
-/* % ######################################################### */
-/* % General box layouts for account information */
-/* % ######################################################### */
-
-.notesbox {
-  padding: 1em;
-  background-color: #F6F6F6;
-  color: #505050;
-  line-height: 1.5em;
-  border: 1px solid #E4E4E4;
-  width: 800px;
-  margin: 1px;
-}
-
-.groupentry {
-  border: 1px solid black;
-  width: auto;
-  margin-left: 0;
-  margin-right: 1em;
-  padding-left: 1em;
-  padding-right: 1em;
-  background-color: #E6E6E6;
-  color: black;
-}
-
-
 
 /* % #################################################################### */
 /* % Rails Log Viewer */
@@ -711,37 +280,6 @@ a {
 }
 
 
-
-/* % #################################################################### */
-/* % Preformated Plain Text Styles */
-/* % #################################################################### */
-
-pre {
-  overflow-x: auto; /* Use horizontal scroller if needed; for Firefox 2, not needed in Firefox 3 */
-  white-space: pre-wrap; /* css-3 */
-  text-align: left;
-  word-wrap: break-word; /* Internet Explorer 5.5+ */
-}
-
-.standard_out {
-  max-width: 1600px;
-}
-
-.ssh_key {
-  max-width: 80em;
-  font-size: 0.7em;
-  line-height: 1.3em;
-}
-
-.script_preview {
-  border: solid black;
-  background-color: #EEEEEE;
-  padding-left: 0.2em;
-  padding-right: 0.2em;
-}
-
-
-
 /* % ######################################################### */
 /* % Format for flash messages (notice/system/error) */
 /* % ######################################################### */
@@ -792,10 +330,10 @@ pre {
   padding: 2px;
   background-color: red;
   display: inline-table;
+  width: 100%;
 }
 
 .errorExplanation {
-  width: 400px;
   border: 2px solid red;
   padding: 7px;
   padding-bottom: 12px;
@@ -827,58 +365,6 @@ pre {
   color: #000;
 }
 
-
-
-/* % ######################################################### */
-/* % Documentation popups */
-/* % ######################################################### */
-
-.help_document_popup > div {
-  width: 100%;
-  height: 100%;
-}
-
-.help_document_popup > button {
-  margin-bottom: 10px;
-}
-
-
-
-/* % ######################################################### */
-/* % Account Section of Application Layout */
-/* % ######################################################### */
-
-.account {
-  background: #0471B4;  /* can be overridden in .account_git_branch_NNNN later in this file */
-  color: #fff;
-  height:1.8em;
-  font-size: 0.9em;
-  padding: 2px 2px 0px 6px;
-  margin: 0px;
-}
-
-.account a {
-  color: #fff;
-  padding: 0 1em 0 0.8em;
-  font-weight: bold;
-  text-decoration: none;
-}
-
-.home_credits {
-  display: inline;
-}
-
-.loggedas {
-  float: right;
-  margin-right: 0.5em;
-}
-
-.last_updated {
-  margin-right: 0.6em;
-  color: #83b4d1;
-  font-weight: bold;
-}
-
 /* ============================================================================== */
 /* Special coloring of the account section's background, based on GIT branch name */
 /* These should all be named .account_git_branch_NNNN where NNNN is a branch name */
@@ -898,131 +384,6 @@ pre {
 
 .account_git_branch_unknown {  /* when not deployed using GIT */
   background: #0471B4; /* same as in .account */
-}
-
-
-
-/* % ######################################################### */
-/* % Menu Section of Application Layout */
-/* % ######################################################### */
-
-#header {
-  height: 6em;
-  margin: 0px;
-  background-color: #05A3D6;
-  position: relative;
-}
-
-#header h1 {
-  color: white;
-  display: inline-block;
-  margin: 0;
-  padding: 0.3em 0.5em 0.3em 0.5em;
-  vertical-align: top;
-}
-
-#header h1 a {
-  color: white;
-}
-
-#header a:hover {
-  color: #222;
-  background: #F1F1F1;
-}
-
-#header h1 span {
-  display: inline-block;
-}
-
-#header_logo {
-  height: 1.3em;
-  vertical-align: -0.3em;
-}
-
-#loading_image {
-  display: inline;
-  margin: 0.5em 0 0 0;
-  padding: 0;
-}
-
-#cbsearch {
-      padding: 1em 1em 0 0;
-      text-align: right;
-      float: right;
-      vertical-align: top;
-}
-
-#main-menu {
-  position: absolute;
-  bottom: 0px;
-  font-size: 11px;
-}
-
-
-.main_menu_left {
-  left:6px;
-}
-
-#main-menu ul {
-  margin: 0;
-  padding: 0;
-}
-
-#main-menu li {
-  float: left;
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  white-space: nowrap;
-}
-
-#main-menu li a {
-  display: block;
-  text-decoration: none;
-  font-weight: bold;
-  margin: 0;
-  padding: 4px 10px 4px 10px;
-}
-
-#main-menu li a:hover {
-  background: gray;
-  color: #fff;
-}
-
-#main-menu li a:hover, a:active {
-  background: #ffffff none repeat scroll 0 0;
-  color: #555555;
-}
-
-.selected a {
-  background-color: white;
-  color: #05A3D6;
-}
-
-.unselected a {
-  color: white;
-}
-
-#active_project_div {
-  white-space: nowrap;
-}
-
-#active_project_div h1 {
-  color: #000;
-}
-
-#header_project_menu {
-  color: #F33;
-  padding-left: 0.5em;
-  padding-right: 0.5em;
-}
-
-#project_menu_items {
-  padding: 0 1em 0 1em;
-}
-
-#header_project_menu span {
-  padding: 0;
 }
 
 
@@ -1121,42 +482,6 @@ pre {
   font-size: 4em;
 }
 
-.project_select_dropdown .title {
-  font-size: 18px;
-  width: 100%;
-  color: white;
-  background: #0471b4;
-  margin: 0;
-  text-align: center;
-  padding: 0 0 0.3em 0;
-}
-
-.project_select_dropdown {
-  border: 0.2em solid #0471b4;
-  background-color: white;
-  white-space: nowrap;
-}
-
-.project_select_dropdown a {
-  font-size: 0.5em;
-  color: #222!important;
-  padding: 0.5em 0em 0.5em 0.5em;
-  min-width: 160px;
-  text-align: left;
-  display: block;
-  margin: 0;
-  border-radius: 0;
-}
-
-.project_select_dropdown:hover {
-  background-color: #F1F1F1;
-}
-
-.project_select_spacer {
-  background-color: #0471b4;
-  height: 0.2em;
-}
-
 .project_button_header {
   border: 0px;
   width: 100%;
@@ -1164,9 +489,6 @@ pre {
   margin-top: 0.8em;
 }
 
-.project_button_header > table {
-  width: 100%;
-}
 
 .project_button_header > table > tbody {
   display: none;
@@ -1193,17 +515,6 @@ pre {
   font-style: italic;
 }
 
-/* % ######################################################### */
-/* % Main Content Section of Application Layout */
-/* % ######################################################### */
-
-.main-content {
-  background-color: #FFFFFF;
-  margin: 0;
-  padding: 1em;
-}
-
-
 
 /* % ######################################################### */
 /* % Footer Section of Application Layout */
@@ -1229,46 +540,26 @@ pre {
 /* % ######################################################### */
 
 .credits_footer {
-  display: table;
-  width: 100%;
-  margin: 1em 0 0 0;
+  clear: both;
+  vertical-align: bottom;
 }
 
 .credits_footer a {
+  color: white;
   text-decoration: none;
-  display: table-cell;
-  text-align: center;
-  vertical-align: middle;
 }
 
-.logobar {
-  height: 50px;
+.site_logos {
+  float: right;
+  margin-right: 2em;
+  height: 100px;
   border: 0;
-  padding: 0px 1em 0px 1em;
 }
 
-#canarie_logo {
-}
-
-#cc_logo {
-  height: 60px;
-}
-
-#neuro_logo {
-  height: 60px;
-}
-
-#mcin_logo {
-}
-
-#bc_logo {
-}
-
-#cfi_logo {
-  height: 60px;
-}
-
-#mcgill_logo {
+.canarie_logo {
+  float: left;
+  margin-left: 2em;
+  height: 100px;
 }
 
 
@@ -1288,7 +579,6 @@ pre {
   border: 1px solid #e4e4e4;
   padding:6px;
   width: 50%;
-  display: table-cell;
 }
 
 .box_spacer {
@@ -1297,116 +587,16 @@ pre {
 }
 
 
-/* ######################################################### */
-/* Session view (login) */
-/* ######################################################### */
-
-.logintable {
-  border: 1px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-top: 1em;
-  padding-left: 1em;
-  padding-right: 1em;
-  padding-bottom: 1em;
-}
-
-.logintable td {
-  border: 0px;
-  font-size: 1em;
-  color: #0471B4;
-  text-align: right;
-  padding-top: 0.5em;
-  padding-left: 2em;
-  padding-right: 2em;
-  padding-bottom: 0.5em;
-  margin: 0px;
-}
-
-.logintable td.field {
-  text-align: left;
-  padding: 2px;
-}
-
-.logintable tr {
-  margin: 1px;
-}
-
-#request_password {
-  padding-right: 12em;
-}
-
-
-
 /* % ############################################## */
 /* % Welcome page */
 /* % ############################################## */
 
-
-.latest_summary_table {
-  border: 0px;
-  background-color: #E4E4E4;
-  width: 100%;
-}
-
-.latest_summary_table td {
-  padding: 0.4em 1em 0.5em 1em;
-  font-weight: bold;
-  border: 0px;
-  text-align: left;
-}
 
 .exception_report {
   border: 2px solid red;
   background: #ffeeee;
   padding: 3px;
 }
-
-
-
-/* % ######################################################### */
-/* % Generic Menu Bar */
-/* % ######################################################### */
-
-.menu_bar {
-  padding-top: 0.2em;
-  padding-bottom: 0.2em;
-  margin-left: 0;
-  margin-right: auto;
-}
-
-
-/* % ######################################################### */
-/* % Active Filters Bar */
-/* % ######################################################### */
-
-.active_status {
-  display: table;
-  margin-top: 0.8em;
-  width: 100%;
-}
-
-.active_status_left_side {
-  display: inline;
-  text-align: left;
-  white-space: nowrap;
-  padding-right: 2em;
-  float: left;
-}
-
-/* not used */
-.active_status_right_side {
-  display: inline;
-  text-align: right;
-  white-space: nowrap;
-  padding-left: 2em;
-  float: right;
-}
-
-.active_label {
-  font-weight: bold;
-}
-
 
 /* % ######################################################### */
 /* % Persistent Selection Bar */
@@ -1479,426 +669,10 @@ pre {
 }
 
 
-
-/* % ######################################################### */
-/* % Show page table formatting */
-/* % ######################################################### */
-
-.show_table {
-  border-collapse: collapse;
-  border: none;
-  width: 100%;
-}
-
-.show_table th {
-  background: none;
-  font-weight: bold;
-  border: none;
-  color: black;
-  text-align: left;
-  white-space: nowrap;
-  width: 20%;
-}
-
-.show_table td {
-  color: black;
-  border: none;
-  margin: 0;
-  padding: 5px 0;
-  text-align: left;
-  white-space: nowrap;
-}
-
-.show_table td.subheader {
-  background-color: #eeeeee;
-}
-
-.show_table th.checkbox_label {
-  text-align: right;
-}
-
-.show_table_edit{
-  font-size: 0.9em;
-}
-
-.show_table_edit_link{
-  color: blue;
-}
-
-.show_table_error {
-  color: red;
-}
-
-.show_table_error a {
-  color: red;
-}
-
-
-
-/* % ######################################################### */
-/* % Generic Sidebar Content */
-/* % ########################################################  */
-
-.sidebar {
-  white-space: nowrap;
-  font-size: 0.9em;
-  padding: 5px;
-  margin-top: 5px;
-  margin-left: 5px;
-  margin-right: 5px;
-  margin-bottom: 5px;
-  background-color: #f6f6f6;
-  border: 1px solid #dddddd;
-}
-
-
-/* % ######################################################### */
-/* % Userfiles Sidebar Content */
-/* % ########################################################  */
-
-.view_options {
-  font-weight: bold;
-  line-height: 1.7em;
-  padding: 0 1em 0 1em;
-  white-space: nowrap;
-}
-
-
-
-/* % ######################################################### */
-/* % Sidebar Filter Content (Tasks or Userfiles) */
-/* % ########################################################  */
-
-#userfiles_filters_dropdown_menu {
-  white-space: nowrap;
-}
-
-.filter_menu {
-  padding: 0;
-  margin-left: 0px;
-  text-align: left;
-}
-
-.filter_menu li {
-  list-style-type: none;
-  margin-left: 0px;
-  font-weight: bold;
-}
-
-.custom_filter li {
-  font-weight: bold;
-}
-
-/* current_filters is an ID because the element is modified with AJAX */
-#current_filters ul {
-  padding-left: 0;
-  color: #0471B4;
-}
-
-.current_filters_item {
-  color: #0471B4;
-  margin-left: 1em;
-}
-
-/* current_filters is an ID because the element is modified with AJAX */
-#current_filters a {
-  text-decoration: none;
-  color: blue;
-}
-
-
-
-/* % ######################################################### */
-/* % Task Show and Edit */
-/* % ######################################################### */
-
-th.center_align_heading {
-  text-align: center;
-}
-
-.show_task_prerequisites {
-  clear: both;
-  margin-right: auto;
-  margin-left: 0px;
-  width: 100%;
-}
-
-.show_task_prerequisites td {
-  text-align: left;
-  margin-right: 0em;
-}
-
-/* Show task parameters */
-.task-show > table {
-  border: 0;
-}
-
-.tsk-sw-hdr,
-.tsk-sw-name,
-.tsk-sw-val {
-  background: inherit;
-  border: 0;
-  text-align: left;
-}
-
-.tsk-sw-hdr {
-  font-family: sans-serif;
-  font-size: 1.1em;
-  font-weight: bold;
-  padding: 30px 5px 10px 5px;
-  text-align: left;
-}
-
-.tsk-sw-name {
-  padding-right: 40px;
-}
-
-.tsk-sw-param > tr > .tsk-sw-hdr {
-  padding-top: 5px;
-}
-
-.tsk-sw-param > tr > .tsk-sw-val {
-  font-family: monospace;
-}
-
-/* Edit task parameters */
-.task-params > ul {
-  list-style: none;
-  padding-left: 20px;
-  padding: 0;
-}
-
-.task-params > ul > li {
-  margin-bottom: 30px;
-  margin-top: 10px;
-}
-
-/* label */
-.tsk-prm-lbl {
-  display: block;
-  font-size: 1.1em;
-  font-weight: bold;
-  margin-bottom: 5px;
-  margin-left: 25px;
-}
-
-.tsk-prm-lbl > .required {
-  color: red;
-}
-
-.tsk-prm.flag > .tsk-prm-lbl {
-  margin-left: 30px;
-}
-
-/* optional */
-.tsk-prm-opt,
-.tsk-prm-chk {
-  display: none;
-}
-
-.tsk-prm-opt-lbl,
-.tsk-prm-chk-lbl {
-  background: #ffffff;
-  border: 1px solid #888888;
-  display: inline-block;
-  float: left;
-  height: 22px;
-  width: 22px;
-}
-
-.tsk-prm-opt-lbl {
-  border-right: 0;
-}
-
-.tsk-prm-opt-lbl > .tsk-prm-opt-icon,
-.tsk-prm-chk-lbl > .tsk-prm-chk-icon {
-  background-image: url("images/ui-icons_ffffff_256x240.png");
-  margin-left: 3px;
-  margin-top: 2px;
-  visibility: hidden;
-}
-
-.tsk-prm-opt:checked + .tsk-prm-opt-lbl,
-.tsk-prm-opt[checked=checked] + .tsk-prm-opt-lbl,
-.tsk-prm-chk:checked + .tsk-prm-chk-lbl,
-.tsk-prm-chk[checked=checked] + .tsk-prm-chk-lbl {
-  background: #0471b4;
-}
-
-.tsk-prm-opt:checked + .tsk-prm-opt-lbl > .tsk-prm-opt-icon,
-.tsk-prm-opt[checked=checked] + .tsk-prm-opt-lbl > .tsk-prm-opt-icon,
-.tsk-prm-chk:checked + .tsk-prm-chk-lbl > .tsk-prm-chk-icon,
-.tsk-prm-chk[checked=checked] + .tsk-prm-chk-lbl > .tsk-prm-chk-icon {
-  visibility: visible;
-}
-
-/* input */
-.tsk-prm-in,
-.tsk-prm-sel {
-  background: #ffffff;
-  border: 1px solid #888888;
-  color: #000000;
-  display: block;
-  font-family: monospace;
-  font-size: 15px;
-  margin-left: 23px;
-  min-height: 18px;
-  padding: 2px 5px;
-  position: relative;
-  width: auto;
-}
-
-.tsk-prm.string > .tsk-prm-in,
-.tsk-prm.string > .tsk-prm-list > li > .tsk-prm-in {
-  width: 600px;
-}
-
-.tsk-prm.number > .tsk-prm-in,
-.tsk-prm.number > .tsk-prm-list > li > .tsk-prm-in,
-.tsk-prm-sel {
-  min-width: 175px;
-}
-
-/* selection */
-.tsk-prm-sel-lbl {
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.tsk-prm-sel-lbl.disabled {
-  color: #888888;
-  font-style: italic;
-}
-
-.tsk-prm-sel > .tsk-prm-sel-icon {
-  background-image: url("images/ui-icons_666666_256x240.png");
-  float: right;
-  margin-top: 2px;
-}
-
-.tsk-prm-sel-opt {
-  border: 1px solid #888888;
-  display: none;
-  left: -1px;
-  list-style: none;
-  max-height: 200px;
-  overflow-y: auto;
-  padding: 0;
-  position: absolute;
-  top: 22px;
-  min-width: 185px;
-  z-index: 51;
-}
-
-.tsk-prm-sel-opt > li {
-  background: #ffffff;
-  color: #000000;
-  display: block;
-  font-family: monospace;
-  font-size: 15px;
-  padding: 4px 5px;
-  width: auto;
-}
-
-.tsk-prm-sel-opt > li:hover {
-  background: #fff3d3;
-}
-
-.tsk-prm-sel-opt > li:active {
-  background: #ffe49a;
-}
-
-/* list */
-.tsk-prm-list {
-  list-style: none;
-  margin-left: 23px;
-  padding: 0;
-}
-
-.tsk-prm-list > li {
-  margin-bottom: 3px;
-}
-
-.tsk-prm-list > li > .tsk-prm-in {
-  display: inline-block;
-  margin-left: 0;
-}
-
-.tsk-prm-list > li > .tsk-prm-add,
-.tsk-prm-list > li > .tsk-prm-rm {
-  background-image: url("images/ui-icons_666666_256x240.png");
-  display: inline-block;
-  cursor: pointer;
-  position: relative;
-  top: 3px;
-}
-
-.tsk-prm-add:hover,
-.tsk-prm-rm:hover {
-  background-color: #dddddd;
-}
-
-.tsk-prm-add:active,
-.tsk-prm-rm:active {
-  background-color: #ffffff;
-}
-
-/* description */
-.tsk-prm-desc {
-  display: block;
-  margin-top: 5px;
-  margin-left: 25px;
-  max-width: 600px;
-}
-
-.tsk-prm.flag > .tsk-prm-desc {
-  margin-left: 30px;
-}
-
-
-/* % ######################################################### */
-/* % Userfiles Content Subclasses */
-/* % ######################################################### */
-
-.plain_file_list {
-  max-width: 950px;
-  margin-left: 0px;
-}
-
-#userfile_contents_display {
-  border: 0.2em solid #6699CC;
-  padding: 0.5em;
-  margin-top: 1em;
-  margin-left: 1em;
-}
-
-img {
-  border: none;
-}
-
-
-
 /* % ######################################################### */
 /* % Tasks Index */
 /* % ######################################################### */
 
-#tasks_div {
-  width: 100%;
-  padding-right: 1em;
-}
-
-#tasks_table {
-  width: auto;
-}
-
-#tasks_table td.expand,
-#tasks_table th.expand {
-  max-width: 12px;
-}
-
-#tasks_table td.expand > .ui-icon {
-  background-image: url(../images/ui-black-icons.png);
-}
 
 #tasks_table td.expand > .batch-btn,
 #tasks_table tr.batch > td.type {
@@ -2200,35 +974,7 @@ img {
   background-color: white;
 }
 
-/* % ######################################################### */
-/* % Extra Toolkit element styling */
-/* % ######################################################### */
 
-.button.grayed-out {
-  opacity: 0.6;
-  filter: alpha(opacity=60);  /* darn IE */
-}
-
-/* % ######################################################### */
-/* % Z Toolkit element styling */
-/* % ######################################################### */
-
-.button_with_drop_down {
-  display: inline-block;
-}
-
-.button_with_drop_down > .drop_down_menu {
-  position: absolute;
-  z-index: 51;
-  border: solid;
-  border-width: 1px;
-  padding: 5px;
-  background: #f8f8f8;
-}
-
-.dropmenu_info {
-  width: 30em;
-}
 
 /* % ######################################################### */
 /* % QC styling */
@@ -2365,18 +1111,4 @@ img {
 .report_fix_attributes td select {
   width: 100%;
   resize: both;
-}
-
-/* % ######################################################### */
-/* % Jquery Confirmation UI styling */
-/* % ######################################################### */
-
-.cbrain-dialog-confirm {
-  background-color: pink !important;
-  font-weight: bold !important;
-  border: 3px solid red !important;
-}
-
-.no-close .ui-dialog-titlebar-close {
-  display: none;
 }

@@ -22,196 +22,231 @@
 #
 -%>
 
-<div class="menu_bar">
-   <%= link_to "Create Project", new_group_path, :class => 'button' %>
-   <%= overlay_ajax_link "Help", "/doc/groups/groups_info.html", :class  => "button" %>
-</div>
-
-<%=
-  render(:partial => 'shared/active_filters', :locals  => {
-    :scope => @scope,
-    :model => Group
-  })
-%>
-
 <% button_view = @scope.custom[:button] %>
 
-<div class="pagination">
-  <div class="pagination_left_side">
-    <%=
-      scope_custom_link(
-        "Switch to #{button_view ? 'List' : 'Button'} View",
-        @scope, { 'button' => !button_view }
-      )
-    %>
-    &nbsp;
-    <%=
-      scope_custom_link(
-        "#{@scope.custom[:small_buttons] ? 'Large' : 'Small'} buttons",
-        @scope, { 'small_buttons' => !@scope.custom[:small_buttons] }
-      ) if button_view
-    %>
-  </div>
-  <div class="page_links">
-    <% if current_user.has_role?(:normal_user) && button_view %>
-      <%= will_paginate @groups, :inner_window => 5, :outer_window => 4, :container => false, :params => { :file_ids => nil } %>
-    <% end %>
-    (<%= pluralize @view_scope.count, "projects" %>)
-  </div>
-  <div class="pagination_right_side">
-    Search by name: <%= ajax_search_box "name_like", groups_path %>
-  </div>
-</div>
+<div class="container-fluid">
+  <div class="row menu_bar">
+    <div class="col-xs-12">
+      <div class="well well-sm">
+        <a href="<%= new_group_path%>" class="btn btn-primary"><span class="glyphicon glyphicon-file"></span> Create Project</a>
 
-<% if button_view %>
-  <% unless current_user.has_role?(:normal_user) %>
-    <%=
-      dynamic_scoped_table([],
-        :id         => "project_button_table",
-        :class      => "project_button_header",
-        :scope      => @scope,
-        :order_map  => {
-          :site => { :a => 'sites.name', :j => Site }
-        },
-        :filter_map => {
-          :site => { :a => 'site_id' }
-        }
-      ) do |t|
-        t.paginate(:collection => @groups)
+        <a href="#" class="btn btn-primary help-btn" data-toggle="modal" data-target="#help-modal" data-url="/doc/groups/groups_info.html"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
 
-        t.column("Name", :name,
-          :sortable => true
-        )
+        <span class="btn btn-primary">
+          <% if button_view %>
+            <span class="glyphicon glyphicon-th-list"></span>
+          <% else %>
+            <span class="glyphicon glyphicon-th-large"></span>
+          <% end %>
+          <%=
+            scope_custom_link(
+              "#{button_view ? 'List' : 'Button'} View",
+              @scope, { 'button' => !button_view }
+            )
+          %>
+        </span>
+        <% if button_view %>
+          <span class="btn btn-primary">
+          <% if @scope.custom[:small_buttons] %>
+            <span class="glyphicon glyphicon-th-large"></span>
+          <% else %>
+            <span class="glyphicon glyphicon-th"></span>
+          <% end %>
+            <%=
+              scope_custom_link(
+                "#{@scope.custom[:small_buttons] ? 'Large' : 'Small'} buttons",
+                @scope, { 'small_buttons' => !@scope.custom[:small_buttons] }
+              )
+            %>
 
-        t.column("Project Type", :type,
-          :sortable => true,
-          :filters  => default_filters_for(@base_scope, :type)
-        )
-
-        t.column("Site", :site,
-          :sortable => true,
-          :filters  => default_filters_for(@base_scope, Site)
-        )
-      end
-    %>
-  <% end %>
-  <div>
-    <%= group_legend(@groups) %>
+          </span>
+        <% end %>
+      </div>
+    </div>
   </div>
-  <div>
-    <% css_small = "small" if @scope.custom[:small_buttons] %>
-    <% @groups.each do |g| %>
-      <% if g == "ALL" %>
-        <div style="color:black" data-href="<%= url_for(:action => :switch, :id => "all") %>" data-method="post" class="project_button <%= css_small %>">
-          <h4 style="color:black">All</h4>
-          <hr>
-          Files: <%= @group_id_2_userfile_counts[nil] || "(None)" %><br>
-          Tasks: <%= @group_id_2_task_counts[nil] || "(None)" %><br>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <%=
+        render(:partial => 'shared/active_filters', :locals  => {
+          :scope => @scope,
+          :model => Group
+        })
+      %>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-12">
+
+
+      <div class="pagination">
+        <div class="pagination_left_side">
+
+        </div>
+        <div class="page_links">
+          <% if current_user.has_role?(:normal_user) && button_view %>
+            <%= will_paginate @groups, :inner_window => 5, :outer_window => 4, :container => false, :params => { :file_ids => nil } %>
+          <% end %>
+          (<%= pluralize @view_scope.count, "projects" %>)
+        </div>
+        <div class="pagination_right_side">
+          Search by name: <%= ajax_search_box "name_like", groups_path %>
+        </div>
+      </div>
+
+      <% if button_view %>
+        <% unless current_user.has_role?(:normal_user) %>
+          <%=
+            dynamic_scoped_table([],
+              :id         => "project_button_table",
+              :class      => "project_button_header",
+              :scope      => @scope,
+              :order_map  => {
+                :site => { :a => 'sites.name', :j => Site }
+              },
+              :filter_map => {
+                :site => { :a => 'site_id' }
+              }
+            ) do |t|
+              t.paginate(:collection => @groups)
+
+              t.column("Name", :name,
+                :sortable => true
+              )
+
+              t.column("Project Type", :type,
+                :sortable => true,
+                :filters  => default_filters_for(@base_scope, :type)
+              )
+
+              t.column("Site", :site,
+                :sortable => true,
+                :filters  => default_filters_for(@base_scope, Site)
+              )
+            end
+          %>
+        <% end %>
+        <div>
+          <%= group_legend(@groups) %>
+        </div>
+        <div>
+          <% css_small = "small" if @scope.custom[:small_buttons] %>
+          <% @groups.each do |g| %>
+            <% if g == "ALL" %>
+              <div style="color:black" data-href="<%= url_for(:action => :switch, :id => "all") %>" data-method="post" class="project_button <%= css_small %>">
+                <h4 style="color:black">All</h4>
+                <hr>
+                Files: <%= @group_id_2_userfile_counts[nil] || "(None)" %><br>
+                Tasks: <%= @group_id_2_task_counts[nil] || "(None)" %><br>
+              </div>
+            <% else %>
+              <%
+                user_count = @group_id_2_user_counts[g.id].to_i
+                css_type   = css_group_type(g, user_count)
+                desc_first = nil
+                desc_rest  = nil
+                if g.description.present?
+                  desc_lines = g.description.lines.to_a
+                  desc_first = desc_lines.shift.presence
+                  desc_rest  = desc_lines.join.presence
+                end
+               %>
+              <div data-href="<%= url_for(:action => :switch, :id => g.id) %>" data-method="post" class="project_button <%= css_small %> <%= css_type %>_project">
+                <h4><%= h crop_text_to(25, g.name) %></h4>
+                <hr>
+                <span class="project_user_count">
+                  <% if user_count > 1 %>
+                    Users: <%= user_count %>
+                  <% elsif css_type != "user" && user_count == 1 %>
+                    <% # FIXME can be rather slow, as it forces a query for each group with just one user %>
+                    User: <%= g.users.first.name %>
+                  <% end %>
+                </span>&nbsp;&nbsp;
+                Files: <%= @group_id_2_userfile_counts[g.id].to_i %>&nbsp;&nbsp;
+                Tasks: <%= @group_id_2_task_counts[g.id].to_i %>
+                <% if desc_first %>
+                  <div class="project_button_description"><%= crop_text_to(35, desc_first) %></div>
+                <% end %>
+                <div class="project_button_details">
+                  <% if desc_rest %>
+                    <div class="project_button_description project_details"><%= crop_text_to(120, desc_rest) %></div>
+                  <% end %>
+                  <%= link_to g.can_be_edited_by?(current_user) ? "Edit" : "Show", group_path(g), :class => "project_edit_button project_button_bottom_link", :title => "Edit" %>
+                  <% if g.is_a?(WorkGroup) && g.can_be_edited_by?(current_user) %>
+                    <%= delete_button "X", group_path(g), :class => "project_delete_button project_button_bottom_link", :title => "Delete", :confirm => "Are you sure you want to delete project '#{h g.name}'?" %>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
         </div>
       <% else %>
-        <%
-          user_count = @group_id_2_user_counts[g.id].to_i
-          css_type   = css_group_type(g, user_count)
-          desc_first = nil
-          desc_rest  = nil
-          if g.description.present?
-            desc_lines = g.description.lines.to_a
-            desc_first = desc_lines.shift.presence
-            desc_rest  = desc_lines.join.presence
+        <%=
+          dynamic_scoped_table(@groups,
+            :id         => 'groups_table',
+            :class      => [ "table-responsive" ],
+            :scope      => @scope,
+            :order_map  => {
+              :site => { :a => 'sites.name', :j => Site }
+            },
+            :filter_map => {
+              :site => { :a => 'site_id' }
+            }
+          ) do |t|
+            t.paginate
+
+            t.column("Name", :name,
+              :sortable => true
+            ) { |g| link_to_group_if_accessible(g) }
+
+            t.column("Description", :description,
+              :sortable => true,
+            ) { |g| overlay_description(g.description) }
+
+            t.column("Project Type", :type,
+              :sortable => true,
+              :filters  => default_filters_for(@base_scope, :type)
+            ) { |g| g.pretty_category_name(current_user) }
+
+            t.column("Site", :site,
+              :sortable => true,
+              :filters  => default_filters_for(@base_scope, Site)
+            ) { |g| link_to_site_if_accessible(g.site) }
+
+            t.column("Users", :users) do |g|
+              @group_id_2_user_counts[g.id] || 0
+            end
+            t.column("Files", :files) do |g|
+              index_count_filter @group_id_2_userfile_counts[g.id], :userfiles, { :group_id => g.id }, :show_zeros => true
+            end
+            t.column("Tasks", :tasks) do |g|
+              index_count_filter @group_id_2_task_counts[g.id], :tasks, { :group_id => g.id }, :show_zeros => true
+            end
+
+            if current_user.has_role?(:admin_user)
+              t.column("Tools", :tools) do |g|
+                index_count_filter @group_id_2_tool_counts[g.id], :tools, { :group_id => g.id }
+              end
+              t.column("Data Providers", :data_providers) do |g|
+                index_count_filter @group_id_2_data_provider_counts[g.id], :data_providers, { :group_id => g.id }
+              end
+              t.column("Portal", :portals) do |g|
+                index_count_filter @group_id_2_brain_portal_counts[g.id], :bourreaux, { :group_id => g.id, :type => "BrainPortal" }
+              end
+              t.column("Execution", :bourreaux) do |g|
+                index_count_filter @group_id_2_bourreau_counts[g.id], :bourreaux, { :group_id => g.id, :type => "Bourreau" }
+              end
+            end
+
+            t.column("Switch", :switch) do |g|
+              link_to 'Switch', { :action => :switch, :id => g.id },
+                :class   => 'action_link',
+                :method  => :post
+            end
           end
-         %>
-        <div data-href="<%= url_for(:action => :switch, :id => g.id) %>" data-method="post" class="project_button <%= css_small %> <%= css_type %>_project">
-          <h4><%= h crop_text_to(25, g.name) %></h4>
-          <hr>
-          <span class="project_user_count">
-            <% if user_count > 1 %>
-              Users: <%= user_count %>
-            <% elsif css_type != "user" && user_count == 1 %>
-              <% # FIXME can be rather slow, as it forces a query for each group with just one user %>
-              User: <%= g.users.first.name %>
-            <% end %>
-          </span>&nbsp;&nbsp;
-          Files: <%= @group_id_2_userfile_counts[g.id].to_i %>&nbsp;&nbsp;
-          Tasks: <%= @group_id_2_task_counts[g.id].to_i %>
-          <% if desc_first %>
-            <div class="project_button_description"><%= crop_text_to(35, desc_first) %></div>
-          <% end %>
-          <div class="project_button_details">
-            <% if desc_rest %>
-              <div class="project_button_description project_details"><%= crop_text_to(120, desc_rest) %></div>
-            <% end %>
-            <%= link_to g.can_be_edited_by?(current_user) ? "Edit" : "Show", group_path(g), :class => "project_edit_button project_button_bottom_link", :title => "Edit" %>
-            <% if g.is_a?(WorkGroup) && g.can_be_edited_by?(current_user) %>
-              <%= delete_button "X", group_path(g), :class => "project_delete_button project_button_bottom_link", :title => "Delete", :confirm => "Are you sure you want to delete project '#{h g.name}'?" %>
-            <% end %>
-          </div>
-        </div>
+        %>
       <% end %>
-    <% end %>
+    </div>
   </div>
-<% else %>
-  <%=
-    dynamic_scoped_table(@groups,
-      :id         => 'groups_table',
-      :class      => [ :resource_list ],
-      :scope      => @scope,
-      :order_map  => {
-        :site => { :a => 'sites.name', :j => Site }
-      },
-      :filter_map => {
-        :site => { :a => 'site_id' }
-      }
-    ) do |t|
-      t.paginate
-
-      t.column("Name", :name,
-        :sortable => true
-      ) { |g| link_to_group_if_accessible(g) }
-
-      t.column("Description", :description,
-        :sortable => true,
-      ) { |g| overlay_description(g.description) }
-
-      t.column("Project Type", :type,
-        :sortable => true,
-        :filters  => default_filters_for(@base_scope, :type)
-      ) { |g| g.pretty_category_name(current_user) }
-
-      t.column("Site", :site,
-        :sortable => true,
-        :filters  => default_filters_for(@base_scope, Site)
-      ) { |g| link_to_site_if_accessible(g.site) }
-
-      t.column("Users", :users) do |g|
-        @group_id_2_user_counts[g.id].to_s.presence || html_colorize("(none)", "red")
-      end
-      t.column("Files", :files) do |g|
-        index_count_filter @group_id_2_userfile_counts[g.id], :userfiles, { :group_id => g.id }, :show_zeros => true
-      end
-      t.column("Tasks", :tasks) do |g|
-        index_count_filter @group_id_2_task_counts[g.id], :tasks, { :group_id => g.id }, :show_zeros => true
-      end
-
-      if current_user.has_role?(:admin_user)
-        t.column("Tools", :tools) do |g|
-          index_count_filter @group_id_2_tool_counts[g.id], :tools, { :group_id => g.id }
-        end
-        t.column("Data Providers", :data_providers) do |g|
-          index_count_filter @group_id_2_data_provider_counts[g.id], :data_providers, { :group_id => g.id }
-        end
-        t.column("Portal", :portals) do |g|
-          index_count_filter @group_id_2_brain_portal_counts[g.id], :bourreaux, { :group_id => g.id, :type => "BrainPortal" }
-        end
-        t.column("Execution", :bourreaux) do |g|
-          index_count_filter @group_id_2_bourreau_counts[g.id], :bourreaux, { :group_id => g.id, :type => "Bourreau" }
-        end
-      end
-
-      t.column("Switch", :switch) do |g|
-        link_to 'Switch', { :action => :switch, :id => g.id },
-          :class   => 'action_link',
-          :method  => :post
-      end
-    end
-  %>
-<% end %>
+</div>

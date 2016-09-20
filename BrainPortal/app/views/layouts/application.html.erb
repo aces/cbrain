@@ -37,8 +37,13 @@
     %>
     <%= id_csrf_meta_tag.html_safe %>
 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    <%= stylesheet_link_tag "bootstrap.min", "bootstrap-custom" %>
     <%= stylesheet_link_tag  "cbrain", "dynamic-table", "jquery-ui", :media => "all" %>
     <%= javascript_include_tag "jquery", "jquery-ui", "jquery.form" %>
+    <%= javascript_include_tag "bootstrap.min" %>
 
     <%= yield :head %>
   </head>
@@ -48,11 +53,11 @@
     <!-- Main HTML Content -->
 
     <%= render :partial => 'layouts/section_account' %>
-    <%= render :partial => 'layouts/section_menu'    %>
     <%= render :partial => 'layouts/section_main'    %>
     <%= render :partial => 'layouts/section_footer'  %>
 
     <!-- Scripts -->
+
 
     <%= javascript_include_tag "cbrain" %>
     <%= javascript_include_tag "dynamic-table" %>
@@ -60,8 +65,8 @@
     <%= javascript_include_tag "custom-confirm-dialog" %>
     <%= yield :scripts %>
 
+    <%= render :partial => 'layouts/confirm_dialog' %>
     <!-- Dynamically Appended Body Elements Below This -->
-
   </body>
 
 </html>

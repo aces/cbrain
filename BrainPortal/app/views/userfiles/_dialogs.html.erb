@@ -306,8 +306,6 @@
   Locked files cannot be modified or moved across data providers.
 </div>
 
-<div id="filter-dialog" class="dlg-dialog"></div>
-
 <div id="tag-dialog" class="dlg-dialog" title="Tags">
   <form action="#" method="post">
     <%=
@@ -377,4 +375,226 @@
 >
   <span class="dlg-cfrm-icon ui-icon ui-icon-alert"></span>
   Are you sure you wish to delete the tag <span class="dlg-cfrm-obj"></span> ?
+</div>
+
+<!-- DELETE FILES MODAL -->
+<div class="modal fade" id="delete-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        Modal title
+      </div>
+      <div class="modal-body">
+        Are you absolutely sure you wish to delete these <span class="dlg-cfrm-obj"></span> file(s)?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary modal-confirm" data-dismiss="modal" id="delete-files" data-url="<%= delete_files_userfiles_path %>" data-method="DELETE">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MOVE/COPY MODAL -->
+<div class="modal fade" id="move-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <span id="move-modal-title">Move</span>
+      </div>
+      <div class="modal-body">
+        <form action="<%= change_provider_userfiles_path %>" method="post">
+          <div class="row">
+            <div class="col-xs-2"><label for="cpmv-dp" class="dlg-fld-lbl">To</label></div>
+            <div class="col-xs-10">
+              <div class="input-group">
+                <%=
+                  data_provider_select('data_provider_id_for_mv_cp',
+                    { :data_providers => writable_dps },
+                    {
+                      :id    => 'up-dp',
+                      :class => 'form-control',
+                      :'data-placeholder' => "A data provider..."
+                    }
+                  )
+                %>
+                <span class="input-group-addon pop" data-toggle="popover" data-trigger="focus" data-container="body" data-content="<%= data_providers_descriptions.html_safe %>" data-html="true"><span class="glyphicon glyphicon-question-sign"></span></span>
+
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-10 col-sm-offset-2">
+                <label for="overwrite">Overwrite existing file(s) with the same name</label>
+                <input id="overwrite" type="checkbox"></input>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" id="delete-files">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LAUNCH TASK MODAL -->
+
+
+<!-- UPLOAD MODAL -->
+<div class="modal fade" id="upload-modal" tabindex="-1" role="dialog"
+  data-max-upload-size="<%= RemoteResource.current_resource.meta[:upload_size_limit].to_i.megabytes %>"
+  data-type-detect-url="<%= detect_file_type_userfiles_path %>">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <span>File Upload</span>
+      </div>
+      <div class="modal-body">
+        <form action="<%= userfiles_path %>" method="post" enctype="multipart/form-data">
+          <div class="row">
+            <div class="col-xs-2">
+              <label for="up-file">Upload</label>
+            </div>
+            <div class="col-xs-10">
+              <input id="up-file" class="form-control" type="file" name="upload_file" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-12"><span id="up-file-warn" class="dlg-msg-err"></span></div>
+          </div>
+
+          <div class="row">
+            <div class="col-xs-2"><label for="up-dp" class="dlg-fld-lbl">To</label></div>
+            <div class="col-xs-10">
+              <div class="input-group">
+                <%=
+                  data_provider_select('data_provider_id',
+                    { :data_providers => writable_dps },
+                    {
+                      :id    => 'up-dp',
+                      :class => 'form-control',
+                      :'data-placeholder' => "A data provider..."
+                    }
+                  )
+                %>
+                <span class="input-group-addon pop" data-toggle="popover" data-trigger="focus" data-container="body" data-content="<%= data_providers_descriptions.html_safe %>" data-html="true"><span class="glyphicon glyphicon-question-sign"></span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-xs-2"><label for="up-prj" class="dlg-fld-lbl">Project</label></div>
+            <div class="col-xs-10">
+              <%=
+                group_select('userfile[group_id]', {}, {
+                  :id    => 'up-prj',
+                  :class => 'form-control',
+                  :'data-placeholder' => "A project..."
+                })
+              %>
+            </div>
+          </div>
+
+          <div clas="row" id="up-ex-container">
+            <div class="col-xs-2"><label for="up-ex" class="dlg-chk-lbl">Extract</label></div>
+            <div class="col-xs-10"><input id="up-ex" class="dlg-chk" type="checkbox" name="_do_extract" value="on" /></div>
+          </div>
+
+          <div class="row" id="up-ex-mode">
+            <div class="col-xs-6">
+              <input id="up-col" class="dlg-rad" type="radio" name="_up_ex_mode" value="collection" checked />
+              <label for="up-col" class="dlg-rad-lbl">As a single collection</label>
+            </div>
+            <div class="col-xs-6">
+              <input id="up-mul" class="dlg-rad" type="radio" name="_up_ex_mode" value="multiple" />
+              <label for="up-mul" class="dlg-rad-lbl">As multiple files</label>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-xs-12">
+
+              <input id="up-opt-toggle" type="checkbox" />
+              <label id="up-opt-icon" for="up-opt-toggle">
+                <span class="ui-icon up-closed ui-icon-carat-1-e"></span>
+                <span class="ui-icon up-open ui-icon-carat-1-s"></span>
+              </label>
+              <label id="up-opt-lbl" for="up-opt-toggle">Advanced options...</label>
+
+              <div id="up-opt">
+                <div class="row">
+                  <div class="col-xs-2"><label for="up-tag" class="dlg-fld-lbl">Tags</label></div>
+                  <div class="col-xs-10">
+                    <select id="up-tag"
+                      class="form-control dlg-chosen"
+                      name="tags[]"
+                      multiple="multiple"
+                      data-placeholder="Some tags..."
+                      data-default-project="<%= default_project.id %>"
+                    >
+                      <%= options_from_collection_for_select(current_user.available_tags, 'id', 'name') %>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-xs-2"><label for="up-type" class="dlg-fld-lbl">Detect as</label></div>
+                  <div class="col-xs-10">
+                    <%=
+                      userfile_type_select(:file_type, {}, {
+                        :id                 => 'up-type',
+                        :class              => 'form-control',
+                        :'data-placeholder' => "A file type...",
+                        # :include_blank      => "(Detect during autoextract)",  # doesn't work
+                      })
+                    %>
+                    <span id="up-type-auto">(autodetected)</span>
+                    <span id="up-type-unknown" class="dlg-msg-warn">Unknown file type!</span>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-xs-2">
+                    <input id="up-shr" class="dlg-chk" name="group_writable" type="checkbox" />
+                    <label for="up-shr" class="dlg-chk-icon">
+                      <span class="ui-icon ui-icon-check"></span>
+                    </label>
+                  </div>
+                  <div class="col-xs-10">
+                    <label for="up-shr" class="dlg-chk-lbl">
+                      Allow modification by other project members
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <%
+           # We create here a tiny SPAN element containing in its attribute "data-link"
+           # a URL to some help page that users can refer to when uploading large datasets.
+           # The URL is configured as a meta data value in the Portal's config page.
+        %>
+        <% large_upload_help_link_url = RemoteResource.current_resource.meta[:large_upload_url].presence.try(:strip) %>
+        <% if large_upload_help_link_url %>
+          <span <%= { :id         => "up-alt-help-link",
+                      :style      => "display: none",
+                      "data-link" => large_upload_help_link_url,
+                    }.to_html_attributes.html_safe %> >
+          </span>
+        <% end %>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" id="upload-files">OK</button>
+      </div>
+
+    </div>
+  </div>
 </div>

@@ -24,46 +24,66 @@
 
 <% title 'Add New Access Profile' %>
 
-<%= overlay_ajax_link "Help", "/doc/access_profiles/access_profiles.html", :class  => "button" %>
-
-<h2>Add New Access Profile</h2>
-
-<%= error_messages_for(@access_profile) %>
-
-<%= form_for @access_profile, :url => { :action => "create" }, :datatype => "script" do |f| -%>
-
-  <div class="generalbox">
-
-    <%= f.label :name %><br>
-    <%= f.text_field :name, :class => "cb_colorpick_bg_target" %>
-    <p>
-
-    <%= f.label :color %><br>
-    <%= f.text_field :color, :class => "cb_colorpick_val_target" %><br>
-    <span class="field_explanation">Use a CSS-compliant <strong>pale</strong> color:<br>
-    e.g. <em>#ff0</em> or <em>yellow</em> etc.</span><br>
-    <%= render :partial => 'shared/color_picker', :locals => { :step => 30, :greys => false, :dark => false } %>
-    <p>
-
-    <span title="Brief description of the profile.">
-      <%= f.label :description, "Description" %><br/>
-      <%= f.text_area :description, :rows => 6, :cols => 60 %><br/>
-      <span class="field_explanation">These are your private notes about this profile.</span>
-    </span>
-
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="well well-sm">
+        <a href="#" class="btn btn-primary help-btn" data-toggle="modal" data-target="#help-modal" data-url="/doc/access_profiles/access_profiles.html"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
+      </div>
+    </div>
   </div>
 
-  <div class="box_spacer"></div>
-
-  <div class="generalbox">
-    <h5>Project Membership</h5>
-    <%= render :partial => 'shared/group_tables', :locals => { :model => @access_profile } %>
+  <div class="row">
+    <div class="col-xs-12">
+      <h3 class="text-center">Add New Access Profile</h3>
+    </div>
   </div>
 
-  <div class="display_row centered">
-    <p>
-    <%= f.submit "Create" %>
-  </div>
+  <%= form_for @access_profile, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+    <div class="row">
+      <div class="col-xs-12"><%= error_messages_for(@access_profile) %></div>
+    </div>
 
-<% end %>
+    <div class="row">
+      <div class="col-xs-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">Profile Info <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#profile-panel"></span></div>
+          <div class="panel-body collapse in" id="profile-panel">
+            <div class="row">
+              <div class="col-xs-4"><%= f.label :name %></div>
+              <div class="col-xs-8"><%= f.text_field :name, :class => "form-control" %></div>
+            </div>
+            <div class="row">
+              <div class="col-xs-4"><%= f.label :color %></div>
+              <div class="col-xs-8">
+                <%= f.text_field :color, :class => "form-control" %>
+                Use a CSS-compliant <strong>pale</strong> colour: e.g. <em>#ff0</em> or <em>yellow</em> etc.
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-4"><%= f.label :description, "Description" %></div>
+              <div class="col-xs-8">
+                <%= f.text_area :description, :rows => 8, :class => "form-control" %>
+                These are your private notes about this profile.
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-xs-4"></div>
+              <div class="col-xs-8"></div>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <div class="col-xs-6">
+        <%= render :partial => 'shared/group_tables', :locals => { :model => @access_profile } %>
+      </div>
+
+    </div>
+
+    <div class="row">
+      <div class="col-xs-12"><%= f.submit "Create", :class => "btn btn-primary btn-block" %></div>
+    </div>
+
+  <% end %>
+</div>

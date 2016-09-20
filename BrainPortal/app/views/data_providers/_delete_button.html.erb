@@ -18,27 +18,37 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<%= button_with_dropdown_menu("Delete Files") do %>
-  <p class="medium_paragraphs">
-  This panel allows you to <strong>delete permanently</strong> files that
-  are present on the remote Data Provider. Note that this operation will
-  work whether or not the files are registered. If they are registered,
-  the will be unregistered first.
-  </p>
 
-  <p class="centered">
-    <%= hijacker_submit_button(
-      "Delete the files",
-      :name     => :register,
-      :url      => url_for(:action => :delete),
-      :method   => :post,
-      :datatype => :script,
-      :class    => "button"
-    ) %>
-  </p>
-<% end %>
+<div class="btn-group">
+  <a href="javascript:;" class="btn btn-primary dropdown-toggle mega-dropdown" role="dropdown" aria-haspopup="true" aria-expanded="false">Delete Files<span class="caret"></span></a>
+  <ul class="dropdown-menu">
+    <div class="container-fluid">
+      <li>
+        This panel allows you to <strong>delete permanently</strong> files that
+        are present on the remote Data Provider. Note that this operation will
+        work whether or not the files are registered. If they are registered,
+        the will be unregistered first.
+      </li>
+      <li class="divider" role="separator"></li>
+      <li>
+        <%= hijacker_submit_button(
+          "Delete the files",
+          :name     => :register,
+          :url      => url_for(:action => :delete),
+          :method   => :post,
+          :datatype => :script,
+          :class    => "btn btn-primary btn-block mega-dropdown-closer"
+        ) %>
+      </li>
+    </div>
+  </ul>
+</div>
+
+
+
+
 

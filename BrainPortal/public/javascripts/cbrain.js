@@ -21,6 +21,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 */
+
 (function() {
   "use strict";
 
@@ -796,6 +797,94 @@
     //
     /////////////////////////////////////////////////////////////////////
 
+    // Initialize Bootstrap popovers
+    $(function () {
+      $('[data-toggle="popover"]').popover()
+    });
+
+    // Initialize Bootstrap tooltips
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+    })
+
+    // Implements dropdown open for mega-dropdowns (example on task page).
+    $('.mega-dropdown').on('click', function (event) {
+      $(this).parent().toggleClass('open');
+    });
+
+    // Closes the dropdown only when when a .mega-dropdown-closer is clicked
+    // or when the user clicks outside the dropdown
+    $('body').on('click', function (event) {
+
+      // Close dropdown when clicking outside
+      if (!$('.mega-dropdown').is(event.target)
+        && $('.mega-dropdown').has(event.target).length === 0
+        && $('.open').has(event.target).length === 0
+      ) {
+          $('.mega-dropdown').parent().removeClass('open');
+      }
+
+      // Close dropdown when ajax button is clicked in it
+      if ($('.mega-dropdown-closer').is(event.target)) {
+        $('.mega-dropdown').parent().removeClass('open');
+      }
+
+    });
+
+    $('.glyphicon-chevron-up').on('click', function(event) {
+      $(this).toggleClass('glyphicon-chevron-up glyphicon-chevron-down');
+    });
+
+    // Makes Popovers not close dropdown menu
+    $(".pop").popover({ trigger: "manual" , html: true, animation:true })
+    .on("mouseenter", function () {
+        var _this = this;
+        $(this).popover("show");
+        $(".popover").on("mouseleave", function () {
+            $(_this).popover('hide');
+        });
+    }).on("mouseleave", function () {
+        var _this = this;
+        setTimeout(function () {
+            if (!$(".popover:hover").length) {
+                $(_this).popover("hide");
+            }
+        }, 300);
+    });
+
+    function SelectText(element) {
+      var doc = document
+          , text = doc.getElementById(element)
+          , range, selection
+      ;
+      if (doc.body.createTextRange) {
+          range = document.body.createTextRange();
+          range.moveToElementText(text);
+          range.select();
+      } else if (window.getSelection) {
+          selection = window.getSelection();
+          range = document.createRange();
+          range.selectNodeContents(text);
+          selection.removeAllRanges();
+          selection.addRange(range);
+      }
+    }
+
+    $(function () {
+      $('.ssh_key').on('click', function(event){
+        SelectText('ssh_key');
+      })
+    });
+
+    // Loads and displays help data
+    $(function() {
+      $('.help-btn').on('click', function(event){
+        var modal_content = $.get($(this).data('url'), function(data){
+          $('#help-content').html(data);
+        });
+      })
+    })
+
     //Forms with the class "ajax_form" will be submitted as ajax requests.
     //Datatype and target can be set with appropriate "data" attributes.
     $(document).delegate(".ajax_form", "ajax:success", function(event, data, status, xhr) {
@@ -1001,8 +1090,6 @@
       var dp_check_btns = $("body").find(".dp_alive_btn");
 
       sequential_loading(0, dp_check_btns);
-
-      event.preventDefault();
     });
 
     function sequential_loading(index, element_array) {
@@ -1013,8 +1100,8 @@
       var error_message = current_element.attr("data-error");
       var replace_elem = $("#" + current_element.attr("data-replace"));
 
-      jQuery.ajax({
-        dataType: 'html',
+      $.ajax({
+        dataType: 'script',
         url: url,
         timeout: 50000,
         success: function(data) {
@@ -1080,4 +1167,3 @@
   });
 
 })();
-

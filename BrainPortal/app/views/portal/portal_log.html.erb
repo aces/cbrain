@@ -1,45 +1,74 @@
 
 <% title 'Portal Logs' %>
 
-<%= form_tag("/portal_log", :method => :get) do %>
+<div class="container-fluid">
+  <%= form_tag("/portal_log", :method => :get) do %>
+    <div class="row">
+      <div class="col-xs-2">
+        <strong>Settings</strong>
+        <div class="input-group">
+          <span class="input-group-addon"># lines to show</span>
+          <%= select_tag :num_lines, options_for_select([100, 500, 1000, 5000, 10_000, 20_000], :selected => params[:num_lines].presence || 5000), :class => "form-control" %>
+        </div>
+        <div class="input-group">
+          <span class="input-group-addon">Min request time:</span>
+          <%= select_tag :ms_min, options_for_select([ '', 200, 500, 1000, 1500, 2000, 5000, 10000], params[:ms_min]), :class => "form-control" %>
+          <span class="input-group-addon">ms</span>
+        </div>
+      </div>
+      <div class="col-xs-2">
+        <strong>Filter</strong>
+        <div class="input-group">
+          <span class="input-group-addon">User</span>
+          <%= select_tag :user_login, options_for_select(@user_counts.keys.sort.map{ |k| ["#{k} (#{@user_counts[k]})", k]  }, selected: params[:user_login]), include_blank: true, :class => "form-control" %>
+        </div>
 
-  <div class="log_refresh">
-    <%= submit_tag "Refresh", :class => "button" %>
+        <div class="input-group">
+          <span class="input-group-addon">Instance Name</span>
+          <%= text_field_tag :log_inst, params[:log_inst], :class => "form-control" %>
+        </div>
+      </div>
+      <div class="col-xs-2">
+        <strong>Filter</strong>
+        <div class="input-group">
+          <span class="input-group-addon">Method</span>
+          <%= select_tag :log_meth, options_for_select(
+             [ '', 'GET', 'POST', 'PUT', 'DELETE' ], params[:log_meth]), :class => "form-control" %>
+        </div>
+
+        <div class="input-group">
+          <span class="input-group-addon">Controller</span>
+          <%= select_tag :log_ctrl, options_for_select(
+             [ '', 'bourreaux', 'custom_filters', 'data_providers', 'feedbacks', 'groups', 'messages', 'session', 'sites', 'tags', 'tasks', 'tool_configs', 'tools', 'userfiles', 'users' ], params[:log_ctrl]), :class => "form-control" %>
+        </div>
+      </div>
+
+      <div class="col-xs-6">
+        <strong>Hide lines</strong><br>
+            'Started':    <%= check_box_tag :hide_started,    "1", params[:hide_started]    == "1" %>
+          | 'Processing': <%= check_box_tag :hide_processing, "1", params[:hide_processing] == "1" %>
+          | 'Parameters': <%= check_box_tag :hide_parameters, "1", params[:hide_parameters] == "1" %>
+          | 'Rendered':   <%= check_box_tag :hide_rendered,   "1", params[:hide_rendered]   == "1" %>
+          | 'Redirected': <%= check_box_tag :hide_redirected, "1", params[:hide_redirected] == "1" %>
+          | 'User':       <%= check_box_tag :hide_user,       "1", params[:hide_user]       == "1" %>
+          | 'Completed':  <%= check_box_tag :hide_completed,  "1", params[:hide_completed]  == "1" %>
+        <% if Rails.env == 'development' %>
+          | 'SQL':        <%= check_box_tag :hide_sql,        "1", params[:hide_sql]        == "1" %>
+          | 'Load':       <%= check_box_tag :hide_load,       "1", params[:hide_load]       == "1" %>
+          | 'CACHE':      <%= check_box_tag :hide_cache,      "1", params[:hide_cache]      == "1" %>
+          | 'AREL':       <%= check_box_tag :hide_arel,       "1", params[:hide_arel]       == "1" %>
+        <% end %>
+        <%= submit_tag "Refresh", :class => "btn btn-primary btn-block" %>
+      </div>
+
+    </div>
+  <% end %>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <pre id="log_contents" class="scroll_bottom"><%= @portal_log %></pre>
+    </div>
   </div>
 
-  <div class="log_filters">
-
-    Number of lines to show: <%= select_tag :num_lines, options_for_select([100, 500, 1000, 5000, 10_000, 20_000], :selected => params[:num_lines].presence || 5000) %>
-    Minimum request time: <%= select_tag :ms_min, options_for_select([ '', 200, 500, 1000, 1500, 2000, 5000, 10000], params[:ms_min]) %> ms
-    <br>
-
-    <strong>Filter:</strong>
-      By user:          <%= select_tag :user_login, options_for_select(@user_counts.keys.sort.map{ |k| ["#{k} (#{@user_counts[k]})", k]  }, selected: params[:user_login]), include_blank: true %>
-      By instance name: <%= text_field_tag :log_inst, params[:log_inst], :size => 8 %>
-      By method:        <%= select_tag :log_meth, options_for_select(
-         [ '', 'GET', 'POST', 'PUT', 'DELETE' ], params[:log_meth]) %>
-      By controller:    <%= select_tag :log_ctrl, options_for_select(
-         [ '', 'bourreaux', 'custom_filters', 'data_providers', 'feedbacks', 'groups', 'messages', 'session', 'sites', 'tags', 'tasks', 'tool_configs', 'tools', 'userfiles', 'users' ], params[:log_ctrl]) %>
-    <br>
-
-    <strong>Hide lines:</strong>
-        'Started':    <%= check_box_tag :hide_started,    "1", params[:hide_started]    == "1" %>
-      | 'Processing': <%= check_box_tag :hide_processing, "1", params[:hide_processing] == "1" %>
-      | 'Parameters': <%= check_box_tag :hide_parameters, "1", params[:hide_parameters] == "1" %>
-      | 'Rendered':   <%= check_box_tag :hide_rendered,   "1", params[:hide_rendered]   == "1" %>
-      | 'Redirected': <%= check_box_tag :hide_redirected, "1", params[:hide_redirected] == "1" %>
-      | 'User':       <%= check_box_tag :hide_user,       "1", params[:hide_user]       == "1" %>
-      | 'Completed':  <%= check_box_tag :hide_completed,  "1", params[:hide_completed]  == "1" %>
-    <% if Rails.env == 'development' %>
-      | 'SQL':        <%= check_box_tag :hide_sql,        "1", params[:hide_sql]        == "1" %>
-      | 'Load':       <%= check_box_tag :hide_load,       "1", params[:hide_load]       == "1" %>
-      | 'CACHE':      <%= check_box_tag :hide_cache,      "1", params[:hide_cache]      == "1" %>
-      | 'AREL':       <%= check_box_tag :hide_arel,       "1", params[:hide_arel]       == "1" %>
-    <% end %>
-
-  </div>
-
-<% end %>
-
-<pre id="log_contents" class="scroll_bottom"><%= @portal_log %></pre>
+</div>
 

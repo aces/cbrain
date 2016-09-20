@@ -22,40 +22,50 @@
 #
 -%>
 
-<div class="menu_bar">
-  <%= link_to 'Create Access Profile', new_access_profile_path, :class => "button menu_button" %>
-  <%= overlay_ajax_link "Help", "/doc/access_profiles/access_profiles.html", :class  => "button" %>
+<div class="container-fluid">
+  <div class="row menu-bar">
+    <div class="col-xs-12">
+      <div class="well well-sm">
+        <a href="<%= new_access_profile_path %>" class="btn btn-primary"><span class="glyphicon glyphicon-file"></span> Create Access Profile</a>
+        <a href="#" class="btn btn-primary help-btn" data-toggle="modal" data-target="#help-modal" data-url="/doc/access_profiles/access_profiles.html"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="text-center">(<%= pluralize @access_profiles.count, "access profile" %>)</div>
+
+        <%=
+          dynamic_scoped_table(@access_profiles,
+            :id    => 'access_profiles_table',
+            :class => [ "table-responsive" ],
+            :scope => @scope
+          ) do |t|
+        %>
+          <%
+            t.column("Name", :name,
+              :sortable => true,
+            ) { |s| access_profile_label(s, :with_link => true) }
+
+            t.column("Color", :color,
+              :sortable => true,
+            ) { |s| s.color.presence || "white" }
+
+
+            t.column("Description", :description,
+              :sortable => true,
+            ) { |s| overlay_description(s.description) }
+
+            t.column("Projects", :projects) do |s|
+              (s.groups.sort_by(&:name).map { |g| link_to_group_if_accessible(g) }.join(", ").html_safe.presence) || "(None)"
+            end
+
+            t.column("Users", :users) do |s|
+              (s.users.sort_by(&:login).map { |u| link_to_user_if_accessible(u) }.join(", ").html_safe.presence) || "(None)"
+            end
+          %>
+        <% end %>
+    </div>
+  </div>
 </div>
-
-<div class="centered">(<%= pluralize @access_profiles.count, "access profile" %>)</div>
-
-<%=
-  dynamic_scoped_table(@access_profiles,
-    :id    => 'access_profiles_table',
-    :class => [ :resource_list ],
-    :scope => @scope
-  ) do |t|
-%>
-  <%
-    t.column("Name", :name,
-      :sortable => true,
-    ) { |s| access_profile_label(s, :with_link => true) }
-
-    t.column("Color", :color,
-      :sortable => true,
-    ) { |s| s.color.presence || "white" }
-
-
-    t.column("Description", :description,
-      :sortable => true,
-    ) { |s| overlay_description(s.description) }
-
-    t.column("Projects", :projects) do |s|
-      (s.groups.sort_by(&:name).map { |g| link_to_group_if_accessible(g) }.join(", ").html_safe.presence) || "(None)"
-    end
-
-    t.column("Users", :users) do |s|
-      (s.users.sort_by(&:login).map { |u| link_to_user_if_accessible(u) }.join(", ").html_safe.presence) || "(None)"
-    end
-  %>
-<% end %>

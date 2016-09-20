@@ -43,7 +43,7 @@
 
 <%# Template for just the core table of a dynamic table %>
 <% templates[:table] = Proc.new do %>
-  <table class="dt-table">
+  <table class="dt-table table table-condensed table-striped table-hover">
     <thead class="dt-head">
       <% templates[:header].call %>
     </thead>
@@ -141,7 +141,7 @@
       </th>
     <% end %>
     <th class="dt-col-csp">
-      <span class="dt-col-btn ui-icon ui-icon-plusthick"></span>
+      <span class="dt-col-btn glyphicon glyphicon-plus"></span>
       <div class="dt-popup">
         <table class="dt-cpop-table">
           <tbody class="dt-cpop-body">

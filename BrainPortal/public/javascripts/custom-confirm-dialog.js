@@ -3,33 +3,17 @@
 
 (function () {
 
-// The custom dialog box actually gets created in the function below
+// Finds the Bootstrap Modal and sets the message, running the confirm callback when user clicks OK
 function myCustomConfirmBox(message, callback) {
 
-	if ($('.cbrain-dialog-confirm').length == 0){
-		$(document.body).append('<div class="cbrain-dialog-confirm"></div>');
-	}
+  $('#confirm-message').html(message);
 
-	$(".cbrain-dialog-confirm").html(message);
+  $('#cbrain-dialog-confirm').modal('show');
 
+  $('.modal-confirm').on('click', function(event){
+    callback();
+  });
 
-	// Define the Dialog and its properties.
-	$(".cbrain-dialog-confirm").dialog({
-		resizable: false,
-		modal: true,
-		dialogClass: "no-close",
-		title: "Confirmation",
-		width: 400,
-		buttons: {
-			"Yes": function () {
-				$(this).dialog('close');
-				callback();
-			},
-			"No": function () {
-				$(this).dialog('close');
-			}
-		}
-	});
 }
 
 // The function below overrides the allowAction to create a custom dialog box

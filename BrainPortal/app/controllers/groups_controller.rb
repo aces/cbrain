@@ -221,6 +221,7 @@ class GroupsController < ApplicationController
     if params[:id].blank?
       current_session[:active_group_id] = nil
     elsif params[:id] == "all"
+puts "changing activte group"
       current_session[:active_group_id] = "all"
     else
       @group = current_user.available_groups.find(params[:id])

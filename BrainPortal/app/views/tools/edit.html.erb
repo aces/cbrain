@@ -18,30 +18,42 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
 <% title 'Edit Tool' %>
 
-<div class="menu_bar">
-  <%= link_to 'Delete', tool_path(@tool), { :confirm => "Are you sure you want to delete '#{@tool.name}' ?", :method => :delete, :class => "button" } %>
+<div class="container-fluid">
+  <div class="row menu-bar">
+    <div class="col-xs-12">
+      <div class="well well-sm">
+        <a href="<%= tool_path(@tool) %>" data-type="script" data-method="DELETE" data-confirm="Are you sure you want to delete '<%= @tool.name %>' ?" class="btn btn-primary"><span class="glyphicon glyphicon-trash"></span> Delete</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <%= form_for(@tool) do |f| %>
+        <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
+        <%= f.submit "Update tool", :class => "btn btn-primary btn-block" %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @tool.has_owner_access?(current_user) %>
+    <div class="row">
+      <div class="col-xs-12">
+        <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool.getlog, :title => 'Tool Log' } %>
+      </div>
+    </div>
+  <% end %>
+
 </div>
 
 
-<div class="generalbox">
-  <%= form_for(@tool) do |f| %>
-    <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
-    <p>
-      <%= f.submit "Update tool" %>
-    </p>
-  <% end %>
 
-  <%= button_to 'Cancel', tools_path, :method  => :get %>
-</div> 
 
-<% if @tool.has_owner_access?(current_user) %>
-  <P>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool.getlog, :title => 'Tool Log' } %>
-<% end %>
+
 

@@ -24,7 +24,6 @@
 class CustomFiltersController < ApplicationController
 
   before_filter :login_required
-  layout false
   api_available
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -36,6 +35,11 @@ class CustomFiltersController < ApplicationController
     end
     filter_class  = Class.const_get(filter_param)
     @custom_filter = filter_class.new
+
+    respond_to do |format|
+      format.html
+    end
+
   end
 
   def edit #:nodoc:
@@ -46,6 +50,7 @@ class CustomFiltersController < ApplicationController
   # POST /custom_filters.xml
   def create #:nodoc:
     filter_param = "#{params[:filter_class]}".classify
+
     unless CustomFilter.descendants.map(&:name).include?(filter_param)
       cb_error "Filter class required", :status  => :unprocessable_entity
     end
@@ -56,19 +61,34 @@ class CustomFiltersController < ApplicationController
     @custom_filter.data.merge! params[:data]
 
     @custom_filter.user_id = current_user.id
-
     @custom_filter.save
 
     if @custom_filter.errors.empty?
       flash[:notice] = "Filter successfully created."
+    else
+      flash[:error] = "Error creating filter."
     end
 
+    respond_to do |format|
+      format.html { redirect_to :controller => :userfiles, :action => :index, :format => :html } if filter_param == UserfileCustomFilter.name
+      format.html { redirect_to :controller => :tasks, :action => :index, :format => :html } if filter_param == TaskCustomFilter.name
+    end
+
+  end
+
+  def show #:nodoc:
+    @custom_filter = current_user.custom_filters.find(params[:id])
+
+    respond_to do |format|
+      format.html # show.html.erb
+    end
   end
 
   # PUT /custom_filters/1
   # PUT /custom_filters/1.xml
   def update #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])
+    filter_param = "#{params[:filter_class]}".classify
 
     params[:custom_filter] ||= {}
     params[:data] ||= {}
@@ -80,14 +100,14 @@ class CustomFiltersController < ApplicationController
 
     if @custom_filter.errors.empty?
       flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
-      return
     end
-
 
     respond_to do |format|
-      format.xml  { render :xml => @custom_filter.errors, :status => :unprocessable_entity }
-      format.js
+      format.html { redirect_to :controller => :userfiles, :action => :index, :format => :html } if filter_param == UserfileCustomFilter.name
+      format.html { redirect_to :controller => :tasks, :action => :index, :format => :html} if filter_param == TaskCustomFilter.name
+      format.xml  { head :ok }
     end
+
   end
 
   # DELETE /custom_filters/1

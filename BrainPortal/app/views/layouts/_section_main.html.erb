@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -28,8 +28,10 @@
 
 <div id="main" class="main-content">
   <% unless params[:action] == "index" && params[:controller] == "messages" %>
-    <div id="message_display">
-      <%= render :partial => 'messages/message_display' %>
+    <div class="col-xs-12">
+      <div id="message_display">
+        <%= render :partial => 'messages/message_display' %>
+      </div>
     </div>
   <% end %>
   <%= yield :layout %>

@@ -39,7 +39,7 @@
   #   +task+ is the first task of the batch. This row type is used for AJAX-loaded batch headers.
   table = dynamic_scoped_table(list,
     :id         => "tasks_table",
-    :class      => [ :resource_list ],
+    :class      => [ "table-responsive" ],
     :render     => false,
     :order_map  => {
       :owner        => { :a => 'users.login',               :j =>  User                                },
@@ -293,58 +293,64 @@
 # Only a loaded batch header and the task themselves are rendered.
 -%>
 
-<% if @row_fetch %>
-  <% if @tasks.empty? %>
-    <tr class="batch">
-      <td class="dt-table-wide">
-        This batch of tasks has disappeared
-      </td>
-    </tr>
-  <% else %>
-    <%= table.render :row, [[ :loaded_batch, @tasks.first[:batch], nil, @tasks.first[:first] ]] %>
-    <%= table.render :row, list %>
-  <% end %>
-<% else %>
-  <%=
-    render(:partial => 'shared/active_filters', :locals  => {
-      :scope => @scope,
-      :model => CbrainTask
-    })
-  %>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12">
+      <% if @row_fetch %>
+        <% if @tasks.empty? %>
+          <tr class="batch">
+            <td class="dt-table-wide">
+              This batch of tasks has disappeared
+            </td>
+          </tr>
+        <% else %>
+          <%= table.render :row, [[ :loaded_batch, @tasks.first[:batch], nil, @tasks.first[:first] ]] %>
+          <%= table.render :row, list %>
+        <% end %>
+      <% else %>
+        <%=
+          render(:partial => 'shared/active_filters', :locals  => {
+            :scope => @scope,
+            :model => CbrainTask
+          })
+        %>
 
-  <div class="pagination">
-    <div class="pagination_left_side">
-      <%=
-        scope_custom_link(
-          "Switch to #{batch_view ? 'List' : 'Batch'} View",
-          @scope, { 'batch' => !batch_view },
-          link: { :ajax => true }
-        )
-      %>
-    </div>
-    <div class="page_links">
-      (<%= pluralize @total_tasks, "task" %>)
-    </div>
-    <div class="pagination_right_side">
-      <% if @total_space_known > 0 %>
-        Total task space used: <%= colored_pretty_size(@total_space_known) %>
-      <% end %>
-      <% if @total_space_unkn  > 0 %>
-        (<%= pluralize @total_space_unkn, "task" %> without space estimates)
+        <div class="pagination">
+          <div class="pagination_left_side">
+            <%=
+              scope_custom_link(
+                "Switch to #{batch_view ? 'List' : 'Batch'} View",
+                @scope, { 'batch' => !batch_view },
+                link: { :ajax => true }
+              )
+            %>
+          </div>
+          <div class="page_links">
+            (<%= pluralize @total_tasks, "task" %>)
+          </div>
+          <div class="pagination_right_side">
+            <% if @total_space_known > 0 %>
+              Total task space used: <%= colored_pretty_size(@total_space_known) %>
+            <% end %>
+            <% if @total_space_unkn  > 0 %>
+              (<%= pluralize @total_space_unkn, "task" %> without space estimates)
+            <% end %>
+          </div>
+        </div>
+
+        <% content_for :scripts do %>
+          <%= javascript_include_tag 'cbrain/tasks/batch_list' %>
+        <% end %>
+
+        <%= table.render %>
+
+        <%=
+          center_legend("Workdir archiving status symbols:", [
+            [ colored_archived_status(:workdir),  "On Cluster" ],
+            [ colored_archived_status(:userfile), "As File"    ],
+          ])
+        %>
       <% end %>
     </div>
   </div>
-
-  <% content_for :scripts do %>
-    <%= javascript_include_tag 'cbrain/tasks/batch_list' %>
-  <% end %>
-
-  <%= table.render %>
-
-  <%=
-    center_legend("Workdir archiving status symbols:", [
-      [ colored_archived_status(:workdir),  "On Cluster" ],
-      [ colored_archived_status(:userfile), "As File"    ],
-    ])
-  %>
-<% end %>
+</div>

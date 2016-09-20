@@ -38,132 +38,137 @@
      CbrainTask.status(:active).where(:user_id => uids, :bourreau_id => bids).group(:user_id,:bourreau_id).count
 %>
 
-<h2>Disk Usage Statistics for Server's Data Provider Caches</h2>
 
-<span class="display_cell">
-  <%= form_tag(:action  => :cleanup_caches) do %>
-    <P>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12">
+      <h2 class="text-center">Disk Usage Statistics for Server's Data Provider Caches</h2>
+    </div>
+  </div>
 
-    <table>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= form_tag(:action  => :cleanup_caches, :class => "form-horizontal") do %>
+        <table class="table table-condensed table-striped">
 
-      <% if @report_rrs.size > 0 %>
-        <tr>
-          <th class="blank"></th>
-          <% @report_rrs.each do |rr| %>
-            <th>
-              <% if rr.is_a?(String) %>
-                <%= rr.capitalize %>
-              <% else %>
-                <%= link_to_bourreau_if_accessible(rr, current_user) %>
-                <br>
-                <small><%= rr.is_a?(Bourreau) ? "(Execution)" : "(Portal)" %></small>
-                <% if rr.has_owner_access?(current_user) %>
-                  <br><small><%= rr.dp_cache_dir %></small>
-                <% end %>
+          <% if @report_rrs.size > 0 %>
+            <tr>
+              <th class="blank"></th>
+              <% @report_rrs.each do |rr| %>
+                <th>
+                  <% if rr.is_a?(String) %>
+                    <%= rr.capitalize %>
+                  <% else %>
+                    <%= link_to_bourreau_if_accessible(rr, current_user) %>
+                    <br>
+                    <small><%= rr.is_a?(Bourreau) ? "(Execution)" : "(Portal)" %></small>
+                    <% if rr.has_owner_access?(current_user) %>
+                      <br><small><%= rr.dp_cache_dir %></small>
+                    <% end %>
+                  <% end %>
+                </th>
               <% end %>
-            </th>
+            </tr>
           <% end %>
-        </tr>
-      <% end %>
 
-      <% @report_users_all.each do |user| %>
-        <tr>
-          <td>
-            <% if user.is_a?(User) %>
-              <%= link_to_user_with_tooltip(user) %>
-              <% # All servers checkbox -%>
-              <BR><%= select_all_checkbox("clean_cache_users_#{user.id}") %>
-            <% else %>
-              <% # Usually this is the keyword 'TOTAL' -%>
-              <%= user.capitalize %>
-            <% end %>
-          </td>
-
-          <% @report_rrs.each do |rr| %>
-
-            <% cell = @report_stats[user] ? @report_stats[user][rr] : nil %>
-
-            <% if ! cell %>
-              <td></td>
-              <% next %>
-            <% end %>
-
-            <td>
-              <%= disk_space_info_display(cell[:size] || 0) do %>
-                <%= pretty_size(cell[:size]) %></br>
-                <%= (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ / ,"&nbsp;").html_safe %>
-                <% if cell[:unknowns] > 0 %>
-                  </br><%= pluralize(cell[:unknowns],"unknown").gsub(/ / ,"&nbsp;").html_safe %>
-                <% end %>
-
-                <% if @report_rrs.include?(rr) && @report_users.include?(user) %>
-                  </br><%= check_box_tag('clean_cache[]', "#{user.id},#{rr.id}", false, :class => "clean_cache_users_#{user.id} clean_cache_rrs_#{rr.id}" ) %>
-                  <% if user.is_a?(User) && rr.is_a?(Bourreau) # && @cache_older <= 6.days.to_i %>
-                    <%  active_cnt = active_counts_by_uid_bid[[user.id, rr.id]] || 0 %>
-                    <%= red_if(active_cnt > 0, "", "(Danger! " + pluralize(active_cnt,"active task") + "!)") %>
-                  <% end %>
-                <% elsif @report_users_all[-1] == user && ! @report_users.include?(user) %>
-                  <br/>
-                  <% if user.is_a?(String) %>
-                     <strong>All on <%= rr.name %>: </strong>
-                  <% end %>
-                  <%= select_all_checkbox( "clean_cache_rrs_#{rr.id}" ) %>
-                <% end %>
-
+          <% @report_users_all.each do |user| %>
+            <tr>
+              <% if user.is_a?(User) %>
+                <% # All servers checkbox -%>
+                <td>
+                  <div class="form-group">
+                    <%= select_all_checkbox("clean_cache_users_#{user.id}") %>
+                    <%= link_to_user_with_tooltip(user) %>
+                  </div>
+                </td>
+              <% else %>
+                <% # Usually this is the keyword 'TOTAL' -%>
+                <td><strong><%= user.capitalize %></strong></td>
               <% end %>
-            </td>
 
-          <% end %>    <%# end column iteration %>
-        </tr>
-      <% end %>    <%# end row iteration %>
+              <% @report_rrs.each do |rr| %>
 
-      <tr>
-        <% if @report_rrs.size == 0 && @report_users.size == 0 %>
-          <th>(There are no entries in this report)</th>
-        <% else %>
-          <th colspan="<%= 1+@report_rrs.size %>">
-            <%= submit_tag 'Cleanup Selected Caches' %>
-          </th>
+                <% cell = @report_stats[user] ? @report_stats[user][rr] : nil %>
+
+                <% if ! cell %>
+                  <td></td>
+                  <% next %>
+                <% end %>
+
+                <td><div class="form-group"><label>
+                  <%= disk_space_info_display(cell[:size] || 0) do %>
+
+                    <% if @report_rrs.include?(rr) && @report_users.include?(user) %>
+                      <%= check_box_tag('clean_cache[]', "#{user.id},#{rr.id}", false, :class => "clean_cache_users_#{user.id} clean_cache_rrs_#{rr.id}" ) %>
+                      <% if user.is_a?(User) && rr.is_a?(Bourreau) # && @cache_older <= 6.days.to_i %>
+                        <%  active_cnt = active_counts_by_uid_bid[[user.id, rr.id]] || 0 %>
+                        <%= red_if(active_cnt > 0, "", "(Danger! " + pluralize(active_cnt,"active task") + "!)") %>
+                      <% end %>
+                    <% elsif @report_users_all[-1] == user && ! @report_users.include?(user) %>
+                      <%= select_all_checkbox( "clean_cache_rrs_#{rr.id}" ) %>
+                      <% if user.is_a?(String) %>
+                         All on <%= rr.name %>: <br>
+                      <% end %>
+                    <% end %>
+
+                    <%= pretty_size(cell[:size]) %> -
+                    <%= (pluralize(cell[:num_entries],"entry") + " / " + pluralize(cell[:num_files],"file")).gsub(/ / ,"&nbsp;").html_safe %>
+                    <% if cell[:unknowns] > 0 %>
+                       &nbsp;-&nbsp;<%= pluralize(cell[:unknowns],"unknown").gsub(/ / ,"&nbsp;").html_safe %>
+                    <% end %>
+
+                  <% end %>
+                </label></div></td>
+                </td>
+
+              <% end %>    <%# end column iteration %>
+            </tr>
+          <% end %>    <%# end row iteration %>
+
+          <tr>
+            <% if @report_rrs.size == 0 && @report_users.size == 0 %>
+              <th>(There are no entries in this report)</th>
+            <% else %>
+              <th colspan="<%= 2+@report_rrs.size*2 %>">
+                <%= submit_tag 'Cleanup Selected Caches', :class => "btn btn-primary btn-block" %>
+              </th>
+            <% end %>
+          </tr>
+
+        </table>
+
+        <div class="col-xs-12">
+          <div class="well well-sm">
+            <%= disk_usage_legend %>
+          </div>
+        </div>
+
+        <%= hidden_field_tag "cleanup_older",    @cache_older %>
+        <%= hidden_field_tag "cleanup_younger",  @cache_younger %>
+        <% (params[:types] || []).each do |type| %>
+          <%= hidden_field_tag "types[]", type  %>
         <% end %>
-      </tr>
-    </table>
-
-    <p>
-    <%= disk_usage_legend %>
-
-    <%= hidden_field_tag "cleanup_older",    @cache_older %>
-    <%= hidden_field_tag "cleanup_younger",  @cache_younger %>
-    <% (params[:types] || []).each do |type| %>
-      <%= hidden_field_tag "types[]", type  %>
-    <% end %>
-
-    <% end %> <!-- form -->
-  </span>
-
-<P>
-
-<!-- *********************************** -->
-<!-- Refresh form -->
-<!-- *********************************** -->
-
-<%= form_tag({ :action  => :rr_disk_usage }, :method => :get) do %>
-  <h4>Filter this report: files reported above...</h4>
-  <div class="display_cell">
-    ... are of type:<br>
-    <%= userfile_type_select :types, {:selector => params[:types]} , :multiple => true, :size => 10 %>
-    <br>(None selected means <em>any</em>)
+      <% end %> <!-- form -->
+    </div>
   </div>
-  <div class="box_spacer"></div>
-  <div class="display_cell">
-    ... were last accessed:<br>
-    <% params[:date_range] ||= {} %>
-    <% params[:date_range]["relative_from"] ||= 50.years.to_i.to_s %>
-    <% params[:date_range]["relative_to"]   ||= 1.week.to_i.to_s %>
-    <%= date_range_panel(params[:date_range], "date_range", :date_attributes => [], :without_abs => true) %>
-    <p>
-    <center>
-      <%= submit_tag 'Refresh Report' %>
-    </center>
-  </div>
-<% end %>
 
+  <!-- *********************************** -->
+  <!-- Refresh form -->
+  <!-- *********************************** -->
+  <div class="row">
+    <div class="col-xs-12">
+      <%= form_tag({ :action  => :rr_disk_usage }, :method => :get) do %>
+        Files reported in the <em>Caches</em> report were last accessed:
+        <div class="well">
+          <% params[:date_range] ||= {} %>
+          <% params[:date_range]["relative_from"] ||= 50.years.to_i.to_s %>
+          <% params[:date_range]["relative_to"]   ||= 1.week.to_i.to_s %>
+          <%= date_range_panel(params[:date_range], "date_range", :date_attributes => [], :without_abs => true) %>
+        </div>
+        <%= submit_tag 'Refresh', :class => "btn btn-primary btn-block" %>
+      <% end %>
+    </div>
+
+  </div>
+
+</div>

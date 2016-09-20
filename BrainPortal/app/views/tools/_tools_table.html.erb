@@ -22,105 +22,120 @@
 #
 -%>
 
-<div class="menu_bar">
-  <% if current_user.has_role?(:admin_user) %>
-    <%= link_to 'Create New Tool', new_tool_path, :class => "button menu_button" %>
-    <%= link_to 'Autoload Tools', { :action  => :create, :autoload  => true}, :method  => :post, :class => "button menu_button", :title => "Registers all subclasses of PortalTask as Tools" %>
-    <%= link_to 'Access Reports', { :controller => :tool_configs, :action => :index }, :class => "button menu_button" %>
-  <% end %>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12 menu_bar">
+      <div class="well well-sm">
+        <% if current_user.has_role?(:admin_user) %>
+          <a href="<%= new_tool_path %>" role="button" class="btn btn-primary"><span class="glyphicon glyphicon-file"></span> Create New Tool</a>
+          <a href="<%= url_for(:action  => :create, :autoload  => true) %>" method="post" title="Registers all subclasses of PortalTask as Tools" class="btn btn-primary"><span class="glyphicon glyphicon-download"></span> Autoload Tools</a>
+          <a href="<%= url_for(:controller => :tool_configs, :action => :index) %>" class="btn btn-primary"><span class="glyphicon glyphicon-list-alt"></span> Access Reports</a>
+        <% end %>
 
-  <%= overlay_ajax_link "Help", "/doc/tool/tool_info.html", :class  => "button menu_button" %>
-</div>
+        <a href="#" class="btn btn-primary help-btn" data-toggle="modal" data-target="#help-modal" data-url="/doc/tool/tool_info.html"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
+      </div>
+    </div>
+  </div>
 
-<%=
-  render(:partial => 'shared/active_filters', :locals  => {
-    :scope => @scope,
-    :model => Tool
-  })
-%>
+  <div class="row">
+    <div class="col-xs-12">
+      <%=
+        render(:partial => 'shared/active_filters', :locals  => {
+          :scope => @scope,
+          :model => Tool
+        })
+      %>
+    </div>
+  </div>
 
-<%=
-  dynamic_scoped_table(@tools,
-    :id         => 'tools_table',
-    :class      => [ :resource_list ],
-    :scope      => @scope,
-    :order_map  => {
-      :owner => { :a => 'users.login', :j => User  },
-      :group => { :a => 'groups.name', :j => Group }
-    },
-    :filter_map => {
-      :owner => { :a => 'user_id'  },
-      :group => { :a => 'group_id' }
-    }
-  ) do |t|
-%>
-  <%
-    t.column("Tool Name", :name,
-      :sortable => true
-    ) do |tool|
-      if current_user.has_role?(:admin_user)
-        link_to tool.name, { :action => :edit, :id => tool.id }
-      else
-        tool.name
-      end
-    end
-
-    t.column("Description", :description,
-      :sortable => true
-    ) { |tool| overlay_description(tool.description) }
-
-    t.column("Category", :category,
-      :sortable => true,
-      :filters  => default_filters_for(@base_scope, :category)
-    )
-
-    t.column("Owner", :owner,
-      :sortable => true,
-      :filters  => default_filters_for(@base_scope, User)
-    ) { |tool| link_to_user_with_tooltip(tool.user) }
-
-    t.column("Project", :group,
-      :sortable => true,
-      :filters  => default_filters_for(@base_scope, Group)
-    ) { |tool| link_to_group_if_accessible(tool.group) }
-
-    t.column("Execution & Versions", :exec) do |tool|
-      tool.bourreaux
-        .reject { |b| ! b.can_be_accessed_by?(current_user) }
-        .sort { |a,b| a.name.casecmp(b.name) }
-        .map do |b|
-          tcs = ToolConfig
-            .where(:bourreau_id => b.id, :tool_id => tool.id)
-            .reject { |tc| ! tc.can_be_accessed_by?(current_user) }
-            .size
-          "#{link_to_bourreau_if_accessible(b)}#{" (#{pluralize tcs, "version"})" if tcs >= 1}"
-        end
-        .join('<br />')
-        .html_safe
-    end
-
-    if current_user.has_role?(:admin_user)
-      t.column("Access?", :access) do |tool|
-        link_to 'Access?',
-          {
-            :controller => :tool_configs,
-            :action     => :index,
-            :tool_id    => tool.id
+  <div class="row">
+    <div class="col-xs-12">
+      <%=
+        dynamic_scoped_table(@tools,
+          :id         => 'tools_table',
+          :class      => [ "table-responsive" ],
+          :scope      => @scope,
+          :order_map  => {
+            :owner => { :a => 'users.login', :j => User  },
+            :group => { :a => 'groups.name', :j => Group }
           },
-          :class => "action_link"
-      end
-    end
+          :filter_map => {
+            :owner => { :a => 'user_id'  },
+            :group => { :a => 'group_id' }
+          }
+        ) do |t|
+      %>
+        <%
+          t.column("Tool Name", :name,
+            :sortable => true
+          ) do |tool|
+            if current_user.has_role?(:admin_user)
+              link_to tool.name, { :action => :edit, :id => tool.id }
+            else
+              tool.name
+            end
+          end
 
-    t.column("Help", :help) do |tool|
-      path   = tool.cbrain_task_class.public_path("edit_params_help.html") rescue nil
-      path ||= tool.cbrain_task_class.help_filepath rescue nil # Boutiques help-page
-      overlay_ajax_link "Help", path.to_s if path
-    end
+          t.column("Description", :description,
+            :sortable => true
+          ) { |tool| overlay_description(tool.description) }
 
-    t.column("Info", :info) do |tool|
-      path = tool.cbrain_task_class.public_path("tool_info.html") rescue nil
-      overlay_ajax_link "Info", path.to_s if path
-    end
-  %>
+          t.column("Category", :category,
+            :sortable => true,
+            :filters  => default_filters_for(@base_scope, :category)
+          )
 
-<% end %>
+          t.column("Owner", :owner,
+            :sortable => true,
+            :filters  => default_filters_for(@base_scope, User)
+          ) { |tool| link_to_user_with_tooltip(tool.user) }
+
+          t.column("Project", :group,
+            :sortable => true,
+            :filters  => default_filters_for(@base_scope, Group)
+          ) { |tool| link_to_group_if_accessible(tool.group) }
+
+          t.column("Execution & Versions", :exec) do |tool|
+            tool.bourreaux
+              .reject { |b| ! b.can_be_accessed_by?(current_user) }
+              .sort { |a,b| a.name.casecmp(b.name) }
+              .map do |b|
+                tcs = ToolConfig
+                  .where(:bourreau_id => b.id, :tool_id => tool.id)
+                  .reject { |tc| ! tc.can_be_accessed_by?(current_user) }
+                  .size
+                "#{link_to_bourreau_if_accessible(b)}#{" (#{pluralize tcs, "version"})" if tcs >= 1}"
+              end
+              .join('<br />')
+              .html_safe
+          end
+
+          if current_user.has_role?(:admin_user)
+            t.column("Access?", :access) do |tool|
+              link_to 'Access?',
+                {
+                  :controller => :tool_configs,
+                  :action     => :index,
+                  :tool_id    => tool.id
+                },
+                :class => "action_link"
+            end
+          end
+
+          t.column("Help", :help) do |tool|
+            path   = tool.cbrain_task_class.public_path("edit_params_help.html") rescue nil
+            path ||= tool.cbrain_task_class.help_filepath rescue nil # Boutiques help-page
+            overlay_ajax_link "Help", path.to_s if path
+          end
+
+          t.column("Info", :tool_info) do |tool|
+            path = tool.cbrain_task_class.public_path("tool_info.html") rescue nil
+            overlay_ajax_link "Info", path.to_s if path
+          end
+        %>
+
+      <% end %>
+    </div>
+  </div>
+
+</div>

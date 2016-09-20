@@ -36,7 +36,7 @@
 <%=
   dynamic_scoped_table(@feedbacks,
     :id         => 'feedbacks_table',
-    :class      => [ :resource_list ],
+    :class      => [ "table-responsive" ],
     :scope      => @scope,
     :sort_map   => {
       :author => { :a => 'users.login', :j => User }

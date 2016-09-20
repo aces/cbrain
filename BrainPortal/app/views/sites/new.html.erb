@@ -24,106 +24,115 @@
 
 <% title 'Add New Site' %>
 
-<h2>Add New Site</h2>
+
 
 <%= error_messages_for @site %>
 
-<%= form_for @site, :as => :site, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+<%= form_for @site, :as => :site, :url => { :action => "create" }, :datatype => "script", :class => "form-horizontal" do |f| -%>
 
-  <div class="generalbox">
+<div class="container-fluid">
+  <div class="row">
+    <h3 class="text-center">Add New Site</h3>
+  </div>
 
-      <div>
-        <%= f.label :name %><br/>
-        <%= f.text_field :name %>
-        <P/>
+  <div class="row">
+    <div class="col-xs-4">
+      <div class="panel panel-primary">
+        <div class="panel-heading">Basic Info <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#basic-panel"></span></div>
+        <div class="panel-body collapse in" id="basic-panel">
+          <div class="row">
+            <div class="col-xs-4"><%= f.label :name %></div>
+            <div class="col-xs-8"><%= f.text_field :name, :class => "form-control" %></div>
+          </div>
+          <div class="row" title="Brief description of the site.">
+            <div class="col-xs-4"><%= f.label :description, "Description" %></div>
+            <div class="col-xs-8">
+              <%= f.text_area :description, :rows => 10, :class => "form-control" %>
+              The first line should be a short summary, and the rest are for any special notes for the users.
+            </div>
+          </div>
 
-        <span title="Brief description of the site.">
-          <%= f.label :description, "Description" %><br/>
-          <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
-          <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div>
-        </span>
-        <P/>
-
+        </div>
       </div>
+    </div>
 
-      <div class="button_div">
-        <!-- Separation between active and locked users -->
-        <%
-        user_by_lock_status_hash = User.all.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"}
-        active_users = user_by_lock_status_hash["Active users"] || []
-        locked_users = user_by_lock_status_hash["Locked users"] || []
-        %>
+    <%
+    user_by_lock_status_hash = User.all.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"}
+    active_users = user_by_lock_status_hash["Active users"] || []
+    locked_users = user_by_lock_status_hash["Locked users"] || []
+    %>
 
-        <!-- Active Users -->
-        <div style="margin:0px">
-          Active users
-          <br>
-          <div id="active_users" class="button_inner_div">
-            <table class="button_table" style="border:0px;">
+    <!-- Active Users -->
+    <div class="col-xs-4">
+      <div class="panel panel-primary">
+        <div class="panel-heading">Active Users <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#active-panel"></span></div>
+          <div class="collapse in" id="active-panel">
+            <table class="table table-striped table-condensed">
               <tr>
-                <td>Login</td>
-                <td>Regular User</td>
-                <td>Site Manager</td>
+                <th>Login</th>
+                <th>Regular User</th>
+                <th>Site Manager</th>
               </tr>
               <% for user in active_users.sort { |a,b| a.full_name.casecmp(b.full_name) } %>
                 <tr>
                   <td class="left_align"><%= link_to_user_with_tooltip(user) -%></td>
-                  <td class="left_align"><%= check_box_tag("site[user_ids][]", user.id) %></td>
-                  <td class="left_align"><%= check_box_tag("site[manager_ids][]", user.id) %></td>
+                  <td class="left_align"><%= check_box_tag("site[user_ids][]", user.id, nil, :class => "form-control") %></td>
+                  <td class="left_align"><%= check_box_tag("site[manager_ids][]", user.id, nil, :class => "form-control") %></td>
                 </tr>
               <% end %>
-            </table>
+           </table>
           </div>
-        </div>
 
       </div>
 
-      <!-- Projects -->
-      <div class="button_div">
-        <div style="margin:0px">
-          Projects
-          <br>
-          <div id="projects" class="button_inner_div">
-            <table class="button_table" style="border:0px;">
-              <% for group in WorkGroup.all.sort { |a,b| a.name.casecmp(b.name) } %>
-                <tr>
-                  <td class="left_align"><%= group.name -%></td>
-                  <td class="left_align"><%= check_box_tag("site[group_ids][]", group.id.to_s) %></td>
-                </tr>
-              <% end %>
-            </table>
-          </div>
-        </div>
-      </div>
-
+      <!-- Locked Users -->
       <%if !locked_users.empty? %>
-      <div>
-        <!-- Locked Users -->
-        <br/>
-            Locked users
-            <%= show_hide_toggle "(Show)", "#locked_users", :class  => 'action_link', :alternate_text => "(Hide)" %>
-          <div id="locked_users" style="display:none" class="button_inner_div">
-            <table class="button_table" style="border:0px;">
+      <div class="panel panel-primary">
+        <div class="panel-heading">Locked Users <span class="pull-right glyphicon glyphicon-chevron-down clickable" data-toggle="collapse" data-target="#locked-panel"></span></div>
+        <div class="collapse" id="locked-panel">
+          <table class="table table-striped table-condensed">
+            <tr>
+              <th>Login</th>
+              <th>Regular User</th>
+              <th>Site Manager</th>
+            </tr>
+            <% for user in locked_users.sort { |a,b| a.full_name.casecmp(b.full_name) } %>
               <tr>
-                <td>Login</td>
-                <td>Regular User</td>
-                <td>Site Manager</td>
+                <td><%= link_to_user_with_tooltip(user) -%></td>
+                <td><%= check_box_tag("site[user_ids][]", user.id, nil, :class => "form-control") %></td>
+                <td><%= check_box_tag("site[manager_ids][]", user.id, nil, :class => "form-control") %></td>
               </tr>
-              <% for user in locked_users.sort { |a,b| a.full_name.casecmp(b.full_name) } %>
-                <tr>
-                  <td class="left_align"><%= link_to_user_with_tooltip(user) -%></td>
-                  <td class="left_align"><%= check_box_tag("site[user_ids][]", user.id) %></td>
-                  <td class="left_align"><%= check_box_tag("site[manager_ids][]", user.id) %></td>
-                </tr>
-              <% end %>
-            </table>
-          </div>
+            <% end %>
+          </table>
+        </div>
       </div>
-
       <% end %>
+    </div>
 
-      <div class="display_row">
-        <P/>
-        <%= f.submit "Create" %>
+    <!-- Projects -->
+    <div class="col-xs-4">
+      <div class="panel panel-primary">
+        <div class="panel-heading">Projects <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#projects-panel"></span></div>
+        <div class="collapse in" id="projects-panel">
+          <table class="table table-striped">
+            <% for group in WorkGroup.all.sort { |a,b| a.name.casecmp(b.name) } %>
+              <tr>
+                <td><label><%= group.name -%></label></td>
+                <td><%= check_box_tag("site[group_ids][]", group.id.to_s, nil, :class => "form-control") %></td>
+              </tr>
+            <% end %>
+          </table>
+        </div>
       </div>
-<% end %>
+    </div>
+  </div>
+
+
+  <div class="row">
+    <div class="col-xs-12">
+      <%= f.submit "Create", :class => "btn btn-primary btn-block" %>
+    </div>
+  </div>
+
+  <% end %>
+</div>

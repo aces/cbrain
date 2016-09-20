@@ -24,229 +24,235 @@
 
 <% title 'Data Provider Info' %>
 
-<div class="menu_bar">
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="well well-sm">
+        <% if @provider.is_browsable?(current_user) && @provider.online? %>
+          <a href="<%= browse_data_provider_path(@provider)%>" class="btn btn-primary"><span class="glyphicon glyphicon-zoom-in"></span> Browse</a>
+        <% end %>
 
-    <% if @provider.is_browsable?(current_user) && @provider.online? %>
-      <%= link_to 'Browse', browse_data_provider_path(@provider), :class => "button" %>
+        <% if current_user.has_role?(:admin_user) && @provider.method(:impl_provider_report).owner != DataProvider %>
+          <a href="<%= report_data_provider_path(@provider) %>" class="btn btn-primary"><span class="glyphicon glyphicon-warning-sign"></span> Inconsistency Report</a>
+        <% end %>
+
+        <a href="<%= report_path(
+                      :table_name       => 'userfiles.combined_file_rep',
+                      :data_provider_id => @provider.id,
+                      :row_type         => :user_id ,
+                      :col_type         => :type,
+                      :generate         => "ok"
+                    )%>"
+           class="btn btn-primary"><span class="glyphicon glyphicon-list-alt"></span> File Registration Statistics</a>
+
+        <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
+          <a href="<%= data_provider_path(@provider) %>" data-method="delete" data-type="script" data-confirm="Are you sure you want to delete '<%= @provider.name %>' ?" class="btn btn-primary"><span class="glyphicon glyphicon-trash"></span> Delete</a>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <%= error_messages_for @provider, :header_message => "Provider could not be updated." %>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <%= show_table(@provider, :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+
+        <% t.edit_cell(:name) do %>
+          <%= text_field_tag "data_provider[name]", @provider.name, :class => "form-control" %>
+        <% end %>
+
+        <% t.edit_cell(:description, :content => overlay_description(@provider.description)) do %>
+          <%= text_area_tag "data_provider[description]", @provider.description, :rows => 10, :class => "form-control" %>
+        <% end %>
+
+        <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
+          <% t.attribute_cell(:type) %>
+        <% else %>
+          <% t.empty_cell %>
+        <% end %>
+
+        <% t.edit_cell(:online, :content => (@provider.online ? "Online" : "Offline")) do %>
+          <%= select_tag "data_provider[online]", options_for_select([["Online", true], ["Offline", false]], :selected => @provider.online), :class => "form-control" %>
+        <% end %>
+
+        <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@provider.user), :disabled => ! current_user.has_role?(:admin_user) ) do %>
+          <%= user_select("data_provider[user_id]", { :selector => @provider }, { :class => "form-control" } ) %>
+        <% end %>
+
+        <% t.edit_cell(:online, :content => (@provider.read_only ? "Read Only" : "Read/Write"), :header => "Mode") do %>
+          <%= select_tag "data_provider[read_only]", options_for_select([["Read/Write", false], ["Read Only", true]], :selected => @provider.read_only), :class => "form-control" %>
+        <% end %>
+
+        <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@provider.group) ) do %>
+          <%= group_select("data_provider[group_id]", { :selector => @provider }, :class => "form-control") %>
+        <% end %>
+
+        <% t.edit_cell(:online, :content => (@provider.not_syncable ? "NOT syncable" : "Fully syncable"), :header => "Syncability") do %>
+          <%= select_tag "data_provider[not_syncable]", options_for_select([["Fully syncable", false], ["NOT syncable", true]], :selected => @provider.not_syncable), :class => "form-control" %>
+        <% end %>
+
+        <% t.cell("Site") { link_to_site_if_accessible(@provider.site) } %>
+
+        <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
+          <% t.cell("Revision Info (DataProvider)") { DataProvider.revision_info.format() } %>
+        <% else %>
+          <% t.empty_cell %>
+        <% end %>
+
+        <% licenses = @provider.license_agreements.count == 0 ? "(None)": @provider.license_agreements.join("\n") %>
+        <% t.edit_cell(:license_agreements, :content => licenses) do %>
+          <%= text_area_tag "data_provider[license_agreements]", @provider.license_agreements.join("\n"), :rows => 5, :class => "form-control" %>
+          Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.
+        <% end %>
+
+        <% t.edit_cell(:time_zone, :content => (@provider.time_zone || "(Unset)") ) do %>
+          <%= select_tag "data_provider[time_zone]", time_zone_options_for_select(@provider.time_zone, /canada/i), :include_blank => true, :class => "form-control" %>
+        <% end %>
+
+        <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
+          <% t.cell("Revision Info (#{@provider.type})") { @provider.revision_info.format()  } %>
+        <% else %>
+          <% t.empty_cell %>
+        <% end %>
+
+        <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
+          <% t.edit_cell(:remote_dir, :header => "Physical Data Location", :show_width => 2) do %>
+            <%= text_field_tag "data_provider[remote_dir]", @provider.remote_dir, :class => "form-control" %>
+          <% end %>
+        <% end %>
+
+      <% end %>
+
+      <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
+        <%= show_table(@provider, :header => "SSH parameters for remote Data Providers") do |t| %>
+          <% t.edit_cell(:remote_host)  do %>
+            <%= text_field_tag "data_provider[remote_host]", @provider.remote_host, :class => "form-control" %>
+          <% end %>
+          <% t.edit_cell(:alternate_host, :header => "Alternate hostname(s)")  do %>
+            <%= text_field_tag "data_provider[alternate_host]", @provider.alternate_host, :class => "form-control" %>
+            Comma-separated list of alternate hostnames; hostname1,hostname2,hostname3,...
+          <% end %>
+          <% t.edit_cell(:remote_port) do %>
+            <%= text_field_tag "data_provider[remote_port]", @provider.remote_port, :class => "form-control" %>
+          <% end %>
+          <% t.edit_cell(:remote_user) do %>
+            <%= text_field_tag "data_provider[remote_user]", @provider.remote_user, :class => "form-control" %>
+          <% end %>
+        <% end %>
+
+        <%= show_table(@provider, :header => "Cloud Storage Configuration") do |t| %>
+          <% t.edit_cell(:cloud_storage_client_identifier, :header => 'Client Identifier', :show_width => 2)  do %>
+            <%= text_field_tag "data_provider[cloud_storage_client_identifier]", @provider.cloud_storage_client_identifier, :class => "form-control" %>
+          <% end %>
+          <% t.edit_cell(:cloud_storage_client_token, :content => '****************', :header => 'Client Token', :show_width => 2) do %>
+            <%= password_field_tag "data_provider[cloud_storage_client_token]", @provider.cloud_storage_client_token, :class => "form-control" %>
+          <% end %>
+        <% end %>
+
+
+      <%= show_table(@provider, :header => "Other Properties", :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+
+        <% t.boolean_edit_cell("meta[no_uploads]", @provider.meta["no_uploads"],  "on", "", :header => "Cannot be used for uploading files in the file manager") %>
+
+        <% t.boolean_edit_cell("meta[no_viewers]", @provider.meta["no_viewers"],  "on", "", :header => "Files cannot be viewed in the file manager") %>
+
+        <% if @provider.is_browsable? %>
+
+          <% t.boolean_edit_cell("meta[must_move]", @provider.meta["must_move"], "on", "", :header => "Files must be copied/moved upon registration") %>
+
+          <% t.edit_cell("meta[browse_gid]",
+               :header  => "Files can be browsed only by members of this project",
+               :content => @provider.meta[:browse_gid].present? ? link_to_group_if_accessible(@provider.meta[:browse_gid]) : '(Any Users)',
+               :show_width => 2
+             ) do %>
+             <%= group_select 'meta[browse_gid]', { :selector => @provider.meta[:browse_gid] }, { :include_blank => "(Any Users)", :class => "form-control" } %>
+          <% end %>
+
+        <% end %>
+
+
+      <% other_dps       = DataProvider.find_all_accessible_by_user(current_user).reject { |dp| dp.id == @provider.id } %>
+      <% dps_by_category = other_dps.hashed_partitions { |dp| dp.is_browsable? ? :user : :official } %>
+
+      <% if other_dps.size > 0 %>
+
+        <%= show_table(@provider, :width => 5, :header => 'Files can be copied or moved to these other Data Providers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+          <% if dps_by_category[:official] %>
+            <% t.row(:class => 'subheader') { "<label>Official Storage</label>".html_safe } %>
+            <% dps_by_category[:official].sort_by(&:name).each do |dp| %>
+              <% meta_key = "dp_no_copy_#{dp.id}" %>
+              <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label') %>
+            <% end%>
+          <% end%>
+
+          <% t.blank_row %>
+
+          <% if dps_by_category[:user] %>
+            <% t.row(:class => 'subheader') { "<strong>User or Site Storage</strong>".html_safe } %>
+            <% dps_by_category[:user].sort_by(&:name).each do |dp| %>
+              <% meta_key = "dp_no_copy_#{dp.id}" %>
+              <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label') %>
+            <% end%>
+          <% end%>
+        <% end%>
+      <% end%>
+
+
+      <% other_rrs       = RemoteResource.find_all_accessible_by_user(current_user) %>
+      <% rrs_by_category = other_rrs.hashed_partitions { |rr| rr.is_a?(Bourreau) ? :bourreau : :portal } %>
+
+      <% if other_rrs.size > 0 %>
+        <%= show_table(@provider, :width => 5, :header => 'File contents can be accessed by these Servers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+          <% if rrs_by_category[:portal] %>
+            <% t.row(:class => 'subheader') { "<strong>Portals<strong>".html_safe } %>
+            <% rrs_by_category[:portal].sort_by(&:name).each do |rr| %>
+              <% meta_key = "rr_no_sync_#{rr.id}" %>
+              <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "#{rr.name} cannot sync #{@provider.name}", :header => "#{rr.name}", :class => 'checkbox_label') %>
+            <% end%>
+          <% end%>
+
+          <% t.blank_row %>
+
+          <% if rrs_by_category[:bourreau] %>
+            <% t.row(:class => 'subheader') { "<strong>Execution Servers<strong>".html_safe } %>
+            <% rrs_by_category[:bourreau].sort_by(&:name).each do |rr| %>
+              <% meta_key = "rr_no_sync_#{rr.id}" %>
+              <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "#{rr.name} cannot sync #{@provider.name}", :header => "#{rr.name}", :class => 'checkbox_label') %>
+            <% end%>
+          <% end%>
+        <% end%>
+      <% end%>
+
     <% end %>
 
-    <% if current_user.has_role?(:admin_user) && @provider.method(:impl_provider_report).owner != DataProvider %>
-      <%= link_to 'Inconsistency Report', report_data_provider_path(@provider), :class => "button" %>
     <% end %>
+  </div>
+  </div>
 
-    <%= link_to 'File Registration Statistics', report_path(
-                  :table_name       => 'userfiles.combined_file_rep',
-                  :data_provider_id => @provider.id,
-                  :row_type         => :user_id ,
-                  :col_type         => :type,
-                  :generate         => "ok"
-                ), :class => "button" %>
+  <% if (check_role(:admin_user) || @provider.user_id == current_user.id) && (@provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface)) %>
+    <div class="row">
+      <div class="col-xs-12">
+        Public SSH Key for this CBRAIN Portal
+        <pre class="ssh_key" id="ssh_key" ><%= pretty_ssh_key(RemoteResource.current_resource.get_ssh_public_key || 'Unknown! Talk to sysadmin!') %></pre>
+        This key should be installed on this Data Provider's host machine to allow remote access.
+      </div>
+    </div>
+  <% end %>
 
-  <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-    <%= link_to 'Delete', data_provider_path(@provider), { :confirm => "Are you sure you want to delete '#{@provider.name}' ?", :method => :delete, :class => "button" } %>
+  <% if @provider.has_owner_access?(current_user) %>
+    <div class="row">
+      <div class="col-xs-12">
+        <%= render :partial => "layouts/log_report", :locals  => { :log  => @provider.getlog, :title => "Data Provider Log" } %>
+      </div>
+    </div>
   <% end %>
 
 </div>
 
-<P>
 
-<%= error_messages_for @provider, :header_message => "Provider could not be updated." %>
-
-<div class="display_inline_block" style="min-width: 50%">
-
-  <%= show_table(@provider, :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
-
-    <% t.edit_cell(:name) do %>
-      <%= text_field_tag "data_provider[name]", @provider.name %>
-    <% end %>
-
-    <% t.edit_cell(:description, :content => overlay_description(@provider.description)) do %>
-      <%= text_area_tag "data_provider[description]", @provider.description, :rows => 10, :cols => 40 %><br>
-    <% end %>
-
-    <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-      <% t.attribute_cell(:type) %>
-    <% else %>
-      <% t.empty_cell %>
-    <% end %>
-
-    <% t.edit_cell(:online, :content => (@provider.online ? "Online" : "Offline")) do %>
-      <%= select_tag "data_provider[online]", options_for_select([["Online", true], ["Offline", false]], :selected => @provider.online) %>
-    <% end %>
-
-    <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@provider.user), :disabled => ! current_user.has_role?(:admin_user) ) do %>
-      <%= user_select("data_provider[user_id]", { :selector => @provider } ) %>
-    <% end %>
-
-    <% t.edit_cell(:online, :content => (@provider.read_only ? "Read Only" : "Read/Write"), :header => "Mode") do %>
-      <%= select_tag "data_provider[read_only]", options_for_select([["Read/Write", false], ["Read Only", true]], :selected => @provider.read_only) %>
-    <% end %>
-
-    <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@provider.group) ) do %>
-      <%= group_select("data_provider[group_id]", { :selector => @provider }) %>
-    <% end %>
-
-    <% t.edit_cell(:online, :content => (@provider.not_syncable ? "NOT syncable" : "Fully syncable"), :header => "Syncability") do %>
-      <%= select_tag "data_provider[not_syncable]", options_for_select([["Fully syncable", false], ["NOT syncable", true]], :selected => @provider.not_syncable) %>
-    <% end %>
-
-    <% t.cell("Site") { link_to_site_if_accessible(@provider.site) } %>
-
-    <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-      <% t.cell("Revision Info (DataProvider)") { DataProvider.revision_info.format() } %>
-    <% else %>
-      <% t.empty_cell %>
-    <% end %>
-
-    <% licenses = @provider.license_agreements.count == 0 ? "(None)": @provider.license_agreements.join("\n") %>
-    <% t.edit_cell(:license_agreements, :content => licenses) do %>
-      <%= text_area_tag "data_provider[license_agreements]", @provider.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
-      <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
-    <% end %>
-
-    <% t.edit_cell(:time_zone, :content => (@provider.time_zone || "(Unset)") ) do %>
-      <%= select_tag "data_provider[time_zone]", time_zone_options_for_select(@provider.time_zone, /canada/i), :include_blank => true %>
-    <% end %>
-
-    <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-      <% t.cell("Revision Info (#{@provider.type})") { @provider.revision_info.format() } %>
-    <% else %>
-      <% t.empty_cell %>
-    <% end %>
-
-    <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-      <% t.edit_cell(:remote_dir, :header => "Physical Data Location", :show_width => 2) do %>
-        <%= text_field_tag "data_provider[remote_dir]", @provider.remote_dir, :size => 60 %>
-      <% end %>
-    <% end %>
-
-  <% end %>
-
-  <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-    <%= show_table(@provider, :header => "SSH parameters for remote Data Providers") do |t| %>
-      <% t.edit_cell(:remote_host)  do %>
-        <%= text_field_tag "data_provider[remote_host]", @provider.remote_host %>
-      <% end %>
-      <% t.edit_cell(:alternate_host, :header => "Alternate hostname(s)")  do %>
-        <%= text_field_tag "data_provider[alternate_host]", @provider.alternate_host, :size => 60 %><br />
-        <div class="field_explanation">Comma-separated list of alternate hostnames; hostname1,hostname2,hostname3,...</div>
-      <% end %>
-      <% t.edit_cell(:remote_port) do %>
-        <%= text_field_tag "data_provider[remote_port]", @provider.remote_port, :size => 6 %>
-      <% end %>
-      <% t.edit_cell(:remote_user) do %>
-        <%= text_field_tag "data_provider[remote_user]", @provider.remote_user %>
-      <% end %>
-    <% end %>
-
-    <%= show_table(@provider, :header => "Cloud Storage Configuration") do |t| %>
-      <% t.edit_cell(:cloud_storage_client_identifier, :header => 'Client Identifier', :show_width => 2)  do %>
-        <%= text_field_tag "data_provider[cloud_storage_client_identifier]", @provider.cloud_storage_client_identifier %>
-      <% end %>
-      <% t.edit_cell(:cloud_storage_client_token, :content => '****************', :header => 'Client Token', :show_width => 2) do %>
-        <%= password_field_tag "data_provider[cloud_storage_client_token]", @provider.cloud_storage_client_token, :size => 80 %>
-      <% end %>
-    <% end %>
-
-  <% end %>
-
-
-  <%= show_table(@provider, :header => "Other Properties", :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
-
-    <% t.boolean_edit_cell("meta[no_uploads]", @provider.meta["no_uploads"],  "on", "", :header => "Cannot be used for uploading files in the file manager") %>
-
-    <% t.boolean_edit_cell("meta[no_viewers]", @provider.meta["no_viewers"],  "on", "", :header => "Files cannot be viewed in the file manager") %>
-
-    <% if @provider.is_browsable? %>
-
-      <% t.boolean_edit_cell("meta[must_move]", @provider.meta["must_move"], "on", "", :header => "Files must be copied/moved upon registration") %>
-
-      <% t.edit_cell("meta[browse_gid]",
-           :header  => "Files can be browsed only by members of this project",
-           :content => @provider.meta[:browse_gid].present? ? link_to_group_if_accessible(@provider.meta[:browse_gid]) : '(Any Users)',
-           :show_width => 2
-         ) do %>
-         <%= group_select 'meta[browse_gid]', { :selector => @provider.meta[:browse_gid] }, { :include_blank => "(Any Users)" } %>
-      <% end %>
-
-    <% end %>
-
-  <% end %>
-
-
-
-  <% other_dps       = DataProvider.find_all_accessible_by_user(current_user).reject { |dp| dp.id == @provider.id } %>
-  <% dps_by_category = other_dps.hashed_partitions { |dp| dp.is_browsable? ? :user : :official } %>
-
-  <% if other_dps.size > 0 %>
-
-    <%= show_table(@provider, :width => 5, :header => 'Files can be copied or moved to these other Data Providers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
-      <% if dps_by_category[:official] %>
-        <% t.row(:class => 'subheader') { "<strong>Official Storage</strong>".html_safe } %>
-        <% dps_by_category[:official].sort_by(&:name).each do |dp| %>
-          <% meta_key = "dp_no_copy_#{dp.id}" %>
-          <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label') %>
-        <% end%>
-      <% end%>
-
-      <% t.blank_row %>
-
-      <% if dps_by_category[:user] %>
-        <% t.row(:class => 'subheader') { "<strong>User or Site Storage</strong>".html_safe } %>
-        <% dps_by_category[:user].sort_by(&:name).each do |dp| %>
-          <% meta_key = "dp_no_copy_#{dp.id}" %>
-          <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label') %>
-        <% end%>
-      <% end%>
-    <% end%>
-  <% end%>
-
-  <% other_rrs       = RemoteResource.find_all_accessible_by_user(current_user) %>
-  <% rrs_by_category = other_rrs.hashed_partitions { |rr| rr.is_a?(Bourreau) ? :bourreau : :portal } %>
-
-  <% if other_rrs.size > 0 %>
-
-    <%= show_table(@provider, :width => 5, :header => 'File contents can be accessed by these Servers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
-      <% if rrs_by_category[:portal] %>
-        <% t.row(:class => 'subheader') { "<strong>Portals<strong>".html_safe } %>
-        <% rrs_by_category[:portal].sort_by(&:name).each do |rr| %>
-          <% meta_key = "rr_no_sync_#{rr.id}" %>
-          <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "#{rr.name} cannot sync #{@provider.name}", :header => "#{rr.name}", :class => 'checkbox_label') %>
-        <% end%>
-      <% end%>
-
-      <% t.blank_row %>
-
-      <% if rrs_by_category[:bourreau] %>
-        <% t.row(:class => 'subheader') { "<strong>Execution Servers<strong>".html_safe } %>
-        <% rrs_by_category[:bourreau].sort_by(&:name).each do |rr| %>
-          <% meta_key = "rr_no_sync_#{rr.id}" %>
-          <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "#{rr.name} cannot sync #{@provider.name}", :header => "#{rr.name}", :class => 'checkbox_label') %>
-        <% end%>
-      <% end%>
-    <% end%>
-  <% end%>
-
-</div>
-
-<p>
-
-<% if (check_role(:admin_user) || @provider.user_id == current_user.id) && (@provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface)) %>
-
-<P>
-
-<div>
-  <table>
-    <tr><th colspan="2" class="supertitle">Public SSH Key for this CBRAIN Portal</th></tr>
-    <tr><td>This key should be installed on this Data Provider's host machine to allow remote access.</td></tr>
-    <tr><td><PRE class="ssh_key"><%= pretty_ssh_key(RemoteResource.current_resource.get_ssh_public_key || 'Unknown! Talk to sysadmin!') %></PRE></td></tr>
-  </table>
-</div>
-
-<% end %>
-
-<% if @provider.has_owner_access?(current_user) %>
-  <P>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @provider.getlog, :title => "Data Provider Log" } %>
-<% end %>
 

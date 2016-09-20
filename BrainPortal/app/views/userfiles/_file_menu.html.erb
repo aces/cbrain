@@ -22,79 +22,100 @@
 #
 -%>
 
-<div id="static-actions">
+<div class="container-fluid">
+<div class="row menu-bar">
+<div class="col-xs-12">
+<div class="well well-sm">
+
+<div class="btn-group" role="group" id="static-actions">
   <span id="launch-btn"
-    class="act-btn"
-    data-dialog="toolsDialog"
-    data-icon="ui-icon-play"
-  >Launch</span>
+    class="btn btn-primary act-btn"
+    data-dialog="toolsDialog">
+    <span class="glyphicon glyphicon-play"></span>
+    Launch</span>
 
   <span id="upload-btn"
-    class="act-btn"
-    data-dialog="upload-dialog"
-    data-icon="ui-icon-arrowthick-1-n"
-  >Upload</span>
+    class="btn btn-primary act-btn"
+    data-dialog="upload-dialog">
+    <span class="glyphicon glyphicon-upload"></span>
+    Upload</span>
 </div>
 
-<div id="dynamic-actions" class="hidden">
+<div class="btn-group" role="group" id="dynamic-actions" class="hidden">
   <span id="down-btn"
-    class="act-btn"
+    class="btn btn-primary act-btn"
     data-url="<%= download_userfiles_path %>"
     data-method="POST"
-    data-empty-selection="0"
-    data-icon="ui-icon-arrowthickstop-1-s"
-  >Download</span>
+    data-empty-selection="0">
+    <span class="glyphicon glyphicon-download"></span>
+    Download</span>
 
   <span id="copy-btn"
-    class="act-btn"
-    data-dialog="cpmv-dialog"
-    data-icon="ui-icon-copy"
-  >Copy</span>
+    class="btn btn-primary act-btn"
+    data-dialog="cpmv-dialog">
+    <span class="glyphicon glyphicon-duplicate"></span>
+    Copy</span>
 
   <span id="move-btn"
-    class="act-btn"
+    class="btn btn-primary act-btn"
     data-dialog="cpmv-dialog"
-    data-icon="ui-icon-arrowreturnthick-1-e"
-  >Move</span>
+    data-icon="ui-icon-arrowreturnthick-1-e">
+    <span class="glyphicon glyphicon-move"></span>
+    Move</span>
 
   <span id="ren-btn"
-    class="act-btn"
-    data-icon="ui-icon-pencil"
-  >Rename</span>
+    class="btn btn-primary act-btn">
+    <span class="glyphicon glyphicon-pencil"></span>
+    Rename</span>
 
   <span id="comp-btn"
-    class="act-btn"
+    class="btn btn-primary act-btn"
     data-url="<%= compress_userfiles_path() %>"
-    data-method="POST"
-    data-icon="ui-icon-suitcase"
-  >Compress</span>
+    data-method="post">
+    <span class="glyphicon glyphicon-compressed"></span>
+    Compress</span>
 
   <span id="ucomp-btn"
-    class="act-btn"
+    class="btn btn-primary act-btn"
     data-url="<%= uncompress_userfiles_path() %>"
-    data-method="POST"
-    data-icon="ui-icon-folder-open"
-  >Uncompress</span>
+    data-method="POST">
+    <span class="glyphicon glyphicon-folder-open"></span>
+    Uncompress</span>
 
   <span id="del-btn"
-    class="act-btn"
+    class="btn btn-primary act-btn"
     data-url="<%= delete_files_userfiles_path %>"
     data-method="DELETE"
-    data-icon="ui-icon-trash"
-    data-confirm-dlg="delete-confirm"
-  >Delete</span>
+    data-confirm-dlg="delete-confirm">
+    <span class="glyphicon glyphicon-trash"></span>
+    Delete</span>
 </div>
 
+<div class="btn-group">
+  <a class="btn btn-primary" data-toggle="modal" data-target="#delete-modal" role="button">DELETE</a>
+  <a class="btn btn-primary" data-toggle="modal" data-target="#move-modal" role="button">MOVE</a>
+  <a class="btn btn-primary" data-toggle="modal" data-target="#move-modal" role="button">COPY</a>
+  <a class="btn btn-primary" data-toggle="modal" data-target="#launch-modal" role="button">LAUNCH</a>
+  <a class="btn btn-primary" data-toggle="modal" data-target="#upload-modal" role="button">UPLOAD</a>
+</div>
+
+<div class="btn-group" role="group">
+  <a href="javascript:;" class="btn btn-primary dropdown" data-toggle="dropdown" role="dropdown" aria-haspopup="true" aria-expanded="false">
+    <span class="glyphicon glyphicon-filter"></span> Custom Filters <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" id="filters-menu">
+    <% @custom_filter = UserfileCustomFilter.new %>
+    <div id="custom_filters_list">
+      <%= render :partial => 'custom_filters/custom_filter_list' %>
+    </div>
+  </ul>
+</div>
+
+
 <div id="menu-actions">
-  <span id="menu-btn" class="act-btn" data-icon="ui-icon-gear">More...</span>
+  <span id="menu-btn" class="act-btn btn btn-primary"><span class="glphicon glyphicon-cog"></span> More...</span>
   <ul id="menu-list">
-    <li id="filters-item">
-      Custom filters
-      <span class="ui-icon ui-icon-zoomin"></span>
-      <ul id="filters-menu">
-        <%= render(:partial => 'filter_items') %>
-      </ul>
-    </li>
+
     <li id="tag-item"
       class="act-item"
       data-dialog="tag-dialog"
@@ -214,4 +235,8 @@
       <span class="ui-icon ui-icon-arrowreturnthick-1-s"></span>
     </li>
   </ul>
+</div>
+</div>
+</div>
+</div>
 </div>

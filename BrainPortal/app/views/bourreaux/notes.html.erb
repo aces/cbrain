@@ -18,20 +18,12 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<P>
-
-<div class="alone_per_line">
-  <%= show_hide_toggle "Show configuration notes", "#notesbody", :class  => 'action_link', :alternate_text => "Hide configuration notes" %>
-  <P>
-</div>
-
-<div id="notesbody" class="notesbox" style="display:none">
-
-    <h3>Some Notes About Configuring A Execution Server</h3>
+<div class="container-fluid">
+   <h3>Some Notes About Configuring A Execution Server</h3>
 
     An Execution Server is a remote Rails application that is used by the
     BrainPortal. Like all Rails applications, it runs on some host
@@ -131,4 +123,5 @@
     the backup <em>database.yml</em> will be restored.
 
 </div>
+
 

@@ -32,80 +32,106 @@
   git_branch = CBRAIN::CBRAIN_Git_Branch.presence || "unknown"
 %>
 
-<div class="account account_git_branch_<%= git_branch.gsub(/\W/,"_") %>">
+<% help_url = RemoteResource.current_resource.help_url %>
+<% support_email = RemoteResource.current_resource.support_email %>
 
-  <span class="home_credits">
-    <% if current_user %>
-      <%= link_to "Dashboard", home_path %>
-      <%= link_to 'My Account', user_path(current_user) %>
-      <%= link_to 'Projects', groups_path %>
-      <%= link_to 'Messages', messages_path, :title  => pluralize(@unread_message_count, "unread message"), :id  => "message_menu_tab" %>
-      <% if current_user.has_role?(:normal_user) %>
-        <%= hover_dropdown("Resources", :dropdown_class => "resource_header") do %>
-          <%= link_to 'Data Providers', data_providers_path %><BR>
-          <%= link_to 'Servers', bourreaux_path %><BR>
-          <%= link_to 'Tools', tools_path %><BR>
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#cbrain-menu-collapse" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="<%= home_path %>"><img src="/images/cbrain-logo.png" height="25em"></a>
+    </div>
+    <div class="collapse navbar-collapse" id="cbrain-menu-collapse">
+    <ul class="nav navbar-nav">
+      <% if current_user %>
+        <li class="dropdown"  <%= set_selected(params[:controller], :groups) %>><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Project: <%= current_project.try(:name) || "none" %> <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <% current_user.groups.where(:type => "WorkGroup", :invisible => false).order(:name).limit(20).all.each do |g| %>
+              <li><%= link_to h(crop_text_to(95, g.name)), {:controller => :groups, :action => :switch, :id  => g.id}, { :datatype => :script, :method => :post } %></li>
+            <% end %>
+            <li><%= link_to "See all files and tasks", { :controller => :groups, :action => :switch, :id  => "all" }, { :datatype => :script, :method => :post } %></li>
+            <li><%= link_to "Full project list", groups_path %></li>
+          </ul>
+        </li>
+
+        <% if current_user %>
+          <% if !current_user.has_role?(:normal_user) || (current_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
+            <li <%= set_selected(params[:controller], :userfiles) %>><a href="<%= userfiles_path%>">Files</a></li>
+            <li <%= set_selected(params[:controller], :tasks) %>><a href="<%= tasks_path%>">Tasks</a></li>
+          <% end %>
+          <% unless current_user.has_role?(:normal_user) %>
+            <li <%= set_selected(params[:controller], :data_providers) %>><a href="<%= data_providers_path %>">Data Providers</a></li>
+            <li <%= set_selected(params[:controller], :bourreaux) %>><a href="<%= bourreaux_path %>">Servers</a></li>
+            <li <%= set_selected(params[:controller], :tools) %>><a href="<%= tools_path %>">Tools</a></li>
+            <li <%= set_selected(params[:controller], :users) %>><a href="<%= users_path %>">Users</a></li>
+          <% end %>
+          <% if current_user.has_role?(:admin_user) %>
+            <li <%= set_selected(params[:controller], :access_profiles) %>><a href="<%= access_profiles_path%>">Profiles</a></li>
+            <li <%= set_selected(params[:controller], :sites) %>><a href="<%= sites_path %>">Sites</a></li>
+            <li <%= set_selected(params[:controller], :exception_logs) %>><a href="<%= exception_logs_path %>">Exceptions</a></li>
+          <% end %>
         <% end %>
-      <% end %>
-      <% help_url = RemoteResource.current_resource.help_url %>
-      <% if help_url.present? %>
-        <%= link_to "Help Site", help_url, :target => '_blank' %>
-      <% end %>
-      <% support_email = RemoteResource.current_resource.support_email %>
-      <% if support_email.present? %>
-        <%= html_tool_tip(mail_to(support_email, "Email Support"), :offset_x => 0, :offset_y => 20) do %>
-          For email support about this platform, including help<br>
-          about failed tasks and file transfer please click here<br>
-          or write to: <%= support_email %>
+
+
+        <li <%= set_selected(params[:controller], :messages) %>><a href="<%= messages_path %>">Messages <% if @unread_message_count > 0 %> <span class="badge progress-bar-info"><%= @unread_message_count %> </span><% end %></a></li>
+        <% if current_user.has_role?(:normal_user) %>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Resources <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="<%= data_providers_path %>"><span class="glyphicon glyphicon-hdd"></span>  Data Providers</a></li>
+              <li><a href="<%= bourreaux_path %>"><span class="glyphicon glyphicon-cog"></span>  Servers</a></li>
+              <li><a href="<%= tools_path%>"><span class="glyphicon glyphicon-wrench"></span>  Tools</a></li>
+            </ul>
+          </li>
+          <% if help_url.present? || support_email.present? %>
+            <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <span class="glyphicon glyphicon-question-sign"></span> Help <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+            <% if help_url.present? %>
+              <li><a href="<%= help_url %>" target="_blank"><span class="glyphicon glyphicon-comment"></span> Forum</a></li>
+            <% end %>
+            <% if support_email.present? %>
+              <li><a href="mailto:<%= support_email %>"><span class="glyphicon glyphicon-envelope"></span> Email</a></li>
+            <% end %>
+            </ul>
+            </li>
+          <% end %>
         <% end %>
+        <li><%= image_tag "ajax-loader.gif", :style => "display:none", :id => "loading_image" %></li>
       <% end %>
-    <% end %>
-    Rev: <%= CBRAIN::CBRAIN_StartTime_Revision %>
-    <% if current_user.present? && current_user.has_role?(:admin_user) %>
-      Branch: <%= git_branch %>
-    <% end %>
-  </span>
+    </ul>
 
-  <span class="loggedas">
-    <% if current_user %>
-      <span class="last_updated">
-        (last updated <span class="elapsed">0m</span> ago)
-        <script>
-          (function () {
-            "use strict";
-
-            var last_update = new Date();
-            setInterval(function () {
-              var diff = Math.floor((new Date() - last_update) / (60 * 1000)),
-                  part = undefined,
-                  text = [];
-
-              part = Math.round(diff % 60);
-              diff = Math.floor(diff / 60);
-              text.unshift(part + 'm');
-
-              part = Math.round(diff % 24);
-              diff = Math.floor(diff / 24);
-              if (part) text.unshift(part + 'h');
-
-              if (diff) text.unshift(diff + 'd');
-
-              $('span.last_updated > span.elapsed').text(text.join(' '));
-            }, 20 * 1000);
-
-            $(document).delegate('*', 'new_content', function () {
-              last_update = new Date();
-            });
-          })();
-        </script>
-      </span>
-
-      Logged in as <%= current_user.full_name %>
-      <%= link_to "Sign out", "/logout" %>
-    <% else %>
-      <%= link_to "Sign in", "/login" %>
-    <% end %>
-  </span>
-
-</div>
-
+    <ul class="nav navbar-nav navbar-right">
+      <% if current_user %>
+        <li class="hidden-md"><p class="navbar-text small">Rev: <%= CBRAIN::CBRAIN_StartTime_Revision %>
+          <% if current_user.present? && current_user.has_role?(:admin_user) %>
+            Branch: <%= git_branch %>
+          <% end %> </p></li>
+        <li>
+          <div class="input-group">
+            <form id="cbsearch" action="<%= search_path %>" class="navbar-form" role="search" method="get">
+              <div class="form-group">
+                <input type="text" class="form-control" placeholder="Search" id="search" name="search">
+              </div>
+              <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
+            </form>
+          </div>
+        </li>
+        <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><%= current_user.full_name %><span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          <li><a href="<%= user_path(current_user) %>"><span class="glyphicon glyphicon-user"></span> My Account</a></li>
+          <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Sign Out</a></li>
+        </ul>
+        </li>
+      <% else %>
+        <li><%= link_to "Sign in", "/login" %></li>
+      <% end %>
+    </ul>
+    </div>
+  </div><!-- /.container-fluid -->
+</nav>

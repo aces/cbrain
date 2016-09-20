@@ -24,17 +24,30 @@
 
 <% title 'Data Provider Report' %>
 
-<h1><%= @provider.name %> - Inconsistency report</h1>
-
-<%= form_tag repair_data_provider_path(@provider), :method => :post do %>
-  <div class="menu_bar">
-    <%= link_to "Reload report", report_data_provider_path(@provider, :reload => true), :class => "button" %>
-    <% unless @issues.empty? %>
-      <%= submit_tag "Repair selected issues", :class => "button" %>
-    <% end %>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12">
+      <h2><%= @provider.name %> - Inconsistency report</h1>
+    </div>
   </div>
 
-  <div class="resource_list" id="dp_report_table">
-    <%= render :partial => 'dp_report_table' %>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= form_tag repair_data_provider_path(@provider), :method => :post do %>
+        <div class="menu_bar">
+          <%= link_to "Reload report", report_data_provider_path(@provider, :reload => true), :class => "btn btn-primary" %>
+          <% unless @issues.empty? %>
+            <%= submit_tag "Repair selected issues", :class => "btn btn-primary" %>
+          <% end %>
+        </div>
+
+        <div class="resource_list" id="dp_report_table">
+          <%= render :partial => 'dp_report_table' %>
+        </div>
+      <% end %>
+
+    </div>
   </div>
-<% end %>
+</div>
+
+

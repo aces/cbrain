@@ -22,31 +22,51 @@
 #
 -%>
 
-<%= button_with_dropdown_menu("View Options") do %>
-  <div class="view_options">
-    <% user_list = current_user.available_users.sort_by(&:login) %>
-    <% if user_list.size > 1 %>
-      Browse as another user:
-      <%=
-        ajax_onchange_select(:as_user_id,
-          browse_data_provider_path,
-          options_for_select(
-            user_list.collect { |u| [ u.login, u.id.to_s ] },
-            @as_user.id.to_s
-          ),
-          :datatype => 'script'
-        )
-      %>
-      <br/>
-    <% end %>
+<% user_list = current_user.available_users.sort_by(&:login) %>
 
-    <%=
-      ajax_link('Refresh list of files',
-        browse_data_provider_path(:refresh => true),
-        :datatype => 'script'
-      )
-    %>
-    <br/>
-  </div>
-<% end %>
+<div class="btn-group">
+  <a href="javascript:;" class="btn btn-primary dropdown-toggle mega-dropdown" role="dropdown" aria-haspopup="true" aria-expanded="false">View Options<span class="caret"></span></a>
+  <ul class="dropdown-menu">
+    <div class="container-fluid">
+      <% if user_list.size > 1 %>
+        <li class="dropdown-header">
+          Browse as another user:
+        </li>
+        <li>
+          <%=
+            ajax_onchange_select(:as_user_id,
+              browse_data_provider_path,
+              options_for_select(
+                user_list.collect { |u| [ u.login, u.id.to_s ] },
+                @as_user.id.to_s
+              ),
+              { :datatype => 'script', :class => "form-control" }
+            )
+          %>
+        </li>
+      <% end %>
+
+      <li class="divider" role="separator"></li>
+      <li>
+        <%=
+          ajax_link('Refresh list of files',
+            browse_data_provider_path(:refresh => true),
+            { :datatype => 'script', :class => "btn btn-primary btn-block mega-dropdown-closer" }
+          )
+        %>
+      </li>
+    </div>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
 

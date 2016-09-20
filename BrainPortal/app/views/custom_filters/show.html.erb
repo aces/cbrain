@@ -1,0 +1,75 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% custom_filter ||= @custom_filter %>
+<% filter_type = custom_filter.class.name.underscore %>
+
+<% title "Custom Filter" %>
+
+<div class="container-fluid">
+  <div class="row menu_bar">
+    <div class="well well-sm">
+      <%= link_to 'Delete', custom_filter_path(@custom_filter),  {
+            :confirm => "Are you sure you want to delete '#{@custom_filter.name}' ?",
+            :method  => :delete,
+            :class => "btn btn-primary"
+            }
+      %>
+      <%= overlay_ajax_link "Help", "/doc/custom_filters/custom_filters.html", :class  => "btn btn-primary" %>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <%= error_messages_for(custom_filter, :object_name => "custom filter") %>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <%= show_table(@custom_filter) do |t| %>
+
+        <% t.edit_cell(:name) do %>
+          <%= text_field_tag "custom_filter[name]", @custom_filter.name, :class => "form-control" %>
+        <% end %>
+
+      <% end %>
+
+      <div class="panel panel-primary">
+        <div class="panel-heading">Filter Parameters</div>
+        <div class="panel-body">
+          <%= form_for custom_filter, :as => :custom_filter, :url => {:controller  => "custom_filters", :action => "update", :filter_class => filter_type }, :datatype  => "script", :method => "put", :class => "form-horizontal" do |f| %>
+
+            <%= render :partial => "custom_filters/#{filter_type}", :locals  => {:custom_filter  => custom_filter}  %>
+
+            <div class="row">
+              <%= f.submit "Update", :class => "btn btn-primary btn-block" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

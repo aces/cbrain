@@ -38,11 +38,11 @@ module RichUiHelper
     return h(cropped_header) if body.blank? && cropped_header !~ /\.\.\.$/
     return h(cropped_header) if cropped_header.present? && body.present? && (cropped_header == body)
 
-    link = h(cropped_header) + " " +
-      html_tool_tip(link_to("(more)", "#"), :offset_x => 0, :offset_y => 20) do
-        pre_body = body.blank? ? "" : "\n<pre>" + h(body) + "</pre>"
-        ("<h4>#{h(header)}</h4>#{pre_body}").html_safe
-      end
+    if body.blank?
+      link = "<span class=\"pop\" data-toggle=\"popover\" data-placement=\"right\" data-trigger=\"focus\" data-container=\"body\" data-content=\"" + header + "\" data-html=\"true\">" + cropped_header + " (more) </span>"
+    else
+      link = "<span class=\"pop\" data-toggle=\"popover\" data-placement=\"right\" data-trigger=\"focus\" data-container=\"body\" data-content=\"" + body + "\" title=\"" + header + "\" data-html=\"true\">" + cropped_header + " (more) </span>"
+    end
     link.html_safe
   end
 
@@ -112,7 +112,7 @@ module RichUiHelper
     end
 
     def tab_titles #:nodoc:
-      ("<ul>\n" + @tab_titles + "\n</ul>\n").html_safe
+      ("<ul class=\"nav nav-tabs\">\n" + @tab_titles + "\n</ul>\n").html_safe
     end
 
     attr_reader :tab_divs #:nodoc:
@@ -271,6 +271,7 @@ module RichUiHelper
     button_id = "id=\"#{button_id}\"" if button_id
     options[:class] ||= ""
     options[:class] +=  " button_with_drop_down"
+    options[:class] += "btn btn-default"
     if options.delete :open
       options["data-open"] = true
       display_style = "style=\"display: block\" "

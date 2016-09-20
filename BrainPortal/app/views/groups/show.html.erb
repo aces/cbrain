@@ -24,126 +24,144 @@
 
 <% title "Project Info" %>
 
-<% if @group.is_a?(WorkGroup) %>
-  <div class="menu_bar">
-    <% unless @group.creator_id == current_user.id %>
-      <%= link_to 'Unregister', {:action => :unregister, :id => @group.id}, :class => "button", :method  => :post %>
-    <% end %>
-    <% if @group.can_be_edited_by?(current_user) %>
-
-        <%= link_to 'Switch', {:action => :switch, :id => @group.id}, :class => "button", :method  => :post %>
-        <% if current_user.has_role?(:normal_user) && @group.can_be_edited_by?(current_user) && current_user.visible_users.present? %>
-          <%= overlay_ajax_link "Invite Other Users", new_invitation_path(group_id: @group.id), class: "button" %>
-        <% end %>
-        <%= link_to 'Delete', group_path(@group), { :confirm => "Are you sure you want to delete '#{@group.name}'?", :method => :delete, :class => "button" } %>
-    <% end %>
+<div class="container-fluid">
+  <% if @group.is_a?(WorkGroup) %>
+    <div class="row menu_bar">
+      <div class="col-xs-12">
+        <div class="well well-sm">
+          <% unless @group.creator_id == current_user.id %>
+            <a href="<%= url_for(:action => :unregister, :id => @group.id) %>" class="btn btn-primary" data-type="script" method="post"><span class="glyphicon glyphicon-ban-circle"></span> Unregister</a>
+          <% end %>
+          <% if @group.can_be_edited_by?(current_user) %>
+              <a href="<%= url_for(:action => :switch, :id => @group.id) %>" class="btn btn-primary" data-type="script" method="post"><span class="glyphicon glyphicon-random"></span> Switch</a>
+              <% if current_user.has_role?(:normal_user) && @group.can_be_edited_by?(current_user) && current_user.visible_users.present? %>
+                <%= overlay_ajax_link "Invite Other Users", new_invitation_path(group_id: @group.id), class: "btn btn-primary" %>
+              <% end %>
+              <a href="<%= group_path(@group) %>" class="btn btn-primary" data-type="script" method="delete" data-confirm="Are you sure you want to delete '<%= @group.name %>'?"><span class="glyphicon glyphicon-trash"></span> Delete</a>
+          <% end %>
+        </div>
+      </div>
     </div>
-<% end %>
+  <% end %>
 
-<P>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= error_messages_for @group, :header_message => "Project could not be updated." %>
+    </div>
+  </div>
 
-<%= error_messages_for @group, :header_message => "Project could not be updated." %>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= show_table(@group, :edit_condition => @group.can_be_edited_by?(current_user)) do |t| %>
 
-<div class="display_inline_block" style="min-width: 50%">
+        <% t.edit_cell(:name) do %>
+          <%= text_field_tag "group[name]", @group.name, :class => "form-control" %>
+        <% end %>
 
-  <%= show_table(@group, :edit_condition => @group.can_be_edited_by?(current_user)) do |t| %>
+        <% t.cell("Creator") { @group.creator.try(:login)} %>
 
-    <% t.edit_cell(:name) do %>
-      <%= text_field_tag "group[name]", @group.name %>
-    <% end %>
+        <% t.edit_cell(:site_id, :content => link_to_site_if_accessible(@group.site), :disabled => !current_user.has_role?(:admin_user)) do %>
+          <%= site_select "group[site_id]", @group.site_id, :prompt => "(Select a site)", :class => "form-control" %>
+        <% end %>
 
-    <% t.cell("Creator") { @group.creator.try(:login)} %>
+        <% t.cell("Type") { @group.pretty_category_name(current_user) } %>
 
-    <% t.edit_cell(:site_id, :content => link_to_site_if_accessible(@group.site), :disabled => !current_user.has_role?(:admin_user)) do %>
-      <%= site_select "group[site_id]", @group.site_id, :prompt => "(Select a site)" %>
-    <% end %>
+        <% t.edit_cell(:description, :content =>  overlay_description(@group.description)) do %>
+            <%= text_area_tag "group[description]", @group.description, :rows => 4, :class => "form-control" %>
+            The first line should be a short summary, and the rest are for details.
+        <% end %>
 
-    <% t.cell("Type") { @group.pretty_category_name(current_user) } %>
-
-    <% t.edit_cell(:description, :content =>  overlay_description(@group.description)) do %>
-        <%= text_area_tag "group[description]", @group.description, :rows => 4, :cols => 40 %><br>
-        <div class="field_explanation">The first line should be a short summary, and the rest are for details.</div><br>
-    <% end %>
-
-    <% if current_user.has_role?(:admin_user) && @group.is_a?(WorkGroup) %>
-      <% t.edit_cell("Invisible", :content => check_box_tag(nil ,nil, @group.invisible?, :disabled => true)) do %>
-        <%= hidden_field_tag "group[invisible]", "0" %>
-        <%= check_box_tag("group[invisible]", "1", @group.invisible?) %>
+        <% if current_user.has_role?(:admin_user) && @group.is_a?(WorkGroup) %>
+          <% t.edit_cell("Invisible", :content => check_box_tag(nil ,nil, @group.invisible?, :disabled => true)) do %>
+            <%= hidden_field_tag "group[invisible]", "0" %>
+            <%= check_box_tag("group[invisible]", "1", @group.invisible?, :class => "form-control") %>
+          <% end %>
+        <% end %>
       <% end %>
-    <% end %>
+    </div>
+  </div>
 
-    <% t.empty_cell %>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= show_table(@group, :header => 'Resources') do |t| %>
 
-  <% end %>
+        <% t.cell("Files") { index_count_filter @group.userfiles.count, :userfiles, {:group_id => @group.id}, :show_zeros => true } %>
 
-  <%= show_table(@group, :header => 'Resources') do |t| %>
+        <% t.cell("Tasks") { index_count_filter @group.cbrain_tasks.count, :tasks, {:group_id => @group.id}, :show_zeros => true } %>
 
-    <% t.cell("Files") { index_count_filter @group.userfiles.count, :userfiles, {:group_id => @group.id}, :show_zeros => true } %>
+        <% if current_user.has_role?(:admin_user) %>
+          <% t.cell("Tools") { index_count_filter @group.tools.count, :tools, {:group_id => @group.id} }%>
+          <% t.cell("Data Providers") { index_count_filter @group.data_providers.count, :data_providers, {:group_id => @group.id} } %>
+          <% t.cell("Portal") { index_count_filter BrainPortal.where(:group_id => @group.id).count, :bourreaux, {:group_id => @group.id, :type => "BrainPortal"} } %>
+          <% t.cell("Execution") { index_count_filter Bourreau.where(:group_id => @group.id).count, :bourreaux, {:group_id => @group.id, :type => "Bourreau"} } %>
+        <% end %>
 
-    <% t.cell("Tasks") { index_count_filter @group.cbrain_tasks.count, :tasks, {:group_id => @group.id}, :show_zeros => true } %>
+      <% end %>
+    </div>
+  </div>
 
-    <% if current_user.has_role?(:admin_user) %>
-      <% t.cell("Tools") { index_count_filter @group.tools.count, :tools, {:group_id => @group.id} }%>
-      <% t.cell("Data Providers") { index_count_filter @group.data_providers.count, :data_providers, {:group_id => @group.id} } %>
-      <% t.cell("Portal") { index_count_filter BrainPortal.where(:group_id => @group.id).count, :bourreaux, {:group_id => @group.id, :type => "BrainPortal"} } %>
-      <% t.cell("Execution") { index_count_filter Bourreau.where(:group_id => @group.id).count, :bourreaux, {:group_id => @group.id, :type => "Bourreau"} } %>
-    <% end %>
-
-  <% end %>
 
   <% # Access Profile List %>
   <% if current_user.has_role?(:admin_user) && @group.access_profiles.count > 0 %>
-    <%= show_table(@group, :header => 'Access profiles') do |t| %>
-      <% t.cell("Access Profiles", :no_header => true) do %>
-        <%= array_to_table(@group.access_profiles.order(:name).all, :table_class => "simple", :cols => 4) do |access_profile| %>
-          <%= access_profile_label(access_profile, :with_link => true) %>
+    <div class="row">
+      <div class="col-xs-12">
+        <%= show_table(@group, :header => 'Access profiles') do |t| %>
+          <% t.cell("Access Profiles", :no_header => true) do %>
+            <%= array_to_table(@group.access_profiles.order(:name).all, :table_class => "simple table", :cols => 4) do |access_profile| %>
+              <%= access_profile_label(access_profile, :with_link => true) %>
+            <% end %>
+          <% end %>
         <% end %>
-      <% end %>
-    <% end %>
+      </div>
+    </div>
   <% end %>
 
   <%
     group_members  = @group.users
     open_invites   = Invitation.where(sender_id: current_user.id, group_id: @group.id, active: true)
   %>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= show_table(@group, :header => 'Members', :edit_condition => @group.can_be_edited_by?(current_user) && (!current_user.has_role?(:normal_user) || group_members.count > 1 || open_invites.present?)) do |t| %>
 
-  <%= show_table(@group, :header => 'Members', :edit_condition => @group.can_be_edited_by?(current_user) && (!current_user.has_role?(:normal_user) || group_members.count > 1 || open_invites.present?)) do |t| %>
+          <% default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left table', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) } %>
 
-    <% default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) } %>
+          <% t.edit_cell(:user_id, :show_width => 2,
+                                   :no_header  => 'Members',
+                                   :content    => default_text) do %>
+            <% if current_user.has_role? :normal_user %>
+              <% group_members.each do |u| %>
+                <%= link_to_user_with_tooltip u %><%= link_to(": Remove", group_path(@group, "group[user_ids]" => (@group.user_ids - [u.id]), update_users: true ), :method => :put, :class => "action_link") unless u == current_user %>
+              <% end %>
+            <% else %>
+                <%= render :partial => 'users_form' %>
+                <%= hidden_field_tag :update_users, true %>
+            <% end %>
+          <% end %>
+          <% if open_invites.present? %>
+            <% default_text = array_to_table(open_invites.map(&:user).sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| u.login } %>
 
-    <% t.edit_cell(:user_id, :show_width => 2,
-                             :no_header  => 'Members',
-                             :content    => default_text) do %>
-      <% if current_user.has_role? :normal_user %>
-        <% group_members.each do |u| %>
-          <%= link_to_user_with_tooltip u %><%= link_to(": Remove", group_path(@group, "group[user_ids]" => (@group.user_ids - [u.id]), update_users: true ), :method => :put, :class => "action_link") unless u == current_user %>
-          <br>
+            <% t.edit_cell(:invites, :show_width => 2,
+                                     :header     => 'Pending Invitations',
+                                     :content    => default_text) do %>
+              <% open_invites.each do |i| %>
+                <%= link_to_user_with_tooltip i.user %>: <%= link_to("Cancel", invitation_path(i), :method => :delete, :class => "action_link") %>
+                <br>
+              <% end %>
+            <% end %>
+          <% end %>
         <% end %>
-      <% else %>
-        <div class="generalbox" style="width: 100%">
-          <%= render :partial => 'users_form' %><br>
-          <%= hidden_field_tag :update_users, true %>
-        </div>
-      <% end %>
-    <% end %>
-    <% if open_invites.present? %>
-      <% default_text = array_to_table(open_invites.map(&:user).sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| u.login } %>
 
-      <% t.edit_cell(:invites, :show_width => 2,
-                               :header     => 'Pending Invitations',
-                               :content    => default_text) do %>
-        <% open_invites.each do |i| %>
-          <%= link_to_user_with_tooltip i.user %>: <%= link_to("Cancel", invitation_path(i), :method => :delete, :class => "action_link") %>
-          <br>
-        <% end %>
-      <% end %>
-    <% end %>
-  <% end %>
+    </div>
+  </div>
 
+  <div class="row">
+    <div class="col-xs-12">
+      <% if @group.can_be_edited_by?(current_user) %>
+        <%= render :partial => "layouts/log_report", :locals  => { :log  => @group.getlog, :title => 'Project Log' } %>
+      <% end %>
+    </div>
+  </div>
 </div>
 
-<% if @group.can_be_edited_by?(current_user) %>
-  <P>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @group.getlog, :title => 'Project Log' } %>
-<% end %>
 

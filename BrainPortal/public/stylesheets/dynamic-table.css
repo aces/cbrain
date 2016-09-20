@@ -25,37 +25,6 @@
 /* Stylesheet for dynamic tables */
 
 /* general layout */
-.dynamic-table {
-  color: #000000;
-  display: inline-block;
-  font-family: sans-serif;
-}
-
-.dt-table {
-  border-collapse: collapse;
-  border-spacing: 0;
-  border: 0;
-  clear: both;
-}
-
-.dt-head > tr > th {
-  background: inherit;
-  border: 0;
-  color: inherit;
-  font-family: inherit;
-  padding: 0.2em 0em 0.2em 0.9em;
-  text-align: left;
-  white-space: nowrap;
-}
-
-.dt-body > tr > td {
-  border: 0;
-  color: inherit;
-  font-family: inherit;
-  height: 22px;
-  padding: 0.2em 0.5em 0.2em 0.9em;
-  text-align: left;
-}
 
 .dt-body > tr > td.dt-table-empty {
   color: #444444;
@@ -116,7 +85,6 @@
 .dt-hdr {
   display: inline-block;
   margin-top: 1px;
-  padding-right: 4em;
 }
 
 .dt-filter-btn,
@@ -126,6 +94,10 @@
   margin-top: 2px;
   position: relative;
   z-index: 1;
+}
+
+.dt-col-btn {
+  padding-bottom: 0.7em;
 }
 
 /* popups */
@@ -194,11 +166,6 @@
 .dt-sel-check:checked + .dt-sel-lbl > .dt-sel-icon,
 .dt-sel-check[checked=checked] + .dt-sel-lbl > .dt-sel-icon {
   visibility: visible;
-}
-
-td.dt-sel,
-th.dt-sel {
-  width: 18px;
 }
 
 th.dt-sel > .dt-sel-check + .dt-sel-lbl {

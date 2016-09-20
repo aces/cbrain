@@ -22,191 +22,212 @@
 #
 -%>
 
-<div class="menu_bar">
-  <% if current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user) %>
-    <%= link_to "Leave Message", new_message_path, :class => "button" %>
-  <% end %>
-  <%= overlay_ajax_link "Help", "/doc/messages/message_info.html", :class  => "button" %>
+<div class="container-fluid">
+  <div class="row menu_bar">
+    <div class="col-xs-12">
+      <div class="well well-sm">
+        <% if current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user) %>
+          <a href="<%= new_message_path %>" class="btn btn-primary"><span class="glyphicon glyphicon-file"></span> New Message</a>
+        <% end %>
 
-  <%= external_submit_button "Delete Checked Messages", "message_form", :class  => "button", :confirm  => "Are you sure you want to delete the selected messages?"  %>
+        <a href="#" class="btn btn-primary help-btn" data-toggle="modal" data-target="#help-modal" data-url="/doc/messages/message_info.html"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
+
+        <%= external_submit_button "Delete", "message_form", :class => "btn btn-primary", :confirm  => "Are you sure you want to delete the selected messages?"  %>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <%=
+        render(:partial => 'shared/active_filters', :locals  => {
+          :scope => @scope,
+          :model => Message
+        })
+      %>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="pagination">
+        <span class="pagination_center">
+          (
+            <%= pluralize @messages.total_entries, "message" %>
+            <% if @unread_count > 0 %>,
+              <%=
+                scope_filter_link(
+                  html_colorize("#{@unread_count} unread"),
+                  @scope, :set, { :a => 'read', :v => 0 },
+                  link: { :ajax => true }
+                )
+              %>
+            <% end %>
+            <% if @read_count > 0 %>,
+              <%=
+                scope_filter_link(
+                  "#{@read_count} read",
+                  @scope, :set, { :a => 'read', :v => 1 },
+                  link: { :ajax => true }
+                )
+              %>
+            <% end %>
+          )
+        </span>
+      </div>
+
+      <%= form_tag({ :controller => :messages, :action => :delete_messages }, :method => :delete, :id => "message_form") do %>
+        <%=
+          dynamic_scoped_table(@messages,
+            :id         => "message_table",
+            :class      => [ "table-responsive" ],
+            :scope      => @scope,
+            :order_map  => {
+              :sender    => { :a => 'users.login', :j => [User, 'id', 'sender_id'] },
+              :recipient => { :a => 'users.login', :j => [User, 'id', 'user_id']   }
+            },
+            :filter_map => {
+              :sender    => { :a => 'sender_id' },
+              :recipient => { :a => 'user_id'   },
+              :last_sent => { :a => 'last_sent', :o => '<=' }
+            }
+          ) do |t|
+        %>
+          <%
+            t.paginate
+            t.selectable("message_ids[]")
+
+            t.row do |m| {
+              :class => [
+                "message_display_#{m.id}",
+                "#{m.message_type}_display",
+                "message_#{m.read? ? "" : "un"}read"
+              ]
+            } end
+          %>
+
+          <%
+            # Unicode character 'WARNING SIGN' (U+26A0)
+            t.column("&#9888;".html_safe, :critical,
+              :pretty_name => 'Critical',
+              :hidden      => true,
+              :filters     => scoped_filters_for(
+                @base_scope, @scope, :critical,
+                format: lambda do |value, label, base, view|
+                  label = (! value || value == 0) ? 'Not critical' : 'Critical'
+                  {
+                    :value     => value,
+                    :label     => "#{label} (of #{base})",
+                    :indicator => view,
+                    :empty     => view == 0
+                  }
+                end
+              )
+            ) { |m| html_colorize("!!!") if m.critical }
+
+            t.column("Type", :message_type,
+              :hidden   => true,
+              :sortable => true,
+              :filters  => scoped_filters_for(
+                @base_scope, @scope, :message_type,
+                format: lambda do |value, label, base, view|
+                  {
+                    :value     => value,
+                    :label     => "#{label.humanize} (of #{base})",
+                    :indicator => view,
+                    :empty     => view == 0
+                  }
+                end
+              )
+            ) { |m| m.message_type.humanize }
+          %>
+
+          <% t.column("Message", :header, :sortable => true) do |m| %>
+            <%= show_hide_toggle(Message.parse_markup(m.header), "#message_table_details_#{m.id}") %>
+            <div id="message_table_details_<%= m.id %>" style="display: none">
+              <%= render :partial  => 'messages/message_details', :locals  => { :mess  => m } %>
+            </div>
+          <% end %>
+
+          <%
+            t.column("Sender", :sender,
+              :sortable => true,
+              :filters  => filter_values_for(
+                @base_scope, :sender_id,
+                label: 'users.login',
+                association: [User, 'id', 'sender_id']
+              ) + [{
+                :value     => nil,
+                :label     => 'System',
+                :indicator => @view_scope
+                  .where('sender_id' => nil)
+                  .count
+              }]
+            ) { |m| m.sender.try(:login) || "System" }
+
+            t.column("Recipient", :recipient,
+              :sortable => true,
+              :filters  => scoped_filters_for(
+                @base_scope, @scope, :user_id,
+                label: 'users.login',
+                association: [User, 'id', 'user_id']
+              )
+            ) { |m| m.user.login } unless
+              current_user.has_role?(:normal_user)
+
+            t.column("Last Updated", :last_sent,
+              :sortable => true,
+              :filters  => ([
+                [10.minutes, 'Ten minutes'],
+                [1.hour,     'One hour'   ],
+                [1.day,      'One day'    ],
+                [2.days,     'Two days'   ],
+                [1.week,     'One week'   ],
+                [1.month,    'One month'  ],
+                [2.months,   'Two months' ],
+                [1.year,     'One year'   ]
+              ]).map do |value, label|
+                [value.ago.to_datetime, label + ' ago']
+              end
+            ) { |m| to_localtime(m.last_sent, :datetime) }
+          %>
+
+          <% t.column("Operations", :operations) do |m| %>
+            <div>
+              <%=
+                delete_button("Mark&nbsp;as&nbsp;#{m.read ? 'Unread' : 'Read'}".html_safe,
+                  message_path(m, :read => (!m.read).to_s),
+                  :class                  => 'action_link',
+                  :method                 => "PUT",
+                  :target                 => ".message_display_#{m.id}",
+                  :loading_message        => "<div style='color: red; text-align: center;'>Updating...</div>",
+                  :loading_message_target => ".message_display_#{m.id} > td.operations > div"
+                )
+              %>
+              &nbsp;
+              <%=
+                delete_button('Delete',
+                  message_path(m),
+                  :class                  => 'action_link',
+                  :method                 => "DELETE",
+                  :target                 => ".message_display_#{m.id}",
+                  :remove_target          => ".message_display_#{m.id}",
+                  :loading_message        => "<div style='color: red; text-align: center;'>Updating...</div>",
+                  :loading_message_target => ".message_display_#{m.id} > td.operations > div"
+                )
+              %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
 </div>
 
-<%=
-  render(:partial => 'shared/active_filters', :locals  => {
-    :scope => @scope,
-    :model => Message
-  })
-%>
+
+
 
 <%# TODO this interface is not as good as it should be... %>
-<div class="pagination">
-  <span class="pagination_center">
-    (
-      <%= pluralize @messages.total_entries, "message" %>
-      <% if @unread_count > 0 %>,
-        <%=
-          scope_filter_link(
-            html_colorize("#{@unread_count} unread"),
-            @scope, :set, { :a => 'read', :v => 0 },
-            link: { :ajax => true }
-          )
-        %>
-      <% end %>
-      <% if @read_count > 0 %>,
-        <%=
-          scope_filter_link(
-            "#{@read_count} read",
-            @scope, :set, { :a => 'read', :v => 1 },
-            link: { :ajax => true }
-          )
-        %>
-      <% end %>
-    )
-  </span>
-</div>
 
-<%= form_tag({ :controller => :messages, :action => :delete_messages }, :method => :delete, :id => "message_form") do %>
-  <%=
-    dynamic_scoped_table(@messages,
-      :id         => "message_table",
-      :class      => [ :resource_list ],
-      :scope      => @scope,
-      :order_map  => {
-        :sender    => { :a => 'users.login', :j => [User, 'id', 'sender_id'] },
-        :recipient => { :a => 'users.login', :j => [User, 'id', 'user_id']   }
-      },
-      :filter_map => {
-        :sender    => { :a => 'sender_id' },
-        :recipient => { :a => 'user_id'   },
-        :last_sent => { :a => 'last_sent', :o => '<=' }
-      }
-    ) do |t|
-  %>
-    <%
-      t.paginate
-      t.selectable("message_ids[]")
-
-      t.row do |m| {
-        :class => [
-          "message_display_#{m.id}",
-          "#{m.message_type}_display",
-          "message_#{m.read? ? "" : "un"}read"
-        ]
-      } end
-    %>
-
-    <%
-      # Unicode character 'WARNING SIGN' (U+26A0)
-      t.column("&#9888;".html_safe, :critical,
-        :pretty_name => 'Critical',
-        :hidden      => true,
-        :filters     => scoped_filters_for(
-          @base_scope, @scope, :critical,
-          format: lambda do |value, label, base, view|
-            label = (! value || value == 0) ? 'Not critical' : 'Critical'
-            {
-              :value     => value,
-              :label     => "#{label} (of #{base})",
-              :indicator => view,
-              :empty     => view == 0
-            }
-          end
-        )
-      ) { |m| html_colorize("!!!") if m.critical }
-
-      t.column("Type", :message_type,
-        :hidden   => true,
-        :sortable => true,
-        :filters  => scoped_filters_for(
-          @base_scope, @scope, :message_type,
-          format: lambda do |value, label, base, view|
-            {
-              :value     => value,
-              :label     => "#{label.humanize} (of #{base})",
-              :indicator => view,
-              :empty     => view == 0
-            }
-          end
-        )
-      ) { |m| m.message_type.humanize }
-    %>
-
-    <% t.column("Message", :header, :sortable => true) do |m| %>
-      <%= show_hide_toggle(Message.parse_markup(m.header), "#message_table_details_#{m.id}") %>
-      <div id="message_table_details_<%= m.id %>" style="display: none">
-        <%= render :partial  => 'messages/message_details', :locals  => { :mess  => m } %>
-      </div>
-    <% end %>
-
-    <%
-      t.column("Sender", :sender,
-        :sortable => true,
-        :filters  => filter_values_for(
-          @base_scope, :sender_id,
-          label: 'users.login',
-          association: [User, 'id', 'sender_id']
-        ) + [{
-          :value     => nil,
-          :label     => 'System',
-          :indicator => @view_scope
-            .where('sender_id' => nil)
-            .count
-        }]
-      ) { |m| m.sender.try(:login) || "System" }
-
-      t.column("Recipient", :recipient,
-        :sortable => true,
-        :filters  => scoped_filters_for(
-          @base_scope, @scope, :user_id,
-          label: 'users.login',
-          association: [User, 'id', 'user_id']
-        )
-      ) { |m| m.user.login } unless
-        current_user.has_role?(:normal_user)
-
-      t.column("Last Updated", :last_sent,
-        :sortable => true,
-        :filters  => ([
-          [10.minutes, 'Ten minutes'],
-          [1.hour,     'One hour'   ],
-          [1.day,      'One day'    ],
-          [2.days,     'Two days'   ],
-          [1.week,     'One week'   ],
-          [1.month,    'One month'  ],
-          [2.months,   'Two months' ],
-          [1.year,     'One year'   ]
-        ]).map do |value, label|
-          [value.ago.to_datetime, label + ' ago']
-        end
-      ) { |m| to_localtime(m.last_sent, :datetime) }
-    %>
-
-    <% t.column("Operations", :operations) do |m| %>
-      <div>
-        <%=
-          delete_button("Mark&nbsp;as&nbsp;#{m.read ? 'Unread' : 'Read'}".html_safe,
-            message_path(m, :read => (!m.read).to_s),
-            :class                  => 'action_link',
-            :method                 => "PUT",
-            :target                 => ".message_display_#{m.id}",
-            :loading_message        => "<div style='color: red; text-align: center;'>Updating...</div>",
-            :loading_message_target => ".message_display_#{m.id} > td.operations > div"
-          )
-        %>
-        &nbsp;
-        <%=
-          delete_button('Delete',
-            message_path(m),
-            :class                  => 'action_link',
-            :method                 => "DELETE",
-            :target                 => ".message_display_#{m.id}",
-            :remove_target          => ".message_display_#{m.id}",
-            :loading_message        => "<div style='color: red; text-align: center;'>Updating...</div>",
-            :loading_message_target => ".message_display_#{m.id} > td.operations > div"
-          )
-        %>
-      </div>
-    <% end %>
-  <% end %>
-<% end %>
 
