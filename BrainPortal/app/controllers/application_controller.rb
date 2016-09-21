@@ -308,6 +308,8 @@ class ApplicationController < ActionController::Base
         mess.update_attributes(:read  => true)
       end
     end
+
+    @exception_count = ExceptionLog.count
   end
 
   # Utility method that allows a controller to add

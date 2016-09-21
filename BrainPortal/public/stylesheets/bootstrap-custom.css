@@ -16,6 +16,10 @@
     color: white;
 }
 
+.navbar-nav>li>.dropdown-menu>.dropdown-heading {
+    color: gray;
+}
+
 /*
  *  Styling for modals
  */

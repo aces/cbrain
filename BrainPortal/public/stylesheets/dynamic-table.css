@@ -38,20 +38,8 @@
 
 /* colors */
 .dt-head > tr {
-  background-color: #0471b4;
+  background-color: #064785;
   color: #ffffff;
-}
-
-.dt-body > tr {
-  border-bottom: 1px solid #dddddd;
-}
-
-.dt-body > tr:nth-child(odd) {
-  background-color: #f9f9f9;
-}
-
-.dt-body > tr:nth-child(even) {
-  background-color: #ffffff;
 }
 
 .dt-table > .dt-head .ui-icon {
@@ -82,11 +70,6 @@
 }
 
 /* headers */
-.dt-hdr {
-  display: inline-block;
-  margin-top: 1px;
-}
-
 .dt-filter-btn,
 .dt-sort-btn {
   display: inline-block;
@@ -94,6 +77,7 @@
   margin-top: 2px;
   position: relative;
   z-index: 1;
+  white-space: nowrap;
 }
 
 .dt-col-btn {
@@ -107,8 +91,8 @@
 }
 
 .dt-popup {
-  background-color: #0471b4;
-  border: 0.3em solid #0471b4;
+  background-color: #064785;
+  border: 0.3em solid #064785;
   display: none;
   left: 0;
   min-width: 120px;

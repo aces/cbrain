@@ -185,7 +185,7 @@
             </p>
             <p>
               <strong>Tools available to you:</strong><br>
-              <%= array_to_table(current_user.available_tools.where( "category <> 'background'" ).map(&:name).sort, :table_class => 'table table-striped table-condensed', :cols => 4) %>
+              <%= array_to_table(current_user.available_tools.where( "category <> 'background'" ).map(&:name).sort, :table_class => 'table table-striped table-condensed', :cols => 2) %>
             </p>
             <p>
               <strong>Your default Data Provider:</strong> <%= link_to_data_provider_if_accessible(@default_data_provider) %>

@@ -92,14 +92,27 @@
               'none' => "ui-icon-carat-2-n-s"
             })[sort_order.to_s]
           %>
-          <span class="dt-sort-btn ui-icon <%= sort_icon %>"
-                data-url="<%= sort_url.html_safe %>"
-                data-column="<%= column.name.to_s %>"
-                data-order="<%= sort_order.to_s %>">
-          </span>
+
+          <div class="pull-right">
+            <div class="clearfix">
+              <span class="dt-sort-btn ui-icon <%= sort_icon %>"
+                    data-url="<%= sort_url.html_safe %>"
+                    data-column="<%= column.name.to_s %>"
+                    data-order="<%= sort_order.to_s %>">
+              </span>
+            <% if !column.filterable? || column.filters.blank? %>
+                </div>
+              </div>
+            <% end %>
         <% end %>
         <% if column.filterable? && ! column.filters.blank? %>
-          <span class="dt-filter-btn ui-icon ui-icon-zoomin"></span>
+          <% if !column.sortable? %>
+            <div class="pull-right">
+              <div class="clearfix">
+          <% end %>
+              <span class="dt-filter-btn ui-icon ui-icon-zoomin"></span>
+            </div>
+          </div>
           <div class="dt-popup">
             <table class="dt-fpop-table">
               <thead class="dt-fpop-head">

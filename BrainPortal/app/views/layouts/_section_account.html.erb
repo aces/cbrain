@@ -69,14 +69,15 @@
             <li <%= set_selected(params[:controller], :bourreaux) %>><a href="<%= bourreaux_path %>">Servers</a></li>
             <li <%= set_selected(params[:controller], :tools) %>><a href="<%= tools_path %>">Tools</a></li>
             <li <%= set_selected(params[:controller], :users) %>><a href="<%= users_path %>">Users</a></li>
+            <% if current_user.has_role?(:admin_user) %>
+              <li <%= set_selected(params[:controller], :access_profiles) %>><a href="<%= access_profiles_path%>">Profiles</a></li>
+            <% end %>
           <% end %>
           <% if current_user.has_role?(:admin_user) %>
-            <li <%= set_selected(params[:controller], :access_profiles) %>><a href="<%= access_profiles_path%>">Profiles</a></li>
             <li <%= set_selected(params[:controller], :sites) %>><a href="<%= sites_path %>">Sites</a></li>
-            <li <%= set_selected(params[:controller], :exception_logs) %>><a href="<%= exception_logs_path %>">Exceptions</a></li>
+            <li <%= set_selected(params[:controller], :exception_logs) %>><a href="<%= exception_logs_path %>">Exceptions <% if @exception_count > 0 %> <span class="badge progress-bar-info"><%= @exception_count %></span><% end %></a></li>
           <% end %>
         <% end %>
-
 
         <li <%= set_selected(params[:controller], :messages) %>><a href="<%= messages_path %>">Messages <% if @unread_message_count > 0 %> <span class="badge progress-bar-info"><%= @unread_message_count %> </span><% end %></a></li>
         <% if current_user.has_role?(:normal_user) %>
@@ -107,10 +108,7 @@
 
     <ul class="nav navbar-nav navbar-right">
       <% if current_user %>
-        <li class="hidden-md"><p class="navbar-text small">Rev: <%= CBRAIN::CBRAIN_StartTime_Revision %>
-          <% if current_user.present? && current_user.has_role?(:admin_user) %>
-            Branch: <%= git_branch %>
-          <% end %> </p></li>
+        <li class="hidden-md"></li>
         <li>
           <div class="input-group">
             <form id="cbsearch" action="<%= search_path %>" class="navbar-form" role="search" method="get">
@@ -124,6 +122,10 @@
         <li class="dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><%= current_user.full_name %><span class="caret"></span></a>
         <ul class="dropdown-menu">
+          <li class="dropdown-heading">Rev: <%= CBRAIN::CBRAIN_StartTime_Revision %>
+          <% if current_user.present? && current_user.has_role?(:admin_user) %>
+            Branch: <%= git_branch %>
+          <% end %> </li>
           <li><a href="<%= user_path(current_user) %>"><span class="glyphicon glyphicon-user"></span> My Account</a></li>
           <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Sign Out</a></li>
         </ul>
