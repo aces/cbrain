@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160811141815) do
+ActiveRecord::Schema.define(:version => 20160907191509) do
 
   create_table "access_profiles", :force => true do |t|
     t.string   "name",        :null => false
@@ -53,7 +53,6 @@ ActiveRecord::Schema.define(:version => 20160811141815) do
     t.integer  "user_id"
     t.integer  "bourreau_id"
     t.text     "description"
-    t.datetime "launch_time"
     t.text     "prerequisites"
     t.integer  "share_wd_tid"
     t.integer  "run_number"
@@ -74,7 +73,6 @@ ActiveRecord::Schema.define(:version => 20160811141815) do
   add_index "cbrain_tasks", ["cluster_workdir_size"], :name => "index_cbrain_tasks_on_cluster_workdir_size"
   add_index "cbrain_tasks", ["group_id", "bourreau_id", "status"], :name => "index_cbrain_tasks_on_group_id_and_bourreau_id_and_status"
   add_index "cbrain_tasks", ["group_id"], :name => "index_cbrain_tasks_on_group_id"
-  add_index "cbrain_tasks", ["launch_time"], :name => "index_cbrain_tasks_on_launch_time"
   add_index "cbrain_tasks", ["status"], :name => "index_cbrain_tasks_on_status"
   add_index "cbrain_tasks", ["type"], :name => "index_cbrain_tasks_on_type"
   add_index "cbrain_tasks", ["user_id", "bourreau_id", "status"], :name => "index_cbrain_tasks_on_user_id_and_bourreau_id_and_status"

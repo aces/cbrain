@@ -35,9 +35,6 @@ class Message < ActiveRecord::Base
   belongs_to :sender,
              :class_name => "User"
 
-  # CBRAIN extension
-  force_text_attribute_encoding 'UTF-8', :description, :variable_text
-
   attr_accessor :send_email
 
   attr_accessible :header, :description, :variable_text, :message_type, :read, :user_id, :expiry, :last_sent, :critical, :display, :send_email, :group_id, :sender_id

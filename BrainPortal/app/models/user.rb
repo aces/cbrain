@@ -110,8 +110,6 @@ class User < ActiveRecord::Base
   # anything else you want your user to change should be added here.
   attr_accessible :full_name, :email, :password, :password_confirmation, :time_zone, :city, :country
 
-  force_text_attribute_encoding 'UTF-8', :full_name, :city, :country
-
   # Returns the admin user
   def self.admin
     @@admin ||= self.find_by_login("admin")

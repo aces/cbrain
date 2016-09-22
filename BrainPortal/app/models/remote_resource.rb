@@ -107,9 +107,6 @@ class RemoteResource < ActiveRecord::Base
 
   after_destroy         :after_destroy_clean_sync_status
 
-  # CBRAIN extension
-  force_text_attribute_encoding 'UTF-8', :description
-
   attr_accessible       :name, :user_id, :group_id, :actres_user, :actres_host, :actres_port,
                         :actres_dir, :online, :read_only, :description, :ssh_control_user, :ssh_control_host,
                         :ssh_control_port, :ssh_control_rails_dir, :tunnel_mysql_port, :tunnel_actres_port,

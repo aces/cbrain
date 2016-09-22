@@ -197,9 +197,9 @@ module SelectBoxHelper
       selected = selector.to_s
     end
 
-    grouped_dps     = data_providers.group_by{ |dp| dp.is_browsable? ? "User Storage" : "CBRAIN Official Storage" }
+    grouped_dps     = data_providers.group_by { |dp| dp.is_browsable? ? "User Storage" : "Service Storage" } # note: two lines below too
     grouped_oplists = []
-    [ "CBRAIN Official Storage", "User Storage" ].collect do |group_title|
+    [ "Service Storage", "User Storage" ].collect do |group_title|
        next unless dps_in_group = grouped_dps[group_title]
        dps_in_group = dps_in_group.sort_by(&:name)
        options_dps  = dps_in_group.map do |dp|

@@ -69,9 +69,6 @@ class ToolConfig < ActiveRecord::Base
                   :cloud_disk_image, :cloud_vm_user, :cloud_ssh_key_pair, :cloud_instance_type,
                   :cloud_job_slots, :cloud_vm_boot_timeout, :cloud_vm_ssh_tunnel_port
 
-  # CBRAIN extension
-  force_text_attribute_encoding 'UTF-8', :description, :version_name
-
   # To make it somewhat compatible with the ResourceAccess module,
   # here's this model's own method for checking if it's visible to a user.
   def can_be_accessed_by?(user)

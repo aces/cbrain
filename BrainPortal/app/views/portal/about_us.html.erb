@@ -18,73 +18,13 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
 <% title 'About' %>
 
-<div class="display_cell credit_box">
-
-   <p><b>CBRAIN Project Overview:</b></p>
-
-   <p>Medical imaging research necessitates extensive data processing in order 
-to explore the scientific questions of interest. This need has led to the 
-development of an extensive array of data processing tools and complete 
-processing workflows. However, given that these tools have been developed 
-across a variable set of software environments, their execution may require 
-specific operating system or software library configurations which limit their 
-adoption rate and lead to frequent recreation of similar tools at different 
-sites.  We  are developing a distributed middleware layer which encapsulates 
-both the software environment and the specific processing tools enabling sites 
-to execute the tools without having to reconfigure their own computer systems 
-for each toolset.  Furthermore, the platform supports dynamic provisioning in 
-addition to allowing processing demand to overflow from member computational 
-facilities including the high-performance computing (HPC) facilities of 
-Consortium Laval, Universit&eacute; du Qu&eacute;bec, McGill and Eastern Quebec 
-(CLUMEQ), R&eacute;seau qu&eacute;b&eacute;cois de calcul de haute performance 
-(RQCHP) and other HPCs under Compute Canada to commercial virtual resource 
-suppliers such as the Amazon Elastic Cloud or the Sun Grid Compute Utility.</p>
-
-   <p>Typical applications of data processing tools involve chaining sets of 
-tools together into pipelines or workflows.  These workflows have, in some 
-cases, grown to become complete applications in their own right, while other 
-workflows are specified on demand to support a particular avenue of research. 
-The design of workflows is an active field of research within the brain imaging 
-community and the platform will support this area of work through the use of 
-Resource Oriented Architecture (ROA).  Consequently, we are developing web 
-services to support dynamic provisioning as well interfaces to a number of 
-existing processing tools.  This will lead us to a leveraging of resource 
-oriented architecture as the technological basis for workflow development.  
-Simultaneously, we are updating the core of our existing toolset to seamlessly 
-access data across a grid further supporting the network capabilities of the 
-platform.</p>
-
-   <p>Users of the imaging platform are as varied as the tools within it. While 
-many researchers contribute to the development of our existing platform, a far 
-greater number are interested only in using the the tools for analysis without 
-becoming developers themselves. In addition to providing graphical user 
-interfaces to the algorithms, we have developed a web portal which provides 
-intuitive access to the network platform, enhances the communication channels 
-in use for distributed projects, enables resource managers to monitor those 
-resources under their control and permits users to apply workflows to their 
-data.</p>
-
-   <p>Finally, although the platform is being developed for use in brain 
-imaging research, much of the fundamental grid middleware, Resource Oriented 
-Architecture (ROA), and virtual organization (VO) policies and their supporting 
-components will be reusable for other medical imaging applications. This will 
-enable research networks in other domains to easily adapt the brain imaging 
-platform to their fields of interest. Additionally, given the flexibility of 
-the platform being developed, we anticipate extending the network deployment to 
-the benefit of our ongoing international collaborations in Europe and Asia 
-after the NEP program is completed.</p>
-
-</div>
-
-<br>
-
-<div class="display_cell credit_box">
+<div class="credit_box">
 
   <h3>Platform Revision Information</h3>
   <strong>Version:</strong> <%= @revinfo['Revision'] %>
@@ -140,14 +80,19 @@ after the NEP program is completed.</p>
 
 <div class="box_spacer"></div>
 
-<div class="display_cell credit_box">
+<div class="credit_box">
   <h3>Licensing Information</h3>
+
+  Credits for the project can be found on the <a class="action_link" href="/credits">credits</a> page,
+  as well as in the <a class="action_link" href="https://github.com/aces/cbrain/graphs/contributors">GitHub contributors</a> page.
+  <p>
+
   <fieldset>
     <legend>
      GNU Public License
     </legend>
     The CBRAIN code base is distributed under the GNU Public License (GPL).<br/>
-    Copyright Alan C. Evans - McGill University 2008-2012<br/>
+    Copyright Alan C. Evans - McGill University 2008-2016<br/>
     A copy of the text of the license can be found here.
     <%= show_hide_toggle "(Show)", "#gpl_panel", :class  => 'action_link' %>
     <div id="gpl_panel" style="display: none">
@@ -173,8 +118,6 @@ after the NEP program is completed.</p>
     </div>
   </fieldset>
 </div>
-
-<br/>
 
 <%= render :partial => 'logo_footer' %>
 

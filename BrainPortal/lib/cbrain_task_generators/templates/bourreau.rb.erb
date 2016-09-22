@@ -54,6 +54,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % out_keys = outputs.select { |o| o['command-line-key'] }
 % flags    = (inputs + outputs).select { |p| p['command-line-flag'] }
 % seps     = inputs.select { |i| i['command-line-flag-separator'] }
+% eVars    = descriptor['environment-variables'].dup rescue []
 %
   # Task properties are special boolean properties of your task, returned as a
   # hash table. Used internally by CBRAIN to enable/disable special task
@@ -125,6 +126,19 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   # Note that this function also generates the list of output filenames
   # in params.
   def cluster_commands #:nodoc:
+
+    # Environment variables from Boutiques descriptor
+% if eVars.empty?
+    envVars = []
+% else
+    envVars = [
+%    eVars.each do |v|
+%# The value is escaped for bash; the whole cmd is then escaped to be written into the ruby code
+      <%= ("export %s=%s" % [v['name'], v['value'].bash_escape(always_quote=true)]).inspect %>,
+%    end
+    ]
+% end
+
 % if in_keys.empty? && out_keys.empty?
 %   unless outputs.empty?
     # Output filenames
@@ -143,10 +157,10 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %   end
 %   if descriptor['cbrain:ignore-exit-status']
     # Command-line
-    [ <<-'CMD' ]
+    envVars + [ <<-'CMD' ]
 %   else
     # Command-line to run <%= name %> and save its exit status
-    [ <<-'CMD', "echo $? > ./#{exit_cluster_filename.bash_escape}" ]
+    envVars + [ <<-'CMD', "echo $? > ./#{exit_cluster_filename.bash_escape}" ]
 %   end
       <%= descriptor['command-line'] %>
     CMD
@@ -253,7 +267,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %   end
 %   if descriptor['cbrain:ignore-exit-status']
     # Generate the final command-line to run <%= name %>
-    [ apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %>) ]
+    envVars + [ apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %>) ]
       <%= descriptor['command-line'] %>
     CMD
 %   else
@@ -263,7 +277,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     CMD
 
     # And save its exit status
-    [ command, "echo $? > ./#{exit_cluster_filename.bash_escape}" ]
+    envVars + [ command, "echo $? > ./#{exit_cluster_filename.bash_escape}" ]
 %   end
 % end
   end

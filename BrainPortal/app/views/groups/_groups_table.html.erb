@@ -183,7 +183,7 @@
       ) { |g| link_to_site_if_accessible(g.site) }
 
       t.column("Users", :users) do |g|
-        @group_id_2_user_counts[g.id] || 0
+        @group_id_2_user_counts[g.id].to_s.presence || html_colorize("(none)", "red")
       end
       t.column("Files", :files) do |g|
         index_count_filter @group_id_2_userfile_counts[g.id], :userfiles, { :group_id => g.id }, :show_zeros => true

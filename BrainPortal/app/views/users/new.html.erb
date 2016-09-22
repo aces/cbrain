@@ -90,7 +90,7 @@
   <div class="generalbox">
     <h5>Access Profiles</h5>
     <% AccessProfile.order(:name).all.each do |access_profile| %>
-      <%= check_box_tag "access_profiles[]", access_profile.id, false, :id => "ap_#{access_profile.id}" %>
+      <%= check_box_tag "user[access_profile_ids][]", access_profile.id, false, :id => "ap_#{access_profile.id}" %>
       <label for="<%= "ap_#{access_profile.id}" %>"><%= access_profile_label(access_profile) %></label>
       <p>
     <% end %>

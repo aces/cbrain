@@ -1849,7 +1849,6 @@ chmod 755 ./.dockerjob.sh
     raise "Invalid tool class: #{new_task_class_name}" unless new_task.class < ClusterTask
 
     new_task.batch_id     = self.id
-    new_task.launch_time  = Time.now
     self.level            = 0 if self.level.blank?
     new_task.level        = self.level + 1 # New task will be one level up its "parent" task in the task table.
     new_task.share_workdir_with(new_share_wd_tid, "Queued") if new_share_wd_tid # can be nil

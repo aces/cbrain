@@ -321,8 +321,9 @@ module TestHelpers
   end
 
   # Helper for cleaning spaces after key subsitution, to make it easier to write the correct test result
+  # Ignores the export commands and assumes the final command is the log writer
   NormedTaskCmd = lambda do |task|
-    task.cluster_commands[0].split.join(' ')
+    task.cluster_commands[-2].split.join(' ')
   end
 
   # A mock json task object, to test possible problems that the full mock app cannot be used to reproduce
