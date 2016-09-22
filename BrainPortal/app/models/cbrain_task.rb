@@ -334,7 +334,7 @@ class CbrainTask < ActiveRecord::Base
     # The most common situation: a task with its own work directory
     if share_wd_tid.blank?
       attval = self.cluster_workdir
-      return attval if attval.blank? || attval =~ /^\// # already full path?
+      return attval if attval.blank? || attval =~ /\A\// # already full path?
       shared_dir = options[:cms_shared_dir] || self.cluster_shared_dir # from its bourreau's cms_shared_dir
       return nil if shared_dir.blank?
       return "#{shared_dir}/#{attval}"
@@ -364,7 +364,7 @@ class CbrainTask < ActiveRecord::Base
   # used to represent the 'name' for presets.
   def short_description
     description = self.description || ""
-    raise "Internal error: can't parse description!?!" unless description =~ /^(.+\n?)/ # the . doesn't match \n
+    raise "Internal error: can't parse description!?!" unless description =~ /\A(.+\n?)/ # the . doesn't match \n
     header = Regexp.last_match[1].strip
     header
   end
@@ -810,7 +810,7 @@ class CbrainTask < ActiveRecord::Base
   # in other cases so a programmer can investigate the problem.
   def addlog_exception(exception,message="Exception raised:",backtrace_lines=15)
     message = "Exception raised:" if message.blank?
-    message.sub!(/[\s:]*$/,":")
+    message.sub!(/[\s:]*\z/,":")
     self.addlog("#{message} #{exception.class}: #{exception.message}", :caller_level => 1)
     if backtrace_lines > 0 && ! exception.is_a?(CbrainException)
       backtrace_lines = exception.backtrace.size if backtrace_lines >= exception.backtrace.size

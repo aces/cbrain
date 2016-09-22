@@ -243,7 +243,7 @@ class CbrainFileRevision
       datetime = row[1]
       author   = row[2]
       relpath  = row[3]
-      relpath  = (relprefix + relpath).to_s if relprefix.present? && relpath !~ /^__/ # adds plugins relative prefix if needed
+      relpath  = (relprefix + relpath).to_s if relprefix.present? && relpath !~ /\A__/ # adds plugins relative prefix if needed
       @_static_revision_hash[relpath] = [ commit, datetime, author ] unless relpath.blank?
       #puts_blue "-> #{@_static_revision_hash[relpath].inspect}"
     end
@@ -330,7 +330,7 @@ class CbrainFileRevision
   def adjust_short_commit #:nodoc:
     return unless @commit
     @short_commit = @commit
-    @short_commit = @commit[0..7] if @commit =~ /^[0-9a-f]{40}$/i # if it a SHA-1 hash
+    @short_commit = @commit[0..7] if @commit =~ /\A[0-9a-f]{40}\z/i # if it a SHA-1 hash
     self
   end
 
@@ -438,12 +438,12 @@ class CbrainFileRevision
     revinfo     = self.class.static_revision_for_relpath(relpath)
 
     if !revinfo # if the root of the app has been renamed... try BrainPortal
-      relpath.sub!(/^[^\/]+\//,"BrainPortal/")
+      relpath.sub!(/\A[^\/]+\//,"BrainPortal/")
       revinfo  = self.class.static_revision_for_relpath(relpath)
     end
 
     if !revinfo # if the root of the app has been renamed... try Bourreau
-      relpath.sub!(/^[^\/]+\//,"Bourreau/")
+      relpath.sub!(/\A[^\/]+\//,"Bourreau/")
       revinfo  = self.class.static_revision_for_relpath(relpath)
     end
 
@@ -481,7 +481,7 @@ class CbrainFileRevision
       end
     end
 
-    if git_last_commit_info =~ /^(\S+) (\d\d\d\d-\d\d-\d\dT?)\s*(\d\d:\d\d:\d\dZ?)(\s*[+-][\d:]+)? (\S.*\S)\s*$/
+    if git_last_commit_info =~ /\A(\S+) (\d\d\d\d-\d\d-\d\dT?)\s*(\d\d:\d\d:\d\dZ?)(\s*[+-][\d:]+)? (\S.*\S)\s*\z/
       @commit = Regexp.last_match[1]
       @date   = Regexp.last_match[2]
       @time   = Regexp.last_match[3] + (Regexp.last_match[4] || "")

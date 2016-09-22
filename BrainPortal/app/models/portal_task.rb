@@ -528,13 +528,13 @@ class PortalTask < CbrainTask
     foundvalue = params
     key        = ""
     while stringpath != ""
-      break unless stringpath =~ /^(\[?([\w\.\-]+)\]?)/
+      break unless stringpath =~ /\A(\[?([\w\.\-]+)\]?)/
       brackets = Regexp.last_match[1]   # "[abcdef]"
       key      = Regexp.last_match[2]   # "abcdef"
       stringpath = stringpath[brackets.size .. -1]
       if foundvalue.is_a?(Hash)
         foundvalue = foundvalue[key.to_sym] || foundvalue[key]
-      elsif foundvalue.is_a?(Array) && key =~ /^\d+$/
+      elsif foundvalue.is_a?(Array) && key =~ /\A\d+\z/
         foundvalue = foundvalue[key.to_i]
       else
         cb_error "Can't access params structure for '#{paramspath}' (stopped at '#{key}' with current structure a '#{foundvalue.class}'."
@@ -666,7 +666,7 @@ class PortalTask < CbrainTask
   def self.human_attribute_name(attname,options={})
     sattname   = attname.to_s # string version of attname, which is usually a symbol now
     prettyhash = self.pretty_params_names || {}
-    shortname  = (sattname =~ /^cbrain_task_params_/i) ? sattname.sub(/^cbrain_task_params_/i,"") : nil
+    shortname  = (sattname =~ /\Acbrain_task_params_/i) ? sattname.sub(/\Acbrain_task_params_/i,"") : nil
     # We try to guess many ways that the task programmer could have
     # stored his 'pretty' names in the hash, including forgetting to call
     # to_la_id() on the keys.
@@ -749,7 +749,7 @@ class PortalTask < CbrainTask
     base = Pathname.new("/cbrain_plugins/cbrain_tasks") + self.to_s.demodulize.underscore
     return base if public_file.blank?
     public_file = Pathname.new(public_file.to_s).cleanpath
-    raise "Public file path outside of task plugin." if public_file.absolute? || public_file.to_s =~ /^\.\./
+    raise "Public file path outside of task plugin." if public_file.absolute? || public_file.to_s =~ /\A\.\./
     base = base + public_file
     return nil unless File.exists?((Rails.root + "public").to_s + base.to_s)
     base
@@ -785,7 +785,7 @@ end
         'cbrain_task_descriptor_loader.rb'
       ].include?(model)
 
-      model.sub!(/.rb$/, '')
+      model.sub!(/.rb\z/, '')
       require_dependency "#{dir}/#{model}.rb" unless
         [ model.classify, model.camelize ].any? { |m| CbrainTask.const_defined?(m) rescue nil }
     end

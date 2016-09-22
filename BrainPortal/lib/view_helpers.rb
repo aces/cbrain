@@ -182,7 +182,7 @@ module ViewHelpers
   #   { :gb => 'red', :mb => 'purple', :kb => 'blue', :bytes => nil }
   def colored_pretty_size(size, options = {})
     pretty = pretty_size(size, options)
-    if pretty =~ /(\S+) (Tb|Gb|Mb|Kb|bytes)$/
+    if pretty =~ /(\S+) (Tb|Gb|Mb|Kb|bytes)\z/
       val    = Regexp.last_match[1].to_f
       suffix = Regexp.last_match[2].downcase.to_sym
       return html_colorize(pretty, options[:tb].presence    || 'purple') if suffix == :tb

@@ -73,7 +73,7 @@
         <% attlist = @userfile.class.const_get('ATTRIBUTES_LIST') %>
         <% attlist.each do |att| %>
           <% att = :project if att == :group_id %>
-          <th><%= att.to_s.sub(/_id$/,"").classify.gsub(/(.+)([A-Z])/, '\1 \2') %></th>
+          <th><%= att.to_s.sub(/_id\z/,"").classify.gsub(/(.+)([A-Z])/, '\1 \2') %></th>
         <% end %>
       </tr>
 

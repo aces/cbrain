@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This module implements useful methods for
@@ -62,7 +62,7 @@ module NumericalSubdirTree
     def numerical_subdir_tree_components(number)
       cb_error "Did not get a proper numeric ID? Got: '#{number.inspect}'." unless number.is_a?(Integer)
       sid = "000000" + number.to_s
-      unless sid =~ /^0*(\d*\d\d)(\d\d)(\d\d)$/
+      unless sid =~ /\A0*(\d*\d\d)(\d\d)(\d\d)\z/
         raise "Can't create subpath for '#{number}'."
       end
       lower  = Regexp.last_match[1] # 123456 -> 12
@@ -70,7 +70,7 @@ module NumericalSubdirTree
       upper  = Regexp.last_match[3] # 123456 -> 56
       [ lower, middle, upper ]
     end
-  
+
     # Make, if needed, the three subdirectory levels for a number.
     # For instance, when called with 344577 :
     #
@@ -94,7 +94,7 @@ module NumericalSubdirTree
       end
       true
     end
-  
+
     # Removes the subdirectory tree for number.
     # Components are removed in reverse order,
     # and stops as soon as a rmdir fails. This is
@@ -126,7 +126,7 @@ module NumericalSubdirTree
       erased += ((Dir.rmdir(level1.to_s) rescue nil) ? 1 : 0) if erased == 2
       erased
     end
-  
+
   end
 
 end

@@ -17,21 +17,21 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Model for graph files in .dot format.
 class DotGraphFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   def self.pretty_type #:nodoc:
     "DOT graph file"
   end
 
   def self.file_name_pattern #:nodoc:
-    /\.dot$/i
+    /\.dot\z/i
   end
-  
+
 end
 

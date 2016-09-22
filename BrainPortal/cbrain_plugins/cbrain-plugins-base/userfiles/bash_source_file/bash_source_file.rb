@@ -17,20 +17,20 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Model for a bash script.
 class BashSourceFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   def self.pretty_type #:nodoc:
     "Bash script"
   end
 
   def self.file_name_pattern #:nodoc:
-    /\.sh$/i
+    /\.sh\z/i
   end
-  
+
 end

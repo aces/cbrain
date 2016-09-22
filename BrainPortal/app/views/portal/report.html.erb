@@ -137,13 +137,13 @@ in a tabular layout. Proceed as follow:
          row_proc = to_s_proc
 
          # Special proc for columns which are IDs to models
-         if @filter_col_key =~ /^(\w+)_id$/
+         if @filter_col_key =~ /\A(\w+)_id\z/
            col_model = Regexp.last_match[1].classify.constantize
            col_proc  = Proc.new { |x| link_to_model_if_accessible(col_model,x,:name,current_user) }
          end
 
          # Special proc for rows which are IDs to models
-         if @filter_row_key =~ /^(\w+)_id$/
+         if @filter_row_key =~ /\A(\w+)_id\z/
            row_model = Regexp.last_match[1].classify.constantize
            row_proc  = Proc.new { |x| link_to_model_if_accessible(row_model,x,:name,current_user) }
          end
@@ -169,7 +169,7 @@ in a tabular layout. Proceed as follow:
 
       <%
          # Special proc for combined file report
-         if params[:table_name] =~ /\.combined_file_rep$/
+         if params[:table_name] =~ /\.combined_file_rep\z/
            td_content_proc = Proc.new do |vector,td_filters|
              size,num_entries,sum_files,num_size_unk = vector
              capture do
@@ -199,7 +199,7 @@ in a tabular layout. Proceed as follow:
 
       <%
          # Special proc for combined task report
-         if params[:table_name] =~ /\.combined_task_rep$/
+         if params[:table_name] =~ /\.combined_task_rep\z/
            td_content_proc = Proc.new do |vector,td_filters|
              size,num_entries,num_unk = vector
              capture do
@@ -224,7 +224,7 @@ in a tabular layout. Proceed as follow:
 
         <%
            # HTML attribute modifications for vertical headers (default) or wider headers
-           vertical_headers = (params[:table_name] !~ /\.combined_(file|task)_rep$/)
+           vertical_headers = (params[:table_name] !~ /\.combined_(file|task)_rep\z/)
            th_att     = ""
            th_div_att = " style=\"margin-right: 1.5em\"".html_safe
            if vertical_headers
@@ -362,7 +362,7 @@ in a tabular layout. Proceed as follow:
         ################################
       %>
 
-      <% if params[:table_name] =~ /\.combined_(file|task)_rep$/ %>
+      <% if params[:table_name] =~ /\.combined_(file|task)_rep\z/ %>
         <p><%= disk_usage_legend %>
       <% end %>
 

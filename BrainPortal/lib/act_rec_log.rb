@@ -235,7 +235,7 @@ module ActRecLog
       message = lines.join("\n") + "\n"
       log += Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + calling_method + message
       while log.size > 65500 && log =~ /\n/   # TODO: archive ?
-        log.sub!(/^[^\n]*\n/,"")
+        log.sub!(/\A[^\n]*\n/,"")
       end
       if use_internal
         @tmp_internal_log = log
@@ -333,7 +333,7 @@ module ActRecLog
       elsif old.size > 60 || new.size > 60
         message = ": size(#{old.size} -> #{new.size})"
       else
-        if att =~ /^(\w+)_id$/
+        if att =~ /\A(\w+)_id\z/
           model = Regexp.last_match[1].classify.constantize rescue nil
           if model
             oldobj = model.find_by_id(old) rescue nil

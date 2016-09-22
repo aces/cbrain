@@ -34,21 +34,21 @@ class ToolConfigsController < ApplicationController
     @view ||= ((params[:view] || "") =~ /(by_bourreau|by_user|by_tool)/) ?
                Regexp.last_match[1] : nil
 
-    if params[:user_id].blank? || params[:user_id].to_s !~ /^\d+$/
+    if params[:user_id].blank? || params[:user_id].to_s !~ /\A\d+\z/
       @users       = User.all
     else
       @users       = [ User.find(params[:user_id].to_s) ]
       @view      ||= 'by_user'
     end
 
-    if params[:bourreau_id].blank? || params[:bourreau_id].to_s !~ /^\d+$/
+    if params[:bourreau_id].blank? || params[:bourreau_id].to_s !~ /\A\d+\z/
       @bourreaux   = Bourreau.all.select { |b| b.can_be_accessed_by?(current_user) }
     else
       @bourreaux   = [ Bourreau.find(params[:bourreau_id].to_s) ]
       @view      ||= 'by_bourreau'
     end
 
-    if params[:tool_id].blank? || params[:tool_id].to_s !~ /^\d+$/
+    if params[:tool_id].blank? || params[:tool_id].to_s !~ /\A\d+\z/
       @tools       = Tool.all
     else
       @tools       = [ Tool.find(params[:tool_id].to_s) ]
@@ -154,7 +154,7 @@ class ToolConfigsController < ApplicationController
        env_name = keyval[:name].strip
        env_val  = keyval[:value].strip
        next if env_name.blank? && env_val.blank?
-       if env_name !~ /^[A-Z][A-Z0-9_]+$/i
+       if env_name !~ /\A[A-Z][A-Z0-9_]+\z/i
          @tool_config.errors.add(:base, "Invalid environment variable name '#{env_name}'")
        elsif env_val !~ /\S/
          @tool_config.errors.add(:base, "Invalid blank variable value for '#{env_name}'")

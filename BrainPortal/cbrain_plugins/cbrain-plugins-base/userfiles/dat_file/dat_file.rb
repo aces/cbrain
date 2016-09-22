@@ -16,16 +16,16 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Generic model for data files (files with .dat extensions).
 class DatFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-    
+
   def self.file_name_pattern #:nodoc:
-    /\.dat$/i
+    /\.dat\z/i
   end
-  
+
 end
