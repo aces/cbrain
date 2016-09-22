@@ -38,7 +38,7 @@
   </div>
 
   <div class="row">
-    <div class="col-xs-12">
+    <div class="col-xs-4">
       <%=
         render(:partial => 'shared/active_filters', :locals  => {
           :scope => @scope,
@@ -46,36 +46,33 @@
         })
       %>
     </div>
+    <div class="col-xs-4">
+      (
+        <%= pluralize @messages.total_entries, "message" %>
+        <% if @unread_count > 0 %>,
+          <%=
+            scope_filter_link(
+              html_colorize("#{@unread_count} unread"),
+              @scope, :set, { :a => 'read', :v => 0 },
+              link: { :ajax => true }
+            )
+          %>
+        <% end %>
+        <% if @read_count > 0 %>,
+          <%=
+            scope_filter_link(
+              "#{@read_count} read",
+              @scope, :set, { :a => 'read', :v => 1 },
+              link: { :ajax => true }
+            )
+          %>
+        <% end %>
+      )
+    </div>
   </div>
 
   <div class="row">
     <div class="col-xs-12">
-      <div class="pagination">
-        <span class="pagination_center">
-          (
-            <%= pluralize @messages.total_entries, "message" %>
-            <% if @unread_count > 0 %>,
-              <%=
-                scope_filter_link(
-                  html_colorize("#{@unread_count} unread"),
-                  @scope, :set, { :a => 'read', :v => 0 },
-                  link: { :ajax => true }
-                )
-              %>
-            <% end %>
-            <% if @read_count > 0 %>,
-              <%=
-                scope_filter_link(
-                  "#{@read_count} read",
-                  @scope, :set, { :a => 'read', :v => 1 },
-                  link: { :ajax => true }
-                )
-              %>
-            <% end %>
-          )
-        </span>
-      </div>
-
       <%= form_tag({ :controller => :messages, :action => :delete_messages }, :method => :delete, :id => "message_form") do %>
         <%=
           dynamic_scoped_table(@messages,

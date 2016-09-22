@@ -221,53 +221,46 @@
   <% if @row_fetch %>
     <%= table.render :row, @bourreaux.to_a %>
   <% else %>
-    <div class="container-fluid">
-      <div class="row menu-bar">
-        <div class="col-xs-12">
-          <div class="well well-sm">
-            <% if check_role(:site_manager) || check_role(:admin_user) %>
-              <a href="<%=  new_bourreau_path %>" role="button" class="btn btn-primary"><span class="glyphicon glyphicon-file"></span> Create New Server</a>
-            <% end %>
-            <a href="<%= rr_access_bourreaux_path %>" datatype="script" class="btn btn-primary"><span class="glyphicon glyphicon-user"></span> User Acccess Reports</a>
-            <a href="<%= rr_disk_usage_bourreaux_path %>" datatype="script", class="btn btn-primary"><span class="glyphicon glyphicon-list-alt"></span> Disk Cache Report</a>
-            <a href="<%= report_path(
-                          :table_name => "cbrain_tasks.combined_task_rep",
-                          :row_type   => :user_id,
-                          :col_type   => :bourreau_id,
-                          :generate   => "ok"
-                        )%>"
-               class="btn btn-primary"><span class="glyphicon glyphicon-hdd"></span> Task Workdir Size Report</a>
-            <a href="<%= rr_access_dp_bourreaux_path %>" datatype="script" class="btn btn-primary"><span class="glyphicon glyphicon-transfer"></span> Access to Data Providers</a>
-            <a href="#" class="btn btn-primary help-btn" data-toggle="modal" data-target="#help-modal" data-url="/doc/server/view_server.html"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
-          </div>
+    <div class="row menu-bar">
+      <div class="col-xs-12">
+        <div class="well well-sm">
+          <% if check_role(:site_manager) || check_role(:admin_user) %>
+            <a href="<%= new_bourreau_path %>" role="button" class="btn btn-primary"><span class="glyphicon glyphicon-file"></span> Create New Server</a>
+          <% end %>
+          <a href="<%= rr_access_bourreaux_path %>" datatype="script" class="btn btn-primary"><span class="glyphicon glyphicon-user"></span> User Acccess Reports</a>
+          <a href="<%= rr_disk_usage_bourreaux_path %>" datatype="script", class="btn btn-primary"><span class="glyphicon glyphicon-list-alt"></span> Disk Cache Report</a>
+          <a href="<%= report_path(
+                        :table_name => "cbrain_tasks.combined_task_rep",
+                        :row_type   => :user_id,
+                        :col_type   => :bourreau_id,
+                        :generate   => "ok"
+                      )%>"
+             class="btn btn-primary"><span class="glyphicon glyphicon-hdd"></span> Task Workdir Size Report</a>
+          <a href="<%= rr_access_dp_bourreaux_path %>" datatype="script" class="btn btn-primary"><span class="glyphicon glyphicon-transfer"></span> Access to Data Providers</a>
+          <a href="#" class="btn btn-primary help-btn" data-toggle="modal" data-target="#help-modal" data-url="/doc/server/view_server.html"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
         </div>
       </div>
-
-    <div class="row">
-      <div class="col-xs-12">
-        <%=
-          render(:partial => 'shared/active_filters', :locals  => {
-            :scope => @scope,
-            :model => RemoteResource
-          })
-        %>
-      </div>
     </div>
 
-    <div class="row">
-      <div class="col-xs-12">
-        <h2 class="text-center">Servers</h2>
-      </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <%=
+        render(:partial => 'shared/active_filters', :locals  => {
+          :scope => @scope,
+          :model => RemoteResource
+        })
+      %>
     </div>
+  </div>
 
-    <div class="row">
-      <div class="col-xs-12">
-        <% content_for :scripts do %>
-          <%= javascript_include_tag 'cbrain/bourreaux/fetch_row' %>
-        <% end %>
+  <div class="row">
+    <div class="col-xs-12">
+      <h3>Servers</h3>
+      <% content_for :scripts do %>
+        <%= javascript_include_tag 'cbrain/bourreaux/fetch_row' %>
+      <% end %>
 
-        <%= table.render %>
-      </div>
+      <%= table.render %>
     </div>
   </div>
 <% end %>

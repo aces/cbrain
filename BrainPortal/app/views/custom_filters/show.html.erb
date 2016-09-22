@@ -27,49 +27,47 @@
 
 <% title "Custom Filter" %>
 
-<div class="container-fluid">
-  <div class="row menu_bar">
-    <div class="well well-sm">
-      <%= link_to 'Delete', custom_filter_path(@custom_filter),  {
-            :confirm => "Are you sure you want to delete '#{@custom_filter.name}' ?",
-            :method  => :delete,
-            :class => "btn btn-primary"
-            }
-      %>
-      <%= overlay_ajax_link "Help", "/doc/custom_filters/custom_filters.html", :class  => "btn btn-primary" %>
-    </div>
+<div class="row menu_bar">
+  <div class="well well-sm">
+    <%= link_to 'Delete', custom_filter_path(@custom_filter),  {
+          :confirm => "Are you sure you want to delete '#{@custom_filter.name}' ?",
+          :method  => :delete,
+          :class => "btn btn-primary"
+          }
+    %>
+    <%= overlay_ajax_link "Help", "/doc/custom_filters/custom_filters.html", :class  => "btn btn-primary" %>
   </div>
+</div>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <%= error_messages_for(custom_filter, :object_name => "custom filter") %>
-    </div>
+<div class="row">
+  <div class="col-xs-12">
+    <%= error_messages_for(custom_filter, :object_name => "custom filter") %>
   </div>
+</div>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <%= show_table(@custom_filter) do |t| %>
+<div class="row">
+  <div class="col-xs-12">
+    <%= show_table(@custom_filter) do |t| %>
 
-        <% t.edit_cell(:name) do %>
-          <%= text_field_tag "custom_filter[name]", @custom_filter.name, :class => "form-control" %>
-        <% end %>
-
+      <% t.edit_cell(:name) do %>
+        <%= text_field_tag "custom_filter[name]", @custom_filter.name, :class => "form-control" %>
       <% end %>
 
-      <div class="panel panel-primary">
-        <div class="panel-heading">Filter Parameters</div>
-        <div class="panel-body">
-          <%= form_for custom_filter, :as => :custom_filter, :url => {:controller  => "custom_filters", :action => "update", :filter_class => filter_type }, :datatype  => "script", :method => "put", :class => "form-horizontal" do |f| %>
+    <% end %>
 
-            <%= render :partial => "custom_filters/#{filter_type}", :locals  => {:custom_filter  => custom_filter}  %>
+    <div class="panel panel-primary">
+      <div class="panel-heading">Filter Parameters</div>
+      <div class="panel-body">
+        <%= form_for custom_filter, :as => :custom_filter, :url => {:controller  => "custom_filters", :action => "update", :filter_class => filter_type }, :datatype  => "script", :method => "put", :class => "form-horizontal" do |f| %>
 
-            <div class="row">
-              <%= f.submit "Update", :class => "btn btn-primary btn-block" %>
-            </div>
-          <% end %>
-        </div>
+          <%= render :partial => "custom_filters/#{filter_type}", :locals  => {:custom_filter  => custom_filter}  %>
+
+          <div class="row">
+            <%= f.submit "Update", :class => "btn btn-primary btn-block" %>
+          </div>
+        <% end %>
       </div>
-
     </div>
+
   </div>
 </div>

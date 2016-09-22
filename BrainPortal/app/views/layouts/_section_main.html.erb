@@ -26,11 +26,13 @@
 <!-- PARTIAL: MAIN SECTION -->
 <!-- ********************* -->
 
-<div id="main" class="main-content">
+<div id="main" class="container-fluid">
   <% unless params[:action] == "index" && params[:controller] == "messages" %>
-    <div class="col-xs-12">
-      <div id="message_display">
-        <%= render :partial => 'messages/message_display' %>
+    <div class="row">
+      <div class="col-xs-12">
+        <div id="row message_display">
+          <%= render :partial => 'messages/message_display' %>
+        </div>
       </div>
     </div>
   <% end %>

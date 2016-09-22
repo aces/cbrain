@@ -22,90 +22,83 @@
 #
 -%>
 
-<div class="container-fluid">
-  <div class="row menu_bar">
-    <div class="col-xs-12">
-      <div class="well well-sm">
-        <%= external_submit_button "Delete", "exception_form", :class  => "btn btn-primary", :confirm  => "Are you sure you want to delete the selected logs?"  %>
-      </div>
+<div class="row menu_bar">
+  <div class="col-xs-12">
+    <div class="well well-sm">
+      <%= external_submit_button "Delete", "exception_form", :class  => "btn btn-primary", :confirm  => "Are you sure you want to delete the selected logs?"  %>
     </div>
   </div>
-
-  <div class="row">
-    <div class="col-xs-12">
-      <%=
-        render(:partial => 'shared/active_filters', :locals  => {
-          :scope => @scope,
-          :model => ExceptionLog
-        })
-      %>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-xs-12">
-      <div class="pagination">
-        <span class="page_links">
-          (<%= pluralize @exception_logs.total_entries, "message" %>)
-        </span>
-      </div>
-
-      <%= ajax_form_tag(url_for(:action => :destroy), :method => :delete, :datatype => :script, :id => "exception_form") do %>
-        <%=
-          dynamic_scoped_table(@exception_logs,
-            :id         => 'exception_logs_table',
-            :class      => [ "table-responsive" ],
-            :scope      => @scope,
-            :order_map  => {
-              :user => { :a => 'users.login', :j => User }
-            },
-            :filter_map => {
-              :user => { :a => 'user_id' }
-            }
-          ) do |t|
-        %>
-          <%
-            generic_column = lambda do |label,field|
-              t.column(label, field,
-                :sortable => true,
-                :filters  => default_filters_for(@base_scope, field)
-              )
-            end
-
-            t.paginate
-            t.selectable('exception_log_ids[]')
-
-            t.column("Exception", :exception_class,
-              :sortable => true,
-              :filters  => default_filters_for(@base_scope, :exception_class)
-            ) { |e| link_to e.exception_class, e }
-
-            t.column("Message", :message) { |e| crop_text_to(75, e.message) }
-
-            generic_column.("Method",     :request_method)
-            generic_column.("Controller", :request_controller)
-            generic_column.("Action",     :request_action)
-            generic_column.("Format",     :request_format)
-
-            t.column("User", :user,
-              :sortable => true,
-              :filters  => default_filters_for(@view_scope, User)
-            ) { |e| link_to_user_with_tooltip(e.user) }
-
-            generic_column.("Revision",   :revision_no)
-
-            t.column("Raised at", :created_at,
-              :sortable => true
-            ) { |e| to_localtime(e.created_at, :datetime) }
-          %>
-        <% end %>
-      <% end %>
-
-    </div>
-  </div>
-
 </div>
 
+<div class="row">
+  <div class="col-xs-12">
+    <%=
+      render(:partial => 'shared/active_filters', :locals  => {
+        :scope => @scope,
+        :model => ExceptionLog
+      })
+    %>
+  </div>
+</div>
 
+<div class="row">
+  <div class="col-xs-12">
+    <div class="pagination">
+      <span class="page_links">
+        (<%= pluralize @exception_logs.total_entries, "message" %>)
+      </span>
+    </div>
 
+    <%= ajax_form_tag(url_for(:action => :destroy), :method => :delete, :datatype => :script, :id => "exception_form") do %>
+      <%=
+        dynamic_scoped_table(@exception_logs,
+          :id         => 'exception_logs_table',
+          :class      => [ "table-responsive" ],
+          :scope      => @scope,
+          :order_map  => {
+            :user => { :a => 'users.login', :j => User }
+          },
+          :filter_map => {
+            :user => { :a => 'user_id' }
+          }
+        ) do |t|
+      %>
+        <%
+          generic_column = lambda do |label,field|
+            t.column(label, field,
+              :sortable => true,
+              :filters  => default_filters_for(@base_scope, field)
+            )
+          end
 
+          t.paginate
+          t.selectable('exception_log_ids[]')
+
+          t.column("Exception", :exception_class,
+            :sortable => true,
+            :filters  => default_filters_for(@base_scope, :exception_class)
+          ) { |e| link_to e.exception_class, e }
+
+          t.column("Message", :message) { |e| crop_text_to(75, e.message) }
+
+          generic_column.("Method",     :request_method)
+          generic_column.("Controller", :request_controller)
+          generic_column.("Action",     :request_action)
+          generic_column.("Format",     :request_format)
+
+          t.column("User", :user,
+            :sortable => true,
+            :filters  => default_filters_for(@view_scope, User)
+          ) { |e| link_to_user_with_tooltip(e.user) }
+
+          generic_column.("Revision",   :revision_no)
+
+          t.column("Raised at", :created_at,
+            :sortable => true
+          ) { |e| to_localtime(e.created_at, :datetime) }
+        %>
+      <% end %>
+    <% end %>
+
+  </div>
+</div>

@@ -295,8 +295,8 @@
 
 <div class="container-fluid">
   <div class="row">
-    <div class="col-xs-12">
-      <% if @row_fetch %>
+    <% if @row_fetch %>
+      <div class="col-xs-12">
         <% if @tasks.empty? %>
           <tr class="batch">
             <td class="dt-table-wide">
@@ -307,7 +307,9 @@
           <%= table.render :row, [[ :loaded_batch, @tasks.first[:batch], nil, @tasks.first[:first] ]] %>
           <%= table.render :row, list %>
         <% end %>
-      <% else %>
+      </div>
+    <% else %>
+      <div class="col-xs-4">
         <%=
           render(:partial => 'shared/active_filters', :locals  => {
             :scope => @scope,
@@ -315,33 +317,34 @@
           })
         %>
 
-        <div class="pagination">
-          <div class="pagination_left_side">
-            <%=
-              scope_custom_link(
-                "Switch to #{batch_view ? 'List' : 'Batch'} View",
-                @scope, { 'batch' => !batch_view },
-                link: { :ajax => true }
-              )
-            %>
-          </div>
-          <div class="page_links">
-            (<%= pluralize @total_tasks, "task" %>)
-          </div>
-          <div class="pagination_right_side">
-            <% if @total_space_known > 0 %>
-              Total task space used: <%= colored_pretty_size(@total_space_known) %>
-            <% end %>
-            <% if @total_space_unkn  > 0 %>
-              (<%= pluralize @total_space_unkn, "task" %> without space estimates)
-            <% end %>
-          </div>
-        </div>
+        <%=
+          scope_custom_link(
+            "Switch to #{batch_view ? 'List' : 'Batch'} View",
+            @scope, { 'batch' => !batch_view },
+            link: { :ajax => true }
+          )
+        %>
+      </div>
 
-        <% content_for :scripts do %>
-          <%= javascript_include_tag 'cbrain/tasks/batch_list' %>
+      <div class="col-xs-4">
+        (<%= pluralize @total_tasks, "task" %>)
+      </div>
+      <div class="col-xs-4">
+        <div class="pull-right">
+        <% if @total_space_known > 0 %>
+          Total task space used: <%= colored_pretty_size(@total_space_known) %>
         <% end %>
+        <% if @total_space_unkn  > 0 %>
+          (<%= pluralize @total_space_unkn, "task" %> without space estimates)
+        <% end %>
+        </div>
+      </div>
 
+      <% content_for :scripts do %>
+        <%= javascript_include_tag 'cbrain/tasks/batch_list' %>
+      <% end %>
+
+      <div class="col-xs-12">
         <%= table.render %>
 
         <%=
@@ -350,7 +353,7 @@
             [ colored_archived_status(:userfile), "As File"    ],
           ])
         %>
-      <% end %>
-    </div>
+      </div>
+    <% end %>
   </div>
 </div>

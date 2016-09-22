@@ -48,449 +48,446 @@
 <%= javascript_include_tag 'jquery.tablesorter.min' %>
 <%= javascript_include_tag 'jquery.metadata' %>
 
-<div class="container-fluid">
-  <%= form_tag( report_path , :method => :get) do %>
+<%= form_tag( report_path , :method => :get) do %>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <h2 class="text-center">Automatic Tabular Report Maker</h2>
-    </div>
+<div class="row">
+  <div class="col-xs-12">
+    <h2 class="text-center">Automatic Tabular Report Maker</h2>
   </div>
+</div>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <p>
-      This form allows you to generate many different kind of reports
-      in a tabular layout. Proceed as follow:
-      </p>
+<div class="row">
+  <div class="col-xs-12">
+    <p>
+    This form allows you to generate many different kind of reports
+    in a tabular layout. Proceed as follow:
+    </p>
 
-      <ul>
-        <li><strong>Select the type of report</strong> in the grey box. Most reports
-            will count the number of objects accessible to you, but some of them
-            will perform summation of some attributes.
-        </li>
-        <li><strong>Click on "Lookup columns and rows"</strong> and the form will be adjusted
-            to show you which attributes you can select for the rows and columns of
-            your table.
-        </li>
-        <li><strong>Select an attribute for the rows and columns</strong> using each of the selection
-            boxes shown at the top and left of the table area.
-        </li>
-        <li><strong>Click on "Generate Report"</strong> and the table will be created with
-            hot links to the appropriate index pages for your objects. You can
-            modify the report's properties and regenerate it anew any time you want.
-        </li>
-      </ul>
+    <ul>
+      <li><strong>Select the type of report</strong> in the grey box. Most reports
+          will count the number of objects accessible to you, but some of them
+          will perform summation of some attributes.
+      </li>
+      <li><strong>Click on "Lookup columns and rows"</strong> and the form will be adjusted
+          to show you which attributes you can select for the rows and columns of
+          your table.
+      </li>
+      <li><strong>Select an attribute for the rows and columns</strong> using each of the selection
+          boxes shown at the top and left of the table area.
+      </li>
+      <li><strong>Click on "Generate Report"</strong> and the table will be created with
+          hot links to the appropriate index pages for your objects. You can
+          modify the report's properties and regenerate it anew any time you want.
+      </li>
+    </ul>
 
-    </div>
   </div>
+</div>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <div class="well well-sm">
-      <div class="row">
+<div class="row">
+  <div class="col-xs-12">
+    <div class="well well-sm">
+    <div class="row">
 
-        <div class="col-xs-2">
-          <%= submit_tag 'Lookup columns and rows', :class => "btn btn-primary btn-block" %>
-        </div>
-        <div class="col-xs-10">
-                <%= select_tag(:table_name,
-                      options_for_select(
-                        [
-                          [ '(Select the report type)',                    "",                                                  ],
-                          [ 'Files - count',                               Userfile.table_name                                  ],
-                          [ 'Files - sum of sizes',                        Userfile.table_name + ".sum(size)"                   ],
-                          [ 'Files - total files in collections',          Userfile.table_name + ".sum(num_files)"              ],
-                          [ 'Files - combined report',                     Userfile.table_name + ".combined_file_rep"           ],
-                          [ 'Tasks - count',                               CbrainTask.table_name                                ],
-                          [ 'Tasks - sum of workdir space',                CbrainTask.table_name + ".sum(cluster_workdir_size)" ],
-                          [ 'Tasks - combined report',                     CbrainTask.table_name + ".combined_task_rep"         ],
-                        ] + ((current_user.has_role?(:admin_user) || current_user.has_role?(:site_manager)) ? [
-                          [ 'Servers - count',                             RemoteResource.table_name                            ],
-                          [ 'Data Providers - count',                      DataProvider.table_name                              ],
-                          [ 'Users - count',                               User.table_name                                      ],
-                          [ 'Projects - count',                            Group.table_name                                     ],
-                          [ 'Tools - count',                               Tool.table_name                                      ],
-                          [ 'Tool Versions - count',                       ToolConfig.table_name                                ],
-                        ] : []),
-                         params[:table_name]
-                      ), :class => "form-control"
-                    )
-                %>
-          </div>
+      <div class="col-xs-2">
+        <%= submit_tag 'Lookup columns and rows', :class => "btn btn-primary btn-block" %>
+      </div>
+      <div class="col-xs-10">
+              <%= select_tag(:table_name,
+                    options_for_select(
+                      [
+                        [ '(Select the report type)',                    "",                                                  ],
+                        [ 'Files - count',                               Userfile.table_name                                  ],
+                        [ 'Files - sum of sizes',                        Userfile.table_name + ".sum(size)"                   ],
+                        [ 'Files - total files in collections',          Userfile.table_name + ".sum(num_files)"              ],
+                        [ 'Files - combined report',                     Userfile.table_name + ".combined_file_rep"           ],
+                        [ 'Tasks - count',                               CbrainTask.table_name                                ],
+                        [ 'Tasks - sum of workdir space',                CbrainTask.table_name + ".sum(cluster_workdir_size)" ],
+                        [ 'Tasks - combined report',                     CbrainTask.table_name + ".combined_task_rep"         ],
+                      ] + ((current_user.has_role?(:admin_user) || current_user.has_role?(:site_manager)) ? [
+                        [ 'Servers - count',                             RemoteResource.table_name                            ],
+                        [ 'Data Providers - count',                      DataProvider.table_name                              ],
+                        [ 'Users - count',                               User.table_name                                      ],
+                        [ 'Projects - count',                            Group.table_name                                     ],
+                        [ 'Tools - count',                               Tool.table_name                                      ],
+                        [ 'Tool Versions - count',                       ToolConfig.table_name                                ],
+                      ] : []),
+                       params[:table_name]
+                    ), :class => "form-control"
+                  )
+              %>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <div class="display_cell" style="vertical-align: middle">
-        <%= select_tag(:row_type, options_for_select( [ [ "(Select row type)", "" ] ] + restricted_att_list, params[:row_type] ), :class => "form-control") if att_ok %>&nbsp;&nbsp;
-      </div>
+<div class="row">
+  <div class="col-xs-12">
+    <div class="display_cell" style="vertical-align: middle">
+      <%= select_tag(:row_type, options_for_select( [ [ "(Select row type)", "" ] ] + restricted_att_list, params[:row_type] ), :class => "form-control") if att_ok %>&nbsp;&nbsp;
+    </div>
 
-      <div class="display_cell">
-        <%= select_tag(:col_type, options_for_select( [ [ "(Select column type)", "" ] ] + restricted_att_list, params[:col_type] ), :class => "form-control") if att_ok %>
-
-
-        <% if @table_ok && @table_col_values.present? && @table_row_values.present? %>
+    <div class="display_cell">
+      <%= select_tag(:col_type, options_for_select( [ [ "(Select column type)", "" ] ] + restricted_att_list, params[:col_type] ), :class => "form-control") if att_ok %>
 
 
-          <%
-             # Generic TO_S proc for row and column headers
-             to_s_proc = Proc.new { |x| x.to_s.demodulize }
-             col_proc = to_s_proc
-             row_proc = to_s_proc
+      <% if @table_ok && @table_col_values.present? && @table_row_values.present? %>
 
-             # Special proc for columns which are IDs to models
-             if @filter_col_key =~ /^(\w+)_id$/
-               col_model = Regexp.last_match[1].classify.constantize
-               col_proc  = Proc.new { |x| link_to_model_if_accessible(col_model,x,:name,current_user) }
-             end
 
-             # Special proc for rows which are IDs to models
-             if @filter_row_key =~ /^(\w+)_id$/
-               row_model = Regexp.last_match[1].classify.constantize
-               row_proc  = Proc.new { |x| link_to_model_if_accessible(row_model,x,:name,current_user) }
-             end
+        <%
+           # Generic TO_S proc for row and column headers
+           to_s_proc = Proc.new { |x| x.to_s.demodulize }
+           col_proc = to_s_proc
+           row_proc = to_s_proc
 
-             vector_size = @table_content[@table_content.keys.first].size
+           # Special proc for columns which are IDs to models
+           if @filter_col_key =~ /^(\w+)_id$/
+             col_model = Regexp.last_match[1].classify.constantize
+             col_proc  = Proc.new { |x| link_to_model_if_accessible(col_model,x,:name,current_user) }
+           end
 
-             # Standard proc for TD content (and totals too).
+           # Special proc for rows which are IDs to models
+           if @filter_row_key =~ /^(\w+)_id$/
+             row_model = Regexp.last_match[1].classify.constantize
+             row_proc  = Proc.new { |x| link_to_model_if_accessible(row_model,x,:name,current_user) }
+           end
+
+           vector_size = @table_content[@table_content.keys.first].size
+
+           # Standard proc for TD content (and totals too).
+           td_content_proc = Proc.new do |vector,td_filters|
+             next '' if vector[0].to_i == 0
+
+             scope_filter_link(
+               (@filter_show_proc ? @filter_show_proc.call(vector) : vector[0].to_s),
+               @filter_controller.to_s, :replace,
+               @filter_fixed.merge(td_filters).map do |attr, value|
+                 { :a => attr, :v => value }
+               end,
+               url: { :controller => @filter_controller.to_s, :action => :index }
+             )
+           end
+        %>
+
+
+
+        <%
+           # Special proc for combined file report
+           if params[:table_name] =~ /\.combined_file_rep$/
              td_content_proc = Proc.new do |vector,td_filters|
-               next '' if vector[0].to_i == 0
+               size,num_entries,sum_files,num_size_unk = vector
+               capture do
+        %>
+                 <%= disk_space_info_display(size || 0) do %>
+                   <%= pretty_size(size) %></br>
+                   <%=
+                     scope_filter_link("#{pluralize(num_entries,"entry")} / #{pluralize(sum_files,"file")}",
+                       'userfiles', :replace,
+                       @filter_fixed.merge(td_filters).map do |attr, value|
+                         { :a => attr, :v => value }
+                       end,
+                       url: { :controller => :userfiles }
+                     )
+                   %>
+                   <% if num_size_unk > 0 %>
+                     </br><%= html_colorize(pluralize(num_size_unk," file") + " w/ unk size") %>
+                   <% end %>
+                 <% end %>
+        <%
+               end # capture
+             end # proc
+           end # if
+        %>
 
-               scope_filter_link(
-                 (@filter_show_proc ? @filter_show_proc.call(vector) : vector[0].to_s),
-                 @filter_controller.to_s, :replace,
-                 @filter_fixed.merge(td_filters).map do |attr, value|
-                   { :a => attr, :v => value }
-                 end,
-                 url: { :controller => @filter_controller.to_s, :action => :index }
-               )
+
+
+        <%
+           # Special proc for combined task report
+           if params[:table_name] =~ /\.combined_task_rep$/
+             td_content_proc = Proc.new do |vector,td_filters|
+               size,num_entries,num_unk = vector
+               capture do
+        %>
+                  <%= disk_space_info_display(size || 0) do %>
+                     <%= format_task_size_unk(
+                           index_count_filter(num_entries, :tasks, @filter_fixed.merge(td_filters || {}), :show_zeros => 1 ),
+                           size || 0,
+                           num_unk
+                         )
+                     %>
+                  <% end %>
+        <%
+               end # capture
+             end # proc
+           end # if
+        %>
+
+
+
+        <table id="report_table" class="tablesorter table">
+
+          <%
+             # HTML attribute modifications for vertical headers (default) or wider headers
+             vertical_headers = (params[:table_name] !~ /\.combined_(file|task)_rep$/)
+             th_att     = ""
+             th_div_att = " style=\"margin-right: 1.5em\"".html_safe
+             if vertical_headers
+               v_height   = "22em"
+               th_att     = " class=\"vertical_text_container\" style=\"background-position: 50% 5%; height: #{v_height}\"".html_safe
+               th_div_att = " class=\"vertical_text\"".html_safe
              end
           %>
 
-
-
           <%
-             # Special proc for combined file report
-             if params[:table_name] =~ /\.combined_file_rep$/
-               td_content_proc = Proc.new do |vector,td_filters|
-                 size,num_entries,sum_files,num_size_unk = vector
-                 capture do
-          %>
-                   <%= disk_space_info_display(size || 0) do %>
-                     <%= pretty_size(size) %></br>
-                     <%=
-                       scope_filter_link("#{pluralize(num_entries,"entry")} / #{pluralize(sum_files,"file")}",
-                         'userfiles', :replace,
-                         @filter_fixed.merge(td_filters).map do |attr, value|
-                           { :a => attr, :v => value }
-                         end,
-                         url: { :controller => :userfiles }
-                       )
-                     %>
-                     <% if num_size_unk > 0 %>
-                       </br><%= html_colorize(pluralize(num_size_unk," file") + " w/ unk size") %>
-                     <% end %>
-                   <% end %>
-          <%
-                 end # capture
-               end # proc
-             end # if
+             # Determine if we add an extra row or column to repeat the headers
+             left_header_column = vertical_headers ? (@table_col_values.size > 15) : (@table_col_values.size > 10)
+             bottom_header_row  =                    (@table_row_values.size > 15)
           %>
 
-
-
           <%
-             # Special proc for combined task report
-             if params[:table_name] =~ /\.combined_task_rep$/
-               td_content_proc = Proc.new do |vector,td_filters|
-                 size,num_entries,num_unk = vector
-                 capture do
-          %>
-                    <%= disk_space_info_display(size || 0) do %>
-                       <%= format_task_size_unk(
-                             index_count_filter(num_entries, :tasks, @filter_fixed.merge(td_filters || {}), :show_zeros => 1 ),
-                             size || 0,
-                             num_unk
-                           )
-                       %>
-                    <% end %>
-          <%
-                 end # capture
-               end # proc
-             end # if
+            ################################
+            # Top headers of table
+            ################################
           %>
 
+          <thead>
+            <tr>
+              <th<%= th_att %>></th>
+              <% @table_col_values.each do |col_key| %>
+                <th<%= th_att %>><div<%= th_div_att %>><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
+              <% end %>
+              <% if @table_col_values.size > 1 %>
+                <th<%= th_att %>><div<%= th_div_att %>>Total</div></th>
+              <% end %>
+              <% if left_header_column %>
+                <th<%= th_att %>></th>
+              <% end %>
+            </tr>
+          </thead>
 
+          <%
+            ################################
+            # Main body of table
+            ################################
+          %>
 
-          <table id="report_table" class="tablesorter table">
+          <tbody>
+
+          <% total_total  = Array.new(vector_size,0) %>
+          <% total_of_col = {} %>
+          <% @table_row_values.each do |row_key| %>
+            <% total_of_row = Array.new(vector_size,0) %>
+            <tr>
+            <% row_sort_value = row_key.present? ? row_model ? row_model.find(row_key).name : row_key : "(None)" %>
+            <th data-sortvalue="<%= row_sort_value %>"><%= row_key.nil? ? "(None)" : row_proc.call(row_key) %></th>
+            <% @table_col_values.each do |col_key| %>
+              <%
+                 total_of_col[col_key] ||= Array.new(vector_size,0)
+                 cell_value = @table_content[ [ row_key, col_key ] ] # this is always an array, with 1, 2, ... n counts in it as elements
+                 if cell_value.present?
+                   0.upto(vector_size-1) do |i|
+                     total_of_row[i]           += cell_value[i]
+                     total_of_col[col_key][i]  += cell_value[i]
+                     total_total[i]            += cell_value[i]
+                   end
+                 end
+              %>
+              <td data-sortvalue="<%= (cell_value.presence && cell_value[0].presence) || 0 %>"><%= cell_value and td_content_proc.call(cell_value, { @filter_row_key => row_key, @filter_col_key => col_key }) %></td>
+            <% end %>
+            <% if @table_col_values.size > 1 %>
+              <td data-sortvalue="<%= total_of_row.presence || 0 %>"><%= td_content_proc.call(total_of_row, { @filter_row_key => row_key }) %></td>
+            <% end %>
+            <% if left_header_column %>
+            <th data-sortvalue="<%= row_sort_value %>"><%= row_key.nil? ? "(None)" : row_proc.call(row_key) %></th>
+            <% end %>
+            </tr>
+          <% end %>
+
+          </tbody>
+
+          <%
+            ################################
+            # 'Total' final row of table
+            ################################
+          %>
+
+          <% if @table_row_values.size > 1 %>
+          <tr>
+            <th>Total</th>
+            <% @table_col_values.each do |col_key| %>
+              <% col_tot = total_of_col[col_key] %>
+              <td><%= td_content_proc.call(col_tot, { @filter_col_key => col_key }) %></td>
+            <% end %>
+            <% if @table_col_values.size > 1 %>
+              <td><%= td_content_proc.call(total_total, {}) %></td>
+            <% end %>
+            <% if left_header_column %>
+              <th>Total</th>
+            <% end %>
+          </tr>
+          <% end %>
+
+          <%
+            ################################
+            # Repeat column headers
+            ################################
+          %>
+
+          <% if bottom_header_row %>
 
             <%
                # HTML attribute modifications for vertical headers (default) or wider headers
-               vertical_headers = (params[:table_name] !~ /\.combined_(file|task)_rep$/)
-               th_att     = ""
-               th_div_att = " style=\"margin-right: 1.5em\"".html_safe
                if vertical_headers
-                 v_height   = "22em"
-                 th_att     = " class=\"vertical_text_container\" style=\"background-position: 50% 5%; height: #{v_height}\"".html_safe
-                 th_div_att = " class=\"vertical_text\"".html_safe
+                 bot_th_att     = " class=\"down_vertical_text_container\"".html_safe
+                 bot_th_div_att = " class=\"down_vertical_text2\"".html_safe
                end
             %>
 
-            <%
-               # Determine if we add an extra row or column to repeat the headers
-               left_header_column = vertical_headers ? (@table_col_values.size > 15) : (@table_col_values.size > 10)
-               bottom_header_row  =                    (@table_row_values.size > 15)
-            %>
-
-            <%
-              ################################
-              # Top headers of table
-              ################################
-            %>
-
-            <thead>
-              <tr>
-                <th<%= th_att %>></th>
-                <% @table_col_values.each do |col_key| %>
-                  <th<%= th_att %>><div<%= th_div_att %>><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
-                <% end %>
-                <% if @table_col_values.size > 1 %>
-                  <th<%= th_att %>><div<%= th_div_att %>>Total</div></th>
-                <% end %>
-                <% if left_header_column %>
-                  <th<%= th_att %>></th>
-                <% end %>
-              </tr>
-            </thead>
-
-            <%
-              ################################
-              # Main body of table
-              ################################
-            %>
-
-            <tbody>
-
-            <% total_total  = Array.new(vector_size,0) %>
-            <% total_of_col = {} %>
-            <% @table_row_values.each do |row_key| %>
-              <% total_of_row = Array.new(vector_size,0) %>
-              <tr>
-              <% row_sort_value = row_key.present? ? row_model ? row_model.find(row_key).name : row_key : "(None)" %>
-              <th data-sortvalue="<%= row_sort_value %>"><%= row_key.nil? ? "(None)" : row_proc.call(row_key) %></th>
-              <% @table_col_values.each do |col_key| %>
-                <%
-                   total_of_col[col_key] ||= Array.new(vector_size,0)
-                   cell_value = @table_content[ [ row_key, col_key ] ] # this is always an array, with 1, 2, ... n counts in it as elements
-                   if cell_value.present?
-                     0.upto(vector_size-1) do |i|
-                       total_of_row[i]           += cell_value[i]
-                       total_of_col[col_key][i]  += cell_value[i]
-                       total_total[i]            += cell_value[i]
-                     end
-                   end
-                %>
-                <td data-sortvalue="<%= (cell_value.presence && cell_value[0].presence) || 0 %>"><%= cell_value and td_content_proc.call(cell_value, { @filter_row_key => row_key, @filter_col_key => col_key }) %></td>
-              <% end %>
-              <% if @table_col_values.size > 1 %>
-                <td data-sortvalue="<%= total_of_row.presence || 0 %>"><%= td_content_proc.call(total_of_row, { @filter_row_key => row_key }) %></td>
-              <% end %>
-              <% if left_header_column %>
-              <th data-sortvalue="<%= row_sort_value %>"><%= row_key.nil? ? "(None)" : row_proc.call(row_key) %></th>
-              <% end %>
-              </tr>
-            <% end %>
-
-            </tbody>
-
-            <%
-              ################################
-              # 'Total' final row of table
-              ################################
-            %>
-
-            <% if @table_row_values.size > 1 %>
             <tr>
-              <th>Total</th>
+              <th></th>
               <% @table_col_values.each do |col_key| %>
-                <% col_tot = total_of_col[col_key] %>
-                <td><%= td_content_proc.call(col_tot, { @filter_col_key => col_key }) %></td>
+                <th<%= bot_th_att %>><div<%= bot_th_div_att %>><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
               <% end %>
               <% if @table_col_values.size > 1 %>
-                <td><%= td_content_proc.call(total_total, {}) %></td>
+                <th<%= bot_th_att %>><div<%= bot_th_div_att %>>Total</div></th>
               <% end %>
               <% if left_header_column %>
-                <th>Total</th>
+                <th></th>
               <% end %>
             </tr>
-            <% end %>
 
-            <%
-              ################################
-              # Repeat column headers
-              ################################
-            %>
-
-            <% if bottom_header_row %>
-
-              <%
-                 # HTML attribute modifications for vertical headers (default) or wider headers
-                 if vertical_headers
-                   bot_th_att     = " class=\"down_vertical_text_container\"".html_safe
-                   bot_th_div_att = " class=\"down_vertical_text2\"".html_safe
-                 end
-              %>
-
-              <tr>
-                <th></th>
-                <% @table_col_values.each do |col_key| %>
-                  <th<%= bot_th_att %>><div<%= bot_th_div_att %>><%= col_key.nil? ? "(None)" : col_proc.call(col_key) %></div></th>
-                <% end %>
-                <% if @table_col_values.size > 1 %>
-                  <th<%= bot_th_att %>><div<%= bot_th_div_att %>>Total</div></th>
-                <% end %>
-                <% if left_header_column %>
-                  <th></th>
-                <% end %>
-              </tr>
-
-            <% end %>
-
-          </table>
-
-          <%
-            ################################
-            # Legend (if necessary)
-            ################################
-          %>
-
-          <% if params[:table_name] =~ /\.combined_(file|task)_rep$/ %>
-            <div class="well well-sm"><%= disk_usage_legend %></div>
           <% end %>
 
-          <script type="text/javascript">
-            $(document).ready(function() {
-                $("#report_table").tablesorter({
-                  // define a custom text extraction function
-                  textExtraction: function(node) {
-                    // extract data from markup and return it
-                    var sortvalue = $(node).data('sortvalue');
-                    return sortvalue;
-                  },
-                  sortList: [ [0,0] ]
-                });
-            });
-          </script>
+        </table>
 
-        <% elsif @table_ok %>
-          <p class="groupentry">
-          There are <%= html_colorize("no objects","red") %> found for this report.<br/>
-          Try with other reporting parameters.
-          </p>
-        <% else %>
-          <p class="groupentry">
-          The report will appear here once you've selected<br/>
-           the proper table content and types for the rows and columns.
-          </p>
+        <%
+          ################################
+          # Legend (if necessary)
+          ################################
+        %>
+
+        <% if params[:table_name] =~ /\.combined_(file|task)_rep$/ %>
+          <div class="well well-sm"><%= disk_usage_legend %></div>
         <% end %>
-  </div>
+
+        <script type="text/javascript">
+          $(document).ready(function() {
+              $("#report_table").tablesorter({
+                // define a custom text extraction function
+                textExtraction: function(node) {
+                  // extract data from markup and return it
+                  var sortvalue = $(node).data('sortvalue');
+                  return sortvalue;
+                },
+                sortList: [ [0,0] ]
+              });
+          });
+        </script>
+
+      <% elsif @table_ok %>
+        <p class="groupentry">
+        There are <%= html_colorize("no objects","red") %> found for this report.<br/>
+        Try with other reporting parameters.
+        </p>
+      <% else %>
+        <p class="groupentry">
+        The report will appear here once you've selected<br/>
+         the proper table content and types for the rows and columns.
+        </p>
+      <% end %>
+</div>
 
 
-  <div class="row">
-    <div class="col-xs-12">
-      <div class="well well-sm">
-        <% if @table_ok %>
-          <%= submit_tag('Refresh Report',    :name => :refresh, :class => "btn btn-primary") %>
-          <%= submit_tag('Flip Rows/Columns', :name => :flip, :class => "btn btn-primary") %>
-        <% else %>
-          <%= submit_tag('Generate Report', :name => :generate, :class => "btn btn-primary") if att_ok %>
-        <% end %>
-      </div>
+<div class="row">
+  <div class="col-xs-12">
+    <div class="well well-sm">
+      <% if @table_ok %>
+        <%= submit_tag('Refresh Report',    :name => :refresh, :class => "btn btn-primary") %>
+        <%= submit_tag('Flip Rows/Columns', :name => :flip, :class => "btn btn-primary") %>
+      <% else %>
+        <%= submit_tag('Generate Report', :name => :generate, :class => "btn btn-primary") if att_ok %>
+      <% end %>
     </div>
   </div>
+</div>
 
 
-  <div class="row">
-    <div class="col-xs-12">
-      <div class="panel panel-primary">
-        <div class="panel-heading">Attributes (Optional) </div>
-        <div class="panel-body">
-          <% if @model_atts.present? && @model_atts.detect { |x| x.to_s =~ /user_id|group_id|data_provider_id|bourreau_id|type|status/ } %>
-            <% if @model_atts.include?(:user_id) %>
-              <div class="col-xs-3">
-                <div class="input-group">
-                  <span class="input-group-addon">Users</span>
-                  <%= user_select :user_id, { :selector => params[:user_id] }, :multiple => true, :class => "form-control" %>
-                </div>
-              </div>
-            <% end %>
-
-            <% if @model_atts.include?(:group_id) %>
-              <div class="col-xs-3">
-                <div class="input-group">
-                  <span class="input-group-addon">Projects</span>
-                  <%= group_select :group_id, { :selector => params[:group_id] }, :multiple => true,  :class => "form-control" %>
-                </div>
-              </div>
-            <% end %>
-
-            <% if @model_atts.include?(:data_provider_id) %>
-              <div class="col-xs-3">
-                <div class="input-group">
-                  <span class="input-group-addon">Data Providers</span>
-                  <%= data_provider_select :data_provider_id, { :selector => params[:data_provider_id], :offline_is_ok => true }, :multiple => true, :class => "form-control" %>
-                </div>
-              </div>
-            <% end %>
-
-            <% if @model_atts.include?(:bourreau_id) %>
-              <div class="col-xs-3">
-                <div class="input-group">
-                  <span class="input-group-addon">Execution Servers</span>
-                  <%= bourreau_select :bourreau_id, { :selector => params[:bourreau_id], :offline_is_ok => true }, :multiple => true,  :class => "form-control" %>
-                </div>
-              </div>
-            <% end %>
-
-            <% if @model_atts.include?(:type) %>
-              <div class="col-xs-3">
-                <div class="input-group">
-                  <span class="input-group-addon">Types</span>
-                    <% if @model <= Userfile %>
-                      <%= userfile_type_select :type, {:selector => params[:type]} , :multiple => true, :class => "form-control" %>
-                    <% elsif @model <= CbrainTask %>
-                      <%= task_type_select :type, {:selector => params[:type]} , :multiple => true, :class => "form-control"  %>
-                    <% elsif @model <= Group %>
-                      <%= group_type_select :type, {:selector => params[:type]} , :multiple => true, :class => "form-control"  %>
-                    <% else %>
-                      <%= select_tag :type, options_for_select( @model.descendants.map { |c| [ c.pretty_type, c.to_s ] }, params[:type] ), :multiple => true, :class => "form-control"  %>
-                    <% end %>
-                </div>
-              </div>
-            <% end %>
-            <div class="row">
-              <% if @model_atts.include?(:status) %>
-                <div class="col-xs-3">
-                  <div class="input-group">
-                    <span class="input-group-addon">Status</span>
-                    <%= task_status_select :status, {:selector => params[:status]}, :multiple => true, :class => "form-control" %>
-                  </div>
-                </div>
-              <% end %>
-
-              <div class="col-xs-3">
-                Dates: <%= date_range_panel(date_filtering) %>
-                (Note: the links in the report will NOT include the date restrictions)
+<div class="row">
+  <div class="col-xs-12">
+    <div class="panel panel-primary">
+      <div class="panel-heading">Attributes (Optional) </div>
+      <div class="panel-body">
+        <% if @model_atts.present? && @model_atts.detect { |x| x.to_s =~ /user_id|group_id|data_provider_id|bourreau_id|type|status/ } %>
+          <% if @model_atts.include?(:user_id) %>
+            <div class="col-xs-3">
+              <div class="input-group">
+                <span class="input-group-addon">Users</span>
+                <%= user_select :user_id, { :selector => params[:user_id] }, :multiple => true, :class => "form-control" %>
               </div>
             </div>
           <% end %>
-        </div>
+
+          <% if @model_atts.include?(:group_id) %>
+            <div class="col-xs-3">
+              <div class="input-group">
+                <span class="input-group-addon">Projects</span>
+                <%= group_select :group_id, { :selector => params[:group_id] }, :multiple => true,  :class => "form-control" %>
+              </div>
+            </div>
+          <% end %>
+
+          <% if @model_atts.include?(:data_provider_id) %>
+            <div class="col-xs-3">
+              <div class="input-group">
+                <span class="input-group-addon">Data Providers</span>
+                <%= data_provider_select :data_provider_id, { :selector => params[:data_provider_id], :offline_is_ok => true }, :multiple => true, :class => "form-control" %>
+              </div>
+            </div>
+          <% end %>
+
+          <% if @model_atts.include?(:bourreau_id) %>
+            <div class="col-xs-3">
+              <div class="input-group">
+                <span class="input-group-addon">Execution Servers</span>
+                <%= bourreau_select :bourreau_id, { :selector => params[:bourreau_id], :offline_is_ok => true }, :multiple => true,  :class => "form-control" %>
+              </div>
+            </div>
+          <% end %>
+
+          <% if @model_atts.include?(:type) %>
+            <div class="col-xs-3">
+              <div class="input-group">
+                <span class="input-group-addon">Types</span>
+                  <% if @model <= Userfile %>
+                    <%= userfile_type_select :type, {:selector => params[:type]} , :multiple => true, :class => "form-control" %>
+                  <% elsif @model <= CbrainTask %>
+                    <%= task_type_select :type, {:selector => params[:type]} , :multiple => true, :class => "form-control"  %>
+                  <% elsif @model <= Group %>
+                    <%= group_type_select :type, {:selector => params[:type]} , :multiple => true, :class => "form-control"  %>
+                  <% else %>
+                    <%= select_tag :type, options_for_select( @model.descendants.map { |c| [ c.pretty_type, c.to_s ] }, params[:type] ), :multiple => true, :class => "form-control"  %>
+                  <% end %>
+              </div>
+            </div>
+          <% end %>
+          <div class="row">
+            <% if @model_atts.include?(:status) %>
+              <div class="col-xs-3">
+                <div class="input-group">
+                  <span class="input-group-addon">Status</span>
+                  <%= task_status_select :status, {:selector => params[:status]}, :multiple => true, :class => "form-control" %>
+                </div>
+              </div>
+            <% end %>
+
+            <div class="col-xs-3">
+              Dates: <%= date_range_panel(date_filtering) %>
+              (Note: the links in the report will NOT include the date restrictions)
+            </div>
+          </div>
+        <% end %>
       </div>
     </div>
+  </div>
 <% end %>
-</div>
-

@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 */
 
@@ -160,7 +160,8 @@
       .undelegate('.dt-sort > .dt-hdr', 'click.dyn-tbl')
       .delegate(  '.dt-sort > .dt-hdr', 'click.dyn-tbl', function () {
         $(this)
-          .siblings('.dt-sort-btn')
+          .siblings('.pull-right')
+          .find('.dt-sort-btn')
           .first()
           .click();
       });
@@ -213,10 +214,14 @@
           .find('.dt-filter-btn, .dt-col-btn')
           .not(this)
           .removeClass('dt-shown')
+          .parent()
+          .parent()
           .siblings('.dt-popup')
           .hide();
 
         var popup = $(this)
+          .parent()
+          .parent()
           .siblings('.dt-popup')
           .toggle();
 

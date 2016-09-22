@@ -27,63 +27,58 @@
    official_storage = @data_providers.select { |dp| ! dp.is_browsable? }
 %>
 
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-xs-12">
-      <div class="menu_bar">
-        <div class="well well-sm">
-          <% if check_role(:site_manager) || check_role(:admin_user) %>
-            <a href="<%= new_data_provider_path %>" role="button" class="btn btn-primary"><span class="glyphicon glyphicon-file"></span> New Data Provider</a>
-          <% end %>
+<div class="row menu_bar">
+  <div class="col-xs-12">
+    <div class="well well-sm">
+      <% if check_role(:site_manager) || check_role(:admin_user) %>
+        <a href="<%= new_data_provider_path %>" role="button" class="btn btn-primary"><span class="glyphicon glyphicon-file"></span> New Data Provider</a>
+      <% end %>
 
-          <div class="btn-group">
-            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-              <span class="glyphicon glyphicon-list-alt"></span> Reports <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu">
-              <li><a href="<%= url_for(:controller  => :data_providers, :action  => :dp_access) %>" datatype="script"><span class="glyphicon glyphicon-user"></span> User Access</a></li>
-              <li><a href="<%= url_for(:controller  => :data_providers, :action  => :dp_transfers) %>" datatype="script"><span class="glyphicon glyphicon-transfer"></span> Transfer Restriction</a></li>
-              <li><a href="<%= report_path(
-                            :table_name => "userfiles.combined_file_rep",
-                            :row_type   => :user_id,
-                            :col_type   => :data_provider_id,
-                            :generate   => "ok"
-                          ) %>"
-                  ><span class="glyphicon glyphicon-hdd"></span> Disk Usage</a></li>
-            </ul>
-          </div>
-
-          <a href="javascript:;" class="btn btn-primary check_all_dp"><span class="glyphicon glyphicon-refresh"></span> Check All</a>
-
-          <%= help_button("data_providers/info") %>
-        </div>
+      <div class="btn-group">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+          <span class="glyphicon glyphicon-list-alt"></span> Reports <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a href="<%= url_for(:controller  => :data_providers, :action  => :dp_access) %>" datatype="script"><span class="glyphicon glyphicon-user"></span> User Access</a></li>
+          <li><a href="<%= url_for(:controller  => :data_providers, :action  => :dp_transfers) %>" datatype="script"><span class="glyphicon glyphicon-transfer"></span> Transfer Restriction</a></li>
+          <li><a href="<%= report_path(
+                        :table_name => "userfiles.combined_file_rep",
+                        :row_type   => :user_id,
+                        :col_type   => :data_provider_id,
+                        :generate   => "ok"
+                      ) %>"
+              ><span class="glyphicon glyphicon-hdd"></span> Disk Usage</a></li>
+        </ul>
       </div>
+
+      <a href="javascript:;" class="btn btn-primary check_all_dp" data-method="POST" data-type="script"><span class="glyphicon glyphicon-refresh"></span> Check All</a>
+
+      <%= help_button("data_providers/info") %>
     </div>
   </div>
+</div>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <%=
-        render(:partial => 'shared/active_filters', :locals  => {
-          :scope => @scope,
-          :model => DataProvider
-        })
-      %>
-    </div>
+<div class="row">
+  <div class="col-xs-12">
+    <%=
+      render(:partial => 'shared/active_filters', :locals  => {
+        :scope => @scope,
+        :model => DataProvider
+      })
+    %>
   </div>
+</div>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <h3>Official Data Storage</h3>
-      <%= render :partial => 'one_data_provider_table', :locals => { :data_providers => official_storage, :id => 'official' } %>
-    </div>
+<div class="row">
+  <div class="col-xs-12">
+    <h3>Official Data Storage</h3>
+    <%= render :partial => 'one_data_provider_table', :locals => { :data_providers => official_storage, :id => 'official' } %>
   </div>
+</div>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <h3>User or Site Storage</h3>
-      <%= render :partial => 'one_data_provider_table', :locals => { :data_providers => user_storage, :id => 'user' } %>
-    </div>
+<div class="row">
+  <div class="col-xs-12">
+    <h3>User or Site Storage</h3>
+    <%= render :partial => 'one_data_provider_table', :locals => { :data_providers => user_storage, :id => 'user' } %>
   </div>
-
 </div>

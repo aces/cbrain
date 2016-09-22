@@ -43,11 +43,9 @@
     </div>
   </div>
 
-
-  <div class="row text-center"> (<%= pluralize @sites.count, "site" %>) </div>
-
   <div class="row">
     <div class="col-xs-12">
+      <div class="text-center">(<%= pluralize @sites.count, "site" %>)</div>
       <%=
         dynamic_scoped_table(@sites,
           :id    => 'sites_table',

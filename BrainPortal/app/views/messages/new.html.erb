@@ -25,99 +25,96 @@
 
 <% title 'Add New Message' %>
 
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-xs-12">
-      <h3 class="text-center">Add New Message</h3>
-    </div>
+<div class="row">
+  <div class="col-xs-12">
+    <h3 class="text-center">Add New Message</h3>
   </div>
+</div>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <%= error_messages_for(@message) %>
-    </div>
+<div class="row">
+  <div class="col-xs-12">
+    <%= error_messages_for(@message) %>
   </div>
+</div>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <div class="panel panel-primary">
-        <div class="panel-heading">Message Info</div>
-        <div class="panel-body">
-          <%= form_for @message, :as => :message, :url => { :action => "create" }, :datatype => "script", :class => "form-horizontal" do |f| -%>
-            <div class="col-xs-6">
-              <div class="row">
-                <div class="col-xs-4"><label>To users of project</label></div>
-                <div class="col-xs-8">
-                  <%= group_select(:group_id,
-                             {
-                               :groups  => current_user.available_groups.order(:name),
-                               :selector => @group_id, # :group_id is not an attribute of Message.
-                             },
-                             { :include_blank => true,
-                                :class => "form-control" }
-                             )
-                  %>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-xs-4"><%= f.label :header %></div>
-                <div class="col-xs-8"><%= f.text_field :header, :size => 92, :class => "form-control" %></div>
-              </div>
-              <div class="row">
-                <div class="col-xs-4"><%= f.label :description %></div>
-                <div class="col-xs-8"><%= f.text_area :description, :rows => 5, :class => "form-control" %></div>
-              </div>
-              <div class="row">
-                <div class="col-xs-4"><%= f.label :variable_text %></div>
-                <div class="col-xs-8"><%= f.text_area :variable_text, :rows => 5, :class => "form-control" %></div>
-              </div>
-            </div>
-
-            <div class="col-xs-6">
-              <div class="row">
-                <div class="col-xs-4"><%= f.label :critical %></div>
-                <div class="col-xs-8"><%= f.check_box :critical, :class => "form-control" %></div>
-              </div>
-              <div class="row">
-                <div class="col-xs-4"><%= f.label :send_email, "Send E-mail" %></div>
-                <div class="col-xs-8"><%= check_box_tag "message[send_email]", 1, false, :class => "form-control" %></div>
-              </div>
-              <div class="row">
-                <div class="col-xs-4"><%= f.label :message_type %></div>
-                <div class="col-xs-8"><%= f.select :message_type, ["system", "notice", "error"], {}, :class => "form-control" %></div>
-              </div>
-              <div class="row">
-                <div class="col-xs-4"><%= f.label :expiry_date, "Expiration date (current time: #{to_localtime(Time.now, :datetime)})" %></div>
-                <div class="col-xs-4">
-                  <%=
-                      text_field_tag :expiry_date,
-                                     (@message.expiry ? "#{@message.expiry.strftime("%d/%m/%G")}" : ""),
-                                     :class => "datepicker form-control"
-                  %>
-                </div>
-                <div class="col-xs-2">
-                  <%=
-                    select_tag :expiry_hour, options_for_select((0..23).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%H") : ""), :class => "form-control"
-                  %>
-                </div>
-                <div class="col-xs-2">
-                  <%=
-                    select_tag :expiry_min,  options_for_select((0..59).step(15).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%M") : ""), :class => "form-control"
-                  %>
-                </div>
-              </div>
-            </div>
-
+<div class="row">
+  <div class="col-xs-12">
+    <div class="panel panel-primary">
+      <div class="panel-heading">Message Info</div>
+      <div class="panel-body">
+        <%= form_for @message, :as => :message, :url => { :action => "create" }, :datatype => "script", :class => "form-horizontal" do |f| -%>
+          <div class="col-xs-6">
             <div class="row">
-              <div class="col-xs-12">
-                <%= f.submit "Send", :class => "btn btn-primary btn-block" %>
+              <div class="col-xs-4"><label>To users of project</label></div>
+              <div class="col-xs-8">
+                <%= group_select(:group_id,
+                           {
+                             :groups  => current_user.available_groups.order(:name),
+                             :selector => @group_id, # :group_id is not an attribute of Message.
+                           },
+                           { :include_blank => true,
+                              :class => "form-control" }
+                           )
+                %>
               </div>
             </div>
-          <% end %>
-        </div>
+            <div class="row">
+              <div class="col-xs-4"><%= f.label :header %></div>
+              <div class="col-xs-8"><%= f.text_field :header, :size => 92, :class => "form-control" %></div>
+            </div>
+            <div class="row">
+              <div class="col-xs-4"><%= f.label :description %></div>
+              <div class="col-xs-8"><%= f.text_area :description, :rows => 5, :class => "form-control" %></div>
+            </div>
+            <div class="row">
+              <div class="col-xs-4"><%= f.label :variable_text %></div>
+              <div class="col-xs-8"><%= f.text_area :variable_text, :rows => 5, :class => "form-control" %></div>
+            </div>
+          </div>
+
+          <div class="col-xs-6">
+            <div class="row">
+              <div class="col-xs-4"><%= f.label :critical %></div>
+              <div class="col-xs-8"><%= f.check_box :critical, :class => "form-control" %></div>
+            </div>
+            <div class="row">
+              <div class="col-xs-4"><%= f.label :send_email, "Send E-mail" %></div>
+              <div class="col-xs-8"><%= check_box_tag "message[send_email]", 1, false, :class => "form-control" %></div>
+            </div>
+            <div class="row">
+              <div class="col-xs-4"><%= f.label :message_type %></div>
+              <div class="col-xs-8"><%= f.select :message_type, ["system", "notice", "error"], {}, :class => "form-control" %></div>
+            </div>
+            <div class="row">
+              <div class="col-xs-4"><%= f.label :expiry_date, "Expiration date (current time: #{to_localtime(Time.now, :datetime)})" %></div>
+              <div class="col-xs-4">
+                <%=
+                    text_field_tag :expiry_date,
+                                   (@message.expiry ? "#{@message.expiry.strftime("%d/%m/%G")}" : ""),
+                                   :class => "datepicker form-control"
+                %>
+              </div>
+              <div class="col-xs-2">
+                <%=
+                  select_tag :expiry_hour, options_for_select((0..23).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%H") : ""), :class => "form-control"
+                %>
+              </div>
+              <div class="col-xs-2">
+                <%=
+                  select_tag :expiry_min,  options_for_select((0..59).step(15).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%M") : ""), :class => "form-control"
+                %>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-xs-12">
+              <%= f.submit "Send", :class => "btn btn-primary btn-block" %>
+            </div>
+          </div>
+        <% end %>
       </div>
-
     </div>
-  </div>
 
+  </div>
 </div>

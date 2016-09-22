@@ -22,106 +22,101 @@
 #
 -%>
 
-<div class="container-fluid">
-   <h3>Some Notes About Configuring A Execution Server</h3>
+<h3>Some Notes About Configuring A Execution Server</h3>
 
-    An Execution Server is a remote Rails application that is used by the
-    BrainPortal. Like all Rails applications, it runs on some host
-    somewhere, it listens to HTTP connections on some port and needs
-    to connect to the same database server as the BrainPortal.
+An Execution Server is a remote Rails application that is used by the
+BrainPortal. Like all Rails applications, it runs on some host
+somewhere, it listens to HTTP connections on some port and needs
+to connect to the same database server as the BrainPortal.
 
-    <p>
+<p>
 
-    Unlike the BrainPortal, the HTTP connections it expects are not
-    from a user's browser, but they are XML requests issued by the
-    BrainPortal using a Rails protocol called ActiveResource. There
-    are several ways that the BrainPortal can be told how to connect to
-    and manage the Execution Server, which explains all the fields in this form.
+Unlike the BrainPortal, the HTTP connections it expects are not
+from a user's browser, but they are XML requests issued by the
+BrainPortal using a Rails protocol called ActiveResource. There
+are several ways that the BrainPortal can be told how to connect to
+and manage the Execution Server, which explains all the fields in this form.
 
-    <p>
-    <h4>Hardcoded DB and ActiveResource</h4>
-    <p>
+<p>
+<h4>Hardcoded DB and ActiveResource</h4>
+<p>
 
-    In the most ordinary case, an Execution Server is installed and deployed
-    manually by a CBRAIN administrator; this requires choosing the
-    listen port (the <em>port</em> argument to its <em>script/server
-    -p port</em> command when it's started) and creating its
-    <em>database.yml</em> file. For such a manual installation, the
-    only two required field in this form will be those in the box
-    <strong>ActiveResource Configuration</strong>. Note that these
-    two fields are completely ignored if the ActiveResource connection
-    is being tunnelled (see below).
+In the most ordinary case, an Execution Server is installed and deployed
+manually by a CBRAIN administrator; this requires choosing the
+listen port (the <em>port</em> argument to its <em>script/server
+-p port</em> command when it's started) and creating its
+<em>database.yml</em> file. For such a manual installation, the
+only two required field in this form will be those in the box
+<strong>ActiveResource Configuration</strong>. Note that these
+two fields are completely ignored if the ActiveResource connection
+is being tunnelled (see below).
 
-    <p>
-    <h4>Hardcoded, But With Remote Control</h4>
-    <p>
+<p>
+<h4>Hardcoded, But With Remote Control</h4>
+<p>
 
-    If the fields in the section <strong>SSH Remote Control
-    Configuration</strong> are filled and describe the deployment
-    remote account of the Execution Server, then the BrainPortal will have the
-    ability to establish a persistent SSH master connection to that
-    host and allow the administrator to start and stop the Server
-    right from the WEB interface. Note that the UNIX user under which
-    the BrainPortal runs must have the proper SSH public keys for that
-    remote account installed.
+If the fields in the section <strong>SSH Remote Control
+Configuration</strong> are filled and describe the deployment
+remote account of the Execution Server, then the BrainPortal will have the
+ability to establish a persistent SSH master connection to that
+host and allow the administrator to start and stop the Server
+right from the WEB interface. Note that the UNIX user under which
+the BrainPortal runs must have the proper SSH public keys for that
+remote account installed.
 
-    <p>
-    <h4>Remote Control And Optional Tunnels</h4>
-    <p>
+<p>
+<h4>Remote Control And Optional Tunnels</h4>
+<p>
 
-    It's possible the further deviate from the standard hardcoded
-    Execution Server by having the BrainPortal set up SSH tunnels for
-    either (or both) of the ActiveResource connection and the
-    Database Server connection. This can be turned on by entering
-    port numbers in the two fields in the section <strong>Tunnelling
-    Configuration</strong>. For this to work, the <strong>SSH Remote
-    Control Configuration</strong> must be operational (see above). The
-    port numbers specified here must both be public TCP port that are
-    free on the Execution Server's host; they can be arbitrary numbers between
-    1024 and 65530, not used by other services.
+It's possible the further deviate from the standard hardcoded
+Execution Server by having the BrainPortal set up SSH tunnels for
+either (or both) of the ActiveResource connection and the
+Database Server connection. This can be turned on by entering
+port numbers in the two fields in the section <strong>Tunnelling
+Configuration</strong>. For this to work, the <strong>SSH Remote
+Control Configuration</strong> must be operational (see above). The
+port numbers specified here must both be public TCP port that are
+free on the Execution Server's host; they can be arbitrary numbers between
+1024 and 65530, not used by other services.
 
-    <p>
+<p>
 
-    <strong>Tunnelling the ActiveResource connection:</strong> Entering
-    a port number here will tell the BrainPortal to select this
-    port for the Execution Server's Rails listening port (the <em>port</em>
-    argument to its <em>script/server -p port</em> command when it's
-    started). When starting the Execution Server using the interface, a SSH
-    tunnel will be established between a local port (not shown here
-    anywhere) on the BrainPortal side and the listening HTTP port
-    of the Server selected here. This means that the two fields in
-    the form's section <strong>ActiveResource Configuration</strong>
-    will be completely ignored.
+<strong>Tunnelling the ActiveResource connection:</strong> Entering
+a port number here will tell the BrainPortal to select this
+port for the Execution Server's Rails listening port (the <em>port</em>
+argument to its <em>script/server -p port</em> command when it's
+started). When starting the Execution Server using the interface, a SSH
+tunnel will be established between a local port (not shown here
+anywhere) on the BrainPortal side and the listening HTTP port
+of the Server selected here. This means that the two fields in
+the form's section <strong>ActiveResource Configuration</strong>
+will be completely ignored.
 
-    <p>
+<p>
 
-    <strong>Tunnelling the DB server connection:</strong> Entering a port
-    number here will tell the BrainPortal to select this port for the
-    Execution Server's Rails DB connection; more accurately, by doing this, the
-    BrainPortal will create from scratch a new <em>database.yml</em>
-    file, send it over to the Execution Server side, and force it to use
-    it. This <em>database.yml</em> will tell the Server to connect
-    to host 127.0.0.1 on the port number specified here. This port
-    will be configured to tunnel back to the BrainPortal all the way
-    to the DB server used by the BrainPortal itself. Note that this
-    can only work if the BrainPortal is connecting to its DB via a IP
-    domain connection, not a file socket. For MySQL for instance,
-    it means the BrainPortal's <em>database.yml</em> file must NOT
-    have the value <em>localhost</em> for the <strong>Host</strong>
-    field. Also, it's likely that you'll need to comment out the entry
-    "bind-address" in the server's <em>my.cnf</em> file.
+<strong>Tunnelling the DB server connection:</strong> Entering a port
+number here will tell the BrainPortal to select this port for the
+Execution Server's Rails DB connection; more accurately, by doing this, the
+BrainPortal will create from scratch a new <em>database.yml</em>
+file, send it over to the Execution Server side, and force it to use
+it. This <em>database.yml</em> will tell the Server to connect
+to host 127.0.0.1 on the port number specified here. This port
+will be configured to tunnel back to the BrainPortal all the way
+to the DB server used by the BrainPortal itself. Note that this
+can only work if the BrainPortal is connecting to its DB via a IP
+domain connection, not a file socket. For MySQL for instance,
+it means the BrainPortal's <em>database.yml</em> file must NOT
+have the value <em>localhost</em> for the <strong>Host</strong>
+field. Also, it's likely that you'll need to comment out the entry
+"bind-address" in the server's <em>my.cnf</em> file.
 
-    <p>
+<p>
 
-    A side effect of tunnelling the DB server is that any
-    <em>database.yml</em> file already present on the Execution Server side will
-    be backed up, and also that the newly created <em>database.yml</em>
-    file will be DELETED after the Server is started. This provides a
-    high security context for the DB server's connection as if there
-    were no <em>database.yml</em> file at all. And if there were,
-    and tunnelling is disabled by blanking out the port field, then
-    the backup <em>database.yml</em> will be restored.
-
-</div>
-
-
+A side effect of tunnelling the DB server is that any
+<em>database.yml</em> file already present on the Execution Server side will
+be backed up, and also that the newly created <em>database.yml</em>
+file will be DELETED after the Server is started. This provides a
+high security context for the DB server's connection as if there
+were no <em>database.yml</em> file at all. And if there were,
+and tunnelling is disabled by blanking out the port field, then
+the backup <em>database.yml</em> will be restored.

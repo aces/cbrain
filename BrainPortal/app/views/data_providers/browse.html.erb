@@ -25,22 +25,20 @@
 <% title 'Browse Data Provider' %>
 
 <%= form_tag(url_for(:controller => 'data_providers', :id => @provider.id, :action => 'register'), :method => :post, :id => "browse_form") do %>
-  <div class="container-fluid">
-    <div class="row menu_bar">
-      <div class="col-xs-12">
-        <div class="well well-sm">
-          <%= render :partial => "register_button" %>
-          <%= render :partial => "unregister_button" %>
-          <%= render :partial => "delete_button" %>
-          <%= render :partial => "view_option_button" %>
-        </div>
+  <div class="row menu_bar">
+    <div class="col-xs-12">
+      <div class="well well-sm">
+        <%= render :partial => "register_button" %>
+        <%= render :partial => "unregister_button" %>
+        <%= render :partial => "delete_button" %>
+        <%= render :partial => "view_option_button" %>
       </div>
     </div>
+  </div>
 
-    <div class="row">
-      <div class="col-xs-12" id="dp_browse_table_container">
-        <%= render :partial => 'dp_browse_table' %>
-      </div>
+  <div class="row">
+    <div class="col-xs-12" id="dp_browse_table_container">
+      <%= render :partial => 'dp_browse_table' %>
     </div>
   </div>
 

@@ -102,7 +102,6 @@ CbrainRailsPortal::Application.routes.draw do
     collection do
       get  'dp_access'
       get  'dp_transfers'
-      get  'dp_types_explained'
     end
   end
 

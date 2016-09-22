@@ -25,53 +25,47 @@
 
 <div class="container-fluid">
   <div class="row">
-    <div class="col-xs-12">
+    <div class="col-xs-4">
       <%=
         render(:partial => 'shared/active_filters', :locals  => {
           :scope => @scope,
           :model => Userfile
         })
       %>
+
+      <%=
+        render(:partial => 'shared/persistent_selection', :locals => {
+          :name      => 'userfiles',
+          :param     => 'file_ids[]',
+          :watch     => 'th.dt-sel > .dt-sel-check',
+          :item_name => 'file',
+          :all_url   => userfiles_path(:ids_only => 1)
+        })
+      %>
     </div>
-  </div>
+    <div class="col-xs-4">
+      (
+        <%
+          show_total = lambda do |total, name, icon|
+            (", #{total} #{name} " + icon).html_safe if
+              total.present? && (total.is_a?(String) || total > 0)
+          end
+        %>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <div class="pagination">
-        <div class="pagination_left_side">
-          <%=
-            render(:partial => 'shared/persistent_selection', :locals => {
-              :name      => 'userfiles',
-              :param     => 'file_ids[]',
-              :watch     => 'th.dt-sel > .dt-sel-check',
-              :item_name => 'file',
-              :all_url   => userfiles_path(:ids_only => 1)
-            })
-          %>
-        </div>
-        <div class="page_links">
-          (
-            <%
-              show_total = lambda do |total, name, icon|
-                (", #{total} #{name} " + icon).html_safe if
-                  total.present? && (total.is_a?(String) || total > 0)
-              end
-            %>
+        <%= pluralize(@userfiles_total," entry") %>
+        <% unless @scope.custom[:view_all] %>
+          <span class="own_files">(own files only)</span>
+        <% end %>,
 
-            <%= pluralize(@userfiles_total," entry") %>
-            <% unless @scope.custom[:view_all] %>
-              <span class="own_files">(own files only)</span>
-            <% end %>,
-
-            <%= colored_pretty_size(@userfiles_total_size) %>
-            <%= show_total.(@hidden_total,    'hidden',   hidden_icon) %>
-            <%= show_total.(@archived_total,  'archived', archived_icon) %>
-            <%= show_total.(@immutable_total, 'locked',   immutable_icon) %>
-          )
-        </div>
-        <div class="pagination_right_side">
-          Search by name: <%= ajax_search_box("name_like", userfiles_path) %>
-        </div>
+        <%= colored_pretty_size(@userfiles_total_size) %>
+        <%= show_total.(@hidden_total,    'hidden',   hidden_icon) %>
+        <%= show_total.(@archived_total,  'archived', archived_icon) %>
+        <%= show_total.(@immutable_total, 'locked',   immutable_icon) %>
+      )
+    </div>
+    <div class="col-xs-4">
+      <div class="pull-right">
+        Search by name: <%= ajax_search_box("name_like", userfiles_path) %>
       </div>
     </div>
   </div>
