@@ -39,7 +39,6 @@ CbrainRailsPortal::Application.routes.draw do
   resources :tool_configs
   resources :tags
   resources :access_profiles
-  resources :feedbacks
 
   # Standard CRUD resources, with extra actions
 

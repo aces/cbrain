@@ -29,12 +29,12 @@
 # object being described and a block. The block will be passed a
 # TableBuilder object to be used to describe the table.
 #   <%=
-#     show_table(@feedbacks, :id => "feedback_table", :class => "resource_list") do |t|
+#     show_table(@messages, :id => "messages_table", :class => "resource_list") do |t|
 #       ...
 #     end
 #   %>
 #
-# Here, @feedbacks is the list of object defining rows in the table. The second argument
+# Here, @messages is the list of object defining rows in the table. The second argument
 # is just a hash table defining HTML attributes on the table.
 module ShowTableHelper
 

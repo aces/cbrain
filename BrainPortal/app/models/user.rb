@@ -102,7 +102,6 @@ class User < ActiveRecord::Base
   has_many                :messages,        :dependent => :destroy
   has_many                :tools,           :dependent => :destroy
   has_many                :tags,            :dependent => :destroy
-  has_many                :feedbacks,       :dependent => :destroy
   has_many                :custom_filters,  :dependent => :destroy
   has_many                :exception_logs,  :dependent => :destroy
 
