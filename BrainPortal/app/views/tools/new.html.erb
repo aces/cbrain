@@ -27,7 +27,6 @@
 <%= form_for @tool, :as => :tool, :url => { :action => "create" }, :datatype => "script", :class => "form-horizontal" do |f| -%>
   <% @bourreaux ||= Bourreau.find_all_accessible_by_user(current_user).all %>
 
-<div class="container-fluid">
   <div class="row">
     <div class="col-xs-12">
       <h2 class="text-center">Add New Tool</h2>
@@ -172,8 +171,4 @@
       <%= f.submit "Create new tool", :class => "btn btn-primary btn-block" %>
     </div>
   </div>
-</div>
-
 <% end %>
-
-

@@ -24,42 +24,39 @@
 
 <% title 'Login' %>
 
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-xs-2 col-sm-offset-5">
-      <div class="well">
-        <%= form_tag session_path, :class => "form-horizontal" do -%>
+<div class="row">
+  <div class="col-xs-2 col-sm-offset-5">
+    <div class="well">
+      <%= form_tag session_path, :class => "form-horizontal" do -%>
 
-            <% if @browser_name =~ /msie/i && @browser_version.to_i < 10 %>
-              The CBRAIN interface does not support <strong>Microsoft
-              Internet Explorer</strong>. You may still proceed, but we recommend
-              using <%= link_to "Chrome", "https://www.google.com/chrome" %>,
-              <%= link_to "Firefox", "http://www.mozilla.org/en-US/firefox/fx/"%>,
-              <%= link_to "Opera", "http://www.opera.com/browser/download/" %>, or
-              <%= link_to "Safari", "http://www.apple.com/safari/download/" %>.
-            <% end %>
+          <% if @browser_name =~ /msie/i && @browser_version.to_i < 10 %>
+            The CBRAIN interface does not support <strong>Microsoft
+            Internet Explorer</strong>. You may still proceed, but we recommend
+            using <%= link_to "Chrome", "https://www.google.com/chrome" %>,
+            <%= link_to "Firefox", "http://www.mozilla.org/en-US/firefox/fx/"%>,
+            <%= link_to "Opera", "http://www.opera.com/browser/download/" %>, or
+            <%= link_to "Safari", "http://www.apple.com/safari/download/" %>.
+          <% end %>
 
-          <div class="row">
-            <div class="col-xs-4"><label for="login">Login</label></div>
-            <div class="col-xs-8"><%= text_field_tag 'login', nil, tabindex: 1, :class => "form-control" %></div>
-          </div>
+        <div class="row">
+          <div class="col-xs-4"><label for="login">Login</label></div>
+          <div class="col-xs-8"><%= text_field_tag 'login', nil, tabindex: 1, :class => "form-control" %></div>
+        </div>
 
-          <div class="row">
-            <div class="col-xs-4"><label for="password">Password</label></div>
-            <div class="col-xs-8"><%= password_field_tag 'password', nil, tabindex: 2, :class => "form-control" %></div>
-          </div>
+        <div class="row">
+          <div class="col-xs-4"><label for="password">Password</label></div>
+          <div class="col-xs-8"><%= password_field_tag 'password', nil, tabindex: 2, :class => "form-control" %></div>
+        </div>
 
-          <div class="row">
-            <div class="col-xs-8 col-sm-offset-4"><%= submit_tag 'Sign in', tabindex: 3, :class => "btn btn-primary btn-block" %></div>
-          </div>
+        <div class="row">
+          <div class="col-xs-8 col-sm-offset-4"><%= submit_tag 'Sign in', tabindex: 3, :class => "btn btn-primary btn-block" %></div>
+        </div>
 
-          <div class="row">
-            <div class="col-xs-8 col-sm-offset-4"><%= link_to "Forgot your password?", request_password_users_path, :class  => "action_link" %></div>
-          </div>
+        <div class="row">
+          <div class="col-xs-8 col-sm-offset-4"><%= link_to "Forgot your password?", request_password_users_path, :class  => "action_link" %></div>
+        </div>
 
-        <% end -%>
-      </div>
+      <% end -%>
     </div>
   </div>
 </div>
-

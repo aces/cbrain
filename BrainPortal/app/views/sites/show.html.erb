@@ -24,113 +24,109 @@
 
 <% title "Site" %>
 
-<div class="container-fluid">
-  <div class="row menu_bar">
-    <div class="col-xs-12">
-      <div class="well well-sm">
-        <a href="#" class="btn btn-primary help-btn" data-toggle="modal" data-target="#help-modal" data-url="/doc/sites/site_info.html"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
-        <a href="<%= site_path(@site) %>" data-type="script" method="delete" class="btn btn-primary" data-confirm="Are you sure you want to delete '<%= @site.name %>' ?"><span class="glyphicon glyphicon-trash"></span> Delete</a>
-      </div>
+<div class="row menu_bar">
+  <div class="col-xs-12">
+    <div class="well well-sm">
+      <a href="#" class="btn btn-primary help-btn" data-toggle="modal" data-target="#help-modal" data-url="/doc/sites/site_info.html"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
+      <a href="<%= site_path(@site) %>" data-type="script" method="delete" class="btn btn-primary" data-confirm="Are you sure you want to delete '<%= @site.name %>' ?"><span class="glyphicon glyphicon-trash"></span> Delete</a>
     </div>
   </div>
-
-  <div class="row">
-    <div class="col-xs-12">
-      <%= error_messages_for @site, :header_message => "site could not be updated." %>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-xs-12">
-      <%= show_table(@site, :edit_condition => check_role(:admin_user)) do |t| %>
-        <% t.edit_cell(:name) { text_field_tag "site[name]", @site.name } %>
-        <% t.edit_cell(:description, :content => overlay_description(@site.description) ) do %>
-          <%= text_area_tag "site[description]", @site.description, :rows => 10, :class => "form-control" %>
-          The first line should be a short summary, and the rest are for any special notes for the users.
-        <% end %>
-      <% end %>
-
-      <%= show_table(@site, :header => 'Resources') do |t| %>
-        <% t.cell("Managers", :show_width => 2) do %>
-          <%= array_to_table(@site.managers.sort{|a, b| a.login.casecmp(b.login)}, :min_data => 6, :table_class => 'table table-bordered') {|u,r,c| link_to_user_with_tooltip(u)} %>
-        <% end %>
-        <%
-          t.blank_row
-          t.cell("Users")            { index_count_filter @site.users.count,  :users,  {:site_id => @site.id} }
-          t.cell("Projects")         { index_count_filter @site.groups.count, :groups, {:site_id => @site.id} }
-          t.cell("Files")            { @site.userfiles_find_all.count }
-          t.cell("Data Providers")   { @site.data_providers_find_all.count }
-          t.cell("Remote Resources") { @site.remote_resources_find_all.count }
-        %>
-      <% end %>
-
-      <div class="panel panel-primary">
-        <div class="panel-heading">Membership</div>
-          <table class="table table-condensed">
-            <tr>
-              <th>
-                Users
-              </th>
-              <th>
-                Projects
-              </th>
-              <th>Data Providers</th>
-              <th>Remote Resources</th>
-            </tr>
-            <tr>
-              <td><%= array_to_table(@site.users.all.sort{|a, b| a.login.casecmp(b.login)}, :min_data => 2, :table_class => 'table table-bordered table-condensed table-striped') {|u,r,c| link_to_user_with_tooltip(u)} %></td>
-              <td><%= array_to_table(@site.groups.all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'table table-bordered table-condensed table-striped') {|g,r,c| link_to_group_if_accessible(g)} %></td>
-              <td><%= array_to_table(@site.data_providers_find_all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'table table-bordered table-condensed table-striped') {|d,r,c| link_to_data_provider_if_accessible(d)} %></td>
-              <td><%= array_to_table(@site.remote_resources_find_all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'table table-bordered table-condensed table-striped') {|b,r,c| link_to_bourreau_if_accessible(b)} %></td>
-            </tr>
-            <tr>
-              <td>
-                <% if check_role(:admin_user) %>
-                  <%= form_for(@site) do |f| %>
-                      <table class="table table-condensed table-striped">
-                        <tr>
-                          <td>Login</td>
-                          <td>Regular User</td>
-                          <td>Site Manager</td>
-                        </tr>
-                        <% for user in User.all.sort { |a,b| a.full_name.casecmp(b.full_name) } %>
-                          <tr>
-                            <td><%= link_to_user_with_tooltip(user) -%></td>
-                            <td><%= check_box_tag("site[user_ids][]", user.id, @site.users.include?(user)) %></td>
-                            <td><%= check_box_tag("site[manager_ids][]", user.id, @site.managers.include?(user)) %></td>
-                          </tr>
-                        <% end %>
-                      </table>
-
-                      <%= f.submit "Update Users", :name => :update_users, :class => "btn btn-primary btn-block" %>
-
-                  <% end %>
-                <% end %>
-              </td>
-              <td>
-                <% if check_role(:admin_user) %>
-                  <%= form_for(@site) do |f| %>
-                    <%= render :partial => 'shared/group_tables', :locals => {:model => @site} %><br>
-                    <%= f.submit 'Update Projects', :name => :update_groups, :class => "btn btn-primary btn-block" %>
-                  <% end %>
-                <% end %>
-              </td>
-              <td>
-
-              </td>
-              <td>
-
-              </td>
-            </tr>
-          </table>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-xs-12"><%= render :partial => "layouts/log_report", :locals  => { :log  => @site.getlog, :title => 'Site Log' } %></div>
-  </div>
-
 </div>
 
+<div class="row">
+  <div class="col-xs-12">
+    <%= error_messages_for @site, :header_message => "site could not be updated." %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <%= show_table(@site, :edit_condition => check_role(:admin_user)) do |t| %>
+      <% t.edit_cell(:name) { text_field_tag "site[name]", @site.name } %>
+      <% t.edit_cell(:description, :content => overlay_description(@site.description) ) do %>
+        <%= text_area_tag "site[description]", @site.description, :rows => 10, :class => "form-control" %>
+        The first line should be a short summary, and the rest are for any special notes for the users.
+      <% end %>
+    <% end %>
+
+    <%= show_table(@site, :header => 'Resources') do |t| %>
+      <% t.cell("Managers", :show_width => 2) do %>
+        <%= array_to_table(@site.managers.sort{|a, b| a.login.casecmp(b.login)}, :min_data => 6, :table_class => 'table table-bordered') {|u,r,c| link_to_user_with_tooltip(u)} %>
+      <% end %>
+      <%
+        t.blank_row
+        t.cell("Users")            { index_count_filter @site.users.count,  :users,  {:site_id => @site.id} }
+        t.cell("Projects")         { index_count_filter @site.groups.count, :groups, {:site_id => @site.id} }
+        t.cell("Files")            { @site.userfiles_find_all.count }
+        t.cell("Data Providers")   { @site.data_providers_find_all.count }
+        t.cell("Remote Resources") { @site.remote_resources_find_all.count }
+      %>
+    <% end %>
+
+    <div class="panel panel-primary">
+      <div class="panel-heading">Membership</div>
+        <table class="table table-condensed">
+          <tr>
+            <th>
+              Users
+            </th>
+            <th>
+              Projects
+            </th>
+            <th>Data Providers</th>
+            <th>Remote Resources</th>
+          </tr>
+          <tr>
+            <td><%= array_to_table(@site.users.all.sort{|a, b| a.login.casecmp(b.login)}, :min_data => 2, :table_class => 'table table-bordered table-condensed table-striped') {|u,r,c| link_to_user_with_tooltip(u)} %></td>
+            <td><%= array_to_table(@site.groups.all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'table table-bordered table-condensed table-striped') {|g,r,c| link_to_group_if_accessible(g)} %></td>
+            <td><%= array_to_table(@site.data_providers_find_all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'table table-bordered table-condensed table-striped') {|d,r,c| link_to_data_provider_if_accessible(d)} %></td>
+            <td><%= array_to_table(@site.remote_resources_find_all.sort{|a, b| a.name.casecmp(b.name)}, :min_data => 2, :table_class => 'table table-bordered table-condensed table-striped') {|b,r,c| link_to_bourreau_if_accessible(b)} %></td>
+          </tr>
+          <tr>
+            <td>
+              <% if check_role(:admin_user) %>
+                <%= form_for(@site) do |f| %>
+                    <table class="table table-condensed table-striped">
+                      <tr>
+                        <td>Login</td>
+                        <td>Regular User</td>
+                        <td>Site Manager</td>
+                      </tr>
+                      <% for user in User.all.sort { |a,b| a.full_name.casecmp(b.full_name) } %>
+                        <tr>
+                          <td><%= link_to_user_with_tooltip(user) -%></td>
+                          <td><%= check_box_tag("site[user_ids][]", user.id, @site.users.include?(user)) %></td>
+                          <td><%= check_box_tag("site[manager_ids][]", user.id, @site.managers.include?(user)) %></td>
+                        </tr>
+                      <% end %>
+                    </table>
+
+                    <%= f.submit "Update Users", :name => :update_users, :class => "btn btn-primary btn-block" %>
+
+                <% end %>
+              <% end %>
+            </td>
+            <td>
+              <% if check_role(:admin_user) %>
+                <%= form_for(@site) do |f| %>
+                  <%= render :partial => 'shared/group_tables', :locals => {:model => @site} %><br>
+                  <%= f.submit 'Update Projects', :name => :update_groups, :class => "btn btn-primary btn-block" %>
+                <% end %>
+              <% end %>
+            </td>
+            <td>
+
+            </td>
+            <td>
+
+            </td>
+          </tr>
+        </table>
+    </div>
+
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12"><%= render :partial => "layouts/log_report", :locals  => { :log  => @site.getlog, :title => 'Site Log' } %></div>
+</div>

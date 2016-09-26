@@ -24,191 +24,187 @@
 
 <% title 'Edit Tool Configuration' %>
 
+<div class="row">
+  <div class="col-xs-12">
+    <h3 class="text-center">Edit Tool Configuration</h3>
+  </div>
+</div>
+
+<%= form_for @tool_config, :as => :tool_config, :url => { :controller => :tool_configs, :action => :update, :id => (@tool_config.id || "NEW") }, :html  => { :method  => :put, :class => "form-horizontal" } do |f| %>
 
 
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-xs-12">
-      <h3 class="text-center">Edit Tool Configuration</h3>
+  <%= hidden_field_tag "tool_config[tool_id]",     @tool_config.tool_id %>
+  <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
+
+<div class="row">
+  <div class="col-xs-12">
+    <%= error_messages_for @tool_config %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <div class="alert alert-warning" role="alert">
+      <strong>Important note:</strong>
+      <% if @tool_config.tool_id %>
+        This form applies to tool <strong><%= @tool_config.tool.name %></strong>
+      <% else %>
+        This form applies to <strong>ALL tools</strong>
+      <% end %>
+
+      <% if @tool_config.bourreau_id.blank? %>
+        running on <strong>ALL Execution Servers</strong>.<br>
+      <% else %>
+        running on Execution Server <strong><%= @tool_config.bourreau.name %></strong>.
+      <% end %>
     </div>
   </div>
+</div>
 
-  <%= form_for @tool_config, :as => :tool_config, :url => { :controller => :tool_configs, :action => :update, :id => (@tool_config.id || "NEW") }, :html  => { :method  => :put, :class => "form-horizontal" } do |f| %>
-
-
-    <%= hidden_field_tag "tool_config[tool_id]",     @tool_config.tool_id %>
-    <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
-
-  <div class="row">
-    <div class="col-xs-12">
-      <%= error_messages_for @tool_config %>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-xs-12">
-      <div class="alert alert-warning" role="alert">
-        <strong>Important note:</strong>
-        <% if @tool_config.tool_id %>
-          This form applies to tool <strong><%= @tool_config.tool.name %></strong>
-        <% else %>
-          This form applies to <strong>ALL tools</strong>
-        <% end %>
-
-        <% if @tool_config.bourreau_id.blank? %>
-          running on <strong>ALL Execution Servers</strong>.<br>
-        <% else %>
-          running on Execution Server <strong><%= @tool_config.bourreau.name %></strong>.
-        <% end %>
-      </div>
-    </div>
-  </div>
-
-  <div class="row">
-    <% if @tool_config.tool_id && @tool_config.bourreau_id %>
-      <div class="col-xs-6">
-        <div class="panel panel-primary">
-          <div class="panel-heading">Bourreau-Specific Configuration <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#bourreau-panel"></span></div>
-          <div class="panel-body collapse in" id="bourreau-panel">
-            <div class="row" title="Project access for this configuration.">
-              <div class="col-xs-4"><%= f.label :group_id, "Available to members of project:" %></div>
-              <div class="col-xs-8"><%= group_select "tool_config[group_id]", @tool_config.group_id, { :class => "form-control" } %></div>
-            </div>
-            <div class="row" title="Version.">
-              <div class="col-xs-4"><%= f.label :version_name, "Version:" %></div>
-              <div class="col-xs-8">
-                <%= f.text_field :version_name, :class => "form-control" %>
-                Must be a simple string that represent a short identifier for the version. First character must be alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'
-              </div>
-            </div>
-            <div class="row" title="Brief description for this configuration.">
-              <div class="col-xs-4"><%= f.label :description, "Description:" %></div>
-              <div class="col-xs-8">
-                <%= f.text_area :description, :rows => 10, :class => "form-control" %>
-                The first line must be a short summary, and the rest are for any special notes for the users.
-              </div>
-            </div>
-            <div class="row" title="Suggested number of CPUs to use in parallel, per task">
-              <div class="col-xs-4"><%= f.label :ncpus, "Suggested number of CPUs to use in parallel, per task:" %></div>
-              <div class="col-xs-8"><%= f.select :ncpus, [ 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 32, 36, 40, 48, 56, 64, 128, 192, 256, 320, 384, 512 ], {}, { :class => "form-control"} %></div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-    <% end %>
-
-    <% context = @tool_config.tool_id ? "tool" : "Execution Server" %>
+<div class="row">
+  <% if @tool_config.tool_id && @tool_config.bourreau_id %>
     <div class="col-xs-6">
       <div class="panel panel-primary">
-        <div class="panel-heading" title="Environment variables needed for this <%= context %>">Environment Variables <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#environment-panel"></span></div>
-        <div class="panel-body collapse in" id="environment-panel">
-          <% @tool_config.env_array.each do |env_name_value| %>
-            <% env_name  = env_name_value[0] %>
-            <% env_value = env_name_value[1] %>
-            <div class="row">
-              <div class="col-xs-5">
-                <div class="row">
-                  <div class="col-xs-2">Name</div>
-                  <div class="col-xs-10"><%= text_field_tag 'env_list[][name]',  env_name, :class => "form-control" %></div>
-                </div>
-              </div>
-              <div class="col-xs-7">
-                <div class="row">
-                  <div class="col-xs-2">Value</div>
-                  <div class="col-xs-10"><%= text_field_tag 'env_list[][value]', env_value, :class => "form-control" %></div>
-                </div>
-              </div>
-            </div>
-          <% end %>
-
-          <% 1.upto(5) do %>
-            <div class="row">
-              <div class="col-xs-5">
-                <div class="row">
-                  <div class="col-xs-2">Name</div>
-                  <div class="col-xs-10"><%= text_field_tag 'env_list[][name]',  "", :class => "form-control" %></div>
-                </div>
-              </div>
-              <div class="col-xs-7">
-                <div class="row">
-                  <div class="col-xs-2">Value</div>
-                  <div class="col-xs-10"><%= text_field_tag 'env_list[][value]', "", :class => "form-control" %></div>
-                </div>
-              </div>
-            </div>
-          <% end %>
-
-            <div class="row">
-              <div class="col-xs-12">
-                In the generated script, the values shown here will be placed in double quotes automatically.
-              </div>
-            </div>
-
+        <div class="panel-heading">Bourreau-Specific Configuration <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#bourreau-panel"></span></div>
+        <div class="panel-body collapse in" id="bourreau-panel">
+          <div class="row" title="Project access for this configuration.">
+            <div class="col-xs-4"><%= f.label :group_id, "Available to members of project:" %></div>
+            <div class="col-xs-8"><%= group_select "tool_config[group_id]", @tool_config.group_id, { :class => "form-control" } %></div>
           </div>
-        </div>
-      </div>
-
-      <div class="col-xs-6">
-        <div class="panel panel-primary">
-          <div class="panel-heading">BASH Options <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#bash-panel"></span></div>
-          <div class="panel-body collapse in" id="bash-panel">
-            <div class="row">
-              <div class="col-xs-4"><%= f.label :script_prologue, "BASH initialization prologue:" %></div>
-              <div class="col-xs-8">
-                <%= f.text_area :script_prologue, :rows => 10, :class => "form-control" %>
-                This is a multi line partial BASH script. It can use the environment variables defined above,
-                 and do anything else you feel is needed to activate this configuration.
-                 Note that this script should usually be silent, as outputing text (like in <em>echo</em> statements)
-                 could interfere with the proper processing of the task's output.
-              </div>
+          <div class="row" title="Version.">
+            <div class="col-xs-4"><%= f.label :version_name, "Version:" %></div>
+            <div class="col-xs-8">
+              <%= f.text_field :version_name, :class => "form-control" %>
+              Must be a simple string that represent a short identifier for the version. First character must be alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'
             </div>
-            <div class="row">
-              <div class="col-xs-4"><%= f.label :merge_from_tc_id, "Option: merge from existing config" %></div>
-              <div class="col-xs-8">
-                <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...', :class => "form-control"  } %>
-                <%= submit_tag 'Merge Configuration', :name => :merge, :class => "btn btn-primary btn-block" %>
-                  <% if @tool_config.tool_id && @tool_config.bourreau_id %>
-                    The description, environment variables and prologue script will be appended to whatever
-                    values are currently in the form. The project and suggested number of CPUs will be changed.
-                  <% else %>
-                    The environment variables and prologue script will be appended to whatever
-                    values are currently in the form.
-                  <% end %>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-xs-4"><%= f.label :docker_image, "Docker image" %></div>
-              <div class="col-xs-8">
-                <%= f.text_field :docker_image, :class => "form-control" %>
-                The name and tag of the Docker image in which the tool is installed, for instance "centos:latest". This name refers to the Docker index accessed by the Bourreau, which is configured manually in the Bourreau for now.
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-xs-4"><%= f.label :extra_qsub_args, "Extra 'qsub' options" %></div>
-              <div class="col-xs-8">
-                <%= f.text_field :extra_qsub_args, :class => "form-control" %>
-                <b>Note:</b> This option will be appended to the extra 'qsub' option defined at the bourreau level.
-              </div>
-            </div>
-
           </div>
-        </div>
-      </div>
+          <div class="row" title="Brief description for this configuration.">
+            <div class="col-xs-4"><%= f.label :description, "Description:" %></div>
+            <div class="col-xs-8">
+              <%= f.text_area :description, :rows => 10, :class => "form-control" %>
+              The first line must be a short summary, and the rest are for any special notes for the users.
+            </div>
+          </div>
+          <div class="row" title="Suggested number of CPUs to use in parallel, per task">
+            <div class="col-xs-4"><%= f.label :ncpus, "Suggested number of CPUs to use in parallel, per task:" %></div>
+            <div class="col-xs-8"><%= f.select :ncpus, [ 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 32, 36, 40, 48, 56, 64, 128, 192, 256, 320, 384, 512 ], {}, { :class => "form-control"} %></div>
+          </div>
 
-      <div class="col-xs-12">
-        <%= submit_tag "Save Configuration", :class => "btn btn-primary btn-block" %>
+        </div>
       </div>
     </div>
   <% end %>
 
-  <div class="row">
-    <div class="col-xs-12">
-     <% if (@tool_config.env_array && @tool_config.env_array.size > 0) ||
-           ! @tool_config.description.blank? || ! @tool_config.script_prologue.blank? %>
-       <h3>Preview of generated BASH script</h3>
-       <pre class="script_preview"><%= @tool_config.to_bash_prologue %></pre>
-     <% end %>
+  <% context = @tool_config.tool_id ? "tool" : "Execution Server" %>
+  <div class="col-xs-6">
+    <div class="panel panel-primary">
+      <div class="panel-heading" title="Environment variables needed for this <%= context %>">Environment Variables <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#environment-panel"></span></div>
+      <div class="panel-body collapse in" id="environment-panel">
+        <% @tool_config.env_array.each do |env_name_value| %>
+          <% env_name  = env_name_value[0] %>
+          <% env_value = env_name_value[1] %>
+          <div class="row">
+            <div class="col-xs-5">
+              <div class="row">
+                <div class="col-xs-2">Name</div>
+                <div class="col-xs-10"><%= text_field_tag 'env_list[][name]',  env_name, :class => "form-control" %></div>
+              </div>
+            </div>
+            <div class="col-xs-7">
+              <div class="row">
+                <div class="col-xs-2">Value</div>
+                <div class="col-xs-10"><%= text_field_tag 'env_list[][value]', env_value, :class => "form-control" %></div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <% 1.upto(5) do %>
+          <div class="row">
+            <div class="col-xs-5">
+              <div class="row">
+                <div class="col-xs-2">Name</div>
+                <div class="col-xs-10"><%= text_field_tag 'env_list[][name]',  "", :class => "form-control" %></div>
+              </div>
+            </div>
+            <div class="col-xs-7">
+              <div class="row">
+                <div class="col-xs-2">Value</div>
+                <div class="col-xs-10"><%= text_field_tag 'env_list[][value]', "", :class => "form-control" %></div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+          <div class="row">
+            <div class="col-xs-12">
+              In the generated script, the values shown here will be placed in double quotes automatically.
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
+
+    <div class="col-xs-6">
+      <div class="panel panel-primary">
+        <div class="panel-heading">BASH Options <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#bash-panel"></span></div>
+        <div class="panel-body collapse in" id="bash-panel">
+          <div class="row">
+            <div class="col-xs-4"><%= f.label :script_prologue, "BASH initialization prologue:" %></div>
+            <div class="col-xs-8">
+              <%= f.text_area :script_prologue, :rows => 10, :class => "form-control" %>
+              This is a multi line partial BASH script. It can use the environment variables defined above,
+               and do anything else you feel is needed to activate this configuration.
+               Note that this script should usually be silent, as outputing text (like in <em>echo</em> statements)
+               could interfere with the proper processing of the task's output.
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-4"><%= f.label :merge_from_tc_id, "Option: merge from existing config" %></div>
+            <div class="col-xs-8">
+              <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...', :class => "form-control"  } %>
+              <%= submit_tag 'Merge Configuration', :name => :merge, :class => "btn btn-primary btn-block" %>
+                <% if @tool_config.tool_id && @tool_config.bourreau_id %>
+                  The description, environment variables and prologue script will be appended to whatever
+                  values are currently in the form. The project and suggested number of CPUs will be changed.
+                <% else %>
+                  The environment variables and prologue script will be appended to whatever
+                  values are currently in the form.
+                <% end %>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-4"><%= f.label :docker_image, "Docker image" %></div>
+            <div class="col-xs-8">
+              <%= f.text_field :docker_image, :class => "form-control" %>
+              The name and tag of the Docker image in which the tool is installed, for instance "centos:latest". This name refers to the Docker index accessed by the Bourreau, which is configured manually in the Bourreau for now.
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-4"><%= f.label :extra_qsub_args, "Extra 'qsub' options" %></div>
+            <div class="col-xs-8">
+              <%= f.text_field :extra_qsub_args, :class => "form-control" %>
+              <b>Note:</b> This option will be appended to the extra 'qsub' option defined at the bourreau level.
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xs-12">
+      <%= submit_tag "Save Configuration", :class => "btn btn-primary btn-block" %>
+    </div>
+  </div>
+<% end %>
+
+<div class="row">
+  <div class="col-xs-12">
+   <% if (@tool_config.env_array && @tool_config.env_array.size > 0) ||
+         ! @tool_config.description.blank? || ! @tool_config.script_prologue.blank? %>
+     <h3>Preview of generated BASH script</h3>
+     <pre class="script_preview"><%= @tool_config.to_bash_prologue %></pre>
+   <% end %>
   </div>
 </div>

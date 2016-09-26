@@ -22,50 +22,45 @@
 #
 -%>
 
+<% title "Launch " + @task.name %>
 
+<%= form_for(@task, :as => :cbrain_task, :url => { :controller  => :tasks, :action  => :create }, :builder => CbrainTaskFormBuilder, :class => "form-horizontal" ) do |form| -%>
 
-<div class="container-fluid">
+<% # Hidden fields -%>
+<%= hidden_field_tag :tool_id, params[:tool_id] %>
+<% (@task.params[:interface_userfile_ids] || []).each do |id| %>
+  <%= hidden_field_tag "interface_userfile_ids[]".to_la, id %>
+<% end %>
 
-  <% title "Launch " + @task.name %>
-
-  <%= form_for(@task, :as => :cbrain_task, :url => { :controller  => :tasks, :action  => :create }, :builder => CbrainTaskFormBuilder, :class => "form-horizontal" ) do |form| -%>
-
-  <% # Hidden fields -%>
-  <%= hidden_field_tag :tool_id, params[:tool_id] %>
-  <% (@task.params[:interface_userfile_ids] || []).each do |id| %>
-    <%= hidden_field_tag "interface_userfile_ids[]".to_la, id %>
-  <% end %>
-
-  <div class="row">
-    <div class="col-12-sm">
-      <h3 class="text-center">Launch <%= @task.pretty_name %> Task </h3>
-    </div>
+<div class="row">
+  <div class="col-12-sm">
+    <h3 class="text-center">Launch <%= @task.pretty_name %> Task </h3>
   </div>
+</div>
 
-  <div class="row">
-    <div class="col-xs-6">
-      <%= render :partial => 'tasks/control', :locals  => { :form => form } %>
-    </div>
-    <div class="col-xs-6">
-      <% unless @task.class.properties[:no_presets] %>
-        <%= render :partial => "tasks/presets", :locals  => { :form => form } %>
-      <% end %>
-    </div>
+<div class="row">
+  <div class="col-xs-6">
+    <%= render :partial => 'tasks/control', :locals  => { :form => form } %>
   </div>
-
-  <div class="row">
-    <div class="col-xs-12">
-        <%= render :partial => "tasks/params", :locals  => { :form => form } %>
-    </div>
-  </div>
-
-  <div class="row">
-    <% unless @task.class.properties[:no_submit_button] %>
-      <div class="col-xs-12">
-        <%= submit_tag "Start #{@task.pretty_name}", :class => "btn btn-primary btn-block" %>
-      </div>
+  <div class="col-xs-6">
+    <% unless @task.class.properties[:no_presets] %>
+      <%= render :partial => "tasks/presets", :locals  => { :form => form } %>
     <% end %>
   </div>
+</div>
 
+<div class="row">
+  <div class="col-xs-12">
+      <%= render :partial => "tasks/params", :locals  => { :form => form } %>
+  </div>
+</div>
+
+<div class="row">
+  <% unless @task.class.properties[:no_submit_button] %>
+    <div class="col-xs-12">
+      <%= submit_tag "Start #{@task.pretty_name}", :class => "btn btn-primary btn-block" %>
+    </div>
   <% end %>
 </div>
+
+<% end %>

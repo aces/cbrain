@@ -24,34 +24,34 @@
 
 <% title(@task.name + ' Task Information') %>
 
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-xs-12">
-      <!-- PROGRESS BAR -->
-      <% if @task.show_progress_bar? %>
-        <% progress_info = @task.progress_info %>
-        <strong>Progress</strong>
-        <% if progress_info[:message].present? || progress_info[:show_percentage] %>
-      :
-        <% end %>
-        <% if progress_info[:show_percentage] %>
-          <%= progress_info[:percentage].to_i %>%
-        <% end %>
-        <%= progress_info[:message] %>
-        <div id="container" style="width:40%; height:20px; border:1px solid black;">
-              <div id="progress-bar" style="width:<%= progress_info[:percentage] %>%;
-                      background-color:<%= progress_info[:color] %>;
-                height:20px">
-          <br>
-        </div>
-        </div>
+<div class="row">
+  <div class="col-xs-12">
+    <!-- PROGRESS BAR -->
+    <% if @task.show_progress_bar? %>
+      <% progress_info = @task.progress_info %>
+      <strong>Progress</strong>
+      <% if progress_info[:message].present? || progress_info[:show_percentage] %>
+    :
       <% end %>
-    </div>
+      <% if progress_info[:show_percentage] %>
+        <%= progress_info[:percentage].to_i %>%
+      <% end %>
+      <%= progress_info[:message] %>
+      <div id="container" style="width:40%; height:20px; border:1px solid black;">
+            <div id="progress-bar" style="width:<%= progress_info[:percentage] %>%;
+                    background-color:<%= progress_info[:color] %>;
+              height:20px">
+        <br>
+      </div>
+      </div>
+    <% end %>
   </div>
+</div>
 
-  <% if @task.bourreau.online? %>
-    <div class="row menu_bar">
-      <div class="col-xs-12">
+<% if @task.bourreau.online? %>
+  <div class="row menu_bar">
+    <div class="col-xs-12">
+      <div class="well well-sm">
         <!-- TERMINATE & REMOVE -->
         <% if @task.status =~ /Queued|On Hold|On CPU|Suspended/ %>
           <%= link_to 'Terminate Task', { :action => 'operation', :operation => 'terminate', 'tasklist[]' => @task.id }, :confirm => "Are you sure you want to terminate this task?", :class  => "btn btn-primary", :method => :post %>
@@ -97,219 +97,219 @@
 
       </div>
     </div>
-  <% end %>
+  </div>
+<% end %>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <%= show_table(@task) do |t| %>
+<div class="row">
+  <div class="col-xs-12">
+    <%= show_table(@task) do |t| %>
 
-        <% t.cell("Task Name") do %>
-          <%= @task.name %><%= " (#{@task.pretty_name})" if @task.name != @task.pretty_name %>
+      <% t.cell("Task Name") do %>
+        <%= @task.name %><%= " (#{@task.pretty_name})" if @task.name != @task.pretty_name %>
+      <% end %>
+      <% t.cell("Task Description") { h(@task.description).gsub("\n", "<br>").html_safe } %>
+
+      <% t.cell("Execution Server") { link_to_bourreau_if_accessible(@task.bourreau) }  %>
+      <% t.cell("Owner") { link_to_user_with_tooltip(@task.user) } %>
+
+      <% t.cell("Tool Version") do %>
+        <% if current_user.has_role?(:admin_user) && @task.tool_config %>
+          <%= link_to @task.tool_config.version_name, tool_config_path(@task.tool_config) %>
+        <% else %>
+          <%= @task.tool_config ? overlay_description(@task.tool_config.description) : "None" %>
         <% end %>
-        <% t.cell("Task Description") { h(@task.description).gsub("\n", "<br>").html_safe } %>
+      <% end %>
+      <% t.cell("Project") { link_to_group_if_accessible(@task.group) } %>
 
-        <% t.cell("Execution Server") { link_to_bourreau_if_accessible(@task.bourreau) }  %>
-        <% t.cell("Owner") { link_to_user_with_tooltip(@task.user) } %>
+      <% t.cell("Current Status") { colored_status(@task.status) } %>
+      <% t.cell("Time Submitted") { to_localtime(@task.created_at,:datetime) }%>
 
-        <% t.cell("Tool Version") do %>
-          <% if current_user.has_role?(:admin_user) && @task.tool_config %>
-            <%= link_to @task.tool_config.version_name, tool_config_path(@task.tool_config) %>
-          <% else %>
-            <%= @task.tool_config ? overlay_description(@task.tool_config.description) : "None" %>
-          <% end %>
-        <% end %>
-        <% t.cell("Project") { link_to_group_if_accessible(@task.group) } %>
+      <% t.attribute_cell(:run_number) %>
+      <% t.cell("Last Updated") { to_localtime(@task.updated_at,:datetime) }%>
 
-        <% t.cell("Current Status") { colored_status(@task.status) } %>
-        <% t.cell("Time Submitted") { to_localtime(@task.created_at,:datetime) }%>
+      <% t.cell("Data Provider For Results") { link_to_data_provider_if_accessible(@task.results_data_provider_id) } %>
+      <% t.empty_cell %>
 
-        <% t.attribute_cell(:run_number) %>
-        <% t.cell("Last Updated") { to_localtime(@task.updated_at,:datetime) }%>
+      <% t.blank_row %>
 
-        <% t.cell("Data Provider For Results") { link_to_data_provider_if_accessible(@task.results_data_provider_id) } %>
+      <% if current_user.has_role?(:admin_user) %>
+
+        <% t.attribute_cell(:cluster_jobid, :header => "Cluster Job's ID") %>
         <% t.empty_cell %>
 
-        <% t.blank_row %>
-
-        <% if current_user.has_role?(:admin_user) %>
-
-          <% t.attribute_cell(:cluster_jobid, :header => "Cluster Job's ID") %>
-          <% t.empty_cell %>
-
-          <% t.cell("Cluster Job's Work Directory", :show_width => 2) { @task.full_cluster_workdir || "(Not yet created or erased)" } %>
-        <% end %>
-
-        <% t.cell("Size of Work Directory") do %>
-          <% if @task.share_wd_tid %>
-            ( Shared with task: <%= link_to_task_if_accessible(@task.share_wd_tid) %> )
-          <% elsif @task.cluster_workdir %>
-            <%= colored_pretty_size(@task.cluster_workdir_size, :blank => "Unknown") %>
-          <% else %>
-            (None)
-          <% end %>
-        <% end %>
-
-        <% t.cell("Archiving Status") do %>
-          <% as = @task.archived_status %>
-          <%= colored_archived_status(as) %>
-          <% if ! as %>
-            (Not archived)
-          <% elsif as == :workdir %>
-            : Archived on cluster.
-          <% else %>
-            <% ar_file = @task.workdir_archive %>
-            : Archived as file <%= link_to_userfile_if_accessible(ar_file) %> <%= colored_pretty_size(ar_file.size) if ar_file %>
-          <% end %>
-        <% end %>
-
+        <% t.cell("Cluster Job's Work Directory", :show_width => 2) { @task.full_cluster_workdir || "(Not yet created or erased)" } %>
       <% end %>
+
+      <% t.cell("Size of Work Directory") do %>
+        <% if @task.share_wd_tid %>
+          ( Shared with task: <%= link_to_task_if_accessible(@task.share_wd_tid) %> )
+        <% elsif @task.cluster_workdir %>
+          <%= colored_pretty_size(@task.cluster_workdir_size, :blank => "Unknown") %>
+        <% else %>
+          (None)
+        <% end %>
+      <% end %>
+
+      <% t.cell("Archiving Status") do %>
+        <% as = @task.archived_status %>
+        <%= colored_archived_status(as) %>
+        <% if ! as %>
+          (Not archived)
+        <% elsif as == :workdir %>
+          : Archived on cluster.
+        <% else %>
+          <% ar_file = @task.workdir_archive %>
+          : Archived as file <%= link_to_userfile_if_accessible(ar_file) %> <%= colored_pretty_size(ar_file.size) if ar_file %>
+        <% end %>
+      <% end %>
+
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <div class="panel panel-primary">
+      <div class="panel-heading">Parameters
+      <span class="pull-right">
+        <ul class="nav panel-tabs">
+          <li class="active"><a href="#summary-tab" data-toggle="tab">Summary</a></li>
+          <li><a href="#raw-tab" data-toggle="tab">Raw</a></li>
+        </ul>
+      </span>
+      </div>
+      <div class="panel-body">
+        <div class="tab-content">
+          <div class="tab-pane active" id="summary-tab">
+            <% begin %>
+              <% if @task.class.respond_to?(:raw_partial) %>
+                <%= render :inline => raw_partial.(:show_params), :locals => { :task => @task, :params  => @task.params } %>
+              <% else %>
+                <%= render :partial => task_partial('show_params'), :locals => { :task => @task, :params  => @task.params } %>
+              <% end %>
+            <% rescue ActionView::MissingTemplate %>
+              <pre>Problem loading summary view (no template provided by task author).</pre>
+            <% rescue => ex %>
+              <pre>Problem loading summary view (template error).</pre>
+              <% Message.send_internal_error_message(nil,"Show summary of params for task #{@task.name}",ex) rescue true %>
+            <% end %>
+          </div>
+          <div class="tab-pane" id="raw-tab">
+            <pre><%= @task.params.to_yaml :root => "Params" -%></pre>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+</div>
 
+<div class="row">
+  <div class="col-xs-12">
+    <div class="panel panel-primary">
+      <div class="panel-heading">Processing Log</div>
+      <div class="panel-body">
+        <pre><%= @task.getlog -%></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%
+   prereqs     = @task.prerequisites || {}
+   prereqs     = {} unless prereqs.is_a?(Hash)
+   for_setup   = prereqs[:for_setup] || prereqs["for_setup"] || {}
+   for_setup   = {} unless for_setup.is_a?(Hash)
+   for_postpro = prereqs[:for_post_processing] || prereqs["for_post_processing"] || {}
+   for_postpro = {} unless for_postpro.is_a?(Hash)
+%>
+
+
+<% unless for_setup.empty? && for_postpro.empty? %>
   <div class="row">
     <div class="col-xs-12">
       <div class="panel panel-primary">
-        <div class="panel-heading">Parameters
+        <div class="panel-heading">Prerequisites</div>
+        <div class="panel-body">
+          <table class="simple show_task_prerequisites table table-striped">
+            <% if for_setup.size > 0 %>
+              <tr>
+                <th class="center_align_heading" colspan="2">Setup Prerequisites</th>
+              </tr>
+              <%= render :partial => 'show_prereqs', :locals  => { :for_this  => for_setup } %>
+            <% end %>
+            <% if for_postpro.size > 0 %>
+              <tr>
+                <th class="center_align_heading" colspan="2">Post Processing Prerequisites</th>
+              </tr>
+              <%= render :partial => 'show_prereqs', :locals  => { :for_this  => for_postpro } %>
+            <% end %>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<%
+  prettystdout = @task.cluster_stdout || "(None)"
+  prettystderr = @task.cluster_stderr || "(None)"
+  prettyscript = @task.script_text    || "(None)"
+%>
+
+<div class="row">
+  <div class="col-xs-12">
+    <div class="panel panel-primary">
+      <div class="panel-heading">Cluster Job's Captured Output
         <span class="pull-right">
           <ul class="nav panel-tabs">
-            <li class="active"><a href="#summary-tab" data-toggle="tab">Summary</a></li>
-            <li><a href="#raw-tab" data-toggle="tab">Raw</a></li>
+            <li class="active"><a href="#stdout-tab" data-toggle="tab">Standard Out</a></li>
+            <li><a href="#stderr-tab" data-toggle="tab">Standard Error</a></li>
+            <li><a href="#script-tab" data-toggle="tab">Script</a></li>
           </ul>
         </span>
-        </div>
-        <div class="panel-body">
-          <div class="tab-content">
-            <div class="tab-pane active" id="summary-tab">
-              <% begin %>
-                <% if @task.class.respond_to?(:raw_partial) %>
-                  <%= render :inline => raw_partial.(:show_params), :locals => { :task => @task, :params  => @task.params } %>
-                <% else %>
-                  <%= render :partial => task_partial('show_params'), :locals => { :task => @task, :params  => @task.params } %>
-                <% end %>
-              <% rescue ActionView::MissingTemplate %>
-                <pre>Problem loading summary view (no template provided by task author).</pre>
-              <% rescue => ex %>
-                <pre>Problem loading summary view (template error).</pre>
-                <% Message.send_internal_error_message(nil,"Show summary of params for task #{@task.name}",ex) rescue true %>
-              <% end %>
-            </div>
-            <div class="tab-pane" id="raw-tab">
-              <pre><%= @task.params.to_yaml :root => "Params" -%></pre>
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
-  </div>
+      <div class="panel-body">
+        <% if @task.workdir_archived? %>
+          Since this task is archived, outputs aren't available right now.
+        <% else %>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <div class="panel panel-primary">
-        <div class="panel-heading">Processing Log</div>
-        <div class="panel-body">
-          <pre><%= @task.getlog -%></pre>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <%
-     prereqs     = @task.prerequisites || {}
-     prereqs     = {} unless prereqs.is_a?(Hash)
-     for_setup   = prereqs[:for_setup] || prereqs["for_setup"] || {}
-     for_setup   = {} unless for_setup.is_a?(Hash)
-     for_postpro = prereqs[:for_post_processing] || prereqs["for_post_processing"] || {}
-     for_postpro = {} unless for_postpro.is_a?(Hash)
-  %>
-
-
-  <% unless for_setup.empty? && for_postpro.empty? %>
-    <div class="row">
-      <div class="col-xs-12">
-        <div class="panel panel-primary">
-          <div class="panel-heading">Prerequisites</div>
-          <div class="panel-body">
-            <table class="simple show_task_prerequisites table table-striped">
-              <% if for_setup.size > 0 %>
-                <tr>
-                  <th class="center_align_heading" colspan="2">Setup Prerequisites</th>
-                </tr>
-                <%= render :partial => 'show_prereqs', :locals  => { :for_this  => for_setup } %>
+          <% if @task.run_number > 1 %>
+            <strong>Outputs are available for several runs:</strong>
+            <% 1.upto(@task.run_number) do |rn| %>
+              <% if rn == @run_number.to_i %>
+                <%= rn %>
+              <% else %>
+                <%= link_to rn.to_s, :controller => :tasks, :action => :show, :id => @task.id, :run_number => rn %>
               <% end %>
-              <% if for_postpro.size > 0 %>
-                <tr>
-                  <th class="center_align_heading" colspan="2">Post Processing Prerequisites</th>
-                </tr>
-                <%= render :partial => 'show_prereqs', :locals  => { :for_this  => for_postpro } %>
-              <% end %>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  <% end %>
-
-  <%
-    prettystdout = @task.cluster_stdout || "(None)"
-    prettystderr = @task.cluster_stderr || "(None)"
-    prettyscript = @task.script_text    || "(None)"
-  %>
-
-  <div class="row">
-    <div class="col-xs-12">
-      <div class="panel panel-primary">
-        <div class="panel-heading">Cluster Job's Captured Output
-          <span class="pull-right">
-            <ul class="nav panel-tabs">
-              <li class="active"><a href="#stdout-tab" data-toggle="tab">Standard Out</a></li>
-              <li><a href="#stderr-tab" data-toggle="tab">Standard Error</a></li>
-              <li><a href="#script-tab" data-toggle="tab">Script</a></li>
-            </ul>
-          </span>
-        </div>
-        <div class="panel-body">
-          <% if @task.workdir_archived? %>
-            Since this task is archived, outputs aren't available right now.
-          <% else %>
-
-            <% if @task.run_number > 1 %>
-              <strong>Outputs are available for several runs:</strong>
-              <% 1.upto(@task.run_number) do |rn| %>
-                <% if rn == @run_number.to_i %>
-                  <%= rn %>
-                <% else %>
-                  <%= link_to rn.to_s, :controller => :tasks, :action => :show, :id => @task.id, :run_number => rn %>
-                <% end %>
-              <% end %>
-              <p>
             <% end %>
-
-            <% all_lim = 999999 %>
-            <div class="tab-content">
-              <div class="tab-pane active" id="stdout-tab">
-                <% if @stdout_lim <= prettystdout.count("\n") && @stdout_lim != all_lim %>
-                  <% new_lim = @stdout_lim * 2 %>
-                  <strong>Only the last <%= @stdout_lim %> lines are shown here. See more lines of Standard Output:</strong>
-                  <%= link_to new_lim, :controller => :tasks, :action => :show, :id => @task.id, :run_number => @run_number, :stdout_lim => new_lim, :stderr_lim => @stderr_lim %>
-                  <%= link_to "All",   :controller => :tasks, :action => :show, :id => @task.id, :run_number => @run_number, :stdout_lim => all_lim, :stderr_lim => @stderr_lim %>
-                <% end %>
-                <pre class="standard_out"><%= prettystdout -%></pre>
-              </div>
-              <div class="tab-pane" id="stderr-tab">
-                <% if @stderr_lim <= prettystderr.count("\n") &&  @stderr_lim != all_lim %>
-                  <% new_lim = @stderr_lim * 2 %>
-                  <strong>Only the last <%= @stderr_lim %> lines are shown here. See more lines of Standard Error:</strong>
-                  <%= link_to new_lim, :controller => :tasks, :action => :show, :id => @task.id, :run_number => @run_number, :stdout_lim => @stdout_lim, :stderr_lim => new_lim %>
-                  <%= link_to "All",   :controller => :tasks, :action => :show, :id => @task.id, :run_number => @run_number, :stdout_lim => @stdout_lim, :stderr_lim => all_lim %>
-                <% end %>
-                <pre class="standard_out"><%= prettystderr -%></pre>
-              </div>
-              <div class="tab-pane" id="script-tab">
-                <pre><%= prettyscript %></pre>
-              </div>
-            </div>
+            <p>
           <% end %>
-        </div>
+
+          <% all_lim = 999999 %>
+          <div class="tab-content">
+            <div class="tab-pane active" id="stdout-tab">
+              <% if @stdout_lim <= prettystdout.count("\n") && @stdout_lim != all_lim %>
+                <% new_lim = @stdout_lim * 2 %>
+                <strong>Only the last <%= @stdout_lim %> lines are shown here. See more lines of Standard Output:</strong>
+                <%= link_to new_lim, :controller => :tasks, :action => :show, :id => @task.id, :run_number => @run_number, :stdout_lim => new_lim, :stderr_lim => @stderr_lim %>
+                <%= link_to "All",   :controller => :tasks, :action => :show, :id => @task.id, :run_number => @run_number, :stdout_lim => all_lim, :stderr_lim => @stderr_lim %>
+              <% end %>
+              <pre class="standard_out"><%= prettystdout -%></pre>
+            </div>
+            <div class="tab-pane" id="stderr-tab">
+              <% if @stderr_lim <= prettystderr.count("\n") &&  @stderr_lim != all_lim %>
+                <% new_lim = @stderr_lim * 2 %>
+                <strong>Only the last <%= @stderr_lim %> lines are shown here. See more lines of Standard Error:</strong>
+                <%= link_to new_lim, :controller => :tasks, :action => :show, :id => @task.id, :run_number => @run_number, :stdout_lim => @stdout_lim, :stderr_lim => new_lim %>
+                <%= link_to "All",   :controller => :tasks, :action => :show, :id => @task.id, :run_number => @run_number, :stdout_lim => @stdout_lim, :stderr_lim => all_lim %>
+              <% end %>
+              <pre class="standard_out"><%= prettystderr -%></pre>
+            </div>
+            <div class="tab-pane" id="script-tab">
+              <pre><%= prettyscript %></pre>
+            </div>
+          </div>
+        <% end %>
       </div>
     </div>
   </div>
