@@ -24,13 +24,20 @@
 
 <%
   css_read = "message_" + (mess.read? ? "read" : "unread")
-  css_type = "#{mess.message_type}_display"
+
+  if mess.message_type == "notice"
+    css_type = "success"
+  elsif mess.message_type == "error"
+    css_type = "danger"
+  elsif mess.message_type == "system"
+    css_type = "info"
+  end
 
   span  = 4
   span += 1 unless current_user.has_role?(:normal_user)
 %>
 
-<tr class="<%= "message_display_#{mess.id} #{css_read} #{css_type}"%>">
+<tr class="<%= "#{css_type}"%>">
   <td class="wrap left" style="white-space:normal">
     <%= show_hide_toggle(Message.parse_markup(mess.header), "#message_table_details_#{mess.id}") %>
     <div id="message_table_details_<%= mess.id %>" style="display: none">

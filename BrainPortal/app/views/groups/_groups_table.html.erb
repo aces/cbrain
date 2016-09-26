@@ -80,15 +80,15 @@
     (<%= pluralize @view_scope.count, "projects" %>)
   </div>
   <div class="col-xs-4">
-    <div class="pull-right">
-      Search by name: <%= ajax_search_box "name_like", groups_path %>
-    </div>
+      <div class="input-group">
+        <%= ajax_search_box "name_like", groups_path, { :placeholder => "Search by name", :class => "form-control" } %>
+        <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+      </div>
   </div>
 </div>
 
 <div class="row">
   <div class="col-xs-12">
-
     <% if button_view %>
       <% unless current_user.has_role?(:normal_user) %>
         <%=

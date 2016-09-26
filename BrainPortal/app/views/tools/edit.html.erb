@@ -24,36 +24,27 @@
 
 <% title 'Edit Tool' %>
 
-<div class="container-fluid">
-  <div class="row menu-bar">
-    <div class="col-xs-12">
-      <div class="well well-sm">
-        <a href="<%= tool_path(@tool) %>" data-type="script" data-method="DELETE" data-confirm="Are you sure you want to delete '<%= @tool.name %>' ?" class="btn btn-primary"><span class="glyphicon glyphicon-trash"></span> Delete</a>
-      </div>
+<div class="row menu-bar">
+  <div class="col-xs-12">
+    <div class="well well-sm">
+      <a href="<%= tool_path(@tool) %>" data-type="script" data-method="DELETE" data-confirm="Are you sure you want to delete '<%= @tool.name %>' ?" class="btn btn-primary"><span class="glyphicon glyphicon-trash"></span> Delete</a>
     </div>
   </div>
-
-  <div class="row">
-    <div class="col-xs-12">
-      <%= form_for(@tool) do |f| %>
-        <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
-        <%= f.submit "Update tool", :class => "btn btn-primary btn-block" %>
-      <% end %>
-    </div>
-  </div>
-
-  <% if @tool.has_owner_access?(current_user) %>
-    <div class="row">
-      <div class="col-xs-12">
-        <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool.getlog, :title => 'Tool Log' } %>
-      </div>
-    </div>
-  <% end %>
-
 </div>
 
+<div class="row">
+  <div class="col-xs-12">
+    <%= form_for(@tool) do |f| %>
+      <%= render :partial => 'form_fields', :locals  => {:f  => f} %>
+      <%= f.submit "Update tool", :class => "btn btn-primary btn-block" %>
+    <% end %>
+  </div>
+</div>
 
-
-
-
-
+<% if @tool.has_owner_access?(current_user) %>
+  <div class="row">
+    <div class="col-xs-12">
+      <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool.getlog, :title => 'Tool Log' } %>
+    </div>
+  </div>
+<% end %>

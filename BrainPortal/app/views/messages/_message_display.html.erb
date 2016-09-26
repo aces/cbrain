@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -28,7 +28,7 @@
 <%- end -%>
 
 <% unless @display_messages.blank? %>
-  <table class="message_display_table">
+  <table class="message_display_table table table-condensed">
     <% for mess in @display_messages %>
       <%= render(:partial  => "messages/message_table_row", :locals  => {:mess  => mess, :render_for => :top }) rescue "Oh oh. Talk to devs!" %>
     <% end %>

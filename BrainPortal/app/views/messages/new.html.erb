@@ -72,37 +72,39 @@
             </div>
           </div>
 
-          <div class="col-xs-6">
-            <div class="row">
-              <div class="col-xs-4"><%= f.label :critical %></div>
-              <div class="col-xs-8"><%= f.check_box :critical, :class => "form-control" %></div>
-            </div>
-            <div class="row">
-              <div class="col-xs-4"><%= f.label :send_email, "Send E-mail" %></div>
-              <div class="col-xs-8"><%= check_box_tag "message[send_email]", 1, false, :class => "form-control" %></div>
-            </div>
-            <div class="row">
-              <div class="col-xs-4"><%= f.label :message_type %></div>
-              <div class="col-xs-8"><%= f.select :message_type, ["system", "notice", "error"], {}, :class => "form-control" %></div>
-            </div>
-            <div class="row">
-              <div class="col-xs-4"><%= f.label :expiry_date, "Expiration date (current time: #{to_localtime(Time.now, :datetime)})" %></div>
-              <div class="col-xs-4">
-                <%=
-                    text_field_tag :expiry_date,
-                                   (@message.expiry ? "#{@message.expiry.strftime("%d/%m/%G")}" : ""),
-                                   :class => "datepicker form-control"
-                %>
+          <div class="row">
+            <div class="col-xs-6">
+              <div class="row">
+                <div class="col-xs-4"><%= f.label :critical %></div>
+                <div class="col-xs-8"><%= f.check_box :critical, :class => "form-control" %></div>
               </div>
-              <div class="col-xs-2">
-                <%=
-                  select_tag :expiry_hour, options_for_select((0..23).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%H") : ""), :class => "form-control"
-                %>
+              <div class="row">
+                <div class="col-xs-4"><%= f.label :send_email, "Send E-mail" %></div>
+                <div class="col-xs-8"><%= check_box_tag "message[send_email]", 1, false, :class => "form-control" %></div>
               </div>
-              <div class="col-xs-2">
-                <%=
-                  select_tag :expiry_min,  options_for_select((0..59).step(15).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%M") : ""), :class => "form-control"
-                %>
+              <div class="row">
+                <div class="col-xs-4"><%= f.label :message_type %></div>
+                <div class="col-xs-8"><%= f.select :message_type, ["system", "notice", "error"], {}, :class => "form-control" %></div>
+              </div>
+              <div class="row">
+                <div class="col-xs-4"><%= f.label :expiry_date, "Expiration date (current time: #{to_localtime(Time.now, :datetime)})" %></div>
+                <div class="col-xs-4">
+                  <%=
+                      text_field_tag :expiry_date,
+                                     (@message.expiry ? "#{@message.expiry.strftime("%d/%m/%G")}" : ""),
+                                     :class => "datepicker form-control"
+                  %>
+                </div>
+                <div class="col-xs-2">
+                  <%=
+                    select_tag :expiry_hour, options_for_select((0..23).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%H") : ""), :class => "form-control"
+                  %>
+                </div>
+                <div class="col-xs-2">
+                  <%=
+                    select_tag :expiry_min,  options_for_select((0..59).step(15).map { |i| sprintf("%2.2d",i) }, @message.expiry ? @message.expiry.strftime("%M") : ""), :class => "form-control"
+                  %>
+                </div>
               </div>
             </div>
           </div>

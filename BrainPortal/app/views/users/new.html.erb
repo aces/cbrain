@@ -48,12 +48,12 @@
         <div class="panel-body collapse in" id="basic-panel">
           <div class="row">
             <div class="col-xs-4"><%= f.label :full_name, "Full Name" %></div>
-            <div class="col-xs-8"><%= f.text_field :full_name, :class => "form-control"%></div>
+            <div class="col-xs-8"><%= f.text_field :full_name, :class => "form-control", :placeholder => "Required" %></div>
           </div>
           <div class="row">
             <div class="col-xs-4"><%= f.label :login, "Login" %></div>
             <div class="col-xs-8">
-              <%= f.text_field :login, :class => "form-control"%>
+              <%= f.text_field :login, :class => "form-control", :placeholder => "Required" %>
               For <strong>Tom Jones</strong>, use <strong>tjones</strong>, not 'tom' or 'jones'.
             </div>
 

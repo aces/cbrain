@@ -1092,6 +1092,14 @@
       sequential_loading(0, dp_check_btns);
     });
 
+    $(document).delegate(".mark_all_read", "click", function (event) {
+      var mark_read_btns = $("body").find(".mark_read");
+
+      mark_read_btns.each( function(event) {
+        this.click();
+      });
+    });
+
     function sequential_loading(index, element_array) {
       if (index >= element_array.length) return;
 

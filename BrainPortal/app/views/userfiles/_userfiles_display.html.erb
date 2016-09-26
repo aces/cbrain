@@ -64,8 +64,9 @@
       )
     </div>
     <div class="col-xs-4">
-      <div class="pull-right">
-        Search by name: <%= ajax_search_box("name_like", userfiles_path) %>
+      <div class="input-group">
+        <%= ajax_search_box "name_like", userfiles_path, { :placeholder => "Search by name", :class => "form-control" } %>
+        <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
       </div>
     </div>
   </div>

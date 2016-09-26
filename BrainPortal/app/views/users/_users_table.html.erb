@@ -42,8 +42,8 @@
     </div>
   </div>
 
-  <div class="pagination">
-    <div class="pagination_center">
+  <div class="row">
+    <div class="col-xs-4 col-xs-offset-4">
       (
         <%= pluralize @users.total_entries, "user" %>
         <% if @unlocked_users_count > 0 %>,
@@ -64,8 +64,11 @@
         <% end %>
       )
     </div>
-    <div class="pagination_right_side">
-      Search by name: <%= ajax_search_box "name_like", users_path %>
+    <div class="col-xs-4">
+      <div class="input-group">
+        <%= ajax_search_box "name_like", users_path, { :placeholder => "Search by name", :class => "form-control" } %>
+        <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+      </div>
     </div>
   </div>
 

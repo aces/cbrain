@@ -45,9 +45,8 @@ class HelpDocumentsController < ApplicationController
     @doc = HelpDocument.find_by_id(params[:id])
 
     respond_to do |format|
-      format.html { render :action => :show, :layout => false }
-      format.xml  { render :xml  => @doc.to_xml(:methods => :contents)  }
-      format.json { render :json => @doc.to_json(:methods => :contents) }
+      format.html
+      format.js
     end
   end
 

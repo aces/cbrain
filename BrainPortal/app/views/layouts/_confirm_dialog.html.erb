@@ -55,3 +55,56 @@
     </div>
   </div>
 </div>
+
+<div class="modal fade" tabindex="-1" role="dialog" id="dynamic-help-modal">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Help</h4>
+      </div>
+      <div class="modal-body" id="dynamic-help-content">
+
+        <% if HelpDocument.can_edit?(current_user) %>
+          This will be Dynamic Help
+
+          <script type="text/x-markdown" class="raw">
+          </script>
+        <% end %>
+
+        <div class="contents"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="show btn btn-primary" style="display:none">Show</button>
+        <button class="edit btn btn-primary" style="display:none">Edit</button>
+        <button class="save btn btn-primary" style="display:none">Save</button>
+        <button class="remove btn btn-primary" style="display:none">Remove</button>
+        <button class="btn btn-primary modal-confirm" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="help_document_popup">
+  <% if HelpDocument.can_edit?(current_user) %>
+    <%= stylesheet_link_tag "codemirror", "codemirror-neo" %>
+
+    <button class="show" style="display:none">Show</button>
+    <button class="edit" style="display:none">Edit</button>
+    <button class="save" style="display:none">Save</button>
+    <button class="remove" style="display:none">Remove</button>
+
+    <div class="editor" style="display:none"></div>
+
+    <div class="empty" style="display:none">
+      There is no documentation on this topic right now. <br />
+      Add some by using the edit button in the top left corner.
+    </div>
+  <% end %>
+
+  <div class="contents"></div>
+
+
+
+</div>

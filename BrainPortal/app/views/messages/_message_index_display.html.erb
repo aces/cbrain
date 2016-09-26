@@ -30,6 +30,8 @@
           <a href="<%= new_message_path %>" class="btn btn-primary"><span class="glyphicon glyphicon-file"></span> New Message</a>
         <% end %>
 
+        <a href="#" class="btn btn-primary mark_all_read"><span class="glyphicon glyphicon-check"></span> Mark All Read</a>
+
         <a href="#" class="btn btn-primary help-btn" data-toggle="modal" data-target="#help-modal" data-url="/doc/messages/message_info.html"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
 
         <%= external_submit_button "Delete", "message_form", :class => "btn btn-primary", :confirm  => "Are you sure you want to delete the selected messages?"  %>
@@ -194,7 +196,7 @@
               <%=
                 delete_button("Mark&nbsp;as&nbsp;#{m.read ? 'Unread' : 'Read'}".html_safe,
                   message_path(m, :read => (!m.read).to_s),
-                  :class                  => 'action_link',
+                  :class                  => "action_link#{m.read ? '' : ' mark_read'}".html_safe,
                   :method                 => "PUT",
                   :target                 => ".message_display_#{m.id}",
                   :loading_message        => "<div style='color: red; text-align: center;'>Updating...</div>",
@@ -221,10 +223,3 @@
   </div>
 
 </div>
-
-
-
-
-<%# TODO this interface is not as good as it should be... %>
-
-
