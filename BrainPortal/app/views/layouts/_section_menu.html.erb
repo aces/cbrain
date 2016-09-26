@@ -65,7 +65,7 @@
             <li <%= set_selected(params[:controller], :tasks) %>><a href="<%= tasks_path%>">Tasks</a></li>
           <% end %>
           <% unless current_user.has_role?(:normal_user) %>
-            <li <%= set_selected(params[:controller], :data_providers) %>><a href="<%= data_providers_path %>">Data Providers</a></li>
+            <li <%= set_selected(params[:controller], :data_providers) %>><a href="<%= data_providers_path %>">Providers</a></li>
             <li <%= set_selected(params[:controller], :bourreaux) %>><a href="<%= bourreaux_path %>">Servers</a></li>
             <li <%= set_selected(params[:controller], :tools) %>><a href="<%= tools_path %>">Tools</a></li>
             <li <%= set_selected(params[:controller], :users) %>><a href="<%= users_path %>">Users</a></li>
@@ -75,7 +75,9 @@
           <% end %>
           <% if current_user.has_role?(:admin_user) %>
             <li <%= set_selected(params[:controller], :sites) %>><a href="<%= sites_path %>">Sites</a></li>
-            <li <%= set_selected(params[:controller], :exception_logs) %>><a href="<%= exception_logs_path %>">Exceptions <% if @exception_count > 0 %> <span class="badge progress-bar-info"><%= @exception_count %></span><% end %></a></li>
+            <% if @exception_count > 0 %>
+              <li <%= set_selected(params[:controller], :exception_logs) %>><a href="<%= exception_logs_path %>">Exceptions <span class="badge progress-bar-info"><%= @exception_count %></span></a></li>
+            <% end %>
           <% end %>
         <% end %>
 
