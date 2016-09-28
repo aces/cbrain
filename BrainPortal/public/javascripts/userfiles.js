@@ -23,64 +23,6 @@
 */
 
 
-$(function() {
-  // Moves Bootstrap modals to the end of the body, at the top level, where they will display properly
-  $('.modal').detach().appendTo('body');
-
-
-  // var params = {
-  //   url:      elem.data('url'),
-  //   method:   elem.data('method')    || 'GET',
-  //   dataType: elem.data('data-type') || 'script',
-  //   ajax:     elem.data('ajax')      || false,
-  //   withSelection:  elem.data('with-selection'),
-  //   emptySelection: elem.data('empty-selection')
-  // };
-
-
-  $('#delete-files').on('click', function(event){
-    var deleteURL = '/userfiles/delete_files';
-
-    var ids = JSON.parse($('.psel-val').attr('value'));
-
-    var authenticity_token_value  = $('#csrf-token').attr('content');
-
-    var data = { file_ids:                        ids,
-                      authenticity_token:         authenticity_token_value,
-                      _psel_val_file_ids:         ids,
-                      name_like:                  $('#name_like').val(),
-                      per_page:                   $('input[name=per_page]').val()
-                    };
-
-
-    alert(data.file_ids);
-    alert(data.authenticity_token);
-    alert(data._psel_val_file_ids);
-    alert(data.name_like);
-    alert(data.per_page);
-
-    $.ajax({
-      url:          deleteURL,
-      type:         'DELETE',
-      data:         data
-    });
-    alert('sent ajax request');
-
-  });
-
-  $('#move-files').on('click', function(event){
-    var moveURL = '/userfiles/change_provider/';
-
-    $.ajax({
-      url:                moveURL,
-      type:              'POST',
-      file_ids:           null,
-      crush_destination:  null
-
-    });
-  });
-});
-
 /*
  * Userfiles client-side behavior
  * Event namespace: .uf
@@ -310,31 +252,31 @@ $(function() {
     update: function (form) {
       var uform = userfiles.children('form');
 
-      $(form).find('select').each(function () {
-        var select = $(this);
+          $(form).find('select').each(function () {
+            var select = $(this);
 
-        /*
-         * disabled select boxes correspond to an explicitly empty field; send
-         * an empty value.
-         */
-        if (select.prop('disabled')) {
-          $(form).append(
-            $('<input type="hidden" value="" />')
-              .attr('name', select.attr('name'))
-          );
+            /*
+             * disabled select boxes correspond to an explicitly empty field; send
+             * an empty value.
+             */
+            if (select.prop('disabled')) {
+              $(form).append(
+                $('<input type="hidden" value="" />')
+                  .attr('name', select.attr('name'))
+              );
 
-          select.removeAttr('name');
+              select.removeAttr('name');
 
-        /*
-         * empty select boxes correspond to 'keep current value'; do not send
-         * anything.
-         */
-        } else if (!select.val()) {
-          select.removeAttr('name');
-        }
-      });
+            /*
+             * empty select boxes correspond to 'keep current value'; do not send
+             * anything.
+             */
+            } else if (!select.val()) {
+              select.removeAttr('name');
+            }
+          });
 
-      $(form).find('.dlg-chk[name]').each(function () {
+          $(form).find('.dlg-chk[name]').each(function () {
         var check = $(this);
 
         /* named but unchecked checkboxes should still be sent */
@@ -543,19 +485,10 @@ $(function() {
         });
     })();
 
-    $('#userfiles_context_menu, #static-actions, #dynamic-actions, #menu-actions')
-      /* Dialog-bound buttons/items */
-      .undelegate('.act-btn[data-dialog], .act-item[data-dialog]', 'click.uf.dlg-bound')
-      .delegate(  '.act-btn[data-dialog], .act-item[data-dialog]', 'click.uf.dlg-bound', function () {
-        var dialog = $(this).data('dialog');
-
-        if (dialog) $('#' + dialog).trigger('open.uf', [this]);
-      })
-      /* Link-bound buttons/items */
-      .undelegate('.act-btn[data-url], .act-item[data-url]', 'click.uf.url-bound')
-      .delegate(  '.act-btn[data-url], .act-item[data-url]', 'click.uf.url-bound', function () {
-        var elem = $(this),
-            cfrm = elem.data('confirm-dlg');
+    $('.modal')
+      .undelegate('.modal-confirm')
+      .delegate(  '.modal-confirm', 'click.uf.url-bound', function () {
+        var elem = $(this);
 
         var params = {
           url:      elem.data('url'),
@@ -566,13 +499,7 @@ $(function() {
           emptySelection: elem.data('empty-selection')
         };
 
-        if (cfrm)
-          $('#' + cfrm).trigger('open.uf', [this, {
-            action: elem.data('confirm-act') || null,
-            accept: function () { userfiles.request(params); },
-          }]);
-        else
-          userfiles.request(params);
+        userfiles.request(params);
       });
 
     /* Rename action button/context menu item */
@@ -592,6 +519,7 @@ $(function() {
   }).find('#menu_bar').trigger('new_content');
 
   /* Dialogs */
+  /* NOTE TO ANDREW: ALL UI DIALOG CODE TO BE REMOVED */
   userfiles.delegate('#userfiles_dialogs', 'new_content', function () {
     /* Dialog button icons */
     var icons = {
@@ -685,6 +613,7 @@ $(function() {
       });
 
     /* Confirmation dialogs */
+    /* NOTE TO ANDREW: ALL UI CONFIRM CODE TO BE REMOVED */
     $('.dlg-cfrm')
       .unbind('open.uf.cfrm-open')
       .bind(  'open.uf.cfrm-open', function (event, source, settings) {
@@ -1073,9 +1002,8 @@ $(function() {
       });
 
     /* Delete files confirmation dialog */
-    $('#delete-confirm')
-      .unbind('open.uf.del-cfrm-open')
-      .bind(  'open.uf.del-cfrm-open', function (event) {
+    $('#delete-modal')
+      .on('show.bs.modal', function (event) {
         $(this).find('.dlg-cfrm-cnt').text(count_selection().toString());
       });
 
@@ -1380,4 +1308,8 @@ $(function() {
       return byte_size + names[0];
     };
   };
+
+  // Moves Bootstrap modals to the end of the body, at the top level, where they will display properly
+  $('.modal').detach().appendTo('body');
+
 });
