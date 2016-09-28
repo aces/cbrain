@@ -182,6 +182,11 @@
         :filters  => default_filters_for(@base_scope, Site)
       ) { |g| link_to_site_if_accessible(g.site) }
 
+      t.column("Creator", :creator_id,
+        :sortable => true,
+        :filters => default_filters_for(@base_scope, @custom_scope, :creator_id)
+      ) { |g| link_to_user_if_accessible(g.creator) }
+
       t.column("Users", :users) do |g|
         @group_id_2_user_counts[g.id].to_s.presence || html_colorize("(none)", "red")
       end

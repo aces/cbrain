@@ -151,8 +151,11 @@ class GroupsController < ApplicationController
       end
     end
 
+    unless (current_user.available_users.map{ |u| u.id } | @group.user_ids).include?(params[:group][:creator_id].to_i )
+      params[:group].delete :creator_id
+    end
+
     @group.make_accessible!(:invisible) if current_user.has_role?(:admin_user)
-    params[:group].delete :creator_id #creator_id is immutable
 
     @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
     respond_to do |format|
