@@ -44,7 +44,7 @@ class CbrainMailer < ActionMailer::Base
     )
   end
 
-  # Send a password reset e-mail.
+  # Send a password reset email.
   def forgotten_password(user)
     @user = user
     return unless @user.is_a?(User) && ! @user.email.blank?
@@ -74,6 +74,45 @@ class CbrainMailer < ActionMailer::Base
       :to      => emails.size == 1 ? emails : [],
       :bcc     => emails.size  > 1 ? emails : [],
       :subject => "CBRAIN Message: #{@subject}"
+    )
+  end
+
+  # Sends an email asking to verify a user's email address by clicking a link
+  def request_confirmation(demand, confirm_url)
+    @demand      = demand
+    @confirm_url = confirm_url
+    return if demand.confirm_token.blank? || demand.email.blank? || confirm_url.blank?
+    mail(
+      :from    => RemoteResource.current_resource.system_from_email,
+      :to      => @demand.email,
+      :subject => "Confirmation of CBRAIN Account Request"
+    )
+  end
+
+  # Sends an email to the administrator
+  def notify_admin(demand, login_url, show_url)
+    @demand     = demand
+    @login_url  = login_url
+    @show_url   = show_url
+    admin_email = RemoteResource.current_resource.support_email
+    return if admin_email.blank?
+    subject  = "CBRAIN Account Request from '#{@demand.full}'"
+    subject += " at '#{@demand.institution}'" if @demand.institution.present?
+    mail(
+      :from    => RemoteResource.current_resource.system_from_email,
+      :to      => admin_email,
+      :subject => subject
+    )
+  end
+
+  # Sends an email to a new user that their request for an account has been approved
+  def account_created(demand, plain_password = nil)
+    @demand         = demand
+    @plain_password = plain_password
+    mail(
+      :from    => RemoteResource.current_resource.system_from_email,
+      :to      => @demand.email,
+      :subject => "New CBRAIN Account Created"
     )
   end
 

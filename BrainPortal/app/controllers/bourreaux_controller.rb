@@ -162,6 +162,9 @@ class BourreauxController < ApplicationController
     # Help link for large uploads (shows up in the upload panel)
     add_meta_data_from_form(@bourreau, [ :large_upload_url ])
 
+    # Site Root
+    add_meta_data_from_form(@bourreau, [ :site_url_prefix] )
+
     # Amazon EC2 properties
     add_meta_data_from_form(@bourreau, [:amazon_ec2_access_key_id, :amazon_ec2_secret_access_key, :amazon_ec2_region] )
 

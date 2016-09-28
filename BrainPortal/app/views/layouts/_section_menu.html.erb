@@ -100,6 +100,12 @@
            <li <%= set_selected(params[:controller], :exception_logs) %>>
              <%= link_to 'Exceptions', exception_logs_path %>
            </li>
+           <% if current_user.has_role?(:admin_user) %>
+              <li <%= set_selected(params[:controller], :demands) %>>
+               <%= link_to 'Demands', demands_path %>
+              </li>
+           <% end %>
+
          <% end %>
        </ul>
     </div>  <!-- End id="main_menu" -->

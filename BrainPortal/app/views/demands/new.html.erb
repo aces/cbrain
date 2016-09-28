@@ -1,0 +1,194 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title 'New Account Request' %>
+
+<center>
+  <%= form_for @demand, :url => { :action => (@demand.new_record? ? "create" : "update"), :id => @demand.id } do |f| %>
+
+  <%= error_messages_for @demand %>
+
+  <table class="simple bordered">
+
+    <tr>
+      <td colspan="2"><h1>CBRAIN Account Request</h1></td>
+    </tr>
+
+    <tr>
+      <td class="warning" colspan="2">Fields with an asterisk (*) are mandatory.</td>
+    </tr>
+
+    <tr>
+      <td colspan="2"><hr></td>
+    </tr>
+
+    <tr>
+      <th>Title:</th>
+      <td><%= f.text_field :title, :size => 10 %> <span class="field_note">(e.g. 'Mr.', 'Dr.', etc.)</span></td>
+    </tr>
+
+    <tr>
+      <th>* First Name:</th>
+      <td><%= f.text_field :first, :size => 20 %></td>
+    </tr>
+
+    <tr>
+      <th>Middle Name:</th>
+      <td><%= f.text_field :middle, :size => 10 %></td>
+    </tr>
+
+    <tr>
+      <th>* Last Name:</th>
+      <td><%= f.text_field :last, :size => 20 %></td>
+    </tr>
+
+    <tr>
+      <th>Preferred 'login' name:</th>
+      <td><%= f.text_field :login, :size => 10 %> <span class="field_note">(one letter + alphanums, between 3 and 20 characters)</span></td>
+    </tr>
+
+    <tr>
+      <td colspan="2"><hr></td>
+    </tr>
+
+    <tr>
+      <th>* Name of Institution/Organization:</th>
+      <td><%= f.text_field :institution, :size => 60 %></td>
+    </tr>
+
+    <tr>
+      <th>* Department</th>
+      <td><%= f.text_field :department, :size => 60 %></td>
+    </tr>
+
+    <tr>
+      <th>* Current position or role:</th>
+      <td><%= f.select :position, options_for_select(
+              [ [ "(select one)", "" ], "Faculty", "PostDoc", "Researcher", "Student", "Industry", "Other" ],
+              @demand.position)
+          %></td>
+    </tr>
+
+    <tr>
+      <th>* Institutional Email address:</th>
+      <td><%= f.text_field :email, :size => 60 %>
+        <br><small>Please supply an address from your research institution</small>
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2"><hr></td>
+    </tr>
+
+    <tr>
+      <th>Street Address (line 1):</th>
+      <td><%= f.text_field :street1, :size => 60 %></td>
+    </tr>
+
+    <tr>
+      <th>Street Address (line 2):</th>
+      <td><%= f.text_field :street2, :size => 60 %></td>
+    </tr>
+
+    <tr>
+      <th>* City:</th>
+      <td><%= f.text_field :city, :size => 30 %></td>
+    </tr>
+
+    <tr>
+      <th>* Province/State:</th>
+      <td><%= f.text_field :province, :size => 30 %></td>
+    </tr>
+
+    <tr>
+      <th>* Country:</th>
+      <td><%= f.text_field :country, :size => 30 %></td>
+    </tr>
+
+    <tr>
+      <th>Postal/ZIP Code:</th>
+      <td><%= f.text_field :postal_code, :size => 8 %></td>
+    </tr>
+
+    <tr>
+      <th>Time Zone:</th>
+      <td>
+        <%= f.time_zone_select :time_zone,
+            ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
+            { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'], :include_blank => true }
+        %>
+     </td>
+    </tr>
+
+    <tr>
+      <td colspan="2"><hr></td>
+    </tr>
+
+    <tr>
+      <th>Comments or special requests:</th>
+      <td>
+          <%= f.text_area :comment, :cols => 100 %>
+          <br>
+          <small>
+                 Please tell us the name of the laboratory you work for, the name of its Principal Investigator (if not you), and if possible anyone<br>
+                 else you know in your lab who are already CBRAIN users. We'll use this information to create or add you to a <em>Site</em> within CBRAIN.
+          </small>
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2"><hr></td>
+    </tr>
+
+    <tr>
+      <td colspan="2">
+        <center><%= f.submit(@demand.new_record? ? "Request Account" : "Update Request") %></center>
+      </td>
+    </tr>
+
+  </table>
+
+  <% end %>
+
+</center>
+
+<br>
+
+<center>
+<b>Privacy note:</b>
+<p class="note">
+The information you supply in this form is
+only used in order to review your application and, when approved, to
+automatically generate your user account. <br>
+This information will not be used in any other way, or passed on to
+any other entities or persons.
+
+<br>
+You can elect to delete the information in the NewAccount database at any time.
+
+<br>
+<br>
+For more information, contact <a href="mailto:cbrain-support.mni@mcgill.ca">cbrain-support.mni@mcgill.ca</A>.
+
+</center>
