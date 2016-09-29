@@ -545,92 +545,192 @@ class PortalTask < CbrainTask
     foundvalue
   end
 
-  # Wrapper class around the ActiveRecord errors() method;
-  # this class answers to the same methods as the errors
+  # Wrapper around the ActiveModel::Errors class.
+  # This class answers to the same methods as the errors
   # object but its 'attributes' are actually paramspaths.
-  # See the Rails classes ActiveRecord::Validations and
-  # ActiveRecord::Errors for more information.
-  class ParamsErrors
-    attr_writer :real_errors
+  #
+  # See the Rails classes ActiveModel::Validations and
+  # ActiveModel::Errors for more information.
+  #
+  # The 'generate_errors' method is not implemented.
 
-    def on(paramspath) #:nodoc:
-      @real_errors.on(paramspath.to_la_id)
-    end
+  class ParamsErrors
+    include Enumerable
+    attr_writer :real_errors, :base
 
     def [](paramspath) #:nodoc:
-      @real_errors.on(paramspath.to_la_id)
+      @real_errors[paramspath.to_la_id]
+    end
+
+    def []=(paramspath,*args) #:nodoc:
+      @real_errors.add(paramspath.to_la_id,*args)
     end
 
     def add(paramspath,*args) #:nodoc:
       @real_errors.add(paramspath.to_la_id,*args)
     end
 
+    def added?(paramspath, *args) #:nodoc:
+      @real_errors.added?(paramspath.to_la_id,*args)
+    end
+
     def add_on_blank(paramspaths,*args) #:nodoc:
-      @real_errors.add_on_blank(paramspaths.map(&:to_la_id),*args)
+      Array(paramspaths).each do |paramspath|
+        value = @base.params_path_value(paramspath)
+        add(paramspath, "is blank") if value.blank?
+      end
     end
 
     def add_on_empty(paramspaths,*args) #:nodoc:
-      @real_errors.add_on_empty(paramspaths.map(&:to_la_id),*args)
+      Array(paramspaths).each do |paramspath|
+        value = @base.params_path_value(paramspath)
+        is_empty = value.respond_to?(:empty?) ? value.empty? : false
+        add(paramspath, "is empty") if value.nil? || is_empty
+      end
     end
 
-    def add_to_base(*args) #:nodoc:
-      @real_errors.add_to_base(*args)
+    def as_json(*args) #:nodoc:
+      only_params_errors.as_json(*args)
     end
 
-    def size #:nodoc:
-      @real_errors.size
-    end
-
-    def count #:nodoc:
-      @real_errors.size
-    end
-
-    def length #:nodoc:
-      @real_errors.size
+    def blank? #:nodoc:
+      only_params_errors.blank?
     end
 
     def clear #:nodoc:
-      @real_errors.clear
+      @real_errors.keys.each { |key|
+        if key =~ (/cbrain_task_params_/i)
+          @real_errors.delete(key)
+        end
+      }
     end
 
+    def count #:nodoc:
+      only_params_errors.size
+    end
+
+    def delete(paramspath) #:nodoc:
+      @real_errors.delete(paramspath.to_la_id.parameterize.underscore.to_sym)
+    end
+
+    # NOTE: returns a copy of the real errors hash
     def each(&block) #:nodoc:
-      @real_errors.each(&block)
-    end
-
-    def each_full(&block) #:nodoc:
-      @real_errors.each_full(&block)
+      only_params_errors.each(&block)
     end
 
     def empty? #:nodoc:
-      @real_errors.empty?
+      only_params_errors.empty?
     end
 
-    def full_messages(*args) #:nodoc:
-      @real_errors.full_messages(*args)
+    def full_message(paramspath, message) #:nodoc:
+      "#{paramspath} #{message}"
     end
 
-    def generate_message(paramspath,*args) #:nodoc:
-      @real_errors.generate_message(paramspath.to_la_id,*args)
+    def full_messages #:nodoc:
+      messages = []
+      only_params_errors.each { |err, msgs|
+        msgs.each { |msg|
+          messages << "#{err} #{msg}"
+        }
+      }
+      messages
     end
 
-    def invalid?(paramspath) #:nodoc:
-      @real_errors.invalid?(paramspath.to_la_id)
+    def full_messages_for(paramspath) #:nodoc:
+      messages = []
+      only_params_errors.each { |err, msgs|
+        if err == paramspath
+          msgs.each { |msg|
+            messages << "#{err} #{msg}"
+          }
+        end
+      }
+      messages
     end
 
-    def on_base #:nodoc:
-      @real_errors.on_base
+    def get(paramspath) #:nodoc:
+      @real_errors.get(paramspath.to_la_id.parameterize.underscore.to_sym)
+    end
+
+    def has_key?(paramspath) #:nodoc:
+      @real_errors.has_key?(paramspath.to_la_id.parameterize.underscore.to_sym)
+    end
+
+    def include?(paramspath) #:nodoc:
+      @real_errors.include?(paramspath.to_la_id.parameterize.underscore.to_sym)
+    end
+
+    def key?(paramspath)
+      include?(paramspath)
+    end
+
+    def keys #:nodoc:
+      param_err_keys = []
+      @real_errors.each {|err|
+        if err =~ (/cbrain_task_params_/i)
+          param_err_keys << @base.class.human_attribute_name(err)
+        end
+      }
+      param_err_keys
+    end
+
+    def set(paramspath, value) #:nodoc:
+      @real_errors.set(paramspath.to_la_id.parameterize.underscore.to_sym, Array(value))
+    end
+
+    def size #:nodoc:
+      only_params_errors.size
+    end
+
+    def to_a #:nodoc:
+      full_messages
+    end
+
+    def to_hash(full_messages = false) #:nodoc:
+      return_hash = {}
+      if full_messages
+        only_params_errors.each { |err, msgs|
+          return_hash[err] = []
+          msgs.each{ |msg|
+            return_hash[err] << full_message(err, msg)
+          }
+        }
+        return_hash
+      else
+        only_params_errors.to_hash()
+      end
     end
 
     def to_xml(*args) #:nodoc:
-      @real_errors.to_xml(*args)
+      only_params_errors.to_xml(*args)
     end
 
+    def values #:nodoc:
+      vals = []
+      only_params_errors.each { |err, msgs|
+        msgs.each { |msg|
+          vals << "#{msg}"
+        }
+      }
+      vals
+    end
+
+    private
+      def only_params_errors #:nodoc:
+        all_param_errors = {}
+        @real_errors.each {|err|
+          if err =~ (/cbrain_task_params_/i)
+            all_param_errors[@base.class.human_attribute_name(err)] = @real_errors.messages[err]
+          end
+        }
+        all_param_errors
+      end
   end
 
   # Returns the equivalent of the 'errors' object for the
   # task, but where the attributes are in fact paramspath
   # values for the task's params[] hash. This works much like
-  # the standard ActiveRecord::Errors class. This is used for
+  # the standard ActiveModel::Errors class. This is used for
   # validating the task's params. For instance:
   #
   #   params = task.params || {}
@@ -651,6 +751,7 @@ class PortalTask < CbrainTask
     return @params_errors_cache if @params_errors_cache
     @params_errors_cache = ParamsErrors.new
     @params_errors_cache.real_errors = self.errors
+    @params_errors_cache.base        = self
     @params_errors_cache
   end
 
@@ -660,7 +761,7 @@ class PortalTask < CbrainTask
   # easy way to provide beautiful names for your parameters
   # is to make pretty_params_names() return such a hash.
   # Otherwise, if the attribute starts with 'cbrain_task_params_'
-  # (like ActiveRecord thinks the params attributes are named)
+  # (like ActiveModel thinks the params attributes are named)
   # it will remove that part and return the rest. And otherwise,
   # it invokes the superclass method.
   def self.human_attribute_name(attname,options={})
