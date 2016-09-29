@@ -10,9 +10,9 @@ en:
         cbrain_task:
           cluster_jobid:               Job id on cluster
           cluster_workdir:             Working directory on cluster
-          share_wd_tid:                Working directory is shared with task 
+          share_wd_tid:                Working directory is shared with task
           cluster_workdir_size:        Working directory size on cluster
-          workdir_archive_userfile_id: Working directory archive 
+          workdir_archive_userfile_id: Working directory archive
         data_provider:
           remote_dir:                  Remote directory
         meta_data_store:
@@ -27,7 +27,7 @@ en:
           actres_dir:                  ActiveResource directory prefix
           ssh_control_rails_dir:       Rails root directory
           tunnel_mysql_port:           Port for MySQL tunnel
-          tunnel_actres_port:          Port for ActiveResource tunnel 
+          tunnel_actres_port:          Port for ActiveResource tunnel
           dp_cache_dir:                Data provider cache directory
           dp_ignore_patterns:          Filename ignore patterns
           spaced_dp_ignore_patterns:   Filename ignore patterns
@@ -43,6 +43,7 @@ en:
         userfiles:
           num_files:                   Number of files in collection
         users:
-          email:                       E-mail 
-
-
+          email:                       Email
+        demand:
+          first:                       First name
+          last:                        Last name

@@ -153,7 +153,7 @@ CbrainRailsPortal::Application.routes.draw do
   resources :demands do
     member do
       post 'approve'
-      get  'resend_confirm'
+      post 'resend_confirm'
       get  'confirm'
     end
     collection do

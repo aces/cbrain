@@ -23,7 +23,6 @@
 
 <% title 'Registration Info' %>
 
-<center>
 <% if @exception_trace.present? %>
   <div class="flash_error"><pre><%= @exception_trace %></pre></div>
 <% end %>
@@ -148,7 +147,7 @@ Below is a summary of the information you provided.
 
   <tr>
     <th>Comments or special requests:</th>
-    <td><pre class="comment"><%= @demand.comment %><pre></td>
+    <td><%= @demand.comment %></td>
   </tr>
 
   <tr>
@@ -184,9 +183,6 @@ Below is a summary of the information you provided.
 <% unless current_user.nil? %>
   <% if current_user.has_role?(:admin_user) %>
     <p>
-    You can go <%= link_to "back to Index", :action => :index %> too.
+    You can go <%= link_to "back to request list", :action => :index %>.
   <% end %>
 <% end %>
-
-
-</center>

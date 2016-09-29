@@ -65,29 +65,6 @@ class Demand < ActiveRecord::Base
 
   validates             :email, :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost$/i }
 
-  #validates_length_of   :postal_code, :within => 5..10
-
-  OK_COUNTRIES_LIST = [
-   "Afganistan", "Albania", "ALGERIA",  "ANDORRA",   "Argentina",   "Australia",  "austria", "Azerbaijan",
-   "Belarus",   "Belgique", "Belgium",    "Bolivia",   "Brasil", "Brazil",  "Brunei", "Bulgaria",
-   "CA",  "Cambodia", "CAMEROON", "Canada",     "Chile", "China",  "Colombia", "Costa Rica", "Cuba",   "Cyprus", "Czech Republic",
-   "Danmark",   "Denmark", "Deutschland",   "Dominican Republic",  "Dutch Caribbean",
-   "ecuador", "egypt", "el salvador", "England", "Estonia", "Ethiopia",
-   "Finland",  "France",  "Georgia", "Germany", "Greece",  "Guatemala",  "holland", "Honduras", "Hong Kong",   "Hungary",
-   "Iceland", "India", "Indonesia",  "Iran", "Iraq", "Ireland",  "Israel", "Italia", "Italy",
-   "Japan",  "Kazakhstan", "Kenya",  "Korea",  "Kuwait",  "Latvia", "Lebanon",  "Liechtenstein",  "Lithuania",  "Luxembourg",
-   "Macau", "Madrid",  "Malaysia", "mali", "Malta",  "maroc", "Martinique",   "Mexico",  "Moldova", "montevideo",   "Morocco",
-   "Nederland",   "Nepal", "Netherland", "Netherlands",      "New Zealand", "Nicaragua",  "Nigeria",  "Northern Ireland", "Norway",
-   "Oman",  "Pakistan",  "Paraguay",   "Peru",  "Philippines", "Poland", "Polska",  "Portugal",  "Puerto Rico",  "Qatar",
-   "Republic of Korea",  "Romania",   "Russia",   "Russian Federation", "Rwanda",
-   "Saudi Arabia",  "Schweiz", "Scotland",  "Serbia",   "Singapore",  "Slovakia", "Slovenia", "South Africa", "south korea", "Spain", "sri lanka",  "St. Maarten",  "Suisse", "Suriname", "Sweden", "Switzerland",
-   "Taiwan",  "Thailand",  "The Netherlands", "Trinidad and Tobago",   "Tunisia", "turkey",
-   "U. S. A.", "U.K.", "U.S.", "U.S.A.", "UAE", "UK", "Ukraine",  "United Arab Emirates", "United Kingdom",    "United States", "United States of America",  "Uruguay", "US", "USA",
-   "Venezuela",  "Vietnam",  "Wales"
-  ]
-  OK_COUNTRIES_HASH = {}; OK_COUNTRIES_LIST.each { |c| OK_COUNTRIES_HASH[c.downcase]=true }
-
-
   def strip_blanks #:nodoc:
     [
       :title, :first, :middle, :last,
@@ -105,7 +82,10 @@ class Demand < ActiveRecord::Base
   # Token inserted in email to new user to confirm their address
   def generate_token
     tok = ""
-    20.times { c=sprintf("%d",rand(10)); tok += c }
+    tok += ("a".."z").to_a[rand(26)]
+    19.times {
+      c=sprintf("%d",rand(10)); tok += c
+    }
     self.confirm_token = tok
   end
 
@@ -125,7 +105,6 @@ class Demand < ActiveRecord::Base
     return 3 if full_cat =~ /([a-z])\1\1\1/i
     return 2 if first.downcase == last.downcase || first.downcase == middle.downcase || middle.downcase == last.downcase
     return 2 if first.downcase !~ /[a-z]/i || last.downcase !~ /[a-z]/i
-    return 1 unless OK_COUNTRIES_HASH[country]
     nil
   end
 
@@ -150,38 +129,39 @@ class Demand < ActiveRecord::Base
     if self.dup_login?
       res.diagnostics = "Failed to create user " + self.login + ", already exists"
       res.success     = false
-    else
-      pass = User.random_string
+      return res
+    end
 
-      u = User.new
+    pass = User.random_string
+
+    u = User.new
 #      u.title                   = self.title
-      u.full_name               = self.full
-      u.login                   = self.login
-      u.email                   = self.email
+    u.full_name               = self.full
+    u.login                   = self.login
+    u.email                   = self.email
 #      u.institution             = self.institution
 #      u.department              = self.department
 #      u.position                = self.position
 #      u.street1                 = self.street1
 #      u.street2                 = self.street2
-      u.city                    = self.city
+    u.city                    = self.city
 #      u.province                = self.province
-      u.country                 = self.country
+    u.country                 = self.country
 #      u.postal_code             = self.postal_code
-      u.time_zone               = self.time_zone
+    u.time_zone               = self.time_zone
 #      u.comment                 = self.comment
-      u.type                    = 'NormalUser'
-      u.password                = pass
-      u.password_confirmation   = pass
-      u.password_reset          = true
+    u.type                    = 'NormalUser'
+    u.password                = pass
+    u.password_confirmation   = pass
+    u.password_reset          = true
 
-      if u.save()
-        res.plain_password = pass
-        res.diagnostics    = "Created as UID #{u.id}"
-        res.success        = true
-      else
-        res.diagnostics    = "Could not save user"
-        res.success        = false
-      end
+    if u.save()
+      res.plain_password = pass
+      res.diagnostics    = "Created as UID #{u.id}"
+      res.success        = true
+    else
+      res.diagnostics    = "Could not save user"
+      res.success        = false
     end
 
     res

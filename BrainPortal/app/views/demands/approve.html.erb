@@ -34,14 +34,13 @@
   <div class="flash_error"><pre><%= @exception_trace %></pre></div>
 
 <% elsif @info.present? %>
-
   The account request was approved, and the user was successfully created:
-  <pre class="comment"><%= @info %></pre>
+  <div class="flash_notice"><pre><%= @info %></pre></div>
 
 <% end %>
 
 <p>
 
 You can go <%= link_to "back to see the request", demand_path(@demand) %>.<br/>
-You can go <%= link_to "back to the index", :action => :index %> too.
+You can go <%= link_to "back to the request list", :action => :index %>.
 

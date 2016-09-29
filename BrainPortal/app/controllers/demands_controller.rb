@@ -174,16 +174,16 @@ class DemandsController < ApplicationController
     symbolic_result, @info, @exception_trace = approve_one(@demand)
 
     if symbolic_result == :all_ok
-      flash.now[:notice] = "The account request for '#{@demand.full}' has been approved."
-      flash.now[:notice] += "\nThe user was notified of his or her new account."
+      # flash.now[:notice] = "The account request for '#{@demand.full}' has been approved."
+      # flash.now[:notice] += "\nThe user was notified of his or her new account."
       current_user.addlog_context(self,"Approved account request for user '#{@demand.login}'")
       User.find_by_login(@demand.login).addlog_context(self, "Account created after request approved by '#{current_user.login}'")
     elsif symbolic_result == :failed_save
-      flash.now[:error] = @info.presence || ""
+      # flash.now[:error] = @info.presence || ""
     elsif symbolic_result == :failed_approval
-      flash.now[:error] = @info.presence || ""
+      # flash.now[:error] = @info.presence || ""
     elsif symbolic_result == :not_notifiable
-      flash.now[:error] = @info.presence || ""
+      # flash.now[:error] = @info.presence || ""
       @current_user.addlog_context(self,"Approved account request for user '#{@demand.login}'")
       User.find_by_login(@demand.login).addlog_context(self, "Account created after request approved by '#{@current_user.login}'")
     end
@@ -237,11 +237,17 @@ class DemandsController < ApplicationController
     @results = reqs.map do |req|
 
       old   = req.login
+      if old =~ /\A[a-z][a-zA-Z0-9]+\z/ && old.size > 3 && old.size < 40
+        login_valid = true
+      else
+        login_valid = false
+      end
+
       new   = ""
       puts "Fixing: #{old}"
 
       email = req.email
-      if email =~ /^(\w+)@/
+      if email =~ /\A(\w+)@/
         new = Regexp.last_match[1].downcase
       end
       new = "" if new.size < 3 || new.size > 8
@@ -249,10 +255,10 @@ class DemandsController < ApplicationController
       if new.blank?
         new = (req.first[0,1] + req.last[0,7]).downcase
       end
-      new = "" if new !~ /^[a-z][a-zA-Z0-9]+$/
+      new = "" if new !~ /\A[a-z][a-zA-Z0-9]+\z/
       new = "" if new.size < 3 || new.size > 8
 
-      if new.blank?
+      if new.blank? || login_valid
           puts "  -> No changes"
         [ req, :no_change, 'No changes', nil ]
       else
@@ -349,7 +355,7 @@ class DemandsController < ApplicationController
     if send_account_created_email(req,plain_password)
       return [ :all_ok, info, nil ]
     else
-      return [ :not_notifiable, 'ERROR: The User was created in CBRAIN, but the notification email failed to send.', nil ]
+      return [ :not_notifiable, 'ERROR: The User was created in CBRAIN, but the notification email failed to send.', 'ERROR: The User was created in CBRAIN, but the notification email failed to send.' ]
     end
 
 

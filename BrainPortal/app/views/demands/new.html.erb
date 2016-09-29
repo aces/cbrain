@@ -24,8 +24,7 @@
 
 <% title 'New Account Request' %>
 
-<center>
-  <%= form_for @demand, :url => { :action => (@demand.new_record? ? "create" : "update"), :id => @demand.id } do |f| %>
+<%= form_for @demand, :url => { :action => (@demand.new_record? ? "create" : "update"), :id => @demand.id } do |f| %>
 
   <%= error_messages_for @demand %>
 
@@ -171,11 +170,8 @@
 
   <% end %>
 
-</center>
-
 <br>
 
-<center>
 <b>Privacy note:</b>
 <p class="note">
 The information you supply in this form is
@@ -184,11 +180,7 @@ automatically generate your user account. <br>
 This information will not be used in any other way, or passed on to
 any other entities or persons.
 
-<br>
-You can elect to delete the information in the NewAccount database at any time.
-
-<br>
-<br>
-For more information, contact <a href="mailto:cbrain-support.mni@mcgill.ca">cbrain-support.mni@mcgill.ca</A>.
-
-</center>
+<% if RemoteResource.current_resource.support_email.presence %>
+  <br>
+  For more information, contact <a href="mailto:<%= RemoteResource.current_resource.support_email %>"><%= RemoteResource.current_resource.support_email %></a>.
+<% end %>
