@@ -576,14 +576,14 @@ class PortalTask < CbrainTask
 
     def add_on_blank(paramspaths,*args) #:nodoc:
       Array(paramspaths).each do |paramspath|
-        value = @base.params_path_value(paramspath)
+        value = @base.params_path_value(paramspath.to_la_id)
         add(paramspath, "is blank") if value.blank?
       end
     end
 
     def add_on_empty(paramspaths,*args) #:nodoc:
       Array(paramspaths).each do |paramspath|
-        value = @base.params_path_value(paramspath)
+        value = @base.params_path_value(paramspath.to_la_id)
         is_empty = value.respond_to?(:empty?) ? value.empty? : false
         add(paramspath, "is empty") if value.nil? || is_empty
       end
@@ -653,14 +653,18 @@ class PortalTask < CbrainTask
     end
 
     def has_key?(paramspath) #:nodoc:
-      @real_errors.has_key?(paramspath.to_la_id.parameterize.underscore.to_sym)
+      include?(paramspath)
     end
 
     def include?(paramspath) #:nodoc:
-      @real_errors.include?(paramspath.to_la_id.parameterize.underscore.to_sym)
+      if @real_errors.include?(paramspath.to_la_id.parameterize.underscore.to_sym).nil?
+        return false
+      else
+        return true
+      end
     end
 
-    def key?(paramspath)
+    def key?(paramspath) #:nodoc:
       include?(paramspath)
     end
 
