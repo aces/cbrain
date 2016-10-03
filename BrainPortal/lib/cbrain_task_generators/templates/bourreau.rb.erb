@@ -97,18 +97,18 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
       retn.(false)
     end
 
-    # Resolve all input userfiles IDs to their Userfile instances and set the
-    # results data provider if missing.
-%#   resolve = format_call('resolve_file_parameter', files) { |file| [
-%#     ":'#{file['id']}'",
-%#     'error'
-%#   ] }
-%#   files.each do |file|
-%#    <%= resolve.(file) %>
-%#   end
-
-    # Set results data provider if missing
-    # TODO (loop through files and use ||=)
+    # Set results data provider if missing via file inputs
+    # Check that the file can be resolved as well
+    isFile = lambda { |p| [<%= files.map { |f| ":'#{f['id']}'" }.join(',') %>].include?(p) }
+    params.each do |k,v|
+      if isFile.(k)
+        ( v.is_a?(Enumerable) ? v : [v] ).each do |t|
+          f = Userfile.find_by_id(t)
+          cb_error("Unable to resolve file (id: #{k}, input: #{t})") unless f
+          self.results_data_provider_id ||= f.data_provider_id rescue nil
+        end
+      end
+    end
 
     # And make them all available to <%= name %>
 %   make_available = format_call('make_available', files) { |file| [
@@ -460,23 +460,6 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     files.compact.each { |file| super(file, directory + '/') }
   end
 
-  # Resolve/replace input userfiles IDs for parameter +param+
-  # to their Userfile instances, calling +failed+ if a file cannot be resolved.
-  # Also try and set the results data provider if its missing.
-#  def resolve_file_parameter(param, failed)
-#    value = params[param]
-#    return if value.nil?
-
-#    files = (value.is_a?(Enumerable) ? value : [value]).map do |file|
-#      file = Userfile.find_by_id(file) unless file.is_a?(Userfile)
-#      failed.("Could not find file with ID #{file}") unless file
-#      file
-#    end
-
-#    params[param] = value.is_a?(Enumerable) ? files : files.first
-#    self.results_data_provider_id ||= files.first.data_provider_id rescue nil
-#  end
-
   # Apply substitution keys +keys+ to +template+ in order to format a
   # command-line or output file name.
   # Substitute each value in +keys+ in +template+, prepended by the
@@ -506,7 +489,8 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
       value = (value.is_a?(Enumerable) ? value.dup : [value])
         .reject(&:nil?)
         .map do |v|
-#          v = v.name if v.is_a?(Userfile)
+
+          # Resolve file ids to names
           if fileKeys.include?(key)
             currFile = Userfile.find_by_id(v)
             cb_error("Unable to find given userfile with id #{v}!") unless currFile
