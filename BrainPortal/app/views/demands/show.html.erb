@@ -38,10 +38,14 @@
 
         <h3>Approving this request:</h3>
 
-          You can also <%= link_to "approve", approve_demand_path(@demand), :method => :post, :confirm => "Approve a CBRAIN account for \"#{@demand.full}\"?" %> this request.
+        <% unless @demand.dup_login? %>
+          You can also <%= link_to "approve", approve_demand_path(@demand), :method => :post, :confirm => "Approve a user account for \"#{@demand.full}\"?" %> this request.
+        <% else %>
+          <span style="color: red">This user's login conflicts with a user already in the system.</span>
+        <% end %>
 
         <% if ! @demand.confirmed? %>
-          <span style="color: red">However, note that the user has not yet confirmed the email address.</span>
+          <span style="color: red">The user has not yet confirmed their email address.</span>
         <% else %>
           The user has confirmed the email address.
         <% end %>

@@ -120,14 +120,8 @@
       t.column("Suspicious", :suspicious) do |d|
     %>
 
-      <% suspicion_level = d.is_suspicious? %>
-
-      <% if suspicion_level == 3 %>
+      <% if d.is_suspicious?%>
         <%= red_if(true, "YES!!") %>
-      <% elsif suspicion_level == 2 %>
-        <%= red_if(true, "yes") %>
-      <% elsif suspicion_level == 1 %>
-        <%= red_if(true, "maybe", "maybe", options= { :color2 => "orange" }) %>
       <% else %>
         <%= h("no") %>
       <% end %>

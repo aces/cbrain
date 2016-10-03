@@ -22,33 +22,6 @@
 
 class Demand < ActiveRecord::Base
 
-#    t.string   "title"
-#    t.string   "first"
-#    t.string   "middle"
-#    t.string   "last"
-#    t.string   "institution"
-#    t.string   "department"
-#    t.string   "position"
-#    t.string   "email"
-#    t.string   "street1"
-#    t.string   "street2"
-#    t.string   "city"
-#    t.string   "province"
-#    t.string   "country"
-#    t.string   "postal_code"
-#    t.string   "time_zone"
-#    t.string   "login"
-#    t.string   "comment"
-#
-#    t.string   "session_id"
-#    t.string   "confirm_token"
-#    t.boolean  "confirmed"
-#
-#    t.string   "approved_by"
-#    t.datetime "approved_at"
-#    t.datetime "created_at"
-#    t.datetime "updated_at"
-
   validate              :strip_blanks
 
   attr_accessible       :title, :first, :middle, :last,
@@ -60,8 +33,10 @@ class Demand < ActiveRecord::Base
                         :institution, :department, :position, :email,
                         :city, :province, :country, :confirm_token
 
-  validates             :login, :length => { :minimum => 3, :maximum => 20 },     :allow_blank => true
-  validates             :login, :format => { :with => /^[a-zA-Z][a-zA-Z0-9]+$/ }, :allow_blank => true
+  validates             :login,
+                        :length => { :within => 3..40 },
+                        :username_format => true,
+                        :allow_blank => true
 
   validates             :email, :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost$/i }
 
@@ -79,7 +54,7 @@ class Demand < ActiveRecord::Base
     true
   end
 
-  # Token inserted in email to new user to confirm their address
+  # Token inserted in email to new user to confirm their email
   def generate_token
     tok = ""
     tok += ("a".."z").to_a[rand(26)]
@@ -97,15 +72,15 @@ class Demand < ActiveRecord::Base
     self.approved_by.present? && self.approved_at.present?
   end
 
-  def is_suspicious?  # types: 1=warning, 2=weird_entries, 3=keyboard_banging
+  def is_suspicious? #:nodoc:
     country = (self.country.presence || "").downcase
     full_cat = "#{full_name}|#{institution}|#{department}|#{email}|#{country}|#{province}|#{city}|#{postal_code}|#{street1}|#{street2}|#{comment}|#{login}".downcase
-    return 3 if full_cat =~ /qwe|tyu|uio|asd|sdf|dfg|fgh|hjk|jkl|zxc|xcv|cvb|vbn|bnm/i # keyboard banging
-    return 3 if full_cat =~ /shit|fuck|cunt|blah|piss|vagina|mother|nigg|negro/i # obscenities
-    return 3 if full_cat =~ /([a-z])\1\1\1/i
-    return 2 if first.downcase == last.downcase || first.downcase == middle.downcase || middle.downcase == last.downcase
-    return 2 if first.downcase !~ /[a-z]/i || last.downcase !~ /[a-z]/i
-    nil
+    return true if full_cat =~ /qwe|tyu|uio|asd|sdf|dfg|fgh|hjk|jkl|zxc|xcv|cvb|vbn|bnm/i # keyboard banging
+    return true if full_cat =~ /shit|fuck|cunt|blah|piss|vagina|mother|nigg|negro/i # obscenities
+    return true if full_cat =~ /([a-z])\1\1\1/i
+    return true if first.downcase == last.downcase || first.downcase == middle.downcase || middle.downcase == last.downcase
+    return true if first.downcase !~ /[a-z]/i || last.downcase !~ /[a-z]/i
+    false
   end
 
   alias full_name full
@@ -121,11 +96,13 @@ class Demand < ActiveRecord::Base
   # This is the method that actually creates the user in CBRAIN's database
   def after_approval
 
+    res = ApprovalResult.new
     unless self.valid?
-       raise "Current record is invalid. Probably: login name incorrect. Check form values."
+      res.diagnostics    = "Account request is invalid. Probably: login name incorrect. Check form values."
+      res.success        = false
+      return res
     end
 
-    res = ApprovalResult.new
     if self.dup_login?
       res.diagnostics = "Failed to create user " + self.login + ", already exists"
       res.success     = false
@@ -135,21 +112,21 @@ class Demand < ActiveRecord::Base
     pass = User.random_string
 
     u = User.new
-#      u.title                   = self.title
+    #u.title                   = self.title
     u.full_name               = self.full
     u.login                   = self.login
     u.email                   = self.email
-#      u.institution             = self.institution
-#      u.department              = self.department
-#      u.position                = self.position
-#      u.street1                 = self.street1
-#      u.street2                 = self.street2
+    #u.institution             = self.institution
+    #u.department              = self.department
+    #u.position                = self.position
+    #u.street1                 = self.street1
+    #u.street2                 = self.street2
     u.city                    = self.city
-#      u.province                = self.province
+    #u.province                = self.province
     u.country                 = self.country
-#      u.postal_code             = self.postal_code
+    #u.postal_code             = self.postal_code
     u.time_zone               = self.time_zone
-#      u.comment                 = self.comment
+    #u.comment                 = self.comment
     u.type                    = 'NormalUser'
     u.password                = pass
     u.password_confirmation   = pass

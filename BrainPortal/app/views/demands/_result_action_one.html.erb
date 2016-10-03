@@ -38,9 +38,9 @@
 <% if info.present? %>
 
   <% if info =~ /\Aerror/i %>
-    <div class="flash_error"><pre><%= info.to_s %></pre></div>
+    <pre><%= info.to_s %></pre>
   <% else %>
-    <div class="flash_notice"><pre><%= info.to_s %></pre></div>
+    <pre><%= info.to_s %></pre>
   <% end %>
 
 <% end %>

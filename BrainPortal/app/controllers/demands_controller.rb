@@ -30,7 +30,7 @@ class DemandsController < ApplicationController
   def show #:nodoc:
     @demand = Demand.find(params[:id]) rescue nil
     unless can_edit?(@demand)
-      redirect_to '/login'
+      redirect_to login_path
       return
     end
   end
@@ -49,7 +49,7 @@ class DemandsController < ApplicationController
     @demand.generate_token
 
     unless can_edit?(@demand)
-      redirect_to '/login'
+      redirect_to login_path
       return
     end
 
@@ -73,7 +73,7 @@ class DemandsController < ApplicationController
   def edit #:nodoc:
     @demand = Demand.find(params[:id]) rescue nil
     unless can_edit?(@demand)
-      redirect_to '/login'
+      redirect_to login_path
       return
     end
     render :action => :new
@@ -85,7 +85,7 @@ class DemandsController < ApplicationController
     @demand = Demand.find(params[:id]) rescue nil
 
     unless can_edit?(@demand)
-      redirect_to '/login'
+      redirect_to login_path
       return
     end
 
@@ -131,7 +131,7 @@ class DemandsController < ApplicationController
     @demand = Demand.find(params[:id]) rescue nil
 
     unless can_edit?(@demand)
-      redirect_to '/login'
+      redirect_to login_path
       return
     end
 
@@ -150,7 +150,7 @@ class DemandsController < ApplicationController
       @demand.confirmed = true
       @demand.save
     else
-      redirect_to '/login'
+      redirect_to login_path
     end
   end
 
@@ -161,7 +161,7 @@ class DemandsController < ApplicationController
 
     unless can_edit?(@demand)
       flash[:error] = "Could not approve account"
-      redirect_to '/login'
+      redirect_to login_path
       return
     end
 
@@ -236,12 +236,20 @@ class DemandsController < ApplicationController
 
     @results = reqs.map do |req|
 
-      old   = req.login
-      if old =~ /\A[a-z][a-zA-Z0-9]+\z/ && old.size > 3 && old.size < 40
-        login_valid = true
-      else
+      login_valid = true
+      NormalUser.validators_on(:login).each do |val|
+        unless val.instance_of?(ActiveRecord::Validations::UniquenessValidator)
+          unless val.validate(req)
+            login_valid = false
+          end
+        end
+      end
+
+      if req.login.blank?
         login_valid = false
       end
+
+      old   = req.login
 
       new   = ""
       puts "Fixing: #{old}"
@@ -367,7 +375,7 @@ class DemandsController < ApplicationController
     @demand = Demand.find(params[:id]) rescue nil
 
     unless can_edit?(@demand)
-      redirect_to '/login'
+      redirect_to login_path
       return
     end
 

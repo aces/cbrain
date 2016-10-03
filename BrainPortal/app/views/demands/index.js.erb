@@ -1,5 +1,4 @@
-
-<%-
+<%
 #
 # CBRAIN Project
 #
@@ -20,27 +19,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
+%>
 
-<% title 'Registration Requests' %>
-
-<h1>Request Approval Result:</h1>
-
-<% if @exception_trace.present? || @info =~ /\Aerror/i %>
-
-  An error occurred. You might want to check the code of demands.rb, in method after_approval().
-  <p>
-
-  <%= @exception_trace %>
-
-<% elsif @info.present? %>
-  The account request was approved, and the user was successfully created:
-  <%= @info %>
-
-<% end %>
-
-<p>
-
-You can go <%= link_to "back to see the request", demand_path(@demand) %>.<br/>
-You can go <%= link_to "back to the request list", :action => :index %>.
-
+<%= render :partial  => "shared/flash_update" %>
+jQuery("#demand_table").html(<%= html_for_js(render(:partial => 'demands_table')) %>);
+jQuery("#demand_table").trigger("new_content");

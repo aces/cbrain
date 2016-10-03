@@ -63,8 +63,8 @@
     </tr>
 
     <tr>
-      <th>Preferred 'login' name:</th>
-      <td><%= f.text_field :login, :size => 10 %> <span class="field_note">(one letter + alphanums, between 3 and 20 characters)</span></td>
+      <th>* Preferred 'login' name:</th>
+      <td><%= f.text_field :login, :size => 10 %> <span class="field_note">(one letter + alphanums, between 3 and 40 characters)</span></td>
     </tr>
 
     <tr>
@@ -173,14 +173,13 @@
 <br>
 
 <b>Privacy note:</b>
-<p class="note">
 The information you supply in this form is
 only used in order to review your application and, when approved, to
 automatically generate your user account. <br>
 This information will not be used in any other way, or passed on to
 any other entities or persons.
 
-<% if RemoteResource.current_resource.support_email.presence %>
+<% if RemoteResource.current_resource.support_email.present? %>
   <br>
   For more information, contact <a href="mailto:<%= RemoteResource.current_resource.support_email %>"><%= RemoteResource.current_resource.support_email %></a>.
 <% end %>
