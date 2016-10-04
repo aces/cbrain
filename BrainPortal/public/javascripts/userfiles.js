@@ -38,8 +38,8 @@ $(function() {
   var urls = {
     refresh: '/userfiles',
     upload:  $('#upload-dialog > form').attr('action'),
-    copy:    $('#cpmv-dialog > form').attr('action'),
-    move:    $('#cpmv-dialog > form').attr('action'),
+    copy:    $('#move-modal form').attr('action'),
+    move:    $('#move-modal form').attr('action'),
     rename:  '/userfiles/:id',
     update:  $('#prop-dialog > form').attr('action'),
     tags:    '/tags/:id',
@@ -485,9 +485,8 @@ $(function() {
         });
     })();
 
-    $('.modal')
-      .undelegate('.modal-confirm')
-      .delegate(  '.modal-confirm', 'click.uf.url-bound', function () {
+    $('.modal-confirm')
+      .on('click.uf.url-bound', function () {
         var elem = $(this);
 
         var params = {
@@ -765,7 +764,7 @@ $(function() {
     })();
 
     /* Copy/Move dialog */
-    $('#cpmv-dialog')
+    $('#Xcpmv-dialog')
       .unbind('open.uf.cpmv-open')
       .bind(  'open.uf.cpmv-open', function (event, source) {
         /* FIXME not exactly a clean way to detect if moving or copying... */
@@ -1003,8 +1002,25 @@ $(function() {
 
     /* Delete files confirmation dialog */
     $('#delete-modal')
+      .off('show.bs.modal')
       .on('show.bs.modal', function (event) {
         $(this).find('.dlg-cfrm-cnt').text(count_selection().toString());
+      });
+
+    /* Adjust title of MOVE/COPY modal, whenever opened */
+    $('#move-modal')
+      .off('show.bs.modal')
+      .on('show.bs.modal', function (event) {
+        /* FIXME not exactly a clean way to detect if moving or copying... */
+        var modal   = $(this);
+        var source  = $(event.relatedTarget);
+        var move    = $(source).is('#move-btn') || $(source).is('#move-ctx');
+        var title   = undefined;
+        title = (move ? 'Move' : 'Copy') + ' - ' + formatted_selection();
+        $('#move-modal-title').text(title);
+        modal.find(".btn-primary").off('click').on('click', function (event) {
+          userfiles[move ? 'move' : 'copy'](modal.find('form')[0]);
+        });
       });
 
     /* Delete tag confirmation dialog */

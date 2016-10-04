@@ -164,12 +164,12 @@
 
 <div id="cpmv-dialog" class="dlg-dialog" title="Copy" data-title="Copy">
   <form action="<%= change_provider_userfiles_path %>" method="post">
-    <label for="cpmv-dp" class="dlg-fld-lbl">To</label>
+    <label for="Xcpmv-dp" class="dlg-fld-lbl">To</label>
     <%=
       data_provider_select('data_provider_id_for_mv_cp',
         { :data_providers => writable_dps },
         {
-          :id    => 'up-dp',
+          :id    => 'Xcpmv-dp',
           :class => 'dlg-fld',
           :'data-placeholder' => "A data provider..."
         }
@@ -414,7 +414,7 @@
                   data_provider_select('data_provider_id_for_mv_cp',
                     { :data_providers => writable_dps },
                     {
-                      :id    => 'up-dp',
+                      :id    => 'cpmv-dp',
                       :class => 'form-control',
                       :'data-placeholder' => "A data provider..."
                     }
@@ -435,7 +435,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" data-dismiss="modal" id="delete-files">OK</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
       </div>
     </div>
   </div>
