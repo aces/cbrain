@@ -65,7 +65,7 @@
       </div>
       <div class="modal-body" id="dynamic-help-content">
 
-        <% if HelpDocument.can_edit?(current_user) %>
+        <% if current_user && HelpDocument.can_edit?(current_user) %>
           This will be Dynamic Help
 
           <script type="text/x-markdown" class="raw">
@@ -87,7 +87,7 @@
 
 
 <div class="help_document_popup">
-  <% if HelpDocument.can_edit?(current_user) %>
+  <% if current_user && HelpDocument.can_edit?(current_user) %>
     <%= stylesheet_link_tag "codemirror", "codemirror-neo" %>
 
     <button class="show" style="display:none">Show</button>
