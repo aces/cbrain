@@ -66,6 +66,9 @@ describe "Bourreau Boutiques Tests" do
       # Create a new instance of the generated task class
       @task          = CbrainTask::BoutiquesTest.new
       @task.params   = {}
+      # Assign it a bourreau
+      resource = RemoteResource.current_resource
+      @task.bourreau_id = resource.id
       # Give access to the generated task class itself
       @task_const    = "CbrainTask::#{SchemaTaskGenerator.classify(@task.name)}".constantize
     end
@@ -211,6 +214,14 @@ describe "Bourreau Boutiques Tests" do
         expect( @idsForFiles.all? { |t| Userfile.find_by_id( t ) } ).to be true
       end
 
+      # Ensure that the `setup` method does not replace ids with hashes
+      it "works with ids rather than objects" do
+        @task.params = ArgumentDictionary.( "-A a -B 9 -C #{C_file} -v s -n 7 ", @idsForFiles )
+        @task.cluster_workdir = 'fcw'
+        @task.setup
+        expect( @task.params[:C] ).to eq( @idsForFiles[0] )
+      end
+
       # Perform tests by running the cmd line given by cluster_commands and checking the exit code
       BasicTests.each do |test|
         # Testing for unrecognized inputs will not work here, since apply_template will ignore them
@@ -225,14 +236,6 @@ describe "Bourreau Boutiques Tests" do
             next # after_form does not need to check this here, since rails puts a value in the hash
           end
           # Run the generated command line from cluster_commands (-2 to ignore export lines and the echo log at -1)
-      #    p( @task.params )
-      #    p(test[1])
-      #    p('fml')
-      #    p( @task.cluster_commands )
-      #    p( @task.cluster_commands[-2].gsub('./'+TestScriptName,'') )
-      #    p( 'qqq' )
-      #    p( FileNamesToPaths.( @task.cluster_commands[-2].gsub('./'+TestScriptName,'') ) )
-      #    p( 'ttt' )
           exit_code = runTestScript( FileNamesToPaths.( @task.cluster_commands[-2].gsub('./'+TestScriptName,'') ), test[3] || [] )
           # Check that the exit code is appropriate
           expect( exit_code ).to eq( test[2] )
