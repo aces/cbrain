@@ -43,6 +43,9 @@ describe "Bourreau Boutiques Tests" do
   # Run before block to create required input files
   before(:all) do
     createInputFiles
+    # The group, provider, and user ids used downstream
+    GID, UID, DPID = Group.everyone.id, User.admin.id, 9
+    @ftype = lambda { |fname| Userfile.suggested_file_type(fname) || SingleFile }
   end
 
   # Post-test cleanup via after block
@@ -183,9 +186,29 @@ describe "Bourreau Boutiques Tests" do
     # Testing Boutiques via the mock 'submission' of a local script, using the output of cluster_commands
     context 'Cluster Command Generation with Mock Program' do
 
+      # The cluster_commands method requires userfiles to exist before running now
+      before(:each) do
+        # Clean userfiles and data providers
+        Userfile.all.each{ |uf| uf.destroy }
+        DataProvider.all.each { |dp| dp.destroy }
+        # Create new data provider
+        @provider    = FlatDirLocalDataProvider.new({ :online => true, :read_only => false, :remote_dir => '.' })
+        @provider.id, @provider.name, @provider.user_id, @provider.group_id = DPID, 'test_provider', UID, GID
+        @provider.save!
+        # Generate files used downstream
+        @userFiles   = InputFilesList.map { |f| @task.safe_userfile_find_or_new(@ftype.(f), name: File.basename(f), data_provider_id: DPID, user_id: UID, group_id: GID) }
+        @userFiles.each { |f| f.save! }
+        @idsForFiles = @userFiles.map { |f| f.id }
+      end
+
       # After each local test, destroy the output files, so they don't interfere with downstream tests
       after(:each) do
         destroyOutputFiles
+      end
+
+      # Check that userfiles are discoverable
+      it "interfaces with userfile system" do
+        expect( @idsForFiles.all? { |t| Userfile.find_by_id( t ) } ).to be true
       end
 
       # Perform tests by running the cmd line given by cluster_commands and checking the exit code
@@ -197,12 +220,20 @@ describe "Bourreau Boutiques Tests" do
         # Run the test
         it "#{test[0]}" do
           begin # Convert string arg to params dict
-            @task.params = ArgumentDictionary.( test[1] )
+            @task.params = ArgumentDictionary.( test[1], @idsForFiles )
           rescue OptionParser::MissingArgument => e
             next # after_form does not need to check this here, since rails puts a value in the hash
           end
           # Run the generated command line from cluster_commands (-2 to ignore export lines and the echo log at -1)
-          exit_code = runTestScript( @task.cluster_commands[-2].gsub('./'+TestScriptName,''), test[3] || [] )
+      #    p( @task.params )
+      #    p(test[1])
+      #    p('fml')
+      #    p( @task.cluster_commands )
+      #    p( @task.cluster_commands[-2].gsub('./'+TestScriptName,'') )
+      #    p( 'qqq' )
+      #    p( FileNamesToPaths.( @task.cluster_commands[-2].gsub('./'+TestScriptName,'') ) )
+      #    p( 'ttt' )
+          exit_code = runTestScript( FileNamesToPaths.( @task.cluster_commands[-2].gsub('./'+TestScriptName,'') ), test[3] || [] )
           # Check that the exit code is appropriate
           expect( exit_code ).to eq( test[2] )
         end
@@ -220,8 +251,6 @@ describe "Bourreau Boutiques Tests" do
 
       # Define some useful constants (constants get redefined in before(:each) blocks)
       before(:all) do
-        # The group, provider, and user ids used downstream
-        GID, UID, DPID = Group.everyone.id, User.admin.id, 9
         # The warning message used when unable to find optional output files
         OptOutFileNotFoundWarning = "Unable to find optional output file: "
         # Current rails pwd
@@ -237,9 +266,8 @@ describe "Bourreau Boutiques Tests" do
         @fname           = DefReqOutName
         @fname_base      = File.basename(@fname) # Need because we will have to change to the temp dir
         FileUtils.touch(@fname)
-        # Helper method for getting filetype classes
-        ftype            = lambda { |fname| Userfile.suggested_file_type(fname) || SingleFile }
-        @userfileClass   = ftype.(@fname)
+        # Use helper method for getting filetype classes
+        @userfileClass   = @ftype.(@fname)
         # Get the schema and json descriptor
         descriptor       = File.join(__dir__, TestScriptDescriptor)
         # Generate a new task class via the Boutiques framework and integrate it into cbrain
@@ -258,7 +286,7 @@ describe "Bourreau Boutiques Tests" do
         # Passing a block to chdir would be preferable but then one would have to do it in every test
         Dir.chdir TempStore
         # Add a local input file to the data provider (allows smarter lookup in userfile_exists)
-        @file_c, @ft     = 'c', ftype.(@file_c)
+        @file_c, @ft     = 'c', @ftype.(@file_c)
         newFile          = @task.safe_userfile_find_or_new(@ft, name: @file_c, data_provider_id: DPID, user_id: UID, group_id: GID)
         newFile.save!
         # Fill in data necessary for the task to check for and save the output file '@fname'
@@ -271,7 +299,7 @@ describe "Bourreau Boutiques Tests" do
         @reqOutfileProps = {:name => @fname_base, :data_provider_id => @provider.id}
         # Optional output file properties
         @optOutFileName  = File.basename(OptOutName) # Implicitly in temp storage
-        @optFileClass    = ftype.( @optOutFileName )
+        @optFileClass    = @ftype.( @optOutFileName )
       end
 
       # Clean up after each test
