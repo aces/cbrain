@@ -155,6 +155,7 @@ class DemandsController < ApplicationController
   end
 
 
+
   # Administrator action that converts a demand into a user
   def approve
     @demand = Demand.find(params[:id]) rescue nil
@@ -236,19 +237,6 @@ class DemandsController < ApplicationController
 
     @results = reqs.map do |req|
 
-      login_valid = true
-      NormalUser.validators_on(:login).each do |val|
-        unless val.instance_of?(ActiveRecord::Validations::UniquenessValidator)
-          unless val.validate(req)
-            login_valid = false
-          end
-        end
-      end
-
-      if req.login.blank?
-        login_valid = false
-      end
-
       old   = req.login
 
       new   = ""
@@ -266,7 +254,7 @@ class DemandsController < ApplicationController
       new = "" if new !~ /\A[a-z][a-zA-Z0-9]+\z/
       new = "" if new.size < 3 || new.size > 8
 
-      if new.blank? || login_valid
+      if new.blank? || !req.login.blank?
           puts "  -> No changes"
         [ req, :no_change, 'No changes', nil ]
       else

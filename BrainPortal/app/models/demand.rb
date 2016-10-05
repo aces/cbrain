@@ -34,8 +34,7 @@ class Demand < ActiveRecord::Base
                         :city, :province, :country, :confirm_token
 
   validates             :login,
-                        :length => { :within => 3..40 },
-                        :username_format => true,
+                        :demand_username_format => true,
                         :allow_blank => true
 
   validates             :email, :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost$/i }
@@ -98,8 +97,11 @@ class Demand < ActiveRecord::Base
 
     res = ApprovalResult.new
     unless self.valid?
-      res.diagnostics    = "Account request is invalid. Probably: login name incorrect. Check form values."
-      res.success        = false
+      res.success     = false
+      res.diagnostics = "Account request invalid:\n"
+      self.errors.full_messages.each{ |msg|
+        res.diagnostics << "\n" + msg
+      }
       return res
     end
 
