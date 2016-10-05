@@ -558,6 +558,12 @@ class PortalTask < CbrainTask
     include Enumerable
     attr_writer :real_errors, :base
 
+    alias :key?      :include?
+    alias :has_key?  :include?
+    alias :added?    :include?
+
+    alias :size      :count
+
     def [](paramspath) #:nodoc:
       @real_errors[paramspath.to_la_id]
     end
@@ -568,10 +574,6 @@ class PortalTask < CbrainTask
 
     def add(paramspath,*args) #:nodoc:
       @real_errors.add(paramspath.to_la_id,*args)
-    end
-
-    def added?(paramspath, *args) #:nodoc:
-      @real_errors.added?(paramspath.to_la_id,*args)
     end
 
     def add_on_blank(paramspaths,*args) #:nodoc:
@@ -606,16 +608,28 @@ class PortalTask < CbrainTask
     end
 
     def count #:nodoc:
-      only_params_errors.size
+      count = 0
+      only_params_errors.each{ |err, msgs|
+        msgs.each { |msg|
+          count += 1
+        }
+      }
+      count
     end
 
     def delete(paramspath) #:nodoc:
       @real_errors.delete(paramspath.to_la_id.parameterize.underscore.to_sym)
     end
 
-    # NOTE: returns a copy of the real errors hash
+    # NOTE: iterates over a copy of the real errors hash
     def each(&block) #:nodoc:
-      only_params_errors.each(&block)
+      err_msgs_array = []
+      only_params_errors.each { |parampath, msgs|
+        msgs.each{ |msg|
+          err_msgs_array << [parampath, msg]
+        }
+      }
+      err_msgs_array.each(&block)
     end
 
     def empty? #:nodoc:
@@ -628,62 +642,46 @@ class PortalTask < CbrainTask
 
     def full_messages #:nodoc:
       messages = []
-      only_params_errors.each { |err, msgs|
+      only_params_errors.each { |parampath, msgs|
         msgs.each { |msg|
-          messages << "#{err} #{msg}"
+          messages << "#{parampath} #{msg}"
         }
       }
       messages
     end
 
-    def full_messages_for(paramspath) #:nodoc:
-      messages = []
-      only_params_errors.each { |err, msgs|
-        if err == paramspath
-          msgs.each { |msg|
-            messages << "#{err} #{msg}"
-          }
-        end
-      }
-      messages
-    end
+    # This is from Rails 4
+    # def full_messages_for(paramspath) #:nodoc:
+    #   messages = []
+    #   only_params_errors.each { |err, msgs|
+    #     if err == paramspath
+    #       msgs.each { |msg|
+    #         messages << "#{err} #{msg}"
+    #       }
+    #     end
+    #   }
+    #   messages
+    # end
 
     def get(paramspath) #:nodoc:
       @real_errors.get(paramspath.to_la_id.parameterize.underscore.to_sym)
     end
 
-    def has_key?(paramspath) #:nodoc:
-      include?(paramspath)
-    end
-
     def include?(paramspath) #:nodoc:
-      if @real_errors.include?(paramspath.to_la_id.parameterize.underscore.to_sym).nil?
-        return false
-      else
-        return true
-      end
-    end
-
-    def key?(paramspath) #:nodoc:
-      include?(paramspath)
+      return false if @real_errors.include?(paramspath.to_la_id.parameterize.underscore.to_sym).nil?
+      true
     end
 
     def keys #:nodoc:
       param_err_keys = []
-      @real_errors.each {|err|
-        if err =~ (/cbrain_task_params_/i)
-          param_err_keys << @base.class.human_attribute_name(err)
-        end
+      only_params_errors.each{ |key, msgs|
+        param_err_keys << key unless param_err_keys.include?(key)
       }
       param_err_keys
     end
 
     def set(paramspath, value) #:nodoc:
       @real_errors.set(paramspath.to_la_id.parameterize.underscore.to_sym, Array(value))
-    end
-
-    def size #:nodoc:
-      only_params_errors.size
     end
 
     def to_a #:nodoc:
@@ -721,13 +719,13 @@ class PortalTask < CbrainTask
 
     private
       def only_params_errors #:nodoc:
-        all_param_errors = {}
-        @real_errors.each {|err|
-          if err =~ (/cbrain_task_params_/i)
-            all_param_errors[@base.class.human_attribute_name(err)] = @real_errors.messages[err]
-          end
+        human_params_errors = {}
+        all_param_errors = @real_errors.reject{ |err, msg| err !~ /cbrain_task_params_/i }
+        all_param_errors.each { |err,msg|
+          human_params_errors[@base.class.human_attribute_name(err)] = [] if human_params_errors[@base.class.human_attribute_name(err)].nil?
+          human_params_errors[@base.class.human_attribute_name(err)] << msg
         }
-        all_param_errors
+        human_params_errors
       end
   end
 

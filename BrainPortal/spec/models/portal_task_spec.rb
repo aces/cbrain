@@ -432,8 +432,8 @@ describe PortalTask do
 
     before(:each) do
       real_errors.clear
-      params_errors.add("test", "is bad")
-      params_errors.add("test", "is invalid")
+      params_errors.add(param_path, "is bad")
+      params_errors.add(param_path, msg)
 
       real_errors.add("user_id", "is bad")
     end
@@ -461,15 +461,6 @@ describe PortalTask do
       it "should convert the path argument to la and forward to the add method" do
         expect(real_errors).to receive(:add).with(param_path.to_la_id, msg)
         params_errors.add(param_path, msg)
-      end
-
-    end
-
-    describe "#added?" do
-
-      it "should convert the path argument to la and forward it to added? method" do
-        expect(real_errors).to receive(:added?).with(param_path.to_la_id)
-        params_errors.added?(param_path)
       end
 
     end
@@ -527,7 +518,7 @@ describe PortalTask do
     describe "#count" do
 
       it "should return the number of params errors and exclude real errors" do
-        expect(params_errors.count).to eq(1)
+        expect(params_errors.count).to eq(2)
       end
 
     end
@@ -579,30 +570,19 @@ describe PortalTask do
 
     end
 
-    describe "#full_messages_for" do
+    # describe "#full_messages_for" do
 
-      it "should return messages for only params errors requested" do
-        expect(params_errors.full_messages_for(param_path)).to be_kind_of(Array)
-        expect(params_errors.full_messages_for(param_path).count).to eq(2)
-      end
+    #   it "should return messages for only params errors requested" do
+    #     expect(params_errors.full_messages_for(param_path)).to be_kind_of(Array)
+    #     expect(params_errors.full_messages_for(param_path).count).to eq(2)
+    #   end
 
-    end
+    # end
 
     describe "#get" do
       it "should return an array with the error messages for a parampath" do
         expect(params_errors.get(param_path)).to be_kind_of(Array)
         expect(params_errors.get(param_path).count).to eq(2)
-      end
-    end
-
-    describe "#has_key?" do
-      it "should return true if there is an error for that param" do
-        expect(params_errors.has_key?(param_path)).to eq(true)
-      end
-
-      it "should return false if there is no error for that param" do
-        params_errors.clear
-        expect(params_errors.has_key?(param_path)).to eq(false)
       end
     end
 
@@ -622,7 +602,7 @@ describe PortalTask do
     describe "#size" do
 
       it "should return the number of params errors and exclude real errors" do
-        expect(params_errors.size).to eq(1)
+        expect(params_errors.size).to eq(2)
       end
 
     end
