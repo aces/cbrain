@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Controls Controller for RemoteResources
@@ -91,34 +91,6 @@ class ControlsController < ApplicationController
     respond_to do |format|
       format.html { head :method_not_allowed }
       format.xml  { head :method_not_allowed }
-    end
-  end
-
-  #######################################################################
-  # Unimplemented/disabled REST CRUD methods
-  #######################################################################
-
-  def destroy #:nodoc:
-    not_allowed
-  end
-
-  def new #:nodoc:
-    not_allowed
-  end
-
-  def update #:nodoc:
-    not_allowed
-  end
-
-  def index #:nodoc:
-    not_allowed
-  end
-
-  def not_allowed #:nodoc:
-    respond_to do |format|
-      format.html { head :method_not_allowed }
-      format.xml  { head :method_not_allowed }
-      format.json { head :method_not_allowed }
     end
   end
 

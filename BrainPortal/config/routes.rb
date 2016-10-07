@@ -28,7 +28,7 @@ CbrainRailsPortal::Application.routes.draw do
   resource  :session, :only => [ :new, :create, :show, :destroy ]
 
   # Control channel
-  resources :controls,       :controller => :controls
+  resources :controls,       :controller => :controls, :only => [ :show, :create ]
 
   # Documentation
   resources :docs,           :controller => :help_documents
@@ -36,12 +36,17 @@ CbrainRailsPortal::Application.routes.draw do
   # Standard CRUD resources
   resources :sites
   resources :custom_filters
-  resources :tool_configs
   resources :tags
   resources :access_profiles
   resources :feedbacks
 
   # Standard CRUD resources, with extra actions
+
+  resources :tool_configs do
+    collection do
+      get  'report'
+    end
+  end
 
   resources :messages do
     collection do

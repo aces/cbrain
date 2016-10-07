@@ -27,7 +27,9 @@ class PortalController < ApplicationController
 
   include DateRangeRestriction
 
-  before_filter :login_required, :except => [ :credits, :about_us, :welcome ]  # welcome is here so that the redirect to the login page doesn't show the error message
+  api_available :only => [ :swagger ] # GET /swagger returns the .json specification
+
+  before_filter :login_required, :except => [ :credits, :about_us, :welcome, :swagger ]  # welcome is here so that the redirect to the login page doesn't show the error message
   before_filter :admin_role_required, :only => :portal_log
 
   # Display a user's home page with information about their account.
@@ -359,6 +361,23 @@ class PortalController < ApplicationController
     @limit   = 20 # used by interface only
 
     @results = @search.present? ? ModelsReport.search_for_token(@search, current_user) : {}
+  end
+
+  # A HTML GET request produces a SwaggerUI information page.
+  # A JSON GET request sends the swagger specification.
+  def swagger
+    # Find latest JSON swagger spec.
+    # FIXME sort() will break when comparing versions...
+    @specfile   = Dir.entries(Rails.root + "public" + "swagger").grep(/\Acbrain-.*-swagger.json\z/).sort.last
+    if (@specfile.blank?)
+      flash[:error] = "Cannot find SWAGGER specification for the service. Sorry."
+      redirect_to start_page_path
+      return
+    end
+    respond_to do |format|
+      format.html
+      format.json { send_file "public/swagger/#{@specfile}", :stream  => true }
+    end
   end
 
   private

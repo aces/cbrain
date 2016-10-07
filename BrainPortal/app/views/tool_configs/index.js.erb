@@ -22,9 +22,6 @@
 #
 -%>
 
-<% title 'Tools and their versions' %>
-
-<div id="tool_configs_table" class="index_block">
-  <%= render :partial => 'tool_configs_table' %>
-</div>
+<%= render :partial  => "shared/flash_update" %>
+jQuery("#tool_configs_table").html(<%= html_for_js(render(:partial => 'tool_configs_table')) %>).trigger("new_content")
 
