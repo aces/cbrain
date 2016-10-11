@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-class Demand < ActiveRecord::Base
+class Signup < ActiveRecord::Base
 
   validate              :strip_blanks
 
@@ -33,11 +33,9 @@ class Demand < ActiveRecord::Base
                         :institution, :department, :position, :email,
                         :city, :province, :country, :confirm_token
 
-  validates             :login,
-                        :demand_username_format => true,
-                        :allow_blank => true
-
   validates             :email, :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost$/i }
+
+  validate              :login_match_user_format
 
   def strip_blanks #:nodoc:
     [
@@ -67,22 +65,11 @@ class Demand < ActiveRecord::Base
     "#{title} #{first} #{middle} #{last}".strip.gsub(/  +/, " ")
   end
 
+  alias full_name full
+
   def approved? #:nodoc:
     self.approved_by.present? && self.approved_at.present?
   end
-
-  def is_suspicious? #:nodoc:
-    country = (self.country.presence || "").downcase
-    full_cat = "#{full_name}|#{institution}|#{department}|#{email}|#{country}|#{province}|#{city}|#{postal_code}|#{street1}|#{street2}|#{comment}|#{login}".downcase
-    return true if full_cat =~ /qwe|tyu|uio|asd|sdf|dfg|fgh|hjk|jkl|zxc|xcv|cvb|vbn|bnm/i # keyboard banging
-    return true if full_cat =~ /shit|fuck|cunt|blah|piss|vagina|mother|nigg|negro/i # obscenities
-    return true if full_cat =~ /([a-z])\1\1\1/i
-    return true if first.downcase == last.downcase || first.downcase == middle.downcase || middle.downcase == last.downcase
-    return true if first.downcase !~ /[a-z]/i || last.downcase !~ /[a-z]/i
-    false
-  end
-
-  alias full_name full
 
   def dup_email? #:nodoc:
     User.exists?(:email => self.email)
@@ -146,13 +133,38 @@ class Demand < ActiveRecord::Base
     res
   end
 
-  class ApprovalResult
+  # Used internally to represent the result of
+  # trying to approve one signup request,
+  class ApprovalResult #:nodoc:
     attr_accessor :diagnostics, :plain_password, :success
 
     def to_s #:nodoc:
       self.diagnostics.presence.to_s
     end
+  end
 
+  #===============================================
+  # ActiveRecord Callbacks
+  #===============================================
+
+  # This method invokes the User model's validators
+  # to make suer the login provided by the user matches
+  # the restrictions within CBRAIN.
+  def login_match_user_format #:nodoc:
+    return true if self.login.blank?
+
+    # Create a dummy user with only the login attribute
+    dummy_user=User.new;dummy_user.login = self.login
+
+    # Run the validations we have on the User model
+    User.validators_on(:login).each do |validator|
+      validator.validate(dummy_user)
+    end
+
+    # Copy error messages
+    dummy_user.errors[:login].each { |m| self.errors[:login] = m }
+
+    self.errors[:login].blank?
   end
 
 end

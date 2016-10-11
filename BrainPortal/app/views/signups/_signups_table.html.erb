@@ -38,18 +38,18 @@
   <%=
     render(:partial => 'shared/active_filters', :locals  => {
       :scope => @scope,
-      :model => Demand
+      :model => Signup,
     })
   %>
 
   <%=
-    dynamic_scoped_table(@demands,
+    dynamic_scoped_table(@signups,
       :class      => [ :resource_list ],
-      :id         => "demands_table",
+      :id         => "signups_table",
       :order_map  => {
         :creation_date  =>  { :a => 'created_at' },
-        :institution    =>  { :a => 'demands.institution' },
-        :email          =>  { :a => 'demands.email' },
+        :institution    =>  { :a => 'signups.institution' },
+        :email          =>  { :a => 'signups.email' },
       },
       :scope      => @scope
     ) do |t|
@@ -117,18 +117,6 @@
     %>
 
     <%
-      t.column("Suspicious", :suspicious) do |d|
-    %>
-
-      <% if d.is_suspicious?%>
-        <%= red_if(true, "YES!!") %>
-      <% else %>
-        <%= h("no") %>
-      <% end %>
-
-    <% end %>
-
-    <%
       t.column("Actions", :actions) do |d|
     %>
       <%= link_to "Show", { :action => :show, :id => d.id } %>
@@ -151,7 +139,7 @@
         <% if d.dup_login? %>
           <span class="warning">(Login conflict)</span>
         <% else %>
-          <%= link_to "(Approve)", approve_demand_path(d), :method => :post,
+          <%= link_to "(Approve)", approve_signup_path(d), :method => :post,
               :confirm => "Approve the application of \"#{d.full}\" ?" %>
         <% end %>
       <% end %>

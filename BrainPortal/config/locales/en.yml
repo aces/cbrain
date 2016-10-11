@@ -44,6 +44,6 @@ en:
           num_files:                   Number of files in collection
         users:
           email:                       Email
-        demand:
+        signups:
           first:                       First name
           last:                        Last name

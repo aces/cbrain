@@ -24,15 +24,11 @@
 
 <% title 'New Account Request' %>
 
-<%= form_for @demand, :url => { :action => (@demand.new_record? ? "create" : "update"), :id => @demand.id } do |f| %>
+<%= form_for @signup, :url => { :action => (@signup.new_record? ? "create" : "update"), :id => @signup.id } do |f| %>
 
-  <%= error_messages_for @demand %>
+  <%= error_messages_for @signup %>
 
   <table class="simple bordered">
-
-    <tr>
-      <td colspan="2"><h1>CBRAIN Account Request</h1></td>
-    </tr>
 
     <tr>
       <td class="warning" colspan="2">Fields with an asterisk (*) are mandatory.</td>
@@ -85,7 +81,7 @@
       <th>* Current position or role:</th>
       <td><%= f.select :position, options_for_select(
               [ [ "(select one)", "" ], "Faculty", "PostDoc", "Researcher", "Student", "Industry", "Other" ],
-              @demand.position)
+              @signup.position)
           %></td>
     </tr>
 
@@ -147,7 +143,7 @@
     <tr>
       <th>Comments or special requests:</th>
       <td>
-          <%= f.text_area :comment, :cols => 100 %>
+          <%= f.text_area :comment, :cols => 80, :rows => 5 %>
           <br>
           <small>
                  Please tell us the name of the laboratory you work for, the name of its Principal Investigator (if not you), and if possible anyone<br>
@@ -162,7 +158,7 @@
 
     <tr>
       <td colspan="2">
-        <center><%= f.submit(@demand.new_record? ? "Request Account" : "Update Request") %></center>
+        <center><%= f.submit(@signup.new_record? ? "Request Account" : "Update Request") %></center>
       </td>
     </tr>
 

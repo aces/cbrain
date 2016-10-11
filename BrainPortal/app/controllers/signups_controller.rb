@@ -19,7 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-class DemandsController < ApplicationController
+class SignupsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
@@ -28,8 +28,8 @@ class DemandsController < ApplicationController
 
 
   def show #:nodoc:
-    @demand = Demand.find(params[:id]) rescue nil
-    unless can_edit?(@demand)
+    @signup = Signup.find(params[:id]) rescue nil
+    unless can_edit?(@signup)
       redirect_to login_path
       return
     end
@@ -38,41 +38,41 @@ class DemandsController < ApplicationController
 
 
   def new #:nodoc:
-    @demand = Demand.new
+    @signup = Signup.new
   end
 
 
 
   def create #:nodoc:
-    @demand = Demand.new(params[:demand])
-    @demand.session_id = request.session_options[:id]
-    @demand.generate_token
+    @signup = Signup.new(params[:signup])
+    @signup.session_id = request.session_options[:id]
+    @signup.generate_token
 
-    unless can_edit?(@demand)
+    unless can_edit?(@signup)
       redirect_to login_path
       return
     end
 
-    if ! @demand.save
+    if ! @signup.save
       render :action => :new
       return
     end
 
-    unless send_confirm_email(@demand)
+    unless send_confirm_email(@signup)
       flash[:error] = "It seems some error occured. Email notification was probably not sent.\n"
     end
 
-    send_admin_notification(@demand)
+    send_admin_notification(@signup)
 
     sleep 1
-    redirect_to :action => :show, :id => @demand.id
+    redirect_to :action => :show, :id => @signup.id
   end
 
 
 
   def edit #:nodoc:
-    @demand = Demand.find(params[:id]) rescue nil
-    unless can_edit?(@demand)
+    @signup = Signup.find(params[:id]) rescue nil
+    unless can_edit?(@signup)
       redirect_to login_path
       return
     end
@@ -82,16 +82,16 @@ class DemandsController < ApplicationController
 
 
   def update #:nodoc:
-    @demand = Demand.find(params[:id]) rescue nil
+    @signup = Signup.find(params[:id]) rescue nil
 
-    unless can_edit?(@demand)
+    unless can_edit?(@signup)
       redirect_to login_path
       return
     end
 
-    @demand.update_attributes(params[:demand])
+    @signup.update_attributes(params[:signup])
 
-    if ! @demand.save
+    if ! @signup.save
       render :action => :new
       return
     end
@@ -99,24 +99,24 @@ class DemandsController < ApplicationController
     flash[:notice] = "The account request has been updated."
 
     sleep 1
-    redirect_to :action => :show, :id => @demand.id
+    redirect_to :action => :show, :id => @signup.id
   end
 
 
 
   def index #:nodoc:
-    @scope = scope_from_session('demands')
+    @scope = scope_from_session('signups')
 
     scope_default_order(@scope, 'country')
 
-    @base_scope       = Demand.where({})
-    @demands          = @scope.apply(@base_scope)
+    @base_scope       = Signup.where({})
+    @signups          = @scope.apply(@base_scope)
 
     # Prepare the Pagination object
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
     @current_offset = (@scope.pagination.page - 1) * @scope.pagination.per_page
 
-    scope_to_session(@scope, 'demands')
+    scope_to_session(@scope, 'signups')
 
     respond_to do |format|
       format.js
@@ -128,27 +128,27 @@ class DemandsController < ApplicationController
 
 
   def destroy #:nodoc:
-    @demand = Demand.find(params[:id]) rescue nil
+    @signup = Signup.find(params[:id]) rescue nil
 
-    unless can_edit?(@demand)
+    unless can_edit?(@signup)
       redirect_to login_path
       return
     end
 
-    @demand.destroy
+    @signup.destroy
     flash[:notice] = "The account request has been deleted."
 
     redirect_to :action => :index
   end
 
 
-  # Confirms that a demandee's email address actually belongs to them
+  # Confirms that a signup person's email address actually belongs to them
   def confirm #:nodoc:
-    @demand = Demand.find(params[:id]) rescue nil
+    @signup = Signup.find(params[:id]) rescue nil
     token    = params[:token] || ""
-    if @demand.present? && token.present? && @demand.confirm_token == token
-      @demand.confirmed = true
-      @demand.save
+    if @signup.present? && token.present? && @signup.confirm_token == token
+      @signup.confirmed = true
+      @signup.save
     else
       redirect_to login_path
     end
@@ -156,37 +156,37 @@ class DemandsController < ApplicationController
 
 
 
-  # Administrator action that converts a demand into a user
+  # Administrator action that converts a signup into a user
   def approve
-    @demand = Demand.find(params[:id]) rescue nil
+    @signup = Signup.find(params[:id]) rescue nil
 
-    unless can_edit?(@demand)
+    unless can_edit?(@signup)
       flash[:error] = "Could not approve account"
       redirect_to login_path
       return
     end
 
-    if @demand.login.blank?
+    if @signup.login.blank?
       flash[:error] = "Before approval, a 'login' name must be set."
-      redirect_to :action => :edit, :id => @demand.id
+      redirect_to :action => :edit, :id => @signup.id
       return
     end
 
-    symbolic_result, @info, @exception_trace = approve_one(@demand)
+    symbolic_result, @info, @exception_trace = approve_one(@signup)
 
     if symbolic_result == :all_ok
-      # flash.now[:notice] = "The account request for '#{@demand.full}' has been approved."
+      # flash.now[:notice] = "The account request for '#{@signup.full}' has been approved."
       # flash.now[:notice] += "\nThe user was notified of his or her new account."
-      current_user.addlog_context(self,"Approved account request for user '#{@demand.login}'")
-      User.find_by_login(@demand.login).addlog_context(self, "Account created after request approved by '#{current_user.login}'")
+      current_user.addlog_context(self,"Approved account request for user '#{@signup.login}'")
+      User.find_by_login(@signup.login).addlog_context(self, "Account created after request approved by '#{current_user.login}'")
     elsif symbolic_result == :failed_save
       # flash.now[:error] = @info.presence || ""
     elsif symbolic_result == :failed_approval
       # flash.now[:error] = @info.presence || ""
     elsif symbolic_result == :not_notifiable
       # flash.now[:error] = @info.presence || ""
-      @current_user.addlog_context(self,"Approved account request for user '#{@demand.login}'")
-      User.find_by_login(@demand.login).addlog_context(self, "Account created after request approved by '#{@current_user.login}'")
+      @current_user.addlog_context(self,"Approved account request for user '#{@signup.login}'")
+      User.find_by_login(@signup.login).addlog_context(self, "Account created after request approved by '#{@current_user.login}'")
     end
 
   end
@@ -217,7 +217,7 @@ class DemandsController < ApplicationController
 
   def delete_multi #:nodoc:
     reqids = params[:reqids] || []
-    reqs = Demand.find(reqids)
+    reqs = Signup.find(reqids)
 
     count = 0
     reqs.each do |req|
@@ -233,7 +233,7 @@ class DemandsController < ApplicationController
 
   def fix_login_multi #:nodoc:
     reqids = params[:reqids] || []
-    reqs = Demand.find(reqids)
+    reqs = Signup.find(reqids)
 
     @results = reqs.map do |req|
 
@@ -280,7 +280,7 @@ class DemandsController < ApplicationController
 
   def resend_conf_multi #:nodoc:
     reqids = params[:reqids] || []
-    reqs = Demand.find(reqids)
+    reqs = Signup.find(reqids)
 
     count = 0
 
@@ -306,7 +306,7 @@ class DemandsController < ApplicationController
 
   def approve_multi #:nodoc:
     reqids = params[:reqids] || []
-    reqs = Demand.find(reqids)
+    reqs = Signup.find(reqids)
 
     @results = reqs.map do |req|
       print "Approving: #{req.full_name} => "
@@ -360,21 +360,21 @@ class DemandsController < ApplicationController
 
 
   def resend_confirm #:nodoc:
-    @demand = Demand.find(params[:id]) rescue nil
+    @signup = Signup.find(params[:id]) rescue nil
 
-    unless can_edit?(@demand)
+    unless can_edit?(@signup)
       redirect_to login_path
       return
     end
 
-    if send_confirm_email(@demand)
+    if send_confirm_email(@signup)
       flash[:notice] = "A new confirmation email has been sent."
     else
       flash[:error] = "It seems some error occured. Email notification was probably not sent. Check your mailhost settings.\n"
     end
 
     sleep 1
-    redirect_to :action => :show, :id => @demand.id
+    redirect_to :action => :show, :id => @signup.id
   end
 
 
@@ -383,9 +383,9 @@ class DemandsController < ApplicationController
 
 
 
-  def can_edit?(demand) #:nodoc:
-    return false if demand.blank?
-    return true  if demand[:session_id] == request.session_options[:id]
+  def can_edit?(signup) #:nodoc:
+    return false if signup.blank?
+    return true  if signup[:session_id] == request.session_options[:id]
     if !current_user.nil?
       return true  if current_user.has_role?(:admin_user)
     end
@@ -394,9 +394,9 @@ class DemandsController < ApplicationController
 
 
 
-  def send_confirm_email(demand) #:nodoc:
-    confirm_url = url_for(:controller => :demands, :action => :confirm, :id => demand.id, :only_path => false, :token => demand.confirm_token)
-    CbrainMailer.request_confirmation(demand, confirm_url).deliver
+  def send_confirm_email(signup) #:nodoc:
+    confirm_url = url_for(:controller => :signups, :action => :confirm, :id => signup.id, :only_path => false, :token => signup.confirm_token)
+    CbrainMailer.signup_request_confirmation(signup, confirm_url).deliver
     return true
   rescue => ex
     Rails.logger.error ex.to_s
@@ -406,22 +406,22 @@ class DemandsController < ApplicationController
 
 
 
-  def send_account_created_email(demand, plain_password = nil) #:nodoc:
-    CbrainMailer.account_created(demand, plain_password).deliver
+  def send_account_created_email(signup, plain_password = nil) #:nodoc:
+    CbrainMailer.signup_account_created(signup, plain_password).deliver
     return true
   rescue => ex
     Rails.logger.error ex.to_s
     #flash.now[:error] ||= "No email for records: "
-    #flash.now[:error]  += "#{demand.id} (#{ex.class.to_s}), "
+    #flash.now[:error]  += "#{signup.id} (#{ex.class.to_s}), "
     return false
   end
 
 
 
-  def send_admin_notification(demand) #:nodoc:
+  def send_admin_notification(signup) #:nodoc:
     return unless RemoteResource.current_resource.support_email
-    show_url  = url_for(:controller => :demands, :action => :show, :id => demand.id, :only_path => false)
-    CbrainMailer.notify_admin(demand, show_url).deliver
+    show_url  = url_for(:controller => :signups, :action => :show, :id => signup.id, :only_path => false)
+    CbrainMailer.signup_notify_admin(signup, show_url).deliver
     return true
   rescue => ex
     Rails.logger.error ex.to_s

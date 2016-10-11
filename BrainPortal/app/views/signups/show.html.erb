@@ -34,17 +34,17 @@
     <h3>Editing this form:</h3>
       As an administrator, you can <%= link_to "edit", :action => :edit %> this form.
 
-      <% if ! @demand.approved_by.present? %>
+      <% if ! @signup.approved_by.present? %>
 
         <h3>Approving this request:</h3>
 
-        <% unless @demand.dup_login? %>
-          You can also <%= link_to "approve", approve_demand_path(@demand), :method => :post, :confirm => "Approve a user account for \"#{@demand.full}\"?" %> this request.
+        <% unless @signup.dup_login? %>
+          You can also <%= link_to "approve", approve_signup_path(@signup), :method => :post, :confirm => "Approve a user account for \"#{@signup.full}\"?" %> this request.
         <% else %>
           <span style="color: red">This user's login conflicts with a user already in the system.</span>
         <% end %>
 
-        <% if ! @demand.confirmed? %>
+        <% if ! @signup.confirmed? %>
           <span style="color: red">The user has not yet confirmed their email address.</span>
         <% else %>
           The user has confirmed the email address.
@@ -62,14 +62,14 @@
 
 <% end %>
 
-<% if current_user.nil? && ! @demand.confirmed? %>
+<% if current_user.nil? && ! @signup.confirmed? %>
 <p>
 A confirmation email has been sent to the address you provided. Once you receive
-it, please click on the provided link so we can confirm your identity. If you haven't received the email, you can ask for another <%= link_to "email confirmation request", resend_confirm_demand_path(@demand) %> to be sent to you.
+it, please click on the provided link so we can confirm your identity. If you haven't received the email, you can ask for another <%= link_to "email confirmation request", resend_confirm_signup_path(@signup) %> to be sent to you.
 
 <% end %>
 <p>
-You can also <%= link_to "delete", demand_path(@demand), :action => :destroy, :method => :delete, :confirm => "Are you sure you want to delete the request of \"#{@demand.full}\" ?" %> this request. No traces or backups will be kept on our servers.
+You can also <%= link_to "delete", signup_path(@signup), :action => :destroy, :method => :delete, :confirm => "Are you sure you want to delete the request of \"#{@signup.full}\" ?" %> this request. No traces or backups will be kept on our servers.
 </br></br>
 Below is a summary of the information you provided.
 <p>
@@ -79,7 +79,7 @@ Below is a summary of the information you provided.
 
   <tr>
     <th>Full Name:</th>
-    <td><%= @demand.full %></td>
+    <td><%= @signup.full %></td>
   </tr>
 
   <tr>
@@ -89,52 +89,52 @@ Below is a summary of the information you provided.
 
   <tr>
     <th>Name of Institution/Organization:</th>
-    <td><%= @demand.institution %></td>
+    <td><%= @signup.institution %></td>
   </tr>
 
   <tr>
     <th>Department:</th>
-    <td><%= @demand.department %></td>
+    <td><%= @signup.department %></td>
   </tr>
 
   <tr>
     <th>Position or role:</th>
-    <td><%= @demand.position %></td>
+    <td><%= @signup.position %></td>
   </tr>
 
   <tr>
     <th>Email address:</th>
-    <td><%= @demand.email %></td>
+    <td><%= @signup.email %></td>
   </tr>
 
   <tr>
     <th>Street Address (line 1):</th>
-    <td><%= @demand.street1 %></td>
+    <td><%= @signup.street1 %></td>
   </tr>
 
   <tr>
     <th>Street Address (line 2):</th>
-    <td><%= @demand.street2 %></td>
+    <td><%= @signup.street2 %></td>
   </tr>
 
   <tr>
     <th>City:</th>
-    <td><%= @demand.city %></td>
+    <td><%= @signup.city %></td>
   </tr>
 
   <tr>
     <th>Province/State:</th>
-    <td><%= @demand.province %></td>
+    <td><%= @signup.province %></td>
   </tr>
 
   <tr>
     <th>Country:</th>
-    <td><%= @demand.country %></td>
+    <td><%= @signup.country %></td>
   </tr>
 
   <tr>
     <th>Postal Code:</th>
-    <td><%= @demand.postal_code %></td>
+    <td><%= @signup.postal_code %></td>
   </tr>
 
   <tr>
@@ -144,14 +144,14 @@ Below is a summary of the information you provided.
 
   <tr>
     <th>Prefered 'login' name:</th>
-    <td><%= @demand.login.presence || "(none)" %></td>
+    <td><%= @signup.login.presence || "(none)" %></td>
   </tr>
 
-  <% if @demand.comment.present? %>
+  <% if @signup.comment.present? %>
 
   <tr>
     <th>Comments or special requests:</th>
-    <td><%= @demand.comment %></td>
+    <td><%= @signup.comment %></td>
   </tr>
 
   <tr>
@@ -165,9 +165,9 @@ Below is a summary of the information you provided.
   <tr>
     <th>Status of request:</th>
     <td>
-        <% if @demand.confirmed? %>
+        <% if @signup.confirmed? %>
           Email address confirmed by user.<br>
-          <% if @demand.approved_by.present? %>
+          <% if @signup.approved_by.present? %>
             Request approved by administrator.
           <% else %>
             <span style="color: #bd2936">Request not yet approved by administrator.</span>
