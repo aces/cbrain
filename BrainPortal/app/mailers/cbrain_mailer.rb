@@ -105,17 +105,6 @@ class CbrainMailer < ActionMailer::Base
     )
   end
 
-  # Sends an email to a new user that their request for an account has been approved
-  def signup_account_created(signup, plain_password = nil)
-    @signup         = signup
-    @plain_password = plain_password
-    mail(
-      :from    => RemoteResource.current_resource.system_from_email,
-      :to      => @signup.email,
-      :subject => "New CBRAIN Account Created"
-    )
-  end
-
   private
 
   def build_from #:nodoc:

@@ -22,25 +22,26 @@
 #
 -%>
 
-<% title 'Registration Requests' %>
+<% title 'Signup Request Approval Result' %>
 
-<h1>Request Approval Result:</h1>
+<h1>Signup Request Approval Result:</h1>
 
-<% if @exception_trace.present? || @info =~ /\Aerror/i %>
+<% if @exception_trace.present? || @symbolic_result != :all_ok %>
 
   An error occurred. You might want to check the code of signups.rb, in method after_approval().
   <p>
 
-  <%= @exception_trace %>
+  <pre><%= @exception_trace %></pre>
 
-<% elsif @info.present? %>
-  The account request was approved, and the user was successfully created:
-  <%= @info %>
-
+<% else %>
+  The account request was approved, and the user was successfully created.<p>
+  <% if @info.present? %>
+    <pre><%= @info %></pre>
+  <% end %>
 <% end %>
 
 <p>
 
-You can go <%= link_to "back to see the request", signup_path(@signup) %>.<br/>
+You can go <%= link_to "back to see the request", signup_path(@signup) %>.<br>
 You can go <%= link_to "back to the request list", :action => :index %>.
 

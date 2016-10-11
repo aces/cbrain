@@ -82,22 +82,19 @@ class Signup < ActiveRecord::Base
   # This is the method that actually creates the user in CBRAIN's database
   def after_approval
 
-    res = ApprovalResult.new
+    res             = ApprovalResult.new
+
     unless self.valid?
-      res.success     = false
-      res.diagnostics = "Account request invalid:\n"
-      self.errors.full_messages.each{ |msg|
-        res.diagnostics << "\n" + msg
-      }
+      res.diagnostics = "Account request invalid:\n" + self.errors.full_messages.join("\n")
       return res
     end
 
     if self.dup_login?
-      res.diagnostics = "Failed to create user " + self.login + ", already exists"
-      res.success     = false
+      res.diagnostics = "Failed to create user '" + self.login + "', as it already exists."
       return res
     end
 
+    # Attempt to create the user
     pass = User.random_string
 
     u = User.new
@@ -121,14 +118,16 @@ class Signup < ActiveRecord::Base
     u.password_confirmation   = pass
     u.password_reset          = true
 
-    if u.save()
-      res.plain_password = pass
-      res.diagnostics    = "Created as UID #{u.id}"
-      res.success        = true
-    else
-      res.diagnostics    = "Could not save user"
-      res.success        = false
+    if ! u.save()
+      res.diagnostics = "Could not save user:\n" + u.errors.full_messages.join("\n")
+      return res
     end
+
+    # Returns information about the success
+    res.plain_password = pass
+    res.diagnostics    = "Created as UID #{u.id}"
+    res.user           = u
+    res.success        = true
 
     res
   end
@@ -137,6 +136,12 @@ class Signup < ActiveRecord::Base
   # trying to approve one signup request,
   class ApprovalResult #:nodoc:
     attr_accessor :diagnostics, :plain_password, :success
+    attr_accessor :user
+
+    def initialize #:nodoc:
+      self.success     = false
+      self.diagnostics = ""
+    end
 
     def to_s #:nodoc:
       self.diagnostics.presence.to_s
@@ -151,7 +156,8 @@ class Signup < ActiveRecord::Base
   # to make suer the login provided by the user matches
   # the restrictions within CBRAIN.
   def login_match_user_format #:nodoc:
-    return true if self.login.blank?
+    return true if   self.login.blank?
+    return true if ! self.login_changed?
 
     # Create a dummy user with only the login attribute
     dummy_user=User.new;dummy_user.login = self.login

@@ -22,18 +22,17 @@
 #
 -%>
 
-<%= form_tag({:action => :multi_action}, :method => :post) do %>
-
+<%= form_tag( { :action => :multi_action }, :method => :post) do %>
 
   <div class="menu-bar">
     <%= link_to "New Request", { :action => :new }, { :class => "button menu_button" }  %>
-    <%= submit_tag "Delete", :class => "button" %>
-    <%= submit_tag "Approve", :class => "button" %>
+    <%= submit_tag "Delete",    :class => "button" %>
+    <%= submit_tag "Approve",   :class => "button" %>
     <%= submit_tag "Fix Login", :class => "button" %>
-    <%= submit_tag "Resend", :class => "button" %>
+    <%= submit_tag "Resend",    :class => "button" %>
   </div>
 
-  <hr/>
+  <hr>
 
   <%=
     render(:partial => 'shared/active_filters', :locals  => {
@@ -67,8 +66,14 @@
     <%
       t.column("Name", :last,
         :sortable => true
-      ) { |d| d.full }
+      ) { |d| link_to d.full, :action => :show, :id => d.id }
     %>
+
+    <%
+      t.column("Edit", :edit) do |d|
+    %>
+      <%= link_to "Edit", :action => :edit, :id => d.id %>
+    <% end %>
 
     <%
       t.column("Email", :email,
@@ -96,45 +101,54 @@
       t.column("Institution", :institution,
         :sortable => true,
         :filters  => default_filters_for(@base_scope, :institution)
-      ) { |d| d.institution }
+      )
     %>
 
     <%
       t.column("Country", :country,
         :sortable => true,
         :filters => default_filters_for(@base_scope, :country)
-      ) { |d| d.country }
+      )
       %>
 
     <%
       t.column("Username", :login,
         :sortable => true
-      ) { |d| d.login }
+      )
     %>
 
     <%
-      t.column("Comments", :comment)
+      t.column("Comments", :comment) do |d|
+        html_tool_tip(crop_text_to(40, d.comment), :offset_x => 0, :offset_y => 20) do
+          simple_format(d.comment, :sanitize => true)
+        end if d.comment.present?
+      end
     %>
 
     <%
-      t.column("Actions", :actions) do |d|
-    %>
-      <%= link_to "Show", { :action => :show, :id => d.id } %>
-      <%= h("/") %>
-      <%= link_to "Edit", :action => :edit, :id => d.id %>
-    <% end %>
+      t.column("In CBRAIN", :user) do |d|
+        user = User.where(:login => d.login).first
+        if (user)
+          link_to_user_with_tooltip(user)
+        else
+          "(None)"
+        end
+      end
+     %>
 
     <%
       t.column("Status", :status) do |d|
     %>
       <% if d.approved_by.presence && d.approved_at.presence %>
-        <%= h("Approved by ") + d.approved_by + h(" at ") + d.approved_at %>
+        Approved by <%= d.approved_by %> at <%= d.approved_at %>
       <% else %>
-        <% if !d.confirmed? %>
-          (Email unconfirmed)
+        <% if d.confirmed? %>
+          <span><strong>Email confirmed.</strong></span>
+        <% else %>
+          <span class="warning">(Email unconfirmed)</span>
         <% end %>
         <% if d.dup_email? %>
-          <span>(Conflicting email)</span>
+          <span  class="warning">(Conflicting email)</span>
         <% end %>
         <% if d.dup_login? %>
           <span class="warning">(Login conflict)</span>
@@ -143,8 +157,8 @@
               :confirm => "Approve the application of \"#{d.full}\" ?" %>
         <% end %>
       <% end %>
-
     <% end %>
 
   <% end %>
 <% end %>
+

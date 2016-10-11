@@ -31,6 +31,10 @@ Thank you. You've confirmed your email address.
 Now it's up to the administrators to review your request
 and you'll be notified if and when they approve it.
 <p>
+<% if @propose_view %>
+In the meantime you can <%= link_to 'have a look', signup_path(@signup) %> at your request, or even <%= link_to 'edit', edit_signup_path(@signup) %> it.
+<p>
+<% end %>
 
 (There is nothing else to do here, you might as well have a coffee and read the news)
 

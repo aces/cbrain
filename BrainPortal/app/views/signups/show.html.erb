@@ -21,40 +21,37 @@
 #
 %>
 
-<% title 'Registration Info' %>
-
-<% if @exception_trace.present? %>
-  <div class="flash_error"><pre><%= @exception_trace %></pre></div>
-<% end %>
+<% title 'Account Request Info' %>
 
 <h1>Account Request Summary</h1>
 
-<% if !current_user.nil? %>
-  <% if current_user.has_role?(:admin_user) %>
-    <h3>Editing this form:</h3>
-      As an administrator, you can <%= link_to "edit", :action => :edit %> this form.
+<% if current_user.present? && current_user.has_role?(:admin_user) %>
 
-      <% if ! @signup.approved_by.present? %>
+  As an administrator, you can <%= link_to "edit", :action => :edit %> this request.<p>
 
-        <h3>Approving this request:</h3>
+  <% if @signup.approved_by.blank? %>
 
-        <% unless @signup.dup_login? %>
-          You can also <%= link_to "approve", approve_signup_path(@signup), :method => :post, :confirm => "Approve a user account for \"#{@signup.full}\"?" %> this request.
-        <% else %>
-          <span style="color: red">This user's login conflicts with a user already in the system.</span>
-        <% end %>
-
-        <% if ! @signup.confirmed? %>
-          <span style="color: red">The user has not yet confirmed their email address.</span>
-        <% else %>
-          The user has confirmed the email address.
-        <% end %>
-
-      <% end %>
+    <% if @signup.dup_login? %>
+      <span style="color: red">This user's login conflicts with a user already in the system.</span>
+    <% else %>
+      You can also <%= link_to "approve", approve_signup_path(@signup), :method => :post, :confirm => "Approve a user account for \"#{@signup.full}\"?" %> this request.
     <% end %>
+
+    <% if ! @signup.confirmed? %>
+      <span style="color: red">The user has not yet confirmed their email address.</span>
+    <% else %>
+      The user has confirmed the email address.
+    <% end %>
+
+    <p>
+    If the user hasn't received the confirmation email, you can ask for another
+    <%= link_to "email confirmation request", resend_confirm_signup_path(@signup), :method => :post %> to be sent again.
+
+  <% end %>
+
 <% else %>
 
-<p>
+  <p>
   You can <%= link_to "edit", :action => :edit %> this form, but
   this option will only be available while you are using the
   same browser session you used for submitting this form
@@ -62,19 +59,22 @@
 
 <% end %>
 
-<% if current_user.nil? && ! @signup.confirmed? %>
-<p>
-A confirmation email has been sent to the address you provided. Once you receive
-it, please click on the provided link so we can confirm your identity. If you haven't received the email, you can ask for another <%= link_to "email confirmation request", resend_confirm_signup_path(@signup) %> to be sent to you.
-
+<% if current_user.blank? && ! @signup.confirmed? %>
+  <p>
+  A confirmation email has been sent to the address you provided. Once you receive
+  it, please click on the provided link so we can confirm your identity.
+  <p>
+  If you haven't received the email, you can ask for another
+  <%= link_to "email confirmation request", resend_confirm_signup_path(@signup), :method => :post %> to be sent to you.
 <% end %>
-<p>
-You can also <%= link_to "delete", signup_path(@signup), :action => :destroy, :method => :delete, :confirm => "Are you sure you want to delete the request of \"#{@signup.full}\" ?" %> this request. No traces or backups will be kept on our servers.
-</br></br>
-Below is a summary of the information you provided.
-<p>
 
-<div>
+<p>
+You can <%= link_to "delete", signup_path(@signup), :action => :destroy, :method => :delete, :confirm => "Are you sure you want to delete the request of \"#{@signup.full}\" ?" %> this request.
+
+<p>
+Below is a summary of the information in this account request.
+
+<p>
   <table class="simple bordered">
 
   <tr>
@@ -147,6 +147,11 @@ Below is a summary of the information you provided.
     <td><%= @signup.login.presence || "(none)" %></td>
   </tr>
 
+  <tr>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+
   <% if @signup.comment.present? %>
 
   <tr>
@@ -161,32 +166,26 @@ Below is a summary of the information you provided.
 
   <% end %>
 
-
   <tr>
     <th>Status of request:</th>
     <td>
-        <% if @signup.confirmed? %>
-          Email address confirmed by user.<br>
-          <% if @signup.approved_by.present? %>
-            Request approved by administrator.
-          <% else %>
-            <span style="color: #bd2936">Request not yet approved by administrator.</span>
-          <% end %>
+      <% if @signup.confirmed? %>
+        Email address confirmed by user.<br>
+        <% if @signup.approved_by.present? %>
+          Request approved by administrator.
         <% else %>
-          <span style="color: #bd2936">Email address not yet confirmed.</span>
+          <span style="color: #bd2936">Request not yet approved by administrator.</span>
         <% end %>
+      <% else %>
+        <span style="color: #bd2936">Email address not yet confirmed.</span>
+      <% end %>
     </td>
   </tr>
 
   </table>
 
-</div>
-
-
-
-<% unless current_user.nil? %>
-  <% if current_user.has_role?(:admin_user) %>
-    <p>
-    You can go <%= link_to "back to request list", :action => :index %>.
-  <% end %>
+<% if current_user.present? && current_user.has_role?(:admin_user) %>
+  <p>
+  You can go <%= link_to "back to request list", :action => :index %>.
 <% end %>
+

@@ -26,22 +26,22 @@ class SignupsController < ApplicationController
   before_filter :login_required,      :except => [:show, :new, :create, :edit, :destroy, :update, :confirm, :resend_confirm]
   before_filter :admin_role_required, :except => [:show, :new, :create, :edit, :destroy, :update, :confirm, :resend_confirm]
 
+  ################################################################
+  # User-accessible action (do not need to be logged in)
+  ################################################################
 
   def show #:nodoc:
     @signup = Signup.find(params[:id]) rescue nil
+
     unless can_edit?(@signup)
       redirect_to login_path
       return
     end
   end
 
-
-
   def new #:nodoc:
     @signup = Signup.new
   end
-
-
 
   def create #:nodoc:
     @signup = Signup.new(params[:signup])
@@ -59,7 +59,7 @@ class SignupsController < ApplicationController
     end
 
     unless send_confirm_email(@signup)
-      flash[:error] = "It seems some error occured. Email notification was probably not sent.\n"
+      flash[:error] = "It seems some error occured. The email notification was probably not sent. There's nothing we can do about this."
     end
 
     send_admin_notification(@signup)
@@ -68,18 +68,16 @@ class SignupsController < ApplicationController
     redirect_to :action => :show, :id => @signup.id
   end
 
-
-
   def edit #:nodoc:
     @signup = Signup.find(params[:id]) rescue nil
+
     unless can_edit?(@signup)
       redirect_to login_path
       return
     end
+
     render :action => :new
   end
-
-
 
   def update #:nodoc:
     @signup = Signup.find(params[:id]) rescue nil
@@ -102,7 +100,66 @@ class SignupsController < ApplicationController
     redirect_to :action => :show, :id => @signup.id
   end
 
+  def destroy #:nodoc:
+    @signup = Signup.find(params[:id]) rescue nil
 
+    unless can_edit?(@signup)
+      redirect_to login_path
+      return
+    end
+
+    @signup.destroy
+    flash[:notice] = "The account request has been deleted."
+
+    if current_user && current_user.has_role?(:admin_user)
+      redirect_to :action => :index
+    else
+      redirect_to login_path
+    end
+  end
+
+  # Confirms that a signup person's email address actually belongs to them
+  def confirm #:nodoc:
+    @signup = Signup.find(params[:id]) rescue nil
+    token    = params[:token] || ""
+
+    # Params properly confirms the request? Then record that and show a nice message to user.
+    if @signup.present? && token.present? && @signup.confirm_token == token
+      @signup.confirmed = true
+      @signup.save
+      @propose_view = can_edit?(@signup)
+      return # renders confirm.html.erb
+    end
+
+    # If not, bluntly send user back to someplace else.
+    if current_user && current_user.has_role?(:admin_user)
+      redirect_to :action => :index
+    else
+      redirect_to login_path
+    end
+  end
+
+  def resend_confirm #:nodoc:
+    @signup = Signup.find(params[:id]) rescue nil
+
+    unless can_edit?(@signup)
+      redirect_to login_path
+      return
+    end
+
+    if send_confirm_email(@signup)
+      flash[:notice] = "A new confirmation email has been sent."
+    else
+      flash[:error] = "It seems some error occured. Email notification was probably not sent. Try again later, or contact the admins."
+    end
+
+    sleep 1
+    redirect_to :action => :show, :id => @signup.id
+  end
+
+  ################################################################
+  # Admin Actions; the current_user must be signed in as an admin.
+  ################################################################
 
   def index #:nodoc:
     @scope = scope_from_session('signups')
@@ -120,49 +177,17 @@ class SignupsController < ApplicationController
 
     respond_to do |format|
       format.js
-      format.html # index.html.erb
-    end
-
-  end
-
-
-
-  def destroy #:nodoc:
-    @signup = Signup.find(params[:id]) rescue nil
-
-    unless can_edit?(@signup)
-      redirect_to login_path
-      return
-    end
-
-    @signup.destroy
-    flash[:notice] = "The account request has been deleted."
-
-    redirect_to :action => :index
-  end
-
-
-  # Confirms that a signup person's email address actually belongs to them
-  def confirm #:nodoc:
-    @signup = Signup.find(params[:id]) rescue nil
-    token    = params[:token] || ""
-    if @signup.present? && token.present? && @signup.confirm_token == token
-      @signup.confirmed = true
-      @signup.save
-    else
-      redirect_to login_path
+      format.html
     end
   end
-
-
 
   # Administrator action that converts a signup into a user
   def approve
     @signup = Signup.find(params[:id]) rescue nil
 
     unless can_edit?(@signup)
-      flash[:error] = "Could not approve account"
-      redirect_to login_path
+      flash[:error] = "Could not approve account."
+      redirect_to :action => :index
       return
     end
 
@@ -172,27 +197,19 @@ class SignupsController < ApplicationController
       return
     end
 
-    symbolic_result, @info, @exception_trace = approve_one(@signup)
+    @symbolic_result, @info, @exception_trace = approve_one(@signup)
 
-    if symbolic_result == :all_ok
-      # flash.now[:notice] = "The account request for '#{@signup.full}' has been approved."
-      # flash.now[:notice] += "\nThe user was notified of his or her new account."
-      current_user.addlog_context(self,"Approved account request for user '#{@signup.login}'")
-      User.find_by_login(@signup.login).addlog_context(self, "Account created after request approved by '#{current_user.login}'")
-    elsif symbolic_result == :failed_save
-      # flash.now[:error] = @info.presence || ""
-    elsif symbolic_result == :failed_approval
-      # flash.now[:error] = @info.presence || ""
-    elsif symbolic_result == :not_notifiable
-      # flash.now[:error] = @info.presence || ""
-      @current_user.addlog_context(self,"Approved account request for user '#{@signup.login}'")
-      User.find_by_login(@signup.login).addlog_context(self, "Account created after request approved by '#{@current_user.login}'")
+    if @symbolic_result != :all_ok
+      flash.now[:error] = @info.presence || "(Unspecified internal error?!?)"
     end
-
   end
 
-
-
+  # Main entry point for mass operations on requests.
+  # Some of these methods render the multi_action view,
+  # which expects @results to be an array of quadruplets
+  # [ signup, status, message, backtrace ]
+  # where +signup+ is a Signup object, and the other three
+  # are similar to what the approve_one() method returns.
   def multi_action #:nodoc:
     if params[:commit] =~ /Approve/
       return approve_multi
@@ -210,14 +227,13 @@ class SignupsController < ApplicationController
       return delete_multi
     end
 
+    # Default: unknown multi action?
     redirect_to :action => :index
   end
 
-
-
   def delete_multi #:nodoc:
     reqids = params[:reqids] || []
-    reqs = Signup.find(reqids)
+    reqs   = Signup.find(reqids)
 
     count = 0
     reqs.each do |req|
@@ -229,45 +245,38 @@ class SignupsController < ApplicationController
     redirect_to :action => :index
   end
 
-
-
   def fix_login_multi #:nodoc:
     reqids = params[:reqids] || []
-    reqs = Signup.find(reqids)
+    reqs   = Signup.find(reqids)
 
     @results = reqs.map do |req|
 
+      next [ req, :no_change, 'No changes', nil ] if req.login.present?
+
       old   = req.login
-
       new   = ""
-      puts "Fixing: #{old}"
 
+      # Attempt at parsing email
       email = req.email
-      if email =~ /\A(\w+)@/
-        new = Regexp.last_match[1].downcase
+      if email =~ /\A(\S+)@/
+        new = Regexp.last_match[1].downcase.gsub(/\W+/,"")
       end
-      new = "" if new.size < 3 || new.size > 8
 
+      # Attempt at using first and last names
       if new.blank?
-        new = (req.first[0,1] + req.last[0,7]).downcase
+        new = (req.first[0,1] + req.last).downcase.gsub(/\W+/,"")
       end
-      new = "" if new !~ /\A[a-z][a-zA-Z0-9]+\z/
-      new = "" if new.size < 3 || new.size > 8
 
-      if new.blank? || !req.login.blank?
-          puts "  -> No changes"
-        [ req, :no_change, 'No changes', nil ]
-      else
-        backtrace = nil
-        begin
-          req.update_attribute(:login, new)
-          puts "  -> #{old} => #{new}"
-        rescue => ex
-          backtrace = ex.backtrace
-        end
-        message = backtrace ? "Attempted" : "Adjusted"
-        [ req, :adjusted, "#{message}: #{old} => #{new}", backtrace ]
+      next [ req, :no_change, 'No changes', nil ] if new.blank?
+
+      backtrace = nil
+      begin
+        req.update_attribute(:login, new)
+      rescue => ex
+        backtrace = ex.backtrace
       end
+      message = backtrace ? "Attempted" : "Adjusted"
+      [ req, :adjusted, "#{message}: #{old} => #{new}", backtrace ]
 
     end
 
@@ -276,22 +285,18 @@ class SignupsController < ApplicationController
     render :action => :multi_action
   end
 
-
-
   def resend_conf_multi #:nodoc:
     reqids = params[:reqids] || []
-    reqs = Signup.find(reqids)
+    reqs   = Signup.find(reqids)
 
     count = 0
 
     @results = reqs.map do |req|
       next if req.confirmed? || req.approved_by.present?
-      print "Resending confirmation: #{req.full_name}"
       if send_confirm_email(req)
         count += 1
         [ req, :all_ok, "Resent confirmation email", nil ]
       else
-        puts "=> ********* FAILED *********"
         [ req, :failed_confirm, "ERROR: Could not send confirmation email", nil ]
       end
     end
@@ -302,17 +307,12 @@ class SignupsController < ApplicationController
     render :action => :multi_action
   end
 
-
-
   def approve_multi #:nodoc:
     reqids = params[:reqids] || []
-    reqs = Signup.find(reqids)
+    reqs   = Signup.find(reqids)
 
     @results = reqs.map do |req|
-      print "Approving: #{req.full_name} => "
       symbolic_result, message, backtrace = approve_one(req)
-
-      #message = "Account created and user notified" if message.blank? && symbolic_result == :all_ok
       [ req, symbolic_result, message, backtrace ]
     end
 
@@ -321,78 +321,49 @@ class SignupsController < ApplicationController
     render :action => :multi_action
   end
 
-
-
-  def approve_one(req) #:nodoc:
-    result = nil
-    exception_trace = ""
-
-    # Trigger approval code
-    if req.respond_to?(:after_approval)
-      begin
-        result = req.after_approval
-      rescue => ex
-        exception_trace = "#{ex.class}: #{ex.message}\n" + ex.backtrace.join("\n")
-        return [ :failed_approval, 'ERROR: Exception when approving' , exception_trace ]
-      end
-    end
+  # This invokes the Signup model method after_approval() which
+  # attempts to create the user based on the signup object's information.
+  # The method here returns a triplet [ status, message, backtrace ]
+  # where +status+ is a symbol among :all_ok, :failed_approval, :failed_save, or :not_notifiable,
+  # +message+ is a message describing the status, and +backtrace+ is the exception trace
+  # if an exception was raised.
+  def approve_one(signup) #:nodoc:
+    result = signup.after_approval
 
     return [ :failed_save, "ERROR: #{result.diagnostics}", nil ] unless result.success
 
-    # Mark as approved
-    info           = result.diagnostics    rescue nil
+    user = result.user
+    current_user.addlog("Approved account request for user '#{user.login}'")
+    user.addlog("Account created after [[signup request][#{signup_path(signup)}]] approved by '#{current_user.login}'")
+
+    # Mark signup object as approved
+    info           = result.to_s           rescue nil
     plain_password = result.plain_password rescue nil
 
-    req.approved_by ||= current_user.login
-    req.approved_at ||= Time.now
-    req.save
+    signup.approved_by ||= current_user.login
+    signup.approved_at ||= Time.now
+    signup.save!
 
     # Notify user
-    if send_account_created_email(req,plain_password)
+    if send_account_created_email(signup,plain_password)
       return [ :all_ok, info, nil ]
     else
-      return [ :not_notifiable, 'ERROR: The User was created in CBRAIN, but the notification email failed to send.', 'ERROR: The User was created in CBRAIN, but the notification email failed to send.' ]
+      return [ :not_notifiable, 'ERROR: The User was created in CBRAIN, but the notification email failed to send.', nil ]
     end
 
-
+  rescue => ex
+    exception_trace = "#{ex.class}: #{ex.message}\n" + ex.backtrace.join("\n")
+    return [ :failed_approval, 'ERROR: Exception when approving' , exception_trace ]
   end
-
-
-
-  def resend_confirm #:nodoc:
-    @signup = Signup.find(params[:id]) rescue nil
-
-    unless can_edit?(@signup)
-      redirect_to login_path
-      return
-    end
-
-    if send_confirm_email(@signup)
-      flash[:notice] = "A new confirmation email has been sent."
-    else
-      flash[:error] = "It seems some error occured. Email notification was probably not sent. Check your mailhost settings.\n"
-    end
-
-    sleep 1
-    redirect_to :action => :show, :id => @signup.id
-  end
-
-
 
   private
-
-
 
   def can_edit?(signup) #:nodoc:
     return false if signup.blank?
     return true  if signup[:session_id] == request.session_options[:id]
-    if !current_user.nil?
-      return true  if current_user.has_role?(:admin_user)
-    end
+    return true  if current_user && current_user.has_role?(:admin_user)
     false
   end
-
-
 
   def send_confirm_email(signup) #:nodoc:
     confirm_url = url_for(:controller => :signups, :action => :confirm, :id => signup.id, :only_path => false, :token => signup.confirm_token)
@@ -400,23 +371,16 @@ class SignupsController < ApplicationController
     return true
   rescue => ex
     Rails.logger.error ex.to_s
-    #flash[:error] = "It seems some error occured. Email notification was probably not sent. Sorry. We'll look into that.\n"
     return false
   end
 
-
-
-  def send_account_created_email(signup, plain_password = nil) #:nodoc:
-    CbrainMailer.signup_account_created(signup, plain_password).deliver
+  def send_account_created_email(user, plain_password) #:nodoc:
+    CbrainMailer.registration_confirmation(user, plain_password).deliver
     return true
   rescue => ex
     Rails.logger.error ex.to_s
-    #flash.now[:error] ||= "No email for records: "
-    #flash.now[:error]  += "#{signup.id} (#{ex.class.to_s}), "
     return false
   end
-
-
 
   def send_admin_notification(signup) #:nodoc:
     return unless RemoteResource.current_resource.support_email
@@ -425,7 +389,6 @@ class SignupsController < ApplicationController
     return true
   rescue => ex
     Rails.logger.error ex.to_s
-    #flash[:error] = "It seems some error occured. Email notification was probably not sent. Sorry. We'll look into that."
     return false
   end
 
