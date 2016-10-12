@@ -100,7 +100,11 @@
            <li <%= set_selected(params[:controller], :exception_logs) %>>
              <%= link_to 'Exceptions', exception_logs_path %>
            </li>
+           <li <%= set_selected(params[:controller], :signups) %>>
+             <%= link_to 'Signups', signups_path %>
+           </li>
          <% end %>
+
        </ul>
     </div>  <!-- End id="main_menu" -->
 
