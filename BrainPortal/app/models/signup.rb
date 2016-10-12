@@ -99,17 +99,17 @@ class Signup < ActiveRecord::Base
 
     u = User.new
     #u.title                   = self.title
-    u.full_name               = self.full
-    u.login                   = self.login
-    u.email                   = self.email
+    u.full_name               = self.full.try :strip
+    u.login                   = self.login.try :strip
+    u.email                   = self.email.try :strip
     #u.institution             = self.institution
     #u.department              = self.department
     #u.position                = self.position
     #u.street1                 = self.street1
     #u.street2                 = self.street2
-    u.city                    = self.city
+    u.city                    = self.city.try :strip
     #u.province                = self.province
-    u.country                 = self.country
+    u.country                 = self.country.try :strip
     #u.postal_code             = self.postal_code
     u.time_zone               = self.time_zone
     #u.comment                 = self.comment
@@ -121,6 +121,13 @@ class Signup < ActiveRecord::Base
     if ! u.save()
       res.diagnostics = "Could not save user:\n" + u.errors.full_messages.join("\n")
       return res
+    end
+
+    # Log additional info in user object log (until we find a place for it).
+    [ :institution, :department, :position, :street1, :street2, :province, :postal_code ].each do |att|
+      val = self[att]
+      next if val.blank?
+      u.addlog("#{att.to_s.capitalize}: #{val.strip}")
     end
 
     # Returns information about the success

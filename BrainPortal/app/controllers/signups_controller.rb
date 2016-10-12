@@ -245,29 +245,16 @@ class SignupsController < ApplicationController
     redirect_to :action => :index
   end
 
+  # Changes login attribute into:
+  # first letter of first name + last name (e.g. "tjones")
   def fix_login_multi #:nodoc:
     reqids = params[:reqids] || []
     reqs   = Signup.find(reqids)
 
     @results = reqs.map do |req|
-
-      next [ req, :no_change, 'No changes', nil ] if req.login.present?
-
-      old   = req.login
-      new   = ""
-
-      # Attempt at parsing email
-      email = req.email
-      if email =~ /\A(\S+)@/
-        new = Regexp.last_match[1].downcase.gsub(/\W+/,"")
-      end
-
-      # Attempt at using first and last names
-      if new.blank?
-        new = (req.first[0,1] + req.last).downcase.gsub(/\W+/,"")
-      end
-
-      next [ req, :no_change, 'No changes', nil ] if new.blank?
+      next if req.approved_by.present? # don't mess with already approved records
+      old = req.login
+      new = (req.first[0,1] + req.last).downcase.gsub(/\W+/,"")
 
       backtrace = nil
       begin
@@ -276,8 +263,7 @@ class SignupsController < ApplicationController
         backtrace = ex.backtrace
       end
       message = backtrace ? "Attempted" : "Adjusted"
-      [ req, :adjusted, "#{message}: #{old} => #{new}", backtrace ]
-
+      [ req, :adjusted, "#{message}: '#{old}' => '#{new}'", backtrace ]
     end
 
     @results.compact!
@@ -333,8 +319,8 @@ class SignupsController < ApplicationController
     return [ :failed_save, "ERROR: #{result.diagnostics}", nil ] unless result.success
 
     user = result.user
-    current_user.addlog("Approved account request for user '#{user.login}'")
-    user.addlog("Account created after [[signup request][#{signup_path(signup)}]] approved by '#{current_user.login}'")
+    current_user.addlog("Approved [[signup request][#{signup_path(signup)}]] for user '#{user.login}'")
+    user.addlog("Account created after signup request approved by '#{current_user.login}'")
 
     # Mark signup object as approved
     info           = result.to_s           rescue nil
@@ -345,7 +331,7 @@ class SignupsController < ApplicationController
     signup.save!
 
     # Notify user
-    if send_account_created_email(signup,plain_password)
+    if send_account_created_email(user,plain_password)
       return [ :all_ok, info, nil ]
     else
       return [ :not_notifiable, 'ERROR: The User was created in CBRAIN, but the notification email failed to send.', nil ]
