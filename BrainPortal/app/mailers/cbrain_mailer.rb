@@ -90,9 +90,8 @@ class CbrainMailer < ActionMailer::Base
   end
 
   # Sends an email to the administrator
-  def signup_notify_admin(signup, login_url, show_url)
+  def signup_notify_admin(signup, show_url)
     @signup     = signup
-    @login_url  = login_url
     @show_url   = show_url
     admin_email = RemoteResource.current_resource.support_email
     return if admin_email.blank?

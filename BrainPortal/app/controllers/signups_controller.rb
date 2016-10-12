@@ -331,7 +331,7 @@ class SignupsController < ApplicationController
     signup.save!
 
     # Notify user
-    if send_account_created_email(signup,plain_password)
+    if send_account_created_email(user,plain_password)
       return [ :all_ok, info, nil ]
     else
       return [ :not_notifiable, 'ERROR: The User was created in CBRAIN, but the notification email failed to send.', nil ]
