@@ -22,17 +22,20 @@
 #
 -%>
 
-<% title 'Request Confirmed' %>
+<%
+#
+# Partial with these locals:
+#
+# signup          : signup object
+# sym_res         : a result symbol
+# info            : info message
+# exception_trace : stack trace when error
+#
+%>
 
-<center>
-<h1>Confirmed!</h1>
+<h3>Result for <%= crop_text_to(30, signup.full_name) %>, <%= crop_text_to(30, signup.institution) %></h3>
 
-Thank you. You've confirmed your email address with the CBRAIN group.
-<p>
-Now it's up to the administrators to review your request
-and you'll be notified if and when they approve it.
-<p>
+<% if info.present? %>
+  <pre><%= info.to_s %></pre>
+<% end %>
 
-(There is nothing else to do here, you might as well have a coffee and read the news)
-
-</center>

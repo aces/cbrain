@@ -150,7 +150,7 @@ CbrainRailsPortal::Application.routes.draw do
     delete :destroy, :on => :collection
   end
 
-  resources :demands do
+  resources :signups do
     member do
       post 'approve'
       post 'resend_confirm'

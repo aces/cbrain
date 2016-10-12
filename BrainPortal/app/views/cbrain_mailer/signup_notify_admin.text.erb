@@ -1,14 +1,14 @@
 Someone is asking for a new account:
 
-Full name:   <%= @demand.full %>
-Email:       <%= @demand.email %>
-Institution: <%= @demand.institution.presence || "(None provided)" %>
-<% if @demand.comment.present? %>
+Full name:   <%= @signup.full %>
+Email:       <%= @signup.email %>
+Institution: <%= @signup.institution.presence || "(None provided)" %>
+<% if @signup.comment.present? %>
 
 The requester provided some comments:
 
 =================================================
-<%= @demand.comment %>
+<%= @signup.comment %>
 =================================================
 <% end %>
 

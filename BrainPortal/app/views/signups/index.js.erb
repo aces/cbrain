@@ -21,11 +21,6 @@
 #
 %>
 
-<% title 'Account Requests' %>
-
-<h1>Account Requests</h1>
-
-
-<div id="demand_table" class="index_block">
-  <%= render :partial => 'demands_table' %>
-</div>
+<%= render :partial  => "shared/flash_update" %>
+jQuery("#signup_table").html(<%= html_for_js(render(:partial => 'signups_table')) %>);
+jQuery("#signup_table").trigger("new_content");

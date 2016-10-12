@@ -22,25 +22,26 @@
 #
 -%>
 
-<%
-#
-# Partial with these locals:
-#
-# demand          : demand object
-# sym_res         : a result symbol
-# info            : info message
-# exception_trace : stack trace when error
-#
-%>
+<% title 'Signup Request Approval Result' %>
 
-<h3>Result for <%= crop_text_to(30, demand.full_name) %>, <%= crop_text_to(30, demand.institution) %></h3>
+<h1>Signup Request Approval Result:</h1>
 
-<% if info.present? %>
+<% if @exception_trace.present? || @symbolic_result != :all_ok %>
 
-  <% if info =~ /\Aerror/i %>
-    <pre><%= info.to_s %></pre>
-  <% else %>
-    <pre><%= info.to_s %></pre>
+  An error occurred. You might want to check the code of signups.rb, in method after_approval().
+  <p>
+
+  <pre><%= @exception_trace %></pre>
+
+<% else %>
+  The account request was approved, and the user was successfully created.<p>
+  <% if @info.present? %>
+    <pre><%= @info %></pre>
   <% end %>
-
 <% end %>
+
+<p>
+
+You can go <%= link_to "back to see the request", signup_path(@signup) %>.<br>
+You can go <%= link_to "back to the request list", :action => :index %>.
+

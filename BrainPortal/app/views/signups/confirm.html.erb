@@ -1,4 +1,5 @@
-<%
+
+<%-
 #
 # CBRAIN Project
 #
@@ -19,8 +20,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-%>
+-%>
 
-<%= render :partial  => "shared/flash_update" %>
-jQuery("#demand_table").html(<%= html_for_js(render(:partial => 'demands_table')) %>);
-jQuery("#demand_table").trigger("new_content");
+<% title 'Request Confirmed' %>
+
+<h1>Confirmed!</h1>
+
+Thank you. You've confirmed your email address.
+<p>
+Now it's up to the administrators to review your request
+and you'll be notified if and when they approve it.
+<p>
+<% if @propose_view %>
+In the meantime you can <%= link_to 'have a look', signup_path(@signup) %> at your request, or even <%= link_to 'edit', edit_signup_path(@signup) %> it.
+<p>
+<% end %>
+
+(There is nothing else to do here, you might as well have a coffee and read the news)
+

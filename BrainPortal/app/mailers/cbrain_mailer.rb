@@ -78,41 +78,30 @@ class CbrainMailer < ActionMailer::Base
   end
 
   # Sends an email asking to verify a user's email address by clicking a link
-  def request_confirmation(demand, confirm_url)
-    @demand      = demand
+  def signup_request_confirmation(signup, confirm_url)
+    @signup      = signup
     @confirm_url = confirm_url
-    return if demand.confirm_token.blank? || demand.email.blank? || confirm_url.blank?
+    return if signup.confirm_token.blank? || signup.email.blank? || confirm_url.blank?
     mail(
       :from    => RemoteResource.current_resource.system_from_email,
-      :to      => @demand.email,
+      :to      => @signup.email,
       :subject => "Confirmation of CBRAIN Account Request"
     )
   end
 
   # Sends an email to the administrator
-  def notify_admin(demand, login_url, show_url)
-    @demand     = demand
+  def signup_notify_admin(signup, login_url, show_url)
+    @signup     = signup
     @login_url  = login_url
     @show_url   = show_url
     admin_email = RemoteResource.current_resource.support_email
     return if admin_email.blank?
-    subject  = "CBRAIN Account Request from '#{@demand.full}'"
-    subject += " at '#{@demand.institution}'" if @demand.institution.present?
+    subject  = "CBRAIN Account Request from '#{@signup.full}'"
+    subject += " at '#{@signup.institution}'" if @signup.institution.present?
     mail(
       :from    => RemoteResource.current_resource.system_from_email,
       :to      => admin_email,
       :subject => subject
-    )
-  end
-
-  # Sends an email to a new user that their request for an account has been approved
-  def account_created(demand, plain_password = nil)
-    @demand         = demand
-    @plain_password = plain_password
-    mail(
-      :from    => RemoteResource.current_resource.system_from_email,
-      :to      => @demand.email,
-      :subject => "New CBRAIN Account Created"
     )
   end
 
