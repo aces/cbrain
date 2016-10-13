@@ -554,14 +554,15 @@ class PortalTask < CbrainTask
   #
   # One major difference between the standard Errors model
   # and this implementation is that the params attribute
-  # names are stored as keys with the full .to_la_id()
-  # treatment (e.g. params :xyz is stored with key
-  # "cbrain_task_params_xyz", and "hello[goodbye]" with
-  # key "cbrain_task_params_hello_goodbye"). This is
-  # only a problem when iterating over all the messages;
-  # the methods [], add(), or delete()
+  # names are stored as keys 'encoded' with a prefix.
+  # E.g. the parameter :xyz is stored with key
+  # :cbrain_task_params_xyz, and "hello[goodbye]" with
+  # key :"cbrain_task_params_hello[goodbye]". This
+  # however is transparent to the user of the class.
   class ParamsErrors
+
     include Enumerable
+
     attr_writer :real_errors, :base
 
     def [](paramspath) #:nodoc:
