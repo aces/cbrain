@@ -552,17 +552,17 @@ class PortalTask < CbrainTask
   # See the Rails classes ActiveModel::Validations and
   # ActiveModel::Errors for more information.
   #
-  # The 'generate_errors' method is not implemented.
-
+  # One major difference between the standard Errors model
+  # and this implementation is that the params attribute
+  # names are stored as keys with the full .to_la_id()
+  # treatment (e.g. params :xyz is stored with key
+  # "cbrain_task_params_xyz", and "hello[goodbye]" with
+  # key "cbrain_task_params_hello_goodbye"). This is
+  # only a problem when iterating over all the messages;
+  # the methods [], add(), or delete()
   class ParamsErrors
     include Enumerable
     attr_writer :real_errors, :base
-
-    alias :key?      :include?
-    alias :has_key?  :include?
-    alias :added?    :include?
-
-    alias :size      :count
 
     def [](paramspath) #:nodoc:
       @real_errors[paramspath.to_la_id]
@@ -577,156 +577,108 @@ class PortalTask < CbrainTask
     end
 
     def add_on_blank(paramspaths,*args) #:nodoc:
-      Array(paramspaths).each do |paramspath|
-        value = @base.params_path_value(paramspath.to_la_id)
+      Array(paramspaths).map do |paramspath|
+        value = @base.params_path_value(paramspath)
         add(paramspath, "is blank") if value.blank?
-      end
+      end.compact
     end
 
     def add_on_empty(paramspaths,*args) #:nodoc:
-      Array(paramspaths).each do |paramspath|
-        value = @base.params_path_value(paramspath.to_la_id)
+      Array(paramspaths).map do |paramspath|
+        value = @base.params_path_value(paramspath)
         is_empty = value.respond_to?(:empty?) ? value.empty? : false
         add(paramspath, "is empty") if value.nil? || is_empty
-      end
+      end.compact
     end
 
     def as_json(*args) #:nodoc:
-      only_params_errors.as_json(*args)
+      to_hash.as_json(*args)
     end
 
     def blank? #:nodoc:
-      only_params_errors.blank?
+      count.zero?
     end
 
     def clear #:nodoc:
-      @real_errors.keys.each { |key|
-        if key =~ (/cbrain_task_params_/i)
-          @real_errors.delete(key)
-        end
-      }
+      keys.each { |k| @real_errors.delete(k) }
     end
 
     def count #:nodoc:
-      count = 0
-      only_params_errors.each{ |err, msgs|
-        msgs.each { |msg|
-          count += 1
-        }
-      }
-      count
+      inject(0) { |c| c += 1 }
     end
 
     def delete(paramspath) #:nodoc:
-      @real_errors.delete(paramspath.to_la_id.parameterize.underscore.to_sym)
+      @real_errors.delete(paramspath.to_la_id)
     end
 
-    # NOTE: iterates over a copy of the real errors hash
     def each(&block) #:nodoc:
-      err_msgs_array = []
-      only_params_errors.each { |parampath, msgs|
-        msgs.each{ |msg|
-          err_msgs_array << [parampath, msg]
-        }
-      }
-      err_msgs_array.each(&block)
+      @real_errors.each do |attr, msg|
+        next unless attr.to_s =~ /^cbrain_task_params_/
+        yield attr, msg
+      end
     end
 
     def empty? #:nodoc:
-      only_params_errors.empty?
+      count == 0
     end
 
+    # For convenience, this method works with both normal paramspaths
+    # and ones that have been converted by to_la_id().
     def full_message(paramspath, message) #:nodoc:
-      "#{paramspath} #{message}"
+      paramspath = paramspath.to_la_id unless paramspath =~ /^cbrain_task_params_/
+      human      = PortalTask.human_attribute_name(paramspath)
+      "#{human} #{message}"
     end
 
     def full_messages #:nodoc:
-      messages = []
-      only_params_errors.each { |parampath, msgs|
-        msgs.each { |msg|
-          messages << "#{parampath} #{msg}"
-        }
-      }
-      messages
+      map { |paramspath, msg| full_message(paramspath, msg) }
     end
 
-    # This is from Rails 4
-    # def full_messages_for(paramspath) #:nodoc:
-    #   messages = []
-    #   only_params_errors.each { |err, msgs|
-    #     if err == paramspath
-    #       msgs.each { |msg|
-    #         messages << "#{err} #{msg}"
-    #       }
-    #     end
-    #   }
-    #   messages
-    # end
+    def full_messages_for(paramspath) #:nodoc:
+      self[paramspath].map { |msg| full_message(paramspath, msg) }
+    end
 
     def get(paramspath) #:nodoc:
-      @real_errors.get(paramspath.to_la_id.parameterize.underscore.to_sym)
+      # for some reason the get() and set() method REALLY want a symbol
+      @real_errors.get(paramspath.to_la_id.to_sym)
     end
 
     def include?(paramspath) #:nodoc:
-      return false if @real_errors.include?(paramspath.to_la_id.parameterize.underscore.to_sym).nil?
-      true
+      @real_errors.include?(paramspath.to_la_id)
     end
 
     def keys #:nodoc:
-      param_err_keys = []
-      only_params_errors.each{ |key, msgs|
-        param_err_keys << key unless param_err_keys.include?(key)
-      }
-      param_err_keys
+      map { |key, _| key }.uniq
     end
 
     def set(paramspath, value) #:nodoc:
-      @real_errors.set(paramspath.to_la_id.parameterize.underscore.to_sym, Array(value))
-    end
-
-    def to_a #:nodoc:
-      full_messages
+      # for some reason the get() and set() method REALLY want a symbol
+      @real_errors.set(paramspath.to_la_id.to_sym, Array(value))
     end
 
     def to_hash(full_messages = false) #:nodoc:
-      return_hash = {}
-      if full_messages
-        only_params_errors.each { |err, msgs|
-          return_hash[err] = []
-          msgs.each{ |msg|
-            return_hash[err] << full_message(err, msg)
-          }
-        }
-        return_hash
-      else
-        only_params_errors.to_hash()
+      inject({}) do |hash, pair|
+        paramspath, msg = *pair
+        hash[paramspath] ||= []
+        hash[paramspath] << (full_messages ? full_message(paramspath, msg) : msg)
+        hash
       end
     end
 
-    def to_xml(*args) #:nodoc:
-      only_params_errors.to_xml(*args)
+    def to_xml(options={}) #:nodoc:
+      to_a.to_xml options.reverse_merge(:root => "errors", :skip_types => true)
     end
 
     def values #:nodoc:
-      vals = []
-      only_params_errors.each { |err, msgs|
-        msgs.each { |msg|
-          vals << "#{msg}"
-        }
-      }
-      vals
+      keys.map { |paramspath| @real_errors[paramspath] }
     end
 
-    private
-      def only_params_errors #:nodoc:
-        human_params_errors = {}
-        all_param_errors = @real_errors.reject{ |err, msg| err !~ /cbrain_task_params_/i }
-        all_param_errors.each { |err,msg|
-          human_params_errors[@base.class.human_attribute_name(err)] = [] if human_params_errors[@base.class.human_attribute_name(err)].nil?
-          human_params_errors[@base.class.human_attribute_name(err)] << msg
-        }
-        human_params_errors
-      end
+    alias :key?      :include?
+    alias :has_key?  :include?
+    alias :added?    :include?
+    alias :to_a      :full_messages
+    alias :size      :count
+
   end
 
   # Returns the equivalent of the 'errors' object for the
