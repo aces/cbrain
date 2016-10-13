@@ -565,15 +565,15 @@ class PortalTask < CbrainTask
     attr_writer :real_errors, :base
 
     def [](paramspath) #:nodoc:
-      @real_errors[paramspath.to_la_id]
+      @real_errors[path2key(paramspath)]
     end
 
     def []=(paramspath,*args) #:nodoc:
-      @real_errors.add(paramspath.to_la_id,*args)
+      @real_errors.add(path2key(paramspath),*args)
     end
 
     def add(paramspath,*args) #:nodoc:
-      @real_errors.add(paramspath.to_la_id,*args)
+      @real_errors.add(path2key(paramspath),*args)
     end
 
     def add_on_blank(paramspaths,*args) #:nodoc:
@@ -600,7 +600,7 @@ class PortalTask < CbrainTask
     end
 
     def clear #:nodoc:
-      keys.each { |k| @real_errors.delete(k) }
+      keys.each { |k| delete(k) }
     end
 
     def count #:nodoc:
@@ -608,13 +608,13 @@ class PortalTask < CbrainTask
     end
 
     def delete(paramspath) #:nodoc:
-      @real_errors.delete(paramspath.to_la_id)
+      @real_errors.delete(path2key(paramspath))
     end
 
     def each(&block) #:nodoc:
       @real_errors.each do |attr, msg|
-        next unless attr.to_s =~ /^cbrain_task_params_/
-        yield attr, msg
+        next unless attr.to_s =~ /^_Xcbrain_task_paramsX_/ # see path2key below
+        yield key2path(attr), msg
       end
     end
 
@@ -622,11 +622,8 @@ class PortalTask < CbrainTask
       count == 0
     end
 
-    # For convenience, this method works with both normal paramspaths
-    # and ones that have been converted by to_la_id().
     def full_message(paramspath, message) #:nodoc:
-      paramspath = paramspath.to_la_id unless paramspath =~ /^cbrain_task_params_/
-      human      = PortalTask.human_attribute_name(paramspath)
+      human = PortalTask.human_attribute_name(paramspath)
       "#{human} #{message}"
     end
 
@@ -640,11 +637,11 @@ class PortalTask < CbrainTask
 
     def get(paramspath) #:nodoc:
       # for some reason the get() and set() method REALLY want a symbol
-      @real_errors.get(paramspath.to_la_id.to_sym)
+      @real_errors.get(path2key(paramspath))
     end
 
     def include?(paramspath) #:nodoc:
-      @real_errors.include?(paramspath.to_la_id)
+      @real_errors.include?(path2key(paramspath))
     end
 
     def keys #:nodoc:
@@ -653,7 +650,7 @@ class PortalTask < CbrainTask
 
     def set(paramspath, value) #:nodoc:
       # for some reason the get() and set() method REALLY want a symbol
-      @real_errors.set(paramspath.to_la_id.to_sym, Array(value))
+      @real_errors.set(path2key(paramspath), Array(value))
     end
 
     def to_hash(full_messages = false) #:nodoc:
@@ -670,7 +667,7 @@ class PortalTask < CbrainTask
     end
 
     def values #:nodoc:
-      keys.map { |paramspath| @real_errors[paramspath] }
+      keys.map { |paramspath| self[paramspath] }
     end
 
     alias :key?      :include?
@@ -678,6 +675,21 @@ class PortalTask < CbrainTask
     alias :added?    :include?
     alias :to_a      :full_messages
     alias :size      :count
+
+    private
+
+    # Will transform an arbitrary paramspath, such as "abc[def]"
+    # into a sort of key which likely will not interfere with
+    # the real attributes of the model, e.g.
+    # :"_Xcbrain_task_paramsX_abc[def]". The key is a symbol.
+    def path2key(paramspath) #:nodoc:
+      "_Xcbrain_task_paramsX_#{paramspath.to_s}".to_sym
+    end
+
+    # Does the reverse of path2key(); the result is a string.
+    def key2path(key) #:nodoc:
+      key.to_s.sub("_Xcbrain_task_paramsX_","")
+    end
 
   end
 
