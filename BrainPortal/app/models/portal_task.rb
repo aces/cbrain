@@ -613,7 +613,7 @@ class PortalTask < CbrainTask
 
     def each(&block) #:nodoc:
       @real_errors.each do |attr, msg|
-        next unless attr.to_s =~ /^_Xcbrain_task_paramsX_/ # see path2key below
+        next unless attr.to_s =~ /^cbrain_task_params_/ # see path2key below
         yield key2path(attr), msg
       end
     end
@@ -681,14 +681,14 @@ class PortalTask < CbrainTask
     # Will transform an arbitrary paramspath, such as "abc[def]"
     # into a sort of key which likely will not interfere with
     # the real attributes of the model, e.g.
-    # :"_Xcbrain_task_paramsX_abc[def]". The key is a symbol.
+    # :"cbrain_task_params_abc[def]". The key is a symbol.
     def path2key(paramspath) #:nodoc:
-      "_Xcbrain_task_paramsX_#{paramspath.to_s}".to_sym
+      "cbrain_task_params_#{paramspath.to_s}".to_sym
     end
 
     # Does the reverse of path2key(); the result is a string.
     def key2path(key) #:nodoc:
-      key.to_s.sub("_Xcbrain_task_paramsX_","")
+      key.to_s.sub("cbrain_task_params_","")
     end
 
   end
