@@ -18,8 +18,17 @@
       By instance name: <%= text_field_tag :log_inst, params[:log_inst], :size => 8 %>
       By method:        <%= select_tag :log_meth, options_for_select(
          [ '', 'GET', 'POST', 'PUT', 'DELETE' ], params[:log_meth]) %>
-      By controller:    <%= select_tag :log_ctrl, options_for_select(
-         [ '', 'bourreaux', 'custom_filters', 'data_providers', 'feedbacks', 'groups', 'messages', 'session', 'sites', 'tags', 'tasks', 'tool_configs', 'tools', 'userfiles', 'users' ], params[:log_ctrl]) %>
+      <%
+         # In development env, only the controllers accessed at least once show up as descendants of
+         # ApplicationController, so we hardcode a initial 'good enough' list.
+         controller_list = %w( access_profiles bourreaux custom_filters data_providers feedbacks groups
+                               help_documents invitations messages portal session_data sessions sites
+                               tags tasks tools tool_configs userfiles users ) # what we have at 4.5.0
+         # The line below adds any other controllers we might have missed (at least in production env).
+         controller_list += ApplicationController.descendants.map(&:name).map { |n| n.sub(/Controller$/,"").underscore }
+         controller_list = controller_list.uniq.sort
+      %>
+      By controller:    <%= select_tag :log_ctrl, options_for_select( [ '' ] + controller_list, params[:log_ctrl]) %>
     <br>
 
     <strong>Hide lines:</strong>

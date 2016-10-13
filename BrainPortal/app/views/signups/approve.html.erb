@@ -28,7 +28,7 @@
 
 <% if @exception_trace.present? || @symbolic_result != :all_ok %>
 
-  An error occurred. You might want to check the code of signups.rb, in method after_approval().
+  An error occurred. <!-- the info is in the flash -->
   <p>
 
   <pre><%= @exception_trace %></pre>
