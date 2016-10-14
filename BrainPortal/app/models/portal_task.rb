@@ -579,14 +579,14 @@ class PortalTask < CbrainTask
 
     def add_on_blank(paramspaths,*args) #:nodoc:
       Array(paramspaths).map do |paramspath|
-        value = @base.params_path_value(paramspath)
+        value = @base.params_path_value(paramspath.to_s)
         add(paramspath, "is blank") if value.blank?
       end.compact
     end
 
     def add_on_empty(paramspaths,*args) #:nodoc:
       Array(paramspaths).map do |paramspath|
-        value = @base.params_path_value(paramspath)
+        value = @base.params_path_value(paramspath.to_s)
         is_empty = value.respond_to?(:empty?) ? value.empty? : false
         add(paramspath, "is empty") if value.nil? || is_empty
       end.compact
