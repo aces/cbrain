@@ -440,8 +440,8 @@ describe PortalTask do
 
     describe "#[]" do
 
-      it "should convert the path argument to launch argument (la) and get it from the real error object" do
-        expect(real_errors).to receive(:"[]").with(param_path.to_la_id)
+      it "should get the error from the real error object" do
+        expect(real_errors).to receive(:"[]")
         params_errors[param_path]
       end
 
@@ -449,8 +449,8 @@ describe PortalTask do
 
     describe "#[]=" do
 
-      it "should convert the path argument to la and forward to the add method" do
-        expect(real_errors).to receive(:add).with(param_path.to_la_id, msg)
+      it "should add the error in the real error object" do
+        expect(real_errors).to receive(:add)
         params_errors[param_path] = msg
       end
 
@@ -458,8 +458,8 @@ describe PortalTask do
 
     describe "#add" do
 
-      it "should convert the path argument to la and forward to the add method" do
-        expect(real_errors).to receive(:add).with(param_path.to_la_id, msg)
+      it "should add the error in the real error object" do
+        expect(real_errors).to receive(:add)
         params_errors.add(param_path, msg)
       end
 
@@ -471,8 +471,8 @@ describe PortalTask do
         params_errors.clear
 
         task.params = {
-          :cbrain_task_params_test => "",
-          :cbrain_task_params_test2 => "NOT BLANK"
+          :test => "",
+          :test2 => "NOT BLANK"
         }
 
         params_errors.add_on_blank([:test, :test2])
@@ -488,8 +488,8 @@ describe PortalTask do
         params_errors.clear
 
         task.params = {
-          :cbrain_task_params_test => "",
-          :cbrain_task_params_test2 => "NOT EMPTY"
+          :test => "",
+          :test2 => "NOT EMPTY"
         }
         params_errors.add_on_empty([:test, :test2])
 
@@ -623,7 +623,7 @@ describe PortalTask do
         expect(params_errors.to_hash(true)).to be_kind_of(Hash)
         params_errors.to_hash(true).each { |key, msgs|
           msgs.each { |msg|
-            expect(msg).to include(key)
+            expect(msg.downcase).to include(key)
           }
         }
       end
