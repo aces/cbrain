@@ -545,84 +545,151 @@ class PortalTask < CbrainTask
     foundvalue
   end
 
-  # Wrapper class around the ActiveRecord errors() method;
-  # this class answers to the same methods as the errors
+  # Wrapper around the ActiveModel::Errors class.
+  # This class answers to the same methods as the errors
   # object but its 'attributes' are actually paramspaths.
-  # See the Rails classes ActiveRecord::Validations and
-  # ActiveRecord::Errors for more information.
+  #
+  # See the Rails classes ActiveModel::Validations and
+  # ActiveModel::Errors for more information.
+  #
+  # One major difference between the standard Errors model
+  # and this implementation is that the params attribute
+  # names are stored as keys 'encoded' with a prefix.
+  # E.g. the parameter :xyz is stored with key
+  # :cbrain_task_params_xyz, and "hello[goodbye]" with
+  # key :"cbrain_task_params_hello[goodbye]". This
+  # however is transparent to the user of the class.
   class ParamsErrors
-    attr_writer :real_errors
 
-    def on(paramspath) #:nodoc:
-      @real_errors.on(paramspath.to_la_id)
-    end
+    include Enumerable
+
+    attr_writer :real_errors, :base
 
     def [](paramspath) #:nodoc:
-      @real_errors.on(paramspath.to_la_id)
+      @real_errors[path2key(paramspath)]
+    end
+
+    def []=(paramspath,*args) #:nodoc:
+      @real_errors.add(path2key(paramspath),*args)
     end
 
     def add(paramspath,*args) #:nodoc:
-      @real_errors.add(paramspath.to_la_id,*args)
+      @real_errors.add(path2key(paramspath),*args)
     end
 
     def add_on_blank(paramspaths,*args) #:nodoc:
-      @real_errors.add_on_blank(paramspaths.map(&:to_la_id),*args)
+      Array(paramspaths).map do |paramspath|
+        value = @base.params_path_value(paramspath.to_s)
+        add(paramspath, "is blank") if value.blank?
+      end.compact
     end
 
     def add_on_empty(paramspaths,*args) #:nodoc:
-      @real_errors.add_on_empty(paramspaths.map(&:to_la_id),*args)
+      Array(paramspaths).map do |paramspath|
+        value = @base.params_path_value(paramspath.to_s)
+        is_empty = value.respond_to?(:empty?) ? value.empty? : false
+        add(paramspath, "is empty") if value.nil? || is_empty
+      end.compact
     end
 
-    def add_to_base(*args) #:nodoc:
-      @real_errors.add_to_base(*args)
+    def as_json(*args) #:nodoc:
+      to_hash.as_json(*args)
     end
 
-    def size #:nodoc:
-      @real_errors.size
-    end
-
-    def count #:nodoc:
-      @real_errors.size
-    end
-
-    def length #:nodoc:
-      @real_errors.size
+    def blank? #:nodoc:
+      count.zero?
     end
 
     def clear #:nodoc:
-      @real_errors.clear
+      keys.each { |k| delete(k) }
+    end
+
+    def count #:nodoc:
+      inject(0) { |c| c += 1 }
+    end
+
+    def delete(paramspath) #:nodoc:
+      @real_errors.delete(path2key(paramspath))
     end
 
     def each(&block) #:nodoc:
-      @real_errors.each(&block)
-    end
-
-    def each_full(&block) #:nodoc:
-      @real_errors.each_full(&block)
+      @real_errors.each do |attr, msg|
+        next unless attr.to_s =~ /^cbrain_task_params_/ # see path2key below
+        yield key2path(attr), msg
+      end
     end
 
     def empty? #:nodoc:
-      @real_errors.empty?
+      count == 0
     end
 
-    def full_messages(*args) #:nodoc:
-      @real_errors.full_messages(*args)
+    def full_message(paramspath, message) #:nodoc:
+      human = PortalTask.human_attribute_name(paramspath)
+      "#{human} #{message}"
     end
 
-    def generate_message(paramspath,*args) #:nodoc:
-      @real_errors.generate_message(paramspath.to_la_id,*args)
+    def full_messages #:nodoc:
+      map { |paramspath, msg| full_message(paramspath, msg) }
     end
 
-    def invalid?(paramspath) #:nodoc:
-      @real_errors.invalid?(paramspath.to_la_id)
+    def full_messages_for(paramspath) #:nodoc:
+      self[paramspath].map { |msg| full_message(paramspath, msg) }
     end
 
-    def on_base #:nodoc:
-      @real_errors.on_base
+    def get(paramspath) #:nodoc:
+      # for some reason the get() and set() method REALLY want a symbol
+      @real_errors.get(path2key(paramspath))
     end
 
-    def to_xml(*args) #:nodoc:
-      @real_errors.to_xml(*args)
+    def include?(paramspath) #:nodoc:
+      @real_errors.include?(path2key(paramspath))
+    end
+
+    def keys #:nodoc:
+      map { |key, _| key }.uniq
+    end
+
+    def set(paramspath, value) #:nodoc:
+      # for some reason the get() and set() method REALLY want a symbol
+      @real_errors.set(path2key(paramspath), Array(value))
+    end
+
+    def to_hash(full_messages = false) #:nodoc:
+      inject({}) do |hash, pair|
+        paramspath, msg = *pair
+        hash[paramspath] ||= []
+        hash[paramspath] << (full_messages ? full_message(paramspath, msg) : msg)
+        hash
+      end
+    end
+
+    def to_xml(options={}) #:nodoc:
+      to_a.to_xml options.reverse_merge(:root => "errors", :skip_types => true)
+    end
+
+    def values #:nodoc:
+      keys.map { |paramspath| self[paramspath] }
+    end
+
+    alias :key?      :include?
+    alias :has_key?  :include?
+    alias :added?    :include?
+    alias :to_a      :full_messages
+    alias :size      :count
+
+    private
+
+    # Will transform an arbitrary paramspath, such as "abc[def]"
+    # into a sort of key which likely will not interfere with
+    # the real attributes of the model, e.g.
+    # :"cbrain_task_params_abc[def]". The key is a symbol.
+    def path2key(paramspath) #:nodoc:
+      "cbrain_task_params_#{paramspath.to_s}".to_sym
+    end
+
+    # Does the reverse of path2key(); the result is a string.
+    def key2path(key) #:nodoc:
+      key.to_s.sub("cbrain_task_params_","")
     end
 
   end
@@ -630,7 +697,7 @@ class PortalTask < CbrainTask
   # Returns the equivalent of the 'errors' object for the
   # task, but where the attributes are in fact paramspath
   # values for the task's params[] hash. This works much like
-  # the standard ActiveRecord::Errors class. This is used for
+  # the standard ActiveModel::Errors class. This is used for
   # validating the task's params. For instance:
   #
   #   params = task.params || {}
@@ -651,6 +718,7 @@ class PortalTask < CbrainTask
     return @params_errors_cache if @params_errors_cache
     @params_errors_cache = ParamsErrors.new
     @params_errors_cache.real_errors = self.errors
+    @params_errors_cache.base        = self
     @params_errors_cache
   end
 
@@ -660,7 +728,7 @@ class PortalTask < CbrainTask
   # easy way to provide beautiful names for your parameters
   # is to make pretty_params_names() return such a hash.
   # Otherwise, if the attribute starts with 'cbrain_task_params_'
-  # (like ActiveRecord thinks the params attributes are named)
+  # (like ActiveModel thinks the params attributes are named)
   # it will remove that part and return the rest. And otherwise,
   # it invokes the superclass method.
   def self.human_attribute_name(attname,options={})
