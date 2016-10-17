@@ -749,7 +749,7 @@ class PortalTask < CbrainTask
        end
        return extended[sattname]        if extended.has_key?(sattname)
     end
-    super(attname,options) # not sattname
+    super(sattname,options)
   end
 
   # Restores from old_params any attributes listed in the
