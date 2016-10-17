@@ -138,7 +138,7 @@ module SchemaTaskGenerator
       # (Otherwise the source wouldn't be available to write down the generated
       # templates). This forces the use of eval instead of the much nicer,
       # faster and easier to maintain alternatives. :(
-      eval @source[Rails.root.to_s =~ /BrainPortal$/ ? :portal : :bourreau]
+      eval @source[Rails.root.to_s =~ /BrainPortal\z/ ? :portal : :bourreau]
 
       # Try and retrieve the just-generated task class
       task   = name.constantize rescue nil
@@ -220,7 +220,7 @@ module SchemaTaskGenerator
       # Create and save a new ToolConfig for the task on this server, unless
       # theres already one. Only applies to Bourreaux (as it would make no
       # sense on the portal).
-      return if Rails.root.to_s =~ /BrainPortal$/
+      return if Rails.root.to_s =~ /BrainPortal\z/
 
       # Create a ToolConfig iff
       #   (1) the Bourreau has a docker executable and
@@ -348,7 +348,7 @@ module SchemaTaskGenerator
   #   s.tool_config = ToolConfig.new(:version => '1.1')
   #   s.f # :a
   def self.version_switcher(name)
-    base = Rails.root.to_s =~ /BrainPortal$/ ? PortalTask : ClusterTask
+    base = Rails.root.to_s =~ /BrainPortal\z/ ? PortalTask : ClusterTask
     @@version_switchers       ||= {}
     @@version_switchers[name] ||= Class.new(base) do
 
@@ -489,7 +489,7 @@ module SchemaTaskGenerator
   def self.classify(str)
     str.gsub!('-', '_')
     str.gsub!(/\W/, '')
-    str.gsub!(/^\d/, '')
+    str.gsub!(/\A\d/, '')
     str.camelize
   end
 
@@ -520,7 +520,7 @@ module SchemaTaskGenerator
         .each_with_index
         .map { |v, i| "%-#{widths[i]}s" % (v + ',') }
         .join(' ')
-        .gsub(/,\s*$/, '')
+        .gsub(/,\s*\z/, '')
 
       "#{func}(#{inner})"
     end

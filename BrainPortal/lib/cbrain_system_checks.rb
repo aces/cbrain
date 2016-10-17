@@ -53,8 +53,8 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
     myname       = ENV["CBRAIN_RAILS_APP_NAME"]
     myname     ||= CBRAIN::CBRAIN_RAILS_APP_NAME if CBRAIN.const_defined?('CBRAIN_RAILS_APP_NAME')
-    mytype       = Rails.root.to_s =~ /BrainPortal$/ ? "BrainPortal" : "Bourreau"
-    myshorttype  = Rails.root.to_s =~ /BrainPortal$/ ? "portal"      : "bourreau"
+    mytype       = Rails.root.to_s =~ /BrainPortal\z/ ? "BrainPortal" : "Bourreau"
+    myshorttype  = Rails.root.to_s =~ /BrainPortal\z/ ? "portal"      : "bourreau"
     if myname.blank?
       puts "C> \t- No name given to this #{mytype} Rails application."
       puts "C> \t  Please edit 'config/initializers/config_#{myshorttype}.rb' and"
@@ -260,7 +260,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       Dir.chdir(cache_root) do
         dir_to_remove  = ".OLD_being_wiped.#{Process.pid}"
         Dir.foreach(".") do |entry|
-          next unless File.directory?(entry) && entry =~ /^\d\d+$/ # only subdirectories named '00', '123' etc
+          next unless File.directory?(entry) && entry =~ /\A\d\d+\z/ # only subdirectories named '00', '123' etc
           Dir.mkdir(dir_to_remove,0700) unless File.directory?(dir_to_remove)
           newname    = "#{dir_to_remove}/#{entry}"
           renamed_ok = File.rename(entry,newname) rescue false

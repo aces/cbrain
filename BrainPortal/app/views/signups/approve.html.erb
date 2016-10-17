@@ -1,0 +1,47 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title 'Signup Request Approval Result' %>
+
+<h1>Signup Request Approval Result:</h1>
+
+<% if @exception_trace.present? || @symbolic_result != :all_ok %>
+
+  An error occurred. <!-- the info is in the flash -->
+  <p>
+
+  <pre><%= @exception_trace %></pre>
+
+<% else %>
+  The account request was approved, and the user was successfully created.<p>
+  <% if @info.present? %>
+    <pre><%= @info %></pre>
+  <% end %>
+<% end %>
+
+<p>
+
+You can go <%= link_to "back to see the request", signup_path(@signup) %>.<br>
+You can go <%= link_to "back to the request list", :action => :index %>.
+

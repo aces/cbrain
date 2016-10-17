@@ -33,7 +33,7 @@
   end
 
   schema     = SchemaTaskGenerator.default_schema
-  descriptor = __FILE__.sub(/.rb$/,'.json')
+  descriptor = __FILE__.sub(/.rb\z/,'.json')
 
   begin
     SchemaTaskGenerator.generate(schema, descriptor).integrate if

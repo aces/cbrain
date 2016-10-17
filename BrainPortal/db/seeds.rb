@@ -123,7 +123,7 @@ elsif File.exists?(portal_name_file)
 end
 
 if ! portal_name.blank?
-  raise "Invalid name for the portal." if portal_name !~ /^[a-z]\w+$/i
+  raise "Invalid name for the portal." if portal_name !~ /\A[a-z]\w+\z/i
   puts "Portal name: #{portal_name}"
 end
 
@@ -133,7 +133,7 @@ if portal_name.blank?
   puts ""
   print "Portal name: "
   portal_name = Readline.readline
-  raise "Invalid name for the portal." if portal_name.blank? || portal_name !~ /^[a-z]\w+$/i
+  raise "Invalid name for the portal." if portal_name.blank? || portal_name !~ /\A[a-z]\w+\z/i
 end
 
 

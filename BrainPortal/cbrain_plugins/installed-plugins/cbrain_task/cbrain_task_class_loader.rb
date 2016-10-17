@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #
@@ -32,9 +32,9 @@
     break
   end
 
-  myshorttype = Rails.root.to_s =~ /BrainPortal$/ ? "portal" : "bourreau"
+  myshorttype = Rails.root.to_s =~ /BrainPortal\z/ ? "portal" : "bourreau"
   dirname     = File.dirname(__FILE__)
-  model       = basename.sub(/.rb$/,"")
+  model       = basename.sub(/.rb\z/,"")
   bytype_code = "#{dirname}/#{model}/#{myshorttype}/#{model}.rb"
   common_code = "#{dirname}/#{model}/common/#{model}.rb"
 
