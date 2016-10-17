@@ -58,7 +58,7 @@ class ApplicationController < ActionController::Base
 
   # This overrides the forgery protection method of
   # the same name; in most situations where a session has already
-  # been created, it just invoke the real method. It's
+  # been created, it just invokes the real method. It's
   # also the case if we are are at the login page of the app,
   # since we need to initialize a new session for sure.
   #
@@ -67,7 +67,7 @@ class ApplicationController < ActionController::Base
   # would create the session object).
   #
   # The problem this solves is that we no longer create empty session
-  # objects for requests that don't need a user to be logged in, sucj
+  # objects for requests that don't need a user to be logged in, such
   # as the service controller, or the credits page, etc.
   def form_authenticity_token
     if session.present? || (params["controller"] == "sessions" && params["action"] == "new")
@@ -216,7 +216,7 @@ class ApplicationController < ActionController::Base
 
     # Compute the host and IP from the request (when not logged in)
     ip   ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
-    if host.blank? && ip =~ /^[\d\.]+$/
+    if host.blank? && ip =~ /\A[\d\.]+\z/
       addrinfo = Rails.cache.fetch("host_addr/#{ip}") do
         Socket.gethostbyaddr(ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ ip ]
       end
@@ -248,7 +248,7 @@ class ApplicationController < ActionController::Base
     client_type            = parsed_http_user_agent.browser_name.presence || "(UnknownClient)"
     controller             = params[:controller].to_s.presence            || "UnknownController"
     action                 = params[:action].to_s.presence                || "UnknownAction"
-    success                = response.code.to_s =~ /^[123]\d\d$/
+    success                = response.code.to_s =~ /\A[123]\d\d\z/
 
     # Fetch the stats structure from meta data
     current_resource       = RemoteResource.current_resource

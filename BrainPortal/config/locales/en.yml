@@ -10,9 +10,9 @@ en:
         cbrain_task:
           cluster_jobid:               Job id on cluster
           cluster_workdir:             Working directory on cluster
-          share_wd_tid:                Working directory is shared with task 
+          share_wd_tid:                Working directory is shared with task
           cluster_workdir_size:        Working directory size on cluster
-          workdir_archive_userfile_id: Working directory archive 
+          workdir_archive_userfile_id: Working directory archive
         data_provider:
           remote_dir:                  Remote directory
         meta_data_store:
@@ -20,14 +20,14 @@ en:
           ar_table_name:               ActiveRecord table name
           meta_key:                    Metadata key
           meta_value:                  Metadata value
-        remote_resources:
+        remote_resource:
           actres_user:                 ActiveResource username
           actres_host:                 ActiveResource hostname
           actres_port:                 ActiveResource port
           actres_dir:                  ActiveResource directory prefix
           ssh_control_rails_dir:       Rails root directory
           tunnel_mysql_port:           Port for MySQL tunnel
-          tunnel_actres_port:          Port for ActiveResource tunnel 
+          tunnel_actres_port:          Port for ActiveResource tunnel
           dp_cache_dir:                Data provider cache directory
           dp_ignore_patterns:          Filename ignore patterns
           spaced_dp_ignore_patterns:   Filename ignore patterns
@@ -35,14 +35,15 @@ en:
           cms_shared_dir:              CMS shared directory
           workers_chk_time:            Workers check interval
           rr_timeout:                  Remote resource timeout
-        tool_configs:
+        tool_config:
           env_array:                   Environment variables array
           ncpus:                       Number of CPUs
-        tools:
+        tool:
           select_menu_text:            Text for select box
-        userfiles:
+        userfile:
           num_files:                   Number of files in collection
-        users:
-          email:                       E-mail 
-
-
+        user:
+          email:                       Email
+        signup:
+          first:                       First name
+          last:                        Last name

@@ -168,18 +168,20 @@
       <% if table.has_row_selection? %>
         <% if row.selectable? %>
           <td class="dt-sel">
-            <% id = table.generate_id %>
-            <input class="dt-sel-check"
-                   type="checkbox"
-                   id="<%= id %>"
-                   name="<%= row.select_param %>"
-                   value="<%= row.select_value %>"
-                   <% if row.selected %>
-                     checked="checked"
-                   <% end %> />
-            <label class="dt-sel-lbl" for="<%= id %>">
-              <span class="dt-sel-icon ui-icon ui-icon-check"></span>
-            </label>
+            <% unless row.select_hidden %>
+              <% id = table.generate_id %>
+              <input class="dt-sel-check"
+                     type="checkbox"
+                     id="<%= id %>"
+                     name="<%= row.select_param %>"
+                     value="<%= row.select_value %>"
+                     <% if row.selected %>
+                       checked="checked"
+                     <% end %> />
+              <label class="dt-sel-lbl" for="<%= id %>">
+                <span class="dt-sel-icon ui-icon ui-icon-check"></span>
+              </label>
+            <% end %>
           </td>
         <% else %>
           <td class="dt-sel-disabled"></td>

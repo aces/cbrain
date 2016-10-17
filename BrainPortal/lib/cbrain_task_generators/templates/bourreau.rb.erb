@@ -54,6 +54,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % out_keys = outputs.select { |o| o['command-line-key'] }
 % flags    = (inputs + outputs).select { |p| p['command-line-flag'] }
 % seps     = inputs.select { |i| i['command-line-flag-separator'] }
+% eVars    = descriptor['environment-variables'].dup rescue []
 %
   # Task properties are special boolean properties of your task, returned as a
   # hash table. Used internally by CBRAIN to enable/disable special task
@@ -96,15 +97,18 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
       retn.(false)
     end
 
-    # Resolve all input userfiles IDs to their Userfile instances and set the
-    # results data provider if missing.
-%   resolve = format_call('resolve_file_parameter', files) { |file| [
-%     ":'#{file['id']}'",
-%     'error'
-%   ] }
-%   files.each do |file|
-    <%= resolve.(file) %>
-%   end
+    # Set results data provider if missing via file inputs
+    # Check that the file can be resolved as well
+    isFile = lambda { |p| [<%= files.map { |f| ":'#{f['id']}'" }.join(',') %>].include?(p) }
+    params.each do |k,v|
+      if isFile.(k)
+        ( v.is_a?(Enumerable) ? v : [v] ).each do |t|
+          f = Userfile.find_by_id(t)
+          cb_error("Unable to resolve file (id: #{k}, input: #{t})") unless f
+          self.results_data_provider_id ||= f.data_provider_id rescue nil
+        end
+      end
+    end
 
     # And make them all available to <%= name %>
 %   make_available = format_call('make_available', files) { |file| [
@@ -125,6 +129,19 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   # Note that this function also generates the list of output filenames
   # in params.
   def cluster_commands #:nodoc:
+
+    # Environment variables from Boutiques descriptor
+% if eVars.empty?
+    envVars = []
+% else
+    envVars = [
+%    eVars.each do |v|
+%# The value is escaped for bash; the whole cmd is then escaped to be written into the ruby code
+      <%= ("export %s=%s" % [v['name'], v['value'].bash_escape(always_quote=true)]).inspect %>,
+%    end
+    ]
+% end
+
 % if in_keys.empty? && out_keys.empty?
 %   unless outputs.empty?
     # Output filenames
@@ -143,10 +160,10 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %   end
 %   if descriptor['cbrain:ignore-exit-status']
     # Command-line
-    [ <<-'CMD' ]
+    envVars + [ <<-'CMD' ]
 %   else
     # Command-line to run <%= name %> and save its exit status
-    [ <<-'CMD', "echo $? > ./#{exit_cluster_filename.bash_escape}" ]
+    envVars + [ <<-'CMD', "echo $? > ./#{exit_cluster_filename.bash_escape}" ]
 %   end
       <%= descriptor['command-line'] %>
     CMD
@@ -253,7 +270,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %   end
 %   if descriptor['cbrain:ignore-exit-status']
     # Generate the final command-line to run <%= name %>
-    [ apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %>) ]
+    envVars + [ apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %>) ]
       <%= descriptor['command-line'] %>
     CMD
 %   else
@@ -263,7 +280,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     CMD
 
     # And save its exit status
-    [ command, "echo $? > ./#{exit_cluster_filename.bash_escape}" ]
+    envVars + [ command, "echo $? > ./#{exit_cluster_filename.bash_escape}" ]
 %   end
 % end
   end
@@ -379,7 +396,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
           tag = '-' + (self.id.to_s || 'unk') + '-' + Time.now.nsec.to_s
           newName = name + tag if name.rindex(".").nil?
           ext = File.extname( name )
-          newName ||= name.gsub( /#{ext}$/, "#{tag + ext}" )
+          newName ||= name.gsub( /#{ext}\z/, "#{tag + ext}" )
           self.addlog("File with same name found. Renaming to #{newName} before saving.")
           name = newName
         end
@@ -443,23 +460,6 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     files.compact.each { |file| super(file, directory + '/') }
   end
 
-  # Resolve/replace input userfiles IDs for parameter +param+
-  # to their Userfile instances, calling +failed+ if a file cannot be resolved.
-  # Also try and set the results data provider if its missing.
-  def resolve_file_parameter(param, failed)
-    value = params[param]
-    return if value.nil?
-
-    files = (value.is_a?(Enumerable) ? value : [value]).map do |file|
-      file = Userfile.find_by_id(file) unless file.is_a?(Userfile)
-      failed.("Could not find file with ID #{file}") unless file
-      file
-    end
-
-    params[param] = value.is_a?(Enumerable) ? files : files.first
-    self.results_data_provider_id ||= files.first.data_provider_id rescue nil
-  end
-
   # Apply substitution keys +keys+ to +template+ in order to format a
   # command-line or output file name.
   # Substitute each value in +keys+ in +template+, prepended by the
@@ -477,6 +477,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   #     strip: [ '.z' ]
   #   ) => 'f -z 5'
   def apply_template(template, keys, flags: {}, strip: [], separators: {})
+    fileKeys = [<%= files.map { |f| '"' + f['command-line-key'] + '"' }.join(",") %>]
     keys.inject(template) do |template, (key, value)|
       flag = flags[key]
       sep_init = separators[key]
@@ -488,11 +489,18 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
       value = (value.is_a?(Enumerable) ? value.dup : [value])
         .reject(&:nil?)
         .map do |v|
-          v = v.name if v.is_a?(Userfile)
-          v = v.dup  if v.is_a?(String)
+
+          # Resolve file ids to names
+          if fileKeys.include?(key)
+            currFile = Userfile.find_by_id(v)
+            cb_error("Unable to find given userfile with id #{v}!") unless currFile
+            v = currFile.name
+          end
+
+          v = v.dup if v.is_a?(String)
 
           strip.find do |e|
-            v.sub!(/#{Regexp.quote(e)}$/, '')
+            v.sub!(/#{Regexp.quote(e)}\z/, '')
           end if v.is_a?(String)
 
           v.to_s.bash_escape

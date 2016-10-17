@@ -38,7 +38,6 @@ namespace :doc do
      rdoc.rdoc_files.include('cbrain_plugins/installed-plugins/userfiles/*/*.rb')
      rdoc.rdoc_files.include('config/initializers/cbrain.rb')
      rdoc.rdoc_files.include('config/initializers/core_extensions/*.rb')
-     rdoc.rdoc_files.include('config/initializers/revisions.rb')
   }
 end
 

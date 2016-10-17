@@ -155,6 +155,17 @@ CbrainRailsPortal::Application.routes.draw do
     delete :destroy, :on => :collection
   end
 
+  resources :signups do
+    member do
+      post 'approve'
+      post 'resend_confirm'
+      get  'confirm'
+    end
+    collection do
+      post 'multi_action'
+    end
+  end
+
   # Special named routes
   root  :to                       => 'portal#welcome'
   get   '/home'                   => 'portal#welcome'

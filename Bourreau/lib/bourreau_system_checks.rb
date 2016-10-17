@@ -417,9 +417,9 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
 
     uids2path = {} # this is the main list of all tasks
     dirlist.each do |path|  # path should be  "./01/23/45\n"
-      next unless path =~ /^\.\/(\d+)\/(\d+)\/(\d+)\s*$/ # make sure
+      next unless path =~ /\A\.\/(\d+)\/(\d+)\/(\d+)\s*\z/ # make sure
       idstring = Regexp.last_match[1..3].join("")
-      uids2path[idstring.to_i] = path.strip.sub(/^\.\//,"") #  12345 => "01/23/45"
+      uids2path[idstring.to_i] = path.strip.sub(/\A\.\//,"") #  12345 => "01/23/45"
     end
 
     all_task_ids  = CbrainTask.where({}).raw_first_column(:id)

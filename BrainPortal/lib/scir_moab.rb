@@ -36,7 +36,7 @@ class ScirMoab < Scir
       xmltext.force_encoding('ASCII-8BIT') # THE STUPID MOAB XML DUMP CAN CONTAIN BINARY DATA!
       raise "Cannot get output of 'showq --blocking --xml' ?!?" if xmltext.blank? && ! showqerr.blank?
       raise "Cannot get XML from showq; got:\n---Start\n#{xmltext}\n---End\n" unless
-        xmltext =~ /^\s*<Data>/i && xmltext =~ /<\/Data>\s*$/i
+        xmltext =~ /\A\s*<Data>/i && xmltext =~ /<\/Data>\s*\z/i
       @job_info_cache = {}
       if xmltext =~ /(<cluster.*?<\/cluster>)/
         @job_info_cache["!moab_cluster_info!"] = Regexp.last_match[1]
@@ -127,7 +127,7 @@ class ScirMoab < Scir
     private
 
     def qsubout_to_jid(txt) #:nodoc:
-      if txt && txt =~ /^(\S+)/
+      if txt && txt =~ /\A(\S+)/
         val = Regexp.last_match[1]
         return val unless val =~ /error/i
       end

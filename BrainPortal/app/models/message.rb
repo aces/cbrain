@@ -35,9 +35,6 @@ class Message < ActiveRecord::Base
   belongs_to :sender,
              :class_name => "User"
 
-  # CBRAIN extension
-  force_text_attribute_encoding 'UTF-8', :description, :variable_text
-
   attr_accessor :send_email
 
   attr_accessible :header, :description, :variable_text, :message_type, :read, :user_id, :expiry, :last_sent, :critical, :display, :send_email, :group_id, :sender_id
@@ -231,7 +228,7 @@ class Message < ActiveRecord::Base
                         "Users: #{find_users_for_destination(destination).map(&:login).join(", ")}\n" +
                         "Hostname: #{Socket.gethostname}\n" +
                         "Process ID: #{Process.pid}\n" +
-                        "Process Name: #{$0.sub(/[\s\0]+$/,"")}\n" +
+                        "Process Name: #{$0.sub(/[\s\0]+\z/,"")}\n" +
                         "Params: #{request_params.hide_filtered.inspect}\n" +
                         "Exception: #{exception.class.to_s}: #{exception.message}\n" +
                         "\n" +

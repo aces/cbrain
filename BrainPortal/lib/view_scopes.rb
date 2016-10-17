@@ -1256,7 +1256,7 @@ module ViewScopes
       name   = simple     if known.has_key?(simple)
       name ||= controller if known.has_key?(controller)
       name ||= default    if known.has_key?(default)
-      name ||= (simple =~ /^(1|t|true)$/i ? default : simple)
+      name ||= (simple =~ /\A(1|t|true)\z/i ? default : simple)
 
       # Then convert other query parameters to Scope::Filter hashes
       excluded = [
@@ -1452,8 +1452,8 @@ module ViewScopes
     when Numeric    then lambda { |v| v.to_f     }
 
     # Match against known true/false representations for boolean types
-    when TrueClass  then lambda { |v| v.to_s =~ /^(true|t|yes|y|on|1)$/i  }
-    when FalseClass then lambda { |v| v.to_s =~ /^(false|f|no|n|off|0)$/i }
+    when TrueClass  then lambda { |v| v.to_s =~ /\A(true|t|yes|y|on|1)\z/i  }
+    when FalseClass then lambda { |v| v.to_s =~ /\A(false|f|no|n|off|0)\z/i }
 
     else nil
     end

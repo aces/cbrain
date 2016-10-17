@@ -152,7 +152,6 @@ class CbrainTask::Parallelizer #:nodoc:
         :bourreau_id    => first.bourreau_id,
         :status         => paral_start_state,
         :params         => { :task_ids_enabled => tasks_ids_enabled },
-        :launch_time    => first.launch_time,
         :batch_id       => first.batch_id,
         :rank           => rank,
         :level          => level_paral,

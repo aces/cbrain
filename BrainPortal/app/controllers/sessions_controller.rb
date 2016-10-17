@@ -51,7 +51,9 @@ class SessionsController < ApplicationController
   end
 
   def create #:nodoc:
-    user = User.authenticate(params[:login], params[:password]) # can be nil if it fails
+    # If the csrf token is blank, it was reset by Rails' request forgery protection
+    # and we want to prevent login
+    user = current_session["_csrf_token"].presence && User.authenticate(params[:login], params[:password]) # can be nil if it fails
     create_from_user(user)
   end
 
@@ -194,7 +196,7 @@ class SessionsController < ApplicationController
     reqenv  = request.env
     from_ip = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
     if from_ip
-      if from_ip  =~ /^[\d\.]+$/
+      if from_ip  =~ /\A[\d\.]+\z/
         addrinfo  = Rails.cache.fetch("host_addr/#{from_ip}") do
           Socket.gethostbyaddr(from_ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ from_ip ]
         end

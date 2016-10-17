@@ -42,7 +42,7 @@ def cu(user=:show)
   return $_current_user if user == :show
   if user.nil? || user.is_a?(User)
     $_current_user = user
-  elsif user.is_a?(Fixnum) || (user.is_a?(String) && user =~ /^\d+$/)
+  elsif user.is_a?(Fixnum) || (user.is_a?(String) && user =~ /\A\d+\z/)
     $_current_user = User.find(user)
   elsif user.is_a?(String)
     $_current_user = User.where([ "(login like ?) OR (full_name like ?)", "%#{user}%", "%#{user}%" ]).first
@@ -64,7 +64,7 @@ def cp(group='show me')
   return $_current_project if group == 'show me'
   if group.nil? || group.is_a?(Group)
     $_current_project = group
-  elsif group.is_a?(Fixnum) || (group.is_a?(String) && group =~ /^\d+$/)
+  elsif group.is_a?(Fixnum) || (group.is_a?(String) && group =~ /\A\d+\z/)
     $_current_project = Group.find(group)
   elsif group.is_a?(Regexp)
     $_current_project = Group.all.detect { |g| g.name =~ group }

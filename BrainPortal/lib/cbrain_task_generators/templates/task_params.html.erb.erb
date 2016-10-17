@@ -371,6 +371,9 @@
         description.(<<-'DESC',<%= isGroupMember %>)
           <%= param['description'] %>
         DESC
+  <%- elsif not param['description'] and isGroupMember %>
+        # Blank Line for empty description (fixes spacing)
+        description.('',<%= isGroupMember %>)
   <%- end -%>
      %>
     </li>

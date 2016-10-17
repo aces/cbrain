@@ -37,7 +37,7 @@ class ExceptionLog < ActiveRecord::Base
   def self.log_exception(exception, user, request)
     params  = request.params.hide_filtered
     session = request.session
-    hdrs    = request.headers.select { |k| k =~ /^[A-Z]/ }
+    hdrs    = request.headers.select { |k| k =~ /\A[A-Z]/ }
 
     e                    = self.new
     e.exception_class    = exception.class.to_s

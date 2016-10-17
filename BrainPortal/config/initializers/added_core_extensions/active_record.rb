@@ -66,12 +66,6 @@ module ActiveRecord #:nodoc:
     include CBRAINExtensions::ActiveRecordExtensions::MassAssignmentAuthorization
 
     ###################################################################
-    # ActiveRecord Added Behavior For Data Typing
-    ###################################################################
-
-    include CBRAINExtensions::ActiveRecordExtensions::ForceEncoding
-
-    ###################################################################
     # ActiveRecord Added Behavior For Serialization
     ###################################################################
 

@@ -56,7 +56,7 @@ class CbrainTask < ActiveRecord::Base
   belongs_to            :workdir_archive, :class_name => 'Userfile', :foreign_key => :workdir_archive_userfile_id
 
   attr_accessible       :type, :batch_id, :cluster_jobid, :cluster_workdir, :status, :user_id, :bourreau_id, :description,
-                        :launch_time, :prerequisites, :share_wd_tid, :run_number, :group_id, :tool_config_id, :level, :rank,
+                        :prerequisites, :share_wd_tid, :run_number, :group_id, :tool_config_id, :level, :rank,
                         :results_data_provider_id, :cluster_workdir_size, :workdir_archived, :workdir_archive_userfile_id,
                         :params
 
@@ -69,9 +69,6 @@ class CbrainTask < ActiveRecord::Base
   # subclass of CbrainTask to find/use/define its content
   # as necessary.
   serialize_as_indifferent_hash :params
-
-  # CBRAIN extension
-  force_text_attribute_encoding 'UTF-8', :description
 
   cb_scope :status, lambda { |s|
                          case s.to_sym
@@ -337,7 +334,7 @@ class CbrainTask < ActiveRecord::Base
     # The most common situation: a task with its own work directory
     if share_wd_tid.blank?
       attval = self.cluster_workdir
-      return attval if attval.blank? || attval =~ /^\// # already full path?
+      return attval if attval.blank? || attval =~ /\A\// # already full path?
       shared_dir = options[:cms_shared_dir] || self.cluster_shared_dir # from its bourreau's cms_shared_dir
       return nil if shared_dir.blank?
       return "#{shared_dir}/#{attval}"
@@ -367,7 +364,7 @@ class CbrainTask < ActiveRecord::Base
   # used to represent the 'name' for presets.
   def short_description
     description = self.description || ""
-    raise "Internal error: can't parse description!?!" unless description =~ /^(.+\n?)/ # the . doesn't match \n
+    raise "Internal error: can't parse description!?!" unless description =~ /\A(.+\n?)/ # the . doesn't match \n
     header = Regexp.last_match[1].strip
     header
   end
@@ -813,7 +810,7 @@ class CbrainTask < ActiveRecord::Base
   # in other cases so a programmer can investigate the problem.
   def addlog_exception(exception,message="Exception raised:",backtrace_lines=15)
     message = "Exception raised:" if message.blank?
-    message.sub!(/[\s:]*$/,":")
+    message.sub!(/[\s:]*\z/,":")
     self.addlog("#{message} #{exception.class}: #{exception.message}", :caller_level => 1)
     if backtrace_lines > 0 && ! exception.is_a?(CbrainException)
       backtrace_lines = exception.backtrace.size if backtrace_lines >= exception.backtrace.size

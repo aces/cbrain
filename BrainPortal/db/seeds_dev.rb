@@ -838,7 +838,6 @@ seeded_users.each do |user|
             :results_data_provider_id => en_dp.id
           },
           {
-            :launch_time => Time.now,
             :description => (tool == diag_tool ? "Some Diagnostics" : "For #{howlong} seconds"),
             :params => { :howlong                => howlong,
                          :interface_userfile_ids => [ Userfile.find_by_user_id(user.id).id ]
