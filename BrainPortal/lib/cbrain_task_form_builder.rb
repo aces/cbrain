@@ -193,10 +193,10 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
 
   # This provides a replacement for the label() method
   # of the default form builder.
-  def params_label(paramspath, *args)
+  def params_label(paramspath, *args, &block)
     id = paramspath.to_la_id.sub(/\Acbrain_task_/,"")
     args.unshift(paramspath.to_s.humanize) if args.size == 0
-    label(id, *args)
+    label(id, *args, &block)
   end
 
   private
