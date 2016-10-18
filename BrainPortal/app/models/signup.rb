@@ -79,79 +79,40 @@ class Signup < ActiveRecord::Base
     User.exists?(:login => self.login)
   end
 
-  # This is the method that actually creates the user in CBRAIN's database
-  def after_approval
+  # Returns a new NormalUser (not saved in the DB yet) based
+  # on the info in the current object.
+  def to_user
 
-    res             = ApprovalResult.new
+    user = NormalUser.new
 
-    unless self.valid?
-      res.diagnostics = "Account request invalid:\n" + self.errors.full_messages.join("\n")
-      return res
-    end
+   #user.title                   = self.title
+    user.full_name               = self.full.try :strip
+    user.login                   = self.login.try :strip
+    user.email                   = self.email.try :strip
+   #user.institution             = self.institution
+   #user.department              = self.department
+   #user.position                = self.position
+   #user.street1                 = self.street1
+   #user.street2                 = self.street2
+    user.city                    = self.city.try :strip
+   #user.province                = self.province
+    user.country                 = self.country.try :strip
+   #user.postal_code             = self.postal_code
+    user.time_zone               = self.time_zone
+   #user.comment                 = self.comment
 
-    if self.dup_login?
-      res.diagnostics = "Failed to create user '" + self.login + "', as it already exists."
-      return res
-    end
+    user # do not save the object!
+  end
 
-    # Attempt to create the user
-    pass = User.random_string
-
-    u = User.new
-    #u.title                   = self.title
-    u.full_name               = self.full.try :strip
-    u.login                   = self.login.try :strip
-    u.email                   = self.email.try :strip
-    #u.institution             = self.institution
-    #u.department              = self.department
-    #u.position                = self.position
-    #u.street1                 = self.street1
-    #u.street2                 = self.street2
-    u.city                    = self.city.try :strip
-    #u.province                = self.province
-    u.country                 = self.country.try :strip
-    #u.postal_code             = self.postal_code
-    u.time_zone               = self.time_zone
-    #u.comment                 = self.comment
-    u.type                    = 'NormalUser'
-    u.password                = pass
-    u.password_confirmation   = pass
-    u.password_reset          = true
-
-    if ! u.save()
-      res.diagnostics = "Could not save user:\n" + u.errors.full_messages.join("\n")
-      return res
-    end
-
-    # Log additional info in user object log (until we find a place for it).
+  # Log additional info in user object log (until we find a place for it).
+  # Here, +user+ is a properly created User object, presumably recently created.
+  # This method is mostly used by the users controller, after a user is created
+  # based on the information from the signup record.
+  def add_extra_info_for_user(user) #:nodoc:
     [ :institution, :department, :position, :street1, :street2, :province, :postal_code ].each do |att|
       val = self[att]
       next if val.blank?
-      u.addlog("#{att.to_s.capitalize}: #{val.strip}")
-    end
-
-    # Returns information about the success
-    res.plain_password = pass
-    res.diagnostics    = "Created as UID #{u.id}"
-    res.user           = u
-    res.success        = true
-
-    res
-  end
-
-  # Used internally to represent the result of
-  # trying to approve one signup request,
-  class ApprovalResult #:nodoc:
-    attr_accessor :diagnostics, :plain_password, :success
-    attr_accessor :user
-
-    def initialize #:nodoc:
-      self.success     = false
-      self.diagnostics = ""
-    end
-
-    def to_s #:nodoc:
-      self.diagnostics.presence.to_s
+      user.addlog("#{att.to_s.capitalize}: #{val.strip}")
     end
   end
 

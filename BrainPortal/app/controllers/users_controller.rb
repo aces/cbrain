@@ -99,6 +99,14 @@ class UsersController < ApplicationController
 
   def new #:nodoc:
     @user = User.new
+
+    # Pre-load attributes based on signup ID given in path.
+    if params[:signup_id].present?
+      if signup = Signup.where(:id => params[:signup_id]).first # assignment, not comparison!
+        @user  = signup.to_user
+        flash.now[:notice] = "Fields have been filled from a signup request."
+      end
+    end
   end
 
   def create #:nodoc:
@@ -135,8 +143,20 @@ class UsersController < ApplicationController
 
     if @user.save
       flash[:notice] = "User successfully created."
-      current_user.addlog_context(self,"Created account for user '#{@user.login}'")
-      @user.addlog_context(self,"Account created by '#{current_user.login}'")
+
+      # Find signup record matching login name, and log creation and transfer some info.
+      if signup = Signup.where(:login => @user.login, :approved_at => nil, :approved_by => nil).first
+        current_user.addlog("Approved [[signup request][#{signup_path(signup)}]] for user '#{@user.login}'")
+        @user.addlog("Account created after signup request approved by '#{current_user.login}'")
+        signup.add_extra_info_for_user(@user)
+        signup.approved_by = current_user.login
+        signup.approved_at = Time.now
+        signup.save
+      else # account was not created from a signup request? Still log some info.
+        current_user.addlog_context(self,"Created account for user '#{@user.login}'")
+        @user.addlog_context(self,"Account created by '#{current_user.login}'")
+      end
+
       if @user.email.blank? || @user.email =~ /example/i || @user.email !~ /@/
         flash[:notice] += "Since this user has no proper email address, no welcome email was sent."
       else
