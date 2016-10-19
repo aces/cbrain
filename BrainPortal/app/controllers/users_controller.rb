@@ -348,7 +348,8 @@ class UsersController < ApplicationController
 
   private
 
-  def send_welcome_email(user, password, no_password_reset_needed)
+  # Sends email and returns true/false if it succeeds/fails
+  def send_welcome_email(user, password, no_password_reset_needed) #:nodoc:
     CbrainMailer.registration_confirmation(user,password,no_password_reset_needed).deliver
     return true
   rescue => ex
@@ -356,7 +357,8 @@ class UsersController < ApplicationController
     return false
   end
 
-  def send_forgot_password_email(user)
+  # Sends email and returns true/false if it succeeds/fails
+  def send_forgot_password_email(user) #:nodoc:
     CbrainMailer.forgotten_password(user).deliver
     return true
   rescue => ex
