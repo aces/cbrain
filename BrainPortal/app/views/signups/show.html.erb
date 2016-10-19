@@ -29,16 +29,16 @@
 
   As an administrator, you can <%= link_to "edit", :action => :edit %> this request.<p>
 
-  <% if @signup.approved_by.blank? %>
+  <% if ! @signup.approved? %>
 
     <% if @signup.dup_login? %>
-      <span style="color: red">This user's login conflicts with a user already in the system.</span>
+      <span class="warning">This user's login conflicts with a user already in the system.</span>
     <% else %>
-      You can also <%= link_to "approve", approve_signup_path(@signup), :method => :post, :confirm => "Approve a user account for \"#{@signup.full}\"?" %> this request.
+      You can also <%= link_to "approve", new_user_path(:signup_id => @signup.id), :class => 'action_link' %> this request.
     <% end %>
 
     <% if ! @signup.confirmed? %>
-      <span style="color: red">The user has not yet confirmed their email address.</span>
+      <span class="warning">The user has not yet confirmed their email address.</span>
     <% else %>
       The user has confirmed the email address.
     <% end %>
@@ -171,21 +171,16 @@ Below is a summary of the information in this account request.
     <td>
       <% if @signup.confirmed? %>
         Email address confirmed by user.<br>
-        <% if @signup.approved_by.present? %>
-          Request approved by administrator.
-        <% else %>
-          <span style="color: #bd2936">Request not yet approved by administrator.</span>
-        <% end %>
       <% else %>
-        <span style="color: #bd2936">Email address not yet confirmed.</span>
+        <span class="warning">Email address not yet confirmed.</span><br>
+      <% end %>
+      <% if @signup.approved? %>
+        Request approved by administrator.
+      <% else %>
+        <span class="warning">Request not yet approved by administrator.</span>
       <% end %>
     </td>
   </tr>
 
   </table>
-
-<% if current_user.present? && current_user.has_role?(:admin_user) %>
-  <p>
-  You can go <%= link_to "back to request list", :action => :index %>.
-<% end %>
 

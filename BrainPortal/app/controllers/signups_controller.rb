@@ -181,40 +181,12 @@ class SignupsController < ApplicationController
     end
   end
 
-  # Administrator action that converts a signup into a user
-  def approve
-    @signup = Signup.find(params[:id]) rescue nil
-
-    unless can_edit?(@signup)
-      flash[:error] = "Could not approve account."
-      redirect_to :action => :index
-      return
-    end
-
-    if @signup.login.blank?
-      flash[:error] = "Before approval, a 'login' name must be set."
-      redirect_to :action => :edit, :id => @signup.id
-      return
-    end
-
-    @symbolic_result, @info, @exception_trace = approve_one(@signup)
-
-    if @symbolic_result != :all_ok
-      flash.now[:error] = @info.presence || "(Unspecified internal error?!?)"
-    end
-  end
-
   # Main entry point for mass operations on requests.
   # Some of these methods render the multi_action view,
   # which expects @results to be an array of quadruplets
   # [ signup, status, message, backtrace ]
-  # where +signup+ is a Signup object, and the other three
-  # are similar to what the approve_one() method returns.
+  # where +signup+ is a Signup object.
   def multi_action #:nodoc:
-    if params[:commit] =~ /Approve/
-      return approve_multi
-    end
-
     if params[:commit] =~ /Fix Login/
       return fix_login_multi
     end
@@ -252,7 +224,7 @@ class SignupsController < ApplicationController
     reqs   = Signup.find(reqids)
 
     @results = reqs.map do |req|
-      next if req.approved_by.present? # don't mess with already approved records
+      next if req.approved? # don't mess with already approved records
       old = req.login
       new = (req.first[0,1] + req.last).downcase.gsub(/\W+/,"")
 
@@ -278,7 +250,7 @@ class SignupsController < ApplicationController
     count = 0
 
     @results = reqs.map do |req|
-      next if req.confirmed? || req.approved_by.present?
+      next if req.confirmed? || req.approved?
       if send_confirm_email(req)
         count += 1
         [ req, :all_ok, "Resent confirmation email", nil ]
@@ -291,55 +263,6 @@ class SignupsController < ApplicationController
 
     flash[:notice] = "Sent " + view_pluralize(count, "confirmation email") + "."
     render :action => :multi_action
-  end
-
-  def approve_multi #:nodoc:
-    reqids = params[:reqids] || []
-    reqs   = Signup.find(reqids)
-
-    @results = reqs.map do |req|
-      symbolic_result, message, backtrace = approve_one(req)
-      [ req, symbolic_result, message, backtrace ]
-    end
-
-    @results.compact!
-
-    render :action => :multi_action
-  end
-
-  # This invokes the Signup model method after_approval() which
-  # attempts to create the user based on the signup object's information.
-  # The method here returns a triplet [ status, message, backtrace ]
-  # where +status+ is a symbol among :all_ok, :failed_approval, :failed_save, or :not_notifiable,
-  # +message+ is a message describing the status, and +backtrace+ is the exception trace
-  # if an exception was raised.
-  def approve_one(signup) #:nodoc:
-    result = signup.after_approval
-
-    return [ :failed_save, "ERROR: #{result.diagnostics}", nil ] unless result.success
-
-    user = result.user
-    current_user.addlog("Approved [[signup request][#{signup_path(signup)}]] for user '#{user.login}'")
-    user.addlog("Account created after signup request approved by '#{current_user.login}'")
-
-    # Mark signup object as approved
-    info           = result.to_s           rescue nil
-    plain_password = result.plain_password rescue nil
-
-    signup.approved_by ||= current_user.login
-    signup.approved_at ||= Time.now
-    signup.save!
-
-    # Notify user
-    if send_account_created_email(user,plain_password)
-      return [ :all_ok, info, nil ]
-    else
-      return [ :not_notifiable, 'ERROR: The User was created in CBRAIN, but the notification email failed to send.', nil ]
-    end
-
-  rescue => ex
-    exception_trace = "#{ex.class}: #{ex.message}\n" + ex.backtrace.join("\n")
-    return [ :failed_approval, 'ERROR: Exception when approving' , exception_trace ]
   end
 
   private
