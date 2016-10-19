@@ -98,7 +98,8 @@ class UsersController < ApplicationController
   end
 
   def new #:nodoc:
-    @user = User.new
+    @user        = User.new
+    @random_pass = User.random_string
 
     # Pre-load attributes based on signup ID given in path.
     if params[:signup_id].present?
@@ -107,7 +108,6 @@ class UsersController < ApplicationController
         flash.now[:notice] = "Fields have been filled from a signup request."
       end
     end
-
   end
 
   def create #:nodoc:
@@ -166,7 +166,6 @@ class UsersController < ApplicationController
         else
           flash[:error] = "Could not send email to '#{@user.email}' informing them that their account was created."
         end
-
       end
       respond_to do |format|
         format.html { redirect_to :action => :index, :format => :html }
