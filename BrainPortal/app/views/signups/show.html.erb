@@ -23,164 +23,145 @@
 
 <% title 'Account Request Info' %>
 
-<h1>Account Request Summary</h1>
+<div class="row">
+  <div class="col-xs-12">
+    <h3 class="text-center">Account Request Summary</h3>
+  </div>
+</div>
 
-<% if current_user.present? && current_user.has_role?(:admin_user) %>
+<div class="row">
+  <div class="col-xs-12">
+    <div class="text-center">
+      <% if current_user.present? && current_user.has_role?(:admin_user) %>
 
-  As an administrator, you can <%= link_to "edit", :action => :edit %> this request.<p>
+        As an administrator, you can <%= link_to "edit", :action => :edit %> this request.<p>
 
-  <% if ! @signup.approved? %>
+        <% if ! @signup.approved? %>
 
-    <% if @signup.dup_login? %>
-      <span class="warning">This user's login conflicts with a user already in the system.</span>
-    <% else %>
-      You can also <%= link_to "approve", new_user_path(:signup_id => @signup.id), :class => 'action_link' %> this request.
-    <% end %>
+          <% if @signup.dup_login? %>
+            <span class="warning">This user's login conflicts with a user already in the system.</span>
+          <% else %>
+            You can also <%= link_to "approve", new_user_path(:signup_id => @signup.id), :class => 'action_link' %> this request.
+          <% end %>
 
-    <% if ! @signup.confirmed? %>
-      <span class="warning">The user has not yet confirmed their email address.</span>
-    <% else %>
-      The user has confirmed the email address.
-    <% end %>
+          <% if ! @signup.confirmed? %>
+            <span class="warning">The user has not yet confirmed their email address.</span>
+          <% else %>
+            The user has confirmed the email address.
+          <% end %>
 
-    <p>
-    If the user hasn't received the confirmation email, you can ask for another
-    <%= link_to "email confirmation request", resend_confirm_signup_path(@signup), :method => :post %> to be sent again.
+          <p>
+          If the user hasn't received the confirmation email, you can ask for another
+          <%= link_to "email confirmation request", resend_confirm_signup_path(@signup), :method => :post %> to be sent again.
 
-  <% end %>
+        <% end %>
 
-<% else %>
-
-  <p>
-  You can <%= link_to "edit", :action => :edit %> this form, but
-  this option will only be available while you are using the
-  same browser session you used for submitting this form
-  originally. Do it now while you can!
-
-<% end %>
-
-<% if current_user.blank? && ! @signup.confirmed? %>
-  <p>
-  A confirmation email has been sent to the address you provided. Once you receive
-  it, please click on the provided link so we can confirm your identity.
-  <p>
-  If you haven't received the email, you can ask for another
-  <%= link_to "email confirmation request", resend_confirm_signup_path(@signup), :method => :post %> to be sent to you.
-<% end %>
-
-<p>
-You can <%= link_to "delete", signup_path(@signup), :action => :destroy, :method => :delete, :confirm => "Are you sure you want to delete the request of \"#{@signup.full}\" ?" %> this request.
-
-<p>
-Below is a summary of the information in this account request.
-
-<p>
-  <table class="simple bordered">
-
-  <tr>
-    <th>Full Name:</th>
-    <td><%= @signup.full %></td>
-  </tr>
-
-  <tr>
-    <td>&nbsp;</td>
-    <td>&nbsp;</td>
-  </tr>
-
-  <tr>
-    <th>Name of Institution/Organization:</th>
-    <td><%= @signup.institution %></td>
-  </tr>
-
-  <tr>
-    <th>Department:</th>
-    <td><%= @signup.department %></td>
-  </tr>
-
-  <tr>
-    <th>Position or role:</th>
-    <td><%= @signup.position %></td>
-  </tr>
-
-  <tr>
-    <th>Email address:</th>
-    <td><%= @signup.email %></td>
-  </tr>
-
-  <tr>
-    <th>Street Address (line 1):</th>
-    <td><%= @signup.street1 %></td>
-  </tr>
-
-  <tr>
-    <th>Street Address (line 2):</th>
-    <td><%= @signup.street2 %></td>
-  </tr>
-
-  <tr>
-    <th>City:</th>
-    <td><%= @signup.city %></td>
-  </tr>
-
-  <tr>
-    <th>Province/State:</th>
-    <td><%= @signup.province %></td>
-  </tr>
-
-  <tr>
-    <th>Country:</th>
-    <td><%= @signup.country %></td>
-  </tr>
-
-  <tr>
-    <th>Postal Code:</th>
-    <td><%= @signup.postal_code %></td>
-  </tr>
-
-  <tr>
-    <td>&nbsp;</td>
-    <td>&nbsp;</td>
-  </tr>
-
-  <tr>
-    <th>Prefered 'login' name:</th>
-    <td><%= @signup.login.presence || "(none)" %></td>
-  </tr>
-
-  <tr>
-    <td>&nbsp;</td>
-    <td>&nbsp;</td>
-  </tr>
-
-  <% if @signup.comment.present? %>
-
-  <tr>
-    <th>Comments or special requests:</th>
-    <td><%= @signup.comment %></td>
-  </tr>
-
-  <tr>
-    <td>&nbsp;</td>
-    <td>&nbsp;</td>
-  </tr>
-
-  <% end %>
-
-  <tr>
-    <th>Status of request:</th>
-    <td>
-      <% if @signup.confirmed? %>
-        Email address confirmed by user.<br>
       <% else %>
-        <span class="warning">Email address not yet confirmed.</span><br>
-      <% end %>
-      <% if @signup.approved? %>
-        Request approved by administrator.
-      <% else %>
-        <span class="warning">Request not yet approved by administrator.</span>
-      <% end %>
-    </td>
-  </tr>
 
-  </table>
+        <p>
+        You can <%= link_to "edit", :action => :edit %> this form, but
+        this option will only be available while you are using the
+        same browser session you used for submitting this form
+        originally. Do it now while you can!
 
+      <% end %>
+
+      <% if current_user.blank? && ! @signup.confirmed? %>
+        <p>
+        A confirmation email has been sent to the address you provided. Once you receive
+        it, please click on the provided link so we can confirm your identity.
+        <p>
+        If you haven't received the email, you can ask for another
+        <%= link_to "email confirmation request", resend_confirm_signup_path(@signup), :method => :post %> to be sent to you.
+      <% end %>
+
+      <p>
+      You can <%= link_to "delete", signup_path(@signup), :action => :destroy, :method => :delete, :confirm => "Are you sure you want to delete the request of \"#{@signup.full}\" ?" %> this request.
+
+      <p>
+      Below is a summary of the information in this account request.
+
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-6 col-xs-offset-3">
+    <div class="panel panel-primary">
+    <div class="panel-heading">Request Information</div>
+    <div class="panel-body">
+      <div class="row">
+        <div class="col-xs-4">Full Name:</div>
+        <div class="col-xs-8"><%= @signup.full %></div>
+      </div>
+      <div class="row">
+        <div class="col-xs-4">Name of Institution/Organization:</div>
+        <div class="col-xs-8"><%= @signup.institution %></div>
+      </div>
+      <div class="row">
+        <div class="col-xs-4">Department:</div>
+        <div class="col-xs-8"><%= @signup.department %></div>
+      </div>
+      <div class="row">
+        <div class="col-xs-4">Position or role:</div>
+        <div class="col-xs-8"><%= @signup.position %></div>
+      </div>
+      <div class="row">
+        <div class="col-xs-4">Email address:</div>
+        <div class="col-xs-8"><%= @signup.email %></div>
+      </div>
+      <div class="row">
+        <div class="col-xs-4">Street Address (line 1):</div>
+        <div class="col-xs-8"><%= @signup.street1 %></div>
+      </div>
+      <div class="row">
+        <div class="col-xs-4">Street Address (line 2):</div>
+        <div class="col-xs-8"><%= @signup.street2 %></div>
+      </div>
+      <div class="row">
+        <div class="col-xs-4">City:</div>
+        <div class="col-xs-8"><%= @signup.city %></div>
+      </div>
+      <div class="row">
+        <div class="col-xs-4">Province/State:</div>
+        <div class="col-xs-8"><%= @signup.province %></div>
+      </div>
+      <div class="row">
+        <div class="col-xs-4">Country:</div>
+        <div class="col-xs-8"><%= @signup.country %></div>
+      </div>
+      <div class="row">
+        <div class="col-xs-4">Postal Code:</div>
+        <div class="col-xs-8"><%= @signup.postal_code %></div>
+      </div>
+      <div class="row">
+        <div class="col-xs-4">Prefered 'login' name:</div>
+        <div class="col-xs-8"><%= @signup.login.presence || "(none)" %></div>
+      </div>
+
+      <% if @signup.comment.present? %>
+        <div class="row">
+          <div class="col-xs-4">Comments or special requests:</div>
+          <div class="col-xs-8"><%= @signup.comment %></div>
+        </div>
+      <% end %>
+
+      <div class="row">
+        <div class="col-xs-4">Status of request:</div>
+        <div class="col-xs-8">
+          <% if @signup.confirmed? %>
+            Email address confirmed by user.<br>
+          <% else %>
+            <span class="warning">Email address not yet confirmed.</span><br>
+          <% end %>
+          <% if @signup.approved? %>
+            Request approved by administrator.
+          <% else %>
+            <span class="warning">Request not yet approved by administrator.</span>
+          <% end %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -58,6 +58,7 @@ div.navbar div.container div.navbar-brand {
 
 .alert {
     margin-bottom: 5px;
+    border: none;
 }
 
 .well {

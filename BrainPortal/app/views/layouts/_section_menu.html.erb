@@ -68,10 +68,11 @@
             <li <%= set_selected(params[:controller], :data_providers) %>><a href="<%= data_providers_path %>">Providers</a></li>
             <li <%= set_selected(params[:controller], :bourreaux) %>><a href="<%= bourreaux_path %>">Servers</a></li>
             <li <%= set_selected(params[:controller], :tools) %>><a href="<%= tools_path %>">Tools</a></li>
-            <li <%= set_selected(params[:controller], :users) %>><a href="<%= users_path %>">Users</a></li>
-            <% if current_user.has_role?(:admin_user) %>
-              <li <%= set_selected(params[:controller], :access_profiles) %>><a href="<%= access_profiles_path%>">Profiles</a></li>
+
+            <% if current_user.has_role?(:site_manager) %>
+              <li <%= set_selected(params[:controller], :users) %>><a href="<%= users_path %>">Users</a></li>
             <% end %>
+
           <% end %>
           <% if current_user.has_role?(:admin_user) %>
             <li <%= set_selected(params[:controller], :sites) %>><a href="<%= sites_path %>">Sites</a></li>
@@ -82,6 +83,18 @@
         <% end %>
 
         <li <%= set_selected(params[:controller], :messages) %>><a href="<%= messages_path %>">Messages <% if @unread_message_count > 0 %> <span class="badge progress-bar-info"><%= @unread_message_count %> </span><% end %></a></li>
+
+        <% if current_user.has_role?(:admin_user) %>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">People <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="<%= users_path %>">Users</a></li>
+              <li><a href="<%= access_profiles_path%>">Access Profiles</a></li>
+              <li><a href="<%= signups_path %>">Signups</a></li>
+            </ul>
+          </li>
+        <% end %>
+
         <% if current_user.has_role?(:normal_user) %>
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Resources <span class="caret"></span></a>
@@ -110,7 +123,6 @@
 
     <ul class="nav navbar-nav navbar-right">
       <% if current_user %>
-        <li class="hidden-md"></li>
         <li>
           <div class="input-group">
             <form id="cbsearch" action="<%= search_path %>" class="navbar-form" role="search" method="get">
