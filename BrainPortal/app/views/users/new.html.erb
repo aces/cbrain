@@ -32,7 +32,6 @@
     </div>
   </div>
 
-
   <%= form_for @user, :as => :user, :url => { :action => "create" }, :datatype => "script", :class => "form-horizontal" do |f| -%>
 
   <div class="row">
@@ -92,11 +91,11 @@
           <% end %>
           <div class="row">
             <div class="col-xs-4"><%= f.label :password, "Password" %></div>
-            <div class="col-xs-8"><%= f.password_field :password, :class => "form-control" %></div>
+            <div class="col-xs-8"><%= f.password_field :password, :class => "form-control", :value => @random_pass  %></div>
           </div>
           <div class="row">
             <div class="col-xs-4"><%= f.label :password_confirmation, "Confirm Password" %></div>
-            <div class="col-xs-8"><%= f.password_field :password_confirmation, :class => "form-control" %></div>
+            <div class="col-xs-8"><%= f.password_field :password_confirmation, :class => "form-control" , :value => @random_pass %></div>
           </div>
           <div class="row">
             <div class="col-xs-4"><label for="no_password_reset_needed">No need to reset initial password:</label></div>

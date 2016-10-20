@@ -186,7 +186,7 @@ class SessionsController < ApplicationController
     reqenv  = request.env
     from_ip = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
     if from_ip
-      if from_ip  =~ /^[\d\.]+$/
+      if from_ip  =~ /\A[\d\.]+\z/
         addrinfo  = Rails.cache.fetch("host_addr/#{from_ip}") do
           Socket.gethostbyaddr(from_ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ from_ip ]
         end

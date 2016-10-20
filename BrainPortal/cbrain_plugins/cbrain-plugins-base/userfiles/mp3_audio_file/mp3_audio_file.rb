@@ -32,7 +32,7 @@ class Mp3AudioFile < AudioFile
   end
 
   def self.file_name_pattern #:nodoc:
-    /\.mp3$/i
+    /\.mp3\z/i
   end
 
 end

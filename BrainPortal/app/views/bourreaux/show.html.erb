@@ -106,7 +106,12 @@
       <% end %>
 
       <% if is_portal %>
-
+        <% t.edit_cell :site_url_prefix,
+                       :header => "Base Portal URL",
+                       :content => (@bourreau.site_url_prefix.blank? ? "(None)" : @bourreau.site_url_prefix),
+                       :show_width => 1 do %>
+          <%= text_field_tag "bourreau[site_url_prefix]", @bourreau.site_url_prefix, :class => "form-control" %>          Required to direct new users to the portal, this should be filled in with the <em>base</em> URL of the portal
+        <% end %>
         <% t.edit_cell(:help_url, :header => "User Manual URL", :show_width => 1) do %>
           <%= text_field_tag "bourreau[help_url]", @bourreau.help_url, :class => "form-control" %>
           If set, the portal will show a link called 'User Manual' in the account bar at the top.

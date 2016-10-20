@@ -80,31 +80,40 @@ module CBRAINExtensions #:nodoc:
       # helper methods defined in CbrainTaskFormBuilder .
       def to_la
         key = self
-        if key =~ /^(\w+)/
+        if key =~ /\A(\w+)/
           newcomp = "[" + Regexp.last_match[1] + "]"
-          key = key.sub(/^(\w+)/,newcomp) # not sub!() !
+          key = key.sub(/\A(\w+)/,newcomp) # not sub!() !
         end
         "cbrain_task[params]#{key}"
       end
 
-      # Used by views for CbrainTasks to transform strings such as these:
-      #
-      #    "abc", "abc[def]"
-      #
+      # Used by views for CbrainTasks to transform strings (a.k.a. +paramspaths+)
       # into names of a pseudo accessor method for that variable, as in:
       #
-      #    "cbrain_task_params_abc", "cbrain_task_params_abc_def"
+      #    "abc"      => "cbrain_task_BRA_params_KET__BRA_abc_KET_",
+      #    "abc"      => "cbrain_task_BRA_params_KET__BRA_abc_KET_",
+      #    "abc[def]" => "cbrain_task_BRA_params_KET__BRA_abc_KET__BRA_def_KET_"
+      #
+      # The string is first run through .to_la(), which adds the constant prefix
+      # "cbrain_task[params][abc]", then the brackets are tranformed into identifier
+      # friendly characters.
       #
       # This is also the name of the input field's HTML ID
       # attribute, used for error validations.
       #
-      # CBRAIN adds a similar method in the Symbol class.
+      # There is a similar method in the Symbol class, which just calls
+      # this method here and then symbolize the results.
       #
       # This can be used to give IDs to input fields for CbrainTask's
       # params hashes, although there are already a nice collection of
       # helper methods defined in CbrainTaskFormBuilder .
       def to_la_id
-        self.to_la.gsub(/\W+/,"_").sub(/_+$/,"").sub(/^_+/,"")
+        self.to_la.gsub('[','_BRA_').gsub(']','_KET_')
+      end
+
+      # Does the reverse of to_la_id().
+      def from_la_id
+        self.gsub('_BRA_','[').gsub('_KET_',']').gsub('cbrain_task[params]','').sub(/^\[(\w+)\]/,'\1')
       end
 
       # Considers self as a pattern to which substitutions
@@ -162,7 +171,7 @@ module CBRAINExtensions #:nodoc:
       def is_a_float?
         Float(self) && true rescue false
       end
-    
+
     end
   end
 end

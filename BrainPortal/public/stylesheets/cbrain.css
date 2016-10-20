@@ -487,6 +487,529 @@ a {
   font-size: 4em;
 }
 
+.project_select_dropdown .title {
+  font-size: 18px;
+  width: 100%;
+  color: white;
+  background: #0471b4;
+  margin: 0;
+  text-align: center;
+  padding: 0 0 0.3em 0;
+}
+
+.project_select_dropdown {
+  border: 0.2em solid #0471b4;
+  background-color: white;
+  white-space: nowrap;
+}
+
+.project_select_dropdown a {
+  font-size: 0.5em;
+  color: #222!important;
+  padding: 0.5em 0em 0.5em 0.5em;
+  min-width: 160px;
+  text-align: left;
+  display: block;
+  margin: 0;
+  border-radius: 0;
+}
+
+.project_select_dropdown:hover {
+  background-color: #F1F1F1;
+}
+
+.project_select_spacer {
+  background-color: #0471b4;
+  height: 0.2em;
+}
+
+.project_button_header {
+  border: 0px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.8em;
+}
+
+.project_button_header > table {
+  width: 100%;
+}
+
+.project_button_header > table > tbody {
+  display: none;
+}
+
+/* % ######################################################### */
+/* % End User License Agreement */
+/* % ######################################################### */
+
+.license_agreement {
+  width: 50%;
+  display: inline-block;
+}
+
+.bold_text {
+  font-weight: bold;
+}
+
+.center_text {
+  text-align: center;
+}
+
+.em_text {
+  font-style: italic;
+}
+
+/* % ######################################################### */
+/* % Main Content Section of Application Layout */
+/* % ######################################################### */
+
+.main-content {
+  background-color: #FFFFFF;
+  margin: 0;
+  padding: 1em;
+}
+
+
+
+/* % ######################################################### */
+/* % Footer Section of Application Layout */
+/* % ######################################################### */
+
+.footer {
+  clear: both;
+  border-top: 2px solid #e4e4e4;
+  font-size: 0.9em;
+  color: #aaa;
+  text-align: center;
+  background: #ffffff;
+  vertical-align: bottom;
+}
+
+.footer a {
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+/* % ######################################################### */
+/* % Footer Section of Credits Layout */
+/* % ######################################################### */
+
+.credits_footer {
+  display: table;
+  width: 100%;
+  margin: 1em 0 0 0;
+}
+
+.credits_footer a {
+  text-decoration: none;
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+  width: 25%;
+}
+
+.logobar {
+  height: 50px;
+  border: 0;
+  padding: 0px 1em 0px 1em;
+}
+
+#canarie_logo {
+}
+
+#cc_logo {
+  height: 60px;
+}
+
+#neuro_logo {
+  height: 70px;
+}
+
+#mcin_logo {
+  height: 40px;
+}
+
+#bc_logo {
+}
+
+#cfi_logo {
+  height: 60px;
+}
+
+#mcgill_logo {
+  height: 40px;
+}
+
+#ludmer_logo {
+}
+
+
+
+/* ######################################################### */
+/* Box for credits */
+/* ######################################################### */
+
+.credit_box {
+  margin-left: 1em;
+  margin-right: 1em;
+  margin-bottom: 1em;
+  padding-bottom: 1em;
+  background-color: #f6f6f6;
+  color: #505050;
+  line-height: 1.5em;
+  border: 1px solid #e4e4e4;
+  padding:6px;
+  width: 50%;
+  display: table-cell;
+}
+
+.box_spacer {
+  min-width: 1em;
+  display: table-cell;
+}
+
+
+/* ######################################################### */
+/* Session view (login) */
+/* ######################################################### */
+
+.logintable {
+  border: 1px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 1em;
+  padding-left: 1em;
+  padding-right: 1em;
+  padding-bottom: 1em;
+}
+
+.logintable td {
+  border: 0px;
+  font-size: 1em;
+  color: #0471B4;
+  text-align: right;
+  padding-top: 0.5em;
+  padding-left: 2em;
+  padding-right: 2em;
+  padding-bottom: 0.5em;
+  margin: 0px;
+}
+
+.logintable td.field {
+  text-align: left;
+  padding: 2px;
+}
+
+.logintable tr {
+  margin: 1px;
+}
+
+#request_password {
+  padding-right: 12em;
+}
+
+
+
+/* % ############################################## */
+/* % Welcome page */
+/* % ############################################## */
+
+
+.latest_summary_table {
+  border: 0px;
+  background-color: #E4E4E4;
+  width: 100%;
+}
+
+.latest_summary_table td {
+  padding: 0.4em 1em 0.5em 1em;
+  font-weight: bold;
+  border: 0px;
+  text-align: left;
+}
+
+.exception_report {
+  border: 2px solid red;
+  background: #ffeeee;
+  padding: 3px;
+}
+
+
+
+/* % ######################################################### */
+/* % Generic Menu Bar */
+/* % ######################################################### */
+
+.menu_bar {
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+
+/* % ######################################################### */
+/* % Active Filters Bar */
+/* % ######################################################### */
+
+.active_status {
+  display: table;
+  margin-top: 0.8em;
+  width: 100%;
+}
+
+.active_status_left_side {
+  display: inline;
+  text-align: left;
+  white-space: nowrap;
+  padding-right: 2em;
+  float: left;
+}
+
+/* not used */
+.active_status_right_side {
+  display: inline;
+  text-align: right;
+  white-space: nowrap;
+  padding-left: 2em;
+  float: right;
+}
+
+.active_label {
+  font-weight: bold;
+}
+
+
+/* % ######################################################### */
+/* % Persistent Selection Bar */
+/* % ######################################################### */
+
+.persistent-selection > .psel-icon {
+  display: inline-block;
+  vertical-align: middle;
+  visibility: hidden;
+  background-image: url(../images/ui-black-icons.png);
+}
+
+.psel-count {
+  color: #05a3d6;
+  font-size: 1.2em;
+  font-family: monospace;
+}
+
+.psel-count.psel-zero {
+  color: #719ba9;
+}
+
+.psel-count.psel-refresh {
+  color: #00d9a2;
+}
+
+.psel-all, .psel-clear {
+  color: blue;
+  cursor: pointer;
+}
+
+
+/* % ######################################################### */
+/* % Pagination Bar */
+/* % ######################################################### */
+
+.pagination {
+  width: 100%;
+  display: table;
+  padding: 0;
+  margin-right: 0;
+  margin-left: 0;
+  margin-top: 0.8em;
+}
+
+.pagination_left_side {
+  width: 1%;
+  display: table-cell;
+  text-align: left;
+  font-weight: bold;
+  white-space: nowrap;
+  padding-right: 2em;
+}
+
+.pagination_right_side {
+  width: 1%;
+  display: table-cell;
+  text-align: right;
+  font-weight: bold;
+  white-space: nowrap;
+  padding-left: 2em;
+}
+
+.pagination_center,
+.page_links {
+  display: table-cell;
+  text-align: center;
+  white-space: nowrap;
+  clear: both;
+}
+
+
+
+/* % ######################################################### */
+/* % Show page table formatting */
+/* % ######################################################### */
+
+.show_table {
+  border-collapse: collapse;
+  border: none;
+  width: 100%;
+}
+
+.show_table th {
+  background: none;
+  font-weight: bold;
+  border: none;
+  color: black;
+  text-align: left;
+  white-space: nowrap;
+  width: 20%;
+}
+
+.show_table td {
+  color: black;
+  border: none;
+  margin: 0;
+  padding: 5px 0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.show_table td.subheader {
+  background-color: #eeeeee;
+}
+
+.show_table th.checkbox_label {
+  text-align: right;
+}
+
+.show_table_edit{
+  font-size: 0.9em;
+}
+
+.show_table_edit_link{
+  color: blue;
+}
+
+.show_table_error {
+  color: red;
+}
+
+.show_table_error a {
+  color: red;
+}
+
+
+
+/* % ######################################################### */
+/* % Generic Sidebar Content */
+/* % ########################################################  */
+
+.sidebar {
+  white-space: nowrap;
+  font-size: 0.9em;
+  padding: 5px;
+  margin-top: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  background-color: #f6f6f6;
+  border: 1px solid #dddddd;
+}
+
+
+/* % ######################################################### */
+/* % Userfiles Sidebar Content */
+/* % ########################################################  */
+
+.view_options {
+  font-weight: bold;
+  line-height: 1.7em;
+  padding: 0 1em 0 1em;
+  white-space: nowrap;
+}
+
+
+
+/* % ######################################################### */
+/* % Sidebar Filter Content (Tasks or Userfiles) */
+/* % ########################################################  */
+
+#userfiles_filters_dropdown_menu {
+  white-space: nowrap;
+}
+
+.filter_menu {
+  padding: 0;
+  margin-left: 0px;
+  text-align: left;
+}
+
+.filter_menu li {
+  list-style-type: none;
+  margin-left: 0px;
+  font-weight: bold;
+}
+
+.custom_filter li {
+  font-weight: bold;
+}
+
+.project_details {
+  font-size: 0.8em;
+}
+
+.project_edit_button {
+  left: 5px;
+}
+
+.project_delete_button {
+  right: 5px;
+}
+
+.system_project_point     { color:      #d41c1c; }
+.system_project           { background: #d41c1c; }
+.system_project:active    { background: #d41c1c; }
+
+.everyone_project_point   { color:      #af0b0b; }
+.everyone_project         { background: #af0b0b; }
+.everyone_project:active  { background: #af0b0b; }
+
+.site_project_point       { color:      #8c0953; }
+.site_project             { background: #8c0953; }
+.site_project:active      { background: #8c0953; }
+
+.user_project_point       { color:      #500d75; }
+.user_project             { background: #500d75; }
+.user_project:active      { background: #500d75; }
+
+.shared_project_point     { color:      #098c09; }
+.shared_project           { background: #098c09; }
+.shared_project:active    { background: #098c09; }
+
+.personal_project_point   { color:      #076969; }
+.personal_project         { background: #076969; }
+.personal_project:active  { background: #076969; }
+
+.invisible_project_point  { color:      #70a30a; }
+.invisible_project        { background: #70a30a; }
+.invisible_project:active { background: #70a30a; }
+
+.empty_project_point      { color:      #16a916; }
+.empty_project            { background: #16a916; }
+.empty_project:active     { background: #16a916; }
+
+.giant{
+  margin-top: 0.3em;
+  font-size: 4em;
+}
+
 .project_button_header {
   border: 0px;
   width: 100%;

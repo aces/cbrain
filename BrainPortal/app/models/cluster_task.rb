@@ -269,7 +269,7 @@ class ClusterTask < CbrainTask
     relpath = relpath.to_s
     cb_error "Current directory is not the task's work directory?" unless self.we_are_in_workdir
     cb_error "New directory argument must be a relative path." if
-      relpath.blank? || relpath =~ /^\//
+      relpath.blank? || relpath =~ /\A\//
     Dir.mkdir(relpath,mode) unless File.directory?(relpath)
   end
 
@@ -287,7 +287,7 @@ class ClusterTask < CbrainTask
     relpath        = relpath.to_s
     cb_error "Current directory is not the task's work directory?" unless self.we_are_in_workdir
     cb_error "New directory argument must be a relative path." if
-      relpath.blank? || relpath =~ /^\//
+      relpath.blank? || relpath =~ /\A\//
     File.unlink(relpath) if File.symlink?(relpath)
     File.symlink(original_entry,relpath)
   end
@@ -399,7 +399,7 @@ class ClusterTask < CbrainTask
   # directory structure.
   def make_available(userfile, file_path, userfile_sub_path = nil)
     cb_error "File path argument must be relative" if
-      file_path.blank? || file_path.to_s =~ /^\//
+      file_path.blank? || file_path.to_s =~ /\A\//
 
     # Fetch and sync the requested userfile
     userfile      = Userfile.find(userfile) unless userfile.is_a?(Userfile)
@@ -457,7 +457,7 @@ class ClusterTask < CbrainTask
     return false unless path
     wdpath   = Pathname.new(workdir)
     rel_path = path.relative_path_from(wdpath) rescue nil
-    return false if rel_path.blank? || rel_path.to_s =~ /^\.\./ # if it starts with ".." it means we go out of the workdir!
+    return false if rel_path.blank? || rel_path.to_s =~ /\A\.\./ # if it starts with ".." it means we go out of the workdir!
     true
   end
 
@@ -970,7 +970,7 @@ class ClusterTask < CbrainTask
     return :go if prereqs.empty?
     final_action = :go
     prereqs.keys.each do |t_taskid|  # taskid is a string like "T62"
-      cb_error "Invalid prereq key '#{t_taskid}'." unless t_taskid =~ /^T(\d+)$/
+      cb_error "Invalid prereq key '#{t_taskid}'." unless t_taskid =~ /\AT(\d+)\z/
       task_id = Regexp.last_match[1].to_i
       cb_notice "Task depends on itself!" if task_id == self.id # Cannot depend on yourself!!!
       task = CbrainTask.find(task_id) rescue nil
@@ -1098,7 +1098,7 @@ class ClusterTask < CbrainTask
   ##################################################################
 
   def in_situ_workdir_archive_file #:nodoc:
-    fn_id = self.fullname.gsub(/[^\w\-]+/,"_").sub(/^_*/,"").sub(/_*$/,"")
+    fn_id = self.fullname.gsub(/[^\w\-]+/,"_").sub(/\A_*/,"").sub(/_*$/,"")
     "CbrainTask_Workdir_#{fn_id}.tar.gz" # note: also check in the TaskWorkdirArchive model
   end
 

@@ -180,7 +180,7 @@ def resolve_bourreaux(bb)
   bourreau_list = bb.map do |b|
     if b.is_a?(String)
       no_log { Bourreau.find_by_name(b) }
-    elsif (b.is_a?(Fixnum) || b.to_s =~ /^\d+$/)
+    elsif (b.is_a?(Fixnum) || b.to_s =~ /\A\d+\z/)
       no_log { Bourreau.find_by_id(b) }
     elsif b.is_a?(Regexp)
       no_log { Bourreau.all.detect { |x| x.name =~ b } }

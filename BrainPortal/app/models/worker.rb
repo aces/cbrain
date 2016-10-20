@@ -679,7 +679,7 @@ class Worker
   # Get pid from pidfile name.
   # Assumes filename has '*pid.run' format.
   def self.extract_pid_from_pidfile_name(filename) #:nodoc:
-    if filename =~ /(\d+)\.run$/
+    if filename =~ /(\d+)\.run\z/
       return Regexp.last_match[1].to_i
     else
       return nil

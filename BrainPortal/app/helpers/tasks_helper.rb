@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Helper methods for tasks views.
@@ -101,7 +101,7 @@ module TasksHelper
   def format_task_size_unk(num_task,tot_size,num_unk)
     t_s_u  = "Tasks: #{num_task}<br/>"
     t_s_u += "Size: #{pretty_size(tot_size)}<br/>"
-    t_s_u += unk.to_i > 0 ? "Unknown: #{num_unk.to_i}" : "&nbsp;"
+    t_s_u += num_unk.to_i > 0 ? "Unknown: #{num_unk.to_i}" : "&nbsp;"
     return t_s_u.html_safe
   end
 

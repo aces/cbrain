@@ -155,7 +155,7 @@ class ModelsReport
   def self.search_for_token(token, user=current_user) #:nodoc:
 
     token       = token.to_s.presence || "-9998877"          # -9998877 is a way to ensure we find nothing ...
-    is_numeric  = token =~ /^\d+$/    || token == "-9998877" # ... because we'll find by ID
+    is_numeric  = token =~ /\A\d+\z/  || token == "-9998877" # ... because we'll find by ID
 
 
     file_scope  = Userfile      .find_all_accessible_by_user(user) .order(:name)

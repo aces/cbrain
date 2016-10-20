@@ -57,6 +57,14 @@
         </div>
 
       <% end -%>
+
+      <div class="centered">
+        Not a user?
+        <%= link_to 'Request an account.',
+              url_for(:controller => :signups, :action => :new),
+              { tabindex: 4, :class => "action_link" }
+         %>
+      </div>
     </div>
   </div>
 </div>

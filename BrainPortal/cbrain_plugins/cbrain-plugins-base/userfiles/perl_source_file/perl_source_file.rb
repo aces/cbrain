@@ -17,20 +17,20 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Model for scripts written in the Perl language.
 class PerlSourceFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   def self.pretty_type #:nodoc:
     "Perl script"
   end
 
   def self.file_name_pattern #:nodoc:
-    /\.(pl|pm)$/i
+    /\.(pl|pm)\z/i
   end
-  
+
 end

@@ -112,7 +112,7 @@ class SshAgent
   attr_reader :socket
 
   def initialize(name,socket=nil,pid=nil) #:nodoc:
-    raise "Invalid name" unless name =~ /^[a-z]\w*$/i || name == '_forwarded' || name == '_current'
+    raise "Invalid name" unless name =~ /\A[a-z]\w*\z/i || name == '_forwarded' || name == '_current'
     @name   = name
     @socket = socket.present? ? socket.to_s : nil
     @pid    = pid.present?    ? pid.to_s    : nil
@@ -246,7 +246,7 @@ class SshAgent
   # Raises an exception if the 'ssh-add' command complains.
   def add_key_file(keypath = "#{ENV['HOME']}/.ssh/id_rsa")
     out = IO.popen("#{CONFIG[:exec_ssh_add]} #{keypath.to_s.bash_escape} 2>&1","r") { |fh| fh.read }
-    raise "Key file doesn't exist, is invalid, or has improper permission" unless out =~ /^Identity added/i
+    raise "Key file doesn't exist, is invalid, or has improper permission" unless out =~ /\AIdentity added/i
     true
   end
 
@@ -292,7 +292,7 @@ class SshAgent
       return [] if out =~ /agent has no identities/i
       raise "Agent doesn't seem to exist anymore." if
        (l_or_L == 'l' && out !~ /:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:/) ||
-       (l_or_L == 'L' && out !~ /^ssh-\S+\s+[a-zA-Z0-9\+\/]{30}/) # base 64 include let, dig, +, /
+       (l_or_L == 'L' && out !~ /\Assh-\S+\s+[a-zA-Z0-9\+\/]{30}/) # base 64 include let, dig, +, /
       return out.split(/\r?\n/)
     end
   end
@@ -331,7 +331,7 @@ echo Agent pid #{self.pid};
   end
 
   def self.agent_config_file_path(name) #:nodoc:
-    raise "Agent name is not a simple identifier." unless name.present? && (name =~ /^[a-z]\w*$/i || name == '_forwarded')
+    raise "Agent name is not a simple identifier." unless name.present? && (name =~ /\A[a-z]\w*\z/i || name == '_forwarded')
     Pathname.new(CONFIG[:agent_bashrc_dir]) + "#{name}@#{CONFIG[:hostname]}.agent.bashrc"
   end
 
