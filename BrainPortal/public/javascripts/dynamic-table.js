@@ -256,8 +256,8 @@
 
         popup.parent().css({ position: 'static' });
         popup.offset({
-          top:  position.top,
-          left: Math.min(position.left, $(window).width() - width - edge_gap)
+          top:  popup.closest('.dt-table').position().top + 220,
+          left: $(window).width() - width - edge_gap
         });
       })
       .undelegate('.dt-col-csp > .dt-popup', 'hide.dyn-tbl')

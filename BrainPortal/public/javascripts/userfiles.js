@@ -37,13 +37,13 @@ $(function() {
   /* URLs to perform actions/operations requests on */
   var urls = {
     refresh: '/userfiles',
-    upload:  $('#upload-dialog > form').attr('action'),
+    upload:  $('#upload-modal form').attr('action'),
     copy:    $('#move-modal form').attr('action'),
     move:    $('#move-modal form').attr('action'),
     rename:  '/userfiles/:id',
-    update:  $('#prop-dialog > form').attr('action'),
+    update:  $('#props-modal form').attr('action'),
     tags:    '/tags/:id',
-    create_collection: $('#collection-dialog > form').attr('action')
+    create_collection: $('#collection-modal form').attr('action')
   };
 
   /* Userfiles actions/operations */
@@ -383,20 +383,6 @@ $(function() {
 
   /* Menus (context menu and menu bar) */
   userfiles.delegate('#menu_bar', 'new_content', function () {
-    /* Style up action buttons */
-    $('.act-btn').each(function () {
-      $(this).button({ icons: { primary: $(this).data('icon') } });
-    });
-
-    /* Style up the dropdown menu */
-    $('#menu-list').menu({
-      position: { my: 'right top', at: 'left top' }
-    });
-
-    $('#menu-list .ui-icon-carat-1-e')
-      .removeClass('ui-icon-carat-1-e')
-      .addClass('ui-icon-carat-1-w');
-
     /* Style up the context menu */
     $('#userfiles_context_menu').menu();
 
@@ -451,16 +437,9 @@ $(function() {
           body.bind(ehide, function (event) {
             menu.hide();
             body.unbind(ehide);
-            event.stopPropagation();
+            // event.stopPropagation();
           });
       };
-
-      /* top bar menu button */
-      $('#menu-btn')
-        .unbind('click.uf.toggle-menu')
-        .bind(  'click.uf.toggle-menu', function (event) {
-          toggle($('#menu-list'), 'click.uf.hide-menu', event);
-        });
 
       /* context menu (right-click) */
       $('#userfiles_table')
@@ -499,7 +478,25 @@ $(function() {
         };
 
         userfiles.request(params);
-      });
+      }).find('#menu_bar').trigger('new_content');
+
+    $('#userfiles_context_menu, #static-actions, #dynamic-actions, #menu-actions')
+      /* Link-bound buttons/items */
+      .undelegate('.act-btn[data-url], .act-item[data-url]', 'click.uf.url-bound')
+      .delegate(  '.act-btn[data-url], .act-item[data-url]', 'click.uf.url-bound', function () {
+        var elem = $(this);
+
+        var params = {
+          url:      elem.data('url'),
+          method:   elem.data('method')    || 'GET',
+          dataType: elem.data('data-type') || 'script',
+          ajax:     elem.data('ajax')      || false,
+          withSelection:  elem.data('with-selection'),
+          emptySelection: elem.data('empty-selection')
+        };
+
+        userfiles.request(params);
+    });
 
     /* Rename action button/context menu item */
     $('#ren-btn, #ren-ctx')
@@ -508,17 +505,8 @@ $(function() {
         userfiles.trigger('rename-start.uf-ren');
       });
 
-    /* Edit custom filter button */
-    $('#filters-menu')
-      .undelegate('.filter-edit', 'click.uf.dlg-filter-edit')
-      .delegate(  '.filter-edit', 'click.uf.dlg-filter-edit', function (event) {
-        event.stopPropagation();
-        $('#filter-dialog').trigger('open.uf', [this]);
-      });
   }).find('#menu_bar').trigger('new_content');
 
-  /* Dialogs */
-  /* NOTE TO ANDREW: ALL UI DIALOG CODE TO BE REMOVED */
   userfiles.delegate('#userfiles_dialogs', 'new_content', function () {
     /* Dialog button icons */
     var icons = {
@@ -534,59 +522,14 @@ $(function() {
       'Create':  'ui-icon-plusthick',
     };
 
-    /* Generic dialog properties and handlers */
-    $('.dlg-dialog').dialog({
-      autoOpen:    false,
-      resizable:   false,
-      modal:       true,
-      width:       'auto',
-      height:      'auto',
-      dialogClass: 'dlg-ovfl',
-      open: function () {
-        $(this)
-          .siblings('.ui-dialog-buttonpane')
-          .find('button')
-          .each(function () {
-            var icon = icons[$(this).text()];
-
-            if (icon) $(this).button({ icons: { primary: icon } });
-          });
-      }
-    });
-
-    /* Open/close events */
-    $('body')
-      .undelegate('.dlg-dialog', 'open.uf.dlg-open')
-      .delegate(  '.dlg-dialog', 'open.uf.dlg-open', function () {
-        $(this).dialog('open');
-      })
-      .undelegate('.dlg-dialog', 'close.uf.dlg-close')
-      .delegate(  '.dlg-dialog', 'close.uf.dlg-close', function () {
-        if ($(this).data('close-state'))
-          $(this).removeData('close-state');
-        else
-          $(this)
-            .data('close-state', 1)
-            .dialog('close');
-      })
-      .undelegate('.dlg-dialog', 'dialogclose.uf.dlg-close-chain')
-      .delegate(  '.dlg-dialog', 'dialogclose.uf.dlg-close-chain', function () {
-        if ($(this).data('close-state'))
-          $(this).removeData('close-state');
-        else
-          $(this)
-            .data('close-state', 1)
-            .trigger('close.uf');
-      });
-
     /* Chosen select box plugin */
     $('#up-tag, #pp-tag').chosen({
       no_results_text: "Press Enter to add: ",
-      width: '200px'
+      width: '100%'
     });
 
     /* Tri-state checkboxes (unset, unchecked, checked) */
-    $('.dlg-dialog')
+    $('.modal')
       .undelegate('.dlg-chk.dlg-tri-state', 'change.uf.switch-state')
       .delegate(  '.dlg-chk.dlg-tri-state', 'change.uf.switch-state', function (event) {
         event.preventDefault();
@@ -604,69 +547,36 @@ $(function() {
             .prop('checked', false);
       });
 
-    /* Disable 'Enter' key form submission in dialogs */
-    $('.dlg-dialog')
+    /* Disable 'Enter' key form submission in modal */
+    $('.modal')
       .undelegate('form', 'keypress.uf.enter-submit')
       .delegate(  'form', 'keypress.uf.enter-submit', function (event) {
         if (event.keyCode === 13) event.preventDefault();
-      });
-
-    /* Confirmation dialogs */
-    /* NOTE TO ANDREW: ALL UI CONFIRM CODE TO BE REMOVED */
-    $('.dlg-cfrm')
-      .unbind('open.uf.cfrm-open')
-      .bind(  'open.uf.cfrm-open', function (event, source, settings) {
-        if (!settings) settings = {};
-
-        var dialog  = $(this),
-            accept  = settings.accept || $.noop,
-            cancel  = settings.cancel || $.noop,
-            action  = settings.action || dialog.data('action') || 'Accept',
-            buttons = {};
-
-        buttons['Cancel'] = function (event) {
-          dialog.trigger('close.uf');
-          dialog.dialog('option', 'buttons', {});
-
-          cancel(event);
-        };
-
-        buttons[action] = function (event) {
-          dialog.trigger('close.uf');
-          dialog.dialog('option', 'buttons', {});
-
-          accept(event);
-        };
-
-        dialog.dialog('option', 'buttons', buttons);
       });
 
     /* Upload dialog */
     (function () {
       var upload_button = undefined;
 
-      $('#upload-dialog')
-        .dialog('option', 'buttons', {
-          'Cancel': function (event) {
-            $(this).trigger('close.uf');
-          },
-          'Upload': function (event) {
-            var dialog = $(this);
+      $('#upload-modal')
+        .find('.modal-confirm')
+        .off('click.uf.upload')
+        .on('click.uf.upload', function (event) {
+          userfiles
+              .upload($('#upload-modal').find('form')[0])
+              .then(userfiles.refresh)
+              .then(($('#upload-modal').find('form')[0]).reset());
+        });
 
-            dialog.trigger('close.uf');
-            userfiles.upload(dialog.children('form')[0])
-              .then(userfiles.refresh);
-          }
-        })
+      $('#upload-modal')
         .unbind('open.uf.up-open')
         .bind(  'open.uf.up-open', function () {
           if (!upload_button)
-            upload_button = $('#upload-dialog')
-              .parent()
-              .find(':button:contains("Upload")');
+            upload_button = $('#upload-modal')
+              .find('.modal-confirm');
 
           upload_button
-            .toggleClass('ui-state-disabled', true)
+            .toggleClass('disabled', true)
             .prop('disabled', true);
 
           $('#up-file').trigger('click');
@@ -727,11 +637,11 @@ $(function() {
             });
 
             upload_button
-              .toggleClass('ui-state-disabled', bad_file || !selected)
+              .toggleClass('disabled', bad_file || !selected)
               .prop('disabled', bad_file || !selected);
           });
 
-      $('#upload-dialog')
+      $('#upload-modal')
         /* file type auto-detection */
         .undelegate('#up-type', 'change.uf.up-arch-detect')
         .delegate(  '#up-type', 'change.uf.up-arch-detect', function (event) {
@@ -745,7 +655,7 @@ $(function() {
         })
         .undelegate('#up-file', 'change.uf.up-type-detect')
         .delegate(  '#up-file', 'change.uf.up-type-detect', function (event) {
-          var url = $('#upload-dialog').data('type-detect-url');
+          var url = $('#upload-modal').data('type-detect-url');
           if (!url) return;
 
           $.post(url, { file_name: $(this).val() }, function (data) {
@@ -763,47 +673,11 @@ $(function() {
         })
     })();
 
-    /* Copy/Move dialog */
-    $('#Xcpmv-dialog')
-      .unbind('open.uf.cpmv-open')
-      .bind(  'open.uf.cpmv-open', function (event, source) {
-        /* FIXME not exactly a clean way to detect if moving or copying... */
-        var move    = $(source).is('#move-btn') || $(source).is('#move-ctx'),
-            dialog  = $(this),
-            buttons = {},
-            title   = undefined;
-
-        title = (move ? 'Move' : 'Copy') + ' - ' + formatted_selection();
-
-        buttons['Cancel'] = function (event) {
-          dialog.trigger('close.uf');
-        };
-
-        buttons[(move ? 'Move' : 'Copy')] = function (event) {
-            userfiles[move ? 'move' : 'copy'](dialog.children('form')[0]);
-            dialog.trigger('close.uf');
-          };
-
-        dialog
-          .dialog('option', 'title', title)
-          .dialog('option', 'buttons', buttons);
-      });
-
     /* Tags dialog */
-    $('#tag-dialog')
-      .dialog('option', 'buttons', {
-        'Done': function (event) {
-          $(this).trigger('close.uf');
-        }
-      })
-      /* remove the initial button focus */
-      .unbind('open.uf.tag-button-focus')
-      .bind(  'open.uf.tag-button-focus', function () {
-        $(this).find('button').blur();
-      })
+    $('#tag-modal')
       /* refresh the main index if tags changed (dirty flag) */
-      .unbind('close.uf.tag-refresh')
-      .bind(  'close.uf.tag-refresh', function () {
+      .off('tag-refresh')
+      .on( 'tag-refresh', function () {
         var dialog = $(this);
 
         if (dialog.data('dirty'))
@@ -819,7 +693,7 @@ $(function() {
           .data('old-value', $(this).text())
           .val($(this).text());
 
-        $('#tag-dialog').find('.tag-body .tag-in-name').blur();
+        $('#tag-modal').find('.tag-body .tag-in-name').blur();
 
         $(this).replaceWith(input);
         input.focus();
@@ -844,8 +718,8 @@ $(function() {
         if (name === old) return;
 
         userfiles.tags.update(id, { name: name })
-          .done(function () { $('#tag-dialog').data('dirty', 1);    })
-          .fail(function () { $('#tag-dialog').trigger('close.uf'); });
+          .done(function () { $('#tag-modal').data('dirty', 1);    })
+          .fail(function () { $('#tag-modal').modal('hide'); });
       })
       /* swap a tag's project label for a drop-down menu on click */
       .undelegate('.tag-body .tag-txt-prj', 'click.uf.tag-swap-iprj')
@@ -872,14 +746,14 @@ $(function() {
               .text($(this).find(':selected').text())
               .data('value', group)
           )
-          .appendTo('#tag-dialog > form')
+          .appendTo($('#tag-modal').find('form')[0])
           .hide();
 
         if (group === old) return;
 
         userfiles.tags.update(id, { group_id: group })
-          .done(function () { $('#tag-dialog').data('dirty', 1);    })
-          .fail(function () { $('#tag-dialog').trigger('close.uf'); });
+          .done(function () { $('#tag-modal').data('dirty', 1);    })
+          .fail(function () { $('#tag-modal').modal('hide'); });
       })
       /* remove an existing tag */
       .undelegate('.tag-body .tag-act', 'click.uf.tag-remove')
@@ -887,19 +761,18 @@ $(function() {
         var row = $(this).closest('.tag-row');
         event.preventDefault();
 
-        $('#tag-del-confirm').trigger('open.uf', [this, {
-          name:   row.find('.tag-name').text().trim(),
-          accept: function (event) {
-            userfiles.tags.remove(row.data('id'))
-              .done(function () {
-                $('#tag-dialog').data('dirty', 1);
-                row.remove();
-              })
-              .fail(function () {
-                $('#tag-dialog').trigger('close.uf');
-              });
-          }
-        }]);
+        var confirm_message_id = '#delete-tag-' + row.data('id');
+        $(confirm_message_id).toggleClass('hidden');
+      })
+      /* actually delete the tag */
+      .undelegate('.delete-tag', 'click.uf.tag-remove')
+      .delegate(  '.delete-tag', 'click.uf.tag-remove', function (event) {
+        var row = $(this).closest('.tag-row');
+
+        userfiles.tags.remove(row.data('id'));
+        $('#tag-modal').data('dirty', 1);
+        $('#tag-modal').trigger('tag-refresh');
+        row.remove();
       })
       /* validate the tag name to activate the add-tag button */
       .undelegate('.tag-add .tag-in-name', 'input.uf.tag-name-check')
@@ -926,34 +799,25 @@ $(function() {
           group_id: form.find('.tag-add .tag-in-prj').val()
         })
           .done(function () {
+            $('#tag-modal').data('dirty', 1);
+            $('#tag-modal').trigger('tag-refresh');
             userfiles.refresh().then(function () {
               indicator.css({ visibility: 'hidden' });
+              $('#tags-modal').modal('hide');
+              $('#tags-modal').modal('show');
             });
           })
           .fail(function () {
-            $('#tag-dialog').trigger('close.uf');
+            $('#tag-modal').modal('hide');
             indicator.css({ visibility: 'hidden' });
           });
       });
 
     /* Properties dialog */
-    $('#prop-dialog')
-      .dialog('option', 'buttons', {
-        'Cancel': function (event) {
-          $(this).trigger('close.uf');
-        },
-        'Apply': function (event) {
-          var dialog = $(this);
-
-          dialog.trigger('close.uf');
-          userfiles.update(dialog.children('form')[0]);
-        }
-      })
-      .unbind('open.uf.prop-open')
-      .bind(  'open.uf.prop-open', function () {
-        $(this).dialog('option', 'title',
-          'File properties - ' + formatted_selection()
-        );
+    $('#props-modal')
+      .off('show.bs.modal')
+      .on( 'show.bs.modal', function (event) {
+        $('#props-modal').find('#props-modal-title').text('File properties - ' + formatted_selection());
       })
       .undelegate('#pp-tag-clr', 'change.uf.prop-tag-clear')
       .delegate(  '#pp-tag-clr', 'change.uf.prop-tag-clear', function () {
@@ -966,25 +830,20 @@ $(function() {
           .trigger('chosen:updated');
       });
 
-    /* New collection dialog */
-    $('#collection-dialog')
-      .dialog('option', 'buttons', {
-        'Cancel': function (event) {
-          $(this).trigger('close.uf');
-        },
-        'Create': function (event) {
-          var dialog = $(this);
+    $('#props-modal')
+      .find('.modal-confirm')
+      .off('click')
+      .on('click', function (event) {
+        userfiles.update($('#props-modal').find('form')[0]);
+      });
 
-          dialog.trigger('close.uf');
-          userfiles.create_collection(dialog.children('form')[0]);
-        }
+    /* New collection dialog */
+    $('#collection-modal')
+      .off('show.bs.modal')
+      .on('show.bs.modal', function (event) {
+        $('#collection-modal-title').text('New collection - ' + formatted_selection());
       })
-      .unbind('open.uf.col-open')
-      .bind(  'open.uf.col-open', function () {
-        $(this).dialog('option', 'title',
-          'New collection - ' + formatted_selection()
-        );
-      })
+
       .undelegate('#co-name', 'input.uf.co-name-check')
       .delegate(  '#co-name', 'input.uf.co-name-check', function () {
         var valid = /^\w[\w~!@#%^&*()-+=:[\]{}|<>,.?]*$/.test($(this).val());
@@ -993,11 +852,18 @@ $(function() {
           visibility: valid ? 'hidden' : 'visible'
         });
 
-        $('#collection-dialog')
-          .parent()
-          .find(':button:contains("Create")')
-          .prop('disabled', !valid)
-          .toggleClass('ui-state-disabled', !valid);
+        if (valid) {
+          $('#collection-modal').find('.modal-confirm').removeAttr('disabled');
+        } else {
+          $('#collection-modal').find('.modal-confirm').attr('disabled', 'disabled');
+        }
+      });
+
+    $('#collection-modal')
+      .find('.modal-confirm')
+      .off('click')
+      .on('click', function (event) {
+        userfiles.create_collection($('#collection-modal').find('form')[0]);
       });
 
     /* Delete files confirmation dialog */
@@ -1011,7 +877,6 @@ $(function() {
     $('#move-modal')
       .off('show.bs.modal')
       .on('show.bs.modal', function (event) {
-        /* FIXME not exactly a clean way to detect if moving or copying... */
         var modal   = $(this);
         var source  = $(event.relatedTarget);
         var move    = $(source).is('#move-btn') || $(source).is('#move-ctx');
@@ -1021,13 +886,6 @@ $(function() {
         modal.find(".btn-primary").off('click').on('click', function (event) {
           userfiles[move ? 'move' : 'copy'](modal.find('form')[0]);
         });
-      });
-
-    /* Delete tag confirmation dialog */
-    $('#tag-del-confirm')
-      .unbind('open.uf.tdel-cfrm-open')
-      .bind(  'open.uf.tdel-cfrm-open', function (event, source, settings) {
-        $(this).find('.dlg-cfrm-obj').text((settings && settings.name) || '?');
       });
 
     /*

@@ -46,6 +46,9 @@
         <button class="ui-icon ui-icon-minusthick"></button>
       <% end %>
     </td>
+    <td class="tag-confirm">
+      <span id="delete-tag-<%= tag.id %>" class="hidden delete-tag"><a href="" class="act-item">Delete</a></span>
+    </td>
   </tr>
 <% end %>
 
@@ -55,6 +58,7 @@
     <th class="tag-prj">Project</th>
     <th class="tag-files">Files</th>
     <th class="tag-act"></th>
+    <th class="tag-confirm"></th>
   </tr>
 </thead>
 <tbody class="tag-available">
@@ -72,7 +76,7 @@
       <%=
         group_select('group_id', {}, {
           :id    => 'tag-add-prj',
-          :class => 'tag-in-prj',
+          :class => 'tag-in-prj form-control',
           :'data-placeholder' => "A project..."
         })
       %>

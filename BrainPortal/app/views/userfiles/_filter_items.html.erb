@@ -43,8 +43,7 @@
     }
   %>
   <li class="filter-item act-item" <%= apply_attr.to_html_attributes.html_safe %>>
-    <span href="custom_filter_path(filter)" class="filter-edit act-icon ui-icon-pencil"
-    ></span>
+    <span href="custom_filter_path(filter)" class="filter-edit"></span>
     <span class="filter-name">
       <%= filter.name %>
     </span>
@@ -54,26 +53,3 @@
   <li class="menu-separator">-</li>
 <% end %>
 
-<%
-  no_parent_attr = {
-    'data-method' => 'GET',
-    'data-ajax'   => 1,
-    'data-url'    => url_for(scope_filter_params(
-      @scope, :set, { 'type' => 'uf.hier', 'operator' => 'no_parent' }
-    ))
-  }
-
-  no_children_attr = {
-    'data-method' => 'GET',
-    'data-ajax'   => 1,
-    'data-url'    => url_for(scope_filter_params(
-      @scope, :set, { 'type' => 'uf.hier', 'operator' => 'no_child' }
-    ))
-  }
-%>
-<li class="filter-item act-item" <%= no_parent_attr.to_html_attributes.html_safe %>>
-  Has no parent
-</li>
-<li class="filter-item act-item" <%= no_children_attr.to_html_attributes.html_safe %>>
-  Has no children
-</li>

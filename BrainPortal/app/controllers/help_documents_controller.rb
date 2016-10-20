@@ -25,7 +25,7 @@ class HelpDocumentsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :only => [ :index, :create, :show, :destroy , :update]
+  api_available :only => [ :index, :new, :create, :show, :destroy , :update]
 
   before_filter :login_required
   before_filter :core_admin_role_required, :except => :show
@@ -45,15 +45,17 @@ class HelpDocumentsController < ApplicationController
     @doc = HelpDocument.find_by_id(params[:id])
 
     respond_to do |format|
-      format.html
-      format.js
+      format.json  { render :json => @doc.to_json(:methods => :contents) }
     end
   end
 
   def new #:nodoc:
     @doc = HelpDocument.new(:key => params[:key], :path => HelpDocument.path_from_key(params[:key]))
 
-    render :action => :show, :layout => false
+    # render :action => :show, :layout => false
+    respond_to do |format|
+      format.json   { render :json => @doc }
+    end
   end
 
   # POST /docs

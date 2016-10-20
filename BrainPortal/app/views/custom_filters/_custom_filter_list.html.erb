@@ -23,31 +23,63 @@
 -%>
 
 
-<div class="col-xs-12">
-  <li><div><%= link_to 'Create Custom Filter', {:controller => :custom_filters, :action => :new, :filter_class => @custom_filter.class.name}, { :class => "btn btn-primary btn-xs" } %></div></li>
+<li>
+  <%= link_to 'New Custom Filter', { :controller => :custom_filters, :action => :new, :filter_class => @custom_filter.class.name } %>
+</li>
 
-  <% @custom_filter.class.all(:conditions  =>  {:user_id  => current_user.id}).each do |filter| %>
+<li class="divider"></li>
 
-    <li class="dropdown-header"><%= crop_text_to(15, filter.name) %></li>
-    <li>
-      <div class="btn-group btn-group-xs btn-group-justified">
-        <%=
-          scope_custom_link("Apply",
-            @scope, { 'custom_filters' => [filter.id] },
-            url:  {
-              'controller'  => @custom_filter.filtered_class_controller,
-              '_scope_mode' => 'append'
-            },
-            link: {
-              :ajax => true,
-              :class => 'btn btn-primary'
-            }
-          )
-        %>
-        <%= link_to "Edit", custom_filter_path(filter), :class => "btn btn-primary" %>
-        <%= ajax_link 'Delete', custom_filter_path(filter), :confirm => "Are you sure you want to delete filter '#{filter.name}' ?", :method => :delete, :datatype  => 'script', :class => "btn btn-primary" %>
-      </div>
-    </li>
+<% if @custom_filter.class.name == UserfileCustomFilter.name %>
+  <%
+    no_parent_attr = {
+      'data-method' => 'GET',
+      'data-ajax'   => 1,
+      'data-url'    => url_for(scope_filter_params(
+        @scope, :set, { 'type' => 'uf.hier', 'operator' => 'no_parent' }
+      ))
+    }
 
-  <% end %>
-</div>
+    no_children_attr = {
+      'data-method' => 'GET',
+      'data-ajax'   => 1,
+      'data-url'    => url_for(scope_filter_params(
+        @scope, :set, { 'type' => 'uf.hier', 'operator' => 'no_child' }
+      ))
+    }
+  %>
+  <li><a href="" <%= no_parent_attr.to_html_attributes.html_safe %>>
+    Has no parent </a>
+  </li>
+  <li><a href="" <%= no_children_attr.to_html_attributes.html_safe %>>
+    Has no children </a>
+  </li>
+  <li class="divider"></li>
+<% end %>
+
+<% @custom_filter.class.all(:conditions  =>  {:user_id  => current_user.id}).each do |filter| %>
+  <li>
+      <%=
+        scope_custom_link(crop_text_to(15, filter.name),
+          @scope, { 'custom_filters' => [filter.id] },
+          url:  {
+            'controller'  => @custom_filter.filtered_class_controller,
+            '_scope_mode' => 'append'
+          },
+          link: {
+            :ajax  => true,
+            :class => "pull-left"
+          }
+        )
+      %>
+
+    <span class="pull-right">
+      <a href="<%= custom_filter_path(filter) %>">
+        <span class="badge progress-bar-info"><span class="glyphicon glyphicon-pencil"></span></span>
+      </a>
+
+      <a href="<%= custom_filter_path(filter) %>" data-confirm="Are you sure you want to delete filter '<%= filter.name %>' ?" data-method="delete" data-type="script" data-remote="true">
+        <span class="badge progress-bar-info"><span class="glyphicon glyphicon-trash"></span></span>
+      </a>
+    </span>
+  </li>
+<% end %>

@@ -25,6 +25,195 @@
 (function() {
   "use strict";
 
+  $('.btn[data-target="#dynamic-help-modal')
+    .off('click')
+    .on('click', function (event) {
+
+    var popup       = $('#dynamic-help-modal'),
+        help_button = $(this);
+
+    // initialize the new doc on the server
+    if(help_button.attr("data-url").includes("new")){
+      $.ajax({
+        url:      "/docs/new",
+        dataType: "html",
+        method:   "GET",
+        data:     { key: help_button.attr("data-key") },
+        success: function (data) {
+          var server_doc_json = data;
+
+          help_button.attr("data-url", "/docs/");
+        }
+      });
+    }
+
+    var converter      = new Showdown.converter(),
+        editor         = undefined,
+        divs           = {
+          editor:   popup.find('div.editor'),
+          empty:    popup.find('div.empty'),
+          content:  popup.find('div.contents'),
+          raw:      popup.find('script.raw') // not actually a div
+        },
+        buttons        = {
+          show:     popup.find('#show'),
+          edit:     popup.find('#edit'),
+          save:     popup.find('#save'),
+          remove:   popup.find('#remove')
+        };
+
+    if (help_button.attr("data-id") != "empty") buttons.remove.show();
+    buttons.save.hide();
+    buttons.show.hide();
+    show();
+
+    buttons.show
+      .off('click')
+      .on('click', function(event) {
+        show();
+      });
+    buttons.edit
+      .off('click')
+      .on('click', function(event){
+        edit();
+      });
+    buttons.save
+      .off('click')
+      .on('click', function(event){
+        save();
+      });
+    buttons.remove
+      .off('click')
+      .on('click', function(event){
+        remove();
+      });
+
+    /* Show the help document as HTML */
+    function show() {
+
+      divs.editor.hide();
+      buttons.edit.show();
+
+      var content = divs.raw.html().trim();
+
+
+      if(!content){
+        $.ajax({
+          method: 'GET',
+          url: help_button.attr("data-url"),
+          key: help_button.attr("data-key"),
+          dataType: 'json',
+          success: function (data) {
+            content = data.contents;
+            divs.raw.html(data.contents);
+          }
+        }).then( function(){
+          if (content) {
+            divs.content.html(converter.makeHtml(content)).show();
+            divs.empty.hide();
+          } else {
+            divs.content.hide();
+            divs.empty.show();
+          }
+
+        });
+      }
+
+      if (content) {
+        divs.content.html(converter.makeHtml(content)).show();
+        divs.empty.hide();
+      } else {
+        divs.content.hide();
+        divs.empty.show();
+      }
+    };
+
+    /* Edit the document as Markdown */
+    function edit() {
+
+      if(!editor) {
+        editor  = CodeMirror(divs.editor[0], {
+          mode:            'markdown',
+          tabMode:         'indent',
+          lineWrapping:    true,
+          lineNumbers:     true,
+          styleActiveLine: true,
+          theme:           'neo',
+        });
+
+        editor.setValue(divs.raw.html().trim());
+        editor
+          .on('changes', function () { buttons.save.show(); });
+      }
+
+      buttons.edit.hide();
+      buttons.show.hide();
+      buttons.remove.hide();
+
+      divs.editor.show();
+      divs.empty.hide();
+      divs.content.hide();
+
+      editor.refresh();
+      editor.focus();
+    };
+
+    /* Save the document on the server */
+    function save() {
+
+      divs.raw.html(editor ? editor.getValue() : divs.raw.html());
+
+      $.ajax({
+        url:      help_button.attr("data-url"),
+        type:     help_button.attr("data-id") != "empty" ? 'PUT' : 'POST',
+        dataType: 'json',
+        data:     {
+          doc:      { key: help_button.attr("data-key") },
+          contents: editor ? editor.getValue() : divs.raw.html().trim()
+        }
+      }).done(function (doc) {
+        if (help_button.attr("data-id") == "empty" && doc.id)
+          help_button.attr("data-url", '/docs/' + doc.id);
+          help_button.attr("data-id", doc.id);
+
+        editor = undefined;
+        divs.editor.html("");
+        divs.editor.hide();
+
+        buttons.remove.show();
+        buttons.save.hide();
+        buttons.edit.show();
+
+        show();
+      });
+    };
+
+    /* Remove/delete the document */
+    function remove() {
+      $.ajax({
+        url:  help_button.attr("data-url"),
+        type: 'DELETE'
+      }).done(function () {
+        help_button.attr("data-url", help_button.attr("data-url").slice(0, help_button.attr("data-url").lastIndexOf('/')));
+        help_button.attr("data-id" , "empty");
+
+        divs.content.html("");
+        divs.raw.html("");
+        divs.empty.show();
+
+        buttons.remove.hide();
+      }).then(show());
+    };
+
+    $('#dynamic-help-modal').on('hide.bs.modal', function (event) {
+      editor = undefined;
+      divs.editor.html("");
+      divs.editor.hide();
+      show();
+    })
+
+  });
+
   /* Generic AJAX error handler */
   $(document).ajaxError(function (event, xhr, settings, error) {
     var flash = $('.flash_error'),
@@ -38,16 +227,16 @@
 
     if (xhr.responseXML && xml.find('errors > error').length)
       flash.html(
-        'Error performing request: <br />' +
+        'Error performing request: <br>' +
         xml.find('errors > error')
           .map(function () { return $(this).text(); })
           .get()
-          .join('<br />')
+          .join('<br>')
       );
     else
       flash.html(
-        'Error sending background request: <br />' +
-        'HTTP ' + xhr.status + ' ' + xhr.statusText + '<br />' +
+        'Error sending background request: <br>' +
+        'HTTP ' + xhr.status + ' ' + xhr.statusText + '<br>' +
         'The CBRAIN administrators have been alerted about this problem.'
       );
 
@@ -914,7 +1103,7 @@
       var target = text_field.attr("data-target");
 
       var parameters = {};
-      parameters[text_field.attr("name")] = text_field.attr("value");
+      parameters[text_field.attr("name")] = text_field.val();
 
       jQuery.ajax({
         type: method,
@@ -1109,7 +1298,7 @@
       var replace_elem = $("#" + current_element.attr("data-replace"));
 
       $.ajax({
-        dataType: 'script',
+        dataType: 'html',
         url: url,
         timeout: 50000,
         success: function(data) {

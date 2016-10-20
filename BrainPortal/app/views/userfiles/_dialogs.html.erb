@@ -31,272 +31,6 @@
     .reject { |dp| dp.read_only? }
 %>
 
-<div id="upload-dialog"
-  class="dlg-dialog"
-  title="Upload - Single file"
-  data-max-upload-size="<%= RemoteResource.current_resource.meta[:upload_size_limit].to_i.megabytes %>"
-  data-type-detect-url="<%= detect_file_type_userfiles_path %>"
->
-  <form action="<%= userfiles_path %>" method="post" enctype="multipart/form-data">
-    <label for="up-file" class="dlg-fld-lbl">Upload</label>
-    <input id="up-file" class="dlg-fld" type="file" name="upload_file" />
-    <span id="up-file-warn" class="dlg-msg-err"></span>
-    <br />
-
-    <label for="up-dp" class="dlg-fld-lbl">To</label>
-    <%=
-      data_provider_select('data_provider_id',
-        { :data_providers => writable_dps },
-        {
-          :id    => 'up-dp',
-          :class => 'dlg-fld',
-          :'data-placeholder' => "A data provider..."
-        }
-      )
-    %>
-    <%=
-      overlay_content_link('',
-        :id    => 'up-dp-help',
-        :class => 'ui-icon ui-icon-help',
-        :enclosing_element => 'span'
-      ) { data_providers_descriptions.html_safe }
-    %>
-    <br />
-
-    <label for="up-prj" class="dlg-fld-lbl">Project</label>
-    <%=
-      group_select('userfile[group_id]', {}, {
-        :id    => 'up-prj',
-        :class => 'dlg-fld',
-        :'data-placeholder' => "A project..."
-      })
-    %>
-    <br />
-
-    <div id="up-ex-container">
-
-      <input id="up-ex" class="dlg-chk" type="checkbox" name="_do_extract" value="on" />
-      <label for="up-ex" class="dlg-chk-icon">
-        <span class="ui-icon ui-icon-check"></span>
-      </label>
-      <label for="up-ex" class="dlg-chk-lbl">Extract</label>
-
-      <br />
-
-      <div id="up-ex-mode">
-
-        <input id="up-col" class="dlg-rad" type="radio" name="_up_ex_mode" value="collection" checked />
-        <label for="up-col" class="dlg-rad-icon">
-          <span class="round-icon"></span>
-        </label>
-        <label for="up-col" class="dlg-rad-lbl">As a single collection</label>
-
-        <br />
-
-        <input id="up-mul" class="dlg-rad" type="radio" name="_up_ex_mode" value="multiple" />
-        <label for="up-mul" class="dlg-rad-icon">
-          <span class="round-icon"></span>
-        </label>
-        <label for="up-mul" class="dlg-rad-lbl">As multiple files</label>
-
-      </div>
-
-    </div>
-    <br />
-
-    <input id="up-opt-toggle" type="checkbox" />
-    <label id="up-opt-icon" for="up-opt-toggle">
-      <span class="ui-icon up-closed ui-icon-carat-1-e"></span>
-      <span class="ui-icon up-open ui-icon-carat-1-s"></span>
-    </label>
-    <label id="up-opt-lbl" for="up-opt-toggle">Advanced options...</label>
-    <div id="up-opt">
-      <label for="up-tag" class="dlg-fld-lbl">Tags</label>
-      <select id="up-tag"
-        class="dlg-fld dlg-chosen"
-        name="tags[]"
-        multiple="multiple"
-        data-placeholder="Some tags..."
-        data-default-project="<%= default_project.id %>"
-      >
-        <%= options_from_collection_for_select(current_user.available_tags, 'id', 'name') %>
-      </select>
-      <br /><br />
-
-      <label for="up-type" class="dlg-fld-lbl">Detect as</label>
-      <%=
-        userfile_type_select(:file_type, {}, {
-          :id                 => 'up-type',
-          :class              => 'dlg-fld',
-          :'data-placeholder' => "A file type...",
-          # :include_blank      => "(Detect during autoextract)",  # doesn't work
-        })
-      %>
-      <span id="up-type-auto">(autodetected)</span>
-      <span id="up-type-unknown" class="dlg-msg-warn">Unknown file type!</span>
-      <br />
-
-      <input id="up-shr" class="dlg-chk" name="group_writable" type="checkbox" />
-      <label for="up-shr" class="dlg-chk-icon">
-        <span class="ui-icon ui-icon-check"></span>
-      </label>
-      <label for="up-shr" class="dlg-chk-lbl">
-        Allow modification by other project members
-      </label>
-    </div>
-  </form>
-
-  <%
-     # We create here a tiny SPAN element containing in its attribute "data-link"
-     # a URL to some help page that users can refer to when uploading large datasets.
-     # The URL is configured as a meta data value in the Portal's config page.
-  %>
-  <% large_upload_help_link_url = RemoteResource.current_resource.meta[:large_upload_url].presence.try(:strip) %>
-  <% if large_upload_help_link_url %>
-    <span <%= { :id         => "up-alt-help-link",
-                :style      => "display: none",
-                "data-link" => large_upload_help_link_url,
-              }.to_html_attributes.html_safe %> >
-    </span>
-  <% end %>
-
-</div>
-
-<div id="cpmv-dialog" class="dlg-dialog" title="Copy" data-title="Copy">
-  <form action="<%= change_provider_userfiles_path %>" method="post">
-    <label for="Xcpmv-dp" class="dlg-fld-lbl">To</label>
-    <%=
-      data_provider_select('data_provider_id_for_mv_cp',
-        { :data_providers => writable_dps },
-        {
-          :id    => 'Xcpmv-dp',
-          :class => 'dlg-fld',
-          :'data-placeholder' => "A data provider..."
-        }
-      )
-    %>
-    <%=
-      overlay_content_link('',
-        :id    => 'up-dp-help',
-        :class => 'ui-icon ui-icon-help',
-        :enclosing_element => 'span'
-      ) { data_providers_descriptions.html_safe }
-    %>
-    <br />
-
-    <input id="cpmv-ovr" class="dlg-chk" name="crush_destination" value="crush" type="checkbox" />
-    <label for="cpmv-ovr" class="dlg-chk-icon">
-      <span class="ui-icon ui-icon-check"></span>
-    </label>
-    <label for="cpmv-ovr" class="dlg-chk-lbl">
-      Overwrite existing file(s) with the same name
-    </label>
-    <br /><br />
-  </form>
-</div>
-
-<div id="prop-dialog" class="dlg-dialog" title="File properties">
-  <span id="pp-fcs" autofocus="autofocus"></span>
-
-  <form action="<%= update_multiple_userfiles_path %>" method="post">
-    <label for="pp-tag" class="dlg-fld-lbl">Tags</label>
-    <select id="pp-tag"
-      class="dlg-fld dlg-chosen"
-      name="tags[]"
-      multiple="multiple"
-      data-placeholder="Keep current tags"
-      data-default-project="<%= default_project.id %>"
-    >
-      <%= options_from_collection_for_select(current_user.available_tags, 'id', 'name') %>
-    </select>
-    <br /><br />
-
-    <input id="pp-tag-clr" class="dlg-chk" type="checkbox" />
-    <label for="pp-tag-clr" class="dlg-chk-icon">
-      <span class="ui-icon ui-icon-check"></span>
-    </label>
-    <label for="pp-tag-clr" class="dlg-chk-lbl">
-      Clear tags
-    </label>
-    <br />
-
-    <br />
-
-    <% unless current_user.has_role?(:normal_user) %>
-      <label for="pp-own" class="dlg-fld-lbl">Owner</label>
-      <%=
-        user_select('user_id', { :selector => nil }, {
-          :id       => 'pp-own',
-          :class    => 'dlg-fld',
-          :include_blank      => "(keep current owner)",
-          :'data-placeholder' => "Keep current owner"
-        })
-      %>
-      <br />
-    <% end %>
-
-    <label for="pp-prj" class="dlg-fld-lbl">Project</label>
-    <%=
-      group_select('group_id', { :selector => nil }, {
-        :id       => 'pp-prj',
-        :class    => 'dlg-fld',
-        :include_blank      => "(keep current project)",
-        :'data-placeholder' => "Keep current project"
-      })
-    %>
-    <br />
-
-    <input id="pp-shr" class="dlg-chk dlg-tri-state dlg-unset" data-name="group_writable" type="checkbox" />
-    <label for="pp-shr" class="dlg-chk-icon">
-      <span class="ui-icon ui-icon-check"></span>
-    </label>
-    <label for="pp-shr" class="dlg-chk-lbl">
-      Allow modification by other project members
-    </label>
-    <br />
-
-    <br />
-
-    <label for="pp-type" class="dlg-fld-lbl">Type</label>
-    <%=
-      userfile_type_select(:type, { :selector => nil }, {
-        :id       => 'pp-type',
-        :class    => 'dlg-fld',
-        :include_blank      => "(keep current file type)",
-        :'data-placeholder' => "Keep current file type"
-      })
-    %>
-    <br />
-
-    <input id="pp-hid" class="dlg-chk dlg-tri-state dlg-unset" data-name="hidden" type="checkbox" />
-    <label for="pp-hid" class="dlg-chk-icon">
-      <span class="ui-icon ui-icon-check"></span>
-    </label>
-    <label for="pp-hid"
-      class="dlg-chk-lbl html_tool_tip_trigger"
-      data-tool-tip-id="pp-hid-tp"
-      data-offset-x="80"
-      data-offset-y="-2"
-    >
-      Hidden (<span class="pp-hid-ind">H</span>)
-    </label>
-    <br />
-
-    <input id="pp-ro" class="dlg-chk dlg-tri-state dlg-unset" data-name="immutable" type="checkbox" />
-    <label for="pp-ro" class="dlg-chk-icon">
-      <span class="ui-icon ui-icon-check"></span>
-    </label>
-    <label for="pp-ro"
-      class="dlg-chk-lbl html_tool_tip_trigger"
-      data-tool-tip-id="pp-ro-tp"
-      data-offset-x="80"
-      data-offset-y="-2"
-    >
-      Locked (<span class="pp-ro-ind">I</span>)
-    </label>
-  </form>
-</div>
-
 <div id="pp-hid-tp" class="html_tool_tip" style="z-index:105">
   Hidden files are invisible by default, and are usually reserved for
   maintenance, internal and archiving purposes.
@@ -304,77 +38,6 @@
 
 <div id="pp-ro-tp" class="html_tool_tip" style="z-index:105">
   Locked files cannot be modified or moved across data providers.
-</div>
-
-<div id="tag-dialog" class="dlg-dialog" title="Tags">
-  <form action="#" method="post">
-    <%=
-      group_select('', {}, {
-        :id    => 'tag-mov-prj',
-        :class => 'tag-in-prj',
-        :'data-placeholder' => "A project..."
-      })
-    %>
-    <table id="tag-table">
-      <%= render(:partial => 'tags_table') %>
-    </table>
-  </form>
-</div>
-
-<div id="collection-dialog" class="dlg-dialog" title="New collection">
-  <form action="<%= create_collection_userfiles_path %>" method="post">
-    <label for="co-name" class="dlg-fld-lbl">Name</label>
-    <input id="co-name"
-      class="dlg-fld"
-      type="text"
-      name="collection_name"
-      value="NewCollection"
-    />
-    <span id="co-invalid-name" class="dlg-msg-err">
-      &#9888; Invalid!
-    </span>
-    <br />
-
-    <label for="co-dp" class="dlg-fld-lbl">Provider</label>
-    <%=
-      data_provider_select('data_provider_id_for_collection',
-        { :data_providers => writable_dps },
-        {
-          :id    => 'co-dp',
-          :class => 'dlg-fld',
-          :'data-placeholder' => "A data provider..."
-        }
-      )
-    %>
-    <br /><br />
-  </form>
-</div>
-
-<div id="delete-confirm"
-  class="dlg-dialog dlg-cfrm"
-  title="Delete"
-  data-action="Delete"
->
-  <span class="dlg-cfrm-icon ui-icon ui-icon-alert"></span>
-  Are you sure you wish to delete these <span class="dlg-cfrm-cnt"></span> file(s)?
-</div>
-
-<div id="qc-confirm"
-  class="dlg-dialog dlg-cfrm"
-  title="Quality control"
-  data-action="Proceed"
->
-  <span class="dlg-cfrm-icon ui-icon ui-icon-info"></span>
-  Note that quality control (QC) requires files to be synchronized locally first.
-</div>
-
-<div id="tag-del-confirm"
-  class="dlg-dialog dlg-cfrm"
-  title="Delete"
-  data-action="Delete"
->
-  <span class="dlg-cfrm-icon ui-icon ui-icon-alert"></span>
-  Are you sure you wish to delete the tag <span class="dlg-cfrm-obj"></span> ?
 </div>
 
 <!-- DELETE FILES MODAL -->
@@ -390,7 +53,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary modal-confirm" data-dismiss="modal" id="delete-files" data-url="<%= delete_files_userfiles_path %>" data-method="DELETE">OK</button>
+        <button type="button" class="btn btn-primary modal-confirm" data-dismiss="modal" data-url="<%= delete_files_userfiles_path %>" data-method="DELETE">OK</button>
       </div>
     </div>
   </div>
@@ -421,28 +84,24 @@
                   )
                 %>
                 <span class="input-group-addon pop" data-toggle="popover" data-trigger="focus" data-container="body" data-content="<%= data_providers_descriptions.html_safe %>" data-html="true"><span class="glyphicon glyphicon-question-sign"></span></span>
-
               </div>
             </div>
-            <div class="row">
-              <div class="col-xs-10 col-sm-offset-2">
-                <label for="overwrite">Overwrite existing file(s) with the same name</label>
-                <input id="overwrite" type="checkbox"></input>
-              </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-10 col-sm-offset-2">
+              <label for="overwrite">Overwrite existing file(s) with the same name</label>
+              <input id="overwrite" type="checkbox">
             </div>
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+        <button type="button" class="btn btn-primary modal-confirm" data-dismiss="modal">OK</button>
       </div>
     </div>
   </div>
 </div>
-
-<!-- LAUNCH TASK MODAL -->
-
 
 <!-- UPLOAD MODAL -->
 <div class="modal fade" id="upload-modal" tabindex="-1" role="dialog"
@@ -592,9 +251,232 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" data-dismiss="modal" id="upload-files">OK</button>
+        <button type="button" class="btn btn-primary modal-confirm" data-dismiss="modal" id="upload-files">OK</button>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- TAG MODAL -->
+<div class="modal fade" id="tag-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        Tags
+      </div>
+      <div class="modal-body">
+        <form method="post">
+          <%=
+            group_select('', {}, {
+              :id    => 'tag-mov-prj',
+              :class => 'tag-in-prj form-control',
+              :'data-placeholder' => "A project..."
+            })
+          %>
+          <table class="table table-condensed table-hover table-striped" id="tag-table">
+            <%= render(:partial => 'tags_table') %>
+          </table>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROPERTIES MODAL -->
+<div class="modal fade" id="props-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <div id="props-modal-title">Properties</div>
+      </div>
+      <div class="modal-body">
+        <form action="<%= update_multiple_userfiles_path %>" method="put" class="form-horizontal">
+
+          <div class="row">
+            <div class="col-xs-2"><label for="pp-tag" class="dlg-fld-lbl">Tags</label></div>
+            <div class="col-xs-10">
+              <select id="pp-tag"
+                class="dlg-fld dlg-chosen form-control"
+                name="tags[]"
+                multiple="multiple"
+                data-placeholder="Keep current tags"
+                data-default-project="<%= default_project.id %>"
+              >
+              <%= options_from_collection_for_select(current_user.available_tags, 'id', 'name') %>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-xs-4 col-xs-offset-4">
+              <input id="pp-tag-clr" class="dlg-chk" type="checkbox" />
+              <label for="pp-tag-clr" class="dlg-chk-icon">
+                <span class="ui-icon ui-icon-check"></span>
+              </label>
+              <label for="pp-tag-clr" class="dlg-chk-lbl">
+                Clear tags
+              </label>
+            </div>
+          </div>
+
+          <% unless current_user.has_role?(:normal_user) %>
+            <div class="row">
+              <div class="col-xs-2"><label for="pp-own" class="dlg-fld-lbl">Owner</label></div>
+              <div class="col-xs-10">
+                <%=
+                  user_select('user_id', { :selector => nil }, {
+                    :id       => 'pp-own',
+                    :class    => 'dlg-fldm form-control',
+                    :include_blank      => "(keep current owner)",
+                    :'data-placeholder' => "Keep current owner"
+                  })
+                %>
+              </div>
+            </div>
+          <% end %>
+
+          <div class="row">
+            <div class="col-xs-2">
+              <label for="pp-prj" class="dlg-fld-lbl">Project</label>
+            </div>
+            <div class="col-xs-10">
+              <%=
+                group_select('group_id', { :selector => nil }, {
+                  :id       => 'pp-prj',
+                  :class    => 'dlg-fld form-control',
+                  :include_blank      => "(keep current project)",
+                  :'data-placeholder' => "Keep current project"
+                })
+              %>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-xs-12">
+              <input id="pp-shr" class="dlg-chk dlg-tri-state dlg-unset" data-name="group_writable" type="checkbox" />
+              <label for="pp-shr" class="dlg-chk-icon">
+                <span class="ui-icon ui-icon-check"></span>
+              </label>
+              <label for="pp-shr" class="dlg-chk-lbl">
+                Allow modification by other project members
+              </label>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-xs-2"><label for="pp-type" class="dlg-fld-lbl">Type</label></div>
+            <div class="col-xs-10">
+              <%=
+                userfile_type_select(:type, { :selector => nil }, {
+                  :id       => 'pp-type',
+                  :class    => 'dlg-fld form-control',
+                  :include_blank      => "(keep current file type)",
+                  :'data-placeholder' => "Keep current file type"
+                })
+              %>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-xs-6">
+              <input id="pp-hid" class="dlg-chk dlg-tri-state dlg-unset" data-name="hidden" type="checkbox" />
+              <label for="pp-hid" class="dlg-chk-icon">
+                <span class="ui-icon ui-icon-check"></span>
+              </label>
+              <label for="pp-hid"
+                class="dlg-chk-lbl html_tool_tip_trigger"
+                data-tool-tip-id="pp-hid-tp"
+                data-offset-x="80"
+                data-offset-y="-2"
+              >
+                Hidden (<span class="pp-hid-ind">H</span>)
+              </label>
+            </div>
+            <div class="col-xs-6">
+              <input id="pp-ro" class="dlg-chk dlg-tri-state dlg-unset" data-name="immutable" type="checkbox" />
+              <label for="pp-ro" class="dlg-chk-icon">
+                <span class="ui-icon ui-icon-check"></span>
+              </label>
+              <label for="pp-ro"
+                class="dlg-chk-lbl html_tool_tip_trigger"
+                data-tool-tip-id="pp-ro-tp"
+                data-offset-x="80"
+                data-offset-y="-2"
+              >
+                Locked (<span class="pp-ro-ind">I</span>)
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary modal-confirm" data-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COLLECTION MODAL -->
+<div class="modal fade" id="collection-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <div id="collection-modal-title">Collection</div>
+      </div>
+      <div class="modal-body">
+        <form action="<%= create_collection_userfiles_path %>" method="post" class="form-horizontal">
+
+          <div class="row">
+            <div class="col-xs-2"><label for="co-name" class="dlg-fld-lbl">Name</label></div>
+            <div class="col-xs-10">
+              <input id="co-name"
+                class="dlg-fld form-control"
+                type="text"
+                name="collection_name"
+                placeholder="NewCollection"
+              />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-xs-10 col-xs-offset-2">
+              <span id="co-invalid-name" class="dlg-msg-err">
+                &#9888; Invalid!
+              </span>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-xs-2">
+              <label for="co-dp" class="dlg-fld-lbl">Provider</label>
+            </div>
+            <div class="col-xs-10">
+              <%=
+                data_provider_select('data_provider_id_for_collection',
+                  { :data_providers => writable_dps },
+                  {
+                    :id    => 'co-dp',
+                    :class => 'dlg-fld form-control',
+                    :'data-placeholder' => "A data provider..."
+                  }
+                )
+              %>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary modal-confirm" data-dismiss="modal">OK</button>
+      </div>
     </div>
   </div>
 </div>

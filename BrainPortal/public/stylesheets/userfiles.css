@@ -25,15 +25,10 @@
 /* Userfiles index stylesheet */
 
 /* General */
-
-.userfiles_tool_selector {
-  padding: 0 1em;
-  display: table-row;
-}
-
-.userfiles_bourreau_selector {
-  padding: 0 1em;
-  display: table-row;
+.scrollable-menu {
+    height: auto;
+    max-height: 200px;
+    overflow-x: hidden;
 }
 
 #userfiles_table td.type_icon,
@@ -60,73 +55,12 @@
   color: #000000;
 }
 
-/* Tool/task launch bar */
-
-.launch_bar {
-  border: 2px solid #0471B4;
-  margin: 5px;
-  padding: 5px;
-  position: relative;
-  text-align: right;
-}
-
-.launch_bar span {
-  display: inline-block;
-  margin: 0px 5px;
-}
-
-.launch_bar span.info {
-  display: block;
-  float: left;
-  font-weight: bold;
-  margin-top: 5px;
-}
-
 /* Tool/task launch dialog */
 
-#toolsDialog {
-  display: none;
-}
 
 .tools-container {
-  border: 1px solid grey;
   height: 500px;
-  overflow-x: hidden;
   overflow-y: auto;
-  width: 400px;
-}
-
-#toolSelectTable {
-  border: none;
-  width: 400px;
-}
-
-#toolSelectTable td {
-  padding: 5px;
-  text-align: left;
-}
-
-#toolSelectTable tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-#toolSelectTable tr:hover td {
-  background-color: #fff3d3;
-}
-
-#toolsDialogWrapper {
-  margin-right: 170px;
-}
-
-#toolsDialogLeftCol {
-  float: left;
-  width: 170px;
-}
-
-#toolsDialogRightCol {
-  float: right;
-  margin-right: -170px;
-  width: 100%;
 }
 
 #tool_version_selector #showAdditionalToolInfo {
@@ -135,27 +69,6 @@
 
 #tool_version_selector .additionalToolInfo {
   display: none;
-}
-
-.toolsDialogClass .ui-dialog-titlebar {
-  background: #05a3d6;
-  color: white;
-}
-
-.toolsDialogClass .ui-dialog-titlebar .ui-dialog-titlebar-close {
-  background: white;
-}
-
-.toolsDialogClass .ui-dialog-titlebar .ui-dialog-titlebar-close:hover {
-  background: #05a3d6;
-}
-
-.toolsDialogLabel {
-  font-weight: bold;
-}
-
-.toolsLink {
-  font-weight: bold;
 }
 
 /* Menus */
@@ -169,23 +82,8 @@
   width: 16px;
 }
 
-#static-actions,
-#dynamic-actions,
-#menu-actions {
-  display: inline-block;
-}
-
-#static-actions {
-  padding-right: 0.5em;
-}
-
 #dynamic-actions.hidden {
   display: none;
-}
-
-#menu-actions {
-  float: right;
-  position: relative;
 }
 
 #menu-list {
@@ -252,45 +150,6 @@
 
 /* Dialogs */
 
-.dlg-ovfl {
-  overflow: initial !important;
-}
-
-.dlg-ovfl > .dlg-dialog {
-  overflow: inherit !important;
-}
-
-.dlg-dialog {
-  white-space: nowrap;
-}
-
-.dlg-fld {
-  display: inline-block;
-  margin-bottom: 1.2em;
-}
-
-.dlg-fld[type="text"] {
-  border: 1px solid #e0e0e0;
-  color: #000000;
-  font-family: sans-serif;
-  min-height: 16px;
-  padding: 3px 5px 4px 5px;
-  width: 200px;
-}
-
-.dlg-fld[type="text"]:focus {
-  border: 1px solid #606060;
-}
-
-.dlg-fld-lbl {
-  display: inline-block;
-  font-size: 1.15em;
-  font-weight: bold;
-  margin-right: 0.2em;
-  text-align: right;
-  width: 70px;
-}
-
 .dlg-chk,
 .dlg-rad {
   display: none;
@@ -319,9 +178,9 @@
 .dlg-chk.dlg-unset + .dlg-chk-icon > .ui-icon {
   background: black;
   border: 4px solid #ffffff;
-  height: 8px;
+  height: 16px;
   visibility: visible;
-  width: 8px;
+  width: 16px;
 }
 
 .dlg-rad-icon > .round-icon {
@@ -393,30 +252,14 @@
   vertical-align: middle;
 }
 
-#userfiles_dialogs {
-  display: none;
-}
-
-#upload-dialog,
-#prop-dialog {
-  margin-top: 0.8em;
-}
-
 /* Upload dialog */
 
-#upload-dialog + .ui-helper-clearfix::after {
-  display: inline-block;
-}
 
 #up-type-auto,
 #up-ex-container,
 #up-ex-mode,
 #up-opt {
   display: none;
-}
-
-#up-file {
-  width: 300px;
 }
 
 #up-dp-help {

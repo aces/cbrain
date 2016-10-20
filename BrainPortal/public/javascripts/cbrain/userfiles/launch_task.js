@@ -50,7 +50,7 @@ $(document).delegate('div#tool_version_selector', 'new_content', function (event
       if (have_selection()) return;
 
       /* Otherwise, hide the dialog and show a nice bar to let the user pick files */
-      $('#toolsDialog').dialog('close');
+      $('#launch-modal').modal('hide');
 
       event.preventDefault();
       event.stopPropagation();
@@ -59,10 +59,12 @@ $(document).delegate('div#tool_version_selector', 'new_content', function (event
       $('.launch_bar').remove();
 
       $('#menu_bar').after(
-        $('<div class="launch_bar">')
-          .append($('<span class="info">Select some files to launch ' + tool_name + '</span>'))
-          .append($('<span class="file_status">No files selected</span>'))
-          .append($('<button>Launch</button>').button({ disabled: true }))
+        $('<div class="launch_bar alert alert-success"> \
+              <span class="info">Select some files to launch ' + tool_name + '. </span> \
+              <span class="file_status">(No files selected)</span> \
+              <button class="btn btn-primary" disabled="disabled">Launch</button> \
+          </div> \
+        ')
       );
 
       /* Launch the task when the launch bar's button is clicked */
@@ -87,8 +89,12 @@ $(document).delegate('div#tool_version_selector', 'new_content', function (event
       $('.launch_bar span.file_status')
         .text(checked ? "Launch with " + checked + " file(s)" : "No files selected");
 
-      $('.launch_bar button')
-        .button(checked ? 'enable' : 'disable');
+      if(checked){
+        $('.launch_bar button').removeAttr('disabled');
+      } else{
+        $('.launch_bar button').attr('disabled', 'disabled');
+      }
+
     });
 });
 

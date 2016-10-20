@@ -34,7 +34,8 @@
 
 <li id="copy-ctx"
   class="act-item"
-  data-dialog="cpmv-dialog"
+  data-toggle="modal"
+  data-target="#move-modal"
 >
   Copy
   <span class="ui-icon ui-icon-copy"></span>
@@ -42,7 +43,8 @@
 
 <li id="move-ctx"
   class="act-item"
-  data-dialog="cpmv-dialog"
+  data-toggle="modal"
+  data-target="#move-modal"
 >
   Move
   <span class="ui-icon ui-icon-arrowreturnthick-1-e"></span>
@@ -75,10 +77,8 @@
 
 <li id="del-ctx"
   class="act-item"
-  data-url="<%= delete_files_userfiles_path %>"
-  data-method="DELETE"
-  data-confirm-dlg="delete-confirm"
-  data-confirm-act="Delete"
+  data-toggle="modal"
+  data-target="#delete-modal"
 >
   Delete
   <span class="ui-icon ui-icon-trash"></span>
@@ -87,7 +87,8 @@
 
 <li id="prop-ctx"
   class="act-item"
-  data-dialog="prop-dialog"
+  data-toggle="modal"
+  data-target="#props-modal"
 >
   Properties
   <span class="ui-icon ui-icon-document-b"></span>

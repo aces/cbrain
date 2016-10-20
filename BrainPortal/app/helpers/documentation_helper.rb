@@ -32,13 +32,12 @@ module DocumentationHelper
   # shown documentation page.
   # See the help_document views for more details.
   def help_button(key, display = "Help")
-    doc = HelpDocument.find_by_key(key) || HelpDocument.from_existing_file!(key)
+    doc = HelpDocument.find_by_key(key)
+
     if doc
-      ("<a href=\"#\" class=\"btn btn-primary dynamic-help-btn\" data-toggle=\"modal\" data-target=\"#dynamic-help-modal\" data-key=\"#{key}\"><span class=\"glyphicon glyphicon-question-sign\"></span> Help</a>").html_safe
-      # overlay_ajax_link display, doc_path(doc), :class  => "btn btn-primary"
-    elsif HelpDocument.can_edit?(current_user)
-      ("<a href=\"#\" class=\"btn btn-primary dynamic-help-btn\" data-toggle=\"modal\" data-target=\"#dynamic-help-modal\" data-key=\"#{key}\"><span class=\"glyphicon glyphicon-question-sign\"></span> Help</a>").html_safe
-      # overlay_ajax_link display, new_doc_path(:key => key), :class => "btn btn-primary grayed-out"
+      link_to display, '#', { :data => { :toggle => "modal", :target => "#dynamic-help-modal", :id => doc.id, :key => key, :url => doc_path(doc) }, :class => "btn btn-primary" }
+    else
+      link_to display, '#', { :data => { :toggle => "modal", :target => "#dynamic-help-modal", :id => "empty", :key => key, :url => new_doc_path(:key => key) }, :class => "btn btn-primary" }
     end
   end
 end

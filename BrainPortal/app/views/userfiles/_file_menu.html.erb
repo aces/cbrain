@@ -22,221 +22,225 @@
 #
 -%>
 
-<div class="container-fluid">
-<div class="row menu-bar">
-<div class="col-xs-12">
-<div class="well well-sm">
+<div class="row">
+  <div class="col-xs-12">
+    <div class="well well-sm">
 
-<div class="btn-group" role="group" id="static-actions">
-  <span id="launch-btn"
-    class="btn btn-primary act-btn"
-    data-dialog="toolsDialog">
-    <span class="glyphicon glyphicon-play"></span>
-    Launch</span>
+      <div class="btn-group">
+        <a id="launch-btn"
+           class="btn btn-primary"
+           data-toggle="modal"
+           data-target="#launch-modal"
+           role="button">
+           <span class="glyphicon glyphicon-play"></span>
+           Launch
+        </a>
+        <a id="upload-btn"
+           class="btn btn-primary"
+           data-toggle="modal"
+           data-target="#upload-modal"
+           role="button">
+           <span class="glyphicon glyphicon-upload"></span>
+           Upload
+        </a>
+      </div>
 
-  <span id="upload-btn"
-    class="btn btn-primary act-btn"
-    data-dialog="upload-dialog">
-    <span class="glyphicon glyphicon-upload"></span>
-    Upload</span>
-</div>
+      <div class="btn-group" id="dynamic-actions">
+        <a data-url="<%= download_userfiles_path %>"
+           data-method="POST"
+           data-empty-selection="0"
+           class="btn btn-primary act-btn"
+           role="button">
+           <span class="glyphicon glyphicon-download"></span>
+           Download
+        </a>
 
-<div class="btn-group" role="group" id="dynamic-actions" class="hidden">
-  <span id="down-btn"
-    class="btn btn-primary act-btn"
-    data-url="<%= download_userfiles_path %>"
-    data-method="POST"
-    data-empty-selection="0">
-    <span class="glyphicon glyphicon-download"></span>
-    Download</span>
+        <a id="copy-btn"
+           class="btn btn-primary"
+           data-toggle="modal"
+           data-target="#move-modal"
+           role="button">
+           <span class="glyphicon glyphicon-duplicate"></span>
+           Copy
+        </a>
 
-  <span id="Xcopy-btn"
-    class="btn btn-primary act-btn"
-    data-dialog="cpmv-dialog">
-    <span class="glyphicon glyphicon-duplicate"></span>
-    Copy</span>
+        <a id="move-btn"
+           class="btn btn-primary"
+           data-toggle="modal"
+           data-target="#move-modal"
+           role="button">
+           <span class="glyphicon glyphicon-move"></span>
+           Move
+        </a>
+        <a id="ren-btn"
+           class="btn btn-primary"
+           role="button">
+           <span class="glyphicon glyphicon-pencil"></span>
+           Rename
+        </a>
 
-  <span id="Xmove-btn"
-    class="btn btn-primary act-btn"
-    data-dialog="cpmv-dialog"
-    data-icon="ui-icon-arrowreturnthick-1-e">
-    <span class="glyphicon glyphicon-move"></span>
-    Move</span>
+        <a id="comp-btn"
+           data-url="<%= compress_userfiles_path() %>"
+           data-type="script"
+           data-method="POST"
+           class="btn btn-primary act-btn"
+           role="button">
+           <span class="glyphicon glyphicon-compressed"></span>
+           Compress
+        </a>
+        <a id="ucomp-btn"
+           data-url="<%= uncompress_userfiles_path() %>"
+           data-type="script"
+           data-method="POST"
+           class="btn btn-primary act-btn"
+           role="button">
+           <span class="glyphicon glyphicon-folder-open"></span>
+           Uncompress
+        </a>
 
-  <span id="ren-btn"
-    class="btn btn-primary act-btn">
-    <span class="glyphicon glyphicon-pencil"></span>
-    Rename</span>
+        <a class="btn btn-primary"
+           data-toggle="modal"
+           data-target="#delete-modal"
+           role="button">
+           <span class="glyphicon glyphicon-trash"></span>
+           Delete
+        </a>
+      </div>
 
-  <span id="comp-btn"
-    class="btn btn-primary act-btn"
-    data-url="<%= compress_userfiles_path() %>"
-    data-method="post">
-    <span class="glyphicon glyphicon-compressed"></span>
-    Compress</span>
+      <div class="btn-group" role="group">
+        <a href="" class="btn btn-primary dropdown" data-toggle="dropdown" role="dropdown">
+          <span class="glyphicon glyphicon-filter"></span> Custom Filters <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu scrollable-menu" id="filters-menu" style="width: 250px; max-height: 250px;">
+          <% @custom_filter = UserfileCustomFilter.new %>
+          <%= render :partial => 'custom_filters/custom_filter_list' %>
+        </ul>
+      </div>
 
-  <span id="ucomp-btn"
-    class="btn btn-primary act-btn"
-    data-url="<%= uncompress_userfiles_path() %>"
-    data-method="POST">
-    <span class="glyphicon glyphicon-folder-open"></span>
-    Uncompress</span>
+      <div class="btn-group pull-right" role="group" id="menu-actions">
+        <a href="" class="btn btn-primary dropdown" data-toggle="dropdown" role="dropdown">
+          <span class="glyphicon glyphicon-cog"></span> More <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a data-toggle="modal"
+               data-target="#tag-modal">
+               <span class="glyphicon glyphicon-tags"></span>
+               Tags
+            </a>
+          </li>
+          <li>
+            <a data-toggle="modal"
+               data-target="#props-modal">
+               <span class="glyphicon glyphicon-list"></span>
+               Properties
+            </a>
+          </li>
+          <li>
+            <a class="act-item"
+               data-type="script"
+               data-url="<%= quality_control_userfiles_path %>"
+               data-method="POST">
+               <span class="glyphicon glyphicon-ok-sign"></span>
+               Quality Control
+            </a>
+          </li>
+          <li>
+            <a class="act-item"
+               data-url="<%= sync_multiple_userfiles_path(:operation => 'sync_local') %>"
+               data-method="POST"
+               data-empty-selection="0"><span class="glyphicon glyphicon-import"></span>
+               Synchronize
+            </a>
+          </li>
+          <li>
+            <a class="act-item"
+               data-url="<%= sync_multiple_userfiles_path(:operation => 'all_newer') %>"
+               data-method="POST"
+               data-empty-selection="0">
+               <span class="glyphicon glyphicon-flag"></span>
+               Mark as Newer
+            </a>
+          </li>
+          <li>
+            <a data-toggle="modal"
+               data-target="#collection-modal">
+               <span class="glyphicon glyphicon-duplicate"></span>
+               New Collection
+            </a>
+          </li>
+          <li>
+            <a class="act-item"
+               data-url="<%= userfiles_path(:format => :csv) %>"
+               data-method="GET">
+               <span class="glyphicon glyphicon-list-alt"></span>
+              Export as CSV
+            </a>
+          </li>
+          <li>
+            <a class="act-item"
+               data-url="<%= export_file_list_userfiles_path %>"
+               data-type="script"
+               data-method="POST">
+               <span class="glyphicon glyphicon-list-alt"></span>
+               Create File List
+            </a>
+          </li>
+          <%
+            toggle_url = lambda do |key|
+              url_for(scope_custom_params(@scope, { key => !@scope.custom[key] }))
+            end
+          %>
+          <li>
+            <a href=""
+               id="vown-item"
+               class="act-item"
+               data-url="<%= toggle_url.(:view_all) %>"
+               data-method="GET"
+               data-ajax="1">
+               <% if @scope.custom[:view_all] %>
+                 <span class="glyphicon glyphicon-eye-close"></span>
+                 Show only my files
+               <% else %>
+                 <span class="glyphicon glyphicon-eye-open"></span>
+                 Show all files
+               <% end %>
+            </a>
+          </li>
 
-  <span id="del-btn"
-    class="btn btn-primary act-btn"
-    data-url="<%= delete_files_userfiles_path %>"
-    data-method="DELETE"
-    data-confirm-dlg="delete-confirm">
-    <span class="glyphicon glyphicon-trash"></span>
-    Delete</span>
-</div>
-
-<div class="btn-group">
-  <a               class="btn btn-primary" data-toggle="modal" data-target="#delete-modal" role="button">DELETE</a>
-  <a id="move-btn" class="btn btn-primary" data-toggle="modal" data-target="#move-modal"   role="button">MOVE</a>
-  <a id="copy-btn" class="btn btn-primary" data-toggle="modal" data-target="#move-modal"   role="button">COPY</a>
-  <a               class="btn btn-primary" data-toggle="modal" data-target="#launch-modal" role="button">LAUNCH</a>
-  <a               class="btn btn-primary" data-toggle="modal" data-target="#upload-modal" role="button">UPLOAD</a>
-</div>
-
-<div class="btn-group" role="group">
-  <a href="javascript:;" class="btn btn-primary dropdown" data-toggle="dropdown" role="dropdown" aria-haspopup="true" aria-expanded="false">
-    <span class="glyphicon glyphicon-filter"></span> Custom Filters <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" id="filters-menu">
-    <% @custom_filter = UserfileCustomFilter.new %>
-    <div id="custom_filters_list">
-      <%= render :partial => 'custom_filters/custom_filter_list' %>
+          <li>
+            <a href=""
+               class="act-item"
+               data-url="<%= toggle_url.(:view_hidden) %>"
+               data-method="GET"
+               data-ajax="1">
+               <% if @scope.custom[:view_hidden] %>
+                 <span class="glyphicon glyphicon-eye-close"></span>
+                 Hide hidden files
+               <% else %>
+                 <span class="glyphicon glyphicon-eye-open"></span>
+                 Show hidden files
+               <% end %>
+            </a>
+          </li>
+          <li>
+            <a href=""
+               class="act-item"
+               data-url="<%= toggle_url.(:tree_sort) %>"
+               data-method="GET"
+               data-type="script"
+               data-ajax="1">
+            <% if @scope.custom[:tree_sort] %>
+              <span class="glyphicon glyphicon-list"></span>
+              List view
+            <% else %>
+              <span class="glyphicon glyphicon-tree-conifer"></span>
+              Tree view
+            <% end %>
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
-  </ul>
-</div>
-
-
-<div id="menu-actions">
-  <span id="menu-btn" class="act-btn btn btn-primary"><span class="glphicon glyphicon-cog"></span> More...</span>
-  <ul id="menu-list">
-
-    <li id="tag-item"
-      class="act-item"
-      data-dialog="tag-dialog"
-    >
-      Tags
-      <span class="ui-icon ui-icon-tag"></span>
-    </li>
-    <li class="menu-separator">-</li>
-
-    <li id="prop-item"
-      class="act-item dyn-item"
-      data-dialog="prop-dialog"
-    >
-      Properties
-      <span class="ui-icon ui-icon-document-b"></span>
-    </li>
-    <li id="qc-item"
-      class="act-item dyn-item"
-      data-url="<%= quality_control_userfiles_path %>"
-      data-method="POST"
-      data-confirm-dlg="qc-confirm"
-    >
-      Quality control
-      <span class="ui-icon ui-icon-check"></span>
-    </li>
-    <li id="sync-item"
-      class="act-item dyn-item"
-      data-url="<%= sync_multiple_userfiles_path(:operation => 'sync_local') %>"
-      data-method="POST"
-      data-empty-selection="0"
-    >
-      Synchronize
-      <span class="ui-icon ui-icon-refresh"></span>
-    </li>
-    <li id="mnew-item"
-      class="act-item dyn-item"
-      data-url="<%= sync_multiple_userfiles_path(:operation => 'all_newer') %>"
-      data-method="POST"
-      data-empty-selection="0"
-    >
-      Mark as newer
-      <span class="ui-icon ui-icon-flag"></span>
-    </li>
-    <li class="menu-separator dyn-item">-</li>
-
-    <li id="col-item"
-      class="act-item dyn-item"
-      data-dialog="collection-dialog"
-    >
-      New collection
-      <span class="ui-icon ui-icon-folder-collapsed"></span>
-    </li>
-    <li class="menu-separator dyn-item">-</li>
-
-    <li id="exp-item"
-      class="act-item"
-      data-url="<%= userfiles_path(:format => :csv) %>"
-      data-method="GET"
-    >
-      Export as CSV
-      <span class="ui-icon ui-icon-extlink"></span>
-    </li>
-
-    <li id="exp-list-item"
-      class="act-item"
-      data-url="<%= export_file_list_userfiles_path %>"
-      data-method="POST"
-    >
-      Create a file list
-      <span class="ui-icon ui-icon-extlink"></span>
-    </li>
-
-    <li class="menu-separator">-</li>
-
-    <%
-      toggle_url = lambda do |key|
-        url_for(scope_custom_params(@scope, { key => !@scope.custom[key] }))
-      end
-    %>
-    <li id="vown-item"
-      class="act-item"
-      data-url="<%= toggle_url.(:view_all) %>"
-      data-method="GET"
-      data-ajax="1"
-    >
-      <% if @scope.custom[:view_all] %>
-        Show only my files
-      <% else %>
-        Show all files
-      <% end %>
-      <span class="ui-icon ui-icon-star"></span>
-    </li>
-    <li id="vhid-item"
-      class="act-item"
-      data-url="<%= toggle_url.(:view_hidden) %>"
-      data-method="GET"
-      data-ajax="1"
-    >
-      <% if @scope.custom[:view_hidden] %>
-        Hide hidden files
-      <% else %>
-        Show hidden files
-      <% end %>
-      <span class="ui-icon ui-icon-note"></span>
-    </li>
-    <li id="vtree-item"
-      class="act-item"
-      data-url="<%= toggle_url.(:tree_sort) %>"
-      data-method="GET"
-      data-ajax="1"
-    >
-      <% if @scope.custom[:tree_sort] %>
-        List view
-      <% else %>
-        Tree view
-      <% end %>
-      <span class="ui-icon ui-icon-arrowreturnthick-1-s"></span>
-    </li>
-  </ul>
-</div>
-</div>
-</div>
-</div>
+  </div>
 </div>

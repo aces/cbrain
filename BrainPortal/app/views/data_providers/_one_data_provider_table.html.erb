@@ -80,13 +80,13 @@
       <% if dp.alive_cached_valid? %>
         <%= red_if( !dp.is_alive_with_caching?, "Yes", "No") %>
       <% else %>
-        <span class="dp_alive_btn" id="<%= "alive" + h(dp.id) %>">
+        <span id="alive<%= h(dp.id) %>">
           <%= on_click_ajax_replace( { :element   => "span",
                                        :url       => url_for(:controller => :data_providers, :action  => :is_alive, :id => dp.id),
                                        :replace   => "alive" + h(dp.id)
                                      },
                                      {
-                                       :before  => "<span class='loading_message'>Loading...</span>",
+                                       :before    => "<span class='loading_message'>Loading...</span>",
                                        :class     => "dp_alive_btn"
                                      }
                                    ) do %>
