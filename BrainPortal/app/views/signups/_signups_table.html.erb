@@ -26,6 +26,10 @@
 
   <div class="menu-bar">
     <%= link_to "New Request", { :action => :new }, { :class => "button menu_button" }  %>
+    <%
+       # Careful, the labels of the buttons below are used by the controller
+       # to select which multi action to perform. Change them at both places.
+    %>
     <%= submit_tag "Delete",                :class => "button" %>
     <%= submit_tag "Adjust Login",          :class => "button" %>
     <%= submit_tag "Resend Confirm Email",  :class => "button" %>
