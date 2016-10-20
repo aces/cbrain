@@ -28,6 +28,10 @@
     <div class="col-xs-12">
       <div class="well well-sm">
         <%= link_to "New Request", { :action => :new }, { :class => "btn btn-primary" }  %>
+        <%
+         # Careful, the labels of the buttons below are used by the controller
+         # to select which multi action to perform. Change them at both places.
+        %>
         <%= submit_tag "Delete",                :class => "btn btn-primary" %>
         <%= submit_tag "Adjust Login",          :class => "btn btn-primary" %>
         <%= submit_tag "Resend Confirm Email",  :class => "btn btn-primary" %>
