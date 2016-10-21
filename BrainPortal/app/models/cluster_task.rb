@@ -70,10 +70,22 @@ class ClusterTask < CbrainTask
 
   include NumericalSubdirTree
 
-  # These basenames might get modified with suffixes appended to them.
-  QSUB_SCRIPT_BASENAME = ".qsub"      # appended: ".{name}.{run_id}.sh"
-  QSUB_STDOUT_BASENAME = ".qsub.out"  # appended: ".{name}.{run_id}"
-  QSUB_STDERR_BASENAME = ".qsub.err"  # appended: ".{name}.{run_id}"
+  # The 'science' script is where the scientific commands
+  # of the task are held. It is a bash script, where most
+  # of the earlier commands are created from the ToolConfigs,
+  # and the last commands are supplied by the cluster_commands()
+  # method.
+  #
+  # These basenames get modified with suffixes appended to them.
+  SCIENCE_SCRIPT_BASENAME = ".science"     # appended: ".{name}.{run_id}.sh"
+  SCIENCE_STDOUT_BASENAME = ".science.out" # appended: ".{name}.{run_id}"
+  SCIENCE_STDERR_BASENAME = ".science.err" # appended: ".{name}.{run_id}"
+
+  # The qsub script is a bash wrapper that executes the scientific script.
+  # These basenames get modified with suffixes appended to them.
+  QSUB_SCRIPT_BASENAME    = ".qsub"        # appended: ".{name}.{run_id}.sh"
+  QSUB_STDOUT_BASENAME    = ".qsub.out"    # appended: ".{name}.{run_id}"
+  QSUB_STDERR_BASENAME    = ".qsub.err"    # appended: ".{name}.{run_id}"
 
   before_destroy :before_destroy_terminate_and_rm_workdir
   validate       :task_is_proper_subclass
@@ -81,7 +93,7 @@ class ClusterTask < CbrainTask
 
 
   ##################################################################
-  # Core Object Methods
+  # Core Model Methods
   ##################################################################
 
   # Automatically register the task's version when new() is invoked.
@@ -714,8 +726,12 @@ class ClusterTask < CbrainTask
       self.apply_tool_config_environment do
         saveok = false
         Dir.chdir(self.full_cluster_workdir) do
+          # Verifies the captured output contains the proper
+          # token line 'CBRAIN Task Exiting' as created by qsub wrapper
+          saveok = check_task_ending_keyword(qsub_stdout_basename)
+          self.addlog("Could not find completion keywords at end of output. Process might have been interrupted.") if ! saveok
           # Call the subclass-provided save_results()
-          saveok = self.save_results
+          saveok = saveok && self.save_results
         end
         if ! saveok
           self.status_transition(self.status, "Failed On Cluster")
@@ -1007,48 +1023,131 @@ class ClusterTask < CbrainTask
   # Cluster Job's STDOUT And STDERR Files Methods
   ##################################################################
 
+  # Returns the basename of the script which contains
+  # the scientific script itself, as build by the programmer in
+  # is cluster_commands() method.
+  def science_script_basename(run_number=nil)
+    "#{SCIENCE_SCRIPT_BASENAME}.#{self.name}.#{self.run_id(run_number)}.sh"
+  end
+
   # Returns a basename for the QSUB script for the task.
   # This is not a full path, just a filename relative to the work directory.
   # The file itself is not garanteed to exist.
   def qsub_script_basename(run_number=nil)
-    workdir = self.full_cluster_workdir || "/does_not_exist_never_mind"
-    if File.exists?("#{workdir}/#{QSUB_SCRIPT_BASENAME}.#{self.run_id(run_number)}.sh") # for compat
-      "#{QSUB_SCRIPT_BASENAME}.#{self.run_id(run_number)}.sh"
-    else
-      "#{QSUB_SCRIPT_BASENAME}.#{self.name}.#{self.run_id(run_number)}.sh" # New official convention
-    end
+    "#{QSUB_SCRIPT_BASENAME}.#{self.name}.#{self.run_id(run_number)}.sh"
   end
 
-  # Returns the filename for the job's captured STDOUT
+  private
+
+  # Returns the basename of the captured standard output of
+  # the scientific script.
+  def science_stdout_basename(run_number=nil) #:nodoc:
+    "#{SCIENCE_STDOUT_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
+  end
+
+  # Returns the basename of the captured standard error of
+  # the scientific script.
+  def science_stderr_basename(run_number=nil) #:nodoc:
+    "#{SCIENCE_STDERR_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
+  end
+
+  # Returns the basename for the QSUB standard output capture file for the task.
+  # This is not a full path, just a filename relative to the work directory.
+  # The file itself is not garanteed to exist.
+  def qsub_stdout_basename(run_number=nil) #:nodoc:
+    "#{QSUB_STDOUT_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
+  end
+
+  # Returns the basename for the QSUB standard error capture file for the task.
+  # This is not a full path, just a filename relative to the work directory.
+  # The file itself is not garanteed to exist.
+  def qsub_stderr_basename(run_number=nil) #:nodoc:
+    "#{QSUB_STDERR_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
+  end
+
+  # Given two basenames for two files, will combine them into a
+  # a single report; the report will be the content of the
+  # first file  where the token +__CBRAIN_CAPTURE_PLACEHOLDER__+
+  # will be replaced by the content of the second file. The
+  # new report is saved in a file with a name set to a modified version
+  # of the name of the first file, "qsub_outerr-combined".
+  #
+  # The method returns that filename. If the combined report already exists,
+  # the method just returns the filename, it will not be recreated.
+  #
+  # If the first file doesn't exist or is not complete (the content must
+  # end with the line "CBRAIN Task Exiting" then the filename returned
+  # is just the second file in argument, +science_outerr+ ; this means
+  # that while a task is running, for instance, this method will still
+  # return the output as it is being created.
+  #
+  # For this method to work properly, the CWD must be set to the
+  # task's work directory.
+  def find_or_create_combined_file(qsub_outerr, science_outerr) #:nodoc:
+    cb_error "Current directory is not the task's work directory?" unless self.we_are_in_workdir
+
+    # Report already prepared? Just return its basename
+    combined_file = "#{qsub_outerr}-combined"
+    return combined_file  if File.exists?(combined_file)
+
+    # Task outputs incomplete? Point to science output captured
+    return nil            if ! File.exists?(science_outerr)
+    return science_outerr if ! File.exists?(qsub_outerr)
+    qsub_content = check_task_ending_keyword(qsub_outerr) # returns nil unless content contains "CBRAIN Task Exiting"
+    return science_outerr if qsub_content.blank?
+
+    # Create combined report
+    science_content = File.read(science_outerr) # can be big but generally not to much
+    qsub_content.sub!('__CBRAIN_CAPTURE_PLACEHOLDER__',science_content)
+    File.open("#{combined_file}-tmp#{Process.pid}","w") { |fh| fh.write(qsub_content) }
+    File.rename("#{combined_file}-tmp#{Process.pid}", combined_file) # atomicity for the win
+    combined_file
+  end
+
+  # Checks that the content of some output file properly
+  # has the keyword "CBRAIN Task Exiting".
+  # Returns the file's content if it's true, otherwise returns nil
+  def check_task_ending_keyword(basename)
+    return nil unless File.exists?(basename)
+    content = File.read(basename)
+    return nil if content !~ /CBRAIN Task Exiting/
+    content
+  end
+
+  public
+
+  # Returns the filename for the job's captured STDOUT.
   # Returns nil if the work directory has not yet been
   # created, or no longer exists. The file itself is not
-  # garanteed to exist, either.
+  # garanteed to exist, either. The returned value is
+  # a full path.
+  #
+  # Because the output of the science script is redirected
+  # to a file separately from the captured output of the qsub
+  # script, this method will try to provide the path to a
+  # combined file when possible (usually when the task is complete)
+  # and otherwise will join return a path to the
+  # science output file.
   def stdout_cluster_filename(run_number=nil)
     workdir = self.full_cluster_workdir
     return nil if workdir.blank?
-    if File.exists?("#{workdir}/.qsub.sh.out") # for compatibility will old tasks
-      "#{workdir}/.qsub.sh.out"
-    elsif File.exists?("#{workdir}/#{QSUB_STDOUT_BASENAME}.#{self.run_id(run_number)}") # for compat
-      "#{workdir}/#{QSUB_STDOUT_BASENAME}.#{self.run_id(run_number)}"
-    else
-      "#{workdir}/#{QSUB_STDOUT_BASENAME}.#{self.name}.#{self.run_id(run_number)}" # New official convention
-    end
+    qsub_out_file    = qsub_stdout_basename(run_number)
+    science_out_file = science_stdout_basename(run_number)
+    combined_file    = Dir.chdir(workdir) { find_or_create_combined_file(qsub_out_file, science_out_file) }
+    return (Pathname.new(workdir) + combined_file).to_s if combined_file.present?
+    nil
   end
 
-  # Returns the filename for the job's captured STDERR
-  # Returns nil if the work directory has not yet been
-  # created, or no longer exists. The file itself is not
-  # garanteed to exist, either.
+  # This method works just like stdout_cluster_filename() but provides
+  # a path to the job's captured STDERR.
   def stderr_cluster_filename(run_number=nil)
     workdir = self.full_cluster_workdir
     return nil if workdir.blank?
-    if File.exists?("#{workdir}/.qsub.sh.err") # for compatibility will old tasks
-      "#{workdir}/.qsub.sh.err"
-    elsif File.exists?("#{workdir}/#{QSUB_STDERR_BASENAME}.#{self.run_id(run_number)}") # for compat
-      "#{workdir}/#{QSUB_STDERR_BASENAME}.#{self.run_id(run_number)}"
-    else
-      "#{workdir}/#{QSUB_STDERR_BASENAME}.#{self.name}.#{self.run_id(run_number)}" # New official convention
-    end
+    qsub_err_file    = qsub_stderr_basename(run_number)
+    science_err_file = science_stderr_basename(run_number)
+    combined_file    = Dir.chdir(workdir) { find_or_create_combined_file(qsub_err_file, science_err_file) }
+    return (Pathname.new(workdir) + combined_file).to_s if combined_file.present?
+    nil
   end
 
   # Read back the STDOUT and STDERR files for the job, and
@@ -1063,6 +1162,8 @@ class ClusterTask < CbrainTask
      self.cluster_stderr = nil
      self.script_text    = nil
 
+     return if self.new_record? || self.workdir_archived?
+
      stdout_lim        ||= 2000
      stdout_lim          = stdout_lim.to_i
      stdout_lim          = 2000 if stdout_lim <= 100 || stdout_lim > 999999
@@ -1071,10 +1172,9 @@ class ClusterTask < CbrainTask
      stderr_lim          = stderr_lim.to_i
      stderr_lim          = 2000 if stderr_lim <= 100 || stderr_lim > 999999
 
-     return if self.new_record? || self.workdir_archived?
      stdoutfile = self.stdout_cluster_filename(run_number)
      stderrfile = self.stderr_cluster_filename(run_number)
-     scriptfile = Pathname.new(self.full_cluster_workdir) + self.qsub_script_basename(run_number) rescue nil
+     scriptfile = Pathname.new(self.full_cluster_workdir) + self.science_script_basename(run_number) rescue nil
      if stdoutfile && File.exist?(stdoutfile)
        io = IO.popen("tail -#{stdout_lim} #{stdoutfile.to_s.bash_escape}","r")
        self.cluster_stdout = io.read
@@ -1528,13 +1628,15 @@ class ClusterTask < CbrainTask
     self.addlog("Tool Global Config: ID=#{tool_glob_config.id}")                   if tool_glob_config
     self.addlog("Tool Version: ID=#{tool_config.id}, #{tool_config.version_name}") if tool_config
 
-    # Create a bash command script out of the text
+    # Create a bash science script out of the text
     # lines supplied by the subclass
-    script = <<-QSUB_SCRIPT
+    science_script = <<-SCIENCE_SCRIPT
 #!/bin/bash
 
-# Script created automatically by #{self.class.to_s}
-# #{Revision_info}
+# Science script created automatically for #{self.class.to_s}
+#   #{self.class.revision_info.to_s}
+# by CbrainTask::ClusterTask
+#   #{CbrainTask::ClusterTask.revision_info.to_s}
 
 #{bourreau_glob_config ? bourreau_glob_config.to_bash_prologue : ""}
 #{tool_glob_config     ? tool_glob_config.to_bash_prologue     : ""}
@@ -1545,10 +1647,51 @@ class ClusterTask < CbrainTask
 
 #{self.use_docker? ? self.docker_commands : commands.join("\n")}
 
+    SCIENCE_SCRIPT
+    sciencefile = self.science_script_basename.to_s
+    File.open(sciencefile,"w") do |io|
+      io.write( science_script )
+    end
+
+    # Create the QSUB wrapper script which is going to be submitted
+    # to the cluster.
+    qsub_script = <<-QSUB_SCRIPT
+#!/bin/bash
+
+# QSUB wrapper script created automatically by CbrainTask::ClusterTask
+#   #{CbrainTask::ClusterTask.revision_info.to_s}
+
+function got_sigterm {
+  echo "CBRAIN Task Got TERM signal"
+  exit 10
+}
+trap got_sigterm TERM
+
+date '+CBRAIN Task Starting At %s : %F %T'
+echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      # where stdout captured below will be substituted
+
+date '+CBRAIN Task Starting At %s : %F %T' 1>&2
+echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      1>&2 # where stderr captured below will be substituted
+
+# stdout and stderr captured below will be re-substituted in
+# the output and error of this script.
+bash '#{sciencefile}' > #{science_stdout_basename} 2> #{science_stderr_basename} </dev/null
+
+date "+CBRAIN Task Ending After $SECONDS seconds, at %s : %F %T"
+date "+CBRAIN Task Ending After $SECONDS seconds, at %s : %F %T" 1>&2
+
+echo ''
+echo 'CBRAIN Task CPU Times Start'
+times
+echo 'CBRAIN Task CPU Times End'
+
+echo "CBRAIN Task Exiting"       # checked by framework
+echo "CBRAIN Task Exiting" 1>&2  # checked by framework
+
     QSUB_SCRIPT
-    qsubfile = self.qsub_script_basename
+    qsubfile = self.qsub_script_basename.to_s
     File.open(qsubfile,"w") do |io|
-      io.write( script )
+      io.write( qsub_script )
     end
 
     # Create the cluster job object
@@ -1557,8 +1700,8 @@ class ClusterTask < CbrainTask
     job          = Scir.job_template_builder(scir_class)
     job.command  = "/bin/bash"
     job.arg      = [ qsubfile ]
-    job.stdout   = ":" + self.stdout_cluster_filename
-    job.stderr   = ":" + self.stderr_cluster_filename
+    job.stdout   = ":" + self.full_cluster_workdir + "/" + qsub_stdout_basename
+    job.stderr   = ":" + self.full_cluster_workdir + "/" + qsub_stderr_basename
     job.join     = false
     job.wd       = workdir
     job.name     = self.tname_tid  # "#{self.name}-#{self.id}" # some clusters want all names to be different!
@@ -1591,8 +1734,10 @@ class ClusterTask < CbrainTask
     # because some cluster management systems just append
     # to them, which can confuse CBRAIN tasks trying to parse
     # them at PostProcessing.
-    File.unlink(self.stdout_cluster_filename) rescue true
-    File.unlink(self.stderr_cluster_filename) rescue true
+    File.unlink(qsub_stdout_basename)    rescue true
+    File.unlink(qsub_stderr_basename)    rescue true
+    File.unlink(stdout_cluster_filename) rescue true # note: this can be combined report and leave original science report in place
+    File.unlink(stderr_cluster_filename) rescue true # same note
 
     # Some jobs are meant only to be fully configured by never actually submitted.
     if self.meta[:configure_only]
