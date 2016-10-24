@@ -22,8 +22,8 @@
          # In development env, only the controllers accessed at least once show up as descendants of
          # ApplicationController, so we hardcode a initial 'good enough' list.
          controller_list = %w( access_profiles bourreaux custom_filters data_providers feedbacks groups
-                               help_documents invitations messages portal session_data sessions sites
-                               tags tasks tools tool_configs userfiles users ) # what we have at 4.5.0
+                               help_documents invitations messages portal session_data sessions signups
+                               sites tags tasks tools tool_configs userfiles users ) # what we have at 4.5.0
          # The line below adds any other controllers we might have missed (at least in production env).
          controller_list += ApplicationController.descendants.map(&:name).map { |n| n.sub(/Controller$/,"").underscore }
          controller_list = controller_list.uniq.sort
@@ -43,7 +43,6 @@
       | 'SQL':        <%= check_box_tag :hide_sql,        "1", params[:hide_sql]        == "1" %>
       | 'Load':       <%= check_box_tag :hide_load,       "1", params[:hide_load]       == "1" %>
       | 'CACHE':      <%= check_box_tag :hide_cache,      "1", params[:hide_cache]      == "1" %>
-      | 'AREL':       <%= check_box_tag :hide_arel,       "1", params[:hide_arel]       == "1" %>
     <% end %>
 
   </div>

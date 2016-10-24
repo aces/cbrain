@@ -95,10 +95,13 @@ class PortalController < ApplicationController
     remove_egrep << "^ *Redirected"   if params[:hide_redirected].presence == "1"
     remove_egrep << "^User:"          if params[:hide_user].presence       == "1"
     remove_egrep << "^Completed"      if params[:hide_completed].presence  == "1"
-    # Note that in production, 'SQL', 'CACHE', 'AREL' and 'LOAD' are never shown.
+    # Note that in production, 'SQL', 'CACHE' and 'LOAD' are never shown.
     remove_egrep << "^ *SQL "         if params[:hide_sql].presence        == "1"
+    remove_egrep << "BEGIN"           if params[:hide_sql].presence        == "1"
+    remove_egrep << "SELECT"          if params[:hide_sql].presence        == "1"
+    remove_egrep << "UPDATE"          if params[:hide_sql].presence        == "1"
+    remove_egrep << "COMMIT"          if params[:hide_sql].presence        == "1"
     remove_egrep << "^ *CACHE "       if params[:hide_cache].presence      == "1"
-    remove_egrep << "^ *AREL "        if params[:hide_arel].presence       == "1"
     remove_egrep << "^ *[^ ]* Load"   if params[:hide_load].presence       == "1"
 
     # Hiding some lines disable some filters, because we hide before we filter. :-(
