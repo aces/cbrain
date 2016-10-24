@@ -41,7 +41,7 @@
     <% else %>
       <%= image_tag "/images/file_icon.png" %>
     <% end %>
-    <% if file.size > 0%>
+    <% if file.size > 0 && file.symbolic_type != :directory %>
       <%= data_link file.name, @userfile %>
     <% else %>
       <%= Pathname.new(file.name).basename.to_s %>
@@ -57,4 +57,3 @@
     <%= colored_pretty_size(file.size) %>
   <% end %>
 </td>
-
