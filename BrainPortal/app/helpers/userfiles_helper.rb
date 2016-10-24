@@ -77,10 +77,20 @@ module UserfilesHelper
   end
 
   # Generates links to pretty file content for userfiles
-  # of type TextFile or ImageFile, downloads any other type of content
+  # of type TextFile or ImageFile
+  # Generates download link for any other type of file
   def data_link(file_name, userfile)
-    display_name  = Pathname.new(file_name).basename.to_s
+    dp = DataProvider.find(userfile.data_provider_id)
+    cache_path = dp.cache_full_path(userfile)
+
+    full_path_name  = Pathname.new(cache_path.dirname + file_name)
+
+    file_lstat = full_path_name.lstat  # lstat doesn't follow symlinks, so we can tell if it is one
+
+    display_name  = full_path_name.basename.to_s
     return h(display_name) unless userfile.is_locally_synced?
+    return h(display_name) unless file_lstat.file?
+    return h(display_name) if file_lstat.symlink?
 
     matched_class = SingleFile.descendants.unshift(SingleFile).find { |c| file_name =~ c.file_name_pattern }
 
