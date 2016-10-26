@@ -1904,8 +1904,9 @@ echo "CBRAIN Task Exiting" 1>&2  # checked by framework
   # Returns the command line(s) associated with the task, wrapped in
   # a Docker call if a Docker image has to be used.
   def docker_commands
+    workDir  = self.container_working_directory || '${PWD}'
     commands = self.cluster_commands
-    commands_joined=commands.join("\n");
+    commands_joined = commands.join("\n");
 
     cache_dir=RemoteResource.current_resource.dp_cache_dir;
     task_dir=self.bourreau.cms_shared_dir;
@@ -1917,7 +1918,7 @@ chmod 755 ./.dockerjob.sh
 # Pull the Docker image to avoid inconsistencies coming from different image versions on worker nodes
 #{docker_executable_name} pull #{self.tool_config.docker_image.bash_escape}
 # Run the task commands
-#{docker_executable_name} run --rm -v ${PWD}:${PWD} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w ${PWD} #{self.tool_config.docker_image.bash_escape} ${PWD}/.dockerjob.sh
+#{docker_executable_name} run --rm -v ${PWD}:#{workDir} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w #{workDir} #{self.tool_config.docker_image.bash_escape} ${PWD}/.dockerjob.sh
 "
     return docker_commands
   end

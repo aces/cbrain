@@ -123,6 +123,14 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     true
   end
 
+  # If a working directory is specified for use in a container environment,
+  # return it; else, return nil.
+  def container_working_directory
+%   cimg = descriptor['container-image'] || {}
+%   wd   = cimg["working-directory"]
+    <%= wd.nil? ? "nil" : "\"" + wd + "\"" %>
+  end
+
   # The set of shell commands to run on the cluster to execute <%= name %>.
   # Any output on stdout or stderr will be captured and logged for information
   # or debugging purposes.
