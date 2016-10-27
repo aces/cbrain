@@ -128,44 +128,70 @@
       <%= select_tag(:row_type, options_for_select( [ [ "(Select row type)", "" ] ] + restricted_att_list, params[:row_type] ), :class => "form-control") if att_ok %>&nbsp;&nbsp;
     </div>
 
-      <% if @table_ok && @table_col_values.present? && @table_row_values.present? %>
+    <% if @table_ok && @table_col_values.present? && @table_row_values.present? %>
 
-        <%
-           # Generic TO_S proc for row and column headers
-           to_s_proc = Proc.new { |x| x.to_s.demodulize }
-           col_proc = to_s_proc
-           row_proc = to_s_proc
 
-           # Special proc for columns which are IDs to models
-           if @filter_col_key =~ /A(\w+)_idz/
-             col_model = Regexp.last_match[1].classify.constantize
-             col_proc  = Proc.new { |x| link_to_model_if_accessible(col_model,x,:name,current_user) }
-           end
+      <%
+         # Generic TO_S proc for row and column headers
+         to_s_proc = Proc.new { |x| x.to_s.demodulize }
+         col_proc = to_s_proc
+         row_proc = to_s_proc
+         # Special proc for columns which are IDs to models
+         if @filter_col_key =~ /\A(\w+)_id\z/
+           col_model = Regexp.last_match[1].classify.constantize
+           col_proc  = Proc.new { |x| link_to_model_if_accessible(col_model,x,:name,current_user) }
+         end
+         # Special proc for rows which are IDs to models
+         if @filter_row_key =~ /\A(\w+)_id\z/
+           row_model = Regexp.last_match[1].classify.constantize
+           row_proc  = Proc.new { |x| link_to_model_if_accessible(row_model,x,:name,current_user) }
+         end
+         vector_size = @table_content[@table_content.keys.first].size
+         # Standard proc for TD content (and totals too).
+         td_content_proc = Proc.new do |vector,td_filters|
+           next '' if vector[0].to_i == 0
+           scope_filter_link(
+             (@filter_show_proc ? @filter_show_proc.call(vector) : vector[0].to_s),
+             @filter_controller.to_s, :replace,
+             @filter_fixed.merge(td_filters).map do |attr, value|
+               { :a => attr, :v => value }
+             end,
+             url: { :controller => @filter_controller.to_s, :action => :index }
+           )
+         end
+      %>
 
-           # Special proc for rows which are IDs to models
-           if @filter_row_key =~ /A(\w+)_idz/
-             row_model = Regexp.last_match[1].classify.constantize
-             row_proc  = Proc.new { |x| link_to_model_if_accessible(row_model,x,:name,current_user) }
-           end
 
-           vector_size = @table_content[@table_content.keys.first].size
 
+      <%
          # Special proc for combined file report
          if params[:table_name] =~ /\.combined_file_rep\z/
-
            td_content_proc = Proc.new do |vector,td_filters|
-             next '' if vector[0].to_i == 0
+             size,num_entries,sum_files,num_size_unk = vector
+             capture do
+      %>
+               <%= disk_space_info_display(size || 0) do %>
+                 <%= pretty_size(size) %></br>
+                 <%=
+                   scope_filter_link("#{pluralize(num_entries,"entry")} / #{pluralize(sum_files,"file")}",
+                     'userfiles', :replace,
+                     @filter_fixed.merge(td_filters).map do |attr, value|
+                       { :a => attr, :v => value }
+                     end,
+                     url: { :controller => :userfiles }
+                   )
+                 %>
+                 <% if num_size_unk > 0 %>
+                   </br><%= html_colorize(pluralize(num_size_unk," file") + " w/ unk size") %>
+                 <% end %>
+               <% end %>
+      <%
+             end # capture
+           end # proc
+         end # if
+      %>
 
-             scope_filter_link(
-               (@filter_show_proc ? @filter_show_proc.call(vector) : vector[0].to_s),
-               @filter_controller.to_s, :replace,
-               @filter_fixed.merge(td_filters).map do |attr, value|
-                 { :a => attr, :v => value }
-               end,
-               url: { :controller => @filter_controller.to_s, :action => :index }
-             )
-           end
-        %>
+
 
       <%
          # Special proc for combined task report
@@ -180,50 +206,13 @@
                          size || 0,
                          num_unk
                        )
-
                    %>
-                   <% if num_size_unk > 0 %>
-                     </br><%= html_colorize(pluralize(num_size_unk," file") + " w/ unk size") %>
-                   <% end %>
-                 <% end %>
-        <%
-               end # capture
-             end # proc
-           end # if
-        %>
-
-        <%
-<<<<<<< HEAD
-           # Special proc for combined task report
-           if params[:table_name] =~ /\.combined_task_rep$/
-             td_content_proc = Proc.new do |vector,td_filters|
-               size,num_entries,num_unk = vector
-               capture do
-=======
-           # HTML attribute modifications for vertical headers (default) or wider headers
-           vertical_headers = (params[:table_name] !~ /\.combined_(file|task)_rep\z/)
-           th_att     = ""
-           th_div_att = " style=\"margin-right: 1.5em\"".html_safe
-           if vertical_headers
-             v_height   = "22em"
-             th_att     = " class=\"vertical_text_container\" style=\"background-position: 50% 5%; height: #{v_height}\"".html_safe
-             th_div_att = " class=\"vertical_text\"".html_safe
-           end
->>>>>>> dev
-        %>
-                  <%= disk_space_info_display(size || 0) do %>
-                     <%= format_task_size_unk(
-                           index_count_filter(num_entries, :tasks, @filter_fixed.merge(td_filters || {}), :show_zeros => 1 ),
-                           size || 0,
-                           num_unk
-                         )
-                     %>
-                  <% end %>
-        <%
-               end # capture
-             end # proc
-           end # if
-        %>
+                <% end %>
+      <%
+             end # capture
+           end # proc
+         end # if
+      %>
 
 
 

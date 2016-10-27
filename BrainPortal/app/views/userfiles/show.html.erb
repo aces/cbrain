@@ -240,13 +240,14 @@
               <% end %>
 
               <% if @userfile.viewers.size > 1 %>
-                  Change view:
+                <div class="input-group">
+                  <span class="input-group-addon">Change view:</span>
                   <%= select_tag "viewer", options_for_select(@userfile.viewers.map { |v| [v.name, v.name] }, (@viewer.try(:name) || @userfile.class.name.underscore)),
-                                 :class        => :request_on_change,
+                                 :class        => "request_on_change form-control",
                                  "data-target" => "#userfile_viewer",
                                  "data-url"    => display_userfile_path(@userfile)
                   %>
-                <br>
+                </div>
               <% end  %>
 
               <div id="userfile_viewer">

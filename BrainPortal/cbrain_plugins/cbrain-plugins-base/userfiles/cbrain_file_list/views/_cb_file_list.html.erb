@@ -61,7 +61,7 @@
       </span>
     </div>
 
-    <table id="report_table">
+    <table id="report_table" class="table table-striped table-condensed table-hover">
 
       <%
         ################################
@@ -88,7 +88,7 @@
           <% cur_file = nil %>
           <% attlist.each_with_index do |att,idx|%>
             <% val = cvs_row[idx] %>
-            <td class="left_align">
+            <td>
               <% if att == :id %>
                 <% cur_file = Userfile.find_all_accessible_by_user(current_user).where(:id => val).first %>
                 <%= val %> : <%= link_to_userfile_if_accessible(cur_file) %>

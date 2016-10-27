@@ -56,12 +56,10 @@
     <% end %>
 
     <%= form_tag userfile_path(@userfile), :method => :get do %>
-      <span class="no_wrap">
         <%= check_box_tag "with_header", "1", with_header %> First row contains header labels.
         <%= hidden_field_tag :page, page %>
         <%= hidden_field_tag :viewer, @viewer.name %>
-        <%= submit_tag "Refresh" %>
-      </span>
+        <%= submit_tag "Refresh", :class => "btn btn-primary" %>
     <% end %>
 
     </br>
@@ -76,7 +74,7 @@
       </span>
     </div>
 
-    <table id="report_table" class="tablesorter">
+    <table id="report_table" class="table table-condensed table-striped table-hover">
       <%
         ################################
         # Top headers of table

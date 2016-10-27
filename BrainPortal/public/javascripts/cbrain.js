@@ -900,7 +900,7 @@
     $(document).delegate(".request_on_change", "change", function() {
       var input_element        = $(this);
       var param_name           = input_element.attr("name");
-      var current_value        = input_element.attr("value");
+      var current_value        = input_element.val();
       var url                  = input_element.attr("data-url");
       var method               = input_element.attr("data-method");
       var target               = input_element.attr("data-target");
