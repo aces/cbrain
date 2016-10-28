@@ -30,20 +30,21 @@
 
 <%
   # Convenience helper to render a single checkbox and a user name
-  user_check_box = lambda do |user|
+  access_profile_check_box = lambda do |access_profile|
     check_box_tag( variable_name,                                # html var name
-                   user.id.to_s,                                 # value
-                   checked.include?(user),                       # checked or not
-                   :id => "#{boxids}_#{user.id}",                # unique DOM id
+                   access_profile.id.to_s,                                 # value
+                   checked.include?(access_profile),                       # checked or not
+                   :id => "#{boxids}_#{access_profile.id}",                # unique DOM id
                    :class => html_class,
                  ).html_safe +
-    (" <label for=\"#{boxids}_#{user.id}\">" + h(user.login) + "</label>").html_safe
+    (" <label for=\"#{boxids}_#{access_profile.id}\">" + access_profile_label(access_profile) + "</label>").html_safe
+
   end
 %>
 
 <%= hidden_field_tag variable_name, [], :id => "#{boxids}_unchecked" %>
 
-<%= array_to_table(users, :cols => 4, :td_class => 'left_align no_wrap') do |user,r,c| %>
-  <%= user_check_box.(user) %>
+<%= array_to_table(access_profiles, :cols => 4) do |access_profile,r,c| %>
+  <%= access_profile_check_box.(access_profile) %>
 <% end %>
 

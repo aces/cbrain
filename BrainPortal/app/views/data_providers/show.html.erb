@@ -60,7 +60,7 @@
       <%= text_field_tag "data_provider[name]", @provider.name %>
     <% end %>
 
-    <% t.edit_cell(:description, :content => overlay_description(@provider.description)) do %>
+    <% t.edit_cell(:description, :content => @provider.description) do %>
       <%= text_area_tag "data_provider[description]", @provider.description, :rows => 10, :cols => 40 %><br>
     <% end %>
 

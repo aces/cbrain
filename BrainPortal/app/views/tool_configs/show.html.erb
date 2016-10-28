@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -29,34 +29,34 @@
 <div class="generalbox">
 
   Configurations shown here:
-  <UL>
+  <ul>
     <% if @bourreau_glob_config %>
-      <LI>
+      <li>
         <strong>Config #<%= @bourreau_glob_config.id %></strong>
         (<%= link_to "edit", edit_tool_config_path(@bourreau_glob_config) %>):
         For <strong>ALL tools</strong> running on Execution Server <strong><%= @bourreau_glob_config.bourreau.name %></strong>
-      </LI>
+      </li>
     <% end %>
     <% if @tool_glob_config %>
-      <LI>
+      <li>
         <strong>Config #<%= @tool_glob_config.id %></strong>
         (<%= link_to "edit", edit_tool_config_path(@tool_glob_config) %>):
         For tool <strong><%= @tool_glob_config.tool.name %></strong> running on <strong>ALL Execution Servers</strong>
-      </LI>
+      </li>
     <% end %>
     <% if @tool_config %>
-      <LI>
+      <li>
         <strong>Config #<%= @tool_config.id %></strong>
         (<%= link_to "edit", edit_tool_config_path(@tool_config) %>):
         For tool <strong><%= @tool_config.tool.name %></strong> running on Execution Server <strong><%= @tool_config.bourreau.name %></strong>
-        <br>Named: <%= overlay_description(@tool_config.description) %>
+        <br>Named: <%= @tool_config.description %>
         <br>Available to members of project <%= link_to_group_if_accessible(@tool_config.group) %>
         <% if @tool_config.ncpus.present? && @tool_config.ncpus.to_i > 0 %>
           <br>Suggested number of CPUs: <%= @tool_config.ncpus.to_i.to_s %>
         <% end %>
-      </LI>
+      </li>
     <% end %>
-  </UL>
+  </ul>
 
   <p>
   <strong>Important note:</strong>
@@ -73,17 +73,17 @@
 </div>
 
 <% if @bourreau_glob_config %>
-  <P>
+  <p>
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @bourreau_glob_config.getlog, :title => "Log of Global Bourreau Tool Config ##{@bourreau_glob_config.id}" } %>
 <% end %>
 
 <% if @tool_glob_config %>
-  <P>
+  <p>
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_glob_config.getlog, :title => "Log of Global Tool Config ##{@tool_glob_config.id}" } %>
 <% end %>
 
 <% if @tool_config %>
-  <P>
+  <p>
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_config.getlog, :title => "Log of Specific Tool Config ##{@tool_config.id}" } %>
 <% end %>
 
