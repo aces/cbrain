@@ -485,7 +485,13 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   #     strip: [ '.z' ]
   #   ) => 'f -z 5'
   def apply_template(template, keys, flags: {}, strip: [], separators: {})
+    # Set of properties from the descriptor for file-type inputs
     fileKeys = [<%= files.map { |f| '"' + f['command-line-key'] + '"' }.join(",") %>]
+    absPath  = [<%= files.map { |f| f['uses-absolute-path'] || false }.join(",") %>]
+    # The working directory from which the task will be launched
+    # Used to fill in absolute paths for inputs requesting it
+    wd = self.container_working_directory || self.full_cluster_workdir
+
     keys.inject(template) do |template, (key, value)|
       flag = flags[key]
       sep_init = separators[key]
@@ -503,6 +509,10 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
             currFile = Userfile.find_by_id(v)
             cb_error("Unable to find given userfile with id #{v}!") unless currFile
             v = currFile.name
+            # If uses-absolute-path is true, convert the filename to a path
+            if absPath[ fileKeys.index(key) ]
+              v = File.join( File.absolute_path(wd), v)
+            end
           end
 
           v = v.dup if v.is_a?(String)
