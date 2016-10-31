@@ -87,7 +87,13 @@
   <% end %>
 
   <%= show_table(@access_profile, :edit_condition => check_role(:admin_user), :header => 'Users With This Profile') do |t| %>
-    <% user_names = (myusers.sort_by(&:login).map { |u| link_to_user_if_accessible(u) }.join(", ").html_safe.presence) || "(None)" %>
+
+    <% if !myusers.nil? && myusers.count > 0 %>
+      <% user_names = (array_to_table(myusers.sort_by(&:login).map { |u| link_to_user_if_accessible(u) }, :table_class => 'simple', :cols => 4).html_safe) %>
+    <% else %>
+      <% user_names = "(None)" %>
+    <% end %>
+
     <% t.edit_cell(:user_ids, :show_width => 2, :no_header => "Users", :content => user_names) do %>
 
       Normal Users<br>
@@ -112,7 +118,7 @@
     <% end %>
   <% end %>
 
-  <P>
+  <p>
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @access_profile.getlog, :title => 'Access Profile Log' } %>
 
 </div>
