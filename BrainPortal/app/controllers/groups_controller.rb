@@ -130,6 +130,7 @@ class GroupsController < ApplicationController
     end
 
     original_user_ids = @group.user_ids
+    original_creator = @group.creator_id
 
     params[:group] ||= {}
 
@@ -161,6 +162,9 @@ class GroupsController < ApplicationController
     respond_to do |format|
       if @group.update_attributes_with_logging(params[:group],current_user)
         @group.reload
+        if params[:group][:creator_id].present?
+          @group.addlog_object_list_updated("Creator", User, original_creator, @group.creator_id, current_user, :login)
+        end
         @group.addlog_object_list_updated("Users", User, original_user_ids, @group.user_ids, current_user, :login)
         flash[:notice] = 'Project was successfully updated.'
         format.html { redirect_to :action => "show" }
