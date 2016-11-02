@@ -97,10 +97,11 @@ class PortalController < ApplicationController
     remove_egrep << "^Completed"      if params[:hide_completed].presence  == "1"
     # Note that in production, 'SQL', 'CACHE' and 'LOAD' are never shown.
     remove_egrep << "^ *SQL "         if params[:hide_sql].presence        == "1"
-    remove_egrep << "BEGIN"           if params[:hide_sql].presence        == "1"
-    remove_egrep << "SELECT"          if params[:hide_sql].presence        == "1"
-    remove_egrep << "UPDATE"          if params[:hide_sql].presence        == "1"
-    remove_egrep << "COMMIT"          if params[:hide_sql].presence        == "1"
+    remove_egrep << "^\\s+\\(\\d+\\.\\d+ms\\)\\s+BEGIN"          if params[:hide_sql].presence        == "1"
+    remove_egrep << "^\\s+\\(\\d+\\.\\d+ms\\)\\s+COMMIT"         if params[:hide_sql].presence        == "1"
+    remove_egrep << "^\\s+\\(\\d+\\.\\d+ms\\)\\s+SELECT"         if params[:hide_sql].presence        == "1"
+    remove_egrep << "^\\s+\\(\\d+\\.\\d+ms\\)\\s+UPDATE"         if params[:hide_sql].presence        == "1"
+    remove_egrep << "^\\s+\\w+\\s+Exists \\(\\d+\\.\\d+ms\\) "   if params[:hide_exists].presence    == "1"
     remove_egrep << "^ *CACHE "       if params[:hide_cache].presence      == "1"
     remove_egrep << "^ *[^ ]* Load"   if params[:hide_load].presence       == "1"
 

@@ -42,6 +42,7 @@
     <% if Rails.env == 'development' %>
       | 'SQL':        <%= check_box_tag :hide_sql,        "1", params[:hide_sql]        == "1" %>
       | 'Load':       <%= check_box_tag :hide_load,       "1", params[:hide_load]       == "1" %>
+      | 'Exists':     <%= check_box_tag :hide_exists,     "1", params[:hide_exists]     == "1" %>
       | 'CACHE':      <%= check_box_tag :hide_cache,      "1", params[:hide_cache]      == "1" %>
     <% end %>
 
