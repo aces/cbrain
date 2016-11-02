@@ -284,12 +284,13 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     if self.use_docker?
       # Task launch directory (mounted into as pwd if specified)
       # Note: assumes container_wd is absolute
-      container_wd = <%= containerImage['working-directory'] || "self.full_cluster_workdir" %>
+%     customWd = containerImage['working-directory']
+      container_wd = <%= customWd ? "\"" + customWd + "\"" : "self.full_cluster_workdir" %>
 %     outids = outputs.map { |p| ":'#{p['id']}'" }.join(", ")
       is_underneath = lambda { |base,potential| (Pathname.new(potential)).fnmatch?(File.join(base,'**')) }
       [<%= outids %>].each do |outid|
         # Relative paths are assumed to be with respect to the mounted directory
-        currentPath = File.absolute_path( params[<%= id %>], container_wd )
+        currentPath = File.absolute_path( params[ outid ], container_wd )
         # If the current path is not in the directory subtree of the mounted directory,
         # issue a move command at the end of cluster_commands and alter the path to search
         # for output files accordingly
@@ -303,7 +304,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
         end
       end
     end
-%   end # output filepath changes for containerized tasks
+%   end # if containerImage (i.e. output filepath changes for containerized tasks)
 %   end
 %   if descriptor['cbrain:ignore-exit-status']
     # Generate the final command-line to run <%= name %>
