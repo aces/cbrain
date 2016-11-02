@@ -1076,7 +1076,7 @@ class ClusterTask < CbrainTask
   # the method just returns the filename, it will not be recreated.
   #
   # If the first file doesn't exist or is not complete (the content must
-  # end with the line "CBRAIN Task Exiting" then the filename returned
+  # end with the line "CBRAIN Task Exiting") then the filename returned
   # is just the second file in argument, +science_outerr+ ; this means
   # that while a task is running, for instance, this method will still
   # return the output as it is being created.
@@ -1126,7 +1126,7 @@ class ClusterTask < CbrainTask
   # to a file separately from the captured output of the qsub
   # script, this method will try to provide the path to a
   # combined file when possible (usually when the task is complete)
-  # and otherwise will join return a path to the
+  # and otherwise will just return a path to the
   # science output file.
   def stdout_cluster_filename(run_number=nil)
     workdir = self.full_cluster_workdir

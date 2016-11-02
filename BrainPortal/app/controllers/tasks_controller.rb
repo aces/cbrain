@@ -786,7 +786,7 @@ class TasksController < ApplicationController
           next
         end
 
-        if task.user_id != current_user.id && current_user.type != 'AdminUser'
+        if task.user_id != current_user.id && ! current_user.has_role?(:admin_user)
           (skipped_list["you not allowed to #{operation} this task(s)"] ||= []) << task
           next
         end
