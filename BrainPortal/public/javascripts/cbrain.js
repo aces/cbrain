@@ -996,6 +996,12 @@
       $('[data-toggle="tooltip"]').tooltip()
     })
 
+    $('#work-projects').multiSelect({
+      selectableHeader: "<div class='custom-header'>Available Projects</div>",
+      selectionHeader: "<div class='custom-header'>Project List</div>",
+      selectableOptgroup: true
+    });
+
     // Implements dropdown open for mega-dropdowns (example on task page).
     $('.mega-dropdown').on('click', function (event) {
       $(this).parent().toggleClass('open');

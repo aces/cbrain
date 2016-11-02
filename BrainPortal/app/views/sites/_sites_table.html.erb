@@ -22,71 +22,69 @@
 #
 -%>
 
-<div class="container-fluid">
-  <div class="menu_bar row">
-    <div class="col-xs-12">
-      <div class="well well-sm">
-        <a href="<%= new_site_path %>" class="btn btn-primary"><span class="glyphicon glyphicon-file"></span> Create New Site</a>
-        <a href="#" class="btn btn-primary help-btn" data-toggle="modal" data-target="#help-modal" data-url="/doc/sites/site_info.html"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
-      </div>
+<div class="menu_bar row">
+  <div class="col-xs-12">
+    <div class="well well-sm">
+      <a href="<%= new_site_path %>" class="btn btn-primary"><span class="glyphicon glyphicon-file"></span> Create New Site</a>
+      <a href="#" class="btn btn-primary help-btn" data-toggle="modal" data-target="#help-modal" data-url="/doc/sites/site_info.html"><span class="glyphicon glyphicon-question-sign"></span> Help</a>
     </div>
   </div>
+</div>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <%=
-        render(:partial => 'shared/active_filters', :locals  => {
-          :scope => @scope,
-          :model => Site
-        })
-      %>
-    </div>
+<div class="row">
+  <div class="col-xs-12">
+    <%=
+      render(:partial => 'shared/active_filters', :locals  => {
+        :scope => @scope,
+        :model => Site
+      })
+    %>
   </div>
+</div>
 
-  <div class="row">
-    <div class="col-xs-12">
-      <div class="text-center">(<%= pluralize @sites.count, "site" %>)</div>
-      <%=
-        dynamic_scoped_table(@sites,
-          :id    => 'sites_table',
-          :class => [ "table-responsive" ],
-          :scope => @scope
-        ) do |t|
+<div class="row">
+  <div class="col-xs-12">
+    <div class="text-center">(<%= pluralize @sites.count, "site" %>)</div>
+    <%=
+      dynamic_scoped_table(@sites,
+        :id    => 'sites_table',
+        :class => [ "table-responsive" ],
+        :scope => @scope
+      ) do |t|
+    %>
+      <%
+        t.column("Name", :name,
+          :sortable => true,
+        ) { |s| link_to_site_if_accessible(s) }
+
+        t.column("Description", :description,
+          :sortable => true,
+        ) { |s| overlay_description(s.description) }
+
+        t.column("Managers", :managers) do |s|
+          array_to_table(s.managers.sort { |a,b| a.login.casecmp(b.login) },
+            :min_data    => 2,
+            :table_class => 'simple bordered'
+          ) { |m,r,c| link_to_user_with_tooltip(m) }
+        end
+
+        users_scope  = scope_from_session('users')
+        groups_scope = scope_from_session('groups')
+
+        t.column("Number of Users", :nusers) do |s|
+          scope_filter_link(s.users.count.to_s,
+            users_scope, :set, { :a => 'site_id', :v => s.id },
+            url: { :controller => :users }
+          )
+        end
+
+        t.column("Number of Projects", :nprojects) do |s|
+          scope_filter_link(s.groups.count.to_s,
+            groups_scope, :set, { :a => 'site_id', :v => s.id },
+            url: { :controller => :groups }
+          )
+        end
       %>
-        <%
-          t.column("Name", :name,
-            :sortable => true,
-          ) { |s| link_to_site_if_accessible(s) }
-
-          t.column("Description", :description,
-            :sortable => true,
-          ) { |s| overlay_description(s.description) }
-
-          t.column("Managers", :managers) do |s|
-            array_to_table(s.managers.sort { |a,b| a.login.casecmp(b.login) },
-              :min_data    => 2,
-              :table_class => 'simple bordered'
-            ) { |m,r,c| link_to_user_with_tooltip(m) }
-          end
-
-          users_scope  = scope_from_session('users')
-          groups_scope = scope_from_session('groups')
-
-          t.column("Number of Users", :nusers) do |s|
-            scope_filter_link(s.users.count.to_s,
-              users_scope, :set, { :a => 'site_id', :v => s.id },
-              url: { :controller => :users }
-            )
-          end
-
-          t.column("Number of Projects", :nprojects) do |s|
-            scope_filter_link(s.groups.count.to_s,
-              groups_scope, :set, { :a => 'site_id', :v => s.id },
-              url: { :controller => :groups }
-            )
-          end
-        %>
-      <% end %>
-    </div>
+    <% end %>
   </div>
 </div>

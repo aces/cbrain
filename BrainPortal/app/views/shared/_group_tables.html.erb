@@ -23,19 +23,19 @@
 -%>
 
 <%
-    if current_user.has_role? :admin_user
-      work_groups  = WorkGroup.where(invisible: false).all
-      invis_groups = WorkGroup.where(invisible: true).all
-    elsif current_user.has_role? :site_manager
-      work_groups  = current_user.site.groups.where( :type  => "WorkGroup", :invisible => false ).all | current_user.groups.where( :type => "WorkGroup", :invisible => false )
-      invis_groups = current_user.site.groups.where( :type  => "WorkGroup", :invisible => true )
-    else
-      work_groups  = []
-      invis_groups = []
-    end
-    work_groups  = work_groups.sort  { |a,b| a.name <=> b.name }
-    invis_groups = invis_groups.sort { |a,b| a.name <=> b.name }
-    class_name   = model.class.sti_root_class.to_s.underscore
+  if current_user.has_role? :admin_user
+    work_groups  = WorkGroup.where(invisible: false).all
+    invis_groups = WorkGroup.where(invisible: true).all
+  elsif current_user.has_role? :site_manager
+    work_groups  = current_user.site.groups.where( :type  => "WorkGroup", :invisible => false ).all | current_user.groups.where( :type => "WorkGroup", :invisible => false )
+    invis_groups = current_user.site.groups.where( :type  => "WorkGroup", :invisible => true )
+  else
+    work_groups  = []
+    invis_groups = []
+  end
+  work_groups  = work_groups.sort  { |a,b| a.name <=> b.name }
+  invis_groups = invis_groups.sort { |a,b| a.name <=> b.name }
+  class_name   = model.class.sti_root_class.to_s.underscore
 %>
 
 <%
@@ -45,11 +45,12 @@
     check_box_tag( "#{class_name}[group_ids][]",                 # name
                    group.id.to_s,                                # value
                    model.groups.include?(group),                 # checked or not
-                   :id => "#{class_name}_group_ids_#{group.id}" # unique DOM id
+                   :id => "#{class_name}_group_ids_#{group.id}"  # unique DOM id
                  ).html_safe +
     h(group.name) + "</label>&nbsp".html_safe
   end
 %>
+
 
 <%= hidden_field_tag "#{class_name}[group_ids][]", [], :id => "#{class_name}_group_ids_unchecked" %>
 
@@ -57,20 +58,16 @@
   <div class="panel panel-primary">
     <div class="panel-heading">Work Projects <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#visible-panel"></span></div>
     <div class="panel-body collapse in" id="visible-panel">
-      <%= array_to_table(work_groups, :cols => 8, :td_class => 'left_align no_wrap', :class => "table") do |group,r,c| %>
-        <%= group_check_box.(group) %>
-      <% end %>
-    </div>
-  </div>
-<% end %>
-
-<% if invis_groups.present? %>
-  <div class="panel panel-primary">
-    <div class="panel-heading">Invisible Projects <span class="pull-right glyphicon glyphicon-chevron-down clickable" data-toggle="collapse" data-target="#invisible-panel"></span></div>
-    <div class="panel-body collapse" id="invisible-panel">
-      <%= array_to_table(invis_groups, :cols => 4, :td_class => 'left_align no_wrap', :class => "table") do |group,r,c| %>
-        <%= group_check_box.(group) %>
-      <% end %>
+      <select id='work-projects' multiple='multiple' name="<%= "#{class_name}[group_ids][]" %>">
+        <optgroup label="Work Projects">
+          <%= options_for_select(work_groups.map{|group| [group.name, group.id] }, model.groups.map{|g| g.id }) %>
+        </optgroup>
+        <% if invis_groups.present? %>
+          <optgroup label="Invisible Projects">
+            <%= options_for_select(invis_groups.map{|group| [group.name, group.id] }, model.groups.map{|g| g.id }) %>
+          </optgroup>
+        <% end %>
+      </select>
     </div>
   </div>
 <% end %>
