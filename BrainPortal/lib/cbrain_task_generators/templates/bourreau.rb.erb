@@ -275,10 +275,39 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %     end
     })
 
+%#  If we are going to execute in a container, we need to detect output files outside the mounted directory,
+%#  add commands to mv them there, and then change the file paths to look there when saving results.
+%   containerImage = descriptor['container-image']
+    outfileMoveCommands = []
+%   if containerImage
+    # If execution will occur in a container, alter the output file paths to compensate
+    if self.use_docker?
+      # Task launch directory (mounted into as pwd if specified)
+      # Note: assumes container_wd is absolute
+      container_wd = <%= containerImage['working-directory'] || "self.full_cluster_workdir" %>
+%     outids = outputs.map { |p| ":'#{p['id']}'" }.join(", ")
+      is_underneath = lambda { |base,potential| (Pathname.new(potential)).fnmatch?(File.join(base,'**')) }
+      [<%= outids %>].each do |outid|
+        # Relative paths are assumed to be with respect to the mounted directory
+        currentPath = File.absolute_path( params[<%= id %>], container_wd )
+        # If the current path is not in the directory subtree of the mounted directory,
+        # issue a move command at the end of cluster_commands and alter the path to search
+        # for output files accordingly
+        unless is_underneath.( container_wd, currentPath )
+          # Move the file to the mounted dir (to be run post-execution, in the container)
+          # Warning: potential overwrite dangers if there is a same-named local file
+          newPosition = File.join( container_wd, File.basename(currentPath) )
+          outfileMoveCommands << "mv #{currentPath} #{newPosition}"
+          # Alter where cbrain should look for the file (outside container)
+          params[ outid ] = File.basename(newPosition)
+        end
+      end
+    end
+%   end # output filepath changes for containerized tasks
 %   end
 %   if descriptor['cbrain:ignore-exit-status']
     # Generate the final command-line to run <%= name %>
-    envVars + [ apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %>) ]
+    envVars + [ apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %>) ] + outfileMoveCommands
       <%= descriptor['command-line'] %>
     CMD
 %   else
@@ -288,10 +317,10 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     CMD
 
     # And save its exit status
-    envVars + [ command, "echo $? > ./#{exit_cluster_filename.bash_escape}" ]
+    envVars + [ command, "echo $? > ./#{exit_cluster_filename.bash_escape}" ] + outfileMoveCommands
 %   end
 % end
-  end
+  end # cluster_commands
 
   # Called after the task is done, this method ensures <%= name %> succeeded and
   # saves its output files to the Bourreau's cache before registering them into
