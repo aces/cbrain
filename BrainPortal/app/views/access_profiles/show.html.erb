@@ -53,14 +53,14 @@
       <%= render :partial => 'shared/color_picker', :locals => { :step => 30, :greys => false, :dark => false } %>
     <% end %>
 
-    <% t.edit_cell(:description, :content => @access_profile.description ) do %>
+    <% t.edit_cell(:description, :content => @access_profile.description, :show_width => 2 ) do %>
       <%= text_area_tag "access_profile[description]", @access_profile.description, :rows => 6, :cols => 60 %><br/>
       <span class="field_explanation">These are your private notes about this profile.</span>
     <% end %>
 
   <% end %>
 
-  <% myusers = @access_profile.users.all %>
+  <% myusers = @access_profile.users.all.sort_by(&:login) %>
 
   <%= show_table(@access_profile, :edit_condition => check_role(:admin_user), :header => 'Projects In This Profile') do |t| %>
     <% group_names = (@access_profile.groups.sort_by(&:name).map { |g| link_to_group_if_accessible(g) }.join(", ").html_safe.presence) || "(None)" %>
@@ -89,7 +89,7 @@
   <%= show_table(@access_profile, :edit_condition => check_role(:admin_user), :header => 'Users With This Profile') do |t| %>
 
     <% if !myusers.nil? && myusers.count > 0 %>
-      <% user_names = (array_to_table(myusers.sort_by(&:login).map { |u| link_to_user_if_accessible(u) }, :table_class => 'simple', :cols => 4).html_safe) %>
+      <% user_names = (array_to_table(myusers.map { |u| link_to_user_if_accessible(u) }, :table_class => 'simple', :cols => 4).html_safe) %>
     <% else %>
       <% user_names = "(None)" %>
     <% end %>
