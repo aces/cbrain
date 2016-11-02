@@ -23,6 +23,14 @@
 -%>
 
 <%
+   # This partial renders a table of users logins with checkboxes
+   # Partial locals:
+   #
+   #   users         => [ user, user, ... ]
+   #   checked       => [ user, user, ... ]
+   #   variable_name => "somemodel[group_ids][]"  # for instance; must end with '[]'
+   #   boxids        => "some_dom_id"             # will be appened with _{id}
+   #   html_class    => "someclass"               # for checkboxes
    checked    ||= []
    boxids     ||= "id_#{rand(1000000)}"
    html_class ||= ""

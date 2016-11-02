@@ -46,6 +46,12 @@ module RichUiHelper
     link.html_safe
   end
 
+  # Takes a +description+ with multiple lines and shows
+  # the whole thing, including line breaks.
+  def full_description(description)
+    ("<span style=\"white-space: pre-wrap;\">" + description + "</span>").html_safe
+  end
+
   # Create an element that opens a dropdown when it's
   # hovered over.
   def hover_dropdown(header, options = {}, &block)

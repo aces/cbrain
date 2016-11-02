@@ -60,7 +60,7 @@
       </div>
     <% end %>
 
-    <% t.edit_cell(:description, :content =>  @bourreau.description) do %>
+    <% t.edit_cell(:description, :content =>  full_description(@bourreau.description)) do %>
       <%= text_area_tag "bourreau[description]", @bourreau.description, :rows => 10, :cols => 40 %><br>
       <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div><br>
     <% end %>

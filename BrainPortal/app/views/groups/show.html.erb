@@ -60,7 +60,7 @@
 
     <% t.cell("Type") { @group.pretty_category_name(current_user) } %>
 
-    <% t.edit_cell(:description, :content =>  @group.description) do %>
+    <% t.edit_cell(:description, :content =>  full_description(@group.description)) do %>
         <%= text_area_tag "group[description]", @group.description, :rows => 4, :cols => 40 %><br>
         <div class="field_explanation">The first line should be a short summary, and the rest are for details.</div><br>
     <% end %>
