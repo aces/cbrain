@@ -77,16 +77,21 @@ module UserfilesHelper
   end
 
   # Generates links to pretty file content for userfiles
-  # of type TextFile or ImageFile; this method is going to
-  # be replaced by a proper generic framework in 4.3.0 !
+  # of type TextFile or ImageFile
+  # Generates download link for any other type of file
   def data_link(file_name, userfile)
-    display_name  = Pathname.new(file_name).basename.to_s
+    full_path_name  = Pathname.new(userfile.cache_full_path.dirname + file_name)
+
+    display_name  = full_path_name.basename.to_s
     return h(display_name) unless userfile.is_locally_synced?
 
-    matched_class = SingleFile.descendants.unshift(SingleFile).find { |c| file_name =~ c.file_name_pattern }
-    return h(display_name) unless matched_class
+    file_lstat = full_path_name.lstat  # lstat doesn't follow symlinks, so we can tell if it is one
 
-    if matched_class <= TextFile
+    return h(display_name) unless file_lstat.file?
+
+    matched_class = SingleFile.descendants.unshift(SingleFile).find { |c| file_name =~ c.file_name_pattern }
+
+    if matched_class && matched_class <= TextFile
       link_to h(display_name),
               display_userfile_path(userfile,
                 :content_loader        => :collection_file,
@@ -96,7 +101,7 @@ module UserfilesHelper
                 :content_viewer        => "off",
               ),
               :target => "_blank"
-    elsif matched_class <= ImageFile
+    elsif matched_class && matched_class <= ImageFile
       link_to h(display_name),
               display_userfile_path(userfile,
                 :content_loader        => :collection_file,
@@ -107,7 +112,8 @@ module UserfilesHelper
               ),
               :target => "_blank"
     else
-       h(display_name)
+      link_to h(display_name),
+              url_for(:action  => :content, :content_loader => :collection_file, :arguments => file_name)
     end
   end
 
