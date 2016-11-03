@@ -1,0 +1,5 @@
+services:
+  - docker
+
+script:
+- sh Travis/travis_ci.sh
