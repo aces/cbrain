@@ -1,0 +1,29 @@
+version: '2'
+services:
+  cbrain-portal:
+    image: mcin/cbrain_portal:travis
+    volumes:
+     - ./volumes/portal/data_cache:/home/cbrain/cbrain_data_cache
+     - ./volumes/portal/.ssh:/home/cbrain/.ssh
+     - ./volumes/portal/plugins:/home/cbrain/plugins
+    depends_on:
+     - mysql
+    environment:
+      MODE: ${MODE}
+      USERID: ${USERID}
+      GROUPID: ${GROUPID}
+      RAILS_ENV: "test"
+      MYSQL_PORT: "3306"
+      MYSQL_HOST: "mysql"
+      MYSQL_USER: "cbrain_test"
+      MYSQL_DATABASE: "cbrain"
+      MYSQL_PASSWORD: "cbrain4567"
+  mysql:
+    image: mariadb:10.0
+    volumes:
+      - ./volumes/mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "my-secret-pw"
+      MYSQL_USER: "cbrain_test"
+      MYSQL_DATABASE: "cbrain"
+      MYSQL_PASSWORD: "cbrain4567"

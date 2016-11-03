@@ -1,0 +1,41 @@
+
+#
+# CBRAIN Project
+#
+# Configuration file for BrainPortal
+#
+# Original author: Pierre Rioux
+#
+# $Id$
+#
+
+# Instructions:
+#
+# 1) Copy this file as 'config_portal.rb' in the current directory.
+#
+# 2) Edit your copy to suit your deployment environement.
+#    DO NOT CHECK-IN your file 'config_portal.rb' !
+#
+# 3) Leave this template alone; when new configuration options are
+#    added to CBRAIN, they will show up here as this file is under version
+#    control. The file 'validation_portal.rb' will warn you and
+#    you'll have to update your .rb file based on the .rb.TEMPLATE.
+
+class CBRAIN
+
+  # Name for this CBRAIN app; this is MANDATORY and must
+  # match an entry in the remote_resources table of the DB.
+  # If the application is booting for the first time, a
+  # dummy entry will be created by the sanity checks.
+  #
+  # If the name is changed with the interface, then this
+  # file must be adjusted accordingly.
+  CBRAIN_RAILS_APP_NAME = {{ default .Env.CBRAIN_APP_NAME "\"CBRAIN\"" }}
+
+  # All other configuration variables are now stored
+  # in the database, and there is an interface to edit them!
+  # If any other old CBRAIN constants are defined here, the
+  # system checks will migrate them to the DB first and
+  # then you'll be required to remove them.
+
+end
