@@ -1,5 +1,10 @@
 #!/bin/bash -e
 
+#
+# This bash script is the main entry point for
+# Travis CI.
+#
+
 function usage {
   echo "usage: $0 [-h] [version]"
   echo "       -h: prints help."
