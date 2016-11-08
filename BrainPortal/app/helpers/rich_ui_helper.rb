@@ -35,7 +35,7 @@ module RichUiHelper
     header = description.lines.first.strip
     body   = (description[header.size,999] || "").strip
     cropped_header = crop_text_to(options[:header_width] || 50,header)
-    return h(cropped_header) if body.blank? && cropped_header !~ /\.\.\.$/
+    return h(cropped_header) if body.blank? && cropped_header !~ /\.\.\.\z/
     return h(cropped_header) if cropped_header.present? && body.present? && (cropped_header == body)
 
     link = h(cropped_header) + " " +

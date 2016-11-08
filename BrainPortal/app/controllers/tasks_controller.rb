@@ -395,7 +395,6 @@ class TasksController < ApplicationController
 
     # Prepare final list of tasks; from the one @task object we have,
     # we get a full array of clones of that task in tasklist
-    @task.launch_time = Time.now # so grouping will work
     tasklist,task_list_message = @task.wrapper_final_task_list
     unless task_list_message.blank?
       messages += "\n" unless messages.blank? || messages =~ /\n$/
@@ -502,7 +501,13 @@ class TasksController < ApplicationController
     # Save old attributes and update the current task to reflect
     # the form's content.
     new_att          = params[:cbrain_task] || {} # not the TASK's params[], the REQUEST's params[]
-    new_att          = new_att.reject { |k,v| k =~ /^(cluster_jobid|cluster_workdir|status|batch_id|launch_time|prerequisites|share_wd_tid|run_number|level|rank|cluster_workdir_size|workdir_archived|workdir_archive_userfile_id)$/ } # some attributes cannot be changed through the controller
+    new_att          = new_att.reject do |k,v| # some attributes cannot be changed through the controller
+      k =~ /\A( cluster_jobid    | cluster_workdir | cluster_workdir_size |
+                status           | batch_id        | prerequisites |
+                share_wd_tid     | run_number      | level | rank |
+                workdir_archived | workdir_archive_userfile_id)\z
+           /x
+    end
     old_tool_config  = @task.tool_config
     old_bourreau     = @task.bourreau
     @task.attributes = new_att # just updates without saving
@@ -847,7 +852,15 @@ class TasksController < ApplicationController
     end
 
     #current_user.addlog_context(self,"Sent '#{operation}' to #{tasklist.size} tasks.")
-    redirect_to :action => :index, :format  => request.format.to_sym
+
+    respond_to do |format|
+      format.html { redirect_to :action => :index }
+      format.js   { redirect_to :action => :index }
+      format.json { head :ok }
+      format.xml  { head :ok }
+    end
+
+
 
   end # method 'operation'
 
@@ -957,7 +970,6 @@ class TasksController < ApplicationController
       preset.cluster_jobid        = nil
       preset.cluster_workdir      = nil
       preset.cluster_workdir_size = nil
-      preset.launch_time          = nil
       preset.prerequisites        = {}
       preset.rank                 = 0
       preset.level                = 0

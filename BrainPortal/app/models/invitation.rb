@@ -46,7 +46,7 @@ Hello! This is an automatic message from the CBRAIN system.
 Your colleague #{sender.full_name} has invited you
 to join the CBRAIN project "#{group.name}". When you
 next connect you should see an invitation message which
-will allows you to join.
+will allow you to join.
       EMAIL_BODY
     )
   end
@@ -59,7 +59,7 @@ will allows you to join.
 
   def add_description #:nodoc:
     self.description = "You've been invited to join project #{group.name}.\n\n"+
-                       "[[Accept][/invitations/#{self.id}}][put]]"
+                       "[[Accept][/invitations/#{self.id}][put]]"
     self.save!
   end
 

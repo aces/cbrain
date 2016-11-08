@@ -25,7 +25,7 @@
 CbrainRailsPortal::Application.routes.draw do
 
   # Session
-  resource  :session
+  resource  :session, :only => [ :new, :create, :show, :destroy ]
 
   # Control channel
   resources :controls,       :controller => :controls
@@ -68,7 +68,7 @@ CbrainRailsPortal::Application.routes.draw do
     end
   end
 
-  resources :invitations, :only => [:new, :create, :update, :destroy]
+  resources :invitations, :only => [ :new, :create, :update, :destroy ]
 
   resources :bourreaux do
     member do
@@ -146,8 +146,18 @@ CbrainRailsPortal::Application.routes.draw do
     end
   end
 
-  resources :exception_logs, :only => [:index, :show] do
+  resources :exception_logs, :only => [ :index, :show ] do
     delete :destroy, :on => :collection
+  end
+
+  resources :signups do
+    member do
+      post 'resend_confirm'
+      get  'confirm'
+    end
+    collection do
+      post 'multi_action'
+    end
   end
 
   # Special named routes

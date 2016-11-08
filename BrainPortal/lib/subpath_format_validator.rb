@@ -26,7 +26,7 @@ class SubpathFormatValidator < ActiveModel::EachValidator #:nodoc:
 
   def validate_each(object, attribute, value) #:nodoc:
     # FIXME currenly, hidden files and directories are not supported
-    unless value.blank? || value =~ /^(?:[^.\/][^\/]*\/?)+$/
+    unless value.blank? || value =~ /\A(?:[^.\/][^\/]*\/?)+\z/
       object.errors[attribute] << (options[:message] || "contains invalid characters")
     end
   end

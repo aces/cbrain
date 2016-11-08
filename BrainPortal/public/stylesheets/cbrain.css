@@ -917,7 +917,7 @@ pre {
   color: white;
   display: inline-block;
   margin: 0;
-  padding: 0.5em;
+  padding: 0.3em 0.5em 0.3em 0.5em;
   vertical-align: top;
 }
 
@@ -928,6 +928,15 @@ pre {
 #header a:hover {
   color: #222;
   background: #F1F1F1;
+}
+
+#header h1 span {
+  display: inline-block;
+}
+
+#header_logo {
+  height: 1.3em;
+  vertical-align: -0.3em;
 }
 
 #loading_image {
@@ -1125,7 +1134,6 @@ pre {
 .project_select_dropdown {
   border: 0.2em solid #0471b4;
   background-color: white;
-  max-height: 15em;
   white-space: nowrap;
 }
 
@@ -1141,9 +1149,13 @@ pre {
 }
 
 .project_select_dropdown:hover {
-    background-color: #F1F1F1;
+  background-color: #F1F1F1;
 }
 
+.project_select_spacer {
+  background-color: #0471b4;
+  height: 0.2em;
+}
 
 .project_button_header {
   border: 0px;
@@ -1217,26 +1229,52 @@ pre {
 /* % ######################################################### */
 
 .credits_footer {
-  clear: both;
-  vertical-align: bottom;
+  display: table;
+  width: 100%;
+  margin: 1em 0 0 0;
 }
 
 .credits_footer a {
-  color: white;
   text-decoration: none;
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+  width: 25%;
 }
 
-.site_logos {
-  float: right;
-  margin-right: 2em;
-  height: 100px;
+.logobar {
+  height: 50px;
   border: 0;
+  padding: 0px 1em 0px 1em;
 }
 
-.canarie_logo {
-  float: left;
-  margin-left: 2em;
-  height: 100px;
+#canarie_logo {
+}
+
+#cc_logo {
+  height: 60px;
+}
+
+#neuro_logo {
+  height: 70px;
+}
+
+#mcin_logo {
+  height: 40px;
+}
+
+#bc_logo {
+}
+
+#cfi_logo {
+  height: 60px;
+}
+
+#mcgill_logo {
+  height: 40px;
+}
+
+#ludmer_logo {
 }
 
 
@@ -1256,6 +1294,7 @@ pre {
   border: 1px solid #e4e4e4;
   padding:6px;
   width: 50%;
+  display: table-cell;
 }
 
 .box_spacer {
@@ -2339,9 +2378,9 @@ img {
 /* % ######################################################### */
 
 .cbrain-dialog-confirm {
-	background-color: pink !important;
-	font-weight: bold !important;
-	border: 3px solid red !important;
+  background-color: pink !important;
+  font-weight: bold !important;
+  border: 3px solid red !important;
 }
 
 .no-close .ui-dialog-titlebar-close {

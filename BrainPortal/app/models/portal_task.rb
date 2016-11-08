@@ -528,13 +528,13 @@ class PortalTask < CbrainTask
     foundvalue = params
     key        = ""
     while stringpath != ""
-      break unless stringpath =~ /^(\[?([\w\.\-]+)\]?)/
+      break unless stringpath =~ /\A(\[?([\w\.\-]+)\]?)/
       brackets = Regexp.last_match[1]   # "[abcdef]"
       key      = Regexp.last_match[2]   # "abcdef"
       stringpath = stringpath[brackets.size .. -1]
       if foundvalue.is_a?(Hash)
         foundvalue = foundvalue[key.to_sym] || foundvalue[key]
-      elsif foundvalue.is_a?(Array) && key =~ /^\d+$/
+      elsif foundvalue.is_a?(Array) && key =~ /\A\d+\z/
         foundvalue = foundvalue[key.to_i]
       else
         cb_error "Can't access params structure for '#{paramspath}' (stopped at '#{key}' with current structure a '#{foundvalue.class}'."
@@ -545,84 +545,158 @@ class PortalTask < CbrainTask
     foundvalue
   end
 
-  # Wrapper class around the ActiveRecord errors() method;
-  # this class answers to the same methods as the errors
+  # Wrapper around the ActiveModel::Errors class.
+  # This class answers to the same methods as the errors
   # object but its 'attributes' are actually paramspaths.
-  # See the Rails classes ActiveRecord::Validations and
-  # ActiveRecord::Errors for more information.
+  #
+  # See the Rails classes ActiveModel::Validations and
+  # ActiveModel::Errors for more information.
+  #
+  # One major difference between the standard Errors model
+  # and this implementation is that the params attribute
+  # names are stored as keys 'encoded' with a prefix.
+  # E.g. the parameter :xyz is stored with key
+  # :cbrain_task_BRA_params_KET__BRA_xyz_KET_ and "hello[goodbye]" with
+  # key :cbrain_task_BRA_params_KET__BRA_hello_KET__BRA_goodbye_KET_. This
+  # however is transparent to the user of the class.
   class ParamsErrors
-    attr_writer :real_errors
 
-    def on(paramspath) #:nodoc:
-      @real_errors.on(paramspath.to_la_id)
-    end
+    include Enumerable
+
+    attr_writer :real_errors, :base
 
     def [](paramspath) #:nodoc:
-      @real_errors.on(paramspath.to_la_id)
+      @real_errors[path2key(paramspath)]
+    end
+
+    def []=(paramspath,*args) #:nodoc:
+      @real_errors.add(path2key(paramspath),*args)
     end
 
     def add(paramspath,*args) #:nodoc:
-      @real_errors.add(paramspath.to_la_id,*args)
+      @real_errors.add(path2key(paramspath),*args)
     end
 
     def add_on_blank(paramspaths,*args) #:nodoc:
-      @real_errors.add_on_blank(paramspaths.map(&:to_la_id),*args)
+      Array(paramspaths).map do |paramspath|
+        value = @base.params_path_value(paramspath.to_s)
+        add(paramspath, "is blank") if value.blank?
+      end.compact
     end
 
     def add_on_empty(paramspaths,*args) #:nodoc:
-      @real_errors.add_on_empty(paramspaths.map(&:to_la_id),*args)
+      Array(paramspaths).map do |paramspath|
+        value = @base.params_path_value(paramspath.to_s)
+        is_empty = value.respond_to?(:empty?) ? value.empty? : false
+        add(paramspath, "is empty") if value.nil? || is_empty
+      end.compact
     end
 
-    def add_to_base(*args) #:nodoc:
-      @real_errors.add_to_base(*args)
+    def as_json(*args) #:nodoc:
+      to_hash.as_json(*args)
     end
 
-    def size #:nodoc:
-      @real_errors.size
-    end
-
-    def count #:nodoc:
-      @real_errors.size
-    end
-
-    def length #:nodoc:
-      @real_errors.size
+    def blank? #:nodoc:
+      count.zero?
     end
 
     def clear #:nodoc:
-      @real_errors.clear
+      keys.each { |k| delete(k) }
+    end
+
+    def count #:nodoc:
+      inject(0) { |c| c += 1 }
+    end
+
+    def delete(paramspath) #:nodoc:
+      @real_errors.delete(path2key(paramspath))
     end
 
     def each(&block) #:nodoc:
-      @real_errors.each(&block)
-    end
-
-    def each_full(&block) #:nodoc:
-      @real_errors.each_full(&block)
+      @real_errors.each do |attr, msg|
+        next unless attr.to_s =~ /^cbrain_task_BRA_params_KET_/ # see path2key below
+        yield key2path(attr), msg
+      end
     end
 
     def empty? #:nodoc:
-      @real_errors.empty?
+      count == 0
     end
 
-    def full_messages(*args) #:nodoc:
-      @real_errors.full_messages(*args)
+    def full_message(paramspath, message) #:nodoc:
+      human = PortalTask.human_attribute_name(paramspath)
+      "#{human} #{message}"
     end
 
-    def generate_message(paramspath,*args) #:nodoc:
-      @real_errors.generate_message(paramspath.to_la_id,*args)
+    def full_messages #:nodoc:
+      map { |paramspath, msg| full_message(paramspath, msg) }
     end
 
-    def invalid?(paramspath) #:nodoc:
-      @real_errors.invalid?(paramspath.to_la_id)
+    def full_messages_for(paramspath) #:nodoc:
+      self[paramspath].map { |msg| full_message(paramspath, msg) }
     end
 
-    def on_base #:nodoc:
-      @real_errors.on_base
+    def get(paramspath) #:nodoc:
+      # for some reason the get() and set() method REALLY want a symbol
+      @real_errors.get(path2key(paramspath))
     end
 
-    def to_xml(*args) #:nodoc:
-      @real_errors.to_xml(*args)
+    def include?(paramspath) #:nodoc:
+      @real_errors.include?(path2key(paramspath))
+    end
+
+    def keys #:nodoc:
+      map { |key, _| key }.uniq
+    end
+
+    def set(paramspath, value) #:nodoc:
+      # for some reason the get() and set() method REALLY want a symbol
+      @real_errors.set(path2key(paramspath), Array(value))
+    end
+
+    def to_hash(full_messages = false) #:nodoc:
+      inject({}) do |hash, pair|
+        paramspath, msg = *pair
+        hash[paramspath] ||= []
+        hash[paramspath] << (full_messages ? full_message(paramspath, msg) : msg)
+        hash
+      end
+    end
+
+    def to_xml(options={}) #:nodoc:
+      to_a.to_xml options.reverse_merge(:root => "errors", :skip_types => true)
+    end
+
+    def values #:nodoc:
+      keys.map { |paramspath| self[paramspath] }
+    end
+
+    alias :key?      :include?
+    alias :has_key?  :include?
+    alias :added?    :include?
+    alias :to_a      :full_messages
+    alias :size      :count
+
+    private
+
+    # Will transform an arbitrary paramspath, such as "abc[def]"
+    # into a sort of key which likely will not interfere with
+    # the real attributes of the model, e.g.
+    #
+    #   :cbrain_task_BRA_params_KET__BRA_abc_KET__BRA_def_KET_
+    #
+    # Right now this method just calls the String method to_la_id().
+    # The key returned is a symbol.
+    def path2key(paramspath) #:nodoc:
+      paramspath.to_la_id.to_sym
+    end
+
+    # Does the reverse of path2key(); the result is a string.
+    #
+    # From :cbrain_task_BRA_params_KET__BRA_abc_KET__BRA_def_KET_
+    # will return "abc[def]".
+    def key2path(key) #:nodoc:
+      key.to_s.from_la_id
     end
 
   end
@@ -630,7 +704,7 @@ class PortalTask < CbrainTask
   # Returns the equivalent of the 'errors' object for the
   # task, but where the attributes are in fact paramspath
   # values for the task's params[] hash. This works much like
-  # the standard ActiveRecord::Errors class. This is used for
+  # the standard ActiveModel::Errors class. This is used for
   # validating the task's params. For instance:
   #
   #   params = task.params || {}
@@ -651,6 +725,7 @@ class PortalTask < CbrainTask
     return @params_errors_cache if @params_errors_cache
     @params_errors_cache = ParamsErrors.new
     @params_errors_cache.real_errors = self.errors
+    @params_errors_cache.base        = self
     @params_errors_cache
   end
 
@@ -659,19 +734,13 @@ class PortalTask < CbrainTask
   # by the class method pretty_params_names() first, so an
   # easy way to provide beautiful names for your parameters
   # is to make pretty_params_names() return such a hash.
-  # Otherwise, if the attribute starts with 'cbrain_task_params_'
-  # (like ActiveRecord thinks the params attributes are named)
-  # it will remove that part and return the rest. And otherwise,
-  # it invokes the superclass method.
   def self.human_attribute_name(attname,options={})
-    sattname   = attname.to_s # string version of attname, which is usually a symbol now
+    sattname   = attname.to_s.from_la_id # string version of attname, which is usually a symbol now
     prettyhash = self.pretty_params_names || {}
-    shortname  = (sattname =~ /^cbrain_task_params_/i) ? sattname.sub(/^cbrain_task_params_/i,"") : nil
     # We try to guess many ways that the task programmer could have
-    # stored his 'pretty' names in the hash, including forgetting to call
-    # to_la_id() on the keys.
+    # stored for the keys of his 'pretty' names in the hash.
     if prettyhash.size > 0
-       extended = prettyhash.dup
+       extended = prettyhash.dup.with_indifferent_access
        prettyhash.each do |att,name| # extend it with to_la_id automatically...
          next unless att.is_a?(String) && att.include?('[')
          id_att = att.to_la_id
@@ -679,14 +748,8 @@ class PortalTask < CbrainTask
          extended[id_att] = name
        end
        return extended[sattname]        if extended.has_key?(sattname)
-       return extended[sattname.to_sym] if extended.has_key?(sattname.to_sym)
-       if shortname
-         return extended[shortname]        if extended.has_key?(shortname)
-         return extended[shortname.to_sym] if extended.has_key?(shortname.to_sym)
-       end
     end
-    return shortname if shortname
-    super(attname,options) # not sattname
+    super(sattname,options)
   end
 
   # Restores from old_params any attributes listed in the
@@ -749,7 +812,7 @@ class PortalTask < CbrainTask
     base = Pathname.new("/cbrain_plugins/cbrain_tasks") + self.to_s.demodulize.underscore
     return base if public_file.blank?
     public_file = Pathname.new(public_file.to_s).cleanpath
-    raise "Public file path outside of task plugin." if public_file.absolute? || public_file.to_s =~ /^\.\./
+    raise "Public file path outside of task plugin." if public_file.absolute? || public_file.to_s =~ /\A\.\./
     base = base + public_file
     return nil unless File.exists?((Rails.root + "public").to_s + base.to_s)
     base
@@ -785,7 +848,7 @@ end
         'cbrain_task_descriptor_loader.rb'
       ].include?(model)
 
-      model.sub!(/.rb$/, '')
+      model.sub!(/.rb\z/, '')
       require_dependency "#{dir}/#{model}.rb" unless
         [ model.classify, model.camelize ].any? { |m| CbrainTask.const_defined?(m) rescue nil }
     end

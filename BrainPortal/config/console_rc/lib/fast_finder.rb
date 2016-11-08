@@ -63,7 +63,7 @@ def fff(token)
       printf "%15s : @#{letter} = %s\n",name,pretty
     else
       printf "%15s : @#{letter}#{letter} contains %d results\n",
-        ApplicationController.helpers.pluralize("2",name).sub(/^[\s\d]+/,""), # ugleeee
+        ApplicationController.helpers.pluralize("2",name).sub(/\A[\s\d]+/,""), # ugleeee
         list.size
     end
   end

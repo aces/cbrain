@@ -35,15 +35,15 @@
     <%= progress_info[:percentage].to_i %>%
   <% end %>
   <%= progress_info[:message] %>
-  <div id="container" style="width:40%; height:20px; border:1px solid black;">
-        <div id="progress-bar" style="width:<%= progress_info[:percentage] %>%;
-				        background-color:<%= progress_info[:color] %>;
-					height:20px">
-	  <br>
-	</div>
+  <div id="container" style="width: 40%; height: 2em; border: 1px solid black;">
+    <div id="progress-bar" style="width: <%= progress_info[:percentage] %>%;
+                                  background-color: <%= progress_info[:color] %>;
+                                  height: 2em">
+      <br>
+    </div>
   </div>
 <% end %>
-  
+
 <% if @task.bourreau.online? %>
 
   <div class="menu_bar">

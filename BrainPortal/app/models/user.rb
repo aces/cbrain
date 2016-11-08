@@ -61,7 +61,7 @@ class User < ActiveRecord::Base
                             :length => { :within => 3..40 },
                             :uniqueness => {:case_sensitive => false},
                             :presence => true,
-                            :filename_format => true
+                            :username_format => true
 
   validates                 :password,
                             :length => { :minimum => 8 },
@@ -75,7 +75,7 @@ class User < ActiveRecord::Base
   validates_presence_of     :password_confirmation,      :if => :password_required?
 
   validates                 :email,
-                            :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost$/i },
+                            :format => { :with => /\A(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}\z|\A\w+@localhost\z/i },
                             :allow_blank => true
 
   validate                  :immutable_login,            :on => :update
@@ -109,8 +109,6 @@ class User < ActiveRecord::Base
   # prevents a user from submitting a crafted form that bypasses activation
   # anything else you want your user to change should be added here.
   attr_accessible :full_name, :email, :password, :password_confirmation, :time_zone, :city, :country
-
-  force_text_attribute_encoding 'UTF-8', :full_name, :city, :country
 
   # Returns the admin user
   def self.admin
@@ -188,7 +186,7 @@ class User < ActiveRecord::Base
   end
 
   def authenticated?(password) #:nodoc:
-    plain_crypted_password = crypted_password.sub(/^\w+:/,"")
+    plain_crypted_password = crypted_password.sub(/\A\w+:/,"")
     # Changed encryption type if crypted_password is in sha1 or in pbkdf2 (old convention)
     if (password_type(crypted_password) == :sha1   && plain_crypted_password == encrypt_in_sha1(password)) ||
        (password_type(crypted_password) == :pbkdf2 && plain_crypted_password == encrypt_in_pbkdf2(password))
@@ -216,7 +214,7 @@ class User < ActiveRecord::Base
 
   # Try to define password type (sha1 or pbkdf2)
   def password_type(crypted_password)
-    if crypted_password =~ /^(\w+):/               # "PBKDF2_SHA1:a2c2646186828474b754591a547c18f132d88d744c152655a470161a1a052135"
+    if crypted_password =~ /\A(\w+):/              # "PBKDF2_SHA1:a2c2646186828474b754591a547c18f132d88d744c152655a470161a1a052135"
       Regexp.last_match[1].downcase.to_sym
     elsif crypted_password.size == 40              # "547c18f132d88d744c152655a470161a1a052135"
       :sha1

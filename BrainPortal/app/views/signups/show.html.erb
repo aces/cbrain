@@ -1,0 +1,186 @@
+<%
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+%>
+
+<% title 'Account Request Info' %>
+
+<h1>Account Request Summary</h1>
+
+<% if current_user.present? && current_user.has_role?(:admin_user) %>
+
+  As an administrator, you can <%= link_to "edit", :action => :edit %> this request.<p>
+
+  <% if ! @signup.approved? %>
+
+    <% if @signup.dup_login? %>
+      <span class="warning">This user's login conflicts with a user already in the system.</span>
+    <% else %>
+      You can also <%= link_to "approve", new_user_path(:signup_id => @signup.id), :class => 'action_link' %> this request.
+    <% end %>
+
+    <% if ! @signup.confirmed? %>
+      <span class="warning">The user has not yet confirmed their email address.</span>
+    <% else %>
+      The user has confirmed the email address.
+    <% end %>
+
+    <p>
+    If the user hasn't received the confirmation email, you can ask for another
+    <%= link_to "email confirmation request", resend_confirm_signup_path(@signup), :method => :post %> to be sent again.
+
+  <% end %>
+
+<% else %>
+
+  <p>
+  You can <%= link_to "edit", :action => :edit %> this form, but
+  this option will only be available while you are using the
+  same browser session you used for submitting this form
+  originally. Do it now while you can!
+
+<% end %>
+
+<% if current_user.blank? && ! @signup.confirmed? %>
+  <p>
+  A confirmation email has been sent to the address you provided. Once you receive
+  it, please click on the provided link so we can confirm your identity.
+  <p>
+  If you haven't received the email, you can ask for another
+  <%= link_to "email confirmation request", resend_confirm_signup_path(@signup), :method => :post %> to be sent to you.
+<% end %>
+
+<p>
+You can <%= link_to "delete", signup_path(@signup), :action => :destroy, :method => :delete, :confirm => "Are you sure you want to delete the request of \"#{@signup.full}\" ?" %> this request.
+
+<p>
+Below is a summary of the information in this account request.
+
+<p>
+  <table class="simple bordered">
+
+  <tr>
+    <th>Full Name:</th>
+    <td><%= @signup.full %></td>
+  </tr>
+
+  <tr>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+
+  <tr>
+    <th>Name of Institution/Organization:</th>
+    <td><%= @signup.institution %></td>
+  </tr>
+
+  <tr>
+    <th>Department:</th>
+    <td><%= @signup.department %></td>
+  </tr>
+
+  <tr>
+    <th>Position or role:</th>
+    <td><%= @signup.position %></td>
+  </tr>
+
+  <tr>
+    <th>Email address:</th>
+    <td><%= @signup.email %></td>
+  </tr>
+
+  <tr>
+    <th>Street Address (line 1):</th>
+    <td><%= @signup.street1 %></td>
+  </tr>
+
+  <tr>
+    <th>Street Address (line 2):</th>
+    <td><%= @signup.street2 %></td>
+  </tr>
+
+  <tr>
+    <th>City:</th>
+    <td><%= @signup.city %></td>
+  </tr>
+
+  <tr>
+    <th>Province/State:</th>
+    <td><%= @signup.province %></td>
+  </tr>
+
+  <tr>
+    <th>Country:</th>
+    <td><%= @signup.country %></td>
+  </tr>
+
+  <tr>
+    <th>Postal Code:</th>
+    <td><%= @signup.postal_code %></td>
+  </tr>
+
+  <tr>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+
+  <tr>
+    <th>Prefered 'login' name:</th>
+    <td><%= @signup.login.presence || "(none)" %></td>
+  </tr>
+
+  <tr>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+
+  <% if @signup.comment.present? %>
+
+  <tr>
+    <th>Comments or special requests:</th>
+    <td><%= @signup.comment %></td>
+  </tr>
+
+  <tr>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+
+  <% end %>
+
+  <tr>
+    <th>Status of request:</th>
+    <td>
+      <% if @signup.confirmed? %>
+        Email address confirmed by user.<br>
+      <% else %>
+        <span class="warning">Email address not yet confirmed.</span><br>
+      <% end %>
+      <% if @signup.approved? %>
+        Request approved by administrator.
+      <% else %>
+        <span class="warning">Request not yet approved by administrator.</span>
+      <% end %>
+    </td>
+  </tr>
+
+  </table>
+

@@ -25,14 +25,21 @@
 <% if @userfile.is_locally_synced? %>
 
   <%
+    show_lines  = 300 # how many lines we show
+    tar_list    = []
     tar_list_io = IO.popen("tar tvf #{@userfile.cache_full_path.to_s.bash_escape}","r") rescue nil
-    tar_list    = tar_list_io.read rescue nil
+    tar_list_io and show_lines.downto(0) do |i|
+      line = tar_list_io.gets
+      break unless line
+      tar_list << line
+      tar_list << "(More files not shown)\n" if i == 0
+    end
     tar_list_io.close rescue nil
   %>
 
   <% if tar_list.present? %>
     List of files in archive:
-    <pre class="standard_out script_preview"><%= tar_list %></pre>
+    <pre class="standard_out script_preview"><%= tar_list.join("") %></pre>
   <% else %>
     (Cannot get archive content list)
   <% end %>

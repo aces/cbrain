@@ -56,8 +56,12 @@
 
     <tr>
       <td></td>
-      <td class="field"><%= submit_tag 'Sign in', tabindex: 3 %></td>
+      <td class="field">
+      <%= submit_tag 'Sign in', tabindex: 3 %>
+      </td>
     </tr>
+
+
 
     <tr>
       <td></td>
@@ -67,4 +71,12 @@
   </table>
 
 <% end -%>
+
+<div class="centered">
+  Not a user?
+  <%= link_to 'Request an account.',
+        url_for(:controller => :signups, :action => :new),
+        { tabindex: 4, :class => "action_link" }
+   %>
+</div>
 

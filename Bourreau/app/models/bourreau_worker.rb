@@ -535,7 +535,7 @@ class BourreauWorker < Worker
   # trapping all exceptions in setup_and_submit_job() and post_process(),
   # so if an exception went through anyway, it's a CODING BUG
   # in this worker's logic.
-  rescue Exception => e
+  rescue => e
     worker_log.fatal "Exception processing task #{task.bname_tid}: #{e.class.to_s} #{e.message}\n" + e.backtrace[0..10].join("\n")
     raise e
 

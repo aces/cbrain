@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'action_view/helpers/form_helper'
@@ -42,7 +42,7 @@ require 'action_view/helpers/form_helper'
 #    "myhash[abc]"         params[:myhash][:abc]  cbrain_task[params][myhash][abc]
 #    "myarray[3]"          params[:myarray][3]    cbrain_task[params][myarray][3]
 #    "anarray[]"           params[:anarray]       cbrain_task[params][anarray][]
-# 
+#
 # Basically, when generating the input tags, the paramspath is
 # automatically transformed into the string returned by calling
 # the String or Symbol method to_la() on it. For instance, the
@@ -126,7 +126,7 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
     new_options = params_common_options(paramspath,options)
     found_value = new_options[:value] # can be nil
     if (found_value.is_a?(Numeric) && found_value == checked_value.to_i) ||
-       (found_value.is_a?(String)  && found_value == checked_value.to_s) || 
+       (found_value.is_a?(String)  && found_value == checked_value.to_s) ||
        (found_value.is_a?(Array)   && found_value.map(&:to_s).include?(checked_value.to_s))
       new_options[:value]   = checked_value
       new_options[:checked] = true
@@ -193,10 +193,10 @@ class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder
 
   # This provides a replacement for the label() method
   # of the default form builder.
-  def params_label(paramspath, *args)
-    id = paramspath.to_la_id.sub(/^cbrain_task_/,"")
+  def params_label(paramspath, *args, &block)
+    id = paramspath.to_la_id.sub(/\Acbrain_task_/,"")
     args.unshift(paramspath.to_s.humanize) if args.size == 0
-    label(id, *args)
+    label(id, *args, &block)
   end
 
   private

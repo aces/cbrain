@@ -33,7 +33,7 @@ module GroupsHelper
     return group.to_s.downcase unless group.is_a?(Group)
 
     # SystemGroup subclasses; UserGroup => "user", EveryoneGroup => "everyone"
-    return group.class.name.demodulize.match(/^([A-Z][a-z]+)/).to_s.downcase if group.is_a?(SystemGroup)
+    return group.class.name.demodulize.match(/\A([A-Z][a-z]+)/).to_s.downcase if group.is_a?(SystemGroup)
 
     group_user_count ||= group.users.count
 

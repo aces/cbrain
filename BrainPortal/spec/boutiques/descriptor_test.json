@@ -4,6 +4,14 @@
 	"description" : "Simple test task for Boutiques",
 	"command-line" : "./boutiquesTestApp.rb [A] [B] [C] [a] [b] [c] [d] [e] [f] [g] [i] [j] [k] [l] [m] [n] [p] [q] [u] [v] [w] [x] [o] [r] [y] [E] [I] [N] [L]",
 	"schema-version" : "0.2",
+  "environment-variables" : [{
+    "name" : "ev1",
+    "value" : "nice_value"
+  }, {
+    "name" : "ev2",
+    "value" : "ta- 9\"\'_%^&$@][",
+    "description" : "Test escaping"
+  }],
 	"inputs" : [{
 		"id" : "A",
 		"name" : "A",

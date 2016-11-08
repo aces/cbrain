@@ -157,7 +157,7 @@ class CbrainTask::MyCksum < PortalTask
       params_errors.add(:an_odd_number, "is not odd, please enter an odd number.")
     end
     params_error.add(:output_file_prefix, "must be a simple prefix with no spaces") unless
-      params[:output_file_prefix] =~ /^\w+$/
+      params[:output_file_prefix] =~ /\A\w+\z/
     "" # all ok
   end
 

@@ -63,6 +63,7 @@
     Rev: <%= CBRAIN::CBRAIN_StartTime_Revision %>
     <% if current_user.present? && current_user.has_role?(:admin_user) %>
       Branch: <%= git_branch %>
+      Instance:&nbsp;<%= CBRAIN::Instance_Name %>
     <% end %>
   </span>
 

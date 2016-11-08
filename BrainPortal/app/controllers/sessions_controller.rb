@@ -31,7 +31,7 @@ class SessionsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_filter :no_logged_in_user, :only => [:new, :create]
+  before_filter :user_already_logged_in, :only => [:new, :create]
 
   api_available
 
@@ -44,24 +44,25 @@ class SessionsController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml
-      format.json { render :json => {:authenticity_token => form_authenticity_token} }
+      format.xml  { render :xml  => { :authenticity_token => form_authenticity_token } }
+      format.json { render :json => { :authenticity_token => form_authenticity_token } }
       format.txt
     end
   end
 
   def create #:nodoc:
-    user = User.authenticate(params[:login], params[:password]) # can be nil if it fails
-    user[:authentication_mechanism] = "password" if user.is_a?(User) # not a real attribute
+    # If the csrf token is blank, it was reset by Rails' request forgery protection
+    # and we want to prevent login
+    user = current_session["_csrf_token"].presence && User.authenticate(params[:login], params[:password]) # can be nil if it fails
     create_from_user(user)
   end
 
   def show #:nodoc:
     if current_user
       respond_to do |format|
-        format.html { render :nothing => true, :status => 200 }
-        format.xml  { render :xml  => {:user_id => current_user.id}, :status => 200 }
-        format.json { render :json => {:user_id => current_user.id}, :status => 200 }
+        format.html { render :nothing => true,                            :status => 200 }
+        format.xml  { render :xml     => { :user_id => current_user.id }, :status => 200 }
+        format.json { render :json    => { :user_id => current_user.id }, :status => 200 }
       end
     else
       render :nothing  => true, :status  => 401
@@ -89,15 +90,6 @@ class SessionsController < ApplicationController
     end
   end
 
-  # Send a proper HTTP error code
-  def auth_failed
-    respond_to do |format|
-      format.html { render :action => 'new' }
-      format.json { render :nothing => true, :status  => 401 }
-      format.xml  { render :nothing => true, :status  => 401 }
-    end
-  end
-
   ###############################################
   #
   # Private methods
@@ -106,12 +98,14 @@ class SessionsController < ApplicationController
 
   private
 
-  def no_logged_in_user #:nodoc:
+  def user_already_logged_in #:nodoc:
     if current_user
       redirect_to start_page_path
     end
   end
 
+  # Does all sort of housekeeping and checks when +user+ logs in.
+  # If user is nil, tells the framework the authentication has failed.
   def create_from_user(user) #:nodoc:
 
     # Bad login/password?
@@ -157,6 +151,16 @@ class SessionsController < ApplicationController
 
   end
 
+  # Send a proper HTTP error code
+  # when a user has not properly authenticated
+  def auth_failed
+    respond_to do |format|
+      format.html { render :action => 'new' }
+      format.json { render :nothing => true, :status  => 401 }
+      format.xml  { render :nothing => true, :status  => 401 }
+    end
+  end
+
   def portal_or_account_locked?(portal) #:nodoc:
 
     # Portal locked?
@@ -182,7 +186,7 @@ class SessionsController < ApplicationController
     reqenv  = request.env
     from_ip = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
     if from_ip
-      if from_ip  =~ /^[\d\.]+$/
+      if from_ip  =~ /\A[\d\.]+\z/
         addrinfo  = Rails.cache.fetch("host_addr/#{from_ip}") do
           Socket.gethostbyaddr(from_ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ from_ip ]
         end
@@ -212,9 +216,9 @@ class SessionsController < ApplicationController
        pretty_host = "#{from_host} (#{pretty_host})"
     end
 
-    # The authentication_mechanism is a string stored temporarily in the current_user object as a pseudo attribute;
-    # it's supposed to describe which mechanism was used by the user to log in.
-    authentication_mechanism = user[:authentication_mechanism] || "(Unknown)"
+    # The authentication_mechanism is a string which describes
+    # the mechanism that was used by the user to log in.
+    authentication_mechanism = "password" # in future this could change
     user.addlog("Logged in with #{authentication_mechanism} from #{pretty_host} using #{pretty_brow}")
     portal.addlog("User #{user.login} logged in with #{authentication_mechanism} from #{pretty_host} using #{pretty_brow}")
     user.update_attribute(:last_connected_at, Time.now)

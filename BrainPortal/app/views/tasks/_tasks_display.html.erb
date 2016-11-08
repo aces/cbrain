@@ -60,14 +60,15 @@
     t.paginate(:collection => @tasks) unless @row_fetch
 
     t.row do |type,id,count,task|
+      available = @bourreau_status[task.bourreau.id]
       case type
       when :task
-        available = @bourreau_status[task.bourreau.id]
         {
           :id    => "task_#{task.id}",
           :class => [:task, (available ? :available : :unavailable)],
-          :select_param => ('tasklist[]' if available),
-          :select_value => (task.id      if available),
+          :select_param => 'tasklist[]',
+          :select_value => task.id,
+          :select_hidden => !available,  # don't even show checkbox, yet allocate cell for it
           :html => {
             :'data-task-id'  => task.id,
             :'data-batch-id' => id,
@@ -79,6 +80,7 @@
           :class => [ :batch ],
           :select_param => 'batch_ids[]',
           :select_value => id,
+          :select_hidden => !available,  # don't even show checkbox, yet allocate cell for it
           :html => {
             :'data-batch-id' => id
           }
@@ -183,7 +185,9 @@
         association: [Bourreau, 'id', 'bourreau_id']
       )
     ) do |type,id,count,task|
-      link_to_bourreau_if_accessible(task.bourreau) unless type == :loaded_batch
+      @_bid_to_bourreau_cache                   ||= {}
+      @_bid_to_bourreau_cache[task.bourreau_id] ||= task.bourreau
+      link_to_bourreau_if_accessible(@_bid_to_bourreau_cache[task.bourreau_id]) unless type == :loaded_batch
     end
   %>
 
@@ -259,13 +263,8 @@
     t.column("Time Submitted", :created_at,
       :sortable => true
     ) do |type,id,count,task|
-      case type
-      when :task
         to_localtime(task.created_at, :datetime)
-      when :batch, :loaded_batch
-        to_localtime(task.launch_time, :datetime)
       end
-    end
 
     t.column("Last Updated", :updated_at,
       :sortable => true

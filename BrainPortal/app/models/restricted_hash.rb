@@ -190,7 +190,7 @@ class RestrictedHash < Hash
    def method_missing(name,*args) #:nodoc:
      # 'name' will be provided by Ruby as :myattr or :myattr=
      myattr = name.to_s
-     if myattr.sub!(/=$/,"")
+     if myattr.sub!(/=\z/,"")
        self[myattr.to_sym] = args[0]
      else
        self[name]

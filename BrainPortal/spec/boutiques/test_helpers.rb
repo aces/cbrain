@@ -42,14 +42,16 @@ module TestHelpers
   OptOutName    = File.join(TempStore, 'o.txt') # Optional output file name
   PotenOutFiles = [AltReqOutName, OptOutName, DefReqOutName]
   # Input file helper variables
-  c_file, d_file, j_file  = File.join(TempStore, 'c'), File.join(TempStore, 'f'), File.join(TempStore, 'jf')
-  f1_file, f2_file = File.join(TempStore, 'f1'), File.join(TempStore, 'f2')
-  f_files = f1_file + ' ' + f2_file
+  C_file, D_file, J_file  = File.join(TempStore, 'c'), File.join(TempStore, 'f'), File.join(TempStore, 'jf')
+  F1_file, F2_file = File.join(TempStore, 'f1'), File.join(TempStore, 'f2')
+  f_files = F1_file + ' ' + F2_file
+  InputFilesList  = [C_file, D_file, J_file, F1_file, F2_file]
+  InputFilesFlags = [  '-C',   '-d',   '-j',    '-f',    '-f']
   # Argument helper variables
   r_arg, o_arg = "-r #{AltReqOutName} ", "-o #{OptOutName} "
-  reqArgs      = "-A a -B 9 -C #{c_file} "            # Required args with values
-  baseArgs     = "-A a -B 9 -C #{c_file} -v s -n 7 "  # Basic minimal argument set
-  baseArgs2    = "-p 7 s1 s2 -A a -B 9 -C #{c_file} " # Alternate basic minimal arg set
+  reqArgs      = "-A a -B 9 -C #{C_file} "            # Required args with values
+  baseArgs     = "-A a -B 9 -C #{C_file} -v s -n 7 "  # Basic minimal argument set
+  baseArgs2    = "-p 7 s1 s2 -A a -B 9 -C #{C_file} " # Alternate basic minimal arg set
   # Whether to print verbosely or not (helpful for debugging tests)
   Verbose = false
 
@@ -83,9 +85,9 @@ module TestHelpers
 
   # Create mock input files
   define_method :createInputFiles do # Avoids new scope creation
-    FileUtils.touch(c_file)  # For -C
-    FileUtils.touch(d_file)  # For -d
-    FileUtils.touch(j_file)  # For -j
+    FileUtils.touch(C_file)  # For -C
+    FileUtils.touch(D_file)  # For -d
+    FileUtils.touch(J_file)  # For -j
     [1,2].each { |i| FileUtils.touch(File.join(TempStore, "f#{i}")) } # For -f
   end
 
@@ -147,11 +149,11 @@ module TestHelpers
     ["works with optional flag", baseArgs2 + "-c -w", 0],
     ["works with optional string list", baseArgs2 + "-e s1 s2 -w", 0],
     ["works with optional file list", baseArgs2 + "-f #{f_files} -w", 0],
-    ["works with optional file", baseArgs2 + "-d #{d_file} -w", 0],
+    ["works with optional file", baseArgs2 + "-d #{D_file} -w", 0],
     ["works with optional number list", baseArgs2 + "-g 1 2 3 -w", 0],
     ["works with negative numbers in numerical list", baseArgs + "-g -1 -2.1 -3", 0],
     # Disables & Requires
-    ["works with inactive disabler", baseArgs + "-j #{j_file}", 0],
+    ["works with inactive disabler", baseArgs + "-j #{J_file}", 0],
     ["works with disabler alone" , baseArgs + "-i 1", 0],
     ["works with requirement alone", baseArgs + "-l 9 7", 0],
     ["works with requirer's (y) requirements met + disabler alone", baseArgs + "-l 9 9 -y", 0],
@@ -166,7 +168,7 @@ module TestHelpers
     ["works with string list having the right number of entries", baseArgs + "-e s1 s2 s3", 0],
     ["works with number list having the right number of entries", baseArgs + "-L 11 8 9 10",  0],
     # Group characteristics testing
-    ["works with both members in one-is-required group (1)", baseArgs + "-j #{j_file}", 0],
+    ["works with both members in one-is-required group (1)", baseArgs + "-j #{J_file}", 0],
     ["works with one member in mutex group (group 2 - with q)", baseArgs + "-q s", 0],
     ["works with one member in mutex group (group 2 - with u)", baseArgs + "-u", 0],
     # Output files testing
@@ -177,10 +179,10 @@ module TestHelpers
     ["works with a correctly specified enum", baseArgs + '-E c', 0],
     ### Tests that should result in the program failing ###
     # Argument requirement failures
-    ["fails when a required argument is missing (A: flag + value)", "-n 7 -B 7 -C #{c_file} -v s", 9],
-    ["fails when a required argument is missing (A: value)", "-n 7 -B 7 -C #{c_file} -v s -A", 1],
+    ["fails when a required argument is missing (A: flag + value)", "-n 7 -B 7 -C #{C_file} -v s", 9],
+    ["fails when a required argument is missing (A: value)", "-n 7 -B 7 -C #{C_file} -v s -A", 1],
     # Argument type failures
-    ["fails when number (-B) is non-numeric (required)", "-n 7 -A a -B q -C #{c_file} -v s -b 7", 3],
+    ["fails when number (-B) is non-numeric (required)", "-n 7 -A a -B q -C #{C_file} -v s -b 7", 3],
     ["fails when number (-b) is non-numeric (optional)", baseArgs + "-b u", 3],
     ["fails when number in list (-l) is non-numeric (optional, pos 2)", baseArgs + "-l 2 u 2", 4],
     ["fails when number in list (-l) is non-numeric (optional, pos 1)", baseArgs + "-l u 1 2", 4],
@@ -208,7 +210,7 @@ module TestHelpers
     ["fails when int is on prohibited boundary", baseArgs + "-I 9", 12],
     # Disables/requires failures
     ["fails if both disabler and target present (k)", baseArgs + "-i 9 -k s", 6],
-    ["fails if both disabler and target present (k+s)", baseArgs + "-i 9 -j #{j_file} -k s", 6],
+    ["fails if both disabler and target present (k+s)", baseArgs + "-i 9 -j #{J_file} -k s", 6],
     ["fails if both disabler and target present (flag: y)", baseArgs + "-i 9 -y", 6],
     ["fails when requirement missing (k: no m [number])", baseArgs + "-k s -l 1 2", 7],
     ["fails when requirement missing (k: no l [string])", baseArgs + "-k s -m s1 s2", 7],
@@ -222,9 +224,6 @@ module TestHelpers
     # Superfluous argument failures
     ["fails with unrecognized flagged arguments", baseArgs + "-z", 1],
     ["fails with unrecognized non-flagged arguments", baseArgs + "z", 1],
-    # Non-existent input arguments
-    ["fails with non-existent input file (-C)", "-n 7 -A a -B 2 -C cc -v s -b 7", 10],
-    ["fails with non-existent input file for list (-f)", baseArgs + "-f '#{f1_file} f3 #{f2_file}'", 10],
     # Output file failures
     ["fails if the optional output file is specified but unnamed", baseArgs + "-o", 1]
   ]
@@ -302,7 +301,7 @@ module TestHelpers
   # It is also used to simulate argument "parsing" when the portal arguments are sent for execution (see Bourreau-side tests).
   # Occurences with lists after the flag become arrays. Lone flags become booleans indicating their presence.
   # e.g. {:a => val_a, :l => [1,2], :v => true, ...} when "-a val_a -l 1 2 -v" appears in the string
-  ArgumentDictionary = lambda do |argsIn|
+  ArgumentDictionary = lambda do |argsIn, idsForFiles=nil|
     # This will hold the output hash arguments
     hash, copy = {}, argsIn.dup
     # Shellify the input string
@@ -316,13 +315,42 @@ module TestHelpers
     xarg = copy.split.find { |a| a.start_with? "-x=" }
     hash.keys.each { |k| hash[k] = xarg[2..-1] if k==:x } unless xarg.nil?
     hash[:x] = false if hash.keys.include?(:x) and xarg.nil?
+    # Replace file paths with ids
+    unless idsForFiles.nil?
+      hash.each do |k,v|
+        if FileLists.include? k
+          hash[k] = v.map { |filepath| idsForFiles[ InputFilesList.find_index(filepath) ] }
+        else
+          hash[k] = idsForFiles[ InputFilesList.find_index(v) ] if InputFilesList.include? v
+        end
+      end
+    end
     # Return
     hash
   end
 
+  # Transform a cbrain command line, from apply_template, to a locally compatible one.
+  # This is needed because our test app runs locally, rather than through cbrain, for many tests,
+  # as well as the need (or recommendation at least) to keep the temporary files outside of '.',
+  # unlike what is done in cbrain.
+  # TODO The need for this should be examined; e.g. by executing through cbrain or
+  # putting the temporary files in '.', we can avoid it
+  FileNamesToPaths = lambda do |cmdLine|
+    basenames = InputFilesList.map { |q| File.basename( q ) }
+    basenames.zip( InputFilesFlags , InputFilesList).each_with_index do |(base,flag,fpath),i|
+      if i == 4 then next  # Handled below in i == 3
+      elsif i == 3 # Special case for the file list
+        cmdLine.gsub!(/#{flag} #{basenames[i]} #{basenames[i+1]}/, "#{flag} #{InputFilesList[i]} #{InputFilesList[i+1]}")
+      end
+      cmdLine.gsub!(/#{flag} #{base}/, "#{flag} #{fpath}" )
+    end
+    cmdLine
+  end
+
   # Helper for cleaning spaces after key subsitution, to make it easier to write the correct test result
+  # Ignores the export commands and assumes the final command is the log writer
   NormedTaskCmd = lambda do |task|
-    task.cluster_commands[0].split.join(' ')
+    task.cluster_commands[-2].split.join(' ')
   end
 
   # A mock json task object, to test possible problems that the full mock app cannot be used to reproduce

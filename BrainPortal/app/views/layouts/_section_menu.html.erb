@@ -29,10 +29,14 @@
 <div id="header">
 
   <h1>
-    <%= link_to_if(current_user.present?, RemoteResource.current_resource.name.presence || "CBRAIN", start_page_path) %>
+    <%
+       # Old link based on portal name; to be made customizable soon.
+       # link_to_if(current_user.present?, RemoteResource.current_resource.name.presence || "CBRAIN", start_page_path)
+    %>
+    <%= link_to_if(current_user.present?, image_tag("custom_logos/cbrain-large_white_alpha.png", :id => "header_logo").html_safe , start_page_path) %>
 
-    <% if current_user && !(params[:controller] == "groups" && params[:action] == "index") %>
-      -
+    <% if current_user && (params[:controller] == "userfiles" || params[:controller] == "tasks") %>
+      <span>-</span>
       <%= hover_dropdown(link_to(current_project.try(:name) || "All", current_project ? group_path(current_project) : groups_path), :dropdown_class => "project_select_dropdown") do %>
           <div class="title">Quick Project Switcher</div>
 
@@ -41,14 +45,14 @@
                 {:controller => :groups, :action => :switch, :id  => g.id}, {:method => :post, :class => "button"} %>
           <% end %>
 
-          <div class="box_spacer"></div>
+          <div class="project_select_spacer"></div>
           <%= link_to "All (no specific project: see all files and tasks)", {:controller => :groups, :action => :switch, :id  => "all"}, {:method => :post, :class => "button"} %>
           <%= link_to "(Full project list)", groups_path, :class => "button" %>
       <% end %>
 
     <% end %>
 
-    <%= yield(:title) %>
+    <span><%= yield(:title) %></span>
   </h1>
 
   <%= image_tag "ajax-loader.gif", :style => "display:none", :id => "loading_image" %>
@@ -96,7 +100,11 @@
            <li <%= set_selected(params[:controller], :exception_logs) %>>
              <%= link_to 'Exceptions', exception_logs_path %>
            </li>
+           <li <%= set_selected(params[:controller], :signups) %>>
+             <%= link_to 'Signups', signups_path %>
+           </li>
          <% end %>
+
        </ul>
     </div>  <!-- End id="main_menu" -->
 

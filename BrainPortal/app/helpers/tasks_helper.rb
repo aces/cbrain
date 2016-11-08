@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Helper methods for tasks views.
@@ -28,8 +28,8 @@ module TasksHelper
   StatesToColor = {
           # Task state name                  => [ color, sort_rank ]
           # --------------------------------    --------------------
-          'Configured'                       => [ "orange",  25 ],
           'New'                              => [ "blue",    20 ],
+          'Configured'                       => [ "orange",  25 ],
           'Setting Up'                       => [ "blue",    30 ],
           'Queued'                           => [ "blue",    40 ],
           'On CPU'                           => [ "blue",    50 ],
@@ -96,14 +96,12 @@ module TasksHelper
     status1 <=> status2 # in case of equality, compare by name again
   end
 
-  # Returns a HTML for task Report with task, size and
-  # number of unknow
-  def format_task_size_unk(task,size,unk)
-    
-    t_s_u  = "Task: #{task}<br/>"
-    t_s_u += "Size: #{pretty_size(size)}<br/>"
-    t_s_u += unk.to_i > 0 ? "Unknown: #{unk.to_i}" : "&nbsp;"
-    
+  # Returns a HTML report snippet with a number of tasks, total size and
+  # number of tasks with unknown sizes. Used by the report maker.
+  def format_task_size_unk(num_task,tot_size,num_unk)
+    t_s_u  = "Tasks: #{num_task}<br/>"
+    t_s_u += "Size: #{pretty_size(tot_size)}<br/>"
+    t_s_u += num_unk.to_i > 0 ? "Unknown: #{num_unk.to_i}" : "&nbsp;"
     return t_s_u.html_safe
   end
 
