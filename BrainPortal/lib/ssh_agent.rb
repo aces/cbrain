@@ -219,13 +219,17 @@ class SshAgent
     return false unless self.socket.present? && File.socket?(self.socket)
     with_modified_env('SSH_AUTH_SOCK' => self.socket) do
       out = IO.popen("#{CONFIG[:exec_ssh_add]} -l 2>&1","r") { |fh| fh.read }
+      # Sample OK outputs:
       # "1024 9e:8a:9b:b5:33:4e:e5:b6:f1:e1:7a:82:47:de:d2:38 /Users/prioux/.ssh/id_dsa (DSA)"
-      # "Could not open a connection to your authentication agent."
+      # "2048 SHA256:b+PHI33YMi/1i3r2drX89KY1EzTN82MXk6HXuU11GUg /Users/prioux/.ssh/id_rsa (RSA)"
       # "The agent has no identities."
+      # Sample bad outputs:
+      # "Could not open a connection to your authentication agent."
       return false if     out =~ /could not open/i
       return true  if     out =~ /agent has no identities/i
-      return false unless out =~ /:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:/
-      true
+      return true  if     out =~ /\A\d+\s+SHA256:/i   # OpenSsh 6.8 + shows base64 SHA256 fingerprints
+      return true  if     out =~ /:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:/ # md5
+      false
     end
   end
 
