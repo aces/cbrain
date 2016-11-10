@@ -30,7 +30,7 @@ class CBRAIN
   #
   # If the name is changed with the interface, then this
   # file must be adjusted accordingly.
-  CBRAIN_RAILS_APP_NAME = {{ default .Env.CBRAIN_APP_NAME "\"CBRAIN\"" }}
+  CBRAIN_RAILS_APP_NAME = {{ default .Env.CBRAIN_APP_NAME "\"CbrainPortalTravisTesting\"" }}
 
   # All other configuration variables are now stored
   # in the database, and there is an interface to edit them!
