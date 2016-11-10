@@ -409,9 +409,17 @@ class ClusterTask < CbrainTask
   #
   # will create a link 'mygoodbye.txt' that points deeper in the
   # directory structure.
-  def make_available(userfile, file_path, userfile_sub_path = nil)
+  #
+  # If start_dir is specified, it changes the root file location
+  # from which the symlink's relative path to the dp_cache is
+  # computed. This is useful for containerized tasks that have mounted
+  # to a location different than the original task directory.
+  def make_available(userfile, file_path, userfile_sub_path = nil, start_dir = nil)
     cb_error "File path argument must be relative" if
       file_path.blank? || file_path.to_s =~ /\A\//
+
+    # Determine starting dir for relative symlink target calculation
+    base_dir = start_dir || self.full_cluster_workdir
 
     # Fetch and sync the requested userfile
     userfile      = Userfile.find(userfile) unless userfile.is_a?(Userfile)
@@ -420,7 +428,7 @@ class ClusterTask < CbrainTask
     # Compute the final absolute path to the target file symlink
     file_path     = Pathname.new(file_path.to_s)
     file_path    += userfile.name if file_path.to_s.end_with?("/")
-    full_path     = Pathname.new(self.full_cluster_workdir) + file_path
+    full_path     = Pathname.new(base_dir) + file_path
 
     # Pathname objects for the userfile and bourreau directories
     workdir_path   = Pathname.new(self.cluster_shared_dir)
@@ -446,8 +454,12 @@ class ClusterTask < CbrainTask
     end
 
     # Make sure the directory exists and there is no symlink already there
-    FileUtils.mkpath(full_path.dirname) unless Dir.exists?(full_path.dirname)
-    File.unlink(full_path) if File.symlink?(full_path.to_s)
+    # Not done when the start_dir is specified because generally the path should
+    # not exist outside the container (and we will not have permission to make it).
+    unless start_dir
+      FileUtils.mkpath(full_path.dirname) unless Dir.exists?(full_path.dirname)
+      File.unlink(full_path) if File.symlink?(full_path.to_s)
+    end
 
     # Create the symlink
     Dir.chdir(self.full_cluster_workdir) do
