@@ -3,7 +3,7 @@ services:
   cbrain:
     image: ${IMAGE_NAME}
     volumes:
-     - ../../cbrain_travis:/home/cbrain/cbrain_travis
+     - ../../cbrain:/home/cbrain/cbrain_travis
     depends_on:
      - mysql
     environment:
