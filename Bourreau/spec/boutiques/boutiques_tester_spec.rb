@@ -64,10 +64,18 @@ describe "Bourreau Boutiques Tests" do
       @boutiquesTask = SchemaTaskGenerator.generate(schema, descriptor)
       @boutiquesTask.integrate if File.exists?(descriptor)
       # Create a new instance of the generated task class
+#      @task          = object_double(  CbrainTask::BoutiquesTest.new, :full_cluster_workdir => File.join(Dir.pwd, TempStore) )
       @task          = CbrainTask::BoutiquesTest.new
       @task.params   = {}
       # Assign it a bourreau
       resource = RemoteResource.current_resource
+#      print("\n\n"+Dir.pwd)
+#      print("\n"+ resource.cms_shared_dir )
+#      targPath = (Pathname.new( Pathname.new(Dir.pwd) )).relative_path_from( Pathname.new( resource.cms_shared_dir ) ).realpath.to_s
+#      print("\n"+targPath)
+#      @task.cluster_workdir = File.join(targPath, TempStore)  # File.join('.',TempStore)
+#      print( "\nfff\n"+@task.full_cluster_workdir )
+      
       @task.bourreau_id = resource.id
       # Give access to the generated task class itself
       @task_const    = "CbrainTask::#{SchemaTaskGenerator.classify(@task.name)}".constantize
@@ -214,8 +222,21 @@ describe "Bourreau Boutiques Tests" do
         expect( @idsForFiles.all? { |t| Userfile.find_by_id( t ) } ).to be true
       end
 
+      # Note: -C is a file of the mock task with uses-absolute-path equaling true. -d doesn't specify.
+      it "handles uses-absolute-paths as intended" do
+        # Mock the location of the full cluster workdir
+        CbrainTask::BoutiquesTest.any_instance.stub( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
+        s1, s2 = @task.apply_template('[C]', { '[C]' => @idsForFiles[0] }), @task.apply_template('[d]', { '[d]' => @idsForFiles[1] })
+        expect( (Pathname.new(s1)).absolute? && ( !(Pathname.new(s2)).absolute? ) ).to be true
+      end
+
       # Ensure that the `setup` method does not replace ids with hashes
       it "works with ids rather than objects" do
+        # Remove symlinks if present, else File.symlink will implode
+#        Dir.chdir(@task.full_cluster_workdir) do
+            #File.symlink(target.to_s, file_path.to_s)
+#            File.delete( 'fcw/'+C_file ) if File.exist?( 'fcw/'+C_file )
+#        end
         @task.params = ArgumentDictionary.( "-A a -B 9 -C #{C_file} -v s -n 7 ", @idsForFiles )
         @task.cluster_workdir = 'fcw'
         @task.setup
@@ -230,11 +251,14 @@ describe "Bourreau Boutiques Tests" do
         next if test[0].include?( "fails when special separator" )
         # Run the test
         it "#{test[0]}" do
+          # Mock the location of the full cluster workdir
+          CbrainTask::BoutiquesTest.any_instance.stub( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
           begin # Convert string arg to params dict
             @task.params = ArgumentDictionary.( test[1], @idsForFiles )
           rescue OptionParser::MissingArgument => e
             next # after_form does not need to check this here, since rails puts a value in the hash
           end
+          #@task.cluster_workdir = File.join('.',TempStore)
           # Run the generated command line from cluster_commands (-2 to ignore export lines and the echo log at -1)
           exit_code = runTestScript( FileNamesToPaths.( @task.cluster_commands[-2].gsub('./'+TestScriptName,'') ), test[3] || [] )
           # Check that the exit code is appropriate
@@ -425,11 +449,13 @@ describe "Bourreau Boutiques Tests" do
         @descriptor      = File.join(__dir__, TestScriptDescriptor)
         # Generate a new task class via the Boutiques framework, without integrating it
         @boutiquesTask   = SchemaTaskGenerator.generate(schema, @descriptor)
-        @boutiquesTask.descriptor["docker-image"] = nil # tool does not use docker by default
+        @boutiquesTask.descriptor["container-image"] = nil # tool does not use docker by default
         @task_const_name = "CbrainTask::#{SchemaTaskGenerator.classify(@boutiquesTask.name)}"
         # Destroy any tools/toolconfigs for the tool, if any exist
         ToolConfig.where(tool_id: CbrainTask::BoutiquesTest.tool.id).destroy_all rescue nil
         Tool.where(:cbrain_task_class_name => @task_const_name).destroy_all rescue nil
+        # Placeholder image
+        @dockerImg = { "type" => "docker", "image" => "image" }
       end
 
       after(:each) do
@@ -443,7 +469,7 @@ describe "Bourreau Boutiques Tests" do
       end
 
       it "is not created when Bourreau does not support Docker" do
-        @boutiquesTask.descriptor['docker-image'] = 'placeholder_string'
+        @boutiquesTask.descriptor['container-image'] = @dockerImg
         @boutiquesTask.integrate if File.exists?(@descriptor)
         expect( ToolConfig.exists?( :tool_id => @task_const_name.constantize.tool.id ) ).to be false
       end
@@ -456,7 +482,7 @@ describe "Bourreau Boutiques Tests" do
       end
 
       it "is created when descriptor has Docker image and Bourreau has Docker" do
-        @boutiquesTask.descriptor['docker-image'] = 'placeholder_string'
+        @boutiquesTask.descriptor['container-image'] = @dockerImg
         resource = RemoteResource.current_resource
         resource.docker_present = true
         resource.save!
