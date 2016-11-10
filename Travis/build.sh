@@ -4,6 +4,7 @@
 # This bash script builds a docker image for testing CBRAIN.
 #
 
+# Default values for building the docker container.
 CBRAIN_REPO="https://github.com/aces/cbrain.git"
 CBRAIN_BRANCH="dev"
 IMAGE_NAME="mcin/cbrain_travis"
@@ -66,11 +67,12 @@ echo "#################################"
 echo
 
 # Build the container
+FULL_NAME="${IMAGE_NAME}:$CBRAIN_BRANCH"
 docker build \
   -f Dockerfile.travis \
   --build-arg "CBRAIN_REPO=$CBRAIN_REPO" \
   --build-arg "CBRAIN_BRANCH=$CBRAIN_BRANCH" \
-  -t "$IMAGE_NAME" .
+  -t "$FULL_NAME" .
 
 # Not ok?
 if test $? -ne 0 ; then
@@ -78,14 +80,17 @@ if test $? -ne 0 ; then
   exit 2
 fi
 
-# Tag it
-docker tag "$IMAGE_NAME" "$IMAGE_NAME:$CBRAIN_BRANCH"
-
+# All good.
 cat <<FINAL
 
-Docker image complete: Name=$IMAGE_NAME:$CBRAIN_BRANCH
-Push it to a repo or registry to use it for testing.
+Docker image complete: Name = "$FULL_NAME"
+Push it to a repo or registry to use it for testing. Or
+you can use it locally by going to the parent directory
+and running
 
+  env CBRAIN_CI_IMAGE_NAME="$FULL_NAME" bash Travis/travis_ci.sh
+
+Thank you.
 FINAL
 
 exit 0

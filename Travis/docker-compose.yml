@@ -1,7 +1,7 @@
 version: '2'
 services:
   cbrain:
-    image: ${IMAGE_NAME}
+    image: ${CBRAIN_CI_IMAGE_NAME}
     volumes:
      - ../../cbrain:/home/cbrain/cbrain_travis
     depends_on:

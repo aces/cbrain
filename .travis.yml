@@ -1,5 +1,7 @@
 services:
-  - docker
-
+- docker
 script:
 - sh Travis/travis_ci.sh
+notifications:
+  slack:
+    secure: k1TinqtdZNJItnEGrN6EyaAdMYj4FdvXJ+8PPy/3sEzmi8zJq9ns0O5u6Kh4Yg7QD0wtnRU9pNV8e4FzAOxPmUKQS9LGFurFF/15g1PQFmjCI3ZSWuqAzEMTgGn50v4L739gvgfvtQm5rn5FvNlx3bVCJCzkm+XDSDFGu7MK3Bo=

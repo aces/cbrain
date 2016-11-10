@@ -27,6 +27,19 @@ dockerize -template $HOME/cbrain_test/Travis/templates/database.yml.TEMPLATE:$HO
 # Edits portal name from template
 dockerize -template $HOME/cbrain_test/Travis/templates/config_portal.rb.TEMPLATE:$HOME/cbrain_test/BrainPortal/config/initializers/config_portal.rb || die "Cannot edit CBRAIN configuration file"
 
+# Make sure RVM is loaded
+source /home/cbrain/.bashrc
+
+# Go to the new code to test
+cd $HOME/cbrain_test/BrainPortal  || die "Cannot cd to BrainPortal directory"
+
+# Prep all that needs to be prepared. With a bit of luck, bundle install
+# will be quite quick given that when building the docker image we already
+# ran it once in ~/cbrain_base.
+export RAILS_ENV=test
+bundle install
+rake cbrain:plugins:install:plugins || die "Cannot install cbrain:plugins"
+
 # Waits for DB to be available
 dockerize -wait tcp://${MYSQL_HOST}:${MYSQL_PORT} -timeout 90s || die "Cannot wait for mysql:3306 to be up or timeout was reached"
 
@@ -40,25 +53,12 @@ do
   sleep 3
 done
 
-# Prepare the DB for testing.
-export RAILS_ENV=test
-
-# Make sure RVM is loaded
-source /home/cbrain/.bashrc
-
-# Go to the new code to test
-cd $HOME/cbrain_test/BrainPortal  || die "Cannot cd to BrainPortal directory"
-
-# Prep all that needs to be prepared. With a bit of luck, bundle install
-# will be quite quick given that in the dicker image we already did it
-# in ~/cbrain_base .
-bundle install
-rake cbrain:plugins:install:plugins || die "Cannot install cbrain:plugins"
-rake db:schema:load                 || die "Cannot load DB schema"
-rake db:seed                        || die "Cannot seed DB"
-rake db:sanity:check                || die "Cannot sanity check DB"
+# Prep steps that necessitates the DB to be ready.
+rake db:schema:load   || die "Cannot load DB schema"
+rake db:seed          || die "Cannot seed DB"
+rake db:sanity:check  || die "Cannot sanity check DB"
 
 # Eventually, it would be nice if from a ENV variable set in Travis,
 # we could run only a subset of the tests.
-rspec spec                          || die "Failed running rspec"
+rspec spec            || die "Failed running rspec"
 

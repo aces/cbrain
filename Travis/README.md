@@ -18,6 +18,6 @@ The entire process can be tried locally without setting up all the Travis CI con
     cd Travis
     bash build.sh -b hello/bye    # "hello/bye" can be any container name of your choice
     cd ..
-    env IMAGE_NAME=hello/bye bash Travis/travis_ci.sh  # the container name can be given in argument too
+    env CBRAIN_CI_IMAGE_NAME=hello/bye bash Travis/travis_ci.sh  # the container name can be given in argument too
 ```
 
