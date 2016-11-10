@@ -1,5 +1,9 @@
 #!/bin/bash -e
 
+#
+# This bash script builds a docker image for testing CBRAIN.
+#
+
 CBRAIN_REPO="https://github.com/aces/cbrain.git"
 CBRAIN_BRANCH="dev"
 IMAGE_NAME="mcin/cbrain_travis"
