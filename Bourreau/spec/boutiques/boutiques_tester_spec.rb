@@ -64,18 +64,10 @@ describe "Bourreau Boutiques Tests" do
       @boutiquesTask = SchemaTaskGenerator.generate(schema, descriptor)
       @boutiquesTask.integrate if File.exists?(descriptor)
       # Create a new instance of the generated task class
-#      @task          = object_double(  CbrainTask::BoutiquesTest.new, :full_cluster_workdir => File.join(Dir.pwd, TempStore) )
       @task          = CbrainTask::BoutiquesTest.new
       @task.params   = {}
       # Assign it a bourreau
       resource = RemoteResource.current_resource
-#      print("\n\n"+Dir.pwd)
-#      print("\n"+ resource.cms_shared_dir )
-#      targPath = (Pathname.new( Pathname.new(Dir.pwd) )).relative_path_from( Pathname.new( resource.cms_shared_dir ) ).realpath.to_s
-#      print("\n"+targPath)
-#      @task.cluster_workdir = File.join(targPath, TempStore)  # File.join('.',TempStore)
-#      print( "\nfff\n"+@task.full_cluster_workdir )
-      
       @task.bourreau_id = resource.id
       # Give access to the generated task class itself
       @task_const    = "CbrainTask::#{SchemaTaskGenerator.classify(@task.name)}".constantize
@@ -225,18 +217,13 @@ describe "Bourreau Boutiques Tests" do
       # Note: -C is a file of the mock task with uses-absolute-path equaling true. -d doesn't specify.
       it "handles uses-absolute-paths as intended" do
         # Mock the location of the full cluster workdir
-        CbrainTask::BoutiquesTest.any_instance.stub( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
+        allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
         s1, s2 = @task.apply_template('[C]', { '[C]' => @idsForFiles[0] }), @task.apply_template('[d]', { '[d]' => @idsForFiles[1] })
         expect( (Pathname.new(s1)).absolute? && ( !(Pathname.new(s2)).absolute? ) ).to be true
       end
 
       # Ensure that the `setup` method does not replace ids with hashes
       it "works with ids rather than objects" do
-        # Remove symlinks if present, else File.symlink will implode
-#        Dir.chdir(@task.full_cluster_workdir) do
-            #File.symlink(target.to_s, file_path.to_s)
-#            File.delete( 'fcw/'+C_file ) if File.exist?( 'fcw/'+C_file )
-#        end
         @task.params = ArgumentDictionary.( "-A a -B 9 -C #{C_file} -v s -n 7 ", @idsForFiles )
         @task.cluster_workdir = 'fcw'
         @task.setup
@@ -252,7 +239,7 @@ describe "Bourreau Boutiques Tests" do
         # Run the test
         it "#{test[0]}" do
           # Mock the location of the full cluster workdir
-          CbrainTask::BoutiquesTest.any_instance.stub( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
+          allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
           begin # Convert string arg to params dict
             @task.params = ArgumentDictionary.( test[1], @idsForFiles )
           rescue OptionParser::MissingArgument => e
@@ -437,7 +424,8 @@ describe "Bourreau Boutiques Tests" do
     end # End output file handling tests
 
     # Test that a Tool Config is created iff both the bourreau and the descriptor specify docker
-    context 'Default ToolConfig' do
+    # Also ensure move commands are added to cluster_commands when needed
+    context 'Containerized Behaviour' do
 
       before(:each) do
         # Ensure the Bourreau does not have docker installed by default
@@ -445,10 +433,10 @@ describe "Bourreau Boutiques Tests" do
         resource.docker_present = false
         resource.save!
         # Get the schema and json descriptor
-        schema           = SchemaTaskGenerator.default_schema
+        @schema          = SchemaTaskGenerator.default_schema
         @descriptor      = File.join(__dir__, TestScriptDescriptor)
         # Generate a new task class via the Boutiques framework, without integrating it
-        @boutiquesTask   = SchemaTaskGenerator.generate(schema, @descriptor)
+        @boutiquesTask   = SchemaTaskGenerator.generate(@schema, @descriptor)
         @boutiquesTask.descriptor["container-image"] = nil # tool does not use docker by default
         @task_const_name = "CbrainTask::#{SchemaTaskGenerator.classify(@boutiquesTask.name)}"
         # Destroy any tools/toolconfigs for the tool, if any exist
@@ -467,6 +455,83 @@ describe "Bourreau Boutiques Tests" do
         resource.docker_present = false
         resource.save!
       end
+
+      it "correctly adds mv commands when relative optional files are specified" do
+        # Tell the Bourreau to use docker
+        resource = RemoteResource.current_resource
+        resource.docker_present = true
+        resource.save!
+        # Make the task execute in a specific container dir
+        descriptor = SchemaTaskGenerator.expand_json(@descriptor)
+        descriptor['container-image'] = @dockerImg.merge( { "working-directory" => "/launch/" } )
+        # Force an output file to be generated outside of that dir or its subtree
+        descriptor["output-files"][0]["path-template"] = "/far/away/[r]"
+        @boutiquesTask   = SchemaTaskGenerator.generate(@schema, descriptor)
+        # Generate the task class via templating
+        @boutiquesTask.integrate if File.exists?(@descriptor)
+        # Ensure cluster_commands accounts for the problem
+        allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :use_docker? ).and_return( true )
+        allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
+        task = CbrainTask::BoutiquesTest.new
+        @userFiles   = InputFilesList.map { |f| task.safe_userfile_find_or_new(@ftype.(f), name: File.basename(f), data_provider_id: DPID, user_id: UID, group_id: GID) }
+        @userFiles.each { |f| f.save! }
+        @idsForFiles = @userFiles.map { |f| f.id }
+        task.params = ArgumentDictionary.( "-A a -B 9 -C #{C_file} -v s -n 7 -r r -o optOutFile", @idsForFiles )
+        print(task.cluster_commands)
+        # TODO CHECK FOR ONE mv COMMANDS (since its a relative path)
+      end
+
+      it "correctly adds mv commands when optional files are not specified" do
+        # Tell the Bourreau to use docker
+        resource = RemoteResource.current_resource
+        resource.docker_present = true
+        resource.save!
+        # Make the task execute in a specific container dir
+        descriptor = SchemaTaskGenerator.expand_json(@descriptor)
+        descriptor['container-image'] = @dockerImg.merge( { "working-directory" => "/launch/" } )
+        # Force an output file to be generated outside of that dir or its subtree
+        descriptor["output-files"][0]["path-template"] = "/far/away/[r]"
+        @boutiquesTask   = SchemaTaskGenerator.generate(@schema, descriptor)
+        # Generate the task class via templating
+        @boutiquesTask.integrate if File.exists?(@descriptor)
+        # Ensure cluster_commands accounts for the problem
+        allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :use_docker? ).and_return( true )
+        allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
+        task = CbrainTask::BoutiquesTest.new
+        @userFiles   = InputFilesList.map { |f| task.safe_userfile_find_or_new(@ftype.(f), name: File.basename(f), data_provider_id: DPID, user_id: UID, group_id: GID) }
+        @userFiles.each { |f| f.save! }
+        @idsForFiles = @userFiles.map { |f| f.id }
+        task.params = ArgumentDictionary.( "-A a -B 9 -C #{C_file} -v s -n 7 -r r", @idsForFiles )
+        print(task.cluster_commands)
+        # TODO CHECK FOR ONE mv COMMAND
+      end
+
+      it "correctly adds mv commands when absolute optional files are specified" do
+        # Tell the Bourreau to use docker
+        resource = RemoteResource.current_resource
+        resource.docker_present = true
+        resource.save!
+        # Make the task execute in a specific container dir
+        descriptor = SchemaTaskGenerator.expand_json(@descriptor)
+        descriptor['container-image'] = @dockerImg.merge( { "working-directory" => "/launch/path/" } )
+        # Force an output file to be generated outside of that dir or its subtree
+        descriptor["output-files"][0]["path-template"] = "/far/away/[r]"
+        descriptor["output-files"][1]["path-template"] = "/another/evil/dir/[o]"
+        @boutiquesTask   = SchemaTaskGenerator.generate(@schema, descriptor)
+        # Generate the task class via templating
+        @boutiquesTask.integrate if File.exists?(@descriptor)
+        # Ensure cluster_commands accounts for the problem
+        allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :use_docker? ).and_return( true )
+        allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
+        task = CbrainTask::BoutiquesTest.new
+        @userFiles   = InputFilesList.map { |f| task.safe_userfile_find_or_new(@ftype.(f), name: File.basename(f), data_provider_id: DPID, user_id: UID, group_id: GID) }
+        @userFiles.each { |f| f.save! }
+        @idsForFiles = @userFiles.map { |f| f.id }
+        task.params = ArgumentDictionary.( "-A a -B 9 -C #{C_file} -v s -n 7 -r r -o optOutFile", @idsForFiles )
+        print(task.cluster_commands)
+        # TODO CHECK FOR TWO mv COMMANDS
+      end
+
 
       it "is not created when Bourreau does not support Docker" do
         @boutiquesTask.descriptor['container-image'] = @dockerImg

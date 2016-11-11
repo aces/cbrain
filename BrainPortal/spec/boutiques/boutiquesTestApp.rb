@@ -95,7 +95,6 @@ options.each do |key, value|
   elsif Enums.include?(key)     && ! String===value
     leave.( "ERROR: input (-#{key.to_s}, #{value}) should be a string", 3)
   elsif Files.include?(key)     && !( String===value && File.exist?(value) )
-    print("#{value}\n")
     leave.( "ERROR: input (-#{key.to_s}, #{value}) is not an existent filename", 10)
   elsif Numbers.include?(key)   && ( Float(value) rescue nil )==nil
     leave.( "ERROR: input (-#{key.to_s}, #{value}) is not a number", 3)
