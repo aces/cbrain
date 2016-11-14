@@ -48,7 +48,7 @@
 
     t.column("Description", :description,
       :sortable => true,
-    ) { |s| overlay_description(s.description.html_safe) }
+    ) { |s| overlay_description(s.description) }
 
     t.column("Projects", :projects) do |s|
       if (s.groups.count > 4)

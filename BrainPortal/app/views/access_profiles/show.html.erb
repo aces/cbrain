@@ -53,7 +53,7 @@
       <%= render :partial => 'shared/color_picker', :locals => { :step => 30, :greys => false, :dark => false } %>
     <% end %>
 
-    <% t.edit_cell(:description, :content => full_desciption(@access_profile.description), :show_width => 2 ) do %>
+    <% t.edit_cell(:description, :content => full_description(@access_profile.description), :show_width => 2 ) do %>
       <%= text_area_tag "access_profile[description]", @access_profile.description, :rows => 6, :cols => 60 %><br/>
       <span class="field_explanation">These are your private notes about this profile.</span>
     <% end %>

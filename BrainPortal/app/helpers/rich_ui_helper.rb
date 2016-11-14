@@ -49,7 +49,7 @@ module RichUiHelper
   # Takes a +description+ with multiple lines and shows
   # the whole thing, including line breaks.
   def full_description(description)
-    ("<span style=\"white-space: pre-wrap;\">" + description + "</span>").html_safe
+    "<span style=\"white-space: pre-wrap;\">".html_safe + description + "</span>".html_safe
   end
 
   # Create an element that opens a dropdown when it's
