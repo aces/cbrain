@@ -301,13 +301,10 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %#  If we are going to execute in a container, we need to detect output files outside the mounted directory,
 %#  add commands to mv them there, and then change the file paths to look there when saving results.
 %   containerImage = descriptor['container-image']
-    print("F MY LIFE\n")
     outfileMoveCommands = []
 %   if containerImage
     # If execution will occur in a container, alter the output file paths to compensate
-    print("\nF YOU\n")
     if self.use_docker?
-      print("\nF THE WORLD\n")
       # Task launch directory (mounted into as pwd if specified)
       # Note: assumes container_wd is absolute
 %     customWd = containerImage['working-directory']
@@ -315,10 +312,8 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %     outids = outputs.map { |p| ":'#{p['id']}'" }.join(", ")
       is_underneath = lambda { |base,potential| (Pathname.new(potential)).fnmatch?(File.join(base,'**')) }
       [<%= outids %>].each do |outid|
-  puts(outid)
-        #
-  next if params[ outid ].nil? or params[ outid ] == ''
-  puts(params[outid])
+        # Do not issue move commands for optional output files with empty path templates
+        next if params[ outid ].nil? or params[ outid ] == ''
         # Relative paths are assumed to be with respect to the mounted directory
         currentPath = File.absolute_path( params[ outid ], container_wd )
         # If the current path is not in the directory subtree of the mounted directory,
