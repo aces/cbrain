@@ -88,8 +88,8 @@
 
   <%= show_table(@access_profile, :edit_condition => check_role(:admin_user), :header => 'Users With This Profile') do |t| %>
 
-    <% if !myusers.nil? && myusers.count > 0 %>
-      <% user_names = (array_to_table(myusers.map { |u| link_to_user_if_accessible(u) }, :table_class => 'simple', :cols => 4).html_safe) %>
+    <% if myusers.present? && myusers.count > 0 %>
+      <% user_names = (array_to_table(myusers.map { |u| link_to_user_if_accessible(u) }, :table_class => 'simple', :cols => 12).html_safe) %>
     <% else %>
       <% user_names = "(None)" %>
     <% end %>

@@ -23,15 +23,23 @@
 -%>
 
 <%
+   # This partial renders a table of access profile names with checkboxes
+   # Partial locals:
+   #
+   #   access_profiles => [ access_profile, access_profile, ... ]
+   #   checked         => [ access_profile, access_profile, ... ]
+   #   variable_name   => "somemodel[group_ids][]"  # for instance; must end with '[]'
+   #   boxids          => "some_dom_id"             # will be appened with _{id}
+   #   html_class      => "someclass"               # for checkboxes
    checked    ||= []
    boxids     ||= "id_#{rand(1000000)}"
    html_class ||= ""
  %>
 
 <%
-  # Convenience helper to render a single checkbox and a user name
-  access_profile_check_box = lambda do |access_profile|
-    check_box_tag( variable_name,                                # html var name
+  # Convenience helper to render a single checkbox and an access profile name
+    access_profile_check_box = lambda do |access_profile|
+    check_box_tag( variable_name,                                          # html var name
                    access_profile.id.to_s,                                 # value
                    checked.include?(access_profile),                       # checked or not
                    :id => "#{boxids}_#{access_profile.id}",                # unique DOM id
@@ -44,7 +52,7 @@
 
 <%= hidden_field_tag variable_name, [], :id => "#{boxids}_unchecked" %>
 
-<%= array_to_table(access_profiles, :cols => 4) do |access_profile,r,c| %>
+<%= array_to_table(access_profiles, :cols => 12) do |access_profile,r,c| %>
   <%= access_profile_check_box.(access_profile) %>
 <% end %>
 
