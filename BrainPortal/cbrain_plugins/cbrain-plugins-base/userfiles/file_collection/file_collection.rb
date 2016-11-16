@@ -172,6 +172,11 @@ class FileCollection < Userfile
     path
   end
 
+  # Returns whether the collection has been archived or not using gzip
+  def compressed?
+    self.archived?
+  end
+
   ##################################################################
   # FileCollection Archiving API
   ##################################################################

@@ -1025,6 +1025,12 @@ pre {
   padding: 0;
 }
 
+.vertical_bar {
+  display: inline;
+  border-left: solid black;
+  margin-right: 5px;
+}
+
 
 /* % ######################################################### */
 /* % Project buttons */
