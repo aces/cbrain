@@ -41,6 +41,7 @@ class UserfilesController < ApplicationController
 
   # GET /userfiles
   # GET /userfiles.xml
+  # GET /userfiles.json
   def index #:nodoc:
     @scope = scope_from_session('userfiles')
 
@@ -584,6 +585,7 @@ class UserfilesController < ApplicationController
 
   # PUT /userfiles/1
   # PUT /userfiles/1.xml
+  # PUT /userfiles/1.json
   def update  #:nodoc:
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :write)
 
@@ -619,10 +621,12 @@ class UserfilesController < ApplicationController
         flash[:notice] += "#{@userfile.name} successfully updated."
         format.html { redirect_to(:action  => 'show') }
         format.xml  { head :ok, :content_type => 'text/plain' }
+        format.json { head :ok
       else
         @userfile.reload
         format.html { render(:action  => 'show') }
-        format.xml  { render :xml => @userfile.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @userfile.errors, :status => :unprocessable_entity }
+        format.json { render :json => @userfile.errors, :status => :unprocessable_entity }
       end
     end
   end

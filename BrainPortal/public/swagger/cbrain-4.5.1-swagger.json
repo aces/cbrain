@@ -5,13 +5,14 @@
         "description": "Interface to control CBRAIN operations",
         "version": "4.5.1"
     },
-    "host": "portal.cbrain.mcgill.ca",
+    "host": "localhost:3000",
     "schemes": [
         "https"
     ],
     "basePath": "/",
     "produces": [
-        "application/json"
+        "application/json",
+        "application/xml"
     ],
     "paths": {
         "/session/new": {
@@ -43,25 +44,31 @@
                 "parameters": [
                     {
                         "name": "authenticity_token",
-                        "in": "query",
+                        "in": "body",
                         "description": "The token returned by /sessions/new",
                         "required": true,
-                        "type": "string"
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     {
                         "name": "login",
-                        "in": "query",
+                        "in": "body",
                         "description": "The CBRAIN user's username",
                         "required": true,
-                        "type": "string"
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     {
                         "name": "password",
-                        "in": "query",
+                        "in": "body",
                         "description": "The CBRAIN user's password",
                         "required": true,
-                        "type": "string",
-                        "format": "password"
+                        "schema": {
+                            "type": "string",
+                            "format": "password"
+                        }
                     }
                 ],
                 "tags": [
@@ -122,6 +129,68 @@
                     },
                     "401": {
                         "description": "No session created yet."
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "summary": "Returns all of the users in CBRAIN.",
+                "description": "Returns all of the users in CBRAIN, as well as information on their permissions and group/site memberships.",
+                "produces": [
+                    "application/json",
+                    "application/xml"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list of all the users in CBRAIN.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/User"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    }
+                },
+                "tags": [
+                    "Users"
+                ]
+            },
+            "post": {
+                "summary": "Create a new user in CBRAIN.",
+                "description": "Creates a new user in CBRAIN.\n",
+                "tags": [
+                    "Users"
+                ],
+                "parameters": [
+                    {
+                        "name": "authenticity_token",
+                        "in": "body",
+                        "description": "The token returned by /sessions/new",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "user",
+                        "in": "body",
+                        "description": "Object that represents a User. \n",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
                     }
                 }
             }
@@ -200,6 +269,979 @@
                     }
                 }
             }
+        },
+        "/tags": {
+            "get": {
+                "summary": "Get a list of the tags currently in CBRAIN.",
+                "description": "This method returns a list of tag objects.\n",
+                "tags": [
+                    "Tags"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An array of Tag objects that are used to group Tasks or Userfiles.\n",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Tag"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a tag.",
+                "description": "Create a new tag in CBRAIN.\n",
+                "parameters": [
+                    {
+                        "name": "tag",
+                        "in": "body",
+                        "description": "The name of the tag.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Returns the created Tag object.\n",
+                        "schema": {
+                            "$ref": "#/definitions/Tag"
+                        }
+                    },
+                    "401": {
+                        "description": "No session created yet.\n"
+                    }
+                }
+            }
+        },
+        "/tags/{id}": {
+            "get": {
+                "summary": "Get one tag.",
+                "description": "Returns a single tag with the ID specified.\n",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the tag to get.",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns the Tag object.\n",
+                        "schema": {
+                            "$ref": "#/definitions/Tag"
+                        }
+                    },
+                    "401": {
+                        "description": "No session created yet.\n"
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update a tag.",
+                "description": "Update the tag specified by the ID parameter.\n",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the tag to update.",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tag was updated successfully."
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    },
+                    "422": {
+                        "description": "Could not update Tag."
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a tag.",
+                "description": "Delete the tag specified by the ID parameter.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the tag to delete.",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tag was deleted."
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    },
+                    "422": {
+                        "description": "Tag could not be deleted."
+                    }
+                }
+            }
+        },
+        "/bourreau": {
+            "get": {
+                "summary": "Get a list of the Bourreaux available to be used by the current user.",
+                "description": "This method returns a list of Bourreau objects.\n",
+                "tags": [
+                    "Bourreau"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An array of Bourreau objects describing an execution\nserver available to be used by the current user.\n",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Bourreau"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    }
+                }
+            }
+        },
+        "/bourreau/{id}": {
+            "get": {
+                "summary": "Get information about a Bourreau.",
+                "description": "This method returns a single Bourreau object based on the\nID parameter.\n",
+                "tags": [
+                    "Bourreau"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the Bourreau to get information on.",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A Bourreau object with information about the status\nof the execution server.\n",
+                        "schema": {
+                            "$ref": "#/definitions/Bourreau"
+                        }
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    }
+                }
+            }
+        },
+        "/data_providers": {
+            "get": {
+                "summary": "Get a list of the Data Providers available to the current user.",
+                "description": "This method returns a list of Data Provider objects that represent\nservers with disk space accessible for storing Userfiles.\n",
+                "tags": [
+                    "DataProviders"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An array of Data Provider objects describing servers that store data.\n",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/DataProvider"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    }
+                }
+            }
+        },
+        "/data_providers/{id}": {
+            "get": {
+                "summary": "Get information on a particular Data Provider.",
+                "description": "This method returns a single Data Provider specified by the ID parameter\n",
+                "tags": [
+                    "DataProviders"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "ID of the Data Provider to get information on.",
+                        "required": true,
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A Data Provider object.\n",
+                        "schema": {
+                            "$ref": "#/definitions/DataProvider"
+                        }
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    }
+                }
+            }
+        },
+        "/data_providers/{id}/browse": {
+            "get": {
+                "summary": "List the files on a Data Provider.",
+                "description": "This method allows the inspection of what files are present on a Data\nProvider specified by the ID parameter. Files that are not yet registered\nas Userfiles are visible using this method, as well as regularly accessible\nUserfiles.\n",
+                "tags": [
+                    "DataProviders"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "The ID of the Data Provider to browse.",
+                        "required": true,
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list of files present in the Data Provider, with their associated\nregistration status, FileType, and other information.\n"
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    }
+                }
+            }
+        },
+        "/data_providers/{id}/register": {
+            "post": {
+                "summary": "Registers a file as a Userfile in CBRAIN.",
+                "description": "This method allows new files to be added to CBRAIN. The files must first\nbe transfered to the Data Provider via SFTP. For more information on\nSFTP file transfers, consult the CBRAIN Wiki documentation. Once files\nare present on the Data Provider, this method registers them in CBRAIN\nby specifying the file type. You can also specify to copy/move the files\nto another Data Provider after file registration.\n",
+                "tags": [
+                    "DataProviders"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "The ID of the Data Provider to register files on.",
+                        "required": true
+                    },
+                    {
+                        "name": "basenames",
+                        "in": "body",
+                        "schema": {
+                            "type": "array",
+                            "items": "string"
+                        },
+                        "description": "An array containing the filenames to register.",
+                        "required": true
+                    },
+                    {
+                        "name": "filetypes",
+                        "in": "body",
+                        "schema": {
+                            "type": "array",
+                            "items": "string"
+                        },
+                        "description": "An array containing the filetypes associated with the files to register\n"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Files were successfully registered.\n"
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    },
+                    "403": {
+                        "description": "The current user does not have access to register files."
+                    }
+                }
+            }
+        },
+        "/data_providers/{id}/unregister": {
+            "post": {
+                "summary": "Unregisters files as Userfile in CBRAIN.",
+                "description": "This method allows files to be unregistered from CBRAIN. This will not\ndelete the files, but removes them from the CBRAIN database, so Tools\nmay no longer be run on them.\n",
+                "tags": [
+                    "DataProviders"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "The ID of the Data Provider to unregister files from.",
+                        "required": true
+                    },
+                    {
+                        "name": "basenames",
+                        "in": "body",
+                        "schema": {
+                            "type": "array",
+                            "items": "string"
+                        },
+                        "description": "An array containing the filenames to register.",
+                        "required": true
+                    },
+                    {
+                        "name": "as_user_id",
+                        "in": "body",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        },
+                        "description": "The ID of the user to unregister files as."
+                    },
+                    {
+                        "name": "delete",
+                        "in": "body",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Specifies to delete the files once they are unregistered."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Files were successfully unregistered.\n"
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    },
+                    "403": {
+                        "description": "The current user does not have access to unregister files."
+                    }
+                }
+            }
+        },
+        "/data_providers/{id}/delete": {
+            "post": {
+                "summary": "Deletes unregistered files from a CBRAIN Data provider.",
+                "description": "This method allows files that have not been registered from CBRAIN to be\ndeleted. This may be necessary if files were uploaded in error, or if\nthey were unregistered but not immediately deleted.\n",
+                "tags": [
+                    "DataProviders"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "The ID of the Data Provider to delete files from.",
+                        "required": true
+                    },
+                    {
+                        "name": "basenames",
+                        "in": "body",
+                        "schema": {
+                            "type": "array",
+                            "items": "string"
+                        },
+                        "description": "An array containing the filenames to delete.",
+                        "required": true
+                    },
+                    {
+                        "name": "as_user_id",
+                        "in": "body",
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "The ID of the user to delete files as."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully launched the operation in the background to delete files."
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    },
+                    "403": {
+                        "description": "You cannot delete files from this provider."
+                    }
+                }
+            }
+        },
+        "/data_providers/{id}/is_alive": {
+            "get": {
+                "summary": "Pings a Data Provider to check if it's running.",
+                "description": "This method allows the querying of a Data Provider specified by the ID\nparameter to see if it's running or not.\n",
+                "tags": [
+                    "DataProviders"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "The ID of the Data Provider to query.",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns \"true\" or \"false\".",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/groups": {
+            "get": {
+                "summary": "Get a list of the Groups (projects) available to the current user.",
+                "description": "This method returns a list of all of the groups that the current user has\naccess to.\n",
+                "tags": [
+                    "Groups"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list of Group objects.\n",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Group"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    }
+                }
+            },
+            "post": {
+                "summary": "Creates a new Group.",
+                "description": "This method creates a new Group, which allows users to organize their files\nand tasks.\n",
+                "tags": [
+                    "Groups"
+                ],
+                "parameters": [
+                    {
+                        "name": "authenticity_token",
+                        "in": "body",
+                        "description": "The token returned by /sessions/new",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "group",
+                        "in": "body",
+                        "description": "An object representing a Group.",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Group"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully created Group."
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    }
+                }
+            }
+        },
+        "/groups/switch": {
+            "post": {
+                "summary": "Switches the active group.",
+                "description": "This method switches the active Group to a new one. This is useful if\nthe analysis that the user is performing is for different projects, and\ninvolves separate Userfiles and Tasks.\n",
+                "tags": [
+                    "Groups"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "body",
+                        "description": "ID of the Group to switch to.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully switched the active Group."
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    }
+                }
+            }
+        },
+        "/groups/{id}": {
+            "get": {
+                "summary": "Get information on a Group (project).",
+                "description": "This method returns information on a single Group (project), specified\nby the ID parameter. Information returned includes the list of Users\nwho are members of the group, the ID of the Site the Group is part of,\nand whether or not the group is visible to Regular Users.\n",
+                "tags": [
+                    "Groups"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the Group to switch to.",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved information on the Group.\n",
+                        "schema": {
+                            "$ref": "#/definitions/Group"
+                        }
+                    },
+                    "401": {
+                        "description": "No Session created yet."
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update the properties of a Group (project).",
+                "description": "This method allows the properties of a Group (project) to be updated.\nThis includes the User membership, the ID of the site the Group belongs\nto, and the visibility status of the group to Regular Users.\n",
+                "tags": [
+                    "Groups"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the Group to be updated.",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    {
+                        "name": "group",
+                        "in": "body",
+                        "description": "Object representing a Group.",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Group"
+                        }
+                    },
+                    {
+                        "name": "authenticity_token",
+                        "in": "body",
+                        "description": "The token returned by /sessions/new",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Group updated successfully."
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    },
+                    "403": {
+                        "description": "Current user is forbidden from editing this group."
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Deletes a Group (project).",
+                "description": "This method allows the removal of Groups (projects) that are no longer\nnecessary. Groups that have Userfiles associated with them may not be\ndeleted.\n",
+                "tags": [
+                    "Groups"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the Group to be updated.",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    {
+                        "name": "authenticity_token",
+                        "in": "body",
+                        "description": "The token returned by /sessions/new",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted the Group (project)."
+                    },
+                    "401": {
+                        "description": "No Session created yet."
+                    }
+                }
+            }
+        },
+        "/userfiles": {
+            "get": {
+                "summary": "List of the Userfiles accessible to the current user.",
+                "description": "This method returns a list of Userfiles that are available to the current\nUser.\n",
+                "tags": [
+                    "Userfiles"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of accessible Userfiles.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Userfile"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No Session created yet."
+                    }
+                }
+            },
+            "post": {
+                "summary": "Creates a new Userfile.",
+                "description": "This method creates a new Userfile in CBRAIN, with the current user\nas the owner of the file.\n",
+                "tags": [
+                    "Userfiles"
+                ],
+                "parameters": [
+                    {
+                        "name": "data_provider_id",
+                        "in": "body",
+                        "description": "The ID of the Data Provider to upload the file to.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "userfile",
+                        "in": "body",
+                        "description": "Information about the userfile.",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "group_id": {
+                                    "type": "integer",
+                                    "format": "int64"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "file_type",
+                        "in": "body",
+                        "description": "The type of the file.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "archive",
+                        "in": "body",
+                        "description": "Archive",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "authenticity_token",
+                        "in": "body",
+                        "description": "The token returned by /sessions/new",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Userfile successfully created."
+                    },
+                    "401": {
+                        "description": "No Session created yet."
+                    }
+                }
+            }
+        },
+        "/userfiles/{id}": {
+            "get": {
+                "summary": "Get information on a Userfile.",
+                "description": "This method returns information about a single Userfile, specified by\nits ID. Information returned includes the ID of the owner, the Group\n(project) it is a part of, a description, information about where the\nacutal copy of the file currently is, and what the status is of any\nsynhronization operations that may have been requested.\n",
+                "tags": [
+                    "Userfiles"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID number of the Userfile to get information on.",
+                        "type": "integer",
+                        "format": "int64",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns the information about the Userfile.",
+                        "schema": {
+                            "$ref": "#/definitions/Userfile"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update information on a Userfile.",
+                "description": "This method allows a User to update information on a userfile.\n",
+                "tags": [
+                    "Userfiles"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID number of the Userfile to update.",
+                        "type": "integer",
+                        "format": "int64",
+                        "required": true
+                    },
+                    {
+                        "name": "authenticity_token",
+                        "in": "body",
+                        "description": "The token returned by /sessions/new",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Userfile updated successfully."
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a Userfile.",
+                "description": "This method allows a User to delete a Userfile.\n",
+                "tags": [
+                    "Userfiles"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID number of the Userfile to delete.",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    {
+                        "name": "authenticity_token",
+                        "in": "body",
+                        "description": "The token returned by /sessions/new",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Userfile deleted successfully."
+                    },
+                    "401": {
+                        "description": "No session created yet."
+                    }
+                }
+            }
+        },
+        "/tasks": {
+            "get": {
+                "summary": "Get the list of Tasks.",
+                "description": "This method returns the list of Tasks accessible to the current user.\n",
+                "tags": [
+                    "Tasks"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of all accessible Tasks.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/CbrainTask"
+                        }
+                    },
+                    "401": {
+                        "description": "No Session created yet."
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a new Task.",
+                "description": "This method allows the creation of a new Task.\n",
+                "tags": [
+                    "Tasks"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Task created successfully."
+                    },
+                    "401": {
+                        "description": "No Session created yet."
+                    }
+                }
+            }
+        },
+        "/tasks/{id}": {
+            "get": {
+                "summary": "Get information on a Task.",
+                "description": "This method returns information on a Task, including its status,\nTask restartability and information on where the results are kept.\n",
+                "tags": [
+                    "Tasks"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID number of the Userfile to delete.",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Information about a Task."
+                    },
+                    "401": {
+                        "description": "No Session created yet."
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update information on a Task.",
+                "description": "This method updates information about a Task in CBRAIN.\n",
+                "tags": [
+                    "Tasks"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID number of the Userfile to delete.",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Task updated successfully."
+                    },
+                    "401": {
+                        "description": "No Session created yet."
+                    }
+                }
+            }
+        },
+        "/tools": {
+            "get": {
+                "summary": "Get the list of Tools.",
+                "description": "This method returns a list of all of the Tools that exist in CBRAIN.\nTools encapsulate a scientific program designed to extract information\nfrom an input Userfile.\n",
+                "tags": [
+                    "Tools"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of Tools.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Tool"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No Session created yet."
+                    }
+                }
+            }
+        },
+        "/tools/{id}": {
+            "get": {
+                "summary": "Get information on a specific Tool.",
+                "description": "This method returns information about a single Tool in CBRAIN, specified\nby the ID parameter, including a list of Users and Groups that have access\nto it, its description, category, and URL for documentation on its parameters.\n",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID number of the Userfile to delete.",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns information about the Tool specified.",
+                        "schema": {
+                            "$ref": "#/definitions/Tool"
+                        }
+                    },
+                    "401": {
+                        "description": "No Session created yet."
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -225,7 +1267,7 @@
                 },
                 "type": {
                     "type": "string",
-                    "description": "class of the user, one of CorAdmin,AdminUser, SiteManager or NormalUser."
+                    "description": "class of the user, one of CoreAdmin,AdminUser, SiteManager or NormalUser."
                 },
                 "created_at": {
                     "type": "string",
@@ -308,6 +1350,466 @@
                     "type": "number",
                     "format": "int32",
                     "description": "A hint at how many CPUs the CBRAIN task will allocate\nto run this tool configuration\n"
+                }
+            }
+        },
+        "Tag": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "id"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "name"
+                },
+                "user_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "user_id"
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "dateTime",
+                    "description": "created_at"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "format": "dateTime",
+                    "description": "updated_at"
+                },
+                "group_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "group_id"
+                }
+            }
+        },
+        "Bourreau": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "Unique numerical ID for the bourreau."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Name given by the creator to the bourreau."
+                },
+                "user_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "ID of the creator of the bourreau."
+                },
+                "group_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "ID of the group allowed to use the bourreau."
+                },
+                "online": {
+                    "type": "string",
+                    "format": "boolean",
+                    "description": "online"
+                },
+                "read_only": {
+                    "type": "string",
+                    "format": "boolean",
+                    "description": "Specifies whether the bourreau is read-only or can be modified."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the bourreau."
+                }
+            }
+        },
+        "DataProvider": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "id"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "name"
+                },
+                "type": {
+                    "type": "string",
+                    "description": "type"
+                },
+                "user_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "user_id"
+                },
+                "group_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "group_id"
+                },
+                "remote_user": {
+                    "type": "string",
+                    "description": "remote_user"
+                },
+                "remote_host": {
+                    "type": "string",
+                    "description": "remote_host"
+                },
+                "remote_port": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "remote_port"
+                },
+                "remote_dir": {
+                    "type": "string",
+                    "description": "remote_dir"
+                },
+                "online": {
+                    "type": "string",
+                    "format": "boolean",
+                    "description": "online"
+                },
+                "read_only": {
+                    "type": "string",
+                    "format": "boolean",
+                    "description": "read_only"
+                },
+                "description": {
+                    "description": "description"
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "dateTime",
+                    "description": "created_at"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "format": "dateTime",
+                    "description": "updated_at"
+                },
+                "time_of_death": {
+                    "type": "string",
+                    "format": "dateTime",
+                    "description": "time_of_death"
+                },
+                "not_syncable": {
+                    "type": "string",
+                    "format": "boolean",
+                    "description": "not_syncable"
+                },
+                "time_zone": {
+                    "type": "string",
+                    "description": "time_zone"
+                },
+                "cloud_storage_client_identifier": {
+                    "type": "string",
+                    "description": "cloud_storage_client_identifier"
+                },
+                "cloud_storage_client_token": {
+                    "type": "string",
+                    "description": "cloud_storage_client_token"
+                },
+                "alternate_host": {
+                    "type": "string",
+                    "description": "alternate_host"
+                }
+            }
+        },
+        "Group": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "ID number of the group."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Name of the group."
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "dateTime",
+                    "description": "When the group was created."
+                },
+                "updated_at": {
+                    "type": "string",
+                    "format": "dateTime",
+                    "description": "When the group was last updated."
+                },
+                "type": {
+                    "type": "string",
+                    "description": "Type of group."
+                },
+                "site_id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "ID of the site associated with the group."
+                },
+                "creator_id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "ID of the User who created the group.\n"
+                },
+                "invisible": {
+                    "type": "boolean",
+                    "description": "Specified whether or not the group is visible to Normal Users.\nInvisible groups exist to specify levels of access to Userfiles,\nDataProviders and Bourreaux.\n"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the group."
+                }
+            }
+        },
+        "Userfile": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "ID number of the file."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Filename"
+                },
+                "size": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Number of bytes used to store the file."
+                },
+                "user_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "user_id"
+                },
+                "parent_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "parent_id"
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "dateTime",
+                    "description": "created_at"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "format": "dateTime",
+                    "description": "updated_at"
+                },
+                "type": {
+                    "type": "string",
+                    "description": "type"
+                },
+                "group_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "group_id"
+                },
+                "data_provider_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "data_provider_id"
+                },
+                "group_writable": {
+                    "type": "string",
+                    "format": "boolean",
+                    "description": "group_writable"
+                },
+                "num_files": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "num_files"
+                },
+                "hidden": {
+                    "type": "string",
+                    "format": "boolean",
+                    "description": "hidden"
+                },
+                "immutable": {
+                    "type": "string",
+                    "format": "boolean",
+                    "description": "immutable"
+                },
+                "archived": {
+                    "type": "string",
+                    "format": "boolean",
+                    "description": "archived"
+                },
+                "description": {
+                    "description": "description"
+                }
+            }
+        },
+        "CbrainTask": {
+            "type": "object",
+            "properties": {
+                "batch_id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "ID of the batch this task was launched as part of."
+                },
+                "cluster_jobid": {
+                    "type": "string",
+                    "description": "ID of the task on the cluster associated with this task."
+                },
+                "cluster_workdir": {
+                    "type": "string",
+                    "description": "Path on the cluster to the working directory."
+                },
+                "params": {
+                    "type": "string",
+                    "description": "Parameters used as inputs to the scientific calculation associated with the task."
+                },
+                "status": {
+                    "type": "string",
+                    "description": "Current status of the task."
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "dateTime",
+                    "description": "Date created."
+                },
+                "updated_at": {
+                    "type": "string",
+                    "format": "dateTime",
+                    "description": "Last updated."
+                },
+                "user_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "ID of the User who created the Task."
+                },
+                "bourreau_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "ID of the Bourreau the Task was launched on."
+                },
+                "description": {
+                    "description": "Description of the Task."
+                },
+                "prerequisites": {
+                    "description": "prerequisites"
+                },
+                "share_wd_tid": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "share_wd_tid"
+                },
+                "run_number": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "run_number"
+                },
+                "group_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "group_id"
+                },
+                "tool_config_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "tool_config_id"
+                },
+                "level": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "level"
+                },
+                "rank": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "rank"
+                },
+                "results_data_provider_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "results_data_provider_id"
+                },
+                "cluster_workdir_size": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "cluster_workdir_size"
+                },
+                "workdir_archived": {
+                    "type": "string",
+                    "format": "boolean",
+                    "description": "workdir_archived"
+                },
+                "workdir_archive_userfile_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "workdir_archive_userfile_id"
+                }
+            }
+        },
+        "Tool": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "id"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "name"
+                },
+                "user_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "user_id"
+                },
+                "group_id": {
+                    "type": "number",
+                    "format": "int64",
+                    "description": "group_id"
+                },
+                "category": {
+                    "type": "string",
+                    "description": "category"
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "dateTime",
+                    "description": "created_at"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "format": "dateTime",
+                    "description": "updated_at"
+                },
+                "cbrain_task_class_name": {
+                    "type": "string",
+                    "description": "cbrain_task_class_name"
+                },
+                "select_menu_text": {
+                    "type": "string",
+                    "description": "select_menu_text"
+                },
+                "description": {
+                    "description": "description"
+                },
+                "url": {
+                    "type": "string",
+                    "description": "url"
+                },
+                "application_package_name": {
+                    "type": "string",
+                    "description": "application_package_name"
+                },
+                "application_type": {
+                    "type": "string",
+                    "description": "application_type"
+                },
+                "application_tags": {
+                    "type": "string",
+                    "description": "application_tags"
                 }
             }
         }

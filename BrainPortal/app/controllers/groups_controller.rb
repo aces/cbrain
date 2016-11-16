@@ -72,11 +72,20 @@ class GroupsController < ApplicationController
     end
   end
 
+  # GET /groups/1
+  # GET /groups/1.xml
+  # GET /groups/1.json
   def show #:nodoc:
     #@group = current_user.available_groups.find(params[:id])
     @group = Group.find(params[:id])
     raise ActiveRecord::RecordNotFound unless @group.can_be_accessed_by?(current_user)
     @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
+
+    respond_to do |format|
+      format.html
+      format.xml  { render :xml  => @group }
+      format.json { render :json => @group }
+    end
   end
 
   def new  #:nodoc:
@@ -86,6 +95,7 @@ class GroupsController < ApplicationController
 
   # POST /groups
   # POST /groups.xml
+  # POST /groups.json
   def create  #:nodoc:
     @group = WorkGroup.new(params[:group])
     @group.make_accessible!(:invisible) if current_user.has_role?(:admin_user)
@@ -106,17 +116,20 @@ class GroupsController < ApplicationController
         @group.addlog_context(self,"Created by #{current_user.login}")
         flash[:notice] = 'Project was successfully created.'
         format.html { redirect_to :action => :index, :format => :html}
-        format.xml  { render :xml => @group, :status => :created, :location => @group }
+        format.xml  { render :xml  => @group, :status => :created, :location => @group }
+        format.json { render :json => @group, :status => :created, :location => @group }
       else
         @users = current_user.available_users.where( "users.login<>'admin'" ).order( :login )
         format.html { render :new  }
-        format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @group.errors, :status => :unprocessable_entity }
+        format.json { render :json => @group.errors, :status => :unprocessable_entity }
       end
     end
   end
 
   # PUT /groups/1
   # PUT /groups/1.xml
+  # PUT /groups/1.json
   def update #:nodoc:
     @group = current_user.available_groups.where( :type => "WorkGroup" ).find(params[:id])
 
@@ -162,10 +175,12 @@ class GroupsController < ApplicationController
         flash[:notice] = 'Project was successfully updated.'
         format.html { redirect_to :action => "show" }
         format.xml  { head :ok }
+        format.json { head :ok }
       else
         @group.reload
         format.html { render :action => "show" }
-        format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @group.errors, :status => :unprocessable_entity }
+        format.json { render :json => @group.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -193,6 +208,7 @@ class GroupsController < ApplicationController
 
   # DELETE /groups/1
   # DELETE /groups/1.xml
+  # DELETE /groups/1.json
   def destroy  #:nodoc:
     @group = current_user.available_groups.find(params[:id])
     @group.destroy
@@ -201,6 +217,7 @@ class GroupsController < ApplicationController
       format.html { redirect_to :action => :index }
       format.js   { redirect_to :action => :index, :format => :js}
       format.xml  { head :ok }
+      format.json { head :ok }
     end
   end
 

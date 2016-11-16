@@ -163,6 +163,105 @@ paths:
           schema:
             $ref: '#/definitions/ToolConfig'
 #=============================================================================
+# TAGS ACTIONS
+#=============================================================================
+  /tags:
+    get:
+      summary: Get a list of the tags currently in CBRAIN.
+      description: |
+        This method returns a list of tag objects.
+      tags:
+        - Tags
+      responses:
+        200:
+          description: |
+            An array of Tag objects that are used to group Tasks or Userfiles.
+          schema:
+            type: array
+            items:
+              $ref: '#definitions/Tag'
+        401:
+          description: No session created yet.
+    post:
+      summary: Create a tag.
+      description: |
+        Create a new tag in CBRAIN.
+      parameters:
+        - name: tag
+          in: body
+          description: The name of the tag.
+          required: true
+          type: string
+      tags:
+        - Tags
+      responses:
+        201:
+          description: |
+            Returns the created Tag object.
+        401:
+          description: |
+            No session created yet.
+  /tags/{id}:
+    get:
+      summary: Get one tag.
+      description: |
+        Returns a single tag with the ID specified.
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the tag to get.
+          required: true
+          type: number
+          format: int64
+      tags:
+        - Tags
+      responses:
+        200:
+          description: |
+            Returns the Tag object.
+        401:
+          description: |
+            No session created yet.
+    put:
+      summary: Update a tag.
+      description: |
+        Update the tag specified by the ID parameter.
+      parameters:
+        - name: id
+          in: body
+          description: ID of the tag to update.
+          required: true
+          type: number
+          format: int64
+      tags:
+        - Tags
+      responses:
+        200:
+          description: Tag was updated successfully.
+        422:
+          description: Could not update Tag.
+        401:
+          description: No session created yet.
+    delete:
+      summary: Delete a tag.
+      description: Delete the tag specified by the ID parameter.
+      parameters:
+        - name: id
+          in: body
+          description: ID of the tag to delete.
+          required: true
+          type: number
+          format: int64
+      tags:
+        - Tags
+      responses:
+        200:
+          description: Tag was deleted.
+        422:
+
+
+
+#=============================================================================
 # MODELS
 #=============================================================================
 definitions:

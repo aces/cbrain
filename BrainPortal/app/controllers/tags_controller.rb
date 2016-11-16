@@ -24,7 +24,7 @@ class TagsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available
+  api_available :only => [ :index, :show, :update, :destroy, :new, :create ]
 
   before_filter :login_required
   before_filter :validate_params, :only => [:update, :create]
@@ -33,7 +33,8 @@ class TagsController < ApplicationController
   # GET /tags.xml
   def index #:nodoc:
     respond_to do |format|
-      format.xml { render :xml => current_user.tags }
+      format.xml  { render :xml  => current_user.tags }
+      format.json { render :json => current_user.tags.as_json }
     end
   end
 
@@ -41,7 +42,8 @@ class TagsController < ApplicationController
   # GET /tags/1.xml
   def show #:nodoc:
     respond_to do |format|
-      format.xml { render :xml => current_user.tags.find(params[:id]) }
+      format.xml  { render :xml  => current_user.tags.find(params[:id]) }
+      format.json { render :json => current_user.tags.find(params[:id]) }
     end
   end
 
@@ -53,9 +55,11 @@ class TagsController < ApplicationController
     respond_to do |format|
       if @tag.save
         flash[:notice] = 'Tag was successfully created.'
-        format.xml { render :xml => @tag, :status => :created, :location => @tag }
+        format.xml  { render :xml  => @tag, :status => :created, :location => @tag }
+        format.json { render :json => @tag, :status => :created, :location => @tag }
       else
-        format.xml { render :xml => @tag.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @tag.errors, :status => :unprocessable_entity }
+        format.json { render :json => @tag.errors, :status => :unprocessable_entity }
       end
       format.js
     end
@@ -70,8 +74,10 @@ class TagsController < ApplicationController
       if @tag.update_attributes(params[:tag])
         flash[:notice] = 'Tag was successfully updated.'
         format.xml  { head :ok, :content_type => 'text/plain' }
+        format.json { head :ok }
       else
-        format.xml  { render :xml => @tag.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @tag.errors, :status => :unprocessable_entity }
+        format.json { render :json => @tag.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -84,6 +90,7 @@ class TagsController < ApplicationController
 
     respond_to do |format|
       format.xml  { head :ok, :content_type => 'text/plain' }
+      format.json { head :ok, :content_type => 'text/plain' }
     end
   end
 
