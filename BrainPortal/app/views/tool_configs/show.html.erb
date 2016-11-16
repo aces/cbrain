@@ -49,7 +49,7 @@
         <strong>Config #<%= @tool_config.id %></strong>
         (<%= link_to "edit", edit_tool_config_path(@tool_config) %>):
         For tool <strong><%= @tool_config.tool.name %></strong> running on Execution Server <strong><%= @tool_config.bourreau.name %></strong>
-        <br>Named: <%= @tool_config.description %>
+        <br>Named: <%= full_description(@tool_config.description) %>
         <br>Available to members of project <%= link_to_group_if_accessible(@tool_config.group) %>
         <% if @tool_config.ncpus.present? && @tool_config.ncpus.to_i > 0 %>
           <br>Suggested number of CPUs: <%= @tool_config.ncpus.to_i.to_s %>
