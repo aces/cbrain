@@ -151,7 +151,12 @@ namespace :cbrain do
     ##########################################################################
     desc "Create the symbolic links for public assets of installed CBRAIN tasks and userfiles."
     ##########################################################################
-    task :public_assets => :environment do
+    task :public_assets do
+
+      if Rails.root.to_s =~ /\/Bourreau$/
+        puts "No public assets need to be installed for a Bourreau."
+        next
+      end
 
       puts "Adjusting paths to public assets for tasks and userfiles..." if verbose
 
@@ -201,6 +206,8 @@ namespace :cbrain do
 
       # Generate help files for Boutiques tasks
       # Note: changes here should be synced with SchemaTaskGenerator if necessary
+      Rake::Task["environment"].invoke
+
       Dir.chdir(descriptors_plugins_dir) do
         helpFileDir = File.join( "cbrain_plugins", "cbrain_tasks", "help_files/" )
         basePath    = Rails.root.join( File.join('public/', helpFileDir) )
@@ -274,6 +281,11 @@ namespace :cbrain do
     ##########################################################################
     task :public_assets do
 
+      if Rails.root.to_s =~ /\/Bourreau$/
+        puts "No public assets need to be cleaned for a Bourreau."
+        next
+      end
+
       puts "Erasing all symlinks for public assets of userfiles installed from CBRAIN plugins..." if verbose
       Dir.chdir(public_userfiles.to_s) do
         Dir.glob('*').select { |f| File.symlink?(f) }.each do |f|
@@ -302,6 +314,7 @@ namespace :cbrain do
     task :orphans => :environment do
 
       # We'll need all available userfile and task models
+      CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
       Rails.application.eager_load!
 
       # Available userfile and task types
@@ -353,6 +366,7 @@ namespace :cbrain do
     task :orphans => :environment do
 
       # We'll need all available userfile and task models
+      CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
       Rails.application.eager_load!
 
       # Available userfile and task types
