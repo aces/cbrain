@@ -1916,7 +1916,7 @@ echo "CBRAIN Task Exiting" 1>&2  # checked by framework
   # Returns the command line(s) associated with the task, wrapped in
   # a Docker call if a Docker image has to be used.
   def docker_commands
-    workDir  = self.container_working_directory || '${PWD}'
+    work_dir = self.container_working_directory || '${PWD}'
     commands = self.cluster_commands
     commands_joined = commands.join("\n");
 

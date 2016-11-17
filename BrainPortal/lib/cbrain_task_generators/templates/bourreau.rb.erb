@@ -323,7 +323,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
           # Move the file to the mounted dir (to be run post-execution, in the container)
           # Warning: potential overwrite dangers if there is a same-named local file
           newPosition = File.join( container_wd, File.basename(currentPath) )
-          outfileMoveCommands << "mv #{currentPath} #{newPosition}"
+          outfileMoveCommands << "mv #{currentPath.bash_escape} #{newPosition.bash_escape}"
           # Alter where cbrain should look for the file (outside container)
           params[ outid ] = File.basename(newPosition)
         end
