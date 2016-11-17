@@ -20,7 +20,7 @@
 		"optional" : false,
 		"list" : false,
 		"command-line-flag" : "-A",
-		"command-line-key" : "[A]"
+		"value-key" : "[A]"
 	}, {
 		"id" : "B",
 		"name" : "B",
@@ -29,7 +29,7 @@
 		"optional" : false,
 		"list" : false,
 		"command-line-flag" : "-B",
-		"command-line-key" : "[B]"
+		"value-key" : "[B]"
 	}, {
 		"id" : "C",
 		"name" : "C",
@@ -37,7 +37,7 @@
 		"description" : "Required File",
 		"optional" : false,
 		"list" : false,
-		"command-line-key" : "[C]",
+		"value-key" : "[C]",
 		"command-line-flag" : "-C",
 		"uses-absolute-path" : true
 	}, {
@@ -47,7 +47,7 @@
 		"description" : "Optional String",
 		"optional" : true,
 		"list" : false,
-		"command-line-key" : "[a]",
+		"value-key" : "[a]",
 		"command-line-flag" : "-a"
 	}, {
 		"id" : "b",
@@ -56,7 +56,7 @@
 		"description" : "Optional Number",
 		"optional" : true,
 		"list" : false,
-		"command-line-key" : "[b]",
+		"value-key" : "[b]",
 		"command-line-flag" : "-b"
 		}, {
 		"id" : "c",
@@ -65,7 +65,7 @@
 		"description" : "Optional Flag",
 		"optional" : true,
 		"list" : false,
-		"command-line-key" : "[c]",
+		"value-key" : "[c]",
 		"command-line-flag" : "-c"
 	}, {
 		"id" : "d",
@@ -74,7 +74,7 @@
 		"description" : "Optional File",
 		"optional" : true,
 		"list" : false,
-		"command-line-key" : "[d]",
+		"value-key" : "[d]",
 		"command-line-flag" : "-d"
 	}, {
 		"id" : "e",
@@ -83,7 +83,7 @@
 		"description" : "Optional String List",
 		"optional" : true,
 		"list" : true,
-		"command-line-key" : "[e]",
+		"value-key" : "[e]",
 		"command-line-flag" : "-e",
 		"min-list-entries" : 2,
 		"max-list-entries" : 3
@@ -94,7 +94,7 @@
 		"description" : "Optional File List",
 		"optional" : true,
 		"list" : true,
-		"command-line-key" : "[f]",
+		"value-key" : "[f]",
 		"command-line-flag" : "-f"
 	}, {
 		"id" : "g",
@@ -103,7 +103,7 @@
 		"description" : "Optional Number List",
 		"optional" : true,
 		"list" : true,
-		"command-line-key" : "[g]",
+		"value-key" : "[g]",
 		"command-line-flag" : "-g"
 	}, {
 		"id" : "i",
@@ -113,7 +113,7 @@
 		"optional" : true,
 		"list" : false,
 		"disables-inputs" : [ "j", "k", "y" ],
-		"command-line-key" : "[i]",
+		"value-key" : "[i]",
 		"command-line-flag" : "-i"
 	}, {
 		"id" : "j",
@@ -122,7 +122,7 @@
 		"description" : "A file disablee",
 		"optional" : true,
 		"list" : false,
-		"command-line-key" : "[j]",
+		"value-key" : "[j]",
 		"command-line-flag" : "-j"
 	}, {
 		"id" : "k",
@@ -132,7 +132,7 @@
 		"optional" : true,
 		"list" : false,
 		"requires-inputs" : [ "l", "m", "y" ],
-		"command-line-key" : "[k]",
+		"value-key" : "[k]",
 		"command-line-flag" : "-k"
 	}, {
 		"id" : "l",
@@ -141,7 +141,7 @@
 		"description" : "A number list requirement",
 		"optional" : true,
 		"list" : true,
-		"command-line-key" : "[l]",
+		"value-key" : "[l]",
 		"command-line-flag" : "-l"
 	}, {
 		"id" : "m",
@@ -151,7 +151,7 @@
 		"optional" : true,
 		"list" : false,
 		"requires-inputs" : [ "k" ],
-		"command-line-key" : "[m]",
+		"value-key" : "[m]",
 		"command-line-flag" : "-m"
 	}, {
 		"id" : "y",
@@ -162,7 +162,7 @@
 		"list" : false,
 		"requires-inputs" : [ "l" ],
 		"disables-inputs" : [ "j" ],
-		"command-line-key" : "[y]",
+		"value-key" : "[y]",
 		"command-line-flag" : "-y"
 	}, {
 		"id" : "n",
@@ -171,7 +171,7 @@
 		"description" : "Number (group 1)",
 		"optional" : true,
 		"list" : false,
-		"command-line-key" : "[n]",
+		"value-key" : "[n]",
 		"command-line-flag" : "-n"
 	}, {
 		"id" : "p",
@@ -180,7 +180,7 @@
 		"description" : "String list (group 1)",
 		"optional" : true,
 		"list" : true,
-		"command-line-key" : "[p]",
+		"value-key" : "[p]",
 		"command-line-flag" : "-p"
 	}, {
 		"id" : "q",
@@ -189,7 +189,7 @@
 		"description" : "String (group 2)",
 		"optional" : true,
 		"list" : false,
-		"command-line-key" : "[q]",
+		"value-key" : "[q]",
 		"command-line-flag" : "-q"
 	}, {
 		"id" : "u",
@@ -198,7 +198,7 @@
 		"description" : "Flag (group 2)",
 		"optional" : true,
 		"list" : false,
-		"command-line-key" : "[u]",
+		"value-key" : "[u]",
 		"command-line-flag" : "-u"
 	}, {
 		"id" : "v",
@@ -207,7 +207,7 @@
 		"description" : "String (group 3)",
 		"optional" : true,
 		"list" : false,
-		"command-line-key" : "[v]",
+		"value-key" : "[v]",
 		"command-line-flag" : "-v"
 	}, {
 		"id" : "w",
@@ -216,7 +216,7 @@
 		"description" : "Flag (group 3)",
 		"optional" : true,
 		"list" : false,
-		"command-line-key" : "[w]",
+		"value-key" : "[w]",
 		"command-line-flag" : "-w"
 	}, {
 		"id" : "x",
@@ -226,7 +226,7 @@
 		"optional" : true,
 		"list" : false,
 		"command-line-flag-separator" : "=",
-		"command-line-key" : "[x]",
+		"value-key" : "[x]",
 		"command-line-flag" : "-x"
 	}, {
 		"id" : "o",
@@ -235,7 +235,7 @@
 		"description" : "Optional output filename for optional output",
 		"optional" : true,
 		"list" : false,
-		"command-line-key" : "[o]",
+		"value-key" : "[o]",
 		"command-line-flag" : "-o"
 	}, {
 		"id" : "E",
@@ -245,7 +245,7 @@
 		"optional" : true,
 		"list" : false,
 		"enum-value-choices" : ["a", "b", "c"],
-		"command-line-key" : "[E]",
+		"value-key" : "[E]",
 		"command-line-flag" : "-E"
 	}, {
 		"id" : "N",
@@ -254,7 +254,7 @@
 		"description" : "A number limited to (7.7, 9.9]",
 		"optional" : true,
 		"list" : false,
-		"command-line-key" : "[N]",
+		"value-key" : "[N]",
 		"integer" : false,
 		"minimum" : 7.7,
 		"maximum" : 9.9,
@@ -273,7 +273,7 @@
 		"maximum" : 9,
 		"exclusive-minimum" : false,
 		"exclusive-maximum" : true,
-		"command-line-key" : "[I]",
+		"value-key" : "[I]",
 		"command-line-flag" : "-I"
 	}, {
 		"id" : "L",
@@ -289,7 +289,7 @@
 		"exclusive-maximum" : true,
 		"min-list-entries" : 3,
 		"max-list-entries" : 5,
-		"command-line-key" : "[L]",
+		"value-key" : "[L]",
 		"command-line-flag" : "-L"
 	}, {
 		"id" : "r",
@@ -299,7 +299,7 @@
 		"optional" : true,
 		"list" : false,
 		"default-value" : "r",
-		"command-line-key" : "[r]",
+		"value-key" : "[r]",
 		"command-line-flag" : "-r"
 	}],
 	"output-files" :  [{

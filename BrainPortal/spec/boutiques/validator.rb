@@ -56,8 +56,8 @@ inById    = lambda { |i| descriptor['inputs'].find{       |v| v['id']==i } || {}
 
 ## Checking command-line-keys and IDs ##
 
-# Every command-line key appears in the command line
-clkeys, cmdline = inputGet.( 'command-line-key' ), descriptor[ 'command-line' ]
+# Every value key appears in the command line
+clkeys, cmdline = inputGet.( 'value-key' ), descriptor[ 'command-line' ]
 clkeys.each { |k| errors.push( k + ' not in cmd line' ) unless cmdline.include?(k) }
 
 # Command-line keys are not contained within each other

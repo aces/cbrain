@@ -50,8 +50,8 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % files    = inputs.select  { |i| i['type'] == 'File'   }
 % required = outputs.select { |o| ! o['optional']       }
 % globs    = outputs.select { |o| o['list']             }
-% in_keys  = inputs.select  { |i| i['command-line-key'] }
-% out_keys = outputs.select { |o| o['command-line-key'] }
+% in_keys  = inputs.select  { |i| i['value-key'] }
+% out_keys = outputs.select { |o| o['value-key'] }
 % flags    = (inputs + outputs).select { |p| p['command-line-flag'] }
 % seps     = inputs.select { |i| i['command-line-flag-separator'] }
 % eVars    = descriptor['environment-variables'].dup rescue []
@@ -209,11 +209,11 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 %   unless in_keys.empty?
     # Substitution keys for input parameters
     keys = {
-%     key_width = max_width.(in_keys, 'command-line-key') + "'".length
+%     key_width = max_width.(in_keys, 'value-key') + "'".length
 %     in_keys.each do |key|
       <%=
         "'%-#{key_width}s => params[:'%s']," % [
-          key['command-line-key'] + "'",
+          key['value-key'] + "'",
           key['id']
         ]
       %>
@@ -229,13 +229,13 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     keys.merge!({
 %     end
 %
-%     key_width  = max_width.(out_keys, 'command-line-key') + "''".length
+%     key_width  = max_width.(out_keys, 'value-key') + "''".length
 %     path_width = max_width.(out_keys, 'path-template')    + "'',".length
 %     out_keys.each do |key|
 %       stripped = key['path-template-stripped-extensions']
       <%=
         "%-#{key_width}s => apply_template(%-#{path_width}s keys%s" % [
-          "'#{key['command-line-key']}'",
+          "'#{key['value-key']}'",
           "'#{key['path-template']}',",
           stripped ? ', strip: [' : '),'
         ]
@@ -254,11 +254,11 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     # Input/output command-line flags used with keys in command-line
     # substitution.
     flags = {
-%     key_width = max_width.(flags, 'command-line-key')  + "''".length
+%     key_width = max_width.(flags, 'value-key')  + "''".length
 %     flags.each do |flag|
       <%=
         "%-#{key_width}s => %s" % [
-          "'#{flag['command-line-key']}'",
+          "'#{flag['value-key']}'",
           "'#{flag['command-line-flag']}',"
         ]
       %>
@@ -270,11 +270,11 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     # Input command-line separators (with flags) used with keys in command-line
     # substitution.
     seps = {
-%     key_width = max_width.(seps, 'command-line-key')  + "''".length
+%     key_width = max_width.(seps, 'value-key')  + "''".length
 %     seps.each do |sep|
       <%=
         "%-#{key_width}s => %s" % [
-          "'#{sep['command-line-key']}'",
+          "'#{sep['value-key']}'",
           "'#{sep['command-line-flag-separator']}',"
         ]
       %>
@@ -541,7 +541,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   #   ) => 'f -z 5'
   def apply_template(template, keys, flags: {}, strip: [], separators: {})
     # Set of properties from the descriptor for file-type inputs
-    fileKeys = [<%= files.map { |f| '"' + f['command-line-key'] + '"' }.join(",") %>]
+    fileKeys = [<%= files.map { |f| '"' + f['value-key'] + '"' }.join(",") %>]
     absPath  = [<%= files.map { |f| f['uses-absolute-path'] || false }.join(",") %>]
     # The working directory from which the task will be launched
     # Used to fill in absolute paths for inputs requesting it

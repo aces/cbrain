@@ -376,7 +376,7 @@ module TestHelpers
       'type'              => type,
       'description'       => desc,
       'command-line-flag' => "-#{id}",
-      'command-line-key'  => "[#{id.upcase}]",
+      'value-key'  => "[#{id.upcase}]",
       'optional'          => true
     }.merge( otherParams )
   end
