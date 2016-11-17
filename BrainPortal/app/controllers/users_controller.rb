@@ -240,8 +240,8 @@ class UsersController < ApplicationController
 
     @user.attributes = params[:user]
 
-    remove_ap_ids     = original_ap_ids - @user.access_profile_ids
-    remove_group_ids  = AccessProfile.find(remove_ap_ids).map(&:group_ids).flatten.uniq
+    remove_ap_ids    = original_ap_ids - @user.access_profile_ids
+    remove_group_ids = remove_ap_ids.present? ? AccessProfile.find(remove_ap_ids).map(&:group_ids).flatten.uniq : []
 
     @user.apply_access_profiles(remove_group_ids: remove_group_ids)
 
