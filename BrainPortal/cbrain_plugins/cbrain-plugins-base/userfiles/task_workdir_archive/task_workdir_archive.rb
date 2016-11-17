@@ -35,7 +35,7 @@ class TaskWorkdirArchive < TarArchive
   before_destroy :before_destroy_adjust_task
 
   def self.file_name_pattern #:nodoc:
-    /^CbrainTask_Workdir_[\w\-]+\.tar\.gz$/i
+    /\ACbrainTask_Workdir_[\w\-]+\.tar\.gz\z/i
   end
 
   def self.pretty_type #:nodoc:

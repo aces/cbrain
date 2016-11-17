@@ -357,8 +357,8 @@ class ScirCloud < Scir
       stdout = self.stdout || ":/dev/null"
       stderr = self.stderr || (self.join ? nil : ":/dev/null")
 
-      stdout.sub!(/^:/,"") if stdout
-      stderr.sub!(/^:/,"") if stderr
+      stdout.sub!(/\A:/,"") if stdout
+      stderr.sub!(/\A:/,"") if stderr
 
       command = ""
       command += "cd #{shell_escape(self.wd)} || exit 20;"  if self.wd

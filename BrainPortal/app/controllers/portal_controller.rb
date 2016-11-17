@@ -88,25 +88,26 @@ class PortalController < ApplicationController
 
     # Hide some less important lines
     remove_egrep = []
-    remove_egrep << "^Started "       if params[:hide_started].presence    == "1"
-    remove_egrep << "^ *Processing "  if params[:hide_processing].presence == "1"
-    remove_egrep << "^ *Parameters: " if params[:hide_parameters].presence == "1"
-    remove_egrep << "^ *Rendered"     if params[:hide_rendered].presence   == "1"
-    remove_egrep << "^ *Redirected"   if params[:hide_redirected].presence == "1"
-    remove_egrep << "^User:"          if params[:hide_user].presence       == "1"
-    remove_egrep << "^Completed"      if params[:hide_completed].presence  == "1"
-    # Note that in production, 'SQL', 'CACHE', 'AREL' and 'LOAD' are never shown.
-    remove_egrep << "^ *SQL "         if params[:hide_sql].presence        == "1"
-    remove_egrep << "^ *CACHE "       if params[:hide_cache].presence      == "1"
-    remove_egrep << "^ *AREL "        if params[:hide_arel].presence       == "1"
-    remove_egrep << "^ *[^ ]* Load"   if params[:hide_load].presence       == "1"
+    remove_egrep << "^Started "                                      if params[:hide_started].presence    == "1"
+    remove_egrep << "^ *Processing "                                 if params[:hide_processing].presence == "1"
+    remove_egrep << "^ *Parameters: "                                if params[:hide_parameters].presence == "1"
+    remove_egrep << "^ *Rendered"                                    if params[:hide_rendered].presence   == "1"
+    remove_egrep << "^ *Redirected"                                  if params[:hide_redirected].presence == "1"
+    remove_egrep << "^User:"                                         if params[:hide_user].presence       == "1"
+    remove_egrep << "^Completed"                                     if params[:hide_completed].presence  == "1"
+    # Note that in production, 'SQL', 'CACHE' and 'LOAD' are never shown.
+    remove_egrep << "^ *SQL "                                        if params[:hide_sql].presence        == "1"
+    remove_egrep << '^[\s\d\.ms\(\)]+(BEGIN|COMMIT|SELECT|UPDATE)'   if params[:hide_sql].presence        == "1"
+    remove_egrep << '^[\s\w]*Exists'                                 if params[:hide_exists].presence     == "1"
+    remove_egrep << "^ *CACHE "                                      if params[:hide_cache].presence      == "1"
+    remove_egrep << "^ *[^ ]* Load"                                  if params[:hide_load].presence       == "1"
 
     # Hiding some lines disable some filters, because we hide before we filter. :-(
-    meth_name = nil if params[:hide_started].presence   == "1"
-    ctrl_name = nil if params[:hide_started].presence   == "1"
-    user_name = nil if params[:hide_user].presence      == "1"
-    inst_name = nil if params[:hide_user].presence      == "1"
-    ms_min    = nil if params[:hide_completed].presence == "1"
+    meth_name = nil                                                  if params[:hide_started].presence    == "1"
+    ctrl_name = nil                                                  if params[:hide_started].presence    == "1"
+    user_name = nil                                                  if params[:hide_user].presence       == "1"
+    inst_name = nil                                                  if params[:hide_user].presence       == "1"
+    ms_min    = nil                                                  if params[:hide_completed].presence  == "1"
 
     # Extract the raw data with escape sequences filtered.
 
@@ -116,12 +117,12 @@ class PortalController < ApplicationController
 
     # Version 2: filter first, tail after. Bad if log file is really large, but perl is fast.
     command  = "perl -pe 's/\\e\\[[\\d;]*\\S//g' #{Rails.configuration.paths["log"].first.to_s.bash_escape}"
-    command += " | grep -E -v '#{remove_egrep.join("|")}'" if remove_egrep.size > 0
+    command += " | perl -n -e 'print unless /#{remove_egrep.join("|")}/'" if remove_egrep.size > 0
     command += " | tail -#{num_lines}"
 
     # Slurp it all
     log = IO.popen(command, "r") { |io| io.read }
-    log.gsub!(/^(Started)/, "\n\\1")
+    log.gsub!(/\A(Started)/, "\n\\1")
 
     @user_counts = Hash.new(0) # For select box.
 
@@ -137,19 +138,19 @@ class PortalController < ApplicationController
 
       (log.split("\n") + [ "\n" ]).each do |line|
         next unless line
-        next unless line =~ /^Started (\S+) "\/(\w*)/ || ! paragraph.empty?
+        next unless line =~ /\AStarted (\S+) "\/(\w*)/ || ! paragraph.empty?
 
         found_meth, found_ctrl = Regexp.last_match[1,2] if Regexp.last_match
         paragraph << '' if paragraph.empty?
         paragraph << line
 
-        if line =~ /^User: (\S+)/
+        if line =~ /\AUser: (\S+)/
           found_user = Regexp.last_match[1]
           @user_counts[found_user] += 1
           if line =~ /on instance (\S+)/
             found_inst = Regexp.last_match[1]
           end
-        elsif line =~ /^Completed.*in (\d+(?:.\d+)?)ms/
+        elsif line =~ /\ACompleted.*in (\d+(?:.\d+)?)ms/
           found_ms = Regexp.last_match[1].to_i
           filtlogs += paragraph if (!user_name || found_user == user_name) &&
                                    (!inst_name || found_inst == inst_name) &&
@@ -162,7 +163,7 @@ class PortalController < ApplicationController
       log = filtlogs.join("\n")
     else
       log.split("\n").each do |line|
-        if line =~ /^User: (\S+)/
+        if line =~ /\AUser: (\S+)/
           found_user = Regexp.last_match[1]
           @user_counts[found_user] += 1
         end
@@ -195,7 +196,7 @@ class PortalController < ApplicationController
     end
     num_checkboxes = params[:num_checkboxes].to_i
     if num_checkboxes > 0
-      num_checks = params.keys.grep(/^license_check/).size
+      num_checks = params.keys.grep(/\Alicense_check/).size
       if num_checks < num_checkboxes
         flash[:error] = "There was a problem with your submission. Please read the agreement and check all checkboxes."
         redirect_to :action => :show_license, :license => @license
@@ -242,7 +243,7 @@ class PortalController < ApplicationController
       submit = :refresh
     end
 
-    if table_name =~ /^(\w+)\.(\S+)$/
+    if table_name =~ /\A(\w+)\.(\S+)\z/
       table_name = Regexp.last_match[1]
       table_op   = Regexp.last_match[2]   # e.g. "sum(size)" or "combined_file_rep"
     end
@@ -340,8 +341,8 @@ class PortalController < ApplicationController
     @table_col_values = raw_table_col_values.compact.sort # sorted non-nil values ; TODO: sort values better?
     @table_row_values.unshift(nil) if raw_table_row_values.size > @table_row_values.size # reinsert nil if needed
     @table_col_values.unshift(nil) if raw_table_col_values.size > @table_col_values.size # reinsert nil if needed
-    @table_row_values.reject! { |x| x == 0 } if row_type =~ /_id$/ # remove 0 values for IDs
-    @table_col_values.reject! { |x| x == 0 } if col_type =~ /_id$/ # remove 0 values for IDs
+    @table_row_values.reject! { |x| x == 0 } if row_type =~ /_id\z/ # remove 0 values for IDs
+    @table_col_values.reject! { |x| x == 0 } if col_type =~ /_id\z/ # remove 0 values for IDs
 
     # For making filter links inside the table
     @filter_controller = @model.to_s.pluralize.underscore
@@ -384,15 +385,15 @@ class PortalController < ApplicationController
 
     # data.gsub!(/\e\[[\d;]+m/, "") # now done when fetching the raw log, with perl (see above)
 
-    data.gsub!(/^Started.+/)                    { |m| "<span class=\"log_started\">#{m}</span>" }
-    data.gsub!(/  Parameters: .+/)              { |m| "<span class=\"log_parameters\">#{m}</span>" }
-    data.gsub!(/  Processing by .+/)            { |m| "<span class=\"log_processing\">#{m}</span>" }
-    data.gsub!(/^Completed.* in \d{1,3}ms/)     { |m| "<span class=\"log_completed_fast\">#{m}</span>" }
-    data.gsub!(/^Completed.* in [1-4]\d\d\dms/) { |m| "<span class=\"log_completed_slow\">#{m}</span>" }
-    data.gsub!(/^Completed.* in [5-9]\d\d\dms/) { |m| "<span class=\"log_completed_very_slow\">#{m}</span>" }
-    data.gsub!(/^Completed.* in \d+\d\d\d\dms/) { |m| "<span class=\"log_completed_atrociously_slow\">#{m}</span>" }
-    data.gsub!(/^User: \S+/)                    { |m| "<span class=\"log_user\">#{m}</span>" }
-    data.gsub!(/ using \S+/)                    { |m| "<span class=\"log_browser\">#{m}</span>" }
+    data.gsub!(/\AStarted.+/)                    { |m| "<span class=\"log_started\">#{m}</span>" }
+    data.gsub!(/  Parameters: .+/)               { |m| "<span class=\"log_parameters\">#{m}</span>" }
+    data.gsub!(/  Processing by .+/)             { |m| "<span class=\"log_processing\">#{m}</span>" }
+    data.gsub!(/\ACompleted.* in \d{1,3}ms/)     { |m| "<span class=\"log_completed_fast\">#{m}</span>" }
+    data.gsub!(/\ACompleted.* in [1-4]\d\d\dms/) { |m| "<span class=\"log_completed_slow\">#{m}</span>" }
+    data.gsub!(/\ACompleted.* in [5-9]\d\d\dms/) { |m| "<span class=\"log_completed_very_slow\">#{m}</span>" }
+    data.gsub!(/\ACompleted.* in \d+\d\d\d\dms/) { |m| "<span class=\"log_completed_atrociously_slow\">#{m}</span>" }
+    data.gsub!(/\AUser: \S+/)                    { |m| "<span class=\"log_user\">#{m}</span>" }
+    data.gsub!(/ using \S+/)                     { |m| "<span class=\"log_browser\">#{m}</span>" }
 
     alt = :_1
     data.gsub!(/  (SQL|CACHE|[A-Za-z\:]+ Load) \(\d+.\d+ms\)/) do |m|

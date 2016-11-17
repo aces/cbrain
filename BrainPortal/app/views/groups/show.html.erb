@@ -52,7 +52,10 @@
       <%= text_field_tag "group[name]", @group.name %>
     <% end %>
 
-    <% t.cell("Creator") { @group.creator.try(:login)} %>
+    <% t.edit_cell(:creator_id, :content => link_to_user_with_tooltip(@group.creator), :header => "Creator") do %>
+      <%= user_select "group[creator_id]", { :users => ( current_user.available_users | @group.users), :selector => @group.creator } %>
+      <div class="field_explanation"><span class="warning">Warning</span>: If you change the Creator to someone else you won't be able to edit this project any more</div>
+    <% end %>
 
     <% t.edit_cell(:site_id, :content => link_to_site_if_accessible(@group.site), :disabled => !current_user.has_role?(:admin_user)) do %>
       <%= site_select "group[site_id]", @group.site_id, :prompt => "(Select a site)" %>

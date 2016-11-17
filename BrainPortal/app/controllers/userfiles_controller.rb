@@ -244,7 +244,7 @@ class UserfilesController < ApplicationController
     # If no viewer object is found but the argument "viewer_name" correspond to a partial
     # on disk, then let's create a transient viewer object representing that file.
     # Not an officially registered viewer, but it will work for the current rendering.
-    if @viewer.blank? && viewer_name =~ /^\w+$/
+    if @viewer.blank? && viewer_name =~ /\A\w+\z/
       partial_filename_base = (viewer_userfile_class.view_path + "_#{viewer_name}.#{request.format.to_sym}").to_s
       if File.exists?(partial_filename_base) || File.exists?(partial_filename_base + ".erb")
         @viewer = Userfile::Viewer.new(viewer_userfile_class, :partial => viewer_name)
@@ -486,7 +486,7 @@ class UserfilesController < ApplicationController
 
     # We will be processing some archive file.
     # First, check for supported extensions
-    if basename !~ /(\.tar|\.tgz|\.tar.gz|\.zip)$/i
+    if basename !~ /(\.tar|\.tgz|\.tar.gz|\.zip)\z/i
       flash[:error] += "Error: file #{basename} does not have one of the supported extensions: .tar, .tar.gz, .tgz or .zip.\n"
       respond_to do |format|
         format.html { redirect_to redirect_path }
@@ -1062,7 +1062,7 @@ class UserfilesController < ApplicationController
     # Check or build filename for downloaded data
     # Does NOT include .tar.gz extensions, which will be added later if necessary
     if ! specified_filename.blank?
-      specified_filename.sub!(/(\.tar)?(\.g?z)?$/i,"")
+      specified_filename.sub!(/(\.tar)?(\.g?z)?\z/i,"")
       if ! Userfile.is_legal_filename?(specified_filename)
           flash[:error] = "Error: filename '#{specified_filename}' is not acceptable (illegal characters?)."
           respond_to do |format|
@@ -1309,8 +1309,8 @@ class UserfilesController < ApplicationController
           if userfile.is_a?(SingleFile)
             $0 = "GzipFile ID=#{userfile.id} #{idx+1}/#{count_todo}\0"
             gzip_file(userfile, operation) if (
-              (  compressing && userfile.name !~ /\.gz$/) ||
-              (! compressing && userfile.name =~ /\.gz$/)
+              (  compressing && userfile.name !~ /\.gz\z/) ||
+              (! compressing && userfile.name =~ /\.gz\z/)
             )
 
           else
@@ -1379,7 +1379,7 @@ class UserfilesController < ApplicationController
   # +userfile+, appending '.gz' while compressing and stripping it while
   # uncompressing. The default +operation+ is compress.
   def gzip_file(userfile, operation = :compress) #:nodoc:
-    name = operation == :compress ? userfile.name + '.gz' : userfile.name.sub(/\.gz$/, '')
+    name = operation == :compress ? userfile.name + '.gz' : userfile.name.sub(/\.gz\z/, '')
     raise 'could not do basic renaming' unless
       userfile.provider_rename(name)
 
@@ -1415,9 +1415,9 @@ class UserfilesController < ApplicationController
 
     # Create content list
     all_files        = []
-    if archive_file_name =~ /(\.tar.gz|\.tgz)$/i
+    if archive_file_name =~ /(\.tar.gz|\.tgz)\z/i
       all_files = IO.popen("tar -tzf #{escaped_archivefile}") { |fh| fh.readlines.map(&:chomp) }
-    elsif archive_file_name =~ /\.tar$/i
+    elsif archive_file_name =~ /\.tar\z/i
       all_files = IO.popen("tar -tf #{escaped_archivefile}") { |fh| fh.readlines.map(&:chomp) }
     elsif archive_file_name =~ /\.zip/i
       all_files = IO.popen("unzip -l #{escaped_archivefile}") { |fh| fh.readlines.map(&:chomp)[3..-3].map{ |line|  line.split[3]} }
@@ -1433,9 +1433,9 @@ class UserfilesController < ApplicationController
     workdir = "/tmp/filecollection.#{Process.pid}"
     Dir.mkdir(workdir)
     Dir.chdir(workdir) do
-      if archive_file_name =~ /(\.tar.gz|\.tgz)$/i
+      if archive_file_name =~ /(\.tar.gz|\.tgz)\z/i
         system("tar -xzf #{escaped_archivefile}")
-      elsif archive_file_name =~ /\.tar$/i
+      elsif archive_file_name =~ /\.tar\z/i
         system("tar -xf #{escaped_archivefile}")
       elsif archive_file_name =~ /\.zip/i
         system("unzip #{escaped_archivefile}")

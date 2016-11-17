@@ -64,7 +64,7 @@ class CbrainFileList < CSVFile
   end
 
   def self.file_name_pattern #:nodoc:
-    /\.cbcsv$/i
+    /\.cbcsv\z/i
   end
 
   # Returns an array of arrays with the parsed content of the CSV file.
@@ -95,7 +95,7 @@ class CbrainFileList < CSVFile
   def ordered_raw_ids
     @ids_with_zeros_and_nils ||= cached_csv_array.map do |row|
       myid = row[0] # can be nil
-      if (myid.present?) && (myid =~ /^\s*\d+\s*$/)
+      if (myid.present?) && (myid =~ /\A\s*\d+\s*\z/)
         myid.strip.to_i
       else
         nil

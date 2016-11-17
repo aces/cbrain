@@ -367,7 +367,7 @@ describe PortalTask do
   describe "#human_attribute_name" do
 
     it "should remove the cbrain_tasks_param part from the string if it's there'" do
-      expect(PortalTask.human_attribute_name("cbrain_task_params_xyz")).to eq("xyz")
+      expect(PortalTask.human_attribute_name("cbrain_task_BRA_params_KET__BRA_xyz_KET_")).to eq("Xyz")
     end
 
     it "should use the pretty names hash if it applies" do
@@ -375,9 +375,9 @@ describe PortalTask do
       expect(PortalTask.human_attribute_name("cbrain_task_params_xyz")).to eq("pretty")
     end
 
-    it "should convert the pretty names sub hash keys if they haven't already beed" do
+    it "should convert the pretty names sub hash keys if they haven't already been" do
       allow(PortalTask).to receive(:pretty_params_names).and_return("xyz[abc]" => "pretty")
-      expect(PortalTask.human_attribute_name("cbrain_task_params_xyz_abc")).to eq("pretty")
+      expect(PortalTask.human_attribute_name("cbrain_task_BRA_params_KET__BRA_xyz_KET__BRA_abc_KET_")).to eq("pretty")
     end
 
     it "should return the humanized version of the string if cbrain_tasks part isn't there" do
@@ -424,100 +424,115 @@ describe PortalTask do
   end
 
   describe "::ParamsErrors" do
-    let(:params_errors) { PortalTask::ParamsErrors.new }
-    let(:real_errors)   { double("real_errors").as_null_object }
-    let(:param_path)    { "param_path" }
+    let(:task)          { CbrainTask::Diagnostics.new }
+    let(:params_errors) { task.params_errors }
+    let(:real_errors)   { task.errors }
+    let(:param_path)    { "test" }
+    let(:msg)           { "is invalid" }
 
     before(:each) do
-      params_errors.real_errors = real_errors
-    end
+      real_errors.clear
+      params_errors.add(param_path, "is bad")
+      params_errors.add(param_path, msg)
 
-    describe "#on" do
-
-      it "should convert the path argument to la and forward it" do
-        expect(real_errors).to receive(:on).with(param_path.to_la_id)
-        params_errors.on(param_path)
-      end
-
+      real_errors.add("user_id", "is bad")
     end
 
     describe "#[]" do
 
-      it "should convert the path argument to la and forward an #on call" do
-        expect(real_errors).to receive(:on).with(param_path.to_la_id)
+      it "should get the error from the real error object" do
+        expect(real_errors).to receive(:"[]")
         params_errors[param_path]
+      end
+
+    end
+
+    describe "#[]=" do
+
+      it "should add the error in the real error object" do
+        expect(real_errors).to receive(:add)
+        params_errors[param_path] = msg
       end
 
     end
 
     describe "#add" do
 
-      it "should convert the path argument to la and forward it" do
-        expect(real_errors).to receive(:add).with(param_path.to_la_id)
-        params_errors.add(param_path)
+      it "should add the error in the real error object" do
+        expect(real_errors).to receive(:add)
+        params_errors.add(param_path, msg)
       end
 
     end
 
     describe "#add_on_blank" do
 
-      it "should convert the path arguments to la and forward it" do
-        expect(real_errors).to receive(:add_on_blank).with([param_path.to_la_id])
-        params_errors.add_on_blank([param_path])
+      it "should add one error if only one param is blank" do
+        params_errors.clear
+
+        task.params = {
+          :test => "",
+          :test2 => "NOT BLANK"
+        }
+
+        params_errors.add_on_blank([:test, :test2])
+
+        expect(params_errors.count).to eq(1)
       end
 
     end
 
     describe "#add_on_empty" do
 
-      it "should convert the path argument to la and forward it" do
-        expect(real_errors).to receive(:add_on_empty).with([param_path.to_la_id])
-        params_errors.add_on_empty([param_path])
+      it "should add one error if only one param is empty" do
+        params_errors.clear
+
+        task.params = {
+          :test => "",
+          :test2 => "NOT EMPTY"
+        }
+        params_errors.add_on_empty([:test, :test2])
+
+        expect(params_errors.count).to eq(1)
       end
 
     end
 
-    describe "#add_to_base" do
-
-      it "should convert the path argument to la and forward it" do
-        expect(real_errors).to receive(:add_to_base)
-        params_errors.add_to_base
+    describe "#as_json" do
+      it "should return a valid json" do
+        expect(params_errors.as_json.to_s).to eq("{\"test\"=>[\"is bad\", \"is invalid\"]}")
       end
-
     end
 
-    describe "#size" do
-
-      it "should forward the call" do
-        expect(real_errors).to receive(:size)
-        params_errors.size
+    describe "#blank?" do
+      it "should return false when there are errors" do
+        expect(params_errors.blank?).to eq(false)
       end
 
+      it "should return true when there are no errors" do
+        params_errors.clear
+        expect(params_errors.blank?).to eq(true)
+      end
     end
 
     describe "#count" do
 
-      it "should forward a #size call" do
-        expect(real_errors).to receive(:size)
-        params_errors.count
-      end
-
-    end
-
-    describe "#length" do
-
-      it "should forward a #size call" do
-        expect(real_errors).to receive(:size)
-        params_errors.length
+      it "should return the number of params errors and exclude real errors" do
+        expect(params_errors.count).to eq(2)
       end
 
     end
 
     describe "#clear" do
 
-      it "should forward the call" do
-        expect(real_errors).to receive(:clear)
+      it "should delete all the params errors" do
         params_errors.clear
+        expect(params_errors.count).to eq(0)
+      end
+
+      it "should not delete the other errors" do
+        params_errors.clear
+        expect(real_errors.count).to eq(1)
       end
 
     end
@@ -531,66 +546,101 @@ describe PortalTask do
 
     end
 
-    describe "#each_full" do
-
-      it "should forward the call" do
-        expect(real_errors).to receive(:each_full)
-        params_errors.each_full
-      end
-
-    end
-
     describe "#empty?" do
 
-      it "should forward the call" do
-        expect(real_errors).to receive(:empty?)
-        params_errors.empty?
+      it "return false when there are params errors" do
+        expect(params_errors.empty?).to eq(false)
+      end
+
+      it "return true when there aren't" do
+        params_errors.clear
+        expect(params_errors.empty?).to eq(true)
       end
 
     end
 
     describe "#full_messages" do
 
-      it "should forward the call" do
-        expect(real_errors).to receive(:full_messages)
-        params_errors.full_messages
+      it "should build strings that represent the full params errors messages" do
+        expect(real_errors.full_messages).to be_kind_of(Array)
+        real_errors.full_messages.each { |msg|
+          expect(msg).to be_kind_of(String)
+        }
       end
 
     end
 
-    describe "#generate_message" do
+    # describe "#full_messages_for" do
 
-      it "should convert the path argument to la and forward it" do
-        expect(real_errors).to receive(:generate_message).with(param_path.to_la_id)
-        params_errors.generate_message(param_path)
+    #   it "should return messages for only params errors requested" do
+    #     expect(params_errors.full_messages_for(param_path)).to be_kind_of(Array)
+    #     expect(params_errors.full_messages_for(param_path).count).to eq(2)
+    #   end
+
+    # end
+
+    describe "#get" do
+      it "should return an array with the error messages for a parampath" do
+        expect(params_errors.get(param_path)).to be_kind_of(Array)
+        expect(params_errors.get(param_path).count).to eq(2)
+      end
+    end
+
+    describe "#keys?" do
+      it "should return an array of all the params that have errors" do
+        expect(params_errors.keys[0]).to eq(param_path.to_s)
+      end
+    end
+
+    describe "#set" do
+      it "should forward the call to set to the real error object with the la parameter name" do
+        expect(real_errors).to receive(:set).with(param_path.to_la_id.to_sym, Array(msg))
+        params_errors.set(param_path.to_s, [msg])
+      end
+    end
+
+    describe "#size" do
+
+      it "should return the number of params errors and exclude real errors" do
+        expect(params_errors.size).to eq(2)
       end
 
     end
 
-    describe "#invalid?" do
-
-      it "should convert the path argument to la and forward it" do
-        expect(real_errors).to receive(:invalid?).with(param_path.to_la_id)
-        params_errors.invalid?(param_path)
+    describe "#to_a" do
+      it "should return an array with the full messages" do
+        expect(params_errors.to_a).to be_kind_of(Array)
+        expect(params_errors.to_a).to eq(params_errors.full_messages)
       end
-
     end
-    describe "#on_base" do
 
-      it "should forward the call" do
-        expect(real_errors).to receive(:on_base)
-        params_errors.on_base
+    describe "#to_hash" do
+      it "should return a hash with partial messages" do
+        expect(params_errors.to_hash(false)).to be_kind_of(Hash)
       end
 
+      it "should return a hash with the full messages" do
+        expect(params_errors.to_hash(true)).to be_kind_of(Hash)
+        params_errors.to_hash(true).each { |key, msgs|
+          msgs.each { |msg|
+            expect(msg.downcase).to include(key)
+          }
+        }
+      end
     end
 
     describe "#to_xml" do
 
-      it "should forward the call" do
-        expect(real_errors).to receive(:on_base)
-        params_errors.on_base
+      it "should output XML" do
+        expect(real_errors.to_xml.to_s).to include("xml")
       end
 
+    end
+
+    describe "#values" do
+      it "should return the error messages without the params" do
+        expect(params_errors.values).to be_kind_of(Array)
+      end
     end
 
   end

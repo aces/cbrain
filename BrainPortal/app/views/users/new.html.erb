@@ -68,10 +68,10 @@
     <% end %>
 
     <p><%= f.label :password, "Password" %><br/>
-    <%= f.password_field :password %>
+    <%= f.password_field :password, :value => @random_pass %>
 
     <p><%= f.label :password_confirmation, "Confirm Password" %><br/>
-    <%= f.password_field :password_confirmation %>
+    <%= f.password_field :password_confirmation, :value => @random_pass %>
 
     <p><label for="no_password_reset_needed">No need to reset initial password:</label>
     <%= check_box_tag :no_password_reset_needed, "1", params[:no_password_reset_needed] == "1" %>

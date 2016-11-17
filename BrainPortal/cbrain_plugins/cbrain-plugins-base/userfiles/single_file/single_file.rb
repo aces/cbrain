@@ -39,12 +39,6 @@ class SingleFile < Userfile
     self.class.pretty_type + (compressed? ? " (compressed)" : "")
   end
 
-  # Returns whether or not the userfile is compressed using the gzip format
-  def compressed?
-    gz_extension_pos = (name =~ /(\.gz)$/i)
-    !gz_extension_pos.blank?  # if no .gz extension found, file not zipped
-  end
-
   # Forces calculation and setting of the size attribute.
   def set_size!
     self.size = self.list_files.inject(0){ |total, file_entry|  total += file_entry.size }

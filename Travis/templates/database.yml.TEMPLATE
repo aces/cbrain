@@ -1,0 +1,8 @@
+test:
+  adapter: mysql2
+  host: {{ default .Env.MYSQL_HOST "mysql" }}
+  port: {{ default .Env.MYSQL_PORT "3306" }}
+  database: {{ default .Env.MYSQL_DATABASE "cbrain_db_name_here" }}
+  username: {{ default .Env.MYSQL_USER "cbrain_db_user_name_here" }}
+  password: {{ default .Env.MYSQL_PASSWORD "cbrain_db_user_pw_here" }}
+  encoding: utf8

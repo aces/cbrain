@@ -28,7 +28,7 @@ class TarArchive < SingleFile
   has_viewer :name => 'TAR Archive', :partial => :tar_archive
 
   def self.file_name_pattern #:nodoc:
-    /\.tar(\.gz)?$|\.tgz$/i
+    /\.tar(\.gz)?\z|\.tgz\z/i
   end
 
   def self.pretty_type #:nodoc:

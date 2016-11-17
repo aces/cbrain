@@ -32,7 +32,7 @@ class Mp4VideoFile < VideoFile
   end
 
   def self.file_name_pattern #:nodoc:
-    /\.mp4$/i
+    /\.mp4\z/i
   end
 
 end

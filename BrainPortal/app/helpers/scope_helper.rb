@@ -223,7 +223,7 @@ module ScopeHelper
     # attribute is in flag_names, the corresponding flag value name is
     # the filter's representation.
     if flag = flag_names[attribute]
-      return values.first.to_s =~ /^(true|t|yes|y|on|1)$/i ? flag.first : flag.last
+      return values.first.to_s =~ /\A(true|t|yes|y|on|1)\z/i ? flag.first : flag.last
     end
 
     # Is +filter+'s attribute an association attribute? If so, resolve it

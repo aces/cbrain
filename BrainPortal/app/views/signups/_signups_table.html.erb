@@ -1,0 +1,166 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%= form_tag( { :action => :multi_action }, :method => :post) do %>
+
+  <div class="menu-bar">
+    <%= link_to "New Request", { :action => :new }, { :class => "button menu_button" }  %>
+    <%
+       # Careful, the labels of the buttons below are used by the controller
+       # to select which multi action to perform. Change them at both places.
+    %>
+    <%= submit_tag "Delete",                :class => "button" %>
+    <%= submit_tag "Adjust Login",          :class => "button" %>
+    <%= submit_tag "Resend Confirm Email",  :class => "button" %>
+  </div>
+
+  <hr>
+
+  <%=
+    render(:partial => 'shared/active_filters', :locals  => {
+      :scope => @scope,
+      :model => Signup,
+    })
+  %>
+
+  <%=
+    dynamic_scoped_table(@signups,
+      :class      => [ :resource_list ],
+      :id         => "signups_table",
+      :order_map  => {
+        :creation_date  =>  { :a => 'created_at' },
+        :institution    =>  { :a => 'signups.institution' },
+        :email          =>  { :a => 'signups.email' },
+      },
+      :scope      => @scope
+    ) do |t|
+  %>
+    <%
+      t.row do |d|
+        {
+          :select_param => 'reqids[]',
+          :select_value => d.id,
+          :html => { 'data-id' => d.id }
+        }
+      end
+    %>
+
+    <%
+      t.column("Name", :last,
+        :sortable => true
+      ) { |d| link_to d.full, :action => :show, :id => d.id }
+    %>
+
+    <%
+      t.column("Edit", :edit) do |d|
+    %>
+      <%= link_to "Edit", :action => :edit, :id => d.id %>
+    <% end %>
+
+    <%
+      t.column("Email", :email,
+        :sortable => true
+      ) { |d| red_if(d.dup_email?, d.email) }
+    %>
+
+    <%
+      t.column("Position", :position,
+        :sortable => true,
+        :hidden   => true,
+        :filters  => default_filters_for(@base_scope, :position)
+      )
+    %>
+
+    <%
+      t.column("Department", :department,
+        :sortable => true,
+        :hidden   => true,
+        :filters  => default_filters_for(@base_scope, :department)
+      )
+    %>
+
+    <%
+      t.column("Institution", :institution,
+        :sortable => true,
+        :filters  => default_filters_for(@base_scope, :institution)
+      )
+    %>
+
+    <%
+      t.column("Country", :country,
+        :sortable => true,
+        :filters => default_filters_for(@base_scope, :country)
+      )
+      %>
+
+    <%
+      t.column("Username", :login,
+        :sortable => true
+      )
+    %>
+
+    <%
+      t.column("Comments", :comment) do |d|
+        html_tool_tip(crop_text_to(40, d.comment), :offset_x => 0, :offset_y => 20) do
+          simple_format(d.comment, :sanitize => true)
+        end if d.comment.present?
+      end
+    %>
+
+    <%
+      t.column("In CBRAIN", :user) do |d|
+        user = User.where(:login => d.login).first
+        if (user)
+          link_to_user_with_tooltip(user)
+        else
+          "(None)"
+        end
+      end
+     %>
+
+    <%
+      t.column("Status", :status) do |d|
+    %>
+      <% if d.approved? %>
+        Approved by <%= d.approved_by %> at <%= d.approved_at %>
+      <% else %>
+        <% if d.confirmed? %>
+          <span><strong>Email confirmed.</strong></span>
+        <% else %>
+          <span class="warning">(Email unconfirmed)</span>
+        <% end %>
+        <% if d.dup_email? %>
+          <span  class="warning">(Conflicting email)</span>
+        <% end %>
+        <% if d.dup_login? %>
+          <span class="warning">(Login conflict)</span>
+        <% else %>
+          <%= link_to "(Approve)", new_user_path(:signup_id => d.id), :class => 'action_link' %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+  <% end %>
+<% end %>
+

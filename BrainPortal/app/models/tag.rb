@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #Model representing user-defined tags.
@@ -35,13 +35,13 @@ class Tag < ActiveRecord::Base
 
   validates_presence_of   :name, :user_id, :group_id
   validates_uniqueness_of :name, :scope => :group_id
-  validates_format_of     :name,  :with => /^[\w\-\=\.\+\?\!\s]*$/, 
+  validates_format_of     :name,  :with => /\A[\w\-\=\.\+\?\!\s]*\z/,
                                   :message  => 'only the following characters are valid: alphanumeric characters, spaces, _, -, =, +, ., ?, !'
-  
+
   has_and_belongs_to_many :userfiles
   belongs_to              :user
   belongs_to              :group
-  
+
   attr_accessible         :name, :user_id, :group_id
 
 end

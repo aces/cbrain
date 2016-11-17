@@ -28,7 +28,7 @@ class TextFile < SingleFile
   has_viewer :name => 'Text File', :partial  => :text_file, :if => :is_viewable?
 
   def self.file_name_pattern #:nodoc:
-    /\.txt$/i
+    /\.txt\z/i
   end
 
   def is_viewable? #:nodoc:

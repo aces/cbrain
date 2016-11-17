@@ -131,55 +131,60 @@ Toggle all: <%= select_all_checkbox 'dp_check' %>
 <%= form.params_hidden_field :do_validations %>
 
 <p>
-<strong>This text field must contain a odd number:</strong>
+<%= form.params_label :inptest_text_odd_number do %>
+  <strong>This text field must contain a odd number:</strong>
+<% end %>
 <%= form.params_text_field :inptest_text_odd_number %>
-</p>
 
 <p>
-<strong>Exactly two checkboxes must be set:</strong>
+<%= form.params_label :inptest_checkbox_1 do %>
+  <strong>Exactly two checkboxes must be set:</strong>
+<% end %>
 <%= form.params_check_box :inptest_checkbox_1 %>
 <%= form.params_check_box :inptest_checkbox_2 %>
 <%= form.params_check_box :inptest_checkbox_3 %>
 <%= form.params_check_box :inptest_checkbox_4 %>
-</p>
 
 <p>
 <strong>A hidden field is here [
 <%= form.params_hidden_field :inptest_hidden_field %>
 ] which MUST have the value 'XyZ'.</strong>
-</p>
 
 <p>
-<strong>This password field must be left blank or contain 'XyZ':</strong>
+<%= form.params_label :inptest_password_field do %>
+  <strong>This password field must be left blank or contain 'XyZ':</strong>
+<% end %>
 <%= form.params_password_field :inptest_password_field %>
-</p>
 
 <p>
-<strong>The first or last radio button must be selected:</strong>
+<%= form.params_label :inptest_radio do %>
+  <strong>The first or last radio button must be selected:</strong>
+<% end %>
 <%= form.params_radio_button :inptest_radio, 'first' %>
 <%= form.params_radio_button :inptest_radio, 'second' %>
 <%= form.params_radio_button :inptest_radio, 'third' %>
-</p>
 
 <p>
-<strong>This text area MUST contain the word 'XyZ':</strong><br/>
+<%= form.params_label :inptest_textarea do %>
+  <strong>This text area MUST contain the word 'XyZ':</strong><br/>
+<% end %>
 <%= form.params_text_area :inptest_textarea, :cols => 40, :rows => 3 %>
-</p>
 
 <p>
-<strong>This text is stored deep in the params and must contain 'Deep':</strong>
+<%= form.params_label 'inptest[deep]' do %>
+  <strong>This text is stored deep in the params and must contain 'Deep':</strong>
+<% end %>
 <%= form.params_text_field 'inptest[deep]' %>
-</p>
 
 <p>
-<strong>This selection box must be set to an odd number:</strong>
+<%= form.params_label :inptest_select do %>
+  <strong>This selection box must be set to an odd number:</strong>
+<% end %>
 <%= form.params_select :inptest_select, [ "1", "2", "3", "4" ] %>
-</p>
 
 <p>
 <%= form.params_hidden_field :refresh_count %>
 <strong>Refresh count <%= params[:refresh_count] || 0 %></strong> | <%= submit_tag 'Trigger Task Refresh' %>
-</p>
 
 </div>
 

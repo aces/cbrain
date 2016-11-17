@@ -1,0 +1,181 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title 'New Account Request' %>
+
+<%= form_for @signup, :url => { :action => (@signup.new_record? ? "create" : "update"), :id => @signup.id } do |f| %>
+
+  <%= error_messages_for @signup %>
+
+  <table class="simple bordered">
+
+    <tr>
+      <td class="warning centered" colspan="2">Fields with an asterisk (*) are mandatory.</td>
+    </tr>
+
+    <tr>
+      <td colspan="2">&nbsp;</td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:title, "Title:") %></th>
+      <td><%= f.text_field :title, :size => 10 %> <span class="field_note">(e.g. 'Mr.', 'Dr.', etc.)</span></td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:first, "* First Name:") %></th>
+      <td><%= f.text_field :first, :size => 20 %></td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:middle, "Middle Name:") %></th>
+      <td><%= f.text_field :middle, :size => 20 %></td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:last, "* Last Name:") %></th>
+      <td><%= f.text_field :last, :size => 20 %></td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:login, "Preferred 'login' name:") %></th>
+      <td><%= f.text_field :login, :size => 15 %> <span class="field_note">(one letter + alphanums)</span></td>
+    </tr>
+
+    <tr>
+      <td colspan="2">&nbsp;</td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:institution, "* Name of Institution/Organization:") %></th>
+      <td><%= f.text_field :institution, :size => 60 %></td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:department, "* Department") %></th>
+      <td><%= f.text_field :department, :size => 60 %></td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:position, "* Current position or role:") %></th>
+      <td><%= f.select :position, options_for_select(
+              [ [ "(select one)", "" ], "Faculty", "PostDoc", "Researcher", "Student", "Industry", "Other" ],
+              @signup.position)
+          %></td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:email, "* Institutional Email address:") %></th>
+      <td><%= f.text_field :email, :size => 60 %>
+        <br><small>Please supply an address from your research institution</small>
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">&nbsp;</td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:street1, "Street Address (line 1):") %></th>
+      <td><%= f.text_field :street1, :size => 60 %></td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:street2, "Street Address (line 2):") %></th>
+      <td><%= f.text_field :street2, :size => 60 %></td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:city, "* City:") %></th>
+      <td><%= f.text_field :city, :size => 30 %></td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:province, "* Province/State:") %></th>
+      <td><%= f.text_field :province, :size => 30 %></td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:country, "* Country:") %></th>
+      <td><%= f.text_field :country, :size => 30 %></td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:postal_code, "Postal/ZIP Code:") %></th>
+      <td><%= f.text_field :postal_code, :size => 8 %></td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:time_zone, "Time Zone:") %></th>
+      <td>
+        <%= f.time_zone_select :time_zone,
+            ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
+            { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'], :include_blank => true }
+        %>
+     </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">&nbsp;</td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:comment, "Comments or special requests:") %></th>
+      <td>
+          <%= f.text_area :comment, :cols => 80, :rows => 5 %>
+          <br>
+          <small>
+                 Please tell us the name of the laboratory you work for, the name of its Principal Investigator (if not you), and if possible anyone<br>
+                 else you know in your lab who are already CBRAIN users. We'll use this information to create or add you to a <em>Site</em> within CBRAIN.
+          </small>
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="2">&nbsp;</td>
+    </tr>
+
+    <tr>
+      <td colspan="2" class="centered">
+        <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request") %>
+      </td>
+    </tr>
+
+  </table>
+
+  <% end %>
+
+<br>
+
+<b>Privacy note:</b>
+The information you supply in this form is
+only used in order to review your application and, when approved, to
+automatically generate your user account. <br>
+This information will not be used in any other way, or passed on to
+any other entities or persons.
+
+<% if RemoteResource.current_resource.support_email.present? %>
+  <br>
+  For more information, contact <a href="mailto:<%= RemoteResource.current_resource.support_email %>"><%= RemoteResource.current_resource.support_email %></a>.
+<% end %>

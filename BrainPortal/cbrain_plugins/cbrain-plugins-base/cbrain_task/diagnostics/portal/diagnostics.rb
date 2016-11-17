@@ -150,7 +150,7 @@ class CbrainTask::Diagnostics < PortalTask
       task.description           = (desc.blank? ? "" : "#{desc} - ") + "Diagnostics with #{numfiles} files" + (num_copies > 1 ? ", copy #{i+1}." : ".")
       task.params[:copy_number]  = (i + 1)
       task.params.keys.select { |x| x.to_s =~ /_delay/ }.each do |delay_key|
-        next unless task.params[delay_key].to_s =~ /^(\d+)\D+(\d+)$/ #  "3-9" or "3..9" means random between 3 and 9 seconds
+        next unless task.params[delay_key].to_s =~ /\A\s*(\d+)\D+(\d+)\s*\z/ #  "3-9" or "3..9" means random between 3 and 9 seconds
         del_from = Regexp.last_match[1].to_i
         del_to   = Regexp.last_match[2].to_i
         task.params[delay_key] = (del_from + rand(del_to-del_from)).to_s
