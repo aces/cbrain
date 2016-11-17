@@ -226,6 +226,7 @@ class UsersController < ApplicationController
     original_group_ids = @user.group_ids
     original_ap_ids    = @user.access_profile_ids
 
+
     @user.make_all_accessible! if current_user.has_role?(:admin_user)
     if current_user.has_role? :site_manager
       @user.make_accessible!(:group_ids, :type, :account_locked)
@@ -238,6 +239,11 @@ class UsersController < ApplicationController
     end
 
     @user.attributes = params[:user]
+
+    remove_ap_ids     = original_ap_ids - @user.access_profile_ids
+    remove_group_ids  = AccessProfile.find(remove_ap_ids).map(&:group_ids).flatten.uniq
+
+    @user.apply_access_profiles(remove_group_ids: remove_group_ids)
 
     @user = @user.class_update
 
