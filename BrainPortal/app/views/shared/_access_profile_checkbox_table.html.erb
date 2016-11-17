@@ -1,0 +1,58 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+   # This partial renders a table of access profile names with checkboxes
+   # Partial locals:
+   #
+   #   access_profiles => [ access_profile, access_profile, ... ]
+   #   checked         => [ access_profile, access_profile, ... ]
+   #   variable_name   => "somemodel[group_ids][]"  # for instance; must end with '[]'
+   #   boxids          => "some_dom_id"             # will be appened with _{id}
+   #   html_class      => "someclass"               # for checkboxes
+   checked    ||= []
+   boxids     ||= "id_#{rand(1000000)}"
+   html_class ||= ""
+ %>
+
+<%
+  # Convenience helper to render a single checkbox and an access profile name
+    access_profile_check_box = lambda do |access_profile|
+    check_box_tag( variable_name,                                          # html var name
+                   access_profile.id.to_s,                                 # value
+                   checked.include?(access_profile),                       # checked or not
+                   :id => "#{boxids}_#{access_profile.id}",                # unique DOM id
+                   :class => html_class,
+                 ).html_safe +
+    (" <label for=\"#{boxids}_#{access_profile.id}\">" + access_profile_label(access_profile) + "</label>").html_safe
+
+  end
+%>
+
+<%= hidden_field_tag variable_name, [], :id => "#{boxids}_unchecked" %>
+
+<%= array_to_table(access_profiles, :cols => 12) do |access_profile,r,c| %>
+  <%= access_profile_check_box.(access_profile) %>
+<% end %>
+

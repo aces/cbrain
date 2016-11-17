@@ -63,7 +63,7 @@
 
     <% t.cell("Type") { @group.pretty_category_name(current_user) } %>
 
-    <% t.edit_cell(:description, :content =>  overlay_description(@group.description)) do %>
+    <% t.edit_cell(:description, :content =>  full_description(@group.description)) do %>
         <%= text_area_tag "group[description]", @group.description, :rows => 4, :cols => 40 %><br>
         <div class="field_explanation">The first line should be a short summary, and the rest are for details.</div><br>
     <% end %>
@@ -94,14 +94,10 @@
 
   <% end %>
 
-  <% # Access Profile List %>
-  <% if current_user.has_role?(:admin_user) && @group.access_profiles.count > 0 %>
-    <%= show_table(@group, :header => 'Access profiles') do |t| %>
-      <% t.cell("Access Profiles", :no_header => true) do %>
-        <%= array_to_table(@group.access_profiles.order(:name).all, :table_class => "simple", :cols => 4) do |access_profile| %>
-          <%= access_profile_label(access_profile, :with_link => true) %>
-        <% end %>
-      <% end %>
+  <% if current_user.has_role?(:admin_user) %>
+    <% group_access_profiles = (@group.access_profiles.map { |ap| access_profile_label(ap) }.join("&nbsp&nbsp").html_safe.presence) || "(None)" %>
+    <%= show_table(@group, :header => 'Access Profiles') do |t| %>
+      <% t.cell("Access Profiles") { group_access_profiles } %>
     <% end %>
   <% end %>
 
