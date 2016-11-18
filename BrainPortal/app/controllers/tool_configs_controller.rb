@@ -25,11 +25,30 @@ class ToolConfigsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  api_available :only => [ :index, :show ]
+
   before_filter :login_required
-  before_filter :admin_role_required
+  before_filter :admin_role_required, :except => [ :index ]
+
+  def index #:nodoc:
+    @scope              = scope_from_session('tool_configs')
+    scope_default_order(@scope, 'name')
+
+    @base_scope   = base_scope.includes([:tool, :bourreau, :group])
+    @view_scope   = @scope.apply(@base_scope)
+
+    @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 15 })
+    @tool_configs = @scope.pagination.apply(@view_scope)
+
+    respond_to do |format|
+      format.html
+      format.json { render :json => @tool_configs.map(&:for_api) } # todo :to_api
+      format.js
+    end
+  end
 
   # Only accessible to the admin user.
-  def index #:nodoc:
+  def report #:nodoc:
 
     @view ||= ((params[:view] || "") =~ /(by_bourreau|by_user|by_tool)/) ?
                Regexp.last_match[1] : nil
@@ -77,6 +96,11 @@ class ToolConfigsController < ApplicationController
       ToolConfig.where( :tool_id => @tool_config.tool_id, :bourreau_id => nil                      ).first if @tool_config
     @bourreau_glob_config ||=
       ToolConfig.where( :tool_id => nil,                  :bourreau_id => @tool_config.bourreau_id ).first if @tool_config
+
+    respond_to do |format|
+      format.html
+      format.json { render :json => @tool_config.for_api }
+    end
   end
 
   # The 'new' action is special in this controller.
@@ -233,6 +257,24 @@ class ToolConfigsController < ApplicationController
                   }
       format.xml  { head :ok }
     end
+  end
+
+  private
+
+  # Create list of TC visible to current user.
+  def base_scope #:nodoc:
+    scope = ToolConfig.scoped
+    unless current_user.has_role?(:admin_user)
+      bourreau_ids = Bourreau.all.select { |b| b.can_be_accessed_by?(current_user) }.map(&:id)
+      tool_ids     = Tool.all.select     { |t| t.can_be_accessed_by?(current_user) }.map(&:id)
+      group_ids    = current_user.groups.raw_first_column(:id)
+      scope = scope.where(
+        :bourreau_id => bourreau_ids,
+        :tool_id     => tool_ids,
+        :group_id    => group_ids
+      )
+    end
+    scope
   end
 
 end

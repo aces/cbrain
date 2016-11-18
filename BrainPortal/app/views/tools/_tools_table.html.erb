@@ -26,9 +26,10 @@
   <% if current_user.has_role?(:admin_user) %>
     <%= link_to 'Create New Tool', new_tool_path, :class => "button menu_button" %>
     <%= link_to 'Autoload Tools', { :action  => :create, :autoload  => true}, :method  => :post, :class => "button menu_button", :title => "Registers all subclasses of PortalTask as Tools" %>
-    <%= link_to 'Access Reports', { :controller => :tool_configs, :action => :index }, :class => "button menu_button" %>
+    <%= link_to 'Access Reports', { :controller => :tool_configs, :action => :report }, :class => "button menu_button" %>
   <% end %>
 
+  <%= link_to 'Tool Versions List', tool_configs_path, :class => "button menu_button" %>
   <%= overlay_ajax_link "Help", "/doc/tool/tool_info.html", :class  => "button menu_button" %>
 </div>
 
@@ -93,9 +94,11 @@
             .where(:bourreau_id => b.id, :tool_id => tool.id)
             .reject { |tc| ! tc.can_be_accessed_by?(current_user) }
             .size
-          "#{link_to_bourreau_if_accessible(b)}#{" (#{pluralize tcs, "version"})" if tcs >= 1}"
+          tcs.zero? ? "" :
+            link_to_bourreau_if_accessible(b) + " " +
+            link_to("(#{pluralize tcs, "version"})", :controller => :tool_configs, :action => :index, :bourreau_id => b.id, :tool_id => tool.id, :_simple_filters => 1 )
         end
-        .join('<br />')
+        .join('<br>')
         .html_safe
     end
 
@@ -104,7 +107,7 @@
         link_to 'Access?',
           {
             :controller => :tool_configs,
-            :action     => :index,
+            :action     => :report,
             :tool_id    => tool.id
           },
           :class => "action_link"

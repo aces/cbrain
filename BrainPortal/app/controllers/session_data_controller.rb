@@ -26,7 +26,8 @@ class SessionDataController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available
+  api_available :only => [ :show, :update ]
+
   before_filter :login_required
 
   # GET /session_data
