@@ -1025,11 +1025,6 @@ pre {
   padding: 0;
 }
 
-.vertical_bar {
-  display: inline;
-  border-left: solid black;
-  margin-right: 0.3em;
-}
 
 
 /* % ######################################################### */
@@ -1638,6 +1633,11 @@ th.center_align_heading {
 .show_task_prerequisites td {
   text-align: left;
   margin-right: 0em;
+}
+
+.vertical_bar {
+  display: inline;
+  font-size: 1.3em;
 }
 
 /* Show task parameters */
