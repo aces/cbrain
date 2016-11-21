@@ -27,9 +27,19 @@
 <div class="menu_bar">
   <% if @userfile.can_be_accessed_by?(current_user, requested_access = :write) %>
     <%= link_to 'Delete', { :action => 'delete_files', :file_ids => [@userfile.id] }, :confirm => "Are you sure you want to delete '#{@userfile.name}' ?", :class  => "button menu_button", :method => :delete  %>
+    <span class="vertical_bar"></span>
   <% end %>
   <% if @userfile.can_be_accessed_by?(current_user, requested_access = :read) %>
     <%= link_to(@userfile.is_a?(FileCollection) ? "Download Collection" : "Download File", { :action => 'download', :file_ids => [@userfile.id] }, :class => "button menu_button", :method  => :get) %>
+    <span class="vertical_bar"></span>
+  <% end %>
+
+  <% if @userfile.can_be_accessed_by?(current_user, requested_access = :write) %>
+    <% if @userfile.compressed? %>
+      <%= link_to "Uncompress", { :action => 'uncompress', :file_ids => [@userfile.id] }, { :method => "POST", :class => 'button menu_button' } %>
+    <% else %>
+      <%= link_to "Compress", { :action => 'compress', :file_ids => [@userfile.id] }, { :method => "POST", :class => 'button menu_button' } %>
+    <% end %>
   <% end %>
 </div>
 

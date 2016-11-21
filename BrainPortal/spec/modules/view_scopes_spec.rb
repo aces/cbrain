@@ -121,7 +121,7 @@ module ViewScopes
         })
       end
 
-      it "should support string matching" do
+      xit "should support string matching" do
         @expect_each.(:match, {
           'a' => [a],
           'k' => [],

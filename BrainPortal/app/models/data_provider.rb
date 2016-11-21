@@ -224,15 +224,15 @@ class DataProvider < ActiveRecord::Base
   validates_presence_of   :user_id, :group_id
   validates_inclusion_of  :read_only, :in => [true, false]
 
-  validates_format_of     :remote_user, :with => /^\w[\w\-\.]*$/,
+  validates_format_of     :remote_user, :with => /\A\w[\w\-\.]*\z/,
                           :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
                           :allow_blank => true
 
-  validates_format_of     :remote_host, :with => /^\w[\w\-\.]*$/,
+  validates_format_of     :remote_host, :with => /\A\w[\w\-\.]*\z/,
                           :message  => 'is invalid as only the following characters are valid: alphanumeric characters, _, -, and .',
                           :allow_blank => true
 
-  validates_format_of     :remote_dir, :with => /^[\w\-\.\=\+\/]*$/,
+  validates_format_of     :remote_dir, :with => /\A[\w\-\.\=\+\/]*\z/,
                           :message  => 'is invalid as only paths with simple characters are valid: a-z, A-Z, 0-9, _, +, =, . and of course /',
                           :allow_blank => true
 
@@ -243,9 +243,6 @@ class DataProvider < ActiveRecord::Base
   attr_accessible         :name, :user_id, :group_id, :remote_user, :remote_host, :alternate_host, :remote_port, :remote_dir, :online,
                           :read_only, :description, :time_of_death, :not_syncable, :time_zone, :cloud_storage_client_identifier,
                           :cloud_storage_client_token, :license_agreements
-
-  # CBRAIN extension
-  force_text_attribute_encoding 'UTF-8', :description
 
   # A class to represent a file accessible through SFTP or available locally.
   # Most of the attributes here are compatible with
@@ -476,7 +473,7 @@ class DataProvider < ActiveRecord::Base
     full_path = cache_full_path(userfile)
     if userfile.is_a?(FileCollection) && rel_path
       rel_path = Pathname.new(rel_path).cleanpath.to_s if rel_path.is_a?(String) || rel_path.is_a?(Pathname)
-      cb_error "Unacceptable path going outside data model." if rel_path.present? && rel_path =~ /^\.\.|^\//
+      cb_error "Unacceptable path going outside data model." if rel_path.present? && rel_path =~ /\A\.\.|\A\//
       full_path += rel_path
     end
     cb_error "Error: read handle cannot be provided for non-file."         unless File.file? full_path
@@ -518,7 +515,7 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: file #{userfile.name} is immutable."                  if     userfile.immutable?
     cb_error "Error: cannot use relative path argument with a SingleFile." if     userfile.is_a?(SingleFile) && rel_path
     rel_path = Pathname.new(rel_path).cleanpath.to_s if rel_path.is_a?(String) || rel_path.is_a?(Pathname)
-    cb_error "Unacceptable path going outside data model." if rel_path.present? && rel_path =~ /^\.\.|^\//
+    cb_error "Unacceptable path going outside data model." if rel_path.present? && rel_path =~ /\A\.\.|\A\//
     cache_prepare(userfile)
     localpath = cache_full_path(userfile)
     SyncStatus.ready_to_modify_cache(userfile) do
@@ -639,7 +636,7 @@ class DataProvider < ActiveRecord::Base
     list = []
 
     directory = Pathname.new(directory).cleanpath.to_s if directory.is_a?(String) || directory.is_a?(Pathname)
-    cb_error "Unacceptable path going outside data model." if directory =~ /^\.\.|^\//
+    cb_error "Unacceptable path going outside data model." if directory =~ /\A\.\.|\A\//
 
     if allowed_types.is_a? Array
       types = allowed_types.dup
@@ -977,7 +974,7 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: provider #{self.name} is offline." unless self.online?
     rr_allowed_syncing!("fetch file content list from")
     directory = Pathname.new(directory).cleanpath.to_s if directory.is_a?(String) || directory.is_a?(Pathname)
-    cb_error "Unacceptable path going outside data model." if directory =~ /^\.\.|^\//
+    cb_error "Unacceptable path going outside data model." if directory =~ /\A\.\.|\A\//
     impl_provider_collection_index(userfile, directory, allowed_types)
   end
 
@@ -1035,7 +1032,7 @@ class DataProvider < ActiveRecord::Base
   # Returns the first line of the description.
   def short_description
     description = self.description || ""
-    raise "Internal error: can't parse description!?!" unless description =~ /^(.+\n?)/ # the . doesn't match \n
+    raise "Internal error: can't parse description!?!" unless description =~ /\A(.+\n?)/ # the . doesn't match \n
     header = Regexp.last_match[1].strip
     header
   end
@@ -1140,7 +1137,7 @@ class DataProvider < ActiveRecord::Base
     rev_file = (cache_root + DP_CACHE_ID_FILE).to_s
     if ! force && File.exist?(rev_file)
       @@cache_rev = File.read(rev_file) rescue "" # a alphanumeric ID as ASCII
-      @@cache_rev = ""   if     @@cache_rev.blank? || @@cache_rev !~ /^\d\d\d\d-\d\d-\d\d/
+      @@cache_rev = "" if @@cache_rev.blank? || @@cache_rev !~ /\A\d\d\d\d-\d\d-\d\d/
       @@cache_rev.strip!
       return DateTime.parse(@@cache_rev) unless @@cache_rev.blank?
       File.unlink(rev_file) rescue true
@@ -1168,7 +1165,7 @@ class DataProvider < ActiveRecord::Base
       end
       sleep 2+rand(5) # make sure other process writing to it is done
       @@cache_rev = File.read(rev_file) rescue ""
-      @@cache_rev = "" if @@cache_rev.blank? || @@cache_rev !~ /^\d\d\d\d-\d\d-\d\d/
+      @@cache_rev = "" if @@cache_rev.blank? || @@cache_rev !~ /\A\d\d\d\d-\d\d-\d\d/
       @@cache_rev.strip!
       raise "Error: could not read a proper Data Provider Cache Revision Number from file '#{rev_file}' !" if @@cache_rev.blank?
       return "Unknown" # String to indicate it WAS unknown.
@@ -1296,9 +1293,9 @@ class DataProvider < ActiveRecord::Base
       IO.popen("find . -mindepth 3 -maxdepth 3 -type d -print","r") { |fh| dirlist = fh.readlines rescue [] }
       uids2path = {} # this is the main list of what to delete (preliminary)
       dirlist.each do |path|  # path should be  "./01/23/45\n"
-        next unless path =~ /^\.\/(\d+)\/(\d+)\/(\d+)\s*$/ # make sure
+        next unless path =~ /\A\.\/(\d+)\/(\d+)\/(\d+)\s*\z/ # make sure
         idstring = Regexp.last_match[1..3].join("")
-        uids2path[idstring.to_i] = path.strip.sub(/^\.\//,"") #  12345 => "01/23/45"
+        uids2path[idstring.to_i] = path.strip.sub(/\A\.\//,"") #  12345 => "01/23/45"
       end
 
       # Might as well clean spurious SyncStatus entries too.
@@ -1329,8 +1326,8 @@ class DataProvider < ActiveRecord::Base
           $0="Cache Spurious PATH=#{path} #{i+1}/#{uids2path.size}\0" if options[:update_dollar_zero]
           system("chmod","-R","u+rwX",path)   # uppercase X affects only directories
           FileUtils.remove_entry(path, true) rescue true
-          maybe_spurious_parents[path.sub(/\/\d+$/,"")]      = 1  # "01/23"
-          maybe_spurious_parents[path.sub(/\/\d+\/\d+$/,"")] = 1  # "01"
+          maybe_spurious_parents[path.sub(/\/\d+\z/,"")]      = 1  # "01/23"
+          maybe_spurious_parents[path.sub(/\/\d+\/\d+\z/,"")] = 1  # "01"
         end
         maybe_spurious_parents.keys.sort { |a,b| b <=> a }.each { |parent| Dir.rmdir(parent) rescue true }
       end

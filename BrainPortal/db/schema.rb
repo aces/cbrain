@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160811141815) do
+ActiveRecord::Schema.define(:version => 20161011184517) do
 
   create_table "access_profiles", :force => true do |t|
     t.string   "name",        :null => false
@@ -53,7 +53,6 @@ ActiveRecord::Schema.define(:version => 20160811141815) do
     t.integer  "user_id"
     t.integer  "bourreau_id"
     t.text     "description"
-    t.datetime "launch_time"
     t.text     "prerequisites"
     t.integer  "share_wd_tid"
     t.integer  "run_number"
@@ -74,7 +73,6 @@ ActiveRecord::Schema.define(:version => 20160811141815) do
   add_index "cbrain_tasks", ["cluster_workdir_size"], :name => "index_cbrain_tasks_on_cluster_workdir_size"
   add_index "cbrain_tasks", ["group_id", "bourreau_id", "status"], :name => "index_cbrain_tasks_on_group_id_and_bourreau_id_and_status"
   add_index "cbrain_tasks", ["group_id"], :name => "index_cbrain_tasks_on_group_id"
-  add_index "cbrain_tasks", ["launch_time"], :name => "index_cbrain_tasks_on_launch_time"
   add_index "cbrain_tasks", ["status"], :name => "index_cbrain_tasks_on_status"
   add_index "cbrain_tasks", ["type"], :name => "index_cbrain_tasks_on_type"
   add_index "cbrain_tasks", ["user_id", "bourreau_id", "status"], :name => "index_cbrain_tasks_on_user_id_and_bourreau_id_and_status"
@@ -277,6 +275,35 @@ ActiveRecord::Schema.define(:version => 20160811141815) do
 
   add_index "sessions", ["session_id"], :name => "index_sessions_on_session_id"
   add_index "sessions", ["updated_at"], :name => "index_sessions_on_updated_at"
+
+  create_table "signups", :force => true do |t|
+    t.string   "title"
+    t.string   "first",         :null => false
+    t.string   "middle"
+    t.string   "last",          :null => false
+    t.string   "institution",   :null => false
+    t.string   "department"
+    t.string   "position"
+    t.string   "email",         :null => false
+    t.string   "website"
+    t.string   "street1"
+    t.string   "street2"
+    t.string   "city"
+    t.string   "province"
+    t.string   "country"
+    t.string   "postal_code"
+    t.string   "time_zone"
+    t.string   "service"
+    t.string   "login"
+    t.string   "comment"
+    t.string   "session_id"
+    t.string   "confirm_token"
+    t.boolean  "confirmed"
+    t.string   "approved_by"
+    t.datetime "approved_at"
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
+  end
 
   create_table "sites", :force => true do |t|
     t.string   "name"

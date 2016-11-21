@@ -43,7 +43,7 @@ require __dir__ + "/lib/fast_finder.rb"
 
 # Adds "ibc"
 require __dir__ + "/lib/interactive_bourreau_control.rb"
-def ibc ; no_log { InteractiveBourreauControl.new.interactive_control } ; end
+def ibc(command=nil) ; no_log { InteractiveBourreauControl.new.interactive_control(command) } ; end
 
 # Adds "plog"
 require __dir__ + "/lib/print_log.rb"

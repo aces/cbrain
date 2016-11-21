@@ -17,20 +17,20 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Model for script files written in the Ruby language.
 class RubySourceFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   def self.pretty_type #:nodoc:
     "Ruby source file"
   end
 
   def self.file_name_pattern #:nodoc:
-    /\.rb$/i
+    /\.rb\z/i
   end
-  
+
 end

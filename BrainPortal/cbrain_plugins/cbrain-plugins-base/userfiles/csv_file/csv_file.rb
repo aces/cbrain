@@ -34,7 +34,7 @@ class CSVFile < TextFile
   end
 
   def self.file_name_pattern #:nodoc:
-    /\.csv$/i
+    /\.csv\z/i
   end
 
   def is_viewable? #:nodoc:

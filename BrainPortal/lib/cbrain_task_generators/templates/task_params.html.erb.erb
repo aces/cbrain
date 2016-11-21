@@ -279,6 +279,7 @@
 <%# Generate a complete HTML block for a given parameter +param+ -%>
 <%- parameter = lambda do |param, isGroupMember = false| -%>
   <%-
+    param['optional'] = false if param['optional'].nil?
     id    = param['id']
     type  = param['type'].downcase.to_sym
     opt   = !!(param['optional'] && type != :flag)
@@ -371,6 +372,9 @@
         description.(<<-'DESC',<%= isGroupMember %>)
           <%= param['description'] %>
         DESC
+  <%- elsif not param['description'] and isGroupMember %>
+        # Blank Line for empty description (fixes spacing)
+        description.('',<%= isGroupMember %>)
   <%- end -%>
      %>
     </li>

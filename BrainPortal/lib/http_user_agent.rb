@@ -75,7 +75,7 @@ class HttpUserAgent
     keyvals = {}
     lastname = ""
     adj_ua.split(/[\s;()]+/).each do |comp|
-      next unless comp =~ /^(\S+)\/(\S+)$/
+      next unless comp =~ /\A(\S+)\/(\S+)\z/
       name  = Regexp.last_match[1]
       value = Regexp.last_match[2]
       next if keyvals.has_key?(name.downcase) # first match has priority
@@ -104,6 +104,7 @@ class HttpUserAgent
       when /iPhone/                     ; 'iPhone'
       when /xbox.?one/                  ; 'Xbox One'
       when /xbox/                       ; 'Xbox'
+      when /windows nt 10/i             ; 'Windows 10'
       when /windows nt 6\.[2-9]/i       ; 'Windows 8'
       when /windows nt 6\.1/i           ; 'Windows 7'
       when /windows nt 6\.0/i           ; 'Windows Vista'

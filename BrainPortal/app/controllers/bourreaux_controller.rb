@@ -482,7 +482,7 @@ class BourreauxController < ApplicationController
     # of second before NOW at which point files OLDER than
     # that become eligible for elimination
     cleanup_older = params[:cleanup_older] || 0
-    if cleanup_older.to_s =~ /^\d+/
+    if cleanup_older.to_s =~ /\A\d+/
       cleanup_older = cleanup_older.to_i
       cleanup_older = 50.year.to_i if cleanup_older > 50.year.to_i
     else
@@ -493,7 +493,7 @@ class BourreauxController < ApplicationController
     # of second before NOW at which point files YOUNGER than
     # that become eligible for elimination
     cleanup_younger = params[:cleanup_younger] || 0
-    if cleanup_younger.to_s =~ /^\d+/
+    if cleanup_younger.to_s =~ /\A\d+/
       cleanup_younger = cleanup_younger.to_i
       cleanup_younger = 50.year.to_i if cleanup_younger > 50.year.to_i
     else
@@ -525,7 +525,7 @@ class BourreauxController < ApplicationController
     # Extract what caches are asked to be cleaned up
     rrid_to_userids = {}  # rr_id => { uid => true , uid => true , uid => true ...}
     clean_cache.each do |pair|
-      next unless pair.to_s.match(/^(\d+),(\d+)$/)
+      next unless pair.to_s.match(/\A(\d+),(\d+)\z/)
       user_id            = Regexp.last_match[1].to_i
       remote_resource_id = Regexp.last_match[2].to_i
       # Make sure we're allowed

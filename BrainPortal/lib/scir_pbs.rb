@@ -48,14 +48,14 @@ class ScirPbs < Scir
       @job_info_cache = {}
       out.split(/\s*\n\s*/).each do |line|
         line.force_encoding('ASCII-8BIT')  # some pbs 'qstat' commands output junk binary data!
-        if line =~ /^Job\s+id\s*:\s*(\S+)/i
+        if line =~ /\AJob\s+id\s*:\s*(\S+)/i
           jid = Regexp.last_match[1]
-          if jid =~ /^(\d+)/
+          if jid =~ /\A(\d+)/
             jid = Regexp.last_match[1]
           end
           next
         end
-        next unless line =~ /^\s*job_state\s*=\s*(\S+)/i
+        next unless line =~ /\A\s*job_state\s*=\s*(\S+)/i
         state = statestring_to_stateconst(Regexp.last_match[1])
         @job_info_cache[jid.to_s] = { :drmaa_state => state }
       end
@@ -118,7 +118,7 @@ class ScirPbs < Scir
     private
 
     def qsubout_to_jid(txt) #:nodoc:
-      if txt && txt =~ /^(\d+)/
+      if txt && txt =~ /\A(\d+)/
         return Regexp.last_match[1]
       end
       raise "Cannot find job ID from qsub output.\nOutput: #{txt}"

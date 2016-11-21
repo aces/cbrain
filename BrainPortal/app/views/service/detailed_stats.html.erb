@@ -129,7 +129,7 @@
       <!-- each row -->
       <% bystatus = @stats['StatusCodes'] || {} %>
       <% bystatus.keys.sort.each do |status_code| %>
-        <% code  = status_code =~ /(\d+)$/ ? Regexp.last_match[1] : status_code %>
+        <% code  = status_code =~ /(\d+)\z/ ? Regexp.last_match[1] : status_code %>
         <% count = bystatus[status_code] || "(Unknown)" %>
         <tr>
           <td><%= code %></td>

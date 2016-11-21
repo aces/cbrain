@@ -372,6 +372,12 @@ module DynamicTableHelper
     #  Defaults to 'selection'.
     #  Marks the row as selectable if specified.
     #
+    # [select_hidden]
+    #  If true, when rows are selectable, the table cell for the check box will be
+    #  left emtpy; the values for :selected, :select_value and :select_params will
+    #  all be ignored. This option allows the layout of a table to include a placeholder
+    #  for the check box even when it is not there.
+    #
     # [override]
     #  Lambda function to call for generating table rows instead of the table's
     #  automatic row generation mechanism. The lambda will be passed 3
@@ -394,12 +400,13 @@ module DynamicTableHelper
     # select_value and select_param row options, with +value+ corresponding to
     # select_value and +param+ to select_param. See the corresponding +row+
     # method options for further information.
-    def selectable(param = nil, value = nil, selected = nil)
+    def selectable(param = nil, value = nil, selected = nil, hidden = nil)
       self.row(
-        :selectable   => true,
-        :selected     => selected,
-        :select_param => param,
-        :select_value => value
+        :selectable    => true,
+        :selected      => selected,
+        :select_param  => param,
+        :select_value  => value,
+        :select_hidden => hidden,
       )
     end
 
@@ -628,7 +635,9 @@ module DynamicTableHelper
       # Parameter name in the request to send select_value as.
       :select_param,
       # Assuming this row is selectable, whether it is initially selected or not.
-      :selected
+      :selected,
+      # Override rendering code to NOT show the select checkbox at all (but the table cell will still be present)
+      :select_hidden,
     ) do
       # Apply a set of +options+, possibly returned by calling +block+
       # on the row's collection object, to the row. Available options are
@@ -653,6 +662,7 @@ module DynamicTableHelper
           self.select_value ||= obj[:id] if obj.respond_to?(:[]) && (obj[:id] rescue nil)
           self.select_value ||= obj.hash
           self.select_param   = options[:select_param] || 'selection'
+          self.select_hidden  = true if options[:select_hidden]
         end
       end
 

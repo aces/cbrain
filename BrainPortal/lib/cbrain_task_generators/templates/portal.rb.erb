@@ -37,7 +37,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 
 % # Maximum width of a given +key+'s value in a +list+ of hashes
 % max_width = lambda do |list, key|
-%   list.map { |i| i[key].to_s.length rescue 0 }.max
+%   list.map { |i| i[key].to_s.length rescue 0 }.max or 0
 % end
 %
 % # Parameter types
@@ -626,8 +626,8 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
       # Try to match against various common representation of true and false
       when :flag
         if value.is_a?(String)
-          value = true  if value =~ /^(true|t|yes|y|on|1)$/i
-          value = false if value =~ /^(false|f|no|n|off|0|)$/i
+          value = true  if value =~ /\A(true|t|yes|y|on|1)\z/i
+          value = false if value =~ /\A(false|f|no|n|off|0|)\z/i
         end
 
         if ! [ true, false ].include?(value)

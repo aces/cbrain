@@ -25,10 +25,10 @@
 CbrainRailsPortal::Application.routes.draw do
 
   # Session
-  resource  :session
+  resource  :session, :only => [ :new, :create, :show, :destroy ]
 
   # Control channel
-  resources :controls,       :controller => :controls
+  resources :controls,       :controller => :controls, :only => [ :show, :create ]
 
   # Documentation
   resources :docs,           :controller => :help_documents
@@ -36,12 +36,17 @@ CbrainRailsPortal::Application.routes.draw do
   # Standard CRUD resources
   resources :sites
   resources :custom_filters
-  resources :tool_configs
   resources :tags
   resources :access_profiles
   resources :feedbacks
 
   # Standard CRUD resources, with extra actions
+
+  resources :tool_configs do
+    collection do
+      get  'report'
+    end
+  end
 
   resources :messages do
     collection do
@@ -68,7 +73,7 @@ CbrainRailsPortal::Application.routes.draw do
     end
   end
 
-  resources :invitations, :only => [:new, :create, :update, :destroy]
+  resources :invitations, :only => [ :new, :create, :update, :destroy ]
 
   resources :bourreaux do
     member do
@@ -146,8 +151,18 @@ CbrainRailsPortal::Application.routes.draw do
     end
   end
 
-  resources :exception_logs, :only => [:index, :show] do
+  resources :exception_logs, :only => [ :index, :show ] do
     delete :destroy, :on => :collection
+  end
+
+  resources :signups do
+    member do
+      post 'resend_confirm'
+      get  'confirm'
+    end
+    collection do
+      post 'multi_action'
+    end
   end
 
   # Special named routes
@@ -165,6 +180,9 @@ CbrainRailsPortal::Application.routes.draw do
 
   # Report Maker
   get   "/report",                :controller => :portal, :action => :report
+
+  # API description, by Swagger
+  get   "/swagger",               :controller => :portal, :action => :swagger
 
   # Licence handling
   get   '/show_license/:license', :controller => :portal, :action => :show_license

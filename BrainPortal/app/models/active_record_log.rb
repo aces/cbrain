@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This model stores the logs for any other
@@ -26,10 +26,8 @@
 class ActiveRecordLog < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
-  attr_accessible :ar_id, :ar_table_name, :log
 
-  force_text_attribute_encoding 'UTF-8', :log
+  attr_accessible :ar_id, :ar_table_name, :log
 
   def active_record_object #:nodoc:
     ar_id = self.ar_id

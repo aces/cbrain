@@ -35,7 +35,7 @@ CbrainSystemChecks.print_intro_info # general information printed to STDOUT
 program_name = $PROGRAM_NAME || $0
 program_name = Pathname.new(program_name).basename.to_s if program_name
 first_arg    = ARGV[0]
-rails_command = $LOADED_FEATURES.detect { |path| path =~ /rails\/commands\/\w+\.rb$/ }
+rails_command = $LOADED_FEATURES.detect { |path| path =~ /rails\/commands\/\w+\.rb\z/ }
 program_name = Pathname.new(rails_command).basename(".rb").to_s if rails_command
 
 #puts_cyan "Program=#{program_name} ARGV=(#{ARGV.join(" | ")})"

@@ -27,7 +27,7 @@ module ExceptionHelpers
 
   def self.included(includer) #:nodoc:
     includer.class_eval do
-      rescue_from Exception,                            :with => :generic_exception
+      rescue_from StandardError,                        :with => :generic_exception
       rescue_from ActiveRecord::RecordNotFound,         :with => :record_not_found
       rescue_from ::AbstractController::ActionNotFound, :with => :unknown_action
       rescue_from CbrainException,                      :with => :cb_exception

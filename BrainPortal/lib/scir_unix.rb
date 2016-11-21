@@ -44,7 +44,7 @@ class ScirUnix < Scir
       psout, pserr = bash_this_and_capture_out_err(ps_command)
       raise "Cannot get output of '#{ps_command}' ?!?" if psout.blank? && ! pserr.blank?
       psout.split(/\s*\n\s*/).each do |line|
-        next unless line =~ /^\s*(\d+)\s+(\d+)\s+(\S+)/
+        next unless line =~ /\A\s*(\d+)\s+(\d+)\s+(\S+)/
         pid       = Regexp.last_match[1]
       # uid       = Regexp.last_match[2]
         statechar = Regexp.last_match[3]
@@ -87,11 +87,11 @@ class ScirUnix < Scir
       case CBRAIN::System_Uname
       when /Linux/i
         cpuinfo = `cat /proc/cpuinfo 2>&1`.split("\n")
-        proclines = cpuinfo.select { |i| i.match(/^processor\s*:\s*/i) }
+        proclines = cpuinfo.select { |i| i.match(/\Aprocessor\s*:\s*/i) }
         return [ loadtxt , proclines.size.to_s ]
       when /Darwin/i
         hostinfo = `hostinfo 2>&1`.strip
-        hostinfo.match(/^(\d+) processors are/)
+        hostinfo.match(/\A(\d+) processors are/)
         numproc = Regexp.last_match[1] || "unknown"
         [ loadtxt, numproc ]
       else
@@ -133,8 +133,8 @@ class ScirUnix < Scir
       stdout = self.stdout || ":/dev/null"
       stderr = self.stderr || (self.join ? nil : ":/dev/null")
 
-      stdout.sub!(/^:/,"") if stdout
-      stderr.sub!(/^:/,"") if stderr
+      stdout.sub!(/\A:/,"") if stdout
+      stderr.sub!(/\A:/,"") if stderr
 
       command = ""
       command += "cd #{shell_escape(self.wd)} || exit 20;"  if self.wd

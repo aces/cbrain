@@ -30,8 +30,8 @@
 # report on the state of a RemoteResource, when queried
 # by another RemoteResource. This is performed by
 # using the Controls controller and the Control
-# ActiveResource, which are used by all CBRAIN
-# Rails applications.
+# ActiveResource, which are part of both CBRAIN
+# Rails applications (BrainPortal and Bourreau).
 class RemoteResourceInfo < RestrictedHash
 
    Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -58,10 +58,10 @@ class RemoteResourceInfo < RestrictedHash
      :starttime_revision,   # GIT tag AT STARTTIME, e.g. "3.1.13-121"
 
      # Statistics
-     :num_cbrain_userfiles,       # Total number of userfiles in system; only filled when querying a CbrainPortal
+     :num_cbrain_userfiles,       # Total number of userfiles in system; only filled when querying a BrainPortal
      :num_sync_cbrain_userfiles,  # Number of userfiles synced locally
      :size_sync_cbrain_userfiles, # Total size for the synced userfiles
-     :num_cbrain_tasks,           # Number of CBRAIN tasks; grand total if querying a CbrainPortal, or subset when querying a Bourreau
+     :num_cbrain_tasks,           # Number of CBRAIN tasks; grand total if querying a BrainPortal, or subset when querying a Bourreau
      :num_active_cbrain_tasks,    # Subset of num_cbrain_trasks that are ACTIVE_STATUS (see cbrain_tasks.rb)
 
      # Bourreau-specific fields

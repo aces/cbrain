@@ -27,7 +27,8 @@ class DataProvidersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :except => [:cleanup]
+  api_available :only => [ :index, :show, :is_alive,
+                           :browse, :register, :unregister, :delete ]
 
   before_filter :login_required
   before_filter :manager_role_required, :only => [:new, :create]
@@ -143,7 +144,7 @@ class DataProvidersController < ApplicationController
            not_syncable cloud_storage_client_identifier cloud_storage_client_token
          )
       )
-      meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/^dp_no_copy_\d+$|^rr_no_sync_\d+$/)
+      meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/\Adp_no_copy_\d+\z|\Arr_no_sync_\d+\z/)
       add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid] + meta_flags_for_restrictions)
       flash[:notice] = "Provider successfully updated."
       respond_to do |format|
@@ -441,7 +442,7 @@ class DataProvidersController < ApplicationController
     # in 'basenames' (to be registered) but *not* in 'filetypes', a default
     # of 'SingleFile' is used.
     filetypes = Array(params[:filetypes])
-      .map { |v| [$2, $1] if v.match(/^(\w+)-(\S+)$/) }
+      .map { |v| [$2, $1] if v.match(/\A(\w+)-(\S+)\z/) }
       .compact
       .to_h
 

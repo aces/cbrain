@@ -35,7 +35,7 @@ module RichUiHelper
     header = description.lines.first.strip
     body   = (description[header.size,999] || "").strip
     cropped_header = crop_text_to(options[:header_width] || 50,header)
-    return h(cropped_header) if body.blank? && cropped_header !~ /\.\.\.$/
+    return h(cropped_header) if body.blank? && cropped_header !~ /\.\.\.\z/
     return h(cropped_header) if cropped_header.present? && body.present? && (cropped_header == body)
 
     link = h(cropped_header) + " " +
@@ -44,6 +44,12 @@ module RichUiHelper
         ("<h4>#{h(header)}</h4>#{pre_body}").html_safe
       end
     link.html_safe
+  end
+
+  # Takes a +description+ with multiple lines and shows
+  # the whole thing, including line breaks.
+  def full_description(description)
+    "<span style=\"white-space: pre-wrap;\">".html_safe + description + "</span>".html_safe
   end
 
   # Create an element that opens a dropdown when it's

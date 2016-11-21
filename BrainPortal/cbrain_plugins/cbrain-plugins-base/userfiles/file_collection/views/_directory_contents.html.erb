@@ -44,7 +44,7 @@
                                     :url      => url_for(:action                => :display,
                                                          :viewer                => "directory_contents",
                                                          :viewer_userfile_class => "FileCollection",
-                                                         :base_directory        => file.name.sub(/^[^\/]+\//, ""),
+                                                         :base_directory        => file.name.sub(/\A[^\/]+\//, ""),
                                                          :apply_div             => "false"
                                                         ),
                                     :position => "after",

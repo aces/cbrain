@@ -23,7 +23,7 @@
 require 'rails_helper'
 
 RSpec.describe SessionsController, :type => :controller do
-  let(:current_session) { double("session").as_null_object }
+  let(:current_session) { mock_model(ActiveRecord::SessionStore::Session, "_csrf_token" => 'dummy csrf').as_null_object }
   let(:portal)          { double("portal", :portal_locked? => false).as_null_object }
 
   before(:each) do
@@ -71,7 +71,7 @@ RSpec.describe SessionsController, :type => :controller do
       expect(response).to render_template("new")
     end
 
-    it "should render the login page if the account is locked" do
+    it "should display an error if the user account is locked" do
       allow(current_user).to receive(:account_locked?).and_return(true)
       post :create
       expect(flash[:error]).to match(/locked/i)

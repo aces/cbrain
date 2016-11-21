@@ -63,7 +63,7 @@ class CustomFilter < ActiveRecord::Base
 
   validates_presence_of   :name
   validates_uniqueness_of :name, :scope  => [:user_id, :type]
-  validates_format_of     :name, :with => /^[\w\-\=\.\+\?\!\s]*$/,
+  validates_format_of     :name, :with => /\A[\w\-\=\.\+\?\!\s]*\z/,
                                  :message  => 'only the following characters are valid: alphanumeric characters, spaces, _, -, =, +, ., ?, !'
 
   validate :validate_date
@@ -85,7 +85,7 @@ class CustomFilter < ActiveRecord::Base
 
   # Returns the name of the controller of the resource being filtered.
   def filtered_class_controller
-    @filtered_class_controller ||= self.class.to_s.sub(/CustomFilter$/, "").tableize
+    @filtered_class_controller ||= self.class.to_s.sub(/CustomFilter\z/, "").tableize
   end
 
   # Wrapper for the data attribute. Ensures it's always initialized.

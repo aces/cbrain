@@ -36,7 +36,7 @@ class SingleFile < Userfile
   end
 
   def pretty_type #:nodoc:
-    self.class.pretty_type + (name =~ /(\.gz|\.Z|\.gz2)$/i ? " (compressed)" : "")
+    self.class.pretty_type + (compressed? ? " (compressed)" : "")
   end
 
   # Forces calculation and setting of the size attribute.

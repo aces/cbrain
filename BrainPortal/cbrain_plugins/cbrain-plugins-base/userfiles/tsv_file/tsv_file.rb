@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Model for TSV file.
@@ -28,9 +28,9 @@ class TsvFile < CSVFile
   def self.pretty_type #:nodoc:
     "TSV File"
   end
-  
+
   def self.file_name_pattern #:nodoc:
-    /\.(tsv|tab)$/i
+    /\.(tsv|tab)\z/i
   end
 
 end
