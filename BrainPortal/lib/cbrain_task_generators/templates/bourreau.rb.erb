@@ -53,7 +53,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 % in_keys  = inputs.select  { |i| i['value-key'] }
 % out_keys = outputs.select { |o| o['value-key'] }
 % flags    = (inputs + outputs).select { |p| p['command-line-flag'] }
-% seps     = inputs.select { |i| i['command-line-flag-separator'] }
+% seps     = (inputs + outputs).select { |i| i['command-line-flag-separator'] }
 % eVars    = descriptor['environment-variables'].dup rescue []
 %
   # Task properties are special boolean properties of your task, returned as a
@@ -526,8 +526,9 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   # Apply substitution keys +keys+ to +template+ in order to format a
   # command-line or output file name.
   # Substitute each value in +keys+ in +template+, prepended by the
-  # corresponding flag in +flags+ (if available) and stripped of the
-  # endings in +strip+:
+  # corresponding flag in +flags+ (if available), stripped of the
+  # endings in +strip+, and separated by the corresponding string in
+  # +separators+:
   #   apply_template('f [1]', { '[1]' => 5 })
   #     => 'f 5'
   #
@@ -539,6 +540,12 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
   #     flags: { '[1]' => '-z' },
   #     strip: [ '.z' ]
   #   ) => 'f -z 5'
+  #
+  #   apply_template('f [1]', { '[1]' => '5' },
+  #     flags: { '[1]' => '-z' },
+  #     separators: { '[1]' => '=' }
+  #   ) => 'f -z=5'
+  #
   def apply_template(template, keys, flags: {}, strip: [], separators: {})
     # Set of properties from the descriptor for file-type inputs
     fileKeys = [<%= files.map { |f| '"' + f['value-key'] + '"' }.join(",") %>]

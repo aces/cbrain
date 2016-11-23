@@ -189,6 +189,77 @@ describe "Bourreau Boutiques Tests" do
 
     end
 
+    # Test cluster_commands generation for a minimal mock app
+    context 'Minimal Mock App' do
+
+      # Bourreau-side generation of minimal task
+      before(:each) do
+        # Generate a descriptor
+        @descriptor = NewMinimalTask.()
+        # Generates a task object from the minimal mock app
+        @generateTask = -> params {
+          genTask = SchemaTaskGenerator.generate(SchemaTaskGenerator.default_schema, @descriptor, false).integrate
+          task = CbrainTask::MinimalTest.new
+          task.params = params
+          task
+        }
+      end
+
+      context 'cbrain integration' do
+
+        # Simple test to ensure integration is correct
+        it "should work correctly" do
+          genTask = SchemaTaskGenerator.generate(SchemaTaskGenerator.default_schema, @descriptor, false).integrate
+          expect( (CbrainTask::MinimalTest.new).name ).to eq( "MinimalTest" ) # Check for task instance
+          expect( genTask.name ).to eq( "CbrainTask::MinimalTest" ) # Check for generated task class instance
+        end
+
+      end
+
+      context 'cluster_command substitution' do
+
+        # Test basic command substitution correctness
+        it "should correctly subsitute cluster_commands with default settings" do
+          task = @generateTask.( { a: 'value' } )
+          expect( task.cluster_commands[0].strip ).to eq( '/minimalApp -a value' )
+        end
+
+        # Test output flag substitution
+        it "should correctly subsitute cluster_commands with output keys" do
+          @descriptor['command-line'] += ' [OUT-KEY]'
+          @descriptor['output-files'][0].merge!( { 'value-key' => '[OUT-KEY]', 'command-line-flag' => '-o' } )
+          task = @generateTask.( { a: 'value' } )
+          expect( task.cluster_commands[0].strip ).to eq( '/minimalApp -a value -o value' )
+        end
+
+        # Test output flag separator substitution
+        it "should correctly subsitute cluster_commands with output keys and a separator" do
+          @descriptor['command-line'] += ' [OUT-KEY]'
+          @descriptor['output-files'][0].merge!( {
+            'value-key'                   => '[OUT-KEY]',
+            'command-line-flag'           => '-o',
+            'command-line-flag-separator' => '=' } )
+          task = @generateTask.( { a: 'value' } )
+          expect( task.cluster_commands[0].strip ).to eq( '/minimalApp -a value -o=value' )
+        end
+
+        # Test output flag separator substitution with prior path-template substitution
+        it "should correctly subsitute cluster_commands with output flag separators and path-template substitutions" do
+          @descriptor['command-line'] += ' [B] [OUT-KEY]'
+          @descriptor['inputs'] << GenerateJsonInputDefault.('b','Number','Numerical arg')
+          @descriptor['output-files'][0].merge!( {
+            'value-key'                   => '[OUT-KEY]',
+            'command-line-flag'           => '-o',
+            'path-template'               => '[A]+[B]',
+            'command-line-flag-separator' => '/' } )
+          task = @generateTask.( { a: 'val', b: 9 } )
+          expect( task.cluster_commands[0].strip ).to eq( '/minimalApp -a val -b 9 -o/val+9' )
+        end
+
+      end
+
+    end
+
     # Testing Boutiques via the mock 'submission' of a local script, using the output of cluster_commands
     context 'Cluster Command Generation with Mock Program' do
 
@@ -248,7 +319,6 @@ describe "Bourreau Boutiques Tests" do
           rescue OptionParser::MissingArgument => e
             next # after_form does not need to check this here, since rails puts a value in the hash
           end
-          #@task.cluster_workdir = File.join('.',TempStore)
           # Run the generated command line from cluster_commands (-2 to ignore export lines and the echo log at -1)
           exit_code = runTestScript( FileNamesToPaths.( @task.cluster_commands[-2].gsub('./'+TestScriptName,'') ), test[3] || [] )
           # Check that the exit code is appropriate
