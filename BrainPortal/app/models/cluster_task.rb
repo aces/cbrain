@@ -1049,20 +1049,6 @@ class ClusterTask < CbrainTask
     "#{QSUB_SCRIPT_BASENAME}.#{self.name}.#{self.run_id(run_number)}.sh"
   end
 
-  private
-
-  # Returns the basename of the captured standard output of
-  # the scientific script.
-  def science_stdout_basename(run_number=nil) #:nodoc:
-    "#{SCIENCE_STDOUT_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
-  end
-
-  # Returns the basename of the captured standard error of
-  # the scientific script.
-  def science_stderr_basename(run_number=nil) #:nodoc:
-    "#{SCIENCE_STDERR_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
-  end
-
   # Returns the basename for the QSUB standard output capture file for the task.
   # This is not a full path, just a filename relative to the work directory.
   # The file itself is not garanteed to exist.
@@ -1075,6 +1061,20 @@ class ClusterTask < CbrainTask
   # The file itself is not garanteed to exist.
   def qsub_stderr_basename(run_number=nil) #:nodoc:
     "#{QSUB_STDERR_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
+  end
+
+  private
+
+  # Returns the basename of the captured standard output of
+  # the scientific script.
+  def science_stdout_basename(run_number=nil) #:nodoc:
+    "#{SCIENCE_STDOUT_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
+  end
+
+  # Returns the basename of the captured standard error of
+  # the scientific script.
+  def science_stderr_basename(run_number=nil) #:nodoc:
+    "#{SCIENCE_STDERR_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
   end
 
   # Given two basenames for two files, will combine them into a
@@ -1103,7 +1103,6 @@ class ClusterTask < CbrainTask
     return combined_file  if File.exists?(combined_file)
 
     # Task outputs incomplete? Point to science output captured
-    return nil            if ! File.exists?(science_outerr)
     return science_outerr if ! File.exists?(qsub_outerr)
     qsub_content = check_task_ending_keyword(qsub_outerr) # returns nil unless content contains "CBRAIN Task Exiting"
     return science_outerr if qsub_content.blank?
