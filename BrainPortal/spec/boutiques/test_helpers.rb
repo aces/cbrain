@@ -362,7 +362,7 @@ module TestHelpers
       'tool-version'   => "9.7.13",
       'description'    => "Minimal test task for Boutiques",
       'command-line'   => '/minimalApp [A]',
-      'schema-version' => '0.2',
+      'schema-version' => '0.4',
       'inputs'         => [GenerateJsonInputDefault.('a','String','A String arg')],
       'output-files'   => [{'id' => 'u', 'name' => 'U', 'path-template' => '[A]'}],
     }

@@ -3,7 +3,7 @@
 	"tool-version" : "9.7.13",
 	"description" : "Simple test task for Boutiques",
 	"command-line" : "./boutiquesTestApp.rb [A] [B] [C] [a] [b] [c] [d] [e] [f] [g] [i] [j] [k] [l] [m] [n] [p] [q] [u] [v] [w] [x] [o] [r] [y] [E] [I] [N] [L]",
-	"schema-version" : "0.2",
+	"schema-version" : "0.4",
   "environment-variables" : [{
     "name" : "ev1",
     "value" : "nice_value"
@@ -240,11 +240,11 @@
 	}, {
 		"id" : "E",
 		"name" : "E",
-		"type" : "Enum",
+		"type" : "String",
 		"description" : "An enum parameter (one of a, b, or c)",
 		"optional" : true,
 		"list" : false,
-		"enum-value-choices" : ["a", "b", "c"],
+		"value-choices" : ["a", "b", "c"],
 		"value-key" : "[E]",
 		"command-line-flag" : "-E"
 	}, {

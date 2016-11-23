@@ -42,7 +42,6 @@ describe "Bourreau Boutiques Tests" do
 
   # Run before block to create required input files
   before(:all) do
-    createInputFiles
     # The group, provider, and user ids used downstream
     GID, UID, DPID = Group.everyone.id, User.admin.id, 9
     @ftype = lambda { |fname| Userfile.suggested_file_type(fname) || SingleFile }
@@ -71,6 +70,10 @@ describe "Bourreau Boutiques Tests" do
       @task.bourreau_id = resource.id
       # Give access to the generated task class itself
       @task_const    = "CbrainTask::#{SchemaTaskGenerator.classify(@task.name)}".constantize
+    end
+
+    before(:all) do
+      createInputFiles
     end
 
     # Tests expected behaviour of the auto-generated cluster task
