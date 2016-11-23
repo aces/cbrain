@@ -374,6 +374,3 @@ class ScirCloud < Scir
 
 end
 
-# Exception raised when no VM is available to execute a task
-class NoVmAvailableError < StandardError
-end

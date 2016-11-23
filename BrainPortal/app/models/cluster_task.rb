@@ -1930,7 +1930,7 @@ chmod 755 ./.dockerjob.sh
 # Pull the Docker image to avoid inconsistencies coming from different image versions on worker nodes
 #{docker_executable_name} pull #{self.tool_config.docker_image.bash_escape}
 # Run the task commands
-#{docker_executable_name} run --rm -v ${PWD}:#{workDir} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w #{workDir} #{self.tool_config.docker_image.bash_escape} ${PWD}/.dockerjob.sh
+#{docker_executable_name} run --rm -v ${PWD}:#{work_dir} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w #{work_dir} #{self.tool_config.docker_image.bash_escape} ${PWD}/.dockerjob.sh
 "
     return docker_commands
   end

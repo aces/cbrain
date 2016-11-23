@@ -1,0 +1,128 @@
+/* http://meyerweb.com/eric/tools/css/reset/ v2.0 | 20110126 */
+
+/* Modified by Pierre Rioux for Swagger UI inside CBRAIN */
+
+.swagger-section html,
+.swagger-section body,
+.swagger-section div,
+.swagger-section span,
+.swagger-section applet,
+.swagger-section object,
+.swagger-section iframe,
+.swagger-section h1,
+.swagger-section h2,
+.swagger-section h3,
+.swagger-section h4,
+.swagger-section h5,
+.swagger-section h6,
+.swagger-section p,
+.swagger-section blockquote,
+.swagger-section pre,
+.swagger-section a,
+.swagger-section abbr,
+.swagger-section acronym,
+.swagger-section address,
+.swagger-section big,
+.swagger-section cite,
+.swagger-section code,
+.swagger-section del,
+.swagger-section dfn,
+.swagger-section em,
+.swagger-section img,
+.swagger-section ins,
+.swagger-section kbd,
+.swagger-section q,
+.swagger-section s,
+.swagger-section samp,
+.swagger-section small,
+.swagger-section strike,
+.swagger-section strong,
+.swagger-section sub,
+.swagger-section sup,
+.swagger-section tt,
+.swagger-section var,
+.swagger-section b,
+.swagger-section u,
+.swagger-section i,
+.swagger-section center,
+.swagger-section dl,
+.swagger-section dt,
+.swagger-section dd,
+.swagger-section ol,
+.swagger-section ul,
+.swagger-section li,
+.swagger-section fieldset,
+.swagger-section form,
+.swagger-section label,
+.swagger-section legend,
+.swagger-section table,
+.swagger-section caption,
+.swagger-section tbody,
+.swagger-section tfoot,
+.swagger-section thead,
+.swagger-section tr,
+.swagger-section th,
+.swagger-section td,
+.swagger-section article,
+.swagger-section aside,
+.swagger-section canvas,
+.swagger-section details,
+.swagger-section embed,
+.swagger-section figure,
+.swagger-section figcaption,
+.swagger-section footer,
+.swagger-section header,
+.swagger-section hgroup,
+.swagger-section menu,
+.swagger-section nav,
+.swagger-section output,
+.swagger-section ruby,
+.swagger-section section,
+.swagger-section summary,
+.swagger-section time,
+.swagger-section mark,
+.swagger-section audio,
+.swagger-section video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+.swagger-section article,
+.swagger-section aside,
+.swagger-section details,
+.swagger-section figcaption,
+.swagger-section figure,
+.swagger-section footer,
+.swagger-section header,
+.swagger-section hgroup,
+.swagger-section menu,
+.swagger-section nav,
+.swagger-section section {
+  display: block;
+}
+.old-disabled-body {
+  line-height: 1;
+}
+.swagger-section ol,
+.swagger-section ul {
+  list-style: none;
+}
+.swagger-section blockquote,
+.swagger-section q {
+  quotes: none;
+}
+.swagger-section blockquote:before,
+.swagger-section blockquote:after,
+.swagger-section q:before,
+.swagger-section q:after {
+  content: '';
+  content: none;
+}
+.swagger-section table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}

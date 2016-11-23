@@ -456,7 +456,7 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 
         # If the file already exists, add a tag (task id + ns time) to the name
         if userfile_exists(userfile_class, :name => name)
-          tag = '-' + (self.id.to_s || 'unk') + '-' + Time.now.nsec.to_s
+          tag = '-' + (self.id.to_s || 'unk') + '-' + (9.times.map { rand(10) }.join)
           newName = name + tag if name.rindex(".").nil?
           ext = File.extname( name )
           newName ||= name.gsub( /#{ext}\z/, "#{tag + ext}" )

@@ -224,6 +224,8 @@ class UsersController < ApplicationController
 
     # For logging
     original_group_ids = @user.group_ids
+    original_ap_ids    = @user.access_profile_ids
+
 
     @user.make_all_accessible! if current_user.has_role?(:admin_user)
     if current_user.has_role? :site_manager
@@ -238,12 +240,18 @@ class UsersController < ApplicationController
 
     @user.attributes = params[:user]
 
+    remove_ap_ids    = original_ap_ids - @user.access_profile_ids
+    remove_group_ids = remove_ap_ids.present? ? AccessProfile.find(remove_ap_ids).map(&:group_ids).flatten.uniq : []
+
+    @user.apply_access_profiles(remove_group_ids: remove_group_ids)
+
     @user = @user.class_update
 
     respond_to do |format|
       if @user.save_with_logging(current_user, %w( full_name login email role city country account_locked ) )
         @user.reload
         @user.addlog_object_list_updated("Groups", Group, original_group_ids, @user.group_ids, current_user)
+        @user.addlog_object_list_updated("Access Profiles", AccessProfile, original_ap_ids, @user.access_profile_ids, current_user)
         add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id, :ip_whitelist])
         flash[:notice] = "User #{@user.login} was successfully updated."
         format.html { redirect_to :action => :show }

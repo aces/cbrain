@@ -31,9 +31,9 @@ class SessionsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_filter :user_already_logged_in, :only => [:new, :create]
+  api_available :only => [ :new, :show, :create, :destroy ]
 
-  api_available
+  before_filter :user_already_logged_in, :only => [:new, :create]
 
   def new #:nodoc:
     reqenv           = request.env
@@ -71,20 +71,30 @@ class SessionsController < ApplicationController
 
   def destroy #:nodoc:
     unless current_user
-      redirect_to new_session_path
+      respond_to do |format|
+        format.html { redirect_to new_session_path }
+        format.xml  { render :nothing => true, :status  => 401 }
+        format.json { render :nothing => true, :status  => 401 }
+      end
       return
     end
 
-    portal = BrainPortal.current_resource
-    current_session.deactivate if current_session
-    current_user.addlog("Logged out") if current_user
-    portal.addlog("User #{current_user.login} logged out") if current_user
-    current_session.clear
-    #reset_session
-    flash[:notice] = "You have been logged out."
+    if current_user
+      portal = BrainPortal.current_resource
+      current_user.addlog("Logged out") if current_user
+      portal.addlog("User #{current_user.login} logged out") if current_user
+    end
+
+    if current_session
+      current_session.deactivate
+      current_session.clear
+    end
 
     respond_to do |format|
-      format.html { redirect_to new_session_path }
+      format.html {
+                    flash[:notice] = "You have been logged out."
+                    redirect_to new_session_path
+                  }
       format.xml  { render :nothing => true, :status  => 200 }
       format.json { render :nothing => true, :status  => 200 }
     end

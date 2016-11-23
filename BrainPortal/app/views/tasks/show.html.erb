@@ -50,13 +50,13 @@
     <!-- EDIT -->
     <% if (@task.status =~ /Completed|Failed|Duplicated|Terminated/) && (! @task.class.properties[:cannot_be_edited]) %>
       <%= link_to 'Edit Parameters', { :action => 'edit', :id => @task.id }, :class  => "button menu_button"  %>
-      <span class="vertical_bar"></span>
+      <span class="vertical_bar">&#x2503;</span>
     <% end %>
 
     <!-- REFRESH -->
     <% if @task.status =~ /Setting Up|Post Processing/ %>
       <%= link_to 'Refresh', { :action => 'show', :id => @task.id }, :class  => "button menu_button" %>
-      <span class="vertical_bar"></span>
+      <span class="vertical_bar">&#x2503;</span>
     <% end %>
 
     <!-- FAILURE RECOVERY -->
@@ -71,30 +71,30 @@
         )
       %>
       <%= link_to label, { :action => 'operation', :operation => 'recover', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
-      <span class="vertical_bar"></span>
+      <span class="vertical_bar">&#x2503;</span>
     <% end %>
 
     <!-- RESTART -->
     <% if CbrainTask::FAILED_STATUS.include?(@task.status) or @task.status =~ /Completed|Terminated|Duplicated/ %>
       <%= link_to 'Restart At Setup', { :action => 'operation', :operation => 'restart_setup', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
       <% if !(@task.status =~ /Completed/) %>
-        <span class="vertical_bar"></span>
+        <span class="vertical_bar">&#x2503;</span>
       <% end %>
     <% end %>
     <% if @task.status == 'Completed' %>
       <%= link_to 'Restart On Cluster', { :action => 'operation', :operation => 'restart_cluster', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
       <%= link_to 'Restart At PostProcessing', { :action => 'operation', :operation => 'restart_postprocess', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
-      <span class="vertical_bar"></span>
+      <span class="vertical_bar">&#x2503;</span>
     <% end %>
 
     <!-- ARCHIVING -->
     <% if CbrainTask::COMPLETED_STATUS.include?(@task.status) && @task.full_cluster_workdir.present? && @task.archived_status.nil? %>
       <%= link_to "Archive on Cluster", url_for(:action  => :operation, :operation => 'archive', 'tasklist[]' => @task.id), :method  => :post, :datatype => :script, :class => "button" %>
-      <span class="vertical_bar"></span>
+      <span class="vertical_bar">&#x2503;</span>
     <% end %>
     <% if CbrainTask::COMPLETED_STATUS.include?(@task.status) && @task.archived_status.present? %>
       <%= link_to "Unarchive", url_for(:action  => :operation, :operation => 'unarchive', 'tasklist[]' => @task.id), :method  => :post, :datatype => :script, :class => "button" %>
-      <span class="vertical_bar"></span>
+      <span class="vertical_bar">&#x2503;</span>
     <% end %>
 
     <!-- TERMINATE & REMOVE -->
@@ -107,7 +107,7 @@
       <%= link_to 'Remove Task',  { :action => 'operation', :operation => 'delete', 'tasklist[]' => @task.id }, :confirm => confirm, :class  => "button menu_button", :method => :post %>
 
       <% if !CbrainTask::COMPLETED_STATUS.include?(@task.status) %>
-        <span class="vertical_bar"></span>
+        <span class="vertical_bar">&#x2503;</span>
       <% end %>
     <% end %>
     <% if CbrainTask::FAILED_STATUS.include?(@task.status) or CbrainTask::COMPLETED_STATUS.include?(@task.status) %>
