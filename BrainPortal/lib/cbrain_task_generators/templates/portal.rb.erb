@@ -225,13 +225,13 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
 
 %#
 %# Enum Check
-% hasEnumVars = params.any?{ |p| p['type'].downcase == 'enum' }
-% if hasEnumVars
+% has_val_choices = lambda { |p| not p['value-choices'].nil? }
+% if params.any?{ |p| has_val_choices.( p ) }
     # Check that any enum parameters have been given allowable values
     errmsg = "was not given an acceptable value!"
 %  for param in params
-%   next unless param['type'].downcase == 'enum'
-%   check = '[' + param['enum-value-choices'].map{ |s| "'#{s}'" }.join(',') + "].include?(params[#{idsym.(param)}])"
+%   next unless has_val_choices.( param )
+%   check = '[' + param['value-choices'].map{ |s| "'#{s}'" }.join(',') + "].include?(params[#{idsym.(param)}])"
     params_errors.add(<%=idsym.(param)%>, errmsg) unless <%= nilcheck.(param) %> || <%= check %>
 %  end
 
