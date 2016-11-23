@@ -231,7 +231,11 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
     errmsg = "was not given an acceptable value!"
 %  for param in params
 %   next unless has_val_choices.( param )
-%   check = '[' + param['value-choices'].map{ |s| "'#{s}'" }.join(',') + "].include?(params[#{idsym.(param)}])"
+%   if param['type'].downcase == 'number'
+%     check = '[' + param['value-choices'].map{ |s| "#{s}" }.join(',') + "].include?(params[#{idsym.(param)}])"
+%   else
+%     check = '[' + param['value-choices'].map{ |s| "'#{s}'" }.join(',') + "].include?(params[#{idsym.(param)}])"
+%   end
     params_errors.add(<%=idsym.(param)%>, errmsg) unless <%= nilcheck.(param) %> || <%= check %>
 %  end
 

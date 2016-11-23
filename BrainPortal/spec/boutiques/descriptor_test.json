@@ -114,7 +114,8 @@
 		"list" : false,
 		"disables-inputs" : [ "j", "k", "y" ],
 		"value-key" : "[i]",
-		"command-line-flag" : "-i"
+		"command-line-flag" : "-i",
+		"value-choices" : [1, 9]
 	}, {
 		"id" : "j",
 		"name" : "j",
