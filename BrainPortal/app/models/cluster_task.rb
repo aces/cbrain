@@ -1622,6 +1622,9 @@ class ClusterTask < CbrainTask
     # are actually performed.
     if commands.blank? || commands.all? { |l| l.blank? }
       self.addlog("No BASH commands associated with this task. Jumping to state 'Data Ready'.")
+      template = "CBRAIN Task Starting\n__CBRAIN_CAPTURE_PLACEHOLDER__\nCBRAIN Task Exiting\n"
+      File.open(self.qsub_stdout_basename, "w") { |fh| fh.write template } # needed for checks
+      File.open(self.qsub_stderr_basename, "w") { |fh| fh.write template } # needed for checks
       self.status_transition(self.status, "Data Ready")  # Will trigger Post Processing later on.
       self.save
       return true
