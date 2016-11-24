@@ -258,7 +258,7 @@ paths:
         200:
           description: Tag was deleted.
         422:
-
+          description: Tag could not be deleted.
 
 
 #=============================================================================

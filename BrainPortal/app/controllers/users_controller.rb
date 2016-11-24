@@ -75,8 +75,21 @@ class UsersController < ApplicationController
 
   # GET /user/1
   # GET /user/1.xml
+  # GET /user/1.json
   def show #:nodoc:
-    @user = User.find(params[:id], :include => :groups)
+    begin
+      @user = User.find(params[:id], :include => :groups)
+    rescue
+      respond_to do |format|
+        format.html {
+          flash[:error] = "User with ID #{params[:id]} not found"
+          redirect_to :action => :index
+        }
+        format.xml  { render :text => "User not found", :status => 404 }
+        format.json { render :text => "User not found", :status => 404 }
+      end
+      return
+    end
 
     cb_error "You don't have permission to view this page.", :redirect  => start_page_path unless edit_permission?(@user)
 
