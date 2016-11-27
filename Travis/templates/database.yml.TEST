@@ -1,0 +1,16 @@
+
+#
+# CBRAIN Project
+#
+# DB configuration file for BrainPortal.
+# This is file is used within a docker
+# container for running the test suite.
+#
+
+test:
+  adapter: mysql2
+  host: localhost
+  username: cb_user
+  database: cb_db_test
+  password: cbpw12345
+  encoding: utf8
