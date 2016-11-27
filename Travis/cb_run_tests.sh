@@ -5,6 +5,12 @@
 
 set -e # bash will exit immediately if any command returns a code other than 0
 
+# Terminal colors, using ANSI sequences.
+RED='\033[31m'
+YELLOW='\033[33m'
+BLUE='\033[34m'
+NC='\033[0m'
+
 # Three copies of the CBRAIN code base:
 cb_base="$HOME/cbrain_base"      # pre-installed and configured in docker container, for efficiency
 cb_travis="$HOME/cbrain_travis"  # docker mount point, where the code to be tested is
@@ -16,7 +22,7 @@ cb_test="$HOME/cbrain_test"      # local copy of cbrain_travis where we run the 
 
 # Prints a message and exits with a non-zero code.
 function die {
-    echo Fatal: "$*"
+    printf "${RED}Fatal: ";echo -n "$*";printf "${NC}\n"
     exit 5
 }
 
@@ -73,10 +79,10 @@ cd $cb_test/BrainPortal || die "Cannot cd to BrainPortal directory"
 # Only bundle the gems if the Gemfile has changed
 if ! cmp -s "$cb_base/BrainPortal/Gemfile" \
             "$cb_test/BrainPortal/Gemfile" ; then
-  echo "Running Bundler on BrainPortal side."
+  printf "${YELLOW}Running Bundler on BrainPortal side.${NC}\n"
   bundle install || die "Cannot bundle gems for the BrainPortal"
 else
-  echo "No need to run the Bundler on BrainPortal side, yippee!"
+  printf "${BLUE}No need to run the Bundler on BrainPortal side, yippee!${NC}\n"
   cp -p "$cb_base/BrainPortal/Gemfile.lock" \
         "$cb_test/BrainPortal/Gemfile.lock"
 fi
@@ -84,10 +90,10 @@ fi
 # Only install the plugins if the list of plugins files has changed.
 if test $(dir_list_cksum "$cb_base/BrainPortal/cbrain_plugins") != \
         $(dir_list_cksum "$cb_test/BrainPortal/cbrain_plugins") ; then
-  echo "Installing plugins symbolic links."
+  printf "${YELLOW}Installing plugins symbolic links.${NC}\n"
   rake cbrain:plugins:install:plugins || die "Cannot install cbrain:plugins" # works for Bourreau too
 else
-  echo "No need to install the plugins symbolic links, yippee!"
+  printf "${BLUE}No need to install the plugins symbolic links, yippee!${NC}\n"
 fi
 
 
@@ -102,10 +108,10 @@ cd $cb_test/Bourreau || die "Cannot cd to Bourreau directory"
 # Only bundle the gems if the Gemfile has changed
 if ! cmp -s "$cb_base/Bourreau/Gemfile" \
             "$cb_test/Bourreau/Gemfile" ; then
-  echo "Running Bundler on Bourreau side."
+  printf "${YELLOW}Running Bundler on Bourreau side.${NC}\n"
   bundle install || die "Cannot bundle gems for the Bourreau"
 else
-  echo "No need to run the Bundler on Bourreau side, yippee!"
+  printf "${BLUE}No need to run the Bundler on Bourreau side, yippee!${NC}\n"
   cp -p "$cb_base/Bourreau/Gemfile.lock" \
         "$cb_test/Bourreau/Gemfile.lock"
 fi
@@ -122,14 +128,14 @@ cd $cb_test/BrainPortal || die "Cannot cd to BrainPortal directory"
 # Only migrate if the list of migration files have changed.
 if test $(dir_list_cksum "$cb_base/BrainPortal/db/migrate") != \
         $(dir_list_cksum "$cb_test/BrainPortal/db/migrate") ; then
-  echo "Running the database migrations."
+  printf "${YELLOW}Running the database migrations.${NC}\n"
   rake "db:migrate" || die "Cannot migrate the DB"
 else
-  echo "No need to migrate the DB, yippee!"
+  printf "${BLUE}No need to migrate the DB, yippee!${NC}\n"
 fi
 
 # This cannot be avoided.
-echo "Running the database sanity checks."
+printf "${YELLOW}Running the database sanity checks.${NC}\n"
 rake "db:sanity:check" || die "Cannot sanity check DB"
 
 
@@ -148,8 +154,9 @@ cd $cb_test/BrainPortal || die "Cannot cd to BrainPortal directory"
 
 # Eventually, it would be nice if from a ENV variable set in Travis,
 # we could run only a subset of the tests.
-echo "Running rpec on BrainPortal side."
+printf "${BLUE}Running rpec on BrainPortal side.${NC}\n"
 rspec spec || fail_portal="rspec on BrainPortal failed with return code $?"
+#CBRAIN_FAILTEST=1 rspec spec/modules/travis_ci_spec.rb || fail_portal="rspec on BrainPortal failed with return code $?"
 
 
 
@@ -162,7 +169,7 @@ cd $cb_test/Bourreau || die "Cannot cd to Bourreau directory"
 # we could run only a subset of the tests.
 # -> NOTE FIXME TODO : hardcoded 'spec/boutiques' for <-
 # -> the moment because no other test files work on Bourreau. <-
-echo "Running rpec on Bourreau side."
+printf "${BLUE}Running rpec on Bourreau side.${NC}\n"
 rspec spec/boutiques || fail_bourreau="rspec on Bourreau failed with return code $?"
 
 
@@ -172,10 +179,10 @@ rspec spec/boutiques || fail_bourreau="rspec on Bourreau failed with return code
 # ------------------------------
 test -z "$fail_portal$fail_bourreau" && exit 0  # Pangloss
 echo ""
-echo "**** rspec commands failures summary ****"
-test -n "$fail_portal"   && echo "$fail_portal"
-test -n "$fail_bourreau" && echo "$fail_bourreau"
-echo "**** ------------------------------- ****"
+printf "${YELLOW}**** rspec commands failures summary ****${NC}\n"
+test -n "$fail_portal"   && printf "${RED}$fail_portal${NC}\n"
+test -n "$fail_bourreau" && printf "${RED}$fail_bourreau${NC}\n"
+printf "${YELLOW}**** ------------------------------- ****${NC}\n"
 echo ""
 exit 2
 

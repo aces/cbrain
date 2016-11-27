@@ -29,7 +29,7 @@ if test ! -d Travis ; then
   echo "Please invoke this program from the root of the CBRAIN project."
   exit 2 # config error
 fi
-cbrain_travis="`pwd -P`"
+cbrain_travis="`pwd -P`" # Root of where the code to test is located.
 cd Travis || exit 2
 
 # Do we have a docker image name to run?
@@ -44,8 +44,12 @@ SECONDS=0 # bash is great
 
 # Run the docker containers
 printf "${MAGENTA}Running CBRAIN test container.${NC}\n"
-process=$(docker run -d -v "$cbrain_travis":/home/cbrain/cbrain_travis ${CBRAIN_CI_IMAGE_NAME})
-if [ $? -ne 0 -o -z "$process" ] ; then
+docker_name="cb_travis" # pretty name of the process
+docker run -d \
+           -v "$cbrain_travis":/home/cbrain/cbrain_travis \
+           --name "$docker_name" \
+           ${CBRAIN_CI_IMAGE_NAME} | perl -ne 'print unless /^[0-9a-f]{64}\n$/'
+if [ $? -ne 0 ] ; then
   printf "${RED}Docker Start Failed. So sorry.${NC}\n"
   exit 10 # partial abomination
 fi
@@ -54,10 +58,11 @@ fi
 # Also Travis CI will abort the test if nothing is printed for too long.
 echo ""
 printf "${MAGENTA}==== Docker logs start here ====${NC}\n"
-docker logs ${process} --follow
+docker logs ${docker_name} --follow
 printf "${MAGENTA}==== Docker logs end here ====${NC}\n"
 echo ""
-test_exit_code=$(docker wait ${process})
+test_exit_code=$(docker wait ${docker_name})
+docker rm ${docker_name} >/dev/null || true
 printf "${MAGENTA}Docker container finished after $SECONDS seconds.${NC}\n"
 echo ""
 
