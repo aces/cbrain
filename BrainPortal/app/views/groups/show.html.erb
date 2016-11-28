@@ -57,7 +57,10 @@
         <%= text_field_tag "group[name]", @group.name, :class => "form-control" %>
       <% end %>
 
-      <% t.cell("Creator") { @group.creator.try(:login)} %>
+      <% t.edit_cell(:creator_id, :content => link_to_user_with_tooltip(@group.creator), :header => "Creator") do %>
+        <%= user_select "group[creator_id]", { :users => ( current_user.available_users | @group.users), :selector => @group.creator } %>
+        <span class="warning">Warning</span>: If you change the Creator to someone else you won't be able to edit this project any more
+      <% end %>
 
       <% t.edit_cell(:site_id, :content => link_to_site_if_accessible(@group.site), :disabled => !current_user.has_role?(:admin_user)) do %>
         <%= site_select "group[site_id]", @group.site_id, :prompt => "(Select a site)", :class => "form-control" %>
@@ -65,7 +68,7 @@
 
       <% t.cell("Type") { @group.pretty_category_name(current_user) } %>
 
-      <% t.edit_cell(:description, :content =>  overlay_description(@group.description)) do %>
+      <% t.edit_cell(:description, :content =>  full_description(@group.description)) do %>
           <%= text_area_tag "group[description]", @group.description, :rows => 4, :class => "form-control" %>
           The first line should be a short summary, and the rest are for details.
       <% end %>
@@ -99,16 +102,19 @@
   </div>
 </div>
 
-
 <% # Access Profile List %>
-<% if current_user.has_role?(:admin_user) && @group.access_profiles.count > 0 %>
+<% if current_user.has_role?(:admin_user) %>
+  <% group_access_profiles = @group.access_profiles
+                             .order('access_profiles.name')
+                             .map { |ap| access_profile_label(ap, :with_link => true) }
+                             .join("").html_safe
+     group_access_profiles = "(None)" if group_access_profiles.blank?
+  %>
   <div class="row">
     <div class="col-xs-12">
-      <%= show_table(@group, :header => 'Access profiles') do |t| %>
-        <% t.cell("Access Profiles", :no_header => true) do %>
-          <%= array_to_table(@group.access_profiles.order(:name).all, :table_class => "simple table", :cols => 4) do |access_profile| %>
-            <%= access_profile_label(access_profile, :with_link => true) %>
-          <% end %>
+      <%= show_table(@group, :header => 'Assigned To Access Profiles') do |t| %>
+        <% t.cell("", :no_header => true, :show_width => 2) do %>
+          <span><%= group_access_profiles %></span>
         <% end %>
       <% end %>
     </div>

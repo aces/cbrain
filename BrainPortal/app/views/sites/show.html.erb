@@ -43,7 +43,7 @@
   <div class="col-xs-12">
     <%= show_table(@site, :edit_condition => check_role(:admin_user)) do |t| %>
       <% t.edit_cell(:name) { text_field_tag "site[name]", @site.name } %>
-      <% t.edit_cell(:description, :content => overlay_description(@site.description) ) do %>
+      <% t.edit_cell(:description, :content => full_description(@site.description) ) do %>
         <%= text_area_tag "site[description]", @site.description, :rows => 10, :class => "form-control" %>
         The first line should be a short summary, and the rest are for any special notes for the users.
       <% end %>
@@ -128,5 +128,7 @@
 </div>
 
 <div class="row">
-  <div class="col-xs-12"><%= render :partial => "layouts/log_report", :locals  => { :log  => @site.getlog, :title => 'Site Log' } %></div>
+  <div class="col-xs-12">
+    <%= render :partial => "layouts/log_report", :locals  => { :log  => @site.getlog, :title => 'Site Log' } %>
+  </div>
 </div>

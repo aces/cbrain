@@ -94,6 +94,7 @@
           :filters  => default_filters_for(@base_scope, Group)
         ) { |tool| link_to_group_if_accessible(tool.group) }
 
+
         t.column("Execution & Versions", :exec) do |tool|
           tool.bourreaux
             .reject { |b| ! b.can_be_accessed_by?(current_user) }
@@ -103,9 +104,11 @@
                 .where(:bourreau_id => b.id, :tool_id => tool.id)
                 .reject { |tc| ! tc.can_be_accessed_by?(current_user) }
                 .size
-              "#{link_to_bourreau_if_accessible(b)}#{" (#{pluralize tcs, "version"})" if tcs >= 1}"
+              tcs.zero? ? "" :
+                link_to_bourreau_if_accessible(b) + " " +
+                link_to("(#{pluralize tcs, "version"})", :controller => :tool_configs, :action => :index, :bourreau_id => b.id, :tool_id => tool.id, :_simple_filters => 1 )
             end
-            .join('<br />')
+            .join('<br>')
             .html_safe
         end
 
@@ -114,7 +117,7 @@
             link_to 'Access?',
               {
                 :controller => :tool_configs,
-                :action     => :index,
+                :action     => :report,
                 :tool_id    => tool.id
               },
               :class => "action_link"

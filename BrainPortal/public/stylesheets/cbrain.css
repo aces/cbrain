@@ -391,7 +391,6 @@ a {
   background: #0471B4; /* same as in .account */
 }
 
-
 /* % ######################################################### */
 /* % Project buttons */
 /* % ######################################################### */
@@ -941,8 +940,19 @@ a {
 /* % Sidebar Filter Content (Tasks or Userfiles) */
 /* % ########################################################  */
 
+<<<<<<< HEAD
 #userfiles_filters_dropdown_menu {
   white-space: nowrap;
+=======
+.vertical_bar {
+  display: inline;
+  font-size: 1.3em;
+}
+
+/* Show task parameters */
+.task-show > table {
+  border: 0;
+>>>>>>> dev
 }
 
 .filter_menu {
@@ -1438,7 +1448,7 @@ a {
   box-shadow: 0px 0px 4px black inset;
   padding: 0.5em;
   margin: 0.5em;
-  display: table-cell;
+  display: inline-block;
 }
 
 /* % ######################################################### */

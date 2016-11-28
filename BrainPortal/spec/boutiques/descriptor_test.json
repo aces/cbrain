@@ -38,7 +38,8 @@
 		"optional" : false,
 		"list" : false,
 		"command-line-key" : "[C]",
-		"command-line-flag" : "-C"
+		"command-line-flag" : "-C",
+		"uses-absolute-path" : true
 	}, {
 		"id" : "a",
 		"name" : "a",

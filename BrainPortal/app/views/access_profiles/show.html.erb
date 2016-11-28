@@ -61,9 +61,11 @@
 
     <% end %>
 
-    <% myusers = @access_profile.users.all %>
+
   </div>
 </div>
+
+<% myusers = @access_profile.users.all.sort_by(&:login) %>
 
 <div class="row">
   <div class="col-xs-12">
@@ -90,10 +92,17 @@
   </div>
 </div>
 
+
 <div class="row">
   <div class="col-xs-12">
     <%= show_table(@access_profile, :edit_condition => check_role(:admin_user), :header => 'Users With This Profile') do |t| %>
-      <% user_names = (myusers.sort_by(&:login).map { |u| link_to_user_if_accessible(u) }.join(", ").html_safe.presence) || "(None)" %>
+
+      <% if myusers.present? && myusers.count > 0 %>
+        <% user_names = (array_to_table(myusers.map { |u| link_to_user_if_accessible(u) }, :table_class => 'simple', :cols => 12).html_safe) %>
+      <% else %>
+        <% user_names = "(None)" %>
+      <% end %>
+
       <% t.edit_cell(:user_ids, :show_width => 2, :no_header => "Users", :content => user_names) do %>
 
         Normal Users<br>
@@ -114,7 +123,6 @@
                                 :variable_name => "access_profile[user_ids][]",
                               }
         %>
-
       <% end %>
     <% end %>
   </div>

@@ -52,18 +52,21 @@
   <div class="row menu_bar">
     <div class="col-xs-12">
       <div class="well well-sm">
-        <!-- TERMINATE & REMOVE -->
-        <% if @task.status =~ /Queued|On Hold|On CPU|Suspended/ %>
-          <%= link_to 'Terminate Task', { :action => 'operation', :operation => 'terminate', 'tasklist[]' => @task.id }, :confirm => "Are you sure you want to terminate this task?", :class  => "btn btn-primary", :method => :post %>
+
+        <!-- EDIT -->
+        <% if (@task.status =~ /Completed|Failed|Duplicated|Terminated/) && (! @task.class.properties[:cannot_be_edited]) %>
+          <%= link_to 'Edit Parameters', { :action => 'edit', :id => @task.id }, :class  => "btn btn-primary"  %>
+          <span class="vertical_bar">&#x2503;</span>
         <% end %>
-        <% if @task.status =~ /New|Queued|On Hold|On CPU|Suspended|Failed.*|Completed/ %>
-          <% confirm  = "Are you sure you want to remove this task?" %>
-          <% confirm += "\n\nIMPORTANT NOTE: This will also remove its archived work directory." if @task.workdir_archive %>
-          <%= link_to 'Remove Task',  { :action => 'operation', :operation => 'delete', 'tasklist[]' => @task.id }, :confirm => confirm, :class  => "btn btn-primary", :method => :post %>
+
+        <!-- REFRESH -->
+        <% if @task.status =~ /Setting Up|Post Processing/ %>
+          <%= link_to 'Refresh', { :action => 'show', :id => @task.id }, :class  => "btn btn-primary" %>
+          <span class="vertical_bar">&#x2503;</span>
         <% end %>
 
         <!-- FAILURE RECOVERY -->
-        <% if @task.status =~ /^Failed*/ %>
+        <% if CbrainTask::FAILED_STATUS.include?(@task.status) %>
           <%
             label = (
               case @task.status
@@ -74,27 +77,54 @@
             )
           %>
           <%= link_to label, { :action => 'operation', :operation => 'recover', 'tasklist[]' => @task.id }, :class  => "btn btn-primary", :method => :post %>
+          <span class="vertical_bar">&#x2503;</span>
         <% end %>
 
         <!-- RESTART -->
-        <% if @task.status =~ /Completed|Terminated|Duplicated/ %>
+        <% if CbrainTask::FAILED_STATUS.include?(@task.status) or @task.status =~ /Completed|Terminated|Duplicated/ %>
           <%= link_to 'Restart At Setup', { :action => 'operation', :operation => 'restart_setup', 'tasklist[]' => @task.id }, :class  => "btn btn-primary", :method => :post %>
+          <% if !(@task.status =~ /Completed/) %>
+            <span class="vertical_bar">&#x2503;</span>
+          <% end %>
         <% end %>
         <% if @task.status == 'Completed' %>
           <%= link_to 'Restart On Cluster', { :action => 'operation', :operation => 'restart_cluster', 'tasklist[]' => @task.id }, :class  => "btn btn-primary", :method => :post %>
           <%= link_to 'Restart At PostProcessing', { :action => 'operation', :operation => 'restart_postprocess', 'tasklist[]' => @task.id }, :class  => "btn btn-primary", :method => :post %>
+          <span class="vertical_bar">&#x2503;</span>
         <% end %>
 
-        <!-- REFRESH -->
-        <% if @task.status =~ /Setting Up|Post Processing/ %>
-          <%= link_to 'Refresh', { :action => 'show', :id => @task.id }, :class  => "btn btn-primary" %>
+        <!-- ARCHIVING -->
+        <% if CbrainTask::COMPLETED_STATUS.include?(@task.status) && @task.full_cluster_workdir.present? && @task.archived_status.nil? %>
+          <%= link_to "Archive on Cluster", url_for(:action  => :operation, :operation => 'archive', 'tasklist[]' => @task.id), :method  => :post, :datatype => :script, :class => "btn btn-primary" %>
+          <span class="vertical_bar">&#x2503;</span>
+        <% end %>
+        <% if CbrainTask::COMPLETED_STATUS.include?(@task.status) && @task.archived_status.present? %>
+          <%= link_to "Unarchive", url_for(:action  => :operation, :operation => 'unarchive', 'tasklist[]' => @task.id), :method  => :post, :datatype => :script, :class => "btn btn-primary" %>
+          <span class="vertical_bar">&#x2503;</span>
         <% end %>
 
-        <!-- EDIT -->
-        <% if (@task.status =~ /Completed|Failed|Duplicated|Terminated/) && (! @task.class.properties[:cannot_be_edited]) %>
-          <%= link_to 'Edit Parameters', { :action => 'edit', :id => @task.id }, :class  => "btn btn-primary"  %>
+        <!-- TERMINATE & REMOVE -->
+        <% if CbrainTask::QUEUED_STATUS.include?(@task.status) %>
+          <%= link_to 'Terminate Task', { :action => 'operation', :operation => 'terminate', 'tasklist[]' => @task.id }, :confirm => "Are you sure you want to terminate this task?", :class  => "btn btn-primary", :method => :post %>
         <% end %>
+        <% if CbrainTask::QUEUED_STATUS.include?(@task.status) or CbrainTask::FAILED_STATUS.include?(@task.status) %>
+          <% confirm  = "Are you sure you want to remove this task?" %>
+          <% confirm += "\n\nIMPORTANT NOTE: This will also remove its archived work directory." if @task.workdir_archive %>
+          <%= link_to 'Remove Task',  { :action => 'operation', :operation => 'delete', 'tasklist[]' => @task.id }, :confirm => confirm, :class  => "btn btn-primary", :method => :post %>
 
+          <% if !CbrainTask::COMPLETED_STATUS.include?(@task.status) %>
+            <span class="vertical_bar">&#x2503;</span>
+          <% end %>
+        <% end %>
+        <% if CbrainTask::FAILED_STATUS.include?(@task.status) or CbrainTask::COMPLETED_STATUS.include?(@task.status) %>
+          <%= link_to "Remove Work Directory", url_for(:action  => :operation, :operation => 'zap_wd', 'tasklist[]' => @task.id),
+                                                      :method  => :post,
+                                                      :datatype => :script,
+                                                      :class => "btn btn-primary",
+                                                      :confirm =>
+                      "Are you sure you want to remove the task's work directory?"
+          %>
+        <% end %>
       </div>
     </div>
   </div>

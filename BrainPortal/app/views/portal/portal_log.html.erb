@@ -35,7 +35,6 @@
            [ '', 'GET', 'POST', 'PUT', 'DELETE' ], params[:log_meth]), :class => "form-control" %>
       </div>
 
-
       <div class="input-group">
         <span class="input-group-addon">Controller</span>
         <%
@@ -53,7 +52,7 @@
     </div>
 
     <div class="col-xs-6">
-      <strong>Hide lines</strong><br>
+      <strong>Hide lines:</strong>
           'Started':    <%= check_box_tag :hide_started,    "1", params[:hide_started]    == "1" %>
         | 'Processing': <%= check_box_tag :hide_processing, "1", params[:hide_processing] == "1" %>
         | 'Parameters': <%= check_box_tag :hide_parameters, "1", params[:hide_parameters] == "1" %>
@@ -64,8 +63,8 @@
       <% if Rails.env == 'development' %>
         | 'SQL':        <%= check_box_tag :hide_sql,        "1", params[:hide_sql]        == "1" %>
         | 'Load':       <%= check_box_tag :hide_load,       "1", params[:hide_load]       == "1" %>
+        | 'Exists':     <%= check_box_tag :hide_exists,     "1", params[:hide_exists]     == "1" %>
         | 'CACHE':      <%= check_box_tag :hide_cache,      "1", params[:hide_cache]      == "1" %>
-        | 'AREL':       <%= check_box_tag :hide_arel,       "1", params[:hide_arel]       == "1" %>
       <% end %>
       <%= submit_tag "Refresh", :class => "btn btn-primary btn-block" %>
     </div>

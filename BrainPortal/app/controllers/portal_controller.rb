@@ -27,7 +27,9 @@ class PortalController < ApplicationController
 
   include DateRangeRestriction
 
-  before_filter :login_required, :except => [ :credits, :about_us, :welcome ]  # welcome is here so that the redirect to the login page doesn't show the error message
+  api_available :only => [ :swagger ] # GET /swagger returns the .json specification
+
+  before_filter :login_required, :except => [ :credits, :about_us, :welcome, :swagger ]  # welcome is here so that the redirect to the login page doesn't show the error message
   before_filter :admin_role_required, :only => :portal_log
 
   # Display a user's home page with information about their account.
@@ -88,25 +90,26 @@ class PortalController < ApplicationController
 
     # Hide some less important lines
     remove_egrep = []
-    remove_egrep << "^Started "       if params[:hide_started].presence    == "1"
-    remove_egrep << "^ *Processing "  if params[:hide_processing].presence == "1"
-    remove_egrep << "^ *Parameters: " if params[:hide_parameters].presence == "1"
-    remove_egrep << "^ *Rendered"     if params[:hide_rendered].presence   == "1"
-    remove_egrep << "^ *Redirected"   if params[:hide_redirected].presence == "1"
-    remove_egrep << "^User:"          if params[:hide_user].presence       == "1"
-    remove_egrep << "^Completed"      if params[:hide_completed].presence  == "1"
-    # Note that in production, 'SQL', 'CACHE', 'AREL' and 'LOAD' are never shown.
-    remove_egrep << "^ *SQL "         if params[:hide_sql].presence        == "1"
-    remove_egrep << "^ *CACHE "       if params[:hide_cache].presence      == "1"
-    remove_egrep << "^ *AREL "        if params[:hide_arel].presence       == "1"
-    remove_egrep << "^ *[^ ]* Load"   if params[:hide_load].presence       == "1"
+    remove_egrep << "^Started "                                      if params[:hide_started].presence    == "1"
+    remove_egrep << "^ *Processing "                                 if params[:hide_processing].presence == "1"
+    remove_egrep << "^ *Parameters: "                                if params[:hide_parameters].presence == "1"
+    remove_egrep << "^ *Rendered"                                    if params[:hide_rendered].presence   == "1"
+    remove_egrep << "^ *Redirected"                                  if params[:hide_redirected].presence == "1"
+    remove_egrep << "^User:"                                         if params[:hide_user].presence       == "1"
+    remove_egrep << "^Completed"                                     if params[:hide_completed].presence  == "1"
+    # Note that in production, 'SQL', 'CACHE' and 'LOAD' are never shown.
+    remove_egrep << "^ *SQL "                                        if params[:hide_sql].presence        == "1"
+    remove_egrep << '^[\s\d\.ms\(\)]+(BEGIN|COMMIT|SELECT|UPDATE)'   if params[:hide_sql].presence        == "1"
+    remove_egrep << '^[\s\w]*Exists'                                 if params[:hide_exists].presence     == "1"
+    remove_egrep << "^ *CACHE "                                      if params[:hide_cache].presence      == "1"
+    remove_egrep << "^ *[^ ]* Load"                                  if params[:hide_load].presence       == "1"
 
     # Hiding some lines disable some filters, because we hide before we filter. :-(
-    meth_name = nil if params[:hide_started].presence   == "1"
-    ctrl_name = nil if params[:hide_started].presence   == "1"
-    user_name = nil if params[:hide_user].presence      == "1"
-    inst_name = nil if params[:hide_user].presence      == "1"
-    ms_min    = nil if params[:hide_completed].presence == "1"
+    meth_name = nil                                                  if params[:hide_started].presence    == "1"
+    ctrl_name = nil                                                  if params[:hide_started].presence    == "1"
+    user_name = nil                                                  if params[:hide_user].presence       == "1"
+    inst_name = nil                                                  if params[:hide_user].presence       == "1"
+    ms_min    = nil                                                  if params[:hide_completed].presence  == "1"
 
     # Extract the raw data with escape sequences filtered.
 
@@ -116,7 +119,7 @@ class PortalController < ApplicationController
 
     # Version 2: filter first, tail after. Bad if log file is really large, but perl is fast.
     command  = "perl -pe 's/\\e\\[[\\d;]*\\S//g' #{Rails.configuration.paths["log"].first.to_s.bash_escape}"
-    command += " | grep -E -v '#{remove_egrep.join("|")}'" if remove_egrep.size > 0
+    command += " | perl -n -e 'print unless /#{remove_egrep.join("|")}/'" if remove_egrep.size > 0
     command += " | tail -#{num_lines}"
 
     # Slurp it all
@@ -359,6 +362,23 @@ class PortalController < ApplicationController
     @limit   = 20 # used by interface only
 
     @results = @search.present? ? ModelsReport.search_for_token(@search, current_user) : {}
+  end
+
+  # A HTML GET request produces a SwaggerUI information page.
+  # A JSON GET request sends the swagger specification.
+  def swagger
+    # Find latest JSON swagger spec.
+    # FIXME sort() will break when comparing versions...
+    @specfile   = Dir.entries(Rails.root + "public" + "swagger").grep(/\Acbrain-.*-swagger.json\z/).sort.last
+    if (@specfile.blank?)
+      flash[:error] = "Cannot find SWAGGER specification for the service. Sorry."
+      redirect_to start_page_path
+      return
+    end
+    respond_to do |format|
+      format.html
+      format.json { send_file "public/swagger/#{@specfile}", :stream  => true }
+    end
   end
 
   private

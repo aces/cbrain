@@ -409,9 +409,17 @@ class ClusterTask < CbrainTask
   #
   # will create a link 'mygoodbye.txt' that points deeper in the
   # directory structure.
-  def make_available(userfile, file_path, userfile_sub_path = nil)
+  #
+  # If start_dir is specified, it changes the root file location
+  # from which the symlink's relative path to the dp_cache is
+  # computed. This is useful for containerized tasks that have mounted
+  # to a location different than the original task directory.
+  def make_available(userfile, file_path, userfile_sub_path = nil, start_dir = nil)
     cb_error "File path argument must be relative" if
       file_path.blank? || file_path.to_s =~ /\A\//
+
+    # Determine starting dir for relative symlink target calculation
+    base_dir = start_dir || self.full_cluster_workdir
 
     # Fetch and sync the requested userfile
     userfile      = Userfile.find(userfile) unless userfile.is_a?(Userfile)
@@ -420,7 +428,7 @@ class ClusterTask < CbrainTask
     # Compute the final absolute path to the target file symlink
     file_path     = Pathname.new(file_path.to_s)
     file_path    += userfile.name if file_path.to_s.end_with?("/")
-    full_path     = Pathname.new(self.full_cluster_workdir) + file_path
+    full_path     = Pathname.new(base_dir) + file_path
 
     # Pathname objects for the userfile and bourreau directories
     workdir_path   = Pathname.new(self.cluster_shared_dir)
@@ -446,8 +454,12 @@ class ClusterTask < CbrainTask
     end
 
     # Make sure the directory exists and there is no symlink already there
-    FileUtils.mkpath(full_path.dirname) unless Dir.exists?(full_path.dirname)
-    File.unlink(full_path) if File.symlink?(full_path.to_s)
+    # Not done when the start_dir is specified because generally the path should
+    # not exist outside the container (and we will not have permission to make it).
+    unless start_dir
+      FileUtils.mkpath(full_path.dirname) unless Dir.exists?(full_path.dirname)
+      File.unlink(full_path) if File.symlink?(full_path.to_s)
+    end
 
     # Create the symlink
     Dir.chdir(self.full_cluster_workdir) do
@@ -1037,20 +1049,6 @@ class ClusterTask < CbrainTask
     "#{QSUB_SCRIPT_BASENAME}.#{self.name}.#{self.run_id(run_number)}.sh"
   end
 
-  private
-
-  # Returns the basename of the captured standard output of
-  # the scientific script.
-  def science_stdout_basename(run_number=nil) #:nodoc:
-    "#{SCIENCE_STDOUT_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
-  end
-
-  # Returns the basename of the captured standard error of
-  # the scientific script.
-  def science_stderr_basename(run_number=nil) #:nodoc:
-    "#{SCIENCE_STDERR_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
-  end
-
   # Returns the basename for the QSUB standard output capture file for the task.
   # This is not a full path, just a filename relative to the work directory.
   # The file itself is not garanteed to exist.
@@ -1065,6 +1063,20 @@ class ClusterTask < CbrainTask
     "#{QSUB_STDERR_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
   end
 
+  private
+
+  # Returns the basename of the captured standard output of
+  # the scientific script.
+  def science_stdout_basename(run_number=nil) #:nodoc:
+    "#{SCIENCE_STDOUT_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
+  end
+
+  # Returns the basename of the captured standard error of
+  # the scientific script.
+  def science_stderr_basename(run_number=nil) #:nodoc:
+    "#{SCIENCE_STDERR_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
+  end
+
   # Given two basenames for two files, will combine them into a
   # a single report; the report will be the content of the
   # first file  where the token +__CBRAIN_CAPTURE_PLACEHOLDER__+
@@ -1076,7 +1088,7 @@ class ClusterTask < CbrainTask
   # the method just returns the filename, it will not be recreated.
   #
   # If the first file doesn't exist or is not complete (the content must
-  # end with the line "CBRAIN Task Exiting" then the filename returned
+  # end with the line "CBRAIN Task Exiting") then the filename returned
   # is just the second file in argument, +science_outerr+ ; this means
   # that while a task is running, for instance, this method will still
   # return the output as it is being created.
@@ -1091,7 +1103,6 @@ class ClusterTask < CbrainTask
     return combined_file  if File.exists?(combined_file)
 
     # Task outputs incomplete? Point to science output captured
-    return nil            if ! File.exists?(science_outerr)
     return science_outerr if ! File.exists?(qsub_outerr)
     qsub_content = check_task_ending_keyword(qsub_outerr) # returns nil unless content contains "CBRAIN Task Exiting"
     return science_outerr if qsub_content.blank?
@@ -1126,7 +1137,7 @@ class ClusterTask < CbrainTask
   # to a file separately from the captured output of the qsub
   # script, this method will try to provide the path to a
   # combined file when possible (usually when the task is complete)
-  # and otherwise will join return a path to the
+  # and otherwise will just return a path to the
   # science output file.
   def stdout_cluster_filename(run_number=nil)
     workdir = self.full_cluster_workdir
@@ -1611,6 +1622,9 @@ class ClusterTask < CbrainTask
     # are actually performed.
     if commands.blank? || commands.all? { |l| l.blank? }
       self.addlog("No BASH commands associated with this task. Jumping to state 'Data Ready'.")
+      template = "CBRAIN Task Starting\n__CBRAIN_CAPTURE_PLACEHOLDER__\nCBRAIN Task Exiting\n"
+      File.open(self.qsub_stdout_basename, "w") { |fh| fh.write template } # needed for checks
+      File.open(self.qsub_stderr_basename, "w") { |fh| fh.write template } # needed for checks
       self.status_transition(self.status, "Data Ready")  # Will trigger Post Processing later on.
       self.save
       return true
@@ -1904,8 +1918,9 @@ echo "CBRAIN Task Exiting" 1>&2  # checked by framework
   # Returns the command line(s) associated with the task, wrapped in
   # a Docker call if a Docker image has to be used.
   def docker_commands
+    work_dir = self.container_working_directory || '${PWD}'
     commands = self.cluster_commands
-    commands_joined=commands.join("\n");
+    commands_joined = commands.join("\n");
 
     cache_dir=RemoteResource.current_resource.dp_cache_dir;
     task_dir=self.bourreau.cms_shared_dir;
@@ -1917,7 +1932,7 @@ chmod 755 ./.dockerjob.sh
 # Pull the Docker image to avoid inconsistencies coming from different image versions on worker nodes
 #{docker_executable_name} pull #{self.tool_config.docker_image.bash_escape}
 # Run the task commands
-#{docker_executable_name} run --rm -v ${PWD}:${PWD} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w ${PWD} #{self.tool_config.docker_image.bash_escape} ${PWD}/.dockerjob.sh
+#{docker_executable_name} run --rm -v ${PWD}:#{work_dir} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w #{work_dir} #{self.tool_config.docker_image.bash_escape} ${PWD}/.dockerjob.sh
 "
     return docker_commands
   end

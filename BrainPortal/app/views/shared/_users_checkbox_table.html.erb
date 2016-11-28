@@ -51,9 +51,7 @@
 
 <%= hidden_field_tag variable_name, [], :id => "#{boxids}_unchecked" %>
 
-
-
-<%= array_to_table(users, :cols => 4, :class => "table", :td_class => 'left_align no_wrap') do |user,r,c| %>
+<%= array_to_table(users, :cols => 12, :class => "table", :td_class => 'left_align no_wrap') do |user,r,c| %>
   <%= user_check_box.(user)%>
 <% end %>
 

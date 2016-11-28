@@ -23,10 +23,13 @@
 # RESTful controller for the CustomFilter resource.
 class CustomFiltersController < ApplicationController
 
-  before_filter :login_required
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
   api_available
 
-  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+  before_filter :login_required
+
+  layout false
 
   def new #:nodoc:
     filter_param = "#{params[:filter_class]}".classify

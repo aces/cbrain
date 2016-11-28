@@ -214,6 +214,14 @@ describe "Bourreau Boutiques Tests" do
         expect( @idsForFiles.all? { |t| Userfile.find_by_id( t ) } ).to be true
       end
 
+      # Note: -C is a file of the mock task with uses-absolute-path equaling true. -d doesn't specify.
+      it "handles uses-absolute-paths as intended" do
+        # Mock the location of the full cluster workdir
+        allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
+        s1, s2 = @task.apply_template('[C]', { '[C]' => @idsForFiles[0] }), @task.apply_template('[d]', { '[d]' => @idsForFiles[1] })
+        expect( (Pathname.new(s1)).absolute? && ( !(Pathname.new(s2)).absolute? ) ).to be true
+      end
+
       # Ensure that the `setup` method does not replace ids with hashes
       it "works with ids rather than objects" do
         @task.params = ArgumentDictionary.( "-A a -B 9 -C #{C_file} -v s -n 7 ", @idsForFiles )
@@ -230,11 +238,14 @@ describe "Bourreau Boutiques Tests" do
         next if test[0].include?( "fails when special separator" )
         # Run the test
         it "#{test[0]}" do
+          # Mock the location of the full cluster workdir
+          allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
           begin # Convert string arg to params dict
             @task.params = ArgumentDictionary.( test[1], @idsForFiles )
           rescue OptionParser::MissingArgument => e
             next # after_form does not need to check this here, since rails puts a value in the hash
           end
+          #@task.cluster_workdir = File.join('.',TempStore)
           # Run the generated command line from cluster_commands (-2 to ignore export lines and the echo log at -1)
           exit_code = runTestScript( FileNamesToPaths.( @task.cluster_commands[-2].gsub('./'+TestScriptName,'') ), test[3] || [] )
           # Check that the exit code is appropriate
@@ -413,7 +424,8 @@ describe "Bourreau Boutiques Tests" do
     end # End output file handling tests
 
     # Test that a Tool Config is created iff both the bourreau and the descriptor specify docker
-    context 'Default ToolConfig' do
+    # Also ensure move commands are added to cluster_commands when needed
+    context 'Containerized Behaviour' do
 
       before(:each) do
         # Ensure the Bourreau does not have docker installed by default
@@ -421,15 +433,42 @@ describe "Bourreau Boutiques Tests" do
         resource.docker_present = false
         resource.save!
         # Get the schema and json descriptor
-        schema           = SchemaTaskGenerator.default_schema
+        @schema          = SchemaTaskGenerator.default_schema
         @descriptor      = File.join(__dir__, TestScriptDescriptor)
         # Generate a new task class via the Boutiques framework, without integrating it
-        @boutiquesTask   = SchemaTaskGenerator.generate(schema, @descriptor)
-        @boutiquesTask.descriptor["docker-image"] = nil # tool does not use docker by default
+        @boutiquesTask   = SchemaTaskGenerator.generate(@schema, @descriptor)
+        @boutiquesTask.descriptor["container-image"] = nil # tool does not use docker by default
         @task_const_name = "CbrainTask::#{SchemaTaskGenerator.classify(@boutiquesTask.name)}"
         # Destroy any tools/toolconfigs for the tool, if any exist
         ToolConfig.where(tool_id: CbrainTask::BoutiquesTest.tool.id).destroy_all rescue nil
         Tool.where(:cbrain_task_class_name => @task_const_name).destroy_all rescue nil
+        # Placeholder image
+        @dockerImg = { "type" => "docker", "image" => "image" }
+        # Check for mv commands
+        @nMvCmds = lambda { |a| a.reduce(0) { |t,s| t + ( s.start_with?("mv ") ? 1 : 0 ) } }
+        @setupForMvTests = lambda do |wd, outfile1, outfile2 = nil|
+          # Tell the Bourreau to use docker
+          resource = RemoteResource.current_resource
+          resource.docker_present = true
+          resource.save!
+          # Make the task execute in a specific container dir
+          descriptor = SchemaTaskGenerator.expand_json(@descriptor)
+          descriptor['container-image'] = @dockerImg.merge( { "working-directory" => wd } )
+          # Force an output file to be generated outside of that dir or its subtree
+          descriptor["output-files"][0]["path-template"] = outfile1
+          descriptor["output-files"][1]["path-template"] = outfile2 unless outfile2.nil?
+          boutiquesTask   = SchemaTaskGenerator.generate(@schema, descriptor)
+          # Generate the task class via templating
+          boutiquesTask.integrate if File.exists?(@descriptor)
+          # Ensure cluster_commands accounts for the problem by mocking the environment
+          allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :use_docker? ).and_return( true )
+          allow_any_instance_of( CbrainTask::BoutiquesTest ).to receive( :full_cluster_workdir ).and_return( File.join(Dir.pwd, TempStore) )
+          task = CbrainTask::BoutiquesTest.new
+          userFiles   = InputFilesList.map { |f| task.safe_userfile_find_or_new(@ftype.(f), name: File.basename(f), data_provider_id: DPID, user_id: UID, group_id: GID) }
+          userFiles.each { |f| f.save! }
+          idsForFiles = userFiles.map { |f| f.id }
+          return task, idsForFiles
+        end
       end
 
       after(:each) do
@@ -442,8 +481,27 @@ describe "Bourreau Boutiques Tests" do
         resource.save!
       end
 
+      it "correctly adds mv commands when relative optional files are specified" do
+        task, idsForFiles = @setupForMvTests.( "/launch/", "/far/away/[r]")
+        task.params = ArgumentDictionary.( "-A a -B 9 -C #{C_file} -v s -n 7 -r r -o optOutFile", idsForFiles )
+        expect( @nMvCmds.( task.cluster_commands ) ).to eq( 1 ) # It's a relative path, so only one mv need be done
+      end
+
+      it "correctly adds mv commands when optional files are not specified" do
+        task, idsForFiles = @setupForMvTests.( "/launch/", "/far/away/[r]")
+        task.params = ArgumentDictionary.( "-A a -B 9 -C #{C_file} -v s -n 7 -r r", idsForFiles )
+        expect( @nMvCmds.( task.cluster_commands ) ).to eq( 1 ) # Only mv required file
+      end
+
+      it "correctly adds mv commands when absolute optional files are specified" do
+        task, idsForFiles = @setupForMvTests.( "/launch/", "/far/away/[r]", "/another/evil/dir/[o]" )
+        task.params = ArgumentDictionary.( "-A a -B 9 -C #{C_file} -v s -n 7 -r r -o optOutFile", idsForFiles )
+        expect( @nMvCmds.( task.cluster_commands ) ).to eq( 2 ) # Need to mv both files
+      end
+
+
       it "is not created when Bourreau does not support Docker" do
-        @boutiquesTask.descriptor['docker-image'] = 'placeholder_string'
+        @boutiquesTask.descriptor['container-image'] = @dockerImg
         @boutiquesTask.integrate if File.exists?(@descriptor)
         expect( ToolConfig.exists?( :tool_id => @task_const_name.constantize.tool.id ) ).to be false
       end
@@ -456,7 +514,7 @@ describe "Bourreau Boutiques Tests" do
       end
 
       it "is created when descriptor has Docker image and Bourreau has Docker" do
-        @boutiquesTask.descriptor['docker-image'] = 'placeholder_string'
+        @boutiquesTask.descriptor['container-image'] = @dockerImg
         resource = RemoteResource.current_resource
         resource.docker_present = true
         resource.save!

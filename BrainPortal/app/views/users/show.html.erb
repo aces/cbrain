@@ -28,7 +28,7 @@
   <div class="col-xs-12">
     <div class="well well-sm">
       <% if check_role(:admin_user) %>
-        <a href="<%= url_for(:controller => :tool_configs, :user_id => @user.id) %>" class="btn btn-primary"><span class="glyphicon glyphicon-list-alt"></span> Tool Access Report</a>
+        <a href="<%= url_for(:controller => :tool_configs, :action => :report, :user_id => @user.id ) %>" class="btn btn-primary"><span class="glyphicon glyphicon-list-alt"></span> Tool Access Report</a>
         <a href="<%= switch_user_path(@user) %>" class="btn btn-primary" data-type="script" data-method="POST"><span class="glyphicon glyphicon-user"></span> Switch To User</a>
       <% end %>
 
@@ -158,13 +158,25 @@
 
     <% end %>
 
-    <% # Access Profile List %>
-    <% if current_user.has_role?(:admin_user) && @user.access_profiles.count > 0 %>
-      <%= show_table(@user, :header => 'Access profiles') do |t| %>
-        <% t.cell("Access Profiles", :no_header => true) do %>
-          <%= array_to_table(@user.access_profiles.order(:name).all, :table_class => "simple table", :cols => 4) do |access_profile| %>
-            <%= access_profile_label(access_profile, :with_link => true) %>
-          <% end %>
+    <% if current_user.has_role?(:admin_user) %>
+      <% user_access_profiles = @user.access_profiles
+                                .order('access_profiles.name')
+                                .map { |ap| access_profile_label(ap, :with_link => true) }
+                                .join("").html_safe
+         user_access_profiles = "(None)" if user_access_profiles.blank?
+      %>
+
+      <%= show_table(@user, :header => 'Access Profiles') do |t| %>
+        <% t.edit_cell(:access_profile_ids, :show_width => 2, :no_header => true, :content => user_access_profiles ) do %>
+
+          <%= render :partial => 'shared/access_profile_checkbox_table',
+                     :locals => {
+                                  :access_profiles  => AccessProfile.order(:name).all,
+                                  :checked          => @user.access_profiles,
+                                  :variable_name    => "user[access_profile_ids][]",
+                                }
+          %>
+
         <% end %>
       <% end %>
     <% end %>
@@ -202,8 +214,13 @@
        </table>
 
       </div>
-
     <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
   </div>
 </div>
 

@@ -36,15 +36,15 @@ module TestHelpers
   TempStore                = File.join('spec','fixtures') # Site for temp file creation, as in other specs
 
   ### Helper script argument-specific constants ###
+  TmpJoin = lambda { |fname| File.join(TempStore, fname) }
   # Local name variables for outfile arguments
-  DefReqOutName = File.join(TempStore, 'r.txt') # Default name for required output
-  AltReqOutName = File.join(TempStore, 'r.csv') # Alternate name for required output
-  OptOutName    = File.join(TempStore, 'o.txt') # Optional output file name
+  DefReqOutName = TmpJoin.('r.txt') # Default name for required output
+  AltReqOutName = TmpJoin.('r.csv') # Alternate name for required output
+  OptOutName    = TmpJoin.('o.txt') # Optional output file name
   PotenOutFiles = [AltReqOutName, OptOutName, DefReqOutName]
   # Input file helper variables
-  C_file, D_file, J_file  = File.join(TempStore, 'c'), File.join(TempStore, 'f'), File.join(TempStore, 'jf')
-  F1_file, F2_file = File.join(TempStore, 'f1'), File.join(TempStore, 'f2')
-  f_files = F1_file + ' ' + F2_file
+  C_file, D_file, J_file, F1_file, F2_file = ['c','f','jf','f1','f2'].map{ |s| TmpJoin.(s) }
+  F_files = F1_file + ' ' + F2_file
   InputFilesList  = [C_file, D_file, J_file, F1_file, F2_file]
   InputFilesFlags = [  '-C',   '-d',   '-j',    '-f',    '-f']
   # Argument helper variables
@@ -88,12 +88,12 @@ module TestHelpers
     FileUtils.touch(C_file)  # For -C
     FileUtils.touch(D_file)  # For -d
     FileUtils.touch(J_file)  # For -j
-    [1,2].each { |i| FileUtils.touch(File.join(TempStore, "f#{i}")) } # For -f
+    [1,2].each { |i| FileUtils.touch( TmpJoin.("f#{i}") ) } # For -f
   end
 
   # Destroy Input files
   def destroyInputFiles
-    ['c','f','jf','f1','f2'].map{|f| File.join(TempStore, f) }.each { |f| File.delete(f) if File.exist?(f) }
+    ['c','f','jf','f1','f2'].map{|f| TmpJoin.(f) }.each { |f| File.delete(f) if File.exist?(f) }
   end
 
   # Destroy output files of the mock program
@@ -148,7 +148,7 @@ module TestHelpers
     ["works with optional string", baseArgs2 + "-a s -w", 0],
     ["works with optional flag", baseArgs2 + "-c -w", 0],
     ["works with optional string list", baseArgs2 + "-e s1 s2 -w", 0],
-    ["works with optional file list", baseArgs2 + "-f #{f_files} -w", 0],
+    ["works with optional file list", baseArgs2 + "-f #{F_files} -w", 0],
     ["works with optional file", baseArgs2 + "-d #{D_file} -w", 0],
     ["works with optional number list", baseArgs2 + "-g 1 2 3 -w", 0],
     ["works with negative numbers in numerical list", baseArgs + "-g -1 -2.1 -3", 0],
