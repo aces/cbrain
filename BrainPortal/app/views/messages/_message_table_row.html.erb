@@ -37,7 +37,7 @@
   span += 1 unless current_user.has_role?(:normal_user)
 %>
 
-<tr class="<%= "#{css_type}"%>">
+<tr class="<%= "message_display_#{mess.id}" "#{css_type}"%>">
   <td class="wrap left" style="white-space:normal">
     <%= show_hide_toggle(Message.parse_markup(mess.header), "#message_table_details_#{mess.id}") %>
     <div id="message_table_details_<%= mess.id %>" style="display: none">

@@ -190,9 +190,9 @@ module AjaxWidgetHelper
     ajax_link h(name.to_s), url, options
   end
 
-  # Create a link that will submin an ajax_request to +url+
+  # Create a link that will submit an ajax_request to +url+
   #
-  # Creates a text field that will sends an ajax
+  # Creates a text field that will send an ajax
   # request to +url+ when the enter key is hit. The current
   # text is sent as parameter +name+.
   #

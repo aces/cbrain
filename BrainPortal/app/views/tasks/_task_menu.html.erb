@@ -25,7 +25,6 @@
 <div class="row menu-bar">
   <div class="col-xs-12">
     <div class="well well-sm">
-      <div class="btn-group btn-group-justified">
         <div class="btn-group">
           <a href="javascript:;" class="btn btn-primary dropdown mega-dropdown" role="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="glyphicon glyphicon-pencil"></span> Update Attributes <span class="caret"></span>
@@ -108,138 +107,143 @@
         </div>
 
         <div class="btn-group">
-          <button href="<%= url_for(:action  => :operation, :operation => 'recover') %>" role="button" method="post" datatype="script" class="btn btn-primary pop" data-toggle="popover" data-placement="bottom" data-trigger="focus" data-container="body" data-content="Triggers cleanup and a restart at the last successful processing stage." data-html="true"><span class="glyphicon glyphicon-repeat"></span> Retry Failed</button>
-        </div>
-
-
-        <div class="btn-group">
-          <a href="javascript:;" class="btn btn-primary dropdown mega-dropdown pop" role="dropdown" aria-haspopup="true" aria-expanded="false">
-            <span class="glyphicon glyphicon-repeat"></span> Restart Completed <span class="caret"></span>
-          </a>
-
-          <ul class="dropdown-menu" id="completed-menu" style="min-width: 400px;">
-            <div class="container-fluid">
-              <li class="dropdown-header">Restart at:</li>
-              <li class="row">
-                <div class="col-xs-10">
-                  <%= hijacker_submit_button("Setup", :url  => url_for(:action  => :operation, :operation => 'restart_setup'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
-                </div>
-                <div class="col-xs-2">
-                  <span class="pop" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-content="When input data files are synchronized on the Execution server and the processing scripts are created." data-html="true"> <span class="glyphicon glyphicon-question-sign" style="font-size: 2em;"></span></span>
-                </div>
-              </li>
-
-              <li class="row">
-                <div class="col-xs-10">
-                  <%= hijacker_submit_button("Cluster", :url  => url_for(:action  => :operation, :operation => 'restart_cluster'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
-                </div>
-                <div class="col-xs-2">
-                  <span class="pop" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-content="When the scientific scripts are actually run on the Execution Server's nodes" data-html="true"> <span class="glyphicon glyphicon-question-sign" style="font-size: 2em;"></span></span>
-                </div>
-              </li>
-              <li class="row">
-                <div class="col-xs-10">
-                  <%= hijacker_submit_button("Post-Processing", :url  => url_for(:action  => :operation, :operation => 'restart_setup'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
-                </div>
-                <div class="col-xs-2">
-                  <span class="pop" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-content="When the resulting output files are sent back to the CBRAIN Data Providers." data-html="true"> <span class="glyphicon glyphicon-question-sign" style="font-size: 2em;"></span></span>
-                </div>
-              </li>
-              <li role="separator" class="divider"></li>
-              <li class="dropdown-header">Duplicate task on:</li>
-              <li><%= bourreau_select :dup_bourreau_id, {}, :class => "task-select form-control" %></li>
-              <li>
-                <%= hijacker_submit_button("Duplicate", :url  => url_for(:action  => :operation, :operation => 'duplicate'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
-              </li>
-            </div>
-          </ul>
-        </div>
-
-        <div class="btn-group">
-          <a href="javascript:;" class="btn btn-primary dropdown mega-dropdown" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-trash"></span> Cleanup <span class="caret"></span></a>
-          <ul class="dropdown-menu" style="min-width: 330px;">
-            <li class="row">
-              <div class="col-xs-10">
-                <%= hijacker_submit_button("Terminate", :url  => url_for(:action  => :operation, :operation => 'terminate'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer", :confirm => "Are you sure you want to terminate the selected tasks?") %>
-              </div>
-              <div class="col-xs-2">
-                <span class="glyphicon glyphicon-question-sign pop" style="font-size: 2em;" data-content="Tasks can be terminated at any point, and may be restarted." data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-html="true"></span>
-              </div>
-            </li>
-
-            <li class="row">
-              <div class="col-xs-10">
-                <%= hijacker_submit_button("Remove Work Directories", :url  => url_for(:action  => :operation, :operation => 'zap_wd'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer", :confirm => "Are you sure you want to remove the WORK DIRECTORIES of the selected tasks?") %>
-              </div>
-              <div class="col-xs-2">
-                <span class="glyphicon glyphicon-question-sign pop" style="font-size: 2em;" data-content="Remove work directories on Execution Servers while leaving the rest of the task info intact. Frees space or removes confidential information that you would prefer to remove. The Archiving button has other options for disposing of tasks' work directories." data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-html="true"></span>
-              </div>
-            </li>
-
-
-            <% delete_tooltip = h("Removes task completely, erasing work directory. Does not remove output files for successful tasks. Deletes any archives of a task's work directory, indicated (" + colored_archived_status(:workdir) + " or " + colored_archived_status(:userfile) + ") in 'WorkDir Size' column.") %>
-
-            <li class="row">
-              <div class="col-xs-10">
-                <%= hijacker_submit_button("Remove", :url  => url_for(:action  => :operation, :operation => 'delete'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer", :confirm => "Are you sure you want to remove the selected tasks? IMPORTANT NOTE: This will also remove their archived work directories, if any.") %>
-              </div>
-              <div class="col-xs-2">
-                <span class="glyphicon glyphicon-question-sign pop" style="font-size: 2em;" data-content="<%= delete_tooltip %>" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-html="true"></span>
-              </div></li>
-          </ul>
-        </div>
-
-  <% on_cluster_popover = h("When archiving <em>On Cluster</em>, the task's files are compressed and archived but will stay on the cluster's side. Such tasks are shown with the " + colored_archived_status(:workdir) + " symbol in the index table.") %>
-  <% as_file_popover = h("When archiving <em>As File</em>, the archive will be brought back to your file manager as a '" + TaskWorkdirArchive.pretty_type + "' file and no data at all will be left on the cluster side. Such tasks are shown with the " + colored_archived_status(:userfile) + " symbol in the index table.") %>
-
-        <div class="btn-group">
-          <a href="javascript:;" class="btn btn-primary dropdown mega-dropdown" role="dropdown" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-compressed"></span> Archive <span class="caret"></span></a>
-          <ul class="dropdown-menu list-group" id="archiving-menu">
-            <div class="container-fluid">
-              <li>Archive the work directory of tasks. Tasks must be in a final state, such as <strong>Completed</strong>, <strong>Failed</strong> or <strong>Terminated</strong>.</li>
-              <li role="separator" class="divider"></li>
-              <li>
-              <div class="row">
-                <div class="col-xs-10">
-                  The process can take a very long time so be patient and do not request this action multiple times in parallel.
-                </div>
-                <div class="col-xs-2">
-                  <span class="glyphicon glyphicon-time" style="font-size: 2em;"></span>
-                </div>
-              </div>
-              </li>
-              <li role="separator" class="divider"></li>
-              <li>The rest of the information about the tasks will not be affected in any way when they are archived. No operation can be performed on archived task, except unarchiving them.</li>
-              <li role="separator" class="divider"></li>
-              <li class="dropdown-header">Archive:</li>
-              <li>
-              <div class="row">
-                <div class="col-xs-10">
-                  <%= hijacker_submit_button("On Cluster", :url => url_for(:action  => :operation, :operation => 'archive'), :method  => :post, :datatype => :script, :class => "btn btn-primary btn-block mega-dropdown-closer") %>
-                </div>
-                <div class="col-xs-2">
-                  <div class="pop" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-content="<%= on_cluster_popover %>" data-html="true"> <span class="glyphicon glyphicon-question-sign" style="font-size: 2em;"></span> </div>
-                </div>
-              </div>
-              </li>
-              <li>
-              <div class="row">
-                <div class="col-xs-10">
-                  <%= hijacker_submit_button("As File", :url => url_for(:action  => :operation, :operation => 'archive_file'), :method  => :post, :datatype => :script, :class => "btn btn-primary btn-block mega-dropdown-closer") %>
-                </div>
-                <div class="col-xs-2">
-                  <div class="pop" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-content="<%= as_file_popover %>" data-html="true"> <span class="glyphicon glyphicon-question-sign" style="font-size: 2em;"></span> </div>
-                </div>
-
-              </div></li>
-              <li>Optional: when archiving <em>As File</em>, choose a destination Data Provider:
-                <%= data_provider_select :archive_dp_id, { :selector => "" }, { :include_blank => "", :class => "form-control" } %></li>
-              <li role="separator" class="divider"></li>
-              <li class="dropdown-header">Unarchive:</li>
-              <li><%= hijacker_submit_button("Unarchive Tasks", :url => url_for(:action  => :operation, :operation => 'unarchive'), :method  => :post, :datatype => :script, :class => "btn btn-primary btn-block mega-dropdown-closer") %></li>
+          <div class="btn-group">
+            <button href="<%= url_for(:action  => :operation, :operation => 'recover') %>" role="button" method="post" datatype="script" class="btn btn-primary pop" data-toggle="popover" data-placement="bottom" data-trigger="focus" data-container="body" data-content="Triggers cleanup and a restart at the last successful processing stage." data-html="true"><span class="glyphicon glyphicon-repeat"></span> Retry Failed</button>
           </div>
-          </ul>
+
+
+          <div class="btn-group">
+            <a href="javascript:;" class="btn btn-primary dropdown mega-dropdown pop" role="dropdown" aria-haspopup="true" aria-expanded="false">
+              <span class="glyphicon glyphicon-repeat"></span> Restart Completed <span class="caret"></span>
+            </a>
+
+            <ul class="dropdown-menu" id="completed-menu" style="min-width: 400px;">
+              <div class="container-fluid">
+                <li class="dropdown-header">Restart at:</li>
+                <li class="row">
+                  <div class="col-xs-10">
+                    <%= hijacker_submit_button("Setup", :url  => url_for(:action  => :operation, :operation => 'restart_setup'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
+                  </div>
+                  <div class="col-xs-2">
+                    <span class="pop" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-content="When input data files are synchronized on the Execution server and the processing scripts are created." data-html="true"> <span class="glyphicon glyphicon-question-sign" style="font-size: 2em;"></span></span>
+                  </div>
+                </li>
+
+                <li class="row">
+                  <div class="col-xs-10">
+                    <%= hijacker_submit_button("Cluster", :url  => url_for(:action  => :operation, :operation => 'restart_cluster'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
+                  </div>
+                  <div class="col-xs-2">
+                    <span class="pop" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-content="When the scientific scripts are actually run on the Execution Server's nodes" data-html="true"> <span class="glyphicon glyphicon-question-sign" style="font-size: 2em;"></span></span>
+                  </div>
+                </li>
+                <li class="row">
+                  <div class="col-xs-10">
+                    <%= hijacker_submit_button("Post-Processing", :url  => url_for(:action  => :operation, :operation => 'restart_setup'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
+                  </div>
+                  <div class="col-xs-2">
+                    <span class="pop" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-content="When the resulting output files are sent back to the CBRAIN Data Providers." data-html="true"> <span class="glyphicon glyphicon-question-sign" style="font-size: 2em;"></span></span>
+                  </div>
+                </li>
+                <li role="separator" class="divider"></li>
+                <li class="dropdown-header">Duplicate task on:</li>
+                <li><%= bourreau_select :dup_bourreau_id, {}, :class => "task-select form-control" %></li>
+                <li>
+                  <%= hijacker_submit_button("Duplicate", :url  => url_for(:action  => :operation, :operation => 'duplicate'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
+                </li>
+              </div>
+            </ul>
+          </div>
         </div>
+
+        <div class="btn-group">
+          <div class="btn-group">
+            <a href="javascript:;" class="btn btn-primary dropdown mega-dropdown" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-trash"></span> Cleanup <span class="caret"></span></a>
+            <ul class="dropdown-menu" style="min-width: 330px;">
+              <li class="row">
+                <div class="col-xs-10">
+                  <%= hijacker_submit_button("Terminate", :url  => url_for(:action  => :operation, :operation => 'terminate'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer", :confirm => "Are you sure you want to terminate the selected tasks?") %>
+                </div>
+                <div class="col-xs-2">
+                  <span class="glyphicon glyphicon-question-sign pop" style="font-size: 2em;" data-content="Tasks can be terminated at any point, and may be restarted." data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-html="true"></span>
+                </div>
+              </li>
+
+              <li class="row">
+                <div class="col-xs-10">
+                  <%= hijacker_submit_button("Remove Work Directories", :url  => url_for(:action  => :operation, :operation => 'zap_wd'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer", :confirm => "Are you sure you want to remove the WORK DIRECTORIES of the selected tasks?") %>
+                </div>
+                <div class="col-xs-2">
+                  <span class="glyphicon glyphicon-question-sign pop" style="font-size: 2em;" data-content="Remove work directories on Execution Servers while leaving the rest of the task info intact. Frees space or removes confidential information that you would prefer to remove. The Archiving button has other options for disposing of tasks' work directories." data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-html="true"></span>
+                </div>
+              </li>
+
+
+              <% delete_tooltip = h("Removes task completely, erasing work directory. Does not remove output files for successful tasks. Deletes any archives of a task's work directory, indicated (" + colored_archived_status(:workdir) + " or " + colored_archived_status(:userfile) + ") in 'WorkDir Size' column.") %>
+
+              <li class="row">
+                <div class="col-xs-10">
+                  <%= hijacker_submit_button("Remove", :url  => url_for(:action  => :operation, :operation => 'delete'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer", :confirm => "Are you sure you want to remove the selected tasks? IMPORTANT NOTE: This will also remove their archived work directories, if any.") %>
+                </div>
+                <div class="col-xs-2">
+                  <span class="glyphicon glyphicon-question-sign pop" style="font-size: 2em;" data-content="<%= delete_tooltip %>" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-html="true"></span>
+                </div></li>
+            </ul>
+          </div>
+
+    <% on_cluster_popover = h("When archiving <em>On Cluster</em>, the task's files are compressed and archived but will stay on the cluster's side. Such tasks are shown with the " + colored_archived_status(:workdir) + " symbol in the index table.") %>
+    <% as_file_popover = h("When archiving <em>As File</em>, the archive will be brought back to your file manager as a '" + TaskWorkdirArchive.pretty_type + "' file and no data at all will be left on the cluster side. Such tasks are shown with the " + colored_archived_status(:userfile) + " symbol in the index table.") %>
+
+          <div class="btn-group">
+            <a href="javascript:;" class="btn btn-primary dropdown mega-dropdown" role="dropdown" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-compressed"></span> Archive <span class="caret"></span></a>
+            <ul class="dropdown-menu list-group" id="archiving-menu" style="min-width: 330px;">
+              <div class="container-fluid">
+                <li>Archive the work directory of tasks. Tasks must be in a final state, such as <strong>Completed</strong>, <strong>Failed</strong> or <strong>Terminated</strong>.</li>
+                <li role="separator" class="divider"></li>
+                <li>
+                <div class="row">
+                  <div class="col-xs-10">
+                    The process can take a very long time so be patient and do not request this action multiple times in parallel.
+                  </div>
+                  <div class="col-xs-2">
+                    <span class="glyphicon glyphicon-time" style="font-size: 2em;"></span>
+                  </div>
+                </div>
+                </li>
+                <li role="separator" class="divider"></li>
+                <li>The rest of the information about the tasks will not be affected in any way when they are archived. No operation can be performed on archived task, except unarchiving them.</li>
+                <li role="separator" class="divider"></li>
+                <li class="dropdown-header">Archive:</li>
+                <li>
+                <div class="row">
+                  <div class="col-xs-10">
+                    <%= hijacker_submit_button("On Cluster", :url => url_for(:action  => :operation, :operation => 'archive'), :method  => :post, :datatype => :script, :class => "btn btn-primary btn-block mega-dropdown-closer") %>
+                  </div>
+                  <div class="col-xs-2">
+                    <div class="pop" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-content="<%= on_cluster_popover %>" data-html="true"> <span class="glyphicon glyphicon-question-sign" style="font-size: 2em;"></span> </div>
+                  </div>
+                </div>
+                </li>
+                <li>
+                <div class="row">
+                  <div class="col-xs-10">
+                    <%= hijacker_submit_button("As File", :url => url_for(:action  => :operation, :operation => 'archive_file'), :method  => :post, :datatype => :script, :class => "btn btn-primary btn-block mega-dropdown-closer") %>
+                  </div>
+                  <div class="col-xs-2">
+                    <div class="pop" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-content="<%= as_file_popover %>" data-html="true"> <span class="glyphicon glyphicon-question-sign" style="font-size: 2em;"></span> </div>
+                  </div>
+
+                </div></li>
+                <li>Optional: when archiving <em>As File</em>, choose a destination Data Provider:
+                  <%= data_provider_select :archive_dp_id, { :selector => "" }, { :include_blank => "", :class => "form-control" } %></li>
+                <li role="separator" class="divider"></li>
+                <li class="dropdown-header">Unarchive:</li>
+                <li><%= hijacker_submit_button("Unarchive Tasks", :url => url_for(:action  => :operation, :operation => 'unarchive'), :method  => :post, :datatype => :script, :class => "btn btn-primary btn-block mega-dropdown-closer") %></li>
+            </div>
+            </ul>
+          </div>
+        </div>
+
         <div class="btn-group">
           <a href="javascript:;" class="btn btn-primary dropdown mega-dropdown" aria-haspopup="true" aria-expanded="false" content-id="task_filters">
             <span class="glyphicon glyphicon-filter"></span> Filters <span class="caret"></span>
@@ -248,8 +252,6 @@
             <% @custom_filter = TaskCustomFilter.new %>
             <%= render :partial => 'custom_filters/custom_filter_list' %>
           </ul>
-
-          </div>
         </div>
       </div>
 </div>

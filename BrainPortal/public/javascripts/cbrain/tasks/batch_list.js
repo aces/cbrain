@@ -38,6 +38,8 @@ $(function () {
           batch  = rows.filter('.batch'),
           tasks  = rows.filter('.task');
 
+      console.log(rows);
+
       /* Replace the old row with the new ones */
       row
         .after(tasks)

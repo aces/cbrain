@@ -295,67 +295,61 @@
 # Only a loaded batch header and the task themselves are rendered.
 -%>
 
-<div class="container-fluid">
-  <div class="row">
-    <% if @row_fetch %>
-      <div class="col-xs-12">
-        <% if @tasks.empty? %>
-          <tr class="batch">
-            <td class="dt-table-wide">
-              This batch of tasks has disappeared
-            </td>
-          </tr>
-        <% else %>
-          <%= table.render :row, [[ :loaded_batch, @tasks.first[:batch], nil, @tasks.first[:first] ]] %>
-          <%= table.render :row, list %>
-        <% end %>
-      </div>
+<% if @row_fetch %>
+    <% if @tasks.empty? %>
+      <tr class="batch">
+        <td class="dt-table-wide">
+          This batch of tasks has disappeared
+        </td>
+      </tr>
     <% else %>
-      <div class="col-xs-4">
-        <%=
-          render(:partial => 'shared/active_filters', :locals  => {
-            :scope => @scope,
-            :model => CbrainTask
-          })
-        %>
-
-        <%=
-          scope_custom_link(
-            "Switch to #{batch_view ? 'List' : 'Batch'} View",
-            @scope, { 'batch' => !batch_view },
-            link: { :ajax => true }
-          )
-        %>
-      </div>
-
-      <div class="col-xs-4">
-        (<%= pluralize @total_tasks, "task" %>)
-      </div>
-      <div class="col-xs-4">
-        <div class="pull-right">
-        <% if @total_space_known > 0 %>
-          Total task space used: <%= colored_pretty_size(@total_space_known) %>
-        <% end %>
-        <% if @total_space_unkn  > 0 %>
-          (<%= pluralize @total_space_unkn, "task" %> without space estimates)
-        <% end %>
-        </div>
-      </div>
-
-      <% content_for :scripts do %>
-        <%= javascript_include_tag 'cbrain/tasks/batch_list' %>
-      <% end %>
-
-      <div class="col-xs-12">
-        <%= table.render %>
-
-        <%=
-          center_legend("Workdir archiving status symbols:", [
-            [ colored_archived_status(:workdir),  "On Cluster" ],
-            [ colored_archived_status(:userfile), "As File"    ],
-          ])
-        %>
-      </div>
+      <%= table.render :row, [[ :loaded_batch, @tasks.first[:batch], nil, @tasks.first[:first] ]] %>
+      <%= table.render :row, list %>
     <% end %>
+<% else %>
+  <div class="col-xs-4">
+    <%=
+      render(:partial => 'shared/active_filters', :locals  => {
+        :scope => @scope,
+        :model => CbrainTask
+      })
+    %>
+
+    <%=
+      scope_custom_link(
+        "Switch to #{batch_view ? 'List' : 'Batch'} View",
+        @scope, { 'batch' => !batch_view },
+        link: { :ajax => true }
+      )
+    %>
   </div>
-</div>
+
+  <div class="col-xs-4">
+    (<%= pluralize @total_tasks, "task" %>)
+  </div>
+  <div class="col-xs-4">
+    <div class="pull-right">
+    <% if @total_space_known > 0 %>
+      Total task space used: <%= colored_pretty_size(@total_space_known) %>
+    <% end %>
+    <% if @total_space_unkn  > 0 %>
+      (<%= pluralize @total_space_unkn, "task" %> without space estimates)
+    <% end %>
+    </div>
+  </div>
+
+  <% content_for :scripts do %>
+    <%= javascript_include_tag 'cbrain/tasks/batch_list' %>
+  <% end %>
+
+  <div class="col-xs-12">
+    <%= table.render %>
+
+    <%=
+      center_legend("Workdir archiving status symbols:", [
+        [ colored_archived_status(:workdir),  "On Cluster" ],
+        [ colored_archived_status(:userfile), "As File"    ],
+      ])
+    %>
+  </div>
+<% end %>

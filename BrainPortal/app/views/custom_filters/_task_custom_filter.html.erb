@@ -27,7 +27,7 @@
 <div class="row">
   <div class="col-xs-4"><label>Task</label></div>
   <div class="col-xs-8">
-    <%= task_type_select("data[type]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name)).sort, :selector => custom_filter.data["type"], :include_top => true }, :multiple => true, :class => "form-control") %>
+    <%= task_type_select("data[type]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name).sort, :selector => custom_filter.data["type"], :include_top => true }, :multiple => true, :class => "form-control") %>
   </div>
 </div>
 <div class="row">

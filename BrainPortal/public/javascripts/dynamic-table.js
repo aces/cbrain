@@ -91,7 +91,6 @@
    * filters, etc.) have changed.
    */
   $(document).delegate('.dynamic-table', 'refresh.dyn-tbl', function () {
-
     var dyntbl    = $(this),
         dyntbl_id = dyntbl.attr('id'),
         table     = dyntbl.find('.dt-table');
@@ -134,7 +133,6 @@
     });
 
     adjust_empty(table);
-
   });
 
   /*
