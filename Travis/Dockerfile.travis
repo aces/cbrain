@@ -37,6 +37,7 @@ RUN yum install -y \
       libxml2-devel \
       libyaml-devel \
       mysql-devel \
+      mysql-server \
       openssl-devel \
       patch \
       readline-devel \
@@ -51,19 +52,24 @@ RUN yum install -y \
 RUN groupadd -g 500        cbrain
 RUN useradd  -u 500 -g 500 cbrain
 
+# Environment variables for the MYSQL DB
+ENV MYSQL_ROOT_PASSWORD="my-secret-pw" MYSQL_USER="cb_user" MYSQL_DATABASE="cb_db_test" MYSQL_PASSWORD="cbpw12345"
 
 
-##########################
-# Dockerize installation #
-##########################
 
-# Dockerize is used in run.sh to edit template configuration files and
-# to wait for the DB to be started before starting the portal
+#############################################
+# MySQL server installation and configuration
+#############################################
 
-ENV DOCKERIZE_VERSION=v0.2.0
+RUN service mysqld start && \
+    /usr/bin/mysqladmin -u root password "$MYSQL_ROOT_PASSWORD" && \
+    /usr/bin/mysqladmin -u root -h `hostname` password "$MYSQL_ROOT_PASSWORD"
 
-RUN wget -O /tmp/dockerize.tar.gz https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-RUN tar -C /usr/local/bin -xzvf /tmp/dockerize.tar.gz && rm /tmp/dockerize.tar.gz
+RUN service mysqld start && \
+    /usr/bin/mysql -u root --password="$MYSQL_ROOT_PASSWORD" -e "create database $MYSQL_DATABASE;"
+
+RUN service mysqld start && \
+    /usr/bin/mysql -u root --password="$MYSQL_ROOT_PASSWORD" -e "grant all on $MYSQL_DATABASE.* to '$MYSQL_USER'@'localhost' identified by '$MYSQL_PASSWORD';"
 
 
 
@@ -106,13 +112,40 @@ ENV CBRAIN_BRANCH=$CBRAIN_BRANCH
 # I would use --single-branch in the git clone command below, but
 # it seems not all git packages support it.
 RUN cd $HOME && \
-    git clone --branch "$CBRAIN_BRANCH" "$CBRAIN_REPO" cbrain_base
+    git clone --branch "$CBRAIN_BRANCH" --depth 2 "$CBRAIN_REPO" cbrain_base
 
 # Install and configure the portal
+ENV RAILS_ENV=test
 
 RUN bash --login -c 'cd $HOME/cbrain_base/BrainPortal && bundle install'
 
+RUN bash --login -c 'cd $HOME/cbrain_base/Bourreau && bundle install'
+
 RUN bash --login -c 'cd $HOME/cbrain_base/BrainPortal && cd $(bundle show sys-proctable) && rake install'
+
+COPY ./templates/database.yml.TEST     /home/cbrain/cbrain_base/BrainPortal/config/database.yml
+
+COPY ./templates/config_portal.rb.TEST /home/cbrain/cbrain_base/BrainPortal/config/initializers/config_portal.rb
+
+# Seed the DB
+USER root
+
+RUN  chown cbrain /home/cbrain/cbrain_base/BrainPortal/config/database.yml && \
+     chown cbrain /home/cbrain/cbrain_base/BrainPortal/config/initializers/config_portal.rb
+
+RUN su -c "bash --login -c 'cd \$HOME/cbrain_base/BrainPortal && rake cbrain:plugins:install:plugins'" cbrain
+
+RUN service mysqld start && \
+    su -c "bash --login -c 'cd \$HOME/cbrain_base/BrainPortal && rake db:schema:load'" cbrain
+
+RUN service mysqld start && \
+    su -c "bash --login -c 'cd \$HOME/cbrain_base/BrainPortal && rake db:seed'" cbrain
+
+RUN service mysqld start && \
+    su -c "bash --login -c 'cd \$HOME/cbrain_base/BrainPortal && rake db:seed:test:bourreau'" cbrain
+
+RUN service mysqld start && \
+    su -c "bash --login -c 'cd \$HOME/cbrain_base/BrainPortal && rake db:sanity:check'" cbrain
 
 
 
@@ -120,15 +153,12 @@ RUN bash --login -c 'cd $HOME/cbrain_base/BrainPortal && cd $(bundle show sys-pr
 # Ports and entry point #
 #########################
 
-# Environment variables for the MYSQL DB
-ENV MYSQL_ROOT_PASSWORD="my-secret-pw" MYSQL_USER="cb_user" MYSQL_DATABASE="cb_db_test" MYSQL_PASSWORD="cbpw12345"
-
 # This command will copy the code freshly extracted by travis
 # and perform the rest of the setup needed to run the tests
-# (seed the DB, run rake tasks, run rspec); the path
+# (migrate the DB, run rake tasks, run rspec); the path
 # /home/cbrain/cbrain_travis is a mounted volume from the
 # VM side.
-CMD [ "/home/cbrain/cbrain_travis/Travis/run_tests.sh" ]
+CMD [ "/home/cbrain/cbrain_travis/Travis/bootstrap.sh" ]
 
 ###########
 # Volumes #
