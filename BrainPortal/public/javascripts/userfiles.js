@@ -683,6 +683,7 @@ $(function() {
         if (dialog.data('dirty'))
           userfiles.refresh().then(function () {
             dialog.removeData('dirty');
+            dialog.modal('hide');
           });
       })
       /* swap a tag's name label for an input textbox on click */

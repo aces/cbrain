@@ -50,7 +50,7 @@
 </div>
 
 <div class="row">
-  <div class="col-xs-12">
+  <div class="col-xs-12 col-md-6">
     <%= show_table(@group, :edit_condition => @group.can_be_edited_by?(current_user)) do |t| %>
 
       <% t.edit_cell(:name) do %>
@@ -81,10 +81,8 @@
       <% end %>
     <% end %>
   </div>
-</div>
 
-<div class="row">
-  <div class="col-xs-12">
+  <div class="col-xs-12 col-md-6">
     <%= show_table(@group, :header => 'Resources') do |t| %>
 
       <% t.cell("Files") { index_count_filter @group.userfiles.count, :userfiles, {:group_id => @group.id}, :show_zeros => true } %>
@@ -100,33 +98,30 @@
 
     <% end %>
   </div>
-</div>
 
-<% # Access Profile List %>
-<% if current_user.has_role?(:admin_user) %>
-  <% group_access_profiles = @group.access_profiles
-                             .order('access_profiles.name')
-                             .map { |ap| access_profile_label(ap, :with_link => true) }
-                             .join("").html_safe
-     group_access_profiles = "(None)" if group_access_profiles.blank?
-  %>
-  <div class="row">
-    <div class="col-xs-12">
+  <% # Access Profile List %>
+  <% if current_user.has_role?(:admin_user) %>
+    <% group_access_profiles = @group.access_profiles
+                               .order('access_profiles.name')
+                               .map { |ap| access_profile_label(ap, :with_link => true) }
+                               .join("").html_safe
+       group_access_profiles = "(None)" if group_access_profiles.blank?
+    %>
+    <div class="col-xs-12 col-md-6">
       <%= show_table(@group, :header => 'Assigned To Access Profiles') do |t| %>
         <% t.cell("", :no_header => true, :show_width => 2) do %>
           <span><%= group_access_profiles %></span>
         <% end %>
       <% end %>
     </div>
-  </div>
-<% end %>
+  <% end %>
 
-<%
-  group_members  = @group.users
-  open_invites   = Invitation.where(sender_id: current_user.id, group_id: @group.id, active: true)
-%>
-<div class="row">
-  <div class="col-xs-12">
+  <%
+    group_members  = @group.users
+    open_invites   = Invitation.where(sender_id: current_user.id, group_id: @group.id, active: true)
+  %>
+
+  <div class="col-xs-12 col-md-6">
     <%= show_table(@group, :header => 'Members', :edit_condition => @group.can_be_edited_by?(current_user) && (!current_user.has_role?(:normal_user) || group_members.count > 1 || open_invites.present?)) do |t| %>
 
         <% default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left table', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) } %>
@@ -151,12 +146,10 @@
                                    :content    => default_text) do %>
             <% open_invites.each do |i| %>
               <%= link_to_user_with_tooltip i.user %>: <%= link_to("Cancel", invitation_path(i), :method => :delete, :class => "action_link") %>
-              <br>
             <% end %>
           <% end %>
         <% end %>
-      <% end %>
-
+    <% end %>
   </div>
 </div>
 

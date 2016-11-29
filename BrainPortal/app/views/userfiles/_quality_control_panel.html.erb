@@ -30,59 +30,65 @@
 
 <%= hidden_field_tag :index, @current_index %>
 
-<h3>
-  Quality Control Tagging for: <%= @userfile.name %> (Dataset <%= @current_index + 1 %> out of <%= @filelist.size %>)
-</h3>
+<div class="row">
+  <div class="col-xs-12">
+    <h3>
+      Quality Control Tagging for: <%= @userfile.name %> (Dataset <%= @current_index + 1 %> out of <%= @filelist.size %>)
+    </h3>
 
-<div class="menubar">
+    <div class="well well-sm">
+      Quick tags:
+      <%= submit_button "Pass",    :name => :pass     , :class => 'btn-success' %>
+      <%= submit_button "Fail",    :name => :fail     , :class => 'btn-danger' %>
+      <%= submit_button "Unknown", :name => :unknown  , :class => 'btn-warning' %>
 
-  Quick tags:
-  <%= submit_button "Pass",    :name => :pass %>
-  <%= submit_button "Fail",    :name => :fail %>
-  <%= submit_button "Unknown", :name => :unknown %>
+      <div class="btn-group pull-right">
+        <% if @current_index > 0 %>
+          <%= submit_button "Previous", :name => :previous  %>
+        <% end %>
 
-  &nbsp;&nbsp;|&nbsp;&nbsp;
+        <% if @current_index < @filelist.size - 1 %>
+          <%= submit_button "Next", :name => :next %>
+        <% end %>
+      </div>
+    </div>
 
-  <% if @current_index > 0 %>
-    <%= submit_button "Previous", :name => :previous %>
-  <% end %>
-
-  <% if @current_index < @filelist.size - 1 %>
-    <%= submit_button "Next", :name => :next %>
-  <% end %>
-
-</div>
-
-<div class="display_table">
-  <div class="display_cell">
-  Full list of tags:<br>
-    <select name="tag_ids[]" multiple="multiple" style="width: 15em" size="4" >
-      <%= options_from_collection_for_select current_user.available_tags, 'id', 'name',
-          @userfile.get_tags_for_user(current_user).raw_first_column(:id) %>
-    </select>
+    <div class="col-xs-6">
+      Full list of tags:
+        <select name="tag_ids[]" multiple="multiple" class="form-control">
+          <%= options_from_collection_for_select current_user.available_tags, 'id', 'name',
+              @userfile.get_tags_for_user(current_user).raw_first_column(:id) %>
+        </select>
+    </div>
+    <div class="col-xs-6">
+      Description:
+        <%= text_area_tag "userfile[description]", @userfile.description, :rows => 3, :class => "form-control" %>
+    </div>
   </div>
-  <div class="display_cell">
-  Description:<br>
-    <%= text_area_tag "userfile[description]", @userfile.description, :rows => 3, :cols => 40 %><br>
+
+
+  <div class="col-xs-12">
+    <div class="row">
+      <div class="col-xs-12">
+        <%= submit_tag "Update", :name => :update, :class => "btn btn-primary btn-block" %>
+      </div>
+    </div>
   </div>
-</div>
-<p>
-<%= submit_tag "Update", :name => :update %>
 
-<p>
-
-<% begin %>
-  <%= render :file => @qc_view_file %>
-<% rescue => ex %>
-  There was an error generating the QC panel for this file. Please talk to the developers.
-  <% if current_user.has_role? :admin_user %>
-    <pre>
-    Exception: <%= ex.class %> : <%= ex.message %>
-    <% ex.backtrace.each do |line| %>
-    <%= line %>
+  <div class="col-xs-12">
+    <% begin %>
+      <%= render :file => @qc_view_file %>
+    <% rescue => ex %>
+      There was an error generating the QC panel for this file. Please talk to the developers.
+      <% if current_user.has_role? :admin_user %>
+        <pre>
+          Exception: <%= ex.class %> : <%= ex.message %>
+          <% ex.backtrace.each do |line| %>
+            <%= line %>
+          <% end %>
+        </pre>
+      <% end %>
     <% end %>
-    </pre>
-  <% end %>
-<% end %>
+  </div>
 
-<br>
+</div>

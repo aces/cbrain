@@ -18,18 +18,22 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
 <% title("Quality Control") %>
 
-<div class="menu_bar">
-  <%= button_to "Finished", {:action => :index}, :class => "button" %>
+<div class="row menu_bar">
+  <div class="col-xs-12">
+    <div class="well well-sm">
+      <%= button_to "Finished", {:action => :index}, :class => "btn btn-primary" %>
+    </div>
+  </div>
 </div>
 
-<div class="display_table qc_table">
-  <div class="display_cell qc_panel">
+<div class="row">
+  <div class="col-xs-6">
     <%= ajax_form_tag url_for(:action  => :quality_control_panel), :target => "#qc_left_panel" do %>
       <%= ajax_element url_for(:action => :quality_control_panel), :data => {:file_ids => @filelist, :index => -1, :authenticity_token => form_authenticity_token}, :method => :post, :id => "qc_left_panel" do %>
         <span class="loading_message">Loading panel...</span>
@@ -37,7 +41,7 @@
     <% end %>
   </div>
   <% if @filelist.size > 1 %>
-    <div class="display_cell qc_panel">
+    <div class="col-xs-6">
       <%= ajax_form_tag url_for(:action  => :quality_control_panel), :target => "#qc_right_panel" do %>
         <%= ajax_element url_for(:action => :quality_control_panel), :data => {:file_ids => @filelist, :index => 0, :authenticity_token => form_authenticity_token}, :method => :post, :id => "qc_right_panel" do %>
           <span class="loading_message">Loading panel...</span>

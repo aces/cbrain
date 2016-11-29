@@ -40,7 +40,7 @@ module DynamicFormHelper
   ###################################################################
   def submit_button(value, options = {})
     options[:class] ||= ""
-    options[:class] +=  " btn btn-primary btn-block"
+    options[:class] +=  " btn btn-primary"
 
     submit_tag(value, options)
   end
