@@ -940,10 +940,10 @@ a {
 /* % Sidebar Filter Content (Tasks or Userfiles) */
 /* % ########################################################  */
 
-<<<<<<< HEAD
 #userfiles_filters_dropdown_menu {
   white-space: nowrap;
-=======
+}
+
 .vertical_bar {
   display: inline;
   font-size: 1.3em;
@@ -952,7 +952,6 @@ a {
 /* Show task parameters */
 .task-show > table {
   border: 0;
->>>>>>> dev
 }
 
 .filter_menu {
