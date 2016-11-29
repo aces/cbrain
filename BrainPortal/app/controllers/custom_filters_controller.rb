@@ -29,8 +29,6 @@ class CustomFiltersController < ApplicationController
 
   before_filter :login_required
 
-  layout false
-
   def new #:nodoc:
     filter_param = "#{params[:filter_class]}".classify
     unless CustomFilter.descendants.map(&:name).include?(filter_param)
