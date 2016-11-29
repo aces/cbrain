@@ -48,7 +48,7 @@
 </div>
 
 <div class="row">
-  <div class="col-xs-12">
+  <div class="col-xs-12 col-md-6">
     <%= show_table(@user, :edit_condition => edit_permission?(@user)) do |t| %>
 
       <% t.attribute_cell(:login) %>
@@ -129,6 +129,8 @@
       <% end %>
     <% end %>
 
+  </div>
+  <div class="col-xs-12 col-md-6">
     <%= show_table(@user, :header => 'Resources') do |t| %>
 
       <% t.cell("Files") do
@@ -157,8 +159,9 @@
       <% end %>
 
     <% end %>
-
+  </div>
     <% if current_user.has_role?(:admin_user) %>
+  <div class="col-xs-12 col-md-6">
       <% user_access_profiles = @user.access_profiles
                                 .order('access_profiles.name')
                                 .map { |ap| access_profile_label(ap, :with_link => true) }
@@ -179,11 +182,13 @@
 
         <% end %>
       <% end %>
+  </div>
     <% end %>
 
     <% # Admin users have access to ALL groups, so no need to show them all here %>
     <% unless @user.has_role? :admin_user %>
 
+  <div class="col-xs-12">
       <div class="panel panel-primary">
         <div class="panel-heading">Projects
           <% if current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user) %>
@@ -215,12 +220,6 @@
 
       </div>
     <% end %>
-  </div>
-</div>
-
-<div class="row">
-  <div class="col-xs-12">
-    <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
   </div>
 </div>
 

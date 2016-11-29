@@ -24,38 +24,41 @@
 
 <% title "Edit Task " + @task.name %>
 
-<h1>Edit Task <%= @task.pretty_name %></h1>
+<div class="row">
+  <div class="col-xs-12">
+    <h2 class="text-center">Edit Task <%= @task.pretty_name %></h2>
+  </div>
 
-<%= form_for(@task, :as => :cbrain_task, :url => {:controller  => :tasks, :action  => :update}, :html => { :method => :put }, :builder => CbrainTaskFormBuilder ) do |form| -%>
+  <%= form_for(@task, :as => :cbrain_task, :url => {:controller  => :tasks, :action  => :update}, :html => { :method => :put }, :builder => CbrainTaskFormBuilder ) do |form| -%>
 
-<% # Hidden fields -%>
-<%= hidden_field_tag :toolname, @task.name %>
-<%= hidden_field_tag :id,       @task.id %>
-<% (@task.params[:interface_userfile_ids] || []).each_with_index do |id,idx| %>
-  <%= hidden_field_tag "interface_userfile_ids[]".to_la, id, :id => "interface_userfile_ids[#{idx}]".to_la_id %>
-<% end %>
+  <% # Hidden fields -%>
+  <%= hidden_field_tag :toolname, @task.name %>
+  <%= hidden_field_tag :id,       @task.id %>
+  <% (@task.params[:interface_userfile_ids] || []).each_with_index do |id,idx| %>
+    <%= hidden_field_tag "interface_userfile_ids[]".to_la, id, :id => "interface_userfile_ids[#{idx}]".to_la_id %>
+  <% end %>
 
+  <% unless @task.class.properties[:no_presets] %>
+    <div class="col-xs-12 col-md-6">
+      <%= render :partial => "tasks/presets",
+                 :locals  => { :form => form }
+      %>
+    </div>
+  <% end %>
 
+  <div class="col-xs-12 col-md-6">
+    <%= render :partial => "tasks/params",
+               :locals  => { :form => form }
+    %>
+  </div>
 
-<%= render :partial => "tasks/control" %>
+  <div class="col-xs-12 col-md-6">
+    <%= render :partial => "tasks/control" %>
+  </div>
 
-<% unless @task.class.properties[:no_presets] %>
-  <%= render :partial => "tasks/presets",
-             :locals  => { :form => form }
-  %>
-<% end %>
+  <div class="col-xs-12">
+    <%= submit_tag "Save modified parameters for this task", :class => "btn btn-primary btn-block" %>
+  </div>
 
-
-
-<%= render :partial => "tasks/params",
-           :locals  => { :form => form }
-%>
-
-
-
-<P>
-<%= submit_tag "Save modified parameters for this task", :class => "button" %>
-<BR>
-
-<% end %>
-
+  <% end %>
+</div>

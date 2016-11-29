@@ -23,49 +23,49 @@
 -%>
 
 
-<div class="panel panel-primary">
+<div class="panel panel-primary <%= "hidden" if (! @task.new_record?) && @task.status != "Duplicated" %>">
   <div class="panel-heading">Task Control <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#task-control"></span></div>
   <div class="panel-body collapse in" id="task-control">
-  <div class="container-fluid control_box<%= " hidden" if (! @task.new_record?) && @task.status != "Duplicated" %>">
-    <div class="row <%= 'class="error_display"' if @task.status == 'Duplicated' %>">
-      <div class="col-xs-2">Server&nbsp;&amp;&nbsp;Version</div>
-      <div class="col-xs-10">
-        <%= tool_config_select "cbrain_task[tool_config_id]", { :tool_configs  => @tool_configs,
-                                                                :selector      => @task,
-                                                              },
-                                                              { :include_blank => "Select Server & Version",
-                                                                :class         => "submit_onchange form-control",
-                                                                "data-commit"  => "refresh",
-                                                              } %>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-xs-2">Save results to</div>
-      <div class="col-xs-10">
-        <div class="input-group">
-          <%= data_provider_select "cbrain_task[results_data_provider_id]", { :selector => @task.results_data_provider_id } , { :include_blank => "Data provider of input files", :class => "form-control" } %>
-            <span class="glyphicon glyphicon-info-sign input-group-addon" rel="popover" data-toggle="popover" data-placement="right" title="Data Provider Info" data-content="<%= data_providers_descriptions.html_safe %>" data-html="true"></span>
+    <div class="control_box">
+      <div class="row" <%= 'class="error_display"' if @task.status == 'Duplicated' %>>
+        <div class="col-xs-2">Server&nbsp;&amp;&nbsp;Version</div>
+        <div class="col-xs-10">
+          <%= tool_config_select "cbrain_task[tool_config_id]", { :tool_configs  => @tool_configs,
+                                                                  :selector      => @task,
+                                                                },
+                                                                { :include_blank => "Select Server & Version",
+                                                                  :class         => "submit_onchange form-control",
+                                                                  "data-commit"  => "refresh",
+                                                                } %>
         </div>
       </div>
-    </div>
-    <div class="row">
-      <div class="col-xs-2">Description</div>
-      <div class="col-xs-10">
-        <%= text_area_tag "cbrain_task[description]", @task.description, :rows => 4, :class => "form-control" %>
-        <div class="field_explanation">(The first line should be a short summary, and the rest are your notes)</div>
+      <div class="row">
+        <div class="col-xs-2">Save results to</div>
+        <div class="col-xs-10">
+          <div class="input-group">
+            <%= data_provider_select "cbrain_task[results_data_provider_id]", { :selector => @task.results_data_provider_id } , { :include_blank => "Data provider of input files", :class => "form-control" } %>
+              <span class="glyphicon glyphicon-info-sign input-group-addon" rel="popover" data-toggle="popover" data-placement="right" title="Data Provider Info" data-content="<%= data_providers_descriptions.html_safe %>" data-html="true"></span>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-2">Description</div>
+        <div class="col-xs-10">
+          <%= text_area_tag "cbrain_task[description]", @task.description, :rows => 4, :class => "form-control" %>
+          <div class="field_explanation">(The first line should be a short summary, and the rest are your notes)</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-2">Owner</div>
+        <div class="col-xs-10"><%= user_select "cbrain_task[user_id]", @task.user_id, { :disabled => ! (current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)), :class => "form-control" } %></div>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-2">Project</div>
+        <div class="col-xs-10"><%= group_select "cbrain_task[group_id]", @task.group_id, :class => "form-control" %></div>
       </div>
     </div>
-
-    <div class="row">
-      <div class="col-xs-2">Owner</div>
-      <div class="col-xs-10"><%= user_select "cbrain_task[user_id]", @task.user_id, { :disabled => ! (current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)), :class => "form-control" } %></div>
-    </div>
-
-    <div class="row">
-      <div class="col-xs-2">Project</div>
-      <div class="col-xs-10"><%= group_select "cbrain_task[group_id]", @task.group_id, :class => "form-control" %></div>
-    </div>
-  </div>
 
   </div>
 </div>

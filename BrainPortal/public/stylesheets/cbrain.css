@@ -858,7 +858,6 @@ a {
 .show_table {
   border-collapse: collapse;
   border: none;
-  width: 100%;
 }
 
 .show_table th {
@@ -867,7 +866,6 @@ a {
   border: none;
   color: black;
   text-align: left;
-  white-space: nowrap;
   width: 20%;
 }
 
@@ -877,7 +875,6 @@ a {
   margin: 0;
   padding: 5px 0;
   text-align: left;
-  white-space: nowrap;
 }
 
 .show_table td.subheader {
@@ -886,10 +883,6 @@ a {
 
 .show_table th.checkbox_label {
   text-align: right;
-}
-
-.show_table_edit{
-  font-size: 0.9em;
 }
 
 .show_table_edit_link{

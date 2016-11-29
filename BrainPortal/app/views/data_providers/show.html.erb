@@ -58,7 +58,7 @@
 </div>
 
 <div class="row">
-  <div class="col-xs-12">
+  <div class="col-xs-12 col-md-6">
     <%= show_table(@provider, :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
 
       <% t.edit_cell(:name) do %>
@@ -129,8 +129,10 @@
       <% end %>
 
     <% end %>
+  </div>
 
-    <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
+  <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
+    <div class="col-xs-12 col-md-6">
       <%= show_table(@provider, :header => "SSH parameters for remote Data Providers") do |t| %>
         <% t.edit_cell(:remote_host)  do %>
           <%= text_field_tag "data_provider[remote_host]", @provider.remote_host, :class => "form-control" %>
@@ -146,7 +148,9 @@
           <%= text_field_tag "data_provider[remote_user]", @provider.remote_user, :class => "form-control" %>
         <% end %>
       <% end %>
+    </div>
 
+    <div class="col-xs-12 col-md-6">
       <%= show_table(@provider, :header => "Cloud Storage Configuration") do |t| %>
         <% t.edit_cell(:cloud_storage_client_identifier, :header => 'Client Identifier', :show_width => 2)  do %>
           <%= text_field_tag "data_provider[cloud_storage_client_identifier]", @provider.cloud_storage_client_identifier, :class => "form-control" %>
@@ -155,85 +159,85 @@
           <%= password_field_tag "data_provider[cloud_storage_client_token]", @provider.cloud_storage_client_token, :class => "form-control" %>
         <% end %>
       <% end %>
+    </div>
 
+    <div class="col-xs-12 col-md-6">
+      <%= show_table(@provider, :header => "Other Properties", :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
 
-    <%= show_table(@provider, :header => "Other Properties", :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+        <% t.boolean_edit_cell("meta[no_uploads]", @provider.meta["no_uploads"],  "on", "", :header => "Cannot be used for uploading files in the file manager") %>
 
-      <% t.boolean_edit_cell("meta[no_uploads]", @provider.meta["no_uploads"],  "on", "", :header => "Cannot be used for uploading files in the file manager") %>
+        <% t.boolean_edit_cell("meta[no_viewers]", @provider.meta["no_viewers"],  "on", "", :header => "Files cannot be viewed in the file manager") %>
 
-      <% t.boolean_edit_cell("meta[no_viewers]", @provider.meta["no_viewers"],  "on", "", :header => "Files cannot be viewed in the file manager") %>
+        <% if @provider.is_browsable? %>
 
-      <% if @provider.is_browsable? %>
+          <% t.boolean_edit_cell("meta[must_move]", @provider.meta["must_move"], "on", "", :header => "Files must be copied/moved upon registration") %>
 
-        <% t.boolean_edit_cell("meta[must_move]", @provider.meta["must_move"], "on", "", :header => "Files must be copied/moved upon registration") %>
-
-        <% t.edit_cell("meta[browse_gid]",
-             :header  => "Files can be browsed only by members of this project",
-             :content => @provider.meta[:browse_gid].present? ? link_to_group_if_accessible(@provider.meta[:browse_gid]) : '(Any Users)',
-             :show_width => 2
-           ) do %>
-           <%= group_select 'meta[browse_gid]', { :selector => @provider.meta[:browse_gid] }, { :include_blank => "(Any Users)", :class => "form-control" } %>
+          <% t.edit_cell("meta[browse_gid]",
+               :header  => "Files can be browsed only by members of this project",
+               :content => @provider.meta[:browse_gid].present? ? link_to_group_if_accessible(@provider.meta[:browse_gid]) : '(Any Users)',
+               :show_width => 2
+             ) do %>
+             <%= group_select 'meta[browse_gid]', { :selector => @provider.meta[:browse_gid] }, { :include_blank => "(Any Users)", :class => "form-control" } %>
+          <% end %>
         <% end %>
-
       <% end %>
-
+    </div>
 
     <% other_dps       = DataProvider.find_all_accessible_by_user(current_user).reject { |dp| dp.id == @provider.id } %>
     <% dps_by_category = other_dps.hashed_partitions { |dp| dp.is_browsable? ? :user : :official } %>
 
     <% if other_dps.size > 0 %>
-
-      <%= show_table(@provider, :width => 5, :header => 'Files can be copied or moved to these other Data Providers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
-        <% if dps_by_category[:official] %>
-          <% t.row(:class => 'subheader') { "<label>Official Storage</label>".html_safe } %>
-          <% dps_by_category[:official].sort_by(&:name).each do |dp| %>
-            <% meta_key = "dp_no_copy_#{dp.id}" %>
-            <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label') %>
+      <div class="col-xs-12 col-md-6">
+        <%= show_table(@provider, :width => 5, :header => 'Files can be copied or moved to these other Data Providers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+          <% if dps_by_category[:official] %>
+            <% t.row(:class => 'subheader') { "<label>Official Storage</label>".html_safe } %>
+            <% dps_by_category[:official].sort_by(&:name).each do |dp| %>
+              <% meta_key = "dp_no_copy_#{dp.id}" %>
+              <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label') %>
+            <% end%>
           <% end%>
-        <% end%>
 
-        <% t.blank_row %>
+          <% t.blank_row %>
 
-        <% if dps_by_category[:user] %>
-          <% t.row(:class => 'subheader') { "<strong>User or Site Storage</strong>".html_safe } %>
-          <% dps_by_category[:user].sort_by(&:name).each do |dp| %>
-            <% meta_key = "dp_no_copy_#{dp.id}" %>
-            <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label') %>
-          <% end%>
-        <% end%>
-      <% end%>
+          <% if dps_by_category[:user] %>
+            <% t.row(:class => 'subheader') { "<strong>User or Site Storage</strong>".html_safe } %>
+            <% dps_by_category[:user].sort_by(&:name).each do |dp| %>
+              <% meta_key = "dp_no_copy_#{dp.id}" %>
+              <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "disabled", :header => "#{dp.name}", :class => 'checkbox_label') %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
     <% end%>
-
 
     <% other_rrs       = RemoteResource.find_all_accessible_by_user(current_user) %>
     <% rrs_by_category = other_rrs.hashed_partitions { |rr| rr.is_a?(Bourreau) ? :bourreau : :portal } %>
 
     <% if other_rrs.size > 0 %>
-      <%= show_table(@provider, :width => 5, :header => 'File contents can be accessed by these Servers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
-        <% if rrs_by_category[:portal] %>
-          <% t.row(:class => 'subheader') { "<strong>Portals<strong>".html_safe } %>
-          <% rrs_by_category[:portal].sort_by(&:name).each do |rr| %>
-            <% meta_key = "rr_no_sync_#{rr.id}" %>
-            <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "#{rr.name} cannot sync #{@provider.name}", :header => "#{rr.name}", :class => 'checkbox_label') %>
+      <div class="col-xs-12 col-md-6">
+        <%= show_table(@provider, :width => 5, :header => 'File contents can be accessed by these Servers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+          <% if rrs_by_category[:portal] %>
+            <% t.row(:class => 'subheader') { "<strong>Portals<strong>".html_safe } %>
+            <% rrs_by_category[:portal].sort_by(&:name).each do |rr| %>
+              <% meta_key = "rr_no_sync_#{rr.id}" %>
+              <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "#{rr.name} cannot sync #{@provider.name}", :header => "#{rr.name}", :class => 'checkbox_label') %>
+            <% end%>
           <% end%>
-        <% end%>
 
-        <% t.blank_row %>
+          <% t.blank_row %>
 
-        <% if rrs_by_category[:bourreau] %>
-          <% t.row(:class => 'subheader') { "<strong>Execution Servers<strong>".html_safe } %>
-          <% rrs_by_category[:bourreau].sort_by(&:name).each do |rr| %>
-            <% meta_key = "rr_no_sync_#{rr.id}" %>
-            <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "#{rr.name} cannot sync #{@provider.name}", :header => "#{rr.name}", :class => 'checkbox_label') %>
-          <% end%>
-        <% end%>
-      <% end%>
-    <% end%>
+          <% if rrs_by_category[:bourreau] %>
+            <% t.row(:class => 'subheader') { "<strong>Execution Servers<strong>".html_safe } %>
+            <% rrs_by_category[:bourreau].sort_by(&:name).each do |rr| %>
+              <% meta_key = "rr_no_sync_#{rr.id}" %>
+              <% t.boolean_edit_cell("meta[#{meta_key}]", @provider.meta[meta_key].to_s, "", "#{rr.name} cannot sync #{@provider.name}", :header => "#{rr.name}", :class => 'checkbox_label') %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
 
   <% end %>
-
-  <% end %>
-</div>
 </div>
 
 <% if (check_role(:admin_user) || @provider.user_id == current_user.id) && (@provider.is_a?(SshDataProvider) || @provider.is_a?(SmartDataProviderInterface)) %>

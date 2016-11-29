@@ -25,8 +25,11 @@
 <% title 'Add New Site' %>
 
 
-
-<%= error_messages_for @site %>
+<div class="row">
+  <div class="col-xs-12">
+    <%= error_messages_for @site %>
+  </div>
+</div>
 
 <%= form_for @site, :as => :site, :url => { :action => "create" }, :datatype => "script", :class => "form-horizontal" do |f| -%>
 

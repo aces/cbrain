@@ -53,7 +53,7 @@
 </div>
 
 <div class="row">
-  <div class="col-xs-12">
+  <div class="col-xs-12 col-md-6">
     <%= show_table(@bourreau, :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
       <% t.edit_cell(:name) do %>
@@ -143,7 +143,7 @@
   </div>
 
   <% if is_portal %>
-    <div class="col-xs-12">
+    <div class="col-xs-12 col-md-6">
       <%= show_table(@bourreau, :header => "Mail configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
         <% t.edit_cell(:support_email, :header => "Support email address") do %>
           <%= text_field_tag "bourreau[support_email]", @bourreau.support_email, :class => "form-control" %><br/>
@@ -163,7 +163,7 @@
 
   <% if (check_role(:admin_user) || @bourreau.user_id == current_user.id) %>
     <% if is_bourreau %>
-      <div class="col-xs-12">
+      <div class="col-xs-12 col-md-6">
         <%= show_table(@bourreau, :header => "Connection Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
           <% t.edit_cell(:ssh_control_host, :header => "SSH Hostname") do %>
@@ -259,7 +259,7 @@
     </div>
     <% end %>
 
-    <div class="col-xs-12">
+    <div class="col-xs-12 col-md-6">
       <%= show_table(@bourreau, :header => "Cache Management Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
         <% t.edit_cell(:dp_cache_dir, :header => "Path to Data Provider caches") do %>
           <%= text_field_tag "bourreau[dp_cache_dir]", @bourreau.dp_cache_dir, :class => "form-control" %>
@@ -296,7 +296,7 @@
 
 
     <% if is_bourreau %>
-      <div class="col-xs-12">
+      <div class="col-xs-12 col-md-6">
         <%= show_table(@bourreau, :header => "Cluster Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
           <% t.edit_cell(:cms_class, :header => "Type of cluster") do %>
@@ -378,7 +378,7 @@
           <% end %>
         <% end %>
       </div>
-      <div class="col-xs-12">
+      <div class="col-xs-12 col-md-6">
         <%= show_table(@bourreau, :header => "Worker Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
           <% t.edit_cell :workers_instances, :header => "Number of workers" do %>
             <%= select_tag "bourreau[workers_instances]", options_for_select([
@@ -428,7 +428,7 @@
         <% end %>
       </div>
 
-      <div class="col-xs-12">
+      <div class="col-xs-12 col-md-6">
         <%= show_table(@bourreau, :header => "Docker Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
           <% t.edit_cell :docker_executable_name, :header => "Docker executable" do %>
             <%= text_field_tag "bourreau[docker_executable_name]", @bourreau.docker_executable_name, :class => "form-control" %>
@@ -439,7 +439,7 @@
       </div>
     <% end %>
 
-    <div class="col-xs-12">
+    <div class="col-xs-12 col-md-6">
       <%= render :partial => 'runtime_info' %>
     </div>
 
@@ -449,7 +449,7 @@
 
 
 <% if @bourreau.has_owner_access?(current_user) %>
-  <div class="row">
+  <div class="col-xs-12">
     <%= render :partial => "layouts/log_report", :locals  => { :log  => @bourreau.getlog, :title => "Server Log" } %>
   </div>
 <% end %>

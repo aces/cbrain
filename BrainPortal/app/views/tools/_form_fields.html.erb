@@ -25,7 +25,7 @@
 <%= error_messages_for(@tool) %>
 
 <div class="row">
-  <div class="col-xs-6">
+  <div class="col-xs-12 col-md-6">
     <div class="panel panel-primary">
       <div class="panel-heading">Tool Information <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#info-panel"></span></div>
       <div class="panel-body collapse in" id="info-panel">
@@ -88,7 +88,7 @@
   </div>
 
   <% if @tool && !@tool.new_record? %>
-   <div class="col-xs-6">
+   <div class="col-xs-12 col-md-6">
       <div class="panel panel-primary">
         <div class="panel-heading">Deployed Tool <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#deployed-panel"></span></div>
         <div class="panel-body collapse in" id="deployed-panel">

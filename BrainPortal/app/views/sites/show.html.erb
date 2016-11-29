@@ -40,7 +40,7 @@
 </div>
 
 <div class="row">
-  <div class="col-xs-12">
+  <div class="col-xs-12 col-md-6">
     <%= show_table(@site, :edit_condition => check_role(:admin_user)) do |t| %>
       <% t.edit_cell(:name) { text_field_tag "site[name]", @site.name } %>
       <% t.edit_cell(:description, :content => full_description(@site.description) ) do %>
@@ -48,7 +48,9 @@
         The first line should be a short summary, and the rest are for any special notes for the users.
       <% end %>
     <% end %>
+  </div>
 
+  <div class="col-xs-12 col-md-6">
     <%= show_table(@site, :header => 'Resources') do |t| %>
       <% t.cell("Managers", :show_width => 2) do %>
         <%= array_to_table(@site.managers.sort{|a, b| a.login.casecmp(b.login)}, :min_data => 6, :table_class => 'table table-bordered') {|u,r,c| link_to_user_with_tooltip(u)} %>
@@ -62,7 +64,9 @@
         t.cell("Remote Resources") { @site.remote_resources_find_all.count }
       %>
     <% end %>
+  </div>
 
+  <div class="col-xs-12">
     <div class="panel panel-primary">
       <div class="panel-heading">Membership</div>
         <table class="table table-condensed">
