@@ -180,7 +180,32 @@
                                 }
           %>
 
+<<<<<<< HEAD
         <% end %>
+=======
+  <% end %>
+
+  <% if current_user.has_role?(:admin_user) %>
+
+    <% user_access_profiles = @user.access_profiles
+                              .order('access_profiles.name')
+                              .map { |ap| access_profile_label(ap, :with_link => true) }
+                              .join("").html_safe
+       user_access_profiles = "(None)" if user_access_profiles.blank?
+    %>
+
+    <%= show_table(@user, :header => 'Access Profiles') do |t| %>
+      <% t.edit_cell(:access_profile_ids, :show_width => 2, :no_header => true, :content => user_access_profiles ) do %>
+
+        <%= render :partial => 'shared/access_profile_checkbox_table',
+                   :locals => {
+                                :access_profiles  => AccessProfile.order(:name).all,
+                                :checked          => @user.access_profiles,
+                                :variable_name    => "user[access_profile_ids][]",
+                              }
+        %>
+
+>>>>>>> dev
       <% end %>
   </div>
     <% end %>
@@ -198,6 +223,7 @@
                 <%= submit_tag 'Update Projects', :class => "btn btn-primary" %>
               <% end %>
             <% end %>
+<<<<<<< HEAD
           <% end %>
         </div>
        <table class="table table-condensed">
@@ -221,6 +247,36 @@
       </div>
     <% end %>
   </div>
+=======
+          </th>
+        </tr>
+
+        <tr>
+          <th>Project Name</th>
+          <th>Project Type</th>
+          <th>Members</th>
+        </tr>
+
+     <% (@user.available_groups.sort { |g1,g2| g1.name.casecmp(g2.name) }).each do |group| %>
+       <% next if group.name == 'everyone' %>
+       <tr class=<%= cycle("list-even", "list-odd") %> >
+         <td><%= link_to_group_if_accessible(group) %></td>
+         <td><%= group.pretty_category_name(current_user) %></td>
+         <td><%= array_to_table(group.users, :table_class => 'simple bordered', :fill_by_columns => true) {|u,r,c| link_to_user_with_tooltip(u)} %></td>
+       </tr>
+     <% end %>
+
+     </table>
+
+    </div>
+
+    <p>
+
+  <% end %>
+
+  <p>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
+>>>>>>> dev
 </div>
 
 <div class="row">

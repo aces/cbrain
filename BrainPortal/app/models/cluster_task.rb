@@ -1108,7 +1108,7 @@ class ClusterTask < CbrainTask
     return science_outerr if qsub_content.blank?
 
     # Create combined report
-    science_content = File.read(science_outerr) # can be big but generally not to much
+    science_content = File.read(science_outerr) rescue "(Processing content blank or unreadable)" # can be big but generally not to much
     qsub_content.sub!('__CBRAIN_CAPTURE_PLACEHOLDER__',science_content)
     File.open("#{combined_file}-tmp#{Process.pid}","w") { |fh| fh.write(qsub_content) }
     File.rename("#{combined_file}-tmp#{Process.pid}", combined_file) # atomicity for the win

@@ -942,6 +942,11 @@ a {
   font-size: 1.3em;
 }
 
+.vertical_bar {
+  display: inline;
+  font-size: 1.3em;
+}
+
 /* Show task parameters */
 .task-show > table {
   border: 0;

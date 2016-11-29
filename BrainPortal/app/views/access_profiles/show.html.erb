@@ -54,14 +54,12 @@
         <%= render :partial => 'shared/color_picker', :locals => { :step => 30, :greys => false, :dark => false } %>
       <% end %>
 
-      <% t.edit_cell(:description, :content => overlay_description(@access_profile.description), :show_width => 2 ) do %>
+      <% t.edit_cell(:description, :content => full_description(@access_profile.description), :show_width => 2 ) do %>
         <%= text_area_tag "access_profile[description]", @access_profile.description, :rows => 6, :class => "form-control" %><br/>
         These are your private notes about this profile.
       <% end %>
 
     <% end %>
-
-
   </div>
 
   <% myusers = @access_profile.users.all.sort_by(&:login) %>
@@ -118,6 +116,7 @@
                                 :variable_name => "access_profile[user_ids][]",
                               }
         %>
+
       <% end %>
     <% end %>
   </div>

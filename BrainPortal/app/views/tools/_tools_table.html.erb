@@ -94,7 +94,6 @@
           :filters  => default_filters_for(@base_scope, Group)
         ) { |tool| link_to_group_if_accessible(tool.group) }
 
-
         t.column("Execution & Versions", :exec) do |tool|
           tool.bourreaux
             .reject { |b| ! b.can_be_accessed_by?(current_user) }

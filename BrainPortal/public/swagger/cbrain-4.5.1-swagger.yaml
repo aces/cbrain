@@ -1,0 +1,258 @@
+# Swagger description of the CBRAIN API
+# Pierre Rioux, August 2016 - October 2016
+swagger: '2.0'
+info:
+  title: CBRAIN API
+  description: Interface to control CBRAIN operations
+  version: "4.5.1"
+# The domain of the service
+host: portal.cbrain.mcgill.ca
+schemes:
+  - https
+basePath: /
+produces:
+  - application/json
+paths:
+#=============================================================================
+# SESSIONS ACTIONS
+#=============================================================================
+  /session/new:
+    get:
+      summary: New session initiator
+      description: |
+        This returns an object with the information necessary to
+        create a new session.
+      tags:
+        - Sessions
+      responses:
+        200:
+          description: An object with an authenticity token
+          schema:
+            type: object
+            properties:
+              authenticity_token:
+                type: string
+#=============================================================================
+  /session:
+    post:
+      summary: Create a new session
+      description: |
+        This is the main entry point to create a CBRAIN session.
+      parameters:
+        - name: authenticity_token
+          in: query
+          description: The token returned by /sessions/new
+          required: true
+          type: string
+        - name: login
+          in: query
+          description: The CBRAIN user's username
+          required: true
+          type: string
+        - name: password
+          in: query
+          description: The CBRAIN user's password
+          required: true
+          type: string
+          format: password
+      tags:
+        - Sessions
+      responses:
+        200:
+          description: An object with the session ID and the CBRAIN user ID
+          schema:
+            type: object
+            properties:
+              session_id:
+                type: string
+              user_id:
+                type: number
+        401:
+          description: Password authentication failed.
+    get:
+      summary: Get session information
+      description: |
+        This returns information about the current session.
+      tags:
+        - Sessions
+      responses:
+        200:
+          description: An object with the CBRAIN user ID
+          schema:
+            type: object
+            properties:
+              user_id:
+                type: number
+        401:
+          description: No session created yet.
+    delete:
+      summary: Destroy the session
+      description: |
+        This destroys the current session, effectively terminating the API's
+        access to the service.
+      tags:
+        - Sessions
+      responses:
+        200:
+          description: Session terminated
+        401:
+          description: No session created yet.
+#=============================================================================
+# USERS ACTIONS
+#=============================================================================
+  /users/{id}:
+    get:
+      summary: Returns information about a user
+      description: |
+        Returns the information about the user associated with the ID given in
+        argument. A normal user only has access to her own information, while an
+        administrator or site manager can have access to a larger set of users.
+      parameters:
+        - name: id
+          in: path
+          description: ID of the user
+          required: true
+          type: string
+      tags:
+        - Users
+      responses:
+        200:
+          description: An object with the CBRAIN user information
+          schema:
+            $ref: '#/definitions/User'
+#=============================================================================
+# TOOL CONFIGS ACTIONS
+#=============================================================================
+  /tool_configs:
+    get:
+      summary: Get a list of tool versions installed.
+      description: |
+        This method returns a list of tool config objects.
+      tags:
+        - ToolConfigs
+      responses:
+        200:
+          description: |
+            An array of ToolConfig objects describing for each tool
+            and execution server the available version numbers and the
+            information about their local configuration.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ToolConfig'
+        401:
+          description: No session created yet.
+  /tool_configs/{id}:
+    get:
+      summary: Get information about a particular tool configuration
+      description: |
+        Returns the information about how a particular configuration of a
+        tool on an execution server.
+      parameters:
+        - name: id
+          in: path
+          description: the ID of the configuration
+          required: true
+          type: string
+      tags:
+        - ToolConfigs
+      responses:
+        200:
+          description: |
+            A single ToolConfig object describing the configuration.
+          schema:
+            $ref: '#/definitions/ToolConfig'
+#=============================================================================
+# MODELS
+#=============================================================================
+definitions:
+  User:
+    type: object
+    properties:
+      id:
+        type: number
+        format: int64
+        description: Unique numerical ID for the user.
+      login:
+        type: string
+        description: UNIX-style username.
+      full_name:
+        type: string
+        description: Full name of the user.
+      email:
+        type: string
+        description: email address of the user.
+      type:
+        type: string
+        description: class of the user, one of CorAdmin,AdminUser, SiteManager or NormalUser.
+      created_at:
+        type: string
+        format: dateTime
+        description: when the user's account was created
+      updated_at:
+        type: string
+        format: dateTime
+        description: when the user's account was last modified
+      site_id:
+        type: number
+        format: int64
+        description: ID of the site affiliation for the user. Can be nil.
+      time_zone:
+        type: string
+        description: the name of the time zone of the user.
+      city:
+        type: string
+        description: the name of the city of the user.
+      last_connected_at:
+        type: string
+        format: dateTime
+        description: time of last connection by the user.
+      account_locked:
+        type: string
+        format: boolean
+        description: Whether or not the account is locked.
+  ToolConfig:
+    type: object
+    properties:
+      id:
+        type: number
+        format: int64
+        description: Unique numerical ID for the ToolConfig.
+      version_name:
+        type: string
+        description: the version name of the tool's configuration
+      description:
+        type: string
+        description: a description of the configuration
+      tool_id:
+        type: number
+        format: int64
+        description: the ID of the tool associated with this configuration
+      bourreau_id:
+        type: number
+        format: int64
+        description: |
+          The ID of the execution server where this tool
+          configuration is available.
+      env_array:
+        description: additional environment variables
+        type: array
+        items:
+          type: string
+      script_prologue:
+        type: string
+        description: |
+          A piece of bash script configured by the administrator to
+          run before the tool is launched.
+      group_id:
+        type: number
+        format: int64
+        description: the ID of the project controlling access to this ToolConfig
+      ncpus:
+        type: number
+        format: int32
+        description: |
+          A hint at how many CPUs the CBRAIN task will allocate
+          to run this tool configuration
+
+
