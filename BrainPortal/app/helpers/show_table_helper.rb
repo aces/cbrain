@@ -350,9 +350,9 @@ module ShowTableHelper
     if tb.editable?
       html << "<div class=\"inline_edit_field_input\" style=\"display:none\">"
       if object.new_record?
-        html << submit_button("Create")
+        html << submit_button("Create", { :class => "btn-block"})
       else
-        html << submit_button("Update")
+        html << submit_button("Update", { :class => "btn-block"})
       end
       html << "</div>"
       html << "</div>"

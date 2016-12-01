@@ -38,19 +38,6 @@
   class_name   = model.class.sti_root_class.to_s.underscore
 %>
 
-<%
-  # Convenience helper to render a single checkbox and a group name
-  group_check_box = lambda do |group|
-    "<label>&nbsp".html_safe +
-    check_box_tag( "#{class_name}[group_ids][]",                 # name
-                   group.id.to_s,                                # value
-                   model.groups.include?(group),                 # checked or not
-                   :id => "#{class_name}_group_ids_#{group.id}"  # unique DOM id
-                 ).html_safe +
-    h(group.name) + "</label>&nbsp".html_safe
-  end
-%>
-
 
 <%= hidden_field_tag "#{class_name}[group_ids][]", [], :id => "#{class_name}_group_ids_unchecked" %>
 
@@ -58,7 +45,7 @@
   <div class="panel panel-primary">
     <div class="panel-heading">Work Projects <span class="pull-right glyphicon glyphicon-chevron-up clickable" data-toggle="collapse" data-target="#visible-panel"></span></div>
     <div class="panel-body collapse in" id="visible-panel">
-      <select id='work-projects' multiple='multiple' name="<%= "#{class_name}[group_ids][]" %>">
+      <select id='work-projects-select' multiple='multiple' name="<%= "#{class_name}[group_ids][]" %>">
         <optgroup label="Work Projects">
           <%= options_for_select(work_groups.map{|group| [group.name, group.id] }, model.groups.map{|g| g.id }) %>
         </optgroup>

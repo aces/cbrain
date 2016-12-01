@@ -28,17 +28,14 @@
   # type : either 'notice' or 'error'
 %>
 
-<div class="row">
-  <div class="col-xs-12">
-    <% if type == :notice %>
-      <div class="alert alert-success alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <%= (h(msg.to_s.strip).gsub(/\n/, '<br/>')).html_safe %>
-      </div>
-    <% elsif type == :error %>
-      <div class="alert alert-danger alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <%= (h(msg.to_s.strip).gsub(/\n/, '<br/>')).html_safe %>
-    <% end %>
+<% if type == :notice %>
+  <div class="alert alert-success alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <%= (h(msg.to_s.strip).gsub(/\n/, '<br/>')).html_safe %>
   </div>
-</div>
+<% elsif type == :error %>
+  <div class="alert alert-danger alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <%= (h(msg.to_s.strip).gsub(/\n/, '<br/>')).html_safe %>
+  </div>
+<% end %>

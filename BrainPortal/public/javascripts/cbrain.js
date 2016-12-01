@@ -996,9 +996,15 @@
       $('[data-toggle="tooltip"]').tooltip()
     })
 
-    $('#work-projects').multiSelect({
+    $('#work-projects-select').multiSelect({
       selectableHeader: "<div class='custom-header'>Available Projects</div>",
       selectionHeader: "<div class='custom-header'>Project List</div>",
+      selectableOptgroup: true
+    });
+
+    $('.users-select').multiSelect({
+      selectableHeader: "<div class='custom-header'>Available Users</div>",
+      selectionHeader: "<div class='custom-header'>Selected Users</div>",
       selectableOptgroup: true
     });
 

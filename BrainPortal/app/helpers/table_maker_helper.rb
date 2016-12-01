@@ -102,7 +102,7 @@ module TableMakerHelper
     tableclass   = options[:table_class]
     trclass      = options[:tr_class]
     tdclass      = options[:td_class]
-    tableclass &&= " class=\"#{tableclass}\""
+    tableclass &&= " class=\"#{tableclass} table table-condensed table-striped\""
     trclass    &&= " class=\"#{trclass}\""
     tdclass    &&= " class=\"#{tdclass}\""
 

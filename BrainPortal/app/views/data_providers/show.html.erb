@@ -51,35 +51,11 @@
   </div>
 </div>
 
-<<<<<<< HEAD
 <div class="row">
   <div class="col-xs-12">
     <%= error_messages_for @provider, :header_message => "Provider could not be updated." %>
   </div>
 </div>
-=======
-<P>
-
-<%= error_messages_for @provider, :header_message => "Provider could not be updated." %>
-
-<div class="display_inline_block" style="min-width: 50%">
-
-  <%= show_table(@provider, :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
-
-    <% t.edit_cell(:name) do %>
-      <%= text_field_tag "data_provider[name]", @provider.name %>
-    <% end %>
-
-    <% t.edit_cell(:description, :content => full_description(@provider.description)) do %>
-      <%= text_area_tag "data_provider[description]", @provider.description, :rows => 10, :cols => 40 %><br>
-    <% end %>
-
-    <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-      <% t.attribute_cell(:type) %>
-    <% else %>
-      <% t.empty_cell %>
-    <% end %>
->>>>>>> dev
 
 <div class="row">
   <div class="col-xs-12 col-md-6">
@@ -89,7 +65,7 @@
         <%= text_field_tag "data_provider[name]", @provider.name, :class => "form-control" %>
       <% end %>
 
-      <% t.edit_cell(:description, :content => overlay_description(@provider.description)) do %>
+      <% t.edit_cell(:description, :content => full_description(@provider.description)) do %>
         <%= text_area_tag "data_provider[description]", @provider.description, :rows => 10, :class => "form-control" %>
       <% end %>
 

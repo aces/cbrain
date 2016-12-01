@@ -58,7 +58,7 @@
       <% end %>
 
       <% t.edit_cell(:creator_id, :content => link_to_user_with_tooltip(@group.creator), :header => "Creator") do %>
-        <%= user_select "group[creator_id]", { :users => ( current_user.available_users | @group.users), :selector => @group.creator } %>
+        <%= user_select "group[creator_id]", { :users => ( current_user.available_users | @group.users), :selector => @group.creator }, :class => "form-control" %>
         <span class="warning">Warning</span>: If you change the Creator to someone else you won't be able to edit this project any more
       <% end %>
 

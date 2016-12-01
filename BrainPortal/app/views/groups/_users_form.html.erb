@@ -65,52 +65,14 @@
 #######################################
 %>
 
-<!-- Separation between active and locked users -->
-<%
-  user_by_lock_status_hash = @users
-    .sort { |a,b| a.login.casecmp(b.login) }
-    .hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users" }
-  active_users = user_by_lock_status_hash["Active users"] || []
-  locked_users = user_by_lock_status_hash["Locked users"] || []
+<%= render :partial => 'shared/users_checkbox_table',
+           :locals => {
+                      :normal_users         => @users.select{|user| !user.account_locked },
+                      :locked_users         => @users.select{|user| user.account_locked },
+                      :checked              => @group.users,
+                      :variable_name        => "#{parameter_name}[]"
+                      }
 %>
-
-<!-- Active Users -->
-  <h4>Active users</h4>
-  <div id="active_users" style="display:block">
-    <%= array_to_table(active_users,
-      :cols        => 5,
-      :table_class => 'table table_striped table-condensed',
-      :td_class    => 'left_align',
-      :fill_by_columns => true
-    ) do |user,r,c| %>
-    <div class="row">
-      <div class="col-xs-4"><%= link_to_user_with_tooltip(user) %></div>
-      <div class="col-xs-8"><%= check_box_tag("#{parameter_name}[]", user.id.to_s, @group.users.map(&:id).include?(user.id), { :class => (@users_multi_select_classes[user] || ""), :class => "form-control" } ) %></div>
-    </div>
-
-    <% end %>
-  </div>
-
-<% show_locked = true if show_locked.nil?%>
-
-<% if !locked_users.empty? && show_locked %>
-  <!-- Locked Users -->
-  <h4>Locked users
-    <%= show_hide_toggle "(Show)", "#locked_users", :class  => 'action_link' %> </h4>
-    <div id="locked_users" style="display:none">
-      <%= array_to_table(locked_users,
-        :cols        => 5,
-        :table_class => 'table table-striped table-condensed',
-        :td_class    => 'left_align',
-        :fill_by_columns => true
-      ) do |user,r,c| %>
-        <div class="row">
-          <div class="col-xs-4"><%= link_to_user_with_tooltip(user) %></div>
-          <div class="col-xs-8"><%= check_box_tag("#{parameter_name}[]", user.id.to_s, @group.users.map(&:id).include?(user.id), { :class => (@users_multi_select_classes[user] || ""), :class => "form-control" } ) %></div>
-        </div>
-        <% end %>
-      </div>
-<% end %>
 
 <%
 #######################################
@@ -126,10 +88,13 @@
     :td_class    => 'left_align',
     :fill_by_columns => true
   ) do |group,r,c| %>
-    <div class="row">
-      <div class="col-xs-4"><label for="workgroup_<%= group.id %>"><%= group.name -%></label></div>
-      <div class="col-xs-8"><%= select_all_checkbox "workgroup_#{group.id}", :id => "workgroup_#{group.id}", :class => "form-control" %></div>
-    </div>
+
+    <label for="workgroup_<%= group.id %>">
+      <%= group.name -%>
+      &nbsp;&nbsp;
+      <%= select_all_checkbox "workgroup_#{group.id}", :id => "workgroup_#{group.id}" %>
+    </label>
+
   <% end %>
 <% end %>
 
@@ -147,9 +112,10 @@
       :td_class    => 'left_align',
       :fill_by_columns => true
       ) do |group,r,c| %>
-        <div class="row">
-          <div class="col-xs-4"><label for="sitegroup_<%= group.id %>"><%= group.name -%></label></div>
-          <div class="col-xs-8"><%= select_all_checkbox "sitegroup_#{group.id}", :id => "sitegroup_#{group.id}" %></div>
-        </div>
+      <label for="sitegroup_<%= group.id %>">
+        <%= group.name -%>
+        &nbsp;&nbsp;
+        <%= select_all_checkbox "sitegroup_#{group.id}", :id => "sitegroup_#{group.id}" %>
+      </label>
   <% end %>
 <% end %>

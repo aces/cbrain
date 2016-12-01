@@ -22,8 +22,8 @@
 #
 -%>
 
-<div class="row">
-  <div class="col-xs-12 menu_bar">
+<div class="row menu_bar">
+  <div class="col-xs-12">
     <div class="well well-sm">
       <% if current_user.has_role?(:admin_user) %>
         <a href="<%= new_tool_path %>" role="button" class="btn btn-primary"><span class="glyphicon glyphicon-file"></span> Create New Tool</a>

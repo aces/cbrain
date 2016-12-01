@@ -683,7 +683,7 @@ $(function() {
         if (dialog.data('dirty'))
           userfiles.refresh().then(function () {
             dialog.removeData('dirty');
-            dialog.modal('hide');
+            // dialog.modal('hide');
           });
       })
       /* swap a tag's name label for an input textbox on click */
@@ -804,9 +804,8 @@ $(function() {
             $('#tag-modal').trigger('tag-refresh');
             userfiles.refresh().then(function () {
               indicator.css({ visibility: 'hidden' });
-              $('#tags-modal').modal('hide');
-              $('#tags-modal').modal('show');
             });
+            location.reload();
           })
           .fail(function () {
             $('#tag-modal').modal('hide');

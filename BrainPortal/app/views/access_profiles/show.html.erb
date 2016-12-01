@@ -76,10 +76,11 @@
             <%= select_all_checkbox "all_affected_users", :id => "togall", :checked => "1" %>
             <%= render :partial => 'shared/users_checkbox_table',
                        :locals => {
-                                  :users         => myusers,
-                                  :checked       => myusers,
-                                  :variable_name => "affected_user_ids[]",
-                                  :html_class    => "all_affected_users",
+                                  :normal_users         => myusers.select{|user| !user.account_locked },
+                                  :locked_users         => myusers.select{|user| user.account_locked },
+                                  :checked              => myusers,
+                                  :variable_name        => "affected_user_ids[]",
+                                  :html_class           => "all_affected_users",
                                 }
             %>
         <% end %>
@@ -91,27 +92,17 @@
     <%= show_table(@access_profile, :edit_condition => check_role(:admin_user), :header => 'Users With This Profile') do |t| %>
 
       <% if myusers.present? && myusers.count > 0 %>
-        <% user_names = (array_to_table(myusers.map { |u| link_to_user_if_accessible(u) }, :table_class => 'simple', :cols => 12).html_safe) %>
+        <% user_names = (array_to_table(myusers.map { |u| link_to_user_if_accessible(u) }, :table_class => 'simple', :cols => 4).html_safe) %>
       <% else %>
         <% user_names = "(None)" %>
       <% end %>
 
       <% t.edit_cell(:user_ids, :show_width => 2, :no_header => "Users", :content => user_names) do %>
 
-        Normal Users<br>
         <%= render :partial => 'shared/users_checkbox_table',
                    :locals => {
-                                :users         => User.where(:account_locked => false).order(:login).all,
-                                :checked       => myusers,
-                                :variable_name => "access_profile[user_ids][]",
-                              }
-        %>
-
-        <br>
-        Locked Users<br>
-        <%= render :partial => 'shared/users_checkbox_table',
-                   :locals => {
-                                :users         => User.where(:account_locked => true).order(:login).all,
+                                :normal_users  => User.where(:account_locked => false).order(:login).all,
+                                :locked_users  => User.where(:account_locked => true).order(:login).all,
                                 :checked       => myusers,
                                 :variable_name => "access_profile[user_ids][]",
                               }
