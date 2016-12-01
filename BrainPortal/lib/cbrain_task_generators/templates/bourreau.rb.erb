@@ -280,17 +280,18 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
       %>
 %     end
     }
+
 %   end
-
-
 %   unless outputs.empty?
     # Generate output filenames
     params.merge!({
 %     id_width   = max_width.(outputs, 'id')          + ":''".length
 %     path_width = max_width.(outputs, 'path-template') + "'',".length
 %     outputs.each do |output|
+%       stripped = output['path-template-stripped-extensions']
+%       strp_str = "strip: [" + stripped.map{ |s| "'#{s}'" }.join(",") + "]" rescue nil
       <%=
-        "%-#{id_width}s => apply_template(%-#{path_width}s keys)," % [
+        "%-#{id_width}s => apply_template(%-#{path_width}s keys#{stripped ? ", " + strp_str : ''})," % [
           ":'#{output['id']}'",
           "'#{output['path-template']}',"
         ]
