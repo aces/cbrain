@@ -980,7 +980,10 @@ $(function () {
              "</tr>";
     }
     // Generate table for invariant parameters
-    var generateStaticTable = function( singleFileCase = false, genericCase = false) {
+    var generateStaticTable = function(singleFileCase, genericCase) {
+      if (singleFileCase === undefined) { singleFileCase = true; }
+      if (genericCase    === undefined) { genericCase    = true; }
+
       // Generate the title
       modalText += "<strong>Parameters " +
                      ((!singleFileCase && !genericCase) ? "for current task" : "that are constant across tasks") +
@@ -1009,7 +1012,9 @@ $(function () {
       modalText += "</tbody> </table> <br>";
     }
     // Generate table for inter-task varying parameters
-    var generateDynamicTable = function( singleFileCase = true ) {
+    var generateDynamicTable = function( singleFileCase ) {
+      if (singleFileCase === undefined) { singleFileCase = true; }
+
       // Add the title
       modalText += "<strong>Parameter values that change across tasks:</strong><br><br>";
       // Get parameters with cbcsv entries

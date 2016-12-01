@@ -127,7 +127,7 @@ class ScirMoab < Scir
     private
 
     def qsubout_to_jid(txt) #:nodoc:
-      if txt && txt =~ /\A(\S+)/
+      if txt && txt.strip =~ /\A(\S+)/
         val = Regexp.last_match[1]
         return val unless val =~ /error/i
       end
