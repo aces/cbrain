@@ -1690,9 +1690,10 @@ echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      1>&2 # where stderr captured below wi
 # stdout and stderr captured below will be re-substituted in
 # the output and error of this script.
 bash '#{sciencefile}' > #{science_stdout_basename} 2> #{science_stderr_basename} </dev/null
+status="$?"
 
-date "+CBRAIN Task Ending After $SECONDS seconds, at %s : %F %T"
-date "+CBRAIN Task Ending After $SECONDS seconds, at %s : %F %T" 1>&2
+date "+CBRAIN Task Ending With Status $status After $SECONDS seconds, at %s : %F %T"
+date "+CBRAIN Task Ending With Status $status After $SECONDS seconds, at %s : %F %T" 1>&2
 
 echo ''
 echo 'CBRAIN Task CPU Times Start'
@@ -1701,6 +1702,7 @@ echo 'CBRAIN Task CPU Times End'
 
 echo "CBRAIN Task Exiting"       # checked by framework
 echo "CBRAIN Task Exiting" 1>&2  # checked by framework
+exit $status
 
     QSUB_SCRIPT
     qsubfile = self.qsub_script_basename.to_s
