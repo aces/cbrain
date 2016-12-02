@@ -11,6 +11,8 @@ YELLOW='\033[33m'
 BLUE='\033[34m'
 NC='\033[0m'
 
+printf "${YELLOW}Rails code initialization starting at %s ${NC}\n" "$(date '+%F %T')"
+
 # Three copies of the CBRAIN code base:
 cb_base="$HOME/cbrain_base"      # pre-installed and configured in docker container, for efficiency
 cb_travis="$HOME/cbrain_travis"  # docker mount point, where the code to be tested is
