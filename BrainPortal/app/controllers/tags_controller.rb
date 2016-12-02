@@ -24,7 +24,7 @@ class TagsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :only => [ :index, :show, :update, :destroy, :new, :create ]
+  api_available :only => [ :index, :show, :update, :destroy, :create ]
 
   before_filter :login_required
   before_filter :validate_params, :only => [:update, :create]

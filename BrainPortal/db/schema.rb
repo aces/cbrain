@@ -41,6 +41,11 @@ ActiveRecord::Schema.define(:version => 20161011184517) do
 
   add_index "active_record_logs", ["ar_id", "ar_table_name"], :name => "index_active_record_logs_on_ar_id_and_ar_table_name"
 
+  create_table "bourreaux_tools", :id => false, :force => true do |t|
+    t.integer "tool_id"
+    t.integer "bourreau_id"
+  end
+
   create_table "cbrain_tasks", :force => true do |t|
     t.string   "type"
     t.integer  "batch_id"
@@ -117,6 +122,35 @@ ActiveRecord::Schema.define(:version => 20161011184517) do
   add_index "data_providers", ["type"], :name => "index_data_providers_on_type"
   add_index "data_providers", ["user_id"], :name => "index_data_providers_on_user_id"
 
+  create_table "demands", :force => true do |t|
+    t.string   "title"
+    t.string   "first",         :null => false
+    t.string   "middle"
+    t.string   "last",          :null => false
+    t.string   "institution",   :null => false
+    t.string   "department"
+    t.string   "position"
+    t.string   "email",         :null => false
+    t.string   "website"
+    t.string   "street1"
+    t.string   "street2"
+    t.string   "city"
+    t.string   "province"
+    t.string   "country"
+    t.string   "postal_code"
+    t.string   "time_zone"
+    t.string   "service"
+    t.string   "login"
+    t.string   "comment"
+    t.string   "session_id"
+    t.string   "confirm_token"
+    t.boolean  "confirmed"
+    t.string   "approved_by"
+    t.datetime "approved_at"
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
+  end
+
   create_table "exception_logs", :force => true do |t|
     t.string   "exception_class"
     t.string   "request_controller"
@@ -174,6 +208,17 @@ ActiveRecord::Schema.define(:version => 20161011184517) do
   end
 
   add_index "help_documents", ["key"], :name => "index_help_documents_on_key", :unique => true
+
+  create_table "logged_exceptions", :force => true do |t|
+    t.string   "exception_class"
+    t.string   "controller_name"
+    t.string   "action_name"
+    t.text     "message"
+    t.text     "backtrace"
+    t.text     "environment"
+    t.text     "request"
+    t.datetime "created_at"
+  end
 
   create_table "messages", :force => true do |t|
     t.string   "header"
@@ -318,6 +363,15 @@ ActiveRecord::Schema.define(:version => 20161011184517) do
     t.datetime "updated_at", :null => false
   end
 
+  create_table "statistics", :force => true do |t|
+    t.integer  "bourreau_id"
+    t.integer  "user_id"
+    t.string   "task_name"
+    t.integer  "count"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+  end
+
   create_table "sync_status", :force => true do |t|
     t.integer  "userfile_id"
     t.integer  "remote_resource_id"
@@ -403,6 +457,17 @@ ActiveRecord::Schema.define(:version => 20161011184517) do
   add_index "tools", ["cbrain_task_class_name"], :name => "index_tools_on_cbrain_task_class"
   add_index "tools", ["group_id"], :name => "index_tools_on_group_id"
   add_index "tools", ["user_id"], :name => "index_tools_on_user_id"
+
+  create_table "user_preferences", :force => true do |t|
+    t.integer  "user_id"
+    t.integer  "data_provider_id"
+    t.text     "other_options"
+    t.datetime "created_at",       :null => false
+    t.datetime "updated_at",       :null => false
+    t.integer  "bourreau_id"
+  end
+
+  add_index "user_preferences", ["user_id"], :name => "index_user_preferences_on_user_id"
 
   create_table "userfiles", :force => true do |t|
     t.string   "name"
