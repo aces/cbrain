@@ -36,14 +36,33 @@ module CBRAINExtensions #:nodoc:
       end
 
       module ClassMethods #:nodoc:
-        def api_attr_visible(*args)
+
+        # Register a list of attributes to be whitelisted for the current model.
+        # The :id attribute is implicit and always whitelisted.
+        # Returns a hash table with attribute names as keys, and +true+ as values.
+        #
+        #   api_attr_visible :name, :description
+        #
+        # returns:
+        #
+        #   { :id => true, :name => true, :description => true }
+        def api_attr_visible(*args) #:nodoc:
           @api_attr_visible ||= { :id => true } # , :updated_at => true, :created_at => true }
           Array(args).each do |attr|
-            raise "Argument #{attr} not a symbol or a proper key to the model." unless
+            raise "Argument '#{attr}' not a symbol or a proper attribute of the model." unless
               attr.is_a?(Symbol) && columns_hash.has_key?(attr.to_s)
-            @api_attr_visible[attr.to_s] = true
+            @api_attr_visible[attr] = true
           end
           @api_attr_visible
+        end
+
+        # Returns a list of whitelisted attributes which is the union
+        # of the ones in the current class, and all those in the superclasses.
+        def cumulative_api_attr_visible #:nodoc:
+          return @cumulative_api_attr_visible if @cumulative_api_attr_visible
+          local_visible_list = api_attr_visible.keys
+          super_visible_list = superclass.respond_to?(:cumulative_api_attr_visible) ? superclass.cumulative_api_attr_visible : []
+          @cumulative_api_attr_visible = local_visible_list | super_visible_list
         end
       end
 
@@ -51,7 +70,7 @@ module CBRAINExtensions #:nodoc:
       # for the attributes specified by api_attr_visible().
       # The return value is a hash, likely suitable for JSON serialization.
       def for_api
-        visible_list = self.class.api_attr_visible.keys
+        visible_list = self.class.cumulative_api_attr_visible
         self.attributes.slice(*visible_list)
       end
 
