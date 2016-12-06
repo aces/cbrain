@@ -44,5 +44,6 @@ class Tag < ActiveRecord::Base
 
   attr_accessible         :name, :user_id, :group_id
 
+  api_attr_visible        :id, :name, :user_id, :group_id
 end
 

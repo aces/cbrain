@@ -118,7 +118,6 @@ class RemoteResource < ActiveRecord::Base
                         :docker_executable_name, :docker_present
 
 
-
   ############################################################################
   # Pseudo-attributes Access
   ############################################################################

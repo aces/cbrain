@@ -42,7 +42,8 @@ class ToolConfigsController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.json { render :json => @tool_configs.map(&:for_api) } # todo :to_api
+      format.json { render :json => @tool_configs.map(&:for_api) }
+      format.xml  { render :xml  => @tool_configs.map(&:for_api) }
       format.js
     end
   end

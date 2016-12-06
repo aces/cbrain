@@ -244,6 +244,7 @@ class DataProvider < ActiveRecord::Base
                           :read_only, :description, :time_of_death, :not_syncable, :time_zone, :cloud_storage_client_identifier,
                           :cloud_storage_client_token, :license_agreements
 
+
   # A class to represent a file accessible through SFTP or available locally.
   # Most of the attributes here are compatible with
   #   Net::SFTP::Protocol::V01::Attributes

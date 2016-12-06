@@ -621,7 +621,7 @@ class UserfilesController < ApplicationController
         flash[:notice] += "#{@userfile.name} successfully updated."
         format.html { redirect_to(:action  => 'show') }
         format.xml  { head :ok, :content_type => 'text/plain' }
-        format.json { head :ok
+        format.json { head :ok, :content_type => 'text/plain' }
       else
         @userfile.reload
         format.html { render(:action  => 'show') }

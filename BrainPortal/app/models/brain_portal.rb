@@ -25,6 +25,9 @@ class BrainPortal < RemoteResource
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  api_attr_visible :id, :name, :user_id, :group_id, :online, :read_only, :description
+
+
   # Returns the same RemoteResourceInfo record has the RemoteResource
   # class, but with some more added information specific to a BrainPortal
   def self.remote_resource_info

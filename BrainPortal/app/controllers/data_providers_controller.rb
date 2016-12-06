@@ -34,8 +34,6 @@ class DataProvidersController < ApplicationController
   before_filter :manager_role_required, :only => [:new, :create]
   before_filter :admin_role_required,   :only => [:report, :repair]
 
-  API_HIDDEN_ATTRIBUTES = [ :cloud_storage_client_identifier, :cloud_storage_client_token ]
-
   def index #:nodoc:
     @scope = scope_from_session('data_providers')
     scope_default_order(@scope, 'name')
@@ -48,12 +46,14 @@ class DataProvidersController < ApplicationController
     respond_to do |format|
       format.html
       format.xml  do
-        @data_providers.each { |dp| dp.hide_attributes(API_HIDDEN_ATTRIBUTES) }
-        render :xml  => @data_providers
+        render :xml  => @data_providers.map(&:for_api).to_xml(
+                          :methods => [
+                            :type, :is_browsable?, :is_fast_syncing?,
+                            :allow_file_owner_change?, :content_storage_shared_between_users?,
+                          ] )
       end
       format.json do
-        @data_providers.each { |dp| dp.hide_attributes(API_HIDDEN_ATTRIBUTES) }
-        render :json => @data_providers.to_json(
+        render :json => @data_providers.map(&:for_api).to_json(
                           :methods => [
                             :type, :is_browsable?, :is_fast_syncing?,
                             :allow_file_owner_change?, :content_storage_shared_between_users?,

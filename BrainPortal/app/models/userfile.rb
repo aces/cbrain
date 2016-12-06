@@ -104,6 +104,8 @@ class Userfile < ActiveRecord::Base
                                             joins(:tags).where('tag_id IN (?)', n).uniq
                                           }
 
+  api_attr_visible        :id, :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable, :num_files, :hidden, :immutable, :archived, :description
+
   ##############################################
   # Miscelleneous methods
   ##############################################

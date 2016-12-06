@@ -31,32 +31,35 @@ class TagsController < ApplicationController
 
   # GET /tags
   # GET /tags.xml
+  # GET /tags.json
   def index #:nodoc:
     respond_to do |format|
-      format.xml  { render :xml  => current_user.tags }
-      format.json { render :json => current_user.tags.as_json }
+      format.xml  { render :xml  => current_user.tags.map(&:for_api) }
+      format.json { render :json => current_user.tags.map(&:for_api) }
     end
   end
 
   # GET /tags/1
   # GET /tags/1.xml
+  # GET /tags/1.json
   def show #:nodoc:
     respond_to do |format|
-      format.xml  { render :xml  => current_user.tags.find(params[:id]) }
-      format.json { render :json => current_user.tags.find(params[:id]) }
+      format.xml  { render :xml  => current_user.tags.find(params[:id]).for_api }
+      format.json { render :json => current_user.tags.find(params[:id]).for_api }
     end
   end
 
   # POST /tags
   # POST /tags.xml
+  # POST /tags.json
   def create #:nodoc:
     @tag = Tag.new(params[:tag])
 
     respond_to do |format|
       if @tag.save
         flash[:notice] = 'Tag was successfully created.'
-        format.xml  { render :xml  => @tag, :status => :created, :location => @tag }
-        format.json { render :json => @tag, :status => :created, :location => @tag }
+        format.xml  { render :xml  => @tag.for_api, :status => :created, :location => @tag }
+        format.json { render :json => @tag.for_api, :status => :created, :location => @tag }
       else
         format.xml  { render :xml  => @tag.errors, :status => :unprocessable_entity }
         format.json { render :json => @tag.errors, :status => :unprocessable_entity }
@@ -67,6 +70,7 @@ class TagsController < ApplicationController
 
   # PUT /tags/1
   # PUT /tags/1.xml
+  # PUT /tags/1.json
   def update #:nodoc:
     @tag = current_user.tags.find(params[:id])
 
@@ -84,6 +88,7 @@ class TagsController < ApplicationController
 
   # DELETE /tags/1
   # DELETE /tags/1.xml
+  # DELETE /tags/1.json
   def destroy #:nodoc:
     @tag = current_user.tags.find(params[:id])
     @tag.destroy
