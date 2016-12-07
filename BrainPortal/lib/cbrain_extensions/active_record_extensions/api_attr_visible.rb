@@ -62,7 +62,7 @@ module CBRAINExtensions #:nodoc:
           return @cumulative_api_attr_visible if @cumulative_api_attr_visible
           local_visible_list = api_attr_visible.keys
           super_visible_list = superclass.respond_to?(:cumulative_api_attr_visible) ? superclass.cumulative_api_attr_visible : []
-          @cumulative_api_attr_visible = local_visible_list | super_visible_list
+          @cumulative_api_attr_visible = (local_visible_list | super_visible_list).map(&:to_s) # need strings :-(
         end
       end
 
