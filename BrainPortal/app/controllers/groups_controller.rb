@@ -25,6 +25,8 @@ class GroupsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  api_available :only => [:index, :create, :switch, :update, :destroy, :show]
+
   before_filter :login_required
 
   # GET /groups

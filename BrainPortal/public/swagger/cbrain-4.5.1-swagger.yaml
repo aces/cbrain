@@ -50,20 +50,22 @@ paths:
         a user is currently logged in, a new session will not be available to
         be created, and the current session will be re-used.
       parameters:
-        - $ref: '#/parameters/authenticity_token'
-        - name: login
+        - name: params
           in: body
-          description: The CBRAIN user's username
-          required: true
+          description: The params
           schema:
-            type: string
-        - name: password
-          in: body
-          description: The CBRAIN user's password
-          required: true
-          schema:
-            type: string
-            format: password
+            type: object
+            properties:
+              login:
+                description: The CBRAIN user's username
+                type: string
+              password:
+                description: The CBRAIN user's password
+                type: string
+                format: password
+              authenticity_token:
+                description: The token returned by /session/new
+                type: string
       tags:
         - Sessions
       responses:
@@ -134,14 +136,17 @@ paths:
       tags:
         - Users
       parameters:
-        - $ref: '#/parameters/authenticity_token'
-        - name: user
+        - name: params
           in: body
-          description: |
-            Object that represents a User.
-          required: true
+          description: The params.
           schema:
-            $ref: '#/definitions/User'
+            type: object
+            properties:
+              user:
+                $ref: '#/definitions/User'
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
       responses:
         "200":
           description: User created successfully
@@ -234,13 +239,17 @@ paths:
       description: |
         Create a new tag in CBRAIN.
       parameters:
-        - name: tag
+        - name: params
           in: body
-          description: The name of the tag.
-          required: true
+          description: The params
           schema:
-            $ref: '#/definitions/Tag'
-        - $ref: '#/parameters/authenticity_token'
+            type: object
+            properties:
+              tag:
+                $ref: '#/definitions/Tag'
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new.
       tags:
         - Tags
       responses:
@@ -280,24 +289,23 @@ paths:
       description: |
         Update the tag specified by the ID parameter.
       parameters:
+        - name: params
+          in: body
+          description: The params
+          schema:
+            type: object
+            properties:
+              tag:
+                $ref: '/definitions/Tag'
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
         - name: id
           in: path
           description: ID of the tag to update.
           required: true
           type: integer
           format: int64
-        - name: tag
-          in: body
-          description: Tag object to replace the current tag with.
-          required: true
-          schema:
-            $ref: '#/definitions/Tag'
-        - name: authenticity_token
-          in: body
-          description: The token returned by /sessions/new
-          required: true
-          schema:
-            type: string
       tags:
         - Tags
       responses:
@@ -317,12 +325,14 @@ paths:
           required: true
           type: integer
           format: int64
-        - name: authenticity_token
+        - name: params
           in: body
-          description: The token returned by /sessions/new
-          required: true
           schema:
-            type: string
+            type: object
+            properties:
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new.
       tags:
         - Tags
       responses:
@@ -461,24 +471,31 @@ paths:
           in: path
           required: true
           description: The ID of the Data Provider to register files on.
+          type: integer
+          format: int64
         - name: params
           in: body
           required: true
           schema:
             type: object
             required:
-              - basenames
-              - filetypes
+            - basenames
+            - filetypes
+            - authenticity_token
             properties:
               basenames:
                 type: array
-                items: string
+                items:
+                  type: string
                 description: An array containing the filenames to register.
               filetypes:
                 type: array
-                items: string
+                items:
+                  type: string
                 description: An array containing the filetypes associated with the files to register
-        - $ref: '#/parameters/authenticity_token'
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
       responses:
         "200":
           description: |
@@ -513,7 +530,8 @@ paths:
             properties:
               basenames:
                 type: array
-                items: array
+                items:
+                  type: string
                 description: An array containing the filenames to unregister.
               as_user_id:
                 type: integer
@@ -522,7 +540,9 @@ paths:
               delete:
                 type: boolean
                 description: Specifies to delete the files once they are unregistered.
-        - $ref: '#/parameters/authenticity_token'
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
       responses:
         "200":
           description: |
@@ -557,7 +577,8 @@ paths:
             properties:
               basenames:
                 type: array
-                items: string
+                items:
+                  type: string
                 description: An array containing the filenames to delete.
               as_user_id:
                 type: integer
@@ -619,18 +640,17 @@ paths:
       tags:
         - Groups
       parameters:
-        - name: authenticity_token
+        - name: params
           in: body
-          description: The token returned by /sessions/new
-          required: true
+          description: The params
           schema:
-            type: string
-        - name: group
-          in: body
-          description: An object representing a Group.
-          required: true
-          schema:
-            $ref: '#/definitions/Group'
+            type: object
+            properties:
+              group:
+                $ref: '#/definitions/Group'
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
       responses:
         "200":
           description: Successfully created Group.
@@ -658,7 +678,7 @@ paths:
           description: Successfully switched the active Group.
         "401":
           description: No session created yet.
-  /groups/{id}:
+  /group/{id}:
     get:
       summary: Get information on a Group (project).
       description: |
@@ -692,24 +712,23 @@ paths:
       tags:
         - Groups
       parameters:
+        - name: params
+          in: body
+          description: The params
+          schema:
+            type: object
+            properties:
+              group:
+                $ref: '#/definitions/Group'
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new.
         - name: id
           in: path
           description: ID of the Group to be updated.
           required: true
           type: integer
           format: int64
-        - name: group
-          in: body
-          description: Object representing a Group.
-          required: true
-          schema:
-            $ref: '#/definitions/Group'
-        - name: authenticity_token
-          in: body
-          description: The token returned by /sessions/new
-          required: true
-          schema:
-            type: string
       responses:
         "200":
           description: Group updated successfully.
@@ -728,16 +747,11 @@ paths:
       parameters:
         - name: id
           in: path
-          description: ID of the Group to be updated.
+          description: ID of the Group to delete.
           required: true
           type: integer
           format: int64
-        - name: authenticity_token
-          in: body
-          description: The token returned by /sessions/new
-          required: true
-          schema:
-            type: string
+        - $ref: '#/parameters/authenticity_token'
       responses:
         "200":
           description: Successfully deleted the Group (project).
@@ -764,55 +778,53 @@ paths:
               $ref: '#/definitions/Userfile'
         "401":
           description: No Session created yet.
-    post:
-      summary: Creates a new Userfile.
-      description: |
-        This method creates a new Userfile in CBRAIN, with the current user
-        as the owner of the file.
-      tags:
-        - Userfiles
-      parameters:
-        - name: data_provider_id
-          in: body
-          description: The ID of the Data Provider to upload the file to.
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: userfile
-          in: body
-          description: Information about the userfile.
-          required: true
-          schema:
-            type: object
-            properties:
-              group_id:
-                type: integer
-                format: int64
-        - name: file_type
-          in: body
-          description: The type of the file.
-          required: true
-          schema:
-            type: string
-        - name: archive
-          in: body
-          description: Archive
-          required: true
-          schema:
-            type: string
-        - name: authenticity_token
-          in: body
-          description: The token returned by /sessions/new
-          required: true
-          schema:
-            type: string
-      # THERE ARE DEFINITELY PARAMETERS MISSING HERE
-      responses:
-        "201":
-          description: Userfile successfully created.
-        "401":
-          description: No Session created yet.
+    # post:
+    #   summary: Creates a new Userfile.
+    #   description: |
+    #     This method creates a new Userfile in CBRAIN, with the current user
+    #     as the owner of the file.
+    #   tags:
+    #     - Userfiles
+    #   consumes:
+    #     - multipart/form-data
+    #   parameters:
+    #     - name: params
+    #       in: formData
+    #       description: The params
+    #       schema:
+    #         type: object
+    #         properties:
+    #           upload_file:
+    #             type: file
+    #             description: The file to be uploaded
+    #           data_provider_id:
+    #             description: The ID of the Data Provider to upload the file to.
+    #             type: integer
+    #             format: int64
+    #           userfile:
+    #             description: Information about the Userfile
+    #             type: object
+    #             properties:
+    #               group_id:
+    #                 type: integer
+    #                 description: ID of the group to change the Userfile's owner to
+    #           file_type:
+    #             description: The type of the file
+    #             type: string
+    #           archive:
+    #             description: Archive
+    #             type: string
+    #           "_up_ex_mode":
+    #             description: Upload mode, either "SingleFile" or "collection"
+    #             type: string
+    #           authenticity_token:
+    #             type: string
+    #             description: The token returned by /session/new
+    #   responses:
+    #     "201":
+    #       description: Userfile successfully created.
+    #     "401":
+    #       description: No Session created yet.
   /userfiles/{id}:
     get:
       summary: Get information on a Userfile.
@@ -970,7 +982,7 @@ paths:
         "401":
           description: No Session created yet.
 #=============================================================================
-# TASK ACTIONS
+# TOOLS ACTIONS
 #=============================================================================
   /tools:
     get:
@@ -1000,7 +1012,7 @@ paths:
       parameters:
         - name: id
           in: path
-          description: The ID number of the Userfile to delete.
+          description: The ID number of the Tool.
           required: true
           type: integer
           format: int64
@@ -1027,6 +1039,14 @@ definitions:
       login:
         type: string
         description: UNIX-style username.
+      password:
+        type: string
+        format: password
+        description: Password field
+      password_confirmation:
+        type: string
+        format: password
+        description: Password field
       full_name:
         type: string
         description: Full name of the user.
@@ -1035,17 +1055,11 @@ definitions:
         description: email address of the user.
       type:
         type: string
-        description: class of the user, one of CoreAdmin,AdminUser, SiteManager or NormalUser.
+        description: Class of the user, one of CoreAdmin, AdminUser, SiteManager or NormalUser.
       site_id:
         type: number
         format: int64
         description: ID of the site affiliation for the user. Can be nil.
-      time_zone:
-        type: string
-        description: the name of the time zone of the user.
-      city:
-        type: string
-        description: the name of the city of the user.
       last_connected_at:
         type: string
         format: dateTime
@@ -1190,7 +1204,6 @@ definitions:
       time_zone:
         type: string
         description: Time zone of the system that hosts the Data Provider.
-
   Group:
     type: object
     properties:

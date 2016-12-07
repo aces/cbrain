@@ -65,12 +65,10 @@ class BourreauxController < ApplicationController
     respond_to do |format|
       format.html # show.html.erb
       format.xml  do
-        @bourreau.hide_attributes(API_HIDDEN_ATTRIBUTES)
-        render :xml  => @bourreau
+        render :xml  => @bourreau.for_api
       end
       format.json do
-        @bourreau.hide_attributes( [:cache_md5] )
-        render :json => @bourreau
+        render :json => @bourreau.for_api
       end
     end
   end
