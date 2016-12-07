@@ -20,18 +20,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#helper.extend ViewHelpers
-include Rails.application.routes.url_helpers
-
-def h(*args)
-  helper.send(:h,*args)
+to_extend  = [ ViewHelpers ] # list of modules to extend into the console
+to_extend |= ActionView::Base.included_modules
+to_extend |= Dir.glob("app/helpers/*").map { |p| p.sub(/^.*\//,"").sub(/.rb$/,"").classify.constantize }
+to_extend.select { |m| m != Kernel }.each do |m|
+   self.extend m rescue nil
 end
+include Rails.application.routes.url_helpers # for userfile_path(3) etc
 
 (CbrainConsoleFeatures ||= []) << <<FEATURES
 ========================================================
 Feature: shortcuts to view helpers
 ========================================================
-  Invoke these directly: h("string"), model_path() etc
+  Invoke these directly: h("jack&jill"), model_path(),
+  pretty_size(1234567), etc.
   Other view helpers: helper.helper_method(args)
 FEATURES
 
