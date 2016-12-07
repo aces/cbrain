@@ -188,7 +188,11 @@ class Userfile < ActiveRecord::Base
     self.class.pretty_type
   end
 
-
+  # Returns whether or not the userfile is compressed using the gzip format
+  def compressed?
+    gz_extension_pos = (name =~ /(\.gz)$/i)
+    gz_extension_pos.present?  # if no .gz extension found, file not zipped
+  end
 
 
   ##############################################

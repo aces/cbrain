@@ -145,6 +145,7 @@ class GroupsController < ApplicationController
     end
 
     original_user_ids = @group.user_ids
+    original_creator = @group.creator_id
 
     params[:group] ||= {}
 
@@ -166,13 +167,19 @@ class GroupsController < ApplicationController
       end
     end
 
+    unless (current_user.available_users.map{ |u| u.id } | @group.user_ids).include?(params[:group][:creator_id].to_i )
+      params[:group].delete :creator_id
+    end
+
     @group.make_accessible!(:invisible) if current_user.has_role?(:admin_user)
-    params[:group].delete :creator_id #creator_id is immutable
 
     @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
     respond_to do |format|
       if @group.update_attributes_with_logging(params[:group],current_user)
         @group.reload
+        if params[:group][:creator_id].present?
+          @group.addlog_object_list_updated("Creator", User, original_creator, @group.creator_id, current_user, :login)
+        end
         @group.addlog_object_list_updated("Users", User, original_user_ids, @group.user_ids, current_user, :login)
         flash[:notice] = 'Project was successfully updated.'
         format.html { redirect_to :action => "show" }

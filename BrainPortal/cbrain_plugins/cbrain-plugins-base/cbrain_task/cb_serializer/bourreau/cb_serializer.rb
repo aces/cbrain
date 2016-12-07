@@ -56,8 +56,8 @@ class CbrainTask::CbSerializer < ClusterTask
     subtasks.each do |otask|
       odir    = otask.full_cluster_workdir
       oscript = otask.qsub_script_basename
-      oout    = otask.stdout_cluster_filename
-      oerr    = otask.stderr_cluster_filename
+      oout    = otask.qsub_stdout_basename
+      oerr    = otask.qsub_stderr_basename
       commands += [
         "",
         "# Run task #{otask.fullname}",

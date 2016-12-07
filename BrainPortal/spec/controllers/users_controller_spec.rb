@@ -46,27 +46,27 @@ RSpec.describe UsersController, :type => :controller do
         end
         it "should sort by full name by default" do
           get :index
-          expect(assigns[:users]).to eq(User.all(:order => "users.full_name"))
+          expect(assigns[:users]).to eq(User.order(:full_name).all)
         end
         it "should sort by full name" do
           get :index, "_scopes"=>{"users" => {"o"=>[{"a"=>"full_name"}]}}
-          expect(assigns[:users]).to eq(User.all(:order => "users.full_name"))
+          expect(assigns[:users]).to eq(User.order(:full_name).all)
         end
         it "should sort by last connection" do
           get :index, "_scopes"=>{"users" => {"o"=>[{"a"=>"last_connected_at"}]}}
-          expect(assigns[:users]).to eq(User.all(:order => "users.last_connected_at"))
+          expect(assigns[:users]).to eq(User.order(:last_connected_at).all)
         end
         it "should sort by site" do
           get :index, "_scopes"=>{"users" => {"o" =>[{"a"=>"sites"}]}}
-          expect(assigns[:users]).to eq(User.all(:include => :site, :order => "sites.name"))
+          expect(assigns[:users]).to eq(User.includes("site").order("sites.name").all)
         end
         it "should sort by city" do
           get :index, "_scopes"=>{"users" => {"o" =>[{"a"=>"city"}]}}
-          expect(assigns[:users]).to eq(User.all(:order => "users.city"))
+          expect(assigns[:users]).to eq(User.order(:city).all)
         end
         it "should sort by country" do
           get :index, "_scopes"=>{"users" => {"o" =>[{"a"=>"country"}]}}
-          expect(assigns[:users]).to eq(User.all(:order => "users.country"))
+          expect(assigns[:users]).to eq(User.order(:country).all)
         end
       end
       context "with site manager" do
@@ -76,7 +76,7 @@ RSpec.describe UsersController, :type => :controller do
         end
         it "should only show users from site" do
           get :index
-          expect(assigns[:users].sort_by(&:id)).to match(User.all(:conditions => {:site_id => site_manager.site_id}).sort_by(&:id))
+          expect(assigns[:users].sort_by(&:id)).to match(User.where(:site_id => site_manager.site_id).order(:id).all)
         end
       end
       context "with regular user" do

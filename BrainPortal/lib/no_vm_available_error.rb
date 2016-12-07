@@ -1,5 +1,4 @@
 
-<%-
 #
 # CBRAIN Project
 #
@@ -20,28 +19,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<% title 'Signup Request Approval Result' %>
+# Exception raised when no VM is available to execute a task
+class NoVmAvailableError < StandardError
 
-<h1>Signup Request Approval Result:</h1>
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-<% if @exception_trace.present? || @symbolic_result != :all_ok %>
-
-  An error occurred. <!-- the info is in the flash -->
-  <p>
-
-  <pre><%= @exception_trace %></pre>
-
-<% else %>
-  The account request was approved, and the user was successfully created.<p>
-  <% if @info.present? %>
-    <pre><%= @info %></pre>
-  <% end %>
-<% end %>
-
-<p>
-
-You can go <%= link_to "back to see the request", signup_path(@signup) %>.<br>
-You can go <%= link_to "back to the request list", :action => :index %>.
+end
 

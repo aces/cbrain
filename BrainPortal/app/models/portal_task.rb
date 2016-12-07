@@ -556,8 +556,8 @@ class PortalTask < CbrainTask
   # and this implementation is that the params attribute
   # names are stored as keys 'encoded' with a prefix.
   # E.g. the parameter :xyz is stored with key
-  # :cbrain_task_params_xyz, and "hello[goodbye]" with
-  # key :"cbrain_task_params_hello[goodbye]". This
+  # :cbrain_task_BRA_params_KET__BRA_xyz_KET_ and "hello[goodbye]" with
+  # key :cbrain_task_BRA_params_KET__BRA_hello_KET__BRA_goodbye_KET_. This
   # however is transparent to the user of the class.
   class ParamsErrors
 
@@ -614,7 +614,7 @@ class PortalTask < CbrainTask
 
     def each(&block) #:nodoc:
       @real_errors.each do |attr, msg|
-        next unless attr.to_s =~ /^cbrain_task_params_/ # see path2key below
+        next unless attr.to_s =~ /^cbrain_task_BRA_params_KET_/ # see path2key below
         yield key2path(attr), msg
       end
     end
@@ -682,14 +682,21 @@ class PortalTask < CbrainTask
     # Will transform an arbitrary paramspath, such as "abc[def]"
     # into a sort of key which likely will not interfere with
     # the real attributes of the model, e.g.
-    # :"cbrain_task_params_abc[def]". The key is a symbol.
+    #
+    #   :cbrain_task_BRA_params_KET__BRA_abc_KET__BRA_def_KET_
+    #
+    # Right now this method just calls the String method to_la_id().
+    # The key returned is a symbol.
     def path2key(paramspath) #:nodoc:
-      "cbrain_task_params_#{paramspath.to_s}".to_sym
+      paramspath.to_la_id.to_sym
     end
 
     # Does the reverse of path2key(); the result is a string.
+    #
+    # From :cbrain_task_BRA_params_KET__BRA_abc_KET__BRA_def_KET_
+    # will return "abc[def]".
     def key2path(key) #:nodoc:
-      key.to_s.sub("cbrain_task_params_","")
+      key.to_s.from_la_id
     end
 
   end
@@ -727,19 +734,13 @@ class PortalTask < CbrainTask
   # by the class method pretty_params_names() first, so an
   # easy way to provide beautiful names for your parameters
   # is to make pretty_params_names() return such a hash.
-  # Otherwise, if the attribute starts with 'cbrain_task_params_'
-  # (like ActiveModel thinks the params attributes are named)
-  # it will remove that part and return the rest. And otherwise,
-  # it invokes the superclass method.
   def self.human_attribute_name(attname,options={})
-    sattname   = attname.to_s # string version of attname, which is usually a symbol now
+    sattname   = attname.to_s.from_la_id # string version of attname, which is usually a symbol now
     prettyhash = self.pretty_params_names || {}
-    shortname  = (sattname =~ /\Acbrain_task_params_/i) ? sattname.sub(/\Acbrain_task_params_/i,"") : nil
     # We try to guess many ways that the task programmer could have
-    # stored his 'pretty' names in the hash, including forgetting to call
-    # to_la_id() on the keys.
+    # stored for the keys of his 'pretty' names in the hash.
     if prettyhash.size > 0
-       extended = prettyhash.dup
+       extended = prettyhash.dup.with_indifferent_access
        prettyhash.each do |att,name| # extend it with to_la_id automatically...
          next unless att.is_a?(String) && att.include?('[')
          id_att = att.to_la_id
@@ -747,14 +748,8 @@ class PortalTask < CbrainTask
          extended[id_att] = name
        end
        return extended[sattname]        if extended.has_key?(sattname)
-       return extended[sattname.to_sym] if extended.has_key?(sattname.to_sym)
-       if shortname
-         return extended[shortname]        if extended.has_key?(shortname)
-         return extended[shortname.to_sym] if extended.has_key?(shortname.to_sym)
-       end
     end
-    return shortname if shortname
-    super(attname,options) # not sattname
+    super(sattname,options)
   end
 
   # Restores from old_params any attributes listed in the

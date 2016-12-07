@@ -111,7 +111,16 @@ class UsersController < ApplicationController
   end
 
   def new #:nodoc:
-    @user = User.new
+    @user        = User.new
+    @random_pass = User.random_string
+
+    # Pre-load attributes based on signup ID given in path.
+    if params[:signup_id].present?
+      if signup = Signup.where(:id => params[:signup_id]).first # assignment, not comparison!
+        @user  = signup.to_user
+        flash.now[:notice] = "Fields have been filled from a signup request."
+      end
+    end
   end
 
   def create #:nodoc:
@@ -148,13 +157,28 @@ class UsersController < ApplicationController
 
     if @user.save
       flash[:notice] = "User successfully created."
-      current_user.addlog_context(self,"Created account for user '#{@user.login}'")
-      @user.addlog_context(self,"Account created by '#{current_user.login}'")
+
+      # Find signup record matching login name, and log creation and transfer some info.
+      if signup = Signup.where(:login => @user.login, :approved_at => nil, :approved_by => nil).first
+        current_user.addlog("Approved [[signup request][#{signup_path(signup)}]] for user '#{@user.login}'")
+        @user.addlog("Account created after signup request approved by '#{current_user.login}'")
+        signup.add_extra_info_for_user(@user)
+        signup.approved_by = current_user.login
+        signup.approved_at = Time.now
+        signup.save
+      else # account was not created from a signup request? Still log some info.
+        current_user.addlog_context(self,"Created account for user '#{@user.login}'")
+        @user.addlog_context(self,"Account created by '#{current_user.login}'")
+      end
+
       if @user.email.blank? || @user.email =~ /example/i || @user.email !~ /@/
         flash[:notice] += "Since this user has no proper email address, no welcome email was sent."
       else
-        flash[:notice] += "\nA welcome email is being sent to '#{@user.email}'."
-        CbrainMailer.registration_confirmation(@user,params[:user][:password],no_password_reset_needed).deliver rescue nil
+        if send_welcome_email(@user, params[:user][:password], no_password_reset_needed)
+          flash[:notice] += "\nA welcome email is being sent to '#{@user.email}'."
+        else
+          flash[:error] = "Could not send email to '#{@user.email}' informing them that their account was created."
+        end
       end
       respond_to do |format|
         format.html { redirect_to :action => :index, :format => :html }
@@ -213,6 +237,8 @@ class UsersController < ApplicationController
 
     # For logging
     original_group_ids = @user.group_ids
+    original_ap_ids    = @user.access_profile_ids
+
 
     @user.make_all_accessible! if current_user.has_role?(:admin_user)
     if current_user.has_role? :site_manager
@@ -227,12 +253,18 @@ class UsersController < ApplicationController
 
     @user.attributes = params[:user]
 
+    remove_ap_ids    = original_ap_ids - @user.access_profile_ids
+    remove_group_ids = remove_ap_ids.present? ? AccessProfile.find(remove_ap_ids).map(&:group_ids).flatten.uniq : []
+
+    @user.apply_access_profiles(remove_group_ids: remove_group_ids)
+
     @user = @user.class_update
 
     respond_to do |format|
       if @user.save_with_logging(current_user, %w( full_name login email role city country account_locked ) )
         @user.reload
         @user.addlog_object_list_updated("Groups", Group, original_group_ids, @user.group_ids, current_user)
+        @user.addlog_object_list_updated("Access Profiles", AccessProfile, original_ap_ids, @user.access_profile_ids, current_user)
         add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id, :ip_whitelist])
         flash[:notice] = "User #{@user.login} was successfully updated."
         format.html { redirect_to :action => :show }
@@ -318,9 +350,12 @@ class UsersController < ApplicationController
       @user.password_reset = true
       @user.set_random_password
       if @user.save
-        CbrainMailer.forgotten_password(@user).deliver
-        flash[:notice] = "#{@user.full_name}, your new password has been sent to you via e-mail. You should receive it shortly."
-        flash[:notice] += "\nIf you do not receive your new password within 24hrs, please contact your admin."
+        if send_forgot_password_email(@user)
+          flash[:notice] = "#{@user.full_name}, your new password has been sent to you via e-mail. You should receive it shortly."
+          flash[:notice] += "\nIf you do not receive your new password within 24hrs, please contact your admin."
+        else
+          flash[:error] = "Could not send an email with the reset password!\nPlease contact your admin."
+        end
         redirect_to login_path
       else
         flash[:error] = "Unable to reset password.\nPlease contact your admin."
@@ -331,5 +366,27 @@ class UsersController < ApplicationController
       redirect_to :action  => :request_password
     end
   end
+
+  private
+
+  # Sends email and returns true/false if it succeeds/fails
+  def send_welcome_email(user, password, no_password_reset_needed) #:nodoc:
+    CbrainMailer.registration_confirmation(user,password,no_password_reset_needed).deliver
+    return true
+  rescue => ex
+    Rails.logger.error ex.to_s
+    return false
+  end
+
+  # Sends email and returns true/false if it succeeds/fails
+  def send_forgot_password_email(user) #:nodoc:
+    CbrainMailer.forgotten_password(user).deliver
+    return true
+  rescue => ex
+    Rails.logger.error ex.to_s
+    return false
+  end
+
+
 
 end

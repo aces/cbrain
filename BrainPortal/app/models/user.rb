@@ -398,8 +398,7 @@ class User < ActiveRecord::Base
   # the user will be removed from these groups as
   # long as they are not also in any of the AccessProfiles.
   #
-  #
-  # Ex: given two access profiles with these (overlapping) group IDs:
+  # Ex: given two AccessProfiles with these (overlapping) group IDs:
   #
   #   ap1.group_ids = [ 11, 12, 13, 99,            ]
   #   ap2.group_ids = [             99, 21, 22, 23 ]

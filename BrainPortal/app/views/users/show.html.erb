@@ -153,13 +153,26 @@
 
   <% end %>
 
-  <% # Access Profile List %>
-  <% if current_user.has_role?(:admin_user) && @user.access_profiles.count > 0 %>
-    <%= show_table(@user, :header => 'Access profiles') do |t| %>
-      <% t.cell("Access Profiles", :no_header => true) do %>
-        <%= array_to_table(@user.access_profiles.order(:name).all, :table_class => "simple", :cols => 4) do |access_profile| %>
-          <%= access_profile_label(access_profile, :with_link => true) %>
-        <% end %>
+  <% if current_user.has_role?(:admin_user) %>
+
+    <% user_access_profiles = @user.access_profiles
+                              .order('access_profiles.name')
+                              .map { |ap| access_profile_label(ap, :with_link => true) }
+                              .join("").html_safe
+       user_access_profiles = "(None)" if user_access_profiles.blank?
+    %>
+
+    <%= show_table(@user, :header => 'Access Profiles') do |t| %>
+      <% t.edit_cell(:access_profile_ids, :show_width => 2, :no_header => true, :content => user_access_profiles ) do %>
+
+        <%= render :partial => 'shared/access_profile_checkbox_table',
+                   :locals => {
+                                :access_profiles  => AccessProfile.order(:name).all,
+                                :checked          => @user.access_profiles,
+                                :variable_name    => "user[access_profile_ids][]",
+                              }
+        %>
+
       <% end %>
     <% end %>
   <% end %>
@@ -203,11 +216,11 @@
 
     </div>
 
-    <P>
+    <p>
 
   <% end %>
 
-  <P>
+  <p>
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @log, :title => 'User activity report' } %>
 </div>
 

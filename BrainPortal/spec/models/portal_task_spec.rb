@@ -367,7 +367,7 @@ describe PortalTask do
   describe "#human_attribute_name" do
 
     it "should remove the cbrain_tasks_param part from the string if it's there'" do
-      expect(PortalTask.human_attribute_name("cbrain_task_params_xyz")).to eq("xyz")
+      expect(PortalTask.human_attribute_name("cbrain_task_BRA_params_KET__BRA_xyz_KET_")).to eq("Xyz")
     end
 
     it "should use the pretty names hash if it applies" do
@@ -375,9 +375,9 @@ describe PortalTask do
       expect(PortalTask.human_attribute_name("cbrain_task_params_xyz")).to eq("pretty")
     end
 
-    it "should convert the pretty names sub hash keys if they haven't already beed" do
+    it "should convert the pretty names sub hash keys if they haven't already been" do
       allow(PortalTask).to receive(:pretty_params_names).and_return("xyz[abc]" => "pretty")
-      expect(PortalTask.human_attribute_name("cbrain_task_params_xyz_abc")).to eq("pretty")
+      expect(PortalTask.human_attribute_name("cbrain_task_BRA_params_KET__BRA_xyz_KET__BRA_abc_KET_")).to eq("pretty")
     end
 
     it "should return the humanized version of the string if cbrain_tasks part isn't there" do

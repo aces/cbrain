@@ -157,7 +157,6 @@ CbrainRailsPortal::Application.routes.draw do
 
   resources :signups do
     member do
-      post 'approve'
       post 'resend_confirm'
       get  'confirm'
     end

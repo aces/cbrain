@@ -28,24 +28,64 @@
             "description": "A string that describes the tool command line, where input and output values are identified by \"keys\". At runtime, command-line keys are substituted with flags and values.",
             "type": "string"
         },
-        "docker-image": {
-            "id": "http://github.com/boutiques/boutiques-schema/docker-image",
-            "minLength": 1,
-            "description": "Name of a Docker image where tool is installed and configured. Example: docker.io/neurodebian.",
-            "type": "string"
-        },
-        "docker-index": {
-            "id": "http://github.com/boutiques/boutiques-schema/docker-index",
-            "minLength": 1,
-            "description": "Docker index where Docker image is available.",
-            "default": "http://index.docker.io",
-            "type": "string"
+        "container-image": {
+            "id": "http://github.com/boutiques/boutiques-schema/container-image",
+            "type": "object",
+            "allOf": [{
+                "properties": {
+                    "working-directory": {
+                        "id": "http://github.com/boutiques/boutiques-schema/container/working-directory",
+                        "minLength": 1,
+                        "description": "Location from which this task must be launched within the container.",
+                        "type": "string"
+                    },
+                    "container-hash": {
+                        "id": "http://github.com/boutiques/boutiques-schema/container/container-hash",
+                        "minLength": 1,
+                        "description": "Hash for the given container.",
+                        "type": "string"
+                    }
+                }
+            },{
+                "oneOf": [{
+                    "properties": {
+                        "type": { "enum": ["docker"] },
+                        "image": {
+                            "id": "http://github.com/boutiques/boutiques-schema/container/image",
+                            "minLength": 1,
+                            "description": "Name of an image where the tool is installed and configured. Example: docker.io/neurodebian.",
+                            "type": "string"
+                        },
+                        "index": {
+                            "id": "http://github.com/boutiques/boutiques-schema/container/index",
+                            "minLength": 1,
+                            "description": "Index where the image is available.",
+                            "default": "http://index.docker.io",
+                            "type": "string"
+                        }
+                    },
+                    "required": ["type", "image"],
+                    "description": "Object representing a docker container for the tool."
+                }, {
+                    "properties": {
+                        "type": { "enum": ["rootfs", "singularity"] },
+                        "url": {
+                            "id": "http://github.com/boutiques/boutiques-schema/container/url",
+                            "minLength": 1,
+                            "description": "URL where the image is available.",
+                            "type": "string"
+                        }
+                    },
+                    "required": ["type", "url"],
+                    "description": "Object representing a rootfs or singularity container for the tool."
+                }]
+            }]
         },
         "schema-version": {
             "id": "http://github.com/boutiques/boutiques-schema/schema-version",
             "type": "string",
             "description": "Version of the schema used.",
-            "enum": ["0.2"]
+            "enum": ["0.2", "0.3"]
         },
         "walltime-estimate": {
             "id": "http://github.com/boutiques/boutiques-schema/walltime-estimate",
@@ -53,9 +93,41 @@
             "description": "Estimated wall time of a task in seconds.",
             "minLength": 1
         },
+        "environment-variables": {
+            "id": "http://github.com/boutiques/boutiques-schema/environment-variables",
+            "type": "array",
+            "description": "An array of key-value pairs specifying environment variable names and their values to be used in the execution environment.",
+            "items": {
+                "id": "http://github.com/boutiques/boutiques-schema/environment-variable",
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "id": "http://github.com/boutiques/boutiques-schema/environment-variable/name",
+                        "minLength": 1,
+                        "description": "The environment variable name (identifier) containing only alphanumeric characters and underscores. Example: \"PROGRAM_PATH\".",
+                        "type": "string",
+                        "pattern": "^[a-z,A-Z][0-9,_,a-z,A-Z]*$"
+                    },
+                    "value": {
+                        "id": "http://github.com/boutiques/boutiques-schema/environment-variable/value",
+                        "description": "The value of the environment variable.",
+                        "type": "string"
+                    },
+                    "description": {
+                        "id": "http://github.com/boutiques/boutiques-schema/environment-variable/description",
+                        "description": "Description of the environment variable.",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name",
+                    "value"
+                ]
+            }
+        },
         "groups": {
             "id": "http://github.com/boutiques/boutiques-schema/groups",
-            "description": "Sets of identifiers of inputs, each specifying a parameter group.",
+            "description": "Sets of identifiers of inputs, each specifying an input group.",
             "type": "array",
             "items": {
                 "id": "http://github.com/boutiques/boutiques-schema/group",
@@ -71,12 +143,12 @@
                     "name": {
                         "id": "http://github.com/boutiques/boutiques-schema/group/name",
                         "minLength": 1,
-                        "description": "A human-readable name for the parameter group.",
+                        "description": "A human-readable name for the input group.",
                         "type": "string"
                     },
                     "description": {
                         "id": "http://github.com/boutiques/boutiques-schema/group/description",
-                        "description": "Description of the parameter grouping.",
+                        "description": "Description of the input group.",
                         "type": "string"
                     },
                     "members": {
@@ -91,12 +163,12 @@
                     },
                     "mutually-exclusive": {
                         "id": "http://github.com/boutiques/boutiques-schema/group/mutually-exclusive",
-                        "description": "True if only one input is permitted to be specified or activated within the group.",
+                        "description": "True if only one input in the group may be active at runtime.",
                         "type": "boolean"
                     },
                     "one-is-required": {
                         "id": "http://github.com/boutiques/boutiques-schema/group/one-is-required",
-                        "description": "True if at least one of the parameters in the group must be specified at runtime.",
+                        "description": "True if at least one of the inputs in the group must be active at runtime.",
                         "type": "boolean"
                     }
                 },
@@ -160,7 +232,7 @@
                     },
                     "requires-inputs": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/required-inputs",
-                        "description": "Ids of the inputs which must be present for this input to be available.",
+                        "description": "Ids of the inputs which must be active for this input to be available.",
                         "type": "array",
                         "items": {
                             "type": "string"
@@ -168,7 +240,7 @@
                     },
                     "disables-inputs": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/disabled-by-inputs",
-                        "description": "Ids of the inputs that disable this input when they are present.",
+                        "description": "Ids of the inputs that are disabled when this input is active.",
                         "type": "array",
                         "items": {
                             "type": "string"
@@ -225,6 +297,11 @@
                         "id": "http://github.com/boutiques/boutiques-schema/input/max-list-entries",
                         "description": "Specify the maximum number of entries in the list. May only be used with List type inputs.",
                         "type": "number"
+                    },
+                    "uses-absolute-path": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/uses-absolute-path",
+                        "description": "Specifies that this input must be given as an absolute path. Only specifiable for File type inputs.",
+                        "type": "boolean"
                     }
                 },
                 "required": [
@@ -232,6 +309,16 @@
                     "id",
                     "type"
                 ],
+                "anyOf": [{
+                    "properties": {
+                      "type": { "enum": ["Flag"] },
+                      "list": { "enum": [false] }
+                    }
+                }, {
+                    "properties": {
+                      "type": { "enum": ["String", "File", "Number", "Enum"] }
+                    }
+                }],
                 "additionalProperties": true,
                 "dependencies": {
                     "command-line-flag-separator": ["command-line-flag"],
@@ -265,6 +352,11 @@
                     "exclusive-maximum": {
                         "properties": {
                             "type": {"enum": ["Number"]}
+                        }
+                    },
+                    "uses-absolute-path": {
+                        "properties": {
+                            "type": {"enum": ["File"]}
                         }
                     },
                     "exclusive-minimum": ["minimum"],
@@ -331,8 +423,12 @@
                         "id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag",
                         "description": "Option flag of the output, involved in the command-line-key substitution. Examples: -o, --output",
                         "type": "string"
+                    },
+                    "uses-absolute-path": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output-files/uses-absolute-path",
+                        "description": "Specifies that this output filepath will be given as an absolute path.",
+                        "type": "boolean"
                     }
-
                 },
                 "required": [
                     "id",
