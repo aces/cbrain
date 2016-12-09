@@ -69,8 +69,8 @@ class GroupsController < ApplicationController
     respond_to do |format|
       format.js
       format.html # index.html.erb
-      format.xml  { render :xml  => @groups }
-      format.json { render :json => @groups.to_json(methods: :type) }
+      format.xml  { render :xml  => @groups.map(&:for_api) }
+      format.json { render :json => @groups.map(&:for_api) }
     end
   end
 
@@ -79,14 +79,14 @@ class GroupsController < ApplicationController
   # GET /groups/1.json
   def show #:nodoc:
     #@group = current_user.available_groups.find(params[:id])
-    @group = Group.find(params[:id])
+    @group = Group.where(:id => params[:id]).first
     raise ActiveRecord::RecordNotFound unless @group.can_be_accessed_by?(current_user)
     @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
 
     respond_to do |format|
       format.html
-      format.xml  { render :xml  => @group }
-      format.json { render :json => @group }
+      format.xml  { render :xml  => @group.for_api }
+      format.json { render :json => @group.for_api }
     end
   end
 
@@ -118,8 +118,8 @@ class GroupsController < ApplicationController
         @group.addlog_context(self,"Created by #{current_user.login}")
         flash[:notice] = 'Project was successfully created.'
         format.html { redirect_to :action => :index, :format => :html}
-        format.xml  { render :xml  => @group, :status => :created, :location => @group }
-        format.json { render :json => @group, :status => :created, :location => @group }
+        format.xml  { render :xml  => @group.for_api, :status => :created }
+        format.json { render :json => @group.for_api, :status => :created }
       else
         @users = current_user.available_users.where( "users.login<>'admin'" ).order( :login )
         format.html { render :new  }
@@ -140,6 +140,7 @@ class GroupsController < ApplicationController
        respond_to do |format|
         format.html { redirect_to :action => :show }
         format.xml  { head :forbidden }
+        format.json { head :forbidden }
        end
        return
     end
@@ -203,6 +204,7 @@ class GroupsController < ApplicationController
         flash[:error] = "You cannot be unregistered from a project you created."
         format.html { redirect_to group_path(@group) }
         format.xml  { head :unprocessable_entity }
+        format.json { head :unprocessable_entity }
       else
         original_user_ids = @group.user_ids
         @group.user_ids   = @group.user_ids - [current_user.id]
@@ -211,6 +213,7 @@ class GroupsController < ApplicationController
         flash[:notice] = "You have been unregistered from project #{@group.name}."
         format.html { redirect_to :action => "index" }
         format.xml  { head :ok }
+        format.json { head :ok}
       end
     end
   end
@@ -219,7 +222,7 @@ class GroupsController < ApplicationController
   # DELETE /groups/1.xml
   # DELETE /groups/1.json
   def destroy  #:nodoc:
-    @group = current_user.available_groups.find(params[:id])
+    @group = current_user.available_groups.where(params[:id]).first
     @group.destroy
 
     respond_to do |format|

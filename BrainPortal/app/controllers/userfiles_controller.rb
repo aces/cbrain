@@ -152,8 +152,8 @@ class UserfilesController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.xml  { render :xml  => @userfiles.to_xml(:methods => :type) }
-      format.json { render :json => @userfiles.to_json(:methods => :type) }
+      format.xml  { render :xml  => @userfiles.map(&:for_api) }
+      format.json { render :json => @userfiles.map(&:for_api) }
       format.csv
     end
   end
@@ -321,8 +321,8 @@ class UserfilesController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml  { render :xml  => @userfile }
-      format.json { render :json => @userfile }
+      format.xml  { render :xml  => @userfile.for_api }
+      format.json { render :json => @userfile.for_api }
     end
   end
 
@@ -377,6 +377,7 @@ class UserfilesController < ApplicationController
 
   # POST /userfiles
   # POST /userfiles.xml
+  # POST /userfiles.json
 
   #The create action is used to save uploaded files to a DataProvider.
   #
@@ -480,6 +481,7 @@ class UserfilesController < ApplicationController
       respond_to do |format|
         format.html { redirect_to redirect_path }
         format.json { render :json => {:notice => "File Uploaded"} }
+        format.xml  { render :xml  => {:notice => "File Uploaded"} }
       end
       return
     end # save
@@ -493,6 +495,7 @@ class UserfilesController < ApplicationController
       respond_to do |format|
         format.html { redirect_to redirect_path }
         format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
+        format.xml  { render :xml  => flash[:error], :status  => :unprocessable_entity}
       end
       return
     end
@@ -506,6 +509,7 @@ class UserfilesController < ApplicationController
         respond_to do |format|
           format.html { redirect_to redirect_path }
           format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
+          format.xml  { render :xml   => flash[:error], :status  => :unprocessable_entity}
         end
         return
       end
@@ -542,6 +546,7 @@ class UserfilesController < ApplicationController
         respond_to do |format|
           format.html { redirect_to redirect_path }
           format.json { render :json => {:notice => "Collection Uploaded" } }
+          format.xml  { render :xml  => {:notice => "Collection Uploaded" } }
         end
       else
         flash[:error] = "Collection '#{collection_name}' could not be created.\n"
@@ -551,6 +556,7 @@ class UserfilesController < ApplicationController
         respond_to do |format|
           format.html { redirect_to redirect_path }
           format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
+          format.xml  { render :xml   => flash[:error], :status  => :unprocessable_entity}
         end
       end # save collection
       return
@@ -580,6 +586,7 @@ class UserfilesController < ApplicationController
     respond_to do |format|
       format.html { redirect_to redirect_path }
       format.json { render :json => {:notice => "Archive Uploaded" } }
+      format.xml  { render :xml  => {:notice => "Archive Uploaded" } }
     end
   end
 
@@ -945,6 +952,7 @@ class UserfilesController < ApplicationController
       respond_to do |format|
         format.html { redirect_to :action => :index }
         format.json { render :json => { :error => flash[:error]}, :status => :forbidden }
+        format.xml  { render :xml  => { :error => flash[:error]}, :status => :forbidden }
       end
       return
     end

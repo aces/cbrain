@@ -63,6 +63,8 @@ class Group < ActiveRecord::Base
 
   attr_accessible         :name, :description, :site_id, :creator_id, :user_ids
 
+  api_attr_visible        :id, :name, :description, :type, :site_id, :invisible
+
   # Returns the unique and special group 'everyone'
   def self.everyone
     @everyone ||= EveryoneGroup.find_by_name('everyone')

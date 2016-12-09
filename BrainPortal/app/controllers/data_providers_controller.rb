@@ -46,18 +46,20 @@ class DataProvidersController < ApplicationController
     respond_to do |format|
       format.html
       format.xml  do
-        render :xml  => @data_providers.map(&:for_api).to_xml(
-                          :methods => [
-                            :type, :is_browsable?, :is_fast_syncing?,
-                            :allow_file_owner_change?, :content_storage_shared_between_users?,
-                          ] )
+
+        render :xml  => @data_providers.map(&:for_api)
       end
       format.json do
-        render :json => @data_providers.map(&:for_api).to_json(
-                          :methods => [
-                            :type, :is_browsable?, :is_fast_syncing?,
-                            :allow_file_owner_change?, :content_storage_shared_between_users?,
-                          ] )
+        data_providers_info = @data_providers.map do |dp|
+          dp_info                             = dp.for_api
+          dp_info['type']                     = dp.type
+          dp_info['is_browsable']             = dp.is_browsable?
+          dp_info['is_fast_syncing']          = dp.is_fast_syncing?
+          dp_info['allow_file_owner_change']  = dp.allow_file_owner_change?
+          dp_info
+        end
+
+        render :json => data_providers_info
       end
       format.js
     end
@@ -65,6 +67,7 @@ class DataProvidersController < ApplicationController
 
   # GET /data_providers/1
   # GET /data_providers/1.xml
+  # GET /data_providers/1.json
   def show  #:nodoc:
     data_provider_id = params[:id]
     @provider        = DataProvider.find(data_provider_id)
@@ -75,12 +78,23 @@ class DataProvidersController < ApplicationController
     respond_to do |format|
       format.html # show.html.erb
       format.xml  {
-          @provider.hide_attributes(API_HIDDEN_ATTRIBUTES)
-          render :xml  => @provider
+          provider_info                                          = @provider.for_api
+          provider_info['type']                                  = @provider.type
+          provider_info['is_browsable']                          = @provider.is_browsable?
+          provider_info['is_fast_syncing']                       = @provider.is_fast_syncing?
+          provider_info['allow_file_owner_change']               = @provider.allow_file_owner_change?
+
+          render :xml  => provider_info
       }
       format.json {
-          @provider.hide_attributes(API_HIDDEN_ATTRIBUTES)
-          render :json => @provider
+          provider_info                                          = @provider.for_api
+          provider_info['type']                                  = @provider.type
+          provider_info['is_browsable']                          = @provider.is_browsable?
+          provider_info['is_fast_syncing']                       = @provider.is_fast_syncing?
+          provider_info['allow_file_owner_change']               = @provider.allow_file_owner_change?
+          provider_info['content_storage_shared_between_users']  = @provider.content_storage_shared_between_users?
+
+          render :json => provider_info
       }
     end
   end

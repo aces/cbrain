@@ -13,14 +13,6 @@ basePath: /
 produces:
   - application/json
   - application/xml
-parameters:
-  authenticity_token:
-    name: authenticity_token
-    in: body
-    description: The token returned by /sessions/new
-    required: true
-    schema:
-      type: string
 paths:
 #=============================================================================
 # SESSIONS ACTIONS
@@ -363,7 +355,7 @@ paths:
               $ref: '#/definitions/Bourreau'
         "401":
           description: No session created yet.
-  /bourreau/{id}:
+  /bourreaux/{id}:
     get:
       summary: Get information about a Bourreau.
       description: |
@@ -454,6 +446,8 @@ paths:
             registration status, FileType, and other information.
         "401":
           description: No session created yet.
+        "403":
+          description: Data Provider is not browsable.
   /data_providers/{id}/register:
     post:
       summary: Registers a file as a Userfile in CBRAIN.
@@ -584,6 +578,9 @@ paths:
                 type: integer
                 format: int64
                 description: The ID of the user to delete files as.
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
       responses:
         "200":
           description: Successfully launched the operation in the background to delete files.
@@ -666,19 +663,25 @@ paths:
       tags:
         - Groups
       parameters:
-        - name: id
+        - name: params
           in: body
-          description: ID of the Group to switch to.
-          required: true
+          description: The params.
           schema:
-            type: integer
-            format: int64
+            type: object
+            properties:
+              id:
+                type: integer
+                format: int64
+                description: ID number of the Group to switch to
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
       responses:
         "200":
           description: Successfully switched the active Group.
         "401":
           description: No session created yet.
-  /group/{id}:
+  /groups/{id}:
     get:
       summary: Get information on a Group (project).
       description: |
@@ -691,7 +694,7 @@ paths:
       parameters:
         - name: id
           in: path
-          description: ID of the Group to switch to.
+          description: ID of the Group to get information on.
           required: true
           type: integer
           format: int64
@@ -751,7 +754,15 @@ paths:
           required: true
           type: integer
           format: int64
-        - $ref: '#/parameters/authenticity_token'
+        - name: params
+          in: body
+          description: The params.
+          schema:
+            type: object
+            properties:
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
       responses:
         "200":
           description: Successfully deleted the Group (project).
@@ -778,53 +789,50 @@ paths:
               $ref: '#/definitions/Userfile'
         "401":
           description: No Session created yet.
-    # post:
-    #   summary: Creates a new Userfile.
-    #   description: |
-    #     This method creates a new Userfile in CBRAIN, with the current user
-    #     as the owner of the file.
-    #   tags:
-    #     - Userfiles
-    #   consumes:
-    #     - multipart/form-data
-    #   parameters:
-    #     - name: params
-    #       in: formData
-    #       description: The params
-    #       schema:
-    #         type: object
-    #         properties:
-    #           upload_file:
-    #             type: file
-    #             description: The file to be uploaded
-    #           data_provider_id:
-    #             description: The ID of the Data Provider to upload the file to.
-    #             type: integer
-    #             format: int64
-    #           userfile:
-    #             description: Information about the Userfile
-    #             type: object
-    #             properties:
-    #               group_id:
-    #                 type: integer
-    #                 description: ID of the group to change the Userfile's owner to
-    #           file_type:
-    #             description: The type of the file
-    #             type: string
-    #           archive:
-    #             description: Archive
-    #             type: string
-    #           "_up_ex_mode":
-    #             description: Upload mode, either "SingleFile" or "collection"
-    #             type: string
-    #           authenticity_token:
-    #             type: string
-    #             description: The token returned by /session/new
-    #   responses:
-    #     "201":
-    #       description: Userfile successfully created.
-    #     "401":
-    #       description: No Session created yet.
+    post:
+      summary: Creates a new Userfile.
+      description: |
+        This method creates a new Userfile in CBRAIN, with the current user
+        as the owner of the file.
+      tags:
+        - Userfiles
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: upload_file
+          in: formData
+          description: File to upload to CBRAIN
+          type: file
+        - name: data_provider_id
+          in: formData
+          description: The ID of the Data Provider to upload the file to.
+          type: integer
+          format: int64
+        - name: userfile[group_id]
+          in: formData
+          type: integer
+          description: ID of the group that will have access to the Userfile
+        - name: file_type
+          in: formData
+          description: The type of the file
+          type: string
+        - name: archive
+          in: formData
+          description: Archive
+          type: string
+        - name: authenticity_token
+          in: formData
+          description: The token returned by /session/new
+          type: string
+        - name: "_up_ex_mode"
+          in: formData
+          description: usually "collection"
+          type: string
+      responses:
+        "201":
+          description: Userfile successfully created.
+        "401":
+          description: No Session created yet.
   /userfiles/{id}:
     get:
       summary: Get information on a Userfile.
@@ -855,18 +863,23 @@ paths:
       tags:
         - Userfiles
       parameters:
+        - name: params
+          in: body
+          description: The params
+          schema:
+            type: object
+            properties:
+              userfile:
+                $ref: '#/definitions/Userfile'
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
         - name: id
           in: path
           description: The ID number of the Userfile to update.
           type: integer
           format: int64
           required: true
-        - name: authenticity_token
-          in: body
-          description: The token returned by /sessions/new
-          required: true
-          schema:
-            type: string
       responses:
         "200":
           description: Userfile updated successfully.
@@ -879,38 +892,201 @@ paths:
       tags:
         - Userfiles
       parameters:
+        - name: params
+          in: body
+          description: The params
+          schema:
+            type: object
+            properties:
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
         - name: id
           in: path
           description: The ID number of the Userfile to delete.
           required: true
           type: integer
           format: int64
-        - name: authenticity_token
-          in: body
-          description: The token returned by /sessions/new
-          required: true
-          schema:
-            type: string
       responses:
         "200":
           description: Userfile deleted successfully.
         "401":
           description: No session created yet.
+  /userfiles/{id}/content:
+    get:
+      summary: Get the content of a Userfile
+      description: This method allows you to download Userfiles.
+      tags:
+        - Userfiles
+      parameters:
+        - name: id
+          in: path
+          description: The ID number of the Userfile to download
+          type: integer
+          format: int64
+          required: true
+      responses:
+        "200":
+          description: The contents of the file
+        "403":
+          description: Forbidden
+  /userfiles/download:
+    post:
+      summary: Download several files
+      description: This method compresses several Userfiles in .gz format and prepares them to be downloaded.
+      tags:
+        - Userfiles
+      parameters:
+        - name: params
+          in: body
+          description: The params
+          schema:
+            type: object
+            properties:
+              file_ids:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                description: The ID numbers of the files to be downloaded
+              specified_filename:
+                type: string
+                description: The name of the archive file that the Userfiles will be compressed into for downloading.
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
+      responses:
+        200:
+          description: Indicates that the files are being compressed and downloaded.
+  /userfiles/delete_files:
+    post:
+      summary: Delete several files that have been registered as Userfiles
+      tags:
+        - Userfiles
+      parameters:
+        - name: params
+          in: body
+          description: The params
+          schema:
+            type: object
+            properties:
+              file_ids:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                description: A list of ID's of the Userfiles that you would like to delete.
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
+      responses:
+        200:
+          description: Indicates that the files are being deleted.
+  /userfiles/change_provider:
+    post:
+      summary: Moves the Userfiles from their current Data Provider to a new one.
+      tags:
+        - Userfiles
+        - DataProvider
+      parameters:
+        - name: params
+          in: body
+          description: The params
+          schema:
+            type: object
+            properties:
+              data_provider_id_for_mv_cp:
+                type: integer
+                format: int64
+                description: The ID of the Data Provider to move or copy the files to.
+              crush_destination:
+                type: boolean
+                description: Specifies whether to overwrite files on the destination Data Provider if a file already exists there with the same name.
+              file_ids:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                description: The ID's of the Userfiles to be moved or copied to a new Data Provider.
+      responses:
+        200:
+          description: Indicates that the files are being moved or copied in the background.
+  /userfiles/compress:
+    post:
+      summary: Compresses many Userfiles each into their own GZIP archive.
+      tags:
+        - Userfiles
+      parameters:
+        - name: params
+          in: body
+          description: The params
+          schema:
+            type: object
+            properties:
+              file_ids:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                description: A list of Userfile ID numbers to compress.
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
+      responses:
+        200:
+          description: Indicates that the compression is starting in the background.
+  /userfiles/uncompress:
+    post:
+      summary: Uncompresses many Userfiles.
+      tags:
+        - Userfiles
+      parameters:
+        - name: params
+          in: body
+          description: The params
+          schema:
+            type: object
+            properties:
+              file_ids:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                description: A list of Userfile ID's of files to uncompress.
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
+      responses:
+        200:
+          description: Indicates that files are being uncompressed in the background.
 
-  # /userfiles/sync_multiple:
-  #   post:
-  # /userfiles/compress:
-  #   post:
-  # /userfiles/uncompress:
-  #   post:
-  # /userfiles/quality_control:
-  #   post:
-  # /userfiles/delete_files:
-  #   delete:
-  # /userfiles/download:
-  #   post:
-  # /userfiles/content:
-  #   get:
+  /userfiles/sync_multiple:
+    post:
+      summary: Syncs Userfiles to their Data Providers' cache.
+      description: Synchronizing files to their Data Providers' caches allows you to download, visualize and do processing on them that is not available if not synced. Most operations will sync files automatically.
+      tags:
+        - Userfiles
+      parameters:
+        - name: params
+          in: body
+          description: The params
+          schema:
+            type: object
+            properties:
+              file_ids:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+              operation:
+                type: string
+                description: Either "sync_local" or "all_newer".
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
+      responses:
+        200:
+          description: Indicates that synchronization is starting in the background
 
 #=============================================================================
 # TASK ACTIONS
@@ -937,12 +1113,29 @@ paths:
         This method allows the creation of a new Task.
       tags:
         - Tasks
+      parameters:
+        - name: params
+          in: body
+          description: The params.
+          schema:
+            type: object
+            properties:
+              # tool_id:
+              #   type: integer
+              #   description: The ID number of the Tool to be used to launch the Task.
+              tool_config_id:
+                type: integer
+                description: The ID number of the Tool Config to be used to launch the Task.
+              cbrain_task:
+                $ref: '#/definitions/CbrainTask'
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
       responses:
         "200":
           description: Task created successfully.
         "401":
           description: No Session created yet.
-      # parameters!!!!
   /tasks/{id}:
     get:
       summary: Get information on a Task.
@@ -972,15 +1165,50 @@ paths:
       parameters:
         - name: id
           in: path
-          description: The ID number of the Userfile to delete.
+          description: The ID number of the Userfile to update.
           required: true
           type: integer
           format: int64
+        - name: params
+          in: body
+          description: The params
+          schema:
+            type: object
+            properties:
+              cbrain_task:
+                $ref: '#/definitions/CbrainTask'
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new
       responses:
         "200":
           description: Task updated successfully.
         "401":
           description: No Session created yet.
+    delete:
+      summary: Deletes a Task
+      description: Deletes a Task from CBRAIN.
+      tags:
+        - Tasks
+      parameters:
+        - name: id
+          in: path
+          description: The ID number of the Task to delete.
+          required: true
+          type: integer
+          format: int64
+        - name: params
+          in: body
+          description: The params
+          schema:
+            type: object
+            properties:
+              authenticity_token:
+                type: string
+                description: The token returned by /session/new.
+      responses:
+        200:
+          description: Indicates that the Task is being deleted in the background.
 #=============================================================================
 # TOOLS ACTIONS
 #=============================================================================
@@ -1002,29 +1230,29 @@ paths:
               $ref: '#/definitions/Tool'
         "401":
           description: No Session created yet.
-  /tools/{id}:
-    get:
-      summary: Get information on a specific Tool.
-      description: |
-        This method returns information about a single Tool in CBRAIN, specified
-        by the ID parameter, including a list of Users and Groups that have access
-        to it, its description, category, and URL for documentation on its parameters.
-      parameters:
-        - name: id
-          in: path
-          description: The ID number of the Tool.
-          required: true
-          type: integer
-          format: int64
-      tags:
-        - Tools
-      responses:
-        "200":
-          description: Returns information about the Tool specified.
-          schema:
-            $ref: '#/definitions/Tool'
-        "401":
-          description: No Session created yet.
+  # /tools/{id}:
+  #   get:
+  #     summary: Get information on a specific Tool.
+  #     description: |
+  #       This method returns information about a single Tool in CBRAIN, specified
+  #       by the ID parameter, including a list of Users and Groups that have access
+  #       to it, its description, category, and URL for documentation on its parameters.
+  #     parameters:
+  #       - name: id
+  #         in: path
+  #         description: The ID number of the Tool.
+  #         required: true
+  #         type: integer
+  #         format: int64
+  #     tags:
+  #       - Tools
+  #     responses:
+  #       "200":
+  #         description: Returns information about the Tool specified.
+  #         schema:
+  #           $ref: '#/definitions/Tool'
+  #       "401":
+  #         description: No Session created yet.
 #=============================================================================
 # MODELS
 #=============================================================================
@@ -1214,14 +1442,6 @@ definitions:
       name:
         type: string
         description: Name of the group.
-      created_at:
-        type: string
-        format: dateTime
-        description: When the group was created.
-      updated_at :
-        type: string
-        format: dateTime
-        description: When the group was last updated.
       type:
         type: string
         description: Type of group.
