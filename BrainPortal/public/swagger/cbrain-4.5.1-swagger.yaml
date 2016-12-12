@@ -41,23 +41,22 @@ paths:
         This is the main entry point to create a CBRAIN session. Note that if
         a user is currently logged in, a new session will not be available to
         be created, and the current session will be re-used.
+      consumes:
+        - multipart/form-data
       parameters:
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              login:
-                description: The CBRAIN user's username
-                type: string
-              password:
-                description: The CBRAIN user's password
-                type: string
-                format: password
-              authenticity_token:
-                description: The token returned by /session/new
-                type: string
+        - name: login
+          in: formData
+          description: The username of the User trying to connect.
+          type: string
+        - name: password
+          in: formData
+          description: The CBRAIN User's password
+          type: string
+          format: password
+        - name: authenticity_token
+          description: The token returned by /session/new
+          type: string
+          in: formData
       tags:
         - Sessions
       responses:
