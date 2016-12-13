@@ -152,8 +152,8 @@ class UserfilesController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.xml  { render :xml  => @userfiles.map(&:for_api) }
-      format.json { render :json => @userfiles.map(&:for_api) }
+      format.xml  { render :xml  => @userfiles.for_api }
+      format.json { render :json => @userfiles.for_api }
       format.csv
     end
   end
@@ -494,7 +494,7 @@ class UserfilesController < ApplicationController
       flash[:error] += "Error: file #{basename} does not have one of the supported extensions: .tar, .tar.gz, .tgz or .zip.\n"
       respond_to do |format|
         format.html { redirect_to redirect_path }
-        format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
+        format.json { render :json => flash[:error], :status  => :unprocessable_entity}
         format.xml  { render :xml  => flash[:error], :status  => :unprocessable_entity}
       end
       return
@@ -508,8 +508,8 @@ class UserfilesController < ApplicationController
         flash[:error] = "Collection '#{collection_name}' already exists.\n"
         respond_to do |format|
           format.html { redirect_to redirect_path }
-          format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
-          format.xml  { render :xml   => flash[:error], :status  => :unprocessable_entity}
+          format.json { render :json => flash[:error], :status  => :unprocessable_entity}
+          format.xml  { render :xml  => flash[:error], :status  => :unprocessable_entity}
         end
         return
       end
@@ -555,8 +555,8 @@ class UserfilesController < ApplicationController
         end
         respond_to do |format|
           format.html { redirect_to redirect_path }
-          format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
-          format.xml  { render :xml   => flash[:error], :status  => :unprocessable_entity}
+          format.json { render :json => flash[:error], :status  => :unprocessable_entity}
+          format.xml  { render :xml  => flash[:error], :status  => :unprocessable_entity}
         end
       end # save collection
       return

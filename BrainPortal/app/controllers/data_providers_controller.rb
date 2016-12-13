@@ -46,20 +46,10 @@ class DataProvidersController < ApplicationController
     respond_to do |format|
       format.html
       format.xml  do
-
-        render :xml  => @data_providers.map(&:for_api)
+        render :xml  => @data_providers.for_api
       end
       format.json do
-        data_providers_info = @data_providers.map do |dp|
-          dp_info                             = dp.for_api
-          dp_info['type']                     = dp.type
-          dp_info['is_browsable']             = dp.is_browsable?
-          dp_info['is_fast_syncing']          = dp.is_fast_syncing?
-          dp_info['allow_file_owner_change']  = dp.allow_file_owner_change?
-          dp_info
-        end
-
-        render :json => data_providers_info
+        render :json => @data_providers.for_api
       end
       format.js
     end
@@ -74,27 +64,13 @@ class DataProvidersController < ApplicationController
 
     cb_notice "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
 
-
     respond_to do |format|
       format.html # show.html.erb
       format.xml  {
-          provider_info                                          = @provider.for_api
-          provider_info['type']                                  = @provider.type
-          provider_info['is_browsable']                          = @provider.is_browsable?
-          provider_info['is_fast_syncing']                       = @provider.is_fast_syncing?
-          provider_info['allow_file_owner_change']               = @provider.allow_file_owner_change?
-
-          render :xml  => provider_info
+        render :xml  => @provider.for_api
       }
       format.json {
-          provider_info                                          = @provider.for_api
-          provider_info['type']                                  = @provider.type
-          provider_info['is_browsable']                          = @provider.is_browsable?
-          provider_info['is_fast_syncing']                       = @provider.is_fast_syncing?
-          provider_info['allow_file_owner_change']               = @provider.allow_file_owner_change?
-          provider_info['content_storage_shared_between_users']  = @provider.content_storage_shared_between_users?
-
-          render :json => provider_info
+        render :json => @provider.for_api
       }
     end
   end

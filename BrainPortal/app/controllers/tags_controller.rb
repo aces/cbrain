@@ -33,9 +33,10 @@ class TagsController < ApplicationController
   # GET /tags.xml
   # GET /tags.json
   def index #:nodoc:
+    @tags = current_user.tags.all
     respond_to do |format|
-      format.xml  { render :xml  => current_user.tags.map(&:for_api) }
-      format.json { render :json => current_user.tags.map(&:for_api) }
+      format.xml  { render :xml  => @tags.for_api }
+      format.json { render :json => @tags.for_api }
     end
   end
 
@@ -43,9 +44,10 @@ class TagsController < ApplicationController
   # GET /tags/1.xml
   # GET /tags/1.json
   def show #:nodoc:
+    @tag = current_user.tags.find(params[:id])
     respond_to do |format|
-      format.xml  { render :xml  => current_user.tags.find(params[:id]).for_api }
-      format.json { render :json => current_user.tags.find(params[:id]).for_api }
+      format.xml  { render :xml  => @tag.for_api }
+      format.json { render :json => @tag.for_api }
     end
   end
 

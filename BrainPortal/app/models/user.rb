@@ -110,7 +110,7 @@ class User < ActiveRecord::Base
   # anything else you want your user to change should be added here.
   attr_accessible :full_name, :email, :password, :password_confirmation, :time_zone, :city, :country
 
-  api_attr_visible :id, :login, :full_name, :email, :type, :site_id, :time_zone, :city, :last_connected_at, :account_locked
+  api_attr_visible :login, :full_name, :email, :type, :site_id, :time_zone, :city, :last_connected_at, :account_locked
 
   # Returns the admin user
   def self.admin

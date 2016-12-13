@@ -1,5 +1,6 @@
 # Swagger description of the CBRAIN API
-# Pierre Rioux, August 2016 - October 2016
+# Pierre Rioux, August - October 2016
+# Andrew Doyle, November - December 2016
 swagger: '2.0'
 info:
   title: CBRAIN API
