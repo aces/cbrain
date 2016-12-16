@@ -739,17 +739,15 @@ class PortalTask < CbrainTask
     prettyhash = self.pretty_params_names || {}
     # We try to guess many ways that the task programmer could have
     # stored for the keys of his 'pretty' names in the hash.
-    if prettyhash.size > 0
-       extended = prettyhash.dup.with_indifferent_access
-       prettyhash.each do |att,name| # extend it with to_la_id automatically...
-         next unless att.is_a?(String) && att.include?('[')
-         id_att = att.to_la_id
-         next if extended.has_key?(id_att)
-         extended[id_att] = name
-       end
-       return extended[sattname]        if extended.has_key?(sattname)
+    extended = prettyhash.dup.with_indifferent_access
+    prettyhash.each do |att,name| # extend it with to_la_id automatically...
+      next unless att.is_a?(String) && att.include?('[')
+      id_att = att.to_la_id
+      next if extended.has_key?(id_att)
+      extended[id_att] = name
     end
-    super(sattname,options)
+    return extended[sattname] if extended.has_key?(sattname)
+    super(sattname,options.merge({ :default => sattname.humanize }))
   end
 
   # Restores from old_params any attributes listed in the

@@ -39,20 +39,25 @@ describe EnCbrainLocalDataProvider do
     end
 
     it "should return true if all works correctly" do
+      dp = en_cbrain_local_data_provider
       allow(Dir).to receive(:mkdir)
-      expect(en_cbrain_local_data_provider.cache_prepare(userfile)).to be_truthy
+      expect(dp.cache_prepare(userfile)).to be_truthy
     end
 
     it "should call mkdir if new userdir not already a directory" do
+      dp = en_cbrain_local_data_provider
+      u = userfile
       allow(File).to receive(:directory?).and_return(false)
       expect(Dir).to receive(:mkdir).at_least(4)
-      en_cbrain_local_data_provider.cache_prepare(userfile)
+      dp.cache_prepare(u)
     end
 
     it "should not call mkdir if new userdir is already a directory" do
+      dp = en_cbrain_local_data_provider
+      u = userfile
       allow(File).to receive(:directory?).and_return(true)
       expect(Dir).not_to receive(:mkdir)
-      en_cbrain_local_data_provider.cache_prepare(userfile)
+      dp.cache_prepare(u)
     end
   end
 

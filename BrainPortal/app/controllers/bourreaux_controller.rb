@@ -35,8 +35,6 @@ class BourreauxController < ApplicationController
   before_filter :login_required
   before_filter :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :rr_access_dp, :update, :start, :stop]
 
-  API_HIDDEN_ATTRIBUTES = [ :cache_md5 ]  # these are hidden back when APIs calls returns objects
-
   def index #:nodoc:
     @scope = scope_from_session('bourreaux')
     scope_default_order(@scope, 'type')
@@ -50,12 +48,10 @@ class BourreauxController < ApplicationController
       format.html
       format.js
       format.xml  do
-        @bourreaux.each { |b| b.hide_attributes(API_HIDDEN_ATTRIBUTES) }
-        render :xml  => @bourreaux
+        render :xml => @bourreaux.for_api
       end
       format.json do
-        @bourreaux.each { |b| b.hide_attributes(API_HIDDEN_ATTRIBUTES) }
-        render :json => @bourreaux
+        render :json => @bourreaux.for_api
       end
     end
   end
@@ -69,12 +65,10 @@ class BourreauxController < ApplicationController
     respond_to do |format|
       format.html # show.html.erb
       format.xml  do
-        @bourreau.hide_attributes(API_HIDDEN_ATTRIBUTES)
-        render :xml  => @bourreau
+        render :xml  => @bourreau.for_api
       end
       format.json do
-        @bourreau.hide_attributes( [:cache_md5] )
-        render :json => @bourreau
+        render :json => @bourreau.for_api
       end
     end
   end
