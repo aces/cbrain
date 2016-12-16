@@ -25,6 +25,8 @@ class GroupsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  api_available :only => [:index, :create, :switch, :update, :destroy, :show]
+
   before_filter :login_required
 
   # GET /groups
@@ -67,25 +69,34 @@ class GroupsController < ApplicationController
     respond_to do |format|
       format.js
       format.html # index.html.erb
-      format.xml  { render :xml  => @groups }
-      format.json { render :json => @groups.to_json(methods: :type) }
+      format.xml  { render :xml  => @groups.for_api }
+      format.json { render :json => @groups.for_api }
     end
   end
 
+  # GET /groups/1
+  # GET /groups/1.xml
+  # GET /groups/1.json
   def show #:nodoc:
-    #@group = current_user.available_groups.find(params[:id])
-    @group = Group.find(params[:id])
+    @group = current_user.available_groups.find(params[:id])
     raise ActiveRecord::RecordNotFound unless @group.can_be_accessed_by?(current_user)
-    @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
+    @users = current_user.available_users.order(:login).reject { |u| u.class == CoreAdmin }
+
+    respond_to do |format|
+      format.html
+      format.xml  { render :xml  => @group.for_api }
+      format.json { render :json => @group.for_api }
+    end
   end
 
   def new  #:nodoc:
     @group = WorkGroup.new
-    @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
+    @users = current_user.available_users.order(:login).reject { |u| u.class == CoreAdmin }
   end
 
   # POST /groups
   # POST /groups.xml
+  # POST /groups.json
   def create  #:nodoc:
     @group = WorkGroup.new(params[:group])
     @group.make_accessible!(:invisible) if current_user.has_role?(:admin_user)
@@ -106,17 +117,20 @@ class GroupsController < ApplicationController
         @group.addlog_context(self,"Created by #{current_user.login}")
         flash[:notice] = 'Project was successfully created.'
         format.html { redirect_to :action => :index, :format => :html}
-        format.xml  { render :xml => @group, :status => :created, :location => @group }
+        format.xml  { render :xml  => @group.for_api, :status => :created }
+        format.json { render :json => @group.for_api, :status => :created }
       else
         @users = current_user.available_users.where( "users.login<>'admin'" ).order( :login )
         format.html { render :new  }
-        format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @group.errors, :status => :unprocessable_entity }
+        format.json { render :json => @group.errors, :status => :unprocessable_entity }
       end
     end
   end
 
   # PUT /groups/1
   # PUT /groups/1.xml
+  # PUT /groups/1.json
   def update #:nodoc:
     @group = current_user.available_groups.where( :type => "WorkGroup" ).find(params[:id])
 
@@ -125,6 +139,7 @@ class GroupsController < ApplicationController
        respond_to do |format|
         format.html { redirect_to :action => :show }
         format.xml  { head :forbidden }
+        format.json { head :forbidden }
        end
        return
     end
@@ -158,7 +173,9 @@ class GroupsController < ApplicationController
 
     @group.make_accessible!(:invisible) if current_user.has_role?(:admin_user)
 
-    @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
+    @users = current_user.available_users.order(:login).reject { |u| u.class == CoreAdmin }
+
+    # TODO FIXME This logic's crummy, refactor the adjustments outside the respond block!
     respond_to do |format|
       if @group.update_attributes_with_logging(params[:group],current_user)
         @group.reload
@@ -169,10 +186,12 @@ class GroupsController < ApplicationController
         flash[:notice] = 'Project was successfully updated.'
         format.html { redirect_to :action => "show" }
         format.xml  { head :ok }
+        format.json { head :ok }
       else
         @group.reload
         format.html { render :action => "show" }
-        format.xml  { render :xml => @group.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @group.errors, :status => :unprocessable_entity }
+        format.json { render :json => @group.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -186,6 +205,7 @@ class GroupsController < ApplicationController
         flash[:error] = "You cannot be unregistered from a project you created."
         format.html { redirect_to group_path(@group) }
         format.xml  { head :unprocessable_entity }
+        format.json { head :unprocessable_entity }
       else
         original_user_ids = @group.user_ids
         @group.user_ids   = @group.user_ids - [current_user.id]
@@ -194,12 +214,14 @@ class GroupsController < ApplicationController
         flash[:notice] = "You have been unregistered from project #{@group.name}."
         format.html { redirect_to :action => "index" }
         format.xml  { head :ok }
+        format.json { head :ok}
       end
     end
   end
 
   # DELETE /groups/1
   # DELETE /groups/1.xml
+  # DELETE /groups/1.json
   def destroy  #:nodoc:
     @group = current_user.available_groups.find(params[:id])
     @group.destroy
@@ -208,6 +230,7 @@ class GroupsController < ApplicationController
       format.html { redirect_to :action => :index }
       format.js   { redirect_to :action => :index, :format => :js}
       format.xml  { head :ok }
+      format.json { head :ok }
     end
   end
 

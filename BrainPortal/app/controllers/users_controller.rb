@@ -27,12 +27,10 @@ class UsersController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :only => [ :index, :create, :show, :destroy , :update]
+  api_available :only => [ :index, :create, :show, :destroy, :update]
 
   before_filter :login_required,        :except => [:request_password, :send_password]
   before_filter :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password]
-
-  API_HIDDEN_ATTRIBUTES = [ :salt, :crypted_password ]
 
   def index #:nodoc:
     @scope = scope_from_session('users')
@@ -63,18 +61,17 @@ class UsersController < ApplicationController
       format.html # index.html.erb
       format.js
       format.xml  do
-        @users.each { |u| u.hide_attributes(API_HIDDEN_ATTRIBUTES) }
-        render :xml  => @users
+        render :xml  => @users.for_api
       end
       format.json do
-        @users.each { |u| u.hide_attributes(API_HIDDEN_ATTRIBUTES) }
-        render :json => @users
+        render :json => @users.for_api
       end
     end
   end
 
   # GET /user/1
   # GET /user/1.xml
+  # GET /user/1.json
   def show #:nodoc:
     @user = User.find(params[:id], :include => :groups)
 
@@ -87,12 +84,10 @@ class UsersController < ApplicationController
     respond_to do |format|
       format.html # show.html.erb
       format.xml  do
-        @user.hide_attributes(API_HIDDEN_ATTRIBUTES)
-        render :xml  => @user
+        render :xml  => @user.for_api
       end
       format.json do
-        @user.hide_attributes(API_HIDDEN_ATTRIBUTES)
-        render :json => @user
+        render :json => @user.for_api
       end
     end
   end
@@ -169,8 +164,8 @@ class UsersController < ApplicationController
       end
       respond_to do |format|
         format.html { redirect_to :action => :index, :format => :html }
-        format.xml  { render :xml  => @user }
-        format.json { render :json => @user }
+        format.xml  { render :xml  => @user.for_api }
+        format.json { render :json => @user.for_api }
       end
     else
       respond_to do |format|
@@ -254,9 +249,9 @@ class UsersController < ApplicationController
         @user.addlog_object_list_updated("Access Profiles", AccessProfile, original_ap_ids, @user.access_profile_ids, current_user)
         add_meta_data_from_form(@user, [:pref_bourreau_id, :pref_data_provider_id, :ip_whitelist])
         flash[:notice] = "User #{@user.login} was successfully updated."
-        format.html { redirect_to :action => :show }
-        format.xml { head :ok }
-        format.json  { render :json => @user }
+        format.html  { redirect_to :action => :show }
+        format.xml   { render :xml  => @user.for_api }
+        format.json  { render :json => @user.for_api }
       else
         @user.reload
         format.html do
@@ -266,7 +261,7 @@ class UsersController < ApplicationController
             render action: "show"
           end
         end
-        format.xml  { render :xml => @user.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @user.errors, :status => :unprocessable_entity }
         format.json { render :json => @user.errors, :status => :unprocessable_entity }
       end
     end
