@@ -36,7 +36,6 @@ gem "json-schema"
 gem "aws-sdk"
 gem "rails_autolink"
 gem "will_paginate"
-gem "test-unit",    "~> 3.1"
 
 group :development do
   gem "wirble"

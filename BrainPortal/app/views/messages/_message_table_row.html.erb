@@ -59,7 +59,6 @@
     <%=
       delete_button("Mark&nbsp;as&nbsp;#{mess.read ? 'Unread' : 'Read'}".html_safe,
         message_path(mess, :read => (!mess.read).to_s),
-        :class           => 'action_link',
         :method          => "PUT",
         :target          => ".message_display_#{mess.id}",
         :loading_message => "<td colspan='#{span}' style='color: red; text-align: center;'>Updating...</td>"
@@ -69,7 +68,6 @@
     <%=
       delete_button('Delete',
         message_path(mess),
-        :class           => 'action_link',
         :method          => "DELETE",
         :target          => ".message_display_#{mess.id}",
         :remove_target   => ".message_display_#{mess.id}",

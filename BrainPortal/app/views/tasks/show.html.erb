@@ -124,6 +124,12 @@
                                                       :confirm =>
                       "Are you sure you want to remove the task's work directory?"
           %>
+          <%= link_to "Remove Task", url_for(:action => :operation, :operation => 'delete', 'tasklist[]' => @task.id),
+                                            :method => :post,
+                                            :datatype => :script,
+                                            :class => "btn btn-primary",
+                                            :confirm => "Are you sure you want to remove the task?"
+          %>
         <% end %>
       </div>
     </div>

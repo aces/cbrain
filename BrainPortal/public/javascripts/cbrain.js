@@ -848,12 +848,14 @@
       element.css("background-color", element.data("original-color"));
     });
 
-    $(document).delegate(".ajax_link", "ajax:success", function(event, data, status, xhr) {
+    $(".ajax_link").ajaxComplete(function(event, data, status, xhr) {
       var link     = $(this);
       var target   = link.attr("data-target");
       var datatype = link.attr("data-type");
       var remove_target = link.attr("data-remove-target");
       var other_options = {};
+
+      alert("AHHHH REMOVE THE ROW");
 
       if (link.attr("data-width")) other_options["width"] = link.attr("data-width");
       if (link.attr("data-height")) other_options["height"] = link.attr("data-height");
@@ -864,7 +866,9 @@
       } else if (datatype !== "script") {
         modify_target(data, target, other_options);
       }
-    }).delegate(".ajax_link", "ajax:beforeSend", function(event, data, status, xhr) {
+    });
+
+    $(".ajax_link").on("ajax:beforeSend", function(event, data, status, xhr) {
       var link = $(this);
       var loading_message = link.attr("data-loading-message");
       var target = link.attr("data-target");
