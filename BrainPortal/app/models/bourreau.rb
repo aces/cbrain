@@ -31,7 +31,7 @@ class Bourreau < RemoteResource
 
   attr_accessor :operation_messages # no need to store in DB
 
-  api_attr_visible :id, :name, :user_id, :group_id, :online, :read_only, :description
+  api_attr_visible :name, :user_id, :group_id, :online, :read_only, :description
 
   def self.pretty_type #:nodoc:
     "Execution"

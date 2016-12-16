@@ -69,8 +69,8 @@ class GroupsController < ApplicationController
     respond_to do |format|
       format.js
       format.html # index.html.erb
-      format.xml  { render :xml  => @groups.map(&:for_api) }
-      format.json { render :json => @groups.map(&:for_api) }
+      format.xml  { render :xml  => @groups.for_api }
+      format.json { render :json => @groups.for_api }
     end
   end
 
@@ -78,10 +78,9 @@ class GroupsController < ApplicationController
   # GET /groups/1.xml
   # GET /groups/1.json
   def show #:nodoc:
-    #@group = current_user.available_groups.find(params[:id])
-    @group = Group.where(:id => params[:id]).first
+    @group = current_user.available_groups.find(params[:id])
     raise ActiveRecord::RecordNotFound unless @group.can_be_accessed_by?(current_user)
-    @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
+    @users = current_user.available_users.order(:login).reject { |u| u.class == CoreAdmin }
 
     respond_to do |format|
       format.html
@@ -92,7 +91,7 @@ class GroupsController < ApplicationController
 
   def new  #:nodoc:
     @group = WorkGroup.new
-    @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
+    @users = current_user.available_users.order(:login).reject { |u| u.class == CoreAdmin }
   end
 
   # POST /groups
@@ -174,7 +173,9 @@ class GroupsController < ApplicationController
 
     @group.make_accessible!(:invisible) if current_user.has_role?(:admin_user)
 
-    @users = current_user.available_users.where( "users.login <> 'admin'" ).order(:login)
+    @users = current_user.available_users.order(:login).reject { |u| u.class == CoreAdmin }
+
+    # TODO FIXME This logic's crummy, refactor the adjustments outside the respond block!
     respond_to do |format|
       if @group.update_attributes_with_logging(params[:group],current_user)
         @group.reload
@@ -222,7 +223,7 @@ class GroupsController < ApplicationController
   # DELETE /groups/1.xml
   # DELETE /groups/1.json
   def destroy  #:nodoc:
-    @group = current_user.available_groups.where(params[:id]).first
+    @group = current_user.available_groups.find(params[:id])
     @group.destroy
 
     respond_to do |format|

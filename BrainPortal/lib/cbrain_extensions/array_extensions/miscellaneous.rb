@@ -20,13 +20,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-###################################################################
-# CBRAIN Array extensions
-###################################################################
-class Array
+module CBRAINExtensions #:nodoc:
+  module ArrayExtensions #:nodoc:
 
-  include CBRAINExtensions::ArrayExtensions::HashedPartitions
-  include CBRAINExtensions::ArrayExtensions::Miscellaneous
+    # Misc new array functions
+    module Miscellaneous
 
+      # Converts and array of ActiveRecord objects by invoking for_api() on
+      # each of them. Returns the array of hash tables.
+      def for_api
+        map(&:for_api)
+      end
+
+    end
+  end
 end
 

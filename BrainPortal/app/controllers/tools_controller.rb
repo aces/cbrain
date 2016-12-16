@@ -42,8 +42,8 @@ class ToolsController < ApplicationController
     respond_to do |format|
       format.js
       format.html # index.html.erb
-      format.xml  { render :xml  => @tools.map(&:for_api) }
-      format.json { render :json => @tools.map(&:for_api) }
+      format.xml  { render :xml  => @tools.for_api }
+      format.json { render :json => @tools.for_api }
     end
   end
 
@@ -130,6 +130,7 @@ class ToolsController < ApplicationController
     @tool = current_user.available_tools.find(params[:id])
 
     respond_to do |format|
+      format.html
       format.json { @tool.for_api }
       format.xml  { @tool.for_api }
     end

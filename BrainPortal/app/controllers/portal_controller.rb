@@ -369,7 +369,7 @@ class PortalController < ApplicationController
   def swagger
     # Find latest JSON swagger spec.
     # FIXME sort() will break when comparing versions...
-    @specfile   = Dir.entries(Rails.root + "public" + "swagger").grep(/\Acbrain-.*-swagger.yaml\z/).sort.last
+    @specfile = Dir.entries(Rails.root + "public" + "swagger").grep(/\Acbrain-.*-swagger.json\z/).sort.last
     if (@specfile.blank?)
       flash[:error] = "Cannot find SWAGGER specification for the service. Sorry."
       redirect_to start_page_path

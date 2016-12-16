@@ -48,10 +48,10 @@ class BourreauxController < ApplicationController
       format.html
       format.js
       format.xml  do
-        render :xml => @bourreaux.map(&:for_api)
+        render :xml => @bourreaux.for_api
       end
       format.json do
-        render :json => @bourreaux.map(&:for_api)
+        render :json => @bourreaux.for_api
       end
     end
   end

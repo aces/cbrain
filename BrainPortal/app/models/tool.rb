@@ -61,7 +61,7 @@ class Tool < ActiveRecord::Base
                           :cbrain_task_class_name, :select_menu_text, :description, :url,
                           :application_type, :application_tags, :application_package_name
 
-  api_attr_visible        :id, :name, :user_id, :group_id, :category, :description, :url
+  api_attr_visible        :name, :user_id, :group_id, :category, :description, :url
 
   # Returns the single ToolConfig object that describes the configuration
   # for this tool for all Bourreaux, or nil if it doesn't exist.
