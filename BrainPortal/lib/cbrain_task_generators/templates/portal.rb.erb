@@ -31,7 +31,7 @@
 % # generated code as legible as possible.
 
 # Portal-side CbrainTask subclass to launch <%= name %>
-class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 'PortalTask' %>
+class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherits-from-class'] || 'PortalTask' %>
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
@@ -101,10 +101,10 @@ class CbrainTask::<%= name %> < <%= descriptor['cbrain:inherits-from-class'] || 
       # the task. Most tasks do not alter their input files, but this is a safe
       # default.
       :readonly_input_files => <%=
-        if descriptor.has_key?('cbrain:readonly-input-files')
-          !!descriptor['cbrain:readonly-input-files']
-        elsif descriptor.has_key?('cbrain:alters-input-files')
-          !descriptor['cbrain:alters-input-files']
+        if descriptor['custom'] && descriptor['custom'].has_key?('cbrain:readonly-input-files')
+          !!descriptor['custom']['cbrain:readonly-input-files']
+        elsif descriptor['custom'] && descriptor['custom'].has_key?('cbrain:alters-input-files')
+          !descriptor['custom']['cbrain:alters-input-files']
         else
           false
         end
