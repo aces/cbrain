@@ -364,7 +364,7 @@
                             "type": "object",
                             "properties": {
                                 "tag": {
-                                    "$ref": "/definitions/Tag"
+                                    "$ref": "#/definitions/Tag"
                                 },
                                 "authenticity_token": {
                                     "type": "string",

@@ -288,7 +288,7 @@ paths:
             type: object
             properties:
               tag:
-                $ref: '/definitions/Tag'
+                $ref: '#/definitions/Tag'
               authenticity_token:
                 type: string
                 description: The token returned by /session/new
