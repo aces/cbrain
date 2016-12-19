@@ -43,7 +43,8 @@ fi
 SECONDS=0 # bash is great
 
 # Run the docker containers
-printf "${MAGENTA}Running CBRAIN test container.${NC}\n"
+printf "${MAGENTA}Launching CBRAIN test container at %s ${NC}\n" "$(date '+%F %T')"
+
 docker_name="cb_travis" # pretty name of the process
 docker run -d \
            -v "$cbrain_travis":/home/cbrain/cbrain_travis \

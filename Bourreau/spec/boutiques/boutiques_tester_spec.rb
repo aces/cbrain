@@ -42,7 +42,6 @@ describe "Bourreau Boutiques Tests" do
 
   # Run before block to create required input files
   before(:all) do
-    createInputFiles
     # The group, provider, and user ids used downstream
     GID, UID, DPID = Group.everyone.id, User.admin.id, 9
     @ftype = lambda { |fname| Userfile.suggested_file_type(fname) || SingleFile }
@@ -71,6 +70,10 @@ describe "Bourreau Boutiques Tests" do
       @task.bourreau_id = resource.id
       # Give access to the generated task class itself
       @task_const    = "CbrainTask::#{SchemaTaskGenerator.classify(@task.name)}".constantize
+    end
+
+    before(:all) do
+      createInputFiles
     end
 
     # Tests expected behaviour of the auto-generated cluster task
@@ -186,6 +189,77 @@ describe "Bourreau Boutiques Tests" do
 
     end
 
+    # Test cluster_commands generation for a minimal mock app
+    context 'Minimal Mock App' do
+
+      # Bourreau-side generation of minimal task
+      before(:each) do
+        # Generate a descriptor
+        @descriptor = NewMinimalTask.()
+        # Generates a task object from the minimal mock app
+        @generateTask = -> params {
+          genTask = SchemaTaskGenerator.generate(SchemaTaskGenerator.default_schema, @descriptor, false).integrate
+          task = CbrainTask::MinimalTest.new
+          task.params = params
+          task
+        }
+      end
+
+      context 'cbrain integration' do
+
+        # Simple test to ensure integration is correct
+        it "should work correctly" do
+          genTask = SchemaTaskGenerator.generate(SchemaTaskGenerator.default_schema, @descriptor, false).integrate
+          expect( (CbrainTask::MinimalTest.new).name ).to eq( "MinimalTest" ) # Check for task instance
+          expect( genTask.name ).to eq( "CbrainTask::MinimalTest" ) # Check for generated task class instance
+        end
+
+      end
+
+      context 'cluster_command substitution' do
+
+        # Test basic command substitution correctness
+        it "should correctly subsitute cluster_commands with default settings" do
+          task = @generateTask.( { a: 'value' } )
+          expect( task.cluster_commands[0].strip ).to eq( '/minimalApp -a value' )
+        end
+
+        # Test output flag substitution
+        it "should correctly subsitute cluster_commands with output keys" do
+          @descriptor['command-line'] += ' [OUT-KEY]'
+          @descriptor['output-files'][0].merge!( { 'value-key' => '[OUT-KEY]', 'command-line-flag' => '-o' } )
+          task = @generateTask.( { a: 'value' } )
+          expect( task.cluster_commands[0].strip ).to eq( '/minimalApp -a value -o value' )
+        end
+
+        # Test output flag separator substitution
+        it "should correctly subsitute cluster_commands with output keys and a separator" do
+          @descriptor['command-line'] += ' [OUT-KEY]'
+          @descriptor['output-files'][0].merge!( {
+            'value-key'                   => '[OUT-KEY]',
+            'command-line-flag'           => '-o',
+            'command-line-flag-separator' => '=' } )
+          task = @generateTask.( { a: 'value' } )
+          expect( task.cluster_commands[0].strip ).to eq( '/minimalApp -a value -o=value' )
+        end
+
+        # Test output flag separator substitution with prior path-template substitution
+        it "should correctly subsitute cluster_commands with output flag separators and path-template substitutions" do
+          @descriptor['command-line'] += ' [B] [OUT-KEY]'
+          @descriptor['inputs'] << GenerateJsonInputDefault.('b','Number','Numerical arg')
+          @descriptor['output-files'][0].merge!( {
+            'value-key'                   => '[OUT-KEY]',
+            'command-line-flag'           => '-o',
+            'path-template'               => '[A]+[B]',
+            'command-line-flag-separator' => '/' } )
+          task = @generateTask.( { a: 'val', b: 9 } )
+          expect( task.cluster_commands[0].strip ).to eq( '/minimalApp -a val -b 9 -o/val+9' )
+        end
+
+      end
+
+    end
+
     # Testing Boutiques via the mock 'submission' of a local script, using the output of cluster_commands
     context 'Cluster Command Generation with Mock Program' do
 
@@ -245,7 +319,6 @@ describe "Bourreau Boutiques Tests" do
           rescue OptionParser::MissingArgument => e
             next # after_form does not need to check this here, since rails puts a value in the hash
           end
-          #@task.cluster_workdir = File.join('.',TempStore)
           # Run the generated command line from cluster_commands (-2 to ignore export lines and the echo log at -1)
           exit_code = runTestScript( FileNamesToPaths.( @task.cluster_commands[-2].gsub('./'+TestScriptName,'') ), test[3] || [] )
           # Check that the exit code is appropriate
@@ -259,76 +332,76 @@ describe "Bourreau Boutiques Tests" do
   # Tests requiring complete Cbrain Bourreau-side system functionality
   describe 'Cbrain Internal' do
 
+    # Define some useful constants (constants get redefined in before(:each) blocks)
+    before(:all) do
+      # The warning message used when unable to find optional output files
+      OptOutFileNotFoundWarning = "Unable to find optional output file: "
+      # Current rails pwd
+      PWD = Dir.pwd
+    end
+
+    # Note: FactoryGirl methods should be used instead, but only if their db changes get rolled back in the before(:each) block
+    # This is currently not happening, possibly due to some versioning issues
+    before(:each) do
+      # Destroy any pre-existing userfiles
+      Userfile.all.each{ |uf| uf.destroy }
+      # Create a mock task required output file
+      @fname           = DefReqOutName
+      @fname_base      = File.basename(@fname) # Need because we will have to change to the temp dir
+      FileUtils.touch(@fname)
+      # Use helper method for getting filetype classes
+      @userfileClass   = @ftype.(@fname)
+      # Get the schema and json descriptor
+      descriptor       = File.join(__dir__, TestScriptDescriptor)
+      # Generate a new task class via the Boutiques framework and integrate it into cbrain
+      @boutiquesTask   = SchemaTaskGenerator.generate(SchemaTaskGenerator.default_schema, descriptor)
+      @boutiquesTask.integrate
+      # Instantiate an object of the new class type
+      @task            = CbrainTask::BoutiquesTest.new
+      # Destroy any prior existing data providers (so we use a clean, lone one)
+      DataProvider.all.each { |dp| dp.destroy }
+      # Create a local data_provider to hold our files
+      @provider        = FlatDirLocalDataProvider.new({ :online => true, :read_only => false, :remote_dir => '.' })
+      @provider.id, @provider.name, @provider.user_id, @provider.group_id = DPID, 'test_provider', UID, GID
+      @provider.save!
+      # Change base directory so checks for simulated files go to the right temp storage place
+      # This is because some checks by e.g. save_results expect files from the task to be in the pwd
+      # Passing a block to chdir would be preferable but then one would have to do it in every test
+      Dir.chdir TempStore
+      # Add a local input file to the data provider (allows smarter lookup in userfile_exists)
+      @file_c, @ft     = 'c', @ftype.(@file_c)
+      newFile          = @task.safe_userfile_find_or_new(@ft, name: @file_c, data_provider_id: DPID, user_id: UID, group_id: GID)
+      newFile.save!
+      # Fill in data necessary for the task to check for and save the output file '@fname'
+      @task.params     = {:ro => @fname_base, :interface_userfile_ids => [Userfile.all.first.id]}
+      @task.user_id, @task.group_id = UID, GID
+      # Generate a simulated exit file, as if the task had run
+      @simExitFile     = @task.exit_cluster_filename
+      FileUtils.touch( @simExitFile )
+      # The basic properties for the required output file
+      @reqOutfileProps = {:name => @fname_base, :data_provider_id => @provider.id}
+      # Optional output file properties
+      @optOutFileName  = File.basename(OptOutName) # Implicitly in temp storage
+      @optFileClass    = @ftype.( @optOutFileName )
+    end
+
+    # Clean up after each test
+    after(:each) do
+      # Delete any generated output files
+      destroyOutputFiles
+      # Also need to get rid of the (simulated) exit file
+      fename = '.qsub.exit.BoutiquesTest.-1'
+      File.delete( fename ) if File.exists?( fename )
+      # Destroy the registered userfiles and the data_provider, so as not to affect downstream tests
+      # Needed to destroy actual output files written to the filesystem
+      Userfile.all.each{ |uf| uf.destroy }
+      # Return to rails base dir
+      Dir.chdir PWD
+    end
+
     # Test that the generated Boutiques task can handle output file saving and renaming
     # Mostly tests the autogenerated save_results method of the mock Boutiques task
     context 'Output File Handling' do
-
-      # Define some useful constants (constants get redefined in before(:each) blocks)
-      before(:all) do
-        # The warning message used when unable to find optional output files
-        OptOutFileNotFoundWarning = "Unable to find optional output file: "
-        # Current rails pwd
-        PWD = Dir.pwd
-      end
-
-      # Note: FactoryGirl methods should be used instead, but only if their db changes get rolled back in the before(:each) block
-      # This is currently not happening, possibly due to some versioning issues
-      before(:each) do
-        # Destroy any pre-existing userfiles
-        Userfile.all.each{ |uf| uf.destroy }
-        # Create a mock task required output file
-        @fname           = DefReqOutName
-        @fname_base      = File.basename(@fname) # Need because we will have to change to the temp dir
-        FileUtils.touch(@fname)
-        # Use helper method for getting filetype classes
-        @userfileClass   = @ftype.(@fname)
-        # Get the schema and json descriptor
-        descriptor       = File.join(__dir__, TestScriptDescriptor)
-        # Generate a new task class via the Boutiques framework and integrate it into cbrain
-        @boutiquesTask   = SchemaTaskGenerator.generate(SchemaTaskGenerator.default_schema, descriptor)
-        @boutiquesTask.integrate
-        # Instantiate an object of the new class type
-        @task            = CbrainTask::BoutiquesTest.new
-        # Destroy any prior existing data providers (so we use a clean, lone one)
-        DataProvider.all.each { |dp| dp.destroy }
-        # Create a local data_provider to hold our files
-        @provider        = FlatDirLocalDataProvider.new({ :online => true, :read_only => false, :remote_dir => '.' })
-        @provider.id, @provider.name, @provider.user_id, @provider.group_id = DPID, 'test_provider', UID, GID
-        @provider.save!
-        # Change base directory so checks for simulated files go to the right temp storage place
-        # This is because some checks by e.g. save_results expect files from the task to be in the pwd
-        # Passing a block to chdir would be preferable but then one would have to do it in every test
-        Dir.chdir TempStore
-        # Add a local input file to the data provider (allows smarter lookup in userfile_exists)
-        @file_c, @ft     = 'c', @ftype.(@file_c)
-        newFile          = @task.safe_userfile_find_or_new(@ft, name: @file_c, data_provider_id: DPID, user_id: UID, group_id: GID)
-        newFile.save!
-        # Fill in data necessary for the task to check for and save the output file '@fname'
-        @task.params     = {:ro => @fname_base, :interface_userfile_ids => [Userfile.all.first.id]}
-        @task.user_id, @task.group_id = UID, GID
-        # Generate a simulated exit file, as if the task had run
-        @simExitFile     = @task.exit_cluster_filename
-        FileUtils.touch( @simExitFile )
-        # The basic properties for the required output file
-        @reqOutfileProps = {:name => @fname_base, :data_provider_id => @provider.id}
-        # Optional output file properties
-        @optOutFileName  = File.basename(OptOutName) # Implicitly in temp storage
-        @optFileClass    = @ftype.( @optOutFileName )
-      end
-
-      # Clean up after each test
-      after(:each) do
-        # Delete any generated output files
-        destroyOutputFiles
-        # Also need to get rid of the (simulated) exit file
-        fename = '.qsub.exit.BoutiquesTest.-1'
-        File.delete( fename ) if File.exists?( fename )
-        # Destroy the registered userfiles and the data_provider, so as not to affect downstream tests
-        # Needed to destroy actual output files written to the filesystem
-        Userfile.all.each{ |uf| uf.destroy }
-        # Return to rails base dir
-        Dir.chdir PWD
-      end
 
       # Check that the input file could be properly registered
       it "has access to the registered input file" do

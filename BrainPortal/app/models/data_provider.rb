@@ -244,6 +244,8 @@ class DataProvider < ActiveRecord::Base
                           :read_only, :description, :time_of_death, :not_syncable, :time_zone, :cloud_storage_client_identifier,
                           :cloud_storage_client_token, :license_agreements
 
+  api_attr_visible        :name, :type, :user_id, :group_id, :online, :read_only, :description
+
   # A class to represent a file accessible through SFTP or available locally.
   # Most of the attributes here are compatible with
   #   Net::SFTP::Protocol::V01::Attributes
@@ -1060,6 +1062,25 @@ class DataProvider < ActiveRecord::Base
     valid
   rescue
     false
+  end
+
+  # Override the default for_api() method so that the resulting
+  # list of attributes also contains some more pseudo-attributes
+  # taken from the class properties.
+  #
+  #     is_browsable                         => true/false
+  #     allow_file_owner_change              => true/false
+  #     is_fast_syncing                      => true/false
+  #     content_storage_shared_between_users => true/false
+  def for_api
+    super.merge(
+      {
+        'is_browsable'                         => self.is_browsable?                         ,
+        'is_fast_syncing'                      => self.is_fast_syncing?                      ,
+        'allow_file_owner_change'              => self.allow_file_owner_change?              ,
+        'content_storage_shared_between_users' => self.content_storage_shared_between_users? ,
+      }
+    )
   end
 
 

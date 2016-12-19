@@ -13,6 +13,11 @@ if test "$UID" -ne 0 ; then
   exit 2
 fi
 
+MAGENTA='\033[35m'
+NC='\033[0m'
+
+printf "${MAGENTA}Container bootstrap script starting at %s ${NC}\n" "$(date '+%F %T')"
+
 test_user="cbrain"            # normal user to run test suite
 test_script="cb_run_tests.sh" # the script for running the suite
 

@@ -1229,7 +1229,7 @@ class ClusterTask < CbrainTask
     return false if self.share_wd_tid
     return true  if self.workdir_archived?
 
-    raise "Tried to archive a task's work directory while in the wrong Rails app." unless
+    cb_error "Tried to archive a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
     tar_file      = self.in_situ_workdir_archive_file
@@ -1335,7 +1335,7 @@ class ClusterTask < CbrainTask
     return false if     self.share_wd_tid
     return true  unless self.workdir_archived?
 
-    raise "Tried to unarchive a task's work directory while in the wrong Rails app." unless
+    cb_error "Tried to unarchive a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
     tar_file      = self.in_situ_workdir_archive_file
@@ -1388,7 +1388,7 @@ class ClusterTask < CbrainTask
     self.addlog_exception(ex, "Unarchiving process exception:")
     return false
   ensure
-    File.unlink(tar_capture)   rescue true
+    File.unlink(tar_capture) rescue true
   end
 
   # This method performs the same steps as
@@ -1465,11 +1465,11 @@ class ClusterTask < CbrainTask
 
     return false unless self.workdir_archived? && self.workdir_archive_userfile_id
 
-    raise "Tried to unarchive a TaskWorkdirArchive while in the wrong Rails app." unless
+    cb_error "Tried to unarchive a TaskWorkdirArchive while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
-    file = TaskWorkdirArchive.find_by_id(self.workdir_archive_userfile_id)
-    unless file
+    taskarch_userfile = TaskWorkdirArchive.find_by_id(self.workdir_archive_userfile_id)
+    unless taskarch_userfile
       self.addlog("Cannot unarchive: TaskWorkdirArchive does not exist.")
       self.update_column(:workdir_archive_userfile_id,nil)
       return false
@@ -1477,27 +1477,21 @@ class ClusterTask < CbrainTask
 
     self.addlog("Attempting to restore TaskWorkdirArchive.")
 
-    file.sync_to_cache
-
-    # Keep updated_at value in order to reset it at the end of method.
-    updated_at_value = self.updated_at
+    taskarch_userfile.sync_to_cache
 
     self.make_cluster_workdir
     Dir.chdir(self.full_cluster_workdir) do
-      safe_symlink(file.cache_full_path, tar_file)
+      safe_symlink(taskarch_userfile.cache_full_path, tar_file)
     end
-    file.addlog("Restored as symlink in work directory of task '#{self.name}'")
+    taskarch_userfile.addlog("Restored TaskWorkdirArchive as symlink in work directory.")
 
     return false unless self.unarchive_work_directory
-
-    file.cache_erase
 
     self.workdir_archive_userfile_id=nil
     self.save
 
-    # Reset update timestamp
-    self.update_column(:updated_at, updated_at_value)
-    self.update_column(:workdir_archive_userfile_id,nil)
+    taskarch_userfile.destroy rescue true
+
   ensure
     File.unlink(tar_file) rescue true
   end
@@ -1690,9 +1684,10 @@ echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      1>&2 # where stderr captured below wi
 # stdout and stderr captured below will be re-substituted in
 # the output and error of this script.
 bash '#{sciencefile}' > #{science_stdout_basename} 2> #{science_stderr_basename} </dev/null
+status="$?"
 
-date "+CBRAIN Task Ending After $SECONDS seconds, at %s : %F %T"
-date "+CBRAIN Task Ending After $SECONDS seconds, at %s : %F %T" 1>&2
+date "+CBRAIN Task Ending With Status $status After $SECONDS seconds, at %s : %F %T"
+date "+CBRAIN Task Ending With Status $status After $SECONDS seconds, at %s : %F %T" 1>&2
 
 echo ''
 echo 'CBRAIN Task CPU Times Start'
@@ -1701,6 +1696,7 @@ echo 'CBRAIN Task CPU Times End'
 
 echo "CBRAIN Task Exiting"       # checked by framework
 echo "CBRAIN Task Exiting" 1>&2  # checked by framework
+exit $status
 
     QSUB_SCRIPT
     qsubfile = self.qsub_script_basename.to_s
@@ -1849,7 +1845,7 @@ echo "CBRAIN Task Exiting" 1>&2  # checked by framework
 
   # Remove the directory created to run the job.
   def remove_cluster_workdir
-    raise "Tried to remove a task's work directory while in the wrong Rails app." unless
+    cb_error "Tried to remove a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
     return true if self.share_wd_tid.present?  # Do not erase if using some other task's workdir.
     full=self.full_cluster_workdir
