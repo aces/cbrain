@@ -288,7 +288,7 @@ paths:
             type: object
             properties:
               tag:
-                $ref: '/definitions/Tag'
+                $ref: '#/definitions/Tag'
               authenticity_token:
                 type: string
                 description: The token returned by /session/new
@@ -862,18 +862,47 @@ paths:
         This method allows a User to update information on a userfile.
       tags:
         - Userfiles
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              userfile:
-                $ref: '#/definitions/Userfile'
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
+        - name: userfile[type]
+          in: formData
+          type: string
+          description: Type of file that the Userfile is registered in CBRAIN as. This parameter affects what kinds of Tools can be used on the file.
+        - name: userfile[user_id]
+          in: formData
+          type: integer
+          description: ID of the user who owns the file.
+        - name: userfile[group_id]
+          in: formData
+          type: integer
+          description: ID of the group that will have access to the Userfile.
+        - name: tag_ids[]
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: ID numbers of the tags that describe the Userfile.
+        - name: userfile[group_writable]
+          in: formData
+          type: boolean
+          description: Specifies whether other members of the group that owns the file can modify the Userfile.
+        - name: userfile[hidden]
+          in: formData
+          type: boolean
+          description: Specifies whether the Userfile is hidden or visible in the normal file listing.
+        - name: userfile[immutable]
+          in: formData
+          type: boolean
+          description: Specifies whether the Userfile can be modified.
+        - name: userfile[description]
+          in: formData
+          type: string
+          description: Description of the Userfile.
+        - name: authenticity_token
+          in: formData
+          description: The token returned by /session/new
+          type: string
         - name: id
           in: path
           description: The ID number of the Userfile to update.
