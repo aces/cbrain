@@ -313,7 +313,15 @@
         checkbox.(id)
 
   <%- end -%>
-  <%- if type == :file -%>
+  <%- enum_vals = param["value-choices"] %>
+  <%- if not enum_vals.nil? -%>
+        # Enum value dropdown
+        dropdown.(id, id,
+          <%= enum_vals.map { |v| [v, v] } %>,
+          optional: <%= opt %>,
+          default:  <%= "\"#{defaults.find { |d| d['id']==id }['default-value']}\"" rescue "nil" %>
+        )
+  <%- elsif type == :file -%>
     <%- if single_file -%>
         # Automatic single file input
         dropdown.(id, id,
@@ -357,14 +365,6 @@
     <%- else -%>
           optional: <%= opt.to_s %>
     <%- end -%>
-        )
-  <%- elsif type == :enum -%>
-    <% enumVals = param["enum-value-choices"] %>
-        # Enum value dropdown
-        dropdown.(id, id,
-          <%= enumVals.map { |v| [v, v] } %>,
-          optional: <%= opt %>,
-          default:  <%= "\"#{defaults.find { |d| d['id']==id }['default-value']}\"" rescue "nil" %>
         )
   <%- end -%>
   <%- if param['description'] -%>
