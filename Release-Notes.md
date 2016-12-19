@@ -1,5 +1,11 @@
 ## CBRAIN Release Notes
 
+#### Version 4.6.1 Released 2016-12-19
+
+- A much more complete version of the Swagger API spec (but not final).
+- Support for version 0.4 of the Boutiques descriptors.
+- Misc bug fixes.
+
 #### Version 4.6.0 Released 2016-11-21
 
 - Build-in support for Travis Continuous Integration.
