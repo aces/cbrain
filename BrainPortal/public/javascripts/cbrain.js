@@ -836,19 +836,19 @@
       return false;
     });
 
-    //Highlighting on resource list tables.
-    $(document).delegate(".row_highlight", "mouseenter", function() {
-      var element = $(this);
-      element.data("original-color", element.css("background-color"));
-      element.css("background-color", "#FFFFE5");
-    });
+    // //Highlighting on resource list tables.
+    // $(document).delegate(".row_highlight", "mouseenter", function() {
+    //   var element = $(this);
+    //   element.data("original-color", element.css("background-color"));
+    //   element.css("background-color", "#FFFFE5");
+    // });
 
-    $(document).delegate(".row_highlight", "mouseleave", function() {
-      var element = $(this);
-      element.css("background-color", element.data("original-color"));
-    });
+    // $(document).delegate(".row_highlight", "mouseleave", function() {
+    //   var element = $(this);
+    //   element.css("background-color", element.data("original-color"));
+    // });
 
-    $(".ajax_link").ajaxComplete(function(event, data, status, xhr) {
+    $(".ajax_link").on("ajax:complete", function(event, data, status, xhr) {
       var link     = $(this);
       var target   = link.attr("data-target");
       var datatype = link.attr("data-type");
@@ -957,32 +957,32 @@
     });
 
 
-    //html_tool_tip_code based on xstooltip provided by
-    //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
-    $(document).delegate(".html_tool_tip_trigger", "mouseenter", function(event) {
-      var trigger = $(this);
-      var tool_tip_id = trigger.attr("data-tool-tip-id");
-      var tool_tip = $("#" + tool_tip_id);
-      var offset_x = trigger.attr("data-offset-x") || '30';
-      var offset_y = trigger.attr("data-offset-y") || '0';
+    // //html_tool_tip_code based on xstooltip provided by
+    // //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
+    // $(document).delegate(".html_tool_tip_trigger", "mouseenter", function(event) {
+    //   var trigger = $(this);
+    //   var tool_tip_id = trigger.attr("data-tool-tip-id");
+    //   var tool_tip = $("#" + tool_tip_id);
+    //   var offset_x = trigger.attr("data-offset-x") || '30';
+    //   var offset_y = trigger.attr("data-offset-y") || '0';
 
-      var x = trigger.position().left + parseInt(offset_x, 10);
-      var y = trigger.position().top  + parseInt(offset_y, 10);
+    //   var x = trigger.position().left + parseInt(offset_x, 10);
+    //   var y = trigger.position().top  + parseInt(offset_y, 10);
 
-      // Fixed position bug.
-      tool_tip.remove().appendTo(trigger.parent());
+    //   // Fixed position bug.
+    //   tool_tip.remove().appendTo(trigger.parent());
 
-      tool_tip.css('top',  y + 'px');
-      tool_tip.css('left', x + 'px');
+    //   tool_tip.css('top',  y + 'px');
+    //   tool_tip.css('left', x + 'px');
 
-      tool_tip.show();
-    }).delegate(".html_tool_tip_trigger", "mouseleave", function(event) {
-      var trigger = $(this);
-      var tool_tip_id = trigger.attr("data-tool-tip-id");
-      var tool_tip = $("#" + tool_tip_id);
+    //   tool_tip.show();
+    // }).delegate(".html_tool_tip_trigger", "mouseleave", function(event) {
+    //   var trigger = $(this);
+    //   var tool_tip_id = trigger.attr("data-tool-tip-id");
+    //   var tool_tip = $("#" + tool_tip_id);
 
-      tool_tip.hide();
-    });
+    //   tool_tip.hide();
+    // });
 
     /////////////////////////////////////////////////////////////////////
     //
