@@ -337,6 +337,9 @@ class BourreauWorker < Worker
 
       #####################################################################
       when 'Data Ready'
+        # If the status Data Ready is very recent and we don't find the stdout file from qsub, we wait.
+        return unless task.ready_to_post_process?
+
         action = task.prerequisites_fulfilled?(:for_post_processing)
         if action == :go
           # We need to raise an exception if we cannot successfully
