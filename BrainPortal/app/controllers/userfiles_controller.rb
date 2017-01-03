@@ -152,8 +152,8 @@ class UserfilesController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.xml  { render :xml  => @userfiles.for_api }
-      format.json { render :json => @userfiles.for_api }
+      format.xml  { render :xml  => (params[:ids_only].present? && api_request) ? @userfiles : @userfiles.for_api }
+      format.json { render :json => (params[:ids_only].present? && api_request) ? @userfiles : @userfiles.for_api }
       format.csv
     end
   end
@@ -1372,7 +1372,7 @@ class UserfilesController < ApplicationController
   # Verify that all files selected for an operation
   # are accessible by the current user.
   def permission_check #:nodoc:
-    action_name = params[:action].to_s
+
     if params[:file_ids].blank?
       flash[:error] = "No files selected? Selection cleared.\n"
       redirect_to :action => :index
@@ -1381,9 +1381,9 @@ class UserfilesController < ApplicationController
 
     yield
   rescue ActiveRecord::RecordNotFound
-    flash[:error] += "\n" unless flash[:error].blank?
+    flash[:error]  += "\n" unless flash[:error].blank?
     flash[:error] ||= ""
-    flash[:error] += "You don't have appropriate permissions to apply the selected action to this set of files."
+    flash[:error]  += "You don't have appropriate permissions to apply the selected action to this set of files."
 
     redirect_to :action => :index
   end

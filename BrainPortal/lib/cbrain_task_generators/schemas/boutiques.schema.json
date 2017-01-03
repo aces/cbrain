@@ -62,9 +62,12 @@
                             "description": "Index where the image is available.",
                             "default": "http://index.docker.io",
                             "type": "string"
-                        }
+                        },           
+                        "working-directory": {},
+                        "container-hash": {}
                     },
                     "required": ["type", "image"],
+                    "additionalProperties": false,
                     "description": "Object representing a docker container for the tool."
                 }, {
                     "properties": {
@@ -74,9 +77,12 @@
                             "minLength": 1,
                             "description": "URL where the image is available.",
                             "type": "string"
-                        }
+                        },
+                        "working-directory": {},
+                        "container-hash": {}
                     },
                     "required": ["type", "url"],
+                    "additionalProperties": false,
                     "description": "Object representing a rootfs or singularity container for the tool."
                 }]
             }]
@@ -85,7 +91,7 @@
             "id": "http://github.com/boutiques/boutiques-schema/schema-version",
             "type": "string",
             "description": "Version of the schema used.",
-            "enum": ["0.2", "0.3"]
+            "enum": ["0.4"]
         },
         "walltime-estimate": {
             "id": "http://github.com/boutiques/boutiques-schema/walltime-estimate",
@@ -122,7 +128,8 @@
                 "required": [
                     "name",
                     "value"
-                ]
+                ],
+                "additionalProperties": false
             }
         },
         "groups": {
@@ -176,7 +183,8 @@
                     "name",
                     "id",
                     "members"
-                ]
+                ],
+                "additionalProperties": false
             }
         },
         "inputs": {
@@ -203,21 +211,21 @@
                         "id": "http://github.com/boutiques/boutiques-schema/input/type",
                         "type": "string",
                         "description": "Input type.",
-                        "enum": ["String", "File", "Flag", "Number", "Enum"]
+                        "enum": ["String", "File", "Flag", "Number"]
                     },
                     "description": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/description",
                         "description": "Input description.",
                         "type": "string"
                     },
-                    "command-line-key": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/command-line-key",
+                    "value-key": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/value-key",
                         "description": "A string contained in command-line, substituted by the input value and/or flag at runtime.",
                         "type": "string"
                     },
                     "list": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/list",
-                        "description":"True if input is a list of value. An input of type \"Flag\" or \"Enum\" cannot be a list.",
+                        "description":"True if input is a list of value. An input of type \"Flag\" cannot be a list.",
                         "type": "boolean"
                     },
                     "optional": {
@@ -227,7 +235,7 @@
                     },
                     "command-line-flag": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/command-line-flag",
-                        "description": "Option flag of the input, involved in the command-line-key substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: -v, --force.",
+                        "description": "Option flag of the input, involved in the value-key substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: -v, --force.",
                         "type": "string"
                     },
                     "requires-inputs": {
@@ -255,12 +263,15 @@
                         "id": "http://github.com/boutiques/boutiques-schema/input/default-value",
                         "description": "Default value of the input, used by the tool when no option is specified."
                     },
-                    "enum-value-choices": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/enum-value-choices",
-                        "description": "Permitted choices for input value. May only be used in conjunction with the enum type.",
+                    "value-choices": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/value-choices",
+                        "description": "Permitted choices for input value. May not be used with the Flag type.",
                         "type": "array",
                         "items": {
-                            "type": "string"
+                            "oneOf":  [
+                                { "type": "string" },
+                                { "type": "number" }
+                            ]
                         }
                     },
                     "integer": {
@@ -311,22 +322,21 @@
                 ],
                 "anyOf": [{
                     "properties": {
-                      "type": { "enum": ["Flag"] },
-                      "list": { "enum": [false] }
+                        "type": { "enum": ["Flag"] },
+                        "list": { "enum": [false] }
                     }
                 }, {
                     "properties": {
-                      "type": { "enum": ["String", "File", "Number", "Enum"] }
+                        "type": { "enum": ["String", "File", "Number"] }
                     }
                 }],
-                "additionalProperties": true,
                 "dependencies": {
                     "command-line-flag-separator": ["command-line-flag"],
                     "min-list-entries": ["list"],
                     "max-list-entries": ["list"],
-                    "enum-value-choices": {
+                    "value-choices": {
                         "properties": {
-                            "type": {"enum": ["Enum"]}
+                            "type": {"enum": ["String", "Number"]}
                         }
                     },
                     "integer": {
@@ -361,8 +371,8 @@
                     },
                     "exclusive-minimum": ["minimum"],
                     "exclusive-maximum": ["maximum"]
-                }
-
+                },
+                "additionalProperties": false
             }
         },
         "output-files": {
@@ -390,14 +400,14 @@
                         "description": "Output description.",
                         "type": "string"
                     },
-                    "command-line-key": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/command-line-key",
+                    "value-key": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/value-key",
                         "description": "A string contained in command-line, substituted by the output value and/or flag at runtime.",
                         "type": "string"
                     },
                     "path-template": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/path-template",
-                        "description": "Describes the output file path relatively to the execution directory. May contain input command-line-keys. Example: \"results/[INPUT1]_brain.mnc\".",
+                        "description": "Describes the output file path relatively to the execution directory. May contain input value keys. Example: \"results/[INPUT1]_brain.mnc\".",
                         "minLength": 1,
                         "type": "string"
                     },
@@ -421,21 +431,60 @@
                     },
                     "command-line-flag": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag",
-                        "description": "Option flag of the output, involved in the command-line-key substitution. Examples: -o, --output",
+                        "description": "Option flag of the output, involved in the value-key substitution. Examples: -o, --output",
+                        "type": "string"
+                    },
+                    "command-line-flag-separator": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag-separator",
+                        "description": "Separator used between flags and their arguments. Defaults to a single space.",
                         "type": "string"
                     },
                     "uses-absolute-path": {
                         "id": "http://github.com/boutiques/boutiques-schema/output-files/uses-absolute-path",
                         "description": "Specifies that this output filepath will be given as an absolute path.",
                         "type": "boolean"
+                    },
+                    "file-template": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/file-template",
+                        "description": "An array of strings that may contain value keys. Each item will be a line in the configuration file.",
+                        "type": "array",
+                        "minItems": 1,
+                        "items": { "type": "string" }
                     }
+
                 },
                 "required": [
                     "id",
                     "name",
                     "path-template"
-                ]
+                ],
+                "anyOf": [{
+                    "properties": {
+                        "file-template": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": { "type": "string" }
+                        },
+                        "list": { "enum": [false] }
+                    }
+                }, {
+                    "properties": {
+                        "file-template": { "enum": [false]} }
+                }
+                         ],
+                "dependencies": {
+                    "command-line-flag-separator": ["command-line-flag"]
+                },
+                "additionalProperties": false
             }
+        },
+        "invocation-schema": {
+            "id": "http://github.com/boutiques/boutiques-schema/invocation-schema",
+            "type": "object"
+        },
+        "custom": {
+            "id": "http://github.com/boutiques/boutiques-schema/custom",
+            "type": "object"
         }
     },
     "required": [
@@ -446,6 +495,7 @@
         "inputs",
         "output-files",
         "tool-version"
-    ]
+    ],
+    "additionalProperties": false
 }
 

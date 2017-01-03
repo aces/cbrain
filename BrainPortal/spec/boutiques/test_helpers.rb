@@ -57,8 +57,7 @@ module TestHelpers
 
   # Useful descriptive variables
   symbolize = lambda { |a| a.map{ |s| s.to_sym } }
-  Strings     = symbolize.( %w(a k q A v o x r) )
-  Enums       = symbolize.( %w(E) )
+  Strings     = symbolize.( %w(a k q A v o x r E) )
   Flags       = symbolize.( %w(c u w y) )
   Files       = symbolize.( %w(C d j) )
   Numbers     = symbolize.( %w(B b n i N I) )
@@ -124,11 +123,10 @@ module TestHelpers
   #     -r specifies a required output name (it is given a default name otherwise)
   #     -o specifies an optional output name (it is not written otherwise)
   #   Argument types
-  #     {a,k,q,A,v,o,x} are String inputs & {p,e,m} are String Lists
+  #     {a,k,q,A,v,o,x,E} are String inputs & {p,e,m} are String Lists
   #     {C,d,j} are Files & {f} is a File List (arguments must exist)
   #     {B,b,n,i,N,I} are Numbers & {g,l,L} are Number Lists
   #     {c,u,w,y} are Flag type inputs
-  #     {E} is an Enum type input
   ###
 
   # Test program symbols
@@ -164,6 +162,7 @@ module TestHelpers
     ["works with appropriately constrained int", baseArgs + "-I 0", 0],
     ["works with appropriately constrained int on boundary", baseArgs + "-I -7", 0],
     ["works with value in int list on numeric boundary", baseArgs + "-L 9 7 12", 0],
+    ["works with value satisfying enum constraint", baseArgs + "-i 9", 0],
     # List constraints satisfied
     ["works with string list having the right number of entries", baseArgs + "-e s1 s2 s3", 0],
     ["works with number list having the right number of entries", baseArgs + "-L 11 8 9 10",  0],
@@ -187,6 +186,7 @@ module TestHelpers
     ["fails when number in list (-l) is non-numeric (optional, pos 2)", baseArgs + "-l 2 u 2", 4],
     ["fails when number in list (-l) is non-numeric (optional, pos 1)", baseArgs + "-l u 1 2", 4],
     ["fails when enum is not given a reasonable value", baseArgs + '-E d', 11],
+    ["fails when numeric enum is not given a proper value", baseArgs + '-i 7', 11],
     # Special separator failures
     ["fails when special separator is missing", baseArgs + "-x 7", 5],
     ["fails when special separator is wrong", baseArgs + "-x~7", 5],
@@ -252,7 +252,7 @@ module TestHelpers
       opt.on('-I','--arg_I num',        'An integer in [-7,9)',     String) { |o| options[:I] = o }
       opt.on('-L','--arg_L x y',        'An int list in [7,13)',    Array ) { |o| options[:L] = o }
       # Disables/Requires
-      opt.on('-i','--arg_i a_number',   'A number input',           String) { |o| options[:i] = o }
+      opt.on('-i','--arg_i a_number',   'A number input in {1,9}',  String) { |o| options[:i] = o }
       opt.on('-j','--arg_j a_file',     'A file input',             String) { |o| options[:j] = o }
       opt.on('-k','--arg_k a_string',   'A string input',           String) { |o| options[:k] = o }
       opt.on('-l','--arg_l N1 N2',      'A number list input',      Array ) { |o| options[:l] = o }
@@ -362,7 +362,7 @@ module TestHelpers
       'tool-version'   => "9.7.13",
       'description'    => "Minimal test task for Boutiques",
       'command-line'   => '/minimalApp [A]',
-      'schema-version' => '0.2',
+      'schema-version' => '0.4',
       'inputs'         => [GenerateJsonInputDefault.('a','String','A String arg')],
       'output-files'   => [{'id' => 'u', 'name' => 'U', 'path-template' => '[A]'}],
     }
@@ -376,7 +376,7 @@ module TestHelpers
       'type'              => type,
       'description'       => desc,
       'command-line-flag' => "-#{id}",
-      'command-line-key'  => "[#{id.upcase}]",
+      'value-key'         => "[#{id.upcase}]",
       'optional'          => true
     }.merge( otherParams )
   end

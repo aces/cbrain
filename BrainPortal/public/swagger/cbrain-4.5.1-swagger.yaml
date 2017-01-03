@@ -236,7 +236,7 @@ paths:
       summary: Create a tag.
       description: |
         Create a new tag in CBRAIN.
-      consumes: 
+      consumes:
         - application/x-www-form-urlencoded
       parameters:
         - name: tag[name]
@@ -294,7 +294,7 @@ paths:
       summary: Update a tag.
       description: |
         Update the tag specified by the ID parameter.
-      consumes: 
+      consumes:
         - application/x-www-form-urlencoded
       parameters:
         - name: tag[name]
@@ -478,7 +478,7 @@ paths:
         to another Data Provider after file registration.
       tags:
         - DataProviders
-      consumes: 
+      consumes:
         - application/x-www-form-urlencoded
       parameters:
         - name: id
@@ -525,7 +525,7 @@ paths:
         may no longer be run on them.
       tags:
         - DataProviders
-      consumes: 
+      consumes:
         - application/x-www-form-urlencoded
       parameters:
         - name: id
@@ -1229,7 +1229,7 @@ paths:
         - name: cbrain_task[user_id]
           in: formData
           type: integer
-          description: ID of the User the Task should be associated with. 
+          description: ID of the User the Task should be associated with.
         - name: cbrain_task[group_id]
           in: formData
           type: integer
@@ -1290,7 +1290,7 @@ paths:
         - name: cbrain_task[user_id]
           in: formData
           type: integer
-          description: ID of the User the Task should be associated with. 
+          description: ID of the User the Task should be associated with.
         - name: cbrain_task[group_id]
           in: formData
           type: integer

@@ -89,6 +89,7 @@ class PortalController < ApplicationController
     ms_min    = params[:ms_min].presence.try(:to_i)
 
     # Hide some less important lines
+    # NOTE: the regex are for the EGREP command, so support less features than Ruby's or Perl's.
     remove_egrep = []
     remove_egrep << "^Started "                                      if params[:hide_started].presence    == "1"
     remove_egrep << "^ *Processing "                                 if params[:hide_processing].presence == "1"
@@ -124,7 +125,7 @@ class PortalController < ApplicationController
 
     # Slurp it all
     log = IO.popen(command, "r") { |io| io.read }
-    log.gsub!(/\A(Started)/, "\n\\1")
+    log.gsub!(/^(Started)/, "\n\\1")
 
     @user_counts = Hash.new(0) # For select box.
 
@@ -404,18 +405,18 @@ class PortalController < ApplicationController
 
     # data.gsub!(/\e\[[\d;]+m/, "") # now done when fetching the raw log, with perl (see above)
 
-    data.gsub!(/\AStarted.+/)                    { |m| "<span class=\"log_started\">#{m}</span>" }
-    data.gsub!(/  Parameters: .+/)               { |m| "<span class=\"log_parameters\">#{m}</span>" }
-    data.gsub!(/  Processing by .+/)             { |m| "<span class=\"log_processing\">#{m}</span>" }
-    data.gsub!(/\ACompleted.* in \d{1,3}ms/)     { |m| "<span class=\"log_completed_fast\">#{m}</span>" }
-    data.gsub!(/\ACompleted.* in [1-4]\d\d\dms/) { |m| "<span class=\"log_completed_slow\">#{m}</span>" }
-    data.gsub!(/\ACompleted.* in [5-9]\d\d\dms/) { |m| "<span class=\"log_completed_very_slow\">#{m}</span>" }
-    data.gsub!(/\ACompleted.* in \d+\d\d\d\dms/) { |m| "<span class=\"log_completed_atrociously_slow\">#{m}</span>" }
-    data.gsub!(/\AUser: \S+/)                    { |m| "<span class=\"log_user\">#{m}</span>" }
-    data.gsub!(/ using \S+/)                     { |m| "<span class=\"log_browser\">#{m}</span>" }
+    data.gsub!(/^Started.+/)                           { |m| "<span class=\"log_started\">#{m}</span>" }
+    data.gsub!(/^\s*Parameters: .+/)                   { |m| "<span class=\"log_parameters\">#{m}</span>" }
+    data.gsub!(/^\s*Processing by .+/)                 { |m| "<span class=\"log_processing\">#{m}</span>" }
+    data.gsub!(/^Completed.* in \d{1,3}\.?\d*ms/)      { |m| "<span class=\"log_completed_fast\">#{m}</span>" }
+    data.gsub!(/^Completed.* in [1-4]\d\d\d\.?\d*ms/)  { |m| "<span class=\"log_completed_slow\">#{m}</span>" }
+    data.gsub!(/^Completed.* in [5-9]\d\d\d\.?\d*ms/)  { |m| "<span class=\"log_completed_very_slow\">#{m}</span>" }
+    data.gsub!(/^Completed.* in \d+\d\d\d\d\.?\d*ms/)  { |m| "<span class=\"log_completed_atrociously_slow\">#{m}</span>" }
+    data.gsub!(/^User: \S+/)                           { |m| "<span class=\"log_user\">#{m}</span>" }
+    data.gsub!(/ using \S+/)                           { |m| "<span class=\"log_browser\">#{m}</span>" }
 
     alt = :_1
-    data.gsub!(/  (SQL|CACHE|[A-Za-z\:]+ Load) \(\d+.\d+ms\)/) do |m|
+    data.gsub!(/^\s*(SQL|CACHE|[A-Za-z\:]+ Load)?\s*\(\d+.\d+ms\)/) do |m|
       alt = (alt == :_1) ? :_2 : :_1
       "<span class=\"log_alternating#{alt}\">#{m}</span>"
     end
