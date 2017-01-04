@@ -848,27 +848,7 @@
     //   element.css("background-color", element.data("original-color"));
     // });
 
-    $(".ajax_link").on("ajax:complete", function(event, data, status, xhr) {
-      var link     = $(this);
-      var target   = link.attr("data-target");
-      var datatype = link.attr("data-type");
-      var remove_target = link.attr("data-remove-target");
-      var other_options = {};
-
-      alert("AHHHH REMOVE THE ROW");
-
-      if (link.attr("data-width")) other_options["width"] = link.attr("data-width");
-      if (link.attr("data-height")) other_options["height"] = link.attr("data-height");
-      if (link.attr("data-replace")) other_options["replace"] = link.attr("data-replace");
-
-      if (remove_target) {
-         $(remove_target).remove();
-      } else if (datatype !== "script") {
-        modify_target(data, target, other_options);
-      }
-    });
-
-    $(".ajax_link").on("ajax:beforeSend", function(event, data, status, xhr) {
+    $(document).on("ajax:beforeSend", ".ajax_link", function(event, data, status, xhr) {
       var link = $(this);
       var loading_message = link.attr("data-loading-message");
       var target = link.attr("data-target");
@@ -877,6 +857,26 @@
         if (!loading_message_target) loading_message_target = target;
         $(loading_message_target).html(loading_message);
       }
+    });
+
+    $(document).on("ajax:complete", ".ajax_link", function(event, data, status, xhr) {
+      alert("AHHHH");
+
+      // var link     = $(this);
+      // var target   = link.attr("data-target");
+      // var datatype = link.attr("data-type");
+      // var remove_target = link.attr("data-remove-target");
+      // var other_options = {};
+
+      // if (link.attr("data-width")) other_options["width"] = link.attr("data-width");
+      // if (link.attr("data-height")) other_options["height"] = link.attr("data-height");
+      // if (link.attr("data-replace")) other_options["replace"] = link.attr("data-replace");
+
+      // if (remove_target) {
+      //    $(remove_target).remove();
+      // } else if (datatype !== "script") {
+      //   modify_target(data, target, other_options);
+      // }
     });
 
     $(document).delegate(".select_all", "click", function() {

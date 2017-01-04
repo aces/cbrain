@@ -3,6 +3,11 @@
  *  to overwrite bootstraps css file
  */
 
+
+.input-group{
+    width:auto;
+}
+
 /*
  *  Styling for the navbar dropdowns
  */
