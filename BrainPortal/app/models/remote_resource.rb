@@ -926,6 +926,7 @@ class RemoteResource < ActiveRecord::Base
         userfile = ss.userfile
         $0 = "CacheCleanup ID=#{userfile.id} #{i+1}/#{syncs.size}\0"
         userfile.cache_erase rescue nil
+        ss.delete rescue nil
       end
     end
 
