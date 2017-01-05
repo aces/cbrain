@@ -164,6 +164,13 @@ Below is a summary of the information in this account request.
     <td>&nbsp;</td>
   </tr>
 
+  <% if @current_user.present? && @current_user.has_role?(:admin_user) %>
+    <tr>
+      <th>Admin Comments</th>
+      <td> <%= @signup.admin_comment %> </td>
+    </tr>
+  <% end %>
+
   <% end %>
 
   <tr>
