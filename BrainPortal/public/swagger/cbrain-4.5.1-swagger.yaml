@@ -49,15 +49,19 @@ paths:
           in: formData
           description: The username of the User trying to connect.
           type: string
+          default: admin
+          required: true
         - name: password
           in: formData
           description: The CBRAIN User's password
           type: string
           format: password
+          required: true
         - name: authenticity_token
           description: The token returned by /session/new
           type: string
           in: formData
+          required: true
       tags:
         - Sessions
       responses:
@@ -130,7 +134,7 @@ paths:
       parameters:
         - name: params
           in: body
-          description: The params.
+          description: An object representing a new User and the autenticity token.
           schema:
             type: object
             properties:
@@ -156,7 +160,8 @@ paths:
           in: path
           description: ID of the user
           required: true
-          type: string
+          type: integer
+          default: 0
       tags:
         - Users
       responses:
@@ -197,7 +202,8 @@ paths:
           in: path
           description: the ID of the configuration
           required: true
-          type: string
+          type: integer
+          default: 0
       tags:
         - ToolConfigs
       responses:
@@ -230,18 +236,26 @@ paths:
       summary: Create a tag.
       description: |
         Create a new tag in CBRAIN.
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              tag:
-                $ref: '#/definitions/Tag'
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new.
+        - name: tag[name]
+          in: formData
+          description: The name of the Tag. No spaces or special chars allowed.
+          type: string
+          default: NewTag
+          required: true
+        - name: tag[group_id]
+          in: formData
+          description: The Group that the Tag will be used in. All Users are part of Group 1
+          type: integer
+          default: 1
+          required: true
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
       tags:
         - Tags
       responses:
@@ -264,7 +278,7 @@ paths:
           description: The ID of the tag to get.
           required: true
           type: integer
-          format: int64
+          default: 1
       tags:
         - Tags
       responses:
@@ -280,24 +294,29 @@ paths:
       summary: Update a tag.
       description: |
         Update the tag specified by the ID parameter.
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              tag:
-                $ref: '#/definitions/Tag'
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
+        - name: tag[name]
+          in: formData
+          description: The new name for the Tag.
+          type: string
+          default: NewTagName
+        - name: tag[group_id]
+          in: formData
+          description: The Group that the Tag will be used in.
+          type: integer
+          default: 1
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
         - name: id
           in: path
           description: ID of the tag to update.
           required: true
           type: integer
-          format: int64
       tags:
         - Tags
       responses:
@@ -316,7 +335,6 @@ paths:
           description: ID of the tag to delete.
           required: true
           type: integer
-          format: int64
         - name: params
           in: body
           schema:
@@ -369,7 +387,7 @@ paths:
           description: ID of the Bourreau to get information on.
           required: true
           type: integer
-          format: int64
+          default: 1
       responses:
         "200":
           description: |
@@ -410,10 +428,10 @@ paths:
       parameters:
         - name: id
           type: integer
-          format: int64
           description: ID of the Data Provider to get information on.
           required: true
           in: path
+          default: 1
       responses:
         "200":
           description: |
@@ -435,10 +453,10 @@ paths:
       parameters:
         - name: id
           type: integer
-          format: int64
           description: The ID of the Data Provider to browse.
           required: true
           in: path
+          default: 1
       responses:
         "200":
           description: |
@@ -460,36 +478,36 @@ paths:
         to another Data Provider after file registration.
       tags:
         - DataProviders
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
         - name: id
           in: path
           required: true
           description: The ID of the Data Provider to register files on.
           type: integer
-          format: int64
-        - name: params
-          in: body
+          default: 1
+        - name: basenames
+          in: formData
+          description: An array containing the filenames to register.
+          type: array
+          default: [file1, file2]
+          items:
+            type: string
           required: true
-          schema:
-            type: object
-            required:
-            - basenames
-            - filetypes
-            - authenticity_token
-            properties:
-              basenames:
-                type: array
-                items:
-                  type: string
-                description: An array containing the filenames to register.
-              filetypes:
-                type: array
-                items:
-                  type: string
-                description: An array containing the filetypes associated with the files to register
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
+        - name: filetypes
+          in: formData
+          description: An array containing the filetypes associated with the files to register
+          type: array
+          items:
+            type: string
+          required: true
+          default: [SingleFile, SingleFile]
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
       responses:
         "200":
           description: |
@@ -507,36 +525,37 @@ paths:
         may no longer be run on them.
       tags:
         - DataProviders
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
         - name: id
           in: path
           description: The ID of the Data Provider to unregister files from.
           required: true
           type: integer
-          format: int64
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            required:
-            - basenames
-            properties:
-              basenames:
-                type: array
-                items:
-                  type: string
-                description: An array containing the filenames to unregister.
-              as_user_id:
-                type: integer
-                format: int64
-                description: The ID of the user to unregister files as.
-              delete:
-                type: boolean
-                description: Specifies to delete the files once they are unregistered.
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
+          default: 1
+        - name: basenames
+          in: formData
+          description: An array containing the filenames to unregister.
+          type: array
+          items:
+            type: string
+          default: [file1, file2]
+          required: true
+        - name: as_user_id
+          in: formData
+          type: integer
+          description: The ID of the user to unregister files as.
+        - name: delete
+          in: formData
+          type: boolean
+          description: Specifies to delete the files once they are unregistered.
+          default: true
+        - name: authenticity_token
+          type: string
+          in: formData
+          description: The token returned by /session/new
+          required: true
       responses:
         "200":
           description: |
@@ -560,27 +579,23 @@ paths:
           description: The ID of the Data Provider to delete files from.
           required: true
           type: integer
-          format: int64
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            required:
-            - basenames
-            properties:
-              basenames:
-                type: array
-                items:
-                  type: string
-                description: An array containing the filenames to delete.
-              as_user_id:
-                type: integer
-                format: int64
-                description: The ID of the user to delete files as.
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
+        - name: basenames
+          in: formData
+          type: array
+          items:
+            type: string
+          default: [file1, file2]
+          required: true
+          description: An array containing the filenames to delete.
+        - name: as_user_id
+          in: formData
+          type: integer
+          description: The ID of the user to delete files as.
+        - name: authenticity_token
+          type: string
+          description: The token returned by /session/new
+          in: formData
+          required: true
       responses:
         "200":
           description: Successfully launched the operation in the background to delete files.
@@ -603,6 +618,7 @@ paths:
           format: int64
           description: The ID of the Data Provider to query.
           required: true
+          default: 1
       responses:
         "200":
           description: Returns "true" or "false".
@@ -636,18 +652,42 @@ paths:
         and tasks.
       tags:
         - Groups
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              group:
-                $ref: '#/definitions/Group'
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
+        - name: group[name]
+          in: formData
+          type: string
+          description: The name of the new Group.
+          default: NewGroupName
+          required: true
+        - name: group[description]
+          in: formData
+          type: string
+          description: The description of the new Group.
+          required: true
+          default: This new Group represents a new, exciting, possibly neuroscience-related Project.
+        - name: group[site_id]
+          in: formData
+          type: integer
+          description: The ID of the site associated with the Group.
+        - name: group[invisible]
+          in: formData
+          type: boolean
+          description: Specifies whether to make the group invisible or not. Invisible groups exist solely to control access to resources.
+          default: false
+        - name: group[user_ids]
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: An array of IDs of Users that will be members of the new Group.
+          default: [1]
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
       responses:
         "200":
           description: Successfully created Group.
@@ -662,20 +702,20 @@ paths:
         involves separate Userfiles and Tasks.
       tags:
         - Groups
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
-        - name: params
-          in: body
-          description: The params.
-          schema:
-            type: object
-            properties:
-              id:
-                type: integer
-                format: int64
-                description: ID number of the Group to switch to
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
+        - name: id
+          in: formData
+          description: ID number of the Group to switch to
+          type: integer
+          required: true
+          default: 1
+        - name: authenticity_token
+          in: formData
+          description: The token returned by /session/new
+          type: string
+          required: true
       responses:
         "200":
           description: Successfully switched the active Group.
@@ -697,7 +737,7 @@ paths:
           description: ID of the Group to get information on.
           required: true
           type: integer
-          format: int64
+          default: 1
       responses:
         "200":
           description: |
@@ -714,24 +754,40 @@ paths:
         to, and the visibility status of the group to Regular Users.
       tags:
         - Groups
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              group:
-                $ref: '#/definitions/Group'
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new.
         - name: id
           in: path
           description: ID of the Group to be updated.
           required: true
           type: integer
-          format: int64
+        - name: group[name]
+          in: formData
+          type: string
+          description: The new name of the Group.
+          default: NewGroupName
+        - name: group[description]
+          in: formData
+          type: string
+          description: The description of the new Group.
+          default: This project will group all of the files for a large neuroscience study to figure out how the brain works once and for all.
+        - name: group[site_id]
+          in: formData
+          type: integer
+          description: The ID of the site associated with the Group.
+        - name: group[invisible]
+          in: formData
+          type: boolean
+          description: Specifies whether to make the group invisible or not. Invisible groups exist solely to control access to resources.
+          default: false
+        - name: group[user_ids]
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: An array of IDs of Users that will be members of the new Group.
+          default: [1]
       responses:
         "200":
           description: Group updated successfully.
@@ -747,22 +803,20 @@ paths:
         deleted.
       tags:
         - Groups
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
         - name: id
           in: path
           description: ID of the Group to delete.
           required: true
           type: integer
-          format: int64
-        - name: params
-          in: body
-          description: The params.
-          schema:
-            type: object
-            properties:
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
+          default: 1
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
       responses:
         "200":
           description: Successfully deleted the Group (project).
@@ -803,19 +857,25 @@ paths:
           in: formData
           description: File to upload to CBRAIN
           type: file
+          required: true
         - name: data_provider_id
           in: formData
           description: The ID of the Data Provider to upload the file to.
           type: integer
-          format: int64
+          default: 1
+          required: true
         - name: userfile[group_id]
           in: formData
           type: integer
           description: ID of the group that will have access to the Userfile
+          default: 1
+          required: true
         - name: file_type
           in: formData
           description: The type of the file
           type: string
+          default: SingleFile
+          required: true
         - name: archive
           in: formData
           description: Archive
@@ -824,6 +884,7 @@ paths:
           in: formData
           description: The token returned by /session/new
           type: string
+          required: true
         - name: "_up_ex_mode"
           in: formData
           description: usually "collection"
@@ -849,8 +910,8 @@ paths:
           in: path
           description: The ID number of the Userfile to get information on.
           type: integer
-          format: int64
           required: true
+          default: 1
       responses:
         "200":
           description: Returns the information about the Userfile.
@@ -862,23 +923,58 @@ paths:
         This method allows a User to update information on a userfile.
       tags:
         - Userfiles
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              userfile:
-                $ref: '#/definitions/Userfile'
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
         - name: id
           in: path
           description: The ID number of the Userfile to update.
           type: integer
           format: int64
+          required: true
+        - name: userfile[type]
+          in: formData
+          type: string
+          description: Type of file that the Userfile is registered in CBRAIN as. This parameter affects what kinds of Tools can be used on the file.
+          default: SingleFile
+        - name: userfile[user_id]
+          in: formData
+          type: integer
+          description: ID of the user who owns the file.
+          default: 1
+        - name: userfile[group_id]
+          in: formData
+          type: integer
+          description: ID of the group that will have access to the Userfile.
+          default: 1
+        - name: tag_ids[]
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: ID numbers of the tags that describe the Userfile.
+        - name: userfile[group_writable]
+          in: formData
+          type: boolean
+          description: Specifies whether other members of the group that owns the file can modify the Userfile.
+        - name: userfile[hidden]
+          in: formData
+          type: boolean
+          description: Specifies whether the Userfile is hidden or visible in the normal file listing.
+          default: false
+        - name: userfile[immutable]
+          in: formData
+          type: boolean
+          description: Specifies whether the Userfile can be modified.
+          default: false
+        - name: userfile[description]
+          in: formData
+          type: string
+          description: Description of the Userfile.
+        - name: authenticity_token
+          in: formData
+          description: The token returned by /session/new
+          type: string
           required: true
       responses:
         "200":
@@ -891,22 +987,20 @@ paths:
         This method allows a User to delete a Userfile.
       tags:
         - Userfiles
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
         - name: id
           in: path
           description: The ID number of the Userfile to delete.
           required: true
           type: integer
-          format: int64
+          default: 1
+        - name: authenticity_token
+          in: formData
+          description: The token returned by /session/new
+          type: string
+          required: true
       responses:
         "200":
           description: Userfile deleted successfully.
@@ -923,7 +1017,6 @@ paths:
           in: path
           description: The ID number of the Userfile to download
           type: integer
-          format: int64
           required: true
       responses:
         "200":
@@ -936,25 +1029,24 @@ paths:
       description: This method compresses several Userfiles in .gz format and prepares them to be downloaded.
       tags:
         - Userfiles
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              file_ids:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                description: The ID numbers of the files to be downloaded
-              specified_filename:
-                type: string
-                description: The name of the archive file that the Userfiles will be compressed into for downloading.
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
+        - name: file_ids
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: The ID numbers of the files to be downloaded. If more than one file is specified, they will be zipped into a gzip archive.
+        - name: specified_filename
+          in: formData
+          type: string
+          description: The name of the archive file that the Userfiles will be compressed into for downloading.
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
       responses:
         200:
           description: Indicates that the files are being compressed and downloaded.
@@ -963,22 +1055,21 @@ paths:
       summary: Delete several files that have been registered as Userfiles
       tags:
         - Userfiles
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              file_ids:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                description: A list of ID's of the Userfiles that you would like to delete.
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
+        - name: file_ids
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: The ID numbers of the files to be deleted
+          required: true
+        - name: authenticity_token
+          in: formData
+          description:  The token returned by /session/new
+          type: string
+          required: true
       responses:
         200:
           description: Indicates that the files are being deleted.
@@ -987,27 +1078,31 @@ paths:
       summary: Moves the Userfiles from their current Data Provider to a new one.
       tags:
         - Userfiles
-        - DataProvider
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              data_provider_id_for_mv_cp:
-                type: integer
-                format: int64
-                description: The ID of the Data Provider to move or copy the files to.
-              crush_destination:
-                type: boolean
-                description: Specifies whether to overwrite files on the destination Data Provider if a file already exists there with the same name.
-              file_ids:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                description: The ID's of the Userfiles to be moved or copied to a new Data Provider.
+        - name: file_ids
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: The ID's of the Userfiles to be moved or copied to a new Data Provider.
+          required: true
+        - name: data_provider_id_for_mv_cp
+          in: formData
+          type: integer
+          description: The ID of the Data Provider to move or copy the files to.
+          required: true
+        - name: crush_destination
+          in: formData
+          type: boolean
+          description: Specifies whether to overwrite files on the destination Data Provider if a file already exists there with the same name
+          default: false
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
       responses:
         200:
           description: Indicates that the files are being moved or copied in the background.
@@ -1017,21 +1112,18 @@ paths:
       tags:
         - Userfiles
       parameters:
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              file_ids:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                description: A list of Userfile ID numbers to compress.
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
+        - name: file_ids
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: A list of Userfile ID numbers to compress.
+          required: true
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
       responses:
         200:
           description: Indicates that the compression is starting in the background.
@@ -1040,22 +1132,21 @@ paths:
       summary: Uncompresses many Userfiles.
       tags:
         - Userfiles
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              file_ids:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                description: A list of Userfile ID's of files to uncompress.
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
+        - name: file_ids
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: A list of Userfile ID numbers to uncompress.
+          required: true
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
       responses:
         200:
           description: Indicates that files are being uncompressed in the background.
@@ -1063,27 +1154,29 @@ paths:
   /userfiles/sync_multiple:
     post:
       summary: Syncs Userfiles to their Data Providers' cache.
-      description: Synchronizing files to their Data Providers' caches allows you to download, visualize and do processing on them that is not available if not synced. Most operations will sync files automatically.
+      description: Synchronizing files to their Data Providers' caches allows you to download, visualize and do processing on them that is not available if not synced. CBRAIN operations will sync files automatically, and this is only necessary if a file is changed on its host Data Provdier by an external process.
       tags:
         - Userfiles
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              file_ids:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-              operation:
-                type: string
-                description: Either "sync_local" or "all_newer".
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
+        - name: file_ids
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: A list of Userfile ID numbers to synchronize.
+          required: true
+        - name: operation
+          in: formData
+          type: string
+          description: Either "sync_local" or "all_newer". "sync_local" will ensure that the version of the file in the CBRAIN portal cache is the most recent version that exists on the Data Provider. "all_newer" will ensure that ALL caches known to CBRAIN are updated with the most recent version of the files in the host Data Provider.
+          default: sync_local
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
       responses:
         200:
           description: Indicates that synchronization is starting in the background
@@ -1113,24 +1206,39 @@ paths:
         This method allows the creation of a new Task.
       tags:
         - Tasks
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
-        - name: params
-          in: body
-          description: The params.
-          schema:
-            type: object
-            properties:
-              # tool_id:
-              #   type: integer
-              #   description: The ID number of the Tool to be used to launch the Task.
-              tool_config_id:
-                type: integer
-                description: The ID number of the Tool Config to be used to launch the Task.
-              cbrain_task:
-                $ref: '#/definitions/CbrainTask'
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
+        - name: tool_config_id
+          type: integer
+          in: formData
+          description: The ID number of the Tool Config to be used to launch the Task.
+          required: true
+        - name: cbrain_task[params]
+          in: formData
+          description: The parameters specific to the task, in an object. This action won't work in the interface to specify parameters because of limitations in Swagger.
+          type: string
+        - name: cbrain_task[results_data_provider_id]
+          type: integer
+          in: formData
+          description: ID of the DataProvider to store the results of the Task on.
+        - name: cbrain_task[description]
+          in: formData
+          type: string
+          description: Description of the Task.
+        - name: cbrain_task[user_id]
+          in: formData
+          type: integer
+          description: ID of the User the Task should be associated with.
+        - name: cbrain_task[group_id]
+          in: formData
+          type: integer
+          description: ID of the Group the Task should be associated with.
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
       responses:
         "200":
           description: Task created successfully.
@@ -1147,10 +1255,10 @@ paths:
       parameters:
         - name: id
           in: path
-          description: The ID number of the Userfile to delete.
+          description: The ID number of the Task to delete.
           required: true
           type: integer
-          format: int64
+          default: 1
       responses:
         "200":
           description: Information about a Task.
@@ -1165,21 +1273,34 @@ paths:
       parameters:
         - name: id
           in: path
-          description: The ID number of the Userfile to update.
+          description: The ID number of the Task to update.
           required: true
           type: integer
-          format: int64
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              cbrain_task:
-                $ref: '#/definitions/CbrainTask'
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new
+          default: 1
+        - name: cbrain_task[results_data_provider_id]
+          type: integer
+          in: formData
+          description: ID of the DataProvider to store the results of the Task on.
+          default: 1
+        - name: cbrain_task[description]
+          in: formData
+          type: string
+          description: Description of the Task.
+          required: true
+        - name: cbrain_task[user_id]
+          in: formData
+          type: integer
+          description: ID of the User the Task should be associated with.
+        - name: cbrain_task[group_id]
+          in: formData
+          type: integer
+          description: ID of the Group the Task should be associated with.
+          default: 1
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
       responses:
         "200":
           description: Task updated successfully.
@@ -1191,21 +1312,15 @@ paths:
       tags:
         - Tasks
       parameters:
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
         - name: id
           in: path
           description: The ID number of the Task to delete.
           required: true
           type: integer
-          format: int64
-        - name: params
-          in: body
-          description: The params
-          schema:
-            type: object
-            properties:
-              authenticity_token:
-                type: string
-                description: The token returned by /session/new.
       responses:
         200:
           description: Indicates that the Task is being deleted in the background.
@@ -1457,7 +1572,7 @@ definitions:
       invisible:
         type: boolean
         description: |
-          Specified whether or not the group is visible to Normal Users.
+          Specifies whether or not the group is visible to Normal Users.
           Invisible groups exist to specify levels of access to Userfiles,
           DataProviders and Bourreaux.
       description:
@@ -1530,10 +1645,10 @@ definitions:
         type: integer
         format: int64
         description: ID of the batch this task was launched as part of. Batches of tasks consist of the same task, with the same parameters, being run on many different input files.
-      cluster_jobid :
+      cluster_jobid:
         type: string
         description: ID of the task on the cluster associated with this task.
-      cluster_workdir :
+      cluster_workdir:
         type: string
         description: Path on the cluster to the working directory.
       params:
