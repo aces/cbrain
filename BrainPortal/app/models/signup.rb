@@ -86,7 +86,7 @@ class Signup < ActiveRecord::Base
     user = NormalUser.new
 
    #user.title                   = self.title
-    user.full_name               = (self.first + " " + self.last).try :strip
+    user.full_name               = (self.first.try :strip) + " " + (self.last.try :strip)
     user.login                   = self.login.try :strip
     user.email                   = self.email.try :strip
    #user.institution             = self.institution
