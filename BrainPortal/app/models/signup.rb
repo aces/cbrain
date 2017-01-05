@@ -65,6 +65,10 @@ class Signup < ActiveRecord::Base
     "#{title} #{first} #{middle} #{last}".strip.gsub(/  +/, " ")
   end
 
+  def user_full #:nodoc:
+    "#{first} #{last}".strip.gsub(/  +/, " ")
+  end
+
   alias full_name full
 
   def approved? #:nodoc:
@@ -86,7 +90,7 @@ class Signup < ActiveRecord::Base
     user = NormalUser.new
 
    #user.title                   = self.title
-    user.full_name               = (self.first.try :strip) + " " + (self.last.try :strip)
+    user.full_name               = user_full
     user.login                   = self.login.try :strip
     user.email                   = self.email.try :strip
    #user.institution             = self.institution

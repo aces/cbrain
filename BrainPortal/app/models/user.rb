@@ -386,10 +386,11 @@ class User < ActiveRecord::Base
   # the current user.
   def union_group_ids_from_access_profiles
     aps = self.access_profiles
-    aps.inject([]) do |group_ids,ap|
+    gids = aps.inject([]) do |group_ids,ap|
       group_ids += ap.group_ids  # union of all
       group_ids
     end
+    gids.uniq
   end
 
   # Scans the list of AccessProfiles associated
@@ -427,7 +428,7 @@ class User < ActiveRecord::Base
   # group 99, because it's present in ap2.
   def apply_access_profiles(remove_group_ids: [])
     gids = union_group_ids_from_access_profiles
-    self.group_ids = self.group_ids - remove_group_ids + gids.to_set.to_a # - and + are NOT COMMUTATIVE!
+    self.group_ids = (self.group_ids - remove_group_ids + gids).uniq # - and + are NOT COMMUTATIVE!
     true
   end
 

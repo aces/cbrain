@@ -153,7 +153,7 @@
         :sortable => true,
         :sort_order => :desc) do |d|
 
-        d.created_at.to_s
+        to_localtime(d.created_at, :datetime)
       end
     %>
 
@@ -168,7 +168,7 @@
         <% else %>
           <span class="warning">(Email unconfirmed)</span>
         <% end %>
-        <% if d.dup_email? %>
+        <% if d.dup_email? and not d.approved? %>
           <span  class="warning">(Conflicting email)</span>
         <% end %>
         <% if d.dup_login? %>
