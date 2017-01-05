@@ -82,7 +82,7 @@
     <%
       t.column("Email", :email,
         :sortable => true
-      ) { |d| red_if(d.dup_email?, d.email) }
+      ) { |d| red_if((d.dup_email? and not d.approved?), d.email) }
     %>
 
     <%
