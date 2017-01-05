@@ -170,7 +170,7 @@ Operations Mode : #{@mode == "each_command" ?
       * Bash queries
 
         S = runs "ps" on the Bourreau side
-        R = runs "ps" looking for workers only
+        R = runs "ps" looking for workers and Bourreaux only
         C = runs a BASH command on the Bourreau side
 
       * Misc
@@ -309,10 +309,10 @@ Operations Mode : #{@mode == "each_command" ?
       return true
     end
 
-    # Status: "ps" for workers
+    # Status: "ps" for workers and Bourreaux
     if letter == "r"
       bash_command_on_bourreaux(
-        "ps -u $USER -o user,pid,%cpu,%mem,vsize,state,stime,time,command | grep 'Worker @b@' | grep -v grep | sed -e 's/  *$//'"
+        "ps -u $USER -o user,pid,%cpu,%mem,vsize,state,stime,time,command | egrep 'Worker @b@|Bourreau @b@' | grep -v grep | sed -e 's/  *$//'"
       )
       return true
     end
@@ -405,7 +405,7 @@ Operations Mode : #{@mode == "each_command" ?
     puts ""
     bourreau_list.each do |bou|
       puts "---- Bourreau: #{bou.name} ----"
-      bash_command_on_one_bourreau(bou,comm.sub('@b@',bou.name))
+      bash_command_on_one_bourreau(bou,comm.gsub('@b@',bou.name))
     end
   end
 
