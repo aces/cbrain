@@ -44,6 +44,12 @@
     })
   %>
 
+  <div class="pagination">
+    <span class="page_links">
+      (<%= pluralize @signups.total_entries, "signup" %>)
+    </span>
+  </div>
+
   <%=
     dynamic_scoped_table(@signups,
       :class      => [ :resource_list ],
