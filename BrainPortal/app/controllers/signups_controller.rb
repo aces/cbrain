@@ -171,8 +171,6 @@ class SignupsController < ApplicationController
 
     # Prepare the Pagination object
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
-    @current_offset = (@scope.pagination.page - 1) * @scope.pagination.per_page
-
 
     @signups          = @scope.pagination.apply(@view_scope)
 
