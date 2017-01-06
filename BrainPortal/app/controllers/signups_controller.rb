@@ -164,14 +164,17 @@ class SignupsController < ApplicationController
   def index #:nodoc:
     @scope = scope_from_session('signups')
 
-    scope_default_order(@scope, 'country')
+    scope_default_order(@scope, 'created_at', :desc)
 
-    @base_scope       = Signup.where({})
-    @signups          = @scope.apply(@base_scope)
+    @base_scope       = Signup
+    @view_scope       = @scope.apply(@base_scope)
 
     # Prepare the Pagination object
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
     @current_offset = (@scope.pagination.page - 1) * @scope.pagination.per_page
+
+
+    @signups          = @scope.pagination.apply(@view_scope)
 
     scope_to_session(@scope, 'signups')
 
