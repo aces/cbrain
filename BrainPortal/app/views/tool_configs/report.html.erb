@@ -61,33 +61,38 @@
 
 <h1>Quick Links To Individual Access Reports</h1>
 
-<h5>By Execution Server(or <%= link_to "all of them", :action => :index, :view => 'by_bourreau' %>)</h5>
+<h5>By Execution Server(or <%= link_to "all of them", :action => :report, :view => 'by_bourreau' %>)</h5>
 <%= array_to_table(Bourreau.all.sort { |a,b| a.name <=> b.name }, :table_class => 'simple', :rows => 1 ) do |bourreau,r,c| %>
-  <%= link_to bourreau.name, :action => :index, :bourreau_id => bourreau.id %>
+  <%= link_to bourreau.name, :action => :report, :bourreau_id => bourreau.id %>
 <% end %>
 
 <p>
 
-<h5>By Tool (or <%= link_to "all of them", :action => :index, :view => 'by_tool' %>)</h5>
+<h5>By Tool (or <%= link_to "all of them", :action => :report, :view => 'by_tool' %>)</h5>
 <%= array_to_table(Tool.all.sort { |a,b| a.name <=> b.name }, :table_class => 'simple', :td_class => 'no_wrap' ) do |tool,r,c| %>
-  <%= link_to tool.name, :action => :index, :tool_id => tool.id %>
+  <%= link_to tool.name, :action => :report, :tool_id => tool.id %>
 <% end %>
 
 <p>
 
 <h5>By User</h5>
 <%= array_to_table(User.all.sort { |a,b| a.login <=> b.login }, :table_class => 'simple' ) do |user,r,c| %>
-  <%= link_to user.login, :action => :index, :user_id => user.id %>
+  <%= link_to user.login, :action => :report, :user_id => user.id %>
 <% end %>
 
 <p>
 
 <h5>By a more specific combinations of resources</h5>
 
-<%= form_tag( { :action => :index }, :method => :get) do %>
+<%= form_tag( { :action => :report }, :method => :get) do %>
 
 Execution Server:
-<%= bourreau_select :bourreau_id, { :selector => (params[:bourreau_id] || "") }, { :include_blank => '(All servers, or...)' } %>
+<%= bourreau_select :bourreau_id,
+                    {
+                      :selector => (params[:bourreau_id] || ""),
+                      :offline_is_ok => true,
+                    },
+                    { :include_blank => '(All servers, or...)' } %>
 
 Tool:
 <% toollist = Tool.all.sort { |a,b| a.name <=> b.name } %>
