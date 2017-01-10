@@ -200,7 +200,8 @@ class SessionsController < ApplicationController
         addrinfo  = Rails.cache.fetch("host_addr/#{from_ip}") do
           Socket.gethostbyaddr(from_ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ from_ip ]
         end
-        from_host = addrinfo[0]
+        from_host = addrinfo[0].presence
+        from_host = from_ip if from_host.blank? || from_host.size < 2 # seen weird "." as a result of lookup
       else
         from_host = from_ip # already got name?!?
       end

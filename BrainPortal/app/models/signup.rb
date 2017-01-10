@@ -27,7 +27,7 @@ class Signup < ActiveRecord::Base
   attr_accessible       :title, :first, :middle, :last,
                         :institution, :department, :position, :email,
                         :street1, :street2, :city, :province, :country, :postal_code,
-                        :login, :time_zone, :comment
+                        :login, :time_zone, :comment, :admin_comment
 
   validates_presence_of :first, :last,
                         :institution, :department, :position, :email,
@@ -65,6 +65,10 @@ class Signup < ActiveRecord::Base
     "#{title} #{first} #{middle} #{last}".strip.gsub(/  +/, " ")
   end
 
+  def user_full #:nodoc:
+    "#{first} #{last}".strip.gsub(/  +/, " ")
+  end
+
   alias full_name full
 
   def approved? #:nodoc:
@@ -86,7 +90,7 @@ class Signup < ActiveRecord::Base
     user = NormalUser.new
 
    #user.title                   = self.title
-    user.full_name               = self.full.try :strip
+    user.full_name               = user_full
     user.login                   = self.login.try :strip
     user.email                   = self.email.try :strip
    #user.institution             = self.institution

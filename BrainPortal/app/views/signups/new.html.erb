@@ -129,6 +129,14 @@
                   else you know in your lab who are already CBRAIN users. We'll use this information to create or add you to a <em>Site</em> within CBRAIN.
               </div>
             </div>
+
+            <% if @current_user.present? && current_user.has_role?(:admin_user) %>
+              <div class="row">
+                <div class="col-xs-4"> <%= f.label(:admin_comment, "Private, admin-only comments:") %> </div>
+                <div class="col-xs-8"> <%= f.text_area :admin_comment, :class => "form-control", :rows => 5 %> </div>
+              </div>
+            <% end %>
+
             <div class="row">
               <div class="col-xs-12"><%= f.submit(@signup.new_record? ? "Request Account" : "Update Request", :class => "btn btn-primary btn-block") %></div>
             </div>

@@ -47,3 +47,6 @@ en:
         signup:
           first:                       First name
           last:                        Last name
+  will_paginate:
+    previous_label: "&larr; Previous"
+    next_label: "Next &rarr;"

@@ -29,10 +29,10 @@
     <div class="col-xs-12">
       <div class="well well-sm">
         <% unless @group.creator_id == current_user.id %>
-          <a href="<%= url_for(:action => :unregister, :id => @group.id) %>" class="btn btn-primary" data-type="script" method="post"><span class="glyphicon glyphicon-ban-circle"></span> Unregister</a>
+          <a href="<%= url_for(:action => :unregister, :id => @group.id) %>" class="btn btn-primary" data-type="script" data-method="post"><span class="glyphicon glyphicon-ban-circle"></span> Unregister</a>
         <% end %>
         <% if @group.can_be_edited_by?(current_user) %>
-            <a href="<%= url_for(:action => :switch, :id => @group.id) %>" class="btn btn-primary" data-type="script" method="post"><span class="glyphicon glyphicon-random"></span> Switch</a>
+            <a href="<%= url_for(:action => :switch, :id => @group.id) %>" class="btn btn-primary" data-type="script" data-method="post"><span class="glyphicon glyphicon-random"></span> Switch</a>
             <% if current_user.has_role?(:normal_user) && @group.can_be_edited_by?(current_user) && current_user.visible_users.present? %>
               <%= overlay_ajax_link "Invite Other Users", new_invitation_path(group_id: @group.id), class: "btn btn-primary" %>
             <% end %>

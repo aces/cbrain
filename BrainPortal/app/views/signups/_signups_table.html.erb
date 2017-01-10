@@ -65,6 +65,7 @@
         ) do |t|
       %>
         <%
+          t.paginate
           t.row do |d|
             {
               :select_param => 'reqids[]',
@@ -89,7 +90,7 @@
         <%
           t.column("Email", :email,
             :sortable => true
-          ) { |d| red_if(d.dup_email?, d.email) }
+          ) { |d| red_if((d.dup_email? and not d.approved?), d.email) }
         %>
 
         <%
@@ -148,6 +149,15 @@
          %>
 
         <%
+          t.column("Created", :created_at,
+            :sortable => true,
+            :sort_order => :desc) do |d|
+
+            to_localtime(d.created_at, :datetime)
+          end
+        %>
+
+        <%
           t.column("Status", :status) do |d|
         %>
           <% if d.approved? %>
@@ -161,7 +171,7 @@
             <% if d.dup_email? %>
               <span  class="warning">(Conflicting email)</span>
             <% end %>
-            <% if d.dup_login? %>
+            <% if d.dup_email? and not d.approved? %>
               <span class="warning">(Login conflict)</span>
             <% else %>
               <%= link_to "(Approve)", new_user_path(:signup_id => d.id), :class => 'action_link' %>

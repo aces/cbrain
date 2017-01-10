@@ -34,8 +34,6 @@ class DataProvidersController < ApplicationController
   before_filter :manager_role_required, :only => [:new, :create]
   before_filter :admin_role_required,   :only => [:report, :repair]
 
-  API_HIDDEN_ATTRIBUTES = [ :cloud_storage_client_identifier, :cloud_storage_client_token ]
-
   def index #:nodoc:
     @scope = scope_from_session('data_providers')
     scope_default_order(@scope, 'name')
@@ -48,16 +46,10 @@ class DataProvidersController < ApplicationController
     respond_to do |format|
       format.html
       format.xml  do
-        @data_providers.each { |dp| dp.hide_attributes(API_HIDDEN_ATTRIBUTES) }
-        render :xml  => @data_providers
+        render :xml  => @data_providers.for_api
       end
       format.json do
-        @data_providers.each { |dp| dp.hide_attributes(API_HIDDEN_ATTRIBUTES) }
-        render :json => @data_providers.to_json(
-                          :methods => [
-                            :type, :is_browsable?, :is_fast_syncing?,
-                            :allow_file_owner_change?, :content_storage_shared_between_users?,
-                          ] )
+        render :json => @data_providers.for_api
       end
       format.js
     end
@@ -65,22 +57,20 @@ class DataProvidersController < ApplicationController
 
   # GET /data_providers/1
   # GET /data_providers/1.xml
+  # GET /data_providers/1.json
   def show  #:nodoc:
     data_provider_id = params[:id]
     @provider        = DataProvider.find(data_provider_id)
 
     cb_notice "Provider not accessible by current user." unless @provider.can_be_accessed_by?(current_user)
 
-
     respond_to do |format|
       format.html # show.html.erb
       format.xml  {
-          @provider.hide_attributes(API_HIDDEN_ATTRIBUTES)
-          render :xml  => @provider
+        render :xml  => @provider.for_api
       }
       format.json {
-          @provider.hide_attributes(API_HIDDEN_ATTRIBUTES)
-          render :json => @provider
+        render :json => @provider.for_api
       }
     end
   end

@@ -146,6 +146,13 @@
         </div>
       <% end %>
 
+      <% if @current_user.present? && @current_user.has_role?(:admin_user) %>
+        <div class="row">
+          <div class="col-xs-4">Admin Comments</div>
+          <div class="col-xs-8"> <pre><%= @signup.admin_comment %></pre> </div>
+        </div>
+      <% end %>
+
       <div class="row">
         <div class="col-xs-4">Status of request:</div>
         <div class="col-xs-8">
