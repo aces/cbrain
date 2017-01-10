@@ -862,11 +862,9 @@
       },
       "ajax:complete" : function(event, data, status, xhr) {
         var link     = $(this);
-        console.log(link);
         var target   = link.attr("data-target");
         var datatype = link.attr("data-type");
         var remove_target = link.attr("data-remove-target");
-        console.log(remove_target);
         var other_options = {};
 
         if (link.attr("data-width")) other_options["width"] = link.attr("data-width");

@@ -47,17 +47,13 @@
           :model => Signup,
         })
       %>
-    </div>
-  </div>
 
-  <div class="row">
-    <div class="col-xs-12">
       <%=
         dynamic_scoped_table(@signups,
           :class      => [ :resource_list ],
           :id         => "signups_table",
           :order_map  => {
-            :creation_date  =>  { :a => 'created_at' },
+            :created_at     =>  { :a => 'signups.created_at' },
             :institution    =>  { :a => 'signups.institution' },
             :email          =>  { :a => 'signups.email' },
           },
@@ -121,7 +117,7 @@
             :sortable => true,
             :filters => default_filters_for(@base_scope, :country)
           )
-          %>
+        %>
 
         <%
           t.column("Username", :login,
@@ -134,6 +130,14 @@
             html_tool_tip(crop_text_to(40, d.comment), :offset_x => 0, :offset_y => 20) do
               simple_format(d.comment, :sanitize => true)
             end if d.comment.present?
+          end
+        %>
+
+        <%
+          t.column("Private Comments", :admin_comment) do |d|
+            html_tool_tip(crop_text_to(40, d.admin_comment), :offset_x => 0, :offset_y => 20) do
+              simple_format(d.admin_comment, :sanitize => true)
+            end if d.admin_comment.present?
           end
         %>
 
@@ -168,10 +172,10 @@
             <% else %>
               <span class="warning">(Email unconfirmed)</span>
             <% end %>
-            <% if d.dup_email? %>
+            <% if d.dup_email? and not d.approved? %>
               <span  class="warning">(Conflicting email)</span>
             <% end %>
-            <% if d.dup_email? and not d.approved? %>
+            <% if d.dup_login? %>
               <span class="warning">(Login conflict)</span>
             <% else %>
               <%= link_to "(Approve)", new_user_path(:signup_id => d.id), :class => 'action_link' %>
