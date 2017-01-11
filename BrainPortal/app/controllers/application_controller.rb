@@ -286,6 +286,9 @@ class ApplicationController < ActionController::Base
 
   # Find new messages to be displayed at the top of the page.
   def prepare_messages #:nodoc:
+    @unread_message_count = 0
+    @exception_count      = 0
+
     return unless current_user
     return if     current_user.all_licenses_signed.blank?
     return if     request.format.blank? || request.xhr?

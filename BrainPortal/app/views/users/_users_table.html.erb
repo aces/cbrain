@@ -179,7 +179,7 @@
         end
 
         t.column("Switch", :switch) do |u|
-          link_to 'Switch', switch_user_path(u), :class => 'action_link', :method  => :post if u != User.admin
+          link_to 'Switch', switch_user_path(u), :class => 'action_link', method: :post if u != User.admin
         end
 
         if current_user.has_role? :admin_user

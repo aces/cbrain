@@ -25,92 +25,89 @@
 <div class="row menu-bar">
   <div class="col-xs-12">
     <div class="well well-sm">
-        <div class="btn-group">
-          <a href="javascript:;" class="btn btn-primary dropdown mega-dropdown" role="dropdown" aria-haspopup="true" aria-expanded="false">
-            <span class="glyphicon glyphicon-pencil"></span> Update Attributes <span class="caret"></span>
-          </a>
-            <ul class="dropdown-menu" id="update-menu" style="width: 650px;">
-            <div class="container-fluid">
-              <% if !current_user.has_role?(:normal_user) %>
-              <li>
-                <div class="row">
-                  <div class="col-xs-2">
-                    <strong>Owner</strong>
-                  </div>
-                  <div class="col-xs-8">
-                    <%= user_select('task[user_id]', {}, { :include_blank => "(Select Owner)", :class => "task-select form-control"} ) %>
-                  </div>
-                  <div class="col-xs-2">
-                    <%= hijacker_submit_button("Update", :name => :update_user_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
-                  </div>
-                </div>
-              </li>
-
+      <div class="btn-group">
+        <a href="javascript:;" class="btn btn-primary dropdown mega-dropdown" role="dropdown" aria-haspopup="true" aria-expanded="false">
+          <span class="glyphicon glyphicon-pencil"></span> Update Attributes <span class="caret"></span>
+        </a>
+          <ul class="dropdown-menu" id="update-menu" style="width: 650px;">
+          <div class="container-fluid">
+            <% if !current_user.has_role?(:normal_user) %>
+            <li>
               <div class="row">
-                <li role="separator" class="divider"></li>
-              </div>
-              <% end %>
-
-              <li>
-                <div class="row">
-                  <div class="col-xs-2">
-                    <strong>Project</strong>
-                  </div>
-                  <div class="col-xs-8">
-                    <%= group_select('task[group_id]', {}, { :include_blank => "(Select Project)", :class => "task-select form-control" } ) %>
-                  </div>
-                  <div class="col-xs-2">
-                    <%= hijacker_submit_button("Update", :name => :update_group_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
-                  </div>
+                <div class="col-xs-2">
+                  <strong>Owner</strong>
                 </div>
-              </li>
-
-              <div class="row">
-                <li role="separator" class="divider"></li>
-              </div>
-
-
-              <li>
-                <div class="row">
-                  <div class="col-xs-2">
-                    <strong>Results Location</strong>
-                  </div>
-                  <div class="col-xs-8">
-                    <%= data_provider_select('task[results_data_provider_id]', {}, { :include_blank => "(Select Data Provider)", :class => "task-select form-control" } ) %>
-                  </div>
-                  <div class="col-xs-2">
-                    <%= hijacker_submit_button("Update", :name => :update_results_data_provider_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
-                  </div>
+                <div class="col-xs-8">
+                  <%= user_select('task[user_id]', {}, { :include_blank => "(Select Owner)", :class => "task-select form-control"} ) %>
                 </div>
-              </li>
-
-              <div class="row">
-                <li role="separator" class="divider"></li>
-              </div>
-
-
-              <li>
-                <div class="row">
-                  <div class="col-xs-2">
-                    <strong>Tool Version</strong>
-                  </div>
-                  <div class="col-xs-8">
-                    <%= tool_config_select('task[tool_config_id]', {}, {:include_blank => "(Select Tool Version)", :class => "task-select form-control"}  ) %>
-                  </div>
-                  <div class="col-xs-2">
-                    <%= hijacker_submit_button("Update", :name => :update_tool_config_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
-                  </div>
+                <div class="col-xs-2">
+                  <%= hijacker_submit_button("Update", :name => :update_user_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
                 </div>
-              </li>
+              </div>
+            </li>
+
+            <div class="row">
+              <li role="separator" class="divider"></li>
             </div>
-            </ul>
+            <% end %>
+
+            <li>
+              <div class="row">
+                <div class="col-xs-2">
+                  <strong>Project</strong>
+                </div>
+                <div class="col-xs-8">
+                  <%= group_select('task[group_id]', {}, { :include_blank => "(Select Project)", :class => "task-select form-control" } ) %>
+                </div>
+                <div class="col-xs-2">
+                  <%= hijacker_submit_button("Update", :name => :update_group_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
+                </div>
+              </div>
+            </li>
+
+            <div class="row">
+              <li role="separator" class="divider"></li>
+            </div>
+
+            <li>
+              <div class="row">
+                <div class="col-xs-2">
+                  <strong>Results Location</strong>
+                </div>
+                <div class="col-xs-8">
+                  <%= data_provider_select('task[results_data_provider_id]', {}, { :include_blank => "(Select Data Provider)", :class => "task-select form-control" } ) %>
+                </div>
+                <div class="col-xs-2">
+                  <%= hijacker_submit_button("Update", :name => :update_results_data_provider_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
+                </div>
+              </div>
+            </li>
+
+            <div class="row">
+              <li role="separator" class="divider"></li>
+            </div>
+
+            <li>
+              <div class="row">
+                <div class="col-xs-2">
+                  <strong>Tool Version</strong>
+                </div>
+                <div class="col-xs-8">
+                  <%= tool_config_select('task[tool_config_id]', {}, {:include_blank => "(Select Tool Version)", :class => "task-select form-control"}  ) %>
+                </div>
+                <div class="col-xs-2">
+                  <%= hijacker_submit_button("Update", :name => :update_tool_config_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
+                </div>
+              </div>
+            </li>
+          </div>
+          </ul>
         </div>
 
         <div class="btn-group">
           <div class="btn-group">
-            <button href="<%= url_for(:action  => :operation, :operation => 'recover') %>" role="button" method="post" datatype="script" class="btn btn-primary pop" data-toggle="popover" data-placement="bottom" data-trigger="focus" data-container="body" data-content="Triggers cleanup and a restart at the last successful processing stage." data-html="true"><span class="glyphicon glyphicon-repeat"></span> Retry Failed</button>
+            <%= hijacker_submit_button("Retry Failed", :url => url_for(:action => :operation, :operation => 'recover'), :method => :post, :datatype => :script, :class => "btn btn-primary") %>
           </div>
-
 
           <div class="btn-group">
             <a href="javascript:;" class="btn btn-primary dropdown mega-dropdown pop" role="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -119,39 +116,35 @@
 
             <ul class="dropdown-menu" id="completed-menu" style="min-width: 400px;">
               <div class="container-fluid">
-                <li class="dropdown-header">Restart at:</li>
-                <li class="row">
-                  <div class="col-xs-10">
-                    <%= hijacker_submit_button("Setup", :url  => url_for(:action  => :operation, :operation => 'restart_setup'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
-                  </div>
-                  <div class="col-xs-2">
-                    <span class="pop" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-content="When input data files are synchronized on the Execution server and the processing scripts are created." data-html="true"> <span class="glyphicon glyphicon-question-sign" style="font-size: 2em;"></span></span>
-                  </div>
-                </li>
+              <li class="dropdown-header">Restart at:</li>
+              <li>
+                <%= hijacker_submit_button("Setup", :url  => url_for(:action  => :operation, :operation => 'restart_setup'), :method => :post, :datatype => :script, :class => "btn btn-primary btn-block mega-dropdown-closer") %>
 
-                <li class="row">
-                  <div class="col-xs-10">
-                    <%= hijacker_submit_button("Cluster", :url  => url_for(:action  => :operation, :operation => 'restart_cluster'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
+              </li>
+              <li class="dropdown-header">When input data files are synchronized on the Execution server and the processing scripts are created.</li>
+
+              <li class="divider"></li>
+              <li>
+                <%= hijacker_submit_button("Cluster", :url  => url_for(:action  => :operation, :operation => 'restart_cluster'), :method => :post, :datatype => :script, :class => "btn btn-primary btn-block mega-dropdown-closer") %>
+              </li>
+              <li class="dropdown-header">When the scientific scripts are actually run on the Execution Server's nodes</li>
+
+              <li class="divider"></li>
+
+              <li>
+                <%= hijacker_submit_button("Post-Processing", :url  => url_for(:action  => :operation, :operation => 'restart_setup'), :method => :post, :datatype => :script, :class => "btn btn-primary btn-block mega-dropdown-closer") %>
+              </li>
+              <li class="dropdown-header">When the resulting output files are sent back to the CBRAIN Data Providers.</li>
+
+              <li class="divider"></li>
+              <li>
+                <div class="input-group">
+                  <div class="input-group-btn">
+                    <%= hijacker_submit_button("Duplicate on:", :url  => url_for(:action  => :operation, :operation => 'duplicate'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
                   </div>
-                  <div class="col-xs-2">
-                    <span class="pop" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-content="When the scientific scripts are actually run on the Execution Server's nodes" data-html="true"> <span class="glyphicon glyphicon-question-sign" style="font-size: 2em;"></span></span>
-                  </div>
-                </li>
-                <li class="row">
-                  <div class="col-xs-10">
-                    <%= hijacker_submit_button("Post-Processing", :url  => url_for(:action  => :operation, :operation => 'restart_setup'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
-                  </div>
-                  <div class="col-xs-2">
-                    <span class="pop" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-content="When the resulting output files are sent back to the CBRAIN Data Providers." data-html="true"> <span class="glyphicon glyphicon-question-sign" style="font-size: 2em;"></span></span>
-                  </div>
-                </li>
-                <li role="separator" class="divider"></li>
-                <li class="dropdown-header">Duplicate task on:</li>
-                <li><%= bourreau_select :dup_bourreau_id, {}, :class => "task-select form-control" %></li>
-                <li>
-                  <%= hijacker_submit_button("Duplicate", :url  => url_for(:action  => :operation, :operation => 'duplicate'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer") %>
-                </li>
-              </div>
+                  <%= bourreau_select :dup_bourreau_id, {}, :class => "task-select form-control" %>
+                </div>
+              </li>
             </ul>
           </div>
         </div>
@@ -159,35 +152,26 @@
         <div class="btn-group">
           <div class="btn-group">
             <a href="javascript:;" class="btn btn-primary dropdown mega-dropdown" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-trash"></span> Cleanup <span class="caret"></span></a>
-            <ul class="dropdown-menu" style="min-width: 330px;">
-              <li class="row">
-                <div class="col-xs-10">
-                  <%= hijacker_submit_button("Terminate", :url  => url_for(:action  => :operation, :operation => 'terminate'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer", :confirm => "Are you sure you want to terminate the selected tasks?") %>
-                </div>
-                <div class="col-xs-2">
-                  <span class="glyphicon glyphicon-question-sign pop" style="font-size: 2em;" data-content="Tasks can be terminated at any point, and may be restarted." data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-html="true"></span>
-                </div>
-              </li>
+            <ul class="dropdown-menu" style="min-width: 330px; max-width: 330px">
+              <div class="container-fluid">
+                <li>
+                  <%= hijacker_submit_button("Terminate", :url  => url_for(:action  => :operation, :operation => 'terminate'), :method => :post, :datatype => :script, :class => "btn btn-primary btn-block mega-dropdown-closer", :confirm => "Are you sure you want to terminate the selected tasks?") %>
+                </li>
+                <li class="dropdown-header">Tasks can be terminated at any point, and may be restarted.</li>
+                <li class="divider"></li>
+                <li>
+                  <%= hijacker_submit_button("Remove Work Directories", :url  => url_for(:action  => :operation, :operation => 'zap_wd'), :method => :post, :datatype => :script, :class => "btn btn-primary btn-block mega-dropdown-closer", :confirm => "Are you sure you want to remove the WORK DIRECTORIES of the selected tasks?") %>
+                </li>
+                <li class="dropdown-header">Remove work directories on Execution Servers while leaving the rest of the task info intact. Frees space or removes confidential information that you would prefer to remove. The Archiving button has other options for disposing of tasks' work directories.</li>
 
-              <li class="row">
-                <div class="col-xs-10">
-                  <%= hijacker_submit_button("Remove Work Directories", :url  => url_for(:action  => :operation, :operation => 'zap_wd'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer", :confirm => "Are you sure you want to remove the WORK DIRECTORIES of the selected tasks?") %>
-                </div>
-                <div class="col-xs-2">
-                  <span class="glyphicon glyphicon-question-sign pop" style="font-size: 2em;" data-content="Remove work directories on Execution Servers while leaving the rest of the task info intact. Frees space or removes confidential information that you would prefer to remove. The Archiving button has other options for disposing of tasks' work directories." data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-html="true"></span>
-                </div>
-              </li>
-
-
-              <% delete_tooltip = h("Removes task completely, erasing work directory. Does not remove output files for successful tasks. Deletes any archives of a task's work directory, indicated (" + colored_archived_status(:workdir) + " or " + colored_archived_status(:userfile) + ") in 'WorkDir Size' column.") %>
-
-              <li class="row">
-                <div class="col-xs-10">
-                  <%= hijacker_submit_button("Remove", :url  => url_for(:action  => :operation, :operation => 'delete'), :method => :post, :datatype => :script, :class => "btn btn-primary mega-dropdown-closer", :confirm => "Are you sure you want to remove the selected tasks? IMPORTANT NOTE: This will also remove their archived work directories, if any.") %>
-                </div>
-                <div class="col-xs-2">
-                  <span class="glyphicon glyphicon-question-sign pop" style="font-size: 2em;" data-content="<%= delete_tooltip %>" data-toggle="popover" data-placement="right" data-trigger="focus" data-container="body" data-html="true"></span>
-                </div></li>
+                <li class="divider"></li>
+                <li>
+                  <%= hijacker_submit_button("Remove", :url  => url_for(:action  => :operation, :operation => 'delete'), :method => :post, :datatype => :script, :class => "btn btn-primary btn-block mega-dropdown-closer", :confirm => "Are you sure you want to remove the selected tasks? IMPORTANT NOTE: This will also remove their archived work directories, if any.") %>
+                </li>
+                <li class="dropdown-header">
+                  Removes task completely, erasing work directory. Does not remove output files for successful tasks. Deletes any archives of a task's work directory, indicated (<%= h(colored_archived_status(:workdir)) %> or <%= h(colored_archived_status(:userfile)) %>) in 'WorkDir Size' column.
+                </li>
+              </div>
             </ul>
           </div>
 

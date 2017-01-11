@@ -8,6 +8,10 @@
     width:auto;
 }
 
+.dropdown-header{
+    white-space: normal;
+}
+
 /*
  *  Styling for the navbar dropdowns
  */

@@ -24,7 +24,7 @@
 
 <div class="btn-group">
   <a href="javascript:;" class="btn btn-primary dropdown-toggle mega-dropdown" role="dropdown" aria-haspopup="true" aria-expanded="false">Unregister Files<span class="caret"></span></a>
-  <ul class="dropdown-menu">
+  <ul class="dropdown-menu" style="min-width: 330px;">
     <div class="container-fluid">
       <li>
         This panel allows you to <strong>unregister</strong> files that are present on
@@ -48,7 +48,7 @@
           :url      => url_for(:action => :unregister),
           :method   => :post,
           :datatype => :script,
-          :class    => "btn btn-primary btn-block"
+          :class    => "btn btn-primary btn-block mega-dropdown-closer"
         ) %>
       </li>
     </div>

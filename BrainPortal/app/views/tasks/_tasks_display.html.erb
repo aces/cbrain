@@ -317,9 +317,9 @@
 
     <%=
       scope_custom_link(
-        "Switch to #{batch_view ? 'List' : 'Batch'} View",
+        "#{batch_view ? 'List' : 'Batch'} View",
         @scope, { 'batch' => !batch_view },
-        link: { :ajax => true }
+        link: { :ajax => true, :class => "btn btn-primary" }
       )
     %>
   </div>
