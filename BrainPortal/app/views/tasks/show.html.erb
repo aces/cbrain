@@ -61,16 +61,7 @@
 
     <!-- FAILURE RECOVERY -->
     <% if CbrainTask::FAILED_STATUS.include?(@task.status) %>
-      <%
-        label = (
-          case @task.status
-          when /Setup/       then "Retry Setting Up"
-          when /Cluster/     then "Retry Processing"
-          when /PostProcess/ then "Retry Post Processing"
-          end
-        )
-      %>
-      <%= link_to label, { :action => 'operation', :operation => 'recover', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
+      <%= link_to 'Retry Failed', { :action => 'operation', :operation => 'recover', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
       <span class="vertical_bar">&#x2503;</span>
     <% end %>
 
