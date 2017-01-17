@@ -53,7 +53,7 @@
 </div>
 
 <div class="row">
-  <div class="col-xs-12 col-md-6">
+  <div class="col-sm-12 col-md-6">
     <%= show_table(@bourreau, :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
       <% t.edit_cell(:name) do %>
@@ -140,10 +140,8 @@
       <% end %>
 
     <% end %>
-  </div>
 
-  <% if is_portal %>
-    <div class="col-xs-12 col-md-6">
+    <% if is_portal %>
       <%= show_table(@bourreau, :header => "Mail configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
         <% t.edit_cell(:support_email, :header => "Support email address") do %>
           <%= text_field_tag "bourreau[support_email]", @bourreau.support_email, :class => "form-control" %><br/>
@@ -157,13 +155,11 @@
           <%= group_select("meta[error_message_mailing_list]", {:include_blank => "All admins", :selector => @bourreau.meta[:error_message_mailing_list], :groups => WorkGroup.where(:creator_id => AdminUser.all.map(&:id)) }, :class => "form-control" ) %>
         <% end %>
       <% end %>
-    </div>
-  <% end %>
+    <% end %>
 
 
-  <% if (check_role(:admin_user) || @bourreau.user_id == current_user.id) %>
-    <% if is_bourreau %>
-      <div class="col-xs-12 col-md-6">
+    <% if (check_role(:admin_user) || @bourreau.user_id == current_user.id) %>
+      <% if is_bourreau %>
         <%= show_table(@bourreau, :header => "Connection Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
           <% t.edit_cell(:ssh_control_host, :header => "SSH Hostname") do %>
@@ -256,193 +252,181 @@
           (Unless specified below)
         <% end %>
       <% end %>
-    </div>
     <% end %>
+    <%= show_table(@bourreau, :header => "Cache Management Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <% t.edit_cell(:dp_cache_dir, :header => "Path to Data Provider caches") do %>
+        <%= text_field_tag "bourreau[dp_cache_dir]", @bourreau.dp_cache_dir, :class => "form-control" %>
+        Warning! Changing this field will result in resetting the synchronization
+        status of all files from all Data Providers! Also, the Rails app will have to
+        be restarted, and all files in that directory will be erased!
+      <% end %>
+      <% t.edit_cell(:spaced_dp_ignore_patterns, :header => "Patterns for filenames to ignore", :content => @bourreau.spaced_dp_ignore_patterns) do %>
+        <%= text_field_tag "bourreau[spaced_dp_ignore_patterns]", @bourreau.spaced_dp_ignore_patterns, :class => "form-control" %>
+        Separate several patterns with spaces; each pattern can contain single '*'s, but no '/'s or special characters.
+      <% end %>
+      <% t.edit_cell(:cache_trust_expire, :header => "Cache Expiration Timeout (in seconds)", :content => (@bourreau.cache_trust_expire == 0 ? "Never" : @bourreau.cache_trust_expire)) do %>
+        <%= select_tag("bourreau[cache_trust_expire]", options_for_select([
+                [ "Never",        "0"                  ],
+                [ "Six hours",     6.hours.to_i.to_s   ],
+                [ "Twelve hours", 12.hours.to_i.to_s   ],
+                [ "One day",       1.day.to_i.to_s     ],
+                [ "Three days",    3.days.to_i.to_s    ],
+                [ "One week",      1.week.to_i.to_s    ],
+                [ "Two weeks",     2.weeks.to_i.to_s   ],
+                [ "One month",     1.month.to_i.to_s   ],
+                [ "Two months",    2.months.to_i.to_s  ],
+                [ "Three months",  3.months.to_i.to_s  ],
+                [ "Six months",    6.months.to_i.to_s  ]
+            ], :selected => @bourreau.cache_trust_expire ), { :class => "form-control" })
+        %>
+        This means that in the execution server's cache, files that have been recorded
+        as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy
+        and will be re-synchronized the next time they are accessed. Set this to a value less than <em>N</em>
+        if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days.
+      <% end %>
+    <% end %>
+  </div>
 
-    <div class="col-xs-12 col-md-6">
-      <%= show_table(@bourreau, :header => "Cache Management Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
-        <% t.edit_cell(:dp_cache_dir, :header => "Path to Data Provider caches") do %>
-          <%= text_field_tag "bourreau[dp_cache_dir]", @bourreau.dp_cache_dir, :class => "form-control" %>
-          Warning! Changing this field will result in resetting the synchronization
-          status of all files from all Data Providers! Also, the Rails app will have to
-          be restarted, and all files in that directory will be erased!
-        <% end %>
-        <% t.edit_cell(:spaced_dp_ignore_patterns, :header => "Patterns for filenames to ignore", :content => @bourreau.spaced_dp_ignore_patterns) do %>
-          <%= text_field_tag "bourreau[spaced_dp_ignore_patterns]", @bourreau.spaced_dp_ignore_patterns, :class => "form-control" %>
-          Separate several patterns with spaces; each pattern can contain single '*'s, but no '/'s or special characters.
-        <% end %>
-        <% t.edit_cell(:cache_trust_expire, :header => "Cache Expiration Timeout (in seconds)", :content => (@bourreau.cache_trust_expire == 0 ? "Never" : @bourreau.cache_trust_expire)) do %>
-          <%= select_tag("bourreau[cache_trust_expire]", options_for_select([
-                  [ "Never",        "0"                  ],
-                  [ "Six hours",     6.hours.to_i.to_s   ],
-                  [ "Twelve hours", 12.hours.to_i.to_s   ],
-                  [ "One day",       1.day.to_i.to_s     ],
-                  [ "Three days",    3.days.to_i.to_s    ],
-                  [ "One week",      1.week.to_i.to_s    ],
-                  [ "Two weeks",     2.weeks.to_i.to_s   ],
-                  [ "One month",     1.month.to_i.to_s   ],
-                  [ "Two months",    2.months.to_i.to_s  ],
-                  [ "Three months",  3.months.to_i.to_s  ],
-                  [ "Six months",    6.months.to_i.to_s  ]
-              ], :selected => @bourreau.cache_trust_expire ), { :class => "form-control" })
+  <div class="col-xs-12 col-md-6">
+    <% if is_bourreau %>
+      <%= show_table(@bourreau, :header => "Cluster Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+        <% t.edit_cell(:cms_class, :header => "Type of cluster") do %>
+          <%= select_tag "bourreau[cms_class]", options_for_select([
+                  [ "(Unconfigured)",  "" ],
+                  [ "Sun GridEngine",  "ScirSge" ],
+                  [ "PBS",             "ScirPbs" ],
+                  [ "MOAB",            "ScirMoab" ],
+                  [ "Sharcnet custom", "ScirSharcnet" ],
+                  [ "LSF",             "ScirLsf" ],
+                  [ "UNIX processes",  "ScirUnix" ]
+              ], :selected => @bourreau.cms_class), { :class => "form-control" }
           %>
-          This means that in the execution server's cache, files that have been recorded
-          as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy
-          and will be re-synchronized the next time they are accessed. Set this to a value less than <em>N</em>
-          if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days.
+        <% end %>
+
+        <% t.edit_cell(:cms_default_queue, :header => "Default queue name") do %>
+          <%= text_field_tag "bourreau[cms_default_queue]", @bourreau.cms_default_queue, :class => "form-control" %>
+          Optional.
+        <% end %>
+
+        <% t.edit_cell 'meta[task_limit_total]', :header => "Maximum total number of active tasks", :content => (@bourreau.meta["task_limit_total"].blank? ? "Unlimited" : @bourreau.meta["task_limit_total"]) do %>
+          <%= select_tag 'meta[task_limit_total]',
+              options_for_select( [ [ "Unlimited", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
+                                  @bourreau.meta[:task_limit_total] ), { :class => "form-control" }
+          %>
+        <% end %>
+
+        <% t.edit_cell(:cms_extra_qsub_args, :header => "Extra 'qsub' options") do %>
+          <%= text_field_tag "bourreau[cms_extra_qsub_args]", @bourreau.cms_extra_qsub_args, :class => "form-control"%>
+          Optional. Careful, this is inserted as-is in the command-line for submitting jobs.
+        <% end %>
+
+        <% t.edit_cell 'meta[task_limit_user_default]',
+                       :header => "Default maximum number of active tasks for each user",
+                       :content => (@bourreau.meta["task_limit_user_default"].blank? ? "Server's max" : @bourreau.meta["task_limit_user_default"]) do %>
+          <%= select_tag 'meta[task_limit_user_default]',
+              options_for_select( [ [ "Server's max", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
+                                  @bourreau.meta[:task_limit_user_default] ), { :class => "form-control" }
+          %>
+          (Unless specified below)
+        <% end %>
+
+        <% tool_config = ToolConfig.where(:bourreau_id => @bourreau.id, :tool_id => nil).first %>
+        <% tool_config_show_link   = tool_config ? (link_to "Show",   tool_config_path(tool_config)) : "No tool config" %>
+        <% tool_config_edit_link   = tool_config ? (link_to "Edit",   edit_tool_config_path(tool_config)) : nil %>
+        <% tool_config_create_link =                link_to "Create", new_tool_config_path(:bourreau_id => @bourreau.id) %>
+
+        <% t.edit_cell("Common configuration for all tasks", :content => tool_config_show_link) do %>
+          <%= tool_config_edit_link || tool_config_create_link %>
+        <% end %>
+
+        <% t.edit_cell(:cms_shared_dir, :header => "Path to shared work directory", :show_width => 2) do %>
+          <%= text_field_tag "bourreau[cms_shared_dir]", @bourreau.cms_shared_dir, :class => "form-control" %>
+          Mandatory. This directory must be visible and writable from all nodes.
+                 This is were the work subdirectories for all tasks will be created.
+        <% end %>
+
+        <% content = capture do %>
+          <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'table table-striped table-condensed', :td_class => 'right', :cols => 4, :fill_by_columns => true) do |user,r,c| %>
+            <% metkey = "task_limit_user_#{user.id}".to_sym %>
+            <%= link_to_user_with_tooltip(user) %>:
+            </td><td>
+            <%= @bourreau.meta[metkey].blank? ? "Default" : @bourreau.meta[metkey] %>
+          <% end %>
+        <% end %>
+
+        <% t.edit_cell 'meta[task_limit_user_default]',
+                       :header => "Maximum number of active tasks per user",
+                       :content => content, :show_width => 2 do %>
+          <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'table table-striped table-condensed', :td_class => 'right', :cols => 4, :fill_by_columns => true) do |user,r,c| %>
+            <% metkey = "task_limit_user_#{user.id}".to_sym %>
+            <%= link_to_user_with_tooltip(user) %>:
+            </td><td>
+            <%= select_tag "meta[#{metkey}]",
+                options_for_select( [ [ "Default", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 150 200 250 300 400 500 750 1000 ) ,
+                                    @bourreau.meta[metkey] ), { :class => "form-control" }
+            %>
+          <% end %>
         <% end %>
       <% end %>
-    </div>
 
-
-    <% if is_bourreau %>
-      <div class="col-xs-12 col-md-6">
-        <%= show_table(@bourreau, :header => "Cluster Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
-
-          <% t.edit_cell(:cms_class, :header => "Type of cluster") do %>
-            <%= select_tag "bourreau[cms_class]", options_for_select([
-                    [ "(Unconfigured)",  "" ],
-                    [ "Sun GridEngine",  "ScirSge" ],
-                    [ "PBS",             "ScirPbs" ],
-                    [ "MOAB",            "ScirMoab" ],
-                    [ "Sharcnet custom", "ScirSharcnet" ],
-                    [ "LSF",             "ScirLsf" ],
-                    [ "UNIX processes",  "ScirUnix" ]
-                ], :selected => @bourreau.cms_class), { :class => "form-control" }
-            %>
-          <% end %>
-
-          <% t.edit_cell(:cms_default_queue, :header => "Default queue name") do %>
-            <%= text_field_tag "bourreau[cms_default_queue]", @bourreau.cms_default_queue, :class => "form-control" %>
-            Optional.
-          <% end %>
-
-          <% t.edit_cell 'meta[task_limit_total]', :header => "Maximum total number of active tasks", :content => (@bourreau.meta["task_limit_total"].blank? ? "Unlimited" : @bourreau.meta["task_limit_total"]) do %>
-            <%= select_tag 'meta[task_limit_total]',
-                options_for_select( [ [ "Unlimited", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
-                                    @bourreau.meta[:task_limit_total] ), { :class => "form-control" }
-            %>
-          <% end %>
-
-          <% t.edit_cell(:cms_extra_qsub_args, :header => "Extra 'qsub' options") do %>
-            <%= text_field_tag "bourreau[cms_extra_qsub_args]", @bourreau.cms_extra_qsub_args, :class => "form-control"%>
-            Optional. Careful, this is inserted as-is in the command-line for submitting jobs.
-          <% end %>
-
-          <% t.edit_cell 'meta[task_limit_user_default]',
-                         :header => "Default maximum number of active tasks for each user",
-                         :content => (@bourreau.meta["task_limit_user_default"].blank? ? "Server's max" : @bourreau.meta["task_limit_user_default"]) do %>
-            <%= select_tag 'meta[task_limit_user_default]',
-                options_for_select( [ [ "Server's max", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
-                                    @bourreau.meta[:task_limit_user_default] ), { :class => "form-control" }
-            %>
-            (Unless specified below)
-          <% end %>
-
-          <% tool_config = ToolConfig.where(:bourreau_id => @bourreau.id, :tool_id => nil).first %>
-          <% tool_config_show_link   = tool_config ? (link_to "Show",   tool_config_path(tool_config)) : "No tool config" %>
-          <% tool_config_edit_link   = tool_config ? (link_to "Edit",   edit_tool_config_path(tool_config)) : nil %>
-          <% tool_config_create_link =                link_to "Create", new_tool_config_path(:bourreau_id => @bourreau.id) %>
-
-          <% t.edit_cell("Common configuration for all tasks", :content => tool_config_show_link) do %>
-            <%= tool_config_edit_link || tool_config_create_link %>
-          <% end %>
-
-          <% t.edit_cell(:cms_shared_dir, :header => "Path to shared work directory", :show_width => 2) do %>
-            <%= text_field_tag "bourreau[cms_shared_dir]", @bourreau.cms_shared_dir, :class => "form-control" %>
-            Mandatory. This directory must be visible and writable from all nodes.
-                   This is were the work subdirectories for all tasks will be created.
-          <% end %>
-
-          <% content = capture do %>
-            <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'table table-striped table-condensed', :td_class => 'right', :cols => 4, :fill_by_columns => true) do |user,r,c| %>
-              <% metkey = "task_limit_user_#{user.id}".to_sym %>
-              <%= link_to_user_with_tooltip(user) %>:
-              </td><td>
-              <%= @bourreau.meta[metkey].blank? ? "Default" : @bourreau.meta[metkey] %>
-            <% end %>
-          <% end %>
-
-          <% t.edit_cell 'meta[task_limit_user_default]',
-                         :header => "Maximum number of active tasks per user",
-                         :content => content, :show_width => 2 do %>
-            <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'table table-striped table-condensed', :td_class => 'right', :cols => 4, :fill_by_columns => true) do |user,r,c| %>
-              <% metkey = "task_limit_user_#{user.id}".to_sym %>
-              <%= link_to_user_with_tooltip(user) %>:
-              </td><td>
-              <%= select_tag "meta[#{metkey}]",
-                  options_for_select( [ [ "Default", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 150 200 250 300 400 500 750 1000 ) ,
-                                      @bourreau.meta[metkey] ), { :class => "form-control" }
-              %>
-            <% end %>
-          <% end %>
+      <%= show_table(@bourreau, :header => "Worker Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+        <% t.edit_cell :workers_instances, :header => "Number of workers" do %>
+          <%= select_tag "bourreau[workers_instances]", options_for_select([
+                  [ "None (for debug)",  0 ],
+                  [ "1",                 1 ],
+                  [ "2",                 2 ],
+                  [ "3",                 3 ],
+                  [ "4",                 4 ],
+                  [ "5",                 5 ],
+                  [ "10",                10 ],
+                  [ "20",                20 ]
+              ], :selected => @bourreau.workers_instances), { :class => "form-control" }
+          %>
         <% end %>
-      </div>
-      <div class="col-xs-12 col-md-6">
-        <%= show_table(@bourreau, :header => "Worker Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
-          <% t.edit_cell :workers_instances, :header => "Number of workers" do %>
-            <%= select_tag "bourreau[workers_instances]", options_for_select([
-                    [ "None (for debug)",  0 ],
-                    [ "1",                 1 ],
-                    [ "2",                 2 ],
-                    [ "3",                 3 ],
-                    [ "4",                 4 ],
-                    [ "5",                 5 ],
-                    [ "10",                10 ],
-                    [ "20",                20 ]
-                ], :selected => @bourreau.workers_instances), { :class => "form-control" }
-            %>
-          <% end %>
-          <% t.edit_cell :workers_chk_time, :header => "Check interval" do %>
-            <%= select_tag "bourreau[workers_chk_time]", options_for_select([
-                    [ "5 seconds",               5 ],
-                    [ "10 seconds",              10 ],
-                    [ "30 seconds",              30 ],
-                    [ "1 minute (recommended)",  60 ],
-                    [ "2 minutes",               120 ],
-                    [ "5 minutes",               300 ],
-                    [ "15 minutes",              900 ],
-                    [ "1 hour",                  3600 ]
-                ], :selected => @bourreau.workers_chk_time), { :class => "form-control" }
-            %>
-          <% end %>
-          <% t.edit_cell :workers_log_to, :header => "Log destination" do %>
-            <%= select_tag "bourreau[workers_log_to]", options_for_select([
-                    [ "Combined file (recommended)", "combined" ],
-                    [ "Separate files",              "separate" ],
-                    [ "RAILS log",                   "bourreau" ],
-                    [ "RAILS stdout",                "stdout" ],
-                    [ "RAILS stderr",                "stderr" ],
-                    [ "RAILS stdout and stderr",     "stdout|stderr" ],
-                    [ "No logging",                  "none" ]
-                ], :selected => @bourreau.workers_log_to), { :class => "form-control" }
-            %>
-          <% end %>
-          <% t.edit_cell :workers_verbose, :header => "Log verbosity", :content => ['(Not configured)', 'Normal', 'Debug info' ][@bourreau.workers_verbose || 0]  do %>
-            <%= select_tag "bourreau[workers_verbose]", options_for_select([
-                    [ "Normal",      1 ],
-                    [ "Debug info",  2 ]
-                ], :selected => @bourreau.workers_verbose), { :class => "form-control" }
-            %>
-          <% end %>
+        <% t.edit_cell :workers_chk_time, :header => "Check interval" do %>
+          <%= select_tag "bourreau[workers_chk_time]", options_for_select([
+                  [ "5 seconds",               5 ],
+                  [ "10 seconds",              10 ],
+                  [ "30 seconds",              30 ],
+                  [ "1 minute (recommended)",  60 ],
+                  [ "2 minutes",               120 ],
+                  [ "5 minutes",               300 ],
+                  [ "15 minutes",              900 ],
+                  [ "1 hour",                  3600 ]
+              ], :selected => @bourreau.workers_chk_time), { :class => "form-control" }
+          %>
         <% end %>
-      </div>
-
-      <div class="col-xs-12 col-md-6">
-        <%= show_table(@bourreau, :header => "Docker Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
-          <% t.edit_cell :docker_executable_name, :header => "Docker executable" do %>
-            <%= text_field_tag "bourreau[docker_executable_name]", @bourreau.docker_executable_name, :class => "form-control" %>
-            Name of the Docker executable available on the machines where tasks will run. Defaults to "docker" if left empty.
-          <% end %>
-          <% t.boolean_edit_cell( 'bourreau[docker_present]', !!@bourreau.docker_present, true, false, :header => "Docker Present?" ) %>
+        <% t.edit_cell :workers_log_to, :header => "Log destination" do %>
+          <%= select_tag "bourreau[workers_log_to]", options_for_select([
+                  [ "Combined file (recommended)", "combined" ],
+                  [ "Separate files",              "separate" ],
+                  [ "RAILS log",                   "bourreau" ],
+                  [ "RAILS stdout",                "stdout" ],
+                  [ "RAILS stderr",                "stderr" ],
+                  [ "RAILS stdout and stderr",     "stdout|stderr" ],
+                  [ "No logging",                  "none" ]
+              ], :selected => @bourreau.workers_log_to), { :class => "form-control" }
+          %>
         <% end %>
-      </div>
-    <% end %>
+        <% t.edit_cell :workers_verbose, :header => "Log verbosity", :content => ['(Not configured)', 'Normal', 'Debug info' ][@bourreau.workers_verbose || 0]  do %>
+          <%= select_tag "bourreau[workers_verbose]", options_for_select([
+                  [ "Normal",      1 ],
+                  [ "Debug info",  2 ]
+              ], :selected => @bourreau.workers_verbose), { :class => "form-control" }
+          %>
+        <% end %>
+      <% end %>
 
-    <div class="col-xs-12 col-md-6">
+      <%= show_table(@bourreau, :header => "Docker Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+        <% t.edit_cell :docker_executable_name, :header => "Docker executable" do %>
+          <%= text_field_tag "bourreau[docker_executable_name]", @bourreau.docker_executable_name, :class => "form-control" %>
+          Name of the Docker executable available on the machines where tasks will run. Defaults to "docker" if left empty.
+        <% end %>
+        <% t.boolean_edit_cell( 'bourreau[docker_present]', !!@bourreau.docker_present, true, false, :header => "Docker Present?" ) %>
+        <% end %>
+      <% end %>
+
       <%= render :partial => 'runtime_info' %>
-    </div>
-
     <% end %>
   </div>
 </div>
