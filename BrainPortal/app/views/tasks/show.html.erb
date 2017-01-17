@@ -60,7 +60,7 @@
     <% end %>
 
     <!-- FAILURE RECOVERY -->
-    <% if CbrainTask::FAILED_STATUS.include?(@task.status) %>
+    <% if @task.status =~ /^Failed*/ %>
       <%= link_to 'Retry Failed', { :action => 'operation', :operation => 'recover', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
       <span class="vertical_bar">&#x2503;</span>
     <% end %>
