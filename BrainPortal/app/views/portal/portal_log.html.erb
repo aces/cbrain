@@ -3,8 +3,7 @@
 
 <%= form_tag("/portal_log", :method => :get) do %>
   <div class="row">
-    <div class="col-xs-2">
-      <strong>Settings</strong>
+    <div class="col-sm-2 col-xs-12">
       <div class="input-group">
         <span class="input-group-addon"># lines to show</span>
         <%= select_tag :num_lines, options_for_select([100, 500, 1000, 5000, 10_000, 20_000], :selected => params[:num_lines].presence || 5000), :class => "form-control" %>
@@ -15,8 +14,7 @@
         <span class="input-group-addon">ms</span>
       </div>
     </div>
-    <div class="col-xs-2">
-      <strong>Filter</strong>
+    <div class="col-sm-2 col-xs-12">
       <div class="input-group">
         <span class="input-group-addon">User</span>
         <%= select_tag :user_login, options_for_select(@user_counts.keys.sort.map{ |k| ["#{k} (#{@user_counts[k]})", k]  }, selected: params[:user_login]), include_blank: true, :class => "form-control" %>
@@ -27,8 +25,7 @@
         <%= text_field_tag :log_inst, params[:log_inst], :class => "form-control" %>
       </div>
     </div>
-    <div class="col-xs-2">
-      <strong>Filter</strong>
+    <div class="col-sm-2 col-xs-12">
       <div class="input-group">
         <span class="input-group-addon">Method</span>
         <%= select_tag :log_meth, options_for_select(
@@ -51,7 +48,7 @@
       </div>
     </div>
 
-    <div class="col-xs-6">
+    <div class="col-sm-6 col-xs-12">
       <strong>Hide lines:</strong>
           'Started':    <%= check_box_tag :hide_started,    "1", params[:hide_started]    == "1" %>
         | 'Processing': <%= check_box_tag :hide_processing, "1", params[:hide_processing] == "1" %>

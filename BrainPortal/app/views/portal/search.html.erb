@@ -71,12 +71,12 @@
 <% end %>
 
 <div class="row">
-  <div class="col-xs-4">
+  <div class="col-sm-4 col-xs-12">
     <% result_table.(:files) do |file, r, c| %>
       <%= link_to_userfile_if_accessible(file) %> (<%= file.user.login %>)
     <% end %>
   </div>
-  <div class="col-xs-4">
+  <div class="col-sm-4 col-xs-12">
     <% result_table.(:tasks) do |task, r, c| %>
       <%= link_to_model_if_accessible(CbrainTask,task,:name_and_bourreau) %> (<%= task.user.login %>)
       <%= link_to "(edit)", edit_task_path(task), :class => 'action_link' %><br>
@@ -84,21 +84,21 @@
     <% end %>
   </div>
 
-  <div class="col-xs-4">
+  <div class="col-sm-4 col-xs-12">
     <% result_table.(:users) do |user, r, c| %>
       <%= user.full_name %> (<%= link_to_user_if_accessible(user) %>)
       <%= link_to '(switch)', switch_user_path(user), :method  => :post, :class => 'action_link' if current_user.has_role?(:admin_user) %>
     <% end %>
   </div>
 
-  <div class="col-xs-4">
+  <div class="col-sm-4 col-xs-12">
     <% result_table.(:groups, 'Projects') do |group, r, c| %>
       <%= link_to_group_if_accessible(group) %> (<%= group.creator.try(:login) %>)
       <%= link_to '(switch)', { :controller => :groups, :action => :switch, :id => group.id } , :method  => :post, :class => 'action_link' %>
     <% end %>
   </div>
 
-  <div class="col-xs-4">
+  <div class="col-sm-4 col-xs-12">
     <% result_table.(:rrs, 'Execution Servers') do |rr, r, c| %>
       <%= link_to_bourreau_if_accessible(rr) %>
       <% task_count = current_user.cbrain_tasks.real_tasks.where(:bourreau_id => rr.id).count %>
@@ -111,7 +111,7 @@
     <% end %>
   </div>
 
-  <div class="col-xs-4">
+  <div class="col-sm-4 col-xs-12">
     <% result_table.(:dps, 'Data Providers') do |dp, r, c| %>
       <%= link_to_data_provider_if_accessible(dp) %>
       <%= link_to '(browse)', browse_data_provider_path(dp), :class => 'action_link' if dp.is_browsable? %>
@@ -125,13 +125,13 @@
     <% end %>
   </div>
 
-  <div class="col-xs-4">
+  <div class="col-sm-4 col-xs-12">
     <% result_table.(:sites) do |site, r, c| %>
       <%= link_to_site_if_accessible(site) %>
     <% end %>
   </div>
 
-  <div class="col-xs-4">
+  <div class="col-sm-4 col-xs-12">
     <% result_table.(:tools) do |tool, r, c| %>
       <% if current_user.has_role?(:admin_user) %>
         <%= link_to tool.name, edit_tool_path(tool) %>
@@ -141,7 +141,7 @@
     <% end %>
   </div>
 
-  <div class="col-xs-4">
+  <div class="col-sm-4 col-xs-12">
     <% result_table.(:tcs, 'Tool Versions') do |tc, r, c| %>
       <% if current_user.has_role?(:admin_user) %>
         <%= tc.tool.name %>@<%= tc.bourreau.name%> : <%= link_to tc.version_name, edit_tool_config_path(tc) %>

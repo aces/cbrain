@@ -18,11 +18,11 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<% 
+<%
 # List of cache update offsets we support
 big_bang = 50.years.to_i # for convenience, because obviously 13.75 billion != 50 ! Fits in signed 32 bits int.
 
@@ -79,66 +79,75 @@ adjusted_relative_from = from_diffs[from_diffs.keys.sort { |a,b| a <=> b }.first
 to_diffs = all_vals.index_by { |v| (v.to_i - adjusted_relative_to).abs }
 adjusted_relative_to = to_diffs[to_diffs.keys.sort { |a,b| a <=> b }.first]
 
-%>                                           
+%>
 
 
-<div class="date_range_display_table" >
+<div class="well well-sm" >
+  <div class="row">
+    <!-- First line date attribute selector -->
+    <% if !date_attributes.empty? %>
+      <div class="col-xs-12">
+        <%= radio_button_tag date_attribute[0], "", !date_attribute[1] || date_attribute[1] == ""  %> Do not filter
 
-  <!-- First line date attribute selector -->
-  <% if !date_attributes.empty? %>
-    <div class="left_align">
-      <%= radio_button_tag date_attribute[0], "", !date_attribute[1] || date_attribute[1] == ""  %> Do not filter
-      <% date_attributes.each do |attribute|  %>
-        <% attribute_name = attribute[0].to_s %>
-        <% attribute_text = attribute[1].to_s %>
-        <%= radio_button_tag date_attribute[0], attribute_name, date_attribute[1].to_s == attribute_name %> <%= attribute_text %> 
-      <% end %>
-    </div>
-  <% end %>
-  
-  <div>
-    <!-- from column-->
-    <span class="display_cell">
-      <div class="centered">From</div>
-      <!-- relative-->
-      <div class="date_range_with_size">
-        <% if !without_abs %>
-          <%= radio_button_tag absolute_or_relative_from[0], "relative", !absolute_or_relative_from[1] || absolute_or_relative_from[1] == "relative" %> 
-        <% else %>
-          <%= hidden_field_tag absolute_or_relative_from[0], "relative" %>
+        <% date_attributes.each do |attribute|  %>
+          <% attribute_name = attribute[0].to_s %>
+          <% attribute_text = attribute[1].to_s %>
+          <div class="input-group">
+            <%= radio_button_tag date_attribute[0], attribute_name, date_attribute[1].to_s == attribute_name %> <%= attribute_text %>
+          </div>
         <% end %>
-        <%= select_tag relative_from[0], grouped_options_for_select(offset_times, adjusted_relative_from ) %>
       </div>
-      <!-- absolute-->
-      <% if !without_abs %>
-        <div class="date_range_with_size">
-          <%= radio_button_tag absolute_or_relative_from[0], "absolute", absolute_or_relative_from[1] == "absolute" %> 
-          <%= text_field_tag absolute_from[0],  absolute_from[1], :class => "daterangepicker date_range_txt_with_size", "data-datefieldtype" => "from" %>
-        </div>                     
-      <% end %>
-    </span>
-    
-    <!-- to column -->
-    <span class="display_cell">
-      <div class="centered">To</div>
+    <% end %>
+
+    <div class="col-xs-6">
+      <!-- from column-->
+      From
       <!-- relative-->
-      <div class="date_range_with_size">
+        <div class="input-group">
+          <% if !without_abs %>
+            <span class="input-group-addon"><%= radio_button_tag absolute_or_relative_from[0], "relative", !absolute_or_relative_from[1] || absolute_or_relative_from[1] == "relative" %></span>
+
+          <% else %>
+            <%= hidden_field_tag absolute_or_relative_from[0], "relative" %>
+          <% end %>
+          <%= select_tag relative_from[0], grouped_options_for_select(offset_times, adjusted_relative_from ), :class => "form-control" %>
+        </div>
+
+        <!-- absolute-->
         <% if !without_abs %>
-          <%= radio_button_tag absolute_or_relative_to[0],   "relative", !absolute_or_relative_to[1] || absolute_or_relative_to[1]   == "relative" %>
+          <div class="input-group">
+            <span class="input-group-addon">
+              <%= radio_button_tag absolute_or_relative_from[0], "absolute", absolute_or_relative_from[1] == "absolute" %>
+            </span>
+            <%= text_field_tag absolute_from[0],  absolute_from[1], :class => "daterangepicker date_range_txt_with_size form-control", "data-datefieldtype" => "from" %>
+          </div>
+        <% end %>
+    </div>
+
+    <div class="col-xs-6">
+      <!-- to column -->
+      To
+      <!-- relative-->
+      <div class="input-group">
+        <% if !without_abs %>
+          <span class="input-group-addon">
+            <%= radio_button_tag absolute_or_relative_to[0],   "relative", !absolute_or_relative_to[1] || absolute_or_relative_to[1]   == "relative" %>
+          </span>
         <% else %>
           <%= hidden_field_tag absolute_or_relative_to[0], "relative" %>
         <% end %>
-        <%= select_tag relative_to[0],   grouped_options_for_select(offset_times, adjusted_relative_to ) %>
+        <%= select_tag relative_to[0],   grouped_options_for_select(offset_times, adjusted_relative_to ), :class => "form-control" %>
       </div>
-      <!-- absolute-->  
-      <% if !without_abs %>
-        <div class="date_range_with_size">
-          <%= radio_button_tag absolute_or_relative_to[0], "absolute", absolute_or_relative_to[1] == "absolute" %> 
-          <%= text_field_tag absolute_to[0],  absolute_to[1], :class => "daterangepicker date_range_txt_with_size", "data-datefieldtype" => "to" %>
-        </div>
-      <% end %>
-    </span>
+        <!-- absolute-->
+        <% if !without_abs %>
+          <div class="input-group">
+            <span class="input-group-addon">
+              <%= radio_button_tag absolute_or_relative_to[0], "absolute", absolute_or_relative_to[1] == "absolute" %>
+            </span>
+            <%= text_field_tag absolute_to[0],  absolute_to[1], :class => "daterangepicker date_range_txt_with_size form-control", "data-datefieldtype" => "to" %>
+          </div>
+        <% end %>
+    </div>
   </div>
-  
 </div>
 
