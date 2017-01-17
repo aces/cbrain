@@ -66,7 +66,7 @@
     <% end %>
 
     <!-- RESTART -->
-    <% if CbrainTask::FAILED_STATUS.include?(@task.status) or @task.status =~ /Completed|Terminated|Duplicated/ %>
+    <% if @task.status =~ /Completed|Terminated|Duplicated/ %>
       <%= link_to 'Restart At Setup', { :action => 'operation', :operation => 'restart_setup', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
       <% if !(@task.status =~ /Completed/) %>
         <span class="vertical_bar">&#x2503;</span>
@@ -74,7 +74,7 @@
     <% end %>
     <% if @task.status == 'Completed' %>
       <%= link_to 'Restart On Cluster', { :action => 'operation', :operation => 'restart_cluster', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
-      <%= link_to 'Restart At PostProcessing', { :action => 'operation', :operation => 'restart_postprocess', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
+      <%= link_to 'Restart At Post-Processing', { :action => 'operation', :operation => 'restart_postprocess', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
       <span class="vertical_bar">&#x2503;</span>
     <% end %>
 
