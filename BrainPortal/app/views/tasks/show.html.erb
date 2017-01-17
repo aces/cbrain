@@ -92,7 +92,7 @@
     <% if CbrainTask::QUEUED_STATUS.include?(@task.status) %>
       <%= link_to 'Terminate Task', { :action => 'operation', :operation => 'terminate', 'tasklist[]' => @task.id }, :confirm => "Are you sure you want to terminate this task?", :class  => "button menu_button", :method => :post %>
     <% end %>
-    <% if CbrainTask::QUEUED_STATUS.include?(@task.status) or CbrainTask::FAILED_STATUS.include?(@task.status) %>
+    <% if CbrainTask::QUEUED_STATUS.include?(@task.status) or CbrainTask::FAILED_STATUS.include?(@task.status) or CbrainTask::COMPLETED_STATUS.include?(@task.status) %>
       <% confirm  = "Are you sure you want to remove this task?" %>
       <% confirm += "\n\nIMPORTANT NOTE: This will also remove its archived work directory." if @task.workdir_archive %>
       <%= link_to 'Remove Task',  { :action => 'operation', :operation => 'delete', 'tasklist[]' => @task.id }, :confirm => confirm, :class  => "button menu_button", :method => :post %>
