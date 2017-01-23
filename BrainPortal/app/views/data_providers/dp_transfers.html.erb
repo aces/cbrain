@@ -72,6 +72,13 @@ symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
 </p>
 
 <% num_prov = @providers.size %>
+<%
+   # Invoking rr_allowed_syncing? is expensive, so we cache the results for each DP.
+   cache_allowed_sync = {}
+   can_sync_from = lambda do |dp|
+     cache_allowed_sync[dp.id] ||= dp.rr_allowed_syncing?
+   end
+%>
 
 <span class="display_cell">
 
@@ -91,7 +98,7 @@ symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
            <br>
            <%= html_colorize("(offline)")             if ! dp.online? %>
            <%= html_colorize("(read only)", "purple") if   dp.read_only? %>
-           <% if ! dp.rr_allowed_syncing? %>
+           <% if ! can_sync_from.(dp) %>
              <%= html_colorize("(portal has no access)", "purple") %>
            <% end %>
           </div>
@@ -108,7 +115,7 @@ symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
            <%= nil and link_to_data_provider_if_accessible(dp_row, current_user, :html_options => { :class => dp_row.online? ? nil : 'error_link' }) %>
            <%= link_to_data_provider_if_accessible(dp_row, current_user) %>
            <%= html_colorize("(offline)")   if ! dp_row.online? %>
-           <% if ! dp_row.rr_allowed_syncing? %>
+           <% if ! can_sync_from.(dp_row) %>
              <br><%= html_colorize("(portal has no access)", "purple") %>
            <% end %>
         </th>
@@ -116,8 +123,8 @@ symbol will be <%= o_icon %>; otherwise it will be <%= times_icon %>.
           <%
              dp2dp_ok     = dp_row.dp_allows_copy?(dp_col)
              portal_dp_ok =
-                (dp_row.rr_allowed_syncing? && dp_col.rr_allowed_syncing? &&
-                 dp_row.online?             && dp_col.online? &&
+                (dp_row.online?         && dp_col.online?         &&
+                 can_sync_from.(dp_row) && can_sync_from.(dp_col) &&
                  ! dp_col.read_only?)
           %>
           <%
