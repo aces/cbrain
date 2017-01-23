@@ -76,7 +76,7 @@
     <%=
       dynamic_scoped_table(@users,
         :id         => 'users_table',
-        :class      => [ "table-responsive" ],
+        :class      => [ ],
         :scope      => @scope,
         :order_map  => {
           :last_connection => { :a => 'last_connected_at' },

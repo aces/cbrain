@@ -39,7 +39,7 @@
   #   +task+ is the first task of the batch. This row type is used for AJAX-loaded batch headers.
   table = dynamic_scoped_table(list,
     :id         => "tasks_table",
-    :class      => [ "table-responsive" ],
+    :class      => [ ],
     :render     => false,
     :order_map  => {
       :owner        => { :a => 'users.login',               :j =>  User                                },

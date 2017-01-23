@@ -1029,7 +1029,9 @@
     // Initialize Bootstrap tooltips
     $(function () {
       $('[data-toggle="tooltip"]').tooltip()
-    })
+    });
+
+    $('table').DynamicTable();
 
     $('#work-projects-select').multiSelect({
       selectableHeader: "<div class='custom-header'>Available Projects</div>",

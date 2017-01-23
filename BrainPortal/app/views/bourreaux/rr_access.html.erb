@@ -39,33 +39,31 @@
       There is no information to show at this time.
     <% else %>
 
-      <div class="table-responsive">
-        <table class="table table-striped table-condensed table-hover">
+      <table class="table table-striped table-condensed table-hover">
 
+        <tr>
+          <th class="blank"></th>
+          <% @remote_r.each do |bourreau| %>
+            <th class="text-center"><%= link_to_bourreau_if_accessible(bourreau, current_user) %>
+              <br/><small><%= bourreau.is_a?(Bourreau) ? "(Execution)" : "(Portal)" %></small>
+            </th>
+          <% end %>
+        </tr>
+
+        <% @users.each do |user| %>
+          <%
+          accessible_rr = RemoteResource.find_all_accessible_by_user(user).all.index_by &:id || {}
+          %>
           <tr>
-            <th class="blank"></th>
+            <td class="text-left"><%= link_to_user_with_tooltip(user) %></td>
+
             <% @remote_r.each do |bourreau| %>
-              <th class="text-center"><%= link_to_bourreau_if_accessible(bourreau, current_user) %>
-                <br/><small><%= bourreau.is_a?(Bourreau) ? "(Execution)" : "(Portal)" %></small>
-              </th>
+              <td class="text-center"> <%= accessible_rr[bourreau.id]  ? o_icon : times_icon %></td>
             <% end %>
           </tr>
+        <% end %>
 
-          <% @users.each do |user| %>
-            <%
-            accessible_rr = RemoteResource.find_all_accessible_by_user(user).all.index_by &:id || {}
-            %>
-            <tr>
-              <td class="text-left"><%= link_to_user_with_tooltip(user) %></td>
-
-              <% @remote_r.each do |bourreau| %>
-                <td class="text-center"> <%= accessible_rr[bourreau.id]  ? o_icon : times_icon %></td>
-              <% end %>
-            </tr>
-          <% end %>
-
-        </table>
-      </div>
+      </table>
 
       <%= center_legend(nil, [ [o_icon, "accessible"], [times_icon, "not accessible"] ] ) %>
 

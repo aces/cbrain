@@ -78,7 +78,7 @@
       <%=
         dynamic_scoped_table(@messages,
           :id         => "message_table",
-          :class      => [ "table-responsive" ],
+          :class      => [ ],
           :scope      => @scope,
           :order_map  => {
             :sender    => { :a => 'users.login', :j => [User, 'id', 'sender_id'] },

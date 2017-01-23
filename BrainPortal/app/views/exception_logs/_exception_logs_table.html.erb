@@ -53,7 +53,7 @@
       <%=
         dynamic_scoped_table(@exception_logs,
           :id         => 'exception_logs_table',
-          :class      => [ "table-responsive" ],
+          :class      => [ ],
           :scope      => @scope,
           :order_map  => {
             :user => { :a => 'users.login', :j => User }
