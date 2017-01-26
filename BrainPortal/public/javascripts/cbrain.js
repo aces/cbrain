@@ -879,37 +879,6 @@
       }
     }, ".ajax_link");
 
-    // $(document).on("ajax:beforeSend.messaging", ".ajax_link", function(event, data, status, xhr) {
-    //   var link = $(this);
-    //   var loading_message = link.attr("data-loading-message");
-    //   var target = link.attr("data-target");
-    //   if (loading_message) {
-    //     var loading_message_target = link.attr("data-loading-message-target");
-    //     if (!loading_message_target) loading_message_target = target;
-    //     $(loading_message_target).html(loading_message);
-    //   }
-    // });
-
-    // $(document).on("ajax:complete.messaging", ".ajax_link", function(event, data, status, xhr) {
-    //     console.log($(this));
-
-    //     var link     = $(this);
-    //     var target   = link.attr("data-target");
-    //     var datatype = link.attr("data-type");
-    //     var remove_target = link.attr("data-remove-target");
-    //     var other_options = {};
-
-    //     if (link.attr("data-width")) other_options["width"] = link.attr("data-width");
-    //     if (link.attr("data-height")) other_options["height"] = link.attr("data-height");
-    //     if (link.attr("data-replace")) other_options["replace"] = link.attr("data-replace");
-
-    //     if (remove_target) {
-    //        $(remove_target).remove();
-    //     } else if (datatype !== "script") {
-    //       modify_target(data, target, other_options);
-    //     }
-    //   });
-
     $(document).delegate(".select_all", "click", function() {
       var header_box = $(this);
       var checkbox_class = header_box.attr("data-checkbox-class");
