@@ -51,104 +51,88 @@
 <% result_table = lambda do |name, title = nil, &block| %>
   <% result = @results[name] %>
 
-  <div class="panel panel-primary">
-    <div class="panel-heading"><%= title || name.to_s.humanize %> (found: <%= result.size %>)</div>
-      <div class="panel-body">
-        <% if result.blank? %>
-          No results.
-        <% else %>
-          <%=
-            array_to_table(result[0, @limit], {
-              :rows            => 10,
-              :fill_by_columns => true,
-              :table_class     => "table table-striped table-condensed",
-              :td_class        => "left_align",
-            }, &block)
-          %>
-        <% end %>
-      </div>
-  </div>
+  <% if result.present? %>
+    <div class="panel panel-primary">
+      <div class="panel-heading"><%= title || name.to_s.humanize %> (found: <%= result.size %>)</div>
+        <div class="panel-body">
+            <%=
+              array_to_table(result[0, @limit], {
+                :rows            => 10,
+                :fill_by_columns => true,
+                :table_class     => "table table-striped table-condensed",
+                :td_class        => "left_align",
+              }, &block)
+            %>
+        </div>
+    </div>
+  <% end %>
 <% end %>
 
-<div class="row">
-  <div class="col-sm-4 col-xs-12">
-    <% result_table.(:files) do |file, r, c| %>
-      <%= link_to_userfile_if_accessible(file) %> (<%= file.user.login %>)
-    <% end %>
-  </div>
-  <div class="col-sm-4 col-xs-12">
-    <% result_table.(:tasks) do |task, r, c| %>
-      <%= link_to_model_if_accessible(CbrainTask,task,:name_and_bourreau) %> (<%= task.user.login %>)
-      <%= link_to "(edit)", edit_task_path(task), :class => 'action_link' %><br>
-      <%= overlay_description(task.description, :header_width => 35) %>
-    <% end %>
-  </div>
+<div class="col-sm-4 col-xs-12">
+  <% result_table.(:files) do |file, r, c| %>
+    <%= link_to_userfile_if_accessible(file) %> (<%= file.user.login %>)
+  <% end %>
 
-  <div class="col-sm-4 col-xs-12">
-    <% result_table.(:users) do |user, r, c| %>
-      <%= user.full_name %> (<%= link_to_user_if_accessible(user) %>)
-      <%= link_to '(switch)', switch_user_path(user), :method  => :post, :class => 'action_link' if current_user.has_role?(:admin_user) %>
-    <% end %>
-  </div>
+  <% result_table.(:tasks) do |task, r, c| %>
+    <%= link_to_model_if_accessible(CbrainTask,task,:name_and_bourreau) %> (<%= task.user.login %>)
+    <%= link_to "(edit)", edit_task_path(task), :class => 'action_link' %><br>
+    <%= overlay_description(task.description, :header_width => 35) %>
+  <% end %>
 
-  <div class="col-sm-4 col-xs-12">
-    <% result_table.(:groups, 'Projects') do |group, r, c| %>
-      <%= link_to_group_if_accessible(group) %> (<%= group.creator.try(:login) %>)
-      <%= link_to '(switch)', { :controller => :groups, :action => :switch, :id => group.id } , :method  => :post, :class => 'action_link' %>
-    <% end %>
-  </div>
-
-  <div class="col-sm-4 col-xs-12">
-    <% result_table.(:rrs, 'Execution Servers') do |rr, r, c| %>
-      <%= link_to_bourreau_if_accessible(rr) %>
-      <% task_count = current_user.cbrain_tasks.real_tasks.where(:bourreau_id => rr.id).count %>
-      <% if task_count > 0 %>
-        (<%= index_count_filter(
-          task_count, :tasks,
-          { :user_id => current_user.id, :bourreau_id => rr.id }
-        ) %> tasks)
-      <% end %>
-    <% end %>
-  </div>
-
-  <div class="col-sm-4 col-xs-12">
-    <% result_table.(:dps, 'Data Providers') do |dp, r, c| %>
-      <%= link_to_data_provider_if_accessible(dp) %>
-      <%= link_to '(browse)', browse_data_provider_path(dp), :class => 'action_link' if dp.is_browsable? %>
-      <% file_count = current_user.userfiles.where(:data_provider_id => dp.id).count %>
-      <% if file_count > 0 %>
-        (<%= index_count_filter(
-          file_count, :userfiles,
-          { :user_id => current_user.id, :data_provider_id => dp.id }
-        ) %> registered files)
-      <% end %>
-    <% end %>
-  </div>
-
-  <div class="col-sm-4 col-xs-12">
-    <% result_table.(:sites) do |site, r, c| %>
-      <%= link_to_site_if_accessible(site) %>
-    <% end %>
-  </div>
-
-  <div class="col-sm-4 col-xs-12">
-    <% result_table.(:tools) do |tool, r, c| %>
-      <% if current_user.has_role?(:admin_user) %>
-        <%= link_to tool.name, edit_tool_path(tool) %>
-      <%  else %>
-        <%= tool.name %>
-      <% end %>
-    <% end %>
-  </div>
-
-  <div class="col-sm-4 col-xs-12">
-    <% result_table.(:tcs, 'Tool Versions') do |tc, r, c| %>
-      <% if current_user.has_role?(:admin_user) %>
-        <%= tc.tool.name %>@<%= tc.bourreau.name%> : <%= link_to tc.version_name, edit_tool_config_path(tc) %>
-      <%  else %>
-        <%= tc.tool.name %>@<%= tc.bourreau.name%> : <%= tc.version_name %>
-      <% end %>
-    <% end %>
-  </div>
+  <% result_table.(:users) do |user, r, c| %>
+    <%= user.full_name %> (<%= link_to_user_if_accessible(user) %>)
+    <%= link_to '(switch)', switch_user_path(user), :method  => :post, :class => 'action_link' if current_user.has_role?(:admin_user) %>
+  <% end %>
 </div>
 
+<div class="col-sm-4 col-xs-12">
+  <% result_table.(:groups, 'Projects') do |group, r, c| %>
+    <%= link_to_group_if_accessible(group) %> (<%= group.creator.try(:login) %>)
+    <%= link_to '(switch)', { :controller => :groups, :action => :switch, :id => group.id } , :method  => :post, :class => 'action_link' %>
+  <% end %>
+
+  <% result_table.(:rrs, 'Execution Servers') do |rr, r, c| %>
+    <%= link_to_bourreau_if_accessible(rr) %>
+    <% task_count = current_user.cbrain_tasks.real_tasks.where(:bourreau_id => rr.id).count %>
+    <% if task_count > 0 %>
+      (<%= index_count_filter(
+        task_count, :tasks,
+        { :user_id => current_user.id, :bourreau_id => rr.id }
+      ) %> tasks)
+    <% end %>
+  <% end %>
+
+  <% result_table.(:dps, 'Data Providers') do |dp, r, c| %>
+    <%= link_to_data_provider_if_accessible(dp) %>
+    <%= link_to '(browse)', browse_data_provider_path(dp), :class => 'action_link' if dp.is_browsable? %>
+    <% file_count = current_user.userfiles.where(:data_provider_id => dp.id).count %>
+    <% if file_count > 0 %>
+      (<%= index_count_filter(
+        file_count, :userfiles,
+        { :user_id => current_user.id, :data_provider_id => dp.id }
+      ) %> registered files)
+    <% end %>
+  <% end %>
+</div>
+
+<div class="col-sm-4 col-xs-12">
+  <% result_table.(:sites) do |site, r, c| %>
+    <%= link_to_site_if_accessible(site) %>
+  <% end %>
+
+  <% result_table.(:tools) do |tool, r, c| %>
+    <% if current_user.has_role?(:admin_user) %>
+      <%= link_to tool.name, edit_tool_path(tool) %>
+    <%  else %>
+      <%= tool.name %>
+    <% end %>
+  <% end %>
+
+  <% result_table.(:tcs, 'Tool Versions') do |tc, r, c| %>
+    <% if current_user.has_role?(:admin_user) %>
+      <%= tc.tool.name %>@<%= tc.bourreau.name%> : <%= link_to tc.version_name, edit_tool_config_path(tc) %>
+    <%  else %>
+      <%= tc.tool.name %>@<%= tc.bourreau.name%> : <%= tc.version_name %>
+    <% end %>
+  <% end %>
+</div>

@@ -957,32 +957,32 @@
     });
 
 
-    // //html_tool_tip_code based on xstooltip provided by
-    // //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
-    // $(document).delegate(".html_tool_tip_trigger", "mouseenter", function(event) {
-    //   var trigger = $(this);
-    //   var tool_tip_id = trigger.attr("data-tool-tip-id");
-    //   var tool_tip = $("#" + tool_tip_id);
-    //   var offset_x = trigger.attr("data-offset-x") || '30';
-    //   var offset_y = trigger.attr("data-offset-y") || '0';
+    //html_tool_tip_code based on xstooltip provided by
+    //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
+    $(document).delegate(".html_tool_tip_trigger", "mouseenter", function(event) {
+      var trigger = $(this);
+      var tool_tip_id = trigger.attr("data-tool-tip-id");
+      var tool_tip = $("#" + tool_tip_id);
+      var offset_x = trigger.attr("data-offset-x") || '30';
+      var offset_y = trigger.attr("data-offset-y") || '0';
 
-    //   var x = trigger.position().left + parseInt(offset_x, 10);
-    //   var y = trigger.position().top  + parseInt(offset_y, 10);
+      var x = trigger.position().left + parseInt(offset_x, 10);
+      var y = trigger.position().top  + parseInt(offset_y, 10);
 
-    //   // Fixed position bug.
-    //   tool_tip.remove().appendTo(trigger.parent());
+      // Fixed position bug.
+      tool_tip.remove().appendTo(trigger.parent());
 
-    //   tool_tip.css('top',  y + 'px');
-    //   tool_tip.css('left', x + 'px');
+      tool_tip.css('top',  y + 'px');
+      tool_tip.css('left', x + 'px');
 
-    //   tool_tip.show();
-    // }).delegate(".html_tool_tip_trigger", "mouseleave", function(event) {
-    //   var trigger = $(this);
-    //   var tool_tip_id = trigger.attr("data-tool-tip-id");
-    //   var tool_tip = $("#" + tool_tip_id);
+      tool_tip.show();
+    }).delegate(".html_tool_tip_trigger", "mouseleave", function(event) {
+      var trigger = $(this);
+      var tool_tip_id = trigger.attr("data-tool-tip-id");
+      var tool_tip = $("#" + tool_tip_id);
 
-    //   tool_tip.hide();
-    // });
+      tool_tip.hide();
+    });
 
     /////////////////////////////////////////////////////////////////////
     //

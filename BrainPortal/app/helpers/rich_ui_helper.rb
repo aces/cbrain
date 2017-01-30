@@ -39,9 +39,31 @@ module RichUiHelper
     return h(cropped_header) if cropped_header.present? && body.present? && (cropped_header == body)
 
     if body.blank?
-      link = "<span class=\"pop\" data-toggle=\"popover\" data-placement=\"right\" data-trigger=\"focus\" data-container=\"body\" data-content=\"" + header + "\" data-html=\"true\">" + cropped_header + " (more) </span>"
+      link = <<-DOC
+        <span class="pop"
+              data-toggle="popover"
+              data-placement="right"
+              data-trigger="focus"
+              data-container="body"
+              data-content="#{header}"
+              data-html="true">
+          #{cropped_header} (more)
+        </span>
+      DOC
     else
-      link = "<span class=\"pop\" data-toggle=\"popover\" data-placement=\"right\" data-trigger=\"focus\" data-container=\"body\" data-content=\"" + body + "\" title=\"" + header + "\" data-html=\"true\">" + cropped_header + " (more) </span>"
+      link = <<-DOC
+        <span class="pop"
+              data-toggle="popover"
+              data-placement="right"
+              data-trigger="focus"
+              data-container="body"
+              data-content="#{body}"
+              title="#{header}"
+              data-html="true">
+          #{cropped_header} (more)
+        </span>
+      DOC
+
     end
     link.html_safe
   end

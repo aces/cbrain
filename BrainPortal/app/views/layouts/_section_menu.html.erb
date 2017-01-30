@@ -23,12 +23,10 @@
 -%>
 
 <!-- ************************ -->
-<!-- PARTIAL: ACCOUNT SECTION -->
+<!-- PARTIAL: MENU SECTION -->
 <!-- ************************ -->
 
 <%
-  # We can colorize the CBRAIN interface based on the current GIT branch
-  # One only needs to define a CSS class 'account_git_branch_NAME'
   git_branch = CBRAIN::CBRAIN_Git_Branch.presence || "unknown"
 %>
 
@@ -44,110 +42,222 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="<%= home_path %>"><img src="/images/cbrain-logo.png" height="25em"></a>
+      <a class="navbar-brand" href="<%= home_path %>">
+        <img src="/images/cbrain-logo.png" height="25em">
+      </a>
     </div>
     <div class="collapse navbar-collapse" id="cbrain-menu-collapse">
-    <ul class="nav navbar-nav">
-      <% if current_user %>
-        <li class="dropdown"  <%= set_selected(params[:controller], :groups) %>><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Project: <%= current_project.try(:name) || "none" %> <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <% current_user.groups.where(:type => "WorkGroup", :invisible => false).order(:name).limit(20).all.each do |g| %>
-              <li><%= link_to h(crop_text_to(95, g.name)), {:controller => :groups, :action => :switch, :id  => g.id}, { :datatype => :script, :method => :post } %></li>
-            <% end %>
-            <li><%= link_to "See all files and tasks", { :controller => :groups, :action => :switch, :id  => "all" }, { :datatype => :script, :method => :post } %></li>
-            <li><%= link_to "Full project list", groups_path %></li>
-          </ul>
-        </li>
-
+      <ul class="nav navbar-nav">
         <% if current_user %>
-          <% if !current_user.has_role?(:normal_user) || (current_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
-            <li <%= set_selected(params[:controller], :userfiles) %>><a href="<%= userfiles_path%>">Files</a></li>
-            <li <%= set_selected(params[:controller], :tasks) %>><a href="<%= tasks_path%>">Tasks</a></li>
-          <% end %>
-          <% unless current_user.has_role?(:normal_user) %>
-            <li <%= set_selected(params[:controller], :data_providers) %>><a href="<%= data_providers_path %>">Providers</a></li>
-            <li <%= set_selected(params[:controller], :bourreaux) %>><a href="<%= bourreaux_path %>">Servers</a></li>
-            <li <%= set_selected(params[:controller], :tools) %>><a href="<%= tools_path %>">Tools</a></li>
+          <li class="dropdown"  <%= set_selected(params[:controller], :groups) %>>
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+              Project: <%= current_project.try(:name) || "none" %>
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+              <% current_user.groups.where(:type => "WorkGroup", :invisible => false).order(:name).limit(20).all.each do |g| %>
+                <li>
+                  <%= link_to h(crop_text_to(95, g.name)), {:controller => :groups, :action => :switch, :id  => g.id}, { :datatype => :script, :method => :post } %>
+                </li>
+              <% end %>
+              <li>
+                <%= link_to "See all files and tasks", { :controller => :groups, :action => :switch, :id  => "all" }, { :datatype => :script, :method => :post } %>
+              </li>
+              <li>
+                <%= link_to "Full project list", groups_path %>
+              </li>
+            </ul>
+          </li>
 
-            <% if current_user.has_role?(:site_manager) %>
-              <li <%= set_selected(params[:controller], :users) %>><a href="<%= users_path %>">Users</a></li>
+          <% if current_user %>
+            <% if !current_user.has_role?(:normal_user) || (current_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
+              <li <%= set_selected(params[:controller], :userfiles) %>>
+                <a href="<%= userfiles_path%>">
+                  Files
+                </a>
+              </li>
+              <li <%= set_selected(params[:controller], :tasks) %>>
+                <a href="<%= tasks_path%>">
+                  Tasks
+                </a>
+              </li>
             <% end %>
 
+            <% unless current_user.has_role?(:normal_user) %>
+              <li <%= set_selected(params[:controller], :data_providers) %>>
+                <a href="<%= data_providers_path %>">
+                  Providers
+                </a>
+              </li>
+              <li <%= set_selected(params[:controller], :bourreaux) %>>
+                <a href="<%= bourreaux_path %>">
+                  Servers
+                </a>
+              </li>
+              <li <%= set_selected(params[:controller], :tools) %>>
+                <a href="<%= tools_path %>">
+                  Tools
+                </a>
+              </li>
+
+              <% if current_user.has_role?(:site_manager) %>
+                <li <%= set_selected(params[:controller], :users) %>>
+                  <a href="<%= users_path %>">
+                    Users
+                  </a>
+                </li>
+              <% end %>
+
+            <% end %>
+            <% if current_user.has_role?(:admin_user) %>
+              <li <%= set_selected(params[:controller], :sites) %>>
+                <a href="<%= sites_path %>">
+                  Sites
+                </a>
+              </li>
+              <% if @exception_count > 0 %>
+                <li <%= set_selected(params[:controller], :exception_logs) %>>
+                  <a href="<%= exception_logs_path %>">
+                    Exceptions
+                    <span class="badge progress-bar-info">
+                      <%= @exception_count %>
+                    </span>
+                  </a>
+                </li>
+              <% end %>
+            <% end %>
           <% end %>
+
+          <li <%= set_selected(params[:controller], :messages) %>>
+            <a href="<%= messages_path %>">
+              Messages
+              <% if @unread_message_count > 0 %>
+                <span class="badge progress-bar-info">
+                  <%= @unread_message_count %>
+                </span>
+              <% end %>
+            </a>
+          </li>
+
           <% if current_user.has_role?(:admin_user) %>
-            <li <%= set_selected(params[:controller], :sites) %>><a href="<%= sites_path %>">Sites</a></li>
-            <% if @exception_count > 0 %>
-              <li <%= set_selected(params[:controller], :exception_logs) %>><a href="<%= exception_logs_path %>">Exceptions <span class="badge progress-bar-info"><%= @exception_count %></span></a></li>
-            <% end %>
-          <% end %>
-        <% end %>
-
-        <li <%= set_selected(params[:controller], :messages) %>><a href="<%= messages_path %>">Messages <% if @unread_message_count > 0 %> <span class="badge progress-bar-info"><%= @unread_message_count %> </span><% end %></a></li>
-
-        <% if current_user.has_role?(:admin_user) %>
-          <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">People <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li><a href="<%= users_path %>">Users</a></li>
-              <li><a href="<%= access_profiles_path%>">Access Profiles</a></li>
-              <li><a href="<%= signups_path %>">Signups</a></li>
-            </ul>
-          </li>
-        <% end %>
-
-        <% if current_user.has_role?(:normal_user) %>
-          <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Resources <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li><a href="<%= data_providers_path %>"><span class="glyphicon glyphicon-hdd"></span>  Data Providers</a></li>
-              <li><a href="<%= bourreaux_path %>"><span class="glyphicon glyphicon-cog"></span>  Servers</a></li>
-              <li><a href="<%= tools_path%>"><span class="glyphicon glyphicon-wrench"></span>  Tools</a></li>
-            </ul>
-          </li>
-          <% if help_url.present? || support_email.present? %>
-            <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <span class="glyphicon glyphicon-question-sign"></span> Help <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-            <% if help_url.present? %>
-              <li><a href="<%= help_url %>" target="_blank"><span class="glyphicon glyphicon-comment"></span> Forum</a></li>
-            <% end %>
-            <% if support_email.present? %>
-              <li><a href="mailto:<%= support_email %>"><span class="glyphicon glyphicon-envelope"></span> Email</a></li>
-            <% end %>
-            </ul>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                People <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="<%= users_path %>">
+                    Users
+                  </a>
+                </li>
+                <li>
+                  <a href="<%= access_profiles_path%>">
+                    Access Profiles
+                  </a>
+                </li>
+                <li>
+                  <a href="<%= signups_path %>">
+                    Signups
+                  </a>
+                </li>
+              </ul>
             </li>
           <% end %>
-        <% end %>
-        <li><%= image_tag "ajax-loader.gif", :style => "display:none", :id => "loading_image" %></li>
-      <% end %>
-    </ul>
 
-    <ul class="nav navbar-nav navbar-right">
-      <% if current_user %>
-        <li>
-          <form id="cbsearch" action="<%= search_path %>" class="navbar-form" role="search" method="get">
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="Search" id="search" name="search">
-              <span class="input-group-btn">
-                <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
-              </span>
-            </div>
-          </form>
-        </li>
-        <li class="dropdown">
-        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><%= current_user.full_name %><span class="caret"></span></a>
-        <ul class="dropdown-menu">
-          <li class="dropdown-heading">Rev: <%= CBRAIN::CBRAIN_StartTime_Revision %>
-          <% if current_user.present? && current_user.has_role?(:admin_user) %>
-            Branch: <%= git_branch %>
-          <% end %> </li>
-          <li><a href="<%= user_path(current_user) %>"><span class="glyphicon glyphicon-user"></span> My Account</a></li>
-          <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Sign Out</a></li>
-        </ul>
-        </li>
-      <% else %>
-        <li><%= link_to "Sign in", "/login" %></li>
-      <% end %>
-    </ul>
+          <% if current_user.has_role?(:normal_user) %>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                Resources <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="<%= data_providers_path %>">
+                    <span class="glyphicon glyphicon-hdd"></span>
+                    Data Providers
+                  </a>
+                </li>
+                <li>
+                  <a href="<%= bourreaux_path %>">
+                    <span class="glyphicon glyphicon-cog"></span>  Servers
+                  </a>
+                </li>
+                <li>
+                  <a href="<%= tools_path%>">
+                    <span class="glyphicon glyphicon-wrench"></span>  Tools
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <% if help_url.present? || support_email.present? %>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                  <span class="glyphicon glyphicon-question-sign"></span> Help <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <% if help_url.present? %>
+                    <li>
+                      <a href="<%= help_url %>" target="_blank">
+                        <span class="glyphicon glyphicon-comment"></span> Forum
+                      </a>
+                    </li>
+                  <% end %>
+                  <% if support_email.present? %>
+                    <li>
+                      <a href="mailto:<%= support_email %>">
+                        <span class="glyphicon glyphicon-envelope"></span> Email
+                      </a>
+                    </li>
+                  <% end %>
+                </ul>
+              </li>
+            <% end %>
+          <% end %>
+
+          <li>
+            <%= image_tag "ajax-loader.gif", :style => "display:none", :id => "loading_image" %>
+          </li>
+        <% end %>
+      </ul>
+
+      <ul class="nav navbar-nav navbar-right">
+        <% if current_user %>
+          <li>
+            <form id="cbsearch" action="<%= search_path %>" class="navbar-form" role="search" method="get">
+              <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search" id="search" name="search">
+                <span class="input-group-btn">
+                  <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
+                </span>
+              </div>
+            </form>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+              <%= current_user.full_name %><span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="dropdown-heading">
+                Rev: <%= CBRAIN::CBRAIN_StartTime_Revision %>
+                <% if current_user.present? && current_user.has_role?(:admin_user) %>
+                  Branch: <%= git_branch %>
+                <% end %>
+              </li>
+              <li>
+                <a href="<%= user_path(current_user) %>">
+                  <span class="glyphicon glyphicon-user"></span> My Account
+                </a>
+              </li>
+              <li>
+                <a href="/logout">
+                  <span class="glyphicon glyphicon-log-out"></span> Sign Out
+                </a>
+              </li>
+            </ul>
+          </li>
+        <% else %>
+          <li><%= link_to "Sign in", "/login" %></li>
+        <% end %>
+      </ul>
     </div>
   </div><!-- /.container-fluid -->
 </nav>

@@ -253,23 +253,18 @@ module ResourceLinkHelper
     return "(None)" if user.blank?
     cb_error "This method requires the first argument to be a User object." unless user.is_a?(User)
 
-    options[:html_options] ||= {}
-
-    options[:html_options]["data-toggle"] = "popover"
-    options[:html_options]["data-placement"] = "right"
-    options[:html_options][:class] = "pop"
-    options[:html_options]["data-trigger"] = "focus"
-    options[:html_options]["data-container"] = "body"
-    options[:html_options]["data-content"] = (
-                      "<small>#{h(user.full_name)}<br>" +
-                      (user.city.blank?  ? "" : "City: #{h(user.city)}<br>") +
-                      (user.site.blank?  ? "" : "Site: #{h(user.site.name)}<br>") +
-                      (user.email.blank? ? "" : "Email: #{h(user.email)}<br>") +
-                      "</small>"
-                      ).html_safe
-    options[:html_options]["data-html"] = "true"
-
-    link_to_user_if_accessible(user,current_user,options)
+    capture do
+      html_tool_tip(link_to_user_if_accessible(user,current_user,options), :offset_x => 60) do
+        (
+        "<div class=\"left_align\">\n" +
+        "#{h(user.full_name)}<br>\n" +
+        (user.city.blank?  ? "" : "City: #{h(user.city)}<br/>\n") +
+        (user.site.blank?  ? "" : "Site: #{h(user.site.name)}<br/>\n") +
+        (user.email.blank? ? "" : "Email: #{h(user.email)}<br/>\n") +
+        "</div>"
+        ).html_safe
+      end
+    end
 
   end
 
