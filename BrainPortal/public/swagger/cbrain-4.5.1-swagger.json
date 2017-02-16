@@ -615,7 +615,7 @@
                         "default": 1
                     },
                     {
-                        "name": "basenames",
+                        "name": "basenames[]",
                         "in": "formData",
                         "description": "An array containing the filenames to register.",
                         "type": "array",
@@ -629,7 +629,7 @@
                         "required": true
                     },
                     {
-                        "name": "filetypes",
+                        "name": "filetypes[]",
                         "in": "formData",
                         "description": "An array containing the filetypes associated with the files to register",
                         "type": "array",
@@ -683,7 +683,7 @@
                         "default": 1
                     },
                     {
-                        "name": "basenames",
+                        "name": "basenames[]",
                         "in": "formData",
                         "description": "An array containing the filenames to unregister.",
                         "type": "array",
@@ -746,7 +746,7 @@
                         "type": "integer"
                     },
                     {
-                        "name": "basenames",
+                        "name": "basenames[]",
                         "in": "formData",
                         "type": "array",
                         "items": {
@@ -1360,7 +1360,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "file_ids",
+                        "name": "file_ids[]",
                         "in": "formData",
                         "type": "array",
                         "items": {
@@ -1400,7 +1400,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "file_ids",
+                        "name": "file_ids[]",
                         "in": "formData",
                         "type": "array",
                         "items": {
@@ -1435,7 +1435,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "file_ids",
+                        "name": "file_ids[]",
                         "in": "formData",
                         "type": "array",
                         "items": {
@@ -1481,7 +1481,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "file_ids",
+                        "name": "file_ids[]",
                         "in": "formData",
                         "type": "array",
                         "items": {
@@ -1516,7 +1516,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "file_ids",
+                        "name": "file_ids[]",
                         "in": "formData",
                         "type": "array",
                         "items": {
@@ -1552,7 +1552,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "file_ids",
+                        "name": "file_ids[]",
                         "in": "formData",
                         "type": "array",
                         "items": {
@@ -1611,53 +1611,27 @@
                 "tags": [
                     "Tasks"
                 ],
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
                 "parameters": [
                     {
-                        "name": "tool_config_id",
-                        "type": "integer",
-                        "in": "formData",
-                        "description": "The ID number of the Tool Config to be used to launch the Task.",
-                        "required": true
-                    },
-                    {
-                        "name": "cbrain_task[params]",
-                        "in": "formData",
-                        "description": "The parameters specific to the task, in an object. This action won't work in the interface to specify parameters because of limitations in Swagger.",
-                        "type": "string"
-                    },
-                    {
-                        "name": "cbrain_task[results_data_provider_id]",
-                        "type": "integer",
-                        "in": "formData",
-                        "description": "ID of the DataProvider to store the results of the Task on."
-                    },
-                    {
-                        "name": "cbrain_task[description]",
-                        "in": "formData",
-                        "type": "string",
-                        "description": "Description of the Task."
-                    },
-                    {
-                        "name": "cbrain_task[user_id]",
-                        "in": "formData",
-                        "type": "integer",
-                        "description": "ID of the User the Task should be associated with."
-                    },
-                    {
-                        "name": "cbrain_task[group_id]",
-                        "in": "formData",
-                        "type": "integer",
-                        "description": "ID of the Group the Task should be associated with."
-                    },
-                    {
-                        "name": "authenticity_token",
-                        "in": "formData",
-                        "type": "string",
-                        "description": "The token returned by /session/new",
-                        "required": true
+                        "name": "Parameters",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "params",
+                                "authenticity_token"
+                            ],
+                            "properties": {
+                                "authenticity_token": {
+                                    "type": "string",
+                                    "description": "The token returned by /session/new"
+                                },
+                                "params": {
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 ],
                 "responses": {
