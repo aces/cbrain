@@ -27,7 +27,7 @@ class Signup < ActiveRecord::Base
   attr_accessible       :title, :first, :middle, :last,
                         :institution, :department, :position, :email,
                         :street1, :street2, :city, :province, :country, :postal_code,
-                        :login, :time_zone, :comment, :admin_comment
+                        :login, :time_zone, :comment, :admin_comment, :hide
 
   validates_presence_of :first, :last,
                         :institution, :department, :position, :email,
