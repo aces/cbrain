@@ -33,6 +33,14 @@
     <%= submit_tag "Delete",                :class => "button" %>
     <%= submit_tag "Adjust Login",          :class => "button" %>
     <%= submit_tag "Resend Confirm Email",  :class => "button" %>
+    <%= submit_tag "Hide",                  :class => "button" %>
+
+    <% if @scope.custom[:view_hidden] %>
+      <%= link_to "Hide Hidden", { :action => :index, :params => {:view_hidden => false} }, :class => "button" %>
+    <% else %>
+      <%= link_to "Show Hidden", { :action => :index, :params => {:view_hidden => true} }, :class => "button" %>
+    <% end %>
+
   </div>
 
   <hr>

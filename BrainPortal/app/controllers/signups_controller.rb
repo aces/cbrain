@@ -166,7 +166,20 @@ class SignupsController < ApplicationController
 
     scope_default_order(@scope, 'created_at', :desc)
 
-    @base_scope       = Signup
+    if params[:view_hidden].present?
+      if params[:view_hidden] == "true"
+        @scope.custom[:view_hidden] = true
+      else
+        @scope.custom[:view_hidden] = false
+      end
+    end
+
+    if @scope.custom[:view_hidden]
+      @base_scope = Signup
+    else
+      @base_scope = Signup.where(:hidden => false)
+    end
+
     @view_scope       = @scope.apply(@base_scope)
 
     # Prepare the Pagination object
@@ -198,6 +211,10 @@ class SignupsController < ApplicationController
 
     if params[:commit] =~ /Delete/i
       return delete_multi
+    end
+
+    if params[:commit] =~ /Hide/i
+      return hide_multi
     end
 
     # Default: unknown multi action?
@@ -264,6 +281,22 @@ class SignupsController < ApplicationController
 
     flash[:notice] = "Sent " + view_pluralize(count, "confirmation email") + "."
     render :action => :multi_action
+  end
+
+  def hide_multi #:nodoc:
+    reqids = params[:reqids] || []
+    reqs   = Signup.find(reqids)
+
+    count = 0
+    reqs.each do |req|
+      req[:hidden] = true
+      req.save
+      count += 1
+    end
+
+    flash[:notice] = "Hid " + view_pluralize(count, "record")
+
+    redirect_to :action => :index
   end
 
   private
