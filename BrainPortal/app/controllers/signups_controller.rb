@@ -217,6 +217,10 @@ class SignupsController < ApplicationController
       return hide_multi
     end
 
+    if params[:commit] =~ /Show/i
+      return show_multi
+    end
+
     # Default: unknown multi action?
     redirect_to :action => :index
   end
@@ -295,6 +299,22 @@ class SignupsController < ApplicationController
     end
 
     flash[:notice] = "Hid " + view_pluralize(count, "record")
+
+    redirect_to :action => :index
+  end
+
+  def show_multi #:nodoc:
+    reqids = params[:reqids] || []
+    reqs   = Signup.find(reqids)
+
+    count = 0
+    reqs.each do |req|
+      req[:hidden] = false
+      req.save
+      count += 1
+    end
+
+    flash[:notice] = "Unhid " + view_pluralize(count, "record")
 
     redirect_to :action => :index
   end
