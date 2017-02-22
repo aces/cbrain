@@ -169,14 +169,10 @@ class SignupsController < ApplicationController
     if params[:view_hidden].present?
       if params[:view_hidden] == "true"
         @scope.custom[:view_hidden] = true
-      else
-        @scope.custom[:view_hidden] = false
+        @base_scope = Signup.where(:hidden => true)
       end
-    end
-
-    if @scope.custom[:view_hidden]
-      @base_scope = Signup.where(:hidden => true)
     else
+      @scope.custom[:view_hidden] = false
       @base_scope = Signup.where(:hidden => false)
     end
 
