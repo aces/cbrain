@@ -156,7 +156,7 @@ cd $cb_test/BrainPortal || die "Cannot cd to BrainPortal directory"
 
 # Eventually, it would be nice if from a ENV variable set in Travis,
 # we could run only a subset of the tests.
-printf "${BLUE}Running rpec on BrainPortal side.${NC}\n"
+printf "${BLUE}Running rspec on BrainPortal side.${NC}\n"
 rspec spec || fail_portal="rspec on BrainPortal failed with return code $?"
 #CBRAIN_FAILTEST=1 rspec spec/modules/travis_ci_spec.rb || fail_portal="rspec on BrainPortal failed with return code $?"
 
@@ -171,7 +171,7 @@ cd $cb_test/Bourreau || die "Cannot cd to Bourreau directory"
 # we could run only a subset of the tests.
 # -> NOTE FIXME TODO : hardcoded 'spec/boutiques' for <-
 # -> the moment because no other test files work on Bourreau. <-
-printf "${BLUE}Running rpec on Bourreau side.${NC}\n"
+printf "${BLUE}Running rspec on Bourreau side.${NC}\n"
 rspec spec/boutiques || fail_bourreau="rspec on Bourreau failed with return code $?"
 
 

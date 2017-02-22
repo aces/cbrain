@@ -141,12 +141,13 @@ class UsersController < ApplicationController
       flash[:notice] = "User successfully created."
 
       # Find signup record matching login name, and log creation and transfer some info.
-      if signup = Signup.where(:login => @user.login, :approved_at => nil, :approved_by => nil).first
+      if signup = Signup.where(:id => params[:signup_id]).first
         current_user.addlog("Approved [[signup request][#{signup_path(signup)}]] for user '#{@user.login}'")
         @user.addlog("Account created after signup request approved by '#{current_user.login}'")
         signup.add_extra_info_for_user(@user)
         signup.approved_by = current_user.login
         signup.approved_at = Time.now
+        signup.user_id     = @user.id
         signup.save
       else # account was not created from a signup request? Still log some info.
         current_user.addlog_context(self,"Created account for user '#{@user.login}'")

@@ -109,7 +109,7 @@ class CbrainTask
       self.class.to_s, self.id,
       user.login,      group.name,
       cluster_workdir_size.presence || "unk",
-      bourreau.name
+      (bourreau.name rescue "(Preset)")
   end
 end
 

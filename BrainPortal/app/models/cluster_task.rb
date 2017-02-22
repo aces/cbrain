@@ -718,7 +718,42 @@ class ClusterTask < CbrainTask
     self.save
   end
 
-  # This is called by a Worker to finish processing a job that has
+  # This method must returns true if a task is at status 'Data Ready' and
+  # other properties allow it to enter post processing. It will be
+  # called by a BourreauWorker. The default behavior is to make a special check
+  # in the work directory to make sure the qsub_stdout_basename file
+  # is present if the task's updated_at timestamp is within a short
+  # window of time (hardcoded at 60 seconds here). This check is necessary
+  # because on some clusters, a job can be finished and yet the captured
+  # output file of the job might take up to a minute to appear in the
+  # work directory. If the BourreauWorker started to post process the task during
+  # the period when the file isn't there, it would mark it as 'Failed On Cluster'.
+  #
+  # This method can be overrided in particular subclasses, but it is highly
+  # recommended to at least invoke the super method first, e.g.
+  #
+  #   # In a subclass
+  #   def ready_to_post_process?
+  #     return false unless super
+  #     #more custom checks here
+  #   end
+  def ready_to_post_process?
+    # Basic properties of the task
+    return false unless self.status     == 'Data Ready'
+    return true  if     self.updated_at <  1.minute.ago # window elapsed; old tasks are considered a 'go'
+
+    # Check for qsub stdout file presence
+    stdout_file = (Pathname.new(self.full_cluster_workdir) + self.qsub_stdout_basename).to_s
+    return true  if     File.exists?(stdout_file) && File.size(stdout_file) > 0
+
+    # Well, at this point the task is super recently updated
+    # and the stdout file is not yet seen, so we postpone post processing.
+    message = "PostProcessing delayed: no stdout file yet available."
+    self.addlog(message) unless self.getlog[message]
+    false
+  end
+
+  # This is called by a BourreauWorker to finish processing a job that has
   # successfully run on the cluster. The main purpose
   # is to call the subclass' supplied save_result() method
   # then cleanup the temporary grid-aware directory.
@@ -732,7 +767,7 @@ class ClusterTask < CbrainTask
     # we have a worker subprocess, we no longer need
     # to have a spawn occur here.
     begin
-      self.addlog("Starting asynchronous postprocessing.")
+      self.addlog("Starting post processing.")
       self.record_cbraintask_revs
       self.update_size_of_cluster_workdir
       self.apply_tool_config_environment do
@@ -749,7 +784,7 @@ class ClusterTask < CbrainTask
           self.status_transition(self.status, "Failed On Cluster")
           self.addlog("Data processing failed on the cluster.")
         else
-          self.addlog("Asynchronous postprocessing completed.")
+          self.addlog("Post processing completed.")
           self.status_transition(self.status, "Completed")
         end
       end
@@ -932,7 +967,7 @@ class ClusterTask < CbrainTask
 
   # This triggers the recovery mechanism for all Failed tasks.
   # This simply sets a special value in the 'status' field
-  # that will be handled by the Bourreau Worker.
+  # that will be handled by the BourreauWorker.
   def recover
     return false if self.workdir_archived?
     curstat = self.status
@@ -958,7 +993,7 @@ class ClusterTask < CbrainTask
 
   # This triggers the restart mechanism for all Completed tasks.
   # This simply sets a special value in the 'status' field
-  # that will be handled by the Bourreau Worker. The +atwhat+
+  # that will be handled by the BourreauWorker. The +atwhat+
   # argument must be exactly one of "Setup", "Cluster" or "PostProcess".
   def restart(atwhat = "Setup")
     return false if self.workdir_archived?

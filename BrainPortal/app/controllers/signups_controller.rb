@@ -164,14 +164,24 @@ class SignupsController < ApplicationController
   def index #:nodoc:
     @scope = scope_from_session('signups')
 
-    scope_default_order(@scope, 'country')
+    scope_default_order(@scope, 'created_at', :desc)
 
-    @base_scope       = Signup.where({})
-    @signups          = @scope.apply(@base_scope)
+    if params[:view_hidden].present?
+      if params[:view_hidden] == "true"
+        @scope.custom[:view_hidden] = true
+        @base_scope = Signup.where(:hidden => true)
+      end
+    else
+      @scope.custom[:view_hidden] = false
+      @base_scope = Signup.where(:hidden => false)
+    end
+
+    @view_scope       = @scope.apply(@base_scope)
 
     # Prepare the Pagination object
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
-    @current_offset = (@scope.pagination.page - 1) * @scope.pagination.per_page
+
+    @signups          = @scope.pagination.apply(@view_scope)
 
     scope_to_session(@scope, 'signups')
 
@@ -197,6 +207,14 @@ class SignupsController < ApplicationController
 
     if params[:commit] =~ /Delete/i
       return delete_multi
+    end
+
+    if params[:commit] =~ /Hide/i
+      return hide_multi
+    end
+
+    if params[:commit] =~ /Show/i
+      return show_multi
     end
 
     # Default: unknown multi action?
@@ -263,6 +281,38 @@ class SignupsController < ApplicationController
 
     flash[:notice] = "Sent " + view_pluralize(count, "confirmation email") + "."
     render :action => :multi_action
+  end
+
+  def hide_multi #:nodoc:
+    reqids = params[:reqids] || []
+    reqs   = Signup.find(reqids)
+
+    count = 0
+    reqs.each do |req|
+      req[:hidden] = true
+      req.save
+      count += 1
+    end
+
+    flash[:notice] = "Hid " + view_pluralize(count, "record")
+
+    redirect_to :action => :index
+  end
+
+  def show_multi #:nodoc:
+    reqids = params[:reqids] || []
+    reqs   = Signup.find(reqids)
+
+    count = 0
+    reqs.each do |req|
+      req[:hidden] = false
+      req.save
+      count += 1
+    end
+
+    flash[:notice] = "Unhid " + view_pluralize(count, "record")
+
+    redirect_to :action => :index
   end
 
   private

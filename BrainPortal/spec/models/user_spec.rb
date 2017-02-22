@@ -705,14 +705,18 @@ describe User do
     let(:group_b) { create(:work_group,     :name  => "G_B",  :user_ids => [ user_a.id ] ) }
     let(:ap_b)    { create(:access_profile, :name  => "AP_B", :user_ids => [ user_a.id ], :group_ids => [ group_b.id ] ) }
 
-    # User A is in Group O, not in any AP
+    # User 'A' is in Group 'O', not in any AP
     let(:group_o) { create(:work_group,     :name  => "G_Oth", :user_ids  => [ user_a.id ] ) }
+
+    # User 'A' is in AP 'C', which contains Groups 'A' and 'B' already
+    let(:ap_c)    { create(:access_profile, :name  => "AP_C", :user_ids => [ user_a.id ], :group_ids => [ group_a.id, group_b.id] ) }
 
     describe "#union_group_ids_from_access_profiles" do
       it "should iterate over all access_profiles" do
-        expect(user_a).to receive(:access_profiles).and_return([ ap_a, ap_b ])
+        expect(user_a).to receive(:access_profiles).and_return([ ap_a, ap_b, ap_c ])
         expect(ap_a).to   receive(:group_ids).and_return([ group_a.id ])
         expect(ap_b).to   receive(:group_ids).and_return([ group_b.id ])
+        expect(ap_c).to   receive(:group_ids).and_return([ group_a.id, group_b.id ])
         expect(user_a.union_group_ids_from_access_profiles).to match_array( [ group_a.id, group_b.id ] )
       end
     end

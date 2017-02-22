@@ -33,6 +33,14 @@
     <%= submit_tag "Delete",                :class => "button" %>
     <%= submit_tag "Adjust Login",          :class => "button" %>
     <%= submit_tag "Resend Confirm Email",  :class => "button" %>
+
+    <% if @scope.custom[:view_hidden] %>
+      <%= submit_tag "Unhide", :class => "button" %>
+      <%= link_to "Hide Hidden", { :action => :index, :params => {:view_hidden => false} }, :class => "button" %>
+    <% else %>
+      <%= submit_tag "Hide", :class => "button" %>
+      <%= link_to "Show Hidden", { :action => :index, :params => {:view_hidden => true} }, :class => "button" %>
+    <% end %>
   </div>
 
   <hr>
@@ -44,12 +52,18 @@
     })
   %>
 
+  <div class="pagination">
+    <span class="page_links">
+      (<%= pluralize @signups.total_entries, "signup" %>)
+    </span>
+  </div>
+
   <%=
     dynamic_scoped_table(@signups,
       :class      => [ :resource_list ],
       :id         => "signups_table",
       :order_map  => {
-        :creation_date  =>  { :a => 'created_at' },
+        :created_at     =>  { :a => 'signups.created_at' },
         :institution    =>  { :a => 'signups.institution' },
         :email          =>  { :a => 'signups.email' },
       },
@@ -57,6 +71,7 @@
     ) do |t|
   %>
     <%
+      t.paginate
       t.row do |d|
         {
           :select_param => 'reqids[]',
@@ -81,7 +96,7 @@
     <%
       t.column("Email", :email,
         :sortable => true
-      ) { |d| red_if(d.dup_email?, d.email) }
+      ) { |d| red_if((d.dup_email? and not d.approved?), d.email) }
     %>
 
     <%
@@ -129,8 +144,16 @@
     %>
 
     <%
+      t.column("Private Comments", :admin_comment) do |d|
+        html_tool_tip(crop_text_to(40, d.admin_comment), :offset_x => 0, :offset_y => 20) do
+          simple_format(d.admin_comment, :sanitize => true)
+        end if d.admin_comment.present?
+      end
+    %>
+
+    <%
       t.column("In CBRAIN", :user) do |d|
-        user = User.where(:login => d.login).first
+        user = User.where(:id => d.user_id).first
         if (user)
           link_to_user_with_tooltip(user)
         else
@@ -138,6 +161,15 @@
         end
       end
      %>
+
+    <%
+      t.column("Created", :created_at,
+        :sortable => true,
+        :sort_order => :desc) do |d|
+
+        to_localtime(d.created_at, :datetime)
+      end
+    %>
 
     <%
       t.column("Status", :status) do |d|
@@ -150,7 +182,7 @@
         <% else %>
           <span class="warning">(Email unconfirmed)</span>
         <% end %>
-        <% if d.dup_email? %>
+        <% if d.dup_email? and not d.approved? %>
           <span  class="warning">(Conflicting email)</span>
         <% end %>
         <% if d.dup_login? %>
