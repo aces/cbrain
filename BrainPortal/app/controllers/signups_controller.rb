@@ -175,7 +175,7 @@ class SignupsController < ApplicationController
     end
 
     if @scope.custom[:view_hidden]
-      @base_scope = Signup
+      @base_scope = Signup.where(:hidden => true)
     else
       @base_scope = Signup.where(:hidden => false)
     end
