@@ -104,6 +104,8 @@ class Userfile < ActiveRecord::Base
                                             joins(:tags).where('tag_id IN (?)', n).uniq
                                           }
 
+  api_attr_visible :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable, :num_files, :hidden, :immutable, :archived, :description
+
   ##############################################
   # Miscelleneous methods
   ##############################################
@@ -186,7 +188,11 @@ class Userfile < ActiveRecord::Base
     self.class.pretty_type
   end
 
-
+  # Returns whether or not the userfile is compressed using the gzip format
+  def compressed?
+    gz_extension_pos = (name =~ /(\.gz)$/i)
+    gz_extension_pos.present?  # if no .gz extension found, file not zipped
+  end
 
 
   ##############################################

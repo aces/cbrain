@@ -30,6 +30,7 @@ class UserfilesController < ApplicationController
   api_available
 
   before_filter :login_required
+
   around_filter :permission_check, :only => [
       :download, :update_multiple, :delete_files,
       :create_collection, :change_provider, :quality_control,
@@ -40,6 +41,7 @@ class UserfilesController < ApplicationController
 
   # GET /userfiles
   # GET /userfiles.xml
+  # GET /userfiles.json
   def index #:nodoc:
     @scope = scope_from_session('userfiles')
 
@@ -150,8 +152,8 @@ class UserfilesController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.xml  { render :xml  => @userfiles.to_xml(:methods => :type) }
-      format.json { render :json => @userfiles.to_json(:methods => :type) }
+      format.xml  { render :xml  => (params[:ids_only].present? && api_request) ? @userfiles : @userfiles.for_api }
+      format.json { render :json => (params[:ids_only].present? && api_request) ? @userfiles : @userfiles.for_api }
       format.csv
     end
   end
@@ -319,8 +321,8 @@ class UserfilesController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml  { render :xml  => @userfile }
-      format.json { render :json => @userfile }
+      format.xml  { render :xml  => @userfile.for_api }
+      format.json { render :json => @userfile.for_api }
     end
   end
 
@@ -375,6 +377,7 @@ class UserfilesController < ApplicationController
 
   # POST /userfiles
   # POST /userfiles.xml
+  # POST /userfiles.json
 
   #The create action is used to save uploaded files to a DataProvider.
   #
@@ -478,6 +481,7 @@ class UserfilesController < ApplicationController
       respond_to do |format|
         format.html { redirect_to redirect_path }
         format.json { render :json => {:notice => "File Uploaded"} }
+        format.xml  { render :xml  => {:notice => "File Uploaded"} }
       end
       return
     end # save
@@ -490,7 +494,8 @@ class UserfilesController < ApplicationController
       flash[:error] += "Error: file #{basename} does not have one of the supported extensions: .tar, .tar.gz, .tgz or .zip.\n"
       respond_to do |format|
         format.html { redirect_to redirect_path }
-        format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
+        format.json { render :json => flash[:error], :status  => :unprocessable_entity}
+        format.xml  { render :xml  => flash[:error], :status  => :unprocessable_entity}
       end
       return
     end
@@ -503,7 +508,8 @@ class UserfilesController < ApplicationController
         flash[:error] = "Collection '#{collection_name}' already exists.\n"
         respond_to do |format|
           format.html { redirect_to redirect_path }
-          format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
+          format.json { render :json => flash[:error], :status  => :unprocessable_entity}
+          format.xml  { render :xml  => flash[:error], :status  => :unprocessable_entity}
         end
         return
       end
@@ -540,6 +546,7 @@ class UserfilesController < ApplicationController
         respond_to do |format|
           format.html { redirect_to redirect_path }
           format.json { render :json => {:notice => "Collection Uploaded" } }
+          format.xml  { render :xml  => {:notice => "Collection Uploaded" } }
         end
       else
         flash[:error] = "Collection '#{collection_name}' could not be created.\n"
@@ -548,7 +555,8 @@ class UserfilesController < ApplicationController
         end
         respond_to do |format|
           format.html { redirect_to redirect_path }
-          format.json { render :json  => flash[:error], :status  => :unprocessable_entity}
+          format.json { render :json => flash[:error], :status  => :unprocessable_entity}
+          format.xml  { render :xml  => flash[:error], :status  => :unprocessable_entity}
         end
       end # save collection
       return
@@ -578,11 +586,13 @@ class UserfilesController < ApplicationController
     respond_to do |format|
       format.html { redirect_to redirect_path }
       format.json { render :json => {:notice => "Archive Uploaded" } }
+      format.xml  { render :xml  => {:notice => "Archive Uploaded" } }
     end
   end
 
   # PUT /userfiles/1
   # PUT /userfiles/1.xml
+  # PUT /userfiles/1.json
   def update  #:nodoc:
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :write)
 
@@ -618,10 +628,12 @@ class UserfilesController < ApplicationController
         flash[:notice] += "#{@userfile.name} successfully updated."
         format.html { redirect_to(:action  => 'show') }
         format.xml  { head :ok, :content_type => 'text/plain' }
+        format.json { head :ok, :content_type => 'text/plain' }
       else
         @userfile.reload
         format.html { render(:action  => 'show') }
-        format.xml  { render :xml => @userfile.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @userfile.errors, :status => :unprocessable_entity }
+        format.json { render :json => @userfile.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -940,6 +952,7 @@ class UserfilesController < ApplicationController
       respond_to do |format|
         format.html { redirect_to :action => :index }
         format.json { render :json => { :error => flash[:error]}, :status => :forbidden }
+        format.xml  { render :xml  => { :error => flash[:error]}, :status => :forbidden }
       end
       return
     end
@@ -1359,7 +1372,7 @@ class UserfilesController < ApplicationController
   # Verify that all files selected for an operation
   # are accessible by the current user.
   def permission_check #:nodoc:
-    action_name = params[:action].to_s
+
     if params[:file_ids].blank?
       flash[:error] = "No files selected? Selection cleared.\n"
       redirect_to :action => :index
@@ -1368,9 +1381,9 @@ class UserfilesController < ApplicationController
 
     yield
   rescue ActiveRecord::RecordNotFound
-    flash[:error] += "\n" unless flash[:error].blank?
+    flash[:error]  += "\n" unless flash[:error].blank?
     flash[:error] ||= ""
-    flash[:error] += "You don't have appropriate permissions to apply the selected action to this set of files."
+    flash[:error]  += "You don't have appropriate permissions to apply the selected action to this set of files."
 
     redirect_to :action => :index
   end

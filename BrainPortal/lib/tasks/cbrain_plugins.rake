@@ -6,6 +6,46 @@
 namespace :cbrain do
   namespace :plugins do
 
+    verbose = false # TODO make a command-line param?
+
+    # Unfortunately we don't have access to cbrain.rb where some useful constants are defined in the
+    # CBRAIN class, such as CBRAIN::TasksPlugins_Dir ; if we ever change where plugins are stored, we
+    # have to update this here and the cbrain.rb file too.
+    plugins_dir             = Rails.root            + "cbrain_plugins"
+    installed_plugins_dir   = plugins_dir           + "installed-plugins"
+    userfiles_plugins_dir   = installed_plugins_dir + "userfiles"
+    tasks_plugins_dir       = installed_plugins_dir + "cbrain_task"
+    descriptors_plugins_dir = installed_plugins_dir + "cbrain_task_descriptors"
+
+    # Paths to public assets exposed by the web server
+    public_root      = Rails.root  + "public"
+    public_tasks     = public_root + "cbrain_plugins/cbrain_tasks" # normally empty and part of CBRAIN dist
+    public_userfiles = public_root + "cbrain_plugins/userfiles" # normally empty and part of CBRAIN dist
+
+    # Our own formatted action logger
+    logger = lambda do |action, package, type, model|
+      # action is what we do to the symlink
+      # package is a name such as 'cbrain-plugins-base'
+      # type is either 'userfile' or 'cbrain_task'
+      # model is the userfile or cbrain_task model name
+      pretty_type = type ; pretty_package = package
+      pretty_type    = 'file' if type =~ /userfile/i
+      pretty_type    = 'task' if type =~ /task/i
+      pretty_type    = 'desc' if type =~ /descriptor/i
+      pretty_package = package.sub('cbrain-plugins-','')
+      format = sprintf("%20s : Package=%-15s (%4s : %s)\n",action, pretty_package, pretty_type, model)
+      print format
+    end
+
+    # Problematic files
+    problem_files = []
+    show_problem_files = lambda do
+      return if problem_files.empty?
+      puts "These files seem to be problematic."
+      puts "You might want to clean them up manually."
+      puts " -> " + problem_files.join("\n -> ")
+    end
+
 
 
     #====================
@@ -17,7 +57,9 @@ namespace :cbrain do
     ##########################################################################
     desc "Install and configure CBRAIN plugins"
     ##########################################################################
-    task :all => [ :plugins, :public_assets ]
+    task :all => [ :plugins, :public_assets ] do
+      puts "All done."
+    end
 
 
 
@@ -26,52 +68,49 @@ namespace :cbrain do
     ##########################################################################
     task :plugins do
 
-      puts "Installing tasks and userfiles, as found in installed CBRAIN plugin packages..."
-
-      # Unfortunately we don't have access to cbrain.rb where some useful constants are defined in the
-      # CBRAIN class, such as CBRAIN::TasksPlugins_Dir ; if we ever change where plugins are stored, we
-      # have to update this here and the cbrain.rb file too.
-      plugins_dir             = Rails.root            + "cbrain_plugins"
-      installed_plugins_dir   = plugins_dir           + "installed-plugins"
-      userfiles_plugins_dir   = installed_plugins_dir + "userfiles"
-      tasks_plugins_dir       = installed_plugins_dir + "cbrain_task"
-      descriptors_plugins_dir = installed_plugins_dir + "cbrain_task_descriptors"
+      puts "Installing tasks and userfiles, as found in installed CBRAIN plugin packages..." if verbose
 
       Dir.chdir(plugins_dir.to_s) do
-        packages = Dir.glob('*').reject { |path| path =~ /^(installed-plugins)$/ }.select { |f| File.directory?(f) }
+        packages = Dir.glob('*').reject { |path| path =~ /^(installed-plugins)$/ }.select { |f| File.directory?(f) }.sort
 
-        puts "Skipping: No CBRAIN packages detected in plugins directory '#{plugins_dir}'." if packages.empty?
+        puts "Skipping: No CBRAIN packages detected in plugins directory '#{plugins_dir}'." if verbose && packages.empty?
 
         # Each package
         packages.each do |package|
-          puts "Checking plugins in package '#{package}'..."
+          puts "Checking plugins in package '#{package}'..." if verbose
           Dir.chdir(package) do
 
             # Setup a single unit (userfiles, tasks or descriptors)
             setup = lambda do |glob, name, directory, condition: nil, after: nil|
               files = Dir.glob(glob)
               files.select!(&condition) if condition
-              puts "Found #{files.size} #{name}(s) to set up..."
+              puts "Found #{files.size} #{name}(s) to set up..." if verbose
               files.each do |u_slash_f|
                 plugin           = Pathname.new(u_slash_f).basename.to_s
                 symlink_location = directory   + plugin
                 plugin_location  = plugins_dir + package + u_slash_f
                 symlink_value    = plugin_location.relative_path_from(symlink_location.parent)
 
-                if File.exists?(symlink_location)
+                if File.exists?(symlink_location) || File.symlink?(symlink_location) # gee exists? returns false on bad symlink
                   if File.symlink?(symlink_location)
                     if File.readlink(symlink_location) == symlink_value.to_s
-                      puts "-> #{name.capitalize} already setup: '#{plugin}'."
+                      puts "-> #{name.capitalize} already setup: '#{plugin}'." if verbose
+                      logger.('CodeSymlinkIsOk', package, name, plugin) if verbose
                       next
                     end
-                    puts "-> Error: there is already a symlink with an unexpected value here:\n   #{symlink_location}"
+                    puts "-> Error: there is already a symlink with an unexpected value here:\n   #{symlink_location}" if verbose
+                    logger.('CodeSymlinkConflict', package, name, plugin)
+                    problem_files << symlink_location
                     next
                   end
-                  puts "-> Error: there is already an entry (file or directory) here:\n   #{symlink_location}"
+                  puts "-> Error: there is already an entry (file or directory) here:\n   #{symlink_location}" if verbose
+                  logger.('CodeSymlinkSpurious', package, name, plugin)
+                  problem_files << symlink_location
                   next
                 end
 
-                puts "-> Creating symlink for #{name} '#{plugin}'."
+                puts "-> Creating symlink for #{name} '#{plugin}'." if verbose
+                logger.('MakeCodeSymlink', package, name, plugin)
                 File.symlink symlink_value, symlink_location
 
                 after.(symlink_location) if after
@@ -103,6 +142,8 @@ namespace :cbrain do
         end # each package
       end # chdir plugins
 
+      show_problem_files.()
+
     end # task :plugins
 
 
@@ -110,40 +151,33 @@ namespace :cbrain do
     ##########################################################################
     desc "Create the symbolic links for public assets of installed CBRAIN tasks and userfiles."
     ##########################################################################
-    task :public_assets => :environment do
+    task :public_assets do
 
-      puts "Adjusting paths to public assets for tasks and userfiles..."
+      if Rails.root.to_s =~ /\/Bourreau$/
+        puts "No public assets need to be installed for a Bourreau."
+        next
+      end
 
-      # Paths to public assets exposed by the web server
-      public_root      = Rails.root  + "public"
-      public_tasks     = public_root + "cbrain_plugins/cbrain_tasks" # normally empty and part of CBRAIN dist
-      public_userfiles = public_root + "cbrain_plugins/userfiles" # normally empty and part of CBRAIN dist
-
-      # Unfortunately we don't have access to cbrain.rb where some useful constants are defined in the
-      # CBRAIN class, such as CBRAIN::TasksPlugins_Dir ; if we ever change where plugins are stored, we
-      # have to update this here and the cbrain.rb file too.
-      plugins_dir             = Rails.root            + "cbrain_plugins"
-      installed_plugins_dir   = plugins_dir           + "installed-plugins"
-      tasks_plugins_dir       = installed_plugins_dir + "cbrain_task"
-      userfiles_plugins_dir   = installed_plugins_dir + "userfiles"
-      descriptors_plugins_dir = installed_plugins_dir + "cbrain_task_descriptors"
+      puts "Adjusting paths to public assets for tasks and userfiles..." if verbose
 
       Dir.chdir(public_userfiles) do
         userfiles_public_dirs = Dir.glob(userfiles_plugins_dir + "*/views/public")
         if userfiles_public_dirs.empty?
-          puts "No public assets made available by any userfiles."
+          puts "No public assets made available by any userfiles." if verbose
         else
-          puts "Found #{userfiles_public_dirs.size} userfile(s) with public assets to set up..."
+          puts "Found #{userfiles_public_dirs.size} userfile(s) with public assets to set up..." if verbose
         end
 
         userfiles_public_dirs.each do |fullpath| # "/a/b/rails/cbrain_plugins/installed-plugins/userfiles/text_file/views/public"
           relpath  = Pathname.new(fullpath).relative_path_from(public_tasks) # ../(...)/cbrain_plugins/installed-plugins/userfiles/text_file/views/public
           filename = relpath.parent.parent.basename # "text_file"
           if File.exists?(filename)
-            puts "-> Assets for userfile already set up: '#{filename}'."
+            puts "-> Assets for userfile already set up: '#{filename}'." if verbose
+            logger.('AssetSymlinkIsOk','(installed)','userfile',filename) if verbose
             next
           end
-          puts "-> Creating assets symbolic link for userfile '#{filename}'."
+          puts "-> Creating assets symbolic link for userfile '#{filename}'." if verbose
+          logger.('MakeAssetSymlink','(installed)','userfile',filename)
           File.symlink(relpath,filename)  # "text_file" -> "../(...)/cbrain_plugins/installed-plugins/userfiles/text_file/views/public"
         end
       end
@@ -151,25 +185,29 @@ namespace :cbrain do
       Dir.chdir(public_tasks) do
         tasks_public_dirs = Dir.glob(tasks_plugins_dir + "*/views/public")
         if tasks_public_dirs.empty?
-          puts "-> No public assets made available by any tasks."
+          puts "-> No public assets made available by any tasks." if verbose
         else
-          puts "Found #{tasks_public_dirs.size} task(s) with public assets to set up..."
+          puts "Found #{tasks_public_dirs.size} task(s) with public assets to set up..." if verbose
         end
 
         tasks_public_dirs.each do |fullpath| # "/a/b/rails/cbrain_plugins/installed-plugins/cbrain_tasks/diagnostics/views/public"
           relpath  = Pathname.new(fullpath).relative_path_from(public_tasks) # ../(...)/cbrain_plugins/cbrain_tasks/diagnostics/views/public
           taskname = relpath.parent.parent.basename # "diagnostics"
           if File.exists?(taskname)
-            puts "-> Assets for task already set up: '#{taskname}'."
+            puts "-> Assets for task already set up: '#{taskname}'." if verbose
+            logger.('AssetSymlinkIsOk','(installed)','task',taskname) if verbose
             next
           end
-          puts "-> Creating assets symbolic link for task '#{taskname}'."
+          puts "-> Creating assets symbolic link for task '#{taskname}'." if verbose
+          logger.('MakeAssetSymlink','(installed)','task',taskname)
           File.symlink(relpath,taskname)  # "diagnostics" -> "../(...)/cbrain_plugins/installed-plugins/cbrain_tasks/diagnostics/views/public"
         end
       end
 
       # Generate help files for Boutiques tasks
       # Note: changes here should be synced with SchemaTaskGenerator if necessary
+      Rake::Task["environment"].invoke
+
       Dir.chdir(descriptors_plugins_dir) do
         helpFileDir = File.join( "cbrain_plugins", "cbrain_tasks", "help_files/" )
         basePath    = Rails.root.join( File.join('public/', helpFileDir) )
@@ -219,20 +257,12 @@ namespace :cbrain do
     ##########################################################################
     task :plugins do
 
-      # Unfortunately we don't have access to cbrain.rb where some useful constants are defined in the
-      # CBRAIN class, such as CBRAIN::TasksPlugins_Dir ; if we ever change where plugins are stored, we
-      # have to update this here and the cbrain.rb file too.
-      plugins_dir             = Rails.root            + "cbrain_plugins"
-      installed_plugins_dir   = plugins_dir           + "installed-plugins"
-      userfiles_plugins_dir   = installed_plugins_dir + "userfiles"
-      tasks_plugins_dir       = installed_plugins_dir + "cbrain_task"
-      descriptors_plugins_dir = installed_plugins_dir + "cbrain_task_descriptors"
-
       erase = lambda do |name, dir|
-        puts "Erasing all symlinks for #{name.pluralize} installed from CBRAIN plugins..."
+        puts "Erasing all symlinks for #{name.pluralize} installed from CBRAIN plugins..." if verbose
         Dir.chdir(dir.to_s) do
           Dir.glob('*').select { |f| File.symlink?(f) }.each do |f|
-            puts "-> Erasing link for #{name} '#{f}'."
+            puts "-> Erasing link for #{name} '#{f}'." if verbose
+            logger.('EraseCodeSymlink', '(installed)', name, f)
             File.unlink(f)
           end
         end
@@ -251,23 +281,25 @@ namespace :cbrain do
     ##########################################################################
     task :public_assets do
 
-      # Paths to public assets exposed by the web server
-      public_root      = Rails.root  + "public"
-      public_tasks     = public_root + "cbrain_plugins/cbrain_tasks" # normally empty and part of CBRAIN dist
-      public_userfiles = public_root + "cbrain_plugins/userfiles" # normally empty and part of CBRAIN dist
+      if Rails.root.to_s =~ /\/Bourreau$/
+        puts "No public assets need to be cleaned for a Bourreau."
+        next
+      end
 
-      puts "Erasing all symlinks for public assets of userfiles installed from CBRAIN plugins..."
+      puts "Erasing all symlinks for public assets of userfiles installed from CBRAIN plugins..." if verbose
       Dir.chdir(public_userfiles.to_s) do
         Dir.glob('*').select { |f| File.symlink?(f) }.each do |f|
-          puts "-> Erasing link for assets of userfile '#{f}'."
+          puts "-> Erasing link for assets of userfile '#{f}'." if verbose
+          logger.('EraseAssetSymlink', '(installed)', 'userfile', f)
           File.unlink(f)
         end
       end
 
-      puts "Erasing all symlinks for public assets of tasks installed from CBRAIN plugins..."
+      puts "Erasing all symlinks for public assets of tasks installed from CBRAIN plugins..." if verbose
       Dir.chdir(public_tasks.to_s) do
         Dir.glob('*').select { |f| File.symlink?(f) }.each do |f|
-          puts "-> Erasing link for assets of task '#{f}'."
+          puts "-> Erasing link for assets of task '#{f}'." if verbose
+          logger.('EraseAssetSymlink', '(installed)', 'task', f)
           File.unlink(f)
         end
       end
@@ -282,6 +314,7 @@ namespace :cbrain do
     task :orphans => :environment do
 
       # We'll need all available userfile and task models
+      CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
       Rails.application.eager_load!
 
       # Available userfile and task types
@@ -333,6 +366,7 @@ namespace :cbrain do
     task :orphans => :environment do
 
       # We'll need all available userfile and task models
+      CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
       Rails.application.eager_load!
 
       # Available userfile and task types

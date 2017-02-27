@@ -2,3 +2,5 @@
 --require rails_helper
 --require spec_helper
 --format documentation
+--order rand
+--fail-fast=50

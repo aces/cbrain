@@ -27,7 +27,9 @@ class PortalController < ApplicationController
 
   include DateRangeRestriction
 
-  before_filter :login_required, :except => [ :credits, :about_us, :welcome ]  # welcome is here so that the redirect to the login page doesn't show the error message
+  api_available :only => [ :swagger ] # GET /swagger returns the .json specification
+
+  before_filter :login_required, :except => [ :credits, :about_us, :welcome, :swagger ]  # welcome is here so that the redirect to the login page doesn't show the error message
   before_filter :admin_role_required, :only => :portal_log
 
   # Display a user's home page with information about their account.
@@ -87,26 +89,28 @@ class PortalController < ApplicationController
     ms_min    = params[:ms_min].presence.try(:to_i)
 
     # Hide some less important lines
+    # NOTE: the regex are for the EGREP command, so support less features than Ruby's or Perl's.
     remove_egrep = []
-    remove_egrep << "^Started "       if params[:hide_started].presence    == "1"
-    remove_egrep << "^ *Processing "  if params[:hide_processing].presence == "1"
-    remove_egrep << "^ *Parameters: " if params[:hide_parameters].presence == "1"
-    remove_egrep << "^ *Rendered"     if params[:hide_rendered].presence   == "1"
-    remove_egrep << "^ *Redirected"   if params[:hide_redirected].presence == "1"
-    remove_egrep << "^User:"          if params[:hide_user].presence       == "1"
-    remove_egrep << "^Completed"      if params[:hide_completed].presence  == "1"
-    # Note that in production, 'SQL', 'CACHE', 'AREL' and 'LOAD' are never shown.
-    remove_egrep << "^ *SQL "         if params[:hide_sql].presence        == "1"
-    remove_egrep << "^ *CACHE "       if params[:hide_cache].presence      == "1"
-    remove_egrep << "^ *AREL "        if params[:hide_arel].presence       == "1"
-    remove_egrep << "^ *[^ ]* Load"   if params[:hide_load].presence       == "1"
+    remove_egrep << "^Started "                                      if params[:hide_started].presence    == "1"
+    remove_egrep << "^ *Processing "                                 if params[:hide_processing].presence == "1"
+    remove_egrep << "^ *Parameters: "                                if params[:hide_parameters].presence == "1"
+    remove_egrep << "^ *Rendered"                                    if params[:hide_rendered].presence   == "1"
+    remove_egrep << "^ *Redirected"                                  if params[:hide_redirected].presence == "1"
+    remove_egrep << "^User:"                                         if params[:hide_user].presence       == "1"
+    remove_egrep << "^Completed"                                     if params[:hide_completed].presence  == "1"
+    # Note that in production, 'SQL', 'CACHE' and 'LOAD' are never shown.
+    remove_egrep << "^ *SQL "                                        if params[:hide_sql].presence        == "1"
+    remove_egrep << '^[\s\d\.ms\(\)]+(BEGIN|COMMIT|SELECT|UPDATE)'   if params[:hide_sql].presence        == "1"
+    remove_egrep << '^[\s\w]*Exists'                                 if params[:hide_exists].presence     == "1"
+    remove_egrep << "^ *CACHE "                                      if params[:hide_cache].presence      == "1"
+    remove_egrep << "^ *[^ ]* Load"                                  if params[:hide_load].presence       == "1"
 
     # Hiding some lines disable some filters, because we hide before we filter. :-(
-    meth_name = nil if params[:hide_started].presence   == "1"
-    ctrl_name = nil if params[:hide_started].presence   == "1"
-    user_name = nil if params[:hide_user].presence      == "1"
-    inst_name = nil if params[:hide_user].presence      == "1"
-    ms_min    = nil if params[:hide_completed].presence == "1"
+    meth_name = nil                                                  if params[:hide_started].presence    == "1"
+    ctrl_name = nil                                                  if params[:hide_started].presence    == "1"
+    user_name = nil                                                  if params[:hide_user].presence       == "1"
+    inst_name = nil                                                  if params[:hide_user].presence       == "1"
+    ms_min    = nil                                                  if params[:hide_completed].presence  == "1"
 
     # Extract the raw data with escape sequences filtered.
 
@@ -116,12 +120,12 @@ class PortalController < ApplicationController
 
     # Version 2: filter first, tail after. Bad if log file is really large, but perl is fast.
     command  = "perl -pe 's/\\e\\[[\\d;]*\\S//g' #{Rails.configuration.paths["log"].first.to_s.bash_escape}"
-    command += " | grep -E -v '#{remove_egrep.join("|")}'" if remove_egrep.size > 0
+    command += " | perl -n -e 'print unless /#{remove_egrep.join("|")}/'" if remove_egrep.size > 0
     command += " | tail -#{num_lines}"
 
     # Slurp it all
     log = IO.popen(command, "r") { |io| io.read }
-    log.gsub!(/\A(Started)/, "\n\\1")
+    log.gsub!(/^(Started)/, "\n\\1")
 
     @user_counts = Hash.new(0) # For select box.
 
@@ -361,6 +365,23 @@ class PortalController < ApplicationController
     @results = @search.present? ? ModelsReport.search_for_token(@search, current_user) : {}
   end
 
+  # A HTML GET request produces a SwaggerUI information page.
+  # A JSON GET request sends the swagger specification.
+  def swagger
+    # Find latest JSON swagger spec.
+    # FIXME sort() will break when comparing versions...
+    @specfile = Dir.entries(Rails.root + "public" + "swagger").grep(/\Acbrain-.*-swagger.json\z/).sort.last
+    if (@specfile.blank?)
+      flash[:error] = "Cannot find SWAGGER specification for the service. Sorry."
+      redirect_to start_page_path
+      return
+    end
+    respond_to do |format|
+      format.html
+      format.json { send_file "public/swagger/#{@specfile}", :stream  => true }
+    end
+  end
+
   private
 
   def merge_vals_as_array(*sub_reports) #:nodoc:
@@ -384,18 +405,18 @@ class PortalController < ApplicationController
 
     # data.gsub!(/\e\[[\d;]+m/, "") # now done when fetching the raw log, with perl (see above)
 
-    data.gsub!(/\AStarted.+/)                    { |m| "<span class=\"log_started\">#{m}</span>" }
-    data.gsub!(/  Parameters: .+/)               { |m| "<span class=\"log_parameters\">#{m}</span>" }
-    data.gsub!(/  Processing by .+/)             { |m| "<span class=\"log_processing\">#{m}</span>" }
-    data.gsub!(/\ACompleted.* in \d{1,3}ms/)     { |m| "<span class=\"log_completed_fast\">#{m}</span>" }
-    data.gsub!(/\ACompleted.* in [1-4]\d\d\dms/) { |m| "<span class=\"log_completed_slow\">#{m}</span>" }
-    data.gsub!(/\ACompleted.* in [5-9]\d\d\dms/) { |m| "<span class=\"log_completed_very_slow\">#{m}</span>" }
-    data.gsub!(/\ACompleted.* in \d+\d\d\d\dms/) { |m| "<span class=\"log_completed_atrociously_slow\">#{m}</span>" }
-    data.gsub!(/\AUser: \S+/)                    { |m| "<span class=\"log_user\">#{m}</span>" }
-    data.gsub!(/ using \S+/)                     { |m| "<span class=\"log_browser\">#{m}</span>" }
+    data.gsub!(/^Started.+/)                           { |m| "<span class=\"log_started\">#{m}</span>" }
+    data.gsub!(/^\s*Parameters: .+/)                   { |m| "<span class=\"log_parameters\">#{m}</span>" }
+    data.gsub!(/^\s*Processing by .+/)                 { |m| "<span class=\"log_processing\">#{m}</span>" }
+    data.gsub!(/^Completed.* in \d{1,3}\.?\d*ms/)      { |m| "<span class=\"log_completed_fast\">#{m}</span>" }
+    data.gsub!(/^Completed.* in [1-4]\d\d\d\.?\d*ms/)  { |m| "<span class=\"log_completed_slow\">#{m}</span>" }
+    data.gsub!(/^Completed.* in [5-9]\d\d\d\.?\d*ms/)  { |m| "<span class=\"log_completed_very_slow\">#{m}</span>" }
+    data.gsub!(/^Completed.* in \d+\d\d\d\d\.?\d*ms/)  { |m| "<span class=\"log_completed_atrociously_slow\">#{m}</span>" }
+    data.gsub!(/^User: \S+/)                           { |m| "<span class=\"log_user\">#{m}</span>" }
+    data.gsub!(/ using \S+/)                           { |m| "<span class=\"log_browser\">#{m}</span>" }
 
     alt = :_1
-    data.gsub!(/  (SQL|CACHE|[A-Za-z\:]+ Load) \(\d+.\d+ms\)/) do |m|
+    data.gsub!(/^\s*(SQL|CACHE|[A-Za-z\:]+ Load)?\s*\(\d+.\d+ms\)/) do |m|
       alt = (alt == :_1) ? :_2 : :_1
       "<span class=\"log_alternating#{alt}\">#{m}</span>"
     end

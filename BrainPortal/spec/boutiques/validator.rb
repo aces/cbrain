@@ -56,8 +56,8 @@ inById    = lambda { |i| descriptor['inputs'].find{       |v| v['id']==i } || {}
 
 ## Checking command-line-keys and IDs ##
 
-# Every command-line key appears in the command line
-clkeys, cmdline = inputGet.( 'command-line-key' ), descriptor[ 'command-line' ]
+# Every value key appears in the command line
+clkeys, cmdline = inputGet.( 'value-key' ), descriptor[ 'command-line' ]
 clkeys.each { |k| errors.push( k + ' not in cmd line' ) unless cmdline.include?(k) }
 
 # Command-line keys are not contained within each other
@@ -102,9 +102,9 @@ descriptor["inputs"].each do |v|
     min, max = v["minimum"] || -1.0/0, v["maximum"] || 1.0/0
     errors.push( "#{v['id']} cannot have greater min (#{min}) than max (#{max})" ) if min > max
   # Enum-type inputs always have specified choices (at least 1), and the default must be in the choices set
-  elsif v["type"] == "Enum"
-    errors.push( "#{v['id']} must have at least one value choice" ) if (v["enum-value-choices"] || []).length < 1
-    badDefault = (ed = v["default-value"]).nil? ? false : !((v["enum-value-choices"] || []).include? ed)
+  elsif v["value-choices"]
+    errors.push( "#{v['id']} must have at least one value choice" ) if (v["value-choices"] || []).length < 1
+    badDefault = (ed = v["default-value"]).nil? ? false : !((v["value-choices"] || []).include? ed)
     errors.push( "#{v['id']} cannot have an default value outside its choices" ) if badDefault
   end
 

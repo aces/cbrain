@@ -82,6 +82,7 @@ module ActiveRecord #:nodoc:
     ###################################################################
 
     include CBRAINExtensions::ActiveRecordExtensions::HiddenAttributes
+    include CBRAINExtensions::ActiveRecordExtensions::ApiAttrVisible
 
     ###################################################################
     # +scopes+ method behaviour lost in Rails 3.1.

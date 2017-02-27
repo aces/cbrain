@@ -203,7 +203,7 @@ module SchemaTaskGenerator
       name         = @descriptor['name']
       version      = @descriptor['tool-version'] || '(unknown)'
       description  = @descriptor['description']  || ''
-      docker_image = @descriptor['docker-image']
+      docker_image = (@descriptor['container-image'] || {})['image']
       resource     = RemoteResource.current_resource
 
       # Create and save a new Tool for the task, unless there's already one.

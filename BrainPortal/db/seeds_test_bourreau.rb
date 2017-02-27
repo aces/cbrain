@@ -82,10 +82,7 @@ end
 # Seeding steps starts here
 #------------------------------------------------
 
-raise "The seeding process must be run by a process connected to a terminal" unless
-  STDIN.tty? && STDOUT.tty? && STDERR.tty?
-stty_save = `stty -g`.chomp
-trap('INT') { system('stty', stty_save) ; puts "\n\nInterrupt. Exiting."; exit(0) }
+trap('INT') { puts "\n\nInterrupt. Exiting."; exit(0) }
 hostname = Socket.gethostname
 
 myself = RemoteResource.current_resource
@@ -122,7 +119,7 @@ BASE_DIR
 
 default_support_dir     = "#{rails_home}/seeds_dev_support_dir"
 print "[#{default_support_dir}] "
-seeds_dev_support_dir   = STDIN.gets.strip.presence
+seeds_dev_support_dir   = STDIN.tty? ? STDIN.gets.strip.presence : nil
 seeds_dev_support_dir ||= default_support_dir
 Dir.mkdir(seeds_dev_support_dir) unless Dir.exists?(seeds_dev_support_dir)
 

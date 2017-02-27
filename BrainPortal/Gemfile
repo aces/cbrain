@@ -34,7 +34,6 @@ gem "thin"
 gem "pbkdf2-ruby"
 gem "json-schema"
 gem "aws-sdk"
-
 gem "rails_autolink"
 gem "will_paginate"
 
