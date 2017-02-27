@@ -72,7 +72,7 @@ class Signup < ActiveRecord::Base
   alias full_name full
 
   def approved? #:nodoc:
-    self.user_id.present?
+    self.approved_by.present? && self.approved_at.present?
   end
 
   def dup_email? #:nodoc:
