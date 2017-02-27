@@ -25,7 +25,9 @@
 <% custom_filter ||= @custom_filter %>
 
 <div class="row">
-  <div class="col-xs-4"><label for="data">Filename</label></div>
+  <div class="col-xs-4">
+    <label for="data">Filename</label>
+  </div>
   <div class="col-xs-4">
     <%= select :data, :file_name_type, [["Don't filter name", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], { :selected => custom_filter.data["file_name_type"] }, { :class => "form-control" } %>
   </div>
@@ -33,46 +35,88 @@
     <%= text_field_tag "data[file_name_term]", custom_filter.data["file_name_term"], :class => "form-control" %>
   </div>
 </div>
+
 <div class="row">
-  <div class="col-xs-4"><label for="data[parent_name_like]">Parent name contains <small>(lists children)</small>:</label></div>
-  <div class="col-xs-8"><%= text_field_tag "data[parent_name_like]", custom_filter.data["parent_name_like"], :class => "form-control" %></div>
+  <div class="col-xs-4">
+    <label for="data[parent_name_like]">Parent name contains <small>(lists children)</small>:</label>
+  </div>
+  <div class="col-xs-8">
+    <%= text_field_tag "data[parent_name_like]", custom_filter.data["parent_name_like"], :class => "form-control" %>
+  </div>
 </div>
+
 <div class="row">
-  <div class="col-xs-4"><label for="data[child_name_like]">Child name contains <small>(lists parents)</small>:</label></div>
-  <div class="col-xs-8"><%= text_field_tag "data[child_name_like]", custom_filter.data["child_name_like"], :class => "form-control" %></div>
+  <div class="col-xs-4">
+    <label for="data[child_name_like]">Child name contains <small>(lists parents)</small>:</label>
+  </div>
+  <div class="col-xs-8">
+    <%= text_field_tag "data[child_name_like]", custom_filter.data["child_name_like"], :class => "form-control" %>
+  </div>
 </div>
+
 <div class="row">
-  <div class="col-xs-4"><label>File format</label></div>
+  <div class="col-xs-4">
+    <label>File format</label>
+  </div>
   <div class="col-xs-8"><%= userfile_type_select("data[type]", {:selector => custom_filter.data["type"]}, :include_blank => true, :multiple => true, :class => "form-control" ) %>
   </div>
 </div>
+
 <div class="row">
-  <div class="col-xs-4"><label>Filtering by date</label></div>
-  <div class="col-xs-8"><%= date_range_panel(custom_filter[:data] || {}, "data") %></div>
+  <div class="col-xs-4">
+    <label>Filtering by date</label>
+  </div>
+  <div class="col-xs-8">
+    <%= date_range_panel(custom_filter[:data] || {}, "data") %>
+  </div>
 </div>
+
 <div class="row">
-  <div class="col-xs-4"><label>Size</label></div>
-  <div class="col-xs-4"><%= select :data, :size_type, [["Don't filter size", ''], ['=', "0"], ['<', "1"], ['>', "2"]], {}, :selected  => custom_filter.data["size_type"], :class => "form-control" %></div>
+  <div class="col-xs-4">
+    <label>Size</label>
+  </div>
+  <div class="col-xs-4">
+    <%= select :data, :size_type, [["Don't filter size", ''], ['=', "0"], ['<', "1"], ['>', "2"]], {}, :selected  => custom_filter.data["size_type"], :class => "form-control" %>
+  </div>
   <div class="col-xs-4">
     <div class="input-group">
-      <%= text_field_tag "data[size_term]", custom_filter.data["size_term"], :class => "form-control" %><div class="input-group-addon">kb</div>
+      <%= text_field_tag "data[size_term]", custom_filter.data["size_term"], :class => "form-control" %>
+      <div class="input-group-addon">kb</div>
     </div>
   </div>
 </div>
+
 <div class="row">
-  <div class="col-xs-4"><label>Owner</label></div>
-  <div class="col-xs-8"><%= user_select("data[user_id]", { :selector => custom_filter.data["user_id"] }, { :include_blank => true, :class => "form-control" })  %></div>
+  <div class="col-xs-4">
+    <label>Owner</label>
+  </div>
+  <div class="col-xs-8">
+    <%= user_select("data[user_id]", { :selector => custom_filter.data["user_id"] }, { :include_blank => true, :class => "form-control" })  %>
+  </div>
 </div>
+
 <div class="row">
-  <div class="col-xs-4"><label>Project</label></div>
-  <div class="col-xs-8"><%= group_select("data[group_id]", { :selector => custom_filter.data["group_id"]}, { :include_blank => true, :class => "form-control" })  %></div>
+  <div class="col-xs-4">
+    <label>Project</label>
+  </div>
+  <div class="col-xs-8">
+    <%= group_select("data[group_id]", { :selector => custom_filter.data["group_id"]}, { :include_blank => true, :class => "form-control" })  %>
+  </div>
 </div>
+
 <div class="row">
-  <div class="col-xs-4"><label>Data Provider</label></div>
-  <div class="col-xs-8"><%= data_provider_select("data[data_provider_id]", { :selector => custom_filter.data["data_provider_id"] || '!' }, { :include_blank => true, :class => "form-control" })  %></div>
+  <div class="col-xs-4">
+    <label>Data Provider</label>
+  </div>
+  <div class="col-xs-8">
+    <%= data_provider_select("data[data_provider_id]", { :selector => custom_filter.data["data_provider_id"] || '!' }, { :include_blank => true, :class => "form-control" })  %>
+  </div>
 </div>
+
 <div class="row">
-  <div class="col-xs-4"><label>Archiving status</label></div>
+  <div class="col-xs-4">
+    <label>Archiving status</label>
+  </div>
   <div class="col-xs-8">
     <%= select :data, :archiving_status,
       [
@@ -82,22 +126,27 @@
       ], { :selected => custom_filter.data["archiving_status"] }, { :class => "form-control" } %>
   </div>
 </div>
+
 <div class="row">
-  <div class="col-xs-4"><label>Synchronization Status</label></div>
+  <div class="col-xs-4">
+    <label>Synchronization Status</label>
+  </div>
   <div class="col-xs-8">
     <%=
       select_tag "data[sync_status]", options_for_select(["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"], :selected => custom_filter.data["sync_status"]), { :multiple => true, :size => 6, :class => "form-control" }
     %>
   </div>
 </div>
+
 <% unless current_user.available_tags.blank? %>
   <div class="row">
-    <div class="col-xs-4"><label>Tags</label></div>
+    <div class="col-xs-4">
+      <label>Tags</label>
+    </div>
     <div class="col-xs-8">
-    <%=
-      select_tag "data[tag_ids]", options_for_select((current_user.available_tags.map { |tags| [tags.name, tags.id] }), :selected => custom_filter.data["tag_ids"]), {
-                :multiple => true, :size => 6, :class => "form-control" }
-    %>
+      <%=
+        select_tag "data[tag_ids]", options_for_select((current_user.available_tags.map { |tags| [tags.name, tags.id] }), :selected => custom_filter.data["tag_ids"]), { :multiple => true, :size => 6, :class => "form-control" }
+      %>
     </div>
   </div>
 <% end %>

@@ -147,7 +147,7 @@
               <li><%= pluralize(one_week_ex,"exception") %> in the past week.<br/></li>
               <li><%= pluralize(all_ex,"exception") %> in total.<br/></li>
             </ul>
-            <%= link_to "Show Exceptions", :controller => :exception_logs, :action => :index, :class => "btn btn-primary btn-block" %>
+            <%= link_to "Show Exceptions", { :controller => :exception_logs, :action => :index}, { :class => "btn btn-primary btn-block" } %>
           </div>
         </div>
       <% end %>

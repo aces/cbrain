@@ -83,7 +83,7 @@
 <% if @other_work_groups.size > 0 %>
   <h4>Select based on other work Projects</h4>
   <%= array_to_table(@other_work_groups,
-    :cols        => 5,
+    :cols        => 4,
     :table_class => 'table table-striped table-condensed',
     :td_class    => 'left_align',
     :fill_by_columns => true
@@ -107,7 +107,7 @@
 <% if @other_site_groups.size > 0 %>
   <h4>Select based on other site Projects</h4>
   <%= array_to_table(@other_site_groups,
-      :cols        => 5,
+      :cols        => 4,
       :table_class => 'table table-striped table-condensed',
       :td_class    => 'left_align',
       :fill_by_columns => true

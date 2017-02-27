@@ -287,7 +287,7 @@ class ApplicationController < ActionController::Base
   # Find new messages to be displayed at the top of the page.
   def prepare_messages #:nodoc:
     @unread_message_count = 0
-    @exception_count      = 0
+    @exception_count      = ExceptionLog.count
 
     return unless current_user
     return if     current_user.all_licenses_signed.blank?
@@ -311,8 +311,6 @@ class ApplicationController < ActionController::Base
         mess.update_attributes(:read  => true)
       end
     end
-
-    @exception_count = ExceptionLog.count
   end
 
   # Utility method that allows a controller to add

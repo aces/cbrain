@@ -32,7 +32,7 @@ module DocumentationHelper
   # shown documentation page.
   # See the help_document views for more details.
   def help_button(key, display = "Help")
-    doc = HelpDocument.find_by_key(key)
+    doc = HelpDocument.find_by_key(key) || HelpDocument.from_existing_file!(key)
 
     if doc
       link_to display, '#', { :data => { :toggle => "modal", :target => "#dynamic-help-modal", :id => doc.id, :key => key, :url => doc_path(doc) }, :class => "btn btn-primary" }
