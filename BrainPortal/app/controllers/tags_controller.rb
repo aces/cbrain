@@ -24,38 +24,47 @@ class TagsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available
+  api_available :only => [ :index, :show, :update, :destroy, :create ]
 
   before_filter :login_required
   before_filter :validate_params, :only => [:update, :create]
 
   # GET /tags
   # GET /tags.xml
+  # GET /tags.json
   def index #:nodoc:
+    @tags = current_user.tags.all
     respond_to do |format|
-      format.xml { render :xml => current_user.tags }
+      format.xml  { render :xml  => @tags.for_api }
+      format.json { render :json => @tags.for_api }
     end
   end
 
   # GET /tags/1
   # GET /tags/1.xml
+  # GET /tags/1.json
   def show #:nodoc:
+    @tag = current_user.tags.find(params[:id])
     respond_to do |format|
-      format.xml { render :xml => current_user.tags.find(params[:id]) }
+      format.xml  { render :xml  => @tag.for_api }
+      format.json { render :json => @tag.for_api }
     end
   end
 
   # POST /tags
   # POST /tags.xml
+  # POST /tags.json
   def create #:nodoc:
     @tag = Tag.new(params[:tag])
 
     respond_to do |format|
       if @tag.save
         flash[:notice] = 'Tag was successfully created.'
-        format.xml { render :xml => @tag, :status => :created, :location => @tag }
+        format.xml  { render :xml  => @tag.for_api, :status => :created, :location => @tag }
+        format.json { render :json => @tag.for_api, :status => :created, :location => @tag }
       else
-        format.xml { render :xml => @tag.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @tag.errors, :status => :unprocessable_entity }
+        format.json { render :json => @tag.errors, :status => :unprocessable_entity }
       end
       format.js
     end
@@ -63,6 +72,7 @@ class TagsController < ApplicationController
 
   # PUT /tags/1
   # PUT /tags/1.xml
+  # PUT /tags/1.json
   def update #:nodoc:
     @tag = current_user.tags.find(params[:id])
 
@@ -70,20 +80,24 @@ class TagsController < ApplicationController
       if @tag.update_attributes(params[:tag])
         flash[:notice] = 'Tag was successfully updated.'
         format.xml  { head :ok, :content_type => 'text/plain' }
+        format.json { head :ok }
       else
-        format.xml  { render :xml => @tag.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @tag.errors, :status => :unprocessable_entity }
+        format.json { render :json => @tag.errors, :status => :unprocessable_entity }
       end
     end
   end
 
   # DELETE /tags/1
   # DELETE /tags/1.xml
+  # DELETE /tags/1.json
   def destroy #:nodoc:
     @tag = current_user.tags.find(params[:id])
     @tag.destroy
 
     respond_to do |format|
       format.xml  { head :ok, :content_type => 'text/plain' }
+      format.json { head :ok, :content_type => 'text/plain' }
     end
   end
 

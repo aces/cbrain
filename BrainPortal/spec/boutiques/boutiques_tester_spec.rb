@@ -543,13 +543,13 @@ describe "BrainPortal Boutiques Tests" do
         @checkAfterForm.( task )
       end
       it "should work with appropriate enums" do
-        @descriptor['inputs'] << GenerateJsonInputDefault.('b','Enum','An enum arg',{'enum-value-choices' => ['a','b','c'], 'default-value' => 'b'})
+        @descriptor['inputs'] << GenerateJsonInputDefault.('b','String','An enum arg',{'value-choices' => ['a','b','c'], 'default-value' => 'b'})
         task = @generateTask.( 'defaults' )
         task.before_form
         @checkAfterForm.( task )
       end
       it "should fail with an inappropriate enum value" do
-        @descriptor['inputs'] << GenerateJsonInputDefault.('b','Enum','An enum arg',{'enum-value-choices' => ['a','b','c'], 'default-value' => 'd'})
+        @descriptor['inputs'] << GenerateJsonInputDefault.('b','String','An enum arg',{'value-choices' => ['a','b','c'], 'default-value' => 'd'})
         task = @generateTask.( 'defaults' )
         task.before_form
         @checkAfterForm.( task, 1, "acceptable value" ) # Should give an error relating to the enum having an unacceptable value

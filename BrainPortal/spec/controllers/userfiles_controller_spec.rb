@@ -66,7 +66,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should only display user's files if 'view all' is off" do
           get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>false}}}
-          expect(assigns[:userfiles].to_a).to match_array(Userfile.all(:conditions => {:user_id => admin.id}))
+          expect(assigns[:userfiles].to_a).to match_array(Userfile.where(:user_id => admin.id))
         end
 
         it "should not tree sort if 'tree_sort' is set" do
@@ -102,7 +102,7 @@ RSpec.describe UserfilesController, :type => :controller do
             admin_userfile.parent_id = admin_userfile_2.id
             admin_userfile.save
             get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "f"=>[{"t"=>"uf.hier", "o"=>"no_parent"}]}}
-            expect(assigns[:userfiles].to_a).to match_array(Userfile.all(:conditions => {:parent_id => nil}))
+            expect(assigns[:userfiles].to_a).to match_array(Userfile.where(:parent_id => nil))
           end
 
           it "should filter for no children" do
@@ -114,48 +114,48 @@ RSpec.describe UserfilesController, :type => :controller do
 
           it "should sort by name" do
             get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"name"}]}}
-            expect(assigns[:userfiles]).to eq(Userfile.all(:order => "userfiles.name"))
+            expect(assigns[:userfiles]).to eq(Userfile.order(:name).all)
           end
 
           it "should be able to reverse sort" do
             get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"name", "d"=>"desc"}]}}
-            expect(assigns[:userfiles]).to eq(Userfile.all(:order => "userfiles.name DESC"))
+            expect(assigns[:userfiles]).to eq(Userfile.order("name DESC").all)
           end
 
           it "should sort by type" do
             get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"type"}]}}
-            expect(assigns[:userfiles]).to eq(Userfile.all(:order => "userfiles.type"))
+            expect(assigns[:userfiles]).to eq(Userfile.order(:type).all)
           end
 
           it "should sort by owner name" do
             get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"users.login", "j"=>"users"}]}}
-            expect(assigns[:userfiles]).to eq(Userfile.all(:joins => :user, :order => "users.login"))
+            expect(assigns[:userfiles]).to eq(Userfile.joins(:user).order(:login).all)
           end
 
           it "should sort by creation date" do
             get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"created_at"}]}}
-            expect(assigns[:userfiles]).to eq(Userfile.all(:order => "userfiles.created_at"))
+            expect(assigns[:userfiles]).to eq(Userfile.order(:created_at).all)
           end
 
           it "should sort by size" do
             get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"size"}]}}
-            expect(assigns[:userfiles]).to eq(Userfile.all(:order => "userfiles.size"))
+            expect(assigns[:userfiles]).to eq(Userfile.order(:size).all)
           end
 
           it "should sort by project name" do
             get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"groups.name", "j"=>"groups"}]}}
-            expect(assigns[:userfiles]).to eq(Userfile.all(:joins => :group, :order => "groups.name"))
+            expect(assigns[:userfiles]).to eq(Userfile.joins(:group).order(:name).all)
           end
 
           it "should sort by project access" do
             [{"a"=>"group_writable"}]
             get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"group_writable"}]}}
-            expect(assigns[:userfiles].map(&:group_writable)).to eq(Userfile.all(:order => "userfiles.group_writable").map(&:group_writable))
+            expect(assigns[:userfiles].map(&:group_writable)).to eq(Userfile.order(:group_writable).all.map(&:group_writable))
           end
 
           it "should sort by provider" do
             get :index, "_scopes"=>{"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"data_providers.name", "j"=>"data_providers"}]}}
-            expect(assigns[:userfiles]).to eq(Userfile.all(:joins => :data_provider, :order => "data_providers.name"))
+            expect(assigns[:userfiles]).to eq(Userfile.joins(:data_provider).order(:name).all)
           end
         end
       end

@@ -52,6 +52,9 @@ class CbrainTask::BashScriptor < PortalTask
     if self.new_record? && (params[:num_files_per_task].blank? || params[:num_files_per_task].to_i < 1)
       params_errors.add(:num_files_per_task, "must be a number greater than 1.")
     end
+    if ((params[:bash_script].presence || "") !~ /\{cbrain_touch_when_completed\}/)
+      params_errors.add(:bash_script, "must include at least one instance of substitution of the keyword {cbrain_touch_when_completed}.")
+    end
     return ""
   end
 

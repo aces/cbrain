@@ -51,11 +51,19 @@
     ) { |s| overlay_description(s.description) }
 
     t.column("Projects", :projects) do |s|
-      (s.groups.sort_by(&:name).map { |g| link_to_group_if_accessible(g) }.join(", ").html_safe.presence) || "(None)"
+      if (s.groups.count > 4)
+        s.groups[0..3].sort_by(&:name).map { |g| link_to_group_if_accessible(g) }.join(", ").html_safe.presence + " ... "
+      else
+        s.groups.sort_by(&:name).map { |g| link_to_group_if_accessible(g) }.join(", ").html_safe.presence || "(None)"
+      end
     end
 
     t.column("Users", :users) do |s|
-      (s.users.sort_by(&:login).map { |u| link_to_user_if_accessible(u) }.join(", ").html_safe.presence) || "(None)"
+      if (s.users.count > 4)
+        s.users[0..3].sort_by(&:login).map { |u| link_to_user_if_accessible(u) }.join(", ").html_safe + " ... "
+      else
+        s.users.sort_by(&:login).map { |u| link_to_user_if_accessible(u) }.join(", ").html_safe.presence || "(None)"
+      end
     end
   %>
 <% end %>

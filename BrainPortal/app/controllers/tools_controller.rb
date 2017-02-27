@@ -25,6 +25,8 @@ class ToolsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  api_available :only => [:index, :show]
+
   before_filter :login_required
   before_filter :admin_role_required, :except  => [:index, :tool_config_select]
 
@@ -40,7 +42,8 @@ class ToolsController < ApplicationController
     respond_to do |format|
       format.js
       format.html # index.html.erb
-      format.xml  { render :xml => @tools }
+      format.xml  { render :xml  => @tools.for_api }
+      format.json { render :json => @tools.for_api }
     end
   end
 
@@ -117,6 +120,19 @@ class ToolsController < ApplicationController
         format.html { render :action => :new }
         format.xml  { render :xml => @tool.errors, :status => :unprocessable_entity }
       end
+    end
+  end
+
+  # GET /tools/1
+  # GET /tools/1.xml
+  # GET /tools/1.json
+  def show
+    @tool = current_user.available_tools.find(params[:id])
+
+    respond_to do |format|
+      format.html
+      format.json { @tool.for_api }
+      format.xml  { @tool.for_api }
     end
   end
 

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160907191509) do
+ActiveRecord::Schema.define(:version => 20170104222339) do
 
   create_table "access_profiles", :force => true do |t|
     t.string   "name",        :null => false
@@ -275,6 +275,36 @@ ActiveRecord::Schema.define(:version => 20160907191509) do
 
   add_index "sessions", ["session_id"], :name => "index_sessions_on_session_id"
   add_index "sessions", ["updated_at"], :name => "index_sessions_on_updated_at"
+
+  create_table "signups", :force => true do |t|
+    t.string   "title"
+    t.string   "first",         :null => false
+    t.string   "middle"
+    t.string   "last",          :null => false
+    t.string   "institution",   :null => false
+    t.string   "department"
+    t.string   "position"
+    t.string   "email",         :null => false
+    t.string   "website"
+    t.string   "street1"
+    t.string   "street2"
+    t.string   "city"
+    t.string   "province"
+    t.string   "country"
+    t.string   "postal_code"
+    t.string   "time_zone"
+    t.string   "service"
+    t.string   "login"
+    t.string   "comment"
+    t.string   "session_id"
+    t.string   "confirm_token"
+    t.boolean  "confirmed"
+    t.string   "approved_by"
+    t.datetime "approved_at"
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
+    t.string   "admin_comment"
+  end
 
   create_table "sites", :force => true do |t|
     t.string   "name"

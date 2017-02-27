@@ -22,84 +22,9 @@
 #
 -%>
 
-<% title 'Access Summary' %>
+<% title 'Tools and their versions' %>
 
-<% if @view == 'by_tool' || @view == 'by_bourreau' %>
-  <%
-    if @view == 'by_bourreau'
-      resources = @bourreaux
-      versus    = @tools
-    else
-      resources = @tools
-      versus    = @bourreaux
-    end
-  %>
-  <h1>Access Report, By <%= @view == 'by_bourreau' ? "Execution Server" : "Tool" %></h1>
-  <% resources.each do |resource| %>
-    <p>
-    <%= render :partial => 'by_resource',
-               :locals  => { :resource => resource,
-                             :versus   => versus,
-                             :users    => @users,
-                            }
-    %>
-  <% end %>
-<% elsif @view == 'by_user' %>
-  <h1>Tool Access Report, By User</h1>
-  <% @users.each do |user| %>
-    <p>
-    <%= render :partial => 'by_user',
-               :locals  => { :bourreaux => @bourreaux,
-                             :user      => user,
-                             :tools     => @tools,
-                            }
-    %>
-  <% end %>
-<% end %>
-
-<p>
-
-<h1>Quick Links To Individual Access Reports</h1>
-
-<h5>By Execution Server(or <%= link_to "all of them", :action => :index, :view => 'by_bourreau' %>)</h5>
-<%= array_to_table(Bourreau.all.sort { |a,b| a.name <=> b.name }, :table_class => 'simple', :rows => 1 ) do |bourreau,r,c| %>
-  <%= link_to bourreau.name, :action => :index, :bourreau_id => bourreau.id %>
-<% end %>
-
-<p>
-
-<h5>By Tool (or <%= link_to "all of them", :action => :index, :view => 'by_tool' %>)</h5>
-<%= array_to_table(Tool.all.sort { |a,b| a.name <=> b.name }, :table_class => 'simple', :td_class => 'no_wrap' ) do |tool,r,c| %>
-  <%= link_to tool.name, :action => :index, :tool_id => tool.id %>
-<% end %>
-
-<p>
-
-<h5>By User</h5>
-<%= array_to_table(User.all.sort { |a,b| a.login <=> b.login }, :table_class => 'simple' ) do |user,r,c| %>
-  <%= link_to user.login, :action => :index, :user_id => user.id %>
-<% end %>
-
-<p>
-
-<h5>By a more specific combinations of resources</h5>
-
-<%= form_tag( { :action => :index }, :method => :get) do %>
-
-Execution Server:
-<%= bourreau_select :bourreau_id, { :selector => (params[:bourreau_id] || "") }, { :include_blank => '(All servers, or...)' } %>
-
-Tool:
-<% toollist = Tool.all.sort { |a,b| a.name <=> b.name } %>
-<%= select_tag :tool_id, options_for_select( [ [ "(All tools, or...)", "" ] ] + (toollist.collect { |t| [ t.name, t.id.to_s ] } ), params[:tool_id] ) %>
-
-User:
-<%= user_select :user_id, { :selector => params[:user_id] }, { :include_blank => '(All users, or...)' } %>
-
-View By:
-<%= select_tag :view, options_for_select( [ [ "(Pick best)", "" ], [ 'By Server', 'by_bourreau' ], [ 'By Tool', 'by_tool' ], [ 'By User', 'by_user' ] ], params[:view] ) %>
-
-<%= submit_tag "Get report!" %>
-
-<% end %>
+<div id="tool_configs_table" class="index_block">
+  <%= render :partial => 'tool_configs_table' %>
+</div>
 

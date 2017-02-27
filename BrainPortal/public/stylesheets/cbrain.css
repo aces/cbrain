@@ -1026,6 +1026,7 @@ pre {
 }
 
 
+
 /* % ######################################################### */
 /* % Project buttons */
 /* % ######################################################### */
@@ -1634,6 +1635,11 @@ th.center_align_heading {
   margin-right: 0em;
 }
 
+.vertical_bar {
+  display: inline;
+  font-size: 1.3em;
+}
+
 /* Show task parameters */
 .task-show > table {
   border: 0;
@@ -2142,7 +2148,7 @@ img {
   box-shadow: 0px 0px 4px black inset;
   padding: 0.5em;
   margin: 0.5em;
-  display: table-cell;
+  display: inline-block;
 }
 
 /* % ######################################################### */

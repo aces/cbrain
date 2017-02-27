@@ -1,0 +1,6 @@
+--color
+--require rails_helper
+--require spec_helper
+--format documentation
+--order defined
+--fail-fast=50

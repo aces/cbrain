@@ -51,6 +51,9 @@ require __dir__ + "/lib/print_log.rb"
 # A set of old utilities mostly made obsolete by "ibc" above
 require __dir__ + "/lib/old_bourreau_control.rb"
 
+# Adds a few shortcuts helpful for development
+require __dir__ + "/lib/shortcuts.rb"
+
 #####################################################
 # Initial help message for user
 #####################################################

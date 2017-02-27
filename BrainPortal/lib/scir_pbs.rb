@@ -118,7 +118,7 @@ class ScirPbs < Scir
     private
 
     def qsubout_to_jid(txt) #:nodoc:
-      if txt && txt =~ /\A(\d+)/
+      if txt && txt.strip =~ /\A(\d+)/
         return Regexp.last_match[1]
       end
       raise "Cannot find job ID from qsub output.\nOutput: #{txt}"

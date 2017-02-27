@@ -786,7 +786,7 @@ class TasksController < ApplicationController
           next
         end
 
-        if task.user_id != current_user.id && current_user.type != 'AdminUser'
+        if task.user_id != current_user.id && ! current_user.has_role?(:admin_user)
           (skipped_list["you not allowed to #{operation} this task(s)"] ||= []) << task
           next
         end
@@ -852,7 +852,15 @@ class TasksController < ApplicationController
     end
 
     #current_user.addlog_context(self,"Sent '#{operation}' to #{tasklist.size} tasks.")
-    redirect_to :action => :index, :format  => request.format.to_sym
+
+    respond_to do |format|
+      format.html { redirect_to :action => :index }
+      format.js   { redirect_to :action => :index }
+      format.json { head :ok }
+      format.xml  { head :ok }
+    end
+
+
 
   end # method 'operation'
 

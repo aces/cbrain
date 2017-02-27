@@ -35,7 +35,7 @@
     %>
     <%= link_to_if(current_user.present?, image_tag("custom_logos/cbrain-large_white_alpha.png", :id => "header_logo").html_safe , start_page_path) %>
 
-    <% if current_user && !(params[:controller] == "groups" && params[:action] == "index") %>
+    <% if current_user && (params[:controller] == "userfiles" || params[:controller] == "tasks") %>
       <span>-</span>
       <%= hover_dropdown(link_to(current_project.try(:name) || "All", current_project ? group_path(current_project) : groups_path), :dropdown_class => "project_select_dropdown") do %>
           <div class="title">Quick Project Switcher</div>
@@ -84,10 +84,13 @@
              <%= link_to 'Servers', bourreaux_path %>
            </li>
            <li <%= set_selected(params[:controller], :tools) %>>
-            <%= link_to 'Tools', tools_path %>
+             <%= link_to 'Tools', tools_path %>
+           </li>
+           <li <%= set_selected(params[:controller], :tool_configs) %>>
+             <%= link_to 'Tool Versions', tool_configs_path %>
            </li>
            <li <%= set_selected(params[:controller], :users) %>>
-            <%= link_to 'Users', users_path %>
+             <%= link_to 'Users', users_path %>
            </li>
          <% end %>
          <% if current_user.has_role?(:admin_user) %>
@@ -100,7 +103,11 @@
            <li <%= set_selected(params[:controller], :exception_logs) %>>
              <%= link_to 'Exceptions', exception_logs_path %>
            </li>
+           <li <%= set_selected(params[:controller], :signups) %>>
+             <%= link_to 'Signups', signups_path %>
+           </li>
          <% end %>
+
        </ul>
     </div>  <!-- End id="main_menu" -->
 

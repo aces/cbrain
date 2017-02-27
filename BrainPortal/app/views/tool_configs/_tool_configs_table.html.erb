@@ -1,0 +1,109 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<div class="menu_bar">
+  <%= link_to 'Tools List', tools_path, :class => "button menu_button" %>
+  <%= overlay_ajax_link "Help", "/doc/tool_configs/tool_configs_info.html", :class  => "button" %>
+</div>
+
+<%=
+  render(:partial => 'shared/active_filters', :locals  => {
+    :scope => @scope,
+    :model => ToolConfig
+  })
+%>
+
+<div class="pagination">
+  <span class="page_links">
+    (<%= pluralize @tool_configs.total_entries, "tool configurations" %>)
+  </span>
+</div>
+
+<%=
+  dynamic_scoped_table(@tool_configs,
+    :id    => 'tool_configs_table',
+    :class => [ :resource_list ],
+    :scope => @scope,
+    :order_map  => {
+      :bourreau => { :a => 'remote_resources.name', :j => [Bourreau, 'id', 'bourreau_id'] },
+      :tool     => { :a => 'tools.name',            :j =>  Tool                           },
+      :group    => { :a => 'groups.name',           :j =>  Group                          },
+    },
+    :filter_map => {
+      :bourreau => { :a => 'bourreau_id'  },
+      :tool     => { :a => 'tool_id'      },
+      :group    => { :a => 'group_id'     },
+    },
+  ) do |t|
+%>
+  <%
+    t.pagination
+
+    t.column("Execution Server", :bourreau,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, Bourreau)
+    ) { |tc| tc.bourreau.try(:name) || html_colorize("(All servers)",'orange')}
+
+    t.column("Tool Name", :tool,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, Tool)
+    ) { |tc| tc.tool.try(:name) || html_colorize("(All tools)", 'orange')}
+
+    t.column("Version", :version_name,
+      :sortable => true,
+    ) { |tc| tc.version_name.presence ||
+        (
+        tc.tool_id.blank?     ? html_colorize("(All tools)", 'orange') :
+        tc.bourreau_id.blank? ? html_colorize("(All servers)", 'orange') :
+        html_colorize("(Unset)",'red')
+        )
+      }
+
+    t.column("Project Access", :group,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, Group)
+    ) { |tc| link_to_group_if_accessible(tc.group) }
+
+    t.column("Number of CPUs", :ncpus,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, :ncpus)
+    ) { |tc| tc.ncpus.to_s }
+
+    t.column("Description", :description,
+      :sortable => true,
+    ) { |tc| overlay_description(tc.description) }
+
+    if current_user.has_role?(:admin_user)
+      t.column("Operations") do |tc|
+        ( link_to("Edit",   edit_tool_config_path(tc), :class => "action_link") + " " +
+          link_to("Show",   tool_config_path(tc),      :class => "action_link") + " " +
+          link_to('Delete', tool_config_path(tc),      :class => "action_link",
+              :confirm => "Are you sure you want to delete version configuration '#{tc.version_name}'?",
+              :method => :delete)
+        )
+      end
+    end
+  %>
+
+<% end %>

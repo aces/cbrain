@@ -279,6 +279,7 @@
 <%# Generate a complete HTML block for a given parameter +param+ -%>
 <%- parameter = lambda do |param, isGroupMember = false| -%>
   <%-
+    param['optional'] = false if param['optional'].nil?
     id    = param['id']
     type  = param['type'].downcase.to_sym
     opt   = !!(param['optional'] && type != :flag)
@@ -312,7 +313,15 @@
         checkbox.(id)
 
   <%- end -%>
-  <%- if type == :file -%>
+  <%- enum_vals = param["value-choices"] %>
+  <%- if not enum_vals.nil? -%>
+        # Enum value dropdown
+        dropdown.(id, id,
+          <%= enum_vals.map { |v| [v, v] } %>,
+          optional: <%= opt %>,
+          default:  <%= "\"#{defaults.find { |d| d['id']==id }['default-value']}\"" rescue "nil" %>
+        )
+  <%- elsif type == :file -%>
     <%- if single_file -%>
         # Automatic single file input
         dropdown.(id, id,
@@ -357,20 +366,15 @@
           optional: <%= opt.to_s %>
     <%- end -%>
         )
-  <%- elsif type == :enum -%>
-    <% enumVals = param["enum-value-choices"] %>
-        # Enum value dropdown
-        dropdown.(id, id,
-          <%= enumVals.map { |v| [v, v] } %>,
-          optional: <%= opt %>,
-          default:  <%= "\"#{defaults.find { |d| d['id']==id }['default-value']}\"" rescue "nil" %>
-        )
   <%- end -%>
   <%- if param['description'] -%>
         # Description
         description.(<<-'DESC',<%= isGroupMember %>)
           <%= param['description'] %>
         DESC
+  <%- elsif not param['description'] and isGroupMember %>
+        # Blank Line for empty description (fixes spacing)
+        description.('',<%= isGroupMember %>)
   <%- end -%>
      %>
     </li>
@@ -976,7 +980,10 @@ $(function () {
              "</tr>";
     }
     // Generate table for invariant parameters
-    var generateStaticTable = function( singleFileCase = false, genericCase = false) {
+    var generateStaticTable = function(singleFileCase, genericCase) {
+      if (singleFileCase === undefined) { singleFileCase = true; }
+      if (genericCase    === undefined) { genericCase    = true; }
+
       // Generate the title
       modalText += "<strong>Parameters " +
                      ((!singleFileCase && !genericCase) ? "for current task" : "that are constant across tasks") +
@@ -1005,7 +1012,9 @@ $(function () {
       modalText += "</tbody> </table> <br>";
     }
     // Generate table for inter-task varying parameters
-    var generateDynamicTable = function( singleFileCase = true ) {
+    var generateDynamicTable = function( singleFileCase ) {
+      if (singleFileCase === undefined) { singleFileCase = true; }
+
       // Add the title
       modalText += "<strong>Parameter values that change across tasks:</strong><br><br>";
       // Get parameters with cbcsv entries

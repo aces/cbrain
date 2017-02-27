@@ -1,0 +1,22 @@
+Someone is asking for a new account:
+
+Full name:   <%= @signup.full %>
+Email:       <%= @signup.email %>
+Institution: <%= @signup.institution.presence || "(None provided)" %>
+<% if @signup.comment.present? %>
+
+The requester provided some comments:
+
+=================================================
+<%= @signup.comment %>
+=================================================
+<% end %>
+
+As an administrator, you can review the full application here:
+
+  <%= @show_url %>
+
+Thank you,
+
+The CBRAIN group
+

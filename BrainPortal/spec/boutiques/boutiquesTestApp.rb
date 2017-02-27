@@ -85,15 +85,13 @@ verbose = true if options.delete(:verbose)
 # Check input types
 # The automatic parser already does this to an extent, but since it is incomplete and
 # we also rely on some manual parsing, we have to check it again
-AllParams = Strings + Flags + Files + Numbers + Enums + NumLists + FileLists + StringLists
+AllParams = Strings + Flags + Files + Numbers + NumLists + FileLists + StringLists
 options.each do |key, value|
   if Strings.include?(key)      && ! (String===value)
     print("\n Handling String type error: #{key.to_s}, #{Strings.include? key}, #{value.class} \n")
     leave.( "ERROR: input (-#{key.to_s}, #{value}) is not a string", 3)
   elsif Flags.include?(key)     && ! (value==true || value==false)
     leave.( "ERROR: input (-#{key.to_s}, #{value}) is not a boolean", 3)
-  elsif Enums.include?(key)     && ! String===value
-    leave.( "ERROR: input (-#{key.to_s}, #{value}) should be a string", 3)
   elsif Files.include?(key)     && !( String===value && File.exist?(value) )
     leave.( "ERROR: input (-#{key.to_s}, #{value}) is not an existent filename", 10)
   elsif Numbers.include?(key)   && ( Float(value) rescue nil )==nil
@@ -148,6 +146,7 @@ leave.("ERROR: -A, -B, and -C are required", 9) if [:A,:B,:C].any? { |k| ! optio
 
 # Check enum has a reasonable input choice
 leave.("ERROR: -E must be one of 'a', 'b', or 'c'", 11) unless (options[:E].nil? || ['a','b','c'].include?(options[:E]))
+leave.("ERROR: -i must be in {1,9}", 11) unless (options[:i].nil? || [1,9].include?( Integer(options[:i]) ))
 
 # Check numerical type constraints
 N_arg, I_arg = options[:N].nil? ? nil : options[:N].to_f, options[:I].nil? ? nil : options[:I].to_i
