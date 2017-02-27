@@ -8,6 +8,13 @@ info:
   version: "4.5.1"
 # The domain of the service
 host: localhost:3000
+securityDefinitions:
+  BrainPortalSession:
+    type: apiKey
+    name: BrainPortalSession
+    in: header
+security:
+  - BrainPortalSession: []
 schemes:
   - https
 basePath: /
@@ -26,6 +33,7 @@ paths:
         create a new session.
       tags:
         - Sessions
+      security: []
       responses:
         "200":
           description: An object with an authenticity token
@@ -42,6 +50,7 @@ paths:
         This is the main entry point to create a CBRAIN session. Note that if
         a user is currently logged in, a new session will not be available to
         be created, and the current session will be re-used.
+      security: []
       consumes:
         - multipart/form-data
       parameters:

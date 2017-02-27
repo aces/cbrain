@@ -6,6 +6,18 @@
         "version": "4.5.1"
     },
     "host": "localhost:3000",
+    "securityDefinitions": {
+        "BrainPortalSession": {
+            "type": "apiKey",
+            "name": "BrainPortalSession",
+            "in": "header"
+        }
+    },
+    "security": [
+        {
+            "BrainPortalSession": []
+        }
+    ],
     "schemes": [
         "https"
     ],
@@ -22,6 +34,7 @@
                 "tags": [
                     "Sessions"
                 ],
+                "security": [],
                 "responses": {
                     "200": {
                         "description": "An object with an authenticity token",
@@ -41,6 +54,7 @@
             "post": {
                 "summary": "Create a new session",
                 "description": "This is the main entry point to create a CBRAIN session. Note that if\na user is currently logged in, a new session will not be available to\nbe created, and the current session will be re-used.\n",
+                "security": [],
                 "consumes": [
                     "multipart/form-data"
                 ],
