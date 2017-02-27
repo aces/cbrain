@@ -166,22 +166,15 @@ class SignupsController < ApplicationController
 
     scope_default_order(@scope, 'created_at', :desc)
 
-    if params[:view_hidden].present?
-      if params[:view_hidden] == "true"
-        @scope.custom[:view_hidden] = true
-        @base_scope = Signup.where(:hidden => true)
-      end
-    else
-      @scope.custom[:view_hidden] = false
-      @base_scope = Signup.where(:hidden => false)
-    end
-
-    @view_scope       = @scope.apply(@base_scope)
+    view_hidden                 = params[:view_hidden].presence == "true" ? true : false
+    @scope.custom[:view_hidden] = view_hidden
+    @base_scope                 = Signup.where(:hidden => view_hidden)
+    @view_scope                 = @scope.apply(@base_scope)
 
     # Prepare the Pagination object
-    @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
+    @scope.pagination           ||= Scope::Pagination.from_hash({ :per_page => 25 })
 
-    @signups          = @scope.pagination.apply(@view_scope)
+    @signups                    = @scope.pagination.apply(@view_scope)
 
     scope_to_session(@scope, 'signups')
 
@@ -287,14 +280,12 @@ class SignupsController < ApplicationController
     reqids = params[:reqids] || []
     reqs   = Signup.find(reqids)
 
-    count = 0
     reqs.each do |req|
       req[:hidden] = true
       req.save
-      count += 1
     end
 
-    flash[:notice] = "Hid " + view_pluralize(count, "record")
+    flash[:notice] = "Hid " + view_pluralize(reqs.size, "record")
 
     redirect_to :action => :index
   end
@@ -303,14 +294,12 @@ class SignupsController < ApplicationController
     reqids = params[:reqids] || []
     reqs   = Signup.find(reqids)
 
-    count = 0
     reqs.each do |req|
       req[:hidden] = false
       req.save
-      count += 1
     end
 
-    flash[:notice] = "Unhid " + view_pluralize(count, "record")
+    flash[:notice] = "Unhid " + view_pluralize(reqs.size, "record")
 
     redirect_to :action => :index
   end
