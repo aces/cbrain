@@ -181,6 +181,9 @@ CbrainRailsPortal::Application.routes.draw do
   # Report Maker
   get   "/report",                :controller => :portal, :action => :report
 
+  # Daily status (shows everything, not log in!)
+  # get   "/daily/report",          :controller => :daily, :action => :report
+
   # API description, by Swagger
   get   "/swagger",               :controller => :portal, :action => :swagger
 

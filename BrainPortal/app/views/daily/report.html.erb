@@ -1,0 +1,80 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title 'Activity Today' %>
+<% title to_localtime(Time.now, :date) %>
+<% title "at " + to_localtime(Time.now, :time) %>
+
+<%= stylesheet_link_tag 'daily' %>
+
+<div class="daily">
+
+
+
+<h1>Execution Servers Caches And Tasks</h1>
+
+<% ([ RemoteResource.current_resource ] + @bourreaux).each do |b| %>
+  <% status_counts = @status_counts[b.id] || {} %>
+  <% cached_files  = @cached_files[b.id] %>
+  <% offline       = b.online? ? nil : "offline" %>
+
+  <fieldset class="daily_bourreau <%= offline %>">
+    <legend><%= red_if(offline, b.name) %><%= b.is_a?(BrainPortal) ? " (Portal)" : "" %></legend>
+
+    <span class="display_cell">
+      <%= disk_space_info_display(cached_files) do %>
+        <%= colored_pretty_size cached_files %><br>
+      <% end %>
+    </span>
+
+    <span class="display_cell">
+      <%= array_to_table(status_counts.to_a, :cols => 1, :table_class => 'simple', :min_data => 1) do |pair| %>
+        <% status, count = *pair %>
+        <%= colored_status status %> : <%= count %>
+      <% end %>
+    </span>
+
+  </fieldset>
+<% end %>
+
+
+
+<h1>Data Providers New Files</h1>
+
+<% @created_files.each do |dp_id,size| %>
+  <% dp       = DataProvider.find(dp_id) %>
+  <% offline  = dp.online? ? nil : "offline" %>
+
+  <fieldset class="daily_dp <%= offline %>">
+    <legend><%= red_if(offline, dp.name) %></legend>
+    <%= disk_space_info_display(size) do %>
+      <%= colored_pretty_size size %>
+    <% end %>
+  </fieldset>
+
+<% end %>
+
+
+
+</div>
