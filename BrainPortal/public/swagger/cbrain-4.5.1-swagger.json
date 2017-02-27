@@ -5,7 +5,7 @@
         "description": "Interface to control CBRAIN operations",
         "version": "4.5.1"
     },
-    "host": "localhost:3000",
+    "host": "portal.cbrain.mcgill.ca",
     "securityDefinitions": {
         "BrainPortalSession": {
             "type": "apiKey",

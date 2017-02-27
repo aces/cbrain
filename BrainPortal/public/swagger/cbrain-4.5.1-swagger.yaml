@@ -1,13 +1,14 @@
 # Swagger description of the CBRAIN API
 # Pierre Rioux, August - October 2016
 # Andrew Doyle, November - December 2016
+# Natacha Beck, January - February 2017
 swagger: '2.0'
 info:
   title: CBRAIN API
   description: Interface to control CBRAIN operations
   version: "4.5.1"
 # The domain of the service
-host: localhost:3000
+host: portal.cbrain.mcgill.ca
 securityDefinitions:
   BrainPortalSession:
     type: apiKey
