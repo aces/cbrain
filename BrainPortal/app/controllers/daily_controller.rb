@@ -53,10 +53,8 @@ class DailyController < ApplicationController
                              .sum("userfiles.size")
 
     # Refresh
-    mybase   = @myself.site_url_prefix.presence
-    mybase ||= "http://" + request.env["HTTP_HOST"] # guess it
-    mybase.sub!(/\/*$/,"")
-    response.headers["Refresh"] = "#{refresh_every};#{mybase}/#{params[:controller]}/#{params[:action]}"
+    myurl = "#{request.protocol}#{request.host_with_port}#{request.fullpath}"
+    response.headers["Refresh"] = "#{refresh_every};#{myurl}"
 
     render :action => :report, :layout => false # layout already in view file
   end
