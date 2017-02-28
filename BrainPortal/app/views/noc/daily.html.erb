@@ -81,9 +81,15 @@
     </span>
 
     <span class="display_cell">
-      <%= array_to_table(status_counts.to_a, :cols => 1, :table_class => 'simple', :min_data => 1) do |pair| %>
+      <% sorted_counts = status_counts.sort { |pair1,pair2| cmp_status_order(pair1[0],pair2[0]) } %>
+      <%= array_to_table(sorted_counts,
+                         :rows            => 3,
+                         :table_class     => 'daily_task_status_table',
+                         :min_data        => 1,
+                         :fill_by_columns => true
+                        ) do |pair| %>
         <% status, count = *pair %>
-        <%= colored_status status %> : <%= count %>
+        <%= count %>x <%= colored_status status %>
       <% end %>
     </span>
 
@@ -92,9 +98,9 @@
 
 
 
-<h1>Data Providers New Files</h1>
+<h1>Data Providers Updated Files</h1>
 
-<% @created_files.each do |dp_id,size| %>
+<% @updated_files.each do |dp_id,size| %>
   <% dp       = DataProvider.find(dp_id) %>
   <% offline  = dp.online? ? nil : "offline" %>
 

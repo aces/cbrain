@@ -45,7 +45,7 @@ class NocController < ApplicationController
     #@data_transfer = rand(500_000_000_000)  # uncomment to make visual tests
 
     @status_counts = @bourreaux.map do |b|     # bourreau_id => { 'New' => 2, ... }, ...
-      s2c = b.cbrain_tasks.where(["updated_at > ?",this_morning]).group(:status).count
+      s2c = b.cbrain_tasks.where(["updated_at > ?",this_morning]).group(:status).count.to_a
       [ b.id, s2c ]
     end.to_h
 
@@ -58,7 +58,7 @@ class NocController < ApplicationController
       [ b.id, size ]
     end.to_h
 
-    @created_files = Userfile.where([ "userfiles.created_at > ?", this_morning ])
+    @updated_files = Userfile.where([ "userfiles.updated_at > ?", this_morning ])
                              .joins(:data_provider)
                              .order("data_providers.name")
                              .group("data_providers.id")
