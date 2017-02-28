@@ -34,7 +34,7 @@
   <link rel="apple-touch-icon" sizes="96x96"   type="image/png" href="/images/custom_logos/cb-small_white_blue.png">
   <link rel="apple-touch-icon" sizes="145x145" type="image/png" href="/images/custom_logos/cb-large_white_blue.png">
   <%= stylesheet_link_tag 'cbrain' %>
-  <%= stylesheet_link_tag 'daily' %>
+  <%= stylesheet_link_tag 'noc' %>
 </head>
 
 <body>
@@ -46,6 +46,21 @@
 <%= image_tag("custom_logos/cbrain-large_white_alpha.png", :id => "header_logo") %>
 <%= yield :title %>
 </h1>
+
+
+
+<% num_task_color = @active_tasks.zero? ? "black" : colorwheel_edge_crawl(@active_tasks, 400) %>
+
+<div class="noc_main">
+  <div class="noc_panel">
+    <div class="noc_header">Active Tasks</div><br>
+    <div class="noc_count" style="color: <%= num_task_color %>"><%= @active_tasks %></div>
+  </div>
+  <div class="noc_panel">
+    <div class="noc_header">Active Transfers</div><br>
+    <div class="noc_count"><%= colored_pretty_size @data_transfer %></div>
+  </div>
+</div>
 
 
 

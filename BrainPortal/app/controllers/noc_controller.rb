@@ -20,18 +20,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Daily live report
-class DailyController < ApplicationController
+# Network Operation Center controller
+# Basically just shows status information.
+class NocController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Provides a graphical daily snapshot of activity
-  def report
+  def daily
     this_morning   = DateTime.now.midnight
-    refresh_every  = 120 # seconds
+    refresh_every  = 120.seconds
+    #this_morning = 7.years.ago # uncomment to artifically show all historical data
 
     @myself        = RemoteResource.current_resource
     @bourreaux     = Bourreau.where([ "updated_at > ?", 1.month.ago ]).order(:name).all # must have been toggled within a month
+
+    @active_tasks  = CbrainTask.active.count
+    @data_transfer = SyncStatus.where("sync_status.status" => [ 'ToCache', 'ToProvider' ])
+                               .joins(:userfile)
+                               .sum("userfiles.size")
+                               .to_i # because we sometimes get the string "0" ?!?
+
+    #@active_tasks = rand(500)  # uncomment to make visual tests
+    #@data_transfer = rand(500_000_000_000)  # uncomment to make visual tests
 
     @status_counts = @bourreaux.map do |b|     # bourreau_id => { 'New' => 2, ... }, ...
       s2c = b.cbrain_tasks.where(["updated_at > ?",this_morning]).group(:status).count
@@ -43,7 +54,8 @@ class DailyController < ApplicationController
                        .where([ "sync_status.updated_at > ?", this_morning ])
                        .joins(:userfile)
                        .sum("userfiles.size")
-      [ b.id, size.to_i ]
+                       .to_i # because we sometimes get the string "0"  ?!?
+      [ b.id, size ]
     end.to_h
 
     @created_files = Userfile.where([ "userfiles.created_at > ?", this_morning ])
@@ -56,7 +68,7 @@ class DailyController < ApplicationController
     myurl = "#{request.protocol}#{request.host_with_port}#{request.fullpath}"
     response.headers["Refresh"] = "#{refresh_every};#{myurl}"
 
-    render :action => :report, :layout => false # layout already in view file
+    render :action => :daily, :layout => false # layout already in view file
   end
 
 end
