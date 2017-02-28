@@ -74,6 +74,7 @@
     cached_files  = info[:cache_sizes]   || 0
     offline       = b.online? ? nil : "offline"
     next if b.is_a?(Bourreau)    &&
+            b.online?            && # we want to always display offline Bourreaux
             task_space.zero?     &&
             status_counts.empty? &&
             cached_files.zero?
