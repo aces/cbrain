@@ -44,27 +44,47 @@ class NocController < ApplicationController
     #@active_tasks = rand(500)  # uncomment to make visual tests
     #@data_transfer = rand(500_000_000_000)  # uncomment to make visual tests
 
-    @status_counts = @bourreaux.map do |b|     # bourreau_id => { 'New' => 2, ... }, ...
-      s2c = b.cbrain_tasks.where(["updated_at > ?",this_morning]).group(:status).count.to_a
-      [ b.id, s2c ]
-    end.to_h
+    # This is where we store all info for all bourreaux, keyed by ID
+    @bourreau_info = {} # { b.id => { info => val, ... } }
 
-    @cached_files = (@bourreaux + [ @myself ]).map do |b|
-      size = SyncStatus.where(:remote_resource_id => b.id)
-                       .where([ "sync_status.updated_at > ?", this_morning ])
-                       .joins(:userfile)
-                       .sum("userfiles.size")
-                       .to_i # because we sometimes get the string "0"  ?!?
-      [ b.id, size ]
-    end.to_h
+    # We also scan the BrainPortal, although it has no tasks, because
+    # the caching logic is the same.
+    ([ @myself ] + @bourreaux ).each do |b| # b is a BrainPortal once, and a Bourreau for the rest
+      info  = @bourreau_info[b.id] = {}
 
+      # Sum of task workdir space
+      info[:task_space] = b.is_a?(BrainPortal) ? 0 :
+        b.cbrain_tasks.where(["updated_at > ?",this_morning])
+                      .sum(:cluster_workdir_size)
+                      .to_i
+
+      # Count of active statuses
+      info[:status_counts] = b.is_a?(BrainPortal) ? [] :
+        b.cbrain_tasks.where(["updated_at > ?",this_morning])
+                      .group(:status)
+                      .count
+                      .to_a  # [ [ status, count ], [ status, count ] ... ]
+      # Uncomment these two lines to generate fake statuses for visual tests
+      #info[:status_counts] =
+      #CbrainTask::ALL_STATUS.shuffle[0..rand(10)].map { |s| [ s, rand(1000) ] }
+
+      # Size in caches (works for Bourreaux and BrainPortals)
+      info[:cache_sizes] =
+        SyncStatus.where(:remote_resource_id => b.id)
+                  .where([ "sync_status.updated_at > ?", this_morning ])
+                  .joins(:userfile)
+                  .sum("userfiles.size")
+                  .to_i # because we sometimes get the string "0"  ?!?
+    end
+
+    # Sizes of files updated, keyed by DP ID: { dp.id => size, ... }
     @updated_files = Userfile.where([ "userfiles.updated_at > ?", this_morning ])
                              .joins(:data_provider)
                              .order("data_providers.name")
                              .group("data_providers.id")
                              .sum("userfiles.size")
 
-    # Refresh
+    # Trigger refresh using HTTP header.
     myurl = "#{request.protocol}#{request.host_with_port}#{request.fullpath}"
     response.headers["Refresh"] = "#{refresh_every};#{myurl}"
 

@@ -66,16 +66,34 @@
 
 <h1>Execution Servers Caches And Tasks</h1>
 
-<% ([ RemoteResource.current_resource ] + @bourreaux).each do |b| %>
-  <% status_counts = @status_counts[b.id] || {} %>
-  <% cached_files  = @cached_files[b.id] %>
-  <% offline       = b.online? ? nil : "offline" %>
+<% ([ @myself ] + @bourreaux).each do |b| %>
+  <%
+    info          = @bourreau_info[b.id] || {}
+    task_space    = info[:task_space]    || 0
+    status_counts = info[:status_counts] || {}
+    cached_files  = info[:cache_sizes]   || 0
+    offline       = b.online? ? nil : "offline"
+    next if b.is_a?(Bourreau)    &&
+            task_space.zero?     &&
+            status_counts.empty? &&
+            cached_files.zero?
+  %>
 
   <fieldset class="daily_bourreau <%= offline %>">
     <legend><%= red_if(offline, b.name) %><%= b.is_a?(BrainPortal) ? " (Portal)" : "" %></legend>
 
+    <% if b.is_a?(Bourreau) %>
+    <span class="display_cell">
+      <%= disk_space_info_display(task_space) do %>
+        <small>Tasks:</small><br>
+        <%= colored_pretty_size task_space %><br>
+      <% end %>
+    </span>
+    <% end %>
+
     <span class="display_cell">
       <%= disk_space_info_display(cached_files) do %>
+        <small>Cache:</small><br>
         <%= colored_pretty_size cached_files %><br>
       <% end %>
     </span>
