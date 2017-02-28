@@ -57,6 +57,8 @@ class DailyController < ApplicationController
     mybase ||= "http://" + request.env["HTTP_HOST"] # guess it
     mybase.sub!(/\/*$/,"")
     response.headers["Refresh"] = "#{refresh_every};#{mybase}/#{params[:controller]}/#{params[:action]}"
+
+    render :action => :report, :layout => false # layout already in view file
   end
 
 end

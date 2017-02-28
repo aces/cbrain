@@ -1,3 +1,5 @@
+<!doctype html>
+<html lang="en">
 
 <%-
 #
@@ -26,9 +28,24 @@
 <% title to_localtime(Time.now, :date) %>
 <% title "at " + to_localtime(Time.now, :time) %>
 
-<%= stylesheet_link_tag 'daily' %>
+<head>
+  <title><%= RemoteResource.current_resource.name.presence || "CBRAIN" %><%= yield :title %></title>
+  <link rel="shortcut icon"                    type="image/png" href="/images/custom_logos/cb-small_white_blue.png">
+  <link rel="apple-touch-icon" sizes="96x96"   type="image/png" href="/images/custom_logos/cb-small_white_blue.png">
+  <link rel="apple-touch-icon" sizes="145x145" type="image/png" href="/images/custom_logos/cb-large_white_blue.png">
+  <%= stylesheet_link_tag 'cbrain' %>
+  <%= stylesheet_link_tag 'daily' %>
+</head>
 
+<body>
 <div class="daily">
+
+
+
+<h1>
+<%= image_tag("custom_logos/cbrain-large_white_alpha.png", :id => "header_logo") %>
+<%= yield :title %>
+</h1>
 
 
 
@@ -76,5 +93,6 @@
 <% end %>
 
 
-
 </div>
+</body>
+</html>

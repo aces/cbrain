@@ -3,8 +3,13 @@
   This file contains stylesheet info for the daily summary page.
 */
 
+body {
+  min-width: 5em; // overrides cbrain.css
+}
+
 .daily {
   font-size: 24px;
+  display: table-cell;
 }
 
 .daily h1 {
