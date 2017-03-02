@@ -2069,6 +2069,7 @@ chmod 755 ./.dockerjob.sh
     new_task.user_id                  = self.user_id
     new_task.results_data_provider_id = self.results_data_provider_id
     new_task.bourreau_id              = self.bourreau_id
+    new_task.group_id                 = self.group_id
 
     # Submits the task
     new_task.status = "New"
