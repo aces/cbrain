@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This model represents an group composed of the members
@@ -41,6 +41,14 @@ class SiteGroup < SystemGroup
      gid_to_labels[g.id] = label.force_encoding('UTF-8')
    end
    gid_to_labels
+  end
+
+  def can_be_edited_by?(user) #:nodoc:
+    if user.has_role? :admin_user
+      return true
+    end
+
+    false
   end
 
 end
