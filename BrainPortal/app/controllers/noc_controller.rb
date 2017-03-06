@@ -35,6 +35,11 @@ class NocController < ApplicationController
     @myself        = RemoteResource.current_resource
     @bourreaux     = Bourreau.where([ "updated_at > ?", 1.month.ago ]).order(:name).all # must have been toggled within a month
 
+    # Three numbers: active users, active tasks, sum of files sizes being transfered.
+    @active_users  = CbrainSession.where([ "updated_at > ?", Time.now.midnight ])
+                                  .where(:active => true)
+                                  .raw_first_column(:user_id)
+                                  .uniq.size
     @active_tasks  = CbrainTask.active.count
     @data_transfer = SyncStatus.where("sync_status.status" => [ 'ToCache', 'ToProvider' ])
                                .joins(:userfile)

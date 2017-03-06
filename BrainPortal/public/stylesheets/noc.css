@@ -4,13 +4,13 @@
   This file contains stylesheet info for the NOC summary pages.
 */
 
+/* Overrides cbrain.css */
 body {
-  min-width: 5em; // overrides cbrain.css
+  min-width: 5em;
 }
 
 .daily {
   font-size: 24px;
-  display: table-cell;
   color: black;
 }
 
