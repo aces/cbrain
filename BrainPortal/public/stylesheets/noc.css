@@ -26,6 +26,7 @@ body {
 
 .noc_main {
   display: table;
+  margin: auto;
 }
 
 .noc_panel {

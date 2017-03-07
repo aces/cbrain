@@ -28,18 +28,30 @@ class NocController < ApplicationController
 
   # Provides a graphical daily snapshot of activity
   def daily
-    this_morning   = DateTime.now.midnight
-    refresh_every  = 120.seconds
+
+    # Sicrit params
+    @hours_ago       = params[:t].presence.try(:to_i)
+    @refresh_every   = params[:r].presence.try(:to_i)
+
+    # Validate them, give them default
+    @hours_ago       = nil if @hours_ago.present?     && @hours_ago < 1
+    # Auto refresh: default every two minutes.
+    @refresh_every   = nil if @refresh_every.present? && @refresh_every < 20
+    @refresh_every ||= 120.seconds
+
+    # Timescale for most reports: from midnight to right now.
+    this_morning    = @hours_ago.try(:hours).try(:ago) || DateTime.now.midnight
     #this_morning = 7.years.ago # uncomment to artifically show all historical data
 
+    # RemoteResources, including the portal itself
     @myself        = RemoteResource.current_resource
     @bourreaux     = Bourreau.where([ "updated_at > ?", 1.month.ago ]).order(:name).all # must have been toggled within a month
 
     # Three numbers: active users, active tasks, sum of files sizes being transfered.
-    @active_users  = CbrainSession.where([ "updated_at > ?", Time.now.midnight ])
+    @active_users  = CbrainSession.where([ "updated_at > ?", this_morning ])
                                   .where(:active => true)
                                   .raw_first_column(:user_id)
-                                  .uniq.size
+                                  .compact.uniq.size
     @active_tasks  = CbrainTask.active.count
     @data_transfer = SyncStatus.where("sync_status.status" => [ 'ToCache', 'ToProvider' ])
                                .joins(:userfile)
@@ -90,10 +102,10 @@ class NocController < ApplicationController
                              .sum("userfiles.size")
 
     # Trigger refresh using HTTP header.
-    myurl = "#{request.protocol}#{request.host_with_port}#{request.fullpath}"
-    response.headers["Refresh"] = "#{refresh_every};#{myurl}"
+    myurl  = "#{request.protocol}#{request.host_with_port}#{request.fullpath}"
+    response.headers["Refresh"] = "#{@refresh_every};#{myurl}"
 
-    render :action => :daily, :layout => false # layout already in view file
+    render :action => :daily, :layout => false # full HTML layout already in view file
   end
 
 end

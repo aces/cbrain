@@ -24,7 +24,8 @@
 #
 -%>
 
-<% title 'Activity Today' %>
+<% range = @hours_ago.blank? ? "Today" : "Last " + pluralize(@hours_ago,"hour") %>
+<% title "Activity #{range}" %>
 <% title to_localtime(Time.now, :date) %>
 <% title "at " + to_localtime(Time.now, :time) %>
 
@@ -52,7 +53,7 @@
 
 <div class="noc_main">
   <div class="noc_panel">
-    <div class="noc_header">Active Users</div><br>
+    <div class="noc_header">Users Today</div><br>
     <div class="noc_count" style="color: <%= num_users_color %>"><%= @active_users %></div>
   </div>
   <div class="noc_panel">
@@ -61,7 +62,7 @@
   </div>
   <div class="noc_panel">
     <div class="noc_header">Active Transfers</div><br>
-    <div class="noc_count"><%= colored_pretty_size @data_transfer %></div>
+    <div class="noc_count"><%= @data_transfer.zero? ? "none" : colored_pretty_size(@data_transfer) %></div>
   </div>
 </div>
 
@@ -86,7 +87,14 @@
   <fieldset class="daily_bourreau <%= offline %>">
     <legend><%= red_if(offline, b.name) %><%= b.is_a?(BrainPortal) ? " (Portal)" : "" %></legend>
 
-    <% if b.is_a?(Bourreau) %>
+    <span class="display_cell">
+      <%= disk_space_info_display(cached_files) do %>
+        <small>Cache:</small><br>
+        <%= colored_pretty_size cached_files %><br>
+      <% end %>
+    </span>
+
+    <% if b.is_a?(Bourreau) && task_space > 0 %>
     <span class="display_cell">
       <%= disk_space_info_display(task_space) do %>
         <small>Tasks:</small><br>
@@ -94,13 +102,6 @@
       <% end %>
     </span>
     <% end %>
-
-    <span class="display_cell">
-      <%= disk_space_info_display(cached_files) do %>
-        <small>Cache:</small><br>
-        <%= colored_pretty_size cached_files %><br>
-      <% end %>
-    </span>
 
     <span class="display_cell">
       <% sorted_counts = status_counts.sort { |pair1,pair2| cmp_status_order(pair1[0],pair2[0]) } %>
