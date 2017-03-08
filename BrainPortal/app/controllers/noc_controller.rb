@@ -32,6 +32,7 @@ class NocController < ApplicationController
     # Sicrit params
     @hours_ago       = params[:t].presence.try(:to_i)
     @refresh_every   = params[:r].presence.try(:to_i)
+    fake             = params[:fake].presence.try(:to_i) # fake statuses / offline / disk space etc
 
     # Validate them, give them default
     @hours_ago       = nil if @hours_ago.present?     && @hours_ago < 1
@@ -58,8 +59,12 @@ class NocController < ApplicationController
                                .sum("userfiles.size")
                                .to_i # because we sometimes get the string "0" ?!?
 
-    #@active_tasks = rand(500)  # uncomment to make visual tests
-    #@data_transfer = rand(500_000_000_000)  # uncomment to make visual tests
+    # This is used to debug layout issues by generating random numbers
+    if fake
+      @active_users  = rand(fake)
+      @active_tasks  = rand(fake)
+      @data_transfer = rand(fake.gigabytes)
+    end
 
     # This is where we store all info for all bourreaux, keyed by ID
     @bourreau_info = {} # { b.id => { info => val, ... } }
@@ -81,9 +86,6 @@ class NocController < ApplicationController
                       .group(:status)
                       .count
                       .to_a  # [ [ status, count ], [ status, count ] ... ]
-      # Uncomment these two lines to generate fake statuses for visual tests
-      #info[:status_counts] =
-      #CbrainTask::ALL_STATUS.shuffle[0..rand(10)].map { |s| [ s, rand(1000) ] }
 
       # Size in caches (works for Bourreaux and BrainPortals)
       info[:cache_sizes] =
@@ -92,6 +94,15 @@ class NocController < ApplicationController
                   .joins(:userfile)
                   .sum("userfiles.size")
                   .to_i # because we sometimes get the string "0"  ?!?
+
+      # More fake info
+      if fake
+        info[:task_space]    = b.is_a?(BrainPortal) ? 0 : rand(fake.gigabytes)
+        info[:cache_sizes]   =                            rand(fake.gigabytes)
+        info[:status_counts] =
+          CbrainTask::ALL_STATUS.shuffle[0..rand(10)].map { |s| [ s, rand(fake) ] }
+      end
+
     end
 
     # Sizes of files updated, keyed by DP ID: { dp.id => size, ... }
@@ -100,6 +111,10 @@ class NocController < ApplicationController
                              .order("data_providers.name")
                              .group("data_providers.id")
                              .sum("userfiles.size")
+    if fake
+      @updated_files = DataProvider.where({}).raw_first_column(:id).shuffle[0..rand(5)]
+                                   .map { |dp| [ dp, rand(fake.gigabytes) ] }.to_h
+    end
 
     # Trigger refresh using HTTP header.
     myurl  = "#{request.protocol}#{request.host_with_port}#{request.fullpath}"
