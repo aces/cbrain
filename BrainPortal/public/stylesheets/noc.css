@@ -1,0 +1,95 @@
+
+/*
+  Network Operation Center
+  This file contains stylesheet info for the NOC summary pages.
+*/
+
+/* Overrides cbrain.css */
+body {
+  min-width: 5em;
+}
+
+.daily {
+  font-size: 24px;
+  color: black;
+}
+
+.daily h1 {
+  text-align: left;
+  color: white;
+  border: 4px solid black;
+  border-radius: 1em;
+  padding: 0.5em;
+  margin: 0.5em;
+  background: #05a3d6;
+}
+
+.noc_main {
+  display: table;
+  margin: auto;
+}
+
+.noc_panel {
+  display: inline-block;
+  border: 4px solid black;
+  border-radius: 1em;
+  text-align: center;
+  margin: 0.5em;
+}
+
+.noc_header {
+  display: inline-block;
+  text-align: center;
+  white-space: nowrap;
+  padding: 0.5em;
+  margin: 0 0 0.5em 0;
+}
+
+.noc_count {
+  display: inline-block;
+  font-size: 128px;
+  margin: 0.2em 0.2em 0.6em 0.2em;
+  text-shadow: -1px -1px 2px black,
+               -1px  1px 2px black,
+                1px -1px 2px black,
+                1px  1px 2px black;
+  white-space: nowrap;
+}
+
+fieldset {
+  border: 4px solid #00dd00;
+  margin: 0.5em;
+}
+
+fieldset.offline {
+  border: 4px solid #dd0000;
+}
+
+fieldset span {
+  vertical-align: middle;
+}
+
+.daily_task_status_table {
+  margin: 0 0 0 0.5em;
+  border: none;
+}
+
+.daily_task_status_table td {
+  border: none;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.daily_task_status_table td span {
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.daily_bourreau {
+  display: inline-block;
+}
+
+.daily_dp {
+  display: inline-block;
+}
+
