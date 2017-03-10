@@ -244,8 +244,7 @@ class DataProvidersController < ApplicationController
 
   end
 
-  # Generates list of providers accessible by the current user.
-  # Generates list of users available by the current user.
+  # Generates a report about which data providers the current user has access to.
   def dp_access
     @providers = DataProvider.find_all_accessible_by_user(current_user).all.sort do |a,b|
                    (b.online?.to_s       <=> a.online?.to_s).nonzero?       ||
@@ -258,7 +257,8 @@ class DataProvidersController < ApplicationController
                  end
   end
 
-  # Generates list of providers accessible by the current user.
+  # Generates a table report about which data provider is allowed to send data to
+  # which other data provider.
   def dp_transfers
     @providers = DataProvider.find_all_accessible_by_user(current_user).all.sort do |a,b|
                    (b.online?.to_s       <=> a.online?.to_s).nonzero?       ||

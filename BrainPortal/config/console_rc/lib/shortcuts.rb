@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-to_extend  = [ ViewHelpers ] # list of modules to extend into the console
+to_extend  = [ ViewHelpers ] rescue [] # list of modules to extend into the console; empty on Bourreau console.
 to_extend |= ActionView::Base.included_modules
 to_extend |= Dir.glob("app/helpers/*").map { |p| p.sub(/^.*\//,"").sub(/.rb$/,"").classify.constantize }
 to_extend.select { |m| m != Kernel }.each do |m|

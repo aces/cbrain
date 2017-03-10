@@ -21,13 +21,16 @@
 #
 
 def plog(*args)
-  args.each do |obj|
-    if obj.respond_to?(:getlog)
-      log = obj.getlog rescue "(Exception getting log)"
-      puts "==== Log for #{obj.inspect} ====" if args.size > 1
-      puts log.to_s
-    else
-      puts "==== Object does not respond to getlog(): #{obj.inspect} ===="
+  no_log do
+    to_show = args.flatten
+    to_show.each do |obj|
+      if obj.respond_to?(:getlog)
+        log = obj.getlog rescue "(Exception getting log)"
+        puts "==== Log for #{obj.inspect} ====" if to_show.size > 1
+        puts log.to_s
+      else
+        puts "==== Object does not respond to getlog(): #{obj.inspect} ===="
+      end
     end
   end
   true
