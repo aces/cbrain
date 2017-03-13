@@ -12,8 +12,7 @@
 # It's strongly recommended to check this file into your version control system.
 
 
-ActiveRecord::Schema.define(:version => 20170308220959) do
-
+ActiveRecord::Schema.define(:version => 20170306210331) do
   create_table "access_profiles", :force => true do |t|
     t.string   "name",        :null => false
     t.string   "description"
@@ -251,6 +250,8 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.string   "external_status_page_url"
     t.string   "docker_executable_name"
     t.boolean  "docker_present"
+    t.string   "small_logo"
+    t.string   "large_logo"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
