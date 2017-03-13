@@ -374,11 +374,6 @@ describe RemoteResource do
 
   end
   describe "#site" do
-    before(:each) do
-      remote_resource.actres_host = "host"
-      remote_resource.actres_port = "port"
-      remote_resource.actres_dir  = "dir"
-    end
     it "should return a url" do
       expect(remote_resource.site).to match(/^http:\/\//)
     end

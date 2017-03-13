@@ -33,14 +33,6 @@ require 'socket'
 #[*read_only*] A boolean value set to whether or not the resource is read only.
 #[*description*] Text with a description of the remote resource.
 #
-#==ActiveResource Attributes (DEPRECATED):
-#[*actres_user*] Username for the remote resource's ActiveResource connection;
-#                this is most often not used.
-#[*actres_host*] Hostname of the remote resource's ActiveResource connection.
-#[*actres_port*] The port number of the remote resource's ActiveResource connection.
-#[*actres_dir*] The directory prefix of the remote resource's ActiveResource connection;
-#               this is most often empty.
-#
 #==SSH Connection Attributes:
 #[*ssh_control_user*] Username of the UNIX account running the remote resource's Rails application.
 #[*ssh_control_host*] Hostname of the machine running the remote resource's Rails application.
@@ -107,9 +99,9 @@ class RemoteResource < ActiveRecord::Base
 
   after_destroy         :after_destroy_clean_sync_status
 
-  attr_accessible       :name, :user_id, :group_id, :actres_user, :actres_host, :actres_port,
-                        :actres_dir, :online, :read_only, :description, :ssh_control_user, :ssh_control_host,
-                        :ssh_control_port, :ssh_control_rails_dir, :tunnel_mysql_port, :tunnel_actres_port,
+  attr_accessible       :name, :user_id, :group_id, :online, :read_only, :description,
+                        :ssh_control_user, :ssh_control_host, :ssh_control_port, :ssh_control_rails_dir,
+                        :tunnel_mysql_port, :tunnel_actres_port,
                         :cache_md5, :portal_locked, :cache_trust_expire, :time_of_death,
                         :time_zone, :site_url_prefix, :dp_cache_dir, :dp_ignore_patterns, :cms_class,
                         :cms_default_queue, :cms_extra_qsub_args, :cms_shared_dir, :workers_instances,
@@ -474,16 +466,14 @@ class RemoteResource < ActiveRecord::Base
     false
   end
 
-  # Returns this RemoteResource's URL. This URL is adjusted
-  # depending on whether or not the ActiveResource
-  # connection is tunnelled through a SSH master connection.
-  # In the case of a tunnel, the connection is established
-  # to host localhost, on a port number equal to (3090 +
-  # the ID of the resource).
+  # Returns this RemoteResource's URL. This URL maps to a
+  # connection tunnelled through a SSH master connection.
+  # The connection is established to host localhost, on a port
+  # number equal to (3090 + the ID of the resource).
   def site
-    host = actres_host
-    port = actres_port
-    dir  = actres_dir || ""
+    host = ""
+    port = nil
+    dir  = ""
     if self.has_ssh_control_info? && self.tunnel_actres_port
       host = "localhost"
       port = 3090+self.id  # see also in start_tunnels()
