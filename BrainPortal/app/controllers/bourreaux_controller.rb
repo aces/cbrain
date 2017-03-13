@@ -136,7 +136,7 @@ class BourreauxController < ApplicationController
     old_dp_cache_dir = @bourreau.dp_cache_dir
 
     if ! @bourreau.update_attributes_with_logging(fields, current_user,
-        RemoteResource.columns_hash.keys.grep(/actres_|cache_trust|cms_|dp_|url|online|proxied_hosts|rr_timeout|ssh_|email|tunnel_|worker/)
+        RemoteResource.columns_hash.keys.grep(/actres_|cache_trust|cms_|dp_|url|online|proxied_hosts|rr_timeout|ssh_|email|tunnel_|worker|logo/)
       )
       @bourreau.reload
       respond_to do |format|
