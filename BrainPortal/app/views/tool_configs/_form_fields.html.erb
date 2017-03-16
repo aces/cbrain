@@ -108,6 +108,18 @@
     </p>
   </span>
 
+    <span title="Id of the Singularity image">
+    <p><%= f.label :singularity_image_userfile_id, "Id of the Singularity image:" %><br/>
+      <%= f.text_field :singularity_image_userfile_id %><br/>
+      <div class="field_explanation">
+        The id number of the Singularity image in which the tool is installed,
+        for instance. This id refers to userfile register in CBRAIN.
+        If left empty, tool will run on the bare resources, without
+        any Singularity image.
+      </div>
+    </p>
+  </span>
+
   <span title="Extra 'qsub' options:">
     <p><%= f.label :extra_qsub_args, "Extra 'qsub' options:" %><br/>
       <%= f.text_field :extra_qsub_args %><br/>

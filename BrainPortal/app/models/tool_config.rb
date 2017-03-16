@@ -59,7 +59,7 @@ class ToolConfig < ActiveRecord::Base
   cb_scope        :specific_versions    , where( "bourreau_id is not null and tool_id is not null" )
 
   attr_accessible :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue,
-                  :group_id, :ncpus, :docker_image, :extra_qsub_args,
+                  :group_id, :ncpus, :docker_image, :singularity_image, :singularity_image_userfile_id, :extra_qsub_args,
                   # The configuration of a tool in a VM managed by a
                   # ScirCloud Bourreau is defined by the following
                   # parameters which specify the disk image where the
@@ -229,6 +229,8 @@ class ToolConfig < ActiveRecord::Base
   def is_trivial?
     return false if self.extra_qsub_args.present?
     return false if self.docker_image.present?
+    return false if self.singularity_image.present?
+    return false if self.singularity_image_userfile_id?
     return false if self.cloud_disk_image.present?
     return false if self.cloud_vm_user.present?
     return false if self.cloud_ssh_key_pair.present?

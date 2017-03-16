@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20170104222339) do
+ActiveRecord::Schema.define(:version => 20170303205119) do
 
   create_table "access_profiles", :force => true do |t|
     t.string   "name",        :null => false
@@ -219,8 +219,8 @@ ActiveRecord::Schema.define(:version => 20170104222339) do
     t.string   "actres_host"
     t.integer  "actres_port"
     t.string   "actres_dir"
-    t.boolean  "online",                   :default => false, :null => false
-    t.boolean  "read_only",                :default => false, :null => false
+    t.boolean  "online",                      :default => false, :null => false
+    t.boolean  "read_only",                   :default => false, :null => false
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -231,8 +231,8 @@ ActiveRecord::Schema.define(:version => 20170104222339) do
     t.integer  "tunnel_mysql_port"
     t.integer  "tunnel_actres_port"
     t.string   "cache_md5"
-    t.boolean  "portal_locked",            :default => false, :null => false
-    t.integer  "cache_trust_expire",       :default => 0
+    t.boolean  "portal_locked",               :default => false, :null => false
+    t.integer  "cache_trust_expire",          :default => 0
     t.datetime "time_of_death"
     t.string   "time_zone"
     t.string   "site_url_prefix"
@@ -254,6 +254,8 @@ ActiveRecord::Schema.define(:version => 20170104222339) do
     t.string   "external_status_page_url"
     t.string   "docker_executable_name"
     t.boolean  "docker_present"
+    t.string   "singularity_executable_name"
+    t.boolean  "singularity_present"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
@@ -379,6 +381,8 @@ ActiveRecord::Schema.define(:version => 20170104222339) do
     t.integer  "cloud_job_slots"
     t.integer  "cloud_vm_boot_timeout"
     t.integer  "cloud_vm_ssh_tunnel_port"
+    t.string   "singularityhub_image"
+    t.integer  "singularity_image_userfile_id"
   end
 
   add_index "tool_configs", ["bourreau_id"], :name => "index_tool_configs_on_bourreau_id"

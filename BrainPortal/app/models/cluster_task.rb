@@ -1671,6 +1671,15 @@ class ClusterTask < CbrainTask
     self.addlog("Tool Global Config: ID=#{tool_glob_config.id}")                   if tool_glob_config
     self.addlog("Tool Version: ID=#{tool_config.id}, #{tool_config.version_name}") if tool_config
 
+    actual_commands = commands.join("\n")
+    self.addlog("-----------------------------")
+    if self.use_docker?
+      actual_commands = self.docker_commands
+    elsif self.use_singularity?
+      self.addlog('==== use_singularity ====')
+      actual_commands = self.singularity_commands
+    end
+
     # Create a bash science script out of the text
     # lines supplied by the subclass
     science_script = <<-SCIENCE_SCRIPT
@@ -1687,8 +1696,7 @@ class ClusterTask < CbrainTask
 #{self.supplemental_cbrain_tool_config_init}
 
 # CbrainTask '#{self.name}' commands section
-
-#{self.use_docker? ? self.docker_commands : commands.join("\n")}
+#{actual_commands}
 
     SCIENCE_SCRIPT
     sciencefile = self.science_script_basename.to_s
@@ -1968,6 +1976,56 @@ chmod 755 ./.dockerjob.sh
     return docker_commands
   end
 
+
+  ##################################################################
+  # Singularity support methods
+  ##################################################################
+
+  # Returns true if the task's ToolConfig is configured to point to a singularity image
+  # for the task's processing.
+  def use_singularity?
+    return self.tool_config.singularityhub_image.present? ||  self.tool_config.singularity_image_userfile_id.present?
+  end
+
+  # Return the 'singularity' command to be used for the task; this is fetched
+  # from the Bourreau's own attribute. Default: "singularity".
+  def singularity_executable_name
+    return RemoteResource.current_resource.singularity_executable_name.presence || "singularity"
+  end
+
+  # Return whether the Bourreau of the task has singularity present or not
+  def singularity_present?
+    return RemoteResource.current_resource.singularity_present
+  end
+
+  # Returns the command line(s) associated with the task, wrapped in
+  # a Singularity call if a Singularity image has to be used.
+  def singularity_commands
+    work_dir        = ( self.respond_to?("container_working_directory")? self.container_working_directory : nil )  || '${PWD}'
+    commands        = self.cluster_commands
+    commands_joined = commands.join("\n");
+
+    # cache_dir=RemoteResource.current_resource.dp_cache_dir;
+    # task_dir=self.bourreau.cms_shared_dir;
+
+    singularity_image_userfile_id = self.tool_config.singularity_image_userfile_id
+    singularity_image             = Userfile.find(singularity_image_userfile_id)
+
+    singularity_image.sync_to_cache
+    cachename = singularity_image.cache_full_path
+    basename  = cachename.basename.to_s
+    safe_symlink(cachename,basename)
+
+    singularity_commands = "cat << \"SINGULARITYJOB\" > .singularityjob.sh
+#!/bin/bash -l
+#{commands_joined}
+SINGULARITYJOB
+chmod 755 ./.singularityjob.sh
+# Run the task commands
+#{singularity_executable_name} run --rm -v ${PWD}:#{work_dir} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w #{work_dir} #{self.tool_config.docker_image.bash_escape} ${PWD}/.dockerjob.sh
+"
+    return singularity_commands
+  end
 
 
   ##################################################################
