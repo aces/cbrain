@@ -1672,11 +1672,9 @@ class ClusterTask < CbrainTask
     self.addlog("Tool Version: ID=#{tool_config.id}, #{tool_config.version_name}") if tool_config
 
     actual_commands = commands.join("\n")
-    self.addlog("-----------------------------")
     if self.use_docker?
       actual_commands = self.docker_commands
     elsif self.use_singularity?
-      self.addlog('==== use_singularity ====')
       actual_commands = self.singularity_commands
     end
 
@@ -2005,24 +2003,34 @@ chmod 755 ./.dockerjob.sh
     commands        = self.cluster_commands
     commands_joined = commands.join("\n");
 
-    # cache_dir=RemoteResource.current_resource.dp_cache_dir;
-    # task_dir=self.bourreau.cms_shared_dir;
+    cache_dir=RemoteResource.current_resource.dp_cache_dir;
 
     singularity_image_userfile_id = self.tool_config.singularity_image_userfile_id
     singularity_image             = Userfile.find(singularity_image_userfile_id)
 
+    self.addlog("Sync the singularity image")
     singularity_image.sync_to_cache
     cachename = singularity_image.cache_full_path
     basename  = cachename.basename.to_s
     safe_symlink(cachename,basename)
 
+    begin     
+      Dir.glob("*").each do |f|
+        next unless File.symlink?(f)
+        FileUtils.mv(f,"#{f}_symlink")
+        FileUtils.cp_r("#{f}_symlink",f)
+      end
+    rescue => ex
+      self.addlog_exception(ex,"Error copying files for singularity")
+    end
+ 
     singularity_commands = "cat << \"SINGULARITYJOB\" > .singularityjob.sh
 #!/bin/bash -l
 #{commands_joined}
 SINGULARITYJOB
 chmod 755 ./.singularityjob.sh
 # Run the task commands
-#{singularity_executable_name} run --rm -v ${PWD}:#{work_dir} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w #{work_dir} #{self.tool_config.docker_image.bash_escape} ${PWD}/.dockerjob.sh
+#{singularity_executable_name} run -B ${PWD}:/data --pwd /data #{basename} .singularityjob.sh
 "
     return singularity_commands
   end
