@@ -1948,12 +1948,12 @@ exit $status
   # Return the 'docker' command to be used for the task; this is fetched
   # from the Bourreau's own attribute. Default: "docker".
   def docker_executable_name
-    return RemoteResource.current_resource.docker_executable_name.presence || "docker"
+    return self.bourreau.docker_executable_name.presence || "docker"
   end
 
   # Return whether the Bourreau of the task has docker present or not
   def docker_present?
-    return RemoteResource.current_resource.docker_present
+    return self.bourreau.docker_present
   end
 
   # Returns the command line(s) associated with the task, wrapped in
@@ -1961,7 +1961,7 @@ exit $status
   def docker_commands(command_script)
     work_dir = ( self.respond_to?("container_working_directory")? self.container_working_directory : nil )  || '${PWD}'
 
-    cache_dir=RemoteResource.current_resource.dp_cache_dir;
+    cache_dir=self.bourreau.dp_cache_dir;
     task_dir=self.bourreau.cms_shared_dir;
     docker_commands = "cat << \"DOCKERJOB\" > .dockerjob.sh
 #!/bin/bash -l
@@ -1984,34 +1984,32 @@ chmod 755 ./.dockerjob.sh
   # Returns true if the task's ToolConfig is configured to point to a singularity image
   # for the task's processing.
   def use_singularity?
-    return self.tool_config.singularityhub_image.present? ||  self.tool_config.singularity_image_userfile.present?
+    return self.tool_config.singularityhub_image.present? ||  self.tool_config.singularity_image.present?
   end
 
   # Return the 'singularity' command to be used for the task; this is fetched
   # from the Bourreau's own attribute. Default: "singularity".
   def singularity_executable_name
-    return RemoteResource.current_resource.singularity_executable_name.presence || "singularity"
+    return self.bourreau.singularity_executable_name.presence || "singularity"
   end
 
   # Return whether the Bourreau of the task has singularity present or not
   def singularity_present?
-    return RemoteResource.current_resource.singularity_present
+    return self.bourreau.singularity_present
   end
 
   # Returns the command line(s) associated with the task, wrapped in
   # a Singularity call if a Singularity image has to be used.
   def singularity_commands(command_script)
     work_dir       = ( self.respond_to?("container_working_directory")? self.container_working_directory : nil )  || '${PWD}'
-    cache_dir      = RemoteResource.current_resource.dp_cache_dir
-    cms_shared_dir = "#{RemoteResource.current_resource.cms_shared_dir}/#{DataProvider::DP_CACHE_SYML}"
+    cache_dir      = self.bourreau.dp_cache_dir
+    cms_shared_dir = "#{self.bourreau.cms_shared_dir}/#{DataProvider::DP_CACHE_SYML}"
 
     self.addlog("Sync the singularity image")
-    singularity_image_userfile = self.tool_config.singularity_image_userfile
-    singularity_image          = Userfile.find(singularity_image_userfile)
+    singularity_image = self.tool_config.singularity_image
     singularity_image.sync_to_cache
-    cachename                  = singularity_image.cache_full_path
-    basename                   = cachename.basename.to_s
-    safe_symlink(cachename,basename)
+    cachename         = singularity_image.cache_full_path
+    safe_symlink(cachename,singularity_image.name)
 
     # Used to set dp_cache for singularity
     basename_dp_cache         = ".singularity_dp_cache"
@@ -2022,7 +2020,7 @@ chmod 755 ./.dockerjob.sh
         next unless File.symlink?(f)
         expand_path = File.expand_path(File.readlink(f))
         next unless expand_path.index(cms_shared_dir) == 0
-        sub_path = expand_path.gsub(cms_shared_dir,"")
+        sub_path    = expand_path.gsub(cms_shared_dir,"")
         FileUtils.mv(f,"#{f}.orig")
         FileUtils.symlink("#{basename_dp_cache}#{sub_path}", f)
       end
@@ -2038,7 +2036,7 @@ SINGULARITYJOB
 chmod 755 ./.singularityjob.sh
 mkdir #{basename_dp_cache}
 # Run the task commands
-#{singularity_executable_name} run -H ${PWD} -B #{cms_shared_dir}:#{singularity_dp_cache_path} #{basename} .singularityjob.sh
+#{singularity_executable_name} run -H ${PWD} -B #{cms_shared_dir}:#{singularity_dp_cache_path} #{singularity_image.name} .singularityjob.sh
 "
 
     return singularity_commands
