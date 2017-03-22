@@ -167,7 +167,7 @@ class ToolConfigsController < ApplicationController
     form_tool_config.bourreau_id = @tool_config.bourreau_id
 
     # Update everything else
-    [ :version_name, :description, :script_prologue, :group_id, :ncpus, :docker_image, :singularity_image_userfile,
+    [ :version_name, :description, :script_prologue, :group_id, :ncpus, :docker_image, :singularity_image_userfile_id,
       :extra_qsub_args, :cloud_disk_image, :cloud_vm_user, :cloud_ssh_key_pair, :cloud_instance_type,
       :cloud_job_slots, :cloud_vm_boot_timeout, :cloud_vm_ssh_tunnel_port ].each do |att|
        @tool_config[att] = form_tool_config[att]
@@ -200,7 +200,7 @@ class ToolConfigsController < ApplicationController
            @tool_config.group                         = other_tc.group
            @tool_config.ncpus                         = other_tc.ncpus
            @tool_config.docker_image                  = other_tc.docker_image
-           @tool_config.singularity_image_userfile    = other_tc.singularity_image_userfile
+           @tool_config.singularity_image_userfile_id = other_tc.singularity_image_userfile_id
            @tool_config.extra_qsub_args               = other_tc.extra_qsub_args
            @tool_config.cloud_disk_image              = other_tc.cloud_disk_image
            @tool_config.cloud_vm_user                 = other_tc.cloud_vm_user

@@ -382,7 +382,7 @@ ActiveRecord::Schema.define(:version => 20170303205119) do
     t.integer  "cloud_vm_boot_timeout"
     t.integer  "cloud_vm_ssh_tunnel_port"
     t.string   "singularityhub_image"
-    t.integer  "singularity_image_userfile"
+    t.integer  "singularity_image_userfile_id"
   end
 
   add_index "tool_configs", ["bourreau_id"], :name => "index_tool_configs_on_bourreau_id"
