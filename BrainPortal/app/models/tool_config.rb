@@ -231,7 +231,6 @@ class ToolConfig < ActiveRecord::Base
   def is_trivial?
     return false if self.extra_qsub_args.present?
     return false if self.docker_image.present?
-    #return false if self.singularity_image.present?
     return false if self.singularity_image_userfile_id.present?
     return false if self.cloud_disk_image.present?
     return false if self.cloud_vm_user.present?
