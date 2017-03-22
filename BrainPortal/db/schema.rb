@@ -215,12 +215,8 @@ ActiveRecord::Schema.define(:version => 20170303205119) do
     t.string   "type"
     t.integer  "user_id"
     t.integer  "group_id"
-    t.string   "actres_user"
-    t.string   "actres_host"
-    t.integer  "actres_port"
-    t.string   "actres_dir"
-    t.boolean  "online",                      :default => false, :null => false
-    t.boolean  "read_only",                   :default => false, :null => false
+    t.boolean  "online",                   :default => false, :null => false
+    t.boolean  "read_only",                :default => false, :null => false
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
