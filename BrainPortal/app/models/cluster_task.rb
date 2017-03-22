@@ -2015,7 +2015,7 @@ chmod 755 ./.dockerjob.sh
 
     # Used to set dp_cache for singularity
     basename_dp_cache         = ".singularity_dp_cache"
-    singularity_dp_cache_path = CBRAIN::Rails_UserHome + basename_dp_cache
+    singularity_dp_cache_path = "#{CBRAIN::Rails_UserHome}/#{basename_dp_cache}"
 
     begin
       Dir.glob("*").each do |f|

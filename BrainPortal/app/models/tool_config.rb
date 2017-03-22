@@ -230,7 +230,7 @@ class ToolConfig < ActiveRecord::Base
     return false if self.extra_qsub_args.present?
     return false if self.docker_image.present?
     #return false if self.singularity_image.present?
-    return false if self.singularity_image_userfile_
+    return false if self.singularity_image_userfile.present?
     return false if self.cloud_disk_image.present?
     return false if self.cloud_vm_user.present?
     return false if self.cloud_ssh_key_pair.present?
