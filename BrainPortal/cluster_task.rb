@@ -2015,7 +2015,7 @@ chmod 755 ./.dockerjob.sh
 
     # Used to set dp_cache for singularity
     basename_dp_cache         = ".singularity_dp_cache"
-    singularity_dp_cache_path = CBRAIN::Rails_UserHome + basename_dp_cache
+    singularity_dp_cache_path = "#{CBRAIN::Rails_UserHome}/#{basename_dp_cache}"
 
     begin
       Dir.glob("*").each do |f|
@@ -2030,7 +2030,6 @@ chmod 755 ./.dockerjob.sh
       self.addlog_exception(ex,"Error copying files for singularity")
     end
 
-    # Set singularity command
     singularity_commands      = "cat << \"SINGULARITYJOB\" > .singularityjob.sh
 #!/bin/bash -l
 #{command_script}
