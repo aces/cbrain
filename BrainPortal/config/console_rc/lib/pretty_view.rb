@@ -255,9 +255,11 @@ class RemoteResource
       ConsoleCtx.send(:pretty_past_date,created_at),
       ConsoleCtx.send(:pretty_past_date,updated_at),
       docker_executable_name.presence || "",
+      singularity_executable_name.presence || "",
       (online? ? "Online" : "Offline"),
       (read_only? ? "ReadOnly" : "R/W"),
       (docker_present? ? "DockerOK" : "NoDocker"),
+      (singularity_present? ? "DockerOK" : "NoDocker"),
       (portal_locked? ? "LOCKED" : "")
   end
 end
