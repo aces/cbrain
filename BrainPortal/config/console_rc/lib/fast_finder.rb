@@ -105,8 +105,9 @@ end
 
 class CbrainTask
   def to_summary
-    sprintf "<%s#%d> [%s:%s] S=%s B=%s",
-      self.class.to_s, self.id,
+    sprintf "<%s#%d> \"%s\" [%s:%s] S=%s B=%s",
+      self.class.to_s.demodulize, self.id,
+      self.status,
       user.login,      group.name,
       cluster_workdir_size.presence || "unk",
       (bourreau.name rescue "(Preset)")
