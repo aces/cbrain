@@ -253,6 +253,14 @@ class CbrainSession
     @model.save!
   end
 
+  # Update timestamp of current session ONLY if it's older than
+  # than 1 minute.
+  def touch_unless_recent
+    return unless @model.present?
+    return if     @model.updated_at.blank? || @model.updated_at > 1.minute.ago
+    @model.touch
+  end
+
   # User model scope of currently (recently) active users.
   # (active and had activity since +since+).
   def self.active_users(since: 10.minutes.ago)
