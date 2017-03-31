@@ -57,6 +57,9 @@ require __dir__ + "/lib/pretty_view.rb"
 # Adds a few shortcuts helpful for development
 require __dir__ + "/lib/shortcuts.rb"
 
+# Adds some reports for admins
+require __dir__ + "/lib/reports.rb"
+
 #####################################################
 # Initial help message for user
 #####################################################

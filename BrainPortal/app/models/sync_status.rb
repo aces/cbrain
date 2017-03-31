@@ -69,6 +69,8 @@ class SyncStatus < ActiveRecord::Base
   TransferTimeout = 12.hours
   DebugMessages   = false
 
+  cb_scope                :active, where(:status => [ 'ToProvider', 'ToCache' ])
+
   belongs_to              :userfile
   belongs_to              :remote_resource
 
