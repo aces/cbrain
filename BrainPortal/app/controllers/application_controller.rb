@@ -50,8 +50,9 @@ class ApplicationController < ActionController::Base
   before_filter :prepare_messages
   before_filter :adjust_system_time_zone
   around_filter :activate_user_time_zone
-  after_filter  :action_counter
-  after_filter  :log_user_info
+  after_filter  :update_session_info       # touch timestamp of session at least once per minute
+  after_filter  :action_counter            # counts all action/controller/user agents
+  after_filter  :log_user_info             # add to log a single line with user info.
 
   # See ActionController::RequestForgeryProtection for details
   protect_from_forgery
@@ -276,6 +277,16 @@ class ApplicationController < ActionController::Base
     true
   rescue => ex
     puts_red "Ex: #{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
+    true
+  end
+
+  # 'After' callback. For the moment only adjusts the timestamp
+  # on the current session, to detect active users. If the user
+  # is only doing GET requests, the session object is not updated,
+  # so this will touch it once per minute.
+  def update_session_info
+    current_session.try(:touch_unless_recent)
+  rescue # ignore all errors.
     true
   end
 

@@ -120,6 +120,10 @@ class NocController < ApplicationController
     myurl  = "#{request.protocol}#{request.host_with_port}#{request.fullpath}"
     response.headers["Refresh"] = "#{@refresh_every};#{myurl}"
 
+    # Show IP address
+    reqenv = request.env || {}
+    @ip_address ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR'] || ""
+
     render :action => :daily, :layout => false # full HTML layout already in view file
   end
 
