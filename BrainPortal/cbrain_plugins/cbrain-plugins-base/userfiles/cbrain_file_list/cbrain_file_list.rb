@@ -83,6 +83,12 @@ class CbrainFileList < CSVFile
     @rows ||= create_csv_array(QUOTING_CHARACTER, FIELD_SEPARATOR)
   end
 
+  # Sets the internal cache from a CSV file.
+  def load_from_file(path)
+    file_content = File.read(path)
+    @rows = CSVFile.parse_file_content_as_csv(file_content, QUOTING_CHARACTER, FIELD_SEPARATOR)
+  end
+
   # Returns an array of the IDs of the first column of the CSV file
   # as extracted by cached_csv_array(). IDs will be numeric, or for
   # missing rows, will contain nils. IDs can be zero.
