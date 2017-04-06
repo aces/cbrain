@@ -108,12 +108,12 @@
     </p>
   </span>
 
-    <span title="Id of the Singularity image">
+    <span title="ID of the Singularity image">
     <p><%= f.label :singularity_image_userfile_id, "ID of the Singularity image:" %><br/>
       <%= f.text_field :singularity_image_userfile_id %> <%= link_to_userfile_if_accessible(@tool_config.singularity_image) %><br>
       <div class="field_explanation">
         The ID number of the Singularity image in which the tool is installed.
-        This ID refers to userfile register in CBRAIN.
+        This ID refers to userfile registered in CBRAIN.
         If left empty, tool will run on the bare resources, without
         any Singularity image.
       </div>
