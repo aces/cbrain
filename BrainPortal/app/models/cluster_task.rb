@@ -1951,11 +1951,6 @@ exit $status
     return self.bourreau.docker_executable_name.presence || "docker"
   end
 
-  # Return whether the Bourreau of the task has docker present or not
-  def docker_present?
-    return self.bourreau.docker_present
-  end
-
   # Returns the command line(s) associated with the task, wrapped in
   # a Docker call if a Docker image has to be used.
   def docker_commands(command_script)
@@ -1991,11 +1986,6 @@ chmod 755 ./.dockerjob.sh
   # from the Bourreau's own attribute. Default: "singularity".
   def singularity_executable_name
     return self.bourreau.singularity_executable_name.presence || "singularity"
-  end
-
-  # Return whether the Bourreau of the task has singularity present or not
-  def singularity_present?
-    return self.bourreau.singularity_present
   end
 
   # Returns the command line(s) associated with the task, wrapped in
