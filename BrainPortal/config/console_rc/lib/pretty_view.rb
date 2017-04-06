@@ -259,7 +259,7 @@ class RemoteResource
       (online? ? "Online" : "Offline"),
       (read_only? ? "ReadOnly" : "R/W"),
       (docker_present? ? "DockerOK" : "NoDocker"),
-      (singularity_present? ? "DockerOK" : "NoDocker"),
+      (singularity_present? ? "SingularityOK" : "NoSingularity"),
       (portal_locked? ? "LOCKED" : "")
   end
 end

@@ -2016,6 +2016,11 @@ chmod 755 ./.dockerjob.sh
     singularity_dp_cache_path = "#{CBRAIN::Rails_UserHome}/#{basename_dp_cache}"
 
     begin
+      # In Dir some entry is symlink that point to file 
+      # present in the `cms_shared_dir` these one will not
+      # be mount in the Singularity image. 
+      # For all these files we create new symlink in this 
+      # way they will be visible in the Singularity image. 
       Dir.glob("*").each do |f|
         next unless File.symlink?(f)
         expand_path = File.expand_path(File.readlink(f))
