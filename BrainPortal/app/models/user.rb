@@ -36,7 +36,6 @@ require 'pbkdf2'
 # * Userfile
 # * CustomFilter
 # * Tag
-# * Feedback
 # *Has* *and* *belongs* *to* *many*:
 # * Group
 #
@@ -44,7 +43,7 @@ require 'pbkdf2'
 # [<b>On Destroy</b>] A user cannot be destroyed if it is still associated with any
 #                     Userfile, RemoteResource or DataProvider resources.
 #                     Destroying a user will destroy the associated
-#                     Tag, Feedback and CustomFilter resources.
+#                     Tag and CustomFilter resources.
 class User < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
