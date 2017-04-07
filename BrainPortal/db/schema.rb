@@ -135,14 +135,6 @@ ActiveRecord::Schema.define(:version => 20170303205119) do
     t.datetime "updated_at"
   end
 
-  create_table "feedbacks", :force => true do |t|
-    t.string   "summary"
-    t.text     "details"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.integer  "user_id"
-  end
-
   create_table "groups", :force => true do |t|
     t.string   "name"
     t.datetime "created_at"
@@ -276,13 +268,13 @@ ActiveRecord::Schema.define(:version => 20170303205119) do
 
   create_table "signups", :force => true do |t|
     t.string   "title"
-    t.string   "first",         :null => false
+    t.string   "first",                            :null => false
     t.string   "middle"
-    t.string   "last",          :null => false
-    t.string   "institution",   :null => false
+    t.string   "last",                             :null => false
+    t.string   "institution",                      :null => false
     t.string   "department"
     t.string   "position"
-    t.string   "email",         :null => false
+    t.string   "email",                            :null => false
     t.string   "website"
     t.string   "street1"
     t.string   "street2"
@@ -293,14 +285,14 @@ ActiveRecord::Schema.define(:version => 20170303205119) do
     t.string   "time_zone"
     t.string   "service"
     t.string   "login"
-    t.string   "comment"
+    t.string     "comment"
     t.string   "session_id"
     t.string   "confirm_token"
     t.boolean  "confirmed"
     t.string   "approved_by"
     t.datetime "approved_at"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
     t.string   "admin_comment"
   end
 
