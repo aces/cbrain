@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% range = @hours_ago.blank? ? "Today" : "Last " + pluralize(@hours_ago,"hour") %>
+<% title "Activity #{range}" %>
+<% title to_localtime(Time.now, :date) %>
+<% title "at " + to_localtime(Time.now, :time) %>
+
+<head>
+  <title><%= RemoteResource.current_resource.name.presence || "CBRAIN" %><%= yield :title %></title>
+  <link rel="shortcut icon"                    type="image/png" href="/images/custom_logos/cb-small_white_blue.png">
+  <link rel="apple-touch-icon" sizes="96x96"   type="image/png" href="/images/custom_logos/cb-small_white_blue.png">
+  <link rel="apple-touch-icon" sizes="145x145" type="image/png" href="/images/custom_logos/cb-large_white_blue.png">
+  <%= stylesheet_link_tag 'cbrain' %>
+  <%= stylesheet_link_tag 'noc' %>
+</head>
+
+<body>
+<div class="daily">
+
+
+
+<h1>
+<%= image_tag("custom_logos/cbrain-large_white_alpha.png", :id => "header_logo") %>
+<%= yield :title %>
+</h1>
+
+<% num_users_color = @active_users.zero? ? "black" : colorwheel_edge_crawl(@active_users, 20) %>
+<% num_tasks_color = @active_tasks.zero? ? "black" : colorwheel_edge_crawl(@active_tasks, 400) %>
+
+<div class="noc_main">
+  <div class="noc_panel">
+    <div class="noc_header">Users Today</div><br>
+    <div class="noc_count" style="color: <%= num_users_color %>"><%= @active_users %></div>
+  </div>
+  <div class="noc_panel">
+    <div class="noc_header">Active Tasks</div><br>
+    <div class="noc_count" style="color: <%= num_tasks_color %>"><%= @active_tasks %></div>
+  </div>
+  <div class="noc_panel">
+    <div class="noc_header">Active Transfers</div><br>
+    <div class="noc_count"><%= @data_transfer.zero? ? "none" : colored_pretty_size(@data_transfer) %></div>
+  </div>
+</div>
+
+
+
+<h1>Execution Servers Caches And Tasks</h1>
+
+<% ([ @myself ] + @bourreaux).each do |b| %>
+  <%
+    info          = @bourreau_info[b.id] || {}
+    task_space    = info[:task_space]    || 0
+    status_counts = info[:status_counts] || {}
+    cached_files  = info[:cache_sizes]   || 0
+    offline       = b.online? ? nil : "offline"
+    next if b.is_a?(Bourreau)    &&
+            b.online?            && # we want to always display offline Bourreaux
+            task_space.zero?     &&
+            status_counts.empty? &&
+            cached_files.zero?
+  %>
+
+  <fieldset class="daily_bourreau <%= offline %>">
+    <legend><%= red_if(offline, b.name) %><%= b.is_a?(BrainPortal) ? " (Portal)" : "" %></legend>
+
+    <span class="display_cell">
+      <%= disk_space_info_display(cached_files) do %>
+        <small>Cache:</small><br>
+        <%= colored_pretty_size cached_files %><br>
+      <% end %>
+    </span>
+
+    <% if b.is_a?(Bourreau) && task_space > 0 %>
+    <span class="display_cell">
+      <%= disk_space_info_display(task_space) do %>
+        <small>Tasks:</small><br>
+        <%= colored_pretty_size task_space %><br>
+      <% end %>
+    </span>
+    <% end %>
+
+    <span class="display_cell">
+      <% sorted_counts = status_counts.sort { |pair1,pair2| cmp_status_order(pair1[0],pair2[0]) } %>
+      <%= array_to_table(sorted_counts,
+                         :rows            => 3,
+                         :table_class     => 'daily_task_status_table',
+                         :min_data        => 1,
+                         :fill_by_columns => true
+                        ) do |pair| %>
+        <% status, count = *pair %>
+        <%= count %>x <%= colored_status status %>
+      <% end %>
+    </span>
+
+  </fieldset>
+<% end %>
+
+
+
+<h1>Data Providers Updated Files</h1>
+
+<% @updated_files.each do |dp_id,size| %>
+  <% dp       = DataProvider.find(dp_id) %>
+  <% offline  = dp.online? ? nil : "offline" %>
+
+  <fieldset class="daily_dp <%= offline %>">
+    <legend><%= red_if(offline, dp.name) %></legend>
+    <%= disk_space_info_display(size) do %>
+      <%= colored_pretty_size size %>
+    <% end %>
+  </fieldset>
+
+<% end %>
+
+
+</div>
+<div class="ip_address"><%= @ip_address %></div>
+</body>
+</html>

@@ -98,10 +98,9 @@ module ViewHelpers
       [numsecs,  is_short ? "s" : "second"]
     ]
 
-
-   components = components.select { |c| c[0] > 0 }
-   components.pop   while components.size > 0 && components[-1] == 0
-   components.shift while components.size > 0 && components[0]  == 0
+    components = components.select { |c| c[0] > 0 }
+    components.pop   while components.size > 0 && components[-1] == 0
+    components.shift while components.size > 0 && components[0]  == 0
 
     if options[:num_components]
       while components.size > options[:num_components]
@@ -140,7 +139,7 @@ module ViewHelpers
     return "(Unknown)" if pastdate.blank?
     loctime = pastdate.is_a?(Time) ? pastdate : Time.parse(pastdate.to_s)
     locdate = to_localtime(pastdate,what)
-    elapsed = pretty_elapsed(Time.now - loctime)
+    elapsed = pretty_elapsed(Time.now - loctime, :num_components => 3)
     "#{locdate} (#{elapsed} ago)"
   end
 

@@ -82,11 +82,6 @@ class Bourreau < RemoteResource
   # *ssh_control_port*:: Optional, default 22
   # *ssh_control_rails_dir*:: Mandatory
   #
-  # If DB and/or ActiveResource tunnelling is enabled, the
-  # remote Bourreau will be told to use the tunnels. This
-  # implies that the remote database.yml will be rewritten
-  # and the "-p port" option will be set to the value
-  # of *tunnel_actres_port* instead of *actres_port*
   def start
     self.operation_messages = "Unknown internal error."
 
@@ -96,7 +91,17 @@ class Bourreau < RemoteResource
     self.zap_info_cache(:ping)
 
     unless self.has_remote_control_info?
-      self.operation_messages = "Not configured for remote control."
+      self.operation_messages = "Not configured for remote control: missing user/host."
+      return false
+    end
+
+    unless self.has_actres_tunnelling_info?
+      self.operation_messages = "Not configured for remote control: missing control tunnel port."
+      return false
+    end
+
+    unless self.has_db_tunnelling_info?
+      self.operation_messages = "Not configured for remote control: missing DB tunnel port."
       return false
     end
 
@@ -114,10 +119,10 @@ class Bourreau < RemoteResource
     myrailsenv = Rails.env || "production"
 
     # If we tunnel the DB, we get a non-blank yml file here
-    db_yml  = self.has_db_tunnelling_info?   ?   self.build_db_yml_for_tunnel(myrailsenv) : ""
+    db_yml  = self.build_db_yml_for_tunnel(myrailsenv)
 
     # What port the Rails Bourreau will listen to?
-    port = self.has_actres_tunnelling_info?  ?   self.tunnel_actres_port : self.actres_port # actres_port no longer supported
+    port = self.tunnel_actres_port
 
     # File to capture command output.
     captfile = "/tmp/start.out.#{Process.pid}"
@@ -125,7 +130,7 @@ class Bourreau < RemoteResource
     # If the remote host is actually just a frontend before the REAL
     # host, add the "-R host -H http_port -D db_port" special options to the command
     proxy_args = ""
-    if ! self.proxied_host.blank?
+    if self.proxied_host.present?
       proxy_args = "-R #{self.proxied_host.bash_escape} -H #{port.to_s.bash_escape} -D #{self.tunnel_mysql_port.to_s.bash_escape}"
     end
 
@@ -163,8 +168,8 @@ class Bourreau < RemoteResource
     # If the remote host is actually just a frontend before the REAL
     # host, add the "-R host -H http_port -D db_port" special options to the command
     proxy_args = ""
-    if ! self.proxied_host.blank?
-      port = self.has_actres_tunnelling_info?  ? self.tunnel_actres_port : self.actres_port # actres_port no longer supported
+    if self.proxied_host.present?
+      port = self.tunnel_actres_port
       proxy_args = "-R #{self.proxied_host.to_s.bash_escape} -H #{port.to_s.bash_escape} -D #{self.tunnel_mysql_port.to_s.bash_escape}"
     end
 
@@ -206,8 +211,8 @@ class Bourreau < RemoteResource
     # If the remote host is actually just a frontend before the REAL
     # host, add the "-R host -H http_port -D db_port" special options to the command
     proxy_args = ""
-    if ! self.proxied_host.blank?
-      port = self.has_actres_tunnelling_info?  ? self.tunnel_actres_port : self.actres_port # actres_port no longer supported
+    if self.proxied_host.present?
+      port = self.tunnel_actres_port
       proxy_args = "-R #{self.proxied_host.to_s.bash_escape} -H #{port.to_s.bash_escape} -D #{self.tunnel_mysql_port.to_s.bash_escape}"
     end
 

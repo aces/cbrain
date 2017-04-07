@@ -34,7 +34,7 @@
 #   @oo # array of Tool objects
 #   @cc # array of ToolConfig objects
 #
-# At the same time, if any of these arrays contain any entries
+# At the same time, if any of these arrays is not empty,
 # a similar variable with a single letter name (e.g. @u, @t, @g etc) will
 # be set to the first entry of the array.
 #
@@ -89,8 +89,8 @@ end
 # Make sure the classes are loaded
 # Note that it's important to load PortalTask too, because of its own pre-loading of subclasses.
 [ Userfile, CbrainTask, User, Group, DataProvider, RemoteResource, Site, Tool, ToolConfig, Bourreau ]
-PortalTask.nil? rescue true
-CluserTask.nil? rescue true
+PortalTask.nil?  rescue true
+ClusterTask.nil? rescue true
 
 
 class Userfile
@@ -105,8 +105,9 @@ end
 
 class CbrainTask
   def to_summary
-    sprintf "<%s#%d> [%s:%s] S=%s B=%s",
-      self.class.to_s, self.id,
+    sprintf "<%s#%d> \"%s\" [%s:%s] S=%s B=%s",
+      self.class.to_s.demodulize, self.id,
+      self.status,
       user.login,      group.name,
       cluster_workdir_size.presence || "unk",
       (bourreau.name rescue "(Preset)")
