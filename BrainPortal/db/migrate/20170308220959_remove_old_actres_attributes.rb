@@ -20,26 +20,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-def plog(*args)
-  no_log do
-    to_show = args.flatten
-    to_show.each do |obj|
-      if obj.respond_to?(:getlog)
-        log = obj.getlog rescue "(Exception getting log)"
-        puts "==== Log for #{obj.inspect} ====" if to_show.size > 1
-        puts log.to_s
-      else
-        puts "==== Object does not respond to getlog(): #{obj.inspect} ===="
-      end
-    end
+class RemoveOldActresAttributes < ActiveRecord::Migration
+  def up
+    remove_column :remote_resources, :actres_host
+    remove_column :remote_resources, :actres_port
+    remove_column :remote_resources, :actres_user
+    remove_column :remote_resources, :actres_dir
   end
-  true
-end
 
-(CbrainConsoleFeatures ||= []) << <<FEATURES
-========================================================
-Feature: print ActiveRecordLog of some objects
-========================================================
-  Activate with: plog obj [, obj , ...]
-FEATURES
+  def down
+    add_column    :remote_resources, :actres_host, :string
+    add_column    :remote_resources, :actres_port, :int
+    add_column    :remote_resources, :actres_user, :string
+    add_column    :remote_resources, :actres_dir,  :string
+  end
+end
 

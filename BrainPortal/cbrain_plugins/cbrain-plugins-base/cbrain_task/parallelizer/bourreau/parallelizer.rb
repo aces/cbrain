@@ -65,14 +65,14 @@ class CbrainTask::Parallelizer < ClusterTask #:nodoc:
       oerr    = otask.qsub_stderr_basename
       commands += [
         "",
-        "# Run task #{otask.fullname}",
+        "# Run task #{otask.fullname.bash_escape}",
         "",
-        "if test -d '#{odir}' ; then",
-        "  echo Starting script for task '#{otask.fullname}' in background.",
-        "  cd '#{odir}'",
-        "  /bin/bash #{oscript} > '#{oout}' 2> '#{oerr}' &",
+        "if test -d #{odir.to_s.bash_escape} ; then",
+        "  echo Starting script for task '#{otask.fullname.bash_escape}' in background.",
+        "  cd #{odir.to_s.bash_escape}",
+        "  /bin/bash #{oscript.bash_escape} > #{oout.bash_escape} 2> #{oerr.bash_escape} &",
         "else",
-        "  echo Could not find workdir of task '#{otask.fullname}'. Skipping.",
+        "  echo Could not find workdir of task #{otask.fullname.to_s.bash_escape}. Skipping.",
         "fi"
       ]
     end
