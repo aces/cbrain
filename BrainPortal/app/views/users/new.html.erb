@@ -76,6 +76,8 @@
     <p><label for="no_password_reset_needed">No need to reset initial password:</label>
     <%= check_box_tag :no_password_reset_needed, "1", params[:no_password_reset_needed] == "1" %>
 
+    <%= hidden_field_tag :signup_id, params[:signup_id] %>
+
   </div>
 
   <div class="box_spacer"></div>

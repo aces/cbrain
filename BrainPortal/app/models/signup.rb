@@ -27,7 +27,7 @@ class Signup < ActiveRecord::Base
   attr_accessible       :title, :first, :middle, :last,
                         :institution, :department, :position, :email,
                         :street1, :street2, :city, :province, :country, :postal_code,
-                        :login, :time_zone, :comment, :admin_comment
+                        :login, :time_zone, :comment, :admin_comment, :hidden, :user_id
 
   validates_presence_of :first, :last,
                         :institution, :department, :position, :email,
@@ -80,7 +80,7 @@ class Signup < ActiveRecord::Base
   end
 
   def dup_login? #:nodoc:
-    User.exists?(:login => self.login)
+    !self.approved? && User.exists?(:login => self.login)
   end
 
   # Returns a new NormalUser (not saved in the DB yet) based

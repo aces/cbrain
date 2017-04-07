@@ -166,13 +166,15 @@ class SignupsController < ApplicationController
 
     scope_default_order(@scope, 'created_at', :desc)
 
-    @base_scope       = Signup
-    @view_scope       = @scope.apply(@base_scope)
+    view_hidden                 = params[:view_hidden].presence == "true" ? true : false
+    @scope.custom[:view_hidden] = view_hidden
+    @base_scope                 = Signup.where(:hidden => view_hidden)
+    @view_scope                 = @scope.apply(@base_scope)
 
     # Prepare the Pagination object
-    @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
+    @scope.pagination           ||= Scope::Pagination.from_hash({ :per_page => 25 })
 
-    @signups          = @scope.pagination.apply(@view_scope)
+    @signups                    = @scope.pagination.apply(@view_scope)
 
     scope_to_session(@scope, 'signups')
 
@@ -198,6 +200,14 @@ class SignupsController < ApplicationController
 
     if params[:commit] =~ /Delete/i
       return delete_multi
+    end
+
+    if params[:commit] =~ /Hide/i
+      return hide_multi
+    end
+
+    if params[:commit] =~ /Show/i
+      return show_multi
     end
 
     # Default: unknown multi action?
@@ -264,6 +274,34 @@ class SignupsController < ApplicationController
 
     flash[:notice] = "Sent " + view_pluralize(count, "confirmation email") + "."
     render :action => :multi_action
+  end
+
+  def hide_multi #:nodoc:
+    reqids = params[:reqids] || []
+    reqs   = Signup.find(reqids)
+
+    reqs.each do |req|
+      req[:hidden] = true
+      req.save
+    end
+
+    flash[:notice] = "Hid " + view_pluralize(reqs.size, "record")
+
+    redirect_to :action => :index
+  end
+
+  def show_multi #:nodoc:
+    reqids = params[:reqids] || []
+    reqs   = Signup.find(reqids)
+
+    reqs.each do |req|
+      req[:hidden] = false
+      req.save
+    end
+
+    flash[:notice] = "Unhid " + view_pluralize(reqs.size, "record")
+
+    redirect_to :action => :index
   end
 
   private

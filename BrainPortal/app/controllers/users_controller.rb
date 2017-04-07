@@ -147,6 +147,7 @@ class UsersController < ApplicationController
         signup.add_extra_info_for_user(@user)
         signup.approved_by = current_user.login
         signup.approved_at = Time.now
+        signup.user_id     = @user.id
         signup.save
       else # account was not created from a signup request? Still log some info.
         current_user.addlog_context(self,"Created account for user '#{@user.login}'")

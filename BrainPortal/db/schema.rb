@@ -11,8 +11,8 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20170308220959) do
 
+ActiveRecord::Schema.define(:version => 20170308220959) do
   create_table "access_profiles", :force => true do |t|
     t.string   "name",        :null => false
     t.string   "description"
@@ -250,6 +250,8 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.string   "external_status_page_url"
     t.string   "docker_executable_name"
     t.boolean  "docker_present"
+    t.string   "small_logo"
+    t.string   "large_logo"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
@@ -274,13 +276,13 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
 
   create_table "signups", :force => true do |t|
     t.string   "title"
-    t.string   "first",         :null => false
+    t.string   "first",                            :null => false
     t.string   "middle"
-    t.string   "last",          :null => false
-    t.string   "institution",   :null => false
+    t.string   "last",                             :null => false
+    t.string   "institution",                      :null => false
     t.string   "department"
     t.string   "position"
-    t.string   "email",         :null => false
+    t.string   "email",                            :null => false
     t.string   "website"
     t.string   "street1"
     t.string   "street2"
@@ -291,15 +293,17 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.string   "time_zone"
     t.string   "service"
     t.string   "login"
-    t.string   "comment"
+    t.text     "comment"
     t.string   "session_id"
     t.string   "confirm_token"
     t.boolean  "confirmed"
     t.string   "approved_by"
     t.datetime "approved_at"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
-    t.string   "admin_comment"
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
+    t.text     "admin_comment"
+    t.integer  "user_id"
+    t.boolean  "hidden",        :default => false
   end
 
   create_table "sites", :force => true do |t|
