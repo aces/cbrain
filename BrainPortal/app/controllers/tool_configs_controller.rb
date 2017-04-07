@@ -167,7 +167,7 @@ class ToolConfigsController < ApplicationController
     form_tool_config.bourreau_id = @tool_config.bourreau_id
 
     # Update everything else
-    [ :version_name, :description, :script_prologue, :group_id, :ncpus, :docker_image,
+    [ :version_name, :description, :script_prologue, :group_id, :ncpus, :docker_image, :singularity_image_userfile_id,
       :extra_qsub_args, :cloud_disk_image, :cloud_vm_user, :cloud_ssh_key_pair, :cloud_instance_type,
       :cloud_job_slots, :cloud_vm_boot_timeout, :cloud_vm_ssh_tunnel_port ].each do |att|
        @tool_config[att] = form_tool_config[att]
@@ -195,19 +195,20 @@ class ToolConfigsController < ApplicationController
        other_tc = ToolConfig.find_by_id(params[:merge_from_tc_id] || 0)
        if other_tc
          if @tool_config.tool_id &&  @tool_config.bourreau_id
-           @tool_config.description              = "#{@tool_config.description}\n#{other_tc.description}".strip
-           @tool_config.version_name             = other_tc.version_name
-           @tool_config.group                    = other_tc.group
-           @tool_config.ncpus                    = other_tc.ncpus
-           @tool_config.docker_image             = other_tc.docker_image
-           @tool_config.extra_qsub_args          = other_tc.extra_qsub_args
-           @tool_config.cloud_disk_image         = other_tc.cloud_disk_image
-           @tool_config.cloud_vm_user            = other_tc.cloud_vm_user
-           @tool_config.cloud_ssh_key_pair       = other_tc.cloud_ssh_key_pair
-           @tool_config.cloud_instance_type      = other_tc.cloud_instance_type
-           @tool_config.cloud_job_slots          = other_tc.cloud_job_slots
-           @tool_config.cloud_vm_boot_timeout    = other_tc.cloud_vm_boot_timeout
-           @tool_config.cloud_vm_ssh_tunnel_port = other_tc.cloud_vm_ssh_tunnel_port
+           @tool_config.description                   = "#{@tool_config.description}\n#{other_tc.description}".strip
+           @tool_config.version_name                  = other_tc.version_name
+           @tool_config.group                         = other_tc.group
+           @tool_config.ncpus                         = other_tc.ncpus
+           @tool_config.docker_image                  = other_tc.docker_image
+           @tool_config.singularity_image_userfile_id = other_tc.singularity_image_userfile_id
+           @tool_config.extra_qsub_args               = other_tc.extra_qsub_args
+           @tool_config.cloud_disk_image              = other_tc.cloud_disk_image
+           @tool_config.cloud_vm_user                 = other_tc.cloud_vm_user
+           @tool_config.cloud_ssh_key_pair            = other_tc.cloud_ssh_key_pair
+           @tool_config.cloud_instance_type           = other_tc.cloud_instance_type
+           @tool_config.cloud_job_slots               = other_tc.cloud_job_slots
+           @tool_config.cloud_vm_boot_timeout         = other_tc.cloud_vm_boot_timeout
+           @tool_config.cloud_vm_ssh_tunnel_port      = other_tc.cloud_vm_ssh_tunnel_port
          end
          @tool_config.env_array       += (other_tc.env_array || [])
          @tool_config.script_prologue  = "#{@tool_config.script_prologue}\n#{other_tc.script_prologue}"
