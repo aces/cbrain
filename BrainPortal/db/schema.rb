@@ -283,7 +283,7 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.string   "time_zone"
     t.string   "service"
     t.string   "login"
-    t.text     "comment"
+    t.string     "comment"
     t.string   "session_id"
     t.string   "confirm_token"
     t.boolean  "confirmed"
@@ -291,7 +291,7 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.datetime "approved_at"
     t.datetime "created_at",                       :null => false
     t.datetime "updated_at",                       :null => false
-    t.string     "admin_comment"
+    t.string   "admin_comment"
   end
 
   create_table "sites", :force => true do |t|
