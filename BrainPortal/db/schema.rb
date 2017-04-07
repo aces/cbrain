@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20170104222339) do
+ActiveRecord::Schema.define(:version => 20170308220959) do
 
   create_table "access_profiles", :force => true do |t|
     t.string   "name",        :null => false
@@ -135,14 +135,6 @@ ActiveRecord::Schema.define(:version => 20170104222339) do
     t.datetime "updated_at"
   end
 
-  create_table "feedbacks", :force => true do |t|
-    t.string   "summary"
-    t.text     "details"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.integer  "user_id"
-  end
-
   create_table "groups", :force => true do |t|
     t.string   "name"
     t.datetime "created_at"
@@ -215,10 +207,6 @@ ActiveRecord::Schema.define(:version => 20170104222339) do
     t.string   "type"
     t.integer  "user_id"
     t.integer  "group_id"
-    t.string   "actres_user"
-    t.string   "actres_host"
-    t.integer  "actres_port"
-    t.string   "actres_dir"
     t.boolean  "online",                   :default => false, :null => false
     t.boolean  "read_only",                :default => false, :null => false
     t.text     "description"
@@ -278,13 +266,13 @@ ActiveRecord::Schema.define(:version => 20170104222339) do
 
   create_table "signups", :force => true do |t|
     t.string   "title"
-    t.string   "first",         :null => false
+    t.string   "first",                            :null => false
     t.string   "middle"
-    t.string   "last",          :null => false
-    t.string   "institution",   :null => false
+    t.string   "last",                             :null => false
+    t.string   "institution",                      :null => false
     t.string   "department"
     t.string   "position"
-    t.string   "email",         :null => false
+    t.string   "email",                            :null => false
     t.string   "website"
     t.string   "street1"
     t.string   "street2"
@@ -295,15 +283,17 @@ ActiveRecord::Schema.define(:version => 20170104222339) do
     t.string   "time_zone"
     t.string   "service"
     t.string   "login"
-    t.string   "comment"
+    t.text     "comment"
     t.string   "session_id"
     t.string   "confirm_token"
     t.boolean  "confirmed"
     t.string   "approved_by"
     t.datetime "approved_at"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
-    t.string   "admin_comment"
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
+    t.text     "admin_comment"
+    t.integer  "user_id"
+    t.boolean  "hidden",        :default => false
   end
 
   create_table "sites", :force => true do |t|
