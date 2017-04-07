@@ -291,9 +291,7 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.datetime "approved_at"
     t.datetime "created_at",                       :null => false
     t.datetime "updated_at",                       :null => false
-    t.text     "admin_comment"
-    t.integer  "user_id"
-    t.boolean  "hidden",        :default => false
+    t.string     "admin_comment"
   end
 
   create_table "sites", :force => true do |t|
