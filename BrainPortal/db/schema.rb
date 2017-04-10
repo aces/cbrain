@@ -11,8 +11,8 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-
 ActiveRecord::Schema.define(:version => 20170306210331) do
+
   create_table "access_profiles", :force => true do |t|
     t.string   "name",        :null => false
     t.string   "description"
@@ -135,14 +135,6 @@ ActiveRecord::Schema.define(:version => 20170306210331) do
     t.datetime "updated_at"
   end
 
-  create_table "feedbacks", :force => true do |t|
-    t.string   "summary"
-    t.text     "details"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.integer  "user_id"
-  end
-
   create_table "groups", :force => true do |t|
     t.string   "name"
     t.datetime "created_at"
@@ -252,6 +244,10 @@ ActiveRecord::Schema.define(:version => 20170306210331) do
     t.boolean  "docker_present"
     t.string   "small_logo"
     t.string   "large_logo"
+    t.string   "actres_host"
+    t.integer  "actres_port"
+    t.string   "actres_user"
+    t.string   "actres_dir"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"

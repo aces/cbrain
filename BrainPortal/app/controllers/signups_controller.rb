@@ -166,7 +166,7 @@ class SignupsController < ApplicationController
 
     scope_default_order(@scope, 'created_at', :desc)
 
-    view_hidden                 = params[:view_hidden].presence == "true" ? true : false
+    view_hidden                 = ( params[:view_hidden].presence == "true" )
     @scope.custom[:view_hidden] = view_hidden
     @base_scope                 = Signup.where(:hidden => view_hidden)
     @view_scope                 = @scope.apply(@base_scope)
