@@ -6,10 +6,9 @@ class SignupsTweaks < ActiveRecord::Migration
     add_column    :signups, :hidden, :boolean, :default => false
 
     Signup.all.each do |d|
-      user = User.where(:login => d.login).first
-      if user.present?
-        user[:signup_id] = user.id
-        user.save
+      if user = User.where(:login => d.login).first
+        d[:user_id] = user.id
+        d.save
       end
     end
   end

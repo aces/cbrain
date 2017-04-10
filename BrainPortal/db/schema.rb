@@ -11,8 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-
-ActiveRecord::Schema.define(:version => 20170306210331) do
+ActiveRecord::Schema.define(:version => 20170308220959) do
 
   create_table "access_profiles", :force => true do |t|
     t.string   "name",        :null => false
@@ -208,8 +207,8 @@ ActiveRecord::Schema.define(:version => 20170306210331) do
     t.string   "type"
     t.integer  "user_id"
     t.integer  "group_id"
-    t.boolean  "online",                   :default => false, :null => false
-    t.boolean  "read_only",                :default => false, :null => false
+    t.boolean  "online",                      :default => false, :null => false
+    t.boolean  "read_only",                   :default => false, :null => false
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -245,10 +244,6 @@ ActiveRecord::Schema.define(:version => 20170306210331) do
     t.boolean  "docker_present"
     t.string   "singularity_executable_name"
     t.boolean  "singularity_present"
-    t.string   "actres_host"
-    t.integer  "actres_port"
-    t.string   "actres_user"
-    t.string   "actres_dir"
     t.string   "small_logo"
     t.string   "large_logo"
   end
@@ -292,11 +287,7 @@ ActiveRecord::Schema.define(:version => 20170306210331) do
     t.string   "time_zone"
     t.string   "service"
     t.string   "login"
-<<<<<<< HEAD
     t.text     "comment"
-=======
-    t.string     "comment"
->>>>>>> dev
     t.string   "session_id"
     t.string   "confirm_token"
     t.boolean  "confirmed"
@@ -304,13 +295,9 @@ ActiveRecord::Schema.define(:version => 20170306210331) do
     t.datetime "approved_at"
     t.datetime "created_at",                       :null => false
     t.datetime "updated_at",                       :null => false
-<<<<<<< HEAD
     t.text     "admin_comment"
     t.integer  "user_id"
     t.boolean  "hidden",        :default => false
-=======
-    t.string   "admin_comment"
->>>>>>> dev
   end
 
   create_table "sites", :force => true do |t|
