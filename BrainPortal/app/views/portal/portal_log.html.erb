@@ -21,7 +21,7 @@
       <%
          # In development env, only the controllers accessed at least once show up as descendants of
          # ApplicationController, so we hardcode a initial 'good enough' list.
-         controller_list = %w( access_profiles bourreaux custom_filters data_providers feedbacks groups
+         controller_list = %w( access_profiles bourreaux custom_filters data_providers groups
                                help_documents invitations messages portal session_data sessions signups
                                sites tags tasks tools tool_configs userfiles users ) # what we have at 4.5.0
          # The line below adds any other controllers we might have missed (at least in production env).
