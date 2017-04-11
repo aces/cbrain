@@ -149,6 +149,24 @@ RUN service mysqld start && \
 
 
 
+########################################################
+# Cleanup files to make the image as small as possible #
+########################################################
+
+USER cbrain
+
+RUN bash --login -c 'rvm cleanup all'
+
+USER root
+
+RUN yum clean all
+
+# Not sure if next line won't interfere with future bundle updates...
+# but then it saves just a few dozen megabytes.
+RUN rm -rf /home/cbrain/.rvm/gems/ruby*/bundler/gems/*/.git
+
+
+
 #########################
 # Ports and entry point #
 #########################
