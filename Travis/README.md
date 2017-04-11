@@ -17,7 +17,7 @@ The container will run `bootstrap.sh`, which is the main docker entry point, and
 
 ## Trying it out locally
 
-The entire process can be tried locally without setting up all the Travis CI configuration, as long as Docker and Docker Compose are available.
+The entire process can be tried locally without setting up all the Travis CI configuration, as long as Docker is available.
 
 ```bash
     cd Travis
