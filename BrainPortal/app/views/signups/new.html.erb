@@ -152,13 +152,16 @@
       </td>
     </tr>
 
-    <% if @current_user.present? && current_user.has_role?(:admin_user) %>
+    <% if current_user.present? && current_user.has_role?(:admin_user) %>
+      <tr>
+        <td colspan="2">&nbsp;</td>
+      </tr>
+
       <tr>
         <th> <%= f.label(:admin_comment, "Private, admin-only comments:") %> </th>
         <td> <%= f.text_area :admin_comment, :cols=>80, :rows => 5 %> </td>
       </tr>
     <% end %>
-
 
     <tr>
       <td colspan="2">&nbsp;</td>

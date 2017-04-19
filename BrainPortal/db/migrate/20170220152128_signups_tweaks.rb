@@ -5,11 +5,14 @@ class SignupsTweaks < ActiveRecord::Migration
     add_column    :signups, :user_id, :integer
     add_column    :signups, :hidden, :boolean, :default => false
 
-    Signup.all.each do |d|
-      if user = User.where(:login => d.login).first
-        d[:user_id] = user.id
-        d.save
-      end
+    Signup.where(:user_id => nil).all
+      .select { |d| d.login.present? && d.approved? }
+      .each do |d|
+        if user = User.where(:login => d.login).first
+          puts "Adjusting link: Signup ##{d.id} #{d.full} created user: #{user.login}"
+          d.user_id = user.id
+          d.save
+        end
     end
   end
 

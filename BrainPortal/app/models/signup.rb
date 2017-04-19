@@ -37,6 +37,8 @@ class Signup < ActiveRecord::Base
 
   validate              :login_match_user_format
 
+  belongs_to            :user
+
   def strip_blanks #:nodoc:
     [
       :title, :first, :middle, :last,
@@ -76,11 +78,11 @@ class Signup < ActiveRecord::Base
   end
 
   def dup_email? #:nodoc:
-    User.exists?(:email => self.email)
+    User.where(:email => self.email).exists?
   end
 
   def dup_login? #:nodoc:
-    !self.approved? && User.exists?(:login => self.login)
+    !self.approved? && User.where(:login => self.login).exists?
   end
 
   # Returns a new NormalUser (not saved in the DB yet) based
