@@ -25,14 +25,23 @@
 <%= form_tag( { :action => :multi_action }, :method => :post) do %>
 
   <div class="menu-bar">
-    <%= link_to "New Request", { :action => :new }, { :class => "button menu_button" }  %>
+    <%= link_to "New Request", new_signup_path, :class => "button" %>
+
     <%
        # Careful, the labels of the buttons below are used by the controller
        # to select which multi action to perform. Change them at both places.
     %>
+
     <%= submit_tag "Delete",                :class => "button" %>
     <%= submit_tag "Adjust Login",          :class => "button" %>
     <%= submit_tag "Resend Confirm Email",  :class => "button" %>
+    <%= submit_tag "Toggle Hidden",         :class => "button" %>
+
+    <% if @scope.custom[:view_hidden] %>
+      <%= link_to "Hide Hidden Records", signups_path(:view_hidden => false), :class => "button" %>
+    <% else %>
+      <%= link_to "Show All Records",    signups_path(:view_hidden => true),  :class => "button" %>
+    <% end %>
   </div>
 
   <hr>
@@ -76,13 +85,13 @@
     <%
       t.column("Name", :last,
         :sortable => true
-      ) { |d| link_to d.full, :action => :show, :id => d.id }
+      ) { |d| link_to d.full, signup_path(d) }
     %>
 
     <%
       t.column("Edit", :edit) do |d|
     %>
-      <%= link_to "Edit", :action => :edit, :id => d.id %>
+      <%= link_to "Edit", edit_signup_path(d), :class => 'action_link' %>
     <% end %>
 
     <%
@@ -145,7 +154,7 @@
 
     <%
       t.column("In CBRAIN", :user) do |d|
-        user = User.where(:login => d.login).first
+        user = User.where(:id => d.user_id).first
         if (user)
           link_to_user_with_tooltip(user)
         else
@@ -156,33 +165,18 @@
 
     <%
       t.column("Created", :created_at,
-        :sortable => true,
-        :sort_order => :desc) do |d|
-
-        to_localtime(d.created_at, :datetime)
+        :sortable => true
+      ) do |d|
+        html_tool_tip(to_localtime(d.created_at, :datetime), :offset_x => 0, :offset_y => 20) do
+          "Updated: #{d.updated_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z")}".html_safe
+        end
       end
     %>
 
     <%
       t.column("Status", :status) do |d|
     %>
-      <% if d.approved? %>
-        Approved by <%= d.approved_by %> at <%= d.approved_at %>
-      <% else %>
-        <% if d.confirmed? %>
-          <span><strong>Email confirmed.</strong></span>
-        <% else %>
-          <span class="warning">(Email unconfirmed)</span>
-        <% end %>
-        <% if d.dup_email? and not d.approved? %>
-          <span  class="warning">(Conflicting email)</span>
-        <% end %>
-        <% if d.dup_login? %>
-          <span class="warning">(Login conflict)</span>
-        <% else %>
-          <%= link_to "(Approve)", new_user_path(:signup_id => d.id), :class => 'action_link' %>
-        <% end %>
-      <% end %>
+      <%= render :partial => 'status', :locals => { :signup => d, :multi_lines => false } %>
     <% end %>
 
   <% end %>

@@ -207,8 +207,8 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.string   "type"
     t.integer  "user_id"
     t.integer  "group_id"
-    t.boolean  "online",                   :default => false, :null => false
-    t.boolean  "read_only",                :default => false, :null => false
+    t.boolean  "online",                      :default => false, :null => false
+    t.boolean  "read_only",                   :default => false, :null => false
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -244,6 +244,8 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.boolean  "docker_present"
     t.string   "singularity_executable_name"
     t.boolean  "singularity_present"
+    t.string   "small_logo"
+    t.string   "large_logo"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
@@ -285,7 +287,7 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.string   "time_zone"
     t.string   "service"
     t.string   "login"
-    t.string     "comment"
+    t.text     "comment"
     t.string   "session_id"
     t.string   "confirm_token"
     t.boolean  "confirmed"
@@ -293,7 +295,9 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.datetime "approved_at"
     t.datetime "created_at",                       :null => false
     t.datetime "updated_at",                       :null => false
-    t.string   "admin_comment"
+    t.text     "admin_comment"
+    t.integer  "user_id"
+    t.boolean  "hidden",        :default => false
   end
 
   create_table "sites", :force => true do |t|
