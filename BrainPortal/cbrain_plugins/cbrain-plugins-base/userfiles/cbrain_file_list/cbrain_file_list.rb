@@ -83,14 +83,13 @@ class CbrainFileList < CSVFile
     @rows ||= create_csv_array(QUOTING_CHARACTER, FIELD_SEPARATOR)
   end
 
-  # Sets the internal cache from an explicit external CSV file.
+  # Sets the internal cache from an explicit +csv_file_content+ string.
   # Returns the same array as cached_csv_array, with the same caveats.
   # This can be invoked before ordered_raw_ids() to bypass the source
   # of the CSV data.
-  def load_from_file(path)
+  def load_from_content(csv_file_content)
     flush_internal_caches()
-    file_content = File.read(path)
-    @rows = CSVFile.parse_file_content_as_csv(file_content, QUOTING_CHARACTER, FIELD_SEPARATOR)
+    @rows = CSVFile.parse_file_content_as_csv(csv_file_content, QUOTING_CHARACTER, FIELD_SEPARATOR)
   end
 
   # Returns an array of the IDs of the first column of the CSV file
