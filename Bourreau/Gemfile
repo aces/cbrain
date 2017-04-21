@@ -35,27 +35,26 @@ gem "pbkdf2-ruby"
 gem "json-schema"
 gem "aws-sdk"
 
-
-
-
 group :development do
   gem "wirble"
   gem "looksee"
   gem "hirb"
+  gem "pry"
+  gem "pry-byebug"
+  gem "pry-doc"
 end
 
-
-
+# Unfortunately test-unit seems to be needed always to start the console...
+gem "test-unit",    "~> 3.1"
 
 group :test do
   gem "rspec",                    "~> 3.4"
   gem "rspec-rails",              "~> 3.2"
-  gem "factory_girl_rails",       "~> 4.5"
+  gem "factory_girl_rails",       "~> 4.5", :require => false
   gem "simplecov",                "~> 0.11"
   gem "rspec-mocks",              "~> 3.4"
   gem 'rspec-activemodel-mocks',  "~> 1.0"
   gem 'rspec-collection_matchers',"~> 1.1"
   gem "database_cleaner",         "~> 1.5"
-  gem "test-unit",    "~> 3.1"
 end
 

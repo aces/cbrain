@@ -46,6 +46,9 @@ group :development do
   gem "pry-doc"
 end
 
+# Unfortunately test-unit seems to be needed always to start the console...
+gem "test-unit",    "~> 3.1"
+
 group :test do
   gem "rspec",                    "~> 3.4"
   gem "rspec-rails",              "~> 3.2"
@@ -55,9 +58,5 @@ group :test do
   gem 'rspec-activemodel-mocks',  "~> 1.0"
   gem 'rspec-collection_matchers',"~> 1.1"
   gem "database_cleaner",         "~> 1.5"
-  gem "test-unit",    "~> 3.1"
-
-  gem "sqlite3" # this is not normally needed outside of CBRAIN's nightly test website
-  gem "syntax"  # this is not normally needed outside of CBRAIN's nightly test website
 end
 
