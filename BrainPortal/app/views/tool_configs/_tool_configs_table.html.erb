@@ -85,12 +85,7 @@
       :filters  => default_filters_for(@base_scope, Group)
     ) { |tc| link_to_group_if_accessible(tc.group) }
 
-    t.column("Number of CPUs", :ncpus,
-      :sortable => true,
-      :filters  => default_filters_for(@base_scope, :ncpus)
-    ) { |tc| tc.ncpus.to_s }
-
-    t.column("", :ncpus,
+    t.column("CPUs", :ncpus,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :ncpus)
     ) { |tc| tc.ncpus.to_s }

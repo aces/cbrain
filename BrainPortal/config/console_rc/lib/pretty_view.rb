@@ -317,13 +317,14 @@ class ToolConfig
   def pretview
     report = <<-VIEW
 ToolConfig #%d "%s"
-  Group:    %d (%s)
-  Tool:     %d (%s)
-  Exec:     %d (%s)
-  nCPUs:    %d
-  ContainerIm: %s
-  ContainerId: %d (%s)
-  QsubExt:  %s
+  Group:           %d (%s)
+  Tool:            %d (%s)
+  Exec:            %d (%s)
+  nCPUs:           %d
+  ContainerEngine: %s
+  ContainerImage:  %s
+  ContainerID:     %d (%s)
+  QsubExt:         "%s"
     VIEW
     sprintf report,
       self.id, self.version_name.presence || "",
@@ -331,8 +332,10 @@ ToolConfig #%d "%s"
       tool_id.presence || 0, tool.try(:name),
       bourreau_id.presence || 0, bourreau.try(:name),
       ncpus.presence || 0,
+      container_engine.presence || "(none)",
       containerhub_image_name.presence || "",
-      container_image_userfile_id.presence || "",
+      container_image_userfile_id.presence || 0,
+      container_image || "none",
       extra_qsub_args.presence || ""
   end
 end
