@@ -27,7 +27,7 @@ class Signup < ActiveRecord::Base
   attr_accessible       :title, :first, :middle, :last,
                         :institution, :department, :position, :email,
                         :street1, :street2, :city, :province, :country, :postal_code,
-                        :login, :time_zone, :comment
+                        :login, :time_zone, :comment, :admin_comment, :hidden, :user_id
 
   validates_presence_of :first, :last,
                         :institution, :department, :position, :email,
@@ -36,6 +36,8 @@ class Signup < ActiveRecord::Base
   validates             :email, :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost$/i }
 
   validate              :login_match_user_format
+
+  belongs_to            :user
 
   def strip_blanks #:nodoc:
     [
@@ -65,6 +67,10 @@ class Signup < ActiveRecord::Base
     "#{title} #{first} #{middle} #{last}".strip.gsub(/  +/, " ")
   end
 
+  def user_full #:nodoc:
+    "#{first} #{last}".strip.gsub(/  +/, " ")
+  end
+
   alias full_name full
 
   def approved? #:nodoc:
@@ -72,11 +78,11 @@ class Signup < ActiveRecord::Base
   end
 
   def dup_email? #:nodoc:
-    User.exists?(:email => self.email)
+    User.where(:email => self.email).exists?
   end
 
   def dup_login? #:nodoc:
-    User.exists?(:login => self.login)
+    !self.approved? && User.where(:login => self.login).exists?
   end
 
   # Returns a new NormalUser (not saved in the DB yet) based
@@ -86,7 +92,7 @@ class Signup < ActiveRecord::Base
     user = NormalUser.new
 
    #user.title                   = self.title
-    user.full_name               = self.full.try :strip
+    user.full_name               = user_full
     user.login                   = self.login.try :strip
     user.email                   = self.email.try :strip
    #user.institution             = self.institution

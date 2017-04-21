@@ -132,7 +132,7 @@ class GroupsController < ApplicationController
   # PUT /groups/1.xml
   # PUT /groups/1.json
   def update #:nodoc:
-    @group = current_user.available_groups.where( :type => "WorkGroup" ).find(params[:id])
+    @group = current_user.available_groups.find(params[:id])
 
     unless @group.can_be_edited_by?(current_user)
        flash[:error] = "You don't have permission to edit this project."

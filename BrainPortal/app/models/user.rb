@@ -36,7 +36,6 @@ require 'pbkdf2'
 # * Userfile
 # * CustomFilter
 # * Tag
-# * Feedback
 # *Has* *and* *belongs* *to* *many*:
 # * Group
 #
@@ -44,7 +43,7 @@ require 'pbkdf2'
 # [<b>On Destroy</b>] A user cannot be destroyed if it is still associated with any
 #                     Userfile, RemoteResource or DataProvider resources.
 #                     Destroying a user will destroy the associated
-#                     Tag, Feedback and CustomFilter resources.
+#                     Tag and CustomFilter resources.
 class User < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -84,6 +83,7 @@ class User < ActiveRecord::Base
   before_create             :add_system_groups
   before_save               :encrypt_password
   before_save               :destroy_sessions_if_locked
+  before_save               :apply_access_profiles
   after_update              :system_group_site_update
   after_destroy             :destroy_system_group
   after_destroy             :destroy_user_sessions
@@ -97,12 +97,12 @@ class User < ActiveRecord::Base
   has_and_belongs_to_many :access_profiles
   has_and_belongs_to_many :groups
   belongs_to              :site
+  has_one                 :signup
 
   # The following resources are destroyed automatically when the user is destroyed.
   has_many                :messages,        :dependent => :destroy
   has_many                :tools,           :dependent => :destroy
   has_many                :tags,            :dependent => :destroy
-  has_many                :feedbacks,       :dependent => :destroy
   has_many                :custom_filters,  :dependent => :destroy
   has_many                :exception_logs,  :dependent => :destroy
 
@@ -385,15 +385,19 @@ class User < ActiveRecord::Base
   # the current user.
   def union_group_ids_from_access_profiles
     aps = self.access_profiles
-    aps.inject([]) do |group_ids,ap|
+    gids = aps.inject([]) do |group_ids,ap|
       group_ids += ap.group_ids  # union of all
       group_ids
     end
+    gids.uniq
   end
 
   # Scans the list of AccessProfiles associated
   # with the current user, and makes sure the user
   # is a member of all the groups in all these profiles.
+  # "before save" callback, so that if any changes are made
+  # to the list of AccessProfiles, the group membership will
+  # be properly updated.
   # If a list of +remove_group_ids+ is supplied,
   # the user will be removed from these groups as
   # long as they are not also in any of the AccessProfiles.
@@ -423,7 +427,8 @@ class User < ActiveRecord::Base
   # group 99, because it's present in ap2.
   def apply_access_profiles(remove_group_ids: [])
     gids = union_group_ids_from_access_profiles
-    self.group_ids = self.group_ids - remove_group_ids + gids # - and + are NOT COMMUTATIVE!
+    self.group_ids = (self.group_ids - remove_group_ids + gids).uniq # - and + are NOT COMMUTATIVE!
+    true
   end
 
 

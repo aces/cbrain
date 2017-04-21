@@ -228,12 +228,13 @@ module SchemaTaskGenerator
       return if docker_image.nil? || !resource.docker_present
 
       ToolConfig.new(
-        :tool_id      => task.tool.id,
-        :bourreau_id  => resource.id,
-        :group_id     => Group.everyone.id,
-        :version_name => version,
-        :description  => "#{name} #{version} on #{resource.name}",
-        :docker_image => docker_image
+        :tool_id                 => task.tool.id,
+        :bourreau_id             => resource.id,
+        :group_id                => Group.everyone.id,
+        :version_name            => version,
+        :description             => "#{name} #{version} on #{resource.name}",
+        :container_engine        => "Docker",
+        :containerhub_image_name => docker_image
       ).save! unless
         ToolConfig.exists?(
           :tool_id      => task.tool.id,

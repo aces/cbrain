@@ -88,6 +88,16 @@ Below is a summary of the information in this account request.
   </tr>
 
   <tr>
+    <th>Prefered 'login' name:</th>
+    <td><%= @signup.login.presence || "(none)" %></td>
+  </tr>
+
+  <tr>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+
+  <tr>
     <th>Name of Institution/Organization:</th>
     <td><%= @signup.institution %></td>
   </tr>
@@ -105,6 +115,11 @@ Below is a summary of the information in this account request.
   <tr>
     <th>Email address:</th>
     <td><%= @signup.email %></td>
+  </tr>
+
+  <tr>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
   </tr>
 
   <tr>
@@ -138,13 +153,8 @@ Below is a summary of the information in this account request.
   </tr>
 
   <tr>
-    <td>&nbsp;</td>
-    <td>&nbsp;</td>
-  </tr>
-
-  <tr>
-    <th>Prefered 'login' name:</th>
-    <td><%= @signup.login.presence || "(none)" %></td>
+    <th>Time Zone:</th>
+    <td><%= @signup.time_zone %></td>
   </tr>
 
   <tr>
@@ -154,31 +164,36 @@ Below is a summary of the information in this account request.
 
   <% if @signup.comment.present? %>
 
-  <tr>
-    <th>Comments or special requests:</th>
-    <td><%= @signup.comment %></td>
-  </tr>
+    <tr>
+      <th>Comments or special requests:</th>
+      <td><pre><%= @signup.comment %></pre></td>
+    </tr>
 
-  <tr>
-    <td>&nbsp;</td>
-    <td>&nbsp;</td>
-  </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+
+  <% end %>
+
+  <% if current_user.present? && current_user.has_role?(:admin_user) %>
+
+    <tr>
+      <th>Admin Comments</th>
+      <td><pre><%= @signup.admin_comment %></pre></td>
+    </tr>
+
+    <tr>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
 
   <% end %>
 
   <tr>
     <th>Status of request:</th>
     <td>
-      <% if @signup.confirmed? %>
-        Email address confirmed by user.<br>
-      <% else %>
-        <span class="warning">Email address not yet confirmed.</span><br>
-      <% end %>
-      <% if @signup.approved? %>
-        Request approved by administrator.
-      <% else %>
-        <span class="warning">Request not yet approved by administrator.</span>
-      <% end %>
+      <%= render :partial => 'status', :locals => { :signup => @signup, :multi_lines => true } %>
     </td>
   </tr>
 

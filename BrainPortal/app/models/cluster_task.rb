@@ -718,7 +718,42 @@ class ClusterTask < CbrainTask
     self.save
   end
 
-  # This is called by a Worker to finish processing a job that has
+  # This method must returns true if a task is at status 'Data Ready' and
+  # other properties allow it to enter post processing. It will be
+  # called by a BourreauWorker. The default behavior is to make a special check
+  # in the work directory to make sure the qsub_stdout_basename file
+  # is present if the task's updated_at timestamp is within a short
+  # window of time (hardcoded at 60 seconds here). This check is necessary
+  # because on some clusters, a job can be finished and yet the captured
+  # output file of the job might take up to a minute to appear in the
+  # work directory. If the BourreauWorker started to post process the task during
+  # the period when the file isn't there, it would mark it as 'Failed On Cluster'.
+  #
+  # This method can be overrided in particular subclasses, but it is highly
+  # recommended to at least invoke the super method first, e.g.
+  #
+  #   # In a subclass
+  #   def ready_to_post_process?
+  #     return false unless super
+  #     #more custom checks here
+  #   end
+  def ready_to_post_process?
+    # Basic properties of the task
+    return false unless self.status     == 'Data Ready'
+    return true  if     self.updated_at <  1.minute.ago # window elapsed; old tasks are considered a 'go'
+
+    # Check for qsub stdout file presence
+    stdout_file = (Pathname.new(self.full_cluster_workdir) + self.qsub_stdout_basename).to_s
+    return true  if     File.exists?(stdout_file) && File.size(stdout_file) > 0
+
+    # Well, at this point the task is super recently updated
+    # and the stdout file is not yet seen, so we postpone post processing.
+    message = "PostProcessing delayed: no stdout file yet available."
+    self.addlog(message) unless self.getlog[message]
+    false
+  end
+
+  # This is called by a BourreauWorker to finish processing a job that has
   # successfully run on the cluster. The main purpose
   # is to call the subclass' supplied save_result() method
   # then cleanup the temporary grid-aware directory.
@@ -732,7 +767,7 @@ class ClusterTask < CbrainTask
     # we have a worker subprocess, we no longer need
     # to have a spawn occur here.
     begin
-      self.addlog("Starting asynchronous postprocessing.")
+      self.addlog("Starting post processing.")
       self.record_cbraintask_revs
       self.update_size_of_cluster_workdir
       self.apply_tool_config_environment do
@@ -749,7 +784,7 @@ class ClusterTask < CbrainTask
           self.status_transition(self.status, "Failed On Cluster")
           self.addlog("Data processing failed on the cluster.")
         else
-          self.addlog("Asynchronous postprocessing completed.")
+          self.addlog("Post processing completed.")
           self.status_transition(self.status, "Completed")
         end
       end
@@ -932,7 +967,7 @@ class ClusterTask < CbrainTask
 
   # This triggers the recovery mechanism for all Failed tasks.
   # This simply sets a special value in the 'status' field
-  # that will be handled by the Bourreau Worker.
+  # that will be handled by the BourreauWorker.
   def recover
     return false if self.workdir_archived?
     curstat = self.status
@@ -958,7 +993,7 @@ class ClusterTask < CbrainTask
 
   # This triggers the restart mechanism for all Completed tasks.
   # This simply sets a special value in the 'status' field
-  # that will be handled by the Bourreau Worker. The +atwhat+
+  # that will be handled by the BourreauWorker. The +atwhat+
   # argument must be exactly one of "Setup", "Cluster" or "PostProcess".
   def restart(atwhat = "Setup")
     return false if self.workdir_archived?
@@ -1636,6 +1671,17 @@ class ClusterTask < CbrainTask
     self.addlog("Tool Global Config: ID=#{tool_glob_config.id}")                   if tool_glob_config
     self.addlog("Tool Version: ID=#{tool_config.id}, #{tool_config.version_name}") if tool_config
 
+    # Joined version of all the lines in the scientific script
+    command_script = commands.join("\n")
+
+    # In case of Docker or Singularity, we rewrite the scientific script inside
+    # another wrapper script.
+    if self.use_docker?
+      command_script = self.docker_commands(command_script)
+    elsif self.use_singularity?
+      command_script = self.singularity_commands(command_script)
+    end
+
     # Create a bash science script out of the text
     # lines supplied by the subclass
     science_script = <<-SCIENCE_SCRIPT
@@ -1652,8 +1698,7 @@ class ClusterTask < CbrainTask
 #{self.supplemental_cbrain_tool_config_init}
 
 # CbrainTask '#{self.name}' commands section
-
-#{self.use_docker? ? self.docker_commands : commands.join("\n")}
+#{command_script}
 
     SCIENCE_SCRIPT
     sciencefile = self.science_script_basename.to_s
@@ -1897,42 +1942,146 @@ exit $status
   # Returns true if the task's ToolConfig is configured to point to a docker image
   # for the task's processing.
   def use_docker?
-    return self.tool_config.docker_image.present?
+    return self.tool_config.container_engine == "Docker" &&
+         ( self.tool_config.containerhub_image_name.present? ||
+           self.tool_config.container_image_userfile_id.present? )
   end
 
   # Return the 'docker' command to be used for the task; this is fetched
   # from the Bourreau's own attribute. Default: "docker".
   def docker_executable_name
-    return RemoteResource.current_resource.docker_executable_name.presence || "docker"
-  end
-
-  # Return whether the Bourreau of the task has docker present or not
-  def docker_present?
-    return RemoteResource.current_resource.docker_present
+    return self.bourreau.docker_executable_name.presence || "docker"
   end
 
   # Returns the command line(s) associated with the task, wrapped in
   # a Docker call if a Docker image has to be used.
-  def docker_commands
-    work_dir = ( self.respond_to?("container_working_directory")? self.container_working_directory : nil )  || '${PWD}'
-    commands = self.cluster_commands
-    commands_joined = commands.join("\n");
+  def docker_commands(command_script)
+    work_dir        = ( self.respond_to?("container_working_directory")? self.container_working_directory : nil )  || '${PWD}'
 
-    cache_dir=RemoteResource.current_resource.dp_cache_dir;
-    task_dir=self.bourreau.cms_shared_dir;
-    docker_commands = "cat << \"DOCKERJOB\" > .dockerjob.sh
+    cache_dir       = self.bourreau.dp_cache_dir
+    task_dir        = self.bourreau.cms_shared_dir
+
+    cmd_load_image  = load_docker_image_cmd
+
+    docker_commands = <<-DOCKER_COMMANDS
+
+cat << \"DOCKERJOB\" > .dockerjob.sh
 #!/bin/bash -l
-#{commands_joined}
+
+#{command_script}
 DOCKERJOB
+
 chmod 755 ./.dockerjob.sh
-# Pull the Docker image to avoid inconsistencies coming from different image versions on worker nodes
-#{docker_executable_name} pull #{self.tool_config.docker_image.bash_escape}
+
+#{cmd_load_image}
+
 # Run the task commands
-#{docker_executable_name} run --rm -v ${PWD}:#{work_dir} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w #{work_dir} #{self.tool_config.docker_image.bash_escape} ${PWD}/.dockerjob.sh
-"
+#{docker_executable_name} run --rm -v ${PWD}:#{work_dir} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w #{work_dir} "$docker_image_name" ${PWD}/.dockerjob.sh
+
+    DOCKER_COMMANDS
+
     return docker_commands
   end
 
+  # Returns the bash statements necessary to pull a Docker image from
+  # dockerhub, or load an image from a local file.
+  # Then name of the image will be set in a bash variable 'docker_image_name'
+  def load_docker_image_cmd #:nodoc:
+    dockerhub_image_name = self.tool_config.containerhub_image_name
+    if dockerhub_image_name.present?
+      return <<-DOCKER_PULL
+# Pull image from DockerHub
+#{docker_executable_name} pull #{dockerhub_image_name.bash_escape}
+docker_image_name=#{dockerhub_image_name.bash_escape}
+    DOCKER_PULL
+    elsif docker_image = self.tool_config.container_image # = not ==
+      docker_image.sync_to_cache
+      cachename    = docker_image.cache_full_path
+      safe_symlink(cachename,docker_image.name)
+
+      # We try to parse the content of the file 'repositories' in the TAR file
+      repo_json    = `tar -xf #{docker_image.name.bash_escape} -O repositories 2>&1`
+      repo_struct  = JSON.parse(repo_json)
+      image_name   = repo_struct.keys.first
+      image_ver    = repo_struct[image_name].keys.first
+      full_image_name = "#{image_name}:#{image_ver}"
+
+      return <<-DOCKER_LOAD
+# Load docker image from tar file
+#{docker_executable_name} load --input #{docker_image.name.bash_escape}
+docker_image_name=#{full_image_name.bash_escape}
+      DOCKER_LOAD
+    else
+      cb_error "Cannot generate docker load commands..."
+    end
+  end
+
+
+
+  ##################################################################
+  # Singularity support methods
+  ##################################################################
+
+  # Returns true if the task's ToolConfig is configured to point to a singularity image
+  # for the task's processing.
+  def use_singularity?
+    return self.tool_config.container_engine == "Singularity" &&
+         ( self.tool_config.containerhub_image_name.present? ||
+           self.tool_config.container_image_userfile_id.present? )
+  end
+
+  # Return the 'singularity' command to be used for the task; this is fetched
+  # from the Bourreau's own attribute. Default: "singularity".
+  def singularity_executable_name
+    return self.bourreau.singularity_executable_name.presence || "singularity"
+  end
+
+  # Returns the command line(s) associated with the task, wrapped in
+  # a Singularity call if a Singularity image has to be used.
+  def singularity_commands(command_script)
+    work_dir       = ( self.respond_to?("container_working_directory")? self.container_working_directory : nil )  || '${PWD}'
+    cache_dir      = self.bourreau.dp_cache_dir
+    cms_shared_dir = "#{self.bourreau.cms_shared_dir}/#{DataProvider::DP_CACHE_SYML}"
+
+    self.addlog("Sync the singularity image")
+    singularity_image = self.tool_config.container_image
+    singularity_image.sync_to_cache
+    cachename         = singularity_image.cache_full_path
+    safe_symlink(cachename,singularity_image.name)
+
+    # Used to set dp_cache for singularity
+    basename_dp_cache         = ".singularity_dp_cache"
+    singularity_dp_cache_path = "#{CBRAIN::Rails_UserHome}/#{basename_dp_cache}"
+
+    begin
+      # In the work directory, there might be symbolic links to
+      # files in the data provider cache. We need to adjust these
+      # so they use our own local singularity mount point for the
+      # cache.
+      Dir.glob("*").each do |f|
+        next unless File.symlink?(f)
+        expand_path = File.expand_path(File.readlink(f))
+        next unless expand_path.index(cms_shared_dir) == 0
+        sub_path    = expand_path.gsub(cms_shared_dir,"")
+        FileUtils.mv(f,"#{f}.orig")
+        FileUtils.symlink("#{basename_dp_cache}#{sub_path}", f)
+      end
+    rescue => ex
+      self.addlog_exception(ex,"Error copying files for singularity")
+    end
+
+    # Set singularity command
+    singularity_commands      = "cat << \"SINGULARITYJOB\" > .singularityjob.sh
+#!/bin/bash -l
+#{command_script}
+SINGULARITYJOB
+chmod 755 ./.singularityjob.sh
+mkdir #{basename_dp_cache}
+# Run the task commands
+#{singularity_executable_name} run -H ${PWD} -B #{cms_shared_dir}:#{singularity_dp_cache_path} #{singularity_image.name} .singularityjob.sh
+"
+    return singularity_commands
+  end
 
 
   ##################################################################
@@ -2034,6 +2183,7 @@ chmod 755 ./.dockerjob.sh
     new_task.user_id                  = self.user_id
     new_task.results_data_provider_id = self.results_data_provider_id
     new_task.bourreau_id              = self.bourreau_id
+    new_task.group_id                 = self.group_id
 
     # Submits the task
     new_task.status = "New"

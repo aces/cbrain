@@ -38,7 +38,6 @@ CbrainRailsPortal::Application.routes.draw do
   resources :custom_filters
   resources :tags
   resources :access_profiles
-  resources :feedbacks
 
   # Standard CRUD resources, with extra actions
 
@@ -180,6 +179,9 @@ CbrainRailsPortal::Application.routes.draw do
 
   # Report Maker
   get   "/report",                :controller => :portal, :action => :report
+
+  # Network Operation Center; daily status (shows everything publicly!)
+  # get   "/noc/daily",             :controller => :noc,    :action => :daily
 
   # API description, by Swagger
   get   "/swagger",               :controller => :portal, :action => :swagger

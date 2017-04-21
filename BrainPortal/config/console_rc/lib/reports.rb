@@ -20,17 +20,30 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-def plog(*args)
+# This file contains miscelleneous reports that can be generated
+# in the Rails console.
+
+# Active transfers report
+def trans
+   no_log do
+     SyncStatus.where(:status => ["ToCache","ToProvider"]).all.each do |ss|
+       file = ss.userfile
+       what = ss.remote_resource
+       dir  = (ss.status == "ToCache") ? "\342\226\274" : "\342\226\262" # UTF8 down triangle, up triangle
+       printf "%10.10s %s %-10.10s (%9s) [%8.8s] \"%s\" for %s\n",
+               what.name, dir, file.data_provider.name,
+               pretty_size(file.size), file.user.login, file.name,
+               pretty_elapsed(Time.now - ss.accessed_at, :num_components => 3)
+     end
+   end
+   true
+end
+
+# Active tasks
+def acttasks
   no_log do
-    to_show = args.flatten
-    to_show.each do |obj|
-      if obj.respond_to?(:getlog)
-        log = obj.getlog rescue "(Exception getting log)"
-        puts "==== Log for #{obj.inspect} ====" if to_show.size > 1
-        puts log.to_s
-      else
-        puts "==== Object does not respond to getlog(): #{obj.inspect} ===="
-      end
+    CbrainTask.active.all.each do |task|
+      puts task.to_summary
     end
   end
   true
@@ -38,8 +51,10 @@ end
 
 (CbrainConsoleFeatures ||= []) << <<FEATURES
 ========================================================
-Feature: print ActiveRecordLog of some objects
+Feature: Reports
 ========================================================
-  Activate with: plog obj [, obj , ...]
+  In the console simply type:
+    trans    : report of active transfers between resources and DP
+    acttasks : active tasks
 FEATURES
 

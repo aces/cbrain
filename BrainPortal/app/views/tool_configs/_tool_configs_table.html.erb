@@ -85,10 +85,24 @@
       :filters  => default_filters_for(@base_scope, Group)
     ) { |tc| link_to_group_if_accessible(tc.group) }
 
-    t.column("Number of CPUs", :ncpus,
+    t.column("CPUs", :ncpus,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :ncpus)
     ) { |tc| tc.ncpus.to_s }
+
+    t.column("Container Engine", :container_engine,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, :container_engine)
+    ) { |tc| tc.container_engine.to_s }
+
+    t.column("Container Image", :container_name_image,
+    ) { |tc|
+        if tc.containerhub_image_name.present?
+          tc.containerhub_image_name
+        elsif  tc.container_image.present?
+          link_to_userfile_if_accessible(tc.container_image)
+        end
+      }
 
     t.column("Description", :description,
       :sortable => true,

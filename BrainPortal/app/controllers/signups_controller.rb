@@ -65,7 +65,7 @@ class SignupsController < ApplicationController
     send_admin_notification(@signup)
 
     sleep 1
-    redirect_to :action => :show, :id => @signup.id
+    redirect_to signup_path(@signup)
   end
 
   def edit #:nodoc:
@@ -97,7 +97,7 @@ class SignupsController < ApplicationController
     flash[:notice] = "The account request has been updated."
 
     sleep 1
-    redirect_to :action => :show, :id => @signup.id
+    redirect_to signup_path(@signup)
   end
 
   def destroy #:nodoc:
@@ -112,7 +112,7 @@ class SignupsController < ApplicationController
     flash[:notice] = "The account request has been deleted."
 
     if current_user && current_user.has_role?(:admin_user)
-      redirect_to :action => :index
+      redirect_to signups_path
     else
       redirect_to login_path
     end
@@ -133,7 +133,7 @@ class SignupsController < ApplicationController
 
     # If not, bluntly send user back to someplace else.
     if current_user && current_user.has_role?(:admin_user)
-      redirect_to :action => :index
+      redirect_to signups_path
     else
       redirect_to login_path
     end
@@ -154,7 +154,7 @@ class SignupsController < ApplicationController
     end
 
     sleep 1
-    redirect_to :action => :show, :id => @signup.id
+    redirect_to signup_path(@signup)
   end
 
   ################################################################
@@ -164,14 +164,21 @@ class SignupsController < ApplicationController
   def index #:nodoc:
     @scope = scope_from_session('signups')
 
-    scope_default_order(@scope, 'country')
+    scope_default_order(@scope, 'created_at', :desc)
 
-    @base_scope       = Signup.where({})
-    @signups          = @scope.apply(@base_scope)
+    # Maintains show/hide hidden records option in session.
+    view_hidden                 = @scope.custom[:view_hidden]
+    view_hidden                 = ( params[:view_hidden].presence == "true" ) if params[:view_hidden].present?
+    @scope.custom[:view_hidden] = view_hidden
+
+    @base_scope                 = Signup.scoped
+    @base_scope                 = @base_scope.where(:hidden => false) unless view_hidden
+    @view_scope                 = @scope.apply(@base_scope)
 
     # Prepare the Pagination object
-    @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
-    @current_offset = (@scope.pagination.page - 1) * @scope.pagination.per_page
+    @scope.pagination           ||= Scope::Pagination.from_hash({ :per_page => 25 })
+
+    @signups                    = @scope.pagination.apply(@view_scope)
 
     scope_to_session(@scope, 'signups')
 
@@ -199,8 +206,12 @@ class SignupsController < ApplicationController
       return delete_multi
     end
 
+    if params[:commit] =~ /Toggle/i
+      return toggle_multi
+    end
+
     # Default: unknown multi action?
-    redirect_to :action => :index
+    redirect_to signups_path
   end
 
   def delete_multi #:nodoc:
@@ -214,7 +225,7 @@ class SignupsController < ApplicationController
 
     flash[:notice] = "Deleted " + view_pluralize(count, "record") + "."
 
-    redirect_to :action => :index
+    redirect_to signups_path
   end
 
   # Changes login attribute into:
@@ -263,6 +274,25 @@ class SignupsController < ApplicationController
 
     flash[:notice] = "Sent " + view_pluralize(count, "confirmation email") + "."
     render :action => :multi_action
+  end
+
+  def toggle_multi #:nodoc:
+    reqids = params[:reqids] || []
+    reqs   = Signup.find(reqids)
+
+    newly_hidden = reqs.select do |req|
+      req.hidden = ! req.hidden?
+      req.save
+      req.hidden?
+    end
+
+    revealed = reqs.count - newly_hidden.count
+
+    flash[:notice] ||= ""
+    flash[:notice]  += "Hidden "   + view_pluralize(newly_hidden.count, "record") + "\n" if newly_hidden.count > 0
+    flash[:notice]  += "Revealed " + view_pluralize(revealed,           "record") + "\n" if revealed           > 0
+
+    redirect_to signups_path
   end
 
   private
