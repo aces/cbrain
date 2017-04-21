@@ -70,6 +70,25 @@ class Bourreau < RemoteResource
 
 
   ############################################################################
+  # Utility property checkers
+  ############################################################################
+
+  def docker_present? #:nodoc:
+    docker_executable_name.present?
+  end
+
+  alias docker_present docker_present? #:nodoc:
+
+
+  def singularity_present? #:nodoc:
+    singularity_executable_name.present?
+  end
+
+  alias singularity_present singularity_present? #:nodoc:
+
+
+
+  ############################################################################
   # Remote Control Methods
   ############################################################################
 

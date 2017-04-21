@@ -268,13 +268,13 @@ ActiveRecord::Schema.define(:version => 20170418125733) do
 
   create_table "signups", :force => true do |t|
     t.string   "title"
-    t.string   "first",         :null => false
+    t.string   "first",                            :null => false
     t.string   "middle"
-    t.string   "last",          :null => false
-    t.string   "institution",   :null => false
+    t.string   "last",                             :null => false
+    t.string   "institution",                      :null => false
     t.string   "department"
     t.string   "position"
-    t.string   "email",         :null => false
+    t.string   "email",                            :null => false
     t.string   "website"
     t.string   "street1"
     t.string   "street2"

@@ -503,7 +503,7 @@ describe "Bourreau Boutiques Tests" do
       before(:each) do
         # Ensure the Bourreau does not have docker installed by default
         resource = RemoteResource.current_resource
-        resource.docker_present = false
+        resource.docker_executable_name = "docker"
         resource.save!
         # Get the schema and json descriptor
         @schema          = SchemaTaskGenerator.default_schema
@@ -522,7 +522,7 @@ describe "Bourreau Boutiques Tests" do
         @setupForMvTests = lambda do |wd, outfile1, outfile2 = nil|
           # Tell the Bourreau to use docker
           resource = RemoteResource.current_resource
-          resource.docker_present = true
+          resource.docker_executable_name = "docker"
           resource.save!
           # Make the task execute in a specific container dir
           descriptor = SchemaTaskGenerator.expand_json(@descriptor)
@@ -550,7 +550,7 @@ describe "Bourreau Boutiques Tests" do
         Tool.where(:cbrain_task_class_name => @task_const_name).destroy_all
         # Ensure the Bourreau does not have docker installed by default
         resource = RemoteResource.current_resource
-        resource.docker_present = false
+        resource.docker_executable_name = "docker"
         resource.save!
       end
 
@@ -574,13 +574,16 @@ describe "Bourreau Boutiques Tests" do
 
 
       it "is not created when Bourreau does not support Docker" do
+        resource = RemoteResource.current_resource
+        resource.docker_executable_name = ""
+        resource.save!
         @boutiquesTask.descriptor['container-image'] = @dockerImg
         @boutiquesTask.integrate if File.exists?(@descriptor)
         expect( ToolConfig.exists?( :tool_id => @task_const_name.constantize.tool.id ) ).to be false
       end
 
       it "is not created when descriptor has no Docker image" do
-        RemoteResource.current_resource.docker_present = true
+        RemoteResource.current_resource.docker_executable_name = "docker"
         RemoteResource.current_resource.save!
         @boutiquesTask.integrate if File.exists?(@descriptor)
         expect( ToolConfig.exists?( :tool_id => @task_const_name.constantize.tool.id ) ).to be false
@@ -589,7 +592,7 @@ describe "Bourreau Boutiques Tests" do
       it "is created when descriptor has Docker image and Bourreau has Docker" do
         @boutiquesTask.descriptor['container-image'] = @dockerImg
         resource = RemoteResource.current_resource
-        resource.docker_present = true
+        resource.docker_executable_name = "docker"
         resource.save!
         @boutiquesTask.integrate if File.exists?(@descriptor)
         expect( ToolConfig.exists?( :tool_id => @task_const_name.constantize.tool.id ) ).to be true
