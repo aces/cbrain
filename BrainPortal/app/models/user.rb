@@ -97,6 +97,7 @@ class User < ActiveRecord::Base
   has_and_belongs_to_many :access_profiles
   has_and_belongs_to_many :groups
   belongs_to              :site
+  has_one                 :signup
 
   # The following resources are destroyed automatically when the user is destroyed.
   has_many                :messages,        :dependent => :destroy

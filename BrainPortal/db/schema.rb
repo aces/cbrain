@@ -242,6 +242,8 @@ ActiveRecord::Schema.define(:version => 20170418125733) do
     t.string   "external_status_page_url"
     t.string   "docker_executable_name"
     t.string   "singularity_executable_name"
+    t.string   "small_logo"
+    t.string   "large_logo"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
@@ -283,15 +285,17 @@ ActiveRecord::Schema.define(:version => 20170418125733) do
     t.string   "time_zone"
     t.string   "service"
     t.string   "login"
-    t.string   "comment"
+    t.text     "comment"
     t.string   "session_id"
     t.string   "confirm_token"
     t.boolean  "confirmed"
     t.string   "approved_by"
     t.datetime "approved_at"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
-    t.string   "admin_comment"
+    t.datetime "created_at",                       :null => false
+    t.datetime "updated_at",                       :null => false
+    t.text     "admin_comment"
+    t.integer  "user_id"
+    t.boolean  "hidden",        :default => false
   end
 
   create_table "sites", :force => true do |t|

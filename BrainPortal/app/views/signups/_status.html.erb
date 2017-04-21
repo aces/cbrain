@@ -1,0 +1,60 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<%
+#
+# Partial with these locals:
+#
+# signup          : signup object
+# multi_lines     : if true each status info separated by a BR
+#
+%>
+
+<% newline = (multi_lines.present? rescue false) ? "<br>".html_safe : "" %>
+
+<%= hidden_icon if signup.hidden? %>
+
+<% if signup.approved? %>
+  Approved by <%= signup.approved_by %> at <%= signup.approved_at %>
+<% else %>
+
+  <% if signup.confirmed? %>
+    <span><strong>Email confirmed.</strong></span>
+  <% else %>
+    <span class="warning">(Email unconfirmed)</span>
+  <% end %>
+  <%= newline %>
+
+  <% if signup.dup_email? %>
+    <span class="warning">(Conflicting email)</span><%= newline %>
+  <% end %>
+
+  <% if signup.dup_login? %>
+    <span class="warning">(Login conflict)</span>
+  <% else %>
+    <%= link_to "(Approve)", new_user_path(:signup_id => signup.id), :class => 'action_link' %>
+  <% end %>
+
+<% end %>
+

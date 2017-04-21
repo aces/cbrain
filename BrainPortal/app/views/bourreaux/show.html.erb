@@ -44,7 +44,7 @@
   </div>
 <% end %>
 
-<P>
+<p>
 
 <%= error_messages_for @bourreau, :header_message => "Server could not be updated." %>
 
@@ -117,6 +117,20 @@
       <% t.edit_cell(:help_url, :header => "User Manual URL", :show_width => 1) do %>
         <%= text_field_tag "bourreau[help_url]", @bourreau.help_url, :size => 40 %><br/>
         <div class="field_explanation">If set, the portal will show a link called 'User Manual' in the account bar at the top.</div>
+      <% end %>
+
+      <% t.edit_cell :small_logo,
+                     :header => "Small logo",
+                     :content => (@bourreau.small_logo.blank? ? "(None)" : @bourreau.small_logo),
+                     :show_width => 1 do %>
+        <%= text_field_tag "bourreau[small_logo]", @bourreau.small_logo, :size => 40 %><br/>
+      <% end %>
+
+      <% t.edit_cell :large_logo,
+                     :header => "Large logo",
+                     :content => (@bourreau.large_logo.blank? ? "(None)" : @bourreau.large_logo),
+                     :show_width => 1 do %>
+        <%= text_field_tag "bourreau[large_logo]", @bourreau.large_logo, :size => 40 %><br/>
       <% end %>
 
       <% t.edit_cell 'meta[large_upload_url]',
