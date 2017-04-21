@@ -43,7 +43,7 @@ class ToolConfig < ActiveRecord::Base
   belongs_to      :tool         # can be nil; it means it applies to all tools
   has_many        :cbrain_tasks
   belongs_to      :group        # can be nil; means 'everyone' in that case.
-  belongs_to      :singularity_image, :class_name => 'Userfile', :foreign_key => :singularity_image_userfile_id
+  belongs_to      :container_image, :class_name => 'Userfile', :foreign_key => :container_image_userfile_id
 
 
   # first character must be alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'
@@ -56,12 +56,14 @@ class ToolConfig < ActiveRecord::Base
                                    :message => "must be unique per pair [tool, server]" },
                   :if         => :applies_to_bourreau_and_tool?
 
+  validate        :container_rules
+
   cb_scope        :global_for_tools     , where( { :bourreau_id => nil } )
   cb_scope        :global_for_bourreaux , where( { :tool_id => nil } )
   cb_scope        :specific_versions    , where( "bourreau_id is not null and tool_id is not null" )
 
   attr_accessible :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue,
-                  :group_id, :ncpus, :docker_image, :singularityhub_image, :singularity_image_userfile_id, :singularity_image, :extra_qsub_args,
+                  :group_id, :ncpus, :container_image_userfile_id, :containerhub_image_name, :container_engine, :extra_qsub_args,
                   # The configuration of a tool in a VM managed by a
                   # ScirCloud Bourreau is defined by the following
                   # parameters which specify the disk image where the
@@ -230,8 +232,9 @@ class ToolConfig < ActiveRecord::Base
   # comments.
   def is_trivial?
     return false if self.extra_qsub_args.present?
-    return false if self.docker_image.present?
-    return false if self.singularity_image_userfile_id.present?
+    return false if self.containerhub_image_name.present?
+    return false if self.container_image_userfile_id.present?
+    return false if self.container_engine.present?
     return false if self.cloud_disk_image.present?
     return false if self.cloud_vm_user.present?
     return false if self.cloud_ssh_key_pair.present?
@@ -307,5 +310,35 @@ class ToolConfig < ActiveRecord::Base
   def cbrain_task_class
     self.tool.cbrain_task_class
   end
+
+
+
+  #################################################################
+  # Validation methods
+  #################################################################
+
+  # Validate some rules for container_engine, container_image_userfile_id, containerhub_image_name
+  def container_rules #:nodoc:
+    # Should only have one container_engine of particular type
+    available_engine = ["Singularity","Docker"]
+    if self.container_engine.present? && available_engine.exclude?(self.container_engine)
+      errors[:container_engine] = "is not valid"
+    end
+    # Should only have a containerhub_image_name or a container_image_userfile_id
+    if self.containerhub_image_name.present? && self.container_image_userfile_id.present?
+      errors[:containerhub_image_name]     = "cannot be set when a container image Userfile ID is set"
+      errors[:container_image_userfile_id] = "cannot be set when a container hub name is set"
+    end
+    # A tool_config with a containerhub_image_name or a container_image_userfile_id should have a container_engine
+    if (self.containerhub_image_name.present? || self.container_image_userfile_id.present?) && self.container_engine.blank?
+      errors[:container_engine] = "should be set when a container image name or a container userfile ID is set"
+    end
+    # A tool_config with a container_engine should have a containerhub_image_name or a container_image_userfile_id
+    if self.container_engine.present? && ( self.containerhub_image_name.blank? && self.container_image_userfile_id.blank? )
+      errors[:container_engine] = "a container hub image name or a container image userfile ID should be set when the container engine is set"
+    end
+    return errors.empty?
+  end
+
 
 end

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20170308220959) do
+ActiveRecord::Schema.define(:version => 20170418125733) do
 
   create_table "access_profiles", :force => true do |t|
     t.string   "name",        :null => false
@@ -241,9 +241,7 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.string   "system_from_email"
     t.string   "external_status_page_url"
     t.string   "docker_executable_name"
-    t.boolean  "docker_present"
     t.string   "singularity_executable_name"
-    t.boolean  "singularity_present"
     t.string   "small_logo"
     t.string   "large_logo"
   end
@@ -364,7 +362,6 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.datetime "updated_at"
     t.integer  "group_id"
     t.integer  "ncpus"
-    t.string   "docker_image"
     t.string   "extra_qsub_args"
     t.string   "cloud_disk_image"
     t.string   "cloud_vm_user"
@@ -373,8 +370,9 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.integer  "cloud_job_slots"
     t.integer  "cloud_vm_boot_timeout"
     t.integer  "cloud_vm_ssh_tunnel_port"
-    t.string   "singularityhub_image"
-    t.integer  "singularity_image_userfile_id"
+    t.integer  "container_image_userfile_id"
+    t.string   "containerhub_image_name"
+    t.string   "container_engine"
   end
 
   add_index "tool_configs", ["bourreau_id"], :name => "index_tool_configs_on_bourreau_id"
