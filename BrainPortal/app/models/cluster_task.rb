@@ -1942,7 +1942,9 @@ exit $status
   # Returns true if the task's ToolConfig is configured to point to a docker image
   # for the task's processing.
   def use_docker?
-    return self.tool_config.docker_image.present?
+    return self.tool_config.container_engine == "Docker" &&
+         ( self.tool_config.containerhub_image_name.present? ||
+           self.tool_config.container_image_userfile_id.present? )
   end
 
   # Return the 'docker' command to be used for the task; this is fetched
@@ -1954,22 +1956,66 @@ exit $status
   # Returns the command line(s) associated with the task, wrapped in
   # a Docker call if a Docker image has to be used.
   def docker_commands(command_script)
-    work_dir = ( self.respond_to?("container_working_directory")? self.container_working_directory : nil )  || '${PWD}'
+    work_dir        = ( self.respond_to?("container_working_directory")? self.container_working_directory : nil )  || '${PWD}'
 
-    cache_dir=self.bourreau.dp_cache_dir;
-    task_dir=self.bourreau.cms_shared_dir;
-    docker_commands = "cat << \"DOCKERJOB\" > .dockerjob.sh
+    cache_dir       = self.bourreau.dp_cache_dir
+    task_dir        = self.bourreau.cms_shared_dir
+
+    cmd_load_image  = load_docker_image_cmd
+
+    docker_commands = <<-DOCKER_COMMANDS
+
+cat << \"DOCKERJOB\" > .dockerjob.sh
 #!/bin/bash -l
+
 #{command_script}
 DOCKERJOB
+
 chmod 755 ./.dockerjob.sh
-# Pull the Docker image to avoid inconsistencies coming from different image versions on worker nodes
-#{docker_executable_name} pull #{self.tool_config.docker_image.bash_escape}
+
+#{cmd_load_image}
+
 # Run the task commands
-#{docker_executable_name} run --rm -v ${PWD}:#{work_dir} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w #{work_dir} #{self.tool_config.docker_image.bash_escape} ${PWD}/.dockerjob.sh
-"
+#{docker_executable_name} run --rm -v ${PWD}:#{work_dir} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w #{work_dir} "$docker_image_name" ${PWD}/.dockerjob.sh
+
+    DOCKER_COMMANDS
+
     return docker_commands
   end
+
+  # Returns the bash statements necessary to pull a Docker image from
+  # dockerhub, or load an image from a local file.
+  # Then name of the image will be set in a bash variable 'docker_image_name'
+  def load_docker_image_cmd #:nodoc:
+    dockerhub_image_name = self.tool_config.containerhub_image_name
+    if dockerhub_image_name.present?
+      return <<-DOCKER_PULL
+# Pull image from DockerHub
+#{docker_executable_name} pull #{dockerhub_image_name.bash_escape}
+docker_image_name=#{dockerhub_image_name.bash_escape}
+    DOCKER_PULL
+    elsif docker_image = self.tool_config.container_image # = not ==
+      docker_image.sync_to_cache
+      cachename    = docker_image.cache_full_path
+      safe_symlink(cachename,docker_image.name)
+
+      # We try to parse the content of the file 'repositories' in the TAR file
+      repo_json    = `tar -xf #{docker_image.name.bash_escape} -O repositories 2>&1`
+      repo_struct  = JSON.parse(repo_json)
+      image_name   = repo_struct.keys.first
+      image_ver    = repo_struct[image_name].keys.first
+      full_image_name = "#{image_name}:#{image_ver}"
+
+      return <<-DOCKER_LOAD
+# Load docker image from tar file
+#{docker_executable_name} load --input #{docker_image.name.bash_escape}
+docker_image_name=#{full_image_name.bash_escape}
+      DOCKER_LOAD
+    else
+      cb_error "Cannot generate docker load commands..."
+    end
+  end
+
 
 
   ##################################################################
@@ -1979,7 +2025,9 @@ chmod 755 ./.dockerjob.sh
   # Returns true if the task's ToolConfig is configured to point to a singularity image
   # for the task's processing.
   def use_singularity?
-    return self.tool_config.singularityhub_image.present? ||  self.tool_config.singularity_image.present?
+    return self.tool_config.container_engine == "Singularity" &&
+         ( self.tool_config.containerhub_image_name.present? ||
+           self.tool_config.container_image_userfile_id.present? )
   end
 
   # Return the 'singularity' command to be used for the task; this is fetched
@@ -1996,7 +2044,7 @@ chmod 755 ./.dockerjob.sh
     cms_shared_dir = "#{self.bourreau.cms_shared_dir}/#{DataProvider::DP_CACHE_SYML}"
 
     self.addlog("Sync the singularity image")
-    singularity_image = self.tool_config.singularity_image
+    singularity_image = self.tool_config.container_image
     singularity_image.sync_to_cache
     cachename         = singularity_image.cache_full_path
     safe_symlink(cachename,singularity_image.name)
@@ -2032,7 +2080,6 @@ mkdir #{basename_dp_cache}
 # Run the task commands
 #{singularity_executable_name} run -H ${PWD} -B #{cms_shared_dir}:#{singularity_dp_cache_path} #{singularity_image.name} .singularityjob.sh
 "
-
     return singularity_commands
   end
 

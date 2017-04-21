@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20170308220959) do
+ActiveRecord::Schema.define(:version => 20170418125733) do
 
   create_table "access_profiles", :force => true do |t|
     t.string   "name",        :null => false
@@ -207,8 +207,8 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.string   "type"
     t.integer  "user_id"
     t.integer  "group_id"
-    t.boolean  "online",                   :default => false, :null => false
-    t.boolean  "read_only",                :default => false, :null => false
+    t.boolean  "online",                      :default => false, :null => false
+    t.boolean  "read_only",                   :default => false, :null => false
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -241,9 +241,7 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.string   "system_from_email"
     t.string   "external_status_page_url"
     t.string   "docker_executable_name"
-    t.boolean  "docker_present"
     t.string   "singularity_executable_name"
-    t.boolean  "singularity_present"
   end
 
   add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
@@ -268,13 +266,13 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
 
   create_table "signups", :force => true do |t|
     t.string   "title"
-    t.string   "first",                            :null => false
+    t.string   "first",         :null => false
     t.string   "middle"
-    t.string   "last",                             :null => false
-    t.string   "institution",                      :null => false
+    t.string   "last",          :null => false
+    t.string   "institution",   :null => false
     t.string   "department"
     t.string   "position"
-    t.string   "email",                            :null => false
+    t.string   "email",         :null => false
     t.string   "website"
     t.string   "street1"
     t.string   "street2"
@@ -285,14 +283,14 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.string   "time_zone"
     t.string   "service"
     t.string   "login"
-    t.string     "comment"
+    t.string   "comment"
     t.string   "session_id"
     t.string   "confirm_token"
     t.boolean  "confirmed"
     t.string   "approved_by"
     t.datetime "approved_at"
-    t.datetime "created_at",                       :null => false
-    t.datetime "updated_at",                       :null => false
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
     t.string   "admin_comment"
   end
 
@@ -360,7 +358,6 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.datetime "updated_at"
     t.integer  "group_id"
     t.integer  "ncpus"
-    t.string   "docker_image"
     t.string   "extra_qsub_args"
     t.string   "cloud_disk_image"
     t.string   "cloud_vm_user"
@@ -369,8 +366,9 @@ ActiveRecord::Schema.define(:version => 20170308220959) do
     t.integer  "cloud_job_slots"
     t.integer  "cloud_vm_boot_timeout"
     t.integer  "cloud_vm_ssh_tunnel_port"
-    t.string   "singularityhub_image"
-    t.integer  "singularity_image_userfile_id"
+    t.integer  "container_image_userfile_id"
+    t.string   "containerhub_image_name"
+    t.string   "container_engine"
   end
 
   add_index "tool_configs", ["bourreau_id"], :name => "index_tool_configs_on_bourreau_id"

@@ -400,21 +400,18 @@
           %>
         <% end %>
       <% end %>
-      <!-- Docker -->
-      <%= show_table(@bourreau, :header => "Docker Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <!-- Container -->
+      <%= show_table(@bourreau, :header => "Container Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+        <!-- Docker -->
         <% t.edit_cell :docker_executable_name, :header => "Docker executable" do %>
           <%= text_field_tag "bourreau[docker_executable_name]", @bourreau.docker_executable_name, :size => 60 %><br/>
-           <div class="field_explanation">Name of the Docker executable available on the machines where tasks will run. Defaults to "docker" if left empty.</div>
+           <div class="field_explanation">Name of the Docker executable available on the machines where tasks will run. It should always be set if Docker is present.</div>
         <% end %>
-        <% t.boolean_edit_cell( 'bourreau[docker_present]', !!@bourreau.docker_present, true, false, :header => "Docker Present?" ) %>
-      <% end %>
-      <!-- Singularity -->
-      <%= show_table(@bourreau, :header => "Singularity Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+        <!-- Singularity -->
         <% t.edit_cell :singularity_executable_name, :header => "Singularity executable" do %>
           <%= text_field_tag "bourreau[singularity_executable_name]", @bourreau.singularity_executable_name, :size => 60 %><br/>
-           <div class="field_explanation">Name of the Singularity executable available on the machines where tasks will run. Defaults to "singularity" if left empty.</div>
+           <div class="field_explanation">Name of the Singularity executable available on the machines where tasks will run. It should always be set if Singularity is present.</div>
         <% end %>
-        <% t.boolean_edit_cell( 'bourreau[singularity_present]', !!@bourreau.singularity_present, true, false, :header => "Singularity Present?" ) %>
       <% end %>
     <% end %>
 

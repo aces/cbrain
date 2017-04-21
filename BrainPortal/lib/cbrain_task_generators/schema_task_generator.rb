@@ -200,11 +200,11 @@ module SchemaTaskGenerator
     # contained in the descriptor. The newly created Tool and ToolConfig
     # will initially belong to the core admin.
     def register(task)
-      name         = @descriptor['name']
-      version      = @descriptor['tool-version'] || '(unknown)'
-      description  = @descriptor['description']  || ''
-      docker_image = (@descriptor['container-image'] || {})['image']
-      resource     = RemoteResource.current_resource
+      name            = @descriptor['name']
+      version         = @descriptor['tool-version'] || '(unknown)'
+      description     = @descriptor['description']  || ''
+      container_image = (@descriptor['container-image'] || {})['image']
+      resource        = RemoteResource.current_resource
 
       # Create and save a new Tool for the task, unless there's already one.
       Tool.new(
@@ -222,10 +222,9 @@ module SchemaTaskGenerator
       # sense on the portal).
       return if Rails.root.to_s =~ /BrainPortal\z/
 
-      # Create a ToolConfig iff
-      #   (1) the Bourreau has a docker executable and
-      #   (2) the descriptor specifies a docker image
-      return if docker_image.nil? || !resource.docker_present
+      # Create a ToolConfig if
+      #   (1) the descriptor specifies a container image
+      return if container_image.nil?
 
       ToolConfig.new(
         :tool_id      => task.tool.id,
@@ -233,7 +232,7 @@ module SchemaTaskGenerator
         :group_id     => Group.everyone.id,
         :version_name => version,
         :description  => "#{name} #{version} on #{resource.name}",
-        :docker_image => docker_image
+        :containerhub_image_name => container_image
       ).save! unless
         ToolConfig.exists?(
           :tool_id      => task.tool.id,

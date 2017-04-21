@@ -223,6 +223,7 @@ class RemoteResource
   Created:  %s
   Updated:  %s
   Docker:   %s
+  Singularity: %s
   Flags:    %s %s %s %s
     VIEW
     sprintf report,
@@ -258,8 +259,6 @@ class RemoteResource
       singularity_executable_name.presence || "",
       (online? ? "Online" : "Offline"),
       (read_only? ? "ReadOnly" : "R/W"),
-      (docker_present? ? "DockerOK" : "NoDocker"),
-      (singularity_present? ? "SingularityOK" : "NoSingularity"),
       (portal_locked? ? "LOCKED" : "")
   end
 end
@@ -322,7 +321,8 @@ ToolConfig #%d "%s"
   Tool:     %d (%s)
   Exec:     %d (%s)
   nCPUs:    %d
-  DockerIm: %s
+  ContainerIm: %s
+  ContainerId: %d (%s)
   QsubExt:  %s
     VIEW
     sprintf report,
@@ -331,7 +331,8 @@ ToolConfig #%d "%s"
       tool_id.presence || 0, tool.try(:name),
       bourreau_id.presence || 0, bourreau.try(:name),
       ncpus.presence || 0,
-      docker_image.presence || "",
+      containerhub_image_name.presence || "",
+      container_image_userfile_id.presence || "",
       extra_qsub_args.presence || ""
   end
 end
