@@ -66,6 +66,7 @@ module UserfilesHelper
   # Generates a set of two links, one for a 'previous' file and one for a 'next' file.
   # The argument +sort_index+ is the index of the 'current' file.
   def file_link_table(previous_userfile, next_userfile, sort_index, options = {})
+    return "" if sort_index.blank?
     (
     "<div class=\"display_table\" style=\"width:100%\">" +
       "<div class=\"display_row\">" +

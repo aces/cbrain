@@ -319,7 +319,12 @@ Operations Mode : #{@mode == "each_command" ?
 
     # Bash command
     if letter == "c"
-      puts "Enter bash command; @b@ will be substituted by the Bourreaux names"
+      puts "Enter bash command; some substitutions will be performed before"
+      puts "sending the command:"
+      puts " * @b@ will be substituted by the local Bourreau name"
+      puts " * @r@ will be substituted by the Bourreau's RAILS root path"
+      puts " * @d@ will be substituted by the Bourreau's DP cache dir path"
+      puts " * @g@ will be substituted by the Bourreau's gridshare dir path"
       comm = Readline.readline("Bash command: ")
       bash_command_on_bourreaux(comm)
       return true
@@ -405,7 +410,13 @@ Operations Mode : #{@mode == "each_command" ?
     puts ""
     bourreau_list.each do |bou|
       puts "---- Bourreau: #{bou.name} ----"
-      bash_command_on_one_bourreau(bou,comm.gsub('@b@',bou.name))
+      bash_command_on_one_bourreau(bou,
+        comm
+        .gsub('@b@',bou.name)
+        .gsub('@r@',bou.ssh_control_rails_dir.presence || "/no/rails"       )
+        .gsub('@d@',bou.dp_cache_dir.presence          || "/no/dp_cachedir" )
+        .gsub('@g@',bou.cms_shared_dir.presence        || "/no/gridshare"   )
+      )
     end
   end
 
