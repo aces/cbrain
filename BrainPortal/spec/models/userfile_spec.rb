@@ -621,7 +621,7 @@ describe Userfile do
     before(:each) do
       allow(userfile).to receive(:data_provider).and_return(data_provider)
       allow(userfile).to receive(:local_sync_status).and_return(syncstat)
-      allow(userfile).to receive(:sync_to_cache)
+      allow(data_provider).to receive(:sync_to_cache).and_return(true)
     end
 
     it "should return true if status is InSync" do
