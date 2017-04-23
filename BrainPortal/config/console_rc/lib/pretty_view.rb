@@ -21,14 +21,19 @@
 #
 
 # Pretty view for active record objects
+$_PV_MAX_SHOW=20
 def pv(*args)
   no_log do
     to_show = args.flatten
-    to_show.each do |obj|
+    to_show.each_with_index do |obj,idx|
       if obj.respond_to?(:pretview)
         puts obj.pretview
       else
         puts "==== Object does not respond to pretview(): #{obj.inspect} ===="
+      end
+      if idx+1 >= $_PV_MAX_SHOW && to_show.size > $_PV_MAX_SHOW
+        puts "Not showing #{to_show.size - $_PV_MAX_SHOW} other entries..."
+        break
       end
     end
   end
@@ -224,7 +229,7 @@ class RemoteResource
   Updated:  %s
   Docker:   %s
   Singularity: %s
-  Flags:    %s %s %s %s
+  Flags:    %s %s %s
     VIEW
     sprintf report,
       self.class.to_s, self.id, self.name,
