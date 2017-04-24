@@ -199,6 +199,7 @@ class ToolConfigsController < ApplicationController
            @tool_config.version_name                = other_tc.version_name
            @tool_config.group                       = other_tc.group
            @tool_config.ncpus                       = other_tc.ncpus
+           @tool_config.container_engine            = other_tc.container_engine
            @tool_config.containerhub_image_name     = other_tc.containerhub_image_name
            @tool_config.container_image_userfile_id = other_tc.container_image_userfile_id
            @tool_config.extra_qsub_args             = other_tc.extra_qsub_args
