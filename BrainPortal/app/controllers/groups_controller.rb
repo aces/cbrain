@@ -69,8 +69,8 @@ class GroupsController < ApplicationController
     respond_to do |format|
       format.js
       format.html # index.html.erb
-      format.xml  { render :xml  => @groups.for_api }
-      format.json { render :json => @groups.for_api }
+      format.xml  { render :xml  => @groups.select { |x| x.is_a?(Group) }.for_api } # @groups can contain the string 'ALL'
+      format.json { render :json => @groups.select { |x| x.is_a?(Group) }.for_api }
     end
   end
 

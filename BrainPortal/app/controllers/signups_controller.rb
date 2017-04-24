@@ -167,13 +167,14 @@ class SignupsController < ApplicationController
     scope_default_order(@scope, 'created_at', :desc)
 
     # Maintains show/hide hidden records option in session.
-    view_hidden                 = @scope.custom[:view_hidden]
+    view_hidden                 = @scope.custom[:view_hidden].present?
     view_hidden                 = ( params[:view_hidden].presence == "true" ) if params[:view_hidden].present?
     @scope.custom[:view_hidden] = view_hidden
 
     @base_scope                 = Signup.scoped
-    @base_scope                 = @base_scope.where(:hidden => false) unless view_hidden
     @view_scope                 = @scope.apply(@base_scope)
+    @num_hidden                 = view_hidden ? 0 : @view_scope.where(:hidden => true).count
+    @view_scope                 = @view_scope.where(:hidden => false) unless view_hidden
 
     # Prepare the Pagination object
     @scope.pagination           ||= Scope::Pagination.from_hash({ :per_page => 25 })

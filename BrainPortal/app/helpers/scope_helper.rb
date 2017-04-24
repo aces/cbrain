@@ -199,12 +199,14 @@ module ScopeHelper
     # Explanatory flag (boolean attributes) value names to use instead of
     # '<attribute>: true/1' or '<attribute>: false/0'.
     flag_names = {
-      'critical'       => ['Critical', 'Not critical'],
-      'read'           => ['Read',     'Unread'],
-      'account_locked' => ['Locked',   'Unlocked']
+      'critical'       => ['Critical',        'Not critical'],
+      'read'           => ['Read',            'Unread'],
+      'account_locked' => ['Locked',          'Unlocked'],
+      'confirmed'      => ['Email Confirmed', 'Email Not confirmed'],
     }
 
-    # Model methods/attributes to use as representation of a model record
+    # Model methods/attributes to use as representation of a model record;
+    # the default is :name .
     naming_methods = {
       :user        => :login,
       :tool_config => :version_name
@@ -280,6 +282,7 @@ module ScopeHelper
         values.first.to_s
       end
     )
+    values = "(None)" if values.blank?
 
     # Have a nice textual representation of the operator
     operator = ({

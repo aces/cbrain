@@ -36,7 +36,10 @@
 <%= hidden_icon if signup.hidden? %>
 
 <% if signup.approved? %>
-  Approved by <%= signup.approved_by %> at <%= signup.approved_at %>
+  <% if newline.present? && current_user.present? && current_user.has_role?(:admin_user) %>
+    Approved by: <%= signup.approved_by %><%= newline %>
+  <% end %>
+  Approved at: <%= signup.approved_at %>
 <% else %>
 
   <% if signup.confirmed? %>
@@ -53,7 +56,9 @@
   <% if signup.dup_login? %>
     <span class="warning">(Login conflict)</span>
   <% else %>
-    <%= link_to "(Approve)", new_user_path(:signup_id => signup.id), :class => 'action_link' %>
+    <% if current_user.present? && current_user.has_role?(:admin_user) %>
+      <%= link_to "(Approve)", new_user_path(:signup_id => signup.id), :class => 'action_link' %>
+    <% end %>
   <% end %>
 
 <% end %>

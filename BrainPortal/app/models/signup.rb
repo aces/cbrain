@@ -44,7 +44,7 @@ class Signup < ActiveRecord::Base
       :title, :first, :middle, :last,
       :institution, :department, :position, :email,
       :street1, :street2, :city, :province, :country, :postal_code,
-      :login, :comment
+      :login, :comment, :admin_comment
     ].each do |att|
       val = read_attribute(att) || ""
       write_attribute(att, val.strip)
@@ -127,7 +127,7 @@ class Signup < ActiveRecord::Base
   #===============================================
 
   # This method invokes the User model's validators
-  # to make suer the login provided by the user matches
+  # to make sure the login provided by the user matches
   # the restrictions within CBRAIN.
   def login_match_user_format #:nodoc:
     return true if   self.login.blank?

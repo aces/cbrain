@@ -42,6 +42,13 @@
     <% else %>
       <%= link_to "Show All Records",    signups_path(:view_hidden => true),  :class => "button" %>
     <% end %>
+
+    <%= scope_filter_link("Latest TODO", "signups", :replace,
+          [ { :a => :approved_by, :v => '' }, { :a => :confirmed, :v => 1 } ],
+          :url => { :controller => :signups, :action => :index, :view_hidden => false },
+          :link => { :class => "button" }
+        )
+    %>
   </div>
 
   <hr>
@@ -55,7 +62,12 @@
 
   <div class="pagination">
     <span class="page_links">
-      (<%= pluralize @signups.total_entries, "signup" %>)
+      (
+      <%= pluralize @signups.total_entries, "signup" %>
+      <% if @num_hidden && @num_hidden > 0 %>
+        , <%= @num_hidden %> hidden <%= hidden_icon %>
+      <% end %>
+      )
     </span>
   </div>
 
@@ -128,7 +140,7 @@
         :sortable => true,
         :filters => default_filters_for(@base_scope, :country)
       )
-      %>
+    %>
 
     <%
       t.column("Username", :login,
@@ -171,6 +183,18 @@
           "Updated: #{d.updated_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z")}".html_safe
         end
       end
+    %>
+
+    <%
+      t.column("Approved By", :approved_by,
+        :sortable => true,
+        :filters => [ { :value => nil,
+                        :label => '(Not approved)',
+                        :indicator => @base_scope.where(:approved_by => nil).count,
+                      }
+                    ] +
+                    default_filters_for(@base_scope, :approved_by)
+      )
     %>
 
     <%
