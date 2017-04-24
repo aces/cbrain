@@ -1,5 +1,17 @@
 ## CBRAIN Release Notes
 
+#### Version 4.7.0 Released 2017-04-24
+
+- Signups index page improved.
+- Container support made more modular: Docker and Singularity.
+- Container support for local images as userfiles.
+- Pretty view helpers in Rails console.
+- New console helpers 'trans' and 'acttasks'.
+- Feedbacks forms/model removed.
+- Support for optional Network Operation Center view page.
+- Swagger authentication getting closer to operational.
+- General swagger improvements.
+
 #### Version 4.6.1 Released 2016-12-19
 
 - A much more complete version of the Swagger API spec (but not final).
