@@ -109,7 +109,7 @@ class CbrainTask
       self.class.to_s, self.id, self.status,
       user_id, user.login,
       group_id, group.try(:name),
-      (bourreau_id || 0), (bourreau_id && bourreau_id != 0 && bourreau.try(:name) || "(none)"),
+      (bourreau_id || 0), (bourreau_id && bourreau_id != 0 && bourreau.try(:name) || "none"),
       (tool_config_id || 0), tool_config.try(:version_name),
       (bourreau_id && bourreau_id != 0 && full_cluster_workdir.presence || "(unk)"),
       (cluster_workdir_size ? "#{cluster_workdir_size.to_s} (#{ConsoleCtx.send(:pretty_size,cluster_workdir_size)})" : "(unk)"),
@@ -117,7 +117,7 @@ class CbrainTask
       (prerequisites.present? ? prerequisites.keys.join(", ") : ""),
       share_wd_tid.to_s,
       run_number,
-      (results_data_provider_id || 0), results_data_provider.try(:name),
+      (results_data_provider_id || 0), results_data_provider.try(:name) || "",
       ConsoleCtx.send(:pretty_past_date,created_at),
       ConsoleCtx.send(:pretty_past_date,updated_at),
       (archived_status.to_s.capitalize + (workdir_archive_userfile_id || 0).to_s)
@@ -145,7 +145,7 @@ class User
       email,
       city.presence || "(None)",
       country.presence || "(None)",
-      (site_id || 0), site.try(:name) || "(No site)",
+      (site_id || 0), site.try(:name) || "No site",
       time_zone,
       ConsoleCtx.send(:pretty_past_date,created_at),
       ConsoleCtx.send(:pretty_past_date,updated_at),
@@ -169,7 +169,7 @@ class Group
       (self.creator_id || 0), self.creator.try(:login),
       ConsoleCtx.send(:pretty_past_date,created_at),
       ConsoleCtx.send(:pretty_past_date,updated_at),
-      (site_id || 0), site.try(:name) || "(No site)",
+      (site_id || 0), site.try(:name) || "No site",
       (self.invisible? ? "Invisible" : "")
   end
 end

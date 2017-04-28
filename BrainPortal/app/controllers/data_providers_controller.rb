@@ -609,7 +609,7 @@ class DataProvidersController < ApplicationController
     # Unregister the given userfiles in background.
     userfiles = userfiles_from_basenames(@provider, @as_user, params[:basenames])
     succeeded, failed = [], {}
-    erasing = params.has_key?(:delete)
+    erasing = params[:delete].present?
 
     CBRAIN.spawn_with_active_records_if(
       [:html, :js].include?(request.format.to_sym),

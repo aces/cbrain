@@ -29,6 +29,10 @@ class NocController < ApplicationController
   # Provides a graphical daily snapshot of activity
   def daily
 
+    # Bourreaux or DataProviders that are offline yet modified in the past
+    # month will be shown in red even if they have no other activity.
+    offline_resource_limit = 1.month # update date must be since that time ago
+
     # Sicrit params
     @hours_ago       = params[:t].presence.try(:to_i)
     @refresh_every   = params[:r].presence.try(:to_i)
@@ -46,7 +50,7 @@ class NocController < ApplicationController
 
     # RemoteResources, including the portal itself
     @myself        = RemoteResource.current_resource
-    @bourreaux     = Bourreau.where([ "updated_at > ?", 1.month.ago ]).order(:name).all # must have been toggled within a month
+    @bourreaux     = Bourreau.where([ "updated_at > ?", offline_resource_limit.ago ]).order(:name).all # must have been toggled within a month
 
     # Three numbers: active users, active tasks, sum of files sizes being transfered.
     @active_users  = CbrainSession.where([ "updated_at > ?", this_morning ])
@@ -111,6 +115,14 @@ class NocController < ApplicationController
                              .order("data_providers.name")
                              .group("data_providers.id")
                              .sum("userfiles.size")
+    # Add entries with 0 for DPs that happen to be offline, so we see still them in red.
+    DataProvider.where(:online => false)
+                .where(["updated_at > ?", offline_resource_limit.ago])
+                .raw_first_column(:id)
+                .each do |dpid|
+      @updated_files[dpid] = 0 unless @updated_files[dpid].present?
+    end
+
     if fake
       @updated_files = DataProvider.where({}).raw_first_column(:id).shuffle[0..rand(5)]
                                    .map { |dp| [ dp, rand(fake.gigabytes) ] }.to_h
@@ -123,6 +135,10 @@ class NocController < ApplicationController
     # Show IP address
     reqenv = request.env || {}
     @ip_address ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR'] || ""
+
+    # Number of exceptions
+    @num_exceptions = ExceptionLog.where([ "created_at > ?", this_morning ]).count
+    @num_exceptions = rand(fake) if fake
 
     render :action => :daily, :layout => false # full HTML layout already in view file
   end

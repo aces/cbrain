@@ -50,6 +50,9 @@
 
 <% num_users_color = @active_users.zero? ? "black" : colorwheel_edge_crawl(@active_users, 20) %>
 <% num_tasks_color = @active_tasks.zero? ? "black" : colorwheel_edge_crawl(@active_tasks, 400) %>
+<% num_excep_color = colorwheel_edge_crawl(@num_exceptions, 20, 1,
+   # from yellow to orange to red
+   :start => 63, :length => 63, :scale => :linear ) %>
 
 <div class="noc_main">
   <div class="noc_panel">
@@ -64,6 +67,12 @@
     <div class="noc_header">Active Transfers</div><br>
     <div class="noc_count"><%= @data_transfer.zero? ? "none" : colored_pretty_size(@data_transfer) %></div>
   </div>
+  <% if @num_exceptions > 0 %>
+  <div class="noc_panel">
+    <div class="noc_header">Exceptions</div><br>
+    <div class="noc_count" style="color: <%= num_excep_color %>"><%= @num_exceptions %></div>
+  </div>
+  <% end %>
 </div>
 
 
@@ -131,6 +140,10 @@
     <legend><%= red_if(offline, dp.name) %></legend>
     <%= disk_space_info_display(size) do %>
       <%= colored_pretty_size size %>
+      <% if offline %>
+        <br>
+        <%= red_if(true,"OFFLINE!") %>
+      <% end %>
     <% end %>
   </fieldset>
 
