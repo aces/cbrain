@@ -120,7 +120,7 @@ class CbrainTask
       (results_data_provider_id || 0), results_data_provider.try(:name) || "",
       ConsoleCtx.send(:pretty_past_date,created_at),
       ConsoleCtx.send(:pretty_past_date,updated_at),
-      (archived_status.to_s.capitalize + (workdir_archive_userfile_id || 0).to_s)
+      (archived_status.to_s.capitalize + " " + (workdir_archive_userfile_id || 0).to_s)
   end
 end
 
