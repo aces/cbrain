@@ -52,7 +52,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 % globs    = outputs.select { |o| o['list']             }
 % in_keys  = inputs.select  { |i| i['value-key'] }
 % out_keys = outputs.select { |o| o['value-key'] }
-% flags    = (inputs + outputs).select { |p| p['command-line-flag'] }
+% flags    = (inputs + outputs).select { |p| p['command-line-flag'].present? }
 % seps     = (inputs + outputs).select { |i| i['command-line-flag-separator'] }
 % eVars    = descriptor['environment-variables'].dup rescue []
 %
