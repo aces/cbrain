@@ -2099,7 +2099,9 @@ mkdir #{basename_dp_cache}
     Dir.chdir(workdir) do
       taskfiles = Dir.glob(".new-task-*.json")
       return unless taskfiles.present?
+      self.reload
       current_status = self.status
+      return if     current_status == "Subtasking"
       return unless self.status_transition(current_status, "Subtasking") # ensures only one process can do the rest
       taskfiles.each do |taskfile|
         #self.addlog("Found new subtask file: #{taskfile}")
@@ -2163,7 +2165,7 @@ mkdir #{basename_dp_cache}
     accessible_tool_configs = ToolConfig.find_all_accessible_by_user(self.user).where(:tool_id => new_tool.id, :bourreau_id => self.bourreau_id)
     new_tcid                = accessible_tool_configs.limit(1).raw_first_column(:id)[0] if new_tcid.blank?
     if new_tcid.blank? || ! accessible_tool_configs.where(:id => new_tcid).exists?
-      raise "Cannot find an acceptable tool config ID for this user, tool, and bourreau.\n"
+      cb_error "Cannot find an acceptable tool config ID for this user, tool, and bourreau."
     end
     new_task.tool_config_id = new_tcid
 
