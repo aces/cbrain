@@ -115,16 +115,22 @@
     });
 
     //All elements with the accordion class will be changed to accordions.
-    loaded_element.find(".accordion").accordion({
-      active: false,
-      collapsible: true,
-      autoHeight: false
+    loaded_element.find(".accordion").each(function() {
+      $(this).accordion({
+        active: false,
+        collapsible: true,
+        autoHeight: false
+      });
     });
 
 
     //Sortable list of elements
-    loaded_element.find(".sortable_list").sortable();
-    loaded_element.find(".sortable_list").disableSelection();
+    loaded_element.find(".sortable_list").each(function() {
+      $(this).sortable();
+    })
+    loaded_element.find(".sortable_list").each(function() {
+      $(this).disableSelection();
+    });
 
     loaded_element.find(".slider_field").each( function() {
       var slider_text_field = $(this).children().filter("input");
@@ -135,17 +141,23 @@
       });
     });
 
-    loaded_element.find(".draggable_element").draggable({
-      connectToSortable: '#sortable',
-      helper: 'clone',
-      revert: 'invalid'
+    loaded_element.find(".draggable_element").each( function() {
+      $(this).draggable({
+        connectToSortable: '#sortable',
+        helper: 'clone',
+        revert: 'invalid'
+      });
     });
 
-    loaded_element.find(".sortable_list ul, sortable_list li").disableSelection();
+    loaded_element.find(".sortable_list ul, sortable_list li").each( function() {
+      $(this).disableSelection();
+    });
 
     // Tab Bar, div's of type tabs become tab_bars
     // See TabBar class
-    loaded_element.find(".tabs").tabs();
+    loaded_element.find(".tabs").each( function() {
+      $(this).tabs();
+    });
 
 
     // //Prevent forms where submit buttons decide behaviour
@@ -199,10 +211,14 @@
     });
 
     //Turns the element into a button looking thing
-    loaded_element.find(".button").button();
+    loaded_element.find(".button").each( function() {
+      $(this).button();
+    });
 
     //Makes a button set, buttons that are glued together
-    loaded_element.find(".button_set").buttonset();
+    loaded_element.find(".button_set").each( function() {
+      $(this).buttonset();
+    });
 
 
     loaded_element.find(".button_with_drop_down > div.drop_down_menu").each(function(e) {

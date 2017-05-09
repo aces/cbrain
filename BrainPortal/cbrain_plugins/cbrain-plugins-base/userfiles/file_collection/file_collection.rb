@@ -162,14 +162,43 @@ class FileCollection < Userfile
   end
 
   # Content loader
+  # +path_string+ is a relative path into the collection, starting with the
+  # collection name itself, e.g. "userfilename/subdir1/subdir2/file.txt"
+  # The full path to the cached copy of the file will be returned after validation that this is
+  # indeed a valid path to a file inside the collection.
   def collection_file(path_string)
-    return nil unless self.list_files.find { |f| f.name == path_string }
+    path_string = Pathname.new(path_string).cleanpath # does not look into FS but compacts internal '..'s
 
-    path = self.cache_full_path.parent + path_string
+    # Must no go out of current userfile
+    return nil if path_string.to_s =~ /^\.\.\//
 
-    return nil unless File.exist?(path) and File.readable?(path) and !(File.directory?(path) || File.symlink?(path) )
+    # Base of the file collection
+    base = self.cache_full_path
 
-    path
+    # Full path inside collection, but no FS check yet
+    path = base.parent + path_string
+
+    # Check on FS for file to exist and is accessible
+    real_loc = path.realdirpath rescue nil
+    return nil unless real_loc.present?
+    stat = File.stat(real_loc) rescue nil
+    return nil if   ! stat
+    return nil if   ! stat.file?
+    return nil if   ! stat.readable?
+    return nil if     stat.symlink?
+
+    # Check that we're accessing legit CBRAIN data
+
+    # Test 1: we're inside the collection
+    return path if real_loc.relative_path_from(base).to_s !~ /^\.\.\//
+
+    # Test 2: we're inside the DP cache in another one of our files TODO MAYBE NOT NEEDED
+    #return path if real_loc.relative_path_from(Pathname.new(RemoteResource.current_resource.dp_cache_dir)).to_s !~ /^\.\.\//
+
+    # Test 3: we're inside a provide in another one of our files TODO MAYBE NOT NEEDED
+    #return path if true
+
+    nil
   end
 
   # Returns whether the collection has been archived or not using gzip
