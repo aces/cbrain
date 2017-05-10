@@ -463,14 +463,16 @@ class Userfile < ActiveRecord::Base
   end
 
   # Returns whether this userfile's contents has been
-  # synced to the local cache.
+  # synced to the local cache. As a side effect, if
+  # the data provider is marked as 'fast syncing', then
+  # the sync operation will be triggered first.
   def is_locally_synced?
     syncstat = self.local_sync_status(:refresh)
     return true if syncstat && syncstat.status == 'InSync'
     return false unless self.data_provider.is_fast_syncing?
     return false if     self.data_provider.not_syncable?
     return false unless self.data_provider.rr_allowed_syncing?
-    self.data_provider.sync_to_cache(self)
+    self.sync_to_cache # will also trigger custom code in models if needed
     syncstat = self.local_sync_status(:refresh)
     return true if syncstat && syncstat.status == 'InSync'
     false
