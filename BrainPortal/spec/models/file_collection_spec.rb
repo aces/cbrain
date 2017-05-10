@@ -25,7 +25,10 @@ require 'rails_helper'
 describe FileCollection do
   let(:provider)        { create(:ssh_data_provider, :online => true, :read_only => false) }
   let(:file_collection) { create(:file_collection, :data_provider => provider) }
-  cache_full_path = Pathname.new("base_path/path")
+  let(:stat)            { double("stat").as_null_object }
+  let(:fullpath)        { double("fullpath").as_null_object }
+  cacheroot       = Pathname.new("cacheroot")
+  cache_full_path = cacheroot + "path"
 
   before(:each) do
     allow(File).to            receive(:exist?).and_return(true)
@@ -35,15 +38,18 @@ describe FileCollection do
 
   describe "#collection_file" do
     before(:each) do
-      allow(file_collection).to receive_message_chain(:list_files, :find).and_return(true)
-      allow(File).to            receive(:readable?).and_return(true)
-      allow(File).to            receive(:directory?).and_return(false)
-      allow(File).to            receive(:symlink?).and_return(false)
+      allow(stat).to          receive(:readable?).and_return(true)
+      allow(stat).to          receive(:file?).and_return(true)
+      allow(stat).to          receive(:symlink?).and_return(false)
+      allow(File).to          receive(:stat).and_return(stat)
+      allow(cacheroot).to     receive(:+).and_return(cache_full_path)
+      allow(cache_full_path).to receive(:parent).and_return(cacheroot)
+      allow(cache_full_path).to receive(:realdirpath).and_return(cache_full_path)
     end
 
     it "should return nil if collection file not in the collection's list of files" do
-      allow(file_collection).to receive_message_chain(:list_files, :find).and_return(nil)
-      expect(file_collection.collection_file('path')).to be_nil
+      allow(cache_full_path).to receive(:realdirpath).and_return(nil)
+      expect(file_collection.collection_file('bad')).to be_nil
     end
 
     it "should return the full path of the collection file if it exists" do
@@ -51,22 +57,22 @@ describe FileCollection do
     end
 
     it "should return nil if we have a file does not exist" do
-      allow(File).to receive(:exist?).and_return(false)
+      allow(File).to          receive(:stat).and_return(nil)
       expect(file_collection.collection_file('path')).to be_nil
     end
 
     it "should return nil if we have a file does not readable" do
-      allow(File).to receive(:readable?).and_return(false)
+      allow(stat).to receive(:readable?).and_return(false)
       expect(file_collection.collection_file('path')).to be_nil
     end
 
     it "should return nil if we have a directory" do
-      allow(File).to receive(:directory?).and_return(true)
+      allow(stat).to receive(:file?).and_return(false)
       expect(file_collection.collection_file('path')).to be_nil
     end
 
     it "should return nil if we have a symlink" do
-      allow(File).to receive(:symlink?).and_return(true)
+      allow(stat).to receive(:symlink?).and_return(true)
       expect(file_collection.collection_file('path')).to be_nil
     end
   end
