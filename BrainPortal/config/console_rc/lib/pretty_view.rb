@@ -60,14 +60,16 @@ class Userfile
   def pretview
     report = <<-VIEW
 %s #%d "%s"
-  Owner:    %d (%s)
-  Group:    %d (%s)
-  Size:     %s
-  NumFiles: %s
-  DP:       %d (%s)
-  Created:  %s
-  Updated:  %s
-  Flags:    %s
+  Owner:     %d (%s)
+  Group:     %d (%s)
+  Size:      %s
+  NumFiles:  %s
+  DP:        %d (%s)
+  Created:   %s
+  Updated:   %s
+  Flags:     %s
+  DP Path:   %s
+  CachePath: %s
     VIEW
     sprintf report,
       self.class.to_s, self.id, self.name,
@@ -82,7 +84,9 @@ class Userfile
        (archived?  ? "Archived"  : "") +
        (hidden?    ? "Hidden"    : "") +
        (immutable? ? "Immutable" : "")
-      )
+      ),
+      self.provider_full_path.to_s,
+      self.cache_full_path.to_s
   end
 end
 

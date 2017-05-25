@@ -161,7 +161,7 @@
           label: 'users.login',
           association: [User, 'id', 'user_id']
         )
-      ) { |m| m.user.login } unless
+      ) { |m| link_to_user_with_tooltip(m.user) } unless
         current_user.has_role?(:normal_user)
 
       t.column("Last Updated", :last_sent,

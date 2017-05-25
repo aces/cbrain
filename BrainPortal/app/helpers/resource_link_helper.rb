@@ -260,6 +260,7 @@ module ResourceLinkHelper
         (user.city.blank?  ? "" : "City: #{h(user.city)}<br/>\n") +
         (user.site.blank?  ? "" : "Site: #{h(user.site.name)}<br/>\n") +
         (user.email.blank? ? "" : "Email: #{h(user.email)}<br/>\n") +
+        "Last connection: #{pretty_past_date(user.last_connected_at)}<br>\n" +
         "</div>"
         ).html_safe
       end

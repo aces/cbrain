@@ -25,35 +25,35 @@
 CbrainRailsPortal::Application.routes.draw do
 
   # Session
-  resource  :session, :only => [ :new, :create, :show, :destroy ]
+  resource  :session,         :only => [ :new, :create, :show, :destroy ]
 
   # Control channel
-  resources :controls,       :controller => :controls, :only => [ :show, :create ]
+  resources :controls,        :only => [ :show, :create ], :controller => :controls
 
   # Documentation
-  resources :docs,           :controller => :help_documents
+  resources :docs,            :except => [ :edit ], :controller => :help_documents
 
   # Standard CRUD resources
-  resources :sites
-  resources :custom_filters
-  resources :tags
-  resources :access_profiles
+  resources :sites,           :except => [ :edit ]
+  resources :custom_filters,  :except => [ :index, :show ]
+  resources :tags,            :except => [ :new, :edit ]
+  resources :access_profiles, :except => [ :edit ]
 
   # Standard CRUD resources, with extra actions
 
-  resources :tool_configs do
+  resources :tool_configs,    :except => [ :create ] do
     collection do
       get  'report'
     end
   end
 
-  resources :messages do
+  resources :messages,        :except => [ :edit, :show ] do
     collection do
       delete 'delete_messages'
     end
   end
 
-  resources :users do
+  resources :users,           :except => [ :edit ] do
     member do
       get  'change_password'
       post 'switch'
@@ -64,17 +64,16 @@ CbrainRailsPortal::Application.routes.draw do
     end
   end
 
-  resources :groups do
+  resources :groups,          :except => [ :edit ] do
     collection do
-      get  'switch_panel'
       post 'unregister'
       post 'switch'
     end
   end
 
-  resources :invitations, :only => [ :new, :create, :update, :destroy ]
+  resources :invitations,     :only => [ :new, :create, :update, :destroy ]
 
-  resources :bourreaux do
+  resources :bourreaux,       :except => [ :edit ] do
     member do
       post 'start'
       post 'stop'
@@ -91,7 +90,7 @@ CbrainRailsPortal::Application.routes.draw do
     end
   end
 
-  resources :data_providers do
+  resources :data_providers,  :except => [ :edit ] do
     member do
       get  'browse'
       post 'register'
@@ -108,11 +107,10 @@ CbrainRailsPortal::Application.routes.draw do
     end
   end
 
-  resources :userfiles do
+  resources :userfiles,       :except => [ :edit, :destroy ] do
     member do
       get  'content'
       get  'display'
-      post 'sync_to_cache'
       post 'extract_from_collection'
     end
     collection do
@@ -134,7 +132,7 @@ CbrainRailsPortal::Application.routes.draw do
     end
   end
 
-  resources :tasks do
+  resources :tasks,           :except => [ :destroy ] do
     collection do
       post 'new', :path => 'new', :as => 'new'
       post 'operation'
@@ -146,11 +144,10 @@ CbrainRailsPortal::Application.routes.draw do
   resources :tools do
     collection do
       get    'tool_config_select'
-      post   'assign_tools'
     end
   end
 
-  resources :exception_logs, :only => [ :index, :show ] do
+  resources :exception_logs,  :only => [ :index, :show ] do
     delete :destroy, :on => :collection
   end
 
@@ -191,7 +188,7 @@ CbrainRailsPortal::Application.routes.draw do
   post  '/sign_license/:license', :controller => :portal, :action => :sign_license
 
   # Portal log
-  get   '/portal_log', :controller => :portal, :action => :portal_log
+  get   '/portal_log',            :controller => :portal, :action => :portal_log
 
   # Service; most of these actions are only needed
   # for the CANARIE monitoring system, and are therefore

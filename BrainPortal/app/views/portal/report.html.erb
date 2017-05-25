@@ -140,12 +140,14 @@ in a tabular layout. Proceed as follow:
          if @filter_col_key =~ /\A(\w+)_id\z/
            col_model = Regexp.last_match[1].classify.constantize
            col_proc  = Proc.new { |x| link_to_model_if_accessible(col_model,x,:name,current_user) }
+           col_proc  = Proc.new { |x| link_to_user_with_tooltip(User.find(x),current_user) rescue x.to_s } if @filter_col_key == 'user_id'
          end
 
          # Special proc for rows which are IDs to models
          if @filter_row_key =~ /\A(\w+)_id\z/
            row_model = Regexp.last_match[1].classify.constantize
            row_proc  = Proc.new { |x| link_to_model_if_accessible(row_model,x,:name,current_user) }
+           row_proc  = Proc.new { |x| link_to_user_with_tooltip(User.find(x),current_user) rescue x.to_s } if @filter_row_key == 'user_id'
          end
 
          vector_size = @table_content[@table_content.keys.first].size

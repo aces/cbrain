@@ -142,7 +142,7 @@ class Userfile < ActiveRecord::Base
   # to contain printable characters only, with no slashes
   # or ASCII nulls, and they must start with a letter or digit.
   def self.is_legal_filename?(basename)
-    return true if basename && basename.match(/\A[a-zA-Z0-9][\w\~\!\@\#\%\^\&\*\(\)\-\+\=\:\[\]\{\}\|\<\>\,\.\?]*\z/)
+    return true if basename.present? && basename.match(/\A[a-zA-Z0-9][\w\~\!\@\#\%\^\(\)\-\+\=\:\[\]\{\}\,\.\?]*\z/)
     false
   end
 
