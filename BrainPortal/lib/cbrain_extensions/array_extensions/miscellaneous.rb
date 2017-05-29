@@ -32,6 +32,28 @@ module CBRAINExtensions #:nodoc:
         map(&:for_api)
       end
 
+      # Just like each_with_index(), but also provides the size of the array
+      # in a third argument. This code:
+      #
+      #   x=('f'..'m').to_a
+      #   x.each_with_index_and_size do |l,i,t|
+      #     puts "#{i+1}/#{t} => #{l}"
+      #   end
+      #
+      # will print:
+      #
+      #   1/8 => f
+      #   2/8 => g
+      #   3/8 => h
+      #   4/8 => i
+      #   5/8 => j
+      #   6/8 => k
+      #   7/8 => l
+      #   8/8 => m
+      def each_with_index_and_size
+        each_with_index { |elem,idx| yield(elem,idx,size) }
+      end
+
     end
   end
 end

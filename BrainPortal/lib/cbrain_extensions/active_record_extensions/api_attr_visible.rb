@@ -35,7 +35,7 @@ module CBRAINExtensions #:nodoc:
         end
       end
 
-      module ClassMethods #:nodoc:
+      module ClassMethods
 
         # Register a list of attributes to be whitelisted for the current model.
         # The :id attribute is implicit and always whitelisted.
@@ -46,7 +46,7 @@ module CBRAINExtensions #:nodoc:
         # returns:
         #
         #   { :id => true, :name => true, :description => true }
-        def api_attr_visible(*args) #:nodoc:
+        def api_attr_visible(*args)
           @api_attr_visible ||= { :id => true } # , :updated_at => true, :created_at => true }
           Array(args).each do |attr|
             raise "Argument '#{attr}' not a symbol or a proper attribute of the model." unless
@@ -58,7 +58,7 @@ module CBRAINExtensions #:nodoc:
 
         # Returns a list of whitelisted attributes which is the union
         # of the ones in the current class, and all those in the superclasses.
-        def cumulative_api_attr_visible #:nodoc:
+        def cumulative_api_attr_visible
           return @cumulative_api_attr_visible if @cumulative_api_attr_visible
           local_visible_list = api_attr_visible.keys
           super_visible_list = superclass.respond_to?(:cumulative_api_attr_visible) ? superclass.cumulative_api_attr_visible : []

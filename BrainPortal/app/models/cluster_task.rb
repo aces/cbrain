@@ -1139,7 +1139,7 @@ class ClusterTask < CbrainTask
 
     # Task outputs incomplete? Point to science output captured
     return science_outerr if ! File.exists?(qsub_outerr)
-    qsub_content = check_task_ending_keyword(qsub_outerr) # returns nil unless content contains "CBRAIN Task Exiting"
+    qsub_content = check_content_substitution_keyword(qsub_outerr) # returns nil unless content contains "__CBRAIN_CAPTURE_PLACEHOLDER__"
     return science_outerr if qsub_content.blank?
 
     # Create combined report
@@ -1157,6 +1157,16 @@ class ClusterTask < CbrainTask
     return nil unless File.exists?(basename)
     content = File.read(basename)
     return nil if content !~ /CBRAIN Task Exiting/
+    content
+  end
+
+  # Checks that the content of some output file properly
+  # has the keyword "__CBRAIN_CAPTURE_PLACEHOLDER__".
+  # Returns the file's content if it's true, otherwise returns nil
+  def check_content_substitution_keyword(basename)
+    return nil unless File.exists?(basename)
+    content = File.read(basename)
+    return nil if content !~ /__CBRAIN_CAPTURE_PLACEHOLDER__/
     content
   end
 
