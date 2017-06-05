@@ -1730,6 +1730,18 @@ function got_sigterm {
 }
 trap got_sigterm TERM
 
+function got_sigxcpu {
+  echo "CBRAIN Task Got XCPU signal"
+  exit 10
+}
+trap got_sigxcpu XCPU
+
+function got_sigxfsz {
+  echo "CBRAIN Task Got XFSZ signal"
+  exit 10
+}
+trap got_sigxfsz XFSZ
+
 date '+CBRAIN Task Starting At %s : %F %T'
 echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      # where stdout captured below will be substituted
 
@@ -1964,29 +1976,68 @@ exit $status
   end
 
   # Returns the command line(s) associated with the task, wrapped in
-  # a Docker call if a Docker image has to be used.
+  # a Docker call if a Docker image has to be used. +command_script+
+  # is the raw scientific bash script.
   def docker_commands(command_script)
-    work_dir        = ( self.respond_to?("container_working_directory")? self.container_working_directory : nil )  || '${PWD}'
 
-    cache_dir       = self.bourreau.dp_cache_dir
-    task_dir        = self.bourreau.cms_shared_dir
+    # Values we substitute in our script:
 
+    # 1) The task class might specify an alternate work directory to use within the container
+    container_work_dir = self.container_working_directory.presence if self.respond_to?(:container_working_directory)
+    esc_cont_work_dir  = container_work_dir.try(:bash_escape) || '"${PWD}"' # bash escaping
+
+    # 2) The root of the DataProvider cache
+    esc_cache_dir      = self.bourreau.dp_cache_dir.bash_escape
+
+    # 3) The root of the shared area for all CBRAIN tasks
+    esc_gridshare_dir  = self.bourreau.cms_shared_dir.bash_escape
+
+    # 4) "docker load" commands for the images (local file or DockerHub)
     cmd_load_image  = load_docker_image_cmd
 
+    # 5) Basename of the docker wrapper script
+    docker_wrapper_basename = ".dockerjob.#{self.run_id}.sh"
+
+    # Here is the main script we return to CBRAIN
     docker_commands = <<-DOCKER_COMMANDS
 
-cat << \"DOCKERJOB\" > .dockerjob.sh
+# Build a local wrapper script to run in a docker container
+cat << \"DOCKERJOB\" > #{docker_wrapper_basename.bash_escape}
 #!/bin/bash -l
+
+# Docker wrapper script created automatically for #{self.class.to_s}
+#   #{self.class.revision_info.to_s}
+# by CbrainTask::ClusterTask
+#   #{CbrainTask::ClusterTask.revision_info.to_s}
+
+# CBRAIN internal consistency test
+if test "$UID" -ne "#{Process.uid}" ; then
+  echo "Docker internal script running with wrong UID (expected UID=#{Process.uid})"
+  echo "Runtime IDs: `id`"
+  exit 2
+fi
+
+# Scientific commands start here
 
 #{command_script}
 DOCKERJOB
 
-chmod 755 ./.dockerjob.sh
+# Make sure it is executable
+chmod 755 #{docker_wrapper_basename.bash_escape}
 
 #{cmd_load_image}
 
-# Run the task commands
-#{docker_executable_name} run --rm -v ${PWD}:#{work_dir} -v #{cache_dir}:#{cache_dir} -v #{task_dir}:#{task_dir} -w #{work_dir} "$docker_image_name" ${PWD}/.dockerjob.sh
+# Invoke docker with our wrapper script above
+#{docker_executable_name}                        \
+    run                                          \
+    -u ${UID}:${GID}                             \
+    --rm                                         \
+    -v "${PWD}":#{esc_cont_work_dir}             \
+    -v #{esc_cache_dir}:#{esc_cache_dir}         \
+    -v #{esc_gridshare_dir}:#{esc_gridshare_dir} \
+    -w #{esc_cont_work_dir}                      \
+    "$docker_image_name"                         \
+    "${PWD}"/#{docker_wrapper_basename.bash_escape}
 
     DOCKER_COMMANDS
 
@@ -1998,13 +2049,18 @@ chmod 755 ./.dockerjob.sh
   # Then name of the image will be set in a bash variable 'docker_image_name'
   def load_docker_image_cmd #:nodoc:
     dockerhub_image_name = self.tool_config.containerhub_image_name
+
+    # Docker PULL
     if dockerhub_image_name.present?
       return <<-DOCKER_PULL
 # Pull image from DockerHub
 #{docker_executable_name} pull #{dockerhub_image_name.bash_escape}
 docker_image_name=#{dockerhub_image_name.bash_escape}
-    DOCKER_PULL
-    elsif docker_image = self.tool_config.container_image # = not ==
+      DOCKER_PULL
+    end
+
+    # Docker LOAD (local image)
+    if docker_image = self.tool_config.container_image # = not ==
       docker_image.sync_to_cache
       cachename    = docker_image.cache_full_path
       safe_symlink(cachename,docker_image.name)
@@ -2021,9 +2077,9 @@ docker_image_name=#{dockerhub_image_name.bash_escape}
 #{docker_executable_name} load --input #{docker_image.name.bash_escape}
 docker_image_name=#{full_image_name.bash_escape}
       DOCKER_LOAD
-    else
-      cb_error "Cannot generate docker load commands..."
     end
+
+    cb_error "Cannot generate docker load or pull commands..."
   end
 
 
@@ -2047,21 +2103,43 @@ docker_image_name=#{full_image_name.bash_escape}
   end
 
   # Returns the command line(s) associated with the task, wrapped in
-  # a Singularity call if a Singularity image has to be used.
+  # a Singularity call if a Singularity image has to be used. +command_script+
+  # is the raw scientific bash script.
   def singularity_commands(command_script)
-    work_dir       = ( self.respond_to?("container_working_directory")? self.container_working_directory : nil )  || '${PWD}'
-    cache_dir      = self.bourreau.dp_cache_dir
-    cms_shared_dir = "#{self.bourreau.cms_shared_dir}/#{DataProvider::DP_CACHE_SYML}"
 
-    self.addlog("Sync the singularity image")
+    # Create a link to our image; the image is a registered CBRAIN file
+    self.addlog("Syncing the singularity image")
     singularity_image = self.tool_config.container_image
     singularity_image.sync_to_cache
     cachename         = singularity_image.cache_full_path
     safe_symlink(cachename,singularity_image.name)
 
-    # Used to set dp_cache for singularity
+    # Values we substitute in our script:
+
+    # 1) The task class might specify an alternate work directory to use within the container
+    #container_work_dir = self.container_working_directory.presence if self.respond_to?(:container_working_directory)
+    #esc_cont_work_dir  = container_work_dir.try(:bash_escape) || '"${PWD}"' # bash escaping
+
+    # 1) The path to the task's work directory
+    esc_task_workdir    = self.full_cluster_workdir.bash_escape
+
+    ## 2) The root of the DataProvider cache
+    #esc_cache_dir      = self.bourreau.dp_cache_dir.bash_escape
+
+    ## 3) The root of the shared area for all CBRAIN tasks
+    #cms_shared_dir     = self.bourreau.cms_shared_dir
+    #esc_gridshare_dir  = cms_shared_dir.bash_escape
+
+    # 4) The special CBRAIN symlink that points to the DP cache, located at the top of the gridshare directory
+    esc_gridshare_dp_symlink = "#{self.bourreau.cms_shared_dir}/#{DataProvider::DP_CACHE_SYML}".bash_escape
+
+    # 5) Internal mountpoint for the DP cache, set in 'home' directory (inside the container)
     basename_dp_cache         = ".singularity_dp_cache"
     singularity_dp_cache_path = "#{CBRAIN::Rails_UserHome}/#{basename_dp_cache}"
+    esc_sing_dp_cache_path    = singularity_dp_cache_path.bash_escape
+
+    # 6) Basename of the singularity wrapper script
+    singularity_wrapper_basename = ".singularity.#{self.run_id}.sh"
 
     begin
       # In the work directory, there might be symbolic links to
@@ -2070,26 +2148,63 @@ docker_image_name=#{full_image_name.bash_escape}
       # cache.
       Dir.glob("*").each do |f|
         next unless File.symlink?(f)
+        next if     f =~ /\.orig_not_rebased$/ # previously adjusted
         expand_path = File.expand_path(File.readlink(f))
         next unless expand_path.index(cms_shared_dir) == 0
-        sub_path    = expand_path.gsub(cms_shared_dir,"")
-        FileUtils.mv(f,"#{f}.orig")
+        sub_path    = expand_path.to_s.gsub(cms_shared_dir,"")
+        FileUtils.mv(f,"#{f}.orig_not_rebased")
         FileUtils.symlink("#{basename_dp_cache}#{sub_path}", f)
       end
     rescue => ex
-      self.addlog_exception(ex,"Error copying files for singularity")
+      self.addlog_exception(ex,"Error adjusting symlinked files for singularity")
     end
 
     # Set singularity command
-    singularity_commands      = "cat << \"SINGULARITYJOB\" > .singularityjob.sh
+    singularity_commands = <<-SINGULARITY_COMMANDS
+
+# Build a local wrapper script to run in a singularity container
+cat << \"SINGULARITYJOB\" > #{singularity_wrapper_basename.bash_escape}
 #!/bin/bash -l
+
+# Singularity wrapper script created automatically for #{self.class.to_s}
+#   #{self.class.revision_info.to_s}
+# by CbrainTask::ClusterTask
+#   #{CbrainTask::ClusterTask.revision_info.to_s}
+
+# CBRAIN internal consistency test
+if test "$UID" -ne "#{Process.uid}" ; then
+  echo "Singularity internal script running with wrong UID (expected UID=#{Process.uid})"
+  echo "Runtime IDs: `id`"
+  exit 2
+fi
+
+# Scientific commands start here
+
 #{command_script}
 SINGULARITYJOB
-chmod 755 ./.singularityjob.sh
-mkdir #{basename_dp_cache}
-# Run the task commands
-#{singularity_executable_name} run -H ${PWD} -B #{cms_shared_dir}:#{singularity_dp_cache_path} #{singularity_image.name} .singularityjob.sh
-"
+
+# Make sure it is executable
+chmod 755 #{singularity_wrapper_basename.bash_escape}
+
+# Create the mountpoint for the DP cache
+mkdir #{basename_dp_cache.bash_escape}
+
+# Invoke Singularity with our wrapper script above.
+# Tricks used here:
+# 1) with -H we mount the task's work directory as the $HOME directory
+# 2) We mount the DP cache as the subdirectory created above,
+#    as a subdirectory of $HOME
+# 3) All local symlinks to cached files have already been adjusted
+#    by the Ruby process that created this script.
+#{singularity_executable_name}                               \
+    run                                                      \
+    -H #{esc_task_workdir}                                   \
+    -B #{esc_gridshare_dp_symlink}:#{esc_sing_dp_cache_path} \
+    #{singularity_image.name.bash_escape}                    \
+    #{singularity_wrapper_basename.bash_escape}
+
+    SINGULARITY_COMMANDS
+
     return singularity_commands
   end
 
