@@ -847,7 +847,7 @@ RSpec.describe UserfilesController, :type => :controller do
       it "should delete the tar file" do
         allow(CBRAIN).to   receive(:spawn_fully_independent).and_yield
         allow(Userfile).to receive(:find_accessible_by_user).and_return([mock_userfile, mock_userfile])
-        expect(File).to    receive(:unlink)
+        expect(File).to    receive(:delete)
         get :download, :file_ids => [1,2]
       end
     end

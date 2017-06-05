@@ -65,8 +65,10 @@ module ResourceLinkHelper
   # the link (the default is the user's login name) and a
   # :path (the default is the show path).
   def link_to_user_if_accessible(user, cur_user = current_user, options = {})
-    user = User.find(user) unless user.is_a?(User)
-    (options[:html_options] ||= {})[:class] = 'error_link' if user.account_locked
+    if user.present?
+      user = User.find(user) unless user.is_a?(User)
+      (options[:html_options] ||= {})[:class] = 'error_link' if user.account_locked
+    end
     link_to_model_if_accessible(User,user,:login,cur_user,options)
   end
 
