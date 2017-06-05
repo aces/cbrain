@@ -2198,7 +2198,7 @@ mkdir #{basename_dp_cache.bash_escape}
     run                                                      \\
     -H #{task_workdir}                                       \\
     -B #{cache_dir.bash_escape}:#{singularity_dp_cache_path.bash_escape} \\
-    #{local_image_basename.name.bash_escape}                 \\
+    #{local_image_basename.bash_escape}                      \\
     #{singularity_wrapper_basename.bash_escape}
 
     SINGULARITY_COMMANDS
