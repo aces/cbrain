@@ -1984,13 +1984,13 @@ exit $status
 
     # 1) The task class might specify an alternate work directory to use within the container
     container_work_dir = self.container_working_directory.presence if self.respond_to?(:container_working_directory)
-    esc_cont_work_dir  = container_work_dir.try(:bash_escape) || '"${PWD}"' # bash escaping
+    esc_cont_work_dir  = container_work_dir.try(:bash_escape) || '"${PWD}"' # must work with bash escaping
 
     # 2) The root of the DataProvider cache
-    esc_cache_dir      = self.bourreau.dp_cache_dir.bash_escape
+    cache_dir          = self.bourreau.dp_cache_dir
 
     # 3) The root of the shared area for all CBRAIN tasks
-    esc_gridshare_dir  = self.bourreau.cms_shared_dir.bash_escape
+    gridshare_dir      = self.bourreau.cms_shared_dir
 
     # 4) "docker load" commands for the images (local file or DockerHub)
     cmd_load_image  = load_docker_image_cmd
@@ -2028,15 +2028,15 @@ chmod 755 #{docker_wrapper_basename.bash_escape}
 #{cmd_load_image}
 
 # Invoke docker with our wrapper script above
-#{docker_executable_name}                        \
-    run                                          \
-    -u ${UID}:${GID}                             \
-    --rm                                         \
-    -v "${PWD}":#{esc_cont_work_dir}             \
-    -v #{esc_cache_dir}:#{esc_cache_dir}         \
-    -v #{esc_gridshare_dir}:#{esc_gridshare_dir} \
-    -w #{esc_cont_work_dir}                      \
-    "$docker_image_name"                         \
+#{docker_executable_name}                        \\
+    run                                          \\
+    -u #{Process.uid}:#{Process.gid}             \\
+    --rm                                         \\
+    -v "${PWD}":#{esc_cont_work_dir}             \\
+    -v #{cache_dir.bash_escape}:#{cache_dir.bash_escape}         \\
+    -v #{gridshare_dir.bash_escape}:#{gridshare_dir.bash_escape} \\
+    -w #{esc_cont_work_dir}                      \\
+    "$docker_image_name"                         \\
     "${PWD}"/#{docker_wrapper_basename.bash_escape}
 
     DOCKER_COMMANDS
@@ -2109,34 +2109,32 @@ docker_image_name=#{full_image_name.bash_escape}
 
     # Create a link to our image; the image is a registered CBRAIN file
     self.addlog("Syncing the singularity image")
-    singularity_image = self.tool_config.container_image
+    singularity_image    = self.tool_config.container_image
     singularity_image.sync_to_cache
-    cachename         = singularity_image.cache_full_path
-    safe_symlink(cachename,singularity_image.name)
+    cachename            = singularity_image.cache_full_path
+    local_image_basename = ".singularity-#{self.run_id}.img"
+    safe_symlink(cachename,local_image_basename)
 
     # Values we substitute in our script:
 
     # 1) The task class might specify an alternate work directory to use within the container
     #container_work_dir = self.container_working_directory.presence if self.respond_to?(:container_working_directory)
-    #esc_cont_work_dir  = container_work_dir.try(:bash_escape) || '"${PWD}"' # bash escaping
 
     # 1) The path to the task's work directory
-    esc_task_workdir    = self.full_cluster_workdir.bash_escape
+    task_workdir        = self.full_cluster_workdir
 
     ## 2) The root of the DataProvider cache
-    #esc_cache_dir      = self.bourreau.dp_cache_dir.bash_escape
+    cache_dir       = self.bourreau.dp_cache_dir
 
     ## 3) The root of the shared area for all CBRAIN tasks
     #cms_shared_dir     = self.bourreau.cms_shared_dir
-    #esc_gridshare_dir  = cms_shared_dir.bash_escape
 
     # 4) The special CBRAIN symlink that points to the DP cache, located at the top of the gridshare directory
-    esc_gridshare_dp_symlink = "#{self.bourreau.cms_shared_dir}/#{DataProvider::DP_CACHE_SYML}".bash_escape
+    gridshare_dp_symlink     = "#{self.bourreau.cms_shared_dir}/#{DataProvider::DP_CACHE_SYML}"
 
     # 5) Internal mountpoint for the DP cache, set in 'home' directory (inside the container)
     basename_dp_cache         = ".singularity_dp_cache"
     singularity_dp_cache_path = "#{CBRAIN::Rails_UserHome}/#{basename_dp_cache}"
-    esc_sing_dp_cache_path    = singularity_dp_cache_path.bash_escape
 
     # 6) Basename of the singularity wrapper script
     singularity_wrapper_basename = ".singularity.#{self.run_id}.sh"
@@ -2150,8 +2148,8 @@ docker_image_name=#{full_image_name.bash_escape}
         next unless File.symlink?(f)
         next if     f =~ /\.orig_not_rebased$/ # previously adjusted
         expand_path = File.expand_path(File.readlink(f))
-        next unless expand_path.index(cms_shared_dir) == 0
-        sub_path    = expand_path.to_s.gsub(cms_shared_dir,"")
+        next unless expand_path.index(gridshare_dp_symlink) == 0
+        sub_path    = expand_path.to_s.gsub(gridshare_dp_symlink,"")
         FileUtils.mv(f,"#{f}.orig_not_rebased")
         FileUtils.symlink("#{basename_dp_cache}#{sub_path}", f)
       end
@@ -2196,11 +2194,11 @@ mkdir #{basename_dp_cache.bash_escape}
 #    as a subdirectory of $HOME
 # 3) All local symlinks to cached files have already been adjusted
 #    by the Ruby process that created this script.
-#{singularity_executable_name}                               \
-    run                                                      \
-    -H #{esc_task_workdir}                                   \
-    -B #{esc_gridshare_dp_symlink}:#{esc_sing_dp_cache_path} \
-    #{singularity_image.name.bash_escape}                    \
+#{singularity_executable_name}                               \\
+    run                                                      \\
+    -H #{task_workdir}                                       \\
+    -B #{cache_dir.bash_escape}:#{singularity_dp_cache_path.bash_escape} \\
+    #{local_image_basename.name.bash_escape}                 \\
     #{singularity_wrapper_basename.bash_escape}
 
     SINGULARITY_COMMANDS
