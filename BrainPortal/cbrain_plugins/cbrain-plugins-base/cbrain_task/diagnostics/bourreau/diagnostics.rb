@@ -70,6 +70,11 @@ class CbrainTask::Diagnostics < ClusterTask
       rescue => ex
         self.addlog "Failed Sync: ID=#{id} NAME='#{u.name}' SIZE=#{mysize} EXCEPT=#{ex.class} #{ex.message}"
       end
+      begin
+        make_available(u, u.name)
+      rescue => ex
+        self.addlog "Failed to make_available(): ID=#{id} NAME='#{u.name}' EXCEPT=#{ex.class} #{ex.message}"
+      end
     end
 
     # Testing data providers
@@ -162,19 +167,7 @@ class CbrainTask::Diagnostics < ClusterTask
       uptime
       echo ""
 
-      if test -f /etc/issue ; then
-        echo "==== Issue ===="
-        cat /etc/issue
-        echo ""
-      fi
-
-      if test -f /etc/system-release ; then
-        echo "==== System Release ===="
-        cat /etc/system-release
-        echo ""
-      fi
-
-      if test -n "`which lsb_release`" ; then
+      if test -n "$(which lsb_release)" ; then
         echo "==== LSB Release ===="
         lsb_release -a
         echo ""
@@ -194,6 +187,14 @@ class CbrainTask::Diagnostics < ClusterTask
       env | sort
       echo ""
 
+      echo "==== Testing Writing to Work Directory ===="
+      echo "Write Test" | tee Write-Test-#{self.name.bash_escape}-#{self.run_id} 2>&1
+      echo ""
+
+      echo "==== Listing Content of Work Directory ===="
+      ls -la
+      echo ""
+
     _DIAGNOSTIC_COMMANDS_
 
     file_ids.each do |id|
@@ -202,8 +203,10 @@ class CbrainTask::Diagnostics < ClusterTask
       full   = u.cache_full_path.to_s
       mysize = u.size || 0.0
       mytype = u.class.to_s
+
+      # Access using full path to the cache
       commands << "\n"
-      commands << "echo \"============================================================\""
+      commands << "echo \"==== Full Path To Cache Access Test ========================\""
       commands << "echo File=\\\"#{full.bash_escape}\\\""
       commands << "echo \"Size=#{mysize}\""
       commands << "echo \"Type=#{mytype}\""
@@ -212,6 +215,20 @@ class CbrainTask::Diagnostics < ClusterTask
         commands << "wc -c #{full.bash_escape} 2>&1"
       else
         commands << "du -s #{full.bash_escape} 2>&1"
+      end
+      commands << "echo \"End=`date`\""
+
+      # Access using the make_available() path
+      commands << "\n"
+      commands << "echo \"==== Relative make_available() Access Test =================\""
+      commands << "echo File=\\\"#{u.name.bash_escape}\\\""
+      commands << "echo \"Size=#{mysize}\""
+      commands << "echo \"Type=#{mytype}\""
+      commands << "echo \"Start=`date`\""
+      if u.is_a?(SingleFile)
+        commands << "wc -c #{u.name.bash_escape} 2>&1"
+      else
+        commands << "du -s #{u.name.bash_escape} 2>&1"
       end
       commands << "echo \"End=`date`\""
     end

@@ -1139,7 +1139,7 @@ class UserfilesController < ApplicationController
     send_file tarfile, :stream  => true, :filename => tarfile_name
     CBRAIN.spawn_fully_independent("Download Clean Tmp #{current_user.login}") do
       sleep 3000
-      File.unlink(tarfile)
+      File.delete(tarfile)
     end
   end
 

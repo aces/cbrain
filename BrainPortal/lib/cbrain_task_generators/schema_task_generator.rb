@@ -230,7 +230,7 @@ module SchemaTaskGenerator
       ToolConfig.new(
         :tool_id                 => task.tool.id,
         :bourreau_id             => resource.id,
-        :group_id                => Group.everyone.id,
+        :group_id                => User.admin.own_group.id,
         :version_name            => version,
         :description             => "#{name} #{version} on #{resource.name}",
         :container_engine        => "Docker",
