@@ -363,22 +363,24 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 % unless (descriptor['custom'] || {})['cbrain:ignore-exit-status']
     # Make sure <%= name %> completed successfully by checking its exit status
     # in +exit_cluster_filename+.
-    unless File.exists?(exit_cluster_filename)
+    if File.exists?(exit_cluster_filename)
+      exit_status = IO.read(exit_cluster_filename).strip.to_i
+      unless SystemExit.new(exit_status).success?
+        self.addlog("Command failed, exit status #{exit_status}")
+%   if outputs.empty?
+        return false
+%   else
+        succeeded &&= false # Do not return so that outputs are transferred
+	                    # and user has a chance to check what happened with the task
+%   end
+      end
+    else
       self.addlog("Missing exit status file #{exit_cluster_filename}")
 %   if outputs.empty?
       return false
 %   else
-      succeeded &&= false
-%   end
-    end
-
-    exit_status = IO.read(exit_cluster_filename).strip.to_i
-    unless SystemExit.new(exit_status).success?
-      self.addlog("Command failed, exit status #{exit_status}")
-%   if outputs.empty?
-      return false
-%   else
-      succeeded &&= false
+      succeeded &&= false # Do not return so that outputs are transferred
+                          # and user has a chance to check what happened with the task
 %   end
     end
 
