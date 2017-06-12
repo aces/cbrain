@@ -363,24 +363,34 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 % unless (descriptor['custom'] || {})['cbrain:ignore-exit-status']
     # Make sure <%= name %> completed successfully by checking its exit status
     # in +exit_cluster_filename+.
-    unless File.exists?(exit_cluster_filename)
+    if ! File.exists?(exit_cluster_filename)
       self.addlog("Missing exit status file #{exit_cluster_filename}")
 %   if outputs.empty?
       return false
 %   else
-      succeeded &&= false
+      succeeded = false
 %   end
-    end
-
-    exit_status = IO.read(exit_cluster_filename).strip.to_i
-    unless SystemExit.new(exit_status).success?
-      self.addlog("Command failed, exit status #{exit_status}")
+    else # Check exit status file content is a number.
+      status_file_content = File.read(exit_cluster_filename).strip
+      if status_file_content.blank? || status_file_content !~ /\A^\d+\z/
+        self.addlog("Exit status file #{exit_cluster_filename} has unexpected content")
 %   if outputs.empty?
-      return false
+        return false
 %   else
-      succeeded &&= false
+        succeeded = false
 %   end
-    end
+      else # Check exit status value
+        exit_status = status_file_content.to_i
+        unless SystemExit.new(exit_status).success?
+          self.addlog("Command failed, exit status #{exit_status}")
+%   if outputs.empty?
+          return false
+%   else
+          succeeded = false
+%   end
+        end # content is success
+      end # content exists
+    end # file exists
 
 % end
     # Additional checks to see if <%= name %> succeeded would belong here.

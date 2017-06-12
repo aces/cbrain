@@ -33,7 +33,7 @@ def trans
        printf "%10.10s %s %-10.10s (%9s) [%8.8s] \"%s\" for %s\n",
                what.name, dir, file.data_provider.name,
                pretty_size(file.size), file.user.login, file.name,
-               pretty_elapsed(Time.now - ss.accessed_at, :num_components => 3)
+               pretty_elapsed(Time.now - ss.updated_at, :num_components => 3)
      end
    end
    true

@@ -192,6 +192,11 @@ module SchemaTaskGenerator
       # generate a Tool and ToolConfig to register the tool into CBRAIN.
       register(task) if register
 
+      # For debugging templates, it helps to view the code generated.
+      # You can simply create an empty directory some place and provide its
+      # path to the method below.
+      #to_directory("/home/myself/cbrain/tmp") # adjust here
+
       task
     end
 

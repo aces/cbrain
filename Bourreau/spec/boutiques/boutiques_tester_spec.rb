@@ -377,7 +377,7 @@ describe "Bourreau Boutiques Tests" do
       @task.user_id, @task.group_id = UID, GID
       # Generate a simulated exit file, as if the task had run
       @simExitFile     = @task.exit_cluster_filename
-      FileUtils.touch( @simExitFile )
+      IO.write( @simExitFile, "0\n" )
       # The basic properties for the required output file
       @reqOutfileProps = {:name => @fname_base, :data_provider_id => @provider.id}
       # Optional output file properties
@@ -390,8 +390,7 @@ describe "Bourreau Boutiques Tests" do
       # Delete any generated output files
       destroyOutputFiles
       # Also need to get rid of the (simulated) exit file
-      fename = '.qsub.exit.BoutiquesTest.-1'
-      File.delete( fename ) if File.exists?( fename )
+      File.delete( @simExitFile ) if File.exists?( @simExitFile )
       # Destroy the registered userfiles and the data_provider, so as not to affect downstream tests
       # Needed to destroy actual output files written to the filesystem
       Userfile.all.each{ |uf| uf.destroy }
@@ -406,6 +405,20 @@ describe "Bourreau Boutiques Tests" do
       # Check that the input file could be properly registered
       it "has access to the registered input file" do
         expect( @task.userfile_exists( @ft, {:name => @file_c, :data_provider_id => @provider.id}) ).to be true
+      end
+
+      # Check that save_results properly verifies the exit code file (3 tests)
+      it "save_results is false if the exit status file is missing" do
+        File.delete(@simExitFile)
+        expect( @task.save_results ).to be false
+      end
+      it "save_results is false if the exit status file has invalid content" do
+        IO.write( @simExitFile, "abcde\n" )
+        expect( @task.save_results ).to be false
+      end
+      it "save_results is false if the exit status file contains a value greater than 1" do
+        IO.write( @simExitFile, "3\n" )
+        expect( @task.save_results ).to be false
       end
 
       # Check that save_results works as expected for existent files
