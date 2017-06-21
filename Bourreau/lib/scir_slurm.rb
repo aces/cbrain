@@ -1,0 +1,1 @@
+../../BrainPortal/lib/scir_slurm.rb
