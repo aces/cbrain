@@ -121,17 +121,17 @@ class ScirSlurm < Scir
       raise "Error, this class only handle 'command' as /bin/bash and a single script in 'arg'" unless
         self.command == "/bin/bash" && self.arg.size == 1
       raise "Error: stdin not supported" if self.stdin
+
       command  = "sbatch "
       command += "-p #{shell_escape(self.queue)} "          unless self.queue.blank?
       command += "--no-requeue "
       command += "--workdir=#{shell_escape(self.wd)} "      if self.wd
       command += "--job-name=#{shell_escape(self.name)} "   if self.name
-      command += "--output=#{shell_escape(self.stdout)} "   if self.stdout
-      command += "--error=#{shell_escape(self.stderr)} "    if self.stderr
-      #command += "-j oe "                               if self.join
+      command += "--output=#{shell_escape(self.stdout.sub(/\A:/,""))} "   if self.stdout
+      command += "--error=#{shell_escape(self.stderr.sub(/\A:/,""))} "    if self.stderr
       command += "#{Scir.cbrain_config[:extra_qsub_args]} " unless Scir.cbrain_config[:extra_qsub_args].blank?
       command += "#{self.tc_extra_qsub_args} "              unless self.tc_extra_qsub_args.blank?
-      command += "--time={(self.walltime.to_i+60) / 60} "   unless self.walltime.blank?
+      command += "--time=#{(self.walltime.to_i+60) / 60} "  unless self.walltime.blank?
       command += "#{shell_escape(self.arg[0])} "
       command += " 2>&1"
 

@@ -1777,7 +1777,7 @@ exit $status
     job          = Scir.job_template_builder(scir_class)
     job.command  = "/bin/bash"
     job.arg      = [ qsubfile ]
-    job.stdout   = ":" + self.full_cluster_workdir + "/" + qsub_stdout_basename
+    job.stdout   = ":" + self.full_cluster_workdir + "/" + qsub_stdout_basename # TODO remove ':' and let the Scir class add it if needed
     job.stderr   = ":" + self.full_cluster_workdir + "/" + qsub_stderr_basename
     job.join     = false
     job.wd       = workdir

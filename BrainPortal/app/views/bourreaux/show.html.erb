@@ -262,7 +262,8 @@
                   [ "MOAB",            "ScirMoab" ],
                   [ "Sharcnet custom", "ScirSharcnet" ],
                   [ "LSF",             "ScirLsf" ],
-                  [ "Amazon EC2",  "ScirAmazon" ],
+                  [ "Amazon EC2",      "ScirAmazon" ],
+                  [ "SLURM",           "ScirSlurm" ],
                   [ "UNIX processes",  "ScirUnix" ]
               ], :selected => @bourreau.cms_class)
           %>
@@ -286,21 +287,21 @@
         <% end %>
 
         <% if @bourreau.cms_class == "ScirAmazon" %>
-	  <% t.edit_cell('meta[amazon_ec2_access_key_id]',
+          <% t.edit_cell('meta[amazon_ec2_access_key_id]',
                          :header => "Amazon EC2 Access Key Id",
                          :content => (@bourreau.meta[:amazon_ec2_access_key_id].blank? ? "(None)" : @bourreau.meta[:amazon_ec2_access_key_id])) do %>
             <%= text_field_tag "meta[amazon_ec2_access_key_id]", @bourreau.meta[:amazon_ec2_access_key_id], :size => 60 %><br/>
             <div class="field_explanation">See <a href="http://docs.aws.amazon.com/AWSSdkDocsRuby/latest/DeveloperGuide/ruby-dg-setup.html" target="_blank">Amazon SDK documentation</a>.</div>
           <% end %>
 
-	  <% t.edit_cell('meta[amazon_ec2_secret_access_key]',
+          <% t.edit_cell('meta[amazon_ec2_secret_access_key]',
                          :header => "Amazon EC2 Secret Access Key",
                          :content => (@bourreau.meta[:amazon_ec2_secret_access_key].blank? ? "(None)" : @bourreau.meta[:amazon_ec2_secret_access_key])) do %>
             <%= text_field_tag "meta[amazon_ec2_secret_access_key]", @bourreau.meta[:amazon_ec2_secret_access_key], :size => 60 %><br/>
             <div class="field_explanation">See <a href="http://docs.aws.amazon.com/AWSSdkDocsRuby/latest/DeveloperGuide/ruby-dg-setup.html" target="_blank">Amazon SDK documentation</a>.</div>
           <% end %>
 
-	  <% t.edit_cell('meta[amazon_ec2_region]',
+          <% t.edit_cell('meta[amazon_ec2_region]',
                          :header => "Amazon EC2 Region",
                          :content => (@bourreau.meta[:amazon_ec2_region].blank? ? "(None)" : @bourreau.meta[:amazon_ec2_region])
            ) do %>
@@ -317,7 +318,7 @@
               ], :selected => @bourreau.meta[:amazon_ec2_region])
             %><br/>
           <% end %>
-	<% end %>
+        <% end %>
 
         <% t.edit_cell 'meta[task_limit_user_default]',
                        :header => "Default maximum number of active tasks for each user",
