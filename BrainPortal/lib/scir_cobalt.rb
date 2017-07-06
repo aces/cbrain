@@ -106,17 +106,16 @@ class ScirCobalt < Scir
     def queue_tasks_tot_max #:nodoc:
       queue = Scir.cbrain_config[:default_queue]
       queue = "default" if queue.blank?
-      queueinfo = `qstat -Q #{shell_escape(queue)} | tail -1`
-			# JobID  User      WallTime  Nodes  State      Location
-      # =======================================================
-      # 42342  user1     00:15:00  16     user hold  None
-      # 45273  user2     00:35:00  1024   queued     None
-			#
-			# "What portion of the cluster is currently being used"
-			# TODO GK: find a cobalt command that returns {in-use, total} node info
+      queueform = `export QSTAT_HEADER=User:Nodes:MaxUserNodes:State`
+      queueinfo = `#{shell_escape(queueform)}; qstat #{shell_escape(queue)} | grep #{CBRAIN::Rails_UserName.to_s.bash_escape} | tail -1`
+      # User   Nodes  MaxUserNodes  State
+      # =====================================
+      # user   32     1024          running
+      #
+      # "What portion of the cluster is currently being used"
 
-      fields = queueinfo.split(/\s+/) #TODO: fix with above
-      [ fields[2], fields[1] ] #TODO: fix with above
+      fields = queueinfo.split(/\s+/)
+      [ fields[1], fields[2] ]
     rescue
       [ "exception", "exception" ]
     end
