@@ -90,14 +90,19 @@ class ScirSlurm < Scir
     end
 
     def queue_tasks_tot_max #:nodoc:
-      tot="unk" ; max = "unk"
-      out = IO.popen("sinfo --summarize --noheader","r") { |i| i.read }
-      #compute*     up 7-00:00:00  785/164/94/1043  gra[1-1043]
-      if out =~ /(\d+)\/(\d+)\/(\d+)\/(\d+)/
-        tot = Regexp.last_match[1]
-        max = Regexp.last_match[4]
+      used="unk" ; max = "unk"
+      out = IO.popen("sinfo --noheader -o '%X,%Y,%F'","r") { |i| i.read }
+      # number of sockets per node, number of cores per socket, allocated/idle/other/total
+      # e.g. 2+,16,915/77/51/1043
+      if out =~ /(\d+)\D+(\d+)\D+(\d+)\/(\d+)\/(\d+)\/(\d+)/
+        nsock  = Regexp.last_match[1]
+        ncores = Regexp.last_match[2]
+        alloc  = Regexp.last_match[3]
+        total  = Regexp.last_match[6]
+        used = nsock * ncores * alloc
+        max  = nsock * ncores * total
       end
-      [ tot, max ]
+      [ used, max ]
     rescue
       [ "exception", "exception" ]
     end

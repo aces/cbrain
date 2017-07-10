@@ -563,6 +563,7 @@ class SyncStatus < ActiveRecord::Base
                        :remote_resource_id => CBRAIN::SelfRemoteResourceId,
                      ).first
       break if state.present? # otherwise try again 3 times
+      sleep 0.1
       puts "SYNC: Status: TryAgain" if DebugMessages
     end
     raise "Internal error: Cannot create or find SyncStatus object for userfile ##{userfile_id}" if !state

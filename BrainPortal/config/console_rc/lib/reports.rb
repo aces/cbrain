@@ -40,10 +40,17 @@ def trans
 end
 
 # Active tasks
-def acttasks
+def acttasks(tasks = CbrainTask.active.all)
   no_log do
-    CbrainTask.active.all.each do |task|
-      puts task.to_summary
+    tasks.group_by(&:batch_id).each do |batch_id,tasklist|
+      tasklist.sort! { |a,b| (a.rank || 0) <=> (b.rank || 0) || a.id <=> b.id }
+      puts tasklist[0].to_summary
+      next if tasklist.size < 2
+      by_types  = tasklist.hashed_partitions { |t| t.type }
+      by_status = tasklist.hashed_partitions { |t| t.status }
+      #puts " -> Total of #{tasklist.size} tasks:"
+      puts " -> Types: "  + by_types.map  { |t,list| "#{list.size} x #{t}" }.join(", ") unless by_types.size == 1
+      puts " -> Status: " + by_status.map { |s,list| "#{list.size} x #{s}" }.join(", ")
     end
   end
   true

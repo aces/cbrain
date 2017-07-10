@@ -201,37 +201,43 @@ class CbrainTask::Diagnostics < ClusterTask
       u = Userfile.find(id) rescue nil
       next unless u
       full   = u.cache_full_path.to_s
-      mysize = u.size || 0.0
+      mysize = u.size || "unknown"
       mytype = u.class.to_s
 
-      # Access using full path to the cache
       commands << "\n"
-      commands << "echo \"==== Full Path To Cache Access Test ========================\""
-      commands << "echo File=\\\"#{full.bash_escape}\\\""
-      commands << "echo \"Size=#{mysize}\""
-      commands << "echo \"Type=#{mytype}\""
+      commands << "echo \"##########################################################\""
+      commands << "echo \"## #{mytype} ID=#{id} SIZE=#{mysize} NAME=\\\"\"#{u.name.bash_escape}\"\\\"\"" # YUKKK!
+      commands << "echo \"##########################################################\""
+      commands << "\n"
+
+      # Access using full path to the cache
+      commands << "echo \"==== Full Path To Cache Access Test ====\""
       commands << "echo \"Start=`date`\""
+      commands << "echo Path=\\\"#{full.bash_escape}\\\""
       if u.is_a?(SingleFile)
+        commands << "echo Command=wc"
         commands << "wc -c #{full.bash_escape} 2>&1"
       else
-        commands << "du -s #{full.bash_escape} 2>&1"
+        commands << "echo Command=du"
+        commands << "du -H -s #{full.bash_escape} 2>&1"  # -H works on linux and MacOS X sierra
       end
       commands << "echo \"End=`date`\""
 
       # Access using the make_available() path
       commands << "\n"
-      commands << "echo \"==== Relative make_available() Access Test =================\""
-      commands << "echo File=\\\"#{u.name.bash_escape}\\\""
-      commands << "echo \"Size=#{mysize}\""
-      commands << "echo \"Type=#{mytype}\""
+      commands << "echo \"==== Relative make_available() Access Test ====\""
+      commands << "echo Path=\\\"#{u.name.bash_escape}\\\""
       commands << "echo \"Start=`date`\""
       if u.is_a?(SingleFile)
+        commands << "echo Command=wc"
         commands << "wc -c #{u.name.bash_escape} 2>&1"
       else
-        commands << "du -s #{u.name.bash_escape} 2>&1"
+        commands << "echo Command=du"
+        commands << "du -H -s #{u.name.bash_escape} 2>&1"  # -H works on linux and MacOS X sierra
       end
       commands << "echo \"End=`date`\""
-    end
+
+    end # for each diagnostic file
 
     cluster_delay = params[:cluster_delay] ? params[:cluster_delay].to_i : 0
     if cluster_delay > 0
