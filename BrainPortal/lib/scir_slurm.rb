@@ -102,7 +102,7 @@ class ScirSlurm < Scir
         used = nsock * ncores * alloc
         max  = nsock * ncores * total
       end
-      [ used, max ]
+      [ used.to_s, max.to_s ]
     rescue
       [ "exception", "exception" ]
     end
