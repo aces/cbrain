@@ -95,10 +95,10 @@ class ScirSlurm < Scir
       # number of sockets per node, number of cores per socket, allocated/idle/other/total
       # e.g. 2+,16,915/77/51/1043
       if out =~ /(\d+)\D+(\d+)\D+(\d+)\/(\d+)\/(\d+)\/(\d+)/
-        nsock  = Regexp.last_match[1]
-        ncores = Regexp.last_match[2]
-        alloc  = Regexp.last_match[3]
-        total  = Regexp.last_match[6]
+        nsock  = Regexp.last_match[1].to_i
+        ncores = Regexp.last_match[2].to_i
+        alloc  = Regexp.last_match[3].to_i
+        total  = Regexp.last_match[6].to_i
         used = nsock * ncores * alloc
         max  = nsock * ncores * total
       end
