@@ -1107,6 +1107,17 @@ class UserfilesController < ApplicationController
       return
     end
 
+    # Check duplicate names when downloading many files
+    name_list = userfiles_list.map(&:name)
+    if name_list.size != name_list.uniq.size
+      flash[:error] = "Some files have the same names and cannot be downloaded together. Use separate downloads."
+      respond_to do |format|
+          format.html { redirect_to :action => :index, :format => request.format.to_sym }
+          format.json { render :json => { :error => flash[:error] } }
+      end
+      return
+    end
+
     # Sync all files
     failed_list = {}
     userfiles_list.each do |userfile|
@@ -1520,60 +1531,38 @@ class UserfilesController < ApplicationController
   end
 
   # This method creates a tar file of the userfiles listed
-  # in +ulist+ (an array of Userfiles) such that
-  # the tar structure is independent of the DP path
-  # and owners. Each userfile basename 'x' will be
-  # stored as a relative path 'user/dpname/x'. This
-  # is needed when downloading a file, as a user is
-  # allowed to have several files with the same names
-  # on different DPs, and several users are allowed to
-  # have files with the same names on the same DP.
+  # in +ulist+ (an array of Userfiles). Each userfile is at
+  # the top of the tar file, so this means that the tar file
+  # could include multiple entries with the same name at the top.
+  # TODO: FIXME . Not sure how to fix.
+  #
+  # Note on the name of the method: a previous version tried to
+  # create a symlink structure, but that transfered hte values of
+  # all symbolic links internal to the userfiles on LINUX.
+  # See also: the -H option of tar on MacOS X which would do the trick,
+  # but doesn't exist on LINUX.
   def create_relocatable_tar_for_userfiles(ulist,username) #:nodoc:
     timestamp    = Time.now.to_i.to_s[-4..-1]  # four digits long
-    tmpdir       = Pathname.new("/tmp/dl.#{Process.pid}.#{timestamp}")
     tarfilename  = Pathname.new("/tmp/cbrain_files_#{username}.#{timestamp}.tar.gz") # must be outside the tmp work dir
+    errfile      = Pathname.new("/tmp/tar.#{Process.pid}.stderr")
 
-    relpath_to_tar = []
-    Dir.mkdir(tmpdir)
-    Dir.chdir(tmpdir) do  # /tmpdir
+    tar_cd_arg_list = []; # properly escaped list of args for the tar command
+    ulist.each do |u|
+      fullpath = u.cache_full_path
+      basename = fullpath.basename
+      dirname  = fullpath.dirname
+      tar_cd_arg_list << "-C"
+      tar_cd_arg_list << dirname.to_s.bash_escape
+      tar_cd_arg_list << basename.to_s.bash_escape
+    end
 
-      uids = ulist.group_by { |u1| u1.user_id }
-      uids.each do |uid,userfiles_per_user|
-        uname = User.find(uid).login
-        Dir.mkdir(uname)
-        Dir.chdir(uname) do # /tmpdir/user/dp
-
-          dpids = userfiles_per_user.group_by { |u2| u2.data_provider_id }
-          dpids.each do |dpid,userfiles_per_dp|
-            dpname = DataProvider.find(dpid).name
-            Dir.mkdir(dpname)
-            Dir.chdir(dpname) do # /tmpdir/user/dp
-
-              userfiles_per_dp.each do |u|
-                fullpath = u.cache_full_path
-                basename = fullpath.basename
-                File.symlink(fullpath,basename) # /tmpdir/user/dp/basename -> fullpath
-                relpath_to_tar << Pathname.new(uname) + dpname + basename
-              end # each file per dp per user
-            end # chdir tmpdir/user/dp
-          end # each dp per user
-        end # chdir tmpdir/user
-      end # each user
-
-      filelistname = "files_for_#{username}.#{Process.pid}.lst"
-      File.open(filelistname,"w") do |fh|
-        fh.write relpath_to_tar.join("\n")
-        fh.write "\n"
-      end
-
-      system("tar -chf - -T #{filelistname.bash_escape} | gzip -c >#{tarfilename.to_s.bash_escape}")
-
-    end # chdir tmpdir
+    system("tar -cf - #{tar_cd_arg_list.join(" ")} 2> #{errfile.to_s.bash_escape} | gzip -c > #{tarfilename.to_s.bash_escape}")
+    err = File.read(errfile)
+    cb_error "Error creating the download file. The file list might be too long, or some files are missing. Sorry." if err.present?
 
     return tarfilename
   ensure
-    FileUtils.remove_entry(tmpdir, true)
-    return tarfilename
+    File.unlink(errfile) rescue nil
   end
 
   # Sort a list of files in "tree order" where
