@@ -41,6 +41,7 @@ RSpec.describe UserfilesController, :type => :controller do
   let(:child_userfile)        { create(:single_file, :user => admin, :parent_id => admin_userfile.id) }
   let(:group_userfile)        { create(:single_file, :group_id => user.group_ids.last, :data_provider => data_provider) }
   let(:mock_userfile)         { mock_model(TextFile, :id => 1).as_null_object }
+  let(:mock_userfile2)        { mock_model(TextFile, :id => 2).as_null_object }
   let(:data_provider)         { create(:flat_dir_local_data_provider, :user => user, :online => true, :read_only => false) }
 
   after(:all) do
@@ -779,6 +780,9 @@ RSpec.describe UserfilesController, :type => :controller do
         allow(controller).to    receive(:render)
         allow(Userfile).to      receive(:find_accessible_by_user).and_return([mock_userfile])
         allow(mock_userfile).to receive(:size).and_return(5)
+        allow(mock_userfile).to receive(:name).and_return("dummy1")
+        allow(mock_userfile2).to receive(:size).and_return(15)
+        allow(mock_userfile2).to receive(:name).and_return("dummy2")
         allow(CBRAIN).to        receive(:spawn_fully_independent)
       end
 
@@ -802,8 +806,6 @@ RSpec.describe UserfilesController, :type => :controller do
         expect(Userfile).to receive(:find_accessible_by_user).and_return([mock_userfile])
         get :download, :file_ids => [1]
       end
-
-
 
       context "when the max download size is exceeded" do
         before(:each) do
@@ -832,24 +834,38 @@ RSpec.describe UserfilesController, :type => :controller do
         get :download, :file_ids => [1]
       end
 
-      it "should create a tar for multiple files" do
-        expect(controller).to receive(:create_relocatable_tar_for_userfiles)
-        allow(Userfile).to    receive(:find_accessible_by_user).and_return([mock_userfile, mock_userfile])
-        get :download, :file_ids => [1,2]
+      context "when downloading multiple files" do
+
+        it "should produce and error for duplicate file names" do
+          allow(mock_userfile2).to receive(:name).and_return("dummy1") # same name as mock_userfile
+          allow(Userfile).to    receive(:find_accessible_by_user).and_return([mock_userfile, mock_userfile2])
+          get :download, :file_ids => [1,2]
+          expect(flash[:error]).to match("Some files have the same names")
+        end
+
+        it "should create a tar" do
+          allow(Userfile).to    receive(:find_accessible_by_user).and_return([mock_userfile, mock_userfile2])
+          expect(controller).to receive(:create_relocatable_tar_for_userfiles).and_return("dummy.tar.gz")
+          get :download, :file_ids => [1,2]
+        end
+
+        it "should send the tar" do
+          allow(Userfile).to    receive(:find_accessible_by_user).and_return([mock_userfile, mock_userfile2])
+          expect(controller).to receive(:create_relocatable_tar_for_userfiles).and_return("dummy.tar.gz")
+          expect(controller).to receive(:send_file)
+          get :download, :file_ids => [1,2]
+        end
+
+        it "should delete the tar" do
+          allow(CBRAIN).to   receive(:spawn_fully_independent).and_yield
+          allow(Userfile).to receive(:find_accessible_by_user).and_return([mock_userfile, mock_userfile2])
+          expect(controller).to receive(:create_relocatable_tar_for_userfiles).and_return("dummy.tar.gz")
+          expect(File).to    receive(:delete)
+          get :download, :file_ids => [1,2]
+        end
+
       end
 
-      it "should send the tar file for multiple files" do
-        expect(controller).to receive(:send_file)
-        allow(Userfile).to    receive(:find_accessible_by_user).and_return([mock_userfile, mock_userfile])
-        get :download, :file_ids => [1,2]
-      end
-
-      it "should delete the tar file" do
-        allow(CBRAIN).to   receive(:spawn_fully_independent).and_yield
-        allow(Userfile).to receive(:find_accessible_by_user).and_return([mock_userfile, mock_userfile])
-        expect(File).to    receive(:delete)
-        get :download, :file_ids => [1,2]
-      end
     end
 
 
