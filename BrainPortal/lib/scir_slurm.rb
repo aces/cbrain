@@ -34,7 +34,7 @@ class ScirSlurm < Scir
         "squeue --format='%A %t' --noheader --user=#{CBRAIN::Rails_UserName.to_s.bash_escape}"
       )
       raise "Cannot get output of 'squeue'" if err_text.present?
-      out_lines = out_text.split('\n')
+      out_lines = out_text.split("\n")
       @job_info_cache = {}
       out_lines.each do |line|  # "12345 R"
         job_id, job_status = line.split(/\s+/)
