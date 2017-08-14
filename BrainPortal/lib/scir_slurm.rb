@@ -39,7 +39,8 @@ class ScirSlurm < Scir
       out_lines.each do |line|  # "12345 R"
         job_id, job_status = line.split(/\s+/)
         next unless job_id.present? && job_status.present?
-        @job_info_cache[job_id] = { :drmaa_state => job_status }
+        state = statestring_to_stateconst(job_status)
+        @job_info_cache[job_id] = { :drmaa_state => state }
       end
       true
     end
