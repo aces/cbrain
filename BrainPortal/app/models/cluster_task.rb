@@ -1687,6 +1687,7 @@ class ClusterTask < CbrainTask
     # In case of Docker or Singularity, we rewrite the scientific script inside
     # another wrapper script.
     if self.use_docker?
+
       command_script = self.docker_commands(command_script)
     elsif self.use_singularity?
       command_script = self.singularity_commands(command_script)
@@ -2062,7 +2063,7 @@ docker_image_name=#{dockerhub_image_name.bash_escape}
     # Docker LOAD (local image)
     if docker_image = self.tool_config.container_image # = not ==
       docker_image.sync_to_cache
-      cachename    = docker_image.cache_full_path
+      cachename     = docker_image.cache_full_path
       safe_symlink(cachename,docker_image.name)
 
       # We try to parse the content of the file 'repositories' in the TAR file
@@ -2107,55 +2108,21 @@ docker_image_name=#{full_image_name.bash_escape}
   # is the raw scientific bash script.
   def singularity_commands(command_script)
 
-    # Create a link to our image; the image is a registered CBRAIN file
-    self.addlog("Syncing the singularity image")
-    singularity_image    = self.tool_config.container_image
-    singularity_image.sync_to_cache
-    cachename            = singularity_image.cache_full_path
-    local_image_basename = ".singularity-#{self.run_id}.img"
-    safe_symlink(cachename,local_image_basename)
-
     # Values we substitute in our script:
-
-    # 1) The task class might specify an alternate work directory to use within the container
-    #container_work_dir = self.container_working_directory.presence if self.respond_to?(:container_working_directory)
-
     # 1) The path to the task's work directory
     task_workdir        = self.full_cluster_workdir
 
-    ## 2) The root of the DataProvider cache
-    cache_dir       = self.bourreau.dp_cache_dir
+    # 2) The root of the DataProvider cache
+    cache_dir          = self.bourreau.dp_cache_dir
 
-    ## 3) The root of the shared area for all CBRAIN tasks
-    #cms_shared_dir     = self.bourreau.cms_shared_dir
+    # 4) The root of the shared area for all CBRAIN tasks
+    gridshare_dir      = self.bourreau.cms_shared_dir
 
-    # 4) The special CBRAIN symlink that points to the DP cache, located at the top of the gridshare directory
-    gridshare_dp_symlink     = "#{self.bourreau.cms_shared_dir}/#{DataProvider::DP_CACHE_SYML}"
-
-    # 5) Internal mountpoint for the DP cache, set in 'home' directory (inside the container)
-    basename_dp_cache         = ".singularity_dp_cache"
-    singularity_dp_cache_path = "#{CBRAIN::Rails_UserHome}/#{basename_dp_cache}"
-
-    # 6) Basename of the singularity wrapper script
+    # 5) Basename of the singularity wrapper script
     singularity_wrapper_basename = ".singularity.#{self.run_id}.sh"
 
-    begin
-      # In the work directory, there might be symbolic links to
-      # files in the data provider cache. We need to adjust these
-      # so they use our own local singularity mount point for the
-      # cache.
-      Dir.glob("*").each do |f|
-        next unless File.symlink?(f)
-        next if     f =~ /\.orig_not_rebased$/ # previously adjusted
-        expand_path = File.expand_path(File.readlink(f))
-        next unless expand_path.index(gridshare_dp_symlink) == 0
-        sub_path    = expand_path.to_s.gsub(gridshare_dp_symlink,"")
-        FileUtils.mv(f,"#{f}.orig_not_rebased")
-        FileUtils.symlink("#{basename_dp_cache}#{sub_path}", f)
-      end
-    rescue => ex
-      self.addlog_exception(ex,"Error adjusting symlinked files for singularity")
-    end
+    # 6) "singularity load" commands for the images (local file or SingularityHub)
+    cmd_load_image  = load_singularity_image_cmd
 
     # Set singularity command
     singularity_commands = <<-SINGULARITY_COMMANDS
@@ -2169,10 +2136,29 @@ cat << \"SINGULARITYJOB\" > #{singularity_wrapper_basename.bash_escape}
 # by CbrainTask::ClusterTask
 #   #{CbrainTask::ClusterTask.revision_info.to_s}
 
-# CBRAIN internal consistency test
+# CBRAIN internal consistency test 1: must run under proper UID
 if test "$UID" -ne "#{Process.uid}" ; then
   echo "Singularity internal script running with wrong UID (expected UID=#{Process.uid})"
   echo "Runtime IDs: `id`"
+  exit 2
+fi
+
+# CBRAIN internal consistency test 2: must have the task workdir mounted inside the container
+if test ! -d #{task_workdir.bash_escape} ; then
+  echo "Missing mount (#{task_workdir.bash_escape}) point inside the container"
+  exit 2
+fi
+
+# CBRAIN internal consistency test 3: must have the cache_dir mounted inside the container
+if test ! -d #{cache_dir.bash_escape} ; then
+  echo "Missing mount (#{cache_dir.bash_escape}) inside the container"
+  exit 2
+fi
+
+
+# CBRAIN internal consistency test 4: must have the gridshare_dir mounted inside the container
+if test ! -d #{gridshare_dir.bash_escape} ; then
+  echo "Missing mount (#{gridshare_dir.bash_escape}) inside the container"
   exit 2
 fi
 
@@ -2184,8 +2170,7 @@ SINGULARITYJOB
 # Make sure it is executable
 chmod 755 #{singularity_wrapper_basename.bash_escape}
 
-# Create the mountpoint for the DP cache
-mkdir #{basename_dp_cache.bash_escape}
+#{cmd_load_image}
 
 # Invoke Singularity with our wrapper script above.
 # Tricks used here:
@@ -2194,16 +2179,51 @@ mkdir #{basename_dp_cache.bash_escape}
 #    as a subdirectory of $HOME
 # 3) All local symlinks to cached files have already been adjusted
 #    by the Ruby process that created this script.
-#{singularity_executable_name}                               \\
-    run                                                      \\
-    -H #{task_workdir}                                       \\
-    -B #{cache_dir.bash_escape}:#{singularity_dp_cache_path.bash_escape} \\
-    #{local_image_basename.bash_escape}                      \\
+#{singularity_executable_name}                                   \\
+    run                                                          \\
+    -B #{gridshare_dir.bash_escape}:#{gridshare_dir.bash_escape} \\
+    -B #{cache_dir.bash_escape}:#{cache_dir.bash_escape}         \\
+    -H #{task_workdir.bash_escape}                               \\
+    "$singularity_image_name"                                    \\
     #{singularity_wrapper_basename.bash_escape}
 
     SINGULARITY_COMMANDS
 
     return singularity_commands
+  end
+
+  # Returns the bash statements necessary to pull a Singularity image from
+  # Singularityhub, or register an image from a local file.
+  # Then name of the image will be set in a bash variable 'singularity_image_name'
+  def load_singularity_image_cmd #:nodoc:
+    singularity_image_name = self.tool_config.containerhub_image_name.presence
+    local_image_basename = ".singularity-#{self.run_id}.img"
+
+    # Singularity PULL
+    if singularity_image_name.present?
+      return <<-SINGULARITY_PULL
+# Pull image from SingularityHub
+#{singularity_executable_name} pull --name "#{local_image_basename}" #{singularityhub_index}#{singularity_image_name.bash_escape}
+singularity_image_name=#{local_image_basename.bash_escape}
+      SINGULARITY_PULL
+    end
+
+    # Singularity registration (local image)
+    if singularity_image = self.tool_config.container_image # = not ==
+      # Create a link to our image; the image is a registered CBRAIN file
+      self.addlog("Syncing the singularity image")
+      singularity_image    = self.tool_config.container_image
+      singularity_image.sync_to_cache
+      cachename            = singularity_image.cache_full_path
+      local_image_basename = ".singularity-#{self.run_id}.img"
+      safe_symlink(cachename,local_image_basename)
+
+      return <<-SINGULARITY_REGISTER
+singularity_image_name=#{local_image_basename.bash_escape}
+      SINGULARITY_REGISTER
+    end
+
+    cb_error "Cannot generate singularity registration or pull commands..."
   end
 
 
