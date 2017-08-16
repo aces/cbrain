@@ -1744,16 +1744,15 @@ function got_sigxfsz {
 trap got_sigxfsz XFSZ
 
 date '+CBRAIN Task Starting At %s : %F %T'
-echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      # where stdout captured below will be substituted
-
 date '+CBRAIN Task Starting At %s : %F %T' 1>&2
-echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      1>&2 # where stderr captured below will be substituted
 
 # stdout and stderr captured below will be re-substituted in
 # the output and error of this script.
 bash '#{sciencefile}' > #{science_stdout_basename} 2> #{science_stderr_basename} </dev/null
 status="$?"
 
+echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      # where stdout captured below will be substituted
+echo '__CBRAIN_CAPTURE_PLACEHOLDER__'      1>&2 # where stderr captured below will be substituted
 date "+CBRAIN Task Ending With Status $status After $SECONDS seconds, at %s : %F %T"
 date "+CBRAIN Task Ending With Status $status After $SECONDS seconds, at %s : %F %T" 1>&2
 
