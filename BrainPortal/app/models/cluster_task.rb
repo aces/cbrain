@@ -1687,9 +1687,9 @@ class ClusterTask < CbrainTask
     # In case of Docker or Singularity, we rewrite the scientific script inside
     # another wrapper script.
     if self.use_docker?
-
       command_script = self.docker_commands(command_script)
     elsif self.use_singularity?
+      load_singularity_image
       command_script = self.singularity_commands(command_script)
     end
 
@@ -1994,7 +1994,7 @@ exit $status
     gridshare_dir      = self.bourreau.cms_shared_dir
 
     # 4) "docker load" commands for the images (local file or DockerHub)
-    cmd_load_image  = load_docker_image_cmd
+    cmd_load_image     = load_docker_image_cmd
 
     # 5) Basename of the docker wrapper script
     docker_wrapper_basename = ".dockerjob.#{self.run_id}.sh"
@@ -2115,14 +2115,11 @@ docker_image_name=#{full_image_name.bash_escape}
     # 2) The root of the DataProvider cache
     cache_dir          = self.bourreau.dp_cache_dir
 
-    # 4) The root of the shared area for all CBRAIN tasks
+    # 3) The root of the shared area for all CBRAIN tasks
     gridshare_dir      = self.bourreau.cms_shared_dir
 
-    # 5) Basename of the singularity wrapper script
+    # 4) Basename of the singularity wrapper script
     singularity_wrapper_basename = ".singularity.#{self.run_id}.sh"
-
-    # 6) "singularity load" commands for the images (local file or SingularityHub)
-    cmd_load_image  = load_singularity_image_cmd
 
     # Set singularity command
     singularity_commands = <<-SINGULARITY_COMMANDS
@@ -2170,8 +2167,6 @@ SINGULARITYJOB
 # Make sure it is executable
 chmod 755 #{singularity_wrapper_basename.bash_escape}
 
-#{cmd_load_image}
-
 # Invoke Singularity with our wrapper script above.
 # Tricks used here:
 # 1) with -H we mount the task's work directory as the $HOME directory
@@ -2179,53 +2174,18 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
 #    as a subdirectory of $HOME
 # 3) All local symlinks to cached files have already been adjusted
 #    by the Ruby process that created this script.
-#{singularity_executable_name}                                   \\
-    run                                                          \\
-    -B #{gridshare_dir.bash_escape}:#{gridshare_dir.bash_escape} \\
-    -B #{cache_dir.bash_escape}:#{cache_dir.bash_escape}         \\
-    -H #{task_workdir.bash_escape}                               \\
-    "$singularity_image_name"                                    \\
+#{singularity_executable_name}                  \\
+    run                                         \\
+    -B #{gridshare_dir.bash_escape}             \\
+    -B #{cache_dir.bash_escape}                 \\
+    -H #{task_workdir.bash_escape}              \\
+    #{container_image_name.bash_escape}         \\
     #{singularity_wrapper_basename.bash_escape}
 
     SINGULARITY_COMMANDS
 
     return singularity_commands
   end
-
-  # Returns the bash statements necessary to pull a Singularity image from
-  # Singularityhub, or register an image from a local file.
-  # Then name of the image will be set in a bash variable 'singularity_image_name'
-  def load_singularity_image_cmd #:nodoc:
-    singularity_image_name = self.tool_config.containerhub_image_name.presence
-    local_image_basename = ".singularity-#{self.run_id}.img"
-
-    # Singularity PULL
-    if singularity_image_name.present?
-      return <<-SINGULARITY_PULL
-# Pull image from SingularityHub
-#{singularity_executable_name} pull --name "#{local_image_basename}" #{singularityhub_index}#{singularity_image_name.bash_escape}
-singularity_image_name=#{local_image_basename.bash_escape}
-      SINGULARITY_PULL
-    end
-
-    # Singularity registration (local image)
-    if singularity_image = self.tool_config.container_image # = not ==
-      # Create a link to our image; the image is a registered CBRAIN file
-      self.addlog("Syncing the singularity image")
-      singularity_image    = self.tool_config.container_image
-      singularity_image.sync_to_cache
-      cachename            = singularity_image.cache_full_path
-      local_image_basename = ".singularity-#{self.run_id}.img"
-      safe_symlink(cachename,local_image_basename)
-
-      return <<-SINGULARITY_REGISTER
-singularity_image_name=#{local_image_basename.bash_escape}
-      SINGULARITY_REGISTER
-    end
-
-    cb_error "Cannot generate singularity registration or pull commands..."
-  end
-
 
   ##################################################################
   # Internal Subtask Submission Mechanism
@@ -2369,6 +2329,47 @@ singularity_image_name=#{local_image_basename.bash_escape}
       }
     }
     JSON::Validator.validate!(schema,json_string) # raises an exception if json_string is not valid
+  end
+
+  ##################################################################
+  # Singularity load
+  ##################################################################
+
+  private
+
+  def container_image_name
+    ".container-#{self.run_id}.img"
+  end
+
+  # Install the singularity image as a local file.
+  def load_singularity_image #:nodoc:
+    singularity_image_name = self.tool_config.containerhub_image_name
+
+    # Singularity PULL
+    if singularity_image_name.present?
+      begin
+        errfile = ".container_load_cmd.#{self.run_id}.err"
+        success = system("#{singularity_executable_name} pull --name #{container_image_name} #{singularity_image_name.bash_escape}  </dev/null >/dev/null 2>#{errfile.bash_escape}")
+        err     = File.read(errfile) rescue ""
+        cb_error "Cannot pull singularity image" if err.present? || !success
+        return
+      ensure
+        File.unlink(errfile)    rescue true
+      end
+    end
+
+    # Singularity registration (local image)
+    if singularity_image = self.tool_config.container_image # = not ==
+      # Create a link to our image; the image is a registered CBRAIN file
+      self.addlog("Syncing the singularity image")
+      singularity_image    = self.tool_config.container_image
+      singularity_image.sync_to_cache
+      cachename            = singularity_image.cache_full_path
+      safe_symlink(cachename,container_image_name)
+      return
+    end
+
+    cb_error "Cannot generate singularity registration or pull commands..."
   end
 
 
