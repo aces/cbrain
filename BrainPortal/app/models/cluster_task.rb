@@ -2147,14 +2147,14 @@ fi
 
 # CBRAIN internal consistency test 3: must have the cache_dir mounted inside the container
 if test ! -d #{cache_dir.bash_escape} ; then
-  echo "Container missing mount point for task work directory:" #{cache_dir.bash_escape}
+  echo "Container missing mount point for cache directory:" #{cache_dir.bash_escape}
   exit 2
 fi
 
 
 # CBRAIN internal consistency test 4: must have the gridshare_dir mounted inside the container
 if test ! -d #{gridshare_dir.bash_escape} ; then
-  echo "Container missing mount point for task work directory:" #{gridshare_dir.bash_escape}
+  echo "Container missing mount point for gridshare directory:" #{gridshare_dir.bash_escape}
   exit 2
 fi
 
@@ -2336,40 +2336,49 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
 
   private
 
+  # Give a unique name for container image
   def container_image_name #:nodoc:
-    ".container-#{self.run_id}.img"
+    ".container-#{self.id}.img"
   end
 
-  # Install the singularity image as a local file.
+ # Load the singularity image either from a repository or from a CBRAIN file
   def load_singularity_image #:nodoc:
-    singularity_image_name = self.tool_config.containerhub_image_name
-
-    # Singularity PULL
-    if singularity_image_name.present?
-      begin
-        errfile = "/tmp/.container_load_cmd.#{self.run_id}.err"
-        success = system("#{singularity_executable_name} pull --name #{container_image_name} #{singularity_image_name.bash_escape}  </dev/null >/dev/null 2>#{errfile.bash_escape}")
-        err     = File.read(errfile) rescue ""
-        cb_error "Cannot pull singularity image" if err.present? || !success
-        return
-      ensure
-        File.unlink(errfile)    rescue true
-      end
+    if self.tool_config.container_image
+      load_singularity_image_from_userfile
+    elsif self.tool_config.containerhub_image_name
+      load_singularity_image_from_repo
+    else
+      cb_error "Cannot find source for singularity image..."
     end
-
-    # Singularity registration (local image)
-    if singularity_image = self.tool_config.container_image # = not ==
-      # Create a link to our image; the image is a registered CBRAIN file
-      self.addlog("Syncing the singularity image")
-      singularity_image.sync_to_cache
-      cachename            = singularity_image.cache_full_path
-      safe_symlink(cachename,container_image_name)
-      return
-    end
-
-    cb_error "Cannot generate singularity registration or pull commands..."
   end
 
+  # Create a link to our image; the image is a registered CBRAIN file
+  def load_singularity_image_from_userfile #:nodoc:
+    singularity_image = self.tool_config.container_image
+    self.addlog("Syncing the singularity image '#{singularity_image.name}'")
+
+    image_name = container_image_name
+    singularity_image.sync_to_cache
+    cachename = singularity_image.cache_full_path
+    safe_symlink(cachename,image_name)
+  end
+
+  # Perform the singularity pull
+  def load_singularity_image_from_repo #:nodoc:
+    singularity_image_name = self.tool_config.containerhub_image_name
+    self.addlog("Pulling singularity image '#{singularity_image_name}'")
+
+    image_name = container_image_name
+    errfile = "/tmp/.container_load_cmd.#{self.run_id}.err"
+    success = system("#{singularity_executable_name} pull --name #{image_name.bash_escape} #{singularity_image_name.bash_escape} </dev/null >/dev/null 2>#{errfile.bash_escape}")
+    err     = File.read(errfile) rescue "No Error File?"
+    cb_error "Cannot pull singularity image" if
+      err.present? ||
+      ! success    ||
+      ! File.exists?(image_name)
+  ensure
+    File.unlink(errfile) rescue true
+  end
 
   ##################################################################
   # Lifecycle hooks

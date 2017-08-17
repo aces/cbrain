@@ -232,7 +232,7 @@ module SchemaTaskGenerator
       #   (1) the Bourreau has a container executable and
       #   (2) the descriptor specifies a container image
       return if container_engine.blank?  # Singularity or Docker
-      return if container_image.blank?   # image name or ID??
+      return if container_image.blank?   # Container name or url
                 container_engine.capitalize!
       return if container_engine == "Singularity" && !resource.singularity_present?
       return if container_engine == "Docker"      && !resource.docker_present?
