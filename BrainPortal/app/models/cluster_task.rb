@@ -2141,20 +2141,20 @@ fi
 
 # CBRAIN internal consistency test 2: must have the task workdir mounted inside the container
 if test ! -d #{task_workdir.bash_escape} ; then
-  echo "Missing mount (#{task_workdir.bash_escape}) point inside the container"
+  echo "Container missing mount point for task work directory:" #{task_workdir.bash_escape}
   exit 2
 fi
 
 # CBRAIN internal consistency test 3: must have the cache_dir mounted inside the container
 if test ! -d #{cache_dir.bash_escape} ; then
-  echo "Missing mount (#{cache_dir.bash_escape}) inside the container"
+  echo "Container missing mount point for task work directory:" #{cache_dir.bash_escape}
   exit 2
 fi
 
 
 # CBRAIN internal consistency test 4: must have the gridshare_dir mounted inside the container
 if test ! -d #{gridshare_dir.bash_escape} ; then
-  echo "Missing mount (#{gridshare_dir.bash_escape}) inside the container"
+  echo "Container missing mount point for task work directory:" #{gridshare_dir.bash_escape}
   exit 2
 fi
 
@@ -2336,7 +2336,7 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
 
   private
 
-  def container_image_name
+  def container_image_name #:nodoc:
     ".container-#{self.run_id}.img"
   end
 
@@ -2347,7 +2347,7 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
     # Singularity PULL
     if singularity_image_name.present?
       begin
-        errfile = ".container_load_cmd.#{self.run_id}.err"
+        errfile = "/tmp/.container_load_cmd.#{self.run_id}.err"
         success = system("#{singularity_executable_name} pull --name #{container_image_name} #{singularity_image_name.bash_escape}  </dev/null >/dev/null 2>#{errfile.bash_escape}")
         err     = File.read(errfile) rescue ""
         cb_error "Cannot pull singularity image" if err.present? || !success
@@ -2361,7 +2361,6 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
     if singularity_image = self.tool_config.container_image # = not ==
       # Create a link to our image; the image is a registered CBRAIN file
       self.addlog("Syncing the singularity image")
-      singularity_image    = self.tool_config.container_image
       singularity_image.sync_to_cache
       cachename            = singularity_image.cache_full_path
       safe_symlink(cachename,container_image_name)
