@@ -169,7 +169,6 @@ class BourreauxController < ApplicationController
                      "synchronization status objects were reset.\n"
       unless old_dp_cache_dir.blank?
         host = @bourreau.ssh_control_host
-        host = @bourreau.actres_host      if host.blank?
         host = 'localhost'                if host.blank?
         info_message += "You may have to clean up the content of the old cache directory\n" +
                         "'#{old_dp_cache_dir}' on host '#{host}'\n"
