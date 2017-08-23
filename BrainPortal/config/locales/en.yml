@@ -21,10 +21,6 @@ en:
           meta_key:                    Metadata key
           meta_value:                  Metadata value
         remote_resource:
-          actres_user:                 ActiveResource username
-          actres_host:                 ActiveResource hostname
-          actres_port:                 ActiveResource port
-          actres_dir:                  ActiveResource directory prefix
           ssh_control_rails_dir:       Rails root directory
           tunnel_mysql_port:           Port for MySQL tunnel
           tunnel_actres_port:          Port for ActiveResource tunnel

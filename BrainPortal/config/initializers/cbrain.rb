@@ -32,7 +32,10 @@ class CBRAIN
   Rails_UserName     = Etc.getpwuid(Rails_UserId).name
   Rails_UserHome     = Etc.getpwuid(Rails_UserId).dir
   System_Uname       = `uname -a`.chomp
-  ENV['PATH']        = "#{Rails.root.to_s}/vendor/cbrain/bin:#{ENV['PATH']}"
+
+  # Custom binaries and libraries for your installation
+  ENV['PATH']            = "#{Rails.root.to_s}/vendor/cbrain/bin:#{ENV['PATH']}"
+  ENV['LD_LIBRARY_PATH'] = "#{Rails.root.to_s}/vendor/cbrain/lib:#{ENV['LD_LIBRARY_PATH']}"
 
   # Instance name. An explicit name can be given by setting the environment variable
   # 'CBRAIN_INSTANCE_NAME' before starting the process. Otherwise, we look at the
