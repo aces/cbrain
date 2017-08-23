@@ -144,11 +144,17 @@ describe User do
 
   describe "#self.authenticate" do
 
-    it "should return nil if user is not authenticates" do
+    it "should return nil if user login name does not exist in DB" do
+      expect(User.authenticate("thisUsernameIsDummy", "anydummypassword")).to be_nil
+    end
+
+    it "should return nil if user is not authenticated" do
       expect(User.authenticate(normal_user.login, normal_user.password + "other")).to be_nil
     end
 
     it "should return user if user can be found with login and password" do
+      allow(normal_user).to receive(:authenticated?).and_return(true)
+      allow(User).to receive(:find_by_login).and_return(normal_user)
       expect(User.authenticate(normal_user.login, normal_user.password)).to eq(normal_user)
     end
 
@@ -218,70 +224,6 @@ describe User do
   end
 
 
-  # Old encrypt method
-  describe "#self.encrypt" do
-
-    it "should call encrypt_in_pbkdf2" do
-      expect(User).to receive(:encrypt_in_pbkdf2).at_least(:once)
-      User.encrypt(normal_user.password,normal_user.salt)
-    end
-
-
-  end
-
-
-
-  describe "#encrypt" do
-
-    it "should call class method" do
-      expect(User).to receive(:encrypt).at_least(:once)
-      normal_user.encrypt(normal_user.password)
-    end
-
-  end
-
-
-  # Encrypt methods in sha1
-  describe "#self.encrypt_in_sha1" do
-
-    it "should return a sha1 string with 40 chars" do
-      expect(User.encrypt_in_sha1(normal_user.password,normal_user.salt).size).to eq(40)
-    end
-
-  end
-
-
-
-  describe "#encrypt_in_sha1" do
-
-    it "should call class method" do
-      expect(User).to receive(:encrypt_in_sha1).at_least(:once)
-      normal_user.encrypt_in_sha1(normal_user.password)
-    end
-
-  end
-
-
-  # Encrypt method in PBKDF2
-  describe "#self.encrypt_in_pbkdf2" do
-
-    it "should return a pbkdf2 string with 64 chars" do
-      expect(User.encrypt_in_pbkdf2(normal_user.password,normal_user.salt).size).to eq(64)
-    end
-
-  end
-
-
-
-  describe "encrypt_in_pbkdf2" do
-
-    it "should call class method" do
-      expect(User).to receive(:encrypt_in_pbkdf2).at_least(:once)
-      normal_user.encrypt_in_pbkdf2(normal_user.password)
-    end
-
-  end
-
 
   # Encrypt method in PBKDF2_SHA1
   describe "#self.encrypt_in_pbkdf2_sha1" do
@@ -307,63 +249,16 @@ describe User do
 
   describe "#authenticated?" do
 
-    it "should changed the password encryption if crypted_password is in SHA1" do
-        normal_user.crypted_password = User.encrypt_in_sha1(normal_user.password,normal_user.salt)
-        normal_user.authenticated?(normal_user.password)
-        expect(normal_user.crypted_password).to match(/^pbkdf2_sha1:\w+/)
-    end
-
-    it "should changed the password encryption if crypted_password is in PBKDF2" do
-        normal_user.crypted_password = User.encrypt_in_pbkdf2(normal_user.password,normal_user.salt)
-        normal_user.authenticated?(normal_user.password)
-        expect(normal_user.crypted_password).to match(/^pbkdf2_sha1:\w+/)
-    end
-
-    it "should return true if crypted_password is equal to encrypt(password) and encryption is in PBKDF2_SHA1" do
-      allow(normal_user).to receive(:password_type).and_return(:pbkdf2_sha1)
-      plain_crypted_password = normal_user.crypted_password.sub(/^\w+:/,"")
+    it "should return true if crypted_password is equal to encrypt(password)" do
+      plain_crypted_password = normal_user.crypted_password
       allow(normal_user).to receive(:encrypt_in_pbkdf2_sha1).and_return(plain_crypted_password)
       expect(normal_user.authenticated?(normal_user.password)).to be(true)
     end
 
-    it "should return false if crypted_password isn't equal to encrypt(password) and encryption is in PBKDF2_SHA1" do
-      allow(normal_user).to receive(:password_type).and_return(:pbkdf2_sha1)
+    it "should return false if crypted_password isn't equal to encrypt(password)" do
       allow(normal_user).to receive(:encrypt_in_pbkdf2_sha1).and_return(:other)
       expect(normal_user.authenticated?(normal_user.password)).to be(false)
     end
-
-     it "should return false if encryption method is unknown" do
-      allow(normal_user).to receive(:password_type).and_return(:other)
-      expect(normal_user.authenticated?(normal_user.password)).to be(false)
-    end
-
-  end
-
-
-
-  describe "#password_type" do
-
-    it "should return :pbkdf2_sha1 if crypted_password size start with 'pbkdf2_sha1'" do
-      normal_user.crypted_password = "pbkdf2_sha1:1"
-      expect(normal_user.password_type(normal_user.crypted_password)).to eq(:pbkdf2_sha1)
-    end
-
-    it "should return :sha1 if crypted_password size is 40" do
-      normal_user.crypted_password = "a"*40
-      expect(normal_user.password_type(normal_user.crypted_password)).to eq(:sha1)
-    end
-
-    it "should return :sha1 if crypted_password size is 64" do
-      normal_user.crypted_password = "a"*64
-      expect(normal_user.password_type(normal_user.crypted_password)).to eq(:pbkdf2)
-    end
-
-    it "should return nil otherwise" do
-      normal_user.crypted_password = "a"
-      expect(normal_user.password_type(normal_user.crypted_password)).to eq(nil)
-    end
-
-
 
   end
 

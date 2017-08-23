@@ -204,17 +204,6 @@ class User < ActiveRecord::Base
   #
   ###############################################
 
-  # Old encrypt methods
-  # Encrypts some data with the salt.
-  def self.encrypt(password, salt) #:nodoc:
-    encrypt_in_pbkdf2(password,salt)
-  end
-
-  # Encrypts the password with the user salt
-  def encrypt(password) #:nodoc:
-    self.class.encrypt(password, salt)
-  end
-
   def self.encrypt_in_pbkdf2_sha1(password, salt) #:nodoc:
     password               = PBKDF2.new(:password => password, :salt => salt, :iterations => 10000)
     password.hash_function = OpenSSL::Digest::SHA1.new
