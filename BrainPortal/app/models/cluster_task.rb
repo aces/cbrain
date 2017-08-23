@@ -2372,8 +2372,9 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
     errfile = "/tmp/.container_load_cmd.#{self.run_id}.err"
     success = system("#{singularity_executable_name} pull --name #{image_name.bash_escape} #{singularity_image_name.bash_escape} </dev/null >/dev/null 2>#{errfile.bash_escape}")
     err     = File.read(errfile) rescue "No Error File?"
-    # Singularity command can generate `implausibly old timestamp` when pulling a docker image (due to tar), we ignore it. 
-    err.gsub!(/^.implausibly old time stamp.$\n?/,"")
+    # Singularity command can generate 'implausibly old time stamp' when pulling a docker image (due to tar), we ignore it.
+    # Remove all lines (use ^ and $) that contains this message. 
+    err.gsub!(/^.*implausibly old time stamp.*$\n?/,"")
     cb_error "Cannot pull singularity image" if
       err.present? ||
       ! success    ||
