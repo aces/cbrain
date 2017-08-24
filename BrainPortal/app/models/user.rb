@@ -379,7 +379,7 @@ class User < ActiveRecord::Base
   def encrypt_password #:nodoc:
     return true if password.blank?
     self.salt             = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--") if salt.blank?
-    self.crypted_password = "pbkdf2_sha1:" + encrypt_in_pbkdf2_sha1(password)
+    self.crypted_password = encrypt_in_pbkdf2_sha1(password)
     true
   end
 
