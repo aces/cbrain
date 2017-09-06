@@ -388,7 +388,7 @@ describe DataProvider do
       end
       it "should copy the file to the cache" do
         allow(SyncStatus).to receive(:ready_to_modify_cache).and_yield
-        expect(provider).to receive(:bash_this).with(/^rsync -a -l --delete/)
+        expect(provider).to receive(:bash_this).with(/^rsync -a -l/)
         provider.cache_copy_from_local_file(userfile, "localpath")
       end
       it "should raise an exception if the copy process fails" do
@@ -437,7 +437,7 @@ describe DataProvider do
         expect(provider.cache_copy_to_local_file(userfile, "localpath")).to be_truthy
       end
       it "should copy the file to the cache" do
-        expect(provider).to receive(:bash_this).with(/^rsync -a -l --delete/)
+        expect(provider).to receive(:bash_this).with(/^rsync -a -l/)
         provider.cache_copy_to_local_file(userfile, "localpath")
       end
       it "should raise an exception if the copy process fails" do
