@@ -141,8 +141,7 @@ module SchemaTaskGenerator
       eval @source[Rails.root.to_s =~ /BrainPortal\z/ ? :portal : :bourreau]
 
       # Try and retrieve the just-generated task class
-      task   = name.constantize rescue nil
-      task ||= "CbrainTask::#{name}".constantize
+      task = "CbrainTask::#{name}".constantize
 
       # Since the task class doesn't have a matching cbrain_plugins directory
       # tree, some methods need to be added/redefined to ensure the cooperation
