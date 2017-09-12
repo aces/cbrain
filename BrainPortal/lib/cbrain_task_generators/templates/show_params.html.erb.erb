@@ -109,7 +109,7 @@
       <tr>
         <td class="tsk-sw-name"><%= output['name'] %></td>
         <td class="tsk-sw-val">
-          <%%= format_files.(params[:'<%= output['id'] %>']) %>
+          <%%= format_files.(params[:'<%= "_cbrain_output_" + output['id'].to_s %>']) %>
         </td>
       </tr>
     <%- end -%>

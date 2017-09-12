@@ -399,10 +399,8 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     # No output files to save; nothing else to do
     true
 % else
-    # Extract out the output files parameters from params. They will be re-added
-    # once their existence is validated and their registration into CBRAIN is
-    # complete.
-    outputs = params.extract!(*[
+    # Identify the output files parameters from params.
+    outputs = params.slice(*[
 %   outputs.each do |output|
       :'<%= output['id'] %>',
 %   end
@@ -485,16 +483,16 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
         end
 
         output.cache_copy_from_local_file(path)
-        params[param] ||= []
-        params[param]  << output.id
+        params["_cbrain_output_#{param}"] ||= []
+        params["_cbrain_output_#{param}"]  << output.id
         self.addlog("Saved result file #{path}")
 %   if (single_file = files.first if files.count == 1 && ! files.first['list'])
 
         # As all output files were generated from a single input file,
         # the outputs can all be made children of the one parent input file.
-        parent = Userfile.find(params[:'<%= single_file['id'] %>'])
-        output.move_to_child_of(parent)
-        self.addlog_to_userfiles_these_created_these([parent], [output])
+        parent = Userfile.find_by_id(params[:'<%= single_file['id'] %>'])
+        output.move_to_child_of(parent) if parent
+        self.addlog_to_userfiles_these_created_these([parent], [output]) if parent
 %   end
       end
     end
