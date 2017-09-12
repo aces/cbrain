@@ -181,7 +181,7 @@ module SchemaTaskGenerator
 
         # Redefine the CbrainTask or Object constant pointing to the task's
         # class to point to the switcher instead.
-        [ Object, CbrainTask ].select { |m| m.const_defined?(name) }.each do |m|
+        [ CbrainTask ].select { |m| m.const_defined?(name) }.each do |m|
           m.send(:remove_const, name)
           m.const_set(name, switcher)
         end
@@ -193,8 +193,20 @@ module SchemaTaskGenerator
 
       # For debugging templates, it helps to view the code generated.
       # You can simply create an empty directory some place and provide its
-      # path to the method below.
-      #to_directory("/home/myself/cbrain/tmp") # adjust here
+      # path to the method to_directory() below.
+      #
+      # Adjust path here, get the dumps of ALL Boutiques tasks in it.
+      #to_directory("/tmp/dump")
+      #
+      # Adjust path here, if you're interested in a single task's (CbrainTask::AbcdXyz) files.
+      #to_directory("/tmp/dump") if name == 'AbcdXyz'
+      #
+      # Alternatively, you can trigger the dumps using environment variables
+      # CBRAIN_BOUTIQUES_DUMPDIR="/path/to/dir"
+      # CBRAIN_BOUTIQUES_DUMPTASK="Abcd" # if not set, all tasks are dumped
+      if ((dumpdir = ENV['CBRAIN_BOUTIQUES_DUMPDIR']) && dumpdir.present? && File.directory?(dumpdir))
+        to_directory(dumpdir) if ENV['CBRAIN_BOUTIQUES_DUMPTASK'].blank? || name == ENV['CBRAIN_BOUTIQUES_DUMPTASK']
+      end
 
       task
     end
