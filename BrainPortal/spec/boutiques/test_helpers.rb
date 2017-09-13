@@ -19,6 +19,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require 'json-schema'
+require 'json'
+
 # This module provides helper methods and constants to avoid cluttering the
 # actual Rspec test files too much. It is shared by the Boutiques tests
 # on both the Bourreau and the Portal side. Note that it is specific to the
@@ -74,8 +77,6 @@ module TestHelpers
 
   # JSON validation
   def runAndCheckJsonValidator(boutiquesSchemaLocation)
-    require 'json-schema'
-    require 'json'
     schema     = boutiquesSchemaLocation.to_s
     json_file  = File.join(__dir__, TestScriptDescriptor)
     descriptor = JSON.parse( File.read(json_file) )

@@ -2050,7 +2050,7 @@ chmod 755 #{docker_wrapper_basename.bash_escape}
   def load_docker_image_cmd #:nodoc:
     dockerhub_image_name = self.tool_config.containerhub_image_name
     docker_container_index = self.tool_config.container_index_location
-    docker_container_index += '/' if (!docker_container_index.end_with? '/') && (docker_container_index.length > 0) # Add trailing / if not present and field not empty
+    docker_container_index += '/' if docker_container_index.present? && !docker_contianer_index.end_with?('/') # Add trailing / if not present and field not empty
     # Docker PULL
     if dockerhub_image_name.present?
       return <<-DOCKER_PULL
@@ -2368,7 +2368,7 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
   def load_singularity_image_from_repo #:nodoc:
     singularity_image_name = self.tool_config.containerhub_image_name
     singularity_index_location = self.tool_config.container_index_location
-    singularity_index_location = "shub://" if singularity_index_location.length < 1
+    singularity_index_location = "shub://" if singularity_index_location.blank?
 
     self.addlog("Pulling singularity image '#{singularity_image_name}'")
 
