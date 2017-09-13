@@ -220,8 +220,8 @@ module SchemaTaskGenerator
       version          = @descriptor['tool-version']     || '(unknown)'
       description      = @descriptor['description']      || ''
       container_engine = (@descriptor['container-image'] || {})['type']
-      container_image  = (@descriptor['container-image'] || {})['image'] ||
-                         (@descriptor['container-image'] || {})['url']
+      container_image  = (@descriptor['container-image'] || {})['image']
+      container_index  = (@descriptor['container-image'] || {})['index']
       resource         = RemoteResource.current_resource
 
       # Create and save a new Tool for the task, unless there's already one.
@@ -249,13 +249,14 @@ module SchemaTaskGenerator
       return if container_engine == "Docker"      && !resource.docker_present?
 
       ToolConfig.new(
-        :tool_id                 => task.tool.id,
-        :bourreau_id             => resource.id,
-        :group_id                => User.admin.own_group.id,
-        :version_name            => version,
-        :description             => "#{name} #{version} on #{resource.name}",
-        :container_engine        => container_engine,
-        :containerhub_image_name => container_image,
+        :tool_id                  => task.tool.id,
+        :bourreau_id              => resource.id,
+        :group_id                 => User.admin.own_group.id,
+        :version_name             => version,
+        :description              => "#{name} #{version} on #{resource.name}",
+        :container_engine         => container_engine,
+        :containerhub_image_name  => container_image,
+        :container_index_location => container_index,
       ).save! unless
         ToolConfig.exists?(
           :tool_id      => task.tool.id,

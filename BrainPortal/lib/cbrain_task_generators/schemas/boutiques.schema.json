@@ -49,29 +49,33 @@
             },{
                 "oneOf": [{
                     "properties": {
-                        "type": { "enum": ["docker"] },
+                        "type": { "enum": ["docker", "singularity"] },
                         "image": {
                             "id": "http://github.com/boutiques/boutiques-schema/container/image",
                             "minLength": 1,
-                            "description": "Name of an image where the tool is installed and configured. Example: docker.io/neurodebian.",
+                            "description": "Name of an image where the tool is installed and configured. Example: bids/mriqc.",
                             "type": "string"
+                        },
+                        "entrypoint": {
+                          "id": "http://github.com/boutiques/boutiques-schema/container/entrypoint",
+                          "description": "Flag indicating whether or not the container uses an entrypoint.",
+                          "type": "boolean"
                         },
                         "index": {
                             "id": "http://github.com/boutiques/boutiques-schema/container/index",
                             "minLength": 1,
-                            "description": "Index where the image is available.",
-                            "default": "http://index.docker.io",
+                            "description": "Optional index where the image is available, if not the standard location. Example: docker.io",
                             "type": "string"
-                        },           
+                        },
                         "working-directory": {},
                         "container-hash": {}
                     },
                     "required": ["type", "image"],
                     "additionalProperties": false,
-                    "description": "Object representing a docker container for the tool."
+                    "description": "Object representing a docker or singularity container for the tool."
                 }, {
                     "properties": {
-                        "type": { "enum": ["rootfs", "singularity"] },
+                        "type": { "enum": ["rootfs"] },
                         "url": {
                             "id": "http://github.com/boutiques/boutiques-schema/container/url",
                             "minLength": 1,
@@ -83,7 +87,7 @@
                     },
                     "required": ["type", "url"],
                     "additionalProperties": false,
-                    "description": "Object representing a rootfs or singularity container for the tool."
+                    "description": "Object representing a rootfs container for the tool."
                 }]
             }]
         },
@@ -91,13 +95,7 @@
             "id": "http://github.com/boutiques/boutiques-schema/schema-version",
             "type": "string",
             "description": "Version of the schema used.",
-            "enum": ["0.4"]
-        },
-        "walltime-estimate": {
-            "id": "http://github.com/boutiques/boutiques-schema/walltime-estimate",
-            "type": "number",
-            "description": "Estimated wall time of a task in seconds.",
-            "minLength": 1
+            "enum": ["0.5"]
         },
         "environment-variables": {
             "id": "http://github.com/boutiques/boutiques-schema/environment-variables",
@@ -176,6 +174,11 @@
                     "one-is-required": {
                         "id": "http://github.com/boutiques/boutiques-schema/group/one-is-required",
                         "description": "True if at least one of the inputs in the group must be active at runtime.",
+                        "type": "boolean"
+                    },
+                    "all-or-none": {
+                        "id": "http://github.com/boutiques/boutiques-schema/group/all-or-none",
+                        "description": "True if members of the group need to be toggled together",
                         "type": "boolean"
                     }
                 },
@@ -481,6 +484,42 @@
         "invocation-schema": {
             "id": "http://github.com/boutiques/boutiques-schema/invocation-schema",
             "type": "object"
+        },
+        "suggested-resources": {
+            "id": "http://github.com/boutiques/boutiques-schema/suggested-resources",
+            "type": "object",
+            "properties": {
+                "cpu-cores": {
+                    "id": "http://github.com/boutiques/boutiques-schema/suggested-resources/cpu-cores",
+                    "description": "The requested number of cpu cores to run the described application",
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "ram": {
+                    "id": "http://github.com/boutiques/boutiques-schema/suggested-resources/ram",
+                    "description": "The requested number of GB RAM to run the described application",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "disk-space": {
+                    "id": "http://github.com/boutiques/boutiques-schema/suggested-resources/disk-space",
+                    "description": "The requested number of GB of storage to run the described application",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "nodes": {
+                    "id": "http://github.com/boutiques/boutiques-schema/suggested-resources/nodes",
+                    "description": "The requested number of nodes to spread the described application across",
+                    "type": "integer",
+                    "minimum": 1
+                },
+                 "walltime-estimate": {
+                     "id": "http://github.com/boutiques/boutiques-schema/suggested-resources/walltime-estimate",
+                     "type": "number",
+                     "description": "Estimated wall time of a task in seconds.",
+                     "minimum": 0
+                 }
+            }
         },
         "custom": {
             "id": "http://github.com/boutiques/boutiques-schema/custom",
