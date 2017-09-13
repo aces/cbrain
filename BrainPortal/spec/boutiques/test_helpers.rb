@@ -80,7 +80,7 @@ module TestHelpers
     json_file  = File.join(__dir__, TestScriptDescriptor)
     descriptor = JSON.parse( File.read(json_file) )
     errors     = JSON::Validator.fully_validate(schema, descriptor)
-    return errors == []
+    return errors.empty?
   end
 
   # Create mock input files
