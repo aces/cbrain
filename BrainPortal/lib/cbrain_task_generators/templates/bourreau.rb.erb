@@ -501,14 +501,14 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 % end
   end
 
-% if descriptor['cbrain:walltime-estimate'] or descriptor['suggested-resources']['walltime-estimate']
+% if descriptor['cbrain:walltime-estimate'] or descriptor['suggested-resources'].try(:[],'walltime-estimate')
   # Conservative maximal run time estimate for <%= name %> when submitting a
   # job on a cluster. This value should be somewhat larger than the longest
   # expected run without being overly excessive; it will be submitted along
   # with the job to the cluster management system for scheduling purposes.
   def job_walltime_estimate
     (<%= (descriptor['cbrain:walltime-estimate']) ?
-          descriptor['cbrain:walltime-estimate'].to_s : descriptor['suggested-resources']['walltime-estimate'].to_s  %>).seconds
+          descriptor['cbrain:walltime-estimate'].to_s : descriptor['suggested-resources'].try(:[], 'walltime-estimate').to_s  %>).seconds
   end
 
 % end
