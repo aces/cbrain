@@ -32,7 +32,6 @@ module TestHelpers
   # External helper constants
   TestScriptName           = 'boutiquesTestApp.rb'
   TestScriptDescriptor     = 'descriptor_test.json'
-  ValidationScriptLocation = 'validator.rb'
   TempStore                = File.join('spec','fixtures') # Site for temp file creation, as in other specs
 
   ### Helper script argument-specific constants ###
@@ -75,11 +74,13 @@ module TestHelpers
 
   # JSON validation
   def runAndCheckJsonValidator(boutiquesSchemaLocation)
-    validator  = File.join(__dir__, ValidationScriptLocation)
+    require 'json-schema'
+    require 'json'
     schema     = boutiquesSchemaLocation.to_s
-    descriptor = File.join(__dir__, TestScriptDescriptor)
-    stdout     = `ruby #{validator} #{schema} #{descriptor}`
-    return stdout.start_with?( '["OK"]' )
+    json_file  = File.join(__dir__, TestScriptDescriptor)
+    descriptor = JSON.parse( File.read(json_file) )
+    errors     = JSON::Validator.fully_validate(schema, descriptor)
+    return errors == []
   end
 
   # Create mock input files
