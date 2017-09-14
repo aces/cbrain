@@ -2368,7 +2368,7 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
   def load_singularity_image_from_repo #:nodoc:
     singularity_image_name = self.tool_config.containerhub_image_name
     singularity_index_location = self.tool_config.container_index_location
-    singularity_index_location = "shub://" if singularity_index_location.blank?
+    singularity_index_location = singularity_index_location.presence || "shub://"
 
     self.addlog("Pulling singularity image '#{singularity_image_name}'")
 
