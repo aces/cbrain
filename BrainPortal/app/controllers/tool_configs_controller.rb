@@ -167,7 +167,7 @@ class ToolConfigsController < ApplicationController
     form_tool_config.bourreau_id = @tool_config.bourreau_id
 
     # Update everything else
-    [ :version_name, :description, :script_prologue, :group_id, :ncpus, :container_engine, :containerhub_image_name, :container_image_userfile_id,
+    [ :version_name, :description, :script_prologue, :group_id, :ncpus, :container_engine, :container_index_location, :containerhub_image_name, :container_image_userfile_id,
       :extra_qsub_args, :cloud_disk_image, :cloud_vm_user, :cloud_ssh_key_pair, :cloud_instance_type,
       :cloud_job_slots, :cloud_vm_boot_timeout, :cloud_vm_ssh_tunnel_port ].each do |att|
        @tool_config[att] = form_tool_config[att]

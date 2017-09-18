@@ -56,6 +56,10 @@ class ToolConfig < ActiveRecord::Base
                                    :message => "must be unique per pair [tool, server]" },
                   :if         => :applies_to_bourreau_and_tool?
 
+  validates                 :container_index_location,
+                            :format => { :with => /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}$/i },
+                            :allow_blank => true
+
   validate        :container_rules
 
   cb_scope        :global_for_tools     , where( { :bourreau_id => nil } )
@@ -64,7 +68,7 @@ class ToolConfig < ActiveRecord::Base
 
   attr_accessible :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue,
                   :group_id, :ncpus, :container_image_userfile_id, :containerhub_image_name, :container_engine,
-                  :containerindex_location, :extra_qsub_args,
+                  :container_index_location, :extra_qsub_args,
                   # The configuration of a tool in a VM managed by a
                   # ScirCloud Bourreau is defined by the following
                   # parameters which specify the disk image where the

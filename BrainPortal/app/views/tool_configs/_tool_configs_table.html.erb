@@ -104,6 +104,13 @@
         end
       }
 
+    t.column("Container Index", :container_index_location,
+    ) { |tc|
+        if tc.container_index_location.present?
+          tc.container_index_location
+        end
+      }
+
     t.column("Description", :description,
       :sortable => true,
     ) { |tc| overlay_description(tc.description) }

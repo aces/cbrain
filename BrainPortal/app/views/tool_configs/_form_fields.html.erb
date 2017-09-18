@@ -112,6 +112,16 @@
     </p>
   </span>
 
+  <span title="Index of the container image">
+    <p><%= f.label :container_index_location, "Index of the container image:" %><br/>
+      <%= f.text_field :container_index_location %><br>
+      <div class="field_explanation">
+        The index/url of the Container image in which the docker/singularity container is
+        accessible through. Examples are: quay.io, index.docker.io (default).
+      </div>
+    </p>
+  </span>
+
   <span title="ID of the container image">
     <p><%= f.label :container_image_userfile_id, "ID of the container image:" %><br/>
       <%= f.text_field :container_image_userfile_id %> <%= link_to_userfile_if_accessible(@tool_config.container_image) %><br>
