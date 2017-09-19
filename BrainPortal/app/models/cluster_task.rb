@@ -2050,7 +2050,7 @@ chmod 755 #{docker_wrapper_basename.bash_escape}
   def load_docker_image_cmd #:nodoc:
     dockerhub_image_name = self.tool_config.containerhub_image_name
     docker_container_index = self.tool_config.container_index_location
-    docker_container_index += '/' if docker_container_index.present? && !docker_contianer_index.end_with?('/') # Add trailing / if not present and field not empty
+    docker_container_index += '/' if docker_container_index.present? && !docker_container_index.end_with?('/') # Add trailing / if not present and field not empty
     # Docker PULL
     if dockerhub_image_name.present?
       return <<-DOCKER_PULL
