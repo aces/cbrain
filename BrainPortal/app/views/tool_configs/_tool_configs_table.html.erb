@@ -106,9 +106,7 @@
 
     t.column("Container Index", :container_index_location,
     ) { |tc|
-        if tc.container_index_location.present?
-          tc.container_index_location
-        end
+        tc.container_index_location
       }
 
     t.column("Description", :description,
