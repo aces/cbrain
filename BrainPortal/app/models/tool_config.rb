@@ -56,7 +56,6 @@ class ToolConfig < ActiveRecord::Base
                                    :message => "must be unique per pair [tool, server]" },
                   :if         => :applies_to_bourreau_and_tool?
 
-
   validate        :container_rules
 
   cb_scope        :global_for_tools     , where( { :bourreau_id => nil } )
@@ -350,8 +349,6 @@ class ToolConfig < ActiveRecord::Base
       end
     end
     return errors.empty?
-
   end
-
 
 end
