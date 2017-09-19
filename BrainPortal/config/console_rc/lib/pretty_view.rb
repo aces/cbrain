@@ -342,6 +342,7 @@ ToolConfig #%d "%s"
       bourreau_id.presence || 0, bourreau.try(:name),
       ncpus.presence || 0,
       container_engine.presence || "(none)",
+      container_index_location || "",
       containerhub_image_name.presence || "",
       container_image_userfile_id.presence || 0,
       container_image || "none",
