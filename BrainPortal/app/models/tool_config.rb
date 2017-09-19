@@ -57,7 +57,7 @@ class ToolConfig < ActiveRecord::Base
                   :if         => :applies_to_bourreau_and_tool?
 
   validates                 :container_index_location,
-                            :format => { :with => /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}$/i },
+                            :format => { :with => /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}$|^shub\:\/\/$/},
                             :allow_blank => true
 
   validate        :container_rules
