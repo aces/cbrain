@@ -24,5 +24,8 @@
 #=================================================================
 
 if defined?(Rails::Console)
-  IRB.conf[:RC_NAME_GENERATOR] = lambda { |ext| (Rails.root + "config/console_rc/init_rc.rb").to_s }
+  IRB.conf[:RC_NAME_GENERATOR] = lambda do |ext|
+    ext.to_s == '_history' ? (ENV['HOME'] + '/.irb-history')
+                           : (Rails.root + "config/console_rc/init_rc.rb").to_s
+  end
 end
