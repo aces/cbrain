@@ -331,8 +331,7 @@ ToolConfig #%d "%s"
   Exec:            %d (%s)
   nCPUs:           %d
   ContainerEngine: %s
-  ContainerIndex:  %s
-  ContainerImage:  %s
+  ContainerImage:  %s%s
   ContainerID:     %d (%s)
   QsubExt:         "%s"
     VIEW
