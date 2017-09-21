@@ -340,11 +340,11 @@ class ToolConfig < ActiveRecord::Base
     end
 
     if self.container_engine.present? && self.container_engine == "Singularity" 
-      if self.container_index_location.present? && ! /^[a-z0-9]+\:\/\/$/.match(self.container_index_location)
+      if self.container_index_location.present? && self.container_index_location !~ /^[a-z0-9]+\:\/\/$/i
         errors[:container_index_location] = "is invalid for container engine Singularity. Should end in '://'."
       end
     elsif self.container_engine.present? && self.container_engine == "Docker"
-      if self.container_index_location.present? && ! /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}$/.match(self.container_index_location)
+      if self.container_index_location.present? && self.container_index_location !~ /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}$/i
         errors[:container_index_location] = "is invalid for container engine Docker. Should be a valid hostname."
       end
     end
