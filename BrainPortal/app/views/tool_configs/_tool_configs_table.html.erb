@@ -95,6 +95,11 @@
       :filters  => default_filters_for(@base_scope, :container_engine)
     ) { |tc| tc.container_engine.to_s }
 
+    t.column("Container Index", :container_index_location,
+    ) { |tc|
+        tc.container_index_location
+      }
+
     t.column("Container Image", :container_name_image,
     ) { |tc|
         if tc.containerhub_image_name.present?

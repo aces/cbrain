@@ -100,11 +100,23 @@
     <%= f.select :container_engine, [["None", ''], ['Docker', 'Docker'], ['Singularity', 'Singularity']] %>
   </span>
 
+  <span title="Index of the container image">
+    <p><%= f.label :container_index_location, "Index of the container image:" %><br/>
+      <%= f.text_field :container_index_location %><br>
+      <div class="field_explanation">
+        The index/url of the container image in which the docker/singularity container is
+        accessible through.
+        Examples for Docker are: quay.io, index.docker.io (default).
+        Examples for Singularity are: docker://, shub:// (default).
+      </div>
+    </p>
+  </span>
+
   <span title="Container image name">
     <p><%= f.label :containerhub_image_name, "Container image name:" %><br/>
       <%= f.text_field :containerhub_image_name %><br/>
       <div class="field_explanation">
-        The name and tag of the Container image in which the tool is installed,
+        The name and tag of the container image in which the tool is installed,
         for instance "centos:latest". This name refers to the Docker/Singulariry index
         accessed by the Bourreau, which is configured manually in the Bourreau
         for now.
@@ -116,7 +128,7 @@
     <p><%= f.label :container_image_userfile_id, "ID of the container image:" %><br/>
       <%= f.text_field :container_image_userfile_id %> <%= link_to_userfile_if_accessible(@tool_config.container_image) %><br>
       <div class="field_explanation">
-        The ID number of the Container image in which the tool is installed.
+        The ID number of the container image in which the tool is installed.
         This ID refers to userfile registered in CBRAIN.
       </div>
     </p>

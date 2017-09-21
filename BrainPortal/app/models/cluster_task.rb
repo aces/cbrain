@@ -2049,12 +2049,20 @@ chmod 755 #{docker_wrapper_basename.bash_escape}
   # Then name of the image will be set in a bash variable 'docker_image_name'
   def load_docker_image_cmd #:nodoc:
     dockerhub_image_name = self.tool_config.containerhub_image_name
-
+    docker_container_index = self.tool_config.container_index_location
+    if docker_container_index.present?
+      if !docker_container_index.end_with?('/')
+        docker_container_index += '/'
+      end
+    else
+      docker_container_index = ''
+    end
+    docker_container_index = docker_container_index + '/' if docker_container_index.present? && !docker_container_index.end_with?('/') # Add trailing / if not present and field not empty
     # Docker PULL
     if dockerhub_image_name.present?
       return <<-DOCKER_PULL
 # Pull image from DockerHub
-#{docker_executable_name} pull #{dockerhub_image_name.bash_escape}
+#{docker_executable_name} pull #{docker_container_index.bash_escape}#{dockerhub_image_name.bash_escape}
 docker_image_name=#{dockerhub_image_name.bash_escape}
       DOCKER_PULL
     end
@@ -2366,11 +2374,13 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
   # Perform the singularity pull
   def load_singularity_image_from_repo #:nodoc:
     singularity_image_name = self.tool_config.containerhub_image_name
+    singularity_index_location = self.tool_config.container_index_location.presence || "shub://"
+
     self.addlog("Pulling singularity image '#{singularity_image_name}'")
 
     image_name = container_image_name
     errfile = "/tmp/.container_load_cmd.#{self.run_id}.err"
-    success = system("#{singularity_executable_name} pull --name #{image_name.bash_escape} #{singularity_image_name.bash_escape} </dev/null >/dev/null 2>#{errfile.bash_escape}")
+    success = system("#{singularity_executable_name} pull --name #{image_name.bash_escape} #{singularity_index_location.bash_escape}#{singularity_image_name.bash_escape} </dev/null >/dev/null 2>#{errfile.bash_escape}")
     err     = File.read(errfile) rescue "No Error File?"
     # Singularity command can generate 'implausibly old time stamp' when pulling a docker image (due to tar), we ignore it.
     # Remove all lines (use ^ and $) that contains this message. 

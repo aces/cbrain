@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20170823174959) do
+ActiveRecord::Schema.define(:version => 20170913185428) do
 
   create_table "access_profiles", :force => true do |t|
     t.string   "name",        :null => false
@@ -373,6 +373,7 @@ ActiveRecord::Schema.define(:version => 20170823174959) do
     t.integer  "container_image_userfile_id"
     t.string   "containerhub_image_name"
     t.string   "container_engine"
+    t.string   "container_index_location"
   end
 
   add_index "tool_configs", ["bourreau_id"], :name => "index_tool_configs_on_bourreau_id"
