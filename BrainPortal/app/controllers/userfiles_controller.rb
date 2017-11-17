@@ -201,7 +201,6 @@ class UserfilesController < ApplicationController
   # GET /userfiles/1/content?option1=....optionN=...
   def content
     @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
-
     content_loader = @userfile.find_content_loader(params[:content_loader])
     argument_list  = params[:arguments] || []
     argument_list  = [argument_list] unless argument_list.is_a?(Array)
@@ -209,7 +208,11 @@ class UserfilesController < ApplicationController
     if content_loader
       response_content = @userfile.send(content_loader.method, *argument_list)
       if content_loader.type == :send_file
-        send_file response_content
+	if response_content.ends_with? '.html'
+          render file: response_content, layout: false
+        else
+          send_file response_content
+        end
       elsif content_loader.type == :gzip
         response.headers["Content-Encoding"] = "gzip"
         render :text => response_content
