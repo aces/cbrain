@@ -110,6 +110,7 @@ Rails.application.routes.draw do
   resources :userfiles,       :except => [ :edit, :destroy ] do
     member do
       get  'content'
+      get  'file_collection_content/*file_path' => 'userfiles#file_collection_content'
       get  'display'
       post 'extract_from_collection'
     end
@@ -206,4 +207,3 @@ Rails.application.routes.draw do
   #get   '/service/provenance',     :controller => :service, :action => :provenance
 
 end
-
