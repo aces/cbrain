@@ -21,6 +21,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 */
+
 (function() {
   "use strict";
 
@@ -67,8 +68,8 @@
     if (target) {
       new_content = $(data);
       if (target === "__OVERLAY__") {
-        width = parseInt(options["width"], 10); // || 800);
-        height = parseInt(options["height"], 10); // || 500);
+        width = parseInt(options["width"], 10); // || 800;
+        height = parseInt(options["height"], 10); // || 500;
         $("<div class='overlay_content'></div>").html(new_content).appendTo($("body")).dialog({
           position: 'center',
           width:  width  || 'auto',
@@ -173,9 +174,9 @@
 
     loaded_element.find(".inline_text_field").each(function() {
       var inline_text_field = $(this);
-      var data_type = inline_text_field.attr("data-type") || "script";
-      var target = inline_text_field.attr("data-target");
-      var method = inline_text_field.attr("data-method") || "POST";
+      var data_type = inline_text_field.data("type") || "script";
+      var target = inline_text_field.data("target");
+      var method = inline_text_field.data("method") || "POST";
 
       var form = inline_text_field.children("form")
       .hide()
@@ -189,11 +190,11 @@
 
       var input_field = form.find(".inline_text_input");
       var text = inline_text_field.find(".current_text");
-      var trigger = inline_text_field.find(inline_text_field.attr("data-trigger"));
+      var trigger = inline_text_field.find(inline_text_field.data("trigger"));
 
-      var data_type = inline_text_field.attr("data-type") || "script";
-      var target = inline_text_field.attr("data-target");
-      var method = inline_text_field.attr("data-method") || "POST";
+      var data_type = inline_text_field.data("type") || "script";
+      var target = inline_text_field.data("target");
+      var method = inline_text_field.data("method") || "POST";
 
       trigger.click(function(event) {
         text.hide();
@@ -224,7 +225,7 @@
     loaded_element.find(".button_with_drop_down > div.drop_down_menu").each(function(e) {
       var menu    = $(this);
       var button  = menu.closest(".button_with_drop_down");
-      var keep_open = button.attr("data-open");
+      var keep_open = button.data("open");
       if (keep_open !== "true") {
         menu.hide();
       }
@@ -306,8 +307,8 @@
       }
 
       var project_button = $(this);
-      var url = project_button.attr("data-href");
-      var method = project_button.attr("data-method");
+      var url = project_button.data("href");
+      var method = project_button.data("method");
       var link = $("<a href=\"" + url + "\" data-method=\"" + method + "\"></a>");
 
       link.appendTo("body");
@@ -355,13 +356,13 @@
 
     function update_ajax_element(element) {
       var current_element = $(element);
-      var method = current_element.attr("data-method") || "GET";
-      var url = current_element.attr("data-url");
-      var error_message = current_element.attr("data-error");
-      var replace = current_element.attr("data-replace");
-      var data = current_element.attr("data-data");
-      var interval = current_element.attr("data-interval");
-      var scroll_bottom = current_element.attr("data-scroll-bottom");
+      var method          = current_element.data("method") || "GET";
+      var url             = current_element.data("url");
+      var error_message   = current_element.data("error");
+      var replace         = current_element.data("replace");
+      var data            = current_element.data("data");
+      var interval        = current_element.data("interval");
+      var scroll_bottom   = current_element.data("scroll-bottom");
 
       if (data) data = jQuery.parseJSON(data);
       if (scroll_bottom === "false") scroll_bottom = false;
@@ -388,7 +389,7 @@
 
     loaded_element.find(".ajax_element_refresh_button").click(function() {
       var button = $(this);
-      var target = $(button.attr("data-target"));
+      var target = $(button.data("target"));
       update_ajax_element(target);
 
       return false;
@@ -401,7 +402,7 @@
     loaded_element.find(".script_loader").each(function (index,element) {
       var current_element = $(element);
       current_element.css("display", "none");
-      var url = current_element.attr("data-url");
+      var url = current_element.data("url");
       jQuery.ajax({
         dataType: 'script',
         url: url,
@@ -415,8 +416,8 @@
       var enclosing_div = $(this);
       var dialog_link = enclosing_div.children('.overlay_content_link');
       var dialog = enclosing_div.children(".overlay_content")
-      var content_width = parseInt(dialog_link.attr('data-width'), 10);
-      var content_height = parseInt(dialog_link.attr('data-height'), 10);
+      var content_width = parseInt(dialog_link.data("width"), 10);
+      var content_height = parseInt(dialog_link.data("height"), 10);
 
       dialog.dialog({
         autoOpen: false,
@@ -434,10 +435,10 @@
     loaded_element.find(".show_toggle_checkbox").each(function() {
       var checkbox = $(this);
       var show = checkbox.is(":checked");
-      var target_element = $(checkbox.attr("data-target"));
-      var slide_effect = checkbox.attr("data-slide-effect");
-      var slide_duration = checkbox.attr("data-slide-duration") || "fast";
-      var invert = checkbox.attr("data-invert");
+      var target_element = $(checkbox.data("target"));
+      var slide_effect = checkbox.data("slide-effect");
+      var slide_duration = checkbox.data("slide-duration") || "fast";
+      var invert = checkbox.data("invert");
 
       if (slide_duration !== "slow" && slide_duration !== "fast") {
         slide_duration = parseInt(slide_duration, 10);
@@ -545,7 +546,7 @@
       }
 
       var header = $(this);
-      var target = $(header.attr("data-target"));
+      var target = $(header.data("target"));
       var search = target.find(".filter_search");
 
       filter_header_timeout = setTimeout(function() {
@@ -567,7 +568,7 @@
 
     $(document).delegate(".hover_open", "mouseenter", function() {
       var header = $(this);
-      var target = $(header.attr("data-target"));
+      var target = $(header.data("target"));
 
       target.show();
       header.mouseleave(function() {
@@ -604,10 +605,10 @@
 
     $(document).delegate(".show_toggle", "click", function() {
       var current_element = $(this);
-      var target_element = $(current_element.attr("data-target"));
-      var alternate_text = current_element.attr("data-alternate-text");
-      var slide_effect   = current_element.attr("data-slide-effect");
-      var slide_duration   = current_element.attr("data-slide-duration");
+      var target_element = $(current_element.data("target"));
+      var alternate_text = current_element.data("alternate-text");
+      var slide_effect   = current_element.data("slide-effect");
+      var slide_duration   = current_element.data("slide-duration");
       var current_text;
 
       if (slide_duration !== 'slow' && slide_duration !== 'fast') {
@@ -616,7 +617,7 @@
 
       if (alternate_text) {
         current_text = current_element.html();
-        current_element.attr("data-alternate-text", current_text);
+        current_element.data("alternate-text", current_text);
         current_element.html(alternate_text);
       }
 
@@ -674,28 +675,32 @@
       element.css("background-color", element.data("original-color"));
     });
 
-    $(document).delegate(".ajax_link", "ajax:success", function(event, data, status, xhr) {
-      var link     = $(this);
-      var target   = link.attr("data-target");
-      var datatype = link.attr("data-type");
-      var remove_target = link.attr("data-remove-target");
+    // This is a jquery_ujs event
+    $(".ajax_link").on("ajax:success", function(event, data, status, xhr) {
+      var link          = $(this);
+      var target        = link.data("target");
+      var datatype      = link.data("type");
+      var remove_target = link.data("remove-target");
       var other_options = {};
 
-      if (link.attr("data-width")) other_options["width"] = link.attr("data-width");
-      if (link.attr("data-height")) other_options["height"] = link.attr("data-height");
-      if (link.attr("data-replace")) other_options["replace"] = link.attr("data-replace");
+      if (link.data("width"))   other_options["width"]   = link.data("width");
+      if (link.data("height"))  other_options["height"]  = link.data("height");
+      if (link.data("replace")) other_options["replace"] = link.data("replace");
 
       if (remove_target) {
          $(remove_target).remove();
       } else if (datatype !== "script") {
         modify_target(data, target, other_options);
       }
-    }).delegate(".ajax_link", "ajax:beforeSend", function(event, data, status, xhr) {
-      var link = $(this);
-      var loading_message = link.attr("data-loading-message");
-      var target = link.attr("data-target");
+    });
+
+    // This is a jquery_ujs event
+    $(".ajax_link").on("ajax:beforeSend", function(event, xhr, settings) {
+      var link            = $(this);
+      var loading_message = link.data("loading-message");
+      var target          = link.data("target");
       if (loading_message) {
-        var loading_message_target = link.attr("data-loading-message-target");
+        var loading_message_target = link.data("loading-message-target");
         if (!loading_message_target) loading_message_target = target;
         $(loading_message_target).html(loading_message);
       }
@@ -703,7 +708,7 @@
 
     $(document).delegate(".select_all", "click", function() {
       var header_box = $(this);
-      var checkbox_class = header_box.attr("data-checkbox-class");
+      var checkbox_class = header_box.data("checkbox-class");
 
       $('.' + checkbox_class).each(function(index, element) {
         element.checked = header_box.prop('checked');
@@ -712,7 +717,7 @@
 
     $(document).delegate(".select_master", "change", function() {
       var master_select = $(this);
-      var select_class = master_select.attr("data-select-class");
+      var select_class = master_select.data("select-class");
       var selection = master_select.find(":selected").text();
 
       $('.' + select_class).each(function(index, elem) {
@@ -723,16 +728,16 @@
       });
     });
 
-    $(document).delegate(".request_on_change", "change", function() {
+    $(document).on("change", ".request_on_change", function() {
       var input_element        = $(this);
       var param_name           = input_element.attr("name");
-      var current_value        = input_element.attr("value");
-      var url                  = input_element.attr("data-url");
-      var method               = input_element.attr("data-method");
-      var target               = input_element.attr("data-target");
-      var data_type            = input_element.attr("data-type");
-      var update_text          = input_element.attr("data-loading-message");
-      var optgroup_change      = input_element.attr("data-optgroup-change")
+      var current_value        = input_element.val(); // input_element.attr("value");
+      var url                  = input_element.data("url");
+      var method               = input_element.data("method");
+      var target               = input_element.data("target");
+      var data_type            = input_element.data("type");
+      var update_text          = input_element.data("loading-message");
+      var optgroup_change      = input_element.data("optgroup-change")
       var old_onchange_value   = input_element.data("old-onchange-value");
       var selected             = input_element.find("option:selected").parent();
       var optgroup_label       = selected.attr("label");
@@ -768,7 +773,7 @@
 
     $(document).delegate(".submit_onchange", "change", function() {
       var select = $(this);
-      var commit_value = select.attr("data-commit");
+      var commit_value = select.data("commit");
       var form   = select.closest("form");
 
       if (commit_value) {
@@ -783,10 +788,10 @@
     //http://www.texsoft.it/index.php?%20m=sw.js.htmltooltip&c=software&l=it
     $(document).delegate(".html_tool_tip_trigger", "mouseenter", function(event) {
       var trigger = $(this);
-      var tool_tip_id = trigger.attr("data-tool-tip-id");
+      var tool_tip_id = trigger.data("tool-tip-id");
       var tool_tip = $("#" + tool_tip_id);
-      var offset_x = trigger.attr("data-offset-x") || '30';
-      var offset_y = trigger.attr("data-offset-y") || '0';
+      var offset_x = trigger.data("offset-x") || '30';
+      var offset_y = trigger.data("offset-y") || '0';
 
       var x = trigger.position().left + parseInt(offset_x, 10);
       var y = trigger.position().top  + parseInt(offset_y, 10);
@@ -800,7 +805,7 @@
       tool_tip.show();
     }).delegate(".html_tool_tip_trigger", "mouseleave", function(event) {
       var trigger = $(this);
-      var tool_tip_id = trigger.attr("data-tool-tip-id");
+      var tool_tip_id = trigger.data("tool-tip-id");
       var tool_tip = $("#" + tool_tip_id);
 
       tool_tip.hide();
@@ -816,9 +821,9 @@
     //Datatype and target can be set with appropriate "data" attributes.
     $(document).delegate(".ajax_form", "ajax:success", function(event, data, status, xhr) {
       var current_form =  $(this);
-      var target = current_form.attr("data-target");
-      var reset_form = current_form.attr("data-reset-form");
-      var scroll_bottom = current_form.attr("data-scroll-bottom")
+      var target = current_form.data("target");
+      var reset_form = current_form.data("reset-form");
+      var scroll_bottom = current_form.data("scroll-bottom")
 
       if (reset_form !== "false") {
         current_form.resetForm();
@@ -835,13 +840,13 @@
       if (event.keyCode !== 13) return true;
 
       var text_field = $(this);
-      var data_type = text_field.attr("data-type") || "script";
-      var url = text_field.attr("data-url");
-      var method = text_field.attr("data-method") || "GET";
-      var target = text_field.attr("data-target");
+      var data_type = text_field.data("type") || "script";
+      var url = text_field.data("url");
+      var method = text_field.data("method") || "GET";
+      var target = text_field.data("target");
 
       var parameters = {};
-      parameters[text_field.attr("name")] = text_field.attr("value");
+      parameters[text_field.attr("name")] = text_field.val();
 
       jQuery.ajax({
         type: method,
@@ -862,23 +867,23 @@
     $(document).delegate(".hijacker_submit_button", "click", function() {
       var button = $(this);
       var submit_name   = button.attr("name");
-      var submit_value  = button.attr("value");
-      var data_type = button.attr("data-type");
-      var url = button.attr("data-url");
-      var method = button.attr("data-method");
-      var target = button.attr("data-target");
-      var ajax_submit = button.attr("data-ajax-submit");
-      var confirm_message = button.attr('data-confirm');
+      var submit_value  = button.val();
+      var data_type = button.data("type");
+      var url = button.data("url");
+      var method = button.data("method");
+      var target = button.data("target");
+      var ajax_submit = button.data("ajax-submit");
+      var confirm_message = button.data("confirm");
       var enclosing_form = button.closest("form");
       var other_options = {};
       var data = {};
 
-      data_type = data_type || enclosing_form.attr("data-type") || "html";
+      data_type = data_type || enclosing_form.data("type") || "html";
       url = url || enclosing_form.attr("action");
-      method = method || enclosing_form.attr("data-method") || "POST";
+      method = method || enclosing_form.data("method") || "POST";
 
-      if (button.attr("data-width")) other_options["width"] = button.attr("data-width");
-      if (button.attr("data-height")) other_options["height"] = button.attr("data-height");
+      if (button.data("width")) other_options["width"] = button.data("width");
+      if (button.data("height")) other_options["height"] = button.data("height");
 
       data[submit_name] = submit_value;
 
@@ -906,9 +911,9 @@
     $(document).delegate('.external_submit_button', 'click', function(e) {
       var button = $(this);
       var submit_name   = button.attr("name");
-      var submit_value  = button.attr("value");
-      var form = $("#" + button.attr('data-associated-form'));
-      var confirm_message = button.attr('data-confirm');
+      var submit_value  = button.val();
+      var form = $("#" + button.data("associated-form"));
+      var confirm_message = button.data("confirm");
       var hidden_field  = $("<input type=\'hidden\' name=\'"+submit_name+"\' value=\'"+submit_value+"\'>");
       var submit_button = $("<input type=\'submit\'>");
 
@@ -927,10 +932,10 @@
     //See on_click_ajax_replace() in application_helper.rb
     function ajax_onclick_show(event) {
       var onclick_elem = $(this);
-      var before_content = onclick_elem.attr("data-before");
-      var replace_selector = onclick_elem.attr("data-replace");
-      var replace_position = onclick_elem.attr("data-position");
-      var parents = onclick_elem.attr("data-parents");
+      var before_content = onclick_elem.data("before");
+      var replace_selector = onclick_elem.data("replace");
+      var replace_position = onclick_elem.data("position");
+      var parents = onclick_elem.data("parents");
       var replace_elem;
 
       if (!parents) {
@@ -964,12 +969,12 @@
       onclick_elem.addClass("ajax_onclick_hide_element");
       $.ajax({
         type: 'GET',
-        url: $(onclick_elem).attr("data-url"),
+        url: $(onclick_elem).data("url"),
         dataType: 'html',
         success: function(data) {
           var new_data = $(data);
 
-          new_data.attr("data-parents", parents);
+          new_data.data("parents", parents);
           new_data.addClass(parents);
           before_content.replaceWith(new_data);
           new_data.trigger("new_content");
@@ -979,7 +984,7 @@
         error:function(e) {
           var new_data = $("Error occured while processing this request");
 
-          new_data.attr("data-parents", parents);
+          new_data.data("parents", parents);
           new_data.addClass(parents);
           before_content.replaceWith(new_data);
           new_data.trigger("new_content");
@@ -1025,9 +1030,9 @@
       if (index >= element_array.length) return;
 
       var current_element = $(element_array[index]);
-      var url = current_element.attr("data-url");
-      var error_message = current_element.attr("data-error");
-      var replace_elem = $("#" + current_element.attr("data-replace"));
+      var url = current_element.data("url");
+      var error_message = current_element.data("error");
+      var replace_elem = $("#" + current_element.data("replace"));
 
       jQuery.ajax({
         dataType: 'html',
@@ -1059,7 +1064,7 @@
         changeMonth: true,
         dateFormat: "dd/mm/yy",
         onSelect: function( selectedDate ) {
-          var type  = datepicker.attr("data-datefieldtype");
+          var type  = datepicker.data("datefieldtype");
           var option = type === "from" ? "minDate" : "maxDate";
           var dates;
 
@@ -1073,7 +1078,7 @@
           dates = datepicker.parent().children(".daterangepicker");
 
           $(dates).each(function(n) {
-            if ($(this).attr("data-datefieldtype") !== type) {
+            if ($(this).data("datefieldtype") !== type) {
               $(this).datepicker("option",option,date);
             }
           });

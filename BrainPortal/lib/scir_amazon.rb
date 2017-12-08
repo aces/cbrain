@@ -82,8 +82,6 @@ class ScirAmazon < ScirCloud
   
   class Session < ScirCloud::Session #:nodoc:
 
-    @@state_if_missing = Scir::STATE_RUNNING
-
     # Returns the local IP address of the VM associated to the
     # CBRAIN task with id 'jid'.
     def get_local_ip(jid)

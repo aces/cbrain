@@ -61,14 +61,12 @@ module DateRangeRestriction
   def add_time_condition_to_scope(scope, table_name, mode_is_absolute_from, mode_is_absolute_to, absolute_from, absolute_to, relative_from, relative_to, date_attribute)
 
     return scope if date_attribute.blank?
-    raise "You can't filter on #{date_attribute}, is not a datetime attribute." if scope.model_name.constantize.columns_hash[date_attribute.to_s].type != :datetime
+    raise "You can't filter on #{date_attribute}, is not a datetime attribute." if scope.model_name.to_s.constantize.columns_hash[date_attribute.to_s].type != :datetime
 
     (start_time,end_time) = determine_date_range_start_end(mode_is_absolute_from, mode_is_absolute_to, absolute_from, absolute_to, relative_from, relative_to)
 
-    scope = scope.scoped(:conditions  => ["#{table_name}.#{date_attribute} >= ?", start_time])
-    scope = scope.scoped(:conditions  => ["#{table_name}.#{date_attribute} <= ?", end_time])
-
-    scope
+    scope.where(["#{table_name}.#{date_attribute} >= ?", start_time])
+         .where(["#{table_name}.#{date_attribute} <= ?", end_time])
 
   end
 

@@ -37,7 +37,9 @@
   array_to_table).
 %>
 <% result_table = lambda do |name, title = nil, &block| %>
-  <% return if (result = @results[name]).blank? %>
+  <% result = @results[name] %>
+  <% result = result.limit(@limit).to_a if result.is_a?(ActiveRecord::Relation) %>
+  <% return if result.blank? %>
   <div class="generalbox no_wrap">
   <h4><%= title || name.to_s.humanize %> (found: <%= result.size %>)</h4>
   <%=

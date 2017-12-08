@@ -86,7 +86,7 @@ class BourreauWorker < Worker
     # The full objects are reloaded in process_task() later on.
     tasks_todo_rel = CbrainTask.not_archived
        .where( :status => ReadyTasks, :bourreau_id => @rr_id )
-       .select([:id, :type, :user_id, :bourreau_id, :status, :updated_at])
+       #.select([:id, :type, :user_id, :bourreau_id, :status, :updated_at])
     tasks_todo_count = tasks_todo_rel.count
     worker_log.info "Found #{tasks_todo_count} tasks to handle."
 
@@ -119,7 +119,7 @@ class BourreauWorker < Worker
     @process_task_list_pid = nil # make sure it's unset in child
     @process_task_list_pid = Kernel.fork do
       begin
-        $0=$0.to_s.sub(/(BourreauWorker)?/, "SubWorker") + "\0"
+        $0=$0.to_s.sub(/(BourreauWorker)?/, "SubWorker")
         @pretty_name = "SubWorker-#{Process.pid}"
         self.worker_log.prefix = @pretty_name + ": " if self.worker_log.is_a?(LoggerPrefixer)
 
@@ -166,7 +166,9 @@ class BourreauWorker < Worker
   # of ugly long-term memory leaks that accumulate when ActiveRecord
   # are fetched over and over again.
   def process_task_list(tasks_todo_rel) #:nodoc:
-    tasks_todo = tasks_todo_rel.all
+    tasks_todo = tasks_todo_rel
+                 .select([:id, :type, :user_id, :bourreau_id, :status, :updated_at])
+                 .all.to_a
 
     # Partition tasks into two sets: 'decrease activity' and 'increase activity'.
     # Actually, 'decrease' means 'decrease or stay the same', or in other

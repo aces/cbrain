@@ -236,7 +236,7 @@ raw_system_cmd       = ""
 Dir.chdir(rails_home) do
   rails_cmd_ar = (mode == "start") ?
         [
-          "script/rails", "server", "thin",
+          "script/rails", "server", "puma",
           "-d", # the -d will start it in background
           "-p", "#{port}",
           "-e", "#{environment}",

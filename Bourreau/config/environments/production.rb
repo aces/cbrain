@@ -83,4 +83,11 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
+
+  # CBRAIN logging preferences (overrides the settings above)
+  config.log_level = :info
+  config.logger = ActiveSupport::Logger.new("#{Rails.root}/log/#{Rails.env}.log")
+  config.log_tags = [ ]
+  config.log_formatter = nil # not used in our custom logger
+
 end

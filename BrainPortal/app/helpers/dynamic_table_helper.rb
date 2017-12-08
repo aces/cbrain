@@ -276,7 +276,7 @@ module DynamicTableHelper
             :indicator => f[:indicator] || '-',
             :empty     => !!f[:empty]
           }
-        elsif f.is_a?(Enumerable)
+        elsif f.is_a?(Enumerable) && ! f.is_a?(ActiveRecord::Relation)
           val, lbl, ind = f.to_a
           {
             :value     => val,
@@ -301,7 +301,7 @@ module DynamicTableHelper
           obj.send(field_name)
         elsif obj.respond_to?(:[]) && (obj[field_name] rescue nil)
           obj[field_name]
-        elsif obj.is_a?(Enumerable)
+        elsif obj.is_a?(Enumerable) && ! obj.is_a?(ActiveRecord::Relation)
           obj.to_a[index]
         else
           raise "Cannot fetch field #{field_name} from #{obj}"
@@ -802,7 +802,10 @@ module DynamicTableHelper
     # with the +create+ class method if you need to render specific elements
     # separately.
     def render(element = :full, *args)
-      rows = (args[0].is_a?(Enumerable) ? args[0] : [args[0]]).map do |obj|
+      rows = (args[0].is_a?(Enumerable) && ! args[0].is_a?(ActiveRecord::Relation)) ?
+                args[0]
+             : [args[0]]
+      rows = rows.map do |obj|
         row = obj.is_a?(Row) ? obj : Row.new(obj, {})
         row.apply(@row_options.clone, &@row_block)
         row

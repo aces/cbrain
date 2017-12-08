@@ -53,7 +53,8 @@ class NocController < ApplicationController
     @bourreaux     = Bourreau.where([ "updated_at > ?", offline_resource_limit.ago ]).order(:name).all # must have been toggled within a month
 
     # Three numbers: active users, active tasks, sum of files sizes being transfered.
-    @active_users  = CbrainSession.where([ "updated_at > ?", this_morning ])
+    @active_users  = CbrainSession.session_model
+                                  .where([ "updated_at > ?", this_morning ])
                                   .where(:active => true)
                                   .raw_first_column(:user_id)
                                   .compact.uniq.size

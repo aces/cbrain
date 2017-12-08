@@ -140,8 +140,8 @@ class ServiceController < ApplicationController
   def licence
     respond_to do |format|
       format.html  { redirect_to :controller => :portal, :action => :about_us }
-      format.xml   { render :nothing => true, :status => 406 }
-      format.json  { render :nothing => true, :status => 406 }
+      format.xml   { head :not_acceptable }
+      format.json  { head :not_acceptable }
     end
   end
 
@@ -149,8 +149,8 @@ class ServiceController < ApplicationController
   def provenance
     respond_to do |format|
       format.html  { redirect_to :controller => :portal, :action => :about_us }
-      format.xml   { render :nothing => true, :status => 406 }
-      format.json  { render :nothing => true, :status => 406 }
+      format.xml   { head :not_acceptable }
+      format.json  { head :not_acceptable }
     end
   end
 

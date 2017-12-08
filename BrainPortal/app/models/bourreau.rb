@@ -27,7 +27,7 @@ class Bourreau < RemoteResource
 
   has_many :cbrain_tasks, :dependent => :restrict_with_exception
   has_many :tool_configs, :dependent => :destroy
-  has_many :tools, -> { uniq }, :through => :tool_configs
+  has_many :tools, -> { distinct }, :through => :tool_configs
 
   attr_accessor :operation_messages # no need to store in DB
 
@@ -465,7 +465,7 @@ class Bourreau < RemoteResource
     CBRAIN.spawn_with_active_records(:admin, "AlterTask #{newstatus}") do
 
     taskids.shuffle.each_with_index do |task_id,count|
-      $0 = "AlterTask #{newstatus} ID=#{task_id} #{count+1}/#{taskids.size}\0"
+      $0 = "AlterTask #{newstatus} ID=#{task_id} #{count+1}/#{taskids.size}"
       task = CbrainTask.where(:id => task_id, :bourreau_id => myself.id).first
       next unless task # doesn't even exist? just ignore it
 

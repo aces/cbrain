@@ -87,9 +87,9 @@
             sort_url     = column.sort_target.call(column.name, sort_order)
             sort_url     = url_for(sort_url) unless sort_url.is_a?(String)
             sort_icon    = ({
-              'asc'  => "ui-icon-carat-1-n",
-              'desc' => "ui-icon-carat-1-s",
-              'none' => "ui-icon-carat-2-n-s"
+              'asc'  => "ui-icon-caret-1-n",
+              'desc' => "ui-icon-caret-1-s",
+              'none' => "ui-icon-caret-2-n-s"
             })[sort_order.to_s]
           %>
           <span class="dt-sort-btn ui-icon <%= sort_icon %>"

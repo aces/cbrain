@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # Place special Bash shell initialization commands here.
@@ -35,3 +35,4 @@ if test -z "$rvm_version$CBRAIN_BASHRC_SOURCED"; then
   CBRAIN_BASHRC_SOURCED="OK"
 fi
 
+export SECRET_KEY_BASE=JUNK-NOT-USED-IN-BOURREAU-THERE-ARE-NO-SESSIONS-ANYWAY

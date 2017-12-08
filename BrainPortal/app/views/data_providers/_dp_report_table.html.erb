@@ -30,7 +30,7 @@
 %>
 
 <%
-  @issues.each do |issue|
+  @view_scope.each do |issue|
     issue[:userfile] = Userfile.find_by_id(issue[:userfile_id]) if issue[:userfile_id]
     issue[:user]   = User.find_by_id(issue[:user_id]) if issue[:user_id]
     issue[:user] ||= issue[:userfile].user if issue[:userfile]

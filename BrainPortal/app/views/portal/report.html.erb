@@ -44,9 +44,8 @@
    date_filtering     = params[:date_range] || {}
 %>
 
-<%= stylesheet_link_tag    'tablesorter_themes/blue/style' %>
-<%= javascript_include_tag 'jquery.tablesorter.min' %>
-<%= javascript_include_tag 'jquery.metadata' %>
+<%= stylesheet_link_tag    asset_path('stylesheets/tablesorter_themes/blue/style') %>
+<%= javascript_include_tag asset_path('javascripts/jquery.tablesorter.min') %>
 
 <h2>Automatic Tabular Report Maker</h2>
 

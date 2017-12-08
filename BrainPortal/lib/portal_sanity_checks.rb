@@ -307,7 +307,8 @@ class PortalSanityChecks < CbrainChecker #:nodoc:
     puts "C> Ensuring tags have a group..."
     #-----------------------------------------------------------------------------
 
-    tags = Tag.all(:conditions => "group_id IS NULL")
+    #tags = Tag.all(:conditions => ["group_id IS NULL"])
+    tags = Tag.where('group_id is NULL');
     tags.each do |t|
       new_group = t.user.own_group
       t.group_id = new_group.id

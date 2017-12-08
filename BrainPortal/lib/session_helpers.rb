@@ -32,8 +32,16 @@ module SessionHelpers
   end
 
   # Returns the current session as a CbrainSession object.
+  def cbrain_session
+    @cbrain_session ||= CbrainSession.new(session)
+  end
+
+#TODO remove this method after fixing all calls to it; they need to be replaced by
+# called to either session() (small data) or cbrain_session() (long data)
   def current_session
-    @cbrain_session ||= CbrainSession.new(session, request.env['rack.session.record'] )
+    puts_red "DEPRECATED: current_session() Instead use session(), or cbrain_session(). Ask Pierre."
+    puts_red "AT: #{caller[0]}"
+    cbrain_session
   end
 
   # Returns currently active project.

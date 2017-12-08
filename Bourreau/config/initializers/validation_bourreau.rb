@@ -24,47 +24,64 @@ require 'socket'
 
 CbrainSystemChecks.print_intro_info # general information printed to STDOUT
 
-# Checking to see if this command requires validation or not
-
-program_name = $PROGRAM_NAME || $0
-program_name = Pathname.new(program_name).basename.to_s if program_name
-first_arg    = ARGV[0]
-rails_command = $LOADED_FEATURES.detect { |path| path =~ /rails\/commands\/\w+\.rb$/ }
-program_name = Pathname.new(rails_command).basename(".rb").to_s if rails_command
-
-#puts_cyan "Program=#{program_name} ARGV=(#{ARGV.join(" | ")})"
-#puts_cyan "FirstArg=#{first_arg} RailsCommand=#{rails_command}"
+# Try extracting what it is we are booting based on the set of loaded ruby files.
+first_arg      = ARGV[0]
+program_name   = Regexp.last_match[1] if $PROGRAM_NAME =~ /(puma|rspec|rake)$/
+program_name ||= $LOADED_FEATURES.detect do |pathname|
+  break Regexp.last_match[2] if pathname =~ %r[
+    (/rails/|/rails/commands/|/lib/)
+    (generators|console|server|puma|rspec-rails|rake) # note that not all combinations are possible
+    .rb$
+    ]x
+end || "unknown"
+# At this point, program_name should be one of keywords in the second line of the Regex above
 
 #
-# Exceptions By Program Name
+# Validations Scenarios By Program Name
 #
 
-if program_name == 'rake' # script/generate or script/destroy
-  puts "C> \t- Running Rake '#{first_arg}'."
-elsif program_name == "rails" # probably 'generate', 'destroy', 'plugin' etc, but we can't tell!
-  puts "C> \t- Running Rails utility."
-elsif program_name == 'rspec' # test suite
-  puts "C> \t- Testing with 'rspec'."
-  CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
-else
+puts "C> CBRAIN identified boot mode: #{program_name}"
+
+# ----- CONSOLE -----
+if program_name =~ /console/
   if ENV['CBRAIN_SKIP_VALIDATIONS']
     puts "C> \t- Warning: environment variable 'CBRAIN_SKIP_VALIDATIONS' is set, so we\n"
     puts "C> \t-          are skipping all validations! Proceed at your own risks!\n"
   else
-    if program_name =~ /console/
-      puts "C> \t- Note:  You can skip all CBRAIN validations by temporarily setting the\n"
-      puts "C> \t         environment variable 'CBRAIN_SKIP_VALIDATIONS' to '1'.\n"
-      CbrainSystemChecks.check(:all)
-      BourreauSystemChecks.check([
-        :a050_ensure_proper_cluster_management_layer_is_loaded, :z000_ensure_we_have_a_forwarded_ssh_agent,
-      ])
-      $0 = "Rails Console #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}\0"
-    else # normal server mode
-      CbrainSystemChecks.check(:all)
-      BourreauSystemChecks.check(:all)
-      $0 = "Rails Server #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}\0"
-    end
+    puts "C> \t- Note:  You can skip all CBRAIN validations by temporarily setting the\n"
+    puts "C> \t         environment variable 'CBRAIN_SKIP_VALIDATIONS' to '1'.\n"
+    CbrainSystemChecks.check(:all)
+    BourreauSystemChecks.check([
+      :a050_ensure_proper_cluster_management_layer_is_loaded, :z000_ensure_we_have_a_forwarded_ssh_agent,
+    ])
   end
+  $0 = "Rails Console #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
+
+# ----- SERVER -----
+elsif program_name =~ /server|puma/ # normal server mode
+  puts "C> \t- Running all validations for server."
+  CbrainSystemChecks.check(:all)
+  BourreauSystemChecks.check(:all)
+  $0 = "Rails Server #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
+
+# ----- RSPEC TESTS -----
+elsif program_name =~ /rspec/ # test suite
+  puts "C> \t- Testing with 'rspec'."
+  CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
+
+# ----- RAKE TASK -----
+elsif program_name =~ /rake/
+  puts "C> \t- Running Rake '#{first_arg}'."
+
+# ----- RAILS GENERATE -----
+elsif program_name =~ /generators/ # probably 'generate', 'destroy', 'plugin' etc, but we can't tell!
+  puts "C> \t- Running Rails utility."
+
+# ----- OTHER -----
+else # any other case is something we've not yet thought about, so we crash until we fix it.
+  #puts_red "PN=#{$PROGRAM_NAME} P0=$0"
+  #puts_yellow $LOADED_FEATURES.sort.join("\n")
+  raise "Unknown boot situation: program=#{program_name}, first arg=#{first_arg}"
 end
 
 #-----------------------------------------------------------------------------

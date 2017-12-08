@@ -34,7 +34,7 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
   def self.print_intro_info #:nodoc:
     #-----------------------------------------------------------------------------
     puts "C> CBRAIN System Checks starting, " + Time.now.to_s
-    puts "C> Rails environment is set to '#{Rails.env}'"
+    puts "C> Ruby #{RUBY_VERSION} on Rails #{Rails::VERSION::STRING}, environment is set to '#{Rails.env}'"
     puts "C> RAILS_ENV variable is set to '#{ENV['RAILS_ENV']}'" if (! ENV['RAILS_ENV'].blank?) && (Rails.env != ENV['RAILS_ENV'])
     puts "C> CBRAIN instance is named '#{CBRAIN::Instance_Name}'"
     puts "C> Hostname is '#{Socket.gethostname rescue "(Exception)"}'"

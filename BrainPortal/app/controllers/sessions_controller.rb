@@ -53,7 +53,10 @@ class SessionsController < ApplicationController
   def create #:nodoc:
     # If the csrf token is blank, it was reset by Rails' request forgery protection
     # and we want to prevent login
-    user = current_session["_csrf_token"].presence && User.authenticate(params[:login], params[:password]) # can be nil if it fails
+puts_yellow "CSRF: -#{session["_csrf_token"]}-"
+puts_yellow "AUTH: L=#{params[:login]} P=#{params[:password]}"
+    user = session["_csrf_token"].presence && User.authenticate(params[:login], params[:password]) # can be nil if it fails
+puts_yellow "AUTH: L=#{params[:login]} P=#{params[:password]} U=#{user}"
     create_from_user(user)
   end
 
@@ -85,10 +88,12 @@ class SessionsController < ApplicationController
       portal.addlog("User #{current_user.login} logged out") if current_user
     end
 
-    if current_session
-      current_session.deactivate
-      current_session.clear
+    if cbrain_session
+      cbrain_session.deactivate
+      cbrain_session.clear
     end
+
+    reset_session # Rails
 
     respond_to do |format|
       format.html {
@@ -140,6 +145,7 @@ class SessionsController < ApplicationController
     end
 
     self.current_user = user
+    session[:user_id] = user.id
     portal = BrainPortal.current_resource
 
     # Check if the user or the portal is locked
@@ -189,8 +195,8 @@ class SessionsController < ApplicationController
   end
 
   def user_tracking(portal) #:nodoc:
-    current_session.activate
     user   = current_user
+    cbrain_session.activate(user.id)
 
     # Record the best guess for browser's remote host name
     reqenv  = request.env

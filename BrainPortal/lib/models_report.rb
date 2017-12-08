@@ -46,6 +46,10 @@ class ModelsReport
     accessed_after   = options[:accessed_after]
     types            = options[:types]
 
+    # Change to true arrays
+    users            = users.all.to_a            if users.is_a?(ActiveRecord::Relation)
+    remote_resources = remote_resources.all.to_a if remote_resources.is_a?(ActiveRecord::Relation)
+
     # Internal constants
     all_users_label = "TOTAL" # used as a key in the table's hash
 

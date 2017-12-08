@@ -67,7 +67,7 @@ class TaskCustomFilter < CustomFilter
   # Returns +scope+ modified to filter the CbrainTask entry's type.
   def scope_type(scope)
     return scope if self.data["type"].is_a?(Array) && self.data["type"].all? { |v| v.blank? }
-    scope.scoped(:conditions  => {:type  =>  self.data["type"]})
+    scope.where(:type => self.data["type"])
   end
 
   # Returns +scope+ modified to filter the CbrainTask entry's description.
@@ -88,36 +88,31 @@ class TaskCustomFilter < CustomFilter
       term = '%' + term
     end
 
-    scope.scoped(:conditions  => ["#{query}", term])
+    scope.where(["#{query}", term])
   end
 
   # Returns +scope+ modified to filter the CbrainTask entry's owner.
   def scope_user(scope)
-    scope.scoped(:conditions  => ["cbrain_tasks.user_id = ?", self.data["user_id"]])
+    scope.where(["cbrain_tasks.user_id = ?", self.data["user_id"]])
   end
 
   # Return +scope+ modified to filter the CbrainTask entry's bourreau.
   def scope_bourreau(scope)
-    scope.scoped(:conditions  => ["cbrain_tasks.bourreau_id = ?", self.data["bourreau_id"]])
+    scope.where(["cbrain_tasks.bourreau_id = ?", self.data["bourreau_id"]])
   end
 
   # Returns +scope+ modified to filter the CbrainTask entry's status.
   def scope_status(scope)
     return scope if self.data["status"].is_a?(Array) && self.data["status"].all? { |v| v.blank? }
-    scope.scoped(:conditions => {:status => self.data["status"]})
+    scope.where(:status => self.data["status"])
   end
 
   # Returns +scope+ modified to filter the CbrainTask entry's archive.
   def scope_archive(scope)
     keyword = self.data["archiving_status"] || ""
-    case keyword
-    when "none"
-      return scope.not_archived
-    when "cluster"
-      return scope.archived_on_cluster
-    when "file"
-      return scope.archived_as_file
-    end
+    return scope.not_archived        if keyword == "none"
+    return scope.archived_on_cluster if keyword == "cluster"
+    return scope.archived_as_file    if keyword == "file"
     return scope # anything else, no operation.
   end
 

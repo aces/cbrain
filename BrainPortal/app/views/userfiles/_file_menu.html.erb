@@ -89,8 +89,9 @@
   <span id="menu-btn" class="act-btn" data-icon="ui-icon-gear">More...</span>
   <ul id="menu-list">
     <li id="filters-item">
+      <div>
       Custom filters
-      <span class="ui-icon ui-icon-zoomin"></span>
+      </div>
       <ul id="filters-menu">
         <%= render(:partial => 'filter_items') %>
       </ul>
@@ -99,8 +100,10 @@
       class="act-item"
       data-dialog="tag-dialog"
     >
+      <div>
       Tags
       <span class="ui-icon ui-icon-tag"></span>
+      </div>
     </li>
     <li class="menu-separator">-</li>
 
@@ -108,8 +111,10 @@
       class="act-item dyn-item"
       data-dialog="prop-dialog"
     >
+      <div>
       Properties
       <span class="ui-icon ui-icon-document-b"></span>
+      </div>
     </li>
     <li id="qc-item"
       class="act-item dyn-item"
@@ -117,8 +122,10 @@
       data-method="POST"
       data-confirm-dlg="qc-confirm"
     >
+      <div>
       Quality control
       <span class="ui-icon ui-icon-check"></span>
+      </div>
     </li>
     <li id="sync-item"
       class="act-item dyn-item"
@@ -126,8 +133,10 @@
       data-method="POST"
       data-empty-selection="0"
     >
+      <div>
       Synchronize
       <span class="ui-icon ui-icon-refresh"></span>
+      </div>
     </li>
     <li id="mnew-item"
       class="act-item dyn-item"
@@ -135,8 +144,10 @@
       data-method="POST"
       data-empty-selection="0"
     >
+      <div>
       Mark as newer
       <span class="ui-icon ui-icon-flag"></span>
+      </div>
     </li>
     <li class="menu-separator dyn-item">-</li>
 
@@ -144,8 +155,10 @@
       class="act-item dyn-item"
       data-dialog="collection-dialog"
     >
+      <div>
       New collection
       <span class="ui-icon ui-icon-folder-collapsed"></span>
+      </div>
     </li>
     <li class="menu-separator dyn-item">-</li>
 
@@ -154,8 +167,10 @@
       data-url="<%= userfiles_path(:format => :csv) %>"
       data-method="GET"
     >
+      <div>
       Export as CSV
       <span class="ui-icon ui-icon-extlink"></span>
+      </div>
     </li>
 
     <li id="exp-list-item"
@@ -163,8 +178,10 @@
       data-url="<%= export_file_list_userfiles_path %>"
       data-method="POST"
     >
+      <div>
       Create a file list
       <span class="ui-icon ui-icon-extlink"></span>
+      </div>
     </li>
 
     <li class="menu-separator">-</li>
@@ -180,12 +197,14 @@
       data-method="GET"
       data-ajax="1"
     >
+      <div>
       <% if @scope.custom[:view_all] %>
         Show only my files
       <% else %>
         Show all files
       <% end %>
       <span class="ui-icon ui-icon-star"></span>
+      </div>
     </li>
     <li id="vhid-item"
       class="act-item"
@@ -193,12 +212,14 @@
       data-method="GET"
       data-ajax="1"
     >
+      <div>
       <% if @scope.custom[:view_hidden] %>
         Hide hidden files
       <% else %>
         Show hidden files
       <% end %>
       <span class="ui-icon ui-icon-note"></span>
+      </div>
     </li>
     <li id="vtree-item"
       class="act-item"
@@ -206,12 +227,14 @@
       data-method="GET"
       data-ajax="1"
     >
+      <div>
       <% if @scope.custom[:tree_sort] %>
         List view
       <% else %>
         Tree view
       <% end %>
       <span class="ui-icon ui-icon-arrowreturnthick-1-s"></span>
+      </div>
     </li>
   </ul>
 </div>
