@@ -62,6 +62,7 @@ gem "jquery-rails"
 gem "jquery-ui-rails"
 gem "jquery-form-rails"
 gem "actionpack-xml_parser"
+gem 'activemodel-serializers-xml'
 gem 'aws-sdk', '<2.0'
 
 group :development do
