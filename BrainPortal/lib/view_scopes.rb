@@ -81,7 +81,7 @@ module ViewScopes
         :scope_to_session
       )
 
-      before_filter(:update_session_scopes)
+      before_action(:update_session_scopes)
     end
   end
 

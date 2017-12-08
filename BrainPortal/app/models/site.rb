@@ -55,9 +55,6 @@ class Site < ActiveRecord::Base
 
   attr_accessor           :manager_ids
 
-  attr_accessible :name, :description, :user_ids, :manager_ids, :group_ids
-
-
   # Returns users that have manager access to this site (site managers or admins).
   def managers
     self.users.where(:type => "SiteManager")
@@ -209,13 +206,13 @@ class Site < ActiveRecord::Base
     @unset_user_ids = @old_user_ids - current_user_ids
     site_group = self.own_group
 
-    unless site_group.blank? || self.groups.exists?(site_group)
+    unless site_group.blank? || self.groups.exists?(site_group.id)
       self.groups << site_group
     end
 
     User.find(@new_user_ids).each do |user|
       user.own_group.update_attributes!(:site => self)
-      unless site_group.blank? || self.groups.exists?(site_group)
+      unless site_group.blank? || self.groups.exists?(site_group.id)
         user.groups << site_group
       end
     end

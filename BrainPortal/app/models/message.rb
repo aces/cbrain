@@ -37,8 +37,6 @@ class Message < ActiveRecord::Base
 
   attr_accessor :send_email
 
-  attr_accessible :header, :description, :variable_text, :message_type, :read, :user_id, :expiry, :last_sent, :critical, :display, :send_email, :group_id, :sender_id
-
   # Send a new message to a user, the users of a group, or a site.
   #
   # The +destination+ argument can be a User, a Group, a Site,

@@ -27,8 +27,8 @@ class ToolConfigsController < ApplicationController
 
   api_available :only => [ :index, :show ]
 
-  before_filter :login_required
-  before_filter :admin_role_required, :except => [ :index ]
+  before_action :login_required
+  before_action :admin_role_required, :except => [ :index ]
 
   def index #:nodoc:
     @scope              = scope_from_session('tool_configs')
@@ -152,7 +152,7 @@ class ToolConfigsController < ApplicationController
   def update #:nodoc:
     id                = params[:id] || "NEW" # can be 'new' if we create()
     id                = nil if id == "NEW"
-    form_tool_config  = ToolConfig.new(params[:tool_config]) # just to store the new attributes
+    form_tool_config  = ToolConfig.new(tool_config_params) # just to store the new attributes
     form_tool_id      = form_tool_config.tool_id.presence
     form_bourreau_id  = form_tool_config.bourreau_id.presence
 
@@ -264,9 +264,24 @@ class ToolConfigsController < ApplicationController
 
   private
 
+  def tool_config_params #:nodoc:
+    params.require(:tool_config).permit(
+      :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue,
+      :group_id, :ncpus, :container_image_userfile_id, :containerhub_image_name, :container_engine, :extra_qsub_args,
+      # The configuration of a tool in a VM managed by a
+      # ScirCloud Bourreau is defined by the following
+      # parameters which specify the disk image where the
+      # tool is installed (including its ssh connection
+      # properties) and the type of instance (thus RAM and
+      # CPU requirements) to use.
+      :cloud_disk_image, :cloud_vm_user, :cloud_ssh_key_pair, :cloud_instance_type,
+      :cloud_job_slots, :cloud_vm_boot_timeout, :cloud_vm_ssh_tunnel_port
+    )
+  end
+
   # Create list of TC visible to current user.
   def base_scope #:nodoc:
-    scope = ToolConfig.scoped
+    scope = ToolConfig.where(nil)
     unless current_user.has_role?(:admin_user)
       bourreau_ids = Bourreau.all.select { |b| b.can_be_accessed_by?(current_user) }.map(&:id)
       tool_ids     = Tool.all.select     { |t| t.can_be_accessed_by?(current_user) }.map(&:id)

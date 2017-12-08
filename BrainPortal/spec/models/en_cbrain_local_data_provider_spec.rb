@@ -24,7 +24,7 @@ require 'rails_helper'
 
 describe EnCbrainLocalDataProvider do
   let(:en_cbrain_local_data_provider) {create(:en_cbrain_local_data_provider, :remote_dir => "remote")}
-  let(:userfile) {create(:userfile, :data_provider => en_cbrain_local_data_provider)}
+  let(:userfile) {create(:single_file, :data_provider => en_cbrain_local_data_provider)}
 
 
   describe "#allow_file_owner_change?" do

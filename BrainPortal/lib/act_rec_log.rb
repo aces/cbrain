@@ -212,41 +212,41 @@ module ActRecLog
   # The first time a message is created, some revision
   # information about the current ActiveRecord class
   # will be added to the top of the log.
-  def addlog(message, options = { :no_caller => true })
-    return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
-    use_internal = self.new_record? || self.id.blank?
-    begin
-      unless use_internal
-        arl = active_record_log_find_or_create
-        return false unless arl
-      end
+  # def addlog(message, options = { :no_caller => true })
+  #   return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
+  #   use_internal = self.new_record? || self.id.blank?
+  #   begin
+  #     unless use_internal
+  #       arl = active_record_log_find_or_create
+  #       return false unless arl
+  #     end
 
-      callerlevel    = options[:caller_level] || 0
-      calling_info   = caller[callerlevel]
-      calling_method = options[:prefix] || ( calling_info.match(/in `(.*)'/) ? ($1 + "() ") : "unknown() " )
-      calling_method = "" if options[:no_caller]
-      calling_method.sub!(/(block|rescue).*? in /, "")
+  #     callerlevel    = options[:caller_level] || 0
+  #     calling_info   = caller[callerlevel]
+  #     calling_method = options[:prefix] || ( calling_info.match(/in `(.*)'/) ? ($1 + "() ") : "unknown() " )
+  #     calling_method = "" if options[:no_caller]
+  #     calling_method.sub!(/(block|rescue).*? in /, "")
 
-      log = use_internal ? @tmp_internal_log : arl.log
-      log = "" if log.blank?
-      lines = message.split(/\s*\n/)
-      lines.pop while lines.size > 0 && lines[-1] == ""
+  #     log = use_internal ? @tmp_internal_log : arl.log
+  #     log = "" if log.blank?
+  #     lines = message.split(/\s*\n/)
+  #     lines.pop while lines.size > 0 && lines[-1] == ""
 
-      message = lines.join("\n") + "\n"
-      log += Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + calling_method + message
-      while log.size > 65500 && log =~ /\n/   # TODO: archive ?
-        log.sub!(/\A[^\n]*\n/,"")
-      end
-      if use_internal
-        @tmp_internal_log = log
-      else
-        arl.update_attributes( { :log => log } )
-      end
-    rescue
-      # puts_green "EX: #{ex.class}: #{ex.message}\n#{ex.backtrace.join("\n")}"
-      false
-    end
-  end
+  #     message = lines.join("\n") + "\n"
+  #     log += Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + calling_method + message
+  #     while log.size > 65500 && log =~ /\n/   # TODO: archive ?
+  #       log.sub!(/\A[^\n]*\n/,"")
+  #     end
+  #     if use_internal
+  #       @tmp_internal_log = log
+  #     else
+  #       arl.update_attributes( { :log => log } )
+  #     end
+  #   rescue
+  #     # puts_green "EX: #{ex.class}: #{ex.message}\n#{ex.backtrace.join("\n")}"
+  #     false
+  #   end
+  # end
 
   # Creates a custom log entry with info about the context
   # where this method is called; the +context+ argument
@@ -267,17 +267,17 @@ module ActRecLog
   # how many levels of calling context to go back to find the method
   # name to display (the default is 0, which means the method
   # where you call addlog_context() itself).
-  def addlog_context(context, message=nil, caller_level=0)
-    return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
-    class_name     = context.class.to_s
-    class_name     = context.to_s if class_name == "Class"
-    rev_info       = context.revision_info
-    pretty_info    = rev_info.short_commit
+  # def addlog_context(context, message=nil, caller_level=0)
+  #   return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
+  #   class_name     = context.class.to_s
+  #   class_name     = context.to_s if class_name == "Class"
+  #   rev_info       = context.revision_info
+  #   pretty_info    = rev_info.short_commit
 
-    full_message   = "#{class_name} rev. #{pretty_info}"
-    full_message  += " #{message}" unless message.blank?
-    self.addlog(full_message, :caller_level => caller_level + 1)
-  end
+  #   full_message   = "#{class_name} rev. #{pretty_info}"
+  #   full_message  += " #{message}" unless message.blank?
+  #   self.addlog(full_message, :caller_level => caller_level + 1)
+  # end
 
   # Creates a custom log entry with the revision info
   # about +anobject+, which is any object or class, supplied as
@@ -294,17 +294,17 @@ module ActRecLog
   # results is a log entry like this one:
   #
   #     "Abcd revision 123 prioux 2009-05-23 hello"
-  def addlog_revinfo(anobject, message=nil, caller_level=0)
-    return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
-    class_name     = anobject.class.to_s
-    class_name     = anobject.to_s if class_name == "Class"
-    rev_info       = anobject.revision_info
-    pretty_info    = rev_info.short_commit
+  # def addlog_revinfo(anobject, message=nil, caller_level=0)
+  #   return true  if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
+  #   class_name     = anobject.class.to_s
+  #   class_name     = anobject.to_s if class_name == "Class"
+  #   rev_info       = anobject.revision_info
+  #   pretty_info    = rev_info.short_commit
 
-    full_message   = "#{class_name} rev. #{pretty_info}"
-    full_message   += " #{message}" unless message.blank?
-    self.addlog(full_message, :caller_level => caller_level + 1)
-  end
+  #   full_message   = "#{class_name} rev. #{pretty_info}"
+  #   full_message   += " #{message}" unless message.blank?
+  #   self.addlog(full_message, :caller_level => caller_level + 1)
+  # end
 
   # This method records in the object's log a list of
   # all currenly pending changes to the object's attribute,
@@ -382,9 +382,9 @@ module ActRecLog
   # no new attributes are expected as argument. It is often used
   # as a replacement for save() when the attributes have already been
   # been changed.
-  def save_with_logging(by_user=nil, white_list=[], caller_level=0)
-    self.update_attributes_with_logging({}, by_user, white_list, caller_level + 1)
-  end
+  # def save_with_logging(by_user=nil, white_list=[], caller_level=0)
+  #   self.update_attributes_with_logging({}, by_user, white_list, caller_level + 1)
+  # end
 
   # This method takes two lists +oldlist and +newlist+ of ActiveRecord object
   # of type +model+ (or just their IDs) and compare them, logging
@@ -397,29 +397,29 @@ module ActRecLog
   #
   #   Managers updated by adminuser: Removed: login1
   #   Managers uddated by adminuser: Added: login4, login5
-  def addlog_object_list_updated(message, model, oldlist, newlist, by_user=nil, name_method=:name, caller_level = 0)
-    klass = model < ActiveRecord::Base ? model : model.constantize
-    oldlist = Array(oldlist)
-    newlist = Array(newlist)
-    # this method handles mixed arrays of IDs or objects
-    oldlist_part = oldlist.hashed_partition { |x| x.is_a?(ActiveRecord::Base) ? :obj : :id }
-    newlist_part = newlist.hashed_partition { |x| x.is_a?(ActiveRecord::Base) ? :obj : :id }
-    oldlist = ((oldlist_part[:obj] || []) + (oldlist_part[:id] ? klass.find_all_by_id(oldlist_part[:id]) : [])).uniq
-    newlist = ((newlist_part[:obj] || []) + (newlist_part[:id] ? klass.find_all_by_id(newlist_part[:id]) : [])).uniq
-    added     = newlist - oldlist
-    removed   = oldlist - newlist
-    by_user_mess = by_user.present? ? " by #{by_user.login}" : ""
-    mess = "#{message} updated#{by_user_mess}:"
-    if removed.present?
-      self.addlog("#{mess} Removed: #{removed.map(&name_method).join(", ")}")
-    end
-    if added.present?
-      self.addlog("#{mess} Added: #{added.map(&name_method).join(", ")}")
-    end
-    true
-  rescue => ex
-    puts_red "Exception in addlog_object_list_updated: #{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
-  end
+  # def addlog_object_list_updated(message, model, oldlist, newlist, by_user=nil, name_method=:name, caller_level = 0)
+  #   klass = model < ActiveRecord::Base ? model : model.constantize
+  #   oldlist = Array(oldlist)
+  #   newlist = Array(newlist)
+  #   # this method handles mixed arrays of IDs or objects
+  #   oldlist_part = oldlist.hashed_partition { |x| x.is_a?(ActiveRecord::Base) ? :obj : :id }
+  #   newlist_part = newlist.hashed_partition { |x| x.is_a?(ActiveRecord::Base) ? :obj : :id }
+  #   oldlist = ((oldlist_part[:obj] || []) + (oldlist_part[:id] ? klass.find_all_by_id(oldlist_part[:id]) : [])).uniq
+  #   newlist = ((newlist_part[:obj] || []) + (newlist_part[:id] ? klass.find_all_by_id(newlist_part[:id]) : [])).uniq
+  #   added     = newlist - oldlist
+  #   removed   = oldlist - newlist
+  #   by_user_mess = by_user.present? ? " by #{by_user.login}" : ""
+  #   mess = "#{message} updated#{by_user_mess}:"
+  #   if removed.present?
+  #     self.addlog("#{mess} Removed: #{removed.map(&name_method).join(", ")}")
+  #   end
+  #   if added.present?
+  #     self.addlog("#{mess} Added: #{added.map(&name_method).join(", ")}")
+  #   end
+  #   true
+  # rescue => ex
+  #   puts_red "Exception in addlog_object_list_updated: #{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
+  # end
 
   # Gets the log for the current ActiveRecord;
   # this is a single long string with embedded newlines.
@@ -435,37 +435,37 @@ module ActRecLog
   # ActiveRecord's log, without any reformating.
   # Use addlog() for normal operation; this method
   # is rarely used in normal situations.
-  def raw_append_log(text)
-    return false if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
-    if self.new_record? || self.id.blank?
-      @tmp_internal_log ||= ""
-      @tmp_internal_log += text
-      return true
-    end
-    return false if self.id.blank?
-    arl = active_record_log_find_or_create
-    log = arl.log + text
-    while log.size > 65500 && log =~ /\n/   # TODO: archive ?
-      log.sub!(/^[^\n]*\n/,"")
-    end
-    arl.update_attributes( { :log => log } )
-  end
+  # def raw_append_log(text)
+  #   return false if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
+  #   if self.new_record? || self.id.blank?
+  #     @tmp_internal_log ||= ""
+  #     @tmp_internal_log += text
+  #     return true
+  #   end
+  #   return false if self.id.blank?
+  #   arl = active_record_log_find_or_create
+  #   log = arl.log + text
+  #   while log.size > 65500 && log =~ /\n/   # TODO: archive ?
+  #     log.sub!(/^[^\n]*\n/,"")
+  #   end
+  #   arl.update_attributes( { :log => log } )
+  # end
 
   # Destroy the log associated with an ActiveRecord.
   # This is usually called automatically as a +after_destroy+
   # callback when the record is destroyed, but it can be
   # called manually too.
-  def destroy_log
-    return true if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
-    if self.new_record? || self.id.blank?
-      @tmp_internal_log = ""
-      return true
-    end
-    arl = self.active_record_log
-    return true unless arl
-    ActiveRecordLog.delete(arl.id) # was: destroy_without_callbacks
-    true
-  end
+  # def destroy_log
+  #   return true if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
+  #   if self.new_record? || self.id.blank?
+  #     @tmp_internal_log = ""
+  #     return true
+  #   end
+  #   arl = self.active_record_log
+  #   return true unless arl
+  #   ActiveRecordLog.delete(arl.id) # was: destroy_without_callbacks
+  #   true
+  # end
 
   # Logs have been temporarily saved to
   # an internal variable when the object
@@ -494,22 +494,22 @@ module ActRecLog
     ActiveRecordLog.where( :ar_id => myid, :ar_table_name => mytable ).first
   end
 
-  def active_record_log_find_or_create #:nodoc:
-    return nil if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
-    arl = active_record_log
-    return arl if arl
+  # def active_record_log_find_or_create #:nodoc:
+  #   return nil if self.is_a?(ActiveRecordLog) || self.is_a?(MetaDataStore)
+  #   arl = active_record_log
+  #   return arl if arl
 
-    myid    = self.id
-    mytable = self.class.table_name
-    return nil unless myid
-    message = Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + "#{self.class} revision " +
-              self.revision_info.format() + "\n"
+  #   myid    = self.id
+  #   mytable = self.class.table_name
+  #   return nil unless myid
+  #   message = Time.zone.now.strftime("[%Y-%m-%d %H:%M:%S %Z] ") + "#{self.class} revision " +
+  #             self.revision_info.format() + "\n"
 
-    arl = ActiveRecordLog.create( :ar_id         => myid,
-                                  :ar_table_name => mytable,
-                                  :log           => message )
-    arl
-  end
+  #   arl = ActiveRecordLog.create( :ar_id         => myid,
+  #                                 :ar_table_name => mytable,
+  #                                 :log           => message )
+  #   arl
+  # end
 
 end
 

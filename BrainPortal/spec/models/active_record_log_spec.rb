@@ -28,15 +28,15 @@ RSpec.describe ActiveRecordLog, :type => :model do
 
   describe "#active_record_object" do
     it "should return nil if the class given is invalid" do
-      arl = ActiveRecordLog.create(:ar_id  => ar_object.id, :ar_class => "XYZ")
+      arl = ActiveRecordLog.create(:ar_id  => ar_object.id, :ar_table_name => "XYZ")
       expect(arl.active_record_object).to be_nil
     end
     it "should return nil if the class is not an ActiveRecord subclass" do
-      arl = ActiveRecordLog.create(:ar_id  => ar_object.id, :ar_class => "String")
+      arl = ActiveRecordLog.create(:ar_id  => ar_object.id, :ar_table_name => "String")
       expect(arl.active_record_object).to be_nil
     end
     it "should return nil if no id is given" do
-      arl = ActiveRecordLog.create(:ar_class => ar_object.class.to_s)
+      arl = ActiveRecordLog.create(:ar_table_name => ar_object.class.to_s)
       expect(arl.active_record_object).to be_nil
     end
     it "should return the associated ActiveRecord object" do

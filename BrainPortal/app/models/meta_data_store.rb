@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 #
@@ -28,7 +28,7 @@
 # ActRecMetaData::MetaDataHandler .
 #
 # == The MetaData API for ActiveRecords
-# 
+#
 # See ActRecMetaData::MetaDataHandler , which provides a nice
 # API to access the metadata store.
 #
@@ -42,8 +42,8 @@ class MetaDataStore < ActiveRecord::Base
 
   validates_presence_of   :meta_key
   validates_uniqueness_of :meta_key, :scope => [ :ar_id, :ar_table_name ]
-  
-  attr_accessible :ar_id, :ar_table_name, :meta_key, :meta_value
+
+  # attr_accessible :ar_id, :ar_table_name, :meta_key, :meta_value
 
   def active_record_object #:nodoc:
     ar_id = self.ar_id

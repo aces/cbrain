@@ -27,7 +27,7 @@ class TasksController < ApplicationController
 
   api_available :except => [:update, :destroy]
 
-  before_filter :login_required
+  before_action :login_required
 
   def index #:nodoc:
     @scope      = scope_from_session('tasks')
@@ -500,8 +500,8 @@ class TasksController < ApplicationController
 
     # Save old attributes and update the current task to reflect
     # the form's content.
-    new_att          = params[:cbrain_task] || {} # not the TASK's params[], the REQUEST's params[]
-    new_att          = new_att.reject do |k,v| # some attributes cannot be changed through the controller
+    new_task_attr          = task_params # not the TASK's params[], the REQUEST's params[]
+    new_task_attr          = new_task_attr.reject do |k,v| # some attributes cannot be changed through the controller
       k =~ /\A( cluster_jobid    | cluster_workdir | cluster_workdir_size |
                 status           | batch_id        | prerequisites |
                 share_wd_tid     | run_number      | level | rank |
@@ -510,7 +510,7 @@ class TasksController < ApplicationController
     end
     old_tool_config  = @task.tool_config
     old_bourreau     = @task.bourreau
-    @task.attributes = new_att # just updates without saving
+    @task.attributes = new_task_attr # just updates without saving
     @task.restore_untouchable_attributes(old_params)
 
     # Bourreau ID must stay the same; tool config must be one associated with it
@@ -596,25 +596,26 @@ class TasksController < ApplicationController
     end
 
     unable_to_update = ""
+    new_task_attr    = task_params
     field_to_update  =
       case commit_name
         when :update_user_id
-          new_user_id = params[:task][:user_id].to_i
+          new_user_id = new_task_attr[:user_id].to_i
           unable_to_update = "user"   if
           ! current_user.available_users.where(:id => new_user_id).exists?
           :user
         when :update_group_id
-          new_group_id = params[:task][:group_id].to_i
+          new_group_id = new_task_attr[:group_id].to_i
           unable_to_update = "project" if
           ! current_user.available_groups.where(:id => new_group_id).exists?
           :group
         when :update_results_data_provider_id
-          new_dp_id = params[:task][:results_data_provider_id].to_i
+          new_dp_id = new_task_attr[:results_data_provider_id].to_i
           unable_to_update = "data provider" if
           ! DataProvider.find_all_accessible_by_user(current_user).where(:id => new_dp_id).exists?
           :results_data_provider
         when :update_tool_config_id
-          new_tool_config = ToolConfig.find(params[:task][:tool_config_id].to_i)
+          new_tool_config = ToolConfig.find(new_task_attr[:tool_config_id].to_i)
           unable_to_update = "tool version" if
             ! new_tool_config.bourreau_and_tool_can_be_accessed_by?(current_user)
           :tool_config
@@ -871,6 +872,15 @@ class TasksController < ApplicationController
   #####################################################################
 
   private
+
+  def task_params #:nodoc:
+    params.require(:cbrain_task).permit(
+      :type, :batch_id, :cluster_jobid, :cluster_workdir, :status, :user_id, :bourreau_id, :description,
+      :prerequisites, :share_wd_tid, :run_number, :group_id, :tool_config_id, :level, :rank,
+      :results_data_provider_id, :cluster_workdir_size, :workdir_archived, :workdir_archive_userfile_id,
+      :params
+    )
+  end
 
   # Some useful variables for the views for 'new' and 'edit'
   def initialize_common_form_values #:nodoc:

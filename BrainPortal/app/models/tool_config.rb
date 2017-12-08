@@ -58,21 +58,9 @@ class ToolConfig < ActiveRecord::Base
 
   validate        :container_rules
 
-  cb_scope        :global_for_tools     , where( { :bourreau_id => nil } )
-  cb_scope        :global_for_bourreaux , where( { :tool_id => nil } )
-  cb_scope        :specific_versions    , where( "bourreau_id is not null and tool_id is not null" )
-
-  attr_accessible :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue,
-                  :group_id, :ncpus, :container_image_userfile_id, :containerhub_image_name, :container_engine,
-                  :container_index_location, :extra_qsub_args,
-                  # The configuration of a tool in a VM managed by a
-                  # ScirCloud Bourreau is defined by the following
-                  # parameters which specify the disk image where the
-                  # tool is installed (including its ssh connection
-                  # properties) and the type of instance (thus RAM and
-                  # CPU requirements) to use.
-                  :cloud_disk_image, :cloud_vm_user, :cloud_ssh_key_pair, :cloud_instance_type,
-                  :cloud_job_slots, :cloud_vm_boot_timeout, :cloud_vm_ssh_tunnel_port
+  scope           :global_for_tools     , -> { where( { :bourreau_id => nil } ) }
+  scope           :global_for_bourreaux , -> { where( { :tool_id => nil } ) }
+  scope           :specific_versions    , -> { where( "bourreau_id is not null and tool_id is not null" ) }
 
   api_attr_visible :version_name, :description, :tool_id, :bourreau_id, :group_id, :ncpus
 
@@ -338,17 +326,8 @@ class ToolConfig < ActiveRecord::Base
     if self.container_engine.present? && ( self.containerhub_image_name.blank? && self.container_image_userfile_id.blank? )
       errors[:container_engine] = "a container hub image name or a container image userfile ID should be set when the container engine is set"
     end
-
-    if self.container_engine.present? && self.container_engine == "Singularity" 
-      if self.container_index_location.present? && self.container_index_location !~ /^[a-z0-9]+\:\/\/$/i
-        errors[:container_index_location] = "is invalid for container engine Singularity. Should end in '://'."
-      end
-    elsif self.container_engine.present? && self.container_engine == "Docker"
-      if self.container_index_location.present? && self.container_index_location !~ /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}$/i
-        errors[:container_index_location] = "is invalid for container engine Docker. Should be a valid hostname."
-      end
-    end
     return errors.empty?
   end
+
 
 end

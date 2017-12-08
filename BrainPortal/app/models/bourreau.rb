@@ -25,9 +25,9 @@ class Bourreau < RemoteResource
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  has_many :cbrain_tasks, :dependent => :restrict
+  has_many :cbrain_tasks, :dependent => :restrict_with_exception
   has_many :tool_configs, :dependent => :destroy
-  has_many :tools, :through => :tool_configs, :uniq => true
+  has_many :tools, -> { uniq }, :through => :tool_configs
 
   attr_accessor :operation_messages # no need to store in DB
 

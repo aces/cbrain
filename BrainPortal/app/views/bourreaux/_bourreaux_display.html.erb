@@ -106,7 +106,7 @@
         pretty_elapsed(info.uptime.to_i, :num_components => 2, :short => true),
         :offset_x => 50
       ) do
-        "Since #{to_localtime(info.uptime.to_i.ago, :datetime)}" +
+        "Since #{to_localtime(info.uptime.to_i.seconds.ago, :datetime)}" +
         "(for #{pretty_elapsed(info.uptime.to_i)})"
       end
     end))

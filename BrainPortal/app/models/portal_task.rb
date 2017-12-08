@@ -638,7 +638,7 @@ class PortalTask < CbrainTask
 
     def get(paramspath) #:nodoc:
       # for some reason the get() and set() method REALLY want a symbol
-      @real_errors.get(path2key(paramspath))
+      @real_errors[path2key(paramspath)]
     end
 
     def include?(paramspath) #:nodoc:

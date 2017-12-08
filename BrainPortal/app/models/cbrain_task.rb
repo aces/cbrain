@@ -55,11 +55,6 @@ class CbrainTask < ActiveRecord::Base
 
   belongs_to            :workdir_archive, :class_name => 'Userfile', :foreign_key => :workdir_archive_userfile_id
 
-  attr_accessible       :type, :batch_id, :cluster_jobid, :cluster_workdir, :status, :user_id, :bourreau_id, :description,
-                        :prerequisites, :share_wd_tid, :run_number, :group_id, :tool_config_id, :level, :rank,
-                        :results_data_provider_id, :cluster_workdir_size, :workdir_archived, :workdir_archive_userfile_id,
-                        :params
-
   # Pseudo Attributes (not saved in DB)
   # These are filled in by calling capture_job_out_err().
   attr_accessor  :cluster_stdout, :cluster_stderr, :script_text
@@ -70,7 +65,7 @@ class CbrainTask < ActiveRecord::Base
   # as necessary.
   serialize_as_indifferent_hash :params
 
-  cb_scope :status, lambda { |s|
+  scope :status, lambda { |s|
                          case s.to_sym
                          when :completed
                            value = CbrainTask::COMPLETED_STATUS
@@ -91,31 +86,31 @@ class CbrainTask < ActiveRecord::Base
                          where(:status => value)
                        }
 
-  cb_scope :active, lambda { status( :active ) }
+  scope :active, lambda { status( :active ) }
 
-  cb_scope :real_tasks,
-        where( "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" )
+  scope :real_tasks,
+        -> { where( "cbrain_tasks.status <> 'Preset' AND cbrain_tasks.status <> 'SitePreset'" ) }
 
-  cb_scope :not_archived,
-        where( "cbrain_tasks.workdir_archived = 0 OR cbrain_tasks.workdir_archived IS NULL" )
+  scope :not_archived,
+        -> { where( "cbrain_tasks.workdir_archived = 0 OR cbrain_tasks.workdir_archived IS NULL" ) }
 
-  cb_scope :archived_on_cluster,
-        where( "cbrain_tasks.workdir_archived" => true, "cbrain_tasks.workdir_archive_userfile_id" => nil )
+  scope :archived_on_cluster,
+        -> { where( "cbrain_tasks.workdir_archived" => true, "cbrain_tasks.workdir_archive_userfile_id" => nil ) }
 
-  cb_scope :archived_as_file,
-        where( "cbrain_tasks.workdir_archived" => true ).where( "cbrain_tasks.workdir_archive_userfile_id IS NOT NULL" )
+  scope :archived_as_file,
+        -> { where( "cbrain_tasks.workdir_archived" => true ).where( "cbrain_tasks.workdir_archive_userfile_id IS NOT NULL" ) }
 
-  cb_scope :shared_wd,
-        where( "cbrain_tasks.share_wd_tid IS NOT NULL" )
+  scope :shared_wd,
+        -> { where( "cbrain_tasks.share_wd_tid IS NOT NULL" ) }
 
-  cb_scope :not_shared_wd,
-        where( "cbrain_tasks.share_wd_tid" => nil )
+  scope :not_shared_wd,
+        -> { where( "cbrain_tasks.share_wd_tid" => nil ) }
 
-  cb_scope :wd_present,
-        not_shared_wd.where( "cbrain_tasks.cluster_workdir IS NOT NULL" )
+  scope :wd_present,
+        -> { not_shared_wd.where( "cbrain_tasks.cluster_workdir IS NOT NULL" ) }
 
-  cb_scope :wd_not_present,
-        where( "cbrain_tasks.cluster_workdir" => nil )
+  scope :wd_not_present,
+        -> { where( "cbrain_tasks.cluster_workdir" => nil ) }
 
 
   # The attribute 'prerequisites' is a serialized hash table

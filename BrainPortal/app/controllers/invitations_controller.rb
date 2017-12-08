@@ -25,7 +25,7 @@ class InvitationsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_filter :login_required
+  before_action :login_required
 
   # Create an invitation
   def new #:nodoc:

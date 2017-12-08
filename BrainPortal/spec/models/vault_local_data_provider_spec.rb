@@ -24,7 +24,7 @@ require 'rails_helper'
 
 describe VaultLocalDataProvider do
   let(:vault_local_data_provider) {create(:vault_local_data_provider, :remote_dir => "remote")}
-  let(:userfile) {create(:userfile, :data_provider => vault_local_data_provider)}
+  let(:userfile) {create(:single_file, :data_provider => vault_local_data_provider)}
 
   describe "#cache_prepare" do
 

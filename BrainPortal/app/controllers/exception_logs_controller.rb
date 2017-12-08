@@ -25,8 +25,8 @@ class ExceptionLogsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_filter :login_required
-  before_filter :admin_role_required
+  before_action :login_required
+  before_action :admin_role_required
 
   def index #:nodoc:
     @scope = scope_from_session('exception_logs')

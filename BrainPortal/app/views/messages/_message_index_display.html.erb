@@ -102,7 +102,8 @@
         :hidden      => true,
         :filters     => scoped_filters_for(
           @base_scope, @scope, :critical,
-          format: lambda do |value, label, base, view|
+          format: lambda do |format_info|
+            value, label, base, view = *format_info
             label = (! value || value == 0) ? 'Not critical' : 'Critical'
             {
               :value     => value,
@@ -119,7 +120,8 @@
         :sortable => true,
         :filters  => scoped_filters_for(
           @base_scope, @scope, :message_type,
-          format: lambda do |value, label, base, view|
+          format: lambda do |format_info|
+            value, label, base, view = *format_info
             {
               :value     => value,
               :label     => "#{label.humanize} (of #{base})",

@@ -29,9 +29,9 @@ class UserfilesController < ApplicationController
 
   api_available
 
-  before_filter :login_required
+  before_action :login_required
 
-  around_filter :permission_check, :only => [
+  around_action :permission_check, :only => [
       :download, :update_multiple, :delete_files,
       :create_collection, :change_provider, :quality_control,
       :export_file_list
@@ -396,7 +396,7 @@ class UserfilesController < ApplicationController
 
     flash[:error]     ||= ""
     flash[:notice]    ||= ""
-    params[:userfile] ||= {}
+    userfile_params
 
     # Mode of upload; this is determined by the values of the
     # params :archive, :_do_extract, and :_up_ex_mode
@@ -439,7 +439,7 @@ class UserfilesController < ApplicationController
     if mode == :save  # the simplest case first
 
       userfile  = file_type.new(
-                      params[:userfile].merge(
+                      userfile_params.merge(
                      :name             => basename,
                      :user_id          => current_user.id,
                      :data_provider_id => data_provider_id,
@@ -518,7 +518,7 @@ class UserfilesController < ApplicationController
       collectionType = FileCollection unless file_type <= FileCollection
 
       collection = collectionType.new(
-        params[:userfile].merge(
+        userfile_params.merge(
           :name              => collection_name,
           :user_id           => current_user.id,
           :data_provider_id  => data_provider_id,
@@ -566,7 +566,7 @@ class UserfilesController < ApplicationController
     cb_error "Unknown upload mode '#{mode}'" if mode != :extract
 
     # Common attributes to all files
-    attributes = params[:userfile].merge({
+    attributes = userfile_params.merge({
       :user_id           => current_user.id,
       :data_provider_id  => data_provider_id,
       :tag_ids           => params[:tags]
@@ -600,19 +600,19 @@ class UserfilesController < ApplicationController
     flash[:error]  = ""
 
     if @userfile.has_owner_access?(current_user)
-      attributes    = params[:userfile] || {}
-      new_user_id   = attributes.delete :user_id
-      new_group_id  = attributes.delete :group_id
-      type          = attributes.delete :type
+      new_userfile_attr = userfile_params
+      new_user_id       = new_userfile_attr.delete :user_id
+      new_group_id      = new_userfile_attr.delete :group_id
+      type              = new_userfile_attr.delete :type
 
       old_name = @userfile.name
-      new_name = attributes.delete(:name) || old_name
+      new_name = new_userfile_attr.delete(:name) || old_name
 
-      @userfile.attributes = attributes
-      @userfile.type       = type         if type
-      @userfile.user_id    = new_user_id  if current_user.available_users.where(:id => new_user_id).first
-      @userfile.group_id   = new_group_id if current_user.available_groups.where(:id => new_group_id).first
-      @userfile            = @userfile.class_update
+      @userfile.new_userfile_attr = new_userfile_attr
+      @userfile.type              = type         if type
+      @userfile.user_id           = new_user_id  if current_user.available_users.where(:id => new_user_id).first
+      @userfile.group_id          = new_group_id if current_user.available_groups.where(:id => new_group_id).first
+      @userfile                   = @userfile.class_update
 
       if @userfile.save_with_logging(current_user, %w( group_writable num_files parent_id hidden ) )
         if new_name != old_name
@@ -1380,6 +1380,13 @@ class UserfilesController < ApplicationController
 
   private
 
+  def userfile_params #:nodoc:
+    params.require(:userfile).permit(
+      :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id,
+      :group_writable, :num_files, :hidden, :immutable, :description, :tag_ids => []
+    )
+  end
+
   # Verify that all files selected for an operation
   # are accessible by the current user.
   def permission_check #:nodoc:
@@ -1635,7 +1642,7 @@ class UserfilesController < ApplicationController
   # respecting view options, user and project restrictions.
   # Requires a valid @scope object.
   def base_scope
-    base = Userfile.scoped
+    base = Userfile.where(nil)
 
     # Restrict by 'view all' or not
     @scope.custom[:view_all] = !current_user.has_role?(:admin_user) if

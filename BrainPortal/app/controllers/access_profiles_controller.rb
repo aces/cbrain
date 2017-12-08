@@ -26,8 +26,8 @@ class AccessProfilesController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_filter :login_required
-  before_filter :admin_role_required
+  before_action :login_required
+  before_action :admin_role_required
 
   def index #:nodoc:
 
@@ -55,7 +55,7 @@ class AccessProfilesController < ApplicationController
   end
 
   def create #:nodoc:
-    @access_profile = AccessProfile.new(params[:access_profile])
+    @access_profile = AccessProfile.new(acces_profile_params)
 
     respond_to do |format|
       if @access_profile.save
@@ -76,7 +76,7 @@ class AccessProfilesController < ApplicationController
 
     # The success variable will be false for errors on ordinary attributes;
     # for the group_ids and user_ids list, these are always updated with no errors or logging... :-(
-    success = @access_profile.update_attributes_with_logging(params[:access_profile], current_user)
+    success = @access_profile.update_attributes_with_logging(acces_profile_params, current_user)
 
     # Adjust groups and users, and log differences
     new_group_ids = @access_profile.group_ids.sort
@@ -141,6 +141,12 @@ class AccessProfilesController < ApplicationController
     respond_to do |format|
       format.html { redirect_to :action => :index, :status => 303 }
     end
+  end
+
+  private
+
+  def acces_profile_params
+    params.require(:access_profile).permit(:name, :color, :description, :group_ids => [], :user_ids => [])
   end
 
 end

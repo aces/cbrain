@@ -27,15 +27,15 @@ class ToolsController < ApplicationController
 
   api_available :only => [:index, :show]
 
-  before_filter :login_required
-  before_filter :admin_role_required, :except  => [:index, :tool_config_select]
+  before_action :login_required
+  before_action :admin_role_required, :except  => [:index, :tool_config_select]
 
   # GET /tools
   # GET /tools.xml
   def index #:nodoc:
     @scope = scope_from_session('tools')
     scope_default_order(@scope, 'name')
-
+ 
     @base_scope = current_user.available_tools.includes(:user, :group)
     @tools = @scope.apply(@base_scope)
 
@@ -49,7 +49,7 @@ class ToolsController < ApplicationController
 
   def tool_config_select #:nodoc:
     if params[:tool_id].blank?
-      render :text  => ""
+      render plain: ""
       return
     end
 
@@ -80,7 +80,7 @@ class ToolsController < ApplicationController
 
   rescue
     # render :text  => "#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
-    render :text  => '<strong style="color:red">No Execution Servers Available</strong>'
+    render html: '<strong style="color:red">No Execution Servers Available</strong>'
   end
 
   def new #:nodoc:
@@ -101,7 +101,7 @@ class ToolsController < ApplicationController
       return
     end
 
-    @tool = Tool.new(params[:tool])
+    @tool = Tool.new(tool_params)
 
     task_class = @tool.cbrain_task_class_name || "CbrainTask::Object"
     task_class = task_class.demodulize
@@ -142,7 +142,7 @@ class ToolsController < ApplicationController
     @tool = current_user.available_tools.find(params[:id])
 
     respond_to do |format|
-      if @tool.update_attributes_with_logging(params[:tool], current_user,
+      if @tool.update_attributes_with_logging(tool_params, current_user,
            %w( category cbrain_task_class_name select_menu_text url application_package_name application_type application_tags ) )
         flash[:notice] = 'Tool was successfully updated.'
         format.html { redirect_to(tools_path) }
@@ -169,6 +169,14 @@ class ToolsController < ApplicationController
   end
 
   private
+
+  def tool_params #:nodoc:
+    params.require(:tool).permit(
+      :name, :user_id, :group_id, :category, :license_agreements,
+      :cbrain_task_class_name, :select_menu_text, :description, :url,
+      :application_type, :application_tags, :application_package_name
+    )
+  end
 
   def autoload_all_tools #:nodoc:
 

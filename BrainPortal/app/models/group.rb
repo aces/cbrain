@@ -61,8 +61,6 @@ class Group < ActiveRecord::Base
   belongs_to              :creator,
                           :class_name   => "User"
 
-  attr_accessible         :name, :description, :site_id, :creator_id, :user_ids
-
   api_attr_visible        :name, :description, :type, :site_id, :invisible
 
   # Returns the unique and special group 'everyone'

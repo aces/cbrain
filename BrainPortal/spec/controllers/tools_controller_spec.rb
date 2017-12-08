@@ -26,12 +26,15 @@ RSpec.describe ToolsController, :type => :controller do
   let(:mock_tool)    { mock_model(Tool).as_null_object }
   let!(:real_tool_1) { create(:tool, :name => "fake_tool1") }
   let!(:real_tool_2) { create(:tool, :name => "fake_tool2") }
+  tool = FactoryBot.attributes_for(:tool)
+
 
   context "with a logged in user" do
     context "user is an admin" do
       let(:admin_user) {  create(:admin_user) }
       before(:each) do
         allow(controller).to receive(:current_user).and_return(admin_user)
+        session[:session_id] = 'session_id'
       end
 
       describe "index", :current => true do
@@ -48,17 +51,17 @@ RSpec.describe ToolsController, :type => :controller do
 
       describe "bourreau_select" do
         it "should render empty text if tool_id is empty" do
-          get(:tool_config_select, {'tool_id' => ""})
+          get(:tool_config_select, params: {'tool_id' => ""})
           expect(response.body).to be_empty
         end
 
         it "should render bourreau_select" do
-          get(:tool_config_select,{'tool_id' => real_tool_1.id.to_s})
+          get(:tool_config_select, params: {'tool_id' => real_tool_1.id.to_s})
           expect(response).to render_template("tools/_tool_config_select")
         end
 
         it "should display error text if go in rescue" do
-          get(:tool_config_select, {'tool_id' => "abc"})
+          get(:tool_config_select, params: {'tool_id' => "abc"})
           expect(response.body).to match(/No Execution Servers/)
         end
       end
@@ -68,7 +71,7 @@ RSpec.describe ToolsController, :type => :controller do
         it "should autoload_all_tools if autoload is defined" do
           allow(controller).to  receive(:render)
           expect(controller).to receive(:autoload_all_tools)
-          post :create, :tool => {}, :autoload => "true", :format => "js"
+          post :create, params: {tool: tool, autoload: "true", format: "js"}
         end
 
         context "when save is successful" do
@@ -80,11 +83,11 @@ RSpec.describe ToolsController, :type => :controller do
           end
 
           it "should send a flash notice" do
-            post :create, :tool => {}
+            post :create, params: {tool: tool}
             expect(flash[:notice]).to  be_truthy
           end
           it "should redirect to the index" do
-            post(:create, :tool => {:name => "name"}, :format => :html)
+            post(:create, params: {tool: {:name => "name", format: 'html'}})
             expect(response).to redirect_to(:action => :index, :format => :html)
           end
         end
@@ -104,13 +107,13 @@ RSpec.describe ToolsController, :type => :controller do
       describe "update" do
 
         it "should find available tools" do
-          put :update, :id => real_tool_1.id
+          put :update, params: {id: real_tool_1.id, tool: tool}
           expect(assigns[:tool]).to eq(real_tool_1)
         end
 
         context "when update is successful" do
           it "should display a flash message" do
-            put :update, :id => real_tool_1.id
+            put :update, params: {id: real_tool_1.id, tool: tool}
             expect(flash[:notice]).to eq("Tool was successfully updated.")
           end
         end
@@ -118,7 +121,7 @@ RSpec.describe ToolsController, :type => :controller do
         context "when update fails" do
 
           it "should render the edit page" do
-            put :update, :id => real_tool_1.id, :tool => {:name => ""}
+            put :update, params: {id: real_tool_1.id, tool: {:name => ""}}
             expect(response).to render_template("edit")
           end
         end
@@ -127,15 +130,15 @@ RSpec.describe ToolsController, :type => :controller do
       describe "destroy" do
 
         it "should find the requested tag" do
-          delete :destroy, :id => real_tool_1.id
+          delete :destroy, params: {id: real_tool_1.id}
           expect(assigns[:tool]).to eq(real_tool_1)
         end
         it "should allow me to destroy a tool" do
-          delete :destroy, :id => real_tool_1.id
+          delete :destroy, params: {id: real_tool_1.id}
           expect(Tool.all).not_to include(real_tool_1)
         end
         it "should redirect to the index" do
-          delete :destroy, :id => real_tool_1.id, :format => "js"
+          delete :destroy, params: {id: real_tool_1.id, format: "js"}
           expect(response).to redirect_to(:action => :index, :format => :js)
         end
       end
@@ -146,6 +149,7 @@ RSpec.describe ToolsController, :type => :controller do
       let(:normal_user) { create(:normal_user) }
       before(:each) do
         allow(controller).to receive(:current_user).and_return(normal_user)
+        session[:session_id] = 'session_id'
       end
 
       describe "index" do
@@ -163,18 +167,18 @@ RSpec.describe ToolsController, :type => :controller do
       describe "tool_config_select" do
 
         it "should render empty text if tool_id is empty" do
-          get(:tool_config_select, {'tool_id' => ""})
+          get(:tool_config_select, params: {tool_id: ""})
           expect(response.body).to be_empty
         end
 
         it "should render bourreau_select if the tc is accessible by the use" do
           allow(normal_user).to receive_message_chain(:available_tools, :find).and_return(real_tool_1)
-          get(:tool_config_select,{'tool_id' => real_tool_1.id.to_s})
+          get(:tool_config_select,params: {tool_id: real_tool_1.id.to_s})
           expect(response).to render_template("tools/_tool_config_select")
         end
 
         it "should display error text if go in rescue" do
-          get(:tool_config_select, {'tool_id' => "abc"})
+          get(:tool_config_select, params: {tool_id: "abc"})
           expect(response.body).to match(/No Execution Servers/)
         end
       end
@@ -182,7 +186,7 @@ RSpec.describe ToolsController, :type => :controller do
       describe "edit" do
 
         it "should redirect to error page" do
-          get(:edit, {"id" => "1"})
+          get(:edit, params: {id: "1"})
           expect(response.code).to eq('401')
         end
       end
@@ -190,7 +194,7 @@ RSpec.describe ToolsController, :type => :controller do
       describe "create" do
 
         it "should redirect to error page" do
-          post(:create, :tool => {:name => "name"})
+          post(:create, params: {tool: {:name => "name"}})
           expect(response.code).to eq('401')
         end
 
@@ -199,7 +203,7 @@ RSpec.describe ToolsController, :type => :controller do
       describe "update" do
 
         it "should redirect to error page" do
-          put :update, :id => "1"
+          put :update, params: {id: "1"}
           expect(response.code).to eq('401')
         end
       end
@@ -207,7 +211,7 @@ RSpec.describe ToolsController, :type => :controller do
       describe "destroy" do
 
         it "should redirect to error page" do
-          delete :destroy, :id => "1"
+          delete :destroy, params: {id: "1"}
           expect(response.code).to eq('401')
         end
       end
@@ -217,7 +221,9 @@ RSpec.describe ToolsController, :type => :controller do
     context "user is a site_manager" do
       let(:site_manager_user) { create(:site_manager) }
       before(:each) do
+        allow(site_manager_user).to receive(:license_agreement_set).and_return([])
         allow(controller).to receive(:current_user).and_return(site_manager_user)
+        session[:session_id] = 'session_id'
       end
 
       describe "index" do
@@ -225,7 +231,7 @@ RSpec.describe ToolsController, :type => :controller do
         it "should assign @tools with all tools avaible for this user" do
           allow(site_manager_user).to receive_message_chain(:available_tools, :includes).and_return([real_tool_1])
           get :index
-          expect(assigns[:tools]).to eq([real_tool_1])
+          expect(assigns[:tools].to_a).to eq([real_tool_1])
         end
         it "should render the index page" do
           get :index
@@ -237,18 +243,18 @@ RSpec.describe ToolsController, :type => :controller do
         let(:real_tool) { create(:tool, :user_id => site_manager_user.id ) }
 
         it "should render empty text if tool_id is empty" do
-          get(:tool_config_select, {'tool_id' => ""})
+          get(:tool_config_select, params: {tool_id:""})
           expect(response.body).to be_empty
         end
 
        it "should render bourreau_select if the tc is accessible by the use" do
           allow(site_manager_user).to receive_message_chain(:available_tools, :find).and_return(real_tool_1)
-          get(:tool_config_select,{'tool_id' => real_tool_1.id.to_s})
+          get(:tool_config_select, params: {tool_id: real_tool_1.id.to_s})
           expect(response).to render_template("tools/_tool_config_select")
         end
 
         it "should display error text if go in rescue" do
-          get(:tool_config_select, {'tool_id' => "abc"})
+          get(:tool_config_select, params: {tool_id: "abc"})
           expect(response.body).to match(/No Execution Servers/)
         end
       end
@@ -256,7 +262,7 @@ RSpec.describe ToolsController, :type => :controller do
       describe "edit" do
 
         it "should redirect to error page" do
-          get(:edit, {"id" => "1"})
+          get(:edit, params: {id: "1"})
           expect(response.code).to eq('401')
         end
       end
@@ -264,7 +270,7 @@ RSpec.describe ToolsController, :type => :controller do
       describe "create" do
 
         it "should redirect to error page" do
-          post(:create, :tool => {:name => "name"})
+          post(:create, params: {tool: {:name => "name"}})
           expect(response.code).to eq('401')
         end
 
@@ -273,7 +279,7 @@ RSpec.describe ToolsController, :type => :controller do
       describe "update" do
 
         it "should redirect to error page" do
-          put :update, :id => "1"
+          put :update, params: {id: "1" }
           expect(response.code).to eq('401')
         end
       end
@@ -281,7 +287,7 @@ RSpec.describe ToolsController, :type => :controller do
       describe "destroy" do
 
         it "should redirect to error page" do
-          delete :destroy, :id => "1"
+          delete :destroy, params: {id: "1"}
           expect(response.code).to eq('401')
         end
       end
@@ -299,7 +305,7 @@ RSpec.describe ToolsController, :type => :controller do
 
     describe "edit" do
       it "should redirect the login page" do
-        get :edit, :id => 1
+        get :edit,  params: {id: 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end
@@ -313,14 +319,14 @@ RSpec.describe ToolsController, :type => :controller do
 
     describe "update" do
       it "should redirect the login page" do
-        put :update, :id => 1
+        put :update, params: {id: 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end
 
     describe "destroy" do
       it "should redirect the login page" do
-        delete :destroy, :id => 1
+        delete :destroy, params: {id: 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end

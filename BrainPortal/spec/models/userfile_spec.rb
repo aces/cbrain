@@ -349,7 +349,7 @@ describe Userfile do
     it "should call scoped with options" do
       userfile
       options = {}
-      expect(Userfile).to receive(:scoped).with(options)
+      expect(Userfile).to receive(:where).with(options)
       allow(Userfile).to receive(:restrict_access_on_query)
       Userfile.accessible_for_user(user, options)
     end
@@ -357,7 +357,7 @@ describe Userfile do
     it "should call restrict_access_on_query" do
       userfile
       options = {}
-      allow(Userfile).to receive(:scoped)
+      allow(Userfile).to receive(:where)
       expect(Userfile).to receive(:restrict_access_on_query).and_return("scope")
       expect(Userfile.accessible_for_user(user, options)).to eq("scope")
     end
@@ -396,22 +396,22 @@ describe Userfile do
     end
 
     it "should return scope if user is admin" do
-      scope = Userfile.scoped({})
+      scope = Userfile.where(nil)
       expect(Userfile.restrict_access_on_query(admin, scope)).to eq(scope)
     end
 
     it "should return only file writable by user" do
-      scope = Userfile.scoped({})
+      scope = Userfile.where(nil)
       expect(Userfile.restrict_access_on_query(site_manager,scope).all).to match_array([userfile1])
     end
 
     it "should return all file of user" do
-      scope = Userfile.scoped({})
+      scope = Userfile.where(nil)
       expect(Userfile.restrict_access_on_query(user,scope, {:access_requested => "read"}).all).to match_array([userfile2])
     end
 
     it "should return file of all user and file where userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)" do
-      scope = Userfile.scoped({})
+      scope = Userfile.where(nil)
       user.group_ids = user.group_ids << userfile1.group_id
       expect(Userfile.restrict_access_on_query(user,scope, {:access_requested => "read"}).all).to match_array([userfile1,userfile2,userfile3])
     end
@@ -420,7 +420,7 @@ describe Userfile do
       user.site_id  = site_manager.site_id
       user1.site_id = site_manager.site_id
       allow(site_manager).to receive(:has_role?).and_return(true)
-      scope = Userfile.scoped({})
+      scope = Userfile.where(nil)
       expect(Userfile.restrict_access_on_query(site_manager,scope).all).to match_array([userfile1, userfile2, userfile3])
     end
 
@@ -513,7 +513,7 @@ describe Userfile do
   end
 
   describe "#move_to_child_of" do
-    let(:userfile1) {create(:userfile)}
+    let(:userfile1) {create(:single_file)}
 
     it "should raise error if self.id == userfile.id" do
       expect{userfile.move_to_child_of(userfile)}.to raise_error(ActiveRecord::ActiveRecordError, /userfile cannot become the child/)
@@ -555,8 +555,8 @@ describe Userfile do
 
   describe "#next_available_file" do
     let(:user) {create(:normal_user)}
-    let(:userfile1) {create(:userfile, :user_id => user.id, :id => (userfile.id + 1).to_i)}
-    let(:userfile2) {create(:userfile, :user_id => user.id, :id => (userfile.id + 2).to_i)}
+    let(:userfile1) {create(:single_file, :user_id => user.id, :id => (userfile.id + 1).to_i)}
+    let(:userfile2) {create(:single_file, :user_id => user.id, :id => (userfile.id + 2).to_i)}
 
     it "should return next available file" do
       userfile.user_id = user.id
@@ -707,7 +707,7 @@ describe Userfile do
     end
 
     describe "#cache_prepare" do
-      let(:userfile1) {build(:userfile)}
+      let(:userfile1) {build(:single_file)}
 
       it "should call save if self.id.blank?" do
         expect(userfile1).to receive(:save!)

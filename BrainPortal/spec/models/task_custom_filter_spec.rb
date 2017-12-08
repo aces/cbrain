@@ -52,46 +52,46 @@ describe TaskCustomFilter do
 
     it "should remove all task without 'data['user_id']'" do
       filter.data = { "user_id" => cbrain_task1.user_id }
-      expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
+      expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
     end
 
     it "should remove all task without 'data['bourreau_id']'" do
       filter.data = { "bourreau_id" => cbrain_task1.bourreau_id }
-      expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
+      expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
     end
 
     it "should remove all task without 'data['status']'" do
       filter.data = { "status" => cbrain_task1.status }
-      expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
+      expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
     end
 
     context "with date" do
 
       it "should only keep task created between 'data['absolute_from'] and 'data['absolute_to']'" do
         filter.data = { "date_attribute" => "created_at", "absolute_or_relative_from"=>"absolute", "absolute_or_relative_to"=>"absolute", "absolute_from" => "04/04/2011", "absolute_to" => "04/04/2011" }
-        expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
+        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
       end
 
       it "should only keep task updates between 'data['absolute_from'] and 'data['absolute_to']'" do
         filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"absolute", "absolute_or_relative_to"=>"absolute", "absolute_from" => "04/05/2011", "absolute_to" => "04/05/2011" }
-        expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
+        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
       end
 
       it "should only keep task created between 'data['absolute_from'] and 'data['relative_date_to']'" do
         filter.data = { "date_attribute" => "created_at", "absolute_or_relative_from"=>"absolute", "absolute_or_relative_to"=>"relative", "absolute_from" => "29/04/2011", "relative_to" => "0" }
-        expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task2])
+        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task2])
       end
 
       it "should only keep task updated between 'data['absolute_from'] and 'data['relative_date_to']'" do
         filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"absolute", "absolute_or_relative_to"=>"relative", "absolute_from" => "29/05/2011", "relative_to" => "0" }
-        expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task2])
+        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task2])
       end
 
       it "should only keep task updated last week" do
         filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"relative", "absolute_or_relative_to"=>"relative", "relative_from" => "#{1.week}", "relative_to" => "0" }
         cbrain_task1.updated_at = Date.today - 1.day
         cbrain_task1.save!
-        expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
+        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
       end
 
     end
@@ -99,22 +99,22 @@ describe TaskCustomFilter do
     context "with description scope" do
       it "should remove all task doesn't match with 'data['description_term']'" do
         filter.data = { "description_type" => "match", "description_term" => cbrain_task1.description }
-        expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
+        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
       end
 
       it "should remove all task doesn't begin with 'data['description_term']'" do
         filter.data = { "description_type" => "begin", "description_term" => cbrain_task1.description[0..2] }
-        expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1,cbrain_task2])
+        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1,cbrain_task2])
       end
 
       it "should remove all task doesn't end with 'data['description_term']'" do
         filter.data = { "description_type" => "end", "description_term" => cbrain_task1.description[-1].chr }
-        expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1])
+        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
       end
 
       it "should remove all task doesn't contain 'data['description_term']'" do
         filter.data = { "description_type" => "contain", "description_term" => cbrain_task1.description[1..3] }
-        expect(filter.filter_scope(CbrainTask.scoped({}))).to match_array([cbrain_task1,cbrain_task2])
+        expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1,cbrain_task2])
       end
     end
   end

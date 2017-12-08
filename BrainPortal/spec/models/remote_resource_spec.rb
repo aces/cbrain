@@ -55,7 +55,7 @@ describe RemoteResource do
     it "should destroy all associated sync statuses" do
       syncstatus = SyncStatus.new(:remote_resource_id => remote_resource.id, :userfile_id => 1)
       syncstatus.save!
-      remote_resource.sync_status([syncstatus])
+      remote_resource.reload
       remote_resource.save!
 
       expect do

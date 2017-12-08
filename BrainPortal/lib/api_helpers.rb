@@ -27,7 +27,7 @@ module ApiHelpers
 
   def self.included(includer) #:nodoc:
     includer.class_eval do
-      before_filter :api_validity_check
+      before_action :api_validity_check
       extend ClassMethods
     end
   end

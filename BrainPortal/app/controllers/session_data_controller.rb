@@ -28,7 +28,7 @@ class SessionDataController < ApplicationController
 
   api_available :only => [ :show, :update ]
 
-  before_filter :login_required
+  before_action :login_required
 
   # GET /session_data
   def show #:nodoc:

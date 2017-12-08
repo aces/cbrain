@@ -380,8 +380,7 @@ module ActRecMetaData
       raise "Search key must be defined!"                  if     mykey.nil?
       mykey = mykey.to_s
       conditions = { :ar_table_name => self.table_name, :meta_key => mykey }
-      conditions[:meta_value] = myval.to_yaml unless myval.nil?  # temp patch, because Rails doesn't serialize
-      #conditions[:meta_value] = myval         unless myval.nil?  # proper code once Rails developers fix bug
+      conditions[:meta_value] = myval         unless myval.nil?
       matched = MetaDataStore.where(conditions)
       matched_ids = matched.raw_first_column(:ar_id)
       objects = self.where(:id => matched_ids).where(options[:conditions] || {}).all

@@ -25,8 +25,8 @@ class MessagesController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_filter :login_required
-  before_filter :manager_role_required, :only  => :create
+  before_action :login_required
+  before_action :manager_role_required, :only  => :create
 
   # GET /messages
   # GET /messages.xml
@@ -62,7 +62,7 @@ class MessagesController < ApplicationController
   # POST /messages
   # POST /messages.xml
   def create #:nodoc:
-    @message = Message.new(params[:message])
+    @message = Message.new(message_params)
 
     date = params[:expiry_date] || ""
     hour = params[:expiry_hour] || "00"
@@ -157,4 +157,9 @@ class MessagesController < ApplicationController
     head :ok
   end
 
+  private
+
+  def message_params
+    params.require(:message).permit(:header, :description, :variable_text, :message_type, :read, :user_id, :expiry, :last_sent, :critical, :display, :send_email, :group_id, :sender_id)
+  end
 end

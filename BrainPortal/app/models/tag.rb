@@ -42,8 +42,6 @@ class Tag < ActiveRecord::Base
   belongs_to              :user
   belongs_to              :group
 
-  attr_accessible         :name, :user_id, :group_id
-
   api_attr_visible        :name, :user_id, :group_id
 end
 

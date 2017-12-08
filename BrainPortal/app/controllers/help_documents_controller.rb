@@ -27,8 +27,8 @@ class HelpDocumentsController < ApplicationController
 
   api_available :only => [ :index, :create, :show, :destroy , :update]
 
-  before_filter :login_required
-  before_filter :core_admin_role_required, :except => :show
+  before_action :login_required
+  before_action :core_admin_role_required, :except => :show
 
   # GET /docs
   def index #:nodoc:

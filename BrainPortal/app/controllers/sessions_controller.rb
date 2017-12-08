@@ -46,7 +46,7 @@ class SessionsController < ApplicationController
       format.html
       format.xml  { render :xml  => { :authenticity_token => form_authenticity_token } }
       format.json { render :json => { :authenticity_token => form_authenticity_token } }
-      format.txt
+      # format.txt
     end
   end
 
@@ -65,7 +65,7 @@ class SessionsController < ApplicationController
         format.json { render :json    => { :user_id => current_user.id }, :status => 200 }
       end
     else
-      render :nothing  => true, :status  => 401
+      head :ok
     end
   end
 

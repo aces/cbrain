@@ -27,7 +27,7 @@ class CustomFiltersController < ApplicationController
 
   api_available
 
-  before_filter :login_required
+  before_action :login_required
 
   layout false
 
@@ -54,7 +54,7 @@ class CustomFiltersController < ApplicationController
     params[:data] ||= {}
 
     filter_class  = Class.const_get(filter_param)
-    @custom_filter = filter_class.new(params[:custom_filter])
+    @custom_filter = filter_class.new(custom_filter_params)
     @custom_filter.data.merge! params[:data]
 
     @custom_filter.user_id = current_user.id
@@ -72,10 +72,9 @@ class CustomFiltersController < ApplicationController
   def update #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])
 
-    params[:custom_filter] ||= {}
-    params[:data] ||= {}
+    custom_filter_params.each{|k,v| @custom_filter.send("#{k}=", v)}
 
-    params[:custom_filter].each{|k,v| @custom_filter.send("#{k}=", v)}
+    params[:data]        ||= {}
     @custom_filter.data.merge! params[:data]
 
     @custom_filter.save
@@ -104,5 +103,11 @@ class CustomFiltersController < ApplicationController
       format.js
       format.xml  { head :ok }
     end
+  end
+
+  private
+
+  def custom_filter_params #:nodoc:
+    params.require(:custom_filter).permit(:name, :user_id)
   end
 end

@@ -290,7 +290,7 @@ describe User do
       describe "#available_tools" do
 
         it "should return all tools if called with an admin" do
-          expect(Tool).to receive(:scoped).with(no_args)
+          expect(Tool).to receive(:where).with(nil)
           admin.available_tools
         end
 
@@ -370,7 +370,7 @@ describe User do
       let!(:user_of_site) {create(:normal_user, :site => site_manager.site)}
 
       it "should return all tasks if called with an admin" do
-        expect(CbrainTask).to receive(:scoped).with(no_args)
+        expect(CbrainTask).to receive(:where).with(nil)
         admin.available_tasks
       end
 
@@ -481,11 +481,11 @@ describe User do
     end
 
     it "should call destroy user session" do
-      user_id = CbrainSession.all.map(&:user_id).first
-      nb_session_after_delete = (CbrainSession.all.count - CbrainSession.where(:user_id => user_id).count)
+      user_id = LargeSessionInfo.all.map(&:user_id).first
+      nb_session_after_delete = (LargeSessionInfo.all.count - LargeSessionInfo.where(:user_id => user_id).count)
       normal_user.id = user_id
       normal_user.destroy_user_sessions
-      expect(CbrainSession.all.count).to eq(nb_session_after_delete)
+      expect(LargeSessionInfo.all.count).to eq(nb_session_after_delete)
     end
 
   end
@@ -579,12 +579,11 @@ describe User do
 
   describe "#system_group_site_update" do
     it "should add me to the site group" do
-      normal_user.site = create(:site, :name => "I_should_be_part_of_this_site_group")
+      site             = create(:site, :name => "I_should_be_part_of_this_site_group")
+      normal_user.site = site
       site             = double("site").as_null_object
-      site_users       = double("site_users").as_null_object
-      allow(site).to receive_message_chain(:own_group, :users).and_return(site_users)
       allow(Site).to receive(:find).and_return(site)
-      expect(site_users).to receive(:<<).with(normal_user)
+      expect(site.users_ids).to include(normal_user.id)
       normal_user.save!
     end
   end

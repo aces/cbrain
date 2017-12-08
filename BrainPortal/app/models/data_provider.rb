@@ -238,11 +238,7 @@ class DataProvider < ActiveRecord::Base
 
   belongs_to              :user
   belongs_to              :group
-  has_many                :userfiles, :dependent => :restrict
-
-  attr_accessible         :name, :user_id, :group_id, :remote_user, :remote_host, :alternate_host, :remote_port, :remote_dir, :online,
-                          :read_only, :description, :time_of_death, :not_syncable, :time_zone, :cloud_storage_client_identifier,
-                          :cloud_storage_client_token, :license_agreements
+  has_many                :userfiles, :dependent => :restrict_with_exception
 
   api_attr_visible        :name, :type, :user_id, :group_id, :online, :read_only, :description
 
@@ -557,7 +553,7 @@ class DataProvider < ActiveRecord::Base
       else
         FileUtils.remove_entry(dest, true) if File.exists?(dest) && File.directory?(dest)
       end
-      rsyncout = bash_this("rsync -a -l --no-p --no-g --chmod=u=rwX,g=rX,o=r --delete #{self.rsync_excludes} #{shell_escape(localpath)}#{needslash} #{shell_escape(dest)} 2>&1")
+      rsyncout = bash_this("rsync -a -l --delete #{self.rsync_excludes} #{shell_escape(localpath)}#{needslash} #{shell_escape(dest)} 2>&1")
       cb_error "Failed to rsync local file '#{localpath}' to cache file '#{dest}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
     end
     sync_to_provider(userfile)
@@ -589,7 +585,7 @@ class DataProvider < ActiveRecord::Base
     else
       FileUtils.remove_entry(localpath, true) if File.exists?(localpath) && File.directory?(localpath)
     end
-    rsyncout = bash_this("rsync -a -l --no-p --no-g --chmod=u=rwX,g=rX,o=r --delete #{self.rsync_excludes} #{shell_escape(source)}#{needslash} #{shell_escape(localpath)} 2>&1")
+    rsyncout = bash_this("rsync -a -l --delete #{self.rsync_excludes} #{shell_escape(source)}#{needslash} #{shell_escape(localpath)} 2>&1")
     cb_error "Failed to rsync cache file '#{source}' to local file '#{localpath}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
     true
   end

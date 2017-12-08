@@ -29,8 +29,8 @@ class UsersController < ApplicationController
 
   api_available :only => [ :index, :create, :show, :destroy, :update]
 
-  before_filter :login_required,        :except => [:request_password, :send_password]
-  before_filter :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password]
+  before_action :login_required,        :except => [:request_password, :send_password]
+  before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password]
 
   def index #:nodoc:
     @scope = scope_from_session('users')
@@ -111,27 +111,23 @@ class UsersController < ApplicationController
     # request forgery protection.
     # uncomment at your own risk
     # reset_session
-    params[:user] ||= {}
+    new_user_attr = user_params
 
     no_password_reset_needed = params[:no_password_reset_needed] == "1"
 
     if current_user.has_role? :site_manager
-      if params[:user][:type] == 'SiteManager'
-        params[:user][:type] = 'SiteManager'
+      if new_user_attr[:type] == 'SiteManager'
+        new_user_attr[:type] = 'SiteManager'
       else
-        params[:user][:type] = 'NormalUser'
+        new_user_attr[:type] = 'NormalUser'
       end
     end
 
-    @user = User.new
-
-    @user.make_all_accessible! if current_user.has_role?(:admin_user)
     if current_user.has_role?(:site_manager)
-      @user.make_accessible!(:login, :type, :group_ids, :account_locked)
-      @user.site = current_user.site
+      new_user_attr[:site_id] = current_user.site_id
     end
 
-    @user.attributes = params[:user]
+    @user = User.new(new_user_attr)
 
     @user = @user.class_update
 
@@ -157,7 +153,7 @@ class UsersController < ApplicationController
       if @user.email.blank? || @user.email =~ /example/i || @user.email !~ /@/
         flash[:notice] += "Since this user has no proper email address, no welcome email was sent."
       else
-        if send_welcome_email(@user, params[:user][:password], no_password_reset_needed)
+        if send_welcome_email(@user, new_user_attr[:password], no_password_reset_needed)
           flash[:notice] += "A welcome email is being sent to '#{@user.email}'."
         else
           flash[:error] = "Could not send email to '#{@user.email}' informing them that their account was created."
@@ -185,31 +181,31 @@ class UsersController < ApplicationController
   # PUT /users/1
   # PUT /users/1.xml
   def update #:nodoc:
-    @user = User.find(params[:id], :include => :groups)
-    params[:user] ||= {}
+    @user         = User.find(params[:id], :include => :groups)
+    new_user_attr = user_params
     cb_error "You don't have permission to view this page.", :redirect => start_page_path unless edit_permission?(@user)
 
-    if params[:user][:group_ids]
+    if new_user_attr[:group_ids]
       system_group_scope = SystemGroup.scoped
-      params[:user][:group_ids]  |= system_group_scope.joins(:users).where( "users.id" => @user.id ).raw_first_column("groups.id").map(&:to_s)
+      new_user_attr[:group_ids]  |= system_group_scope.joins(:users).where( "users.id" => @user.id ).raw_first_column("groups.id").map(&:to_s)
       unless current_user.has_role?(:admin_user)
-        params[:user][:group_ids]  |= WorkGroup.where(invisible: true).raw_first_column("groups.id").map(&:to_s)
+        new_user_attr[:group_ids]  |= WorkGroup.where(invisible: true).raw_first_column("groups.id").map(&:to_s)
       end
     end
 
-    if params[:user][:password].present?
+    if new_user_attr[:password].present?
       if current_user.id == @user.id
         @user.password_reset = false
       else
         @user.password_reset = params[:force_password_reset] != '0'
       end
     else
-      params[:user].delete(:password)
-      params[:user].delete(:password_confirmation)
+      new_user_attr.delete(:password)
+      new_user_attr.delete(:password_confirmation)
     end
 
-    if params[:user].has_key?(:time_zone) && (params[:user][:time_zone].blank? || !ActiveSupport::TimeZone[params[:user][:time_zone]])
-      params[:user][:time_zone] = nil # change "" to nil
+    if new_user_attr.has_key?(:time_zone) && (new_user_attr[:time_zone].blank? || !ActiveSupport::TimeZone[new_user_attr[:time_zone]])
+      new_user_attr[:time_zone] = nil # change "" to nil
     end
 
     # IP whitelist
@@ -223,18 +219,16 @@ class UsersController < ApplicationController
     original_ap_ids    = @user.access_profile_ids
 
 
-    @user.make_all_accessible! if current_user.has_role?(:admin_user)
     if current_user.has_role? :site_manager
-      @user.make_accessible!(:group_ids, :type, :account_locked)
-      if params[:user][:type] == 'SiteManager'
-        params[:user][:type] = 'SiteManager'
+      if new_user_attr[:type] == 'SiteManager'
+        new_user_attr[:type] = 'SiteManager'
       else
-        params[:user][:type] = 'NormalUser'
+        new_user_attr[:type] = 'NormalUser'
       end
       @user.site = current_user.site
     end
 
-    @user.attributes = params[:user]
+    @user.attributes = new_user_attr
 
     remove_ap_ids    = original_ap_ids - @user.access_profile_ids
     remove_group_ids = remove_ap_ids.present? ? AccessProfile.find(remove_ap_ids).map(&:group_ids).flatten.uniq : []
@@ -256,7 +250,7 @@ class UsersController < ApplicationController
       else
         @user.reload
         format.html do
-          if params[:user][:password]
+          if new_user_attr[:password]
             render action: "change_password"
           else
             render action: "show"
@@ -351,6 +345,15 @@ class UsersController < ApplicationController
   end
 
   private
+
+  def user_params #:nodoc:
+    # XXXX
+    allowed  = [ :full_name, :email, :password, :password_confirmation, :time_zone, :city, :country ]
+    allowed += [ :login, :type, :group_ids, :account_locked ] if current_user.has_role?(:site_manager)
+    allowed  = User.column_names - ["id"]                     if current_user.has_role?(:admin_user)
+
+    params.require(:user).permit( allowed )
+  end
 
   # Sends email and returns true/false if it succeeds/fails
   def send_welcome_email(user, password, no_password_reset_needed) #:nodoc:

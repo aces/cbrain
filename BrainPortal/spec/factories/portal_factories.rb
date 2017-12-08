@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-FactoryGirl.define do
+FactoryBot.define do
 
   #################
   # User          #
@@ -226,6 +226,7 @@ FactoryGirl.define do
   # Task            #
   ###################
 
+  PortalTask.nil? # force pre-load of all constants under CbrainTask
   factory :cbrain_task do
     status      "New"
     association :bourreau
@@ -241,9 +242,8 @@ FactoryGirl.define do
   end
 
 
-  factory "cbrain_task/diagnostics" do
+  factory "cbrain_task/diagnostics", parent: :cbrain_task, class: "cbrain_task/diagnostics" do
     status      "New"
-    add_attribute( :type, "CbrainTask::Diagnostics")
     association :bourreau
     association :user, factory: :normal_user
     association :group

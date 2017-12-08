@@ -25,8 +25,8 @@ require 'rails_helper'
 describe DataProvider do
 
   let(:provider)        { create(:data_provider, :online => true, :read_only => false) }
-  let(:userfile)        { mock_model(Userfile, :name => "userfile_mock", :user_id => 1).as_null_object }
-  let(:singlefile)      { mock_model(SingleFile, :name => "singlefile_mock", :user_id => 1).as_null_object }
+  let(:userfile)        { mock_model(Userfile,       :name => "userfile_mock",       :user_id => 1).as_null_object }
+  let(:singlefile)      { mock_model(SingleFile,     :name => "singlefile_mock",     :user_id => 1).as_null_object }
   let(:filecollection)  { mock_model(FileCollection, :name => "filecollection_mock", :user_id => 1).as_null_object }
 
   describe "validations" do
@@ -450,10 +450,10 @@ describe DataProvider do
   describe "#cache_erase" do
     before(:each) do
       allow(DataProvider).to receive(:cache_rootdir).and_return("cache")
-      allow(provider).to receive(:cache_full_pathname).and_return(Pathname.new("cache_path"))
-      allow(SyncStatus).to receive(:ready_to_modify_cache).and_yield
-      allow(FileUtils).to receive(:remove_entry)
-      allow(Dir).to receive(:rmdir)
+      allow(provider).to     receive(:cache_full_pathname).and_return(Pathname.new("cache_path"))
+      allow(SyncStatus).to   receive(:ready_to_modify_cache).and_yield
+      allow(FileUtils).to    receive(:remove_entry)
+      allow(Dir).to          receive(:rmdir)
     end
     it "should ensure that the cache is ready to be modified and update the sync status" do
       expect(SyncStatus).to receive(:ready_to_modify_cache)
@@ -552,7 +552,7 @@ describe DataProvider do
       expect(provider.provider_rename(userfile, "&*!@^#%*")).to be_falsey
     end
     it "should return false if the name is already used by another userfile" do
-      conflict_file = create(:userfile, :name => "abc", :data_provider => provider)
+      conflict_file = create(:single_file, :name => "abc", :data_provider => provider)
       allow(userfile).to receive(:user_id).and_return(conflict_file.user_id)
       expect(provider.provider_rename(userfile, "abc")).to be_falsey
     end
@@ -563,7 +563,7 @@ describe DataProvider do
     context "renaming on the provider" do
       before(:each) do
         allow(provider).to receive(:cache_erase)
-        allow(provider).to receive_message_chain(:userfiles, :first).and_return(nil)
+        allow(provider).to receive_message_chain(:userfiles, :where, :first).and_return(nil)
         userfile.as_null_object
         allow(SyncStatus).to receive(:ready_to_modify_dp)
       end
@@ -782,7 +782,7 @@ describe DataProvider do
 
   describe "#validate_destroy" do
     it "should prevent desctruction if associated userfiles still exist" do
-      destroyed_provider = create(:data_provider, :userfiles => [create(:userfile)])
+      destroyed_provider = create(:data_provider, :userfiles => [create(:single_file)])
       expect{ destroyed_provider.destroy }.to raise_error(ActiveRecord::DeleteRestrictionError)
     end
     it "should allow desctruction if no associated userfiles still exist" do

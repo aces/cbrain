@@ -23,8 +23,8 @@ class SignupsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_filter :login_required,      :except => [:show, :new, :create, :edit, :destroy, :update, :confirm, :resend_confirm]
-  before_filter :admin_role_required, :except => [:show, :new, :create, :edit, :destroy, :update, :confirm, :resend_confirm]
+  before_action :login_required,      :except => [:show, :new, :create, :edit, :destroy, :update, :confirm, :resend_confirm]
+  before_action :admin_role_required, :except => [:show, :new, :create, :edit, :destroy, :update, :confirm, :resend_confirm]
 
   ################################################################
   # User-accessible action (do not need to be logged in)
@@ -44,7 +44,7 @@ class SignupsController < ApplicationController
   end
 
   def create #:nodoc:
-    @signup = Signup.new(params[:signup])
+    @signup = Signup.new(signup_params)
     @signup.session_id = request.session_options[:id]
     @signup.generate_token
 
@@ -87,7 +87,7 @@ class SignupsController < ApplicationController
       return
     end
 
-    @signup.update_attributes(params[:signup])
+    @signup.update_attributes(signup_params)
 
     if ! @signup.save
       render :action => :new
@@ -171,7 +171,7 @@ class SignupsController < ApplicationController
     view_hidden                 = ( params[:view_hidden].presence == "true" ) if params[:view_hidden].present?
     @scope.custom[:view_hidden] = view_hidden
 
-    @base_scope                 = Signup.scoped
+    @base_scope                 = Signup.where(nil)
     @view_scope                 = @scope.apply(@base_scope)
     @num_hidden                 = view_hidden ? 0 : @view_scope.where(:hidden => true).count
     @view_scope                 = @view_scope.where(:hidden => false) unless view_hidden
@@ -297,6 +297,15 @@ class SignupsController < ApplicationController
   end
 
   private
+
+  def signup_params
+    params.require(:signup).permit(
+      :title, :first, :middle, :last,
+      :institution, :department, :position, :email,
+      :street1, :street2, :city, :province, :country, :postal_code,
+      :login, :time_zone, :comment, :admin_comment, :hidden, :user_id
+    )
+  end
 
   def can_edit?(signup) #:nodoc:
     return false if signup.blank?

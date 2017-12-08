@@ -80,7 +80,8 @@
       t.column('Type', :symbolic_type,
         :sortable => true,
         :filters  => filter_values_for(@fileinfolist, :symbolic_type,
-          format: lambda do |value, label, count|
+          format: lambda do |format_info|
+            value, label, count = *format_info
             { :value => value.to_s, :label => label.to_s.humanize, :indicator => count }
           end
         )

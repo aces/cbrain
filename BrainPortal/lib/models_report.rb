@@ -40,8 +40,8 @@ class ModelsReport
   # on the remote_resources, and are compared to the
   # :accessed_at attribute of the SyncStatus structure.
   def self.rr_usage_statistics(options)
-    users            = options[:users]
-    remote_resources = options[:remote_resources]
+    users            = options[:users]            || User.all
+    remote_resources = options[:remote_resources] || RemoteResource.all
     accessed_before  = options[:accessed_before]
     accessed_after   = options[:accessed_after]
     types            = options[:types]
@@ -50,18 +50,10 @@ class ModelsReport
     all_users_label = "TOTAL" # used as a key in the table's hash
 
     # Which users to gather stats for
-    userlist = if users
-                 users.is_a?(Array) ? users : [ users ]
-               else
-                 User.all
-               end
+    userlist = users.to_a
 
     # Which remote resource to gather stats for
-    rrlist   = if remote_resources
-                 remote_resources.is_a?(Array) ? remote_resources : [ remote_resources ]
-               else
-                 RemoteResource.all
-               end
+    rrlist   = remote_resources.to_a
 
     # Base relation for file status
     base_rel = SyncStatus.joins(:userfile).group([ 'userfiles.user_id', 'sync_status.remote_resource_id'])

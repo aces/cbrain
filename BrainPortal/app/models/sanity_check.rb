@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # A simple model to track the revision info
@@ -28,8 +28,8 @@ class SanityCheck < ActiveRecord::Base
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   validates_presence_of :revision_info
-  
-  attr_accessible :revision_info
+
+  # attr_accessible :revision_info
 
 end
 

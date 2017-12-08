@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # The Control class implements a communication channel
@@ -34,7 +34,7 @@
 # When a command is sent from one RemoteResource to another,
 # the Control object is filled with a RemoteCommand object:
 #
-#     mycom = RemoteCommand.new(blah blah) # acts like a Hash
+#     mycom  = RemoteCommand.new(blah blah) # acts like a Hash
 #     tosend = Control.new(mycom)
 #
 # The ActiveResource layer doesn't care that the data being
@@ -42,8 +42,8 @@
 class Control < ActiveResource::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
-  
+
   self.format = :xml
-  
+
 end
 

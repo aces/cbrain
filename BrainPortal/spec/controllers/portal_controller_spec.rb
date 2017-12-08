@@ -31,7 +31,8 @@ RSpec.describe PortalController, :type => :controller do
   context "with a logged in normal user" do
 
     before(:each) do
-      session[:user_id] = current_user.id
+      session[:user_id]    = current_user.id
+      session[:session_id] = 'session_id'
     end
 
     describe "welcome" do
@@ -49,25 +50,25 @@ RSpec.describe PortalController, :type => :controller do
     end
     describe "show_license" do
       it "should display the appropriate licence" do
-        get :show_license, :license =>  "12345"
+        get :show_license, params: {:license =>  "12345"}
         expect(assigns[:license]).to eq("12345")
       end
     end
     describe "sign_license" do
       it "should log the user out if the 'agree' parameter is not sent" do
-        post :sign_license, :license => "12345"
+        post :sign_license, params: {:license => "12345"}
         expect(response).to redirect_to "/logout"
       end
       it "should update the appropriate licence" do
-        post :sign_license, :license => "12345", :agree => true
+        post :sign_license, params: {:license => "12345", :agree => true}
         expect(assigns[:license]).to eq("12345")
       end
       it "should redirect to the show license page if not all checkboxes were checked" do
-        post :sign_license, :license => "12345", :agree => true, :num_checkboxes => 1
+        post :sign_license, params: {:license => "12345", :agree => true, :num_checkboxes => 1}
         expect(response).to redirect_to(:action => :show_license, :license => "12345")
       end
       it "should redirect to the start page if all checkboxes were checked" do
-        post :sign_license, :license => "12345", :agree => true, :num_checkboxes => 1, :license_check => "1"
+        post :sign_license, params: {:license => "12345", :agree => true, :num_checkboxes => 1, :license_check => "1"}
         expect(response).to redirect_to(controller.send :start_page_path)
       end
     end
@@ -77,6 +78,7 @@ RSpec.describe PortalController, :type => :controller do
 
     before(:each) do
       session[:user_id] = site_manager.id
+      session[:session_id] = 'session_id'
     end
 
     describe "welcome" do
@@ -93,25 +95,25 @@ RSpec.describe PortalController, :type => :controller do
     end
     describe "show_license" do
       it "should display the appropriate licence" do
-        get :show_license, :license =>  "12345"
+        get :show_license, params: {:license =>  "12345"}
         expect(assigns[:license]).to eq("12345")
       end
     end
     describe "sign_license" do
       it "should log the user out if the 'agree' parameter is not sent" do
-        post :sign_license, :license => "12345"
+        post :sign_license, params: {:license => "12345"}
         expect(response).to redirect_to "/logout"
       end
       it "should update the appropriate licence" do
-        post :sign_license, :license => "12345", :agree => true
+        post :sign_license, params: {:license => "12345", :agree => true}
         expect(assigns[:license]).to eq("12345")
       end
       it "should redirect to the show license page if not all checkboxes were checked" do
-        post :sign_license, :license => "12345", :agree => true, :num_checkboxes => 1
+        post :sign_license, params: {:license => "12345", :agree => true, :num_checkboxes => 1}
         expect(response).to redirect_to(:action => :show_license, :license => "12345")
       end
       it "should redirect to the start page if all checkboxes were checked" do
-        post :sign_license, :license => "12345", :agree => true, :num_checkboxes => 1, :license_check => "1"
+        post :sign_license, params: {:license => "12345", :agree => true, :num_checkboxes => 1, :license_check => "1"}
         expect(response).to redirect_to(controller.send :start_page_path)
       end
     end
@@ -122,6 +124,7 @@ RSpec.describe PortalController, :type => :controller do
 
      before(:each) do
         session[:user_id] = admin_user.id
+        session[:session_id] = 'session_id'
         allow(IO).to receive(:popen).and_return("log")
       end
 
@@ -144,25 +147,25 @@ RSpec.describe PortalController, :type => :controller do
     end
     describe "show_license" do
       it "should display the appropriate licence" do
-        get :show_license, :license =>  "12345"
+        get :show_license, params: {:license =>  "12345"}
         expect(assigns[:license]).to eq("12345")
       end
     end
     describe "sign_license" do
       it "should log the user out if the 'agree' parameter is not sent" do
-        post :sign_license, :license => "12345"
+        post :sign_license, params: {:license => "12345"}
         expect(response).to redirect_to "/logout"
       end
       it "should update the appropriate licence" do
-        post :sign_license, :license => "12345", :agree => true
+        post :sign_license, params: {:license => "12345", :agree => true}
         expect(assigns[:license]).to eq("12345")
       end
       it "should redirect to the show license page if not all checkboxes were checked" do
-        post :sign_license, :license => "12345", :agree => true, :num_checkboxes => 1
+        post :sign_license, params: {:license => "12345", :agree => true, :num_checkboxes => 1}
         expect(response).to redirect_to(:action => :show_license, :license => "12345")
       end
       it "should redirect to the start page if all checkboxes were checked" do
-        post :sign_license, :license => "12345", :agree => true, :num_checkboxes => 1, :license_check => "1"
+        post :sign_license, params: {:license => "12345", :agree => true, :num_checkboxes => 1, :license_check => "1"}
         expect(response).to redirect_to(controller.send :start_page_path)
       end
     end
@@ -183,13 +186,13 @@ RSpec.describe PortalController, :type => :controller do
     end
     describe "show_license" do
       it "should redirect the login page" do
-        get :show_license, :license =>  "12345"
+        get :show_license, params: {:license =>  "12345"}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end
     describe "sign_license" do
       it "should redirect the login page" do
-        post :sign_license, :license =>  "12345"
+        post :sign_license, params: {:license =>  "12345"}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end

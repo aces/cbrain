@@ -52,7 +52,8 @@ RSpec.describe AccessProfilesController, :type => :controller do
                           ) }
 
     before(:each) do
-      session[:user_id] = current_user.id
+      session[:user_id]    = current_user.id
+      session[:session_id] = 'session_id'
     end
 
     #----------------
@@ -72,11 +73,11 @@ RSpec.describe AccessProfilesController, :type => :controller do
     #----------------
     describe "show" do
       it "should return a profile by ID" do
-        get :show, :id => ap_b.id
+        get :show, params: {:id => ap_b.id}
         expect(assigns[:access_profile]).to match(ap_b)
       end
       it "should fail on a unknown profile ID" do
-        expect { get :show, :id => -987 }.to raise_error(ActiveRecord::RecordNotFound)
+        expect { get :show, params: {:id => -987} }.to raise_error(ActiveRecord::RecordNotFound)
       end
     end
 
@@ -100,7 +101,7 @@ RSpec.describe AccessProfilesController, :type => :controller do
                         :user_ids    => [ user_a.id, user_b.id ],
                         :group_ids   => [ group_a.id, group_b.id ],
                       }
-        post :create, :access_profile => attributes
+        post :create, params: {:access_profile => attributes}
         expect(assigns[:access_profile]).to     match(AccessProfile.last)
         expect(AccessProfile.last.user_ids).to  match_array(attributes[:user_ids])
         expect(AccessProfile.last.group_ids).to match_array(attributes[:group_ids])
@@ -112,15 +113,15 @@ RSpec.describe AccessProfilesController, :type => :controller do
     #----------------
     describe "update" do
       it "should find a profile by ID" do
-        post :update, :id => ap_b.id
+        post :update, params: {:id => ap_b.id}
         expect(assigns[:access_profile]).to match(ap_b)
       end
       it "should fail on a unknown profile ID" do
-        expect { post :update, :id => -987 }.to raise_error(ActiveRecord::RecordNotFound)
+        expect { post :update, params: {:id => -987} }.to raise_error(ActiveRecord::RecordNotFound)
       end
       it "should change standard attributes" do
         new_att = { :name => 'new_name', :description => 'new_desc', :color => '#cababe' }
-        post :update, :id => ap_b.id, :access_profile => new_att
+        post :update, params: {:id => ap_b.id, :access_profile => new_att}
         updated_ap = AccessProfile.find(ap_b.id)
         expect(updated_ap.name).to        match(new_att[:name])
         expect(updated_ap.description).to match(new_att[:description])
@@ -130,10 +131,10 @@ RSpec.describe AccessProfilesController, :type => :controller do
         it "should adjust all affected users" do
           allow(User).to receive_message_chain(:where, :all).and_return([ user_a ])
           expect(user_a).to receive(:apply_access_profiles).and_return true
-          post :update, :id                => ap_a.id,
+          post :update, params: {:id                => ap_a.id,
                         :affected_user_ids => [ user_a.id ],
                         :access_profile    =>
-                          ap_a.attributes.slice("name","description","color")
+                          ap_a.attributes.slice("name","description","color")}
                           .merge(:user_ids => [ user_a.id ], :group_ids => [ group_a.id, group_o.id ])
         end
       end
@@ -141,10 +142,10 @@ RSpec.describe AccessProfilesController, :type => :controller do
         it "should adjust all affected users" do
           allow(User).to receive_message_chain(:where, :all).and_return([ user_a ])
           expect(user_a).to receive(:apply_access_profiles).and_return true
-          post :update, :id                => ap_a.id,
+          post :update, params: {:id                => ap_a.id,
                         :affected_user_ids => [ user_a.id ],
                         :access_profile    =>
-                          ap_a.attributes.slice("name","description","color")
+                          ap_a.attributes.slice("name","description","color")}
                           .merge(:user_ids => [ user_a.id ], :group_ids => [ ])
         end
       end
@@ -153,9 +154,9 @@ RSpec.describe AccessProfilesController, :type => :controller do
           allow(User).to receive(:find).with([ user_b.id ]).and_return([ user_b ])
           allow(User).to receive(:find).with([ ]).and_return([ ])
           expect(user_b).to receive(:apply_access_profiles).and_return true
-          post :update, :id                => ap_b.id,
+          post :update, params: {:id                => ap_b.id,
                         :access_profile    =>
-                          ap_b.attributes.slice("name","description","color")
+                          ap_b.attributes.slice("name","description","color")}
                           .merge(:user_ids => [ user_b.id ], :group_ids => [ ])
         end
       end
@@ -164,9 +165,9 @@ RSpec.describe AccessProfilesController, :type => :controller do
           allow(User).to receive(:find).with([ ]).and_return([ ])
           allow(User).to receive(:find).with([ user_a.id ]).and_return([ user_a ])
           expect(user_a).to receive(:apply_access_profiles).and_return true
-          post :update, :id                => ap_a.id,
+          post :update, params: {:id                => ap_a.id,
                         :access_profile    =>
-                          ap_a.attributes.slice("name","description","color")
+                          ap_a.attributes.slice("name","description","color")}
                           .merge(:user_ids => [ ], :group_ids => [ group_a.id ])
         end
       end
@@ -177,13 +178,13 @@ RSpec.describe AccessProfilesController, :type => :controller do
     #----------------
     describe "destroy" do
       it "should destroy the access profile" do
-        post :destroy, :id => ap_a.id
+        post :destroy, params: {:id => ap_a.id}
         expect(AccessProfile.where(:id => ap_a.id).all).to match_array([])
       end
       it "should adjust all affected users" do
         allow(User).to receive(:find).with([ user_a.id ]).and_return([ user_a ])
         expect(user_a).to receive(:apply_access_profiles).with(remove_group_ids: [ group_a.id ]).and_return true
-        post :destroy, :id => ap_a.id
+        post :destroy, params: {:id => ap_a.id}
       end
     end
 
@@ -199,6 +200,7 @@ RSpec.describe AccessProfilesController, :type => :controller do
 
     before(:each) do
       session[:user_id] = current_user.id
+      session[:session_id] = 'session_id'
     end
 
     describe "index" do
@@ -209,7 +211,7 @@ RSpec.describe AccessProfilesController, :type => :controller do
     end
     describe "show" do
       it "should present the not authorized page" do
-        get :show, :id => 1
+        get :show,  params: {:id => 1}
         expect(response.code).to eq('401')
       end
     end
@@ -227,13 +229,13 @@ RSpec.describe AccessProfilesController, :type => :controller do
     end
     describe "update" do
       it "should present the not authorized page" do
-        put :update, :id => 1
+        put :update, params: {:id => 1}
         expect(response.code).to eq('401')
       end
     end
     describe "destroy" do
       it "should present the not authorized page" do
-        delete :destroy, :id => 1
+        delete :destroy, params: {:id => 1}
         expect(response.code).to eq('401')
       end
     end
@@ -252,7 +254,7 @@ RSpec.describe AccessProfilesController, :type => :controller do
     end
     describe "show" do
       it "should redirect the login page" do
-        get :show, :id => 1
+        get :show, params: {:id => 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end
@@ -270,13 +272,13 @@ RSpec.describe AccessProfilesController, :type => :controller do
     end
     describe "update" do
       it "should redirect the login page" do
-        put :update, :id => 1
+        put :update, params: {:id => 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end
     describe "destroy" do
       it "should redirect the login page" do
-        delete :destroy, :id => 1
+        delete :destroy, params: {:id => 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end
