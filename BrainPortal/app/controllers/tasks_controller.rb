@@ -381,7 +381,7 @@ class TasksController < ApplicationController
     prop_parallel = @task.class.properties[:use_parallelizer] # true, or a number
     tc_ncpus      = @task.tool_config.ncpus || 1
     if prop_parallel && (tc_ncpus > 1)
-      if prop_parallel.is_a?(Fixnum) && prop_parallel > 1
+      if prop_parallel.is_a?(Integer) && prop_parallel > 1
         parallel_size = tc_ncpus < prop_parallel ? tc_ncpus : prop_parallel # min of the two
       else
         parallel_size = tc_ncpus

@@ -65,3 +65,14 @@ gem "puma"
 gem 'activeresource', require: 'active_resource'
 gem 'aws-sdk', '<2.0'
 
+group :test do
+  gem 'pry'
+  gem 'pry-byebug'
+  gem "rspec-rails"
+  gem "factory_bot_rails", :require => false
+  gem 'rails-controller-testing'
+  gem "rspec-mocks"
+  gem 'rspec-activemodel-mocks'
+  gem 'rspec-collection_matchers'
+  gem "database_cleaner"
+end

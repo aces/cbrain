@@ -222,7 +222,7 @@ module ResourceLinkHelper
     return "(None)" if model_obj_or_id.blank?
     user ||= current_user # allows us to supply 'nil' in arg
     model_obj = model_obj_or_id
-    if model_obj_or_id.is_a?(String) || model_obj_or_id.is_a?(Fixnum)
+    if model_obj_or_id.is_a?(String) || model_obj_or_id.is_a?(Integer)
       model_obj = model_class.find(model_obj_or_id) rescue nil
       return "(Deleted/Non-existing)" if model_obj.blank?
     end

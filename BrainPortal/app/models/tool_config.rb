@@ -326,8 +326,17 @@ class ToolConfig < ActiveRecord::Base
     if self.container_engine.present? && ( self.containerhub_image_name.blank? && self.container_image_userfile_id.blank? )
       errors[:container_engine] = "a container hub image name or a container image userfile ID should be set when the container engine is set"
     end
+
+    if self.container_engine.present? && self.container_engine == "Singularity" 
+      if self.container_index_location.present? && self.container_index_location !~ /\A[a-z0-9]+\:\/\/\z/i
+        errors[:container_index_location] = "is invalid for container engine Singularity. Should end in '://'."
+      end
+    elsif self.container_engine.present? && self.container_engine == "Docker"
+      if self.container_index_location.present? && self.container_index_location !~ /\A[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}\z/i
+        errors[:container_index_location] = "is invalid for container engine Docker. Should be a valid hostname."
+      end
+    end
     return errors.empty?
   end
-
 
 end

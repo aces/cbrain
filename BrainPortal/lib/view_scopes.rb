@@ -1381,7 +1381,7 @@ module ViewScopes
   # trying to decompress an already decompressed scope).
   # Returns the scope's hash representation.
   def self.decompress_scope(scope)
-    return scope if scope.is_a?(Hash)
+    return scope.to_unsafe_hash if !scope.is_a?(String)
 
     scope.tr!('-_', '+/')
     scope = Base64.decode64(scope)

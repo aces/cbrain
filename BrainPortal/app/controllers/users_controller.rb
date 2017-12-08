@@ -347,10 +347,13 @@ class UsersController < ApplicationController
   private
 
   def user_params #:nodoc:
-    # XXXX
-    allowed  = [ :full_name, :email, :password, :password_confirmation, :time_zone, :city, :country ]
-    allowed += [ :login, :type, :group_ids, :account_locked ] if current_user.has_role?(:site_manager)
-    allowed  = User.column_names - ["id"]                     if current_user.has_role?(:admin_user)
+    pseudo_attr  = [:password, :password_confirmation]
+    pseudo_attr += [:group_ids => [], :access_profile_ids => []] if
+                    current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)
+
+    allowed     = [ :full_name, :email, :time_zone, :city, :country ] + pseudo_attr
+    allowed    += [ :login, :type, :account_locked]             if current_user.has_role?(:site_manager)
+    allowed     = User.column_names - ["id"] + pseudo_attr      if current_user.has_role?(:admin_user)
 
     params.require(:user).permit( allowed )
   end

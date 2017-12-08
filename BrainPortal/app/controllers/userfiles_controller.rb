@@ -266,7 +266,7 @@ class UserfilesController < ApplicationController
           render :action => :display,                  :layout => params[:apply_layout].present?
         end
       else
-        render :text => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>", :status  => "404"
+        render :html => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>", :status  => "404"
       end
     rescue ActionView::Template::Error => e
       exception = e.original_exception
@@ -279,7 +279,7 @@ class UserfilesController < ApplicationController
         :description => "An internal error occured when trying to display the contents of #{@userfile.name}."
       )
 
-      render :text => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>", :status => "500"
+      render :html => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>", :status => "500"
     end
   end
 
@@ -701,7 +701,7 @@ class UserfilesController < ApplicationController
     within_spawn = file_ids.size > 5
     CBRAIN.spawn_with_active_records_if(within_spawn, current_user, "Sending update to files") do
       # Read access is enough if just tags are to be updated
-      access = changes.has_key?(:tags) && changes.size == 1 ? :read : :write
+      access = changes.has_key?(:tags) && changes.to_unsafe_h.size == 1 ? :read : :write
 
       userfiles = Userfile
         .find_all_accessible_by_user(current_user, :access_requested => access)
@@ -1273,7 +1273,7 @@ class UserfilesController < ApplicationController
 
     # Write access to the userfiles' DP is required
     readonly_dps, writable_dps = DataProvider
-      .where(:id => userfiles.uniq.select(:data_provider_id))
+      .where(:id => userfiles.distinct.select(:data_provider_id))
       .all.partition(&:read_only?)
 
     skipped["Data Provider not writable"] = userfiles

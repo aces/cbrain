@@ -90,7 +90,7 @@ class DataProvidersController < ApplicationController
     @provider = DataProvider.sti_new(data_provider_params)
     @provider.user_id  ||= current_user.id # disabled field in form DOES NOT send value!
     @provider.group_id ||= (( current_project && current_project.id ) || current_user.own_group.id)
-
+   
     if @provider.save
       add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid])
       @provider.addlog_context(self,"Created by #{current_user.login}")
@@ -187,7 +187,7 @@ class DataProvidersController < ApplicationController
     is_alive = @provider.is_alive_with_caching?
 
     respond_to do |format|
-      format.html { render :text => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }
+      format.html { render :html => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }
       format.xml  { render :xml  => { :is_alive => is_alive } }
       format.json { render :json => { :is_alive => is_alive } }
     end

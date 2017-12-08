@@ -12,14 +12,14 @@ class ApplicationController < ActionController::Base
 
   helper_method :start_page_path
 
-  # before_filter :set_cache_killer
-  # before_filter :check_account_validity
-  # before_filter :prepare_messages
-  # before_filter :adjust_system_time_zone
-  # around_filter :activate_user_time_zone
+  before_action :set_cache_killer
+  before_action :check_account_validity
+  before_action :prepare_messages
+  before_action :adjust_system_time_zone
+  around_action :activate_user_time_zone
   after_action  :update_session_info       # touch timestamp of session at least once per minute
-  # after_filter  :action_counter            # counts all action/controller/user agents
-  # after_filter  :log_user_info             # add to log a single line with user info.
+  after_action  :action_counter            # counts all action/controller/user agents
+  after_action  :log_user_info             # add to log a single line with user info.
 
   protect_from_forgery with: :exception
 

@@ -2,14 +2,14 @@ Rails.application.routes.draw do
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 
 
-  # # Session
+  # Session
   resource  :session,         :only => [ :new, :create, :show, :destroy ]
 
-  # # Control channel
+  # Control channel
   # resources :controls,        :only => [ :show, :create ], :controller => :controls
 
-  # # Documentation
-  # resources :docs,            :except => [ :edit ], :controller => :help_documents
+  # Documentation
+  resources :docs,            :except => [ :edit ], :controller => :help_documents
 
   # # Standard CRUD resources
   resources :sites,           :except => [ :edit ]
@@ -17,7 +17,7 @@ Rails.application.routes.draw do
   resources :tags,            :except => [ :new, :edit ]
   resources :access_profiles, :except => [ :edit ]
 
-  # # Standard CRUD resources, with extra actions
+  # Standard CRUD resources, with extra actions
 
   resources :tool_configs,    :except => [ :create ] do
     collection do
@@ -49,7 +49,7 @@ Rails.application.routes.draw do
     end
   end
 
-  # resources :invitations,     :only => [ :new, :create, :update, :destroy ]
+  resources :invitations,     :only => [ :new, :create, :update, :destroy ]
 
   resources :bourreaux,       :except => [ :edit ] do
     member do
@@ -139,8 +139,8 @@ Rails.application.routes.draw do
     end
   end
 
-  # # Special named routes
-  # root  :to                       => 'portal#welcome'
+  # Special named routes
+  root  :to                       => 'portal#welcome'
   get   '/home'                   => 'portal#welcome'
   post  '/home'                   => 'portal#welcome' # lock/unlock service
   get   '/credits'                => 'portal#credits'
@@ -152,35 +152,35 @@ Rails.application.routes.draw do
   # get   '/session_data'           => 'session_data#show'
   # post  '/session_data'           => 'session_data#update'
 
-  # # Report Maker
+  # Report Maker
   get   "/report",                :controller => :portal, :action => :report
 
-  # # Network Operation Center; daily status (shows everything publicly!)
-  # # get   "/noc/daily",             :controller => :noc,    :action => :daily
+  # Network Operation Center; daily status (shows everything publicly!)
+  # get   "/noc/daily",             :controller => :noc,    :action => :daily
 
-  # # API description, by Swagger
+  # API description, by Swagger
   # get   "/swagger",               :controller => :portal, :action => :swagger
 
-  # # Licence handling
+  # Licence handling
   # get   '/show_license/:license', :controller => :portal, :action => :show_license
   # post  '/sign_license/:license', :controller => :portal, :action => :sign_license
 
-  # # Portal log
+  # Portal log
   get   '/portal_log',            :controller => :portal, :action => :portal_log
 
-  # # Service; most of these actions are only needed
-  # # for the CANARIE monitoring system, and are therefore
-  # # shipped disabled by default, because it's not needed
-  # # anywhere else.
-  # #get   '/service/info',           :controller => :service, :action => :info
-  # #get   '/service/stats',          :controller => :service, :action => :stats
-  # #get   '/service/detailed_stats', :controller => :service, :action => :detailed_stats
-  # #get   '/service/doc',            :controller => :service, :action => :doc
-  # #get   '/service/releasenotes',   :controller => :service, :action => :releasenotes
-  # #get   '/service/support',        :controller => :service, :action => :support
-  # #get   '/service/source',         :controller => :service, :action => :source
-  # #get   '/service/tryme',          :controller => :service, :action => :tryme
-  # #get   '/service/licence',        :controller => :service, :action => :licence
-  # #get   '/service/provenance',     :controller => :service, :action => :provenance
+  # Service; most of these actions are only needed
+  # for the CANARIE monitoring system, and are therefore
+  # shipped disabled by default, because it's not needed
+  # anywhere else.
+  #get   '/service/info',           :controller => :service, :action => :info
+  #get   '/service/stats',          :controller => :service, :action => :stats
+  #get   '/service/detailed_stats', :controller => :service, :action => :detailed_stats
+  #get   '/service/doc',            :controller => :service, :action => :doc
+  #get   '/service/releasenotes',   :controller => :service, :action => :releasenotes
+  #get   '/service/support',        :controller => :service, :action => :support
+  #get   '/service/source',         :controller => :service, :action => :source
+  #get   '/service/tryme',          :controller => :service, :action => :tryme
+  #get   '/service/licence',        :controller => :service, :action => :licence
+  #get   '/service/provenance',     :controller => :service, :action => :provenance
 
 end

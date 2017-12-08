@@ -81,9 +81,6 @@ class Userfile < ActiveRecord::Base
   attr_accessor           :tree_children
   attr_accessor           :rank_order
 
-  attr_accessible         :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable,
-                          :num_files, :tag_ids, :hidden, :immutable, :description
-
   scope                   :name_like,     -> (n)       {where("userfiles.name LIKE ?", "%#{n.strip}%")}
 
   scope                   :has_no_parent, ->           {where(parent_id: nil)}
@@ -470,7 +467,7 @@ class Userfile < ActiveRecord::Base
   # the sync operation will be triggered first.
   def is_locally_synced?
     syncstat = self.local_sync_status(:refresh)
-    return true if syncstat && syncstat.status == 'InSync'
+    return true  if syncstat && syncstat.status == 'InSync'
     return false unless self.data_provider.is_fast_syncing?
     return false if     self.data_provider.not_syncable?
     return false unless self.data_provider.rr_allowed_syncing?
