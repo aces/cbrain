@@ -208,8 +208,8 @@ class ApplicationController < ActionController::Base
     instname = CBRAIN::Instance_Name rescue "(?)"
 
     # Get host and IP from session (when logged in)
-    ip     = current_session["guessed_remote_ip"]
-    host   = current_session["guessed_remote_host"] # only set when logged in
+    ip     = session["guessed_remote_ip"]
+    host   = session["guessed_remote_host"] # only set when logged in
 
     # Compute the host and IP from the request (when not logged in)
     ip   ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
@@ -281,7 +281,7 @@ class ApplicationController < ActionController::Base
   # is only doing GET requests, the session object is not updated,
   # so this will touch it once per minute.
   def update_session_info
-    current_session.try(:touch_unless_recent)
+    session.try(:touch_unless_recent)
   rescue # ignore all errors.
     true
   end

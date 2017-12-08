@@ -300,7 +300,7 @@ class TasksController < ApplicationController
     tool_config           = nil unless tool_config && tool_config.can_be_accessed_by?(current_user) &&
                              tool_config.bourreau_and_tool_can_be_accessed_by?(current_user)
     if tool_config
-      new_task_info[:tool_id]     = tool_config.tool_id     # replace whatever was there or not
+      params[:tool_id]            = tool_config.tool_id     # replace whatever was there or not, tool_id is not CbrainTask parameters
       new_task_info[:bourreau_id] = tool_config.bourreau_id # replace whatever was there or not
     else
       new_task_info[:tool_config_id] = nil # ZAP value, it's incorrect; will likely cause a validation error later on.

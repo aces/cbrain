@@ -642,15 +642,16 @@ class UserfilesController < ApplicationController
   # userfiles.
   def update_multiple #:nodoc:
     file_ids = (params[:file_ids] || []).map(&:to_i)
-    changes  = params.slice(
-      :tags,
+    accepted_params = [
       :user_id,
       :group_id,
       :group_writable,
       :type,
       :hidden,
-      :immutable
-    )
+      :immutable,
+    ]
+    changes = params.slice(*accepted_params, :tags)
+    changes = changes.permit(*accepted_params, :tags => [])
 
     changes[:user_id]  = changes[:user_id].to_i                      if changes.has_key?(:user_id)
     changes[:group_id] = changes[:group_id].to_i                     if changes.has_key?(:group_id)
@@ -1648,10 +1649,10 @@ class UserfilesController < ApplicationController
     @scope.custom[:view_all] = !current_user.has_role?(:admin_user) if
       @scope.custom[:view_all].nil?
 
-    if @scope.custom[:view_all]
-      base = Userfile.restrict_access_on_query(current_user, base, :access_requested => :read)
-    else
+    if @scope.custom[:view_all] == "false" || !@scope.custom[:view_all]
       base = base.where(:user_id => current_user.id)
+    else
+      base = Userfile.restrict_access_on_query(current_user, base, :access_requested => :read)
     end
 
     base = base.where(:group_id => current_project.id) if current_project

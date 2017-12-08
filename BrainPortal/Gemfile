@@ -69,11 +69,13 @@ group :development do
   gem 'hirb'
   gem 'looksee'
   gem 'pry'
+  gem 'pry-byebug'
 end
 
 group :test do
   gem "rspec-rails"
   gem "factory_bot_rails", :require => false
+  gem 'rails-controller-testing'
   gem "rspec-mocks"
   gem 'rspec-activemodel-mocks'
   gem 'rspec-collection_matchers'
