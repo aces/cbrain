@@ -79,7 +79,6 @@ module ResourceAccess
     # [For *admin* users:] any resource on the system.
     # [For regular users:] all resources that belong to a group to which the user belongs.
     def find_accessible_by_user(id, user, options = {})
-      #scope = self.scoped(options)
       scope = self.where(options) # will fail if not simple attibute mappings
 
       unless user.has_role? :admin_user

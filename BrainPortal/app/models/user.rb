@@ -22,6 +22,7 @@
 
 require 'digest/sha1'
 require 'pbkdf2'
+
 # Model representing CBrain users.
 # All authentication of user access to the system is handle by the User model.
 # User level access to pages are handled through a given user's +class+ (currently *NormalUser*, *SiteManager*, *AdminUser*).
@@ -95,7 +96,7 @@ class User < ActiveRecord::Base
 
   has_and_belongs_to_many :access_profiles
   has_and_belongs_to_many :groups
-  belongs_to              :site
+  belongs_to              :site, :optional => true
   has_one                 :signup
 
   # The following resources are destroyed automatically when the user is destroyed.

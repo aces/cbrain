@@ -61,10 +61,10 @@ class UsersController < ApplicationController
       format.html # index.html.erb
       format.js
       format.xml  do
-        render :xml  => @users.for_api
+        render :xml  => @users.to_a.for_api
       end
       format.json do
-        render :json => @users.for_api
+        render :json => @users.to_a.for_api
       end
     end
   end
@@ -182,14 +182,15 @@ class UsersController < ApplicationController
   # PUT /users/1.xml
   def update #:nodoc:
     @user          = User.where(:id => params[:id]).includes(:groups).first
-    new_user_attr = user_params
     cb_error "You don't have permission to view this page.", :redirect => start_page_path unless edit_permission?(@user)
 
-    if new_user_attr[:group_ids]
-      system_group_scope = SystemGroup.scoped
-      new_user_attr[:group_ids]  |= system_group_scope.joins(:users).where( "users.id" => @user.id ).raw_first_column("groups.id").map(&:to_s)
+    new_user_attr = user_params
+    if new_user_attr[:group_ids] # the ID adjustment logic in this paragraph is awful FIXME
+      # This makes sure the user stays in all his SystemGroups
+      new_user_attr[:group_ids]   |= @user.groups.where(:type => SystemGroup.sti_descendant_names).pluck(:id).map(&:to_s)
       unless current_user.has_role?(:admin_user)
-        new_user_attr[:group_ids]  |= WorkGroup.where(invisible: true).raw_first_column("groups.id").map(&:to_s)
+        # This makes sure the user stays in all his invisible WorkGroups
+        new_user_attr[:group_ids] |= @user.groups.where(:type => WorkGroup.sti_descendant_names, :invisible => true).pluck(:id).map(&:to_s)
       end
     end
 
@@ -301,9 +302,9 @@ class UsersController < ApplicationController
     myportal.addlog("Admin user '#{current_user.login}' switching to user '#{@user.login}'")
     current_user.addlog("Switching to user '#{@user.login}'")
     @user.addlog("Switched from user '#{current_user.login}'")
-    current_session.clear
+    cbrain_session.clear
     self.current_user = @user
-    current_session[:user_id] = @user.id
+    cbrain_session[:user_id] = @user.id
 
     redirect_to start_page_path
   end
@@ -320,7 +321,7 @@ class UsersController < ApplicationController
         flash[:error] = "This account is locked, please write to #{contact} to get this account unlocked."
         respond_to do |format|
           format.html { redirect_to :action  => :request_password }
-          format.xml  { render :nothing => true, :status  => 401 }
+          format.xml  { head :unauthorized }
         end
         return
       end
