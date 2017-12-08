@@ -73,6 +73,8 @@ group :development do
 end
 
 group :test do
+  gem 'pry'
+  gem 'pry-byebug'
   gem "rspec-rails"
   gem "factory_bot_rails", :require => false
   gem 'rails-controller-testing'

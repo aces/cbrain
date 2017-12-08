@@ -152,8 +152,8 @@ class UserfilesController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.xml  { render :xml  => (params[:ids_only].present? && api_request) ? @userfiles : @userfiles.for_api }
-      format.json { render :json => (params[:ids_only].present? && api_request) ? @userfiles : @userfiles.for_api }
+      format.xml  { render :xml  => (params[:ids_only].present? && api_request) ? @userfiles.to_a : @userfiles.to_a.for_api }
+      format.json { render :json => (params[:ids_only].present? && api_request) ? @userfiles.to_a : @userfiles.to_a.for_api }
       format.csv
     end
   end
@@ -164,7 +164,7 @@ class UserfilesController < ApplicationController
     @userfiles   = Userfile.find_all_accessible_by_user(current_user, :access_requested => :write).where(:id => file_ids).all.to_a
     @have_parent = @userfiles.any? { |u| u.parent_id  }
     if ! ( @userfiles.size >= 2  || @have_parent )
-      render :text  => "<span class=\"warning\">You must select either:<br> 1) several files without parents or<br> 2) one file with a parent.</span>"
+      render :html  => "<span class=\"warning\">You must select either:<br> 1) several files without parents or<br> 2) one file with a parent.</span>".html_safe
       return
     end
 
@@ -212,7 +212,7 @@ class UserfilesController < ApplicationController
         send_file response_content
       elsif content_loader.type == :gzip
         response.headers["Content-Encoding"] = "gzip"
-        render :text => response_content
+        render :plain => response_content
       else
         render content_loader.type => response_content
       end
@@ -223,8 +223,8 @@ class UserfilesController < ApplicationController
   rescue
     respond_to do |format|
        format.html { render :file    => "public/404.html", :status => 404 }
-       format.xml  { render :nothing => true,              :status => 404 }
-       format.json { render :nothing => true,              :status => 404 }
+       format.xml  { head   :not_found }
+       format.json { head   :not_found }
     end
   end
 
@@ -266,7 +266,7 @@ class UserfilesController < ApplicationController
           render :action => :display,                  :layout => params[:apply_layout].present?
         end
       else
-        render :html => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>", :status  => "404"
+        render :html => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>".html_safe, :status  => "404"
       end
     rescue ActionView::Template::Error => e
       exception = e.original_exception
@@ -279,7 +279,7 @@ class UserfilesController < ApplicationController
         :description => "An internal error occured when trying to display the contents of #{@userfile.name}."
       )
 
-      render :html => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>", :status => "500"
+      render :html => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>".html_safe, :status => "500"
     end
   end
 
@@ -296,14 +296,15 @@ class UserfilesController < ApplicationController
     @log                = @userfile.getlog        rescue nil
 
     # Add some information for json
-    if request.format.to_sym == :json
+    if request.format.to_sym == :json || request.format.to_sym == :xml
       rr_ids_accessible   = RemoteResource.find_all_accessible_by_user(current_user).map(&:id)
       @remote_sync_status = SyncStatus.where(:userfile_id => @userfile.id, :remote_resource_id => rr_ids_accessible)
       @children_ids       = @userfile.children_ids  rescue []
 
-      @userfile[:cbrain_log]         = @log
-      @userfile[:remote_sync_status] = @remote_sync_status
-      @userfile[:children_ids]       = @children_ids
+      userfile_for_api = @userfile.for_api # transforms into a plain Hash
+      userfile_for_api["cbrain_log"]         = @log
+      userfile_for_api["remote_sync_status"] = @remote_sync_status
+      userfile_for_api["children_ids"]       = @children_ids
     # Prepare next/previous userfiles for html
     elsif request.format.to_sym == :html
       @sort_index  = [ 0, params[:sort_index].to_i, 999_999_999 ].sort[1]
@@ -321,8 +322,8 @@ class UserfilesController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml  { render :xml  => @userfile.for_api }
-      format.json { render :json => @userfile.for_api }
+      format.xml  { render :xml  => userfile_for_api }
+      format.json { render :json => userfile_for_api }
     end
   end
 
@@ -396,7 +397,6 @@ class UserfilesController < ApplicationController
 
     flash[:error]     ||= ""
     flash[:notice]    ||= ""
-    userfile_params
 
     # Mode of upload; this is determined by the values of the
     # params :archive, :_do_extract, and :_up_ex_mode
@@ -740,7 +740,7 @@ class UserfilesController < ApplicationController
       # Dataprovider owner switch availability check
       if changes.has_key?(:user_id)
         allowed, rejected = DataProvider
-          .where(:id => userfiles.pluck(:data_provider_id).uniq)
+          .where(:id => userfiles.pluck('userfiles.data_provider_id').uniq)
           .all.partition(&:allow_file_owner_change?)
 
         failed["changing file ownership is not allowed on this data provider"] = userfiles
@@ -1373,7 +1373,7 @@ class UserfilesController < ApplicationController
   def detect_file_type
     @type = (SingleFile.suggested_file_type(params[:file_name]) || SingleFile).name
     respond_to do |format|
-      format.html { render :text => @type }
+      format.html { render :html => @type.html_safe }
       format.json { render :json => { :type => @type } }
       format.xml  { render :xml  => { :type => @type } }
     end
@@ -1719,7 +1719,7 @@ class UserfilesController < ApplicationController
       tags = Set.new(@value)
 
       # With an Userfile model (or scope)
-      if (collection.is_a?(ActiveRecord::Relation))
+      if (collection <= ActiveRecord::Base rescue nil)
         placeholders = tags.map { '?' }.join(',')
         collection.where(<<-"SQL".strip_heredoc, *tags)
           ((
@@ -1828,7 +1828,7 @@ class UserfilesController < ApplicationController
       raise "nothing to filter with" unless valid?
 
       # With an Userfile model (or scope)
-      if (collection.is_a?(ActiveRecord::Relation))
+      if (collection <= ActiveRecord::Base rescue nil)
         case @operator.to_s.downcase
         when 'no_child'
           collection.where(<<-"SQL".strip_heredoc)

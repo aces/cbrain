@@ -33,16 +33,15 @@ class ApplicationController < ActionController::Base
   include AuthenticatedSystem
   include SessionHelpers
   include ViewScopes
-  # include PersistentSelection
+  include PersistentSelection
   include ViewHelpers
   include ApiHelpers
   include PermissionHelpers
-  # include ExceptionHelpers
-  # include MessageHelpers
+  include ExceptionHelpers
+  include MessageHelpers
 
   helper_method :start_page_path
 
-#  before_action :set_cache_killer
   before_action :check_account_validity
   before_action :prepare_messages
   before_action :adjust_system_time_zone
@@ -53,26 +52,6 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery with: :exception
 
-#  # This overrides the forgery protection method of
-#  # the same name; in most situations where a session has already
-#  # been created, it just invokes the real method. It's
-#  # also the case if we are are at the login page of the app,
-#  # since we need to initialize a new session for sure.
-#  #
-#  # In all other cases, it returns a plausible token while preventing
-#  # the the key "_csrf_token" to be assigned in the session (which
-#  # would create the session object).
-#  #
-#  # The problem this solves is that we no longer create empty session
-#  # objects for requests that don't need a user to be logged in, such
-#  # as the service controller, or the credits page, etc.
-#  def form_authenticity_token
-#    if session.present? || (params["controller"] == "sessions" && params["action"] == "new")
-#      super # this ALWAYS creates a session object with key "_csrf_token"
-#    else
-#      @_cbrain_fat ||= SecureRandom.base64(32) # dummy FAT
-#    end
-#  end
 
 
   ########################################################################
@@ -80,13 +59,6 @@ class ApplicationController < ActionController::Base
   ########################################################################
 
   private
-
-#  # Returns the name of the model class associated with a given contoller. By default
-#  # takes the name from the name of the controller, but can be redefined in subclasses
-#  # as needed.
-#  def resource_class #:nodoc:
-#    @resource_class ||= Class.const_get self.class.to_s.sub(/Controller$/, "").singularize
-#  end
 
   # This method adjust the Rails app's time zone in the rare
   # cases where the admin has changed it in the DB using the
@@ -122,31 +94,6 @@ class ApplicationController < ActionController::Base
     end
   end
 
-#  #Prevents pages from being cached in the browser.
-#  #This prevents users from being able to access pages after logout by hitting
-#  #the 'back' button on the browser.
-#  #
-#  #NOTE: Does not seem to be effective for all browsers.
-#  def set_cache_killer #:nodoc:
-#    # (no-cache) Instructs the browser not to cache and get a fresh version of the resource
-#    # (no-store) Makes sure the resource is not stored to disk anywhere - does not guarantee that the
-#    # resource will not be written
-#    # (must-revalidate) the cache may use the response in replying to a subsequent request but if the resonse is stale
-#    # all caches must first revalidate with the origin server using the request headers from the new request to allow
-#    # the origin server to authenticate the new reques
-#    # (max-age) Indicates that the client is willing to accept a response whose age is no greater than the specified time in seconds.
-#    # Unless max- stale directive is also included, the client is not willing to accept a stale response.
-#    response.headers["Last-Modified"] = Time.now.httpdate
-#    response.headers["Expires"] = "#{1.year.ago}"
-#    # HTTP 1.0
-#    # When the no-cache directive is present in a request message, an application SHOULD forward the request
-#    # toward the origin server even if it has a cached copy of what is being requested
-#    response.headers["Pragma"] = "no-cache"
-#    # HTTP 1.1 'pre-check=0, post-check=0' (IE specific)
-#    response.headers["Cache-Control"] = 'no-store, no-cache, must-revalidate, max-age=0, pre-check=0, post-check=0'
-#    response.headers["X-CBRAIN-Instance-Name" ] = CBRAIN::Instance_Name
-#  end
-
   # Check if the user needs to change their password
   # or sign license agreements.
   def check_account_validity #:nodoc:
@@ -169,8 +116,8 @@ class ApplicationController < ActionController::Base
       if File.exists?(Rails.root + "public/licenses/#{unsigned_agreements.first}.html")
         respond_to do |format|
           format.html { redirect_to :controller => :portal, :action => :show_license, :license => unsigned_agreements.first }
-          format.json { render :status => 403, :text => "Some license agreements are not signed." }
-          format.xml  { render :status => 403, :text => "Some license agreements are not signed." }
+          format.json { render :status => 403, :json => { "error" => "Some license agreements are not signed." } }
+          format.xml  { render :status => 403, :xml  => { "error" => "Some license agreements are not signed." } }
         end
         return false
       end
@@ -208,8 +155,8 @@ class ApplicationController < ActionController::Base
     instname = CBRAIN::Instance_Name rescue "(?)"
 
     # Get host and IP from session (when logged in)
-    ip     = session["guessed_remote_ip"]
-    host   = session["guessed_remote_host"] # only set when logged in
+    ip     = cbrain_session["guessed_remote_ip"]
+    host   = cbrain_session["guessed_remote_host"] # only set when logged in
 
     # Compute the host and IP from the request (when not logged in)
     ip   ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
@@ -281,7 +228,7 @@ class ApplicationController < ActionController::Base
   # is only doing GET requests, the session object is not updated,
   # so this will touch it once per minute.
   def update_session_info
-    session.try(:touch_unless_recent)
+    cbrain_session.try(:touch_unless_recent)
   rescue # ignore all errors.
     true
   end
@@ -352,24 +299,6 @@ class ApplicationController < ActionController::Base
     target_object.update_meta_data(meta_params, meta_keys, { :delete_on_blank => true }.merge(options))
   end
 
-#  ####################################################
-#  #
-#  # Changing default redirect code from 302 to 303
-#  #
-#  ####################################################
-#
-#  alias :old_redirect_to :redirect_to
-#
-#  # Change default redirect code to 303
-#  def redirect_to(options = {}, response_status = {}) #:nodoc:
-#    if options.is_a?(Hash)
-#      options[:status] ||= 303
-#    else
-#      response_status[:status] ||= 303
-#    end
-#    old_redirect_to(options, response_status)
-#  end
-
   # Home pages in hash form.
   def start_page_params #:nodoc:
     if current_user.nil?
@@ -393,7 +322,7 @@ class ApplicationController < ActionController::Base
   ####################################################
 
   # Use in order to return param key if it's present in params
-  def extract_params_key (list=[], default=nil) #:nodoc:
+  def extract_params_key(list=[], default=nil) #:nodoc:
     list.detect { |x| params.has_key?(x) && x } || default
   end
 

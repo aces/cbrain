@@ -674,7 +674,7 @@ class Userfile < ActiveRecord::Base
     end
 
     def partial_path(alternate_partial=nil) #:nodoc:
-      @userfile_class.view_path(alternate_partial.presence || @partial)
+      @userfile_class.view_path(alternate_partial.to_s.presence || @partial)
     end
   end
 
@@ -718,7 +718,7 @@ class Userfile < ActiveRecord::Base
   # Returns a Pathname object.
   def self.view_path(partial_name=nil)
     base = Pathname.new(CBRAIN::UserfilesPlugins_Dir) + self.to_s.underscore + "views"
-    return base if partial_name.blank?
+    return base if partial_name.to_s.blank?
     partial_name = Pathname.new(partial_name.to_s).cleanpath
     raise "View partial path outside of userfile plugin." if partial_name.absolute? || partial_name.to_s =~ /\A\.\./
     base = base + partial_name.to_s.sub(/([^\/]+)\z/,'_\1')
@@ -744,7 +744,7 @@ class Userfile < ActiveRecord::Base
   # Otherwise, returns a Pathname object.
   def self.public_path(public_file=nil)
     base = Pathname.new("/cbrain_plugins/userfiles") + self.to_s.underscore
-    return base if public_file.blank?
+    return base if public_file.to_s.blank?
     public_file = Pathname.new(public_file.to_s).cleanpath
     raise "Public file path outside of userfile plugin." if public_file.absolute? || public_file.to_s =~ /\A\.\./
     base = base + public_file

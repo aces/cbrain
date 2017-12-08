@@ -386,7 +386,7 @@ class TasksController < ApplicationController
       else
         parallel_size = tc_ncpus
       end
-      parallel_size = nil if parallel_size < 1 # no need then
+      parallel_size = nil if parallel_size < 2 # no need then
     end
 
     # Disable parallelizer if no Tool object yet created.
