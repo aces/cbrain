@@ -43,8 +43,6 @@ class MetaDataStore < ActiveRecord::Base
   validates_presence_of   :meta_key
   validates_uniqueness_of :meta_key, :scope => [ :ar_id, :ar_table_name ]
 
-  # attr_accessible :ar_id, :ar_table_name, :meta_key, :meta_value
-
   def active_record_object #:nodoc:
     ar_id = self.ar_id
     klass = self.ar_table_name.classify.constantize rescue nil

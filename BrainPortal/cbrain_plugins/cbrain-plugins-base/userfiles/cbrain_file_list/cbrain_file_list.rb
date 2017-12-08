@@ -183,7 +183,7 @@ class CbrainFileList < CSVFile
 
       # INVALID ENTRIES
       if userfile.is_a?(String) && userfile == "INVALID"
-        self.errors[error_key] = "has invalid file ID in first column"
+        self.errors.add(error_key, "has invalid file ID in first column")
         next
       end
 
@@ -192,7 +192,7 @@ class CbrainFileList < CSVFile
         next unless strict
         other_atts = row[1 .. -1].map(&:to_s).join("") # join them all in a single string
         if other_atts.present? # not all blank
-          self.errors[error_key] = "has spurious column values after ID"
+          self.errors.add(error_key, "has spurious column values after ID")
         end
         next
       end

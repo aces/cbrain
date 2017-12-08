@@ -57,9 +57,8 @@ class Group < ActiveRecord::Base
   has_many                :remote_resources
   has_many                :cbrain_tasks
   has_many                :tags
-  belongs_to              :site
-  belongs_to              :creator,
-                          :class_name   => "User"
+  belongs_to              :site, :optional => true
+  belongs_to              :creator, :class_name => "User", :optional => true
 
   api_attr_visible        :name, :description, :type, :site_id, :invisible
 

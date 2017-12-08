@@ -806,7 +806,7 @@ class DataProvidersController < ApplicationController
   private
 
   def data_provider_params #:nodoc:
-    params.require(:data_provider).require(
+    params.require_as_params(:data_provider).permit(
       :name, :user_id, :group_id, :remote_user, :remote_host, :alternate_host,
       :remote_port, :remote_dir, :online, :read_only, :description, :time_of_death,
       :not_syncable, :time_zone, :cloud_storage_client_identifier,

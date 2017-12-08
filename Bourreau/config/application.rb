@@ -12,14 +12,13 @@ module CbrainRailsBourreau
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
 
-    
     # Custom directories with classes and modules you want to be autoloadable.
     # config.autoload_paths += %W(#{config.root}/extras)
-    config.autoload_paths += Dir["#{config.root}/lib"]
-    config.autoload_paths += Dir["#{config.root}/lib/cbrain_task_generators"]
+    config.eager_load_paths += Dir["#{config.root}/lib"]
+    config.eager_load_paths += Dir["#{config.root}/lib/cbrain_task_generators"]
 
     # CBRAIN Plugins load paths: add directories for each Userfile model
-    config.autoload_paths += Dir[ * Dir.glob("#{config.root}/cbrain_plugins/installed-plugins/userfiles/*") ]
+    config.eager_load_paths += Dir[ * Dir.glob("#{config.root}/cbrain_plugins/installed-plugins/userfiles/*") ]
 
     # CBRAIN Plugins load paths: add directory for the CbrainTask models
     # This directory contains symbolic links to a special loader code

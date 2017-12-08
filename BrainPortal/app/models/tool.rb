@@ -55,7 +55,7 @@ class Tool < ActiveRecord::Base
   belongs_to              :user
   belongs_to              :group
   has_many                :tool_configs, :dependent => :destroy
-  has_many                :bourreaux, -> { uniq }, :through => :tool_configs
+  has_many                :bourreaux, -> { distinct }, :through => :tool_configs
 
   api_attr_visible        :name, :user_id, :group_id, :category, :description, :url
 

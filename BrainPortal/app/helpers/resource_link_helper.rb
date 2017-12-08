@@ -25,26 +25,26 @@ module ResourceLinkHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # # Creates a link to the show page of a +userfile+, as long
-  # # as the +cur_user+ has access to it. By default, +cur_user+ is
-  # # current_user.
-  # #
-  # # +userfile+ can be provided as an ID too.
-  # #
-  # # If the ID is nil, then the string
-  # #   "(None)"
-  # # will be returned.
-  # #
-  # # If the ID is invalid, the string
-  # #   "(Deleted/Non-existing)"
-  # # will be returned.
-  # #
-  # # +options+ can contain a :name for
-  # # the link (the default is the userfile's name) and a
-  # # :path (the default is the show path).
-  # def link_to_userfile_if_accessible(userfile, cur_user = current_user, options = {})
-  #   link_to_model_if_accessible(Userfile,userfile,:name,cur_user,options)
-  # end
+  # Creates a link to the show page of a +userfile+, as long
+  # as the +cur_user+ has access to it. By default, +cur_user+ is
+  # current_user.
+  #
+  # +userfile+ can be provided as an ID too.
+  #
+  # If the ID is nil, then the string
+  #   "(None)"
+  # will be returned.
+  #
+  # If the ID is invalid, the string
+  #   "(Deleted/Non-existing)"
+  # will be returned.
+  #
+  # +options+ can contain a :name for
+  # the link (the default is the userfile's name) and a
+  # :path (the default is the show path).
+  def link_to_userfile_if_accessible(userfile, cur_user = current_user, options = {})
+    link_to_model_if_accessible(Userfile,userfile,:name,cur_user,options)
+  end
 
   # Creates a link to the show page of a +user+, as long
   # as the +cur_user+ has access to it. By default, +cur_user+ is
@@ -72,125 +72,125 @@ module ResourceLinkHelper
     link_to_model_if_accessible(User,user,:login,cur_user,options)
   end
 
-  # # Creates a link to the show page of a +data_provider+, as long
-  # # as the +cur_user+ has access to it. By default, +cur_user+ is
-  # # current_user.
-  # #
-  # # +data_provider+ can be provided as an ID too.
-  # #
-  # # If the ID is nil, then the string
-  # #   "(None)"
-  # # will be returned.
-  # #
-  # # If the ID is invalid, the string
-  # #   "(Deleted/Non-existing)"
-  # # will be returned.
-  # #
-  # # +options+ can contain a :name for
-  # # the link (the default is the data provider's name) and a
-  # # :path (the default is the show path).
-  # def link_to_data_provider_if_accessible(dp, cur_user = current_user, options = {})
-  #   link_to_model_if_accessible(DataProvider,dp,:name,cur_user,options)
-  # end
+  # Creates a link to the show page of a +data_provider+, as long
+  # as the +cur_user+ has access to it. By default, +cur_user+ is
+  # current_user.
+  #
+  # +data_provider+ can be provided as an ID too.
+  #
+  # If the ID is nil, then the string
+  #   "(None)"
+  # will be returned.
+  #
+  # If the ID is invalid, the string
+  #   "(Deleted/Non-existing)"
+  # will be returned.
+  #
+  # +options+ can contain a :name for
+  # the link (the default is the data provider's name) and a
+  # :path (the default is the show path).
+  def link_to_data_provider_if_accessible(dp, cur_user = current_user, options = {})
+    link_to_model_if_accessible(DataProvider,dp,:name,cur_user,options)
+  end
 
-  # # Creates a link to the show page of a +bourreau+, as long
-  # # as the +cur_user+ has access to it. By default, +cur_user+ is
-  # # current_user.
-  # #
-  # # +bourreau+ can be provided as an ID too.
-  # #
-  # # If the ID is nil, then the string
-  # #   "(None)"
-  # # will be returned.
-  # #
-  # # If the ID is invalid, the string
-  # #   "(Deleted/Non-existing)"
-  # # will be returned.
-  # #
-  # # +options+ can contain a :name for
-  # # the link (the default is the bourreau's name) and a
-  # # :path (the default is the show path).
-  # def link_to_bourreau_if_accessible(bourreau, cur_user = current_user, options = {})
-  #   (options[:html_options] ||= {})[:class] = 'error_link' if bourreau.is_a?(Bourreau) && ! bourreau.online?
-  #   link_to_model_if_accessible(Bourreau,bourreau,:name,cur_user,options)
-  # end
+  # Creates a link to the show page of a +bourreau+, as long
+  # as the +cur_user+ has access to it. By default, +cur_user+ is
+  # current_user.
+  #
+  # +bourreau+ can be provided as an ID too.
+  #
+  # If the ID is nil, then the string
+  #   "(None)"
+  # will be returned.
+  #
+  # If the ID is invalid, the string
+  #   "(Deleted/Non-existing)"
+  # will be returned.
+  #
+  # +options+ can contain a :name for
+  # the link (the default is the bourreau's name) and a
+  # :path (the default is the show path).
+  def link_to_bourreau_if_accessible(bourreau, cur_user = current_user, options = {})
+    (options[:html_options] ||= {})[:class] = 'error_link' if bourreau.is_a?(Bourreau) && ! bourreau.online?
+    link_to_model_if_accessible(Bourreau,bourreau,:name,cur_user,options)
+  end
 
-  # # Creates a link to the show page of a +group+, as long
-  # # as the +cur_user+ has access to it. By default, +cur_user+ is
-  # # current_user.
-  # #
-  # # +group+ can be provided as an ID too.
-  # #
-  # # If the ID is nil, then the string
-  # #   "(None)"
-  # # will be returned.
-  # #
-  # # If the ID is invalid, the string
-  # #   "(Deleted/Non-existing)"
-  # # will be returned.
-  # #
-  # # +options+ can contain a :name for
-  # # the link (the default is the group's name) and a
-  # # :path (the default is the show path).
+  # Creates a link to the show page of a +group+, as long
+  # as the +cur_user+ has access to it. By default, +cur_user+ is
+  # current_user.
+  #
+  # +group+ can be provided as an ID too.
+  #
+  # If the ID is nil, then the string
+  #   "(None)"
+  # will be returned.
+  #
+  # If the ID is invalid, the string
+  #   "(Deleted/Non-existing)"
+  # will be returned.
+  #
+  # +options+ can contain a :name for
+  # the link (the default is the group's name) and a
+  # :path (the default is the show path).
   def link_to_group_if_accessible(group, cur_user = current_user, options = {})
     the_id = group.is_a?(Group) ? group.id : ( group.to_i rescue 0 )
     return "everyone" if the_id == Group.everyone.id && ! cur_user.has_role?(:admin_user) # special case
     link_to_model_if_accessible(Group,group,:name,cur_user,options)
   end
 
-  # # This method works like link_to_group_if_accessible() except that
-  # # the link is created only if the group is a WorkGroup.
-  # # The first argument MUST be an actual group.
-  # # The link created will be to the edit page of the group.
-  # def link_to_group_if_editable(group, cur_user = current_user, options = {})
-  #   if group.is_a?(WorkGroup)
-  #     link_to_group_if_accessible(group, cur_user, options.dup.merge(:path => group_path(group)))
-  #   else
-  #     group.name
-  #   end
-  # end
+  # This method works like link_to_group_if_accessible() except that
+  # the link is created only if the group is a WorkGroup.
+  # The first argument MUST be an actual group.
+  # The link created will be to the edit page of the group.
+  def link_to_group_if_editable(group, cur_user = current_user, options = {})
+    if group.is_a?(WorkGroup)
+      link_to_group_if_accessible(group, cur_user, options.dup.merge(:path => group_path(group)))
+    else
+      group.name
+    end
+  end
 
-  # # Creates a link to the show page of a +site+, as long
-  # # as the +cur_user+ has access to it. By default, +cur_user+ is
-  # # current_user.
-  # #
-  # # +site+ can be provided as an ID too.
-  # #
-  # # If the ID is nil, then the string
-  # #   "(None)"
-  # # will be returned.
-  # #
-  # # If the ID is invalid, the string
-  # #   "(Deleted/Non-existing)"
-  # # will be returned.
-  # #
-  # # +options+ can contain a :name for
-  # # the link (the default is the site's name) and a
-  # # :path (the default is the show path).
-  # def link_to_site_if_accessible(site, cur_user = current_user, options = {})
-  #   link_to_model_if_accessible(Site,site,:name,cur_user,options)
-  # end
+  # Creates a link to the show page of a +site+, as long
+  # as the +cur_user+ has access to it. By default, +cur_user+ is
+  # current_user.
+  #
+  # +site+ can be provided as an ID too.
+  #
+  # If the ID is nil, then the string
+  #   "(None)"
+  # will be returned.
+  #
+  # If the ID is invalid, the string
+  #   "(Deleted/Non-existing)"
+  # will be returned.
+  #
+  # +options+ can contain a :name for
+  # the link (the default is the site's name) and a
+  # :path (the default is the show path).
+  def link_to_site_if_accessible(site, cur_user = current_user, options = {})
+    link_to_model_if_accessible(Site,site,:name,cur_user,options)
+  end
 
-  # # Creates a link to the show page of a +task+, as long
-  # # as the +cur_user+ has access to it. By default, +cur_user+ is
-  # # current_user.
-  # #
-  # # +task+ can be provided as an ID too.
-  # #
-  # # If the ID is nil, then the string
-  # #   "(None)"
-  # # will be returned.
-  # #
-  # # If the ID is invalid, the string
-  # #   "(Deleted/Non-existing)"
-  # # will be returned.
-  # #
-  # # +options+ can contain a :name for
-  # # the link (the default is the task's name) and a
-  # # :path (the default is the show path).
-  # def link_to_task_if_accessible(task, cur_user = current_user, options = {})
-  #   link_to_model_if_accessible(CbrainTask,task,:name,cur_user,options)
-  # end
+  # Creates a link to the show page of a +task+, as long
+  # as the +cur_user+ has access to it. By default, +cur_user+ is
+  # current_user.
+  #
+  # +task+ can be provided as an ID too.
+  #
+  # If the ID is nil, then the string
+  #   "(None)"
+  # will be returned.
+  #
+  # If the ID is invalid, the string
+  #   "(Deleted/Non-existing)"
+  # will be returned.
+  #
+  # +options+ can contain a :name for
+  # the link (the default is the task's name) and a
+  # :path (the default is the show path).
+  def link_to_task_if_accessible(task, cur_user = current_user, options = {})
+    link_to_model_if_accessible(CbrainTask,task,:name,cur_user,options)
+  end
 
   # Creates a link to the show page of an +access_profile+, as long
   # as the +cur_user+ has access to it. By default, +cur_user+ is

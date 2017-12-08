@@ -13,7 +13,9 @@
 
 // Add an equal sign // should be //=
 
-// require jquery
-// require jquery_ujs
+//= require jquery
+//= require jquery-ui
+//= require jquery.form
+//= require jquery_ujs
 // require turbolinks
 // require_tree .

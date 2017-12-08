@@ -147,13 +147,13 @@ Rails.application.routes.draw do
   get   '/about_us'               => 'portal#about_us'
   get   '/search'                 => 'portal#search'
   get   '/login'                  => 'sessions#new'
-  # get   '/logout'                 => 'sessions#destroy'
+  get   '/logout'                 => 'sessions#destroy'
   # get   '/session_status'         => 'sessions#show'
   # get   '/session_data'           => 'session_data#show'
   # post  '/session_data'           => 'session_data#update'
 
   # # Report Maker
-  # get   "/report",                :controller => :portal, :action => :report
+  get   "/report",                :controller => :portal, :action => :report
 
   # # Network Operation Center; daily status (shows everything publicly!)
   # # get   "/noc/daily",             :controller => :noc,    :action => :daily
@@ -166,7 +166,7 @@ Rails.application.routes.draw do
   # post  '/sign_license/:license', :controller => :portal, :action => :sign_license
 
   # # Portal log
-  # get   '/portal_log',            :controller => :portal, :action => :portal_log
+  get   '/portal_log',            :controller => :portal, :action => :portal_log
 
   # # Service; most of these actions are only needed
   # # for the CANARIE monitoring system, and are therefore

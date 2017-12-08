@@ -581,10 +581,9 @@ describe User do
     it "should add me to the site group" do
       site             = create(:site, :name => "I_should_be_part_of_this_site_group")
       normal_user.site = site
-      site             = double("site").as_null_object
-      allow(Site).to receive(:find).and_return(site)
-      expect(site.users_ids).to include(normal_user.id)
       normal_user.save!
+      site.reload
+      expect(site.user_ids).to include(normal_user.id)
     end
   end
 

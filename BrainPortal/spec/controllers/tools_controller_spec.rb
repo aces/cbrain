@@ -71,7 +71,7 @@ RSpec.describe ToolsController, :type => :controller do
         it "should autoload_all_tools if autoload is defined" do
           allow(controller).to  receive(:render)
           expect(controller).to receive(:autoload_all_tools)
-          post :create, params: {tool: tool, autoload: "true", format: "js"}
+          post :create, params: {tool: tool, autoload: "true"}
         end
 
         context "when save is successful" do
@@ -87,7 +87,7 @@ RSpec.describe ToolsController, :type => :controller do
             expect(flash[:notice]).to  be_truthy
           end
           it "should redirect to the index" do
-            post(:create, params: {tool: {:name => "name", format: 'html'}})
+            post(:create, params: {tool: {:name => "name"}})
             expect(response).to redirect_to(:action => :index, :format => :html)
           end
         end
@@ -138,7 +138,7 @@ RSpec.describe ToolsController, :type => :controller do
           expect(Tool.all).not_to include(real_tool_1)
         end
         it "should redirect to the index" do
-          delete :destroy, params: {id: real_tool_1.id, format: "js"}
+          delete :destroy, params: {id: real_tool_1.id}, :format => :js
           expect(response).to redirect_to(:action => :index, :format => :js)
         end
       end

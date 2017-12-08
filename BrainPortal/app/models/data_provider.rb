@@ -726,7 +726,12 @@ class DataProvider < ActiveRecord::Base
       userfile.errors.add(:name, "contains illegal characters.")
       return false
     end
-    target_exists = self.userfiles.first(:conditions => { :name => newname, :user_id => userfile.user_id } )
+    target_exists = self.userfiles
+                        .where(
+                          :name    => newname,
+                          :user_id => userfile.user_id,
+                        )
+                        .first
     return false if target_exists
     cache_erase(userfile)
     SyncStatus.ready_to_modify_dp(userfile) do

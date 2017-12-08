@@ -48,15 +48,15 @@
 #
 # Currently active/known scopes are stored in Rails' session as a hash with
 # scope names for keys and scope hash definitions/representations as values:
-#   current_session['scopes'] == {
+#   cbrain_session['scopes'] == {
 #     'userfiles' => { 'f' => [ ... ], 'o' => ... },
 #     'tasks'     => { 'f' => [ ... ], 'o' => ... },
 #     ...
 #   }
 # To directly add or replace one of the session scopes, convert the scope to a
 # compact hash representation first before adding to
-# +current_session['scopes']+:
-#   current_session['scopes']['tasks'] = scope.to_hash(compact: true)
+# +cbrain_session['scopes']+:
+#   cbrain_session['scopes']['tasks'] = scope.to_hash(compact: true)
 #
 # Scopes created from hashes and session attributes are automatically sanitized
 # and it is thus safe to pass user-supplied values to create them.
@@ -196,8 +196,8 @@ module ViewScopes
     def apply(collection, on_failure: :ignore, paginate: false, sorting: true)
       # Wrap a filtering or sorting rule application to handle exceptions,
       # using +fallback+ as a fall-back value for :ignore.
-      empty = (collection <= ActiveRecord::Base rescue nil) ?
-        collection.where('1 = 0') : []
+      empty = (collection.is_a?(ActiveRecord::Relation)) ?
+        collection.model.where('1 = 0') : []
       wrap = lambda do |fallback, &block|
         begin
           block.call()
@@ -217,7 +217,7 @@ module ViewScopes
 
       # Apply sorting rules
       if sorting
-        if (collection <= ActiveRecord::Base rescue nil)
+        if (collection.is_a?(ActiveRecord::Relation))
           collection = @order.inject(collection) do |collection, order|
             wrap.(collection) { order.apply(collection) }
           end
@@ -466,7 +466,7 @@ module ViewScopes
 
         @value ||= [] if [ 'in', 'out', 'range' ].include?(@operator.to_s)
 
-        if (collection <= ActiveRecord::Base rescue nil)
+        if (collection.is_a?(ActiveRecord::Relation))
           apply_on_model(collection)
         else
           apply_on_collection(collection)
@@ -809,7 +809,7 @@ module ViewScopes
         raise "no direction to sort in" unless @direction
         raise "no attribute to sort on" unless @attribute
 
-        if (collection <= ActiveRecord::Base rescue nil)
+        if (collection.is_a?(ActiveRecord::Relation))
           apply_on_model(collection)
         else
           apply_on_collection(collection)
@@ -987,8 +987,9 @@ module ViewScopes
       # with *per_page* elements per page, and return the paginated collection
       # scoped to the page corresponding to *page*.
       def apply(collection)
+        collection = collection.where(nil) if collection.is_a?(ActiveRecord::Base)
         collection = collection.to_a unless
-          (collection <= ActiveRecord::Base rescue nil)
+          (collection.is_a?(ActiveRecord::Relation))
 
         # Validate @total and clamp @page and @per_page to a sane range
         total    = (@total || collection.size).to_i
@@ -1144,7 +1145,7 @@ module ViewScopes
   # default scope name; +default_scope_name+.
   def scope_from_session(name = nil)
     name   ||= default_scope_name
-    scopes   = (current_session['scopes'] ||= {})
+    scopes   = (cbrain_session['scopes'] ||= {})
     hash     = (scopes[name] ||= {})
 
     Scope.from_hash(hash).tap { |s| s.name = name }
@@ -1158,8 +1159,9 @@ module ViewScopes
   # (+default_scope_name+).
   def scope_to_session(scope, name = nil)
     name   ||= scope.name || default_scope_name
-    scopes   = (current_session['scopes'] ||= {})
+    scopes   = (cbrain_session['scopes'] ||= {}) # this may not mark it as modified, if we changed something deep inside
     scopes[name] = scope.to_hash(compact: true)
+    cbrain_session.mark_as_modified # ... so force it here
   end
 
   # Default scope name for the current route. Typically '<controller>#<route>'.
@@ -1183,7 +1185,7 @@ module ViewScopes
   #
   # [_default_scope]
   #  Expected to be a hash to be merged in the current route's default scope
-  #  (current_session['scopes'][+default_scope_name+]). Behaves similarly to
+  #  (cbrain_session['scopes'][+default_scope_name+]). Behaves similarly to
   #  +_scopes+, as it too uses CbrainSession's +apply_changes+ method.
   #
   # [_scope_mode]
@@ -1242,13 +1244,14 @@ module ViewScopes
   # compressed format (see the +compress_scope+ and +decompress_scope+ utility
   # methods).
   def update_session_scopes
+    return true if current_user.blank?
     mode   = params['_scope_mode'].to_sym if
         [ 'append', 'delete', 'replace' ].include?(params['_scope_mode'])
     mode ||= :replace
 
     # Special _simple_filters filter syntax
     if (simple = params['_simple_filters'])
-      known      = (current_session['scopes'] ||= {})
+      known      = (cbrain_session['scopes'] ||= {})
       default    = default_scope_name
       controller = params[:controller].to_s.downcase
 
@@ -1278,7 +1281,8 @@ module ViewScopes
         params['_default_scope']
 
       # Then decompress, if required
-      scopes = scopes.map do |n, s|
+      scopes = scopes.keys.map do |n|
+        s = scopes[n]
         next [n, s] if s.is_a?(Hash)
         [ n, ViewScopes.decompress_scope(s) ]
       end.to_h
@@ -1289,7 +1293,7 @@ module ViewScopes
     end
 
     # Apply the scope changes, if any
-    current_session.apply_changes([mode, { 'scopes' => scopes }]) unless scopes.blank?
+    cbrain_session.apply_changes([mode, { 'scopes' => scopes }]) unless scopes.blank?
 
     # Pagination parameters (which override _scopes, _default_scope
     # and _simple_filters)
@@ -1303,9 +1307,9 @@ module ViewScopes
     # doesn't belong, creating spurious Scopes in the session. A workaround is
     # to require the target scope to already exist:
     pagination.delete('p') unless
-      (current_session['scopes'] || {}).has_key?(pag_scope)
+      (cbrain_session['scopes'] || {}).has_key?(pag_scope)
 
-    current_session.apply_changes(
+    cbrain_session.apply_changes(
       { 'scopes' => { pag_scope => { 'p' => pagination } } }
     ) unless
       pagination.empty?
@@ -1471,7 +1475,7 @@ module ViewScopes
     return nil if assoc.blank?
 
     # Convert a table name into an ActiveRecord model class
-    unless (assoc <= ActiveRecord::Base rescue nil)
+    unless ((assoc <= ActiveRecord::Base) rescue nil)
       table = assoc.to_s.tableize
       assoc = ActiveRecord::Base.descendants.find do |m|
         assoc == m.name || table == m.table_name
@@ -1490,7 +1494,7 @@ module ViewScopes
   # +parse_assoc+) but using a table name (as a string) instead of an
   # ActiveRecord model class.
   def self.assoc_with_table(assoc)
-    return assoc.table_name if (assoc <= ActiveRecord::Base rescue nil)
+    return assoc.table_name if ((assoc <= ActiveRecord::Base) rescue nil)
     return assoc unless assoc.is_a?(Enumerable)
 
     assoc, assoc_attr, model_attr = assoc

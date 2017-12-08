@@ -23,19 +23,18 @@
 # Filters added to this controller apply to all controllers in the application.
 # Likewise, all the methods added will be available for all controllers.
 
-class ApplicationController < ActionController::Base
+class ApplicationController < ActionController::Base #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  helper :all # include all helpers, all the time
-
-  # Patch
+  # Patch: allows the controls_controller to
+  # invoke the api_available method even if it means
+  # nothing within a Bourreau app.
   def self.api_available #:nodoc:
     true
   end
 
-  #protect_from_forgery with: :exception
-
+  #Patch: Load all models so single-table inheritance works properly.
   begin
     Dir.chdir(File.join(Rails.root.to_s, "app", "models")) do
       Dir.glob("*.rb").each do |model|

@@ -110,7 +110,7 @@ if ENV['CBRAIN_RAILS_APP_NAME'] # env variable has priority
   portal_name = ENV['CBRAIN_RAILS_APP_NAME']
 elsif File.exists?(portal_name_file)
   puts "Found config file '#{portal_name_file}', loading it..."
-  (require portal_name_file rescue nil) if Rails.env != "test"
+  require portal_name_file rescue nil
   portal_name = CBRAIN::CBRAIN_RAILS_APP_NAME if CBRAIN.const_defined?('CBRAIN_RAILS_APP_NAME')
   unless portal_name
     puts "It seems the file exists but doesn't define the CBRAIN_RAILS_APP_NAME ?"
@@ -177,15 +177,15 @@ everyone.update_attributes!(:creator_id => admin.id)
 # Create portal object
 BrainPortal.seed_record!(
   {
+    :name             => portal_name,
     :user_id          => admin.id,
     :group_id         => everyone.id,
-    :ssh_control_host => hostname
   },
   {
-    :name        => portal_name,
-    :online      => true,
-    :read_only   => false,
-    :description => "CBRAIN BrainPortal on host #{hostname}"
+    :description      => "CBRAIN BrainPortal on host #{hostname}",
+    :ssh_control_host => hostname,
+    :online           => true,
+    :read_only        => false
   },
   { :info_name_method => :name }
 )

@@ -34,7 +34,7 @@ class MessagesController < ApplicationController
     @scope = scope_from_session('messages')
     scope_default_order(@scope, 'last_sent', :desc)
 
-    @base_scope = Message
+    @base_scope = Message.where(nil)
     @base_scope = @base_scope.where(:user_id => current_user.available_users.map(&:id)) unless
       current_user.has_role?(:admin_user)
     @view_scope = @messages = @scope.apply(@base_scope)
@@ -112,15 +112,15 @@ class MessagesController < ApplicationController
       @message = current_user.messages.find(params[:id])
     end
 
+    # It seems we only support changing the read/unread attribute.
     respond_to do |format|
-      if @message.update_attributes(:read  => params[:read])
+      if @message.update_attributes(:read =>  params[:read])
         format.xml  { head :ok }
+        format.js   { head :ok }
       else
         flash.now[:error] = "Problem updating message."
-        format.xml  { render :xml => @message.errors, :status => :unprocessable_entity }
-      end
-      format.js do
-        redirect_to :action => :index
+        format.xml  { render :xml  => @message.errors, :status => :unprocessable_entity }
+        format.js   { render :json => @message.errors, :status => :unprocessable_entity }
       end
     end
   end

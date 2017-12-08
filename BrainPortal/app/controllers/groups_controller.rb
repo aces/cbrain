@@ -69,8 +69,8 @@ class GroupsController < ApplicationController
     respond_to do |format|
       format.js
       format.html # index.html.erb
-      format.xml  { render :xml  => @groups.select { |x| x.is_a?(Group) }.for_api } # @groups can contain the string 'ALL'
-      format.json { render :json => @groups.select { |x| x.is_a?(Group) }.for_api }
+      format.xml  { render :xml  => @groups.to_a.select { |x| x.is_a?(Group) }.for_api } # @groups can contain the string 'ALL'
+      format.json { render :json => @groups.to_a.select { |x| x.is_a?(Group) }.for_api }
     end
   end
 
@@ -100,10 +100,13 @@ class GroupsController < ApplicationController
   def create  #:nodoc:
     @group = WorkGroup.new(group_params)
 
+    # Normal users and Site Managers are always member of newly created group.
     unless current_user.has_role? :admin_user
       @group.site = current_user.site
     end
 
+    # Final list of user IDs must intersect with list of available users for current user
+    @group.user_ids |= [ current_user.id ] unless current_user.has_role?(:admin_user)
     unless @group.user_ids.blank?
       @group.user_ids &= current_user.available_users.map(&:id)
     end
@@ -245,12 +248,12 @@ class GroupsController < ApplicationController
     redirect_path[:id] = redirect_id unless redirect_id.blank?
 
     if params[:id].blank?
-      cbrain_session[:active_group_id] = nil
+      session[:active_group_id] = nil
     elsif params[:id] == "all"
-      cbrain_session[:active_group_id] = "all"
+      session[:active_group_id] = "all"
     else
       @group = current_user.available_groups.find(params[:id])
-      cbrain_session[:active_group_id] = @group.id
+      session[:active_group_id] = @group.id
     end
 
     redirect_to userfiles_path
@@ -260,9 +263,9 @@ class GroupsController < ApplicationController
 
   def group_params #:nodoc:
     if current_user.has_role?(:admin_user)
-      params.require(:group).permit(:name, :description, :site_id, :creator_id, :invisible, :user_ids => [])
+      params.require_as_params(:group).permit(:name, :description, :site_id, :creator_id, :invisible, :user_ids => [])
     else
-      params.require(:group).permit(:name, :description, :site_id, :creator_id, :user_ids => [])
+      params.require_as_params(:group).permit(:name, :description)
     end
   end
 

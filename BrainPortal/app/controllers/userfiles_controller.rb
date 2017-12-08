@@ -55,7 +55,7 @@ class UserfilesController < ApplicationController
 
     # Apply basic and @scope-based scoping/filtering
     scope_default_order(@scope, 'name')
-    @base_scope   = base_scope.includes([:user, :data_provider, :sync_status, :tags, :group])
+    @base_scope   = base_scope #.includes([:user, :data_provider, :sync_status, :tags, :group])
     @custom_scope = custom_scope(@base_scope)
 
     if @scope.custom[:view_hidden]
@@ -136,7 +136,7 @@ class UserfilesController < ApplicationController
 
     # This is for the tool selection dialog box....
     # we need the tools the user has access to and tags associated with the tools
-    @my_tools    = current_user.available_tools.where("tools.category <> 'background'").all
+    @my_tools    = current_user.available_tools.where("tools.category <> 'background'").all.to_a
     top_tool_ids = current_user.meta[:top_tool_ids] || {}
 
     if top_tool_ids.present?
@@ -161,7 +161,7 @@ class UserfilesController < ApplicationController
   def new_parent_child #:nodoc:
 
     file_ids     = params[:file_ids]
-    @userfiles   = Userfile.find_all_accessible_by_user(current_user, :access_requested => :write).where(:id => file_ids).all
+    @userfiles   = Userfile.find_all_accessible_by_user(current_user, :access_requested => :write).where(:id => file_ids).all.to_a
     @have_parent = @userfiles.any? { |u| u.parent_id  }
     if ! ( @userfiles.size >= 2  || @have_parent )
       render :text  => "<span class=\"warning\">You must select either:<br> 1) several files without parents or<br> 2) one file with a parent.</span>"
@@ -313,7 +313,7 @@ class UserfilesController < ApplicationController
       sorted_scope = filtered_scope
 
       # Fetch the neighbors of the shown userfile in the ordered scope's order
-      neighbors = sorted_scope.where("userfiles.id != ?", @userfile.id).offset([0, @sort_index - 1].max).limit(2).all
+      neighbors = sorted_scope.where("userfiles.id != ?", @userfile.id).offset([0, @sort_index - 1].max).limit(2).all.to_a
       neighbors.unshift nil if @sort_index == 0
 
       @previous_userfile, @next_userfile = neighbors
@@ -328,7 +328,7 @@ class UserfilesController < ApplicationController
 
   def new #:nodoc:
     @user_tags      = current_user.available_tags
-    @data_providers = DataProvider.find_all_accessible_by_user(current_user).all
+    @data_providers = DataProvider.find_all_accessible_by_user(current_user).all.to_a
     @data_providers.reject! { |dp| dp.meta[:no_uploads].present? }
   end
 
@@ -608,11 +608,11 @@ class UserfilesController < ApplicationController
       old_name = @userfile.name
       new_name = new_userfile_attr.delete(:name) || old_name
 
-      @userfile.new_userfile_attr = new_userfile_attr
-      @userfile.type              = type         if type
-      @userfile.user_id           = new_user_id  if current_user.available_users.where(:id => new_user_id).first
-      @userfile.group_id          = new_group_id if current_user.available_groups.where(:id => new_group_id).first
-      @userfile                   = @userfile.class_update
+      @userfile.attributes = new_userfile_attr
+      @userfile.type       = type         if type
+      @userfile.user_id    = new_user_id  if current_user.available_users.where(:id => new_user_id).first
+      @userfile.group_id   = new_group_id if current_user.available_groups.where(:id => new_group_id).first
+      @userfile            = @userfile.class_update
 
       if @userfile.save_with_logging(current_user, %w( group_writable num_files parent_id hidden ) )
         if new_name != old_name
@@ -714,7 +714,7 @@ class UserfilesController < ApplicationController
       failed["you don't have access"] = Userfile
         .where(:id => file_ids - userfiles.raw_first_column(:id))
         .select([:id, :name, :type])
-        .all
+        .all.to_a
 
       # Group access check
       if changes.has_key?(:group_id)
@@ -730,7 +730,7 @@ class UserfilesController < ApplicationController
         failed["new group is not accessible by the file's owner"] = userfiles
           .where(:user_id => rejected.map(&:id))
           .select([:id, :name, :type])
-          .all
+          .all.to_a
 
         userfiles = userfiles
           .where(:user_id => allowed.map(&:id))
@@ -745,7 +745,7 @@ class UserfilesController < ApplicationController
         failed["changing file ownership is not allowed on this data provider"] = userfiles
           .where(:data_provider_id => rejected.map(&:id))
           .select([:id, :name, :type])
-          .all
+          .all.to_a
 
         userfiles = userfiles
           .where(:data_provider_id => allowed.map(&:id))
@@ -1228,7 +1228,7 @@ class UserfilesController < ApplicationController
     # Find the files
     userfiles = Userfile
       .find_all_accessible_by_user(current_user, :access_requested => :read)
-      .where(:id => file_ids).all
+      .where(:id => file_ids).all.to_a
 
     if userfiles.empty?
       flash[:error] = "You need to select some files first."
@@ -1303,7 +1303,7 @@ class UserfilesController < ApplicationController
       SQL
       .where(match)
       .select(['userfiles.id', 'userfiles.name', 'userfiles.type'])
-      .all
+      .all.to_a
       .select { |userfile| userfile.is_a?(SingleFile) }
 
     skipped["Filename collision"] = collisions.count
@@ -1718,7 +1718,7 @@ class UserfilesController < ApplicationController
       tags = Set.new(@value)
 
       # With an Userfile model (or scope)
-      if (collection <= ActiveRecord::Base rescue nil)
+      if (collection.is_a?(ActiveRecord::Relation))
         placeholders = tags.map { '?' }.join(',')
         collection.where(<<-"SQL".strip_heredoc, *tags)
           ((
@@ -1827,7 +1827,7 @@ class UserfilesController < ApplicationController
       raise "nothing to filter with" unless valid?
 
       # With an Userfile model (or scope)
-      if (collection <= ActiveRecord::Base rescue nil)
+      if (collection.is_a?(ActiveRecord::Relation))
         case @operator.to_s.downcase
         when 'no_child'
           collection.where(<<-"SQL".strip_heredoc)

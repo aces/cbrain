@@ -198,7 +198,7 @@ class TasksController < ApplicationController
       @task.bourreau_id = @task.tool_config.bourreau_id
     elsif @task.bourreau_id # Offer latest accessible tool config as default id ! @task.tool_config
       tool = @task.tool
-      toolconfigs = ToolConfig.where( :bourreau_id => @task.bourreau_id, :tool_id => tool.id )
+      toolconfigs = ToolConfig.where( :bourreau_id => @task.bourreau_id, :tool_id => tool.id ).all.to_a
       toolconfigs.reject! { |tc| ! tc.can_be_accessed_by?(current_user) }
       lastest_toolconfig = toolconfigs.last
       @task.tool_config  = lastest_toolconfig if lastest_toolconfig
@@ -288,27 +288,29 @@ class TasksController < ApplicationController
     flash.now[:notice] = ""
     flash.now[:error]  = ""
 
+    new_task_info = task_params()
+
     # For historical reasons, the web interface sends both a tool_id and a tool_config_id.
     # Only the tool_config_id is really necessary, as itself the tool_config object supplies
     # the tool_id and the bourreau_id.
     # For support with the external APIs, we'll try to guess missing values if we
     # only receive a tool_config_id.
-    params_tool_config_id = params[:cbrain_task][:tool_config_id] # can be nil
+    params_tool_config_id = new_task_info[:tool_config_id] # can be nil
     tool_config           = ToolConfig.find(params_tool_config_id) rescue nil
     tool_config           = nil unless tool_config && tool_config.can_be_accessed_by?(current_user) &&
                              tool_config.bourreau_and_tool_can_be_accessed_by?(current_user)
     if tool_config
-      params[:tool_id]                   = tool_config.tool_id     # replace whatever was there or not
-      params[:cbrain_task][:bourreau_id] = tool_config.bourreau_id # replace whatever was there or not
+      params[:tool_id]            = tool_config.tool_id     # replace whatever was there or not
+      new_task_info[:bourreau_id] = tool_config.bourreau_id # replace whatever was there or not
     else
-      params[:cbrain_task][:tool_config_id] = nil # ZAP value, it's incorrect; will likely cause a validation error later on.
+      new_task_info[:tool_config_id] = nil # ZAP value, it's incorrect; will likely cause a validation error later on.
     end
 
     @tool_config = tool_config # for acces in view
 
     # A brand new task object!
     @toolname         = Tool.find(params[:tool_id]).cbrain_task_class_name.demodulize
-    @task             = CbrainTask.const_get(@toolname).new(params[:cbrain_task])
+    @task             = CbrainTask.const_get(@toolname).new(new_task_info)
     @task.user_id   ||= current_user.id
     @task.group_id  ||= current_project.try(:id) || current_user.own_group.id
     @task.status      = "New" if @task.status.blank? || @task.status !~ /Standby/ # Standby is special.
@@ -501,13 +503,7 @@ class TasksController < ApplicationController
     # Save old attributes and update the current task to reflect
     # the form's content.
     new_task_attr          = task_params # not the TASK's params[], the REQUEST's params[]
-    new_task_attr          = new_task_attr.reject do |k,v| # some attributes cannot be changed through the controller
-      k =~ /\A( cluster_jobid    | cluster_workdir | cluster_workdir_size |
-                status           | batch_id        | prerequisites |
-                share_wd_tid     | run_number      | level | rank |
-                workdir_archived | workdir_archive_userfile_id)\z
-           /x
-    end
+
     old_tool_config  = @task.tool_config
     old_bourreau     = @task.bourreau
     @task.attributes = new_task_attr # just updates without saving
@@ -874,12 +870,15 @@ class TasksController < ApplicationController
   private
 
   def task_params #:nodoc:
-    params.require(:cbrain_task).permit(
-      :type, :batch_id, :cluster_jobid, :cluster_workdir, :status, :user_id, :bourreau_id, :description,
-      :prerequisites, :share_wd_tid, :run_number, :group_id, :tool_config_id, :level, :rank,
-      :results_data_provider_id, :cluster_workdir_size, :workdir_archived, :workdir_archive_userfile_id,
-      :params
+    task_attr = params.require(:cbrain_task).permit(
+      :user_id, :group_id, :description,
+      :bourreau_id, :tool_config_id,
+      :results_data_provider_id, :params => {}
     )
+    task_params = params.require(:cbrain_task).require(:params) rescue ActionController::Parameters.new({})
+    task_params.permit!
+    task_attr[:params] = task_params
+    task_attr
   end
 
   # Some useful variables for the views for 'new' and 'edit'
@@ -887,7 +886,7 @@ class TasksController < ApplicationController
 
     # Find the list of Bourreaux that are both available and support the tool
     tool         = @task.tool
-    bourreau_ids = tool.bourreaux.map(&:id)
+    bourreau_ids = tool.bourreaux.pluck(:id)
     bourreaux    = Bourreau.find_all_accessible_by_user(current_user).where( :online => true, :id => bourreau_ids ).all
 
     # Presets
@@ -909,7 +908,7 @@ class TasksController < ApplicationController
     # Tool Configurations
     valid_bourreau_ids = bourreaux.index_by(&:id)
     valid_bourreau_ids = { @task.bourreau_id => @task.bourreau } if ! @task.new_record? # existing tasks have more limited choices.
-    @tool_configs      = tool.tool_configs # all of them, too much actually
+    @tool_configs      = tool.tool_configs.all.to_a # all of them, too much actually
     @tool_configs.reject! do |tc|
       tc.bourreau_id.blank? ||
       ! valid_bourreau_ids[tc.bourreau_id] ||

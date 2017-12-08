@@ -49,6 +49,13 @@ FactoryBot.define do
 
   factory :normal_user, parent: :user, class: NormalUser do
     sequence(:login)      { |n| "normal_user_#{n}" }
+
+    factory :normal_user_with_assocs do
+      after(:create) do |nu,_|
+        create_list(:work_group_with_assocs,      0, users:  [], access_profiles: [])
+        create_list(:access_profiles_with_assocs, 0, groups: [], users:           [])
+      end
+    end
   end
 
   factory :site_manager, parent: :user, class: SiteManager do
@@ -72,6 +79,13 @@ FactoryBot.define do
 
   factory :work_group do
     sequence(:name) { |n| "work_group_#{n}" }
+
+    factory :work_group_with_assocs do
+      after(:create) do |wg, _|
+        create_list(:normal_user_with_assocs,    0, groups: [], access_profiles: [])
+        create_list(:access_profile_with_assocs, 0, groups: [], users:           [])
+      end
+    end
   end
 
   factory :system_group do
@@ -298,6 +312,13 @@ FactoryBot.define do
   factory :access_profile do
     sequence(:name)        { |n| "ap_#{n}" }
     sequence(:description) { |n| "description for ap_#{n}" }
+
+    factory :access_profile_with_assocs do
+      after(:create) do |ap, _|
+        create_list(:normal_user_with_assocs,  0, groups: [], access_profiles: [] )
+        create_list(:work_group_with_assocs,   0, users:  [], access_profiles: [] )
+      end
+    end
   end
 
 end

@@ -154,7 +154,7 @@ RSpec.describe UsersController, :type => :controller do
 
         context "when save failed" do
 
-          it "should render partial failed_create" do
+          it "should return unprocessable entity" do
             allow(User).to receive(:new).and_return(user)
             allow(user).to receive(:save).and_return(false)
             post :create, params: {:user => {id: user.id}}, format: :json
@@ -445,17 +445,15 @@ RSpec.describe UsersController, :type => :controller do
 
         it "should allow me to reset groups" do
           new_group =  create(:work_group, :user_ids => [user.id])
-          fake_user[:group_ids] = [nil]
+          fake_user[:group_ids] = [""]
           put :update, params: {:id => user.id, :user => fake_user  }
           user.reload
           expect(user.group_ids).not_to include(new_group.id)
         end
 
         it "should add meta data if any was sent" do
-          allow(User).to receive_message_chain(:where, :includes, :first).and_return([fake_user])
-          allow(fake_user).to receive(:save_with_logging).and_return(true)
           expect(controller).to receive(:add_meta_data_from_form)
-          put :update, params: {:id => fake_user.id, :user => fake_user, :meta => {:key => :value}}
+          put :update, params: {:id => user.id, :user => { :full_name => 'xyz' }, :meta => {:key => :value}}
         end
 
       end
@@ -500,7 +498,7 @@ RSpec.describe UsersController, :type => :controller do
 
         it "should allow site manager to reset groups" do
           new_group =  create(:work_group, :user_ids => [site_user.id])
-          fake_user[:group_ids] = [nil]
+          fake_user[:group_ids] = [""]
           put :update, params: {:id => site_user.id, :user => fake_user}
           site_user.reload
           expect(site_user.group_ids).not_to include(new_group.id)
@@ -542,7 +540,6 @@ RSpec.describe UsersController, :type => :controller do
         before(:each) do
           session[:user_id]    = admin.id
           session[:session_id] = 'session_id'
-          allow(User).to receive_message_chain(:where, :includes, :first).and_return([user])
           allow(user).to receive(:save_with_logging).and_return(false)
         end
 
@@ -551,7 +548,7 @@ RSpec.describe UsersController, :type => :controller do
           expect(response).to render_template(:change_password)
         end
         it "should render show page otherwise" do
-          put :update, params: {:id => user.id, :user => {:full_name => "NAME"}} 
+          put :update, params: {:id => user.id, :user => {:login => "immutable" }}
           expect(response).to render_template(:show)
         end
       end
@@ -571,7 +568,7 @@ RSpec.describe UsersController, :type => :controller do
         end
 
         it "should redirect to the index" do
-          delete :destroy, params: {:id => user.id, :format => "js"}
+          delete :destroy, params: {:id => user.id}, :format => "js"
           expect(response).to redirect_to(:action => :index, :format => :js)
         end
 
@@ -609,10 +606,10 @@ RSpec.describe UsersController, :type => :controller do
     end
 
     describe "switch" do
-      let(:current_session) { mock_model(LargeSessionInfo, "_csrf_token" => 'dummy csrf', "session_id" => 'session_id', "user_id" => admin.id).as_null_object }
+      let(:cbrain_session) { mock_model(LargeSessionInfo, "_csrf_token" => 'dummy csrf', "session_id" => 'session_id', "user_id" => admin.id).as_null_object }
 
       before(:each) do
-        allow(controller).to receive(:current_session).and_return(current_session)
+        allow(controller).to receive(:cbrain_session).and_return(cbrain_session)
       end
 
       context "with admin user" do
@@ -622,7 +619,8 @@ RSpec.describe UsersController, :type => :controller do
         end
 
         it "should switch the current user" do
-          expect(current_session[:user_id]).to eq(user.id)
+          expect(cbrain_session).to receive(:clear)
+          expect(cbrain_session).to receive(:[]=).with(:user_id, user.id)
           post :switch, params: {:id => user.id}
         end
 
@@ -640,13 +638,14 @@ RSpec.describe UsersController, :type => :controller do
         end
 
         it "should allow switching to a user from the site" do
+          expect(cbrain_session).to receive(:clear)
+          expect(cbrain_session).to receive(:[]=).with(:user_id, site_user.id)
           post :switch, params: {:id => site_user.id}
-          expect(current_session[:user_id]).to eq(site_user.id)
         end
 
         it "should not allow switching to a user not from the site" do
           expect { post :switch, params: {:id => user.id }}.to raise_error(ActiveRecord::RecordNotFound)
-          expect(current_session[:user_id]).not_to eq(user.id)
+          expect(cbrain_session[:user_id]).not_to eq(user.id)
         end
       end
 

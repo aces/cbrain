@@ -32,8 +32,7 @@ class Message < ActiveRecord::Base
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   belongs_to :user
-  belongs_to :sender,
-             :class_name => "User"
+  belongs_to :sender, :class_name => "User", :optional => true
 
   attr_accessor :send_email
 

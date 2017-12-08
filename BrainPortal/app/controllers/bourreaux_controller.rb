@@ -48,10 +48,10 @@ class BourreauxController < ApplicationController
       format.html
       format.js
       format.xml  do
-        render :xml => @bourreaux.for_api
+        render :xml => @bourreaux.to_a.for_api
       end
       format.json do
-        render :json => @bourreaux.for_api
+        render :json => @bourreaux.to_a.for_api
       end
     end
   end
@@ -249,7 +249,7 @@ class BourreauxController < ApplicationController
 
   rescue
     respond_to do |format|
-      format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
+      format.html { render :plain  => '<strong style="color:red">No Information Available</strong>' }
       format.xml  { head :unprocessable_entity }
       format.json { head :unprocessable_entity }
     end
@@ -291,11 +291,21 @@ class BourreauxController < ApplicationController
     if alive_ok
       flash[:notice] = "Execution Server '#{@bourreau.name}' started."
     elsif started_ok
-      flash[:error]  = "Execution Server '#{@bourreau.name}' was started but did not reply to first inquiry:\n" +
-                      @bourreau.operation_messages
+      flash[:error]  = "Execution Server '#{@bourreau.name}' was started but did not reply to first query:"
+      Message.send_message(current_user,
+        :header        => "Start Exec Server #{@bourreau.name} Problem",
+        :description   => 'Bourreau started but it did not reply to first query.',
+        :variable_text => @bourreau.operation_messages,
+        :type          => :error,
+      )
     else
-      flash[:error]  = "Execution Server '#{@bourreau.name}' could not be started. Diagnostics:\n" +
-                      @bourreau.operation_messages
+      flash[:error]  = "Execution Server '#{@bourreau.name}' could not be started."
+      Message.send_message(current_user,
+        :header        => "Start Exec Server #{@bourreau.name} Problem",
+        :description   => 'Bourreau could not be started.',
+        :variable_text => @bourreau.operation_messages,
+        :type          => :error,
+      )
     end
 
     if workers_ok
@@ -384,10 +394,10 @@ class BourreauxController < ApplicationController
     @cache_older   = Time.now.to_i - accessed_before.to_i # partial will adjust to closest value in selection box
 
     # Users in statistics table
-    userlist       = current_user.available_users.all
+    userlist       = current_user.available_users.all.to_a
 
     # Remote resources in statistics table
-    rrlist         = RemoteResource.find_all_accessible_by_user(current_user).all
+    rrlist         = RemoteResource.find_all_accessible_by_user(current_user).all.to_a
 
     # Create disk usage statistics table
     stats_options  = { :users            => userlist,
@@ -443,11 +453,12 @@ class BourreauxController < ApplicationController
       # If we want to filter empty entries
       # next if number_entries == 0 && total_size == 0 && number_files == 0 && number_unknown == 0
 
-      info_by_user[user_id] = {}
-      info_by_user[user_id][:number_entries]  =  number_entries.to_i
-      info_by_user[user_id][:total_size]      =  total_size.to_i
-      info_by_user[user_id][:number_files]    =  number_files.to_i
-      info_by_user[user_id][:number_unknown]  =  number_unknown.to_i
+      user_key = "user_#{user_id}" # must be alphanum for XML report
+      info_by_user[user_key] = {}
+      info_by_user[user_key][:number_entries] = number_entries.to_i
+      info_by_user[user_key][:total_size]     = total_size.to_i
+      info_by_user[user_key][:number_files]   = number_files.to_i
+      info_by_user[user_key][:number_unknown] = number_unknown.to_i
     end
 
     respond_to do |format|
@@ -458,7 +469,7 @@ class BourreauxController < ApplicationController
 
   rescue
     respond_to do |format|
-      format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
+      format.html { render :html  => '<strong style="color:red">No Information Available</strong>'.html_safe }
       format.xml  { head :unprocessable_entity }
       format.json { head :unprocessable_entity }
     end
@@ -533,7 +544,7 @@ class BourreauxController < ApplicationController
       userids = userlist.keys.each { |uid| uid.to_s }.join(",")  # "uid,uid,uid"
       flash[:notice] += "\n" unless flash[:notice].blank?
       begin
-        remote_resource.send_command_clean_cache(userids,typeslist,cleanup_older.ago,cleanup_younger.ago)
+        remote_resource.send_command_clean_cache(userids,typeslist,cleanup_older.seconds.ago,cleanup_younger.seconds.ago)
         flash[:notice] += "Sending cleanup command to #{remote_resource.name}."
       rescue
         flash[:notice] += "Could not contact #{remote_resource.name}."

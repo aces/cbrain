@@ -58,4 +58,13 @@ gem "activeresource"
 gem "log4r"
 gem "sys-proctable"
 gem "will_paginate"
+gem "jquery-rails"
+gem "jquery-ui-rails"
+gem "jquery-form-rails"
 
+group :development do
+  gem 'wirble'
+  gem 'hirb'
+  gem 'looksee'
+  gem 'pry'
+end

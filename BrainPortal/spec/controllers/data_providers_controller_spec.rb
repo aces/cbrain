@@ -40,7 +40,7 @@ RSpec.describe DataProvidersController, :type => :controller do
         let!(:local_dp) { create(:flat_dir_local_data_provider) }
         it "should assign @data_providers" do
           get :index
-          expect(assigns[:data_providers]).to eq([local_dp])
+          expect(assigns[:data_providers].to_a).to eq([local_dp])
         end
         it "should render the index page" do
          get :index
@@ -72,11 +72,11 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
           it "should add the meta data" do
             expect(controller).to receive(:add_meta_data_from_form)
-            post :create, params: {'ACCEPT' => 'application/json'}
+            post :create, :xhr => true
           end
 
           it "should display a flash message" do
-            post :create, params: {'ACCEPT' => 'application/json'}
+            post :create, :xhr => true
             expect(flash[:notice]).to match("created")
           end
 
@@ -92,10 +92,10 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
           it "should not add the meta data" do
             expect(controller).not_to receive(:add_meta_data_from_form)
-            post :create, params: {'ACCEPT' => 'application/json'}
+            post :create, :xhr => true
           end
           it "should render new page again" do
-            post :create, params: {'ACCEPT' => 'application/json'}
+            post :create, :xhr => true
             expect(response).to render_template(:new)
           end
         end

@@ -49,6 +49,16 @@ module CBRAINExtensions #:nodoc:
                 @finder_needs_type_condition = old_finder_needs_type_condition
               end
 
+              # Returns the list of subclasses, including self
+              def sti_descendants
+                [ self ] + self.descendants
+              end
+
+              # Returns the list of subclasses names, including self
+              def sti_descendant_names
+                sti_descendants.map(&:name)
+              end
+
             end
           end
         end

@@ -64,7 +64,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should display all files if 'view all' is on" do
           get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}}}}
-          expect(assigns[:userfiles].to_a).to match_array(Userfile.all)
+          expect(assigns[:userfiles].to_a).to match_array(Userfile.all.to_a)
         end
 
         it "should only display user's files if 'view all' is off" do
@@ -113,22 +113,22 @@ RSpec.describe UserfilesController, :type => :controller do
             child_userfile
             get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "f"=>[{"t"=>"uf.hier", "o"=>"no_child"}]}}}
             parent_ids = Userfile.where('parent_id is NOT NULL').map{|f| f.parent_id}
-            expect(assigns[:userfiles].to_a).to match_array(Userfile.all.where(['userfiles.id NOT IN (?)', parent_ids]))
+            expect(assigns[:userfiles].to_a).to match_array(Userfile.where(['userfiles.id NOT IN (?)', parent_ids]).all.to_a)
           end
 
           it "should sort by name" do
             get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"name"}]}}}
-            expect(assigns[:userfiles].to_a).to eq(Userfile.order(:name).all)
+            expect(assigns[:userfiles].to_a).to eq(Userfile.order(:name).all.to_a)
           end
 
           it "should be able to reverse sort" do
             get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"name", "d"=>"desc"}]}}}
-            expect(assigns[:userfiles].to_a).to eq(Userfile.order("name DESC").all)
+            expect(assigns[:userfiles].to_a).to eq(Userfile.order("name DESC").all.to_a)
           end
 
           it "should sort by type" do
             get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"type"}]}}}
-            expect(assigns[:userfiles].to_a).to eq(Userfile.order(:type).all)
+            expect(assigns[:userfiles].to_a).to eq(Userfile.order(:type).all.to_a)
           end
 
           it "should sort by owner name" do
@@ -138,28 +138,28 @@ RSpec.describe UserfilesController, :type => :controller do
 
           it "should sort by creation date" do
             get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"created_at"}]}}}
-            expect(assigns[:userfiles].to_a).to eq(Userfile.order(:created_at).all)
+            expect(assigns[:userfiles].to_a).to eq(Userfile.order(:created_at).all.to_a)
           end
 
           it "should sort by size" do
             get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"size"}]}}}
-            expect(assigns[:userfiles].to_a).to eq(Userfile.order(:size).all)
+            expect(assigns[:userfiles].to_a).to eq(Userfile.order(:size).all.to_a)
           end
 
           it "should sort by project name" do
             get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"groups.name", "j"=>"groups"}]}}}
-            expect(assigns[:userfiles].to_a).to eq(Userfile.joins(:group).order(:name).all)
+            expect(assigns[:userfiles].to_a).to eq(Userfile.joins(:group).order("groups.name").all.to_a)
           end
 
           it "should sort by project access" do
             [{"a"=>"group_writable"}]
             get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"group_writable"}]}}}
-            expect(assigns[:userfiles].map(&:group_writable)).to eq(Userfile.order(:group_writable).all.map(&:group_writable))
+            expect(assigns[:userfiles].to_a.map(&:group_writable)).to eq(Userfile.order(:group_writable).all.to_a.map(&:group_writable))
           end
 
           it "should sort by provider" do
             get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"data_providers.name", "j"=>"data_providers"}]}}}
-            expect(assigns[:userfiles].to_a).to eq(Userfile.joins(:data_provider).order(:name).all)
+            expect(assigns[:userfiles].to_a).to eq(Userfile.joins(:data_provider).order("data_providers.name").all.to_a)
           end
         end
       end
@@ -685,8 +685,6 @@ RSpec.describe UserfilesController, :type => :controller do
         allow(Userfile).to      receive(:find_accessible_by_user).and_return(mock_userfile)
         allow(mock_userfile).to receive(:provider_move_to_otherprovider)
         allow(mock_userfile).to receive(:provider_copy_to_otherprovider)
-        session[:session_id] = 'session_id'
-
       end
 
       context "when the other data povider is not found" do

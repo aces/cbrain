@@ -62,7 +62,7 @@
 #
 # Getting a list of ActiveRecord objects with particular metadata:
 #
-#   objlist = SomeARclass.find_all_by_meta_data(:author, "Austen", :conditions => { :user_id => 3 })
+#   objlist = SomeARclass.find_all_by_meta_data(:author, "Austen")
 #   # objlist will be an array of objects of type SomeARclass or subclasses of it
 #
 # == The 'meta_data_store' Table (see MetaDataStore)
@@ -358,32 +358,30 @@ module ActRecMetaData
   module ClassMethods
 
     #
-    # This method returns an array of all ActiveRecord objects
-    # of the current class (or its subclasses) that have the key +mykey+ set to +myval+
+    # This method returns an ActiveRecord::Relation for objects of
+    # the current class (or its subclasses) that have, in their
+    # meta data store, the key +mykey+ set to +myval+
     # (or +mykey+ can be any value if +myval+ is set to nil).
-    # The options hash can be used to further refine the find
-    # operation.
     #
     # Example: if we have a model of Authors with metadata about them,
     # we can find the authors born in 1932 with
     #
     #   list1932 = Author.find_all_by_meta_data(:birthyear, 1932)
     #
-    # If the Author model has an attribute :lastname, we can make the
-    # search more specific with
+    # If the value in the meta data store is a serialized complex structure
+    # such as a hash or array, the match on +myval+ will only work if
+    # if the internal structure is identical and in the same order, as
+    # the DB search is performed by comparing the serialized version
+    # with an "=" DB comparison.
     #
-    #   list1932 = Author.find_all_by_meta_data(:birthyear, 1932,
-    #                     :conditions => { :lastname => 'Johnson' })
-    #
-    def find_all_by_meta_data(mykey,myval=nil,options={})
+    def find_all_by_meta_data(mykey,myval=nil)
       raise "Cannot search for MetaDataStore objects!"     if     self <= MetaDataStore
       raise "Search key must be defined!"                  if     mykey.nil?
       mykey = mykey.to_s
-      conditions = { :ar_table_name => self.table_name, :meta_key => mykey }
-      conditions[:meta_value] = myval         unless myval.nil?
-      matched = MetaDataStore.where(conditions)
-      matched_ids = matched.raw_first_column(:ar_id)
-      objects = self.where(:id => matched_ids).where(options[:conditions] || {}).all
+      search = MetaDataStore.where( :ar_table_name => self.table_name, :meta_key => mykey )
+      search = search.where("meta_value = ?", myval.to_yaml) unless myval.nil?
+      matched_ids = search.pluck(:ar_id)
+      objects = self.where(:id => matched_ids)
       return objects
     end
 

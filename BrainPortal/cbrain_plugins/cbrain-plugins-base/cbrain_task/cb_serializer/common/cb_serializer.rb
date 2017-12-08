@@ -98,6 +98,7 @@ class CbrainTask::CbSerializer
         :tool_id         => tool_id,
         :bourreau_id     => bourreau_id,
         :group_id        => Group.everyone.id,
+        :version_name    => "Standard",
         :ncpus           => 512,
         :env_array       => [],
         :script_prologue => "",

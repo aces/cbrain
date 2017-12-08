@@ -864,7 +864,7 @@ class RemoteResource < ActiveRecord::Base
       dp_stats = {}
       dp_ids.each_with_index do |dp_id,idx|
         dp  = DataProvider.find_by_id(dp_id)
-        $0 = "DP Check #{idx+1}/#{dp_ids.size}: #{dp.try(:name) || "UnknownDP"}\0\0\0\0"
+        $0 = "DP Check #{idx+1}/#{dp_ids.size}: #{dp.try(:name) || "UnknownDP"}"
         if ! dp
           stat = "notexist"
         elsif ! dp.online?
@@ -904,7 +904,7 @@ class RemoteResource < ActiveRecord::Base
       syncs = syncs.all
       syncs.each_with_index do |ss,i|
         userfile = ss.userfile
-        $0 = "CacheCleanup ID=#{userfile.id} #{i+1}/#{syncs.size}\0"
+        $0 = "CacheCleanup ID=#{userfile.id} #{i+1}/#{syncs.size}"
         userfile.cache_erase rescue nil
         ss.delete rescue nil
       end

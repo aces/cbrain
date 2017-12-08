@@ -28,11 +28,11 @@ class Signup < ActiveRecord::Base
                         :institution, :department, :position, :email,
                         :city, :province, :country, :confirm_token
 
-  validates             :email, :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost$/i ,  :multiline => true }
+  validates             :email, :format => { :with => /\A(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost\z/i }
 
   validate              :login_match_user_format
 
-  belongs_to            :user
+  belongs_to            :user, :optional => true # link filled after approval
 
   def strip_blanks #:nodoc:
     [

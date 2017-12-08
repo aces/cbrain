@@ -49,11 +49,11 @@ class CbrainTask < ActiveRecord::Base
   belongs_to            :bourreau
   belongs_to            :user
   belongs_to            :group
-  belongs_to            :tool_config
-  belongs_to            :results_data_provider, :class_name => 'DataProvider', :foreign_key => :results_data_provider_id
-  belongs_to            :batch_master_task,     :class_name => 'CbrainTask',   :foreign_key => :batch_id
+  belongs_to            :tool_config, :optional => true  # no TC means a task object containing 'presets'
+  belongs_to            :results_data_provider, :class_name => 'DataProvider', :foreign_key => :results_data_provider_id, :optional => true
+  belongs_to            :batch_master_task,     :class_name => 'CbrainTask',   :foreign_key => :batch_id, :optional => true
 
-  belongs_to            :workdir_archive, :class_name => 'Userfile', :foreign_key => :workdir_archive_userfile_id
+  belongs_to            :workdir_archive, :class_name => 'Userfile', :foreign_key => :workdir_archive_userfile_id, :optional => true
 
   # Pseudo Attributes (not saved in DB)
   # These are filled in by calling capture_job_out_err().
@@ -82,7 +82,6 @@ class CbrainTask < ActiveRecord::Base
                          else
                            value = s
                          end
-                         # { :conditions => { :status => value } }
                          where(:status => value)
                        }
 

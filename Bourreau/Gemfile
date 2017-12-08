@@ -52,17 +52,16 @@ end
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
-gem "puma"
-
 # CBRAIN ADDED GEMS
-# gem 'aws-s3',        :require => 'aws/s3' # Client library for Amazon's Simple Storage Service's REST API
-gem "aws-sdk"
+gem "actionpack-xml_parser"
 gem "net-ssh",       :require => 'net/ssh'
 gem "net-sftp",      :require => 'net/sftp'
-gem "sys-proctable", :git     => 'https://github.com/djberg96/sys-proctable.git', :ref => "ac047b6"
+gem "sys-proctable"
 gem "mysql2"
 gem "log4r"
 gem "pbkdf2-ruby"
 gem "json-schema"
-gem "thin"
+gem "puma"
 gem 'activeresource', require: 'active_resource'
+gem 'aws-sdk', '<2.0'
+

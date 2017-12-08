@@ -39,11 +39,11 @@ class ToolConfig < ActiveRecord::Base
 
   serialize       :env_array
 
-  belongs_to      :bourreau     # can be nil; it means it applies to all bourreaux
-  belongs_to      :tool         # can be nil; it means it applies to all tools
+  belongs_to      :bourreau, :optional => true     # can be nil; it means it applies to all bourreaux
+  belongs_to      :tool, :optional => true         # can be nil; it means it applies to all tools
   has_many        :cbrain_tasks
-  belongs_to      :group        # can be nil; means 'everyone' in that case.
-  belongs_to      :container_image, :class_name => 'Userfile', :foreign_key => :container_image_userfile_id
+  belongs_to      :group
+  belongs_to      :container_image, :class_name => 'Userfile', :foreign_key => :container_image_userfile_id, :optional => true
 
 
   # first character must be alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'

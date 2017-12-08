@@ -308,7 +308,7 @@ class Userfile < ActiveRecord::Base
     access_options = {}
     access_options[:access_requested] = options.delete :access_requested
 
-    scope = self.scoped(options)
+    scope = self.where(options)
     scope = Userfile.restrict_access_on_query(user, scope, access_options)
 
     scope

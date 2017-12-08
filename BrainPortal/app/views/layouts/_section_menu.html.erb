@@ -33,7 +33,7 @@
        # Old link based on portal name; to be made customizable soon.
        # link_to_if(current_user.present?, RemoteResource.current_resource.name.presence || "CBRAIN", start_page_path)
     %>
-    <% logo = RemoteResource.current_resource.large_logo.present? ? RemoteResource.current_resource.large_logo : "/images/custom_logos/cbrain-large_white_alpha.png" %>
+    <% logo = RemoteResource.current_resource.large_logo.presence || "/images/custom_logos/cbrain-large_white_alpha.png" %>
 
     <%= link_to_if(current_user.present?, image_tag(logo, :id => "header_logo").html_safe , start_page_path) %>
 
@@ -70,7 +70,7 @@
   <% if current_user %>
     <div id="main-menu" class="main_menu_left">
        <ul>
-         <% if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
+         <% if !current_user.has_role?(:normal_user) || (session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
            <li <%= set_selected(params[:controller], :userfiles) %>>
              <%= link_to 'Files', userfiles_path %>
            </li>

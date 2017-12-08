@@ -186,25 +186,26 @@
     <% t.column("Operations", :operations) do |m| %>
       <div>
         <%=
-          delete_button("Mark&nbsp;as&nbsp;#{m.read ? 'Unread' : 'Read'}".html_safe,
+          click_state   = m.read ? 'Unread' : 'Read' # inverse of current state
+          delete_button("<span class=\"read_unread\">Mark&nbsp;as&nbsp;#{click_state}</span>".html_safe,
             message_path(m, :read => (!m.read).to_s),
             :class                  => 'action_link',
             :method                 => "PUT",
             :target                 => ".message_display_#{m.id}",
-            :loading_message        => "<div style='color: red; text-align: center;'>Updating...</div>",
-            :loading_message_target => ".message_display_#{m.id} > td.operations > div"
+            :loading_message        => "<span style='color: red; text-align: center;'>#{click_state}</span>",
+            :loading_message_target => ".message_display_#{m.id} > td.operations > div > a > span.read_unread"
           )
         %>
         &nbsp;
         <%=
-          delete_button('Delete',
+          delete_button('<span class="del_label">Delete</span>'.html_safe,
             message_path(m),
             :class                  => 'action_link',
             :method                 => "DELETE",
             :target                 => ".message_display_#{m.id}",
             :remove_target          => ".message_display_#{m.id}",
-            :loading_message        => "<div style='color: red; text-align: center;'>Updating...</div>",
-            :loading_message_target => ".message_display_#{m.id} > td.operations > div"
+            :loading_message        => "<span style='color: red; text-align: center;'>Deleting...</span>",
+            :loading_message_target => ".message_display_#{m.id} > td.operations > a > span.del_label"
           )
         %>
       </div>

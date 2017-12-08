@@ -23,12 +23,15 @@
 require 'rails_helper'
 
 RSpec.describe SessionsController, :type => :controller do
-  let(:current_session) { mock_model(ActiveRecord::SessionStore::Session, "_csrf_token" => 'dummy csrf').as_null_object }
-  let(:portal)          { double("portal", :portal_locked? => false).as_null_object }
+  let(:cookie_session) { ActionController::TestSession.new(:_csrf_token => 'dummy') }
+  let(:cbrain_session) { mock_model(LargeSessionInfo).as_null_object }
+  let(:portal)         { double("portal", :portal_locked? => false).as_null_object }
 
   before(:each) do
     allow(BrainPortal).to receive(:current_resource).and_return(portal)
     allow(Kernel).to      receive(:sleep)
+    allow(controller).to  receive(:session).and_return(cookie_session)
+    allow(controller).to  receive(:cbrain_session).and_return(cbrain_session)
   end
 
   describe "new" do
@@ -43,8 +46,8 @@ RSpec.describe SessionsController, :type => :controller do
 
     before(:each) do
       allow(User).to         receive(:authenticate).and_return(current_user)
+      allow(current_user).to receive(:time_zone).and_return(nil)
       allow(current_user).to receive(:meta).and_return({})
-      allow(controller).to receive(:current_session).and_return(current_session)
     end
 
     it "should render the login page if authentication fails" do
@@ -93,7 +96,7 @@ RSpec.describe SessionsController, :type => :controller do
     end
 
     it "should activate the session" do
-      expect(current_session).to receive(:activate)
+      expect(cbrain_session).to receive(:activate)
       post :create
     end
 
@@ -137,8 +140,8 @@ RSpec.describe SessionsController, :type => :controller do
     end
 
     it "should deactivate the session" do
-      allow(controller).to receive(:current_session).and_return(current_session)
-      expect(current_session).to receive(:deactivate)
+      allow(controller).to receive(:cbrain_session).and_return(cbrain_session)
+      expect(cbrain_session).to receive(:deactivate)
       delete :destroy
     end
 
@@ -149,8 +152,8 @@ RSpec.describe SessionsController, :type => :controller do
     end
 
     it "should clear the session data" do
-      allow(controller).to receive(:current_session).and_return(current_session)
-      expect(current_session).to receive(:clear)
+      allow(controller).to receive(:cbrain_session).and_return(cbrain_session)
+      expect(cbrain_session).to receive(:clear)
       delete :destroy
     end
 

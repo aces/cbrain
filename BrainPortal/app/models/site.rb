@@ -207,13 +207,13 @@ class Site < ActiveRecord::Base
     site_group = self.own_group
 
     unless site_group.blank? || self.groups.exists?(site_group.id)
-      self.groups << site_group
+      self.group_ids |= [ site_group.id ]
     end
 
     User.find(@new_user_ids).each do |user|
-      user.own_group.update_attributes!(:site => self)
+      user.own_group.update_attributes!(:site_id => self.id)
       unless site_group.blank? || self.groups.exists?(site_group.id)
-        user.groups << site_group
+        user.group_ids |= [ site_group.id ]
       end
     end
   end

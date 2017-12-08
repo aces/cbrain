@@ -35,15 +35,15 @@ class ToolsController < ApplicationController
   def index #:nodoc:
     @scope = scope_from_session('tools')
     scope_default_order(@scope, 'name')
- 
+
     @base_scope = current_user.available_tools.includes(:user, :group)
     @tools = @scope.apply(@base_scope)
 
     respond_to do |format|
       format.js
       format.html # index.html.erb
-      format.xml  { render :xml  => @tools.for_api }
-      format.json { render :json => @tools.for_api }
+      format.xml  { render :xml  => @tools.to_a.for_api }
+      format.json { render :json => @tools.to_a.for_api }
     end
   end
 
@@ -80,7 +80,7 @@ class ToolsController < ApplicationController
 
   rescue
     # render :text  => "#{ex.class} #{ex.message}\n#{ex.backtrace.join("\n")}"
-    render html: '<strong style="color:red">No Execution Servers Available</strong>'
+    render html: '<strong style="color:red">No Execution Servers Available</strong>'.html_safe
   end
 
   def new #:nodoc:
