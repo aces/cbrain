@@ -575,7 +575,7 @@ module SelectBoxHelper
   # Group a list of users into two sub-categories:
   # one for active users and another for locked users
   def regroup_users_by_lock_status(users) #:nodoc:
-    user_by_lock_status_hash = users.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"}
+    user_by_lock_status_hash = users.to_a.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"}
     ordered_by_lock_status   = []
 
     user_by_lock_status_hash.sort.each do |status,users_by_status|

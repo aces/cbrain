@@ -33,7 +33,7 @@ class SessionsController < ApplicationController
 
   api_available :only => [ :new, :show, :create, :destroy ]
 
-  before_filter :user_already_logged_in, :only => [:new, :create]
+  before_action :user_already_logged_in, :only => [:new, :create]
 
   def new #:nodoc:
     reqenv           = request.env
@@ -242,7 +242,7 @@ puts_yellow "AUTH: L=#{params[:login]} P=#{params[:password]} U=#{user}"
 
     # Admin users start with some differences in behavior
     if user.has_role?(:admin_user)
-      current_session[:active_group_id] = "all"
+      cbrain_session[:active_group_id] = "all"
     end
   end
 

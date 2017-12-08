@@ -106,10 +106,6 @@ class User < ActiveRecord::Base
   has_many                :custom_filters,  :dependent => :destroy
   has_many                :exception_logs,  :dependent => :destroy
 
-  # prevents a user from submitting a crafted form that bypasses activation
-  # anything else you want your user to change should be added here.
-  attr_accessible :full_name, :email, :password, :password_confirmation, :time_zone, :city, :country
-
   api_attr_visible :login, :full_name, :email, :type, :site_id, :time_zone, :city, :last_connected_at, :account_locked
 
   # Returns the admin user

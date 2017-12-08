@@ -100,11 +100,10 @@ module ResourceAccess
     # [For *admin* users:] any resource on the system.
     # [For regular users:] all resources that belong to a group to which the user belongs.
     def find_all_accessible_by_user(user, options = {})
-      #scope = self.scoped(options)
       scope = self.where(options) # will fail if not simple attibute mappings
 
       unless user.has_role? :admin_user
-        scope = scope.joins(user).where("#{self.quoted_table_name}.readonly"  => false)
+        scope = scope.joins(:user).where(:read_only  => false)
 
         if user.has_role? :site_manager
           scope = scope.where(["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?)) OR (users.site_id = ?)", user.id, user.group_ids, user.site_id])

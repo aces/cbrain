@@ -180,10 +180,12 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
     puts "C> Checking to see if Data Provider cache is valid..."
     #-----------------------------------------------------------------------------
 
-    myself = RemoteResource.current_resource
+    myself         = RemoteResource.current_resource
 
     cache_root     = DataProvider.cache_rootdir rescue nil
-    if cache_root.blank?
+    # Need to perform a `to_s` due to a strange behaviour of `blank?` 
+    # on `Pathname` (if a content of a `Pathname` is empty it will return true)
+    if cache_root.to_s.blank?
       puts "C> \t- SKIPPING! No cache root directory yet configured!"
       return
     end

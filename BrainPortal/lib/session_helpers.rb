@@ -46,12 +46,12 @@ module SessionHelpers
 
   # Returns currently active project.
   def current_project
-    return nil unless current_session[:active_group_id]
-    return nil if current_session[:active_group_id] == "all"
+    return nil unless cbrain_session[:active_group_id]
+    return nil if     cbrain_session[:active_group_id] == "all"
 
-    if !@current_project || @current_project.id.to_i != current_session[:active_group_id].to_i
-      @current_project = Group.find_by_id(current_session[:active_group_id])
-      current_session[:active_group_id] = nil if @current_project.nil?
+    if !@current_project || @current_project.id.to_i != cbrain_session[:active_group_id].to_i
+      @current_project = Group.find_by_id(cbrain_session[:active_group_id])
+      cbrain_session[:active_group_id] = nil if @current_project.nil?
     end
 
     @current_project

@@ -29,8 +29,8 @@ class PortalController < ApplicationController
 
   api_available :only => [ :swagger ] # GET /swagger returns the .json specification
 
-  before_filter :login_required, :except => [ :credits, :about_us, :welcome, :swagger ]  # welcome is here so that the redirect to the login page doesn't show the error message
-  before_filter :admin_role_required, :only => :portal_log
+  before_action :login_required, :except => [ :credits, :about_us, :welcome, :swagger ]  # welcome is here so that the redirect to the login page doesn't show the error message
+  before_action :admin_role_required, :only => :portal_log
 
   # Display a user's home page with information about their account.
   def welcome #:nodoc:
