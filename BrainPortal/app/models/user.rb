@@ -22,7 +22,6 @@
 
 require 'digest/sha1'
 require 'pbkdf2'
-
 # Model representing CBrain users.
 # All authentication of user access to the system is handle by the User model.
 # User level access to pages are handled through a given user's +class+ (currently *NormalUser*, *SiteManager*, *AdminUser*).
@@ -293,17 +292,7 @@ class User < ActiveRecord::Base
 
   # Destroy all sessions for user
   def destroy_user_sessions
-    myid = self.id
-    return true unless myid # defensive
-    sessions = CbrainSession.all.select do |s|
-      data = s.data rescue {} # old sessions can have problems being reconstructed
-      (s.user_id && s.user_id == myid) ||
-      (data && data[:user_id] && data[:user_id] == myid)
-    end
-    sessions.each do |s|
-      s.destroy rescue true
-    end
-    true
+    LargeSessionInfo.where(:user_id => self.id).destroy_all
   end
 
 

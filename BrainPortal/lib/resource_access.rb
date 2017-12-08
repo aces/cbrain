@@ -26,6 +26,7 @@
 #
 # This requires that classes that include them be ActiveRecord models
 # with at least the attributes +user_id+ and +group_id+.
+
 module ResourceAccess
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -82,7 +83,7 @@ module ResourceAccess
       scope = self.where(options) # will fail if not simple attibute mappings
 
       unless user.has_role? :admin_user
-        #scope = scope.joins(:user)
+        scope = scope.joins(:user)
 
         if user.has_role? :site_manager
           scope = scope.where(["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?)) OR (users.site_id = ?)", user.id, user.group_ids, user.site_id])
@@ -103,7 +104,7 @@ module ResourceAccess
       scope = self.where(options) # will fail if not simple attibute mappings
 
       unless user.has_role? :admin_user
-        #scope = scope.joins(:user)
+        scope = scope.joins(:user)
 
         if user.has_role? :site_manager
           scope = scope.where(["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?)) OR (users.site_id = ?)", user.id, user.group_ids, user.site_id])
