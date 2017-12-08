@@ -45,8 +45,11 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 % end
 %
 % # Parameter groups
-% inputs   = descriptor['inputs'].dup       rescue []
-% outputs  = descriptor['output-files'].dup rescue []
+% inputs   = (descriptor['inputs'].dup                || []) rescue []
+% outputs  = (descriptor['output-files'].dup          || []) rescue []
+% eVars    = (descriptor['environment-variables'].dup || []) rescue []
+%
+% # Subsets
 % files    = inputs.select  { |i| i['type'] == 'File'   }
 % required = outputs.select { |o| ! o['optional']       }
 % globs    = outputs.select { |o| o['list']             }
@@ -54,7 +57,6 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 % out_keys = outputs.select { |o| o['value-key'] }
 % flags    = (inputs + outputs).select { |p| p['command-line-flag'].present? }
 % seps     = (inputs + outputs).select { |i| i['command-line-flag-separator'] }
-% eVars    = descriptor['environment-variables'].dup rescue []
 %
   # Task properties are special boolean properties of your task, returned as a
   # hash table. Used internally by CBRAIN to enable/disable special task

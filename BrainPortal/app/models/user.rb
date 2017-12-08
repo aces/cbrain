@@ -89,10 +89,10 @@ class User < ActiveRecord::Base
   after_destroy             :destroy_user_sessions
 
   # The following resources PREVENT the user from being destroyed if some of them exist.
-  has_many                :userfiles,         :dependent => :restrict
-  has_many                :data_providers,    :dependent => :restrict
-  has_many                :remote_resources,  :dependent => :restrict
-  has_many                :cbrain_tasks,      :dependent => :restrict
+  has_many                :userfiles,         :dependent => :restrict_with_exception
+  has_many                :data_providers,    :dependent => :restrict_with_exception
+  has_many                :remote_resources,  :dependent => :restrict_with_exception
+  has_many                :cbrain_tasks,      :dependent => :restrict_with_exception
 
   has_and_belongs_to_many :access_profiles
   has_and_belongs_to_many :groups

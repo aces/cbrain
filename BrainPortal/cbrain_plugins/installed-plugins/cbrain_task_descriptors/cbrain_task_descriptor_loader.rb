@@ -28,7 +28,8 @@
 
   basename = File.basename(__FILE__)
   if basename == 'cbrain_task_descriptor_loader.rb' # usually, the symlink destination
-    puts "Weird. Trying to load the loader?!?"
+    # This can happen with eager loading.
+    #puts "Weird. Trying to load the loader?!?"
     break
   end
 
@@ -39,9 +40,12 @@
     SchemaTaskGenerator.generate(schema, descriptor).integrate if
       File.exists?(descriptor)
   rescue StandardError => e
+    #puts "================="
     puts "Failed to generate or integrate task from descriptor #{descriptor}"
     puts "\tNil errors are common for descriptors that fail to validate"
     puts "\tError Message: #{e.message}"
+    #puts e.backtrace.join("\n");
+    #puts "================="
   end
 
 end

@@ -79,7 +79,7 @@ RUN service mysqld start && \
 
 USER cbrain
 
-ENV RUBY_VERSION=2.2.0
+ENV RUBY_VERSION=2.4.1
 
 RUN cd $HOME && curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -
 
@@ -116,6 +116,8 @@ RUN cd $HOME && \
 
 # Install and configure the portal
 ENV RAILS_ENV=test
+
+RUN bash --login -c 'cd $HOME/cbrain_base/BrainPortal && gem install bundler --no-ri --no-rdoc'
 
 RUN bash --login -c 'cd $HOME/cbrain_base/BrainPortal && bundle install'
 

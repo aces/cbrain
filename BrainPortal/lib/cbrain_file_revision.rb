@@ -236,7 +236,7 @@ class CbrainFileRevision
   # Class method. Slurps a static file of revision info
   # and caches it.
   def self.load_static_revision_file(path,relprefix="") #:nodoc:
-    relprefix = Pathname.new(relprefix) if relprefix.present?
+    relprefix = Pathname.new(relprefix) if relprefix.to_s.present?
     CSV.foreach(path.to_s, :col_sep => ' -#- ') do |row|
       # 7f6bb2f24f6afb3d3b355d6c0ad630cdf353e1fe -#- 2011-07-18 17:16:57 -0400 -#- Pierre Rioux -#- Bourreau/README
       commit   = row[0]

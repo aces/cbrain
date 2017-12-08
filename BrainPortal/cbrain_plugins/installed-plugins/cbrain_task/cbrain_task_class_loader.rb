@@ -28,7 +28,8 @@
 
   basename    = File.basename(__FILE__)
   if basename == 'cbrain_task_class_loader.rb' # usually, the symlink destination
-    puts "Weird. Trying to load the loader?!?"
+    # This can happen with eager loading.
+    #puts "Weird. Trying to load the loader?!?"
     break
   end
 

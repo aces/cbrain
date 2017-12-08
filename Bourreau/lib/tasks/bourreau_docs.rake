@@ -20,15 +20,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require 'rdoc/task'
+
 namespace :doc do
   desc "Create CBRAIN Bourreau documentation"
-  Rake::RDocTask.new(:bourreau) { |rdoc|
+  RDoc::Task.new(:bourreau) { |rdoc|
      rdoc.rdoc_dir = 'doc/bourreau'
      rdoc.title    = "CBRAIN Bourreau API Documentation"
      rdoc.options << '-a'
      rdoc.options << '-W https://github.com/aces/cbrain/blob/master/Bourreau/%s'
-     rdoc.main = 'README'
-     rdoc.rdoc_files.include('README')
+     rdoc.main = 'README.md'
+     rdoc.rdoc_files.include('README.md')
      rdoc.rdoc_files.include('app/*/*.rb')
      rdoc.rdoc_files.include('app/models/userfiles/*.rb')
      rdoc.rdoc_files.include('lib/*.rb')

@@ -33,25 +33,25 @@ module ActiveRecord #:nodoc:
     # ActiveRecord Added Behavior For MetaData
     ###################################################################
 
-    include ActRecMetaData # module in lib/act_rec_meta_data.rb
+#    include ActRecMetaData # module in lib/act_rec_meta_data.rb
 
     ###################################################################
     # ActiveRecord Added Behavior For Logging
     ###################################################################
 
-    include ActRecLog # module in lib/act_rec_log.rb
+#    include ActRecLog # module in lib/act_rec_log.rb
 
     ############################################################################
     # Pretty Type methods
     ############################################################################
 
-    include CBRAINExtensions::ActiveRecordExtensions::PrettyType
+#    include CBRAINExtensions::ActiveRecordExtensions::PrettyType
 
     ###################################################################
     # ActiveRecord Added Behavior For Single Table Inheritance
     ###################################################################
 
-    include CBRAINExtensions::ActiveRecordExtensions::SingleTableInheritance
+#    include CBRAINExtensions::ActiveRecordExtensions::SingleTableInheritance
 
     ###################################################################
     # ActiveRecord Added Behavior For Single Table Inheritance
@@ -63,13 +63,13 @@ module ActiveRecord #:nodoc:
     # Helpers to manage mass-assignable attributes.
     ###################################################################
 
-    include CBRAINExtensions::ActiveRecordExtensions::MassAssignmentAuthorization
+#    include CBRAINExtensions::ActiveRecordExtensions::MassAssignmentAuthorization
 
     ###################################################################
     # ActiveRecord Added Behavior For Serialization
     ###################################################################
 
-    include CBRAINExtensions::ActiveRecordExtensions::Serialization
+#    include CBRAINExtensions::ActiveRecordExtensions::Serialization
 
     ###################################################################
     # ActiveRecord Added Behavior For Core Models
@@ -81,14 +81,14 @@ module ActiveRecord #:nodoc:
     # ActiveRecord Added Behavior For Hiding Attributes
     ###################################################################
 
-    include CBRAINExtensions::ActiveRecordExtensions::HiddenAttributes
+#    include CBRAINExtensions::ActiveRecordExtensions::HiddenAttributes
     include CBRAINExtensions::ActiveRecordExtensions::ApiAttrVisible
 
     ###################################################################
     # +scopes+ method behaviour lost in Rails 3.1.
     ###################################################################
 
-    include CBRAINExtensions::ActiveRecordExtensions::CbrainScopes
+#    include CBRAINExtensions::ActiveRecordExtensions::CbrainScopes
 
   end # class Base of ActiveRecord
 
@@ -101,23 +101,23 @@ module ActiveRecord #:nodoc:
     # ActiveRecord::Relation safety net to avoid OOM conditions
     #####################################################################
 
-    prepend CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::SafeInspect
+#    prepend CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::SafeInspect
 
     #####################################################################
     # ActiveRecord::Relation Added Behavior For Unstructured Data Fetches
     #####################################################################
 
-    include CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::RawData
+#    include CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::RawData
 
   end
 
   # CBRAIN ActiveRecord::Associations::CollectionProxy extensions
   # delegating extended Relation methods.
-  module Associations #:nodoc:
-    class CollectionProxy #:nodoc:
-      delegate :raw_first_column, :raw_rows, :to => :scoped
-    end
-  end
+#  module Associations #:nodoc:
+#    class CollectionProxy #:nodoc:
+#      delegate :raw_first_column, :raw_rows, :to => :scoped
+#    end
+#  end
 
 end
 

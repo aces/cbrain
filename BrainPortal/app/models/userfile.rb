@@ -48,6 +48,8 @@ class Userfile < ActiveRecord::Base
   before_destroy          :erase_data_provider_content_and_cache, :nullify_children
   after_destroy           :remove_spurious_sync_status
 
+  validates :type, :subclass => true  # actually this will prevent files of class Userfile to be saved
+
   validates               :name,
                           :presence => true,
                           :uniqueness =>  { :scope => [ :user_id, :data_provider_id ] },

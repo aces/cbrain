@@ -50,7 +50,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 % file_lists   = files.select  { |i| i['list']           }
 %
 % # Parameter groups
-% groups    = descriptor['groups'].dup rescue []
+% groups    = (descriptor['groups'].dup || []) rescue []
 % noGroups  = (groups.length == 0)
 % gIdToMbrs = groups.inject({}){ |m,v| m.merge( v["id"] => v["members"] ) }
 % gIdToPrms = gIdToMbrs.map { |k,v| [k, params.select{ |p| v.include? p["id"] }] }.to_h
@@ -141,7 +141,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 %   .uniq
 % unless file_types.empty?
     # Resolve interface_userfile_ids to actual userfile objects
-    files = Userfile.find_all_by_id(self.params[:interface_userfile_ids])
+    files = Userfile.where(:id => self.params[:interface_userfile_ids]).all.to_a
 
 %   if file_types.length == 1 && !file_types.first
     # At least one file is required.
@@ -550,7 +550,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
         # Replace each cbcsv with an entry
         cbcsvs.map{ |f| f[0] }.each_with_index do |id,j|
           currId = mapCbcsvToUserfiles[j][i]
-          currTask.params[:interface_userfile_ids] << mapCbcsvToUserfiles unless currId.nil?
+          #currTask.params[:interface_userfile_ids] << mapCbcsvToUserfiles unless currId.nil?
           currTask.params[id] = currId # If id = 0 or nil, currId = nil
           currTask.params.delete(id) if currId.nil?
         end

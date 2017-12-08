@@ -180,7 +180,7 @@ class FileCollection < Userfile
 
     # Check on FS for file to exist and is accessible
     real_loc = path.realdirpath rescue nil
-    return nil unless real_loc.present?
+    return nil unless real_loc.to_s.present?
     stat = File.stat(real_loc) rescue nil
     return nil if   ! stat
     return nil if   ! stat.file?
@@ -225,6 +225,8 @@ class FileCollection < Userfile
     updated_at_value = self.updated_at
 
     return "" if self.archived?
+
+    cb_error "Error: file #{self.name} is immutable." if self.immutable?
 
     self.sync_to_cache
     # Just to check that file properties are OK; raise exception otherwise.
