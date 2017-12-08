@@ -47,7 +47,15 @@ end
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 #gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
+gem "puma"
 
 # CBRAIN ADDED GEMS
 gem "pbkdf2-ruby"
+gem "json-schema"
+gem "net-ssh",       :require => 'net/ssh'
+gem "net-sftp",      :require => 'net/sftp'
+gem "activeresource"
+gem "log4r"
+gem "sys-proctable"
+gem "will_paginate"
 

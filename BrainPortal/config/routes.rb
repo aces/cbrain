@@ -1,3 +1,186 @@
 Rails.application.routes.draw do
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+
+
+  # # Session
+  resource  :session,         :only => [ :new, :create, :show, :destroy ]
+
+  # # Control channel
+  # resources :controls,        :only => [ :show, :create ], :controller => :controls
+
+  # # Documentation
+  # resources :docs,            :except => [ :edit ], :controller => :help_documents
+
+  # # Standard CRUD resources
+  resources :sites,           :except => [ :edit ]
+  resources :custom_filters,  :except => [ :index, :show ]
+  resources :tags,            :except => [ :new, :edit ]
+  resources :access_profiles, :except => [ :edit ]
+
+  # # Standard CRUD resources, with extra actions
+
+  resources :tool_configs,    :except => [ :create ] do
+    collection do
+      get  'report'
+    end
+  end
+
+  resources :messages,        :except => [ :edit, :show ] do
+    collection do
+      delete 'delete_messages'
+    end
+  end
+
+  resources :users,           :except => [ :edit ] do
+    member do
+      get  'change_password'
+      post 'switch'
+    end
+    collection do
+      get  'request_password'
+      post 'send_password'
+    end
+  end
+
+  resources :groups,          :except => [ :edit ] do
+    collection do
+      post 'unregister'
+      post 'switch'
+    end
+  end
+
+  # resources :invitations,     :only => [ :new, :create, :update, :destroy ]
+
+  resources :bourreaux,       :except => [ :edit ] do
+    member do
+      post 'start'
+      post 'stop'
+      get  'row_data'
+      get  'info'
+      get  'cache_disk_usage'
+    end
+    collection do
+      get  'load_info'
+      get  'rr_disk_usage'
+      get  'rr_access'
+      post 'cleanup_caches'
+      get  'rr_access_dp'
+    end
+  end
+
+  resources :data_providers,  :except => [ :edit ] do
+    member do
+      get  'browse'
+      post 'register'
+      post 'unregister'
+      post 'delete'
+      get  'is_alive'
+      get  'disk_usage'
+      get  'report'
+      post 'repair'
+    end
+    collection do
+      get  'dp_access'
+      get  'dp_transfers'
+    end
+  end
+
+  resources :userfiles,       :except => [ :edit, :destroy ] do
+    member do
+      get  'content'
+      get  'display'
+      post 'extract_from_collection'
+    end
+    collection do
+      post   'download'
+      get    'download'
+      get    'new_parent_child'
+      post   'create_parent_child'
+      delete 'delete_files'
+      post   'create_collection'
+      put    'update_multiple'
+      post   'change_provider'
+      post   'compress'
+      post   'uncompress'
+      post   'quality_control'
+      post   'quality_control_panel'
+      post   'sync_multiple'
+      post   'detect_file_type'
+      post   'export_file_list'
+    end
+  end
+
+  resources :tasks,           :except => [ :destroy ] do
+    collection do
+      match 'new', :as => 'new', :via => 'new'
+      post 'operation'
+      get  'batch_list'
+      post 'update_multiple'
+    end
+  end
+
+  resources :tools do
+    collection do
+      get    'tool_config_select'
+    end
+  end
+
+  resources :exception_logs,  :only => [ :index, :show ] do
+    delete :destroy, :on => :collection
+  end
+
+  resources :signups do
+    member do
+      post 'resend_confirm'
+      get  'confirm'
+    end
+    collection do
+      post 'multi_action'
+    end
+  end
+
+  # # Special named routes
+  # root  :to                       => 'portal#welcome'
+  get   '/home'                   => 'portal#welcome'
+  post  '/home'                   => 'portal#welcome' # lock/unlock service
+  get   '/credits'                => 'portal#credits'
+  get   '/about_us'               => 'portal#about_us'
+  get   '/search'                 => 'portal#search'
+  get   '/login'                  => 'sessions#new'
+  # get   '/logout'                 => 'sessions#destroy'
+  # get   '/session_status'         => 'sessions#show'
+  # get   '/session_data'           => 'session_data#show'
+  # post  '/session_data'           => 'session_data#update'
+
+  # # Report Maker
+  # get   "/report",                :controller => :portal, :action => :report
+
+  # # Network Operation Center; daily status (shows everything publicly!)
+  # # get   "/noc/daily",             :controller => :noc,    :action => :daily
+
+  # # API description, by Swagger
+  # get   "/swagger",               :controller => :portal, :action => :swagger
+
+  # # Licence handling
+  # get   '/show_license/:license', :controller => :portal, :action => :show_license
+  # post  '/sign_license/:license', :controller => :portal, :action => :sign_license
+
+  # # Portal log
+  # get   '/portal_log',            :controller => :portal, :action => :portal_log
+
+  # # Service; most of these actions are only needed
+  # # for the CANARIE monitoring system, and are therefore
+  # # shipped disabled by default, because it's not needed
+  # # anywhere else.
+  # #get   '/service/info',           :controller => :service, :action => :info
+  # #get   '/service/stats',          :controller => :service, :action => :stats
+  # #get   '/service/detailed_stats', :controller => :service, :action => :detailed_stats
+  # #get   '/service/doc',            :controller => :service, :action => :doc
+  # #get   '/service/releasenotes',   :controller => :service, :action => :releasenotes
+  # #get   '/service/support',        :controller => :service, :action => :support
+  # #get   '/service/source',         :controller => :service, :action => :source
+  # #get   '/service/tryme',          :controller => :service, :action => :tryme
+  # #get   '/service/licence',        :controller => :service, :action => :licence
+  # #get   '/service/provenance',     :controller => :service, :action => :provenance
+
 end

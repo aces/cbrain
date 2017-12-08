@@ -4,6 +4,13 @@
 Rails.application.config.assets.version = '1.0'
 
 # Add additional assets to the asset load path
+Rails.application.config.assets.precompile += %w( tablesorter_themes/blue/style.css )
+Rails.application.config.assets.precompile += %w( cbrain.css )
+Rails.application.config.assets.precompile += %w( dynamic-table.css )
+Rails.application.config.assets.precompile += %w( jquery-ui.css )
+Rails.application.config.assets.precompile += %w( userfiles.css )
+Rails.application.config.assets.precompile += %w( chosen.min.css )
+
 # Rails.application.config.assets.paths << Emoji.images_path
 
 # Precompile additional assets.

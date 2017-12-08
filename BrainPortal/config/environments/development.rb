@@ -43,7 +43,8 @@ Rails.application.configure do
   config.assets.debug = true
 
   # Suppress logger output for asset requests.
-  config.assets.quiet = true
+  config.assets.quiet = false
+  config.logger = Logger.new(STDOUT)
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true

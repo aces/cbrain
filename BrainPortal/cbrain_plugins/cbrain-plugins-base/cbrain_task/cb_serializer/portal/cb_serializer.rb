@@ -38,7 +38,7 @@ class CbrainTask::CbSerializer < PortalTask
   #  for_setup    = prereqs[:for_setup] || {}
   #  ttids        = for_setup.keys   #  [ "T123", "T343" etc ]
   #  tids         = ttids.map { |ttid| ttid[1,999].to_i }
-  #  prereq_tasks = CbrainTask.find_all_by_id(tids)
+  #  prereq_tasks = CbrainTask.where(id: tids)
   #  grouped      = prereq_tasks.group_by(&:name)
   #  summary      = ""
   #  grouped.each do |name,tasklist|

@@ -27,27 +27,27 @@ class AdminUser < User
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def available_tools  #:nodoc:
-    Tool.scoped
+    Tool.where(nil)
   end
 
   def available_groups  #:nodoc:
-    Group.scoped
+    Group.where(nil)
   end
 
   def available_tasks  #:nodoc:
-    CbrainTask.scoped
+    CbrainTask.where(nil)
   end
 
   def available_users  #:nodoc:
-    User.scoped
+    User.where(nil)
   end
 
   def accessible_sites #:nodoc:
-    Site.scoped
+    Site.where(nil)
   end
 
   def visible_users #:nodoc:
-    User.scoped
+    User.where(nil)
   end
 
 end

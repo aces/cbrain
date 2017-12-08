@@ -44,6 +44,7 @@
 #   0,,,,,,
 #   933,"hello.txt",3433434,"TextFile","SomeDP","jsmith","mygroup"
 #
+
 class CbrainFileList < CSVFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -198,7 +199,7 @@ class CbrainFileList < CSVFile
 
       # USERFILE ENTRIES
       bad_message = validate_row_attributes(userfile, row)
-      self.errors[error_key] = bad_message if bad_message.present?
+      self.errors.add(error_key, bad_message) if bad_message.present?
     end
     self.errors.size == 0
   end
@@ -255,7 +256,7 @@ class CbrainFileList < CSVFile
             assoc_cache[[att,val]] ||= ( userfile.send(att.to_s.sub(/_id$/,"")).try(att == :user_id ? :login : :name) || "-")
             val = assoc_cache[[att,val]]
           end
-          if att !~ /_id$/ && userfile_model_hash[att.to_s].type == :integer # might need to check others too
+          if att !~ /_id$/ && userfile_model_hash[att.to_s].type == :integer ||  userfile_model_hash[att.to_s].type == :decimal # might need to check others too
             row << val
           else
             row << QUOTING_CHARACTER + val.gsub(QUOTING_CHARACTER, QUOTING_CHARACTER+QUOTING_CHARACTER) + QUOTING_CHARACTER

@@ -11,6 +11,8 @@
 # end
 
 # These inflection rules are supported but not enabled by default:
-# ActiveSupport::Inflector.inflections(:en) do |inflect|
+ActiveSupport::Inflector.inflections(:en) do |inflect|
 #   inflect.acronym 'RESTful'
-# end
+  inflect.irregular 'bourreau', 'bourreaux'
+  inflect.irregular 'status', 'status'
+end
