@@ -46,10 +46,10 @@ class DataProvidersController < ApplicationController
     respond_to do |format|
       format.html
       format.xml  do
-        render :xml  => @data_providers.for_api
+        render :xml  => @data_providers.to_a.for_api
       end
       format.json do
-        render :json => @data_providers.for_api
+        render :json => @data_providers.to_a.for_api
       end
       format.js
     end
@@ -229,14 +229,14 @@ class DataProvidersController < ApplicationController
     end
 
     respond_to do |format|
-      format.html { render :text => info_by_user.inspect }
-      format.xml  { render :xml  => info_by_user }
-      format.json { render :json => info_by_user }
+      format.html { render :plain => info_by_user.inspect } # not really html
+      format.xml  { render :xml   => info_by_user }
+      format.json { render :json  => info_by_user }
     end
 
   rescue
     respond_to do |format|
-      format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
+      format.html { render :html => '<strong style="color:red">No Information Available</strong>'.html_safe }
       format.xml  { head :unprocessable_entity }
       format.json { head :unprocessable_entity }
     end

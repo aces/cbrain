@@ -68,7 +68,8 @@ class Userfile < ActiveRecord::Base
   belongs_to              :group
   belongs_to              :parent,
                           :class_name   => "Userfile",
-                          :foreign_key  => "parent_id"
+                          :foreign_key  => "parent_id",
+                          :optional     => true
 
   has_and_belongs_to_many :tags
   has_many                :sync_status
@@ -247,7 +248,9 @@ class Userfile < ActiveRecord::Base
     tags ||= []
     tags = [tags] unless tags.is_a? Array
 
-    non_user_tags = self.tags.all(:conditions  => ["tags.user_id<>? AND tags.group_id NOT IN (?)", user.id, user.group_ids]).map(&:id)
+    non_user_tags = self.tags
+                        .where(["tags.user_id <> ? AND tags.group_id NOT IN (?)", user.id, user.group_ids])
+                        .raw_first_column(:id)
     new_tag_set = tags + non_user_tags
 
     self.tag_ids = new_tag_set

@@ -61,6 +61,8 @@ gem "will_paginate"
 gem "jquery-rails"
 gem "jquery-ui-rails"
 gem "jquery-form-rails"
+gem "actionpack-xml_parser"
+gem 'aws-sdk', '<2.0'
 
 group :development do
   gem 'wirble'

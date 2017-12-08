@@ -472,10 +472,10 @@ class DataProvider < ActiveRecord::Base
     full_path = cache_full_path(userfile)
     if userfile.is_a?(FileCollection) && rel_path
       rel_path = Pathname.new(rel_path).cleanpath.to_s if rel_path.is_a?(String) || rel_path.is_a?(Pathname)
-      cb_error "Unacceptable path going outside data model." if rel_path.present? && rel_path =~ /\A\.\.|\A\//
+      cb_error "Unacceptable path going outside data model." if rel_path.to_s.present? && rel_path.to_s =~ /\A\.\.|\A\//
       full_path += rel_path
     end
-    cb_error "Error: read handle cannot be provided for non-file."         unless File.file? full_path
+    cb_error "Error: read handle cannot be provided for non-file."         unless File.file? full_path.to_s
     File.open(full_path,"r") do |fh|
       yield(fh)
     end
@@ -514,7 +514,7 @@ class DataProvider < ActiveRecord::Base
     cb_error "Error: file #{userfile.name} is immutable."                  if     userfile.immutable?
     cb_error "Error: cannot use relative path argument with a SingleFile." if     userfile.is_a?(SingleFile) && rel_path
     rel_path = Pathname.new(rel_path).cleanpath.to_s if rel_path.is_a?(String) || rel_path.is_a?(Pathname)
-    cb_error "Unacceptable path going outside data model." if rel_path.present? && rel_path =~ /\A\.\.|\A\//
+    cb_error "Unacceptable path going outside data model." if rel_path.to_s.present? && rel_path.to_s =~ /\A\.\.|\A\//
     cache_prepare(userfile)
     localpath = cache_full_path(userfile)
     SyncStatus.ready_to_modify_cache(userfile) do
@@ -535,9 +535,10 @@ class DataProvider < ActiveRecord::Base
   # The syncronization method +sync_to_provider+ will automatically
   # be called after the copy is performed.
   def cache_copy_from_local_file(userfile, localpath)
+    localpath = localpath.to_s # in case we get a Pathname
     cb_error "Error: provider #{self.name} is offline."                                   unless self.online?
     cb_error "Error: provider #{self.name} is read_only."                                 if     self.read_only?
-    cb_error "Error: file does not exist: #{localpath.to_s}"                              unless File.exists?(localpath)
+    cb_error "Error: file does not exist: '#{localpath}'."                                unless File.exists?(localpath)
     cb_error "Error: file #{userfile.name} is immutable."                                 if     userfile.immutable?
     cb_error "Error: incompatible directory '#{localpath}' given for a SingleFile."       if
         userfile.is_a?(SingleFile)     && File.directory?(localpath)
@@ -554,7 +555,7 @@ class DataProvider < ActiveRecord::Base
       else
         FileUtils.remove_entry(dest, true) if File.exists?(dest) && File.directory?(dest)
       end
-      rsyncout = bash_this("rsync -a -l --delete #{self.rsync_excludes} #{shell_escape(localpath)}#{needslash} #{shell_escape(dest)} 2>&1")
+      rsyncout = bash_this("rsync -a -l --no-p --no-g --chmod=u=rwX,g=rX,o=r --delete #{self.rsync_excludes} #{shell_escape(localpath)}#{needslash} #{shell_escape(dest)} 2>&1")
       cb_error "Failed to rsync local file '#{localpath}' to cache file '#{dest}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
     end
     sync_to_provider(userfile)
@@ -572,11 +573,11 @@ class DataProvider < ActiveRecord::Base
   # a existing subdirectory /a/b/c/, then 'c' will be erased and
   # replaced by a file.
   def cache_copy_to_local_file(userfile,localpath)
+    localpath = localpath.to_s # in case we get a Pathname
     cb_error "Error: provider #{self.name} is offline."   unless self.online?
     cb_error "Error: provider #{self.name} is read_only." if     self.read_only?
     sync_to_cache(userfile)
     source    = cache_full_path(userfile).to_s
-    localpath = localpath.to_s
     return true if source == localpath
     needslash=""
     if File.directory?(source)
@@ -586,7 +587,7 @@ class DataProvider < ActiveRecord::Base
     else
       FileUtils.remove_entry(localpath, true) if File.exists?(localpath) && File.directory?(localpath)
     end
-    rsyncout = bash_this("rsync -a -l --delete #{self.rsync_excludes} #{shell_escape(source)}#{needslash} #{shell_escape(localpath)} 2>&1")
+    rsyncout = bash_this("rsync -a -l --no-p --no-g --chmod=u=rwX,g=rX,o=r --delete #{self.rsync_excludes} #{shell_escape(source)}#{needslash} #{shell_escape(localpath)} 2>&1")
     cb_error "Failed to rsync cache file '#{source}' to local file '#{localpath}';\nrsync reported: #{rsyncout}" unless rsyncout.blank?
     true
   end
@@ -1346,7 +1347,7 @@ class DataProvider < ActiveRecord::Base
         maybe_spurious_parents={}
         uids2path.keys.sort.each_with_index do |id,i|  # 12345
           path = uids2path[id]                         # "01/23/45"
-          $0="Cache Spurious PATH=#{path} #{i+1}/#{uids2path.size}\0" if options[:update_dollar_zero]
+          $0="Cache Spurious PATH=#{path} #{i+1}/#{uids2path.size}" if options[:update_dollar_zero]
           system("chmod","-R","u+rwX",path)   # uppercase X affects only directories
           FileUtils.remove_entry(path, true) rescue true
           maybe_spurious_parents[path.sub(/\/\d+\z/,"")]      = 1  # "01/23"

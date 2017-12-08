@@ -701,7 +701,7 @@ class UserfilesController < ApplicationController
     within_spawn = file_ids.size > 5
     CBRAIN.spawn_with_active_records_if(within_spawn, current_user, "Sending update to files") do
       # Read access is enough if just tags are to be updated
-      access = changes.has_key?(:tags) && changes.to_unsafe_h.size == 1 ? :read : :write
+      access = changes.has_key?(:tags) && changes.keys.size == 1 ? :read : :write
 
       userfiles = Userfile
         .find_all_accessible_by_user(current_user, :access_requested => access)
@@ -719,7 +719,7 @@ class UserfilesController < ApplicationController
       # Group access check
       if changes.has_key?(:group_id)
         allowed, rejected = User
-          .where(:id => userfiles.uniq.select(:user_id))
+          .where(:id => userfiles.pluck(:user_id).uniq)
           .all.partition do |user|
             user
               .available_groups
@@ -739,7 +739,7 @@ class UserfilesController < ApplicationController
       # Dataprovider owner switch availability check
       if changes.has_key?(:user_id)
         allowed, rejected = DataProvider
-          .where(:id => userfiles.uniq.select(:data_provider_id))
+          .where(:id => userfiles.pluck(:data_provider_id).uniq)
           .all.partition(&:allow_file_owner_change?)
 
         failed["changing file ownership is not allowed on this data provider"] = userfiles
@@ -1273,7 +1273,7 @@ class UserfilesController < ApplicationController
 
     # Write access to the userfiles' DP is required
     readonly_dps, writable_dps = DataProvider
-      .where(:id => userfiles.distinct.select(:data_provider_id))
+      .where(:id => userfiles.pluck('userfiles.data_provider_id').uniq)
       .all.partition(&:read_only?)
 
     skipped["Data Provider not writable"] = userfiles

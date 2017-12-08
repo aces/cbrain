@@ -1,17 +1,39 @@
-Rails.application.routes.draw do
-  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+# CBRAIN Routing Table
+
+Rails.application.routes.draw do
 
   # Session
   resource  :session,         :only => [ :new, :create, :show, :destroy ]
 
   # Control channel
-  # resources :controls,        :only => [ :show, :create ], :controller => :controls
+  resources :controls,        :only => [ :show, :create ], :controller => :controls
 
   # Documentation
   resources :docs,            :except => [ :edit ], :controller => :help_documents
 
-  # # Standard CRUD resources
+  # Standard CRUD resources
   resources :sites,           :except => [ :edit ]
   resources :custom_filters,  :except => [ :index, :show ]
   resources :tags,            :except => [ :new, :edit ]
@@ -112,7 +134,7 @@ Rails.application.routes.draw do
 
   resources :tasks,           :except => [ :destroy ] do
     collection do
-      match 'new', :as => 'new', :via => 'new'
+      post 'new', :as => 'new', :via => 'new'
       post 'operation'
       get  'batch_list'
       post 'update_multiple'
@@ -148,9 +170,9 @@ Rails.application.routes.draw do
   get   '/search'                 => 'portal#search'
   get   '/login'                  => 'sessions#new'
   get   '/logout'                 => 'sessions#destroy'
-  # get   '/session_status'         => 'sessions#show'
-  # get   '/session_data'           => 'session_data#show'
-  # post  '/session_data'           => 'session_data#update'
+  get   '/session_status'         => 'sessions#show'
+  get   '/session_data'           => 'session_data#show'
+  post  '/session_data'           => 'session_data#update'
 
   # Report Maker
   get   "/report",                :controller => :portal, :action => :report
@@ -159,11 +181,11 @@ Rails.application.routes.draw do
   # get   "/noc/daily",             :controller => :noc,    :action => :daily
 
   # API description, by Swagger
-  # get   "/swagger",               :controller => :portal, :action => :swagger
+  get   "/swagger",               :controller => :portal, :action => :swagger
 
   # Licence handling
-  # get   '/show_license/:license', :controller => :portal, :action => :show_license
-  # post  '/sign_license/:license', :controller => :portal, :action => :sign_license
+  get   '/show_license/:license', :controller => :portal, :action => :show_license
+  post  '/sign_license/:license', :controller => :portal, :action => :sign_license
 
   # Portal log
   get   '/portal_log',            :controller => :portal, :action => :portal_log
@@ -184,3 +206,4 @@ Rails.application.routes.draw do
   #get   '/service/provenance',     :controller => :service, :action => :provenance
 
 end
+

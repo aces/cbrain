@@ -466,7 +466,7 @@ module ViewScopes
 
         @value ||= [] if [ 'in', 'out', 'range' ].include?(@operator.to_s)
 
-        if (collection.is_a?(ActiveRecord::Relation))
+        if (collection <= ActiveRecord::Base rescue nil)
           apply_on_model(collection)
         else
           apply_on_collection(collection)
@@ -809,7 +809,7 @@ module ViewScopes
         raise "no direction to sort in" unless @direction
         raise "no attribute to sort on" unless @attribute
 
-        if (collection.is_a?(ActiveRecord::Relation))
+        if (collection <= ActiveRecord::Base rescue nil)
           apply_on_model(collection)
         else
           apply_on_collection(collection)

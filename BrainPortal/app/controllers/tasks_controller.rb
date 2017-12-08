@@ -43,7 +43,7 @@ class TasksController < ApplicationController
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
     @base_scope   = user_scope(current_user.available_tasks)
-      .includes([:bourreau, :user, :group])
+      #.includes([:bourreau, :user, :group])
     @custom_scope = custom_scope(@base_scope)
     @view_scope   = @scope.apply(@custom_scope)
 
@@ -117,7 +117,7 @@ class TasksController < ApplicationController
         .available_tasks
         .real_tasks
         .where(:batch_id => params[:batch_id])
-        .includes([:bourreau, :user, :group])
+        #.includes([:bourreau, :user, :group])
     ))
 
     @tasks = @scope.apply(@base_scope)
@@ -300,7 +300,7 @@ class TasksController < ApplicationController
     tool_config           = nil unless tool_config && tool_config.can_be_accessed_by?(current_user) &&
                              tool_config.bourreau_and_tool_can_be_accessed_by?(current_user)
     if tool_config
-      params[:tool_id]            = tool_config.tool_id     # replace whatever was there or not
+      new_task_info[:tool_id]     = tool_config.tool_id     # replace whatever was there or not
       new_task_info[:bourreau_id] = tool_config.bourreau_id # replace whatever was there or not
     else
       new_task_info[:tool_config_id] = nil # ZAP value, it's incorrect; will likely cause a validation error later on.
@@ -870,12 +870,14 @@ class TasksController < ApplicationController
   private
 
   def task_params #:nodoc:
-    task_attr = params.require(:cbrain_task).permit(
+    task_attr = params.require_as_params(:cbrain_task).permit(
       :user_id, :group_id, :description,
       :bourreau_id, :tool_config_id,
       :results_data_provider_id, :params => {}
     )
-    task_params = params.require(:cbrain_task).require(:params) rescue ActionController::Parameters.new({})
+    # There are way too many 'params' in the next bit of code. Two different
+    # concepts with the same name... :-(
+    task_params = params.require_as_params(:cbrain_task).require_as_params(:params)
     task_params.permit!
     task_attr[:params] = task_params
     task_attr

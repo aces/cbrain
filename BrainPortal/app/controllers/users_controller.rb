@@ -181,7 +181,7 @@ class UsersController < ApplicationController
   # PUT /users/1
   # PUT /users/1.xml
   def update #:nodoc:
-    @user         = User.find(params[:id], :include => :groups)
+    @user          = User.where(:id => params[:id]).includes(:groups).first
     new_user_attr = user_params
     cb_error "You don't have permission to view this page.", :redirect => start_page_path unless edit_permission?(@user)
 
