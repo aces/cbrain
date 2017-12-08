@@ -434,7 +434,7 @@ class User < ActiveRecord::Base
       end
       unless self.changes["site_id"].last.blank?
         new_site = Site.find(self.changes["site_id"].last)
-        new_site.own_group.users << self
+        new_site.own_group.user_ids |= [ self.id ]
       end
     end
   end

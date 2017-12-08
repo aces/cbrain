@@ -21,6 +21,7 @@
 #
 
 require 'ipaddr'
+require 'http_user_agent'
 
 # Sesssions controller for the BrainPortal interface
 # This controller handles the login/logout function of the site.
@@ -46,29 +47,26 @@ class SessionsController < ApplicationController
       format.html
       format.xml  { render :xml  => { :authenticity_token => form_authenticity_token } }
       format.json { render :json => { :authenticity_token => form_authenticity_token } }
-      # format.txt
+      format.txt
     end
   end
 
   def create #:nodoc:
     # If the csrf token is blank, it was reset by Rails' request forgery protection
     # and we want to prevent login
-puts_yellow "CSRF: -#{session["_csrf_token"]}-"
-puts_yellow "AUTH: L=#{params[:login]} P=#{params[:password]}"
     user = session["_csrf_token"].presence && User.authenticate(params[:login], params[:password]) # can be nil if it fails
-puts_yellow "AUTH: L=#{params[:login]} P=#{params[:password]} U=#{user}"
     create_from_user(user)
   end
 
   def show #:nodoc:
     if current_user
       respond_to do |format|
-        format.html { render :nothing => true,                            :status => 200 }
+        format.html { head   :ok                                                         }
         format.xml  { render :xml     => { :user_id => current_user.id }, :status => 200 }
         format.json { render :json    => { :user_id => current_user.id }, :status => 200 }
       end
     else
-      head :ok
+      head :unauthorized
     end
   end
 
@@ -76,8 +74,8 @@ puts_yellow "AUTH: L=#{params[:login]} P=#{params[:password]} U=#{user}"
     unless current_user
       respond_to do |format|
         format.html { redirect_to new_session_path }
-        format.xml  { render :nothing => true, :status  => 401 }
-        format.json { render :nothing => true, :status  => 401 }
+        format.xml  { head :unauthorized }
+        format.json { head :unauthorized }
       end
       return
     end
@@ -100,8 +98,8 @@ puts_yellow "AUTH: L=#{params[:login]} P=#{params[:password]} U=#{user}"
                     flash[:notice] = "You have been logged out."
                     redirect_to new_session_path
                   }
-      format.xml  { render :nothing => true, :status  => 200 }
-      format.json { render :nothing => true, :status  => 200 }
+      format.xml  { head :ok }
+      format.json { head :ok }
     end
   end
 
@@ -162,7 +160,7 @@ puts_yellow "AUTH: L=#{params[:login]} P=#{params[:password]} U=#{user}"
     respond_to do |format|
       format.html { redirect_back_or_default(start_page_path) }
       format.json { render :json => {:session_id => request.session_options[:id], :user_id => current_user.id}, :status => 200 }
-      format.xml  { render :nothing => true, :status  => 200 }
+      format.xml  { head :ok }
     end
 
   end
@@ -172,8 +170,8 @@ puts_yellow "AUTH: L=#{params[:login]} P=#{params[:password]} U=#{user}"
   def auth_failed
     respond_to do |format|
       format.html { render :action => 'new' }
-      format.json { render :nothing => true, :status  => 401 }
-      format.xml  { render :nothing => true, :status  => 401 }
+      format.json { head   :unauthorized }
+      format.xml  { head   :unauthorized }
     end
   end
 
@@ -215,12 +213,12 @@ puts_yellow "AUTH: L=#{params[:login]} P=#{params[:password]} U=#{user}"
        from_ip   = '0.0.0.0'
        from_host = 'unknown'
     end
-    current_session[:guessed_remote_ip]   = from_ip
-    current_session[:guessed_remote_host] = from_host
+    cbrain_session[:guessed_remote_ip]   = from_ip
+    cbrain_session[:guessed_remote_host] = from_host
 
     # Record the user agent
     raw_agent = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'
-    current_session[:raw_user_agent]      = raw_agent
+    cbrain_session[:raw_user_agent]      = raw_agent
 
     # Record that the user logged in
     parsed         = HttpUserAgent.new(raw_agent)
@@ -242,7 +240,7 @@ puts_yellow "AUTH: L=#{params[:login]} P=#{params[:password]} U=#{user}"
 
     # Admin users start with some differences in behavior
     if user.has_role?(:admin_user)
-      cbrain_session[:active_group_id] = "all"
+      session[:active_group_id] = "all"
     end
   end
 

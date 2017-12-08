@@ -82,7 +82,7 @@ module ResourceAccess
       scope = self.where(options) # will fail if not simple attibute mappings
 
       unless user.has_role? :admin_user
-        scope = scope.joins(:user).where("#{self.quoted_table_name}.readonly" => false)
+        #scope = scope.joins(:user)
 
         if user.has_role? :site_manager
           scope = scope.where(["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?)) OR (users.site_id = ?)", user.id, user.group_ids, user.site_id])
@@ -103,7 +103,7 @@ module ResourceAccess
       scope = self.where(options) # will fail if not simple attibute mappings
 
       unless user.has_role? :admin_user
-        scope = scope.joins(:user).where(:read_only  => false)
+        #scope = scope.joins(:user)
 
         if user.has_role? :site_manager
           scope = scope.where(["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?)) OR (users.site_id = ?)", user.id, user.group_ids, user.site_id])

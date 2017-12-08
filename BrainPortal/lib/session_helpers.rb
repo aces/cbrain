@@ -27,7 +27,7 @@ module SessionHelpers
 
   def self.included(includer) #:nodoc:
     includer.class_eval do
-      helper_method :current_session,   :current_project
+      helper_method :current_project, :cbrain_session
     end
   end
 
@@ -36,22 +36,14 @@ module SessionHelpers
     @cbrain_session ||= CbrainSession.new(session)
   end
 
-#TODO remove this method after fixing all calls to it; they need to be replaced by
-# called to either session() (small data) or cbrain_session() (long data)
-  def current_session
-    puts_red "DEPRECATED: current_session() Instead use session(), or cbrain_session(). Ask Pierre."
-    puts_red "AT: #{caller[0]}"
-    cbrain_session
-  end
-
   # Returns currently active project.
   def current_project
-    return nil unless cbrain_session[:active_group_id]
-    return nil if     cbrain_session[:active_group_id] == "all"
+    return nil unless session[:active_group_id]
+    return nil if     session[:active_group_id] == "all"
 
-    if !@current_project || @current_project.id.to_i != cbrain_session[:active_group_id].to_i
-      @current_project = Group.find_by_id(cbrain_session[:active_group_id])
-      cbrain_session[:active_group_id] = nil if @current_project.nil?
+    if !@current_project || @current_project.id.to_i != session[:active_group_id].to_i
+      @current_project = Group.find_by_id(session[:active_group_id])
+      session[:active_group_id] = nil if @current_project.nil?
     end
 
     @current_project
