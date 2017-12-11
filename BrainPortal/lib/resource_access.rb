@@ -78,19 +78,7 @@ module ResourceAccess
     # [For *admin* users:] any resource on the system.
     # [For regular users:] all resources that belong to a group to which the user belongs.
     def find_accessible_by_user(id, user, options = {})
-      scope = self.scoped(options)
-
-      unless user.has_role? :admin_user
-        scope = scope.scoped(:joins  => :user, :readonly  => false)
-
-        if user.has_role? :site_manager
-          scope = scope.scoped(:conditions  => ["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?)) OR (users.site_id = ?)", user.id, user.group_ids, user.site_id])
-        else
-          scope = scope.scoped(:conditions  => ["(#{self.table_name}.user_id = ?) OR (#{self.table_name}.group_id IN (?))", user.id, user.group_ids])
-        end
-      end
-
-      scope.find(id)
+      self.find_all_accessible_by_user(user, options).find(id)
     end
 
     # Find all resources accessible by +user+.
@@ -115,4 +103,3 @@ module ResourceAccess
     end
   end
 end
-
