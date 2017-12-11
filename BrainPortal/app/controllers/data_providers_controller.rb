@@ -90,7 +90,7 @@ class DataProvidersController < ApplicationController
     @provider = DataProvider.sti_new(data_provider_params)
     @provider.user_id  ||= current_user.id # disabled field in form DOES NOT send value!
     @provider.group_id ||= (( current_project && current_project.id ) || current_user.own_group.id)
-   
+
     if @provider.save
       add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid])
       @provider.addlog_context(self,"Created by #{current_user.login}")
@@ -125,7 +125,8 @@ class DataProvidersController < ApplicationController
        return
     end
 
-    new_data_provider_attr    = data_provider_params
+    new_data_provider_attr = data_provider_params
+    new_data_provider_attr.delete :type # Type cannot be updated once it is set.
 
     if @provider.update_attributes_with_logging(new_data_provider_attr, current_user,
          %w(
@@ -808,7 +809,7 @@ class DataProvidersController < ApplicationController
   def data_provider_params #:nodoc:
     params.require_as_params(:data_provider).permit(
       :name, :user_id, :group_id, :remote_user, :remote_host, :alternate_host,
-      :remote_port, :remote_dir, :online, :read_only, :description, :time_of_death,
+      :remote_port, :remote_dir, :online, :read_only, :description, :type,
       :not_syncable, :time_zone, :cloud_storage_client_identifier,
       :cloud_storage_client_token, :license_agreements
     )
