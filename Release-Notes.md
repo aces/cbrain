@@ -1,5 +1,15 @@
 ## CBRAIN Release Notes
 
+#### Version 5.0.0 Released 2017-12-12
+
+This is the first release based on Rails 5.0.
+
+- No major new features compared to 4.7.1.
+- User interface is similar, but some buttons have a different appearance.
+- Several internal bug fixes were applied.
+- The application follows more closely the Rails 5 conventions.
+- The web server is now 'puma' instead of 'thin'.
+
 #### Version 4.7.1 Released 2017-12-12
 
 This is the last release in the 4.7 series, which was built on Rails 3.2.
