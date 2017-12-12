@@ -1,5 +1,14 @@
 ## CBRAIN Release Notes
 
+#### Version 4.7.1 Released 2017-12-12
+
+This is the last release in the 4.7 series, which was built on Rails 3.2.
+The next release will be the 5.0 series based Rails 5.0.
+
+- Some big fixes and improvements in container support
+- Better supprot for Singularity
+- Added support for ScirSlurm and ScirCobalt
+
 #### Version 4.7.0 Released 2017-04-24
 
 - Signups index page improved.
