@@ -70,7 +70,7 @@ class CbrainTask::Parallelizer #:nodoc:
 
     return [ "", [], [] ] if tasklist.empty?
 
-    options = { :group_size => options } if options.is_a?(Fixnum) # old API
+    options = { :group_size => options } if options.is_a?(Integer) # old API
 
     unless tasklist.all? { |t| t.status == 'Standby' }
       cb_error "Trying to parallelize a list of tasks that are NOT in Standby state?!?"
@@ -91,6 +91,7 @@ class CbrainTask::Parallelizer #:nodoc:
         :tool_id         => tool_id,
         :bourreau_id     => bourreau_id,
         :group_id        => Group.everyone.id,
+        :version_name    => "Standard",
         :ncpus           => 512,
         :env_array       => [],
         :script_prologue => "",

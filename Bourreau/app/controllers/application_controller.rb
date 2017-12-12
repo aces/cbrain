@@ -27,21 +27,12 @@ class ApplicationController < ActionController::Base #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  helper :all # include all helpers, all the time
-
-  # Patch
+  # Patch: allows the controls_controller to
+  # invoke the api_available method even if it means
+  # nothing within a Bourreau app.
   def self.api_available #:nodoc:
     true
   end
-
-  # See ActionController::RequestForgeryProtection for details
-  # Uncomment the :secret if you're not using the cookie session store
-  #protect_from_forgery # :secret => '1ffec2733b8e6fe4baef5e8b84db95b8'
-
-  # See ActionController::Base for details
-  # Uncomment this to filter the contents of submitted sensitive data parameters
-  # from your application log (in this case, all fields with names like "password").
-  # filter_parameter_logging :password
 
   #Patch: Load all models so single-table inheritance works properly.
   begin

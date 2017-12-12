@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -27,7 +27,7 @@
 <%= overlay_ajax_link 'Create Custom Filter', {:controller => :custom_filters, :action => :new, :filter_class => @custom_filter.class.name} %>
 
 <ul class="filter_menu">
-  <%  @custom_filter.class.all(:conditions  =>  {:user_id  => current_user.id}).each do |filter| %>
+  <%  @custom_filter.class.where(:user_id  => current_user.id).each do |filter| %>
 
     <li id="custom_filter_<%= filter.id %>" class="custom_filter">
       <%= render :partial => 'custom_filters/custom_filter_li', :locals  => {:filter  => filter} %>

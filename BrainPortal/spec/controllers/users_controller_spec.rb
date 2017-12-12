@@ -31,6 +31,9 @@ RSpec.describe UsersController, :type => :controller do
 
   let(:start_page_path) {controller.send :start_page_path}
 
+  fake_user = FactoryBot.attributes_for(:user)
+
+
   context "collection action" do
 
     describe "index" do
@@ -43,35 +46,37 @@ RSpec.describe UsersController, :type => :controller do
       context "with admin user" do
         before(:each) do
           session[:user_id] = admin.id
+          session[:session_id] = 'session_id'
         end
         it "should sort by full name by default" do
           get :index
-          expect(assigns[:users]).to eq(User.order(:full_name).all)
+          expect(assigns[:users]).to eq(User.order(:full_name).all.to_a)
         end
         it "should sort by full name" do
-          get :index, "_scopes"=>{"users" => {"o"=>[{"a"=>"full_name"}]}}
-          expect(assigns[:users]).to eq(User.order(:full_name).all)
+          get :index, params: {"_scopes"=>{"users" => {"o"=>[{"a"=>"full_name"}]}}}
+          expect(assigns[:users]).to eq(User.order(:full_name).all.to_a)
         end
         it "should sort by last connection" do
-          get :index, "_scopes"=>{"users" => {"o"=>[{"a"=>"last_connected_at"}]}}
-          expect(assigns[:users]).to eq(User.order(:last_connected_at).all)
+          get :index, params: {"_scopes"=>{"users" => {"o"=>[{"a"=>"last_connected_at"}]}}}
+          expect(assigns[:users]).to eq(User.order(:last_connected_at).all.to_a)
         end
         it "should sort by site" do
-          get :index, "_scopes"=>{"users" => {"o" =>[{"a"=>"sites"}]}}
-          expect(assigns[:users]).to eq(User.includes("site").order("sites.name").all)
+          get :index, params: {"_scopes"=>{"users" => {"o" =>[{"a"=>"sites"}]}}}
+          expect(assigns[:users]).to eq(User.includes("site").order("sites.name").all.to_a)
         end
         it "should sort by city" do
-          get :index, "_scopes"=>{"users" => {"o" =>[{"a"=>"city"}]}}
-          expect(assigns[:users]).to eq(User.order(:city).all)
+          get :index, params: {"_scopes"=>{"users" => {"o" =>[{"a"=>"city"}]}}}
+          expect(assigns[:users]).to eq(User.order(:city).all.to_a)
         end
         it "should sort by country" do
-          get :index, "_scopes"=>{"users" => {"o" =>[{"a"=>"country"}]}}
-          expect(assigns[:users]).to eq(User.order(:country).all)
+          get :index, params: {"_scopes"=>{"users" => {"o" =>[{"a"=>"country"}]}}}
+          expect(assigns[:users]).to eq(User.order(:country).all.to_a)
         end
       end
       context "with site manager" do
         before(:each) do
           session[:user_id] = site_manager.id
+          session[:session_id] = 'session_id'
           1.upto(3) {  create(:normal_user, :site => site_manager.site) }
         end
         it "should only show users from site" do
@@ -81,7 +86,8 @@ RSpec.describe UsersController, :type => :controller do
       end
       context "with regular user" do
         before(:each) do
-          session[:user_id] = user.id
+          session[:user_id]    = user.id
+          session[:session_id] = 'session_id'
         end
         it "should return a 401 (unauthorized)" do
           get :index
@@ -97,31 +103,32 @@ RSpec.describe UsersController, :type => :controller do
 
       context "with admin user" do
         before(:each) do
-          session[:user_id] = admin.id
+          session[:user_id]    = admin.id
+          session[:session_id] = 'session_id'
         end
 
         it "should allow the login to be set" do
-          post :create, :user => {:login => "login"}
+          post :create, params: {:user => {:login => "login"}}
           expect(assigns[:user].login).to eq("login")
         end
 
         it "should allow type to be set to admin" do
-          post :create, :user => {:type => "AdminUser"}
+          post :create, params: {:user => {:type => "AdminUser"}}
           expect(assigns[:user].type).to eq("AdminUser")
         end
 
         it "should allow type to be set to site manager" do
-          post :create, :user => {:type => "SiteManager"}
+          post :create, params: {:user => {:type => "SiteManager"}}
           expect(assigns[:user].type).to eq("SiteManager")
         end
 
         it "should allow type to be set to user" do
-          post :create, :user => {:type => "NormalUser"}
+          post :create, params: {:user => {:type => "NormalUser"}}
           expect(assigns[:user].type).to eq("NormalUser")
         end
 
         it "should allow the site to be set" do
-          post :create, :user => {:site_id => user.site_id}
+          post :create, params: {:user => {:site_id => user.site_id}}
           expect(assigns[:user].site_id).to eq(user.site_id)
         end
 
@@ -134,24 +141,24 @@ RSpec.describe UsersController, :type => :controller do
           it "should send a confirmation email if email is valid" do
             allow(mock_user).to receive(:email).and_return("me@here.com")
             expect(CbrainMailer).to receive(:registration_confirmation)
-            post :create, :user => {}
+            post :create, params: {:user => fake_user}
           end
 
           it "should not send a confirmation email if email is invalid" do
             allow(mock_user).to receive(:email).and_return("invalid_email")
             expect(CbrainMailer).not_to receive(:registration_confirmation)
-            post :create, :user => {}
+            post :create, params: {:user => fake_user}
           end
 
         end
 
         context "when save failed" do
 
-          it "should render partial failed_create" do
-            allow(User).to receive(:new).and_return(mock_user)
-            allow(mock_user).to receive(:save).and_return(false)
-            post :create, :user => {}, :format => :js
-            expect(response.status).to eq(406)
+          it "should return unprocessable entity" do
+            allow(User).to receive(:new).and_return(user)
+            allow(user).to receive(:save).and_return(false)
+            post :create, params: {:user => {id: user.id}}, format: :json
+            expect(response.status).to eq(422)
           end
 
         end
@@ -160,30 +167,31 @@ RSpec.describe UsersController, :type => :controller do
       context "with site manager" do
         before(:each) do
           session[:user_id] = site_manager.id
+          session[:session_id] = 'session_id'
         end
 
         it "should allow the login to be set" do
-          post :create, :user => {:login => "login"}
+          post :create, params: {:user => {:login => "login"}}
           expect(assigns[:user].login).to eq("login")
         end
 
         it "should not allow type to be set to admin" do
-          post :create, :user => {:type => "AdminUser"}
+          post :create, params: {:user => {:type => "AdminUser"}}
           expect(assigns[:user].type).not_to eq("AdminUser")
         end
 
         it "should allow type to be set to site manager" do
-          post :create, :user => {:type => "SiteManager"}
+          post :create, params: {:user => {:type => "SiteManager"}}
           expect(assigns[:user].type).to eq("SiteManager")
         end
 
         it "should allow type to be set to user" do
-          post :create, :user => {:type => "NormalUser"}
+          post :create, params: {:user => {:type => "NormalUser"}}
           expect(assigns[:user].type).to eq("NormalUser")
         end
 
         it "should automatically set site to manager's site'" do
-          post :create, :user => {:site_id => user.site_id}
+          post :create, params: {:user => {:site_id => user.site_id}}
           expect(assigns[:user].site_id).to eq(site_manager.site_id)
         end
 
@@ -191,7 +199,8 @@ RSpec.describe UsersController, :type => :controller do
 
       context "with standard user" do
         before(:each) do
-          session[:user_id] = user.id
+          session[:user_id]    = user.id
+          session[:session_id] = 'session_id'
         end
 
         it "should return a 401 (unauthorized)" do
@@ -210,12 +219,12 @@ RSpec.describe UsersController, :type => :controller do
       context "when user is found" do
 
         it "should set the users 'password reset' flag" do
-          post :send_password, :login => user.login, :email => user.email
+          post :send_password, params: {:login => user.login, :email => user.email}
           expect(assigns[:user].password_reset).to be_truthy
         end
 
         it "should change the password" do
-          post :send_password, :login => user.login, :email => user.email
+          post :send_password, params: {:login => user.login, :email => user.email}
           expect(assigns[:user].password).not_to eq(user.password)
         end
 
@@ -224,7 +233,7 @@ RSpec.describe UsersController, :type => :controller do
           it "should display a message" do
             allow(mock_user).to receive(:account_locked?).and_return(true)
             allow(User).to receive_message_chain(:where, :first).and_return(mock_user)
-            post :send_password, :login => user.login, :email => user.email
+            post :send_password, params: {:login => user.login, :email => user.email}
             expect(flash[:error]).to match(/locked/i)
           end
 
@@ -234,7 +243,7 @@ RSpec.describe UsersController, :type => :controller do
 
           it "should send an e-mail" do
             expect(CbrainMailer).to receive(:forgotten_password)
-            post :send_password, :login => user.login, :email => user.email
+            post :send_password, params: {:login => user.login, :email => user.email}
           end
 
         end
@@ -268,6 +277,7 @@ RSpec.describe UsersController, :type => :controller do
       context "with admin" do
         before(:each) do
           session[:user_id] = admin.id
+          session[:session_id] = 'session_id'
         end
 
         it "should render new" do
@@ -278,7 +288,8 @@ RSpec.describe UsersController, :type => :controller do
 
       context "with site_manager" do
         before(:each) do
-          session[:user_id] = site_manager.id
+          session[:user_id]    = site_manager.id
+          session[:session_id] = 'session_id'
         end
 
         it "should render new" do
@@ -291,6 +302,7 @@ RSpec.describe UsersController, :type => :controller do
       context "with standard user" do
         before(:each) do
           session[:user_id] = user.id
+          session[:session_id] = 'session_id'
         end
 
         it "should return a 401 (unauthorized)" do
@@ -310,10 +322,11 @@ RSpec.describe UsersController, :type => :controller do
       context "with admin user" do
         before(:each) do
           session[:user_id] = admin.id
+          session[:session_id] = 'session_id'
         end
 
         it "should show any user" do
-          get :show, :id => user.id
+          get :show, params: {:id => user.id}
           expect(response).to render_template("show")
         end
       end
@@ -321,15 +334,16 @@ RSpec.describe UsersController, :type => :controller do
       context "with site manager" do
         before(:each) do
           session[:user_id] = site_manager.id
+          session[:session_id] = 'session_id'
         end
 
         it "should show a user associated with the site" do
-          get :show, :id => site_user.id
+          get :show, params: {:id => site_user.id}
           expect(response).to render_template("show")
         end
 
         it "should not show a user not associated with the site" do
-          get :show, :id => user.id
+          get :show, params: {:id => user.id}
           expect(response).to redirect_to(start_path)
         end
 
@@ -338,15 +352,16 @@ RSpec.describe UsersController, :type => :controller do
       context "with regular user" do
         before(:each) do
           session[:user_id] = user.id
+          session[:session_id] = 'session_id'
         end
 
         it "should show self" do
-          get :show, :id => user.id
+          get :show, params: {:id => user.id}
           expect(response).to render_template("show")
         end
 
         it "should not show other users" do
-          get :show, :id => site_user.id
+          get :show, params: {:id => site_user.id}
           expect(response).to redirect_to(start_path)
         end
 
@@ -357,35 +372,38 @@ RSpec.describe UsersController, :type => :controller do
       context "with admin user" do
         before(:each) do
           session[:user_id] = admin.id
+          session[:session_id] = 'session_id'
         end
         it "should show the change password page" do
-          get :change_password, :id => user.id
+          get :change_password, params: {:id => user.id}
           expect(response.status).to eq(200)
         end
       end
       context "with site manager" do
         before(:each) do
           session[:user_id] = site_manager.id
+          session[:session_id] = 'session_id'
         end
         it "should show the change password page if the user belongs to the site" do
-          get :change_password, :id => site_user.id
+          get :change_password, params: {:id => site_user.id}
           expect(response.status).to eq(200)
         end
         it "should not show the change password page if the user does not belong to the site" do
-          get :change_password, :id => user.id
+          get :change_password, params: {:id => user.id}
           expect(response).to redirect_to(start_page_path)
         end
       end
       context "with normal user" do
         before(:each) do
           session[:user_id] = user.id
+          session[:session_id] = 'session_id'
         end
         it "should allow a user to change their own password" do
-          get :change_password, :id => user.id
+          get :change_password, params: {:id => user.id}
           expect(response.status).to eq(200)
         end
         it "should not allow the user to change anyone else's password'" do
-          get :change_password, :id => site_user.id
+          get :change_password, params: {:id => site_user.id}
           expect(response).to redirect_to(start_page_path)
         end
       end
@@ -395,45 +413,47 @@ RSpec.describe UsersController, :type => :controller do
       context "with admin user" do
         before(:each) do
           session[:user_id] = admin.id
+          session[:session_id] = 'session_id'
         end
 
         it "should allow type to be set to admin" do
-          put :update, :id => user.id, :user => {:type => "AdminUser"}
+          put :update, params: {:id => user.id, :user => {:type => "AdminUser"}}
           expect(assigns[:user].type).to eq("AdminUser")
         end
 
         it "should allow type to be set to site manager" do
-          put :update, :id => user.id, :user => {:type => "SiteManager", :site_id => site_manager.site.id}
+          put :update, params: {:id => user.id, :user => {:type => "SiteManager", :site_id => site_manager.site.id}}
           expect(assigns[:user].type).to eq("SiteManager")
         end
 
         it "should allow type to be set to user" do
-          put :update, :id => user.id, :user => {:type => "NormalUser"}
+          put :update, params: {:id => user.id, :user => {:type => "NormalUser"}}
           expect(assigns[:user].type).to eq("NormalUser")
         end
 
         it "should allow the site to be set" do
-          put :update, :id => user.id, :user => {:site_id => user.site_id}
+          put :update, params: {:id => user.id, :user => {:site_id => user.site_id}}
           expect(assigns[:user].site_id).to eq(user.site_id)
         end
 
         it "should allow me to add groups" do
           new_group =  create(:work_group)
-          put :update, :id => user.id, :user => {:group_ids => [new_group.id]}
+          put :update, params: {:id => user.id, :user => {:group_ids => [new_group.id]}}
           user.reload
           expect(user.group_ids).to include(new_group.id)
         end
 
         it "should allow me to reset groups" do
           new_group =  create(:work_group, :user_ids => [user.id])
-          put :update, :id => user.id, :user => {:group_ids => []}
+          fake_user[:group_ids] = [""]
+          put :update, params: {:id => user.id, :user => fake_user  }
           user.reload
           expect(user.group_ids).not_to include(new_group.id)
         end
 
         it "should add meta data if any was sent" do
           expect(controller).to receive(:add_meta_data_from_form)
-          put :update, :id => user.id, :meta => {:key => :value}
+          put :update, params: {:id => user.id, :user => { :full_name => 'xyz' }, :meta => {:key => :value}}
         end
 
       end
@@ -441,43 +461,45 @@ RSpec.describe UsersController, :type => :controller do
       context "with site manager" do
         before(:each) do
           session[:user_id] = site_manager.id
+          session[:session_id] = 'session_id'
         end
 
         it "should not allow site manager to modify a user that does not belong to the site" do
-          put :update, :id => user.id
+          put :update, params: {:id => user.id}
           expect(response).to redirect_to(start_page_path)
         end
 
         it "should not allow type to be set to admin" do
-          put :update, :id => site_user.id, :user => {:type => "AdminUser"}
+          put :update, params: {:id => site_user.id, :user => {:type => "AdminUser"}}
           expect(assigns[:user].type).not_to eq("AdminUser")
         end
 
         it "should allow type to be set to site manager" do
-          put :update, :id => site_user.id, :user => {:type => "SiteManager"}
+          put :update, params: {:id => site_user.id, :user => {:type => "SiteManager"}}
           expect(assigns[:user].type).to eq("SiteManager")
         end
 
         it "should allow type to be set to user" do
-          put :update, :id => site_user.id, :user => {:type => "NormalUser"}
+          put :update, params: {:id => site_user.id, :user => {:type => "NormalUser"}}
           expect(assigns[:user].type).to eq("NormalUser")
         end
 
         it "should automatically set site to manager's site'" do
-          put :update, :id => site_user.id, :user => {:site_id => user.site_id}
+          put :update, params: {:id => site_user.id, :user => {:site_id => user.site_id}}
           expect(assigns[:user].site_id).to eq(site_user.site_id)
         end
 
         it "should allow site manager to add groups" do
           new_group =  create(:work_group)
-          put :update, :id => site_user.id, :user => {:group_ids => [new_group.id]}
+          put :update, params: {:id => site_user.id, :user => {:group_ids => [new_group.id]}}
           site_user.reload
           expect(site_user.group_ids).to include(new_group.id)
         end
 
         it "should allow site manager to reset groups" do
           new_group =  create(:work_group, :user_ids => [site_user.id])
-          put :update, :id => site_user.id, :user => {:group_ids => []}
+          fake_user[:group_ids] = [""]
+          put :update, params: {:id => site_user.id, :user => fake_user}
           site_user.reload
           expect(site_user.group_ids).not_to include(new_group.id)
         end
@@ -487,26 +509,27 @@ RSpec.describe UsersController, :type => :controller do
       context "with regular user" do
         before(:each) do
           session[:user_id] = user.id
+          session[:session_id] = 'session_id'
         end
 
         it "should not allow another user to be modified" do
-          put :update, :id => site_user.id
+          put :update, params: {:id => site_user.id}
           expect(response).to redirect_to(start_page_path)
         end
 
         it "should not allow type to be modified" do
-          put :update, :id => user.id, :user => {:type => "SiteManager"}
+          put :update, params: {:id => user.id, :user => {:type => "SiteManager"}}
           expect(assigns[:user].type).to eq(user.type)
         end
 
         it "should not allow site to be modified" do
-          put :update, :id => user.id, :user => {:site_id => site_user.site_id}
+          put :update, params: {:id => user.id, :user => {:site_id => site_user.site_id}}
           expect(assigns[:user].site_id).to eq(user.site_id)
         end
 
         it "should not allow groups to be modified" do
           new_group =  create(:work_group)
-          put :update, :id => user.id, :user => {:group_ids => [new_group.id]}
+          put :update, params: {:id => user.id, :user => {:group_ids => [new_group.id]}}
           user.reload
           expect(user.group_ids).not_to include(new_group.id)
         end
@@ -515,16 +538,17 @@ RSpec.describe UsersController, :type => :controller do
 
       context "when the update fails" do
         before(:each) do
-          session[:user_id] = admin.id
-          allow(User).to receive(:find).and_return(double("updated_user", :save_with_logging => false).as_null_object)
+          session[:user_id]    = admin.id
+          session[:session_id] = 'session_id'
+          allow(user).to receive(:save_with_logging).and_return(false)
         end
 
         it "should redirect to change_password if password change was attempted" do
-          put :update, :id => user.id, :user => {:password => "password"}
+          put :update, params: {:id => user.id, :user => {:password => "password"}}
           expect(response).to render_template(:change_password)
         end
-        it "should redirect to show otherwise" do
-          put :update, :id => user.id, :user => {:full_name => "NAME"}
+        it "should render show page otherwise" do
+          put :update, params: {:id => user.id, :user => {:login => "immutable" }}
           expect(response).to render_template(:show)
         end
       end
@@ -534,16 +558,17 @@ RSpec.describe UsersController, :type => :controller do
     describe "destroy" do
       context "with admin user" do
         before(:each) do
-          session[:user_id] = admin.id
+          session[:user_id]    = admin.id
+          session[:session_id] = 'session_id'
         end
 
         it "should allow admin to destroy a user" do
-          delete :destroy, :id => user.id
+          delete :destroy, params: {:id => user.id}
           expect(User.all).not_to include(user)
         end
 
         it "should redirect to the index" do
-          delete :destroy, :id => user.id, :format => "js"
+          delete :destroy, params: {:id => user.id}, :format => "js"
           expect(response).to redirect_to(:action => :index, :format => :js)
         end
 
@@ -552,15 +577,16 @@ RSpec.describe UsersController, :type => :controller do
       context "with site manager" do
         before(:each) do
           session[:user_id] = site_manager.id
+          session[:session_id] = 'session_id'
         end
 
         it "should allow site manager to destroy a user from the site" do
-          delete :destroy, :id => site_user.id
-          expect(User.all).not_to include(user)
+          delete :destroy, params: {:id => site_user.id}
+          expect(User.all.to_a).not_to include(user)
         end
 
         it "should not allow site manager to destroy a user not from the site" do
-          expect { delete :destroy, :id => user.id }.to raise_error(ActiveRecord::RecordNotFound)
+          expect { delete :destroy, params: {:id => user.id }}.to raise_error(ActiveRecord::RecordNotFound)
         end
 
       end
@@ -568,6 +594,7 @@ RSpec.describe UsersController, :type => :controller do
       context "with regular user" do
         before(:each) do
           session[:user_id] = user.id
+          session[:session_id] = 'session_id'
         end
 
         it "should return a 401 (unauthorized)" do
@@ -579,51 +606,53 @@ RSpec.describe UsersController, :type => :controller do
     end
 
     describe "switch" do
-       let(:current_session) do
-         h = CbrainSession.new(session, ActiveRecord::SessionStore::Session.new )
-         allow(h).to receive(:params_for).and_return({})
-         h
-       end
+      let(:cbrain_session) { mock_model(LargeSessionInfo, "_csrf_token" => 'dummy csrf', "session_id" => 'session_id', "user_id" => admin.id).as_null_object }
 
       before(:each) do
-        allow(controller).to receive(:current_session).and_return(current_session)
+        allow(controller).to receive(:cbrain_session).and_return(cbrain_session)
       end
 
       context "with admin user" do
         before(:each) do
-          session[:user_id] = admin.id
+          session[:user_id]    = admin.id
+          session[:session_id] = 'session_id'
         end
 
         it "should switch the current user" do
-          post :switch, :id => user.id
-          expect(current_session[:user_id]).to eq(user.id)
+          expect(cbrain_session).to receive(:clear)
+          expect(cbrain_session).to receive(:[]=).with(:user_id, user.id)
+          post :switch, params: {:id => user.id}
         end
 
         it "should redirect to the welcome page" do
-          post :switch, :id => user.id
+          session[:session_id] = 'session_id'
+          post :switch, params: {:id => user.id}
           expect(response).to redirect_to("/groups")
         end
       end
 
       context "with site manager" do
         before(:each) do
-          session[:user_id] = site_manager.id
+          session[:user_id]    = site_manager.id
+          session[:session_id] = 'session_id'
         end
 
         it "should allow switching to a user from the site" do
-          post :switch, :id => site_user.id
-          expect(current_session[:user_id]).to eq(site_user.id)
+          expect(cbrain_session).to receive(:clear)
+          expect(cbrain_session).to receive(:[]=).with(:user_id, site_user.id)
+          post :switch, params: {:id => site_user.id}
         end
 
         it "should not allow switching to a user not from the site" do
-          expect { post :switch, :id => user.id }.to raise_error(ActiveRecord::RecordNotFound)
-          expect(current_session[:user_id]).not_to eq(user.id)
+          expect { post :switch, params: {:id => user.id }}.to raise_error(ActiveRecord::RecordNotFound)
+          expect(cbrain_session[:user_id]).not_to eq(user.id)
         end
       end
 
       context "with regular user" do
         before(:each) do
           session[:user_id] = user.id
+          session[:session_id] = 'session_id'
         end
 
         it "should return a 401 (unauthorized)" do
@@ -649,7 +678,7 @@ RSpec.describe UsersController, :type => :controller do
     describe "show" do
 
       it "should redirect the login page" do
-        get :show, :id => 1
+        get :show, params: {:id => 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
 
@@ -667,7 +696,7 @@ RSpec.describe UsersController, :type => :controller do
     describe "update" do
 
       it "should redirect the login page" do
-        put :update, :id => 1
+        put :update, params: {:id => 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
 
@@ -676,7 +705,7 @@ RSpec.describe UsersController, :type => :controller do
     describe "destroy" do
 
       it "should redirect the login page" do
-        delete :destroy, :id => 1
+        delete :destroy, params: {:id => 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
 
@@ -685,7 +714,7 @@ RSpec.describe UsersController, :type => :controller do
     describe "switch" do
 
       it "should redirect the login page" do
-        post :switch, :id => 1
+        post :switch, params: {:id => 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
 

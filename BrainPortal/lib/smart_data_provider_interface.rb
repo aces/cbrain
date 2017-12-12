@@ -54,7 +54,6 @@ module SmartDataProviderInterface
     end
 
     # Copy attributes to the internal real provider object
-    @real_provider.make_all_accessible!
     @real_provider.attributes = self.attributes.reject { |k,v| k.to_sym == :type ||  k.to_sym == :id  || ! @real_provider.class.columns_hash[k] }
     @real_provider.id = self.id # the real provider gets the id of the ActiveRecord object, even if it's never saved in the DB
     @real_provider.readonly!

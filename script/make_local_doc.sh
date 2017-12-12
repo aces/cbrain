@@ -36,17 +36,17 @@ if test ! -d BrainPortal ; then
 fi
 
 echo "Generating BrainPortal HTML documentation..."
-cd BrainPortal || exit 20
-bundle install >/dev/null 2>/dev/null
+pushd BrainPortal >/dev/null || exit 20
+bundle install >/dev/null || exit 20
 rake doc:brainportal 2>&1 | sed -e 's/^/-> /'
-cd ..
+popd >/dev/null
 echo ""
 
 echo "Generating Bourreau HTML documentation..."
-cd Bourreau || exit 20
-bundle install >/dev/null 2>/dev/null
+pushd Bourreau >/dev/null || exit 20
+bundle install >/dev/null || exit 20
 rake doc:bourreau 2>&1 | sed -e 's/^/-> /'
-cd ..
+popd >/dev/null
 
 echo ""
 echo "You can now access the HTML documentation pages locally"

@@ -29,9 +29,9 @@ class UserfilesController < ApplicationController
 
   api_available
 
-  before_filter :login_required
+  before_action :login_required
 
-  around_filter :permission_check, :only => [
+  around_action :permission_check, :only => [
       :download, :update_multiple, :delete_files,
       :create_collection, :change_provider, :quality_control,
       :export_file_list
@@ -55,7 +55,7 @@ class UserfilesController < ApplicationController
 
     # Apply basic and @scope-based scoping/filtering
     scope_default_order(@scope, 'name')
-    @base_scope   = base_scope.includes([:user, :data_provider, :sync_status, :tags, :group])
+    @base_scope   = base_scope #.includes([:user, :data_provider, :sync_status, :tags, :group])
     @custom_scope = custom_scope(@base_scope)
 
     if @scope.custom[:view_hidden]
@@ -136,7 +136,7 @@ class UserfilesController < ApplicationController
 
     # This is for the tool selection dialog box....
     # we need the tools the user has access to and tags associated with the tools
-    @my_tools    = current_user.available_tools.where("tools.category <> 'background'").all
+    @my_tools    = current_user.available_tools.where("tools.category <> 'background'").all.to_a
     top_tool_ids = current_user.meta[:top_tool_ids] || {}
 
     if top_tool_ids.present?
@@ -152,8 +152,8 @@ class UserfilesController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.xml  { render :xml  => (params[:ids_only].present? && api_request) ? @userfiles : @userfiles.for_api }
-      format.json { render :json => (params[:ids_only].present? && api_request) ? @userfiles : @userfiles.for_api }
+      format.xml  { render :xml  => (params[:ids_only].present? && api_request) ? @userfiles.to_a : @userfiles.to_a.for_api }
+      format.json { render :json => (params[:ids_only].present? && api_request) ? @userfiles.to_a : @userfiles.to_a.for_api }
       format.csv
     end
   end
@@ -161,10 +161,10 @@ class UserfilesController < ApplicationController
   def new_parent_child #:nodoc:
 
     file_ids     = params[:file_ids]
-    @userfiles   = Userfile.find_all_accessible_by_user(current_user, :access_requested => :write).where(:id => file_ids).all
+    @userfiles   = Userfile.find_all_accessible_by_user(current_user, :access_requested => :write).where(:id => file_ids).all.to_a
     @have_parent = @userfiles.any? { |u| u.parent_id  }
     if ! ( @userfiles.size >= 2  || @have_parent )
-      render :text  => "<span class=\"warning\">You must select either:<br> 1) several files without parents or<br> 2) one file with a parent.</span>"
+      render :html  => "<span class=\"warning\">You must select either:<br> 1) several files without parents or<br> 2) one file with a parent.</span>".html_safe
       return
     end
 
@@ -212,7 +212,7 @@ class UserfilesController < ApplicationController
         send_file response_content
       elsif content_loader.type == :gzip
         response.headers["Content-Encoding"] = "gzip"
-        render :text => response_content
+        render :plain => response_content
       else
         render content_loader.type => response_content
       end
@@ -223,8 +223,8 @@ class UserfilesController < ApplicationController
   rescue
     respond_to do |format|
        format.html { render :file    => "public/404.html", :status => 404 }
-       format.xml  { render :nothing => true,              :status => 404 }
-       format.json { render :nothing => true,              :status => 404 }
+       format.xml  { head   :not_found }
+       format.json { head   :not_found }
     end
   end
 
@@ -266,7 +266,7 @@ class UserfilesController < ApplicationController
           render :action => :display,                  :layout => params[:apply_layout].present?
         end
       else
-        render :text => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>", :status  => "404"
+        render :html => "<div class=\"warning\">Could not find viewer #{viewer_name}.</div>".html_safe, :status  => "404"
       end
     rescue ActionView::Template::Error => e
       exception = e.original_exception
@@ -279,7 +279,7 @@ class UserfilesController < ApplicationController
         :description => "An internal error occured when trying to display the contents of #{@userfile.name}."
       )
 
-      render :text => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>", :status => "500"
+      render :html => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>".html_safe, :status => "500"
     end
   end
 
@@ -296,14 +296,15 @@ class UserfilesController < ApplicationController
     @log                = @userfile.getlog        rescue nil
 
     # Add some information for json
-    if request.format.to_sym == :json
+    if request.format.to_sym == :json || request.format.to_sym == :xml
       rr_ids_accessible   = RemoteResource.find_all_accessible_by_user(current_user).map(&:id)
       @remote_sync_status = SyncStatus.where(:userfile_id => @userfile.id, :remote_resource_id => rr_ids_accessible)
       @children_ids       = @userfile.children_ids  rescue []
 
-      @userfile[:cbrain_log]         = @log
-      @userfile[:remote_sync_status] = @remote_sync_status
-      @userfile[:children_ids]       = @children_ids
+      userfile_for_api = @userfile.for_api # transforms into a plain Hash
+      userfile_for_api["cbrain_log"]         = @log
+      userfile_for_api["remote_sync_status"] = @remote_sync_status
+      userfile_for_api["children_ids"]       = @children_ids
     # Prepare next/previous userfiles for html
     elsif request.format.to_sym == :html
       @sort_index  = [ 0, params[:sort_index].to_i, 999_999_999 ].sort[1]
@@ -313,7 +314,7 @@ class UserfilesController < ApplicationController
       sorted_scope = filtered_scope
 
       # Fetch the neighbors of the shown userfile in the ordered scope's order
-      neighbors = sorted_scope.where("userfiles.id != ?", @userfile.id).offset([0, @sort_index - 1].max).limit(2).all
+      neighbors = sorted_scope.where("userfiles.id != ?", @userfile.id).offset([0, @sort_index - 1].max).limit(2).all.to_a
       neighbors.unshift nil if @sort_index == 0
 
       @previous_userfile, @next_userfile = neighbors
@@ -321,14 +322,14 @@ class UserfilesController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml  { render :xml  => @userfile.for_api }
-      format.json { render :json => @userfile.for_api }
+      format.xml  { render :xml  => userfile_for_api }
+      format.json { render :json => userfile_for_api }
     end
   end
 
   def new #:nodoc:
     @user_tags      = current_user.available_tags
-    @data_providers = DataProvider.find_all_accessible_by_user(current_user).all
+    @data_providers = DataProvider.find_all_accessible_by_user(current_user).all.to_a
     @data_providers.reject! { |dp| dp.meta[:no_uploads].present? }
   end
 
@@ -396,7 +397,6 @@ class UserfilesController < ApplicationController
 
     flash[:error]     ||= ""
     flash[:notice]    ||= ""
-    params[:userfile] ||= {}
 
     # Mode of upload; this is determined by the values of the
     # params :archive, :_do_extract, and :_up_ex_mode
@@ -439,7 +439,7 @@ class UserfilesController < ApplicationController
     if mode == :save  # the simplest case first
 
       userfile  = file_type.new(
-                      params[:userfile].merge(
+                      userfile_params.merge(
                      :name             => basename,
                      :user_id          => current_user.id,
                      :data_provider_id => data_provider_id,
@@ -518,7 +518,7 @@ class UserfilesController < ApplicationController
       collectionType = FileCollection unless file_type <= FileCollection
 
       collection = collectionType.new(
-        params[:userfile].merge(
+        userfile_params.merge(
           :name              => collection_name,
           :user_id           => current_user.id,
           :data_provider_id  => data_provider_id,
@@ -566,7 +566,7 @@ class UserfilesController < ApplicationController
     cb_error "Unknown upload mode '#{mode}'" if mode != :extract
 
     # Common attributes to all files
-    attributes = params[:userfile].merge({
+    attributes = userfile_params.merge({
       :user_id           => current_user.id,
       :data_provider_id  => data_provider_id,
       :tag_ids           => params[:tags]
@@ -600,15 +600,15 @@ class UserfilesController < ApplicationController
     flash[:error]  = ""
 
     if @userfile.has_owner_access?(current_user)
-      attributes    = params[:userfile] || {}
-      new_user_id   = attributes.delete :user_id
-      new_group_id  = attributes.delete :group_id
-      type          = attributes.delete :type
+      new_userfile_attr = userfile_params
+      new_user_id       = new_userfile_attr.delete :user_id
+      new_group_id      = new_userfile_attr.delete :group_id
+      type              = new_userfile_attr.delete :type
 
       old_name = @userfile.name
-      new_name = attributes.delete(:name) || old_name
+      new_name = new_userfile_attr.delete(:name) || old_name
 
-      @userfile.attributes = attributes
+      @userfile.attributes = new_userfile_attr
       @userfile.type       = type         if type
       @userfile.user_id    = new_user_id  if current_user.available_users.where(:id => new_user_id).first
       @userfile.group_id   = new_group_id if current_user.available_groups.where(:id => new_group_id).first
@@ -642,15 +642,16 @@ class UserfilesController < ApplicationController
   # userfiles.
   def update_multiple #:nodoc:
     file_ids = (params[:file_ids] || []).map(&:to_i)
-    changes  = params.slice(
-      :tags,
+    accepted_params = [
       :user_id,
       :group_id,
       :group_writable,
       :type,
       :hidden,
-      :immutable
-    )
+      :immutable,
+    ]
+    changes = params.slice(*accepted_params, :tags)
+    changes = changes.permit(*accepted_params, :tags => [])
 
     changes[:user_id]  = changes[:user_id].to_i                      if changes.has_key?(:user_id)
     changes[:group_id] = changes[:group_id].to_i                     if changes.has_key?(:group_id)
@@ -701,7 +702,7 @@ class UserfilesController < ApplicationController
     within_spawn = file_ids.size > 5
     CBRAIN.spawn_with_active_records_if(within_spawn, current_user, "Sending update to files") do
       # Read access is enough if just tags are to be updated
-      access = changes.has_key?(:tags) && changes.size == 1 ? :read : :write
+      access = changes.has_key?(:tags) && changes.keys.size == 1 ? :read : :write
 
       userfiles = Userfile
         .find_all_accessible_by_user(current_user, :access_requested => access)
@@ -714,12 +715,12 @@ class UserfilesController < ApplicationController
       failed["you don't have access"] = Userfile
         .where(:id => file_ids - userfiles.raw_first_column(:id))
         .select([:id, :name, :type])
-        .all
+        .all.to_a
 
       # Group access check
       if changes.has_key?(:group_id)
         allowed, rejected = User
-          .where(:id => userfiles.uniq.select(:user_id))
+          .where(:id => userfiles.pluck(:user_id).uniq)
           .all.partition do |user|
             user
               .available_groups
@@ -730,7 +731,7 @@ class UserfilesController < ApplicationController
         failed["new group is not accessible by the file's owner"] = userfiles
           .where(:user_id => rejected.map(&:id))
           .select([:id, :name, :type])
-          .all
+          .all.to_a
 
         userfiles = userfiles
           .where(:user_id => allowed.map(&:id))
@@ -739,13 +740,13 @@ class UserfilesController < ApplicationController
       # Dataprovider owner switch availability check
       if changes.has_key?(:user_id)
         allowed, rejected = DataProvider
-          .where(:id => userfiles.uniq.select(:data_provider_id))
+          .where(:id => userfiles.pluck('userfiles.data_provider_id').uniq)
           .all.partition(&:allow_file_owner_change?)
 
         failed["changing file ownership is not allowed on this data provider"] = userfiles
           .where(:data_provider_id => rejected.map(&:id))
           .select([:id, :name, :type])
-          .all
+          .all.to_a
 
         userfiles = userfiles
           .where(:data_provider_id => allowed.map(&:id))
@@ -1228,7 +1229,7 @@ class UserfilesController < ApplicationController
     # Find the files
     userfiles = Userfile
       .find_all_accessible_by_user(current_user, :access_requested => :read)
-      .where(:id => file_ids).all
+      .where(:id => file_ids).all.to_a
 
     if userfiles.empty?
       flash[:error] = "You need to select some files first."
@@ -1273,7 +1274,7 @@ class UserfilesController < ApplicationController
 
     # Write access to the userfiles' DP is required
     readonly_dps, writable_dps = DataProvider
-      .where(:id => userfiles.uniq.select(:data_provider_id))
+      .where(:id => userfiles.pluck('userfiles.data_provider_id').uniq)
       .all.partition(&:read_only?)
 
     skipped["Data Provider not writable"] = userfiles
@@ -1303,7 +1304,7 @@ class UserfilesController < ApplicationController
       SQL
       .where(match)
       .select(['userfiles.id', 'userfiles.name', 'userfiles.type'])
-      .all
+      .all.to_a
       .select { |userfile| userfile.is_a?(SingleFile) }
 
     skipped["Filename collision"] = collisions.count
@@ -1372,13 +1373,20 @@ class UserfilesController < ApplicationController
   def detect_file_type
     @type = (SingleFile.suggested_file_type(params[:file_name]) || SingleFile).name
     respond_to do |format|
-      format.html { render :text => @type }
+      format.html { render :html => @type.html_safe }
       format.json { render :json => { :type => @type } }
       format.xml  { render :xml  => { :type => @type } }
     end
   end
 
   private
+
+  def userfile_params #:nodoc:
+    params.require(:userfile).permit(
+      :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id,
+      :group_writable, :num_files, :hidden, :immutable, :description, :tag_ids => []
+    )
+  end
 
   # Verify that all files selected for an operation
   # are accessible by the current user.
@@ -1635,16 +1643,16 @@ class UserfilesController < ApplicationController
   # respecting view options, user and project restrictions.
   # Requires a valid @scope object.
   def base_scope
-    base = Userfile.scoped
+    base = Userfile.where(nil)
 
     # Restrict by 'view all' or not
     @scope.custom[:view_all] = !current_user.has_role?(:admin_user) if
       @scope.custom[:view_all].nil?
 
-    if @scope.custom[:view_all]
-      base = Userfile.restrict_access_on_query(current_user, base, :access_requested => :read)
-    else
+    if @scope.custom[:view_all] == "false" || !@scope.custom[:view_all]
       base = base.where(:user_id => current_user.id)
+    else
+      base = Userfile.restrict_access_on_query(current_user, base, :access_requested => :read)
     end
 
     base = base.where(:group_id => current_project.id) if current_project

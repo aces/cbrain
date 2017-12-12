@@ -176,7 +176,7 @@ end
 # Utility method used by bb_bash() etc
 def resolve_bourreaux(bb)
   bb = bb[0] if bb.size == 1 && bb[0].is_a?(Array)
-  bb = no_log { Bourreau.find_all_by_online(true) } if bb.blank?
+  bb = no_log { Bourreau.where(:online => true).all.to_a } if bb.blank?
   bourreau_list = bb.map do |b|
     if b.is_a?(String)
       no_log { Bourreau.find_by_name(b) }

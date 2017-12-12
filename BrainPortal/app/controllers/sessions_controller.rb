@@ -21,6 +21,7 @@
 #
 
 require 'ipaddr'
+require 'http_user_agent'
 
 # Sesssions controller for the BrainPortal interface
 # This controller handles the login/logout function of the site.
@@ -33,7 +34,7 @@ class SessionsController < ApplicationController
 
   api_available :only => [ :new, :show, :create, :destroy ]
 
-  before_filter :user_already_logged_in, :only => [:new, :create]
+  before_action :user_already_logged_in, :only => [:new, :create]
 
   def new #:nodoc:
     reqenv           = request.env
@@ -53,19 +54,19 @@ class SessionsController < ApplicationController
   def create #:nodoc:
     # If the csrf token is blank, it was reset by Rails' request forgery protection
     # and we want to prevent login
-    user = current_session["_csrf_token"].presence && User.authenticate(params[:login], params[:password]) # can be nil if it fails
+    user = session["_csrf_token"].presence && User.authenticate(params[:login], params[:password]) # can be nil if it fails
     create_from_user(user)
   end
 
   def show #:nodoc:
     if current_user
       respond_to do |format|
-        format.html { render :nothing => true,                            :status => 200 }
+        format.html { head   :ok                                                         }
         format.xml  { render :xml     => { :user_id => current_user.id }, :status => 200 }
         format.json { render :json    => { :user_id => current_user.id }, :status => 200 }
       end
     else
-      render :nothing  => true, :status  => 401
+      head :unauthorized
     end
   end
 
@@ -73,8 +74,8 @@ class SessionsController < ApplicationController
     unless current_user
       respond_to do |format|
         format.html { redirect_to new_session_path }
-        format.xml  { render :nothing => true, :status  => 401 }
-        format.json { render :nothing => true, :status  => 401 }
+        format.xml  { head :unauthorized }
+        format.json { head :unauthorized }
       end
       return
     end
@@ -85,18 +86,20 @@ class SessionsController < ApplicationController
       portal.addlog("User #{current_user.login} logged out") if current_user
     end
 
-    if current_session
-      current_session.deactivate
-      current_session.clear
+    if cbrain_session
+      cbrain_session.deactivate
+      cbrain_session.clear
     end
+
+    reset_session # Rails
 
     respond_to do |format|
       format.html {
                     flash[:notice] = "You have been logged out."
                     redirect_to new_session_path
                   }
-      format.xml  { render :nothing => true, :status  => 200 }
-      format.json { render :nothing => true, :status  => 200 }
+      format.xml  { head :ok }
+      format.json { head :ok }
     end
   end
 
@@ -140,6 +143,7 @@ class SessionsController < ApplicationController
     end
 
     self.current_user = user
+    session[:user_id] = user.id
     portal = BrainPortal.current_resource
 
     # Check if the user or the portal is locked
@@ -156,7 +160,7 @@ class SessionsController < ApplicationController
     respond_to do |format|
       format.html { redirect_back_or_default(start_page_path) }
       format.json { render :json => {:session_id => request.session_options[:id], :user_id => current_user.id}, :status => 200 }
-      format.xml  { render :nothing => true, :status  => 200 }
+      format.xml  { head :ok }
     end
 
   end
@@ -166,8 +170,8 @@ class SessionsController < ApplicationController
   def auth_failed
     respond_to do |format|
       format.html { render :action => 'new' }
-      format.json { render :nothing => true, :status  => 401 }
-      format.xml  { render :nothing => true, :status  => 401 }
+      format.json { head   :unauthorized }
+      format.xml  { head   :unauthorized }
     end
   end
 
@@ -189,8 +193,8 @@ class SessionsController < ApplicationController
   end
 
   def user_tracking(portal) #:nodoc:
-    current_session.activate
     user   = current_user
+    cbrain_session.activate(user.id)
 
     # Record the best guess for browser's remote host name
     reqenv  = request.env
@@ -209,12 +213,12 @@ class SessionsController < ApplicationController
        from_ip   = '0.0.0.0'
        from_host = 'unknown'
     end
-    current_session[:guessed_remote_ip]   = from_ip
-    current_session[:guessed_remote_host] = from_host
+    cbrain_session[:guessed_remote_ip]   = from_ip
+    cbrain_session[:guessed_remote_host] = from_host
 
     # Record the user agent
     raw_agent = reqenv['HTTP_USER_AGENT'] || 'unknown/unknown'
-    current_session[:raw_user_agent]      = raw_agent
+    cbrain_session[:raw_user_agent]      = raw_agent
 
     # Record that the user logged in
     parsed         = HttpUserAgent.new(raw_agent)
@@ -236,7 +240,7 @@ class SessionsController < ApplicationController
 
     # Admin users start with some differences in behavior
     if user.has_role?(:admin_user)
-      current_session[:active_group_id] = "all"
+      session[:active_group_id] = "all"
     end
   end
 

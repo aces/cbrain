@@ -50,12 +50,13 @@ class PortalSystemChecks < CbrainChecker #:nodoc:
     puts "C> Checking for pending migrations..."
     #-----------------------------------------------------------------------------
 
-    if defined? ActiveRecord
-      pending_migrations = ActiveRecord::Migrator.new(:up, 'db/migrate').pending_migrations
-      if pending_migrations.any?
-        puts "C> \t- You have #{pending_migrations.size} pending migrations:"
-        pending_migrations.each do |pending_migration|
-          puts "C> \t\t- %4d %s" % [pending_migration.version, pending_migration.name]
+    if defined?(ActiveRecord::Migrator)
+      migrator = ActiveRecord::Migrator.open(ActiveRecord::Migrator.migrations_paths)
+      pending  = migrator.pending_migrations
+      if pending.present?
+        puts "C> \t- You have #{pending.size} pending migration(s):"
+        pending.each do |migr|
+          puts "C> \t    #{migr.version} #{migr.name}"
         end
         puts "C> \t- Please run \"rake db:migrate RAILS_ENV=#{Rails.env}\" to update"
         puts "C> \t  your database then try again."

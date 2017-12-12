@@ -20,6 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require 'rails/generators'
+
 class CbrainTaskGenerator < Rails::Generators::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -46,9 +48,9 @@ class CbrainTaskGenerator < Rails::Generators::Base
     empty_directory "#{task_dir}/common"
     empty_directory "#{task_dir}/views"
     empty_directory "#{task_dir}/views/public"
-    template "portal_task_model.rb",      "#{task_dir}/portal/#{file_name}.rb"
-    template "bourreau_task_model.rb",    "#{task_dir}/bourreau/#{file_name}.rb"
-    template "common_task_model.rb",      "#{task_dir}/common/#{file_name}.rb"
+    template "portal_task_model.rb.erb",  "#{task_dir}/portal/#{file_name}.rb"
+    template "bourreau_task_model.rb.erb","#{task_dir}/bourreau/#{file_name}.rb"
+    template "common_task_model.rb.erb",  "#{task_dir}/common/#{file_name}.rb"
     template "task_params.html.erb",      "#{task_dir}/views/_task_params.html.erb"
     template "show_params.html.erb",      "#{task_dir}/views/_show_params.html.erb"
     template "edit_params_help.html.erb", "#{task_dir}/views/public/edit_params_help.html"

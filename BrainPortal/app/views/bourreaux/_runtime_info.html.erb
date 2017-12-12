@@ -44,8 +44,8 @@
     <% t.cell("Remote Host OS Type",                :show_width => 2) { @info.host_uname } %>
     <% t.cell("Remote Host Uptime",                 :show_width => 2) { @info.host_uptime } %>
     <% t.cell("Rails Server uptime",                :show_width => 2) do %>
-      Up since: <%= to_localtime(@info.uptime.to_i.ago,:datetime) %>
-      (for: <%= pretty_elapsed(@info.uptime.to_i) %>)
+      Up since: <%= to_localtime(@info.uptime.to_i.seconds.ago,:datetime) %>
+      (for: <%= pretty_elapsed(@info.uptime.to_i.seconds) %>)
     <% end %>
 
     <% t.blank_row %>

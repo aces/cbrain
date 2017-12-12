@@ -145,7 +145,7 @@ class SshDataProvider < DataProvider
     newpath   = newpath.to_s
 
     self.master # triggers unlocking the agent
-    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
+    Net::SFTP.start(remote_host,remote_user, :port => (remote_port.presence || 22), :auth_methods => [ 'publickey' ] ) do |sftp|
       begin
         sftp.lstat!(newpath)
         return false # means file exists already
@@ -191,7 +191,7 @@ class SshDataProvider < DataProvider
     types.map!(&:to_sym)
 
     self.master # triggers unlocking the agent
-    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
+    Net::SFTP.start(remote_host,remote_user, :port => (remote_port.presence || 22), :auth_methods => [ 'publickey' ] ) do |sftp|
       entries = []
       if userfile.is_a? FileCollection
         if directory == :all
@@ -354,7 +354,7 @@ class SshDataProvider < DataProvider
                 'uid',  'gid',  'owner', 'group',
                 'atime', 'ctime', 'mtime' ]
     self.master # triggers unlocking the agent
-    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
+    Net::SFTP.start(remote_host,remote_user, :port => (remote_port.presence || 22), :auth_methods => [ 'publickey' ] ) do |sftp|
       sftp.dir.foreach(dirname) do |entry|
         attributes = entry.attributes
         type = attributes.symbolic_type

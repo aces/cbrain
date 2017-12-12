@@ -56,7 +56,7 @@ describe "BrainPortal Boutiques Tests" do
     # Change to the temporary storage directory so files are automatically written there
     Dir.chdir TempStore
     # Build some of the cbrain environment
-    @user, @group = FactoryGirl.create(:user), FactoryGirl.create(:group)
+    @user, @group = FactoryBot.create(:user), FactoryBot.create(:group)
     @dp = FlatDirLocalDataProvider.new({
       :online => true, :read_only => false, :remote_dir => '.', :name => "dp1", :user_id => @user.id, :group_id => @group.id
     })
@@ -150,7 +150,7 @@ describe "BrainPortal Boutiques Tests" do
     # Run before block to create required task and task class
     before(:each) do
       # Create environment
-      execer         = FactoryGirl.create(:bourreau)
+      execer         = FactoryBot.create(:bourreau)
       schema         = SchemaTaskGenerator.default_schema
       descriptor     = File.join(__dir__, TestScriptDescriptor)
       @boutiquesTask = SchemaTaskGenerator.generate(schema, descriptor)
@@ -191,7 +191,7 @@ describe "BrainPortal Boutiques Tests" do
         expect( @task_const.to_s ).to eq( "CbrainTask::BoutiquesTest" )
       end
       it "should have a tool" do
-        expect( Tool.exists?(:cbrain_task_class_name => @task_const) ).to be true
+        expect( Tool.exists?(:cbrain_task_class_name => @task_const.to_s) ).to be true
       end
       it "should have no public path" do # Just test the help file
         expect( @task_const.public_path("edit_params_help.html") ).to eq( nil )
@@ -332,7 +332,7 @@ describe "BrainPortal Boutiques Tests" do
           end
           it "to detect errors when a file is inaccessible" do
             # Create a new user and file for him/her
-            user2, grp2 = FactoryGirl.create( :user ), FactoryGirl.create( :group )
+            user2, grp2 = FactoryBot.create( :user ), FactoryBot.create( :group )
             file2 = @addUserFile.("file2.c", @task, user: user2, group: grp2)
             # Put the file in a cbcsv and check after_form
             cbcsvTest = @makeCbcsv.([@userfiles[0],file2,@userfiles[1]],"cbcsvWithOthersFiles.cbcsv", @task)
@@ -440,7 +440,7 @@ describe "BrainPortal Boutiques Tests" do
         # Instantiate a task object from the descriptor
         @task = @generateTask.( 'defaults' )
         # Add metadata to the task
-        @task.bourreau = FactoryGirl.create(:bourreau)
+        @task.bourreau = FactoryBot.create(:bourreau)
         @task.user_id, @task.group_id, @task.params = @user.id, @group.id, {}
         @task.params[:interface_userfile_ids] = []
         # Generate some userfiles for testing
@@ -479,14 +479,14 @@ describe "BrainPortal Boutiques Tests" do
         end
         it "fails gracefully when a file is inaccessible" do
           # Create a new user and file for him/her
-          user2, grp2 = FactoryGirl.create( :user ), FactoryGirl.create( :group )
+          user2, grp2 = FactoryBot.create( :user ), FactoryBot.create( :group )
           file2 = @addUserFile.("f2.tex", @task, user: user2, group: grp2)
           # Make sure after_form catches the problem
           @checkAfterForm.( @task, 1, "trying to find file", true )
         end
         it "fails gracefully when a cbcsv subfile is inaccessible" do
           # Create a new user and file for him/her
-          user2, grp2 = FactoryGirl.create( :user ), FactoryGirl.create( :group )
+          user2, grp2 = FactoryBot.create( :user ), FactoryBot.create( :group )
           file2 = @addUserFile.("f2.swift", @task, false, user: user2, group: grp2)
           # Put the file in a cbcsv and check after_form (only add the prohibited file to a cbcsv)
           cbcsvTest = @makeCbcsv.( [@f1,file2,@f3], "cbcsvWithOthersFiles.cbcsv", @task)

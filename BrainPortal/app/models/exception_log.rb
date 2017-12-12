@@ -37,7 +37,7 @@ class ExceptionLog < ActiveRecord::Base
   def self.log_exception(exception, user, request)
     params  = request.params.hide_filtered
     session = request.session
-    hdrs    = request.headers.select { |k| k =~ /\A[A-Z]/ }
+    hdrs    = request.headers.to_h.select { |k| k =~ /\A[A-Z]/ }
 
     e                    = self.new
     e.exception_class    = exception.class.to_s
@@ -60,25 +60,6 @@ class ExceptionLog < ActiveRecord::Base
     e.save
 
     e
-  end
-
-  # This next section is handling the case where reports (trace dumps etc)
-  # are too long, so they are truncated explicitely.
-
-  after_find    :replace_attributes_too_big
-  attr_accessor :truncated_attributes #:nodoc:
-
-  def replace_attributes_too_big #:nodoc:
-    raw = {}
-    self.class.serialized_attributes.keys.each do |att|
-      att = att.to_sym
-      val = self.send(att)
-      next unless val.is_a?(String) # when string, something went wrong
-      self.send("#{att}=", { :too_long => "the information for \"#{att}\" was too long to fit in the DB..." })
-      raw[att] = val # so we can still display it in the interface
-    end
-    self.truncated_attributes = raw
-    true
   end
 
 end

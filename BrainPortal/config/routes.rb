@@ -22,7 +22,7 @@
 
 # CBRAIN Routing Table
 
-CbrainRailsPortal::Application.routes.draw do
+Rails.application.routes.draw do
 
   # Session
   resource  :session,         :only => [ :new, :create, :show, :destroy ]
@@ -134,7 +134,7 @@ CbrainRailsPortal::Application.routes.draw do
 
   resources :tasks,           :except => [ :destroy ] do
     collection do
-      post 'new', :path => 'new', :as => 'new'
+      post 'new', :as => 'new', :via => 'new'
       post 'operation'
       get  'batch_list'
       post 'update_multiple'

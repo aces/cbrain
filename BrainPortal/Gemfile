@@ -20,22 +20,30 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-source 'http://rubygems.org'
+source 'https://rubygems.org'
 
 # In the :default group
-gem 'rails',         :git     => 'https://github.com/rails/rails.git', :branch => "3-2-stable"
-gem 'aws-s3',        :require => 'aws/s3' # Client library for Amazon's Simple Storage Service's REST API
+gem 'rails', '~> 5.0.6'
 gem "net-ssh",       :require => 'net/ssh'
 gem "net-sftp",      :require => 'net/sftp'
-gem "sys-proctable", :git     => 'https://github.com/djberg96/sys-proctable.git', :ref => "ac047b6"
-gem "mysql2",        "<0.4"
+gem "sys-proctable"
+gem "mysql2"
 gem "log4r"
-gem "thin"
+gem "puma"
 gem "pbkdf2-ruby"
 gem "json-schema"
-gem "aws-sdk"
-gem "rails_autolink"
+gem "aws-sdk", '<2.0'
+
+# User interface gems
 gem "will_paginate"
+gem "jquery-rails"
+gem "jquery-ui-rails"
+gem "jquery-form-rails"
+
+# ActiveResource channel gems
+gem "activeresource", require: 'active_resource'
+gem "actionpack-xml_parser"
+gem "activemodel-serializers-xml"
 
 group :development do
   gem "wirble"
@@ -43,20 +51,17 @@ group :development do
   gem "hirb"
   gem "pry"
   gem "pry-byebug"
-  gem "pry-doc"
+  gem "listen", '~> 3.0.5'
 end
 
-# Unfortunately test-unit seems to be needed always to start the console...
-gem "test-unit",    "~> 3.1"
-
 group :test do
-  gem "rspec",                    "~> 3.4"
-  gem "rspec-rails",              "~> 3.2"
-  gem "factory_girl_rails",       "~> 4.5", :require => false
-  gem "simplecov",                "~> 0.11"
-  gem "rspec-mocks",              "~> 3.4"
-  gem 'rspec-activemodel-mocks',  "~> 1.0"
-  gem 'rspec-collection_matchers',"~> 1.1"
-  gem "database_cleaner",         "~> 1.5"
+  gem "rspec"
+  gem "rspec-rails"
+  gem "factory_bot_rails", :require => false
+  gem "rails-controller-testing"
+  gem "rspec-mocks"
+  gem "rspec-activemodel-mocks"
+  gem "rspec-collection_matchers"
+  gem "database_cleaner"
 end
 

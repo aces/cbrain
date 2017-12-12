@@ -99,17 +99,6 @@ class RemoteResource < ActiveRecord::Base
 
   after_destroy         :after_destroy_clean_sync_status
 
-  attr_accessible       :name, :user_id, :group_id, :online, :read_only, :description,
-                        :ssh_control_user, :ssh_control_host, :ssh_control_port, :ssh_control_rails_dir,
-                        :tunnel_mysql_port, :tunnel_actres_port,
-                        :cache_md5, :portal_locked, :cache_trust_expire, :time_of_death,
-                        :time_zone, :site_url_prefix, :dp_cache_dir, :dp_ignore_patterns, :cms_class,
-                        :cms_default_queue, :cms_extra_qsub_args, :cms_shared_dir, :workers_instances,
-                        :workers_chk_time, :workers_log_to, :workers_verbose, :help_url, :rr_timeout, :proxied_host,
-                        :spaced_dp_ignore_patterns, :license_agreements, :support_email, :system_from_email, :external_status_page_url,
-                        :docker_executable_name, :docker_present, :singularity_executable_name, :singularity_present,
-                        :small_logo, :large_logo
-
 
 
   ############################################################################
@@ -696,14 +685,14 @@ class RemoteResource < ActiveRecord::Base
   # Utility method to send a clean_cache command to a
   # RemoteResource, whether local or not.
   def send_command_clean_cache(userlist,typelist,older_than,younger_than)
-    if older_than.is_a?(Fixnum)
+    if older_than.is_a?(Integer)
        time_older = older_than.seconds.ago
     elsif older_than.is_a?(Time)
        time_older = older_than
     else
        cb_error "Invalid older_than time offset for clean_cache command."
     end
-    if younger_than.is_a?(Fixnum)
+    if younger_than.is_a?(Integer)
        time_younger = younger_than.seconds.ago
     elsif younger_than.is_a?(Time)
        time_younger = younger_than
@@ -875,7 +864,7 @@ class RemoteResource < ActiveRecord::Base
       dp_stats = {}
       dp_ids.each_with_index do |dp_id,idx|
         dp  = DataProvider.find_by_id(dp_id)
-        $0 = "DP Check #{idx+1}/#{dp_ids.size}: #{dp.try(:name) || "UnknownDP"}\0\0\0\0"
+        $0 = "DP Check #{idx+1}/#{dp_ids.size}: #{dp.try(:name) || "UnknownDP"}"
         if ! dp
           stat = "notexist"
         elsif ! dp.online?
@@ -915,7 +904,7 @@ class RemoteResource < ActiveRecord::Base
       syncs = syncs.all
       syncs.each_with_index do |ss,i|
         userfile = ss.userfile
-        $0 = "CacheCleanup ID=#{userfile.id} #{i+1}/#{syncs.size}\0"
+        $0 = "CacheCleanup ID=#{userfile.id} #{i+1}/#{syncs.size}"
         userfile.cache_erase rescue nil
         ss.delete rescue nil
       end

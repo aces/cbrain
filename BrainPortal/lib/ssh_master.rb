@@ -245,9 +245,9 @@ class SshMaster
     raise "'direction' must be :forward or :reverse." unless
       direction == :forward || direction == :reverse
     raise "'accept_port' must be a port number > 1024 and < 65535." unless
-      accept_port.is_a?(Fixnum) && accept_port > 1024 && accept_port < 65535
+      accept_port.is_a?(Integer) && accept_port > 1024 && accept_port < 65535
     raise "'dest_port' must be a port number." unless
-      dest_port.is_a?(Fixnum) && dest_port > 0 && dest_port < 65535
+      dest_port.is_a?(Integer) && dest_port > 0 && dest_port < 65535
     raise "'dest_host' is not a simple host name." unless
       dest_host =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\z/
 

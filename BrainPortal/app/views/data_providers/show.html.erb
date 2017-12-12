@@ -176,7 +176,7 @@
 
 
   <% other_dps       = DataProvider.find_all_accessible_by_user(current_user).reject { |dp| dp.id == @provider.id } %>
-  <% dps_by_category = other_dps.hashed_partitions { |dp| dp.is_browsable? ? :user : :official } %>
+  <% dps_by_category = other_dps.to_a.hashed_partitions { |dp| dp.is_browsable? ? :user : :official } %>
 
   <% if other_dps.size > 0 %>
 
@@ -202,7 +202,7 @@
   <% end%>
 
   <% other_rrs       = RemoteResource.find_all_accessible_by_user(current_user) %>
-  <% rrs_by_category = other_rrs.hashed_partitions { |rr| rr.is_a?(Bourreau) ? :bourreau : :portal } %>
+  <% rrs_by_category = other_rrs.to_a.hashed_partitions { |rr| rr.is_a?(Bourreau) ? :bourreau : :portal } %>
 
   <% if other_rrs.size > 0 %>
 

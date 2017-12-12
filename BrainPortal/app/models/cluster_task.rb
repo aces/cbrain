@@ -416,7 +416,7 @@ class ClusterTask < CbrainTask
   # to a location different than the original task directory.
   def make_available(userfile, file_path, userfile_sub_path = nil, start_dir = nil)
     cb_error "File path argument must be relative" if
-      file_path.blank? || file_path.to_s =~ /\A\//
+      file_path.to_s.blank? || file_path.to_s =~ /\A\//
 
     # Determine starting dir for relative symlink target calculation
     base_dir = start_dir || self.full_cluster_workdir
@@ -434,7 +434,7 @@ class ClusterTask < CbrainTask
     workdir_path   = Pathname.new(self.cluster_shared_dir)
     dp_cache_path  = Pathname.new(RemoteResource.current_resource.dp_cache_dir)
     userfile_path  = Pathname.new(userfile.cache_full_path)
-    userfile_path += Pathname.new(userfile_sub_path) if userfile_sub_path.present?
+    userfile_path += Pathname.new(userfile_sub_path) if userfile_sub_path.to_s.present?
 
     # Try to figure out if the DataProvider of userfile is local, or remote.
     # SmartDataProviders supply the real implementation under a real_provider method;
@@ -481,7 +481,7 @@ class ClusterTask < CbrainTask
     return false unless path
     wdpath   = Pathname.new(workdir)
     rel_path = path.relative_path_from(wdpath) rescue nil
-    return false if rel_path.blank? || rel_path.to_s =~ /\A\.\./ # if it starts with ".." it means we go out of the workdir!
+    return false if rel_path.to_s.blank? || rel_path.to_s =~ /\A\.\./ # if it starts with ".." it means we go out of the workdir!
     true
   end
 
@@ -1190,7 +1190,7 @@ class ClusterTask < CbrainTask
     qsub_out_file    = qsub_stdout_basename(run_number)
     science_out_file = science_stdout_basename(run_number)
     combined_file    = Dir.chdir(workdir) { find_or_create_combined_file(qsub_out_file, science_out_file) }
-    return (Pathname.new(workdir) + combined_file).to_s if combined_file.present?
+    return (Pathname.new(workdir) + combined_file).to_s if combined_file.to_s.present?
     nil
   end
 
@@ -1202,7 +1202,7 @@ class ClusterTask < CbrainTask
     qsub_err_file    = qsub_stderr_basename(run_number)
     science_err_file = science_stderr_basename(run_number)
     combined_file    = Dir.chdir(workdir) { find_or_create_combined_file(qsub_err_file, science_err_file) }
-    return (Pathname.new(workdir) + combined_file).to_s if combined_file.present?
+    return (Pathname.new(workdir) + combined_file).to_s if combined_file.to_s.present?
     nil
   end
 
@@ -1983,7 +1983,7 @@ exit $status
     # Values we substitute in our script:
 
     # 1) The task class might specify an alternate work directory to use within the container
-    container_work_dir = self.container_working_directory.presence if self.respond_to?(:container_working_directory)
+    container_work_dir = self.container_working_directory.to_s.presence if self.respond_to?(:container_working_directory)
     esc_cont_work_dir  = container_work_dir.try(:bash_escape) || '"${PWD}"' # must work with bash escaping
 
     # 2) The root of the DataProvider cache

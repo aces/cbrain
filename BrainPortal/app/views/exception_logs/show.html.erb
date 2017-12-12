@@ -66,14 +66,6 @@
     <% end %>
   <% end %>
 
-  <% if @exception_log.truncated_attributes.present? %>
-    <%= show_table(@exception_log, :width => 2, :header => "Truncated attributes") do |t| %>
-      <% @exception_log.truncated_attributes.each do |key,val| %>
-        <% t.cell(key, :td_options => { :class => "wrap" }) { val } %>
-      <% end %>
-    <% end %>
-  <% end %>
-
 </div>
 
 

@@ -29,22 +29,23 @@ RSpec.describe TagsController, :type => :controller do
 
   context "with a logged in user" do
     before(:each) do
-      session[:user_id] = current_user.id
+      session[:user_id]    = current_user.id
+      session[:session_id] = 'session_id'
     end
 
     describe "create" do
       it "should assign the tag to the current user" do
-        post :create, params
+        post :create, params: params, xhr: true
         expect(assigns[:tag].user_id).to eq(current_user.id)
       end
       it "should assign the tag to the own group of the current user" do
-        post :create, params
+        post :create, params: params, xhr: true
         expect(assigns[:tag].group_id).to eq(current_user.own_group.id)
       end
       it "should save the record" do
         allow(Tag).to  receive(:new).and_return(tag)
         expect(tag).to receive(:save)
-        post :create, params
+        post :create, params: params, xhr: true
       end
 
       context "when save is successful" do
@@ -54,7 +55,7 @@ RSpec.describe TagsController, :type => :controller do
         end
 
         it "should display a flash message" do
-          post :create, params
+          post :create, params: params, xhr: true
           expect(flash[:notice]).to eq('Tag was successfully created.')
         end
       end
@@ -67,7 +68,7 @@ RSpec.describe TagsController, :type => :controller do
 
         it "should return :unprocessable_entity status in xml" do
           params[:format] = "xml"
-          post :create, params
+          post :create, params: params
           expect(response.status).to eq(Rack::Utils::SYMBOL_TO_STATUS_CODE[:unprocessable_entity])
         end
       end
@@ -81,13 +82,14 @@ RSpec.describe TagsController, :type => :controller do
       end
 
       it "should find the requested tag" do
-        put :update, params
+        params[:id] = real_tag.id
+        put :update, params: params, xhr: true
         expect(assigns[:tag]).to eq(real_tag)
       end
 
       context "when update is successful" do
         it "should display a flash message" do
-          put :update, params
+          put :update, params: params, xhr: true
           expect(flash[:notice]).to eq("Tag was successfully updated.")
         end
       end
@@ -96,7 +98,7 @@ RSpec.describe TagsController, :type => :controller do
         it "should return :unprocessable_entity status in xml" do
           params[:tag][:name]   = "#"
           params[:format]       = "xml"
-          put :update, params
+          put :update, params: params
           expect(response.status).to eq(Rack::Utils::SYMBOL_TO_STATUS_CODE[:unprocessable_entity])
         end
       end
@@ -106,12 +108,12 @@ RSpec.describe TagsController, :type => :controller do
       let!(:real_tag) { create(:tag, :user_id => current_user.id)}
 
       it "should find the requested tag" do
-        delete :destroy, :id => real_tag.id
+        delete :destroy, params: {id: real_tag.id}, xhr: true
         expect(assigns[:tag]).to eq(real_tag)
       end
       it "should call destroy on requested_tag" do
         expect {
-          delete :destroy, :id => real_tag.id }
+          delete :destroy, params: {id: real_tag.id} , xhr: true}
         .to change(Tag, :count).by(-1)
       end
     end
@@ -129,14 +131,14 @@ RSpec.describe TagsController, :type => :controller do
 
     describe "update" do
       it "should redirect the login page" do
-        put :update, :id => 1
+        put :update, params: {id: 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end
 
     describe "destroy" do
       it "should redirect the login page" do
-        delete :destroy, :id => 1
+        delete :destroy, params: {id: 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end

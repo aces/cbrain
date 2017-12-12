@@ -77,7 +77,7 @@ class CbrainTask::CbSerializer
 
     return [ "", [], [] ] if tasklist.empty?
 
-    options = { :group_size => options } if options.is_a?(Fixnum) # old API
+    options = { :group_size => options } if options.is_a?(Integer) # old API
 
     unless tasklist.all? { |t| t.status == 'Standby' }
       cb_error "Trying to serialize a list of tasks that are NOT in Standby state?!?"
@@ -98,6 +98,7 @@ class CbrainTask::CbSerializer
         :tool_id         => tool_id,
         :bourreau_id     => bourreau_id,
         :group_id        => Group.everyone.id,
+        :version_name    => "Standard",
         :ncpus           => 512,
         :env_array       => [],
         :script_prologue => "",

@@ -31,7 +31,8 @@ RSpec.describe DataProvidersController, :type => :controller do
       allow(controller).to receive(:current_user).and_return(admin_user)
       allow(admin_user).to receive(:license_agreement_set).and_return([])
       allow(admin_user).to receive(:unsigned_license_agreements).and_return([])
-      session[:user_id] = admin_user.id
+      session[:user_id]    = admin_user.id
+      session[:session_id] = 'session_id'
     end
 
     context "collection action" do
@@ -39,7 +40,7 @@ RSpec.describe DataProvidersController, :type => :controller do
         let!(:local_dp) { create(:flat_dir_local_data_provider) }
         it "should assign @data_providers" do
           get :index
-          expect(assigns[:data_providers]).to eq([local_dp])
+          expect(assigns[:data_providers].to_a).to eq([local_dp])
         end
         it "should render the index page" do
          get :index
@@ -71,11 +72,11 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
           it "should add the meta data" do
             expect(controller).to receive(:add_meta_data_from_form)
-            post :create, :format => :js
+            post :create, :xhr => true
           end
 
           it "should display a flash message" do
-            post :create, :format => :js
+            post :create, :xhr => true
             expect(flash[:notice]).to match("created")
           end
 
@@ -91,10 +92,10 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
           it "should not add the meta data" do
             expect(controller).not_to receive(:add_meta_data_from_form)
-            post :create, :format => :js
+            post :create, :xhr => true
           end
           it "should render new page again" do
-            post :create, :format => :html
+            post :create, :xhr => true
             expect(response).to render_template(:new)
           end
         end
@@ -114,11 +115,11 @@ RSpec.describe DataProvidersController, :type => :controller do
       describe "show" do
         it "should raise an cb_notice if the provider is not accessible by the current user" do
           allow(data_provider).to receive(:can_be_accessed_by?).and_return(false)
-          get :show, :id => 1
+          get :show, params: {id: 1}
           expect(response).to redirect_to(:action => :index)
         end
         it "should render the show page" do
-          get :show, :id => 1
+          get :show, params: {id: 1}
           expect(response).to render_template("show")
         end
       end
@@ -129,36 +130,36 @@ RSpec.describe DataProvidersController, :type => :controller do
         end
         it "should check if user has owner access" do
           expect(data_provider).to receive(:has_owner_access?)
-          put :update, :id => 1
+          put :update, params: {id: 1}
         end
         it "should update attributes" do
           expect(data_provider).to receive(:update_attributes_with_logging)
-          put :update, :id => 1
+          put :update, params: {id: 1}
         end
         context "user does not have access" do
           before(:each) do
             allow(data_provider).to receive(:has_owner_access?).and_return(false)
           end
           it "should display an error message" do
-            put :update, :id => 1
+            put :update, params: {id: 1}
             expect(flash[:error]).not_to be_blank
           end
           it "should redirect to show" do
-            put :update, :id => 1
+            put :update, params: {id: 1}
             expect(response).to redirect_to(:action => :show)
           end
         end
         context "success" do
           it "should add meta data" do
             expect(controller).to receive(:add_meta_data_from_form)
-            put :update, :id => 1
+            put :update, params: {id: 1}
           end
           it "should display success message" do
-            put :update, :id => 1
+            put :update, params: {id: 1}
             expect(flash[:notice]).to match("success")
           end
           it "should redirect to index" do
-            put :update, :id => 1
+            put :update, params: {id: 1}
             expect(response).to redirect_to(:action => :show)
           end
         end
@@ -168,10 +169,10 @@ RSpec.describe DataProvidersController, :type => :controller do
           end
           it "should reload the data_provider" do
             expect(data_provider).to receive(:reload)
-            put :update, :id => 1
+            put :update, params: {id: 1}
           end
           it "should redirect to index" do
-            put :update, :id => 1
+            put :update, params: {id: 1}
             expect(response).to render_template(:show)
           end
         end
@@ -183,15 +184,15 @@ RSpec.describe DataProvidersController, :type => :controller do
         end
         it "should display an error if the user does not have owner access" do
           allow(data_provider).to receive(:has_owner_access?).and_return(false)
-          delete :destroy, :id => 1
+          delete :destroy, params: {id: 1}
           expect(flash[:error]).not_to be_blank
         end
         it "should destroy the data provider" do
           expect(data_provider).to receive(:destroy)
-          delete :destroy, :id => 1
+          delete :destroy, params: {id: 1}
         end
         it "should redirect to index" do
-          delete :destroy, :id => 1
+          delete :destroy, params: {id: 1}
           expect(response).to redirect_to(:action => :index)
         end
         context "provider not destroyed" do
@@ -199,11 +200,11 @@ RSpec.describe DataProvidersController, :type => :controller do
             allow(data_provider).to receive(:destroy).and_raise(ActiveRecord::DeleteRestrictionError.new("Not Destroyed!!!"))
           end
           it "should display an error message" do
-            delete :destroy, :id => 1
+            delete :destroy, params: {id: 1}
             expect(flash[:error]).to match("Not Destroyed!!!")
           end
           it "should redirect to index" do
-            delete :destroy, :id => 1
+            delete :destroy, params: {id: 1}
             expect(response).to redirect_to(:action => :index)
           end
         end
@@ -215,16 +216,16 @@ RSpec.describe DataProvidersController, :type => :controller do
         end
         it "should check if the data provider is alive" do
           expect(data_provider).to receive(:is_alive_with_caching?)
-          get :is_alive, :id => 1
+          get :is_alive, params: {id: 1}
         end
         it "should return yes if provider is alive" do
           allow(data_provider).to receive(:is_alive_with_caching?).and_return(true)
-          get :is_alive, :id => 1
+          get :is_alive, params: {id: 1}
           expect(response.body).to match(/yes/i)
         end
         it "should return no if provider is not alive" do
           allow(data_provider).to receive(:is_alive_with_caching?).and_return(false)
-          get :is_alive, :id => 1
+          get :is_alive, params: {id: 1}
           expect(response.body).to match(/no/i)
         end
       end
@@ -244,11 +245,11 @@ RSpec.describe DataProvidersController, :type => :controller do
             allow(data_provider).to receive(:is_browsable?).and_return(false)
           end
           it "should display an error message" do
-            get :browse, :id => 1
+            get :browse, params: {id: 1}
             expect(flash[:error]).not_to be_blank
           end
           it "should redirect to index" do
-            get :browse, :id => 1
+            get :browse, params: {id: 1}
             expect(response).to redirect_to(:action => :index)
           end
         end
@@ -257,37 +258,37 @@ RSpec.describe DataProvidersController, :type => :controller do
             allow(data_provider).to receive(:online?).and_return(false)
           end
           it "should display an error message" do
-            get :browse, :id => 1
+            get :browse, params: {id: 1}
             expect(flash[:error]).not_to be_blank
           end
           it "should redirect to index" do
-            get :browse, :id => 1
+            get :browse, params: {id: 1}
             expect(response).to redirect_to(:action => :index)
           end
         end
         it "should retrieve the list of files" do
           expect(controller).to receive(:get_recent_provider_list_all).and_return(file_info_list)
-          get :browse, :id => 1
+          get :browse, params: {id: 1}
         end
         it "should iterate over the file list" do
           allow(controller).to    receive(:get_recent_provider_list_all).and_return(file_info_list)
           expect(file_info_list).to receive(:each)
-          get :browse, :id => 1
+          get :browse, params: {id: 1}
         end
         it "should check that the filenames are legal" do
           expect(Userfile).to receive(:is_legal_filename?).at_least(:once)
-          get :browse, :id => 1
+          get :browse, params: {id: 1}
         end
         it "should retrieve the list of file with name_like 'hi'" do
-          get :browse, :id => 1, :name_like => "hi", :update_filter => :browse_hash
+          get :browse, params: {id: 1, name_like: "hi", update_filter: :browse_hash}
           expect(assigns(:files)).to eq([file1])
         end
         it "should paginate the list" do
           expect(WillPaginate::Collection).to receive(:create)
-          get :browse, :id => 1
+          get :browse, params: {id: 1}
         end
         it "should render the browse page" do
-          get :browse, :id => 1
+          get :browse, params: {id: 1}
           expect(response).to render_template("browse")
         end
       end
@@ -304,7 +305,7 @@ RSpec.describe DataProvidersController, :type => :controller do
 
         it "should check if the data_provider is browsable" do
           expect(data_provider).to receive(:is_browsable?)
-          post :register, :id => 1, :basenames => ["a_file"]
+          post :register, params: {id: 1, basenames: ["a_file"]}
         end
 
         context "provider is not browsable" do
@@ -312,11 +313,11 @@ RSpec.describe DataProvidersController, :type => :controller do
             allow(data_provider).to receive(:is_browsable?).and_return(false)
           end
           it "should display an error message" do
-            post :register, :id => 1, :basenames => ["a_file"]
+            post :register, params: {id: 1, basenames: ["a_file"]}
             expect(flash[:error]).not_to be_blank
           end
           it "should redirect to index" do
-            post :register, :id => 1, :basenames => ["a_file"]
+            post :register, params: {id: 1, basenames: ["a_file"]}
             expect(response).to redirect_to(:action => :index)
           end
         end
@@ -324,14 +325,14 @@ RSpec.describe DataProvidersController, :type => :controller do
         context "register only" do
           it "should set the sizes in a separate process" do
             expect(CBRAIN).to receive(:spawn_with_active_records)
-            post :register, :id => 1, :basenames => ["a_file"]
+            post :register, params: {id: 1, basenames: ["a_file"]}
           end
           it "should display that registration was a success" do
-            post :register, :id => 1, :basenames => ["a_file"]
+            post :register, params: {id: 1, basenames: ["a_file"]}
             expect(flash[:notice]).to match(/\bRegistering\b/i)
           end
           it "should redirect to browse" do
-            post :register, :id => 1, :basenames => ["a_file"]
+            post :register, params: {id: 1, basenames: ["a_file"]}
             expect(response).to redirect_to(:action => :browse)
           end
         end
@@ -342,25 +343,25 @@ RSpec.describe DataProvidersController, :type => :controller do
 
           it "should check for collisions" do
             expect(Userfile).to receive(:where).and_return(double("registered files").as_null_object)
-            post :register, :id => 1, :basenames => ["a_file"], :auto_do => "MOVE"
+            post :register, params: {id: 1, basenames: ["a_file"],auto_do: "MOVE"}
           end
           it "should spawn a background process for moving" do
             expect(CBRAIN).to receive(:spawn_with_active_records)
-            post :register, :id => 1, :basenames => ["a_file"], :auto_do => "MOVE"
+            post :register, params: {id: 1, basenames: ["a_file"],auto_do: "MOVE"}
           end
           it "should redirect to browse" do
-            post :register, :id => 1, :basenames => ["a_file"], :auto_do => "MOVE"
+            post :register, params: {id: 1, basenames: ["a_file"],auto_do: "MOVE"}
             expect(response).to redirect_to(:action => :browse)
           end
           it "should move the file if a move is requested" do
             allow(controller).to receive(:userfiles_from_basenames).and_return({"b_file" => nil})
             expect(registered_file).to receive(:provider_move_to_otherprovider)
-            post :register, :id => 1, :basenames => ["b_file"], :auto_do => "MOVE"
+            post :register, params: {id: 1, basenames: ["b_file"], auto_do: "MOVE"}
           end
           it "should copy the file if a copy is requested" do
             allow(controller).to receive(:userfiles_from_basenames).and_return({"b_file" => nil})
             expect(registered_file).to receive(:provider_copy_to_otherprovider)
-            post :register, :id => 1, :basenames => ["b_file"], :auto_do => "COPY"
+            post :register, params: {id: 1, basenames: ["b_file"], auto_do: "COPY"}
           end
         end
 
@@ -384,7 +385,7 @@ RSpec.describe DataProvidersController, :type => :controller do
     end
     describe "show" do
       it "should redirect the login page" do
-        get :show, :id => 1
+        get :show, params: {id: 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end
@@ -408,31 +409,31 @@ RSpec.describe DataProvidersController, :type => :controller do
     end
     describe "update" do
       it "should redirect the login page" do
-        put :update, :id => 1
+        put :update, params: {id: 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end
     describe "destroy" do
       it "should redirect the login page" do
-        delete :destroy, :id => 1
+        delete :destroy, params: {id: 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end
     describe "is_alive" do
       it "should redirect the login page" do
-        delete :is_alive, :id => 1
+        delete :is_alive, params: {id: 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end
     describe "browse" do
       it "should redirect the login page" do
-        delete :browse, :id => 1
+        delete :browse, params: {id: 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end
     describe "register" do
       it "should redirect the login page" do
-        delete :register, :id => 1
+        delete :register, params: {id: 1}
         expect(response).to redirect_to(:controller => :sessions, :action => :new)
       end
     end

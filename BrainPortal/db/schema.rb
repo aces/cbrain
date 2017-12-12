@@ -1,4 +1,3 @@
-# encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -9,51 +8,50 @@
 # from scratch. The latter is a flawed and unsustainable approach (the more migrations
 # you'll amass, the slower it'll run and the greater likelihood for issues).
 #
-# It's strongly recommended to check this file into your version control system.
+# It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20170913185428) do
+ActiveRecord::Schema.define(version: 20171114224024) do
 
-  create_table "access_profiles", :force => true do |t|
-    t.string   "name",        :null => false
+  create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+    t.string   "name",        null: false
     t.string   "description"
     t.string   "color"
-    t.datetime "created_at",  :null => false
-    t.datetime "updated_at",  :null => false
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
-  create_table "access_profiles_groups", :id => false, :force => true do |t|
+  create_table "access_profiles_groups", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer "access_profile_id"
     t.integer "group_id"
   end
 
-  create_table "access_profiles_users", :id => false, :force => true do |t|
+  create_table "access_profiles_users", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer "access_profile_id"
     t.integer "user_id"
   end
 
-  create_table "active_record_logs", :force => true do |t|
+  create_table "active_record_logs", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer  "ar_id"
     t.string   "ar_table_name"
-    t.text     "log"
+    t.text     "log",           limit: 65535
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.index ["ar_id", "ar_table_name"], name: "index_active_record_logs_on_ar_id_and_ar_table_name", using: :btree
   end
 
-  add_index "active_record_logs", ["ar_id", "ar_table_name"], :name => "index_active_record_logs_on_ar_id_and_ar_table_name"
-
-  create_table "cbrain_tasks", :force => true do |t|
+  create_table "cbrain_tasks", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "type"
     t.integer  "batch_id"
     t.string   "cluster_jobid"
     t.string   "cluster_workdir"
-    t.text     "params"
+    t.text     "params",                      limit: 65535
     t.string   "status"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "user_id"
     t.integer  "bourreau_id"
-    t.text     "description"
-    t.text     "prerequisites"
+    t.text     "description",                 limit: 65535
+    t.text     "prerequisites",               limit: 65535
     t.integer  "share_wd_tid"
     t.integer  "run_number"
     t.integer  "group_id"
@@ -61,37 +59,35 @@ ActiveRecord::Schema.define(:version => 20170913185428) do
     t.integer  "level"
     t.integer  "rank"
     t.integer  "results_data_provider_id"
-    t.decimal  "cluster_workdir_size",        :precision => 24, :scale => 0
-    t.boolean  "workdir_archived",                                           :default => false, :null => false
+    t.decimal  "cluster_workdir_size",                      precision: 24
+    t.boolean  "workdir_archived",                                         default: false, null: false
     t.integer  "workdir_archive_userfile_id"
+    t.index ["batch_id"], name: "index_cbrain_tasks_on_batch_id", using: :btree
+    t.index ["bourreau_id", "status", "type"], name: "index_cbrain_tasks_on_bourreau_id_and_status_and_type", using: :btree
+    t.index ["bourreau_id", "status"], name: "index_cbrain_tasks_on_bourreau_id_and_status", using: :btree
+    t.index ["bourreau_id"], name: "index_cbrain_tasks_on_bourreau_id", using: :btree
+    t.index ["cluster_workdir_size"], name: "index_cbrain_tasks_on_cluster_workdir_size", using: :btree
+    t.index ["group_id", "bourreau_id", "status"], name: "index_cbrain_tasks_on_group_id_and_bourreau_id_and_status", using: :btree
+    t.index ["group_id"], name: "index_cbrain_tasks_on_group_id", using: :btree
+    t.index ["status"], name: "index_cbrain_tasks_on_status", using: :btree
+    t.index ["type"], name: "index_cbrain_tasks_on_type", using: :btree
+    t.index ["user_id", "bourreau_id", "status"], name: "index_cbrain_tasks_on_user_id_and_bourreau_id_and_status", using: :btree
+    t.index ["user_id"], name: "index_cbrain_tasks_on_user_id", using: :btree
+    t.index ["workdir_archived"], name: "index_cbrain_tasks_on_workdir_archived", using: :btree
   end
 
-  add_index "cbrain_tasks", ["batch_id"], :name => "index_cbrain_tasks_on_batch_id"
-  add_index "cbrain_tasks", ["bourreau_id", "status", "type"], :name => "index_cbrain_tasks_on_bourreau_id_and_status_and_type"
-  add_index "cbrain_tasks", ["bourreau_id", "status"], :name => "index_cbrain_tasks_on_bourreau_id_and_status"
-  add_index "cbrain_tasks", ["bourreau_id"], :name => "index_cbrain_tasks_on_bourreau_id"
-  add_index "cbrain_tasks", ["cluster_workdir_size"], :name => "index_cbrain_tasks_on_cluster_workdir_size"
-  add_index "cbrain_tasks", ["group_id", "bourreau_id", "status"], :name => "index_cbrain_tasks_on_group_id_and_bourreau_id_and_status"
-  add_index "cbrain_tasks", ["group_id"], :name => "index_cbrain_tasks_on_group_id"
-  add_index "cbrain_tasks", ["status"], :name => "index_cbrain_tasks_on_status"
-  add_index "cbrain_tasks", ["type"], :name => "index_cbrain_tasks_on_type"
-  add_index "cbrain_tasks", ["user_id", "bourreau_id", "status"], :name => "index_cbrain_tasks_on_user_id_and_bourreau_id_and_status"
-  add_index "cbrain_tasks", ["user_id"], :name => "index_cbrain_tasks_on_user_id"
-  add_index "cbrain_tasks", ["workdir_archived"], :name => "index_cbrain_tasks_on_workdir_archived"
-
-  create_table "custom_filters", :force => true do |t|
+  create_table "custom_filters", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "user_id"
     t.string   "type"
-    t.text     "data"
+    t.text     "data",       limit: 65535
+    t.index ["type"], name: "index_custom_filters_on_type", using: :btree
+    t.index ["user_id"], name: "index_custom_filters_on_user_id", using: :btree
   end
 
-  add_index "custom_filters", ["type"], :name => "index_custom_filters_on_type"
-  add_index "custom_filters", ["user_id"], :name => "index_custom_filters_on_user_id"
-
-  create_table "data_providers", :force => true do |t|
+  create_table "data_providers", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name"
     t.string   "type"
     t.integer  "user_id"
@@ -100,116 +96,121 @@ ActiveRecord::Schema.define(:version => 20170913185428) do
     t.string   "remote_host"
     t.integer  "remote_port"
     t.string   "remote_dir"
-    t.boolean  "online",                          :default => false, :null => false
-    t.boolean  "read_only",                       :default => false, :null => false
-    t.text     "description"
+    t.boolean  "online",                                        default: false, null: false
+    t.boolean  "read_only",                                     default: false, null: false
+    t.text     "description",                     limit: 65535
     t.datetime "created_at"
     t.datetime "updated_at"
     t.datetime "time_of_death"
-    t.boolean  "not_syncable",                    :default => false, :null => false
+    t.boolean  "not_syncable",                                  default: false, null: false
     t.string   "time_zone"
     t.string   "cloud_storage_client_identifier"
     t.string   "cloud_storage_client_token"
     t.string   "alternate_host"
+    t.index ["group_id"], name: "index_data_providers_on_group_id", using: :btree
+    t.index ["type"], name: "index_data_providers_on_type", using: :btree
+    t.index ["user_id"], name: "index_data_providers_on_user_id", using: :btree
   end
 
-  add_index "data_providers", ["group_id"], :name => "index_data_providers_on_group_id"
-  add_index "data_providers", ["type"], :name => "index_data_providers_on_type"
-  add_index "data_providers", ["user_id"], :name => "index_data_providers_on_user_id"
-
-  create_table "exception_logs", :force => true do |t|
+  create_table "exception_logs", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "exception_class"
     t.string   "request_controller"
     t.string   "request_action"
     t.string   "request_method"
     t.string   "request_format"
     t.integer  "user_id"
-    t.text     "message"
-    t.text     "backtrace"
-    t.text     "request"
-    t.text     "session"
-    t.text     "request_headers"
+    t.text     "message",            limit: 65535
+    t.text     "backtrace",          limit: 65535
+    t.text     "request",            limit: 65535
+    t.text     "session",            limit: 65535
+    t.text     "request_headers",    limit: 65535
     t.string   "instance_name"
     t.string   "revision_no"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  create_table "groups", :force => true do |t|
+  create_table "groups", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "type"
     t.integer  "site_id"
     t.integer  "creator_id"
-    t.boolean  "invisible",   :default => false
-    t.text     "description"
+    t.boolean  "invisible",                 default: false
+    t.text     "description", limit: 65535
+    t.index ["invisible"], name: "index_groups_on_invisible", using: :btree
+    t.index ["name"], name: "index_groups_on_name", using: :btree
+    t.index ["type"], name: "index_groups_on_type", using: :btree
   end
 
-  add_index "groups", ["invisible"], :name => "index_groups_on_invisible"
-  add_index "groups", ["name"], :name => "index_groups_on_name"
-  add_index "groups", ["type"], :name => "index_groups_on_type"
-
-  create_table "groups_users", :id => false, :force => true do |t|
+  create_table "groups_users", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer "group_id"
     t.integer "user_id"
+    t.index ["group_id"], name: "index_groups_users_on_group_id", using: :btree
+    t.index ["user_id"], name: "index_groups_users_on_user_id", using: :btree
   end
 
-  add_index "groups_users", ["group_id"], :name => "index_groups_users_on_group_id"
-  add_index "groups_users", ["user_id"], :name => "index_groups_users_on_user_id"
-
-  create_table "help_documents", :force => true do |t|
-    t.string   "key",        :null => false
-    t.string   "path",       :null => false
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+  create_table "help_documents", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+    t.string   "key",        null: false
+    t.string   "path",       null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["key"], name: "index_help_documents_on_key", unique: true, using: :btree
   end
 
-  add_index "help_documents", ["key"], :name => "index_help_documents_on_key", :unique => true
+  create_table "large_session_infos", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.string   "session_id",                               null: false
+    t.text     "data",       limit: 65535
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "user_id"
+    t.boolean  "active",                   default: false
+    t.index ["session_id"], name: "index_sessions_on_session_id", using: :btree
+    t.index ["updated_at"], name: "index_sessions_on_updated_at", using: :btree
+  end
 
-  create_table "messages", :force => true do |t|
+  create_table "messages", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "header"
-    t.text     "description"
-    t.text     "variable_text"
+    t.text     "description",   limit: 65535
+    t.text     "variable_text", limit: 65535
     t.string   "message_type"
-    t.boolean  "read",          :default => false, :null => false
+    t.boolean  "read",                        default: false, null: false
     t.integer  "user_id"
     t.datetime "expiry"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.datetime "last_sent"
-    t.boolean  "critical",      :default => false, :null => false
-    t.boolean  "display",       :default => false, :null => false
+    t.boolean  "critical",                    default: false, null: false
+    t.boolean  "display",                     default: false, null: false
     t.integer  "group_id"
     t.string   "type"
     t.boolean  "active"
     t.integer  "sender_id"
+    t.index ["user_id"], name: "index_messages_on_user_id", using: :btree
   end
 
-  add_index "messages", ["user_id"], :name => "index_messages_on_user_id"
-
-  create_table "meta_data_store", :force => true do |t|
+  create_table "meta_data_store", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer  "ar_id"
     t.string   "ar_table_name"
     t.string   "meta_key"
-    t.text     "meta_value"
+    t.text     "meta_value",    limit: 65535
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.index ["ar_id", "ar_table_name", "meta_key"], name: "index_meta_data_store_on_ar_id_and_ar_table_name_and_meta_key", using: :btree
+    t.index ["ar_id", "ar_table_name"], name: "index_meta_data_store_on_ar_id_and_ar_table_name", using: :btree
+    t.index ["ar_table_name", "meta_key"], name: "index_meta_data_store_on_ar_table_name_and_meta_key", using: :btree
+    t.index ["meta_key"], name: "index_meta_data_store_on_meta_key", using: :btree
   end
 
-  add_index "meta_data_store", ["ar_id", "ar_table_name", "meta_key"], :name => "index_meta_data_store_on_ar_id_and_ar_table_name_and_meta_key"
-  add_index "meta_data_store", ["ar_id", "ar_table_name"], :name => "index_meta_data_store_on_ar_id_and_ar_table_name"
-  add_index "meta_data_store", ["ar_table_name", "meta_key"], :name => "index_meta_data_store_on_ar_table_name_and_meta_key"
-  add_index "meta_data_store", ["meta_key"], :name => "index_meta_data_store_on_meta_key"
-
-  create_table "remote_resources", :force => true do |t|
+  create_table "remote_resources", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name"
     t.string   "type"
     t.integer  "user_id"
     t.integer  "group_id"
-    t.boolean  "online",                      :default => false, :null => false
-    t.boolean  "read_only",                   :default => false, :null => false
-    t.text     "description"
+    t.boolean  "online",                                    default: false, null: false
+    t.boolean  "read_only",                                 default: false, null: false
+    t.text     "description",                 limit: 65535
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "ssh_control_user"
@@ -219,13 +220,13 @@ ActiveRecord::Schema.define(:version => 20170913185428) do
     t.integer  "tunnel_mysql_port"
     t.integer  "tunnel_actres_port"
     t.string   "cache_md5"
-    t.boolean  "portal_locked",               :default => false, :null => false
-    t.integer  "cache_trust_expire",          :default => 0
+    t.boolean  "portal_locked",                             default: false, null: false
+    t.integer  "cache_trust_expire",                        default: 0
     t.datetime "time_of_death"
     t.string   "time_zone"
     t.string   "site_url_prefix"
     t.string   "dp_cache_dir"
-    t.text     "dp_ignore_patterns"
+    t.string   "dp_ignore_patterns"
     t.string   "cms_class"
     t.string   "cms_default_queue"
     t.string   "cms_extra_qsub_args"
@@ -244,37 +245,24 @@ ActiveRecord::Schema.define(:version => 20170913185428) do
     t.string   "singularity_executable_name"
     t.string   "small_logo"
     t.string   "large_logo"
+    t.index ["type"], name: "index_remote_resources_on_type", using: :btree
   end
 
-  add_index "remote_resources", ["type"], :name => "index_remote_resources_on_type"
-
-  create_table "sanity_checks", :force => true do |t|
+  create_table "sanity_checks", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "revision_info"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  create_table "sessions", :force => true do |t|
-    t.string   "session_id", :null => false
-    t.text     "data"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.integer  "user_id"
-    t.boolean  "active"
-  end
-
-  add_index "sessions", ["session_id"], :name => "index_sessions_on_session_id"
-  add_index "sessions", ["updated_at"], :name => "index_sessions_on_updated_at"
-
-  create_table "signups", :force => true do |t|
+  create_table "signups", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "title"
-    t.string   "first",                            :null => false
+    t.string   "first",                                       null: false
     t.string   "middle"
-    t.string   "last",                             :null => false
-    t.string   "institution",                      :null => false
+    t.string   "last",                                        null: false
+    t.string   "institution",                                 null: false
     t.string   "department"
     t.string   "position"
-    t.string   "email",                            :null => false
+    t.string   "email",                                       null: false
     t.string   "website"
     t.string   "street1"
     t.string   "street2"
@@ -285,33 +273,33 @@ ActiveRecord::Schema.define(:version => 20170913185428) do
     t.string   "time_zone"
     t.string   "service"
     t.string   "login"
-    t.text     "comment"
+    t.text     "comment",       limit: 65535
     t.string   "session_id"
     t.string   "confirm_token"
     t.boolean  "confirmed"
     t.string   "approved_by"
     t.datetime "approved_at"
-    t.datetime "created_at",                       :null => false
-    t.datetime "updated_at",                       :null => false
-    t.text     "admin_comment"
+    t.datetime "created_at",                                  null: false
+    t.datetime "updated_at",                                  null: false
+    t.text     "admin_comment", limit: 65535
     t.integer  "user_id"
-    t.boolean  "hidden",        :default => false
+    t.boolean  "hidden",                      default: false
   end
 
-  create_table "sites", :force => true do |t|
+  create_table "sites", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.text     "description"
+    t.text     "description", limit: 65535
   end
 
-  create_table "ssh_agent_unlocking_events", :force => true do |t|
+  create_table "ssh_agent_unlocking_events", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "message"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
-  create_table "sync_status", :force => true do |t|
+  create_table "sync_status", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer  "userfile_id"
     t.integer  "remote_resource_id"
     t.string   "status"
@@ -319,45 +307,42 @@ ActiveRecord::Schema.define(:version => 20170913185428) do
     t.datetime "updated_at"
     t.datetime "accessed_at"
     t.datetime "synced_at"
+    t.index ["remote_resource_id"], name: "index_sync_status_on_remote_resource_id", using: :btree
+    t.index ["userfile_id", "remote_resource_id"], name: "index_sync_status_on_userfile_id_and_remote_resource_id", using: :btree
+    t.index ["userfile_id"], name: "index_sync_status_on_userfile_id", using: :btree
   end
 
-  add_index "sync_status", ["remote_resource_id"], :name => "index_sync_status_on_remote_resource_id"
-  add_index "sync_status", ["userfile_id", "remote_resource_id"], :name => "index_sync_status_on_userfile_id_and_remote_resource_id"
-  add_index "sync_status", ["userfile_id"], :name => "index_sync_status_on_userfile_id"
-
-  create_table "tags", :force => true do |t|
+  create_table "tags", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name"
     t.integer  "user_id"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "group_id"
+    t.index ["name"], name: "index_tags_on_name", using: :btree
+    t.index ["user_id"], name: "index_tags_on_user_id", using: :btree
   end
 
-  add_index "tags", ["name"], :name => "index_tags_on_name"
-  add_index "tags", ["user_id"], :name => "index_tags_on_user_id"
-
-  create_table "tags_userfiles", :id => false, :force => true do |t|
+  create_table "tags_userfiles", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer "tag_id"
     t.integer "userfile_id"
+    t.index ["tag_id"], name: "index_tags_userfiles_on_tag_id", using: :btree
+    t.index ["userfile_id"], name: "index_tags_userfiles_on_userfile_id", using: :btree
   end
 
-  add_index "tags_userfiles", ["tag_id"], :name => "index_tags_userfiles_on_tag_id"
-  add_index "tags_userfiles", ["userfile_id"], :name => "index_tags_userfiles_on_userfile_id"
-
-  create_table "task_vm_allocations", :force => true do |t|
+  create_table "task_vm_allocations", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer  "vm_id"
     t.integer  "task_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
-  create_table "tool_configs", :force => true do |t|
+  create_table "tool_configs", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "version_name"
-    t.text     "description"
+    t.text     "description",                 limit: 65535
     t.integer  "tool_id"
     t.integer  "bourreau_id"
-    t.text     "env_array"
-    t.text     "script_prologue"
+    t.text     "env_array",                   limit: 65535
+    t.text     "script_prologue",             limit: 65535
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "group_id"
@@ -374,12 +359,11 @@ ActiveRecord::Schema.define(:version => 20170913185428) do
     t.string   "containerhub_image_name"
     t.string   "container_engine"
     t.string   "container_index_location"
+    t.index ["bourreau_id"], name: "index_tool_configs_on_bourreau_id", using: :btree
+    t.index ["tool_id"], name: "index_tool_configs_on_tool_id", using: :btree
   end
 
-  add_index "tool_configs", ["bourreau_id"], :name => "index_tool_configs_on_bourreau_id"
-  add_index "tool_configs", ["tool_id"], :name => "index_tool_configs_on_tool_id"
-
-  create_table "tools", :force => true do |t|
+  create_table "tools", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name"
     t.integer  "user_id"
     t.integer  "group_id"
@@ -388,21 +372,20 @@ ActiveRecord::Schema.define(:version => 20170913185428) do
     t.datetime "updated_at"
     t.string   "cbrain_task_class_name"
     t.string   "select_menu_text"
-    t.text     "description"
+    t.text     "description",              limit: 65535
     t.string   "url"
     t.string   "application_package_name"
     t.string   "application_type"
     t.string   "application_tags"
+    t.index ["category"], name: "index_tools_on_category", using: :btree
+    t.index ["cbrain_task_class_name"], name: "index_tools_on_cbrain_task_class", using: :btree
+    t.index ["group_id"], name: "index_tools_on_group_id", using: :btree
+    t.index ["user_id"], name: "index_tools_on_user_id", using: :btree
   end
 
-  add_index "tools", ["category"], :name => "index_tools_on_category"
-  add_index "tools", ["cbrain_task_class_name"], :name => "index_tools_on_cbrain_task_class"
-  add_index "tools", ["group_id"], :name => "index_tools_on_group_id"
-  add_index "tools", ["user_id"], :name => "index_tools_on_user_id"
-
-  create_table "userfiles", :force => true do |t|
+  create_table "userfiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name"
-    t.decimal  "size",             :precision => 24, :scale => 0
+    t.decimal  "size",                           precision: 24
     t.integer  "user_id"
     t.integer  "parent_id"
     t.datetime "created_at"
@@ -410,25 +393,24 @@ ActiveRecord::Schema.define(:version => 20170913185428) do
     t.string   "type"
     t.integer  "group_id"
     t.integer  "data_provider_id"
-    t.boolean  "group_writable",                                  :default => false, :null => false
+    t.boolean  "group_writable",                                default: false, null: false
     t.integer  "num_files"
-    t.boolean  "hidden",                                          :default => false
-    t.boolean  "immutable",                                       :default => false
-    t.boolean  "archived",                                        :default => false
-    t.text     "description"
+    t.boolean  "hidden",                                        default: false
+    t.boolean  "immutable",                                     default: false
+    t.boolean  "archived",                                      default: false
+    t.text     "description",      limit: 65535
+    t.index ["archived", "id"], name: "index_userfiles_on_archived_and_id", using: :btree
+    t.index ["data_provider_id"], name: "index_userfiles_on_data_provider_id", using: :btree
+    t.index ["group_id"], name: "index_userfiles_on_group_id", using: :btree
+    t.index ["hidden", "id"], name: "index_userfiles_on_hidden_and_id", using: :btree
+    t.index ["hidden"], name: "index_userfiles_on_hidden", using: :btree
+    t.index ["immutable", "id"], name: "index_userfiles_on_immutable_and_id", using: :btree
+    t.index ["name"], name: "index_userfiles_on_name", using: :btree
+    t.index ["type"], name: "index_userfiles_on_type", using: :btree
+    t.index ["user_id"], name: "index_userfiles_on_user_id", using: :btree
   end
 
-  add_index "userfiles", ["archived", "id"], :name => "index_userfiles_on_archived_and_id"
-  add_index "userfiles", ["data_provider_id"], :name => "index_userfiles_on_data_provider_id"
-  add_index "userfiles", ["group_id"], :name => "index_userfiles_on_group_id"
-  add_index "userfiles", ["hidden", "id"], :name => "index_userfiles_on_hidden_and_id"
-  add_index "userfiles", ["hidden"], :name => "index_userfiles_on_hidden"
-  add_index "userfiles", ["immutable", "id"], :name => "index_userfiles_on_immutable_and_id"
-  add_index "userfiles", ["name"], :name => "index_userfiles_on_name"
-  add_index "userfiles", ["type"], :name => "index_userfiles_on_type"
-  add_index "userfiles", ["user_id"], :name => "index_userfiles_on_user_id"
-
-  create_table "users", :force => true do |t|
+  create_table "users", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "full_name"
     t.string   "login"
     t.string   "email"
@@ -438,15 +420,14 @@ ActiveRecord::Schema.define(:version => 20170913185428) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "site_id"
-    t.boolean  "password_reset",    :default => false, :null => false
+    t.boolean  "password_reset",    default: false, null: false
     t.string   "time_zone"
     t.string   "city"
     t.string   "country"
     t.datetime "last_connected_at"
-    t.boolean  "account_locked",    :default => false, :null => false
+    t.boolean  "account_locked",    default: false, null: false
+    t.index ["login"], name: "index_users_on_login", using: :btree
+    t.index ["type"], name: "index_users_on_type", using: :btree
   end
-
-  add_index "users", ["login"], :name => "index_users_on_login"
-  add_index "users", ["type"], :name => "index_users_on_type"
 
 end

@@ -27,8 +27,6 @@ class ActiveRecordLog < ActiveRecord::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  attr_accessible :ar_id, :ar_table_name, :log
-
   def active_record_object #:nodoc:
     ar_id = self.ar_id
     klass = self.ar_table_name.classify.constantize rescue nil

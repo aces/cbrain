@@ -69,7 +69,7 @@ class SyncStatus < ActiveRecord::Base
   TransferTimeout = 12.hours
   DebugMessages   = false
 
-  cb_scope                :active, where(:status => [ 'ToProvider', 'ToCache' ])
+  scope                   :active, -> { where(:status => [ 'ToProvider', 'ToCache' ]) }
 
   belongs_to              :userfile
   belongs_to              :remote_resource
@@ -81,9 +81,6 @@ class SyncStatus < ActiveRecord::Base
   # It's expected to make the create!() method return
   # an exception in get_or_create_status().
   validates_uniqueness_of :remote_resource_id, :scope => :userfile_id
-
-  attr_accessible :userfile_id, :remote_resource_id, :status, :accessed_at, :synced_at
-
 
   #################################################
   # Attribute Wrappers

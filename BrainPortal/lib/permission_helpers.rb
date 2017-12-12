@@ -28,7 +28,7 @@ module PermissionHelpers
   def self.included(includer) #:nodoc:
     includer.class_eval do
       helper_method :check_role, :not_admin_user, :edit_permission?, :delete_permission?
-      before_filter :check_if_locked
+      before_action :check_if_locked
     end
   end
 

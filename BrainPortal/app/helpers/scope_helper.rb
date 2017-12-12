@@ -360,10 +360,10 @@ module ScopeHelper
   # symbols, consider converting them the resulting filter values to strings
   # before using them to construct filtering URLs.
   def filter_values_for(collection, attribute, label: nil, association: nil, format: nil)
-    return [] if collection.blank?
+    return [] if collection.nil? || collection.count == 0
 
     # Invoke the model/collection specific method
-    if (collection <= ActiveRecord::Base rescue nil)
+    if (collection.is_a?(ActiveRecord::Relation))
       filters = ScopeHelper.model_filter_values(
         collection, attribute, label,
         association: association
@@ -453,10 +453,10 @@ module ScopeHelper
 
     # Normalize the scopes in +view+ and +scope+ into just scopes
     scopes = scope || []
-    scopes = [scopes] unless scopes.is_a?(Enumerable)
+    scopes = [scopes] unless scopes.is_a?(Enumerable) && ! scopes.is_a?(ActiveRecord::Relation)
 
-    if view.is_a?(Scope) || (view.is_a?(Enumerable) && view.all? { |v| v.is_a?(Scope) })
-      scopes += Array(view)
+    if view.is_a?(Scope) || ((view.is_a?(Enumerable) && ! view.is_a?(ActiveRecord::Relation)) && view.all? { |v| v.is_a?(Scope) })
+      scopes += [view]
       view = base
     end
 

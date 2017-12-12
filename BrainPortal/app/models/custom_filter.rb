@@ -53,13 +53,9 @@ class CustomFilter < ActiveRecord::Base
 
   include DateRangeRestriction
 
-  attr_accessible :name, :user_id
-
   serialize_as_indifferent_hash :data
 
   belongs_to    :user
-
-  attr_accessible :name, :user_id
 
   validates_presence_of   :name
   validates_uniqueness_of :name, :scope  => [:user_id, :type]

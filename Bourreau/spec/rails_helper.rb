@@ -54,9 +54,9 @@ require 'rspec/rails'
 CbrainError ; CbrainNotice
 
 RSpec.configure do |config|
-  # If you do not include FactoryGirl::Syntax::Methods in your test suite,
-  # then all factory_girl methods will need to be prefaced with FactoryGirl.
-  config.include FactoryGirl::Syntax::Methods
+  # If you do not include FactoryBot::Syntax::Methods in your test suite,
+  # then all factory_girl methods will need to be prefaced with FactoryBot.
+  config.include FactoryBot::Syntax::Methods
 
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_path = "#{::Rails.root}/spec/fixtures"

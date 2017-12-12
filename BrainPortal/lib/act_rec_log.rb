@@ -328,8 +328,8 @@ module ActRecLog
       next if new == old # well, it seems it's the same anyway; happens when writing "" to replace a 'false'
       if att_type == :boolean
         message = "is now #{new}"
-      elsif self.class.serialized_attributes[att]
-        message = "(serialized) size(#{old.size} -> #{new.size})"
+      #elsif self.class.serialized_attributes[att]
+      #  message = "(serialized) size(#{old.size} -> #{new.size})"
       elsif old.size > 60 || new.size > 60
         message = ": size(#{old.size} -> #{new.size})"
       else
@@ -404,8 +404,8 @@ module ActRecLog
     # this method handles mixed arrays of IDs or objects
     oldlist_part = oldlist.hashed_partition { |x| x.is_a?(ActiveRecord::Base) ? :obj : :id }
     newlist_part = newlist.hashed_partition { |x| x.is_a?(ActiveRecord::Base) ? :obj : :id }
-    oldlist = ((oldlist_part[:obj] || []) + (oldlist_part[:id] ? klass.find_all_by_id(oldlist_part[:id]) : [])).uniq
-    newlist = ((newlist_part[:obj] || []) + (newlist_part[:id] ? klass.find_all_by_id(newlist_part[:id]) : [])).uniq
+    oldlist = ((oldlist_part[:obj] || []) + (oldlist_part[:id] ? klass.where(:id => oldlist_part[:id]).all.to_a : [])).uniq
+    newlist = ((newlist_part[:obj] || []) + (newlist_part[:id] ? klass.where(:id => newlist_part[:id]).all.to_a : [])).uniq
     added     = newlist - oldlist
     removed   = oldlist - newlist
     by_user_mess = by_user.present? ? " by #{by_user.login}" : ""

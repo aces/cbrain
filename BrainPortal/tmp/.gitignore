@@ -1,1 +1,6 @@
+#
+# Specific list of things we don't want listed in our git status
+# Anything else that shows up needs investigating
+#
 *.bashrc
+AgentLocker.lock

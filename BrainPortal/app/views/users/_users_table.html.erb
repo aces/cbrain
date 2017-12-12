@@ -82,7 +82,8 @@
       :sortable => true,
       :filters  => scoped_filters_for(
         @base_scope, @scope, :account_locked,
-        format: lambda do |value, label, base, view|
+        format: lambda do |format_info|
+          value, label, base, view = *format_info
           label = (!value || value == 0 ? 'Unlocked' : 'Locked')
           {
             :value     => value,

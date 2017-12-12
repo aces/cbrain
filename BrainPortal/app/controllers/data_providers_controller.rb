@@ -30,9 +30,9 @@ class DataProvidersController < ApplicationController
   api_available :only => [ :index, :show, :is_alive,
                            :browse, :register, :unregister, :delete ]
 
-  before_filter :login_required
-  before_filter :manager_role_required, :only => [:new, :create]
-  before_filter :admin_role_required,   :only => [:report, :repair]
+  before_action :login_required
+  before_action :manager_role_required, :only => [:new, :create]
+  before_action :admin_role_required,   :only => [:report, :repair]
 
   def index #:nodoc:
     @scope = scope_from_session('data_providers')
@@ -46,10 +46,10 @@ class DataProvidersController < ApplicationController
     respond_to do |format|
       format.html
       format.xml  do
-        render :xml  => @data_providers.for_api
+        render :xml  => @data_providers.to_a.for_api
       end
       format.json do
-        render :json => @data_providers.for_api
+        render :json => @data_providers.to_a.for_api
       end
       format.js
     end
@@ -87,10 +87,10 @@ class DataProvidersController < ApplicationController
   end
 
   def create #:nodoc:
-    @provider = DataProvider.sti_new(params[:data_provider])
+    @provider = DataProvider.sti_new(data_provider_params)
     @provider.user_id  ||= current_user.id # disabled field in form DOES NOT send value!
     @provider.group_id ||= (( current_project && current_project.id ) || current_user.own_group.id)
-
+   
     if @provider.save
       add_meta_data_from_form(@provider, [:must_move, :no_uploads, :no_viewers, :browse_gid])
       @provider.addlog_context(self,"Created by #{current_user.login}")
@@ -125,10 +125,9 @@ class DataProvidersController < ApplicationController
        return
     end
 
-    fields    = params[:data_provider] || {}
-    fields.delete(:type)
+    new_data_provider_attr    = data_provider_params
 
-    if @provider.update_attributes_with_logging(fields, current_user,
+    if @provider.update_attributes_with_logging(new_data_provider_attr, current_user,
          %w(
            remote_user remote_host remote_port remote_dir
            not_syncable cloud_storage_client_identifier cloud_storage_client_token
@@ -188,7 +187,7 @@ class DataProvidersController < ApplicationController
     is_alive = @provider.is_alive_with_caching?
 
     respond_to do |format|
-      format.html { render :text => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }
+      format.html { render :html => red_if( ! is_alive, "<span>Yes</span>".html_safe, "No" ) }
       format.xml  { render :xml  => { :is_alive => is_alive } }
       format.json { render :json => { :is_alive => is_alive } }
     end
@@ -230,14 +229,14 @@ class DataProvidersController < ApplicationController
     end
 
     respond_to do |format|
-      format.html { render :text => info_by_user.inspect }
-      format.xml  { render :xml  => info_by_user }
-      format.json { render :json => info_by_user }
+      format.html { render :plain => info_by_user.inspect } # not really html
+      format.xml  { render :xml   => info_by_user }
+      format.json { render :json  => info_by_user }
     end
 
   rescue
     respond_to do |format|
-      format.html { render :text  => '<strong style="color:red">No Information Available</strong>' }
+      format.html { render :html => '<strong style="color:red">No Information Available</strong>'.html_safe }
       format.xml  { head :unprocessable_entity }
       format.json { head :unprocessable_entity }
     end
@@ -806,12 +805,21 @@ class DataProvidersController < ApplicationController
 
   private
 
+  def data_provider_params #:nodoc:
+    params.require_as_params(:data_provider).permit(
+      :name, :user_id, :group_id, :remote_user, :remote_host, :alternate_host,
+      :remote_port, :remote_dir, :online, :read_only, :description, :time_of_death,
+      :not_syncable, :time_zone, :cloud_storage_client_identifier,
+      :cloud_storage_client_token, :license_agreements
+    )
+  end
+
   def get_type_list #:nodoc:
     data_provider_list = [ "FlatDirSshDataProvider" ]
     if check_role(:site_manager) || check_role(:admin_user)
       data_provider_list = DataProvider.descendants.map(&:name)
     end
-    grouped_options = data_provider_list.hashed_partitions { |name| name.constantize.pretty_category_name }
+    grouped_options = data_provider_list.to_a.hashed_partitions { |name| name.constantize.pretty_category_name }
     grouped_options.delete(nil) # data providers that can not be on this list return a category name of nil, so we remove them
     grouped_options.keys.sort.map { |type| [ type, grouped_options[type].sort ] }
   end

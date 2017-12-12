@@ -23,7 +23,7 @@
 -%>
 
 <%% content_for :head do %>
-  <link href="/stylesheets/boutiques.css" media="all" rel="stylesheet" type="text/css" />
+  <%%= stylesheet_link_tag 'boutiques', :media => "all" %>
 <%% end %>
 
 <%%-
@@ -48,7 +48,7 @@
   defaults = params.select { |i|   i['default-value']  }
 
   # Parameter groups and maps
-  groups    = descriptor['groups'].dup rescue []
+  groups    = (descriptor['groups'].dup || []) rescue []
   noGroups  = (groups.length == 0)
   gIdToMbrs = groups.inject({}){ |m,v| m.merge( v["id"] => v["members"] ) }
   gIdToPrms = gIdToMbrs.map { |k,v| [k, params.select{ |p| v.include? p["id"] }] }.to_h
@@ -57,7 +57,7 @@
   files       = params.select { |i| i['type'] == 'File' }
   single_file = files.first if files.count == 1 && ! files.any? { |f| f['list'] }
 -%>
-<%% input_files = Userfile.find_all_by_id(params[:interface_userfile_ids]) rescue [] %>
+<%% input_files = Userfile.where(:id => params[:interface_userfile_ids]).all.to_a rescue [] %>
 
 <%%
     # Handling for multi-task generation via CBCSVs

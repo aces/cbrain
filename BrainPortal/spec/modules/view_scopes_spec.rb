@@ -69,7 +69,7 @@ module ViewScopes
           filter.operator = op
           tests.map do |value, expected|
             filter.value = value
-            expect(filter.apply(NormalUser).to_a).to match_array(expected)
+            expect(filter.apply(NormalUser.all.to_a).to_a).to match_array(expected)
           end
         end
       end
@@ -101,7 +101,7 @@ module ViewScopes
           :<= => [a, b, c]
         }).each do |op, result|
           filter.operator = op
-          expect(filter.apply(NormalUser).to_a).to match_array(result)
+          expect(filter.apply(NormalUser.all.to_a).to_a).to match_array(result)
         end
       end
 
@@ -151,10 +151,10 @@ module ViewScopes
         filter.attribute = :id
 
         filter.operator  = :==
-        expect(filter.apply(NormalUser).to_a).to match_array([])
+        expect(filter.apply(NormalUser.all.to_a).to_a).to match_array([])
 
         filter.operator  = :!=
-        expect(filter.apply(NormalUser).to_a).to match_array([a, b, c, d])
+        expect(filter.apply(NormalUser.all.to_a).to_a).to match_array([a, b, c, d])
       end
     end
 
@@ -452,12 +452,12 @@ module ViewScopes
 
       it "should support sorting/ordering in ascending order" do
         order.direction = :asc
-        expect(order.apply(NormalUser)).to eq([a, c, b, d])
+        expect(order.apply(NormalUser.all.to_a)).to eq([a, c, b, d])
       end
 
       it "should support sorting/ordering in descending order" do
         order.direction = :desc
-        expect(order.apply(NormalUser)).to eq([d, b, c, a])
+        expect(order.apply(NormalUser.all.to_a)).to eq([d, b, c, a])
       end
 
       context "when using an association" do

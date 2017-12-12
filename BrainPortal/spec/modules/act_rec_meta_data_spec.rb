@@ -102,13 +102,13 @@ describe ActRecMetaData do
 
   describe "#reload" do
     it "should not update cache if not called" do
-      copied_user = User.find(current_user)
+      copied_user = User.find(current_user.id)
       copied_user.meta
       current_user.meta["key2"]="new_val2"
       expect(copied_user.meta.attributes).to eq({"key1"=> "val1", "key2"=> "val2"})
     end
     it "should update cache if called" do
-      copied_user = User.find(current_user)
+      copied_user = User.find(current_user.id)
       copied_user.meta
       current_user.meta["key2"]="new_val2"
       expect(copied_user.meta.reload).to be_truthy

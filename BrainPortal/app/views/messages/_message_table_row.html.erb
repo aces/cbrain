@@ -48,25 +48,28 @@
   <td>
     <%= to_localtime(mess.last_sent, :datetime) %>
   </td>
-  <td>
+  <td class="operations">
     <%=
-      delete_button("Mark&nbsp;as&nbsp;#{mess.read ? 'Unread' : 'Read'}".html_safe,
+      delete_button("<span class=\"read_unread\">Mark&nbsp;as&nbsp;#{mess.read ? 'Unread' : 'Read'}</span>".html_safe,
         message_path(mess, :read => (!mess.read).to_s),
         :class           => 'action_link',
         :method          => "PUT",
         :target          => ".message_display_#{mess.id}",
-        :loading_message => "<td colspan='#{span}' style='color: red; text-align: center;'>Updating...</td>"
+        :remove_target   => ".message_display_#{mess.id}",
+        :loading_message => "<span style='color: red; text-align: center;'>Updating...</span>",
+        :loading_message_target => ".message_display_#{mess.id} > td.operations > a > span.read_unread"
       )
     %>
     &nbsp;
     <%=
-      delete_button('Delete',
+      delete_button('<span class="del_label">Delete</span>'.html_safe,
         message_path(mess),
         :class           => 'action_link',
         :method          => "DELETE",
         :target          => ".message_display_#{mess.id}",
         :remove_target   => ".message_display_#{mess.id}",
-        :loading_message => "<td colspan='#{span}' style='color: red; text-align: center;'>Deleting...</td>"
+        :loading_message => "<span style='color: red; text-align: center;'>Deleting...</span>",
+        :loading_message_target => ".message_display_#{mess.id} > td.operations > a > span.del_label"
       )
     %>
   </td>

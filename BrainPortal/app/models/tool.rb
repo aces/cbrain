@@ -49,17 +49,13 @@ class Tool < ActiveRecord::Base
   validates_uniqueness_of :name, :select_menu_text, :cbrain_task_class_name
   validates_presence_of   :name, :cbrain_task_class_name, :user_id, :group_id, :category, :select_menu_text, :description
   validates_inclusion_of  :category, :in => Categories
-  validates_format_of :url, :with => URI::regexp(%w(http https)), :if => :url_present?
+  validates_format_of     :url, :with => URI::regexp(%w(http https)), :if => :url_present?
 
 
   belongs_to              :user
   belongs_to              :group
   has_many                :tool_configs, :dependent => :destroy
-  has_many                :bourreaux, :through => :tool_configs, :uniq => true
-
-  attr_accessible         :name, :user_id, :group_id, :category, :license_agreements,
-                          :cbrain_task_class_name, :select_menu_text, :description, :url,
-                          :application_type, :application_tags, :application_package_name
+  has_many                :bourreaux, -> { distinct }, :through => :tool_configs
 
   api_attr_visible        :name, :user_id, :group_id, :category, :description, :url
 

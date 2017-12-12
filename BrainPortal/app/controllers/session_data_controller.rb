@@ -28,11 +28,11 @@ class SessionDataController < ApplicationController
 
   api_available :only => [ :show, :update ]
 
-  before_filter :login_required
+  before_action :login_required
 
   # GET /session_data
   def show #:nodoc:
-    @session = current_session.to_h.reject do |k,v|
+    @session = cbrain_session.to_h.reject do |k,v|
       CbrainSession.internal_keys.include?(k)
     end
 
@@ -45,7 +45,7 @@ class SessionDataController < ApplicationController
   # POST /session_data
   def update #:nodoc:
     mode = request.query_parameters[:mode].to_sym rescue :replace
-    current_session.apply_changes([request.request_parameters, mode])
+    cbrain_session.apply_changes([request.request_parameters, mode])
 
     show
 

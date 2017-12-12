@@ -424,9 +424,9 @@ $(function() {
       position: { my: 'right top', at: 'left top' }
     });
 
-    $('#menu-list .ui-icon-carat-1-e')
-      .removeClass('ui-icon-carat-1-e')
-      .addClass('ui-icon-carat-1-w');
+    $('#menu-list .ui-icon-caret-1-e')
+      .removeClass('ui-icon-caret-1-e')
+      .addClass('ui-icon-caret-1-w');
 
     /* Style up the context menu */
     $('#userfiles_context_menu').menu();

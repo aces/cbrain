@@ -89,14 +89,14 @@ class User < ActiveRecord::Base
   after_destroy             :destroy_user_sessions
 
   # The following resources PREVENT the user from being destroyed if some of them exist.
-  has_many                :userfiles,         :dependent => :restrict
-  has_many                :data_providers,    :dependent => :restrict
-  has_many                :remote_resources,  :dependent => :restrict
-  has_many                :cbrain_tasks,      :dependent => :restrict
+  has_many                :userfiles,         :dependent => :restrict_with_exception
+  has_many                :data_providers,    :dependent => :restrict_with_exception
+  has_many                :remote_resources,  :dependent => :restrict_with_exception
+  has_many                :cbrain_tasks,      :dependent => :restrict_with_exception
 
   has_and_belongs_to_many :access_profiles
   has_and_belongs_to_many :groups
-  belongs_to              :site
+  belongs_to              :site, :optional => true
   has_one                 :signup
 
   # The following resources are destroyed automatically when the user is destroyed.
@@ -105,10 +105,6 @@ class User < ActiveRecord::Base
   has_many                :tags,            :dependent => :destroy
   has_many                :custom_filters,  :dependent => :destroy
   has_many                :exception_logs,  :dependent => :destroy
-
-  # prevents a user from submitting a crafted form that bypasses activation
-  # anything else you want your user to change should be added here.
-  attr_accessible :full_name, :email, :password, :password_confirmation, :time_zone, :city, :country
 
   api_attr_visible :login, :full_name, :email, :type, :site_id, :time_zone, :city, :last_connected_at, :account_locked
 
@@ -297,17 +293,7 @@ class User < ActiveRecord::Base
 
   # Destroy all sessions for user
   def destroy_user_sessions
-    myid = self.id
-    return true unless myid # defensive
-    sessions = CbrainSession.all.select do |s|
-      data = s.data rescue {} # old sessions can have problems being reconstructed
-      (s.user_id && s.user_id == myid) ||
-      (data && data[:user_id] && data[:user_id] == myid)
-    end
-    sessions.each do |s|
-      s.destroy rescue true
-    end
-    true
+    LargeSessionInfo.where(:user_id => self.id).destroy_all
   end
 
 
@@ -438,7 +424,7 @@ class User < ActiveRecord::Base
       end
       unless self.changes["site_id"].last.blank?
         new_site = Site.find(self.changes["site_id"].last)
-        new_site.own_group.users << self
+        new_site.own_group.user_ids |= [ self.id ]
       end
     end
   end

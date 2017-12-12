@@ -20,6 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require 'rails/generators'
+
 class DescriptorTaskGenerator < Rails::Generators::Base
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:

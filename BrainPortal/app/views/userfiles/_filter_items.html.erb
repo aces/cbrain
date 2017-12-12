@@ -33,8 +33,10 @@
   }
 %>
 <li id="filter-new" class="act-item" <%= new_attr.to_html_attributes.html_safe %>>
+  <div>
   New filter
   <span class="ui-icon ui-icon-plus"></span>
+  </div>
 </li>
 <li class="menu-separator">-</li>
 
@@ -62,12 +64,14 @@
     }
   %>
   <li class="filter-item act-item" <%= apply_attr.to_html_attributes.html_safe %>>
+    <div>
     <span class="filter-edit act-icon ui-icon-pencil"
       <%= edit_attr.to_html_attributes.html_safe %>
     ></span>
     <span class="filter-name">
       <%= filter.name %>
     </span>
+    </div>
   </li>
 <% end %>
 <% unless filters.empty? %>
@@ -92,8 +96,12 @@
   }
 %>
 <li class="filter-item act-item" <%= no_parent_attr.to_html_attributes.html_safe %>>
+  <div>
   Has no parent
+  </div>
 </li>
 <li class="filter-item act-item" <%= no_children_attr.to_html_attributes.html_safe %>>
+  <div>
   Has no children
+  </div>
 </li>

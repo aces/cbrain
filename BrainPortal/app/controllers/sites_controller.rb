@@ -25,9 +25,9 @@ class SitesController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_filter :login_required
-  before_filter :admin_role_required, :except  => :show
-  before_filter :site_membership_required, :only => :show
+  before_action :login_required
+  before_action :admin_role_required, :except  => :show
+  before_action :site_membership_required, :only => :show
 
   # GET /sites
   # GET /sites.xml
@@ -62,7 +62,7 @@ class SitesController < ApplicationController
   # POST /sites
   # POST /sites.xml
   def create #:nodoc:
-    @site = Site.new(params[:site])
+    @site = Site.new(site_params)
 
     respond_to do |format|
       if @site.save
@@ -82,7 +82,7 @@ class SitesController < ApplicationController
   def update #:nodoc:
     @site = Site.find(params[:id])
 
-    params[:site] ||= {}
+    new_site_attr = site_params
 
     original_user_ids    = @site.user_ids
     original_manager_ids = @site.managers.raw_first_column(&:id)
@@ -91,25 +91,25 @@ class SitesController < ApplicationController
     commit_name = extract_params_key([ :update_users, :update_groups ])
 
     unless commit_name == :update_users
-      params[:site][:user_ids]    = original_user_ids    # we need to make sure they stay the same
-      params[:site][:manager_ids] = original_manager_ids # we need to make sure they stay the same
+      new_site_attr[:user_ids]    = original_user_ids    # we need to make sure they stay the same
+      new_site_attr[:manager_ids] = original_manager_ids # we need to make sure they stay the same
     end
 
     unless commit_name == :update_groups
-      params[:site][:group_ids] = original_group_ids    # we need to make sure they stay the same
+      new_site_attr[:group_ids] = original_group_ids    # we need to make sure they stay the same
     end
 
-    params[:site][:user_ids]      = [] if params[:site][:user_ids].blank?
-    params[:site][:manager_ids]   = [] if params[:site][:manager_ids].blank?
-    params[:site][:group_ids]     = [ @site.own_group.id ] if params[:site][:group_ids].blank?
-    params[:site][:user_ids]      = params[:site][:user_ids].reject(&:blank?).map(&:to_i)
-    params[:site][:manager_ids]   = params[:site][:manager_ids].reject(&:blank?).map(&:to_i)
-    params[:site][:group_ids]     = params[:site][:group_ids].reject(&:blank?).map(&:to_i)
+    new_site_attr[:user_ids]      = [] if new_site_attr[:user_ids].blank?
+    new_site_attr[:manager_ids]   = [] if new_site_attr[:manager_ids].blank?
+    new_site_attr[:group_ids]     = [ @site.own_group.id ] if new_site_attr[:group_ids].blank?
+    new_site_attr[:user_ids]      = new_site_attr[:user_ids].reject(&:blank?).map(&:to_i)
+    new_site_attr[:manager_ids]   = new_site_attr[:manager_ids].reject(&:blank?).map(&:to_i)
+    new_site_attr[:group_ids]     = new_site_attr[:group_ids].reject(&:blank?).map(&:to_i)
 
     @site.unset_managers
 
     respond_to do |format|
-      if @site.update_attributes_with_logging(params[:site], current_user)
+      if @site.update_attributes_with_logging(new_site_attr, current_user)
         @site.reload
         @site.addlog_object_list_updated("Users",    User,  original_user_ids,    @site.user_ids,                        current_user, :login)
         @site.addlog_object_list_updated("Managers", User,  original_manager_ids, @site.managers.raw_first_column(&:id), current_user, :login)
@@ -137,5 +137,11 @@ class SitesController < ApplicationController
       format.js   { redirect_to :action => :index, :format => :js }
       format.xml  { head :ok }
     end
+  end
+
+  private
+
+  def site_params #:nodoc:
+    params.require(:site).permit(:name, :description, :user_ids => [], :manager_ids => [], :group_ids => [])
   end
 end

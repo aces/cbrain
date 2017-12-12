@@ -27,7 +27,7 @@ class GroupsController < ApplicationController
 
   api_available :only => [:index, :create, :switch, :update, :destroy, :show]
 
-  before_filter :login_required
+  before_action :login_required
 
   # GET /groups
   # GET /groups.xml
@@ -69,8 +69,8 @@ class GroupsController < ApplicationController
     respond_to do |format|
       format.js
       format.html # index.html.erb
-      format.xml  { render :xml  => @groups.select { |x| x.is_a?(Group) }.for_api } # @groups can contain the string 'ALL'
-      format.json { render :json => @groups.select { |x| x.is_a?(Group) }.for_api }
+      format.xml  { render :xml  => @groups.to_a.select { |x| x.is_a?(Group) }.for_api } # @groups can contain the string 'ALL'
+      format.json { render :json => @groups.to_a.select { |x| x.is_a?(Group) }.for_api }
     end
   end
 
@@ -98,14 +98,15 @@ class GroupsController < ApplicationController
   # POST /groups.xml
   # POST /groups.json
   def create  #:nodoc:
-    @group = WorkGroup.new(params[:group])
-    @group.make_accessible!(:invisible) if current_user.has_role?(:admin_user)
-    @group.attributes = params[:group]
+    @group = WorkGroup.new(group_params)
 
+    # Normal users and Site Managers are always member of newly created group.
     unless current_user.has_role? :admin_user
       @group.site = current_user.site
     end
 
+    # Final list of user IDs must intersect with list of available users for current user
+    @group.user_ids |= [ current_user.id ] unless current_user.has_role?(:admin_user)
     unless @group.user_ids.blank?
       @group.user_ids &= current_user.available_users.map(&:id)
     end
@@ -145,41 +146,39 @@ class GroupsController < ApplicationController
     end
 
     original_user_ids = @group.user_ids
-    original_creator = @group.creator_id
+    original_creator  = @group.creator_id
 
-    params[:group] ||= {}
+    new_group_attr    = group_params
 
     unless current_user.has_role? :admin_user
-      params[:group][:site_id] = current_user.site_id
+      new_group_attr[:site_id] = current_user.site_id
     end
 
     unless params[:update_users].present?
-      params[:group][:user_ids] = @group.user_ids.map(&:to_s)
+      new_group_attr[:user_ids] = @group.user_ids.map(&:to_s)
     end
 
-    params[:group][:user_ids] ||= []
+    new_group_attr[:user_ids] ||= []
 
-    unless params[:group][:user_ids].blank?
+    unless new_group_attr[:user_ids].blank?
       if current_user.has_role? :normal_user
-        params[:group][:user_ids] &= @group.user_ids.map(&:to_s)
+        new_group_attr[:user_ids] &= @group.user_ids.map(&:to_s)
       else
-        params[:group][:user_ids] &= current_user.visible_users.map{ |u| u.id.to_s  }
+        new_group_attr[:user_ids] &= current_user.visible_users.map{ |u| u.id.to_s  }
       end
     end
 
-    unless (current_user.available_users.map{ |u| u.id } | @group.user_ids).include?(params[:group][:creator_id].to_i )
-      params[:group].delete :creator_id
+    unless (current_user.available_users.map{ |u| u.id } | @group.user_ids).include?(new_group_attr[:creator_id].to_i )
+      new_group_attr.delete :creator_id
     end
-
-    @group.make_accessible!(:invisible) if current_user.has_role?(:admin_user)
 
     @users = current_user.available_users.order(:login).reject { |u| u.class == CoreAdmin }
 
     # TODO FIXME This logic's crummy, refactor the adjustments outside the respond block!
     respond_to do |format|
-      if @group.update_attributes_with_logging(params[:group],current_user)
+      if @group.update_attributes_with_logging(new_group_attr,current_user)
         @group.reload
-        if params[:group][:creator_id].present?
+        if new_group_attr[:creator_id].present?
           @group.addlog_object_list_updated("Creator", User, original_creator, @group.creator_id, current_user, :login)
         end
         @group.addlog_object_list_updated("Users", User, original_user_ids, @group.user_ids, current_user, :login)
@@ -249,15 +248,25 @@ class GroupsController < ApplicationController
     redirect_path[:id] = redirect_id unless redirect_id.blank?
 
     if params[:id].blank?
-      current_session[:active_group_id] = nil
+      session[:active_group_id] = nil
     elsif params[:id] == "all"
-      current_session[:active_group_id] = "all"
+      session[:active_group_id] = "all"
     else
       @group = current_user.available_groups.find(params[:id])
-      current_session[:active_group_id] = @group.id
+      session[:active_group_id] = @group.id
     end
 
     redirect_to userfiles_path
+  end
+
+  private
+
+  def group_params #:nodoc:
+    if current_user.has_role?(:admin_user)
+      params.require_as_params(:group).permit(:name, :description, :site_id, :creator_id, :invisible, :user_ids => [])
+    else
+      params.require_as_params(:group).permit(:name, :description)
+    end
   end
 
 end

@@ -177,15 +177,15 @@ everyone.update_attributes!(:creator_id => admin.id)
 # Create portal object
 BrainPortal.seed_record!(
   {
+    :name             => portal_name,
     :user_id          => admin.id,
     :group_id         => everyone.id,
-    :ssh_control_host => hostname
   },
   {
-    :name        => portal_name,
-    :online      => true,
-    :read_only   => false,
-    :description => "CBRAIN BrainPortal on host #{hostname}"
+    :description      => "CBRAIN BrainPortal on host #{hostname}",
+    :ssh_control_host => hostname,
+    :online           => true,
+    :read_only        => false
   },
   { :info_name_method => :name }
 )

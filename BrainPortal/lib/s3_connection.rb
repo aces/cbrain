@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 require 'aws/s3'
@@ -27,8 +27,6 @@ class S3Connection
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  include AWS::S3
-
   attr_accessor :base,:service, :bucket, :s3object
 
   # Establish a connection handler to S3
@@ -37,17 +35,17 @@ class S3Connection
     @service  = Service
     @bucket   = Bucket
     @s3object = S3Object
-    
+
     @base.establish_connection!(
       :access_key_id     => (access_key || "blah"),
       :secret_access_key => (secret_key || "blah")
     )
   end
-  
+
   def execute_on_s3 #:nodoc:
      yield self
   end
-  
+
   # Create a bucket on the current connection.
   def create_bucket(bucket_name)
     @bucket.create(bucket_name)
@@ -62,7 +60,7 @@ class S3Connection
   def list_buckets
    @service.buckets
   end
-  
+
   # Returns true if a particular bucket exists.
   def bucket_exists?(name)
     list_buckets.include? name

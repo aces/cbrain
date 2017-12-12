@@ -32,12 +32,9 @@ class Message < ActiveRecord::Base
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   belongs_to :user
-  belongs_to :sender,
-             :class_name => "User"
+  belongs_to :sender, :class_name => "User", :optional => true
 
   attr_accessor :send_email
-
-  attr_accessible :header, :description, :variable_text, :message_type, :read, :user_id, :expiry, :last_sent, :critical, :display, :send_email, :group_id, :sender_id
 
   # Send a new message to a user, the users of a group, or a site.
   #

@@ -26,8 +26,7 @@ class TagsController < ApplicationController
 
   api_available :only => [ :index, :show, :update, :destroy, :create ]
 
-  before_filter :login_required
-  before_filter :validate_params, :only => [:update, :create]
+  before_action :login_required
 
   # GET /tags
   # GET /tags.xml
@@ -35,8 +34,8 @@ class TagsController < ApplicationController
   def index #:nodoc:
     @tags = current_user.tags.all
     respond_to do |format|
-      format.xml  { render :xml  => @tags.for_api }
-      format.json { render :json => @tags.for_api }
+      format.xml  { render :xml  => @tags.to_a.for_api }
+      format.json { render :json => @tags.to_a.for_api }
     end
   end
 
@@ -55,7 +54,7 @@ class TagsController < ApplicationController
   # POST /tags.xml
   # POST /tags.json
   def create #:nodoc:
-    @tag = Tag.new(params[:tag])
+    @tag = Tag.new(tag_params)
 
     respond_to do |format|
       if @tag.save
@@ -77,7 +76,7 @@ class TagsController < ApplicationController
     @tag = current_user.tags.find(params[:id])
 
     respond_to do |format|
-      if @tag.update_attributes(params[:tag])
+      if @tag.update_attributes(tag_params)
         flash[:notice] = 'Tag was successfully updated.'
         format.xml  { head :ok, :content_type => 'text/plain' }
         format.json { head :ok }
@@ -103,13 +102,16 @@ class TagsController < ApplicationController
 
   private
 
-  # This method validates that the current user has access to the user and group being assigned to the created or updated tag
-  def validate_params #:nodoc:
-    user_id = params[:tag][:user_id]
-    group_id = params[:tag][:group_id]
+  def tag_params #:nodoc:
+    new_tag_attr = params.require(:tag).permit(:name, :user_id, :group_id)
 
-    params[:tag][:user_id]  = current_user.id           if !current_user.available_users.raw_first_column(:id).include?(user_id.to_i)
-    params[:tag][:group_id] = current_user.own_group.id if !current_user.available_groups.raw_first_column(:id).include?(group_id.to_i)
+    # Adjusts user_id and group_id to make sure they stay within allowed values
+    user_id      = new_tag_attr[:user_id]
+    group_id     = new_tag_attr[:group_id]
+    new_tag_attr[:user_id]  = current_user.id           if !current_user.available_users.where(:id => user_id).exists?
+    new_tag_attr[:group_id] = current_user.own_group.id if !current_user.available_groups.where(:id => group_id).exists?
+
+    new_tag_attr
   end
 
 end

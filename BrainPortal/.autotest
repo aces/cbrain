@@ -1,7 +1,0 @@
-Autotest.add_hook :initialize do |at|
-  at.add_exception %r%^\./tmp%
-  at.add_exception %r%^\./test/vault%
-  at.add_exception %r%^\./log%
-  at.add_exception %r%^\./test%
-  at.add_exception %r%^\./rerun.txt%
-end

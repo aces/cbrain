@@ -101,7 +101,7 @@
 
   <%
     t.column("Files", :files) do |dp|
-      file_count = Userfile.find_all_accessible_by_user(current_user, :conditions => { :data_provider_id => dp.id }).count
+      file_count = Userfile.find_all_accessible_by_user(current_user).where(:data_provider_id => dp.id).count
       if file_count > 0
         index_count_filter(file_count, :userfiles, { :data_provider_id => dp.id })
       else

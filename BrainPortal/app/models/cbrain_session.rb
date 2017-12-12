@@ -23,15 +23,15 @@
 require 'set'
 
 # Model representing a CBRAIN user's Rails session. The currently logged in
-# user's session object can be accessed using the current_session method of
+# user's session object can be accessed using the cbrain_session method of
 # ApplicationController (from SessionHelpers).
 #
-# Meant as a wrapper around Rails session hash, this model is mostly used
+# Meant as a complement to the rails session hash, this model is mostly used
 # to add additional reporting/monitoring logic, to cleanly support partial
 # updates and to validate certain session attributes.
 #
-# NOTE: This model is not database-backed, but the attribute 'session'
-# in it is the real Rails session object.
+# The database backend is through the ActiveRecord model returned by
+# the class method +session_model+ .
 class CbrainSession
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -39,14 +39,15 @@ class CbrainSession
   # Create a new CbrainSession object wrapping +session+ (a Rails session)
   # backed by +model+, an instance of CbrainSession.session_model (which is
   # expected to be an ActiveRecord record).
-  def initialize(session, model = nil)
-    @session = session
-    @model   = model
+  def initialize(session)
+    return unless session[:session_id].present?
+    @model   = self.class.session_model.where( :session_id => session[:session_id]).first ||
+               self.class.session_model.create(:session_id => session[:session_id], :data => {})
   end
 
-  # ActiveRecord model class for Rails sessions
+  # ActiveRecord model class for Rails session info
   def self.session_model
-    ActiveRecord::SessionStore::Session
+    LargeSessionInfo
   end
 
   # Internal CBRAIN session tracking keys. Invisible to the API and end-user,
@@ -72,21 +73,24 @@ class CbrainSession
 
   # User this session belongs to, from the :user_id attribute
   def user
-    @user = User.find_by_id(@session[:user_id]) unless
-      @user && @user.id == @session[:user_id]
+    @user = User.find_by_id(@model[:user_id]) unless
+      @user && @user.id == @model[:user_id]
     @user
   end
 
+  ###########################################
   # Hash-like interface to session attributes
+  ###########################################
 
-  # Delegate [] to @session
+  # Delegate [] to @model.data
   def [](key) #:nodoc:
-    @session[key]
+    @model.data[key]
   end
 
-  # Delegate []= to @session
+  # Delegate []= to @model.data[]=
   def []=(key, value) #:nodoc:
-    @session[key] = value
+    @modified        = true
+    @model.data[key] = value
   end
 
   # Update sessions attributes from the contents of +changes+. +changes+ is
@@ -101,15 +105,15 @@ class CbrainSession
   # differences:
   #
   # - Hashes in +hash+ and session attributes are recursively merged:
-  #     @session # { :a => { :b => 1 } }
+  #     cbrain_session # { :a => { :b => 1 } }
   #     apply_changes({ :a => { :c => 1 } })
-  #     @session # { :a => { :b => 1, :c => 1 } }
+  #     cbrain_session # { :a => { :b => 1, :c => 1 } }
   #
   # - nil values are automatically removed from hashes to avoid clutter. This
   #   cleanly allows removing keys from hashes:
-  #     @session # { :a => { :b => 1 } }
+  #     cbrain_session # { :a => { :b => 1 } }
   #     apply_changes({ :a => { :b => nil } })
-  #     @session # { :a => {} }
+  #     cbrain_session # { :a => {} }
   #
   # - apply_changes does not accept a block; session attributes are always
   #   overwritten by their new value in +hash+, if present.
@@ -135,19 +139,19 @@ class CbrainSession
   # a wide range of operations from just an input hash and a mode switch.
   # For example:
   #   # Adding a key to the session
-  #   @session # { :a => 1 }
+  #   cbrain_session # { :a => 1 }
   #   apply_changes({ :b => 2 })
-  #   @session # { :a => 1, :b => 2 }
+  #   cbrain_session # { :a => 1, :b => 2 }
   #
   #   # Adding an element to an array in the session
-  #   @session # { :a => { :c => [1] } }
+  #   cbrain_session # { :a => { :c => [1] } }
   #   apply_changes([:append, { :a => { :c => [2] } }])
-  #   @session # { :a => { :c => [1, 2] } }
+  #   cbrain_session # { :a => { :c => [1, 2] } }
   #
   #   # Removing keys from the session
-  #   @session # { :a => { :c => 1, :d => 2 } }
+  #   cbrain_session # { :a => { :c => 1, :d => 2 } }
   #   apply_changes([:delete, { :a => { :c => nil, :d => 2 } }])
-  #   @session # { :a => {} }
+  #   cbrain_session # { :a => {} }
   def apply_changes(changes)
     # At least one of +vars+ is one of +classes+
     any_of = lambda do |vars, classes|
@@ -212,22 +216,24 @@ class CbrainSession
     changes = [[:replace, changes]] if changes.is_a?(Hash)
     changes.each do |mode, change|
       apply.(
-        @session,
+        @model.data,
         change.reject { |k,v| self.class.internal_keys.include?(k) },
         mode || :replace
       )
     end
+    @modified = changes.present?
   end
 
   # Clear out all session attributes bar those used for tracking (IP, host,
   # user agent, ...). Used when the user logs out.
   def clear
-    @session.select! { |k,v| self.class.tracking_keys.include?(k) }
+    @model.data.select! { |k,v| self.class.tracking_keys.include?(k) }
+    @modified = true
   end
 
   # Convert all session attributes directly into a regular hash.
   def to_h
-    @session.to_h
+    @model.data.to_h
   end
 
   # Reporting/monitoring methods
@@ -237,10 +243,10 @@ class CbrainSession
   # after the user logs out.
 
   # Mark this session as active.
-  def activate
+  def activate(user_id)
     return unless @model
 
-    @model.user_id = @session[:user_id]
+    @model.user_id = user_id
     @model.active  = true
     @model.save!
   end
@@ -257,8 +263,13 @@ class CbrainSession
   # than 1 minute.
   def touch_unless_recent
     return unless @model.present?
+    return @model.save if @modified
     return if     @model.updated_at.blank? || @model.updated_at > 1.minute.ago
     @model.touch
+  end
+
+  def mark_as_modified #:nodoc:
+    @modified = true
   end
 
   # User model scope of currently (recently) active users.
@@ -305,7 +316,7 @@ class CbrainSession
       .destroy_all
   end
 
-  # Purge all session entries older than +since+, no matter if theres an
+  # Purge all session entries older than +since+, no matter if there is an
   # attached user or not.
   def self.purge_sessions(since: 1.hour.ago)
     session_model
@@ -313,10 +324,8 @@ class CbrainSession
       .delete_all
   end
 
-  # Delegate other calls on CbrainSession to session_model, making CbrainSession
-  # behave like Rails's session model.
-  def self.method_missing(method, *args) # :nodoc:
-    session_model.send(method, *args)
+  def self.count #:nodoc:
+    session_model.count
   end
 
   # Deprecated/old API methods
@@ -325,7 +334,7 @@ class CbrainSession
   # Marked as deprecated as session attributes are no longer necessarily bound
   # to a controller.
   def params_for(controller) #:nodoc:
-    controller  = (@session[controller.to_sym] ||= {})
+    controller  = (@model.data[controller.to_sym] ||= {})
     controller['filter_hash'] ||= {}
     controller['sort_hash']   ||= {}
     controller

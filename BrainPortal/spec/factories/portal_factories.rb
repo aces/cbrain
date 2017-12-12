@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-FactoryGirl.define do
+FactoryBot.define do
 
   #################
   # User          #
@@ -49,6 +49,13 @@ FactoryGirl.define do
 
   factory :normal_user, parent: :user, class: NormalUser do
     sequence(:login)      { |n| "normal_user_#{n}" }
+
+    factory :normal_user_with_assocs do
+      after(:create) do |nu,_|
+        create_list(:work_group_with_assocs,      0, users:  [], access_profiles: [])
+        create_list(:access_profiles_with_assocs, 0, groups: [], users:           [])
+      end
+    end
   end
 
   factory :site_manager, parent: :user, class: SiteManager do
@@ -72,6 +79,13 @@ FactoryGirl.define do
 
   factory :work_group do
     sequence(:name) { |n| "work_group_#{n}" }
+
+    factory :work_group_with_assocs do
+      after(:create) do |wg, _|
+        create_list(:normal_user_with_assocs,    0, groups: [], access_profiles: [])
+        create_list(:access_profile_with_assocs, 0, groups: [], users:           [])
+      end
+    end
   end
 
   factory :system_group do
@@ -226,6 +240,7 @@ FactoryGirl.define do
   # Task            #
   ###################
 
+  PortalTask.nil? # force pre-load of all constants under CbrainTask
   factory :cbrain_task do
     status      "New"
     association :bourreau
@@ -241,9 +256,8 @@ FactoryGirl.define do
   end
 
 
-  factory "cbrain_task/diagnostics" do
+  factory "cbrain_task/diagnostics", parent: :cbrain_task, class: "cbrain_task/diagnostics" do
     status      "New"
-    add_attribute( :type, "CbrainTask::Diagnostics")
     association :bourreau
     association :user, factory: :normal_user
     association :group
@@ -298,6 +312,13 @@ FactoryGirl.define do
   factory :access_profile do
     sequence(:name)        { |n| "ap_#{n}" }
     sequence(:description) { |n| "description for ap_#{n}" }
+
+    factory :access_profile_with_assocs do
+      after(:create) do |ap, _|
+        create_list(:normal_user_with_assocs,  0, groups: [], access_profiles: [] )
+        create_list(:work_group_with_assocs,   0, users:  [], access_profiles: [] )
+      end
+    end
   end
 
 end

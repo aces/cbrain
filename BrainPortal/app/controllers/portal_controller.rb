@@ -29,8 +29,8 @@ class PortalController < ApplicationController
 
   api_available :only => [ :swagger ] # GET /swagger returns the .json specification
 
-  before_filter :login_required, :except => [ :credits, :about_us, :welcome, :swagger ]  # welcome is here so that the redirect to the login page doesn't show the error message
-  before_filter :admin_role_required, :only => :portal_log
+  before_action :login_required, :except => [ :credits, :about_us, :welcome, :swagger ]  # welcome is here so that the redirect to the login page doesn't show the error message
+  before_action :admin_role_required, :only => :portal_log
 
   # Display a user's home page with information about their account.
   def welcome #:nodoc:
@@ -45,7 +45,7 @@ class PortalController < ApplicationController
     @default_bourreau       = Bourreau.find_by_id(current_user.meta["pref_bourreau_id"])
 
     if current_user.has_role? :admin_user
-      @active_users = CbrainSession.active_users
+      @active_users = CbrainSession.active_users.to_a
       @active_users.unshift(current_user) unless @active_users.include?(current_user)
       if request.post?
         CbrainSession.clean_sessions

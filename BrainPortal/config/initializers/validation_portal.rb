@@ -30,22 +30,26 @@ require 'socket'
 
 CbrainSystemChecks.print_intro_info # general information printed to STDOUT
 
-# Checking to see if this command requires validation or not
-
-program_name = $PROGRAM_NAME || $0
-program_name = Pathname.new(program_name).basename.to_s if program_name
-first_arg    = ARGV[0]
-rails_command = $LOADED_FEATURES.detect { |path| path =~ /rails\/commands\/\w+\.rb\z/ }
-program_name = Pathname.new(rails_command).basename(".rb").to_s if rails_command
-
-#puts_cyan "Program=#{program_name} ARGV=(#{ARGV.join(" | ")})"
-#puts_cyan "FirstArg=#{first_arg} RailsCommand=#{rails_command}"
+# Try extracting what it is we are booting based on the set of loaded ruby files.
+first_arg      = ARGV[0]
+program_name   = Regexp.last_match[1] if $PROGRAM_NAME =~ /(puma|rspec|rake)$/
+program_name ||= $LOADED_FEATURES.detect do |pathname|
+  break Regexp.last_match[2] if pathname =~ %r[
+    (/rails/|/rails/commands/|/lib/)
+    (generators|console|server|puma|rspec-rails|rake) # note that not all combinations are possible
+    .rb$
+    ]x
+end || "unknown"
+# At this point, program_name should be one of keywords in the second line of the Regex above
 
 #
-# Exceptions By Program Name
+# Validations Scenarios By Program Name
 #
 
-if program_name =~ /console/ # console or dbconsole
+puts "C> CBRAIN identified boot mode: #{program_name}"
+
+# ----- CONSOLE -----
+if program_name =~ /console/
   if ENV['CBRAIN_SKIP_VALIDATIONS']
     puts "C> \t- Warning: environment variable 'CBRAIN_SKIP_VALIDATIONS' is set, so we\n"
     puts "C> \t-          are skipping all validations! Proceed at your own risks!\n"
@@ -56,33 +60,48 @@ if program_name =~ /console/ # console or dbconsole
     CbrainSystemChecks.check(:all)
     PortalSystemChecks.check(:all)
   end
-  $0 = "Rails Console #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}\0"
-elsif program_name == "rails" # probably 'generate', 'destroy', 'plugin' etc, but we can't tell!
-  puts "C> \t- Running Rails utility."
-elsif program_name == 'rspec' # test suite
+  $0 = "Rails Console #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
+
+# ----- SERVER -----
+elsif program_name =~ /server|puma/ # normal server mode
+  puts "C> \t- Running all validations for server."
+  CbrainSystemChecks.check(:all)
+  PortalSystemChecks.check(:all)
+  $0 = "Rails Server #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
+
+# ----- RSPEC TESTS -----
+elsif program_name =~ /rspec/ # test suite
   puts "C> \t- Testing with 'rspec'."
   CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
-elsif program_name == "rake"
+  PortalSystemChecks.check([:a010_check_if_pending_database_migrations])
+
+# ----- RAKE TASK -----
+elsif program_name =~ /rake/
   #
   # Rake Exceptions By First Argument
   #
-  skip_validations_for = [ /^db:/, /^cbrain:plugins/, /^route/ ]
+  skip_validations_for = [ /^db:/, /^cbrain:plugins/, /^route/, /^assets/ ]
   if skip_validations_for.any? { |p| first_arg =~ p }
     #------------------------------------------------------------------------------
-    puts "C> \t- No validations needed. Skipping."
+    puts "C> \t- No validations needed for rake task '#{first_arg}'. Skipping."
     #------------------------------------------------------------------------------
-  elsif ! first_arg.nil? && first_arg.include?("spec") #if running the test suite, make model sane and run the validation
-    PortalSanityChecks.check(:all)
-    CbrainSystemChecks.check(:all)
-    PortalSystemChecks.check(PortalSystemChecks.all - [:a020_check_database_sanity])
   else # all other rake cases
+    #------------------------------------------------------------------------------
+    puts "C> \t- All validations will run for rake task '#{first_arg}'."
+    #------------------------------------------------------------------------------
     CbrainSystemChecks.check(:all)
     PortalSystemChecks.check(:all)
   end
-else # all other cases
-  CbrainSystemChecks.check(:all)
-  PortalSystemChecks.check(:all)
-  $0 = "Rails Server #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}\0"
+
+# ----- RAILS GENERATE -----
+elsif program_name =~ /generators/ # probably 'generate', 'destroy', 'plugin' etc, but we can't tell!
+  puts "C> \t- Running Rails utility."
+
+# ----- OTHER -----
+else # any other case is something we've not yet thought about, so we crash until we fix it.
+  #puts_red "PN=#{$PROGRAM_NAME} P0=$0"
+  #puts_yellow $LOADED_FEATURES.sort.join("\n")
+  raise "Unknown boot situation: program=#{program_name}, first arg=#{first_arg}"
 end
 
 #-----------------------------------------------------------------------------

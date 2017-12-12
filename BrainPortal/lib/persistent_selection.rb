@@ -32,7 +32,7 @@ module PersistentSelection
   # PersistentSelection is a simple controller extension module with just one
   # filter/handler (+merge_persistent_selection+) and no exposed methods.
   def self.included(includer) #:nodoc:
-    includer.class_eval { before_filter(:merge_persistent_selection) }
+    includer.class_eval { before_action(:merge_persistent_selection) }
   end
 
   # Pick out persistent selection elements (_psel_*) from the request parameters

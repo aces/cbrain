@@ -24,20 +24,15 @@ class Signup < ActiveRecord::Base
 
   validate              :strip_blanks
 
-  attr_accessible       :title, :first, :middle, :last,
-                        :institution, :department, :position, :email,
-                        :street1, :street2, :city, :province, :country, :postal_code,
-                        :login, :time_zone, :comment, :admin_comment, :hidden, :user_id
-
   validates_presence_of :first, :last,
                         :institution, :department, :position, :email,
                         :city, :province, :country, :confirm_token
 
-  validates             :email, :format => { :with => /^(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost$/i }
+  validates             :email, :format => { :with => /\A(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost\z/i }
 
   validate              :login_match_user_format
 
-  belongs_to            :user
+  belongs_to            :user, :optional => true # link filled after approval
 
   def strip_blanks #:nodoc:
     [

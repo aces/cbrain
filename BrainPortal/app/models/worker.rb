@@ -153,7 +153,7 @@ class Worker
     self.pid            = nil
     self.role           = :proxy
     self.proxy_pid      = Process.pid
-    self.check_interval = 10
+    self.check_interval = 10.seconds
     self.sleep_interval = nil
     self.stop_received  = nil
     init_copy = initializers.dup
@@ -236,7 +236,7 @@ class Worker
         # Initialize variables modified by signals
         self.stop_received  = false
         self.sleep_mode     = false
-        self.sleep_interval = self.check_interval * 10 if self.sleep_interval.blank?
+        self.sleep_interval = (self.check_interval * 10).seconds if self.sleep_interval.blank?
         @trap_log           = []
         @trap_lock          = Mutex.new
 
@@ -455,7 +455,7 @@ class Worker
   # Put worker into sleep mode.
   def sleep_for_requested_interval #:nodoc:
     self.validate_I_am_a_worker
-    time_to_wake_up = self.sleep_interval.from_now
+    time_to_wake_up = self.sleep_interval.seconds.from_now
     self.worker_log.debug "Entering sleep mode for #{self.sleep_interval} seconds."
     while self.sleep_mode && ! self.stop_received
       sleep 1
@@ -473,7 +473,7 @@ class Worker
   # Unlike sleep mode, cannot be awakened.
   def wait_for_requested_interval #:nodoc:
     self.validate_I_am_a_worker
-    time_to_wake_up = self.check_interval.from_now
+    time_to_wake_up = self.check_interval.seconds.from_now
     self.worker_log.debug "Waiting for next check."
     while ! self.stop_received
       sleep 1

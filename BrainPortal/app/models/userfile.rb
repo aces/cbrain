@@ -48,6 +48,8 @@ class Userfile < ActiveRecord::Base
   before_destroy          :erase_data_provider_content_and_cache, :nullify_children
   after_destroy           :remove_spurious_sync_status
 
+  validates :type, :subclass => true  # actually this will prevent files of class Userfile to be saved
+
   validates               :name,
                           :presence => true,
                           :uniqueness =>  { :scope => [ :user_id, :data_provider_id ] },
@@ -66,7 +68,8 @@ class Userfile < ActiveRecord::Base
   belongs_to              :group
   belongs_to              :parent,
                           :class_name   => "Userfile",
-                          :foreign_key  => "parent_id"
+                          :foreign_key  => "parent_id",
+                          :optional     => true
 
   has_and_belongs_to_many :tags
   has_many                :sync_status
@@ -79,30 +82,27 @@ class Userfile < ActiveRecord::Base
   attr_accessor           :tree_children
   attr_accessor           :rank_order
 
-  attr_accessible         :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable,
-                          :num_files, :tag_ids, :hidden, :immutable, :description
+  scope                   :name_like,     -> (n)       {where("userfiles.name LIKE ?", "%#{n.strip}%")}
 
-  cb_scope                :name_like, lambda { |n| {:conditions => ["userfiles.name LIKE ?", "%#{n.strip}%"]} }
+  scope                   :has_no_parent, ->           {where(parent_id: nil)}
 
-  cb_scope                :has_no_parent, :conditions => {:parent_id => nil}
-  cb_scope                :has_no_child,  lambda { |ignored|
+  scope                   :has_no_child,  lambda { |ignored|
                                             parents_ids = Userfile.where("parent_id IS NOT NULL").raw_first_column(:parent_id).uniq
                                             parents_ids.blank? ? where({}) : where("userfiles.id NOT IN (?)", parents_ids)
                                           }
-  cb_scope                :parent_name_like, lambda { |n|
+
+  scope                   :parent_name_like, lambda { |n|
                                             matching_parents_ids = Userfile.where("name like ?", "%#{n.strip}%").raw_first_column(:id).uniq
                                             where(:parent_id => matching_parents_ids)
                                           }
 
-  cb_scope                :child_name_like, lambda { |n|
+  scope                  :child_name_like, lambda { |n|
                                              matching_children_ids = Userfile.where("name like ?", "%#{n.strip}%").where("parent_id IS NOT NULL").raw_first_column(:id).uniq
                                              matching_parents_ids  = Userfile.where(:id => matching_children_ids).raw_first_column(:parent_id).uniq
                                              where(:id => matching_parents_ids)
                                             }
 
-  cb_scope                :contain_tags, lambda {|n|
-                                            joins(:tags).where('tag_id IN (?)', n).uniq
-                                          }
+  scope                   :contain_tags, -> (n) {joins(:tags).where("tag_id IN (?)", n)}
 
   api_attr_visible :name, :size, :user_id, :parent_id, :type, :group_id, :data_provider_id, :group_writable, :num_files, :hidden, :immutable, :archived, :description
 
@@ -248,7 +248,9 @@ class Userfile < ActiveRecord::Base
     tags ||= []
     tags = [tags] unless tags.is_a? Array
 
-    non_user_tags = self.tags.all(:conditions  => ["tags.user_id<>? AND tags.group_id NOT IN (?)", user.id, user.group_ids]).map(&:id)
+    non_user_tags = self.tags
+                        .where(["tags.user_id <> ? AND tags.group_id NOT IN (?)", user.id, user.group_ids])
+                        .raw_first_column(:id)
     new_tag_set = tags + non_user_tags
 
     self.tag_ids = new_tag_set
@@ -306,7 +308,7 @@ class Userfile < ActiveRecord::Base
     access_options = {}
     access_options[:access_requested] = options.delete :access_requested
 
-    scope = self.scoped(options)
+    scope = self.where(options)
     scope = Userfile.restrict_access_on_query(user, scope, access_options)
 
     scope
@@ -321,6 +323,8 @@ class Userfile < ActiveRecord::Base
   # [For regular users:] all files that belong to the user all
   #                      files assigned to a group to which the user belongs.
   def self.find_accessible_by_user(id, user, options = {})
+    # Seems weird, it is to accomodate rails5 deprecation warnin for find (accept only id)
+    id = id.id if id.is_a?(Userfile) 
     self.accessible_for_user(user, options).find(id)
   end
 
@@ -468,7 +472,7 @@ class Userfile < ActiveRecord::Base
   # the sync operation will be triggered first.
   def is_locally_synced?
     syncstat = self.local_sync_status(:refresh)
-    return true if syncstat && syncstat.status == 'InSync'
+    return true  if syncstat && syncstat.status == 'InSync'
     return false unless self.data_provider.is_fast_syncing?
     return false if     self.data_provider.not_syncable?
     return false unless self.data_provider.rr_allowed_syncing?
@@ -670,7 +674,7 @@ class Userfile < ActiveRecord::Base
     end
 
     def partial_path(alternate_partial=nil) #:nodoc:
-      @userfile_class.view_path(alternate_partial.presence || @partial)
+      @userfile_class.view_path(alternate_partial.to_s.presence || @partial)
     end
   end
 
@@ -714,7 +718,7 @@ class Userfile < ActiveRecord::Base
   # Returns a Pathname object.
   def self.view_path(partial_name=nil)
     base = Pathname.new(CBRAIN::UserfilesPlugins_Dir) + self.to_s.underscore + "views"
-    return base if partial_name.blank?
+    return base if partial_name.to_s.blank?
     partial_name = Pathname.new(partial_name.to_s).cleanpath
     raise "View partial path outside of userfile plugin." if partial_name.absolute? || partial_name.to_s =~ /\A\.\./
     base = base + partial_name.to_s.sub(/([^\/]+)\z/,'_\1')
@@ -740,7 +744,7 @@ class Userfile < ActiveRecord::Base
   # Otherwise, returns a Pathname object.
   def self.public_path(public_file=nil)
     base = Pathname.new("/cbrain_plugins/userfiles") + self.to_s.underscore
-    return base if public_file.blank?
+    return base if public_file.to_s.blank?
     public_file = Pathname.new(public_file.to_s).cleanpath
     raise "Public file path outside of userfile plugin." if public_file.absolute? || public_file.to_s =~ /\A\.\./
     base = base + public_file

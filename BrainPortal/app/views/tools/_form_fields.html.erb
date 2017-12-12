@@ -103,7 +103,7 @@
             <%= link_to_bourreau_if_accessible(bourreau) %>
           </th>
       </tr>
-      <% tcs = ToolConfig.where( :bourreau_id => bourreau.id, :tool_id => @tool.id ) %>
+      <% tcs = ToolConfig.where( :bourreau_id => bourreau.id, :tool_id => @tool.id ).all.to_a %>
       <% tcs << 'Dummy entry for "add new" row' %>
       <% rows = tcs.size %>
       <% tcs.each_with_index do |tc,i| %>

@@ -36,9 +36,8 @@
 # creating a simple table to store these allocations sounds simple and
 # efficient.
 class TaskVmAllocation < ActiveRecord::Base
-  
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  attr_accessible :task_id, :vm_id
-
 end
+

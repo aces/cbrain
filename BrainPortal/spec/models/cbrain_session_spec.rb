@@ -24,9 +24,9 @@ require 'rails_helper'
 
 describe CbrainSession do
 
-  let(:session)      { Hash.new }
-  let(:sess_model)   { double("sess_model").as_null_object }
-  let(:cb_session)   { CbrainSession.new(session, sess_model) }
+  let(:session)      { { :session_id => 'dummy' } }
+  let(:cb_session)   { CbrainSession.new(session) }
+  let(:sess_model)   { cb_session.instance_eval { @model } } # ugly digging into implementation
   let(:current_user) { mock_model(User).as_null_object }
 
 
@@ -40,7 +40,7 @@ describe CbrainSession do
       expect(sess_model).to receive(:user_id=).with(session[:user_id])
       expect(sess_model).to receive(:active=).with(true)
       expect(sess_model).to receive(:save!)
-      cb_session.activate
+      cb_session.activate(session[:user_id])
     end
 
   end
@@ -62,7 +62,7 @@ describe CbrainSession do
   describe "self.activate_users" do
 
     it "should call where on session_class and where on User.where" do
-      cb_class = ActiveRecord::SessionStore::Session
+      cb_class = CbrainSession.session_model
       expect(cb_class).to receive(:quoted_table_name)
       expect(User).to     receive(:quoted_table_name)
       expect(User).to     receive_message_chain(:joins, :where, :where)
@@ -75,14 +75,14 @@ describe CbrainSession do
 
   describe "self.recent_activity" do
 
+    CbrainSession.session_model.delete_all
+
     1.upto(15) do |i|
-      sess = ActiveRecord::SessionStore::Session.create!( :updated_at => (i*10).seconds.ago, :session_id => "xyz#{i}", :data => {})
-      sess.user_id = i
-      sess.active  = true
-      sess.save!
+      sess = CbrainSession.new( { :session_id => "xyz_#{i}" } )
+      sess.activate(1)
     end
 
-    xit "should return an array containning recent activity (max n)" do
+    it "should return an array containning recent activity (max n)" do
       allow(User).to receive(:find_by_id).and_return(current_user)
       n = 9
       expect(CbrainSession.recent_activity(n).size).to eq(n)

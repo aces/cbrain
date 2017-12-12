@@ -60,12 +60,6 @@ module ActiveRecord #:nodoc:
     include CBRAINExtensions::ActiveRecordExtensions::AbstractModelMethods
 
     ###################################################################
-    # Helpers to manage mass-assignable attributes.
-    ###################################################################
-
-    include CBRAINExtensions::ActiveRecordExtensions::MassAssignmentAuthorization
-
-    ###################################################################
     # ActiveRecord Added Behavior For Serialization
     ###################################################################
 
@@ -83,12 +77,6 @@ module ActiveRecord #:nodoc:
 
     include CBRAINExtensions::ActiveRecordExtensions::HiddenAttributes
     include CBRAINExtensions::ActiveRecordExtensions::ApiAttrVisible
-
-    ###################################################################
-    # +scopes+ method behaviour lost in Rails 3.1.
-    ###################################################################
-
-    include CBRAINExtensions::ActiveRecordExtensions::CbrainScopes
 
   end # class Base of ActiveRecord
 
@@ -111,14 +99,5 @@ module ActiveRecord #:nodoc:
 
   end
 
-  # CBRAIN ActiveRecord::Associations::CollectionProxy extensions
-  # delegating extended Relation methods.
-  module Associations #:nodoc:
-    class CollectionProxy #:nodoc:
-      delegate :raw_first_column, :raw_rows, :to => :scoped
-    end
-  end
-
 end
-
 

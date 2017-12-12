@@ -22,6 +22,7 @@
 
 # Create a new logger for ActiveRecord operations
 console_logger              = Logger.new(STDOUT)
+console_logger.formatter    = Proc.new { |s,d,p,m| "#{m}\n" }
 ActiveRecord::Base.logger   = console_logger
 ActiveResource::Base.logger = console_logger
 
@@ -31,7 +32,7 @@ ActiveResource::Base.logger = console_logger
 # it was originally. With no block given, it's permanent until
 # do_log() is invoked.
 def no_log(&block)
-  set_log_level(Logger::ERROR,&block) rescue nil
+  set_log_level(Logger::ERROR,&block)
 end
 
 # Enable AR logging (actually, just sets logging level to DEBUG).
@@ -40,22 +41,19 @@ end
 # it was originally. With no block given, it's permanent until
 # no_log() is invoked.
 def do_log(&block)
-  set_log_level(Logger::DEBUG,&block) rescue nil
+  set_log_level(Logger::DEBUG,&block)
 end
 
 # Toggle log level for the two loggers
 def set_log_level(level) #:nodoc:
-  l1 = ActiveRecord::Base.logger.level   rescue nil
-  l2 = ActiveResource::Base.logger.level rescue nil
-  ActiveRecord::Base.logger.level   = level rescue true
-  ActiveResource::Base.logger.level = level rescue true
-  if block_given?
-    begin
-      return yield
-    ensure
-      ActiveRecord::Base.logger.level   = l1 if l1
-      ActiveResource::Base.logger.level = l2 if l2
-    end
+  console_logger       = ActiveRecord::Base.logger
+  previous_level       = console_logger.level
+  console_logger.level = level
+  return unless block_given?
+  begin
+    return yield
+  ensure
+    console_logger.level = previous_level
   end
 end
 

@@ -20,15 +20,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require 'rdoc/task'
+
 namespace :doc do
   desc "Create CBRAIN BrainPortal documentation"
-  Rake::RDocTask.new(:brainportal) { |rdoc|
+  RDoc::Task.new(:brainportal) { |rdoc|
      rdoc.rdoc_dir = 'doc/brainportal'
-     rdoc.title    = "CBRAIN BrainPortal API Documentation"
+     rdoc.title    = "CBRAIN BrainPortal API"
      rdoc.options << '-a'
      rdoc.options << '-W https://github.com/aces/cbrain/blob/master/BrainPortal/%s'
-     rdoc.main = 'README'
-     rdoc.rdoc_files.include('README')
+     rdoc.main = 'README.md'
+     rdoc.rdoc_files.include('README.md')
      rdoc.rdoc_files.include('app/*/*.rb')
      rdoc.rdoc_files.include('app/models/userfiles/*.rb')
      rdoc.rdoc_files.include('lib/*.rb')

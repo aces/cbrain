@@ -103,9 +103,12 @@
     <% t.cell("Data Provider") do %>
       <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
       ( <%= @userfile.data_provider.class.to_s %> )
-      <%= "Cached: " unless @userfile.sync_status.blank? %>
-      <% @userfile.sync_status.each do |syncstat| %>
-        <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>
+      <% ss = @userfile.sync_status.all.to_a %>
+      <% if ss.size > 0 %>
+        Cached:
+        <% ss.each do |syncstat| %>
+          <%= render :partial => 'syncstatus', :locals => { :syncstat => syncstat } %>
+        <% end %>
       <% end %>
     <% end %>
 
@@ -144,9 +147,10 @@
       <% t.empty_cell %>
     <% end %>
 
-    <% if @userfile.children.present? %>
+    <% children = @userfile.children.order(:name).all.to_a %>
+    <% if children.size > 0 %>
       <% t.cell("Children", :show_width => 2) do %>
-        <%= array_to_table(@userfile.children.sort {|a,b| a.name.casecmp(b.name)}, :table_class => 'simple', :min_data => 3, :cols => 3, :fill_by_columns => true ) do |u,r,c| %>
+        <%= array_to_table(children, :table_class => 'simple', :min_data => 3, :cols => 3, :fill_by_columns => true ) do |u,r,c| %>
           <%= link_to_userfile_if_accessible(u) %>
         <% end %>
       <% end %>

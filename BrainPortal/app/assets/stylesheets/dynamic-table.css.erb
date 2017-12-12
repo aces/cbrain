@@ -1,0 +1,398 @@
+
+/*
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+*/
+
+/* Stylesheet for dynamic tables */
+
+/* general layout */
+.dynamic-table {
+  color: #000000;
+  display: inline-block;
+  font-family: sans-serif;
+}
+
+.dt-table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  border: 0;
+  clear: both;
+}
+
+.dt-head > tr > th {
+  background: inherit;
+  border: 0;
+  color: inherit;
+  padding: 0.2em 0em 0.2em 0.9em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.dt-body > tr > td {
+  border: 0;
+  color: inherit;
+  height: 22px;
+  padding: 0.2em 0.5em 0.2em 0.9em;
+  text-align: left;
+}
+
+.dt-body > tr > td.dt-table-empty {
+  color: #444444;
+  font-style: italic;
+  text-align: center;
+}
+
+.dt-hidden {
+  display: none;
+}
+
+/* colors */
+.dt-head > tr {
+  background-color: #0471b4;
+  color: #ffffff;
+}
+
+.dt-body > tr {
+  border-bottom: 1px solid #dddddd;
+}
+
+.dt-body > tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+.dt-body > tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+.dt-table > .dt-head .ui-icon {
+  background-image: url(<%= asset_path 'images/ui-white-icons.png' %>);
+  margin-top: 0.2em;
+}
+
+.dt-col-btn:hover,
+.dt-filter-btn:hover,
+.dt-pop-close-btn:hover,
+.dt-sort-btn:hover {
+  background-color: #287fb5;
+  cursor: pointer;
+}
+
+.dt-col-btn:active,
+.dt-filter-btn:active,
+.dt-pop-close-btn:active,
+.dt-sort-btn:active {
+  background-color: #4c8db5;
+  cursor: pointer;
+}
+
+.dt-col-btn.dt-shown.ui-icon,
+.dt-filter-btn.dt-shown.ui-icon {
+  background-color: #ffffff;
+  background-image: url(<%= asset_path 'images/ui-blue-icons.png' %>);
+  cursor: pointer;
+}
+
+/* headers */
+.dt-hdr {
+  display: inline-block;
+  margin-top: 1px;
+  padding-right: 4em;
+}
+
+.dt-filter-btn,
+.dt-sort-btn {
+  display: inline-block;
+  float: right;
+  margin-top: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+/* popups */
+.dt-col-csp,
+.dt-filter {
+  position: relative;
+}
+
+.dt-popup {
+  background-color: #0471b4;
+  border: 0.3em solid #0471b4;
+  display: none;
+  left: 0;
+  min-width: 120px;
+  position: absolute;
+  text-align: left;
+  top: 2.7em;
+  white-space: normal;
+  z-index: 2;
+}
+
+.dt-popup > table {
+  background: #ffffff;
+  border-spacing: 0;
+  border: 0;
+  color: #000000;
+  font-weight: normal;
+  padding: 0.6em;
+  text-align: left;
+}
+
+.dt-popup > table > thead > tr > th,
+.dt-popup > table > thead > tr > td,
+.dt-popup > table > tbody > tr > td {
+  padding: 0;
+  text-align: left;
+  white-space: normal;
+}
+
+.dt-pop-title {
+  display: inline-block;
+  height: 100%;
+  padding-left: 1em;
+  padding-top: 0.3em;
+}
+
+.dt-pop-close-btn {
+  display: inline-block;
+  float: right;
+  margin-top: 0.3em;
+}
+
+/* selection */
+.dt-sel-check {
+  display: none;
+}
+
+.dt-sel-check + .dt-sel-lbl {
+  display: inline-block;
+}
+
+.dt-sel-check + .dt-sel-lbl > .dt-sel-icon {
+  visibility: hidden;
+}
+
+.dt-sel-check:checked + .dt-sel-lbl > .dt-sel-icon,
+.dt-sel-check[checked=checked] + .dt-sel-lbl > .dt-sel-icon {
+  visibility: visible;
+}
+
+td.dt-sel,
+th.dt-sel {
+  width: 18px;
+}
+
+th.dt-sel > .dt-sel-check + .dt-sel-lbl {
+  border: 1px solid #ffffff;
+  margin: 2px 6px 2px 0;
+  vertical-align: middle;
+}
+
+td.dt-sel > .dt-sel-check + .dt-sel-lbl {
+  background-color: #ffffff;
+  border: 1px solid #dddddd;
+  margin: 2px 0 2px 0;
+  vertical-align: middle;
+}
+
+td.dt-sel > .dt-sel-lbl > .dt-sel-icon {
+  background-image: url(<%= asset_path 'images/ui-black-icons.png' %>);
+}
+
+.dt-body.dt-sel-rows {
+  cursor: pointer;
+}
+
+.dt-body > tr.dt-sel-row:hover,
+.dt-body > tr.dt-selected:hover {
+  background-color: #fff3d3;
+}
+
+.dt-body > tr.dt-sel-row:active,
+.dt-body > tr.dt-selected:active {
+  background-color: #ffe49a;
+}
+
+.dt-body > tr.dt-selected {
+  background-color: #fff8e6;
+}
+
+/* sort */
+.dt-sort > .dt-hdr {
+  cursor: pointer;
+}
+
+/* filter */
+.dt-fpop-cnt,
+.dt-fpop-find,
+.dt-fpop-find-icon,
+.dt-fpop-txt {
+  border: 0;
+  color: inherit;
+  font-size: inherit;
+  padding: inherit;
+}
+
+.dt-popup > .dt-fpop-table {
+  padding: 0.6em 0.8em 0.6em 0.5em;
+}
+
+.dt-fpop-head > tr > .dt-fpop-find-icon {
+  padding-right: 0.3em;
+  text-align: right;
+}
+
+.dt-fpop-head > tr > .dt-fpop-find {
+  text-align: left;
+  padding-right: 0.4em;
+  white-space: nowrap;
+}
+
+.dt-fpop-body > tr > .dt-fpop-cnt {
+  color: #0471b4;
+  font-weight: bold;
+  min-width: 16px;
+  padding-right: 0.9em;
+  text-align: right;
+}
+
+.dt-fpop-body > tr > .dt-fpop-txt {
+  min-width: 18px;
+  padding-left: 0.3em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.dt-fpop-head > tr > .dt-fpop-find-icon > .ui-icon {
+  background-image: url(<%= asset_path 'images/ui-blue-icons.png' %>);
+  display: inline-block;
+}
+
+.dt-fpop-find > input {
+  border: 1px solid #dddddd;
+  margin-bottom: 0.2em;
+  padding-left: 0.2em;
+  width: 100%;
+}
+
+.dt-fpop-body > tr > .dt-fpop-txt.dt-empty,
+.dt-fpop-body > tr > .dt-fpop-cnt.dt-empty {
+  color: #bbbbbb;
+}
+
+.dt-fpop-txt {
+  cursor: pointer;
+}
+
+.dt-fpop-txt:hover {
+  background-color: #fff3d3;
+}
+
+.dt-fpop-txt:active {
+  background-color: #ffe49a;
+}
+
+/* columns */
+.dt-head > tr > th.dt-col-csp {
+  padding: 0 0.6em;
+}
+
+.dt-body > tr > td.dt-col-csp {
+  color: #888888;
+}
+
+.dt-cpop-col > .dt-cpop-icon.ui-icon {
+  background-image: url(<%= asset_path 'images/ui-black-icons.png' %>);
+}
+
+.dt-cpop-col {
+  cursor: pointer;
+}
+
+.dt-cpop-col:hover {
+  background-color: #fff3d3;
+}
+
+.dt-cpop-col:active {
+  background-color: #ffe49a;
+}
+
+.dt-cpop-col > td {
+  border: 0;
+  color: inherit;
+  padding: inherit;
+  text-align: left;
+  font-size: inherit;
+}
+
+.dt-cpop-icon + td {
+  min-width: 100px;
+}
+
+/* pagination */
+.dt-pag-pages {
+  float: left;
+  padding: 0.5em 0.2em;
+}
+
+.dt-pag-pages > a,
+.dt-pag-pages > em,
+.dt-pag-pages > span {
+  display: inline-block;
+  padding: 0.2em 0.3em;
+}
+
+.dt-pag-pages > a {
+  border: 1px solid #ffffff;
+  text-decoration: none;
+  color: #000000;
+}
+
+.dt-pag-pages > a:hover {
+  border-color: #dddddd;
+}
+
+.dt-pag-pages > a:active {
+  background-color: #f9f9f9;
+}
+
+.dt-pag-pages > em {
+  border: 1px solid #05a3d6;
+  font-style: normal;
+}
+
+.dt-pag-pages > .disabled,
+.dt-pag-pages > .gap {
+  color: #888888;
+}
+
+.dt-pag-cnt {
+  float: right;
+  padding: 0.5em 0.2em;
+}
+
+.dt-pag-cnt > input {
+  border: 1px solid #dddddd;
+  font: inherit;
+  text-align: right;
+  width: 3em;
+  padding: 0.2em;
+}

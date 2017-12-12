@@ -37,6 +37,7 @@ module SelectBoxHelper
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options[:selector]
     users    = options[:users] || current_user.available_users
+    users    = users.all.to_a if users.is_a?(ActiveRecord::Relation)
 
     if selector.respond_to?(:user_id)
       selected = selector.user_id.to_s
@@ -73,7 +74,8 @@ module SelectBoxHelper
   # displayed when no option is selected
   def site_select(parameter_name = "site", options = {}, select_tag_options = {} )
      options  = { :selector => options } unless options.is_a?(Hash)
-     sites = options[:sites] || Site.order(:name).all
+     sites = options[:sites] || Site.order(:name)
+     sites = sites.all.to_a if sites.is_a?(ActiveRecord::Relation)
      selector = options[:selector]
 
      if selector.respond_to?(:site_id)
@@ -104,6 +106,7 @@ module SelectBoxHelper
     options  = { :selector => options } unless options.is_a?(Hash)
     selector = options.has_key?(:selector) ? (options[:selector].presence || "") : current_project
     groups   = options.has_key?(:groups)   ? (options[:groups].presence   || []) : current_user.available_groups
+    groups   = groups.all.to_a if groups.is_a?(ActiveRecord::Relation)
 
     if selector.respond_to?(:group_id)
       selected = selector.group_id.to_s
@@ -185,7 +188,8 @@ module SelectBoxHelper
     if ! options.has_key?(:selector)
       selector = current_user.meta["pref_data_provider_id"]
     end
-    data_providers = options[:data_providers] || DataProvider.find_all_accessible_by_user(current_user).all
+    data_providers = options[:data_providers] || DataProvider.find_all_accessible_by_user(current_user)
+    data_providers = data_providers.all.to_a if data_providers.is_a?(ActiveRecord::Relation)
 
     if selector.respond_to?(:data_provider_id)
       selected = selector.data_provider_id.to_s
@@ -238,7 +242,8 @@ module SelectBoxHelper
     if ! options.has_key?(:selector)
       selector = current_user.meta["pref_bourreau_id"].presence
     end
-    bourreaux = options[:bourreaux] || Bourreau.find_all_accessible_by_user(current_user).all
+    bourreaux = options[:bourreaux] || Bourreau.find_all_accessible_by_user(current_user)
+    bourreaux = bourreaux.all.to_a if bourreaux.is_a?(ActiveRecord::Relation)
 
     if selector.respond_to?(:bourreau_id)
       selected = selector.bourreau_id.to_s
@@ -250,7 +255,7 @@ module SelectBoxHelper
       selected = selector.to_s
     end
 
-    return "<strong style=\"color:red\">No Execution Servers Available</strong>".html_safe if bourreaux.blank?
+    return "<strong style=\"color:red\">No Execution Servers Available</strong>".html_safe if bourreaux.nil? || bourreaux.empty?
 
     bourreaux_pairs = bourreaux.sort_by(&:name).map do |b|
        opt_pair = [ b.name, b.id.to_s ]
@@ -306,6 +311,7 @@ module SelectBoxHelper
     end
 
     tool_configs  = Array(options[:tool_configs] || ToolConfig.find_all_accessible_by_user(current_user).all)
+    tool_configs  = tool_configs.all.to_a if tool_configs.is_a?(ActiveRecord::Relation)
 
     tool_config_options = []   # [ [ grouplabel, [ [pair], [pair] ] ], [ grouplabel, [ [pair], [pair] ] ] ]
 
@@ -575,7 +581,7 @@ module SelectBoxHelper
   # Group a list of users into two sub-categories:
   # one for active users and another for locked users
   def regroup_users_by_lock_status(users) #:nodoc:
-    user_by_lock_status_hash = users.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"}
+    user_by_lock_status_hash = users.to_a.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"}
     ordered_by_lock_status   = []
 
     user_by_lock_status_hash.sort.each do |status,users_by_status|

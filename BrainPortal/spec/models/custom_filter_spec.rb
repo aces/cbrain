@@ -27,7 +27,7 @@ describe CustomFilter do
 
   describe "#filter_scope" do
     it "should raise an exception, this method should be redefined in subclasses" do
-      expect{cf.filter_scope(CustomFilter.scoped({}))}.to raise_error("Using filter_scope in CustomFilter base class. Should be used from a subclass.")
+      expect{cf.filter_scope(CustomFilter.where(nil))}.to raise_error("Using filter_scope in CustomFilter base class. Should be used from a subclass.")
     end
   end
 

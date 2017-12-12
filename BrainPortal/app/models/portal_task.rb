@@ -614,7 +614,7 @@ class PortalTask < CbrainTask
 
     def each(&block) #:nodoc:
       @real_errors.each do |attr, msg|
-        next unless attr.to_s =~ /^cbrain_task_BRA_params_KET_/ # see path2key below
+        next unless attr.to_s =~ /\Acbrain_task_BRA_params_KET_/ # see path2key below
         yield key2path(attr), msg
       end
     end
@@ -638,7 +638,7 @@ class PortalTask < CbrainTask
 
     def get(paramspath) #:nodoc:
       # for some reason the get() and set() method REALLY want a symbol
-      @real_errors.get(path2key(paramspath))
+      @real_errors[path2key(paramspath)]
     end
 
     def include?(paramspath) #:nodoc:
@@ -808,7 +808,7 @@ class PortalTask < CbrainTask
   # Otherwise, returns a Pathname object.
   def self.public_path(public_file=nil)
     base = Pathname.new("/cbrain_plugins/cbrain_tasks") + self.to_s.demodulize.underscore
-    return base if public_file.blank?
+    return base if public_file.to_s.blank?
     public_file = Pathname.new(public_file.to_s).cleanpath
     raise "Public file path outside of task plugin." if public_file.absolute? || public_file.to_s =~ /\A\.\./
     base = base + public_file

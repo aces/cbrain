@@ -27,23 +27,23 @@ module SessionHelpers
 
   def self.included(includer) #:nodoc:
     includer.class_eval do
-      helper_method :current_session,   :current_project
+      helper_method :current_project, :cbrain_session
     end
   end
 
   # Returns the current session as a CbrainSession object.
-  def current_session
-    @cbrain_session ||= CbrainSession.new(session, request.env['rack.session.record'] )
+  def cbrain_session
+    @cbrain_session ||= CbrainSession.new(session)
   end
 
   # Returns currently active project.
   def current_project
-    return nil unless current_session[:active_group_id]
-    return nil if current_session[:active_group_id] == "all"
+    return nil unless session[:active_group_id]
+    return nil if     session[:active_group_id] == "all"
 
-    if !@current_project || @current_project.id.to_i != current_session[:active_group_id].to_i
-      @current_project = Group.find_by_id(current_session[:active_group_id])
-      current_session[:active_group_id] = nil if @current_project.nil?
+    if !@current_project || @current_project.id.to_i != session[:active_group_id].to_i
+      @current_project = Group.find_by_id(session[:active_group_id])
+      session[:active_group_id] = nil if @current_project.nil?
     end
 
     @current_project

@@ -87,7 +87,7 @@ class EnCbrainSshDataProvider < SshDataProvider
 
     # We should create a nice state machine for the remote rename operations
     self.master # triggers unlocking the agent
-    Net::SFTP.start(remote_host,remote_user, :port => remote_port, :auth_methods => [ 'publickey' ] ) do |sftp|
+    Net::SFTP.start(remote_host,remote_user, :port => (remote_port.presence || 22), :auth_methods => [ 'publickey' ] ) do |sftp|
 
       req = sftp.lstat(newpath).wait
       return false if req.response.ok?   # file already exists ?

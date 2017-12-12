@@ -91,7 +91,7 @@ class ScirUnix < Scir
         return [ loadtxt , proclines.size.to_s ]
       when /Darwin/i
         hostinfo = `hostinfo 2>&1`.strip
-        hostinfo.match(/\A(\d+) processors are/)
+        hostinfo.match(/(\d+) processors are/)
         numproc = Regexp.last_match[1] || "unknown"
         [ loadtxt, numproc ]
       else

@@ -25,8 +25,8 @@ class MessagesController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_filter :login_required
-  before_filter :manager_role_required, :only  => :create
+  before_action :login_required
+  before_action :manager_role_required, :only  => :create
 
   # GET /messages
   # GET /messages.xml
@@ -34,7 +34,7 @@ class MessagesController < ApplicationController
     @scope = scope_from_session('messages')
     scope_default_order(@scope, 'last_sent', :desc)
 
-    @base_scope = Message
+    @base_scope = Message.where(nil)
     @base_scope = @base_scope.where(:user_id => current_user.available_users.map(&:id)) unless
       current_user.has_role?(:admin_user)
     @view_scope = @messages = @scope.apply(@base_scope)
@@ -62,7 +62,7 @@ class MessagesController < ApplicationController
   # POST /messages
   # POST /messages.xml
   def create #:nodoc:
-    @message = Message.new(params[:message])
+    @message = Message.new(message_params)
 
     date = params[:expiry_date] || ""
     hour = params[:expiry_hour] || "00"
@@ -112,15 +112,15 @@ class MessagesController < ApplicationController
       @message = current_user.messages.find(params[:id])
     end
 
+    # It seems we only support changing the read/unread attribute.
     respond_to do |format|
-      if @message.update_attributes(:read  => params[:read])
+      if @message.update_attributes(:read =>  params[:read])
         format.xml  { head :ok }
+        format.js   { head :ok }
       else
         flash.now[:error] = "Problem updating message."
-        format.xml  { render :xml => @message.errors, :status => :unprocessable_entity }
-      end
-      format.js do
-        redirect_to :action => :index
+        format.xml  { render :xml  => @message.errors, :status => :unprocessable_entity }
+        format.js   { render :json => @message.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -157,4 +157,9 @@ class MessagesController < ApplicationController
     head :ok
   end
 
+  private
+
+  def message_params
+    params.require(:message).permit(:header, :description, :variable_text, :message_type, :read, :user_id, :expiry, :last_sent, :critical, :display, :send_email, :group_id, :sender_id)
+  end
 end
