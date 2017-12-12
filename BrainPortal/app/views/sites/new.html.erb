@@ -49,7 +49,7 @@
       <div class="button_div">
         <!-- Separation between active and locked users -->
         <%
-        user_by_lock_status_hash = User.all.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"}
+        user_by_lock_status_hash = User.all.to_a.hashed_partition { |u| u.account_locked == false ? "Active users" : "Locked users"}
         active_users = user_by_lock_status_hash["Active users"] || []
         locked_users = user_by_lock_status_hash["Locked users"] || []
         %>
