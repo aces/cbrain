@@ -188,6 +188,36 @@ class UserfilesController < ApplicationController
     redirect_to :action => :index
   end
 
+  # Use the rest of the route as a path into a file collection.
+  # [:file_path] a path relative to the file collection's route directory.
+  #
+  # GET /userfiles/1/file_collection_content/path/to/file/in/file_collection
+  def file_collection_content
+    @userfile = Userfile.find_accessible_by_user(params[:id], current_user, :access_requested => :read)
+    if @userfile.nil?
+      raise ActiveRecord::RecordNotFound("Could not retrieve a userfile with ID: #{params[:id]}")
+    end
+    path = @userfile.cache_full_path.to_s + '/' + params[:file_path]
+    if params[:format]
+      path += '.' + params[:format]
+    end
+    if not File.file?(path)
+      head :not_found
+      return
+    end
+    if File.symlink?(path)
+      sympath = File.expand_path(File.readlink(path))
+      if not sympath.to_s.start_with? @userfile.cache_full_path.to_s
+        head :unauthorized
+        return
+      end
+    end
+    if params[:format] == 'html'
+      render file: path, layout: false
+    else
+      send_file path
+    end
+  end
   # Transfer contents of a file.
   # If no relevant parameters are given, the controller
   # will simply attempt to send the entire file.
