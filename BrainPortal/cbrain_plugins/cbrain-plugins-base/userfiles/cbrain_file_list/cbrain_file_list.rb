@@ -124,7 +124,7 @@ class CbrainFileList < CSVFile
   # Note that this method caches internally its result. To clear the
   # cache (if the userfile's content has changed for instance) call
   # the method flush_internal_caches().
-  def userfiles_accessible_by_user!(user, missing=nil, invalid=nil)
+  def userfiles_accessible_by_user!(user, missing=nil, invalid=nil, access_requested = :write)
 
     # Caching system, since this method is expensive
     @userfiles ||= {}
@@ -134,7 +134,7 @@ class CbrainFileList < CSVFile
     # Compute everything
     ids_with_zeros_and_nils = self.ordered_raw_ids
     just_ids                = ordered_raw_ids.reject { |v| v.blank? || v == 0 }
-    unsorted_files          = Userfile.find_all_accessible_by_user(user).where( 'userfiles.id' => just_ids ).all
+    unsorted_files          = Userfile.find_all_accessible_by_user(user, :access_requested => access_requested).where( 'userfiles.id' => just_ids ).all.to_a
     hashed_files            = unsorted_files.index_by { |f| f.id }
     @userfiles[cache_key]   = ids_with_zeros_and_nils.map do |idzn|
       if idzn.nil?

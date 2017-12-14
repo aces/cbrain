@@ -324,7 +324,7 @@ class Userfile < ActiveRecord::Base
   #                      files assigned to a group to which the user belongs.
   def self.find_accessible_by_user(id, user, options = {})
     # Seems weird, it is to accomodate rails5 deprecation warnin for find (accept only id)
-    id = id.id if id.is_a?(Userfile) 
+    id = id.id if id.is_a?(Userfile)
     self.accessible_for_user(user, options).find(id)
   end
 

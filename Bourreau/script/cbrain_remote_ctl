@@ -112,7 +112,8 @@ def tunnel_to_secondary_host(host, http_port, db_port, args)
   end
   myscript = __FILE__
   myscript = (Pathname.getwd + myscript).to_s if myscript !~ /^\//
-  proxymaster.remote_shell_command_writer("ruby #{myscript.bash_escape} #{args.map(&:bash_escape).join(" ")} 2>&1" ) do |fh|
+  mydir = Pathname.getwd
+  proxymaster.remote_shell_command_writer("cd #{mydir.to_s.bash_escape}; bundle exec ruby #{myscript.bash_escape} #{args.map(&:bash_escape).join(" ")} 2>&1" ) do |fh|
     fh.write(STDIN.read) unless args.size == 1 && args[0] == 'stop'
   end
   if args.size == 1 && args[0] == 'stop'
@@ -234,20 +235,25 @@ File.rename(environment_log_file, environment_log_file.sub(/\.log$/,"_#{date_ext
 # Start the server or the console
 raw_system_cmd       = ""
 Dir.chdir(rails_home) do
+  ENV["SECRET_KEY_BASE"] ||= "JUNK-NOT-USED-IN-BOURREAU-THERE-ARE-NO-SESSIONS-ANYWAY"
   rails_cmd_ar = (mode == "start") ?
         [
           "script/rails", "server", "puma",
+          #"puma",
           "-d", # the -d will start it in background
           "-p", "#{port}",
           "-e", "#{environment}",
           "-b", "127.0.0.1",
-          "-P", "#{pidfile}"
+          "-P", "#{pidfile}",
+          #"--pidfile", "#{pidfile}",
+          #"--redirect-stdout", "log/stdout.tmp",
+          #"--redirect-stderr", "log/stderr.tmp",
         ] :
         [
           "script/rails", "console", "#{environment}",
         ]
   raw_system_cmd = (mode == "start") ?
-      "set -o pipefail ; " + rails_cmd_ar.map(&:bash_escape).join(" ") + " 2>&1 | tee -a #{start_log_file.bash_escape}" :
+      "set -o pipefail ; exec 6>&- ; exec 255>&- ; " + rails_cmd_ar.map(&:bash_escape).join(" ") + " </dev/null 2>&1 | tee -a #{start_log_file.bash_escape}" :
       rails_cmd_ar.map(&:bash_escape).join(" ")
   start_success=system("bash","-c",raw_system_cmd) # this will BLOCK if console, NOT BLOCK if start
 end

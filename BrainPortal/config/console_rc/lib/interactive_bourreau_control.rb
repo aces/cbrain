@@ -304,7 +304,8 @@ Operations Mode : #{@mode == "each_command" ?
     # Status: "ps"
     if letter == "s"
       bash_command_on_bourreaux(
-        "ps -u $USER -o user,pid,%cpu,%mem,vsize,state,stime,time,command | sed -e 's/  *$//'"
+        #"ps -u $USER -o user,pid,%cpu,%mem,vsize,state,stime,time,command | sed -e 's/  *$//'"
+        "ps xww -o pid,vsz,lstart,time,args | grep -v grep | sed -e 's/  *$//'"
       )
       return true
     end
@@ -312,7 +313,8 @@ Operations Mode : #{@mode == "each_command" ?
     # Status: "ps" for workers and Bourreaux
     if letter == "r"
       bash_command_on_bourreaux(
-        "ps -u $USER -o user,pid,%cpu,%mem,vsize,state,stime,time,command | egrep 'Worker @b@|Bourreau @b@' | grep -v grep | sed -e 's/  *$//'"
+        #"ps -u $USER -o user,pid,%cpu,%mem,vsize,state,stime,time,command | egrep 'Worker @b@|Bourreau @b@' | grep -v grep | sed -e 's/  *$//'"
+        "ps xww -o pid,vsz,lstart,time,args | egrep 'COMMAND|Worker @b@|Bourreau @b@' | grep -v grep | sed -e 's/  *$//'"
       )
       return true
     end
