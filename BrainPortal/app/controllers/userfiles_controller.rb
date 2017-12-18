@@ -205,12 +205,10 @@ class UserfilesController < ApplicationController
       head :not_found
       return
     end
-    if File.symlink?(path)
-      sympath = File.expand_path(File.readlink(path))
-      if not sympath.to_s.start_with? @userfile.cache_full_path.to_s
-        head :unauthorized
-        return
-      end
+    final_path = Pathname.new(path).realpath rescue nil
+    if not final_path.to_s.start_with? @userfile.cache_full_path.to_s
+      head :unauthorized
+      return
     end
     if params[:format] == 'html'
       render file: path, layout: false

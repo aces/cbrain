@@ -112,6 +112,14 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     })
   end
 
+  # This determines if the task expects to only read its input files,
+  # or modify them, and return respectively :read or :write (the default).
+  # The symbol can be passed to methods such as Userfile.find_accessible_by_user().
+  # Depending on the value, more or less files are allowed to be processed.
+  def file_access
+    @_file_access ||= (self.class.properties[:readonly_input_files].present? ? :read : :write)
+  end
+
 % unless defaults.empty?
   # Default values for some (all?) of <%= name %>'s parameters. Those values
   # reflect the defaults taken by the tool's developer; feel free to change
@@ -405,9 +413,9 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
       msg2 = lambda { |e| " cbcsv accessibility error in #{f.name}! Possibly due to cbcsv malformation. (Received error: #{e.inspect})" }
       errFlag = true # Whether the error checking found a problem
       begin # Check that the user has access to all of the files in the cbcsv
-        fs = f.userfiles_accessible_by_user!(self.user)
+        fs = f.userfiles_accessible_by_user!(self.user,nil,nil,file_access)
         for i in f.ordered_raw_ids.select{ |r| (! r.nil?) && (r.to_s != '0') }
-          accessible = ! ( Userfile.find_accessible_by_user( i, self.user ) rescue nil ).nil?
+          accessible = ! ( Userfile.find_accessible_by_user( i, self.user, :access_requested => file_access ) rescue nil ).nil?
           params_errors.add( id, msg1.(i) ) unless accessible
           errFlag = false unless accessible
         end
@@ -431,13 +439,13 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     # Get cbcsvs (note: we get files that end with cbcsv, but may not be of that class; the user is warned when this occurs, i.e. after_form fails)
     files = self.params[:interface_userfile_ids].map do |f|
       begin
-        Userfile.find_accessible_by_user( f, self.user )
+        Userfile.find_accessible_by_user( f, self.user, :access_requested => file_access )
       rescue => e
         params_errors.add(<%= ":'#{single_file['id']}'" %>, "encountered an error trying to find file #{f}. Ensure the file exists and you can access it.")
         return ""
       end
     end
-    cbcsvs = files.map { |f| Userfile.find_accessible_by_user( f, self.user ) }.select { |f| f.name.end_with?('.cbcsv') || f.is_a?(CbrainFileList) }
+    cbcsvs = files.map { |f| Userfile.find_accessible_by_user( f, self.user, :access_requested => file_access ) }.select { |f| f.name.end_with?('.cbcsv') || f.is_a?(CbrainFileList) }
     # Validate accessibility
     for cbcsv in cbcsvs
       # Get the id of the single_file input
@@ -495,7 +503,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     <%= "file_lists = [%s]" % file_lists.map { |f| ":'#{f['id']}'" }.join( ', ' ) %>
     return [] if files.nil? || files.length == 0
     files.select { |f| ! self.params[f].nil? && ! file_lists.include?(f) } # Prevent problems with file-type inputs with list=true
-         .map    { |f| [f, Userfile.find_accessible_by_user(self.params[f], self.user)] }
+         .map    { |f| [f, Userfile.find_accessible_by_user(self.params[f], self.user, :access_requested => file_access)] }
          .select { |f| f[1].name.end_with?('.cbcsv') || f[1].suggested_file_type == CbrainFileList }
   end
 
@@ -523,9 +531,9 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
         tsk
       end
       # Expand cbcsvs and generate tasks from them
-      f = Userfile.find_accessible_by_user( id, self.user )
+      f = Userfile.find_accessible_by_user( id, self.user, :access_requested => file_access )
       if f.is_a?( CbrainFileList )
-        ufiles = f.userfiles_accessible_by_user!( self.user )
+        ufiles = f.userfiles_accessible_by_user!( self.user, nil, nil, file_access )
         # Skip files that are purposefully nil (e.g. given id 0 by the user)
         tasks = ufiles.select { |u| ! u.nil? }.map{ |a| fillTask.( a.id, task.dup ) }
       # Set and sanitize the one file parameter for each id for regular files
@@ -601,6 +609,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # Raises an exception for task parameter +name+ if the parameter's value
   # is not adequate.
   def sanitize_param(name, type, options = {})
+
     # Taken userfile names. An error will be raised if two input files have the
     # same name.
     @taken_files ||= Set.new
@@ -646,7 +655,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
           next value
         end
 
-        unless (file = Userfile.find_accessible_by_user(value, self.user))
+        unless (file = Userfile.find_accessible_by_user(value, self.user, :access_requested => file_access))
           params_errors.add(name, ": cannot find userfile (ID #{value})")
           next value
         end

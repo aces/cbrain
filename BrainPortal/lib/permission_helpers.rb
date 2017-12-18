@@ -58,8 +58,9 @@ module PermissionHelpers
   # Helper method to render and error page. Will render public/<+status+>.html
   def access_error(status)
     respond_to do |format|
-      format.html { render(:file => (Rails.root.to_s + '/public/' + status.to_s), :status  => status, :layout => false ) }
-      format.xml  { head status }
+      format.html  { render(:file => (Rails.root.to_s + '/public/' + status.to_s), :status  => status, :layout => false ) }
+      format.xml   { head status }
+      format.json  { head status }
     end
   end
 
@@ -73,8 +74,9 @@ module PermissionHelpers
       flash.now[:error] += "\n#{message}" unless message.blank?
       unless current_user && current_user.has_role?(:admin_user)
         respond_to do |format|
-          format.html {redirect_to logout_path unless params[:controller] == "sessions"}
-          format.xml  {render :xml => {:message => message}, :status => 503}
+          format.html  { redirect_to logout_path unless params[:controller] == "sessions"}
+          format.xml   { render :xml  => {:message => message}, :status => 503}
+          format.json  { render :json => {:message => message}, :status => 503}
         end
       end
     end
