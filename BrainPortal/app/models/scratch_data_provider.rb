@@ -58,7 +58,8 @@ class ScratchDataProvider < LocalDataProvider
   # Returns true if the local Rails app has a properly configured
   # cache directory.
   def impl_is_alive? #:nodoc:
-    self.this_is_a_proper_cache_dir!(self.class.cache_rootdir.to_s)
+    self.class.this_is_a_proper_cache_dir!(self.class.cache_rootdir.to_s,
+      :for_remote_resource_id => RemoteResource.current_resource.id)
     true
   rescue
     false

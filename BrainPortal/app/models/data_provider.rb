@@ -1231,7 +1231,7 @@ class DataProvider < ActiveRecord::Base
       # Check to see if the cache dir match the path of any known Data Provider
       conflict_dp = self.all
         .select do |dp|
-          Pathname.new(dp.remote_dir).cleanpath == cache_root_path
+          Pathname.new(dp.remote_dir || '').cleanpath == cache_root_path
         end
         .find do |dp|
           hosts  = (dp.alternate_host || "").split(',')
