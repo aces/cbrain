@@ -265,7 +265,7 @@ class GroupsController < ApplicationController
     if current_user.has_role?(:admin_user)
       params.require_as_params(:group).permit(:name, :description, :site_id, :creator_id, :invisible, :user_ids => [])
     else
-      params.require_as_params(:group).permit(:name, :description)
+      params.require_as_params(:group).permit(:name, :description, :user_ids => [])
     end
   end
 
