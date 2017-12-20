@@ -577,17 +577,17 @@ RSpec.describe UserfilesController, :type => :controller do
       end
 
       it "should find or create a 'PASS' tag" do
-        expect(available_tags).to receive(:find_or_create_by_name_and_user_id_and_group_id).with("QC_PASS", anything, anything)
+        expect(available_tags).to receive(:find_or_create_by).with(:name => "QC_PASS", :user_id => anything, :group_id => anything)
         post :quality_control_panel, params: {userfile: userfile}
       end
 
       it "should find or create a 'FAIL' tag" do
-        expect(available_tags).to receive(:find_or_create_by_name_and_user_id_and_group_id).with("QC_FAIL", anything, anything)
+        expect(available_tags).to receive(:find_or_create_by).with(:name => "QC_FAIL", :user_id => anything, :group_id => anything)
         post :quality_control_panel, params: {userfile: userfile}
       end
 
       it "should find or create an 'UNKNOWN' tag" do
-        expect(available_tags).to receive(:find_or_create_by_name_and_user_id_and_group_id).with("QC_UNKNOWN", anything, anything)
+        expect(available_tags).to receive(:find_or_create_by).with(:name => "QC_UNKNOWN", :user_id => anything, :group_id => anything)
         post :quality_control_panel, params: {userfile: userfile}
       end
 
