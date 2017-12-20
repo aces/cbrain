@@ -837,9 +837,21 @@ class UserfilesController < ApplicationController
     admin_user     = User.find_by_login("admin")
     everyone_group = Group.everyone
 
-    pass_tag    = current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_PASS", admin_user.id, everyone_group.id)
-    fail_tag    = current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_FAIL", admin_user.id, everyone_group.id)
-    unknown_tag = current_user.available_tags.find_or_create_by_name_and_user_id_and_group_id("QC_UNKNOWN", admin_user.id, everyone_group.id)
+    pass_tag    = current_user.available_tags.find_or_create_by(
+      :name     => "QC_PASS",
+      :user_id  => admin_user.id,
+      :group_id => everyone_group.id,
+    )
+    fail_tag    = current_user.available_tags.find_or_create_by(
+      :name     => "QC_FAIL",
+      :user_id  => admin_user.id,
+      :group_id => everyone_group.id,
+    )
+    unknown_tag = current_user.available_tags.find_or_create_by(
+      :name     => "QC_UNKNOWN",
+      :user_id  => admin_user.id,
+      :group_id => everyone_group.id,
+    )
 
     commit_name  = extract_params_key([ :next, :previous, :pass, :fail, :unknown, :update ])
     if @current_index >=  0 && commit_name && commit_name != :next && commit_name != :previous
