@@ -59,6 +59,10 @@
     .ajaxStart(function () { $('#loading_image').show(); })
     .ajaxStop( function () { $('#loading_image').hide(); });
 
+  // This function assigns 'data' to a 'target' in the DOM and is used mainly after
+  // an ajax request returns successfully.
+  // The options argument may contain values for 'width', 'height';
+  // 'replace' and 'scroll_bottom' are evaluated as boolean.
   function modify_target(data, target, options) {
     options = options || {};
 
@@ -160,18 +164,6 @@
       $(this).tabs();
     });
 
-
-    // //Prevent forms where submit buttons decide behaviour
-    // //from submitting on 'enter'.
-    // loaded_element.find("form").each(function() {
-    //   var form = $(this);
-    //   if (form.find("input[type=submit]").length > 1) {
-    //     form.keypress(function(event) {
-    //       if (event.keyCode == 13) event.preventDefault();
-    //     });
-    //   }
-    // });
-
     loaded_element.find(".inline_text_field").each(function() {
       var inline_text_field = $(this);
       var data_type = inline_text_field.data("type") || "script";
@@ -268,39 +260,6 @@
       }).mouseleave(function() {
         project_details.hide();
       });
-
-    }).mouseenter(function() {
-      var project_button = $(this);
-
-      project_button.css("-webkit-transform", "scale(1.3)");
-      project_button.css("-moz-transform", "scale(1.3)");
-      project_button.css("-o-transform", "scale(1.3)");
-      project_button.css("-ms-transform", "scale(1.3)");
-    }).mouseleave(function() {
-      var project_button = $(this);
-
-      project_button.css("-webkit-transform", "scale(1)");
-      project_button.css("-moz-transform", "scale(1)");
-      project_button.css("-o-transform", "scale(1)");
-      project_button.css("-ms-transform", "scale(1)");
-    }).mousedown(function(event) {
-      if (event.target.nodeName === "A") {
-        return true;
-      }
-
-      var project_button = $(this);
-
-      project_button.css("-webkit-transform", "scale(1.2)");
-      project_button.css("-moz-transform", "scale(1.2)");
-      project_button.css("-o-transform", "scale(1.2)");
-      project_button.css("-ms-transform", "scale(1.2)");
-    }).mouseup(function() {
-      var project_button = $(this);
-
-      project_button.css("-webkit-transform", "scale(1.1)");
-      project_button.css("-moz-transform", "scale(1.1)");
-      project_button.css("-o-transform", "scale(1.1)");
-      project_button.css("-ms-transform", "scale(1.1)");
     }).click(function(event) {
       if (event.target.nodeName === "A") {
         return true;
@@ -393,21 +352,6 @@
       update_ajax_element(target);
 
       return false;
-    });
-
-    //See script_loader() in application_helper.rb
-    //Similar to above except that instead of loading html
-    //it fetches javascript from the server that will be executed
-    //update the page.
-    loaded_element.find(".script_loader").each(function (index,element) {
-      var current_element = $(element);
-      current_element.css("display", "none");
-      var url = current_element.data("url");
-      jQuery.ajax({
-        dataType: 'script',
-        url: url,
-        timeout: 50000
-      });
     });
 
     //Overlay dialogs
@@ -536,36 +480,6 @@
       }
     });
 
-    var filter_header_timeout = null;
-
-    $(document).delegate(".filter_header", "mouseenter", function() {
-
-      if (filter_header_timeout) {
-        clearTimeout(filter_header_timeout);
-        filter_header_timeout = null;
-      }
-
-      var header = $(this);
-      var target = $(header.data("target"));
-      var search = target.find(".filter_search");
-
-      filter_header_timeout = setTimeout(function() {
-        target.show();
-        search.focus();
-      }, 500);
-
-      header.closest("th").mouseleave(function() {
-        if (filter_header_timeout) {
-          clearTimeout(filter_header_timeout);
-          filter_header_timeout = null;
-        }
-        target.hide();
-        return false;
-      });
-
-      return false;
-    });
-
     $(document).delegate(".hover_open", "mouseenter", function() {
       var header = $(this);
       var target = $(header.data("target"));
@@ -578,30 +492,6 @@
 
       return false;
      });
-
-    $(document).delegate(".filter_search", "input", function() {
-      var text_field = $(this);
-      var cur_value  = text_field.val();
-      var filter_list = text_field.closest(".filter_list");
-
-      filter_list.find(".filter_item").each(function() {
-        var filter = $(this);
-        var link   = $(filter).find("a");
-
-        if (link.html().match(new RegExp("^" + cur_value, "i"))) {
-          filter.show();
-        } else {
-          filter.hide();
-        }
-      });
-    }).delegate(".filter_search", "keypress", function(event) {
-      if (event.keyCode === 13) {
-        var text_field = $(this);
-        var filter_link = text_field.closest(".filter_list").find(".filter_item a:visible").first();
-        filter_link.focus();
-        return false;
-      }
-    });
 
     $(document).delegate(".show_toggle", "click", function() {
       var current_element = $(this);
@@ -649,13 +539,8 @@
 
       if (!alternate_text) alternate_text = "Cancel";
 
-      if (visible) {
-        group.find(".inline_edit_field_default_text").show();
-        group.find(".inline_edit_field_input").hide();
-      } else {
-        group.find(".inline_edit_field_default_text").hide();
-        group.find(".inline_edit_field_input").show();
-      }
+      group.find(".inline_edit_field_default_text").toggle(visible);
+      group.find(".inline_edit_field_input").toggle(!visible);
 
       link.html(alternate_text);
       link.data("alternate-text", current_text);

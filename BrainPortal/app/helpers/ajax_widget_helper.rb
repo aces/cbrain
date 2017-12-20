@@ -83,29 +83,6 @@ module AjaxWidgetHelper
     html.html_safe
   end
 
-  # This doesn't seem to be used anymore? PR OCT 2015
-  def ajax_refresh_link(text, target, options = {}) #:nodoc:
-    options["data-target"] = target
-
-    options[:class] ||= ""
-    options[:class] +=  " ajax_element_refresh_button"
-
-    link_to text, "#", options
-  end
-
-  # Request some js through ajax to be run on the current page.
-  def script_loader(url, options = {})
-    options["data-url"] = url
-
-    options[:class] ||= ""
-    options[:class] +=  " script_loader"
-
-    # This builds an html attribute string from the html_opts hash
-    atts = options.to_html_attributes
-
-    "<div #{atts}></div>".html_safe
-  end
-
   ###############################################################
   # Creates an html element which will have its or another element's
   # content updated when it is clicked on
