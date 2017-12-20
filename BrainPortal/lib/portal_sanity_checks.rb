@@ -333,5 +333,33 @@ class PortalSanityChecks < CbrainChecker #:nodoc:
     end
   end
 
+  # There must be a single ScatchDataProvider object for the whole
+  # CBRAIN system.
+  def self.ensure_scratch_data_provider_exists #:nodoc:
+
+    #-----------------------------------------------------------------------------
+    puts "C> Ensuring a single ScratchDataProvider exists..."
+    #-----------------------------------------------------------------------------
+
+    admin_user  = User.find_by_login("admin")
+    all_scratch = ScratchDataProvider.all.to_a
+    if (all_scratch.size > 1)
+      puts "C> \t -There is more than one ScratchDataProvider in the system!"
+      all_scratch[1..(all_scratch.size-1)].each { |dp| dp.delete }
+    end
+    if (all_scratch.size == 0)
+      scratch = ScratchDataProvider.new
+      scratch.user_id      = admin_user.id
+      scratch.group_id     = admin_user.own_group.id
+      scratch.name         = "SystemScratchSpace"
+      scratch.online       = true
+      scratch.read_only    = false
+      scratch.not_syncable = false
+      scratch.description  = "Automatically created by the system.\n\n" +
+                             "Used to cache scratch userfile content on each server.\n"
+      scratch.save!
+    end
+  end
+
 end
 
