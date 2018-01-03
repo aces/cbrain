@@ -1318,6 +1318,12 @@ class ClusterTask < CbrainTask
         fh.write JSON.pretty_generate(JSON[self.to_json])
       end
 
+      # Remove core files. Core file names can be customized by a sysadmin, so
+      # we'll try with the two most common conventions: 'core' and 'core.PID'
+      Dir.glob('core*').select { |f| f =~ /\Acore(\.\d+)?\z/ }.each do |corename|
+         File.unlink(corename) if File.file?(corename)
+      end
+
       system("chmod","-R","u+rwX",".") # uppercase X mode affects only directories
       system("tar -czf '#{temp_tar_file}' --exclude '*#{temp_tar_file}' . </dev/null >'#{tar_capture}' 2>&1")
       out = File.read(tar_capture) rescue ""
