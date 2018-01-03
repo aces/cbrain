@@ -1,5 +1,13 @@
 ## CBRAIN Release Notes
 
+#### Version 5.0.1 Released 2018-01-03 (Happy Birthday)
+
+This release contains a few bug fixes identified while running 5.0.0
+in production. It also includes one new feature, a ScratchDataProvider
+class that programmers can use to store data files in a temporary
+area (the app's cache space) while still benefitting from all the APIs
+provided by the data provider framework.
+
 #### Version 5.0.0 Released 2017-12-12
 
 This is the first release based on Rails 5.0.
