@@ -619,6 +619,55 @@ class Userfile < ActiveRecord::Base
 
 
   ##############################################
+  # Scratch Userfiles Support Methods
+  ##############################################
+
+  # This helper method provides a convenient way for a programmer
+  # to request caching of a the content of some data as a temporary
+  # local userfile, and get to the cache quickly if it's already there.
+  #
+  # The +attributes+ describes a userfile's attribute for tracking
+  # the data; normally only the 'name' is required is should be specific
+  # enough to represent a particular piece of data (e.g. a container
+  # image name with full version in it). A block must be given to the
+  # method, and it will be invoked if the data is not already cached;
+  # it will receive a single argument, the path to the caching subsystem
+  # where the userfile's data should be installed (the path is the same
+  # as that returned by 'DataProvider#cache_full_path()'. The block is
+  # expected to fill this path with appropriate files and/or directories.
+  #
+  # The method returns the userfile object (which will have a default
+  # owner of 'admin' and group of 'admin', to hide it from normal users).
+  #
+  # If a force refresh of the content is required, the attribute hash
+  # may contain a key :force_content_update to trigger it.
+  #
+  # See also the documentation for the class ScratchDataProvider
+  def self.find_or_create_as_scratch(attributes = {}, &block)
+    cb_error "Need a block" if ! block_given?
+    atts = attributes.reverse_merge(
+      :user_id  => User.admin.id,
+      :group_id => User.admin.own_group.id,
+    ).merge(
+      :data_provider_id => ScratchDataProvider.main.id
+    )
+    refresh = atts.delete(:force_content_update)
+    file    = self.find_or_create_by(atts)
+    file.save!
+    return file if !refresh &&
+                   file.local_sync_status.try(:status) == 'InSync' &&
+                   file.sync_to_provider # always true: this does nothing but record the timestamp of last access
+    file.cache_prepare
+    SyncStatus.ready_to_modify_cache(file) do
+      yield file.cache_full_path # allow programmer to provide content for the file
+    end
+    file.sync_to_provider
+    file
+  end
+
+
+
+  ##############################################
   # Viewer Methods
   ##############################################
 

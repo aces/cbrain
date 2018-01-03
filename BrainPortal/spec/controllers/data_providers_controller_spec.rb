@@ -25,6 +25,7 @@ require 'rails_helper'
 RSpec.describe DataProvidersController, :type => :controller do
   let(:data_provider) { mock_model(DataProvider).as_null_object }
   let(:admin_user)    { create(:admin_user) }
+  let(:scratch_dp)    { ScratchDataProvider.main }
 
   context "with an admin user" do
     before(:each) do
@@ -40,7 +41,7 @@ RSpec.describe DataProvidersController, :type => :controller do
         let!(:local_dp) { create(:flat_dir_local_data_provider) }
         it "should assign @data_providers" do
           get :index
-          expect(assigns[:data_providers].to_a).to eq([local_dp])
+          expect(assigns[:data_providers].to_a).to match_array([scratch_dp,local_dp])
         end
         it "should render the index page" do
          get :index

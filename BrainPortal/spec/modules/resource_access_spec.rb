@@ -26,6 +26,7 @@ describe ResourceAccess do
   let(:normal_user)    { create(:normal_user) }
   let(:site_manager)   { create(:site_manager) }
   let(:admin)          { create(:admin_user) }
+  let(:scratch_dp)     { ScratchDataProvider.main }
   let(:free_resource)  { create(:data_provider) }
   let(:group_resource) { create(:data_provider, :group => user.groups.last) }
   let(:site_resource)  { create(:data_provider, :user => create(:normal_user, :site => user.site)) }
@@ -145,7 +146,7 @@ describe ResourceAccess do
         group_resource
         site_resource
         owned_resource
-        expect(DataProvider.find_all_accessible_by_user(admin).map(&:id)).to match_array([free_resource.id, group_resource.id, site_resource.id, owned_resource.id])
+        expect(DataProvider.find_all_accessible_by_user(admin).map(&:id)).to match_array([scratch_dp.id, free_resource.id, group_resource.id, site_resource.id, owned_resource.id])
       end
     end
 
