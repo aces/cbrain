@@ -41,8 +41,8 @@ class CbrainSession
   # expected to be an ActiveRecord record).
   def initialize(session)
     return unless session[:session_id].present?
-    @model   = self.class.session_model.where( :session_id => session[:session_id]).first ||
-               self.class.session_model.create(:session_id => session[:session_id], :data => {})
+    @model   = self.class.session_model.where(:session_id => session[:session_id]).first ||
+               self.class.session_model.new(  :session_id => session[:session_id], :data => {})
   end
 
   # ActiveRecord model class for Rails session info
@@ -54,12 +54,10 @@ class CbrainSession
   # these keys keep track of the user's connection information.
   def self.tracking_keys
     @tracking_keys ||= Set.new([
-      :client_type,
       :guessed_remote_host,
       :guessed_remote_ip,
       :raw_user_agent,
-      :return_to,
-    ].map(&:to_s))
+    ])
   end
 
   # Internal CBRAIN session authentication, security, tracking and monitoring
@@ -68,7 +66,7 @@ class CbrainSession
     @internal_keys ||= Set.new([
       :_csrf_token,
       :user_id,
-    ].map(&:to_s) + self.tracking_keys.to_a)
+    ] + self.tracking_keys.to_a)
   end
 
   # User this session belongs to, from the :user_id attribute
@@ -262,9 +260,10 @@ class CbrainSession
   # Update timestamp of current session ONLY if it's older than
   # than 1 minute.
   def touch_unless_recent
-    return unless @model.present?
-    return @model.save if @modified
-    return if     @model.updated_at.blank? || @model.updated_at > 1.minute.ago
+    return             unless @model.present?
+    return @model.save     if @modified
+    return                 if @model.updated_at.blank? || @model.updated_at > 1.minute.ago
+    return                 if @model.new_record? && @model.data.try(:size) == 0
     @model.touch
   end
 
@@ -300,9 +299,9 @@ class CbrainSession
           :user           => User.find_by_id(session.user_id),
           :active         => session.active?,
           :last_access    => session.updated_at,
-          :remote_ip      => data['guessed_remote_ip'],
-          :remote_host    => data['guessed_remote_host'],
-          :raw_user_agent => data['raw_user_agent']
+          :remote_ip      => data[:guessed_remote_ip],
+          :remote_host    => data[:guessed_remote_host],
+          :raw_user_agent => data[:raw_user_agent]
         }
       end
   end

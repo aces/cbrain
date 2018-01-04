@@ -155,8 +155,8 @@ class ApplicationController < ActionController::Base
     instname = CBRAIN::Instance_Name rescue "(?)"
 
     # Get host and IP from session (when logged in)
-    ip     = cbrain_session["guessed_remote_ip"]
-    host   = cbrain_session["guessed_remote_host"] # only set when logged in
+    ip     = cbrain_session[:guessed_remote_ip]
+    host   = cbrain_session[:guessed_remote_host] # only set when logged in
 
     # Compute the host and IP from the request (when not logged in)
     ip   ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
