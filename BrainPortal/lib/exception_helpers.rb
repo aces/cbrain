@@ -31,10 +31,12 @@ module ExceptionHelpers
       rescue_from ActiveRecord::RecordNotFound,         :with => :record_not_found
       rescue_from ::AbstractController::ActionNotFound, :with => :unknown_action
       rescue_from CbrainException,                      :with => :cb_exception
+      rescue_from ActionController::UnknownFormat,      :with => :unknown_format
     end
   end
 
   protected
+
   # Record not accessible.
   def record_not_found(exception)
     raise unless Rails.env == 'production' #Want to see stack trace in dev.
@@ -57,6 +59,12 @@ module ExceptionHelpers
     end
   end
 
+  # When an unknown mime type format was requested, returns
+  # the status :unauthorized
+  def unknown_format(exception)
+    head :unauthorized
+  end
+
   # Internal CBRAIN errors.
   def cb_exception(exception)
     if exception.is_a? CbrainNotice
@@ -67,8 +75,9 @@ module ExceptionHelpers
     logger.error "CbrainException for controller #{params[:controller]}, action #{params[:action]}: #{exception.class} #{exception.message}"
     respond_to do |format|
       format.html { redirect_to exception.redirect || default_redirect }
-      format.js   { render :partial  => "shared/flash_update",     :status => exception.status }
-      format.xml  { render :xml => {:error  => exception.message}, :status => exception.status }
+      format.js   { render :partial  => "shared/flash_update",          :status => exception.status }
+      format.xml  { render :xml      => {:error  => exception.message}, :status => exception.status }
+      format.json { render :json     => {:error  => exception.message}, :status => exception.status }
     end
   end
 

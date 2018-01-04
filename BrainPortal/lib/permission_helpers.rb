@@ -75,8 +75,8 @@ module PermissionHelpers
       unless current_user && current_user.has_role?(:admin_user)
         respond_to do |format|
           format.html  { redirect_to logout_path unless params[:controller] == "sessions"}
-          format.xml   { render :xml  => {:message => message}, :status => 503}
-          format.json  { render :json => {:message => message}, :status => 503}
+          format.xml   { render :xml  => {:message => message}, :status => :service_unavailable }
+          format.json  { render :json => {:message => message}, :status => :service_unavailable }
         end
       end
     end
