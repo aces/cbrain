@@ -99,9 +99,9 @@ module TasksHelper
   # Returns a HTML report snippet with a number of tasks, total size and
   # number of tasks with unknown sizes. Used by the report maker.
   def format_task_size_unk(num_task,tot_size,num_unk)
-    t_s_u  = "Tasks: #{num_task}<br/>"
-    t_s_u += "Size: #{pretty_size(tot_size)}<br/>"
-    t_s_u += num_unk.to_i > 0 ? "Unknown: #{num_unk.to_i}" : "&nbsp;"
+    t_s_u  = "Tasks: #{num_task}<br>" +
+             "Size: #{pretty_size(tot_size)}"
+    t_s_u += "<br>Unknown: #{num_unk.to_i}" if num_unk.to_i > 0
     return t_s_u.html_safe
   end
 

@@ -317,7 +317,12 @@ class PortalController < ApplicationController
     table_ops = table_op.split(/\W+/).reject { |x| x.blank? }.map { |x| x.to_sym } # 'sum(size)' => [ :sum, :size ]
     #table_content_scope = table_content_scope.where(:id => -999) # for debugging interface appearance -> no entries
     table_content_fetcher = table_content_scope.group( [ "#{table_name}.#{row_type}", "#{table_name}.#{col_type}" ] )
+
+    # Some additional restrictions:
+    # 1) for tasks, just fetch records that are not Preset or SitePresets
     table_content_fetcher = table_content_fetcher.real_tasks if table_name == 'cbrain_tasks'
+    # 2) when summing an attribute, don't sum those that are nil to avoid getting a '0' entry in the table content
+    table_content_fetcher = table_content_fetcher.where("#{table_ops[1]} is not null") if table_ops[0] == :sum
 
     # Fetch one or several reports using the fetcher
     if    table_ops[0] == :combined_file_rep # special fetch of multiple values for file report
