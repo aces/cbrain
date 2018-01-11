@@ -228,7 +228,7 @@ class FileCollection < Userfile
 
     cb_error "Error: file #{self.name} is immutable." if self.immutable?
 
-    self.sync_to_cache
+    self.sync_to_cache_for_archiving_possible
     # Just to check that file properties are OK; raise exception otherwise.
     # We don't call sync_to_provider directly in order to avoid the cost of set_size!
     self.data_provider.sync_to_provider(self)
@@ -294,7 +294,7 @@ class FileCollection < Userfile
 
     return "" if ! self.archived?
 
-    self.sync_to_cache
+    self.sync_to_cache_for_archiving_possible
     # Just to check that file properties are OK; raise exception otherwise.
     # We don't call sync_to_provider directly in order to avoid the cost of set_size!
     self.data_provider.sync_to_provider(self)
@@ -339,6 +339,12 @@ class FileCollection < Userfile
       return "Unarchiving process exception: #{ex.class}"
     ensure
       File.unlink(tar_capture) rescue true
+  end
+
+  def sync_to_cache_for_archiving_possible #:nodoc:
+    self.respond_to? :sync_to_cache_for_archiving ?
+      self.sync_to_cache_for_archiving :
+      self.sync_to_cache
   end
 
   def verify_tar_execution(out,error_status,userfile_name,temp_tar_file=nil) #:nodoc:
