@@ -228,7 +228,7 @@ class FileCollection < Userfile
 
     cb_error "Error: file #{self.name} is immutable." if self.immutable?
 
-    self.sync_to_cache_for_archiving_possible
+    self.sync_to_cache_for_archiving_if_possible
     # Just to check that file properties are OK; raise exception otherwise.
     # We don't call sync_to_provider directly in order to avoid the cost of set_size!
     self.data_provider.sync_to_provider(self)
@@ -270,9 +270,9 @@ class FileCollection < Userfile
 
     self.meta[:before_archiving_size]      = self.size
     self.meta[:before_archiving_num_files] = self.num_files
+    self.archived = true
     self.sync_to_provider
     self.cache_erase
-    self.archived = true
     self.save!
 
     "" # everything OK
@@ -294,7 +294,7 @@ class FileCollection < Userfile
 
     return "" if ! self.archived?
 
-    self.sync_to_cache_for_archiving_possible
+    self.sync_to_cache_for_archiving_if_possible
     # Just to check that file properties are OK; raise exception otherwise.
     # We don't call sync_to_provider directly in order to avoid the cost of set_size!
     self.data_provider.sync_to_provider(self)
@@ -341,8 +341,13 @@ class FileCollection < Userfile
       File.unlink(tar_capture) rescue true
   end
 
-  def sync_to_cache_for_archiving_possible #:nodoc:
-    self.respond_to? :sync_to_cache_for_archiving ?
+  # Invokes sync_to_cache_for_archiving if the method
+  # is defined for the model, otherwise invokes
+  # sync_to_cache. This allows models to provide
+  # some cleanup code before archiving, or bypass any
+  # special setup code they normall do when syncing to cache.
+  def sync_to_cache_for_archiving_if_possible #:nodoc:
+    self.respond_to?(:sync_to_cache_for_archiving) ?
       self.sync_to_cache_for_archiving :
       self.sync_to_cache
   end
