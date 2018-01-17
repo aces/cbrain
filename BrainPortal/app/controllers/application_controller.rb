@@ -155,34 +155,42 @@ class ApplicationController < ActionController::Base
     instname = CBRAIN::Instance_Name rescue "(?)"
 
     # Get host and IP from session (when logged in)
-    ip     = cbrain_session[:guessed_remote_ip]
-    host   = cbrain_session[:guessed_remote_host] # only set when logged in
+    from_ip   = cbrain_session[:guessed_remote_ip].presence
+    from_host = cbrain_session[:guessed_remote_host].presence # only set when logged in
 
     # Compute the host and IP from the request (when not logged in)
-    ip   ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
-    if host.blank? && ip =~ /\A[\d\.]+\z/
-      addrinfo = Rails.cache.fetch("host_addr/#{ip}") do
-        Socket.gethostbyaddr(ip.split(/\./).map(&:to_i).pack("CCCC")) rescue [ ip ]
-      end
-      host = addrinfo[0]
-    end
+    from_ip   ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
+    from_host ||= hostname_from_ip(from_ip)
 
     # Pretty user agent string
     brow  = parsed_http_user_agent.browser_name.presence    || "(UnknownClient)"
     b_ver = parsed_http_user_agent.browser_version.presence
 
     # Create final message
-    from  = (host.present? && host != ip) ? "#{host} (#{ip})" : ip
+    from  = (from_host.present? && from_host != from_ip) ? "#{from_host} (#{from_ip})" : from_ip
     mess  = "User: #{login} on instance #{instname} from #{from} using #{brow} #{b_ver}"
     Rails.logger.info mess
     true
-  rescue # anything bad we ignore, as we did the best we could and all this is optional
-    true
+  rescue => ex
+    Rails.logger.error "#{ex.class}: #{ex.message}\n#{ex.backtrace[0..2].join("\n")}"
   end
 
   # Returns a HttpUserAgent object with the parsed info from ENV['HTTP_USER_AGENT']
   def parsed_http_user_agent #:nodoc:
     @_http_user_agent_ ||= HttpUserAgent.new((request.env || {})['HTTP_USER_AGENT'] || 'unknown/unknown')
+  end
+
+  # Returns (and caches) the DNS hostname associated with an IP "aaa.bbb.ccc.ddd"
+  # Returns ip as-is if ip is not an IP address, or lookup fails.
+  def hostname_from_ip(ip) # :nodoc:
+    return ip if ip.blank? || ip !~ /\A\d+\.\d+\.\d+\.\d+\z/
+    host = Rails.cache.fetch("host_addr/#{ip}", expires_in: 24.hours) do
+      Socket.gethostbyaddr(ip.split(/\./).map(&:to_i).pack("CCCC")).try(:first) rescue ip
+    end
+    host = ip if host.size < 2 # seen weird "." as a result of lookup
+    host
+  rescue
+    ip
   end
 
   # 'After' callback: store a hash in the metadata of the session, in order

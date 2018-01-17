@@ -40,9 +40,9 @@ class CbrainSession
   # backed by +model+, an instance of CbrainSession.session_model (which is
   # expected to be an ActiveRecord record).
   def initialize(session)
-    return unless session[:session_id].present?
-    @model   = self.class.session_model.where(:session_id => session[:session_id]).first ||
-               self.class.session_model.new(  :session_id => session[:session_id], :data => {})
+    sid = session[:session_id].presence || self.class.random_session_id
+    @model   = self.class.session_model.where(:session_id => sid).first ||
+               self.class.session_model.new(  :session_id => sid, :data => {})
   end
 
   # ActiveRecord model class for Rails session info
@@ -337,6 +337,14 @@ class CbrainSession
     controller['filter_hash'] ||= {}
     controller['sort_hash']   ||= {}
     controller
+  end
+
+  HEX_DIGITS = ('0'..'9').to_a + ('a'..'f').to_a #:nodoc:
+
+  # When the connection is coming from a non-browser,
+  # we generate a unique, one-time session ID.
+  def self.random_session_id #:nodoc:
+    (0..31).map { HEX_DIGITS[rand(16)] }.join
   end
 
 end

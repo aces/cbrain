@@ -197,21 +197,11 @@ class SessionsController < ApplicationController
     cbrain_session.activate(user.id)
 
     # Record the best guess for browser's remote host name
-    reqenv  = request.env
-    from_ip = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
-    if from_ip
-      if from_ip  =~ /\A[\d\.]+\z/
-        from_host = Rails.cache.fetch("host_addr/#{from_ip}", expires_in: 24.hours) do
-          Socket.gethostbyaddr(from_ip.split(/\./).map(&:to_i).pack("CCCC")).try(:first) rescue from_ip
-        end
-        from_host = from_ip if from_host.blank? || from_host.size < 2 # seen weird "." as a result of lookup
-      else
-        from_host = from_ip # already got name?!?
-      end
-    else
-       from_ip   = '0.0.0.0'
-       from_host = 'unknown'
-    end
+    reqenv      = request.env
+    from_ip     = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
+    from_host   = hostname_from_ip(from_ip)
+    from_ip   ||= '0.0.0.0'
+    from_host ||= 'unknown'
     cbrain_session[:guessed_remote_ip]   = from_ip
     cbrain_session[:guessed_remote_host] = from_host
 
