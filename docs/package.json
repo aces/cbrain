@@ -1,0 +1,19 @@
+{
+  "name": "cookbook",
+  "version": "1.0.0",
+  "description": "Cookbook for CBRAIN in a form of a GitBook",
+  "main": "index.js",
+  "homepage": "https://aces.github.io/cbrain",
+  "repository": "github:aces/cbrain",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:docs": "gitbook build gitbook docs_build",
+    "deploy:docs": "gh-pages -d docs_build"
+  },
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "gh-pages": "^1.1.0",
+    "gitbook-cli": "^2.3.2"
+  },
+  "dependencies": {}
+}
