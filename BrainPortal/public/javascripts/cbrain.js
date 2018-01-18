@@ -388,7 +388,7 @@
         slide_duration = parseInt(slide_duration, 10);
       }
 
-      if (invert === "true") {
+      if (invert === true) {
         show = !show;
       }
 
@@ -400,7 +400,7 @@
 
       checkbox.change(function() {
         show = checkbox.is(":checked");
-        if (invert === "true") {
+        if (invert === true) {
           show = !show;
         }
 
