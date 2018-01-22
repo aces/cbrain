@@ -289,7 +289,7 @@
         data: data,
         success: function(data) {
           var new_content = $(data);
-          if (replace === "true") {
+          if (replace === true) {
             current_element.replaceWith(new_content);
           } else {
             current_element.html(new_content);
@@ -303,7 +303,7 @@
           if (!error_message) {
             error_message = "<span class='loading_message'>Error loading element</span>";
           }
-          if (replace === "true") {
+          if (replace === true) {
             current_element.replaceWith(error_message);
           } else {
             current_element.html(error_message);
@@ -324,7 +324,7 @@
       var scroll_bottom   = current_element.data("scroll-bottom");
 
       if (data) data = jQuery.parseJSON(data);
-      if (scroll_bottom === "false") scroll_bottom = false;
+      if (scroll_bottom === false) scroll_bottom = false;
 
       if (interval) {
         interval = parseInt(interval, 10) * 1000;
@@ -705,12 +705,12 @@
     //Forms with the class "ajax_form" will be submitted as ajax requests.
     //Datatype and target can be set with appropriate "data" attributes.
     $(document).delegate(".ajax_form", "ajax:success", function(event, data, status, xhr) {
-      var current_form =  $(this);
-      var target = current_form.data("target");
-      var reset_form = current_form.data("reset-form");
+      var current_form  =  $(this);
+      var target        = current_form.data("target");
+      var reset_form    = current_form.data("reset-form");
       var scroll_bottom = current_form.data("scroll-bottom")
 
-      if (reset_form !== "false") {
+      if (reset_form !== false) {
         current_form.resetForm();
       }
 
@@ -772,7 +772,7 @@
 
       data[submit_name] = submit_value;
 
-      if (ajax_submit !== "false") {
+      if (ajax_submit !== false) {
         enclosing_form.ajaxSubmit({
           url: url,
           type: method,
