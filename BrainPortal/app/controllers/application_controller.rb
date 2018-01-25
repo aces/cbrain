@@ -309,7 +309,7 @@ class ApplicationController < ActionController::Base
 
   # Home pages in hash form.
   def start_page_params #:nodoc:
-    if current_user.nil?
+    if current_user.blank?
       { :controller => :sessions, :action => :new }
     elsif current_user.has_role?(:normal_user)
       { :controller => :groups, :action => :index }

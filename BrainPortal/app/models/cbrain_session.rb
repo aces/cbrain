@@ -39,8 +39,12 @@ class CbrainSession
   # Create a new CbrainSession object wrapping +session+ (a Rails session)
   # backed by +model+, an instance of CbrainSession.session_model (which is
   # expected to be an ActiveRecord record).
-  def initialize(session)
-    sid = session[:session_id].presence || self.class.random_session_id
+  def initialize(session_or_largeinfo)
+    if session_or_largeinfo.is_a?(self.class.session_model)
+      @model = session_or_largeinfo
+      return
+    end
+    sid = session_or_largeinfo[:session_id].presence || self.class.random_session_id
     @model   = self.class.session_model.where(:session_id => sid).first ||
                self.class.session_model.new(  :session_id => sid, :data => {})
   end
@@ -74,6 +78,19 @@ class CbrainSession
     @user = User.find_by_id(@model[:user_id]) unless
       @user && @user.id == @model[:user_id]
     @user
+  end
+
+  # Returns the token for API calls; right now we use the original Rails session ID obtained
+  # at logging in.
+  def cbrain_api_token
+    @model.try(:session_id)
+  end
+
+  # Returns the user if the model data indicates
+  # that it represents a valid, active session connected with +token+
+  def user_for_cbrain_api(token)
+    return nil unless @model && @model.active? && self.cbrain_api_token == token
+    self.user
   end
 
   ###########################################

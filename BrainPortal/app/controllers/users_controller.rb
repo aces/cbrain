@@ -304,7 +304,6 @@ class UsersController < ApplicationController
     @user.addlog("Switched from user '#{current_user.login}'")
     cbrain_session.clear
     self.current_user = @user
-    cbrain_session[:user_id] = @user.id
 
     redirect_to start_page_path
   end

@@ -327,6 +327,8 @@ class UserfilesController < ApplicationController
     if request.format.to_sym == :json || request.format.to_sym == :xml
       rr_ids_accessible   = RemoteResource.find_all_accessible_by_user(current_user).map(&:id)
       @remote_sync_status = SyncStatus.where(:userfile_id => @userfile.id, :remote_resource_id => rr_ids_accessible)
+                            .select([:id, :remote_resource_id, :status, :accessed_at, :synced_at])
+                            .all.to_a
       @children_ids       = @userfile.children_ids  rescue []
 
       userfile_for_api = @userfile.for_api # transforms into a plain Hash

@@ -29,5 +29,7 @@ class LargeSessionInfo < ActiveRecord::Base
 
   serialize :data
 
+  belongs_to :user
+
 end
 
