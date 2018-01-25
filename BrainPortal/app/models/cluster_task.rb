@@ -2401,13 +2401,14 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
       # Run singularity pull command
       errfile = "/tmp/.container_load_cmd.#{self.run_id}.err"
       success = Dir.chdir(cache_path.parent.to_s) do # singularity pull won't work with full pathnames for --name :-(
-        system("#{singularity_executable_name} pull --name #{scratch_name.bash_escape} #{singularity_index_location.bash_escape}#{singularity_image_name.bash_escape} </dev/null >/dev/null 2>#{errfile.bash_escape}")
+        system("umask 002; #{singularity_executable_name} build #{scratch_name.bash_escape} #{singularity_index_location.bash_escape}#{singularity_image_name.bash_escape} </dev/null >/dev/null 2>#{errfile.bash_escape}")
       end
       err     = File.read(errfile) rescue "No Error File?"
       File.unlink(errfile) rescue true
       # Singularity command can generate 'implausibly old time stamp' when pulling a docker image (due to tar), we ignore it.
       # Remove all lines (use ^ and $) that contains this message.
       err.gsub!(/^.*implausibly old time stamp.*$\n?/,"")
+      err.gsub!(/^.*WARNING:.+/, "")
       cb_error "Cannot pull singularity image" if
         err.present? ||
         ! success    ||
