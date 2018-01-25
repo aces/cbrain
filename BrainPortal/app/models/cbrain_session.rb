@@ -93,6 +93,13 @@ class CbrainSession
     self.user
   end
 
+  # Change the user ID in underlying model; only used when switching users.
+  def user_id=(uid)
+    return unless @model
+    @model.user_id = uid
+    @modified      = true
+  end
+
   ###########################################
   # Hash-like interface to session attributes
   ###########################################
@@ -274,7 +281,8 @@ class CbrainSession
     @model.save!
   end
 
-  # Update timestamp of current session ONLY if it's older than
+  # Save model if modified in any way. If not,
+  # update timestamp of model ONLY if it's older
   # than 1 minute.
   def touch_unless_recent
     return             unless @model.present?

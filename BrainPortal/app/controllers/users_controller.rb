@@ -303,7 +303,11 @@ class UsersController < ApplicationController
     current_user.addlog("Switching to user '#{@user.login}'")
     @user.addlog("Switched from user '#{current_user.login}'")
     cbrain_session.clear
+
+    # This does most of the work...
     self.current_user = @user
+    # ... but we must adjust the CBRAIN session object too
+    cbrain_session.user_id = @user.id
 
     redirect_to start_page_path
   end
