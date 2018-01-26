@@ -50,7 +50,7 @@ class ApplicationController < ActionController::Base
   after_action  :action_counter            # counts all action/controller/user agents
   after_action  :log_user_info             # add to log a single line with user info.
 
-  protect_from_forgery with: :exception
+  protect_from_forgery with: :exception, unless: -> { request.format.json? || request.format.xml? }
 
 
 
