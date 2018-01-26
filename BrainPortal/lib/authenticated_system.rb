@@ -3,11 +3,17 @@ module AuthenticatedSystem #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  include ActionController::HttpAuthentication::Token
+
   protected
 
     # Extract the API token from the params, leaves it in @cbrain_api_token
     def extract_api_token
-      @cbrain_api_token = params.delete(:cbrain_api_token).presence
+      http_token, options = token_and_options(request) # provided by Rails; we ignore options
+      params_token        = params.delete(:cbrain_api_token).presence
+      # The next two lines can be permuted to change the priority
+      @cbrain_api_token ||= http_token.presence
+      @cbrain_api_token ||= params_token.presence
       true
     end
 
