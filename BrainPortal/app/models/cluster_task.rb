@@ -2188,12 +2188,12 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
 # 3) All local symlinks to cached files have already been adjusted
 #    by the Ruby process that created this script.
 #{singularity_executable_name}                  \\
-    run                                         \\
+    exec                                        \\
     -B #{gridshare_dir.bash_escape}             \\
     -B #{cache_dir.bash_escape}                 \\
     -H #{task_workdir.bash_escape}              \\
     #{container_image_name.bash_escape}         \\
-    #{singularity_wrapper_basename.bash_escape}
+    ./#{singularity_wrapper_basename.bash_escape}
 
     SINGULARITY_COMMANDS
 
