@@ -3,23 +3,43 @@ module AuthenticatedSystem #:nodoc:
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  include ActionController::HttpAuthentication::Token
+
   protected
+
+    # Extract the API token from the params, leaves it in @cbrain_api_token
+    def extract_api_token
+      http_token, options = token_and_options(request) # provided by Rails; we ignore options
+      params_token        = params.delete(:cbrain_api_token).presence
+      # The next two lines can be permuted to change the priority
+      @cbrain_api_token ||= http_token.presence
+      @cbrain_api_token ||= params_token.presence
+      true
+    end
+
     # Returns true or false if the user is logged in.
     # Preloads @current_user with the user model if they're logged in.
     def logged_in?
       !!current_user
     end
 
-    # Accesses the current user from the session.
-    # Future calls avoid the database because nil is not equal to false.
+    # Returns the currently logged-in user, if any.
     def current_user
-      @current_user ||= login_from_session unless @current_user == false
+      return @current_user if @current_user.present?
+      return nil if @current_user == false # false means we previously explicitely set current_user=(nil)
+      user ||= user_from_api_token
+      user ||= user_from_session
+      self.current_user=user # user can be nil, in that case @current_user is set to false
+      @current_user.presence # transforms false into nil
     end
 
-    # Store the given user id in the session.
+    # Store the given user id in the cookie session. This makes the +new_user+
+    # permanently logged-in. If +new_user+ is nil then
+    # we record that the current user is unset, therefore marking the
+    # session as not logged in.
     def current_user=(new_user)
-      session[:user_id] = new_user ? new_user.id : nil
-      @current_user = new_user || false
+      session[:user_id] = new_user.try(:id) unless @cbrain_api_token
+      @current_user = new_user || false # the false value is important: it means we know we have no user.
     end
 
     # Check if the user is authorized
@@ -101,7 +121,7 @@ module AuthenticatedSystem #:nodoc:
           redirect_to new_session_path
         end
         format.any do
-          request_http_basic_authentication 'Web Password'
+          head :unauthorized
         end
       end
     end
@@ -126,11 +146,25 @@ module AuthenticatedSystem #:nodoc:
     # available as ActionView helper methods.
     def self.included(base)
       base.send :helper_method, :current_user, :logged_in?
+      base.class_eval do
+        before_action :extract_api_token
+      end
     end
 
     # Called from #current_user.  First attempt to login by the user id stored in the session.
-    def login_from_session
-      self.current_user = User.find_by_id(session[:user_id]) if session[:user_id]
+    def user_from_session
+      User.find_by_id(session[:user_id]) if session[:user_id]
+    end
+
+    # For API calls. A +cbrain_api_token+ is expected in the params.
+    # If the token is valid, the cbrain_session object will contain
+    # a proper LargeSessionInfo object from which the token's user
+    # can be found.
+    def user_from_api_token
+      return nil unless @cbrain_api_token
+      user = cbrain_session.user_for_cbrain_api(@cbrain_api_token)
+      #@cbrain_api_token = nil unless user # invalid, just reset it
+      user
     end
 
 end

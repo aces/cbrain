@@ -50,7 +50,7 @@ class ApplicationController < ActionController::Base
   after_action  :action_counter            # counts all action/controller/user agents
   after_action  :log_user_info             # add to log a single line with user info.
 
-  protect_from_forgery with: :exception
+  protect_from_forgery with: :exception, unless: -> { request.format.json? || request.format.xml? }
 
 
 
@@ -309,7 +309,7 @@ class ApplicationController < ActionController::Base
 
   # Home pages in hash form.
   def start_page_params #:nodoc:
-    if current_user.nil?
+    if current_user.blank?
       { :controller => :sessions, :action => :new }
     elsif current_user.has_role?(:normal_user)
       { :controller => :groups, :action => :index }

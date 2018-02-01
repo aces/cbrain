@@ -34,7 +34,8 @@ class SessionsController < ApplicationController
 
   api_available :only => [ :new, :show, :create, :destroy ]
 
-  before_action :user_already_logged_in, :only => [:new, :create]
+  before_action      :user_already_logged_in,    :only => [:new, :create]
+  skip_before_action :verify_authenticity_token, :only => [ :create ] # we invoke it ourselves in create()
 
   def new #:nodoc:
     reqenv           = request.env
@@ -45,16 +46,15 @@ class SessionsController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml  { render :xml  => { :authenticity_token => form_authenticity_token } }
-      format.json { render :json => { :authenticity_token => form_authenticity_token } }
-      format.txt
+      format.any { head :unauthorized }
     end
   end
 
   def create #:nodoc:
-    # If the csrf token is blank, it was reset by Rails' request forgery protection
-    # and we want to prevent login
-    user = session["_csrf_token"].presence && User.authenticate(params[:login], params[:password]) # can be nil if it fails
+    if request.format.to_sym !~ /^(json|xml)$/i # JSON is used for API calls; XML not yet fully supported
+      verify_authenticity_token  # from Rails; will raise exception if not present.
+    end
+    user = User.authenticate(params[:login], params[:password]) # can be nil if it fails
     create_from_user(user)
   end
 
@@ -113,7 +113,11 @@ class SessionsController < ApplicationController
 
   def user_already_logged_in #:nodoc:
     if current_user
-      redirect_to start_page_path
+      respond_to do |format|
+        format.html { redirect_to start_page_path }
+        format.json { render :json => { :cbrain_api_token => cbrain_session.cbrain_api_token, :user_id => current_user.id }, :status => 200 }
+        format.xml  { render :xml  => { :cbrain_api_token => cbrain_session.cbrain_api_token, :user_id => current_user.id }, :status => 200 }
+      end
     end
   end
 
@@ -143,7 +147,7 @@ class SessionsController < ApplicationController
     end
 
     self.current_user = user
-    session[:user_id] = user.id
+    session[:user_id] = user.id if request.format.to_sym == :html
     portal = BrainPortal.current_resource
 
     # Check if the user or the portal is locked
@@ -159,8 +163,8 @@ class SessionsController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_back_or_default(start_page_path) }
-      format.json { render :json => {:session_id => request.session_options[:id], :user_id => current_user.id}, :status => 200 }
-      format.xml  { head :ok }
+      format.json { render :json => { :cbrain_api_token => cbrain_session.cbrain_api_token, :user_id => current_user.id }, :status => 200 }
+      format.xml  { render :xml  => { :cbrain_api_token => cbrain_session.cbrain_api_token, :user_id => current_user.id }, :status => 200 }
     end
 
   end
@@ -169,7 +173,7 @@ class SessionsController < ApplicationController
   # when a user has not properly authenticated
   def auth_failed
     respond_to do |format|
-      format.html { render :action => 'new' }
+      format.html { render :action => 'new', :status => :ok } # should it be :unauthorized ?
       format.json { head   :unauthorized }
       format.xml  { head   :unauthorized }
     end

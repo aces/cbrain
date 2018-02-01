@@ -25,6 +25,8 @@ module SessionHelpers
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  SESSION_API_TOKEN_VALIDITY = 1.day #:nodoc: How long a token is valid if not used.
+
   def self.included(includer) #:nodoc:
     includer.class_eval do
       helper_method :current_project, :cbrain_session
@@ -33,7 +35,8 @@ module SessionHelpers
 
   # Returns the current session as a CbrainSession object.
   def cbrain_session
-    @cbrain_session ||= CbrainSession.new(session)
+    @cbrain_session ||= cbrain_session_from_api_token
+    @cbrain_session ||= CbrainSession.new(session) # A new wrapper
   end
 
   # Returns currently active project.
@@ -47,6 +50,26 @@ module SessionHelpers
     end
 
     @current_project
+  end
+
+  private
+
+  # For API calls. A +cbrain_api_token+ is expected in the params.
+  # For the moment, the API token is the same as a standard session_id, even though
+  # we don't send/receive the session object using cookies. The token will
+  # be used to look up a LargeSessionInfo object (the class returned by
+  # CbrainSession.session_model). This will have been created
+  # during the initial login of the API. If we can find it and it's valid,
+  # it means the cbrain_session must be associated with it. The LargeSessionInfo
+  # object will also provide us later with the associated user account.
+  def cbrain_session_from_api_token
+    return nil unless @cbrain_api_token
+    large_info = CbrainSession.session_model.where(
+      :session_id => @cbrain_api_token,
+      :active     => true,
+    ).where( "updated_at > ?", SESSION_API_TOKEN_VALIDITY.ago ).first
+    return nil unless large_info
+    CbrainSession.new(large_info)
   end
 
 end

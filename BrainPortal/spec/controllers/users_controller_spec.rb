@@ -606,6 +606,7 @@ RSpec.describe UsersController, :type => :controller do
     end
 
     describe "switch" do
+      # NOTE: the mock model below is not right.... :-( cbrain_sesssion() returns a CbrainSession object!
       let(:cbrain_session) { mock_model(LargeSessionInfo, "_csrf_token" => 'dummy csrf', "session_id" => 'session_id', "user_id" => admin.id).as_null_object }
 
       before(:each) do
@@ -620,7 +621,7 @@ RSpec.describe UsersController, :type => :controller do
 
         it "should switch the current user" do
           expect(cbrain_session).to receive(:clear)
-          expect(cbrain_session).to receive(:[]=).with(:user_id, user.id)
+          expect(cbrain_session).to receive(:user_id=).with(user.id)
           post :switch, params: {:id => user.id}
         end
 
@@ -639,7 +640,7 @@ RSpec.describe UsersController, :type => :controller do
 
         it "should allow switching to a user from the site" do
           expect(cbrain_session).to receive(:clear)
-          expect(cbrain_session).to receive(:[]=).with(:user_id, site_user.id)
+          expect(cbrain_session).to receive(:user_id=).with(site_user.id)
           post :switch, params: {:id => site_user.id}
         end
 

@@ -2274,7 +2274,10 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
     new_task.batch_id     = self.id
     self.level            = 0 if self.level.blank?
     new_task.level        = self.level + 1 # New task will be one level up its "parent" task in the task table.
-    new_task.share_workdir_with(new_share_wd_tid, "Queued") if new_share_wd_tid # can be nil
+    if new_share_wd_tid.present?
+      new_share_wd_tid      = self.id if new_share_wd_tid == 0 # a value of 0 means current task
+      new_task.share_workdir_with(new_share_wd_tid, "Queued")
+    end
 
     # Sets tool config among tool configs accessible by user of current task
     new_tool                = new_task.tool
