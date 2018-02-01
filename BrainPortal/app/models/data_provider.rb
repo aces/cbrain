@@ -202,7 +202,7 @@ require 'digest/md5'
 # *Belongs* *to*:
 # * User
 # * Group
-class DataProvider < ActiveRecord::Base
+class DataProvider < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

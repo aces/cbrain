@@ -61,10 +61,10 @@ class UsersController < ApplicationController
       format.html # index.html.erb
       format.js
       format.xml  do
-        render :xml  => @users.to_a.for_api
+        render :xml  => @users.for_api
       end
       format.json do
-        render :json => @users.to_a.for_api
+        render :json => @users.for_api
       end
     end
   end

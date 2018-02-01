@@ -35,7 +35,7 @@
 # transitions, but that would be complex and error-prone. Instead,
 # creating a simple table to store these allocations sounds simple and
 # efficient.
-class TaskVmAllocation < ActiveRecord::Base
+class TaskVmAllocation < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

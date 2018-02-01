@@ -29,7 +29,7 @@
 #* User
 #*Has* *and* *belongs* *to* *many*:
 #* Userfile
-class Tag < ActiveRecord::Base
+class Tag < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

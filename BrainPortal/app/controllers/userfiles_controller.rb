@@ -152,8 +152,8 @@ class UserfilesController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.xml  { render :xml  => (params[:ids_only].present? && api_request) ? @userfiles.to_a : @userfiles.to_a.for_api }
-      format.json { render :json => (params[:ids_only].present? && api_request) ? @userfiles.to_a : @userfiles.to_a.for_api }
+      format.xml  { render :xml  => (params[:ids_only].present? && api_request) ? @userfiles.to_a : @userfiles.for_api }
+      format.json { render :json => (params[:ids_only].present? && api_request) ? @userfiles.to_a : @userfiles.for_api }
       format.csv
     end
   end
@@ -1761,7 +1761,7 @@ class UserfilesController < ApplicationController
       tags = Set.new(@value)
 
       # With an Userfile model (or scope)
-      if (collection <= ActiveRecord::Base rescue nil)
+      if (collection <= ApplicationRecord rescue nil)
         placeholders = tags.map { '?' }.join(',')
         collection.where(<<-"SQL".strip_heredoc, *tags)
           ((
@@ -1870,7 +1870,7 @@ class UserfilesController < ApplicationController
       raise "nothing to filter with" unless valid?
 
       # With an Userfile model (or scope)
-      if (collection <= ActiveRecord::Base rescue nil)
+      if (collection <= ApplicationRecord rescue nil)
         case @operator.to_s.downcase
         when 'no_child'
           collection.where(<<-"SQL".strip_heredoc)

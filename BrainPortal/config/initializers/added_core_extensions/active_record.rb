@@ -25,65 +25,8 @@
 ###################################################################
 module ActiveRecord #:nodoc:
 
-  # CBRAIN ActiveRecord::Base extensions
-  class Base
-
-
-    ###################################################################
-    # ActiveRecord Added Behavior For MetaData
-    ###################################################################
-
-    include ActRecMetaData # module in lib/act_rec_meta_data.rb
-
-    ###################################################################
-    # ActiveRecord Added Behavior For Logging
-    ###################################################################
-
-    include ActRecLog # module in lib/act_rec_log.rb
-
-    ############################################################################
-    # Pretty Type methods
-    ############################################################################
-
-    include CBRAINExtensions::ActiveRecordExtensions::PrettyType
-
-    ###################################################################
-    # ActiveRecord Added Behavior For Single Table Inheritance
-    ###################################################################
-
-    include CBRAINExtensions::ActiveRecordExtensions::SingleTableInheritance
-
-    ###################################################################
-    # ActiveRecord Added Behavior For Single Table Inheritance
-    ###################################################################
-
-    include CBRAINExtensions::ActiveRecordExtensions::AbstractModelMethods
-
-    ###################################################################
-    # ActiveRecord Added Behavior For Serialization
-    ###################################################################
-
-    include CBRAINExtensions::ActiveRecordExtensions::Serialization
-
-    ###################################################################
-    # ActiveRecord Added Behavior For Core Models
-    ###################################################################
-
-    include CBRAINExtensions::ActiveRecordExtensions::CoreModels
-
-    ###################################################################
-    # ActiveRecord Added Behavior For Hiding Attributes
-    ###################################################################
-
-    include CBRAINExtensions::ActiveRecordExtensions::HiddenAttributes
-    include CBRAINExtensions::ActiveRecordExtensions::ApiAttrVisible
-
-  end # class Base of ActiveRecord
-
-
-
   # CBRAIN ActiveRecord::Relation extensions
-  class Relation
+  class Relation #:nodoc:
 
     #####################################################################
     # ActiveRecord::Relation safety net to avoid OOM conditions
@@ -96,6 +39,12 @@ module ActiveRecord #:nodoc:
     #####################################################################
 
     include CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::RawData
+
+    #####################################################################
+    # ActiveRecord::Relation Added Behavior For API Requests
+    #####################################################################
+
+    include CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::ForApiRequests
 
   end
 

@@ -23,14 +23,14 @@
 # This model stores the logs for any other
 # ActiveRecord model objects. See the ActRecLog module
 # for more information about the API.
-class ActiveRecordLog < ActiveRecord::Base
+class ActiveRecordLog < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   def active_record_object #:nodoc:
     ar_id = self.ar_id
     klass = self.ar_table_name.classify.constantize rescue nil
-    return nil unless klass && ar_id && klass < ActiveRecord::Base
+    return nil unless klass && ar_id && klass < ApplicationRecord
     klass.find_by_id(ar_id)
   end
 

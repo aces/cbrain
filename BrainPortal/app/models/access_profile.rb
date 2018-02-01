@@ -32,7 +32,7 @@
 # Later on, access restrictions will be
 # recorded here too. For instance, restrictions and
 # limits of launching tasks, number of files, etc etc.
-class AccessProfile < ActiveRecord::Base
+class AccessProfile < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

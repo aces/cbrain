@@ -28,7 +28,7 @@ module LicenseAgreements
 
   # Check that the the class this module is being included into is a valid one.
   def self.included(includer) #:nodoc:
-    unless includer <= ActiveRecord::Base
+    unless includer <= ApplicationRecord
       raise "#{includer} is not an ActiveRecord model. The LicenseAgreements module cannot be used with it."
     end
 

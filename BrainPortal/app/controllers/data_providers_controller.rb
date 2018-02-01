@@ -46,10 +46,10 @@ class DataProvidersController < ApplicationController
     respond_to do |format|
       format.html
       format.xml  do
-        render :xml  => @data_providers.to_a.for_api
+        render :xml  => @data_providers.for_api
       end
       format.json do
-        render :json => @data_providers.to_a.for_api
+        render :json => @data_providers.for_api
       end
       format.js
     end

@@ -466,7 +466,7 @@ module ViewScopes
 
         @value ||= [] if [ 'in', 'out', 'range' ].include?(@operator.to_s)
 
-        if (collection <= ActiveRecord::Base rescue nil)
+        if (collection <= ApplicationRecord rescue nil)
           apply_on_model(collection)
         else
           apply_on_collection(collection)
@@ -809,7 +809,7 @@ module ViewScopes
         raise "no direction to sort in" unless @direction
         raise "no attribute to sort on" unless @attribute
 
-        if (collection <= ActiveRecord::Base rescue nil)
+        if (collection <= ApplicationRecord rescue nil)
           apply_on_model(collection)
         else
           apply_on_collection(collection)
@@ -987,7 +987,7 @@ module ViewScopes
       # with *per_page* elements per page, and return the paginated collection
       # scoped to the page corresponding to *page*.
       def apply(collection)
-        collection = collection.where(nil) if collection.is_a?(ActiveRecord::Base)
+        collection = collection.where(nil) if collection.is_a?(ApplicationRecord)
         collection = collection.to_a unless
           (collection.is_a?(ActiveRecord::Relation))
 
@@ -1475,9 +1475,9 @@ module ViewScopes
     return nil if assoc.blank?
 
     # Convert a table name into an ActiveRecord model class
-    unless ((assoc <= ActiveRecord::Base) rescue nil)
+    unless ((assoc <= ApplicationRecord) rescue nil)
       table = assoc.to_s.tableize
-      assoc = ActiveRecord::Base.descendants.find do |m|
+      assoc = ApplicationRecord.descendants.find do |m|
         assoc == m.name || table == m.table_name
       end
     end
@@ -1494,7 +1494,7 @@ module ViewScopes
   # +parse_assoc+) but using a table name (as a string) instead of an
   # ActiveRecord model class.
   def self.assoc_with_table(assoc)
-    return assoc.table_name if ((assoc <= ActiveRecord::Base) rescue nil)
+    return assoc.table_name if ((assoc <= ApplicationRecord) rescue nil)
     return assoc unless assoc.is_a?(Enumerable)
 
     assoc, assoc_attr, model_attr = assoc

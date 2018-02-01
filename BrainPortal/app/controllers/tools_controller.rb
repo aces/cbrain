@@ -42,8 +42,8 @@ class ToolsController < ApplicationController
     respond_to do |format|
       format.js
       format.html # index.html.erb
-      format.xml  { render :xml  => @tools.to_a.for_api }
-      format.json { render :json => @tools.to_a.for_api }
+      format.xml  { render :xml  => @tools.for_api }
+      format.json { render :json => @tools.for_api }
     end
   end
 

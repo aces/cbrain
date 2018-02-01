@@ -1,3 +1,1 @@
-class ApplicationRecord < ActiveRecord::Base
-  self.abstract_class = true
-end
+../../../BrainPortal/app/models/application_record.rb

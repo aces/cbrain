@@ -34,8 +34,8 @@ class TagsController < ApplicationController
   def index #:nodoc:
     @tags = current_user.tags.all
     respond_to do |format|
-      format.xml  { render :xml  => @tags.to_a.for_api }
-      format.json { render :json => @tags.to_a.for_api }
+      format.xml  { render :xml  => @tags.for_api }
+      format.json { render :json => @tags.for_api }
     end
   end
 

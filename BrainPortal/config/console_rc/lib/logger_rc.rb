@@ -23,7 +23,7 @@
 # Create a new logger for ActiveRecord operations
 console_logger              = Logger.new(STDOUT)
 console_logger.formatter    = Proc.new { |s,d,p,m| "#{m}\n" }
-ActiveRecord::Base.logger   = console_logger
+ApplicationRecord.logger    = console_logger
 ActiveResource::Base.logger = console_logger
 
 # Disable AR logging (actually, just sets logging level to ERROR).
@@ -46,7 +46,7 @@ end
 
 # Toggle log level for the two loggers
 def set_log_level(level) #:nodoc:
-  console_logger       = ActiveRecord::Base.logger
+  console_logger       = ApplicationRecord.logger
   previous_level       = console_logger.level
   console_logger.level = level
   return unless block_given?

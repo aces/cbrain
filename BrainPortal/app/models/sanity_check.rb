@@ -23,7 +23,7 @@
 # A simple model to track the revision info
 # of the DB sanity check class,
 # and track whether or not it was applied.
-class SanityCheck < ActiveRecord::Base
+class SanityCheck < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

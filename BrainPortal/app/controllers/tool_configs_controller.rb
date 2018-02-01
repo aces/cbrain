@@ -42,8 +42,8 @@ class ToolConfigsController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.json { render :json => @tool_configs.to_a.for_api }
-      format.xml  { render :xml  => @tool_configs.to_a.for_api }
+      format.json { render :json => @tool_configs.for_api }
+      format.xml  { render :xml  => @tool_configs.for_api }
       format.js
     end
   end

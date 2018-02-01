@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-class Signup < ActiveRecord::Base
+class Signup < ApplicationRecord
 
   validate              :strip_blanks
 

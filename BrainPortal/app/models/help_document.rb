@@ -34,7 +34,7 @@ require 'fileutils'
 #          documentation is kept.
 #
 # TODO auto-generate an HelpDocument if theres a file in PATH matching the key
-class HelpDocument < ActiveRecord::Base
+class HelpDocument < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

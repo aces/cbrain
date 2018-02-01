@@ -1093,7 +1093,7 @@ class TasksController < ApplicationController
       statuses = StatusClasses[@value.to_s.downcase]
 
       # With a CbrainTask model (or scope)
-      if (collection <= ActiveRecord::Base rescue nil)
+      if (collection <= ApplicationRecord rescue nil)
         collection.where(:status => statuses)
 
       # With a Ruby Enumerable

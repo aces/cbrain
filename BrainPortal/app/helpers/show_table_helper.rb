@@ -300,7 +300,7 @@ module ShowTableHelper
     tb = TableBuilder.new(object, self, options)
     yield(tb)
 
-    if tb.editable? && object.is_a?(ActiveRecord::Base)
+    if tb.editable? && object.is_a?(ApplicationRecord)
       unless url
         url = {:controller  => params[:controller]}
         if object.new_record?

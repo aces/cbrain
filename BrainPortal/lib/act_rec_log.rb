@@ -48,7 +48,7 @@
 # (those that are defined with 'belongs_to', 'has_many', 'has_one' etc).
 # This table and its records are NOT expected to be ever accessed by CBRAIN
 # programmers directly, instead a simple API has been added to the lowest
-# level of the ActiveRecord class hierarchy, ActiveRecord::Base.
+# level of the ActiveRecord class hierarchy, ApplicationRecord.
 #
 # === The new ActiveRecord methods
 #
@@ -193,7 +193,7 @@ module ActRecLog
 
   # Check that the the class this module is being included into is a valid one.
   def self.included(includer) #:nodoc:
-    unless includer <= ActiveRecord::Base
+    unless includer <= ApplicationRecord
       raise "#{includer} is not an ActiveRecord model. The ActRecLog module cannot be used with it."
     end
 
@@ -398,12 +398,12 @@ module ActRecLog
   #   Managers updated by adminuser: Removed: login1
   #   Managers uddated by adminuser: Added: login4, login5
   def addlog_object_list_updated(message, model, oldlist, newlist, by_user=nil, name_method=:name, caller_level = 0)
-    klass = model < ActiveRecord::Base ? model : model.constantize
+    klass = model < ApplicationRecord ? model : model.constantize
     oldlist = Array(oldlist)
     newlist = Array(newlist)
     # this method handles mixed arrays of IDs or objects
-    oldlist_part = oldlist.hashed_partition { |x| x.is_a?(ActiveRecord::Base) ? :obj : :id }
-    newlist_part = newlist.hashed_partition { |x| x.is_a?(ActiveRecord::Base) ? :obj : :id }
+    oldlist_part = oldlist.hashed_partition { |x| x.is_a?(ApplicationRecord) ? :obj : :id }
+    newlist_part = newlist.hashed_partition { |x| x.is_a?(ApplicationRecord) ? :obj : :id }
     oldlist = ((oldlist_part[:obj] || []) + (oldlist_part[:id] ? klass.where(:id => oldlist_part[:id]).all.to_a : [])).uniq
     newlist = ((newlist_part[:obj] || []) + (newlist_part[:id] ? klass.where(:id => newlist_part[:id]).all.to_a : [])).uniq
     added     = newlist - oldlist
