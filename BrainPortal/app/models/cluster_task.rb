@@ -2038,6 +2038,7 @@ chmod 755 #{docker_wrapper_basename.bash_escape}
     run                                          \\
     -u #{Process.uid}:#{Process.gid}             \\
     --rm                                         \\
+    --entrypoint /bin/sh                         \\
     -v "${PWD}":#{esc_cont_work_dir}             \\
     -v #{cache_dir.bash_escape}:#{cache_dir.bash_escape}         \\
     -v #{gridshare_dir.bash_escape}:#{gridshare_dir.bash_escape} \\
