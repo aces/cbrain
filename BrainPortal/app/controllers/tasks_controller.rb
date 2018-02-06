@@ -30,7 +30,7 @@ class TasksController < ApplicationController
   before_action :login_required
 
   def index #:nodoc:
-    @scope      = scope_from_session('tasks')
+    @scope      = scope_from_session
     api_request = [:xml, :json].include?(request.format.to_sym)
 
     # Default sorting order and batch mode
@@ -83,7 +83,7 @@ class TasksController < ApplicationController
       .to_h
 
     # Save the modified scope object
-    scope_to_session(@scope, 'tasks')
+    scope_to_session(@scope)
 
     respond_to do |format|
       format.html
@@ -109,7 +109,7 @@ class TasksController < ApplicationController
 
   # Renders a set of tasks associated with a batch.
   def batch_list
-    @scope = scope_from_session('tasks')
+    @scope = scope_from_session('tasks#index')
     @scope.order.clear
 
     @base_scope = custom_scope(user_scope(
@@ -573,7 +573,7 @@ class TasksController < ApplicationController
 
   # Allows user to update attributes of multiple tasks.
   def update_multiple
-    @scope = scope_from_session('tasks')
+    @scope = scope_from_session('tasks#index')
 
     # Construct task_ids and batch_ids
     task_ids   = Array(params[:tasklist]  || [])
@@ -734,7 +734,7 @@ class TasksController < ApplicationController
   # [*Terminate*] Kill the task, while maintaining its temporary files and its entry in the database.
   # [*Delete*] Kill the task, delete the temporary files and remove its entry in the database.
   def operation
-    @scope = scope_from_session('tasks')
+    @scope = scope_from_session('tasks#index')
 
     operation  = params[:operation]
     tasklist   = params[:tasklist]  || []

@@ -43,7 +43,7 @@ class UserfilesController < ApplicationController
   # GET /userfiles.xml
   # GET /userfiles.json
   def index #:nodoc:
-    @scope = scope_from_session('userfiles')
+    @scope = scope_from_session
 
     # Manually handle the 'name_like' input, as it cant be pre-computed
     # server-side (and going the JS route would be overkill).
@@ -128,11 +128,11 @@ class UserfilesController < ApplicationController
     # General case
     else
       @userfiles = @view_scope
-      @userfiles = @scope.pagination.apply(@userfiles) unless api_request
+      @userfiles = @scope.pagination.apply(@userfiles)
     end
 
     # Save the modified scope object
-    scope_to_session(@scope, 'userfiles')
+    scope_to_session(@scope)
 
     # This is for the tool selection dialog box....
     # we need the tools the user has access to and tags associated with the tools
@@ -340,7 +340,7 @@ class UserfilesController < ApplicationController
       @sort_index  = [ 0, params[:sort_index].to_i, 999_999_999 ].sort[1]
 
       # Rebuild the sorted Userfile scope
-      @scope       = scope_from_session('userfiles')
+      @scope       = scope_from_session('userfiles#index')
       sorted_scope = filtered_scope
 
       # Fetch the neighbors of the shown userfile in the ordered scope's order

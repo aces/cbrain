@@ -32,7 +32,7 @@ class GroupsController < ApplicationController
   # GET /groups
   # GET /groups.xml
   def index  #:nodoc:
-    @scope = scope_from_session('groups')
+    @scope = scope_from_session
     scope_default_order(@scope, 'groups.name')
 
     params[:name_like].strip! if params[:name_like]
@@ -238,10 +238,10 @@ class GroupsController < ApplicationController
     redirect_action     = params[:redirect_action]     || :index
     redirect_id         = params[:redirect_id]
 
-    ['userfiles', 'tasks'].each do |name|
+    ['userfiles#index', 'tasks#index'].each do |name|
       scope = scope_from_session(name)
       scope.filters.reject! { |f| f.attribute.to_s == 'group_id' }
-      scope_to_session(scope)
+      scope_to_session(scope, name)
     end
 
     redirect_path = { :controller => redirect_controller, :action => redirect_action }

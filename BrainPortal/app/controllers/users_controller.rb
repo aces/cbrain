@@ -33,7 +33,7 @@ class UsersController < ApplicationController
   before_action :manager_role_required, :except => [:show, :edit, :update, :request_password, :send_password, :change_password]
 
   def index #:nodoc:
-    @scope = scope_from_session('users')
+    @scope = scope_from_session
     scope_default_order(@scope, 'full_name')
 
     params[:name_like].strip! if params[:name_like]
@@ -46,8 +46,7 @@ class UsersController < ApplicationController
     @users = @view_scope = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 50 })
-    @users = @scope.pagination.apply(@view_scope) if
-      [:html, :js].include?(request.format.to_sym)
+    @users = @scope.pagination.apply(@view_scope)
 
     # Precompute file, task and locked/unlocked counts.
     @users_file_counts    = Userfile.where(:user_id => @view_scope).group(:user_id).count

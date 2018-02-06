@@ -993,7 +993,7 @@ module ViewScopes
 
         # Validate @total and clamp @page and @per_page to a sane range
         total    = (@total || collection.size).to_i
-        per_page = [25, @per_page.to_i, 1000].sort[1]
+        per_page = [1, @per_page.to_i, 1000].sort[1]
         page     = [1, @page.to_i, (total + per_page - 1) / per_page].sort[1]
 
         # Is there a native paginate method available?
@@ -1305,9 +1305,11 @@ module ViewScopes
 
     # FIXME: the per_page parameter is often passed in many requests where it
     # doesn't belong, creating spurious Scopes in the session. A workaround is
-    # to require the target scope to already exist:
+    # to require the target scope to already exist.
+    #
+    # Added exception for pagination on the 'index' methods, we just always apply those.
     pagination.delete('p') unless
-      (cbrain_session['scopes'] || {}).has_key?(pag_scope)
+      (cbrain_session['scopes'] || {}).has_key?(pag_scope) || pag_scope =~ /#index$/
 
     cbrain_session.apply_changes(
       { 'scopes' => { pag_scope => { 'p' => pagination } } }

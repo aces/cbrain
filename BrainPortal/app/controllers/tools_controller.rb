@@ -33,7 +33,7 @@ class ToolsController < ApplicationController
   # GET /tools
   # GET /tools.xml
   def index #:nodoc:
-    @scope = scope_from_session('tools')
+    @scope = scope_from_session
     scope_default_order(@scope, 'name')
 
     @base_scope = current_user.available_tools.includes(:user, :group)

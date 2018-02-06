@@ -36,7 +36,7 @@ class BourreauxController < ApplicationController
   before_action :manager_role_required, :except  => [:index, :show, :row_data, :load_info, :rr_disk_usage, :cleanup_caches, :rr_access, :rr_access_dp, :update, :start, :stop]
 
   def index #:nodoc:
-    @scope = scope_from_session('bourreaux')
+    @scope = scope_from_session
     scope_default_order(@scope, 'type')
 
     @base_scope = RemoteResource

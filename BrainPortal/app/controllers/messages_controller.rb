@@ -31,7 +31,7 @@ class MessagesController < ApplicationController
   # GET /messages
   # GET /messages.xml
   def index #:nodoc:
-    @scope = scope_from_session('messages')
+    @scope = scope_from_session
     scope_default_order(@scope, 'last_sent', :desc)
 
     @base_scope = Message.where(nil)

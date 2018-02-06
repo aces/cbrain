@@ -32,7 +32,7 @@ class SitesController < ApplicationController
   # GET /sites
   # GET /sites.xml
   def index #:nodoc:
-    @scope = scope_from_session('sites')
+    @scope = scope_from_session
     scope_default_order(@scope, 'name')
 
     @sites = @scope.apply(Site.includes(:users, :groups))
