@@ -522,7 +522,7 @@ class DataProvidersController < ApplicationController
       end
 
       # Notify user of registration successes and failures.
-      mangled_action = (post_action == :move ? 'mov' : 'copi')
+      mangled_action = (post_action == :move ? 'mov' : 'copy')
       generic_notice_messages('register', succeeded, failed,
         "Files will now be #{mangled_action}ed in background.")
 
