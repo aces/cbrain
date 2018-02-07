@@ -32,16 +32,24 @@ module ApiHelpers
     end
   end
 
-  # Before filter that blocks certain actions
-  # from the API
-  def api_validity_check
-    if request.format && (request.format.to_sym == :xml || request.format.to_sym == :json)
-      valid_actions = self.class.api_actions || []
-      current_action = params[:action].to_sym
+  # Returns true if the current request is an API request (JSON or XML)
+  def api_request?
+    return @_is_api_request unless @_is_api_request.nil?
+    @_is_api_request = (request.format.json? || request.format.xml?)
+  end
 
-      unless valid_actions.include? current_action
-        render :xml => {:error  => "Action '#{current_action}' not available to API. Available actions are #{valid_actions.inspect}"}, :status  => :bad_request
-      end
+  # Before filter that blocks certain actions from the API
+  def api_validity_check
+    return unless api_request?
+
+    valid_actions  = self.class.api_actions || []
+    current_action = params[:action].to_sym
+    return if valid_actions.include? current_action
+
+    error_obj = { :error => "Action '#{current_action}' not available to API. Available actions are #{valid_actions.inspect}" }
+    respond_to do |format|
+      format.xml  { render :xml  => error_obj, :status => :bad_request }
+      format.json { render :json => error_obj, :status => :bad_request }
     end
   end
 

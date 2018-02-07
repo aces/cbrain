@@ -1250,7 +1250,7 @@ module ViewScopes
     mode ||= :replace
 
     # Special _simple_filters filter syntax
-    if (simple = params['_simple_filters'])
+    if (simple = (params['_simple_filters'] || (api_request? && "true")))
       known      = (cbrain_session['scopes'] ||= {})
       default    = default_scope_name
       controller = params[:controller].to_s.downcase
@@ -1262,16 +1262,16 @@ module ViewScopes
       name ||= (simple =~ /\A(1|t|true)\z/i ? default : simple)
 
       # Then convert other query parameters to Scope::Filter hashes
-      excluded = [
-        'action', 'controller',
-        '_simple_filters', '_scope_mode',
-        'page', 'per-page', 'per_page'
-      ]
-      scopes   = { name => { 'f' =>
-        params.to_h
-          .reject { |key| excluded.include?(key) }
-          .map    { |attr,value| { 'a' => attr.to_s, 'v' => value.to_s } }
-      } }
+      model_name = controller_path.classify
+      model_name = 'CbrainTask' if model_name == 'Task' # tasks_controller for CbrainTask model
+      model      = model_name.constantize rescue nil
+      att_list   = model.try(:attribute_names) || []
+      common     = params.to_unsafe_hash.slice(*att_list)
+      scopes     = {
+          name => { 'f' =>
+            common.map { |attr,value| { 'a' => attr.to_s, 'v' => value.to_s } }
+          }
+        } if common.present?
 
     # Generic scopes updates through '_scopes' or '_default_scope'
     elsif params['_scopes'] || params['_default_scope']

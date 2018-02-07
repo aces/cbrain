@@ -89,10 +89,9 @@ class UserfilesController < ApplicationController
     # Prepare the Pagination object
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
     @current_offset = (@scope.pagination.page - 1) * @scope.pagination.per_page
-    api_request     = ! [:html, :js].include?(request.format.to_sym)
 
     # Special case; only userfile IDs are required (API request)
-    if params[:ids_only] && api_request
+    if params[:ids_only] && api_request?
       @userfiles = @view_scope.raw_first_column('userfiles.id')
 
     # Tree sort
@@ -100,7 +99,7 @@ class UserfilesController < ApplicationController
       # Sort using just IDs and parent IDs then paginate, giving the final
       # userfiles list in tuple (see +tree_sort_by_pairs+) form.
       tuples = tree_sort_by_pairs(@view_scope.raw_rows(['userfiles.id', 'userfiles.parent_id']))
-      tuples = @scope.pagination.apply(tuples) unless api_request
+      tuples = @scope.pagination.apply(tuples) unless api_request?
 
       # Keep just ID and depth/level; there is no need for the parent ID,
       # children list, original index, etc.
@@ -152,8 +151,8 @@ class UserfilesController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-      format.xml  { render :xml  => (params[:ids_only].present? && api_request) ? @userfiles.to_a : @userfiles.for_api }
-      format.json { render :json => (params[:ids_only].present? && api_request) ? @userfiles.to_a : @userfiles.for_api }
+      format.xml  { render :xml  => (params[:ids_only].present? && api_request?) ? @userfiles.to_a : @userfiles.for_api }
+      format.json { render :json => (params[:ids_only].present? && api_request?) ? @userfiles.to_a : @userfiles.for_api }
       format.csv
     end
   end
@@ -324,7 +323,7 @@ class UserfilesController < ApplicationController
     @log                = @userfile.getlog        rescue nil
 
     # Add some information for json
-    if request.format.to_sym == :json || request.format.to_sym == :xml
+    if api_request?
       rr_ids_accessible   = RemoteResource.find_all_accessible_by_user(current_user).map(&:id)
       @remote_sync_status = SyncStatus.where(:userfile_id => @userfile.id, :remote_resource_id => rr_ids_accessible)
                             .select([:id, :remote_resource_id, :status, :accessed_at, :synced_at])
@@ -1003,7 +1002,7 @@ class UserfilesController < ApplicationController
     # Spawn subprocess to perform the move or copy operations
     success_list  = []
     failed_list   = {}
-    CBRAIN.spawn_with_active_records_if(request.format.to_sym != :json, current_user, "#{word_move.capitalize} To Other Data Provider") do
+    CBRAIN.spawn_with_active_records_if(! api_request?, current_user, "#{word_move.capitalize} To Other Data Provider") do
       filelist.shuffle.each_with_index do |id,count|
         $0 = "#{word_move.capitalize} ID=#{id} #{count+1}/#{filelist.size} To #{new_provider.name}\0"
         begin
@@ -1064,7 +1063,7 @@ class UserfilesController < ApplicationController
     deleted_success_list      = []
     unregistered_success_list = []
     failed_list               = {}
-    CBRAIN.spawn_with_active_records_if(request.format.to_sym != :json, current_user, "Delete files") do
+    CBRAIN.spawn_with_active_records_if(! api_request?, current_user, "Delete files") do
       idlist = to_delete.raw_first_column(:id).shuffle
       idlist.each_with_index do |userfile_id,count|
         userfile = Userfile.find(userfile_id) rescue nil # that way we instanciate one record at a time
@@ -1091,7 +1090,7 @@ class UserfilesController < ApplicationController
 
     flash[:notice] = "Your files are being deleted in background."
 
-    if request.format.to_sym == :json
+    if api_request?
       json_failed_list = {}
       failed_list.each do |error_message, userfiles|
         json_failed_list[error_message] = userfiles.map(&:id).sort
@@ -1101,6 +1100,12 @@ class UserfilesController < ApplicationController
     respond_to do |format|
       format.html { redirect_to :action => :index }
       format.json { render :json => { :unregistered_list => unregistered_success_list.map(&:id).sort,
+                                      :deleted_list      => deleted_success_list.map(&:id).sort,
+                                      :failed_list       => json_failed_list,
+                                      :error             => flash[:error]
+                                    }
+                  }
+      format.xml  { render :xml  => { :unregistered_list => unregistered_success_list.map(&:id).sort,
                                       :deleted_list      => deleted_success_list.map(&:id).sort,
                                       :failed_list       => json_failed_list,
                                       :error             => flash[:error]
@@ -1691,9 +1696,9 @@ class UserfilesController < ApplicationController
     @scope.custom[:view_all] = !current_user.has_role?(:admin_user) if
       @scope.custom[:view_all].nil?
 
-    if @scope.custom[:view_all] == "false" || !@scope.custom[:view_all]
+    if (! api_request? && (@scope.custom[:view_all] == "false" || !@scope.custom[:view_all]))
       base = base.where(:user_id => current_user.id)
-    else
+    else # api request, or view_all is true
       base = Userfile.restrict_access_on_query(current_user, base, :access_requested => :read)
     end
 

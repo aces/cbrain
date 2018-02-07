@@ -31,10 +31,9 @@ class TasksController < ApplicationController
 
   def index #:nodoc:
     @scope      = scope_from_session
-    api_request = [:xml, :json].include?(request.format.to_sym)
 
     # Default sorting order and batch mode
-    if api_request
+    if api_request?
       scope_default_order(@scope, 'updated_at', :desc)
     else
       scope_default_order(@scope, 'rank')
@@ -59,7 +58,7 @@ class TasksController < ApplicationController
     single_batch    = @scope.filters.any? { |f| f.attribute == 'batch_id' }
     @showing_batch  = @scope.custom[:batch] && single_batch
 
-    if ! api_request && @scope.custom[:batch] && ! single_batch
+    if ! api_request? && @scope.custom[:batch] && ! single_batch
       @tasks = @scope.pagination.apply(@view_scope.group(:batch_id).count.to_a)
       @tasks.map! do |id, count|
         first = @view_scope
@@ -150,7 +149,7 @@ class TasksController < ApplicationController
     @stderr_lim        = params[:stderr_lim].to_i
     @stderr_lim        = 2000 if @stderr_lim <= 100 || @stderr_lim > 999999
 
-    if ((request.format.to_sym != :xml) || params[:get_task_outputs]) && ! @task.workdir_archived?
+    if ((! api_request?) || params[:get_task_outputs]) && ! @task.workdir_archived?
       begin
         @task.capture_job_out_err(@run_number,@stdout_lim,@stderr_lim) # PortalTask method: sends command to bourreau to get info
       rescue Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError, ActiveResource::TimeoutError, ActiveResource::MethodNotAllowed
@@ -404,7 +403,7 @@ class TasksController < ApplicationController
     end
 
     # Spawn a background process to launch the tasks.
-    CBRAIN.spawn_with_active_records_if(request.format.to_sym != :xml && request.format.to_sym != :json, :admin, "Spawn Tasks") do
+    CBRAIN.spawn_with_active_records_if(! api_request?, :admin, "Spawn Tasks") do
 
       spawn_messages = ""
 

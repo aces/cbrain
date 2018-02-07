@@ -51,7 +51,7 @@ class SessionsController < ApplicationController
   end
 
   def create #:nodoc:
-    if request.format.to_sym !~ /^(json|xml)$/i # JSON is used for API calls; XML not yet fully supported
+    if ! api_request? # JSON is used for API calls; XML not yet fully supported
       verify_authenticity_token  # from Rails; will raise exception if not present.
     end
     user = User.authenticate(params[:login], params[:password]) # can be nil if it fails
@@ -147,7 +147,7 @@ class SessionsController < ApplicationController
     end
 
     self.current_user = user
-    session[:user_id] = user.id if request.format.to_sym == :html
+    session[:user_id] = user.id  if request.format.to_sym == :html
     portal = BrainPortal.current_resource
 
     # Check if the user or the portal is locked
@@ -227,6 +227,13 @@ class SessionsController < ApplicationController
     # The authentication_mechanism is a string which describes
     # the mechanism that was used by the user to log in.
     authentication_mechanism = "password" # in future this could change
+
+    # In case of logins though the API, record that in the session too.
+    if api_request?
+      cbrain_session[:api] = 'yes'
+      authentication_mechanism = 'password/api'
+    end
+
     user.addlog("Logged in with #{authentication_mechanism} from #{pretty_host} using #{pretty_brow}")
     portal.addlog("User #{user.login} logged in with #{authentication_mechanism} from #{pretty_host} using #{pretty_brow}")
     user.update_attribute(:last_connected_at, Time.now)
