@@ -63,32 +63,32 @@ RSpec.describe UserfilesController, :type => :controller do
         end
 
         it "should display all files if 'view all' is on" do
-          get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}}}}
+          get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}}}}
           expect(assigns[:userfiles].to_a).to match_array(Userfile.all.to_a)
         end
 
         it "should only display user's files if 'view all' is off" do
-          get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>false}}}}
+          get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>false}}}}
           expect(assigns[:userfiles].to_a).to match_array(Userfile.where(:user_id => admin.id))
         end
 
         it "should not tree sort if 'tree_sort' is set" do
           expect(controller).to receive(:tree_sort_by_pairs)
-          get :index, params: {_scopes: {"userfiles" => {"c"=>{"tree_sort"=>true}}}}
+          get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"tree_sort"=>true}}}}
         end
 
         context "filtering and sorting" do
 
           it "should filter by type FileCollection" do
             file_collection = create(:file_collection)
-            get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "f"=>[{"a"=>"type", "v"=>"FileCollection"}]}}}
+            get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}, "f"=>[{"a"=>"type", "v"=>"FileCollection"}]}}}
             expect(assigns[:userfiles].to_a).to match_array([file_collection])
           end
 
           it "should filter by tag" do
             admin_userfile_2
             tag = create(:tag, :userfiles => [admin_userfile], :user => admin)
-            get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "f"=>[{"t"=>"uf.tags", "v"=>[tag.id]}]}}}
+            get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}, "f"=>[{"t"=>"uf.tags", "v"=>[tag.id]}]}}}
             expect(assigns[:userfiles].to_a).to match_array([admin_userfile])
           end
 
@@ -97,68 +97,68 @@ RSpec.describe UserfilesController, :type => :controller do
             custom_filter.data = {"file_name_type"=>"match", "file_name_term" => admin_userfile.name}
             custom_filter.save
             allow(admin).to receive(:custom_filter_ids).and_return([custom_filter.id])
-            get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true, "custom_filters"=>[custom_filter.id]}}}}
+            get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true, "custom_filters"=>[custom_filter.id]}}}}
             expect(assigns[:userfiles].to_a).to eq([admin_userfile])
           end
 
           it "should filter for no parent" do
             admin_userfile.parent_id = admin_userfile_2.id
             admin_userfile.save
-            get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "f"=>[{"t"=>"uf.hier", "o"=>"no_parent"}]}}}
+            get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}, "f"=>[{"t"=>"uf.hier", "o"=>"no_parent"}]}}}
             expect(assigns[:userfiles].to_a).to match_array(Userfile.where(:parent_id => nil))
           end
 
           it "should filter for no children" do
             admin_userfile
             child_userfile
-            get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "f"=>[{"t"=>"uf.hier", "o"=>"no_child"}]}}}
+            get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}, "f"=>[{"t"=>"uf.hier", "o"=>"no_child"}]}}}
             parent_ids = Userfile.where('parent_id is NOT NULL').map{|f| f.parent_id}
             expect(assigns[:userfiles].to_a).to match_array(Userfile.where(['userfiles.id NOT IN (?)', parent_ids]).all.to_a)
           end
 
           it "should sort by name" do
-            get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"name"}]}}}
+            get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"name"}]}}}
             expect(assigns[:userfiles].to_a).to eq(Userfile.order(:name).all.to_a)
           end
 
           it "should be able to reverse sort" do
-            get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"name", "d"=>"desc"}]}}}
+            get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"name", "d"=>"desc"}]}}}
             expect(assigns[:userfiles].to_a).to eq(Userfile.order("name DESC").all.to_a)
           end
 
           it "should sort by type" do
-            get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"type"}]}}}
+            get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"type"}]}}}
             expect(assigns[:userfiles].to_a).to eq(Userfile.order(:type).all.to_a)
           end
 
           it "should sort by owner name" do
-            get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"users.login", "j"=>"users"}]}}}
+            get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"users.login", "j"=>"users"}]}}}
             expect(assigns[:userfiles].to_a).to eq(Userfile.joins(:user).merge(User.order(login: :ASC)).all.to_a)
           end
 
           it "should sort by creation date" do
-            get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"created_at"}]}}}
+            get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"created_at"}]}}}
             expect(assigns[:userfiles].to_a).to eq(Userfile.order(:created_at).all.to_a)
           end
 
           it "should sort by size" do
-            get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"size"}]}}}
+            get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"size"}]}}}
             expect(assigns[:userfiles].to_a).to eq(Userfile.order(:size).all.to_a)
           end
 
           it "should sort by project name" do
-            get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"groups.name", "j"=>"groups"}]}}}
+            get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"groups.name", "j"=>"groups"}]}}}
             expect(assigns[:userfiles].to_a).to eq(Userfile.joins(:group).order("groups.name").all.to_a)
           end
 
           it "should sort by project access" do
             [{"a"=>"group_writable"}]
-            get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"group_writable"}]}}}
+            get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"group_writable"}]}}}
             expect(assigns[:userfiles].to_a.map(&:group_writable)).to eq(Userfile.order(:group_writable).all.to_a.map(&:group_writable))
           end
 
           it "should sort by provider" do
-            get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"data_providers.name", "j"=>"data_providers"}]}}}
+            get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}, "o"=>[{"a"=>"data_providers.name", "j"=>"data_providers"}]}}}
             expect(assigns[:userfiles].to_a).to eq(Userfile.joins(:data_provider).order("data_providers.name").all.to_a)
           end
         end
@@ -176,12 +176,12 @@ RSpec.describe UserfilesController, :type => :controller do
         end
 
         it "should display site-associated files if 'view all' is on" do
-          get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}}}}
+          get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}}}}
           expect(assigns[:userfiles].to_a).to match_array(Userfile.find_all_accessible_by_user(site_manager, :access_requested => :read))
         end
 
         it "should only display user's files if 'view all' is off" do
-          get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>false}}}}
+          get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>false}}}}
           expect(assigns[:userfiles].to_a).to match_array([site_manager_userfile])
         end
       end
@@ -198,12 +198,12 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should display group-associated files if 'view all' is on" do
           group_userfile
-          get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>true}}}}
+          get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>true}}}}
           expect(assigns[:userfiles].to_a).to match_array([group_userfile, user_userfile])
         end
 
         it "should only display user's files if 'view all' is off" do
-          get :index, params: {_scopes: {"userfiles" => {"c"=>{"view_all"=>false}}}}
+          get :index, params: {_scopes: {"userfiles#index" => {"c"=>{"view_all"=>false}}}}
           expect(assigns[:userfiles].to_a).to match_array([user_userfile])
         end
       end

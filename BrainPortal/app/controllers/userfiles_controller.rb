@@ -1696,7 +1696,7 @@ class UserfilesController < ApplicationController
     @scope.custom[:view_all] = !current_user.has_role?(:admin_user) if
       @scope.custom[:view_all].nil?
 
-    if (! api_request? && (@scope.custom[:view_all] == "false" || !@scope.custom[:view_all]))
+    if ((! api_request?) && (@scope.custom[:view_all] == "false" || !@scope.custom[:view_all]))
       base = base.where(:user_id => current_user.id)
     else # api request, or view_all is true
       base = Userfile.restrict_access_on_query(current_user, base, :access_requested => :read)

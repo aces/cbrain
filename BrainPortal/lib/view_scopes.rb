@@ -1263,7 +1263,8 @@ module ViewScopes
 
       # Then convert other query parameters to Scope::Filter hashes
       model_name = controller_path.classify
-      model_name = 'CbrainTask' if model_name == 'Task' # tasks_controller for CbrainTask model
+      model_name = 'CbrainTask'     if model_name == 'Task' # tasks_controller for CbrainTask model
+      model_name = 'RemoteResource' if model_name == 'Bourreau' # bourreaux_controller for RemoteResource model
       model      = model_name.constantize rescue nil
       att_list   = model.try(:attribute_names) || []
       common     = params.to_unsafe_hash.slice(*att_list)
