@@ -179,7 +179,7 @@ in a tabular layout. Proceed as follow:
                  <%= pretty_size(size) %></br>
                  <%=
                    scope_filter_link("#{pluralize(num_entries,"entry")} / #{pluralize(sum_files,"file")}",
-                     'userfiles', :replace,
+                     'userfiles#index', :replace,
                      @filter_fixed.merge(td_filters).map do |attr, value|
                        { :a => attr, :v => value }
                      end,
