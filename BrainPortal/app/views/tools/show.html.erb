@@ -1,0 +1,93 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+#
+-%>
+
+<% title 'Tool Info' %>
+
+<div class="display_inline_block" style="min-width:50%">
+
+	<%= show_table(@tool) do |t| %>
+	<% 
+		t.edit_cell(:name) { text_field_tag "tool[name]", @tool.name} 
+	%>
+	
+	<%
+		t.edit_cell(:category) do
+			select_tag "tool[category]", options_for_select(Tool::Categories, :selected => @tool.category)
+		end
+	%>
+	<%
+		t.edit_cell(:user_id, :header => "Belongs to", :content => link_to_user_with_tooltip(@tool.user)) do
+			user_select("tool[user_id]", {:selector => @tool})
+		end
+	%>
+	
+	<% 
+		licenses = @tool.license_agreements.count == 0 ? "(None)": @tool.license_agreements.join("\n")
+		t.edit_cell(:license_agreements, :content => licenses) do %>
+			<%= text_area_tag "tool[license_agreements]", @tool.license_agreements.join("\n"), :rows=>5, :cols=>40 %>
+			<br>
+			<div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
+		<% end %>
+	
+	<% 
+		t.edit_cell(:group_id, :header=> "Available to members of project", :content => link_to_group_if_accessible(@tool.group)) do
+			 group_select("tool[group_id]", {:selector => @tool} )
+		end
+	%>
+	
+	<%  t.edit_cell(:description, :content => full_description(@tool.description)) do %>
+	<%= text_area_tag "tool[description]", @tool.description, :rows=>10, :cols=>40 %>
+	<% end %>
+	
+	<% 	external_page_url = @tool.url.nil? ? "(Not Specified)": link_to(@tool.url, @tool.url, :class => "action_link", :target => "_blank")
+	   	t.edit_cell(:url, :header => "Tool Website URL", :content=> external_page_url ) do %>
+	   	<%= text_field_tag "tool[url]", @tool.url, :size => 60 %> 
+	   	<br>
+	   	<div class="field_explanation">Link to external information page for this tool</div>
+	<% end %>
+	
+	<% 
+		app_name = @tool.application_package_name.empty? ? "(Not Specified)" : @tool.application_package_name
+		t.edit_cell(:application_package_name, :content => app_name ) do %>
+		<%= text_field_tag "tool[application_package_name]", @tool.application_package_name %>
+		<% end
+
+	%>
+	
+	<% 
+		app_type = @tool.application_type.empty? ? "(Not Specified)" : @tool.application_type
+		t.edit_cell(:application_type, :header => "Application Type", :content => app_type) do %>
+		<%= text_field_tag "tool[application_type]", @tool.application_type %>
+		<% end
+	%>	
+
+	<%
+		app_tags = @tool.application_tags.empty? ? "(Not Specified)" : @tool.application_tags
+		t.edit_cell(:application_tags, :header => "Comma Separated Tags", :content => app_tags) do %>
+		<%= text_field_tag "tool[application_tags]", @tool.application_type %>
+		<% end
+	%> 
+	 
+	<% end %>
+</div>
