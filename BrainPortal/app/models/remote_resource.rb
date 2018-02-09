@@ -52,7 +52,7 @@ require 'socket'
 #*Belongs* *to*:
 #* User
 #* Group
-class RemoteResource < ActiveRecord::Base
+class RemoteResource < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
@@ -136,7 +136,7 @@ class RemoteResource < ActiveRecord::Base
   # database.yml.
   def self.current_resource_db_config(railsenv = nil)
     railsenv ||= (Rails.env || 'production')
-    myconfigs  = ActiveRecord::Base.configurations
+    myconfigs  = ApplicationRecord.configurations
     myconfig   = myconfigs[railsenv].dup
     myconfig
   end

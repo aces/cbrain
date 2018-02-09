@@ -21,7 +21,7 @@
 #
 
 # This model represents events of unlocking the system's SshAgent
-class SshAgentUnlockingEvent < ActiveRecord::Base
+class SshAgentUnlockingEvent < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

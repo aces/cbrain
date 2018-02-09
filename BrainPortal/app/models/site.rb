@@ -25,7 +25,7 @@
 # system administrator. A Site is generally associated
 # with one or more Site Managers who can act as admistrators
 # for resources within the site.
-class Site < ActiveRecord::Base
+class Site < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

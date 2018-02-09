@@ -35,7 +35,7 @@
 #* Group
 #*Has* *and* *belongs* *to* *many*
 #* Bourreau
-class Tool < ActiveRecord::Base
+class Tool < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

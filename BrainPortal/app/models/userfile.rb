@@ -39,7 +39,7 @@ require 'set'
 #*Has* *and* *belongs* *to* *many*:
 #* Tag
 #
-class Userfile < ActiveRecord::Base
+class Userfile < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

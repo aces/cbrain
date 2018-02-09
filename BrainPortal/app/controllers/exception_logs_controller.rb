@@ -29,7 +29,7 @@ class ExceptionLogsController < ApplicationController
   before_action :admin_role_required
 
   def index #:nodoc:
-    @scope = scope_from_session('exception_logs')
+    @scope = scope_from_session
     scope_default_order(@scope, 'created_at', :desc)
 
     @base_scope = ExceptionLog.where(nil)

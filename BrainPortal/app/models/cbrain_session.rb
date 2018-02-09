@@ -286,10 +286,16 @@ class CbrainSession
   # than 1 minute.
   def touch_unless_recent
     return             unless @model.present?
-    return @model.save     if @modified
+    clean_model_for_api    if @model.data[:api]
+    return @model.save     if @modified && @model.changed? # I hate having two parallel systems to track this
     return                 if @model.updated_at.blank? || @model.updated_at > 1.minute.ago
     return                 if @model.new_record? && @model.data.try(:size) == 0
     @model.touch
+  end
+
+  # When using the CBRAIN API, we don't save any state information for scopes
+  def clean_model_for_api #:nodoc:
+    @model.data.delete "scopes"
   end
 
   def mark_as_modified #:nodoc:

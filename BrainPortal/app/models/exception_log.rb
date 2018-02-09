@@ -21,7 +21,7 @@
 #
 
 # Exception logging class
-class ExceptionLog < ActiveRecord::Base
+class ExceptionLog < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

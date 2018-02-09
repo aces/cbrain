@@ -59,8 +59,8 @@
       ) { |m,r,c| link_to_user_with_tooltip(m) }
     end
 
-    users_scope  = scope_from_session('users')
-    groups_scope = scope_from_session('groups')
+    users_scope  = scope_from_session('users#index')
+    groups_scope = scope_from_session('groups#index')
 
     t.column("Number of Users", :nusers) do |s|
       scope_filter_link(s.users.count.to_s,

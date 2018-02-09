@@ -35,7 +35,7 @@ class DataProvidersController < ApplicationController
   before_action :admin_role_required,   :only => [:report, :repair]
 
   def index #:nodoc:
-    @scope = scope_from_session('data_providers')
+    @scope = scope_from_session
     scope_default_order(@scope, 'name')
 
     @base_scope = DataProvider
@@ -46,10 +46,10 @@ class DataProvidersController < ApplicationController
     respond_to do |format|
       format.html
       format.xml  do
-        render :xml  => @data_providers.to_a.for_api
+        render :xml  => @data_providers.for_api
       end
       format.json do
-        render :json => @data_providers.to_a.for_api
+        render :json => @data_providers.for_api
       end
       format.js
     end
@@ -285,7 +285,7 @@ class DataProvidersController < ApplicationController
     end
 
     # Load up the default scope for DP browsing and handle 'name_like'.
-    @scope = scope_from_session(default_scope_name)
+    @scope = scope_from_session
     scope_filter_from_params(@scope, :name_like, {
       :attribute => 'name',
       :operator  => 'match'
@@ -370,8 +370,7 @@ class DataProvidersController < ApplicationController
     @fileinfolist = @scope.apply(@fileinfolist)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
-    @files = @scope.pagination.apply(@fileinfolist) unless
-      [:xml, :json].include?(request.format.to_sym)
+    @files = @scope.pagination.apply(@fileinfolist)
 
     scope_to_session(@scope)
 
@@ -737,7 +736,7 @@ class DataProvidersController < ApplicationController
 
   # Report inconsistencies in the data provider.
   def report
-    @scope    = scope_from_session(default_scope_name)
+    @scope    = scope_from_session
     @provider = DataProvider.find(params[:id])
     @issues   = @provider.provider_report(params[:reload])
 

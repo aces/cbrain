@@ -139,13 +139,13 @@ module CBRAINExtensions #:nodoc:
 
         # Find the root of this branch of the STI hierarchy.
         def sti_root_class
-          return nil unless self < ::ActiveRecord::Base
+          return nil unless self < ::ApplicationRecord
           return class_variable_get("@@__sti_root_class__") if class_variable_defined?("@@__sti_root_class__")
 
-          if self.superclass == ::ActiveRecord::Base
+          if self.superclass == ::ApplicationRecord
             root_class = self
           else
-            root_class = ancestors.find{ |c| c.is_a?(Class) && c.superclass == ::ActiveRecord::Base }
+            root_class = ancestors.find{ |c| c.is_a?(Class) && c.superclass == ::ApplicationRecord }
           end
           root_class.class_variable_set("@@__sti_root_class__", root_class)
 

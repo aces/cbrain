@@ -60,7 +60,7 @@
 #                the content was already synchronized and
 #                younger than the RemoteResource's threshold
 #                (specified by its cache_trust_expire).
-class SyncStatus < ActiveRecord::Base
+class SyncStatus < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

@@ -27,7 +27,7 @@ require 'socket'
 
 # Model representing messages that can be sent by the system to
 # other users, or from users to each other.
-class Message < ActiveRecord::Base
+class Message < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

@@ -36,7 +36,7 @@
 #[<b>On Destroy</b>] All Userfile, RemoteResource and DataProvider
 #                    associated with the group being destroyed will
 #                    have their group set to their owner's SystemGroup.
-class Group < ActiveRecord::Base
+class Group < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

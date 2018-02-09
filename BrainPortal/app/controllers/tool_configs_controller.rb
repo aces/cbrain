@@ -31,7 +31,7 @@ class ToolConfigsController < ApplicationController
   before_action :admin_role_required, :except => [ :index ]
 
   def index #:nodoc:
-    @scope              = scope_from_session('tool_configs')
+    @scope = scope_from_session
     scope_default_order(@scope, 'name')
 
     @base_scope   = base_scope.includes([:tool, :bourreau, :group])
@@ -42,8 +42,8 @@ class ToolConfigsController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.json { render :json => @tool_configs.to_a.for_api }
-      format.xml  { render :xml  => @tool_configs.to_a.for_api }
+      format.json { render :json => @tool_configs.for_api }
+      format.xml  { render :xml  => @tool_configs.for_api }
       format.js
     end
   end

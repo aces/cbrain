@@ -26,14 +26,19 @@ describe TaskCustomFilter do
   let(:filter)  {create(:task_custom_filter)}
   let(:task_scope) { double("task_scope").as_null_object }
 
+  let(:user1)     { create(:normal_user) }
+  let(:user2)     { create(:normal_user) }
+  let(:bourreau1) { create(:bourreau) }
+  let(:bourreau2) { create(:bourreau) }
+
   let(:cbrain_task1) {
-    create(:cbrain_task, :description => "desc1", :user_id => 1, :bourreau_id => 1,
+    create(:cbrain_task, :description => "desc1", :user_id => user1.id, :bourreau_id => bourreau1.id,
                     :created_at => "2011-04-04", :status => "New",
                     :updated_at => "2011-05-04")
   }
 
   let(:cbrain_task2) {
-    create(:cbrain_task, :description => "desc2", :user_id => 2, :bourreau_id => 2,
+    create(:cbrain_task, :description => "desc2", :user_id => user2.id, :bourreau_id => bourreau2.id,
                     :created_at => "2011-04-29", :status => "Completed",
                     :updated_at => "2011-05-29")
   }

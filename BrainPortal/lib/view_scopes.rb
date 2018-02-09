@@ -466,7 +466,7 @@ module ViewScopes
 
         @value ||= [] if [ 'in', 'out', 'range' ].include?(@operator.to_s)
 
-        if (collection <= ActiveRecord::Base rescue nil)
+        if (collection <= ApplicationRecord rescue nil)
           apply_on_model(collection)
         else
           apply_on_collection(collection)
@@ -809,7 +809,7 @@ module ViewScopes
         raise "no direction to sort in" unless @direction
         raise "no attribute to sort on" unless @attribute
 
-        if (collection <= ActiveRecord::Base rescue nil)
+        if (collection <= ApplicationRecord rescue nil)
           apply_on_model(collection)
         else
           apply_on_collection(collection)
@@ -987,13 +987,13 @@ module ViewScopes
       # with *per_page* elements per page, and return the paginated collection
       # scoped to the page corresponding to *page*.
       def apply(collection)
-        collection = collection.where(nil) if collection.is_a?(ActiveRecord::Base)
+        collection = collection.where(nil) if collection.is_a?(ApplicationRecord)
         collection = collection.to_a unless
           (collection.is_a?(ActiveRecord::Relation))
 
         # Validate @total and clamp @page and @per_page to a sane range
         total    = (@total || collection.size).to_i
-        per_page = [25, @per_page.to_i, 1000].sort[1]
+        per_page = [1, @per_page.to_i, 1000].sort[1]
         page     = [1, @page.to_i, (total + per_page - 1) / per_page].sort[1]
 
         # Is there a native paginate method available?
@@ -1250,7 +1250,7 @@ module ViewScopes
     mode ||= :replace
 
     # Special _simple_filters filter syntax
-    if (simple = params['_simple_filters'])
+    if (simple = (params['_simple_filters'] || (api_request? && "true")))
       known      = (cbrain_session['scopes'] ||= {})
       default    = default_scope_name
       controller = params[:controller].to_s.downcase
@@ -1262,16 +1262,17 @@ module ViewScopes
       name ||= (simple =~ /\A(1|t|true)\z/i ? default : simple)
 
       # Then convert other query parameters to Scope::Filter hashes
-      excluded = [
-        'action', 'controller',
-        '_simple_filters', '_scope_mode',
-        'page', 'per-page', 'per_page'
-      ]
-      scopes   = { name => { 'f' =>
-        params.to_h
-          .reject { |key| excluded.include?(key) }
-          .map    { |attr,value| { 'a' => attr.to_s, 'v' => value.to_s } }
-      } }
+      model_name = controller_path.classify
+      model_name = 'CbrainTask'     if model_name == 'Task' # tasks_controller for CbrainTask model
+      model_name = 'RemoteResource' if model_name == 'Bourreau' # bourreaux_controller for RemoteResource model
+      model      = model_name.constantize rescue nil
+      att_list   = model.try(:attribute_names) || []
+      common     = params.to_unsafe_hash.slice(*att_list)
+      scopes     = {
+          name => { 'f' =>
+            common.map { |attr,value| { 'a' => attr.to_s, 'v' => value.to_s } }
+          }
+        } if common.present?
 
     # Generic scopes updates through '_scopes' or '_default_scope'
     elsif params['_scopes'] || params['_default_scope']
@@ -1305,9 +1306,11 @@ module ViewScopes
 
     # FIXME: the per_page parameter is often passed in many requests where it
     # doesn't belong, creating spurious Scopes in the session. A workaround is
-    # to require the target scope to already exist:
+    # to require the target scope to already exist.
+    #
+    # Added exception for pagination on the 'index' methods, we just always apply those.
     pagination.delete('p') unless
-      (cbrain_session['scopes'] || {}).has_key?(pag_scope)
+      (cbrain_session['scopes'] || {}).has_key?(pag_scope) || pag_scope =~ /#index$/
 
     cbrain_session.apply_changes(
       { 'scopes' => { pag_scope => { 'p' => pagination } } }
@@ -1475,9 +1478,9 @@ module ViewScopes
     return nil if assoc.blank?
 
     # Convert a table name into an ActiveRecord model class
-    unless ((assoc <= ActiveRecord::Base) rescue nil)
+    unless ((assoc <= ApplicationRecord) rescue nil)
       table = assoc.to_s.tableize
-      assoc = ActiveRecord::Base.descendants.find do |m|
+      assoc = ApplicationRecord.descendants.find do |m|
         assoc == m.name || table == m.table_name
       end
     end
@@ -1494,7 +1497,7 @@ module ViewScopes
   # +parse_assoc+) but using a table name (as a string) instead of an
   # ActiveRecord model class.
   def self.assoc_with_table(assoc)
-    return assoc.table_name if ((assoc <= ActiveRecord::Base) rescue nil)
+    return assoc.table_name if ((assoc <= ApplicationRecord) rescue nil)
     return assoc unless assoc.is_a?(Enumerable)
 
     assoc, assoc_attr, model_attr = assoc

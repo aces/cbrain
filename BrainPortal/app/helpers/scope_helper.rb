@@ -233,7 +233,7 @@ module ScopeHelper
     # and values.
     if model
       model = model.to_s.classify.constantize unless
-        (model <= ActiveRecord::Base rescue nil)
+        (model <= ApplicationRecord rescue nil)
       association = model.reflect_on_all_associations(:belongs_to)
         .find { |a| a.foreign_key == attribute }
 
@@ -552,7 +552,7 @@ module ScopeHelper
     view       = args.first
 
     # Pre-set some defaults
-    is_assoc = attribute <= ActiveRecord::Base rescue nil
+    is_assoc = attribute <= ApplicationRecord rescue nil
     label  = 'login' if is_assoc && attribute <= User
     format = formatter.((
       proc { |l| l.constantize.pretty_type } if

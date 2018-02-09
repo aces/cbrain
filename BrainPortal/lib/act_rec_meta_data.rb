@@ -32,13 +32,13 @@
 #
 # = CBRAIN Metadata API
 #
-# This module is included in the base class ActiveRecord::Base
+# This module is included in the base class ApplicationRecord
 # and provides a simple interface to a metadata store. It
 # allows a program to store arbitrary (key,value) pairs with
 # any ActiveRecord object on the system.
 #
 # The basic access mechanism is through the meta() instance method
-# added to the ActiveRecord::Base class. This returns an instance
+# added to the ApplicationRecord class. This returns an instance
 # of a special handler object of type ActRecMetaData::MetaDataHandler that
 # provides the interface to set and get metadata values for the original
 # ActiveRecord object.
@@ -78,7 +78,7 @@ module ActRecMetaData
 
   # Check that the the class this module is being included into is a valid one.
   def self.included(includer) #:nodoc:
-    unless includer <= ActiveRecord::Base
+    unless includer <= ApplicationRecord
       raise "#{includer} is not an ActiveRecord model. The ActRecMetaData module cannot be used with it."
     end
 

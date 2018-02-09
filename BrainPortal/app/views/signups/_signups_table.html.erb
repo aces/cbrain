@@ -43,7 +43,7 @@
       <%= link_to "Show All Records",    signups_path(:view_hidden => true),  :class => "button" %>
     <% end %>
 
-    <%= scope_filter_link("Latest TODO", "signups", :replace,
+    <%= scope_filter_link("Latest TODO", "signups#index", :replace,
           [ { :a => :approved_by, :v => '' }, { :a => :confirmed, :v => 1 } ],
           :url => { :controller => :signups, :action => :index, :view_hidden => false },
           :link => { :class => "button" }

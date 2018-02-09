@@ -68,7 +68,7 @@ class BourreauWorker < Worker
     end
 
     # Flush AR caches and trigger Ruby garbage collect
-    ActiveRecord::Base.connection.clear_query_cache
+    ApplicationRecord.connection.clear_query_cache
     GC.enable; GC.start
 
     # Check for tasks stuck in Ruby, at most once per 20 minutes

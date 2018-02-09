@@ -145,9 +145,6 @@ describe DataProvider do
       provider.not_syncable = true
       expect{provider.sync_to_cache(userfile)}.to raise_error(CbrainError, "Error: provider #{provider.name} is not syncable.")
     end
-    it "should raise an exception if sync_to_cache is called" do
-      expect{provider.sync_to_cache(userfile)}.to raise_error("Error: method not yet implemented in subclass.")
-    end
   end
 
   describe "#sync_to_provider" do
@@ -165,9 +162,6 @@ describe DataProvider do
     it "should raise an exception if not syncable" do
       provider.not_syncable = true
       expect{provider.sync_to_provider(userfile)}.to raise_error(CbrainError, "Error: provider #{provider.name} is not syncable.")
-    end
-    it "should raise an exception when sync_to_provider called but not implemented" do
-      expect{provider.sync_to_provider(userfile)}.to raise_error("Error: method not yet implemented in subclass.")
     end
     it "should raise an exception if userfile is immutable" do
       allow(userfile).to receive(:immutable?).and_return(true)

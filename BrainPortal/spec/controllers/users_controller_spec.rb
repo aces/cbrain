@@ -53,23 +53,23 @@ RSpec.describe UsersController, :type => :controller do
           expect(assigns[:users]).to eq(User.order(:full_name).all.to_a)
         end
         it "should sort by full name" do
-          get :index, params: {"_scopes"=>{"users" => {"o"=>[{"a"=>"full_name"}]}}}
+          get :index, params: {"_scopes"=>{"users#index" => {"o"=>[{"a"=>"full_name"}]}}}
           expect(assigns[:users]).to eq(User.order(:full_name).all.to_a)
         end
         it "should sort by last connection" do
-          get :index, params: {"_scopes"=>{"users" => {"o"=>[{"a"=>"last_connected_at"}]}}}
+          get :index, params: {"_scopes"=>{"users#index" => {"o"=>[{"a"=>"last_connected_at"}]}}}
           expect(assigns[:users]).to eq(User.order(:last_connected_at).all.to_a)
         end
         it "should sort by site" do
-          get :index, params: {"_scopes"=>{"users" => {"o" =>[{"a"=>"sites"}]}}}
+          get :index, params: {"_scopes"=>{"users#index" => {"o" =>[{"a"=>"sites"}]}}}
           expect(assigns[:users]).to eq(User.includes("site").order("sites.name").all.to_a)
         end
         it "should sort by city" do
-          get :index, params: {"_scopes"=>{"users" => {"o" =>[{"a"=>"city"}]}}}
+          get :index, params: {"_scopes"=>{"users#index" => {"o" =>[{"a"=>"city"}]}}}
           expect(assigns[:users]).to eq(User.order(:city).all.to_a)
         end
         it "should sort by country" do
-          get :index, params: {"_scopes"=>{"users" => {"o" =>[{"a"=>"country"}]}}}
+          get :index, params: {"_scopes"=>{"users#index" => {"o" =>[{"a"=>"country"}]}}}
           expect(assigns[:users]).to eq(User.order(:country).all.to_a)
         end
       end

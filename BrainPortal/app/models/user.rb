@@ -44,7 +44,7 @@ require 'pbkdf2'
 #                     Userfile, RemoteResource or DataProvider resources.
 #                     Destroying a user will destroy the associated
 #                     Tag and CustomFilter resources.
-class User < ActiveRecord::Base
+class User < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

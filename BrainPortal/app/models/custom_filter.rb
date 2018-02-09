@@ -47,7 +47,7 @@
 #= Associations:
 #*Belongs* *to*:
 #* User
-class CustomFilter < ActiveRecord::Base
+class CustomFilter < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

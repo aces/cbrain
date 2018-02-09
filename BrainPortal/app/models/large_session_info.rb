@@ -23,7 +23,7 @@
 # This model is used to store CBRAIN large session information.
 # The table name will be adjusted in a future release; right now this
 # model is a piece of transition code between Rails 3 and Rails 5.
-class LargeSessionInfo < ActiveRecord::Base
+class LargeSessionInfo < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

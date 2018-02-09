@@ -23,6 +23,7 @@
 require 'rails_helper'
 
 describe RemoteResource do
+  let(:userfile)        {create(:single_file)}
   let(:remote_resource) {create(:remote_resource)}
 
   describe "#spaced_dp_ignore_patterns" do
@@ -53,7 +54,7 @@ describe RemoteResource do
   end
   describe "#after_destroy" do
     it "should destroy all associated sync statuses" do
-      syncstatus = SyncStatus.new(:remote_resource_id => remote_resource.id, :userfile_id => 1)
+      syncstatus = SyncStatus.new(:remote_resource_id => remote_resource.id, :userfile_id => userfile.id)
       syncstatus.save!
       remote_resource.reload
       remote_resource.save!

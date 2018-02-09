@@ -31,7 +31,7 @@ class AccessProfilesController < ApplicationController
 
   def index #:nodoc:
 
-    @scope = scope_from_session('access_profiles')
+    @scope = scope_from_session
     scope_default_order(@scope, 'name')
 
     @base_scope       = AccessProfile.where({})

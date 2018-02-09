@@ -162,7 +162,7 @@ class SignupsController < ApplicationController
   ################################################################
 
   def index #:nodoc:
-    @scope = scope_from_session('signups')
+    @scope = scope_from_session
 
     scope_default_order(@scope, 'created_at', :desc)
 
@@ -181,7 +181,7 @@ class SignupsController < ApplicationController
 
     @signups                    = @scope.pagination.apply(@view_scope)
 
-    scope_to_session(@scope, 'signups')
+    scope_to_session(@scope)
 
     respond_to do |format|
       format.js

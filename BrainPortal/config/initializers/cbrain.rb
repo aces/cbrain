@@ -80,7 +80,7 @@ class CBRAIN
   def self.spawn_with_active_records(destination = nil, taskname = 'Internal Background Task')
 
     # Save the original DB connection and disconnect
-    dbconfig = ActiveRecord::Base.remove_connection
+    dbconfig = ApplicationRecord.remove_connection
 
     reader,writer = IO.pipe  # The stream that we use to send the subchild's pid to the parent
     childpid = Kernel.fork do
@@ -126,7 +126,7 @@ class CBRAIN
           end
 
           # Reconnect to DB
-          ActiveRecord::Base.establish_connection(dbconfig)
+          ApplicationRecord.establish_connection(dbconfig)
 
           # Execute the user code
           yield
@@ -138,7 +138,7 @@ class CBRAIN
           destination = User.find_by_login('admin') if destination.blank? || destination == :admin
           Message.send_internal_error_message(destination,taskname,itswrong) unless destination == :nobody
         ensure
-          ActiveRecord::Base.remove_connection
+          ApplicationRecord.remove_connection
           Kernel.exit! # End of subchild.
         end
         Kernel.exit! # End of subchild.
@@ -156,7 +156,7 @@ class CBRAIN
     writer.close # Not needed in parent!
     subchildpid = reader.read.to_i
     reader.close # Parent is done reading subchild's PID from child
-    ActiveRecord::Base.establish_connection(dbconfig)
+    ApplicationRecord.establish_connection(dbconfig)
     subchildpid
   end
 

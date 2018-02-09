@@ -30,11 +30,10 @@ class TasksController < ApplicationController
   before_action :login_required
 
   def index #:nodoc:
-    @scope      = scope_from_session('tasks')
-    api_request = [:xml, :json].include?(request.format.to_sym)
+    @scope      = scope_from_session
 
     # Default sorting order and batch mode
-    if api_request
+    if api_request?
       scope_default_order(@scope, 'updated_at', :desc)
     else
       scope_default_order(@scope, 'rank')
@@ -59,7 +58,7 @@ class TasksController < ApplicationController
     single_batch    = @scope.filters.any? { |f| f.attribute == 'batch_id' }
     @showing_batch  = @scope.custom[:batch] && single_batch
 
-    if ! api_request && @scope.custom[:batch] && ! single_batch
+    if ! api_request? && @scope.custom[:batch] && ! single_batch
       @tasks = @scope.pagination.apply(@view_scope.group(:batch_id).count.to_a)
       @tasks.map! do |id, count|
         first = @view_scope
@@ -83,7 +82,7 @@ class TasksController < ApplicationController
       .to_h
 
     # Save the modified scope object
-    scope_to_session(@scope, 'tasks')
+    scope_to_session(@scope)
 
     respond_to do |format|
       format.html
@@ -109,7 +108,7 @@ class TasksController < ApplicationController
 
   # Renders a set of tasks associated with a batch.
   def batch_list
-    @scope = scope_from_session('tasks')
+    @scope = scope_from_session('tasks#index')
     @scope.order.clear
 
     @base_scope = custom_scope(user_scope(
@@ -150,7 +149,7 @@ class TasksController < ApplicationController
     @stderr_lim        = params[:stderr_lim].to_i
     @stderr_lim        = 2000 if @stderr_lim <= 100 || @stderr_lim > 999999
 
-    if ((request.format.to_sym != :xml) || params[:get_task_outputs]) && ! @task.workdir_archived?
+    if ((! api_request?) || params[:get_task_outputs]) && ! @task.workdir_archived?
       begin
         @task.capture_job_out_err(@run_number,@stdout_lim,@stderr_lim) # PortalTask method: sends command to bourreau to get info
       rescue Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError, ActiveResource::TimeoutError, ActiveResource::MethodNotAllowed
@@ -404,7 +403,7 @@ class TasksController < ApplicationController
     end
 
     # Spawn a background process to launch the tasks.
-    CBRAIN.spawn_with_active_records_if(request.format.to_sym != :xml && request.format.to_sym != :json, :admin, "Spawn Tasks") do
+    CBRAIN.spawn_with_active_records_if(! api_request?, :admin, "Spawn Tasks") do
 
       spawn_messages = ""
 
@@ -573,7 +572,7 @@ class TasksController < ApplicationController
 
   # Allows user to update attributes of multiple tasks.
   def update_multiple
-    @scope = scope_from_session('tasks')
+    @scope = scope_from_session('tasks#index')
 
     # Construct task_ids and batch_ids
     task_ids   = Array(params[:tasklist]  || [])
@@ -734,7 +733,7 @@ class TasksController < ApplicationController
   # [*Terminate*] Kill the task, while maintaining its temporary files and its entry in the database.
   # [*Delete*] Kill the task, delete the temporary files and remove its entry in the database.
   def operation
-    @scope = scope_from_session('tasks')
+    @scope = scope_from_session('tasks#index')
 
     operation  = params[:operation]
     tasklist   = params[:tasklist]  || []
@@ -1093,7 +1092,7 @@ class TasksController < ApplicationController
       statuses = StatusClasses[@value.to_s.downcase]
 
       # With a CbrainTask model (or scope)
-      if (collection <= ActiveRecord::Base rescue nil)
+      if (collection <= ApplicationRecord rescue nil)
         collection.where(:status => statuses)
 
       # With a Ruby Enumerable

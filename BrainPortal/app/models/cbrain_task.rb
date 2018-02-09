@@ -30,7 +30,7 @@
 # Most of the methods here are useful both on the BrainPortal side and on
 # the Bourreau side; for methods that should only be used on a particular
 # side, see the classes PortalTask and ClusterTask respectively.
-class CbrainTask < ActiveRecord::Base
+class CbrainTask < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

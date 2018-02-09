@@ -176,7 +176,7 @@
       <h1>
         <%=
           scope_link('Latest Updated Tasks',
-            'tasks', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
+            'tasks#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
             url: { :controller => :tasks, :action => :index }
           )
         %>
@@ -184,8 +184,8 @@
         <% if active_count > 0 %>
           <%=
             scope_filter_link("(#{active_count} active)",
-              'tasks', :replace, { :t => 't.sts', :v => 'active' },
-              url: { :controller => :tasks }
+              'tasks#index', :replace, { :t => 't.sts', :v => 'active' },
+              url: { :controller => :tasks, :action => :index }
             )
           %>
         <% else %>
@@ -209,7 +209,7 @@
       <h1>
         <%=
           scope_link('Latest Updated Files',
-            'userfiles', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
+            'userfiles#index', { :order => [{ :a => 'updated_at', :d => 'desc' }], },
             url: { :controller => :userfiles, :action => :index }
           )
         %>

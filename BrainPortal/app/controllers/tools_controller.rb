@@ -33,7 +33,7 @@ class ToolsController < ApplicationController
   # GET /tools
   # GET /tools.xml
   def index #:nodoc:
-    @scope = scope_from_session('tools')
+    @scope = scope_from_session
     scope_default_order(@scope, 'name')
 
     @base_scope = current_user.available_tools.includes(:user, :group)
@@ -42,8 +42,8 @@ class ToolsController < ApplicationController
     respond_to do |format|
       format.js
       format.html # index.html.erb
-      format.xml  { render :xml  => @tools.to_a.for_api }
-      format.json { render :json => @tools.to_a.for_api }
+      format.xml  { render :xml  => @tools.for_api }
+      format.json { render :json => @tools.for_api }
     end
   end
 

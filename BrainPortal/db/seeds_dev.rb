@@ -47,13 +47,13 @@ require 'etc'
 #
 # ActiveRecord extensions for seeding
 #
-class ActiveRecord::Base
+class ApplicationRecord
 
   def self.seed_record!(attlist, create_attlist = {}, options = { :info_name_method => :name })
     raise "Bad attribute list." if attlist.blank? || ! attlist.is_a?(Hash)
 
     top_superclass = self
-    while top_superclass.superclass < ActiveRecord::Base
+    while top_superclass.superclass < ApplicationRecord
       top_superclass = top_superclass.superclass
     end
 
