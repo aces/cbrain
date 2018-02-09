@@ -2395,7 +2395,7 @@ chmod o+x . .. ../.. ../../..
     self.addlog("Building singularity image '#{singularity_image_name}'")
 
     # Find or create the userfile holding the image content.
-    scratch_name     = "Singularity-pull-" + singularity_image_name.gsub(/[^a-z0-9_\.\-]+/i,"_") # must respect userfile convention.
+    scratch_name     = "Singularity-build-" + singularity_image_name.gsub(/[^a-z0-9_\.\-]+/i,"_") # must respect userfile convention.
     scratch_name.sub!(/(\.img)?$/i, ".img")
     scratch_userfile = SingularityImage.find_or_create_as_scratch(:name => scratch_name) do |cache_path|
       # Optimization: if another find_or_create_as_scratch has already beaten us to the punch
@@ -2403,10 +2403,7 @@ chmod o+x . .. ../.. ../../..
       # of these blocks can be scheduled to run, but only one will execute at at any given time.
       next if File.exists?(cache_path.to_s) && File.size(cache_path.to_s) > 0
       # Run singularity build command
-      errfile = "/tmp/.container_load_cmd.#{self.run_id}.err"
-      success = tool_config_system("umask 002; #{singularity_executable_name} build #{cache_path.parent.to_s}/#{scratch_name.bash_escape} #{singularity_index_location.bash_escape}#{singularity_image_name.bash_escape} </dev/null >/dev/null 2>#{errfile.bash_escape}")
-      err     = File.read(errfile) rescue "No Error File?"
-      File.unlink(errfile) rescue true
+      out,err = tool_config_system("umask 002; #{singularity_executable_name} build #{cache_path.parent.to_s}/#{scratch_name.bash_escape} #{singularity_index_location.bash_escape}#{singularity_image_name.bash_escape}")
       # Singularity command can generate 'implausibly old time stamp' when pulling a docker image (due to tar), we ignore it.
       # Not sure if it is still true for `build` command, leave it just in case.
       # Remove all lines (use ^ and $) that contains this message.
@@ -2414,7 +2411,6 @@ chmod o+x . .. ../.. ../../..
       err.gsub!(/^.*WARNING:.+/, "")
       cb_error "Cannot build singularity image" if
         err.present? ||
-        ! success    ||
         ! File.exists?(cache_path.to_s)
     end
 
