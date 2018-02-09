@@ -2180,6 +2180,9 @@ SINGULARITYJOB
 
 # Make sure it is executable
 chmod 755 #{singularity_wrapper_basename.bash_escape}
+# Other should have executable right on all components
+# of the path in order to be mounted by singularity.
+chmod o+x . .. ../.. ../../..
 
 # Invoke Singularity with our wrapper script above.
 # Tricks used here:
@@ -2383,34 +2386,33 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
     safe_symlink(cachename,image_name)
   end
 
-  # Perform the singularity pull; the image will be cached
+  # Perform the singularity build; the image will be cached
   # as a special, hidden userfile on the ScratchDataProvider.
   def load_singularity_image_from_repo #:nodoc:
     singularity_image_name     = self.tool_config.containerhub_image_name
     singularity_index_location = self.tool_config.container_index_location.presence || "shub://"
 
-    self.addlog("Pulling singularity image '#{singularity_image_name}'")
+    self.addlog("Building singularity image '#{singularity_image_name}'")
 
     # Find or create the userfile holding the image content.
     scratch_name     = "Singularity-pull-" + singularity_image_name.gsub(/[^a-z0-9_\.\-]+/i,"_") # must respect userfile convention.
-    scratch_name.sub!(/(\.img)?$/i, ".img") # singularity pull is peculiar about extensions... :-(
+    scratch_name.sub!(/(\.img)?$/i, ".img")
     scratch_userfile = SingularityImage.find_or_create_as_scratch(:name => scratch_name) do |cache_path|
       # Optimization: if another find_or_create_as_scratch has already beaten us to the punch
       # and dowloaded the file, just skip this block altogether. The way SyncStatus works, several
       # of these blocks can be scheduled to run, but only one will execute at at any given time.
       next if File.exists?(cache_path.to_s) && File.size(cache_path.to_s) > 0
-      # Run singularity pull command
+      # Run singularity build command
       errfile = "/tmp/.container_load_cmd.#{self.run_id}.err"
-      success = Dir.chdir(cache_path.parent.to_s) do # singularity pull won't work with full pathnames for --name :-(
-        system("umask 002; #{singularity_executable_name} build #{scratch_name.bash_escape} #{singularity_index_location.bash_escape}#{singularity_image_name.bash_escape} </dev/null >/dev/null 2>#{errfile.bash_escape}")
-      end
+      success = tool_config_system("umask 002; #{singularity_executable_name} build #{cache_path.parent.to_s}/#{scratch_name.bash_escape} #{singularity_index_location.bash_escape}#{singularity_image_name.bash_escape} </dev/null >/dev/null 2>#{errfile.bash_escape}")
       err     = File.read(errfile) rescue "No Error File?"
       File.unlink(errfile) rescue true
       # Singularity command can generate 'implausibly old time stamp' when pulling a docker image (due to tar), we ignore it.
+      # Not sure if it is still true for `build` command, leave it just in case.
       # Remove all lines (use ^ and $) that contains this message.
       err.gsub!(/^.*implausibly old time stamp.*$\n?/,"")
       err.gsub!(/^.*WARNING:.+/, "")
-      cb_error "Cannot pull singularity image" if
+      cb_error "Cannot build singularity image" if
         err.present? ||
         ! success    ||
         ! File.exists?(cache_path.to_s)
