@@ -234,18 +234,14 @@ class GroupsController < ApplicationController
   end
 
   def switch #:nodoc:
-    redirect_controller = params[:redirect_controller] || :groups
-    redirect_action     = params[:redirect_action]     || :index
-    redirect_id         = params[:redirect_id]
+
+    orig_active_group_id = session[:active_group_id]
 
     ['userfiles#index', 'tasks#index'].each do |name|
       scope = scope_from_session(name)
       scope.filters.reject! { |f| f.attribute.to_s == 'group_id' }
       scope_to_session(scope, name)
     end
-
-    redirect_path = { :controller => redirect_controller, :action => redirect_action }
-    redirect_path[:id] = redirect_id unless redirect_id.blank?
 
     if params[:id].blank?
       session[:active_group_id] = nil
@@ -256,7 +252,15 @@ class GroupsController < ApplicationController
       session[:active_group_id] = @group.id
     end
 
-    redirect_to userfiles_path
+    # This flag will tell the userfiles 'index' action to add code to the page
+    # to clear the persistently selected list of files.
+    session[:switched_active_group] = (session[:active_group_id] != orig_active_group_id)
+
+    #if api_request?
+    #  head :ok
+    #else
+      redirect_to userfiles_path
+    #end
   end
 
   private

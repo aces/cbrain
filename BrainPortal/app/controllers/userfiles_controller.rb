@@ -148,6 +148,12 @@ class UserfilesController < ApplicationController
       @my_tools = top_5_tools + @my_tools
     end
 
+    # Handles the case when we just switched active project in group_controller/switch
+    if session[:switched_active_group]
+      session.delete(:switched_active_group)
+      @force_clear_persistent = 1 # HTML page will have extra javascript code to clear the list
+    end
+
     respond_to do |format|
       format.html
       format.js

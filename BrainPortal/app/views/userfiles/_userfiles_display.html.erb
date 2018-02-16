@@ -37,7 +37,8 @@
         :param     => 'file_ids[]',
         :watch     => 'th.dt-sel > .dt-sel-check',
         :item_name => 'file',
-        :all_url   => userfiles_path(:ids_only => 1)
+        :all_url   => userfiles_path(:ids_only => 1),
+        :initial_clear => @force_clear_persistent,
       })
     %>
   </div>

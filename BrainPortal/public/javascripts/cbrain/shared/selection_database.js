@@ -122,7 +122,17 @@
         watch_selector = psel.data('watch-selector'),
         store_name     = psel.data('store-name'),
         all_url        = psel.data('all-url'),
-        selected_url   = psel.data('selected-url');
+        selected_url   = psel.data('selected-url'),
+        initial_clear  = psel.data('initial-clear');
+
+    if (initial_clear) {
+      (function initialize_clear() {
+        var store = open_store(store_name, initialize_clear);
+        if (!store) return;
+        psel.data('initial-clear',false); // reset immediately
+        store.clear();
+      })();
+    }
 
     /* make sure the up-to-date selection state is shown */
     psel.trigger('refresh.psel');
