@@ -2038,6 +2038,7 @@ chmod 755 #{docker_wrapper_basename.bash_escape}
     run                                          \\
     -u #{Process.uid}:#{Process.gid}             \\
     --rm                                         \\
+    --entrypoint /bin/sh                         \\
     -v "${PWD}":#{esc_cont_work_dir}             \\
     -v #{cache_dir.bash_escape}:#{cache_dir.bash_escape}         \\
     -v #{gridshare_dir.bash_escape}:#{gridshare_dir.bash_escape} \\
@@ -2188,12 +2189,12 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
 # 3) All local symlinks to cached files have already been adjusted
 #    by the Ruby process that created this script.
 #{singularity_executable_name}                  \\
-    run                                         \\
+    exec                                        \\
     -B #{gridshare_dir.bash_escape}             \\
     -B #{cache_dir.bash_escape}                 \\
     -H #{task_workdir.bash_escape}              \\
     #{container_image_name.bash_escape}         \\
-    #{singularity_wrapper_basename.bash_escape}
+    ./#{singularity_wrapper_basename.bash_escape}
 
     SINGULARITY_COMMANDS
 
@@ -2404,13 +2405,14 @@ chmod 755 #{singularity_wrapper_basename.bash_escape}
       # Run singularity pull command
       errfile = "/tmp/.container_load_cmd.#{self.run_id}.err"
       success = Dir.chdir(cache_path.parent.to_s) do # singularity pull won't work with full pathnames for --name :-(
-        system("#{singularity_executable_name} pull --name #{scratch_name.bash_escape} #{singularity_index_location.bash_escape}#{singularity_image_name.bash_escape} </dev/null >/dev/null 2>#{errfile.bash_escape}")
+        system("umask 002; #{singularity_executable_name} build #{scratch_name.bash_escape} #{singularity_index_location.bash_escape}#{singularity_image_name.bash_escape} </dev/null >/dev/null 2>#{errfile.bash_escape}")
       end
       err     = File.read(errfile) rescue "No Error File?"
       File.unlink(errfile) rescue true
       # Singularity command can generate 'implausibly old time stamp' when pulling a docker image (due to tar), we ignore it.
       # Remove all lines (use ^ and $) that contains this message.
       err.gsub!(/^.*implausibly old time stamp.*$\n?/,"")
+      err.gsub!(/^.*WARNING:.+/, "")
       cb_error "Cannot pull singularity image" if
         err.present? ||
         ! success    ||
