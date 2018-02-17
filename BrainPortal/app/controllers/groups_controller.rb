@@ -256,11 +256,11 @@ class GroupsController < ApplicationController
     # to clear the persistently selected list of files.
     session[:switched_active_group] = (session[:active_group_id] != orig_active_group_id)
 
-    #if api_request?
-    #  head :ok
-    #else
+    if api_request?
+      head :ok
+    else
       redirect_to userfiles_path
-    #end
+    end
   end
 
   private
