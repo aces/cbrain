@@ -223,12 +223,7 @@ class SshDataProvider < DataProvider
         next if is_excluded?(entry.name) # in DataProvider
 
         fileinfo               = FileInfo.new
-        if entry.name =~ /\A#{Regexp.quote(userfile.name)}/ # this is actually BUGGY if a subdir has same name as userfile!
-          # (This entire method is such awful code)
-          fileinfo.name          = entry.name
-        else
-          fileinfo.name          = "#{userfile.name}#{base_dir}#{entry.name}"
-        end
+        fileinfo.name          = "#{userfile.name}#{base_dir}#{entry.name}"
 
         bad_attributes = []
         attlist.each do |meth|
