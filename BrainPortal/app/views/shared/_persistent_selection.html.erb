@@ -98,6 +98,9 @@
    "<item_name>s currently selected", "Select all <item_name>s on all pages".
    Defaults to "item".
 
+  [initial_clear]
+   If set, the list of persistently selected items will be cleared.
+
   [html]
    Hash of HTML attributes to add to the persistent selection's container tag.
    For example, specifying :html => { :id => 'foo' } will add an id of 'foo' to
@@ -155,11 +158,12 @@
     bind = "[name=\"#{param}\"]"
   end
 
-  watch        ||= nil
-  hidden       ||= false
-  item_name    ||= 'item'
-  all_url      ||= nil
-  selected_url ||= nil
+  watch         ||= nil
+  hidden        ||= false
+  item_name     ||= 'item'
+  all_url       ||= nil
+  selected_url  ||= nil
+  initial_clear ||= nil
 
   all_tooltip   = "psel-all-tp-#{rand(10000)}"
   clear_tooltip = "psel-clear-tp-#{rand(10000)}"
@@ -172,6 +176,7 @@
   html['data-watch-selector'] = watch if watch
   html['data-all-url']        = all_url      if all_url
   html['data-selected-url']   = selected_url if selected_url
+  html['data-initial-clear']  = "true"       if initial_clear
 %>
 
 <div <%= html.to_html_attributes.html_safe %>>
