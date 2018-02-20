@@ -364,7 +364,7 @@ class User < ApplicationRecord
   # 3- save it in crypted_password
   def encrypt_password #:nodoc:
     return true if password.blank?
-    self.salt             = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--") if salt.blank?
+    self.salt             = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--#{rand(999999)}--")
     self.crypted_password = encrypt_in_pbkdf2_sha1(password)
     true
   end
@@ -380,8 +380,11 @@ class User < ApplicationRecord
     true
   end
 
+  # Returns true if a password pseudo-attribute is present or needed.
+  # This is the case when creating a new record, or resetting the password
+  # on an existing one.
   def password_required? #:nodoc:
-    crypted_password.blank? || !password.blank?
+    crypted_password.blank? || salt.blank? || password.present?
   end
 
   # Create a random string (currently for passwords).
@@ -431,7 +434,7 @@ class User < ApplicationRecord
 
   def password_strength_check #:nodoc:
     score = 0
-    unless self.password.blank?
+    if self.password.present?
       score += 1 if self.password =~ /[A-Z]/
       score += 1 if self.password =~ /[a-z]/
       score += 1 if self.password =~ /\d/
