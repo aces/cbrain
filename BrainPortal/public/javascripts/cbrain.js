@@ -984,5 +984,35 @@
 
   });
 
+
+  // Set a timer to update the "Last Updated" indicator
+  (function () {
+    "use strict";
+
+    var last_update = new Date();
+    setInterval(function () {
+      var diff = Math.floor((new Date() - last_update) / (60 * 1000)),
+          part = undefined,
+          text = [];
+
+      part = Math.round(diff % 60);
+      diff = Math.floor(diff / 60);
+      text.unshift(part + 'm');
+
+      part = Math.round(diff % 24);
+      diff = Math.floor(diff / 24);
+      if (part) text.unshift(part + 'h');
+
+      if (diff) text.unshift(diff + 'd');
+
+      $('span.last_updated > span.elapsed').text(text.join(' '));
+    }, 5 * 1000);
+
+    // The only times we need to reset it is when AJAX request are made.
+    $( document ).ajaxStart(function() {
+      last_update = new Date();
+    });
+  })();
+
 })();
 
