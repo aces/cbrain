@@ -921,12 +921,13 @@ RSpec.describe UserfilesController, :type => :controller do
           allow(CBRAIN).to     receive(:spawn_with_active_records).and_yield
         end
 
-        it "should call gzip_file method" do
+        it "should call gzip_content method" do
           data_provider           = DataProvider.find(user_userfile.data_provider_id)
           data_provider.read_only = false
           data_provider.save
-          expect(controller).to receive(:gzip_file)
+          $0="Testing"
           post :compress, params: {:file_ids => [user_userfile.id]}
+          expect($0).to match(/GzipFile ID=#{user_userfile.id}/) # Ah! what a test!
         end
 
         it "Really tricky part to test since the method do lot of stuff!"
