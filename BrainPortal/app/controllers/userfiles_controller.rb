@@ -1383,28 +1383,34 @@ class UserfilesController < ApplicationController
       userfiles_list = userfiles.all.shuffle # real array of all records
       count_todo     = userfiles_list.size
       userfiles_list.each_with_index do |userfile,idx|
+
+        if userfile.immutable?
+          ( failed['File is immutable.'] ||= [] ) << userfile
+          next
+        end
+
+        # This begin block process each file and captures exceptions
+        # to provide a report of failures.
         begin
+
+          # SingleFiles
           if userfile.is_a?(SingleFile)
             $0 = "GzipFile ID=#{userfile.id} #{idx+1}/#{count_todo}\0"
-            gzip_file(userfile, operation) if (
-              (  compressing && userfile.name !~ /\.gz\z/) ||
-              (! compressing && userfile.name =~ /\.gz\z/)
-            )
-
-          else
-            if compressing && ! userfile.archived?
-              $0 = "ArchiveFile ID=#{userfile.id} #{idx+1}/#{count_todo}\0"
-              failure = userfile.provider_archive
-
-            elsif ! compressing && userfile.archived?
-              $0 = "UnarchiveFile ID=#{userfile.id} #{idx+1}/#{count_todo}\0"
-              failure = userfile.provider_unarchive
-            end
-
-            raise failure unless failure.blank?
+            userfile.gzip_content(operation) # :compress or :uncompress
+            next
           end
 
+          # FileCollections
+          if compressing && ! userfile.archived?
+            $0 = "ArchiveFile ID=#{userfile.id} #{idx+1}/#{count_todo}\0"
+            failure = userfile.provider_archive
+          elsif ! compressing && userfile.archived?
+            $0 = "UnarchiveFile ID=#{userfile.id} #{idx+1}/#{count_todo}\0"
+            failure = userfile.provider_unarchive
+          end
+          raise failure unless failure.blank?
           succeeded << userfile
+
         rescue => e
           (failed[e.message] ||= []) << userfile
         end
@@ -1458,26 +1464,6 @@ class UserfilesController < ApplicationController
     flash[:error]  += "You don't have appropriate permissions to apply the selected action to this set of files."
 
     redirect_to :action => :index
-  end
-
-  # Invoke the GNU utility gzip to compress or uncompress the single file
-  # +userfile+, appending '.gz' while compressing and stripping it while
-  # uncompressing. The default +operation+ is compress.
-  def gzip_file(userfile, operation = :compress) #:nodoc:
-    name = operation == :compress ? userfile.name + '.gz' : userfile.name.sub(/\.gz\z/, '')
-    raise 'could not do basic renaming' unless
-      userfile.provider_rename(name)
-
-    userfile.sync_to_cache
-    SyncStatus.ready_to_modify_cache(userfile) do
-      path = userfile.cache_full_path.to_s
-      temp = "#{path}+#{$$}+#{Time.now.to_i}"
-
-      gzip = (operation == :compress ? 'gzip' : 'gunzip')
-      system("#{gzip} -c < #{path.bash_escape} > #{temp.bash_escape}")
-      File.rename(temp, path)
-    end
-    userfile.sync_to_provider
   end
 
   #Extract files from an archive and register them in the database.

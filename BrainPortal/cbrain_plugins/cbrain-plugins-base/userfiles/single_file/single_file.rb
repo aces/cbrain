@@ -51,4 +51,33 @@ class SingleFile < Userfile
     self.num_files ||= 1
   end
 
+  # Invoke the GNU utility gzip to compress or uncompress the file,
+  # appending '.gz' while compressing and stripping it while
+  # uncompressing. The default +operation+ is compress.
+  # FIXME This method is not really good at handling errors during the process,
+  # and can leave files compressed/uncompressed while the names don't match the
+  # state... :-(
+  def gzip_content(operation = :compress) #:nodoc:
+
+    return true if operation == :compress && self.name =~ /\.gz\z/ # already compressed
+    return true if operation != :compress && self.name !~ /\.gz\z/ # already uncompressed
+
+    newname = (operation == :compress) ? self.name + '.gz' : self.name.sub(/\.gz\z/, '')
+
+    cb_error 'Could not do basic renaming' unless
+      self.provider_rename(newname)
+    self.reload # just to be sure we got the new name
+
+    self.sync_to_cache
+    SyncStatus.ready_to_modify_cache(self) do
+      path = self.cache_full_path.to_s
+      temp = "#{path}+#{$$}+#{Time.now.to_i}"
+
+      gzip = (operation == :compress ? 'gzip' : 'gunzip')
+      system("#{gzip} -c < #{path.bash_escape} > #{temp.bash_escape}")
+      File.rename(temp, path)
+    end
+    self.sync_to_provider
+  end
+
 end
