@@ -2411,7 +2411,7 @@ chmod o+x . .. ../.. ../../..
       # Not sure if it is still true for `build` command, leave it just in case.
       # Remove all lines (use ^ and $) that contains this message.
       cb_error "Cannot build singularity image" if
-        File.zero?(cache_path.to_s)
+        !File.size?(cache_path.to_s)
     end
 
     self.addlog("Image stored as scratch userfile '#{scratch_userfile.name}' (ID #{scratch_userfile.id})")
