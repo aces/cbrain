@@ -91,3 +91,49 @@
 	 
 	<% end %>
 </div>
+
+<div class="display_inline_block" style="min-width:50%">
+<% if @tool && !@tool.new_record? %>
+<p>
+  Common configuration for all servers: <%= link_to "Edit", new_tool_config_path( :tool_id => @tool.id ) %><br/>
+</p>
+<p>
+  Versions installed on the following execution servers:<br/>
+  <table class="simple" width="100%">
+    <% for bourreau in Bourreau.find_all_accessible_by_user(current_user).all %>
+      <tr>
+          <th colspan="6" class="centered">
+            <%= link_to_bourreau_if_accessible(bourreau) %>
+          </th>
+      </tr>
+      <% tcs = ToolConfig.where( :bourreau_id => bourreau.id, :tool_id => @tool.id ).all.to_a %>
+      <% tcs << 'Dummy entry for "add new" row' %>
+      <% rows = tcs.size %>
+      <% tcs.each_with_index do |tc,i| %>
+        <tr class="<%= cycle("list-odd", "list-even") %>">
+          <% if i == rows - 1 %>
+            <td colspan="6">
+              <center>
+              <% if rows <= 1 %>
+                <%= html_colorize("(No specific versions configured).") %>
+              <% else %>
+                <%= pluralize(rows-1," version") + " configured." %>
+              <% end %>
+              <%= link_to "Add new", new_tool_config_path( :tool_id => @tool.id, :bourreau_id => bourreau.id ) %>
+              </center>
+            </td>
+          <% else %>
+            <td><%= overlay_description(tc.version_name + "\n" + tc.description) %></td>
+            <td><%= link_to_group_if_accessible(tc.group) %></td>
+            <td><%= pluralize((tc.ncpus || 1), "cpu") %></td>
+            <td><%= link_to "Edit", edit_tool_config_path(tc) %></td>
+            <td><%= link_to "Show", tool_config_path(tc) %></td>
+            <td><%= link_to 'Delete', tc, :confirm => "Are you sure you want to delete version configuration '#{tc.version_name}'?", :method => :delete %></td>
+          <% end %>
+        </tr>
+      <% end %>
+    <% end %>
+  </table>
+</p>
+<% end %>
+</div>
