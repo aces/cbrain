@@ -43,9 +43,34 @@
 <script src='swagger/lib/marked.js'                        type='text/javascript'></script>
 <script src='swagger/lib/swagger-oauth.js'                 type='text/javascript'></script>
 
-<p class="medium_paragraphs">
-<strong>Important note:</strong>
+<strong style="color: red">Important note:</strong>
 This API specification is still at a prototype stage.
+
+<p class="medium_paragraphs">
+As of February 2018, the API has been simplified and enhanced in
+many ways, and this specification is <strong>OUT OF DATE</strong>.
+We will update it shortly to match the OpenAPI 3.0 standard.
+<p>
+Changes include:<p>
+
+<ul>
+  <li>Single token based authentication (using Bearer token in headers)</li>
+  <li>No need for the csrf token</li>
+  <li>Attribute filters are applied automatically</li>
+  <li>No session state for filters and other options</li>
+</ul>
+
+<p class="medium_paragraphs">
+For more information about the work in progress on the API, please look up the
+<a href="https://github.com/aces/cbrain/issues?q=is%3Aopen+is%3Aissue+label%3AAPI">API issues</a>
+on
+<a href="https://github.com/aces/cbrain">CBRAIN's GitHub repository</a>,
+and in particular the
+<a href="https://github.com/aces/cbrain/projects/7">API tracking project</a>.
+</p>
+
+<p class="medium_paragraphs">
+
 There are likely many issues and bugs remaining. In particular, the
 <em>Try it out!</em> buttons will not work for POST operations if you
 are already logged in into the CBRAIN portal; instead <%= link_to "sign out",logout_path %> and
