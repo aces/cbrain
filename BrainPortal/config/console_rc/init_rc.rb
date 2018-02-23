@@ -60,6 +60,9 @@ require __dir__ + "/lib/shortcuts.rb"
 # Adds some reports for admins
 require __dir__ + "/lib/reports.rb"
 
+# Adds fancy table layouts with Hirb, Wirble and looksee
+require __dir__ + "/lib/wirble_hirb_looksee.rb"
+
 #####################################################
 # Initial help message for user
 #####################################################
