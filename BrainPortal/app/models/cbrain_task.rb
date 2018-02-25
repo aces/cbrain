@@ -371,14 +371,14 @@ class CbrainTask < ApplicationRecord
 
   # Returns an ID string containing both the bourreau_id +bid+
   # and the task ID +tid+ in format "bid/tid". Example:
-  #     "3/4"   # Bourreau #3, task #4
+  #     "3/4"   # Bourreau ID 3, task ID 4
   def bid_tid
     @bid_tid ||= "#{self.bourreau_id || '?'}/#{self.id || '?'}"
   end
 
   # Returns an ID string containing both the bourreau_name +bname+
   # and the task ID +tid+ in format "bname/tid". Example:
-  #     "Mammouth/4"   # Bourreau 'Mammouth', task #4
+  #     "Mammouth/4"   # Bourreau 'Mammouth', task ID 4
   def bname_tid
     @bname_tid ||= "#{self.bourreau.name || '?'}/#{self.id || '?'}"
   end
@@ -386,19 +386,24 @@ class CbrainTask < ApplicationRecord
   # Returns an ID string containing both the bourreau_name +bname+
   # and the task ID +tid+ in format "bname-tid" ; this is suitable to
   # be used as part of a filename. Example:
-  #     "Mammouth-4"   # Bourreau 'Mammouth', task #4
+  #     "Mammouth-4"   # Bourreau 'Mammouth', task ID 4
   def bname_tid_dashed
     @bname_tid_dashed ||= "#{self.bourreau.name || 'Unk'}-#{self.id || 'Unk'}"
   end
 
   # Returns an ID string containing both the task +tname+
-  # and the task ID +tid+ in format "tname/tid". Example:
-  #     "Civet-1234"   # Task 'Civet' #1234
+  # and the task ID +tid+ in format "tname-tid". Example:
+  #     "Civet-1234"   # Task 'Civet' with ID 1234
   def tname_tid
     @tname_tid ||= "#{self.name || '?'}-#{self.id || '?'}"
   end
 
-
+  # Returns an ID string containing the task +tname+
+  # and the run_id in format "tname-rid". Example:
+  #     "Civet-1234-1"   # Task 'Civet' with ID 1234 and run number 1
+  def tname_rid
+    @tname_rid ||= "#{self.name || '?'}-#{self.run_id || '?'}"
+  end
 
   ##################################################################
   # Run Number ID Methods

@@ -517,6 +517,9 @@ class Bourreau < RemoteResource
         elsif newstatus == 'RemoveWorkdir'
           task.send(:remove_cluster_workdir) # it's a protected method
           next
+        elsif newstatus == 'SaveWorkdir'
+          task.send(:save_cluster_workdir) # it's a protected method
+          next
         end
 
         # No other operations are allowed for archived tasks,

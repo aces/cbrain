@@ -1935,6 +1935,33 @@ exit $status
     true
   end
 
+  # Save the directory created to run the job.
+  # The directory will be saved as a FileCollection
+  # only if the task have a results Data Provider.
+  def save_cluster_workdir
+    cb_error "Tried to save a task's work directory while in the wrong Rails app." unless
+      self.bourreau_id == CBRAIN::SelfRemoteResourceId
+
+    cb_error "To save the work directory the task should have a result Data Provider" unless
+      self.results_data_provider_id
+
+    userfile_name = self.tname_rid
+    file_collection = safe_userfile_find_or_new(FileCollection,
+        :name             => userfile_name,
+        :data_provider_id => self.results_data_provider_id
+      )
+
+    file_collection.cache_copy_from_local_file(self.full_cluster_workdir)
+
+    if file_collection.save
+      self.addlog("Saved new FileCollection #{userfile_name}.")
+    else
+      self.addlog("Could not save back result file '#{userfile_name}'.")
+    end
+  end
+
+
+
   # Compute size in bytes of the work directory; save it in the task's
   # attribute :cluster_workdir_size . Leaves nil if the directory doesn't
   # exist or any error occured. Sets to '0' if the task uses another task's
