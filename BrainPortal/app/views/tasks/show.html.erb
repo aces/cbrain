@@ -128,7 +128,12 @@
     <% end %>
     <% t.cell("Project") { link_to_group_if_accessible(@task.group) } %>
 
-    <% t.cell("Current Status") { colored_status(@task.status) } %>
+    <% t.cell("Current Status") do %>
+      <%= colored_status(@task.status) %>
+      <% if CbrainTask::ACTIVE_STATUS.include?(@task.status) %>
+        <%= link_to 'Refresh', task_path(@task.id), :class => "button" %>
+      <% end %>
+    <% end %>
     <% t.cell("Time Submitted") { to_localtime(@task.created_at,:datetime) }%>
 
     <% t.attribute_cell(:run_number) %>
