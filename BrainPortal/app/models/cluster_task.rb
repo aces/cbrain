@@ -2004,6 +2004,12 @@ exit $status
     # 5) Basename of the docker wrapper script
     docker_wrapper_basename = ".dockerjob.#{self.run_id}.sh"
 
+    # 6) More -v (bind mounts) for all the local data providers.
+    # This will be a string "-v path1:path1 -v path2:path2" etc.
+    esc_local_dp_mountpoints = local_dp_storage_paths.inject("") do |dock_opts,path|
+      "#{dock_opts} -v #{path.bash_escape}:#{path.bash_escape}"
+    end
+
     # Here is the main script we return to CBRAIN
     docker_commands = <<-DOCKER_COMMANDS
 
@@ -2042,6 +2048,7 @@ chmod 755 #{docker_wrapper_basename.bash_escape}
     -v "${PWD}":#{esc_cont_work_dir}             \\
     -v #{cache_dir.bash_escape}:#{cache_dir.bash_escape}         \\
     -v #{gridshare_dir.bash_escape}:#{gridshare_dir.bash_escape} \\
+    #{esc_local_dp_mountpoints}                  \\
     -w #{esc_cont_work_dir}                      \\
     "$docker_image_name"                         \\
     "${PWD}"/#{docker_wrapper_basename.bash_escape}
@@ -2135,6 +2142,12 @@ docker_image_name=#{full_image_name.bash_escape}
     # 4) Basename of the singularity wrapper script
     singularity_wrapper_basename = ".singularity.#{self.run_id}.sh"
 
+    # 5) More -B (bind mounts) for all the local data providers.
+    # This will be a string "-B path1 -B path2 -B path3" etc.
+    esc_local_dp_mountpoints = local_dp_storage_paths.inject("") do |sing_opts,path|
+      "#{sing_opts} -B #{path.bash_escape}"
+    end
+
     # Set singularity command
     singularity_commands = <<-SINGULARITY_COMMANDS
 
@@ -2186,15 +2199,15 @@ chmod o+x . .. ../.. ../../..
 
 # Invoke Singularity with our wrapper script above.
 # Tricks used here:
-# 1) with -H we mount the task's work directory as the $HOME directory
-# 2) We mount the DP cache as the subdirectory created above,
-#    as a subdirectory of $HOME
-# 3) All local symlinks to cached files have already been adjusted
-#    by the Ruby process that created this script.
+# 1) we mount the gridshare root directory
+# 2) we mount the local data provider cache root directory
+# 3) we mount each (if any) of the root directory for local data providers
+# 4) with -H we mount the task's work directory as the $HOME directory
 #{singularity_executable_name}                  \\
     exec                                        \\
     -B #{gridshare_dir.bash_escape}             \\
     -B #{cache_dir.bash_escape}                 \\
+    #{esc_local_dp_mountpoints}                 \\
     -H #{task_workdir.bash_escape}              \\
     #{container_image_name.bash_escape}         \\
     ./#{singularity_wrapper_basename.bash_escape}
@@ -2203,6 +2216,31 @@ chmod o+x . .. ../.. ../../..
 
     return singularity_commands
   end
+
+
+
+  ##################################################################
+  # Generic container support methods
+  ##################################################################
+
+  private
+
+  # Returns an array of directory paths for all
+  # online data providers that are local to the current
+  # system (including smart ones). This is often needed
+  # when setting up container environments so that these
+  # DPs are mounted explicitely inside the containers.
+  def local_dp_storage_paths #:nodoc:
+    dirs = DataProvider
+      .where(:online => true)
+      .select { |dp| dp.is_fast_syncing? && dp.remote_dir.present? }
+      .map(&:remote_dir)
+      .select { |dir| File.directory?(dir) }
+      .sort { |a,b| a <=> b } # ordered so deeper paths are last
+    dirs
+  end
+
+
 
   ##################################################################
   # Internal Subtask Submission Mechanism
