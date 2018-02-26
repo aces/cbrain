@@ -53,8 +53,8 @@
     <% end %>
 
     <!-- REFRESH -->
-    <% if @task.status =~ /Setting Up|Post Processing/ %>
-      <%= link_to 'Refresh', { :action => 'show', :id => @task.id }, :class  => "button menu_button" %>
+    <% if CbrainTask::ACTIVE_STATUS.include?(@task.status) %>
+      <%= link_to 'Refresh', task_path(@task.id), :class => "button menu_button" %>
     <% end %>
 
     <!-- FAILURE RECOVERY -->
@@ -130,9 +130,6 @@
 
     <% t.cell("Current Status") do %>
       <%= colored_status(@task.status) %>
-      <% if CbrainTask::ACTIVE_STATUS.include?(@task.status) %>
-        <%= link_to 'Refresh', task_path(@task.id), :class => "button" %>
-      <% end %>
     <% end %>
     <% t.cell("Time Submitted") { to_localtime(@task.created_at,:datetime) }%>
 
