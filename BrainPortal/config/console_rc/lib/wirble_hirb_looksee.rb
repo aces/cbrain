@@ -73,7 +73,7 @@ end
 ========================================================
 Feature: Hirb pretty model tables, and table helpers
 ========================================================
-  Models have pretty unicode tables: User.limt(4)
+  Models have pretty unicode tables: User.limit(4)
   Console commands 'table' and 'view'
   Toggle with: Hirb.enable ; Hirb.disable
   (See the doc for the gem Hirb for more info)

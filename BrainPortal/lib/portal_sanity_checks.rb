@@ -356,9 +356,17 @@ class PortalSanityChecks < CbrainChecker #:nodoc:
       scratch.read_only    = false
       scratch.not_syncable = false
       scratch.description  = "Automatically created by the system.\n\n" +
-                             "Used to cache scratch userfile content on each server.\n"
+                             "Used to cache scratch userfile content on each server.\n" +
+                             "Sysadmins: do no make this provider available or visible\n" +
+                             "to normal users, and do not attempt to transfer/copy/upload\n" +
+                             "files here, it won't work."
       scratch.save!
     end
+
+    # Force some properties
+    scratch = ScratchDataProvider.first
+    scratch.meta['no_uploads'] = 'on'  # interface won't offer it as upload destination
+    scratch.meta['no_viewers'] = 'on'  # files can't be viewed in interface
   end
 
 end
