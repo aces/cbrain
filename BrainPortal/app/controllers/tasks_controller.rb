@@ -815,7 +815,12 @@ class TasksController < ApplicationController
             new_status && allowed_new.include?(new_status)
           end
           if oktasks.size > 0
-            bourreau.send_command_alter_tasks(oktasks, new_status, new_bourreau_id, archive_dp_id) # TODO parse returned command object?
+            bourreau.send_command_alter_tasks(oktasks, new_status, 
+                                               { :notify_user_id           => current_user.id.to_s, 
+                                                 :new_bourreau_id          => new_bourreau_id, 
+                                                 :archive_data_provider_id => archive_dp_id
+                                               }
+                                              ) # TODO parse returned command object?
             success_list += oktasks
           end
           skippedtasks = btasklist - oktasks

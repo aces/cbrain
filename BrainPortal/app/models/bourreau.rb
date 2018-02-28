@@ -373,16 +373,15 @@ class Bourreau < RemoteResource
   # +new_task_status+ is one of the keywords recognized by
   # process_command_alter_tasks(); in the case where operation
   # is 'Duplicated', then a +new_bourreau_id+ can be supplied too.
-  def send_command_alter_tasks(tasks,new_task_status,new_bourreau_id=nil,archive_dp_id=nil)
+  def send_command_alter_tasks(tasks,new_task_status,extra_remote_commands = {})
     tasks    = [ tasks ] unless tasks.is_a?(Array)
     task_ids = tasks.map { |t| t.is_a?(CbrainTask) ? t.id : t.to_i }
     command  = RemoteCommand.new(
       :command                  => 'alter_tasks',
       :task_ids                 => task_ids.join(","),
       :new_task_status          => new_task_status,
-      :new_bourreau_id          => new_bourreau_id,
-      :archive_data_provider_id => archive_dp_id
     )
+    command.merge!(extra_remote_commands)
     send_command(command)
   end
 
@@ -459,6 +458,7 @@ class Bourreau < RemoteResource
     # description of an action to perform here (e.g. RemoveWorkDir)
     taskids   = command.task_ids.split(/,/)
     newstatus = command.new_task_status
+    userid    = command.notify_user_id
 
     tasks_affected = 0
 
@@ -518,7 +518,7 @@ class Bourreau < RemoteResource
           task.send(:remove_cluster_workdir) # it's a protected method
           next
         elsif newstatus == 'SaveWorkdir'
-          task.send(:save_cluster_workdir) # it's a protected method
+          task.send(:save_cluster_workdir, userid) # it's a protected method
           next
         end
 

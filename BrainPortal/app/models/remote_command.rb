@@ -100,7 +100,11 @@ class RemoteCommand < RestrictedHash
 
     # -------- CHECK DATA PROVIDERS PARAMETERS --------
 
-    :data_provider_ids,    # in input for the command, an array of DP ids
+    :data_provider_ids,    # an input for the command, a list of DP ids as string. "1,2,3"
+
+    # -------- KEEP USER IDS --------
+
+    :notify_user_id,       # an input for the command generaly the current_user
 
   ]
 

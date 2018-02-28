@@ -401,8 +401,8 @@ class CbrainTask < ApplicationRecord
   # Returns an ID string containing the task +tname+
   # and the run_id in format "tname-rid". Example:
   #     "Civet-1234-1"   # Task 'Civet' with ID 1234 and run number 1
-  def tname_rid
-    @tname_rid ||= "#{self.name || '?'}-#{self.run_id || '?'}"
+  def tname_run_id
+    @tname_run_id ||= "#{self.name || '?'}-#{self.run_id || '?'}"
   end
 
   ##################################################################

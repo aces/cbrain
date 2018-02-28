@@ -1938,25 +1938,59 @@ exit $status
   # Save the directory created to run the job.
   # The directory will be saved as a FileCollection
   # only if the task have a results Data Provider.
-  def save_cluster_workdir
+  def save_cluster_workdir(user_id="")
+    full_cluster_workdir = self.full_cluster_workdir
+    user                 = User.find(user_id)
+
+    # Some verification before saving the work directory
     cb_error "Tried to save a task's work directory while in the wrong Rails app." unless
       self.bourreau_id == CBRAIN::SelfRemoteResourceId
 
-    cb_error "To save the work directory the task should have a result Data Provider" unless
-      self.results_data_provider_id
+    if full_cluster_workdir.blank?
+      self.addlog("Cannot save work directory: no task workdir was found")
+      return
+    end
 
-    userfile_name = self.tname_rid
+    data_provider_id = self.results_data_provider_id || user.meta[:pref_data_provider_id]
+    if data_provider_id.blank?
+      self.addlog("Cannot save work directory: the task should have a result Data Provider or user should have a default Data Provider")
+      return
+    end
+
+    if self.workdir_archived
+      self.addlog "Cannot save work directory: this task is archived"
+      return
+    end
+
+    if self.share_wd_tid
+      self.addlog "Cannot save work directory: this task doesn't have its own work directory"
+      return
+    end
+
+    # Save under a new FileCollection
+    userfile_name = self.tname_run_id
     file_collection = safe_userfile_find_or_new(FileCollection,
         :name             => userfile_name,
-        :data_provider_id => self.results_data_provider_id
+        :data_provider_id => data_provider_id.to_i
       )
 
-    file_collection.cache_copy_from_local_file(self.full_cluster_workdir)
+    file_collection.cache_copy_from_local_file(full_cluster_workdir)
 
     if file_collection.save
-      self.addlog("Saved new FileCollection #{userfile_name}.")
+      Message.send_message(user,
+        :header        => "Saved task work directory",
+        :description   => "Task work directory was saved as a FileCollection",
+        :variable_text => "For [[#{self.pretty_type}][/tasks/#{self.id}]] under [[#{file_collection.name}][/userfiles/#{file_collection.id}]]",
+        :type          => :notice,
+      )
+      self.addlog("Saved work directory in FileCollection #{userfile_name}.")
     else
-      self.addlog("Could not save back result file '#{userfile_name}'.")
+      Message.send_message(user,
+        :header        => "Could not save work directory",
+        :description   => "Unable to save work directory for [[#{self.pretty_type}][/tasks/#{self.id}]]",
+        :type          => :error,
+      )
+      self.addlog("Could not save work directory.")
     end
   end
 
