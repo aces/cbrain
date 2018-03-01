@@ -816,7 +816,7 @@ class TasksController < ApplicationController
           end
           if oktasks.size > 0
             bourreau.send_command_alter_tasks(oktasks, new_status, 
-                                               { :notify_user_id           => current_user.id.to_s, 
+                                               { :send_to_user_id          => current_user.id.to_s, 
                                                  :new_bourreau_id          => new_bourreau_id, 
                                                  :archive_data_provider_id => archive_dp_id
                                                }

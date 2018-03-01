@@ -458,7 +458,7 @@ class Bourreau < RemoteResource
     # description of an action to perform here (e.g. RemoveWorkDir)
     taskids   = command.task_ids.split(/,/)
     newstatus = command.new_task_status
-    userid    = command.notify_user_id
+    userid    = command.send_to_user_id
 
     tasks_affected = 0
 

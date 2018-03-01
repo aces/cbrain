@@ -104,7 +104,7 @@ class RemoteCommand < RestrictedHash
 
     # -------- KEEP USER IDS --------
 
-    :notify_user_id,       # an input for the command generaly the current_user
+    :send_to_user_id,         # an input for the command generally the current_user
 
   ]
 
