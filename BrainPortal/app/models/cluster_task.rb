@@ -1971,7 +1971,8 @@ exit $status
     userfile_name   = "TaskRawWorkdir-#{self.tname_run_id}"
     file_collection = safe_userfile_find_or_new(TaskRawWorkdir,
         :name             => userfile_name,
-        :data_provider_id => data_provider_id.to_i
+        :data_provider_id => data_provider_id
+        :user_id          => user_id
       )
 
     file_collection.cache_copy_from_local_file(full_cluster_workdir)
