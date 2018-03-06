@@ -104,7 +104,7 @@ class RemoteCommand < RestrictedHash
 
     # -------- KEEP USER IDS --------
 
-    :requester_user_id,    # an input for the command generally the current_user
+    :requester_user_id,    # an input for the command, generally the current_user
 
   ]
 
