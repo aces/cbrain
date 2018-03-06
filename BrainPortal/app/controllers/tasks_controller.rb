@@ -215,6 +215,25 @@ class TasksController < ApplicationController
       return
     end
 
+    # Check that input files are accessible from selected Bourreau
+    if @task.bourreau_id
+      dp_ids_of_inputs = @files.map(&:data_provider_id).uniq
+      bad_dps = DataProvider.where(:id => dp_ids_of_inputs).to_a.select do |dp|
+        ! dp.rr_allowed_syncing?(@task.bourreau)
+      end
+      if bad_dps.present?
+        flash[:error] =
+          "Some selected files are stored on Data Providers that are\n" +
+          "not accessible from execution server #{@task.bourreau.name}:\n\n" +
+          (bad_dps.map do |dp|
+            num_files =  @files.count { |f| f.data_provider_id == dp.id }
+            "Data Provider '#{dp.name}' : #{view_pluralize(num_files, "file")}\n"
+          end).join
+        redirect_to :controller  => :userfiles, :action  => :index
+        return
+      end
+    end
+
     @task.params[:interface_userfile_ids] = @files.map(&:id)
 
     # Other common instance variables, such as @data_providers and @bourreaux
@@ -715,7 +734,7 @@ class TasksController < ApplicationController
     if do_in_spawn
       flash[:notice] = "The tasks are being updated in background."
     else
-     flash[:notice] = "Successfully update #{view_pluralize(success_list.count, "task")}."   if success_list.present?
+     flash[:notice] = "Successfully updated #{view_pluralize(success_list.count, "task")}." if success_list.present?
      failure_count  = 0
      failed_list.each_value { |v| failure_count += v.size }
      flash[:error]  = "Failed to update #{view_pluralize(failure_count, "task")}." if failure_count > 0
