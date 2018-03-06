@@ -20,16 +20,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This model represents a single file containing a Singularity container image.
-class SingularityImage < FilesystemImage
+# A specific FileCollection used for the work directories of tasks.
+class TaskRawWorkdir < FileCollection
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # There really is no specific code for that model, yet.
-
-  def self.file_name_pattern #:nodoc:
-    /\.s?img\z/i
+  def self.pretty_type #:nodoc:
+    "Task raw workdir"
   end
 
 end
+
 

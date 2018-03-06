@@ -52,6 +52,7 @@ class PortalTask < CbrainTask
     "archive_file"        => "ArchiveWorkdirAsFile",
     "unarchive"           => "UnarchiveWorkdir",
     "zap_wd"              => "RemoveWorkdir",
+    "save_wd"             => "SaveWorkdir",
   }
 
   # In order to optimize the set of state transitions
@@ -82,13 +83,13 @@ class PortalTask < CbrainTask
 
     # Current                          => List of states we can change to
     #--------------------------------  ---------------------------------------------
-    "Failed To Setup"                  => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir" ],
-    "Failed On Cluster"                => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir" ],
-    "Failed To PostProcess"            => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir" ],
-    "Failed Setup Prerequisites"       => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir" ],
-    "Failed PostProcess Prerequisites" => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir" ],
-    "Terminated"                       => [ "Duplicated", "Restart Setup", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir" ],
-    "Completed"                        => [ "Duplicated", "Restart Setup", "Restart Cluster", "Restart PostProcess", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir" ],
+    "Failed To Setup"                  => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir", "SaveWorkdir" ],
+    "Failed On Cluster"                => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir", "SaveWorkdir" ],
+    "Failed To PostProcess"            => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir", "SaveWorkdir" ],
+    "Failed Setup Prerequisites"       => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir", "SaveWorkdir" ],
+    "Failed PostProcess Prerequisites" => [ "Duplicated", "Recover", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir", "SaveWorkdir" ],
+    "Terminated"                       => [ "Duplicated", "Restart Setup", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir", "SaveWorkdir" ],
+    "Completed"                        => [ "Duplicated", "Restart Setup", "Restart Cluster", "Restart PostProcess", "ArchiveWorkdir", "ArchiveWorkdirAsFile", "UnarchiveWorkdir", "RemoveWorkdir", "SaveWorkdir" ],
     "Duplicated"                       => [ "Restart Setup" ],
 
     #===============================================================================

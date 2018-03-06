@@ -1935,6 +1935,71 @@ exit $status
     true
   end
 
+  # Save the directory created to run the job.
+  # The directory will be saved as a FileCollection
+  # only if the task have a results Data Provider.
+  def save_cluster_workdir(user_id)
+    full_cluster_workdir = self.full_cluster_workdir
+    user                 = User.find(user_id)
+
+    # Some verification before saving the work directory
+    cb_error "Tried to save a task's work directory while in the wrong Rails app." unless
+      self.bourreau_id == CBRAIN::SelfRemoteResourceId
+
+    if full_cluster_workdir.blank?
+      self.addlog("Cannot save work directory: no task workdir was found")
+      return
+    end
+
+    if self.workdir_archived
+      self.addlog "Cannot save work directory: this task is archived"
+      return
+    end
+
+    if self.share_wd_tid
+      self.addlog "Cannot save work directory: this task doesn't have its own work directory"
+      return
+    end
+
+    data_provider_id = self.results_data_provider_id || (user && user.meta[:pref_data_provider_id])
+    if data_provider_id.blank?
+      self.addlog("Cannot save work directory: the task should have a result Data Provider or user should have a default Data Provider")
+      return
+    end
+
+
+    # Save under a new TaskRawWorkdir
+    userfile_name   = "TaskRawWorkdir-#{self.tname_run_id}"
+    file_collection = safe_userfile_find_or_new(TaskRawWorkdir,
+        :name             => userfile_name,
+        :data_provider_id => data_provider_id,
+        :user_id          => user.id,
+        :group_id         => user.own_group.id,
+      )
+
+    file_collection.cache_copy_from_local_file(full_cluster_workdir)
+
+    if file_collection.save
+      Message.send_message(user,
+        :header        => "Saved task work directory",
+        :description   => "Task work directory was saved as a TaskRawWorkdir",
+        :variable_text => "For [[#{self.fullname}][/tasks/#{self.id}]] under [[#{userfile_name}][/userfiles/#{file_collection.id}]]",
+        :type          => :notice,
+      ) if user
+      self.addlog("Saved work directory in TaskRawWorkdir #{userfile_name}.")
+    else
+      Message.send_message(user,
+        :header        => "Could not save work directory",
+        :description   => "Unable to save work directory for [[#{self.pretty_type}][/tasks/#{self.id}]]",
+        :variable_text => "#{self.errors.full_messages.join("\n")}",
+        :type          => :error,
+      ) if user
+      self.addlog("Could not save work directory.")
+    end
+  end
+
+
+
   # Compute size in bytes of the work directory; save it in the task's
   # attribute :cluster_workdir_size . Leaves nil if the directory doesn't
   # exist or any error occured. Sets to '0' if the task uses another task's

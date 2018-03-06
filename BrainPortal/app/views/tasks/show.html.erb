@@ -96,11 +96,14 @@
 
     <% if CbrainTask::FAILED_STATUS.include?(@task.status) or CbrainTask::COMPLETED_STATUS.include?(@task.status) %>
       <%= link_to "Remove Work Directory", url_for(:action  => :operation, :operation => 'zap_wd', 'tasklist[]' => @task.id),
-                                                  :method  => :post,
-                                                  :datatype => :script,
-                                                  :class => "button",
-                                                  :confirm =>
+                                                  :method   => :post,
+                                                  :class    => "button",
+                                                  :confirm  =>
                   "Are you sure you want to remove the task's work directory?"
+      %>
+      <%= link_to "Save Work Directory", url_for(:action    => :operation, :operation => 'save_wd', 'tasklist[]' => @task.id),
+                                                  :method   => :post,
+                                                  :class    => "button"
       %>
     <% end %>
   </div>
