@@ -20,14 +20,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#This model is meant to represent an arbitrary collection files (which
-#may or may not contain subdirectories) registered as a single entry in
-#the userfiles table.
+# A specific FileCollection used for the work directories of tasks.
 class TaskRawWorkdir < FileCollection
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  self.pretty_type #:nodoc:
+  def self.pretty_type #:nodoc:
     "Task raw workdir"
   end
 

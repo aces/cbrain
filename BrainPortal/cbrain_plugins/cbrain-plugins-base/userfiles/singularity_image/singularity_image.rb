@@ -28,7 +28,7 @@ class SingularityImage < FilesystemImage
   # There really is no specific code for that model, yet.
 
   def self.file_name_pattern #:nodoc:
-    /\.img\z/i
+    /\.s?img\z/i
   end
 
 end
