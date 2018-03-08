@@ -22,19 +22,9 @@
 #
 -%>
 
-<%
-  new_attr = {
-    'data-dialog'      => 'filter-dialog',
-    'data-overlay-url' => url_for({
-      :controller   => :custom_filters,
-      :action       => :new,
-      :filter_class => 'UserfileCustomFilter'
-    })
-  }
-%>
-<li id="filter-new" class="act-item" <%= new_attr.to_html_attributes.html_safe %>>
+<li class="act-item">
   <div>
-  New filter
+  <a href="/custom_filters/new?filter_class=UserfileCustomFilter">New filter</a>
   <span class="ui-icon ui-icon-plus"></span>
   </div>
 </li>
