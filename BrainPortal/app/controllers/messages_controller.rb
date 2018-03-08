@@ -39,8 +39,8 @@ class MessagesController < ApplicationController
       current_user.has_role?(:admin_user)
     @view_scope = @messages = @scope.apply(@base_scope)
 
-    @read_count   = @view_scope.where(:read => true).count
-    @unread_count = @view_scope.count - @read_count
+    @read_count   = @view_scope.where(:user_id => current_user.id, :read => true).count
+    @unread_count = @view_scope.where(:user_id => current_user.id, :read => false).count
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
     @messages = @scope.pagination.apply(@view_scope)
@@ -49,7 +49,6 @@ class MessagesController < ApplicationController
 
     respond_to do |format|
       format.html # index.html.erb
-      format.js
       format.xml  { render :xml => @messages }
     end
   end
