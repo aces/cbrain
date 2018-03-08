@@ -41,7 +41,7 @@
       <%= link_to 'Projects', groups_path %>
       <%
          message_link = 'Messages'
-         message_link = "#{message_link} <span class=\"message_count\">(#{@unread_message_count})</span>".html_safe if @unread_message_count > 0
+         message_link = "#{message_link} <span class=\"message_count\">(#{@unread_message_count})</span>".html_safe if (@unread_message_count.presence || 0) > 0
       %>
       <%= link_to message_link, messages_path, :title => pluralize(@unread_message_count, "unread message") %>
       <% if current_user.has_role?(:normal_user) %>
