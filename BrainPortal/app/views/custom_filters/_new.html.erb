@@ -27,21 +27,24 @@
 
 <h2>New Custom Filter</h2>
 
-<div class="generalbox">
+<%= form_for @custom_filter, :as => :site, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
-  <%= ajax_form_for custom_filter, :as => :custom_filter, :url => {:controller  => "custom_filters", :action => "create" }, :datatype  => "script" do |f| %>
-    <%= hidden_field_tag :filter_class, filter_type %>
-    <%= error_messages_for(custom_filter, :object_name => "custom filter") %>
+  <div class="generalbox">
 
-    <p>
-    <%= f.label :name, "Filter name" %><br>
-    <%= f.text_field :name %>
+    <%= ajax_form_for custom_filter, :as => :custom_filter, :url => {:controller  => "custom_filters", :action => "create" }, :datatype  => "script" do |f| %>
+      <%= hidden_field_tag :filter_class, filter_type %>
+      <%= error_messages_for(custom_filter, :object_name => "custom filter") %>
 
-    <p>
-    <%= render :partial => "custom_filters/#{filter_type}" %>
+      <p>
+      <%= f.label :name, "Filter name" %><br>
+      <%= f.text_field :name %>
 
-    <p>
-    <%= f.submit "Create" %>
-  <% end %>
+      <p>
+      <%= render :partial => "custom_filters/#{filter_type}" %>
 
-</div>  <!-- End class="generalbox" -->
+      <p>
+      <%= f.submit "Create" %>
+    <% end %>
+
+  </div>  <!-- End class="generalbox" -->
+<% end %>

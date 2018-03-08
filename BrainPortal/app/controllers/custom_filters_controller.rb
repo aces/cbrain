@@ -29,8 +29,6 @@ class CustomFiltersController < ApplicationController
 
   before_action :login_required
 
-  layout false
-
   def new #:nodoc:
     filter_param = "#{params[:filter_class]}".classify
     unless CustomFilter.descendants.map(&:name).include?(filter_param)
@@ -63,6 +61,11 @@ class CustomFiltersController < ApplicationController
 
     if @custom_filter.errors.empty?
       flash[:notice] = "Filter successfully created."
+    end
+
+    respond_to do |format|
+      controller = @custom_filter.type.gsub(/CustomFilter$/, "").downcase.pluralize.to_sym
+      format.html { redirect_to :controller => controller, :action => :index }
     end
 
   end
