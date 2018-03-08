@@ -36,14 +36,14 @@ class TaskCustomFilter < CustomFilter
 
   # See CustomFilter
   def filter_scope(scope)
-    scope = scope_type(scope)         unless self.data["type"].blank?
-    scope = scope_description(scope)  unless self.data["description_type"].blank? || self.data["description_term"].blank?
-    scope = scope_user(scope)         unless self.data["user_id"].blank?
-    scope = scope_bourreau(scope)     unless self.data["bourreau_id"].blank?
-    scope = scope_date(scope)         unless self.data["date_attribute"].blank?
-    scope = scope_status(scope)       unless self.data["status"].blank?
-    scope = scope_archive(scope)      unless self.data["archiving_status"].blank?
-    scope = scope_wd_status(scope)    unless self.data["wd_status"].blank?
+    scope = scope_type(scope)         unless self.data[:type].blank?
+    scope = scope_description(scope)  unless self.data[:description_type].blank? || self.data[:description_term].blank?
+    scope = scope_user(scope)         unless self.data[:user_id].blank?
+    scope = scope_bourreau(scope)     unless self.data[:bourreau_id].blank?
+    scope = scope_date(scope)         unless self.data[:date_attribute].blank?
+    scope = scope_status(scope)       unless self.data[:status].blank?
+    scope = scope_archive(scope)      unless self.data[:archiving_status].blank?
+    scope = scope_wd_status(scope)    unless self.data[:wd_status].blank?
     scope
   end
 

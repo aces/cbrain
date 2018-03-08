@@ -84,6 +84,23 @@ class CustomFilter < ApplicationRecord
     @filtered_class_controller ||= self.class.to_s.sub(/CustomFilter\z/, "").tableize
   end
 
+
+  # Return +scope+ modified to filter the CbrainTask entry's dates.
+  def scope_date(scope)
+
+    date_at               = self.data[:date_attribute] # assignation ...
+    mode_is_absolute_from = self.data[:absolute_or_relative_from] == "absolute"
+    mode_is_absolute_to   = self.data[:absolute_or_relative_to]   == "absolute"
+    absolute_from         = self.data[:absolute_from]
+    absolute_to           = self.data[:absolute_to]
+    relative_from         = self.data[:relative_from]
+    relative_to           = self.data[:relative_to]
+    table_name            = self.target_filtered_table
+
+    scope = add_time_condition_to_scope(scope,table_name,mode_is_absolute_from,mode_is_absolute_to,
+                                     absolute_from, absolute_to, relative_from, relative_to,date_at );
+  end
+
   # Wrapper for the data attribute. Ensures it's always initialized.
   def data
     unless read_attribute(:data)
@@ -95,22 +112,6 @@ class CustomFilter < ApplicationRecord
   # Virtual attribute for mass assigning to the data hash.
   def data=(new_data)
     write_attribute(:data, new_data)
-  end
-
-  # Return +scope+ modified to filter the CbrainTask entry's dates.
-  def scope_date(scope)
-
-    date_at               = self.data["date_attribute"] # assignation ...
-    mode_is_absolute_from = self.data['absolute_or_relative_from'] == "absolute"
-    mode_is_absolute_to   = self.data['absolute_or_relative_to']   == "absolute"
-    absolute_from         = self.data["absolute_from"]
-    absolute_to           = self.data["absolute_to"]
-    relative_from         = self.data["relative_from"]
-    relative_to           = self.data["relative_to"]
-    table_name            = self.target_filtered_table
-
-    scope = add_time_condition_to_scope(scope,table_name,mode_is_absolute_from,mode_is_absolute_to,
-                                     absolute_from, absolute_to, relative_from, relative_to,date_at );
   end
 
   private

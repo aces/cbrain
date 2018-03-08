@@ -37,18 +37,18 @@ class UserfileCustomFilter < CustomFilter
 
   # See CustomFilter
   def filter_scope(scope)
-    scope = scope_name(scope)        unless self.data["file_name_type"].blank? || self.data["file_name_term"].blank?
-    scope = scope_parent_name(scope) unless self.data["parent_name_like"].blank?
-    scope = scope_child_name(scope)  unless self.data["child_name_like"].blank?
-    scope = scope_date(scope)        unless self.data["date_attribute"].blank?
-    scope = scope_size(scope)        unless self.data["size_type"].blank? || self.data["size_term"].blank?
-    scope = scope_user(scope)        unless self.data["user_id"].blank?
-    scope = scope_group(scope)       unless self.data["group_id"].blank?
-    scope = scope_dp(scope)          unless self.data["data_provider_id"].blank?
-    scope = scope_type(scope)        unless self.data["type"].blank?
-    scope = scope_archive(scope)     unless self.data["archiving_status"].blank?
-    scope = scope_syncstatus(scope)  unless self.data["sync_status"].blank?
-    scope = scope_tags(scope)        unless self.data["tag_ids"].blank?
+    scope = scope_name(scope)        unless self.data[:file_name_type].blank? || self.data[:file_name_term].blank?
+    scope = scope_parent_name(scope) unless self.data[:parent_name_like].blank?
+    scope = scope_child_name(scope)  unless self.data[:child_name_like].blank?
+    scope = scope_date(scope)        unless self.data[:date_attribute].blank?
+    scope = scope_size(scope)        unless self.data[:size_type].blank? || self.data[:size_term].blank?
+    scope = scope_user(scope)        unless self.data[:user_id].blank?
+    scope = scope_group(scope)       unless self.data[:group_id].blank?
+    scope = scope_dp(scope)          unless self.data[:data_provider_id].blank?
+    scope = scope_type(scope)        unless self.data[:type].blank?
+    scope = scope_archive(scope)     unless self.data[:archiving_status].blank?
+    scope = scope_syncstatus(scope)  unless self.data[:sync_status].blank?
+    scope = scope_tags(scope)        unless self.data[:tag_ids].blank?
     scope
   end
 
