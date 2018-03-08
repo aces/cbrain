@@ -49,6 +49,7 @@ class MessagesController < ApplicationController
 
     respond_to do |format|
       format.html # index.html.erb
+      format.js   # annoying, used only because of pagination
       format.xml  { render :xml => @messages }
     end
   end
