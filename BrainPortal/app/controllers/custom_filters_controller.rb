@@ -82,15 +82,17 @@ class CustomFiltersController < ApplicationController
 
     @custom_filter.save
 
-    if @custom_filter.errors.empty?
-      flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
-      return
-    end
-
-
     respond_to do |format|
-      format.xml  { render :xml => @custom_filter.errors, :status => :unprocessable_entity }
-      format.js
+      if @custom_filter.errors.empty?
+        flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
+        controller = @custom_filter.type.gsub(/CustomFilter$/, "").downcase.pluralize.to_sym
+        format.html { redirect_to :controller => controller, :action => :index }
+      else 
+        @custom_filter.reload
+        format.html { render :action => "edit" }
+        format.xml  { render :xml  => @custom_filter.errors, :status => :unprocessable_entity }
+        format.js
+      end
     end
   end
 
