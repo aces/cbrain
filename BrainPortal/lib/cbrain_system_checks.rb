@@ -138,6 +138,8 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       puts "C> \t  the list of revision numbers for CbrainFileRevision is missing."
       Kernel.exit(10)
     end
+    mode = CbrainFileRevision.git_available? ? 'git' : 'static CSV files'
+    puts "C> \t- Revisions are fetched using: #{mode}"
 
   end
 
