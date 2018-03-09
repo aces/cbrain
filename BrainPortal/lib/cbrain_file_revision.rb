@@ -360,8 +360,8 @@ class CbrainFileRevision
     what_root  = what == 'CBRAIN' ? rails_root.parent : Pathname.new(CBRAIN::Plugins_Dir) + what
     #Dir.chdir(what_root.to_s) do
       head_rev = self.new("#{what_root}/#{head_key}")
-      return head_rev if `cd #{Rails.root.to_s.bash_escape} ; git rev-parse --show-toplevel 2>/dev/null`.strip != what_root.to_s
-      head_info = `cd #{Rails.root.to_s.bash_escape} ; git log -n1 --format="%H -#- %ai -#- %an"`.strip.split(' -#- ')
+      return head_rev if `cd #{what_root.to_s.bash_escape} ; git rev-parse --show-toplevel 2>/dev/null`.strip != what_root.to_s
+      head_info = `cd #{what_root.to_s.bash_escape} ; git log -n1 --format="%H -#- %ai -#- %an"`.strip.split(' -#- ')
       head_rev.basename = head_key
       head_rev.commit   = head_info[0]
       head_rev.author   = head_info[2]
