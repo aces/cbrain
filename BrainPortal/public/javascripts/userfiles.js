@@ -558,10 +558,7 @@ $(function() {
     /* Edit custom filter button */
     $('#filters-menu')
       .undelegate('.filter-edit', 'click.uf.dlg-filter-edit')
-      .delegate(  '.filter-edit', 'click.uf.dlg-filter-edit', function (event) {
-        event.stopPropagation();
-        $('#filter-dialog').trigger('open.uf', [this]);
-      });
+      .delegate(  '.filter-edit', 'click.uf.dlg-filter-edit', function (event) {});
   }).find('#menu_bar').trigger('new_content');
 
   /* Dialogs */
@@ -828,62 +825,6 @@ $(function() {
             userfiles[move ? 'move' : 'copy'](dialog.children('form')[0]);
             dialog.trigger('close.uf');
           };
-
-        dialog
-          .dialog('option', 'title', title)
-          .dialog('option', 'buttons', buttons);
-      });
-
-    /* Custom filters dialog */
-    $('#filter-dialog')
-      .unbind('open.uf.filter-open')
-      .bind(  'open.uf.filter-open', function (event, source) {
-        var edit    = !$(source).is('#filter-new'),
-            dialog  = $(this),
-            buttons = {},
-            title   = undefined;
-
-        /* fetch the matching custom filters form */
-        $.get($(source).data('overlay-url'), function (html) {
-          var contents = $(html);
-          contents.find('input[type="submit"]').remove();
-
-          dialog
-            .html(contents)
-            .dialog('option', 'position', {
-              my: 'center', at: 'center center+15%', of: window
-            });
-        });
-
-        title = (edit ? 'Edit custom filter' : 'New custom filter');
-
-        buttons['Cancel'] = function () {
-          dialog.trigger('close.uf');
-        };
-
-        /* generic filter action handler generator */
-        var handle = function (action) {
-          return function (event) {
-            var form = action === 'add'
-              ? 'form#new_custom_filter'
-              : 'form#edit_custom_filter';
-
-            dialog.trigger('close.uf');
-            userfiles.filters[action]($(form)[0])
-              .then(userfiles.refresh);
-          }
-        };
-
-        if (edit) {
-          buttons['Apply']  = handle('update');
-          buttons['Delete'] = {
-            text:    'Delete',
-            'class': 'dlg-left-button',
-            click: handle('remove')
-          };
-        } else {
-          buttons['Create'] = handle('add');
-        }
 
         dialog
           .dialog('option', 'title', title)
