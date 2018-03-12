@@ -50,11 +50,9 @@ class CustomFiltersController < ApplicationController
       cb_error "Filter class required", :status  => :unprocessable_entity
     end
 
-    params[:data] ||= {}
-
-    filter_class  = Class.const_get(filter_param)
+    binding.pry
+    filter_class   = Class.const_get(filter_param)
     @custom_filter = filter_class.new(custom_filter_params)
-    @custom_filter.data.merge! params[:data]
 
     @custom_filter.user_id = current_user.id
 
@@ -114,13 +112,12 @@ class CustomFiltersController < ApplicationController
   private
 
   def custom_filter_params #:nodoc:
-    custom_filter_attr = params.require(:custom_filter).permit(:name, :user_id, :data => {})
+    custom_filter_attr = params.require(:custom_filter).permit(:name, :user_id)
 
     # A way to allow arbitrary value in data
-    custom_filter_data = params.require_as_params(:custom_filter).require_as_params(:data)
-    custom_filter_data.permit!
-    restricted_data = CustomFilterData.new(custom_filter_data)
-    custom_filter_attr[:data] = restricted_data
+    data_allowed_keys  = CustomFilterData.new().allowed_keys
+    custom_filter_data = params.require(:data).permit(data_allowed_keys)
+    custom_filter_attr[:data] = custom_filter_data
     custom_filter_attr
   end
 
