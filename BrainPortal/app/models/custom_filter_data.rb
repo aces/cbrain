@@ -35,8 +35,7 @@ class CustomFilterData < RestrictedHash
   # List of allowed keys in the hash
   self.allowed_keys=[
     # Data available for Userfile and Task filter
-    :user_id,
-    :type, 
+    :user_id, 
     :date_attribute, 
     :absolute_or_relative_to, 
     :absolute_or_relative_from,
@@ -51,7 +50,6 @@ class CustomFilterData < RestrictedHash
     :absolute_to,
     :archiving_status, 
 
-
     # Only for Userfile filter
     :size_type, 
     :size_term, 
@@ -61,20 +59,27 @@ class CustomFilterData < RestrictedHash
     :description_type, 
     :parent_name_like, 
     :child_name_like, 
-    :sync_status,
 
     # Only for Task filter 
     :data_provider_id, 
     :description_term, 
     :bourreau_id, 
-    :status, 
     :wd_status, 
 
     # Not defined in form
     :created_date_type,
     :date_term, 
     :created_date_term, 
-    :tag_ids, 
+
+
+    # all the array params need to be at the end
+    # of the allowed keys
+    {
+      :type        => [],
+      :status      => [],
+      :sync_status => [],
+      :tag_ids     => [], 
+    }
   ]
 
 end
