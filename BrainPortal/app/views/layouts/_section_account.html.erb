@@ -39,7 +39,11 @@
       <%= link_to "Dashboard", home_path %>
       <%= link_to 'My Account', user_path(current_user) %>
       <%= link_to 'Projects', groups_path %>
-      <%= link_to 'Messages', messages_path, :title  => pluralize(@unread_message_count, "unread message"), :id  => "message_menu_tab" %>
+      <%
+         message_link = 'Messages'
+         message_link = "#{message_link} <span class=\"message_count\">(#{@unread_message_count})</span>".html_safe if (@unread_message_count.presence || 0) > 0
+      %>
+      <%= link_to message_link, messages_path, :title => pluralize(@unread_message_count, "unread message") %>
       <% if current_user.has_role?(:normal_user) %>
         <%= hover_dropdown("Resources", :dropdown_class => "resource_header") do %>
           <%= link_to 'Data Providers', data_providers_path %><BR>

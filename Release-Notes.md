@@ -1,5 +1,20 @@
 ## CBRAIN Release Notes
 
+#### Version 5.0.2 Released 2018-03-09
+
+Several bug fixes (boring!) and enhancements (yeah!)
+
+- Singularity support fixes (build instead of pull, exec instead of run)
+- jQuery fixes
+- API is now single-token based (Bearer token)
+- API improvements (limits, simpler filters)
+- Switch project clears the persistent list
+- Containers mount local DPs
+- Plugins can provide arbitrary ruby code in their lib/
+- A task's work directory can be saved for inspection
+- Launching tasks checks accessibility of inputs
+- Lots of tiny internal bugs fixes
+
 #### Version 5.0.1 Released 2018-01-03 (Happy Birthday)
 
 This release contains a few bug fixes identified while running 5.0.0

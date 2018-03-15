@@ -81,7 +81,7 @@ Archiving status<br>
   %>
 </p>
 
-<% unless current_user.available_tags.blank? %>
+<% if current_user.available_tags.count > 0 %>
   Tags <br>
   <%=
   select_tag "data[tag_ids]", options_for_select((current_user.available_tags.map { |tags| [tags.name, tags.id] }), :selected => custom_filter.data["tag_ids"]),

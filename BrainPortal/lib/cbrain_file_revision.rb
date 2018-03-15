@@ -221,21 +221,24 @@ class CbrainFileRevision
     self.load_static_revision_file(main_path)
 
     # Each plugin package now
-    Dir.chdir(rails_root + "cbrain_plugins") do # TODO use CBRAIN::Plugins_Dir ?
-      Dir.glob("cbrain-plugins-*").each do |package|
-        Dir.chdir(package) do
-          if File.exists?(FLATFILE_BASENAME)
-            self.load_static_revision_file(FLATFILE_BASENAME, rails_app_basename + "cbrain_plugins" + package)
-          end
-        end
-      end
+    # This code used to be more elegant with Dir.chdir, but caused problems
+    # with Ruby threads. :-(
+    packages_pattern = (rails_root + "cbrain_plugins" + "cbrain-plugins-*").to_s
+    packages_full_paths = Dir.glob(packages_pattern)
+    packages_full_paths.each do |pack_full| # "/path/to/BrainPortal/cbrain-plugins/cbrain-plugins-neuro"
+      csv_file = Pathname.new(pack_full) + FLATFILE_BASENAME
+      next unless File.exists?(csv_file.to_s)
+      package = Pathname.new(pack_full).basename   # "cbrain-plugins-neuro"
+      self.load_static_revision_file(csv_file.to_s, rails_app_basename + "cbrain_plugins" + package)
     end
+
     true
   end
 
   # Class method. Slurps a static file of revision info
   # and caches it.
   def self.load_static_revision_file(path,relprefix="") #:nodoc:
+    Rails.logger.info("Loading static file revision #{path} with prefix #{relprefix.presence || '(none)'}")
     relprefix = Pathname.new(relprefix) if relprefix.to_s.present?
     CSV.foreach(path.to_s, :col_sep => ' -#- ') do |row|
       # 7f6bb2f24f6afb3d3b355d6c0ad630cdf353e1fe -#- 2011-07-18 17:16:57 -0400 -#- Pierre Rioux -#- Bourreau/README
@@ -259,14 +262,14 @@ class CbrainFileRevision
     test = `bash -c "which git 2>/dev/null"`
     @_git_available = (test.blank? ? :no : :yes)
     if @_git_available == :yes
-      Dir.chdir(Rails.root) do
-        test2 = `git rev-parse --show-toplevel 2>/dev/null`
+      #Dir.chdir(Rails.root) do
+        test2 = `cd #{Rails.root.to_s.bash_escape} ; git rev-parse --show-toplevel 2>/dev/null`
         @_git_available = :no if test2.blank?
         if @_git_available == :yes
-          test3 = `git log -n 1 . 2>/dev/null`
+          test3 = `cd #{Rails.root.to_s.bash_escape} ; git log -n 1 . 2>/dev/null`
           @_git_available = :no if test3.blank?
         end
-      end
+      #end
     end
     @_git_available == :yes
   end
@@ -274,7 +277,7 @@ class CbrainFileRevision
   # If the current app was deployed using GIT, returns the current GIT branch name.
   def self.git_branch_name
     return "" unless git_available?
-    IO.popen("git rev-parse --abbrev-ref HEAD") do |fh|
+    IO.popen("cd #{Rails.root.to_s.bash_escape} ; git rev-parse --abbrev-ref HEAD") do |fh|
       fh.gets.strip
     end
   end
@@ -355,10 +358,10 @@ class CbrainFileRevision
     # Live value
     rails_root = Pathname.new(Rails.root)
     what_root  = what == 'CBRAIN' ? rails_root.parent : Pathname.new(CBRAIN::Plugins_Dir) + what
-    Dir.chdir(what_root.to_s) do
+    #Dir.chdir(what_root.to_s) do
       head_rev = self.new("#{what_root}/#{head_key}")
-      return head_rev if `git rev-parse --show-toplevel 2>/dev/null`.strip != what_root.to_s
-      head_info = `git log -n1 --format="%H -#- %ai -#- %an"`.strip.split(' -#- ')
+      return head_rev if `cd #{what_root.to_s.bash_escape} ; git rev-parse --show-toplevel 2>/dev/null`.strip != what_root.to_s
+      head_info = `cd #{what_root.to_s.bash_escape} ; git log -n1 --format="%H -#- %ai -#- %an"`.strip.split(' -#- ')
       head_rev.basename = head_key
       head_rev.commit   = head_info[0]
       head_rev.author   = head_info[2]
@@ -369,7 +372,7 @@ class CbrainFileRevision
       end
       head_rev.adjust_short_commit
       return head_rev # not cached, so it's live
-    end
+    #end
   end
 
   # Returns the artifical tag name info for
@@ -403,26 +406,33 @@ class CbrainFileRevision
     seen       = {}
     rails_root = Pathname.new(Rails.root)
     what_root  = what == 'CBRAIN' ? rails_root.parent : Pathname.new(CBRAIN::Plugins_Dir) + what
-    Dir.chdir(what_root.to_s) do
-      return DEFAULT_TAG if `git rev-parse --show-toplevel 2>/dev/null`.strip != what_root.to_s
-      tags_set = `git tag -l`.split.shuffle # initial list: all tags we can find
+
+    # Unfortunately, in multithreaded versions of this app (puma server maybe?)
+    # we get into problems with chdirs being active in multiple threads.
+    # So the Dir.chdir() block below is commented out and all bash statements
+    # are prefixed with a "cd" command. It's ugly but eh.
+    cd_bash    = "cd #{what_root.to_s.bash_escape} ; " # Prefix for all bash commands below
+
+    #Dir.chdir(what_root.to_s) do
+      return DEFAULT_TAG if `#{cd_bash} git rev-parse --show-toplevel 2>/dev/null`.strip != what_root.to_s
+      tags_set = `#{cd_bash} git tag -l`.split.shuffle # initial list: all tags we can find
       git_tag = tags_set.shift unless tags_set.empty? # extract one as a starting point
       seen[git_tag] = true
       while tags_set.size > 0
-        tags_set = `git tag --contains #{git_tag.bash_escape}`.split.shuffle.reject { |v| seen[v] }
+        tags_set = `#{cd_bash} git tag --contains #{git_tag.bash_escape}`.split.shuffle.reject { |v| seen[v] }
         git_tag = tags_set.shift unless tags_set.empty? # new first
         seen[git_tag] = true
       end
       if git_tag
-        num_new_commits = `git rev-list '#{git_tag}..HEAD'`.split.size
+        num_new_commits = `#{cd_bash} git rev-list '#{git_tag}..HEAD'`.split.size
       elsif DEFAULT_TAG # fallback for plugins
-        num_new_commits = `git rev-list HEAD`.split.size
+        num_new_commits = `#{cd_bash} git rev-list HEAD`.split.size
         git_tag = DEFAULT_TAG
       end
       if git_tag
         git_tag += "-#{num_new_commits}" if num_new_commits > 0
       end
-    end
+    #end
 
     git_tag # not cached, so it's really live
 
@@ -467,10 +477,10 @@ class CbrainFileRevision
     # 9f4c0900fa3e6c87131d830194d0276acb1ce595 2011-06-28 17:50:26 -0400 Pierre Rioux
     git_last_commit_info = ""
 
-    Dir.chdir(dirname) do
+    #Dir.chdir(dirname) do
       # If symlink, try to deref
       target = File.symlink?(@basename) ? File.readlink(@basename) : @basename
-      File.popen("git rev-list --max-count=1 --date=iso --pretty=format:'%H %ad %an' HEAD -- ./#{target.to_s.bash_escape} 2>/dev/null","r") do |fh|
+      IO.popen("cd #{dirname.to_s.bash_escape} ; git rev-list --max-count=1 --date=iso --pretty=format:'%H %ad %an' HEAD -- ./#{target.to_s.bash_escape} 2>/dev/null","r") do |fh|
         line = fh.readline.strip rescue ""
         if line =~ /\d\d\d\d-\d\d-\d\d/
           git_last_commit_info = line
@@ -479,7 +489,7 @@ class CbrainFileRevision
           git_last_commit_info = line if line =~ /\d\d\d\d-\d\d-\d\d/
         end
       end
-    end
+    #end
 
     if git_last_commit_info =~ /\A(\S+) (\d\d\d\d-\d\d-\d\dT?)\s*(\d\d:\d\d:\d\dZ?)(\s*[+-][\d:]+)? (\S.*\S)\s*\z/
       @commit = Regexp.last_match[1]
