@@ -47,20 +47,15 @@
       )
     }
 
-    edit_attr = {
-      'data-dialog'      => 'filter-dialog',
-      'data-overlay-url' => edit_custom_filter_path(filter),
-      'data-filter-id'   => filter.id
-    }
   %>
   <li class="filter-item act-item" <%= apply_attr.to_html_attributes.html_safe %>>
-    <div>
-    <span class="filter-edit act-icon ui-icon-pencil"
-      <%= edit_attr.to_html_attributes.html_safe %>
-    ></span>
-    <span class="filter-name">
-      <%= filter.name %>
-    </span>
+    <div display="inline-block">
+      <a href=<%=edit_custom_filter_path(filter)%>>  
+        <span class="filter-edit act-icon ui-icon-pencil"></span>
+      </a>
+      <span class="filter-name">
+        <%= filter.name %>
+      </span>
     </div>
   </li>
 <% end %>

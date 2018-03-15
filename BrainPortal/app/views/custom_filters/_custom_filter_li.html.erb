@@ -37,6 +37,5 @@
 %>
 </b>
 <small><small>
-   <%= link_to "Edit", edit_custom_filter_path(filter) %>
-   <%= ajax_link 'Delete', custom_filter_path(filter), :confirm => "Are you sure you want to delete filter '#{filter.name}' ?", :method => :delete, :datatype  => 'script' %>  
+   <%= link_to "Edit/Delete", edit_custom_filter_path(filter) %>
 </small></small>
