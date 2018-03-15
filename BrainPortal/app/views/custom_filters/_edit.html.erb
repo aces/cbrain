@@ -40,7 +40,8 @@
     <%= render :partial => "custom_filters/#{filter_type}", :locals  => {:custom_filter  => custom_filter}  %>
 
     <p>
-    <%= f.submit "Update" %>
+    <%= f.submit "Update", :class => "button" %>
+    <%= link_to 'Delete', custom_filter_path(custom_filter),  {:method => :delete, :class => "button"} %>
   <% end %>
 
 </div>  <!-- End class="generalbox" -->
