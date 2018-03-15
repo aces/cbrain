@@ -73,7 +73,6 @@ class Worker
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  include Sys
   include Log4r
 
   PIDFILES_DIR = Pathname.new(Rails.root.to_s) + "tmp/pids"
@@ -369,7 +368,7 @@ class Worker
   # Returns true if process identified by +pid+ exists and
   # belongs to us.
   def process_running?(somepid) #:nodoc:
-    process_info = ProcTable.ps(somepid)
+    process_info = Sys::ProcTable.ps(:pid => somepid)
     return false unless process_info
     procuid   = process_info.ruid rescue nil
     procuid ||= process_info.uid  rescue nil

@@ -69,8 +69,6 @@ require 'active_support'
 # the man page ssh_config, and for the '-o' option of 'ssh').
 class SshMaster
 
-  include Sys  # for ProcTable
-
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Class configuration variables.
@@ -694,7 +692,7 @@ class SshMaster
   # Makes sure that a process owned by us runs for this pid.
   def process_ok?(mypid) #:nodoc:
     return false unless mypid
-    process_info = ProcTable.ps(mypid.to_i)
+    process_info = Sys::ProcTable.ps(:pid => mypid.to_i)
     return false unless process_info
     procuid   = process_info.ruid rescue nil
     procuid ||= process_info.uid rescue nil

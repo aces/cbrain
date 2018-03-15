@@ -94,6 +94,26 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
 
 
 
+  # Checks that the Sys::Proctable gem is properly installed (it
+  # has a special manual installation step that people sometimes forget)
+  def self.a007_check_sys_proctable #:nodoc:
+
+    #-----------------------------------------------------------------------------
+    puts "C> Ensuring that the Sys::ProcTable gem is operational..."
+    #-----------------------------------------------------------------------------
+
+    my_own_process = Sys::ProcTable.ps(:pid => Process.pid)
+    puts "C> \t- All good. Found process name: #{my_own_process.name}"
+  rescue => ex
+    puts "C> \t- Error: it seems Sys::ProcTable doesn't work. Did you run the rake task"
+    puts "C> \t  like it says in the installation instructions?"
+    puts "#{ex.class} #{ex.message}"
+    puts ex.backtrace.join("\n") + "\n"
+    Kernel.exit(10)
+  end
+
+
+
   # Checks for a proper timezone configuration in Rails' environment.
   def self.a009_check_time_zone_configuration #:nodoc:
 

@@ -26,7 +26,7 @@ source 'https://rubygems.org'
 gem 'rails', '~> 5.0.6'
 gem "net-ssh",       :require => 'net/ssh'
 gem "net-sftp",      :require => 'net/sftp'
-gem "sys-proctable"
+gem "sys-proctable", '~> 1.2.0'
 gem "mysql2"
 gem "log4r"
 gem "puma"
