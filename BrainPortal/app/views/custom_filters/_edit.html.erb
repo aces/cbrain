@@ -41,7 +41,7 @@
 
     <p>
     <%= f.submit "Update", :class => "button" %>
-    <%= link_to 'Delete', custom_filters_path(custom_filter),  { :confirm => "Are you sure you want to delete '#{custom_filter.name}' ?", :method => :delete, :class => "button"} %>
+    <%= link_to 'Delete', custom_filter_path(custom_filter),  {:method => :delete, :class => "button"} %>
   <% end %>
 
 </div>  <!-- End class="generalbox" -->

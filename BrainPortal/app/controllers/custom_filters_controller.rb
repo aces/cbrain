@@ -50,7 +50,6 @@ class CustomFiltersController < ApplicationController
       cb_error "Filter class required", :status  => :unprocessable_entity
     end
 
-    binding.pry
     filter_class   = Class.const_get(filter_param)
     @custom_filter = filter_class.new(custom_filter_params)
 
@@ -104,6 +103,8 @@ class CustomFiltersController < ApplicationController
     flash[:notice] = "Custom filter '#{@custom_filter.name}' deleted."
 
     respond_to do |format|
+      controller = @custom_filter.type.gsub(/CustomFilter$/, "").downcase.pluralize.to_sym
+      format.html { redirect_to :controller => controller, :action => :index }
       format.js
       format.xml  { head :ok }
     end
