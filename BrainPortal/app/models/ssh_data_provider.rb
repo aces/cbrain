@@ -272,7 +272,7 @@ class SshDataProvider < DataProvider
     remote_files.select { |u| ! self.userfiles.where(:name => u).exists? }.each do |unreg|
       issues << {
         :type     => :unregistered,
-        :message  => "Unregisted file '#{unreg}'",
+        :message  => "Unregistered file '#{unreg}'",
         :severity => :trivial
       }
     end
