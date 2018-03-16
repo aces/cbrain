@@ -450,12 +450,12 @@ module ScopeHelper
 
     # Normalize +attribute+ to a lower-case string, as per Scope API conventions
     attribute = attribute.to_s.downcase
-
+    
     # Normalize the scopes in +view+ and +scope+ into just scopes
     scopes = scope || []
     scopes = [scopes] unless scopes.is_a?(Enumerable) && ! scopes.is_a?(ActiveRecord::Relation)
 
-    if view.is_a?(Scope) || ((view.is_a?(Enumerable) && ! view.is_a?(ActiveRecord::Relation)) && view.all? { |v| v.is_a?(Scope) })
+    if view.is_a?(Scope) || ((view.is_a?(Enumerable) && ! view.is_a?(ActiveRecord::Relation)) && !view.empty? && view.all? { |v| v.is_a?(Scope) })
       scopes += [view]
       view = base
     end
