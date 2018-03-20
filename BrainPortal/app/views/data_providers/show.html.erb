@@ -146,8 +146,13 @@
       <% t.edit_cell(:cloud_storage_client_token, :content => '****************', :header => 'Client Token', :show_width => 2) do %>
         <%= password_field_tag "data_provider[cloud_storage_client_token]", @provider.cloud_storage_client_token, :size => 80 %>
       <% end %>
+      <% t.edit_cell(:cloud_storage_client_bucket_name, :header => 'Client Bucket Name', :show_width => 2) do %>
+        <%= text_field_tag "data_provider[cloud_storage_client_bucket_name]", @provider.cloud_storage_client_bucket_name, :size => 80 %>
+      <% end %>
+      <% t.edit_cell(:cloud_storage_client_path_start, :header => 'Client Starting Path', :show_width => 2) do %>
+        <%= text_field_tag "data_provider[cloud_storage_client_path_start]", @provider.cloud_storage_client_path_start, :size => 80 %>
+      <% end %>
     <% end %>
-
   <% end %>
 
 
