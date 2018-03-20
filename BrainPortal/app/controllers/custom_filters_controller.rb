@@ -38,6 +38,10 @@ class CustomFiltersController < ApplicationController
     @custom_filter = filter_class.new
   end
 
+  def show #:nodoc:
+    @custom_filter = current_user.custom_filters.find(params[:id])
+  end
+
   def edit #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])
   end
@@ -83,11 +87,10 @@ class CustomFiltersController < ApplicationController
     respond_to do |format|
       if @custom_filter.errors.empty?
         flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
-        controller = @custom_filter.type.gsub(/CustomFilter$/, "").downcase.pluralize.to_sym
-        format.html { redirect_to :controller => controller, :action => :index }
+        format.html { render :action => :show }
       else 
         @custom_filter.reload
-        format.html { render :action => "edit" }
+        format.html { render :action => :show }
         format.xml  { render :xml  => @custom_filter.errors, :status => :unprocessable_entity }
         format.js
       end

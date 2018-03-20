@@ -32,8 +32,6 @@
 # [*group_id*] The id of the group to filter on.
 # [*tags*] A serialized hash of tags to filter on.
 
-require 'pry'
-
 class UserfileCustomFilter < CustomFilter
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:

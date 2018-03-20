@@ -22,48 +22,76 @@
 #
 -%>
 
-<% custom_filter ||= @custom_filter %>
 
-Task<br>
-<%= task_type_select("data[type]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name).sort, :selector => custom_filter.data["type"], :include_top => true }, :multiple => true, :size => 10) %>
+<%= show_table(@custom_filter, :edit_condition => (check_role(:admin_user) || @custom_filter.user_id == current_user.id)) do |t| %>
 
-<p>
-Status<br>
-<%= task_status_select("data[status]", {:selector => custom_filter.data["status"]}, :multiple => true, :size => 10) %>
+  <% t.edit_cell(:name) do %>
+    <%= text_field_tag "custom_filter[name]", @custom_filter.name %>
+  <% end %>
 
-<p>
-Description<br>
-<%= select :data, :description_type, [["Don't filter description", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => custom_filter.data["description_type"] %> <%= text_field_tag "data[description_term]", custom_filter.data["description_term"] %>
+  <% t.edit_cell(:type, :header => "Tasks", :content => (@custom_filter.data[:type]||[]).map(&:constantize).map(&:pretty_name).sort.join(", ")) do %>
+    <%= task_type_select("data[type]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name).sort, :selector => @custom_filter.data["type"], :include_top => true }, :multiple => true, :size => 10) %>
+  <% end %>
 
-<p>
-Owner<br>
-<%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => custom_filter.data["user_id"] }, :include_blank => true %>
+  <% t.edit_cell(:status, :header => "Status", :content => (@custom_filter.data[:status]||[]).join(", ")) do %>
+    <%= task_status_select("data[status]", {:selector => @custom_filter.data["status"]}, :multiple => true, :size => 10) %>
+  <% end %>
 
-<p>
-Execution Server<br>
-<%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => custom_filter.data["bourreau_id"] }, :include_blank => true %>
-</p>
+  <%
+    description_type = 
+      {
+        ''        => "Don't filter description",
+        'match'   => 'Matches',
+        'contain' => 'Contains',
+        'begin'   => 'Begins with',
+        'end'     => 'Ends with',
+      }
+  %>
 
-Filtering by date<br>
-<%= date_range_panel(custom_filter[:data] || {}, "data") %>
+  <% t.edit_cell(:description_type, :header => "Description", 
+                 :content => "#{description_type[@custom_filter.data[:description_type]]} #{@custom_filter.data[:description_term]}") do %>
+    <%= select :data, :description_type, description_type.map{|k,v| [v,k]}, :selected => @custom_filter.data["description_type"] %> <%= text_field_tag "data[description_term]", @custom_filter.data["description_term"] %>
+  <% end %>
 
-<p>
-Archiving status<br>
-<%= select :data, :archiving_status,
-[
-  ["Don't filter by archiving status", ''        ],
-  ["Not archived",                     'none'    ],
-  ["Archived on cluster",              'cluster' ],
-  ["Archived as file",                 'file'    ]
-], :selected => custom_filter.data["archiving_status"] %>
+  <% t.edit_cell(:user, :header => "Owner", :content => User.find_by_id(@custom_filter.data[:user_id]).try(:name) || "None") do %>
+    <%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => @custom_filter.data["user_id"] }, :include_blank => true %>
+  <% end %>
 
-<p>
-Work Directory status<br>
-<%= select :data, :wd_status,
-[
-  [ "Don't filter by work directory status",    ''           ],
-  [ "Use another task's",                       'shared'     ],
-  [ "Have own Work Directory",                  'not_shared' ],
-  [ "Work Directory exists on cluster",         'exists'     ],
-  [ "Work Directory does not exist on cluster", 'none'       ]
-], :selected => custom_filter.data["wd_status"] %>
+  <% t.edit_cell(:bourreau_id, :header => "Execution Server", :content => Bourreau.find_by_id(@custom_filter.data[:bourreau_id]).try(:name) || "None") do %>
+    <%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => @custom_filter.data["bourreau_id"] }, :include_blank => true %>
+  <% end %>
+
+  <% 
+    archiving_status = 
+      {
+        ""         => "Don't filter by archiving status",
+        "none"     => "Not archived",
+        "cluster"  => "Archived on cluster",
+        "file"     => "Archived as file" 
+      } 
+  %> 
+
+  <% t.edit_cell(:archiving_status, :header => "Archiving status", :content => archiving_status[@custom_filter.data[:archiving_status]]) do %>
+    <%= select :data, :archiving_status, archiving_status.map{|k,v| [v,k]} %>
+  <% end %>
+  
+  <% 
+    wd_status = 
+      {
+        ''           => "Don't filter by work directory status",
+        'shared'     => "Use another task's",
+        'not_shared' => "Have own Work Directory",
+        'exists'     => "Work Directory exists on cluster",
+        'none'       => "Work Directory does not exist on cluster" 
+      }
+  %>
+
+  <% t.edit_cell(:wd_status, :header => "Work Directory status", :content => wd_status[@custom_filter.data[:wd_status]]) do %>
+    <%= select :data, :wd_status, wd_status.map{|k,v| [v,k]}%>
+  <% end %>
+
+  <% t.edit_cell(:date_range_display_table, :header => "Filtering by date", :content => date_range_panel(@custom_filter[:data] || {}, 'data')) do %>
+    <%= date_range_panel(@custom_filter[:data] || {}, "data") %>
+  <% end %>
+
+<% end %>

@@ -22,70 +22,100 @@
 #
 -%>
 
-<% custom_filter ||= @custom_filter %>
 
-<p>
-Filename<br>
-<%= select :data, :file_name_type, [["Don't filter name", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => custom_filter.data["file_name_type"]    %>
-<%= text_field_tag "data[file_name_term]", custom_filter.data["file_name_term"] %>
+<%= show_table(@custom_filter, :edit_condition => (check_role(:admin_user) || @custom_filter.user_id == current_user.id)) do |t| %>
 
-<p>
-Parent name contains <small>(lists children)</small>:<br>
-<%= text_field_tag "data[parent_name_like]", custom_filter.data["parent_name_like"] %>
+  <% t.edit_cell(:name) do %>
+    <%= text_field_tag "custom_filter[name]", @custom_filter.name %>
+  <% end %>
 
-<p>
-Child name contains <small>(lists parents)</small>:<br>
-<%= text_field_tag "data[child_name_like]", custom_filter.data["child_name_like"] %>
-
-
-<p>
-  File format<br>
-  <%= userfile_type_select("data[type]", {:selector => custom_filter.data["type"]}, :include_blank => true, :multiple => true ) %>
-</p>
-
-Filtering by date<br>
-<%= date_range_panel(custom_filter[:data] || {}, "data") %>
-
-<p>
-Size<br>
-<%= select :data, :size_type, [["Don't filter size", ''], ['=', "0"], ['<', "1"], ['>', "2"]], :selected  => custom_filter.data["size_type"] %>
-<%= text_field_tag "data[size_term]", custom_filter.data["size_term"] %> kb
-
-<p>
-Owner<br>
-<%= user_select("data[user_id]", { :selector => custom_filter.data["user_id"] }, { :include_blank => true })  %>
-
-<p>
-Project<br>
-<%= group_select("data[group_id]", { :selector => custom_filter.data["group_id"]}, { :include_blank => true })  %>
-
-<p>
-  Data Provider<br>
-  <%= data_provider_select("data[data_provider_id]", { :selector => custom_filter.data["data_provider_id"] || '!' }, { :include_blank => true })  %>
-</p>
-
-<p>
-Archiving status<br>
-<%= select :data, :archiving_status,
-[
-  ["Don't filter by archiving status", ''        ],
-  ["Archived",                         'archived' ],
-  ["Not archived",                     'none'    ],
-], :selected => custom_filter.data["archiving_status"] %>
-
-<p>
-  Synchronization status<br>
-  <%=
-  select_tag "data[sync_status]", options_for_select(["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"], :selected => custom_filter.data["sync_status"]),
-              :multiple => true, :size => 6, :selected => custom_filter.data["sync_status"]
+  <%
+    file_name_type = 
+      {
+        ''        => "Don't filter description",
+        'match'   => 'Matches',
+        'contain' => 'Contains',
+        'begin'   => 'Begins with',
+        'end'     => 'Ends with',
+      }
   %>
-</p>
 
-<% if current_user.available_tags.count > 0 %>
-  Tags <br>
-  <%=
-  select_tag "data[tag_ids]", options_for_select((current_user.available_tags.map { |tags| [tags.name, tags.id] }), :selected => custom_filter.data["tag_ids"]),
-              :multiple => true, :size => 6, :selected => custom_filter.data["tag_ids"]
+  <% t.edit_cell(:file_name_type, :header => "Filename", 
+                 :content => "#{file_name_type[@custom_filter.data[:file_name_type]]} #{@custom_filter.data[:file_name_term]}") do %>
+    <%= select :data, :file_name_type, file_name_type.map{|k,v| [v,k]}, :selected => @custom_filter.data["file_name_type"] %> <%= text_field_tag "data[file_name_term]", @custom_filter.data["file_name_term"] %>
+  <% end %>
+
+  <% t.edit_cell(:parent_name_like, :header => "Parent name contains (lists children)", :content => @custom_filter.data[:parent_name_like])  do %>
+    <%= text_field_tag "data[parent_name_like]", @custom_filter.data[:parent_name_like] %>
+  <% end %>
+
+  <% t.edit_cell(:child_name_like, :header => "Child name contains (lists parents)", :content => @custom_filter.data[:child_name_like]) do %>
+    <%= text_field_tag "data[child_name_like]", @custom_filter.data[:parent_name_like] %>
+  <% end %>
+
+  <% t.edit_cell(:type, :header => "File format", :content => (@custom_filter.data[:type]||[]).sort.join(", ")) do %>
+      <%= userfile_type_select("data[type]", {:selector => @custom_filter.data[:type]}, :include_blank => true, :multiple => true ) %>
+  <% end %>
+
+  <%
+    size = 
+     {
+        ""  => "Don't filter size", 
+        "0" => "=", 
+        "1" => "<", 
+        "2" => ">",
+      }
   %>
+
+  <% t.edit_cell(:size, :header => "Size", :content => "#{size[@custom_filter.data[:size_type]]} #{@custom_filter.data[:size_term]}") do %>
+    <%= select :data, :size_type, size.map{|k,v| [v,k]} , :selected  => @custom_filter.data[:size_type] %>
+    <%= text_field_tag "data[size_term]", @custom_filter.data[:size_term] %> kb
+  <% end %>
+
+  <% t.edit_cell(:user, :header => "Owner", :content => User.find_by_id(@custom_filter.data[:user_id]).try(:name) || "None") do %>
+    <%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => @custom_filter.data["user_id"] }, :include_blank => true %>
+  <% end %>
+
+  <% t.edit_cell(:group, :header => "Project", :content => Group.find_by_id(@custom_filter.data[:group_id]).try(:name) || "None") do %>
+    <%= group_select("data[group_id]", { :selector => @custom_filter.data[:group_id]}, { :include_blank => true })  %>
+  <% end %>
+
+  <% t.edit_cell(:data_provider, :header => "Data Provider", :content => DataProvider.find_by_id(@custom_filter.data[:data_provider_id]).try(:name) || "None") do %>
+    <%= data_provider_select("data[data_provider_id]", { :selector => @custom_filter.data[:data_provider_id] || '!' }, { :include_blank => true })  %>
+  <% end %>
+
+  <%
+    archiving_status = 
+      {
+        ""         => "Don't filter by archiving status",
+        "archived" => "Archived",
+        "none"     => "Not archived",
+      }
+  %> 
+
+  <% t.edit_cell(:archiving_status, :header => "Archiving status", :content => archiving_status[@custom_filter.data[:archiving_status]]) do %>
+    <%= select :data, :archiving_status, archiving_status.map{|k,v| [v,k]} %>
+  <% end %>
+
+  <% t.edit_cell(:sync_status, :header => "Synchronization status", :content => (@custom_filter.data[:sync_status]||[]).join(", ")) do %>
+    <%=
+    select_tag "data[sync_status]", options_for_select(["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"], :selected => @custom_filter.data[:sync_status]),
+                :multiple => true, :size => 6, :selected => @custom_filter.data[:sync_status]
+    %>
+  <% end %>
+
+
+  <% if current_user.available_tags.count > 0 %>
+    <% t.edit_cell(:tags, :header => "Tags", :content => Tag.where(:id => @custom_filter.data[:tag_ids]).map(&:name).join(", ")) do %>
+      <%=
+      select_tag "data[tag_ids]", options_for_select((current_user.available_tags.map { |tags| [tags.name, tags.id] }), :selected => @custom_filter.data[:tag_ids]),
+                :multiple => true, :size => 6, :selected => @custom_filter.data[:tag_ids]
+      %>
+    <% end %>  
+  <% end %>
+
+  <% t.edit_cell(:date_range_display_table, :header => "Filtering by date", :content => date_range_panel(@custom_filter[:data] || {}, 'data')) do %>
+    <%= date_range_panel(@custom_filter[:data] || {}, "data") %>
+  <% end %>
+
 <% end %>
-

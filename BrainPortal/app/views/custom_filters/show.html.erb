@@ -22,20 +22,17 @@
 #
 -%>
 
-<b>
-<%=
-  scope_custom_link(crop_text_to(15, filter.name),
-    @scope, { 'custom_filters' => [filter.id] },
-    url:  {
-      'controller'  => @custom_filter.filtered_class_controller,
-      '_scope_mode' => 'append'
-    },
-    link: {
-      :ajax => true
-    }
-  )
-%>
-</b>
-<small><small>
-   <%= link_to "Edit/Delete", custom_filter_path(filter) %>
-</small></small>
+<% filter_type = @custom_filter.class.name.underscore %>
+
+<% title "#{filter_type.capitalize.gsub('_',' ')}" %>
+
+<div class="menu_bar">
+  <%= overlay_ajax_link "Help", "/doc/sites/custom_filter_info.html", :class  => "button" %>
+  <%= link_to 'Delete', custom_filter_path(@custom_filter),  { :method => :delete, :class => "button"} %>
+</div>
+
+<br>
+
+<%= error_messages_for @custom_filter, :header_message => "custom filter could not be updated." %>
+
+<%= render :partial => "custom_filters/#{filter_type}", :locals  => {:custom_filter  => @custom_filter}  %>
