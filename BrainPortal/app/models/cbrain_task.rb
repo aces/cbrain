@@ -46,7 +46,7 @@ class CbrainTask < ApplicationRecord
   validates_presence_of :status
   validates_presence_of :tool_config_id
 
-  belongs_to            :bourreau
+  belongs_to            :bourreau, optional: true
   belongs_to            :user
   belongs_to            :group
   belongs_to            :tool_config, :optional => true  # no TC means a task object containing 'presets'
