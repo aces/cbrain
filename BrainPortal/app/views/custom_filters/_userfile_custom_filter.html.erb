@@ -114,7 +114,7 @@
     <% end %>  
   <% end %>
 
-  <% t.edit_cell(:date_range_display_table, :header => "Filtering by date", :content => date_range_panel(@custom_filter[:data] || {}, 'data')) do %>
+  <% t.edit_cell(:date_range_display_table, :header => "Filtering by date", :content => date_range_info(@custom_filter[:data] || {}, 'data')) do %>
     <%= date_range_panel(@custom_filter[:data] || {}, "data") %>
   <% end %>
 
