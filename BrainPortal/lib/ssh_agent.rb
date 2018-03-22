@@ -85,8 +85,6 @@ require 'active_support'
 #
 class SshAgent
 
-  #include Sys  # for ProcTable  TODO
-
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   # Class configuration.
