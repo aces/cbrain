@@ -153,13 +153,6 @@ module DateRangePanelHelper
     adjusted_relative_to = to_diffs[to_diffs.keys.sort { |a,b| a <=> b }.first]
 
     return [offset_times, offset_time_hash, adjusted_relative_from, adjusted_relative_to]
-  end
-
-  # return the from and the to date of a range     
-  def date_range(from,to) #:nodoc:
-    
-
-    [from, to]
-  end                                   
+  end           
 
 end
