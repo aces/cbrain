@@ -72,8 +72,6 @@ module DateRangePanelHelper
     to       = current_selection['absolute_or_relative_to']   == 'relative' ? 
       offset_time_hash[current_selection['relative_to']].downcase   : current_selection['absolute_to']
 
-    from,to  = date_range(from,to)
-
     render :partial => '/shared/date_range_info', :locals  => {
            :type => current_selection["date_attribute"],
            :from => from,
