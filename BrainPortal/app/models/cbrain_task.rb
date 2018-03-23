@@ -46,6 +46,9 @@ class CbrainTask < ApplicationRecord
   validates_presence_of :status
   validates_presence_of :tool_config_id
 
+  # Rails5 make belongs_to association required by default
+  # Task presets have bourreau id set to 0, 
+  # that's why the :bourreau assocition should be optionnal
   belongs_to            :bourreau, optional: true
   belongs_to            :user
   belongs_to            :group
