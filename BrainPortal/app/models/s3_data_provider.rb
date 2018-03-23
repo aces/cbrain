@@ -45,7 +45,6 @@ class S3DataProvider < DataProvider
                                       self.cloud_storage_client_token,
                                       self.cloud_storage_client_bucket_name,
                                       self.cloud_storage_client_path_start)
-    puts @s3_connection.connected?
   end
 
   # Get the bucket name for the Data Provider specified at creation
@@ -79,57 +78,48 @@ class S3DataProvider < DataProvider
   
   def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
     list = []
-       
-     if allowed_types.is_a? Array
-       types = allowed_types.dup
-     else
-       types = [allowed_types]
-     end
-  
-     types.map!(&:to_sym)
+    types = allowed_types.is_a?(Array) ? allowed_types.dup : [allowed_types]
+    
+    types.map!(&:to_sym)
+    
+    init_connection
+    entries = []
+    if userfile.is_a? FileCollection
+      if directory == :all
+        entriesTmp = s3_connection.list_objects_long(userfile.name)
+        entriesTmp.each do |e| 
+          x = @s3_connection.get_object_stats(e[:key])
+          next if x[:content_type] == "application/x-directory"
+          x[:name] = e[:key]
+          entries << x
+        end
+      end
+    else
+      entry = @s3_connection.get_object_stats(provider_full_path(userfile))
+      entry[:name] = userfile.name
+      entries << entry
+    end
      
-     init_connection
-     entries = []
-     if userfile.is_a? FileCollection
-       if directory == :all
-         entriesTmp = s3_connection.list_objects_long(userfile.name)
-         entriesTmp.each do |e| 
-           x = @s3_connection.get_object_stats(e[:key])
-           next if x[:content_type] == "application/x-directory"
-           x[:name] = e[:key]
-           entries << x
-         end
-       else
-         
-       end
-         
-     else
-        entry = @s3_connection.get_object_stats(provider_full_path(userfile))
-        entry[:name] = userfile.name
-        entries << entry
-     end
-     
-     entries.each do |entry|
-        next if entry[:content_type] == "application/x-directory"
-        type = @s3_connection.translate_content_type_to_ftype(entry[:content_type])
-        next unless types.include?(type)
-        next if is_excluded?(entry[:name]) # in DataProvider
-        
-        fileinfo = FileInfo.new
-        
-        fileinfo.name          = entry[:name]
-        
-        fileinfo               = FileInfo.new
-        fileinfo.symbolic_type = type
-        fileinfo.size          = entry[:content_length]
-        fileinfo.mtime         = entry[:last_modified]
-        fileinfo.owner         = "s3"
-        fileinfo.group         = "s3"
-        list << fileinfo 
-     end
-     list.sort! { |a,b| a.name <=> b.name }
-     list 
-  end
+    entries.each do |entry|
+      next if entry[:content_type] == "application/x-directory"
+      type = @s3_connection.translate_content_type_to_ftype(entry[:content_type])
+      next unless types.include?(type)
+      next if is_excluded?(entry[:name]) # in DataProvider
+    
+      fileinfo = FileInfo.new
+      
+      fileinfo.name          = entry[:name]
+      fileinfo               = FileInfo.new
+      fileinfo.symbolic_type = type
+      fileinfo.size          = entry[:content_length]
+      fileinfo.mtime         = entry[:last_modified]
+      fileinfo.owner         = "s3"
+      fileinfo.group         = "s3"
+      list << fileinfo 
+   end
+   list.sort! { |a,b| a.name <=> b.name }
+   list 
+ end
    
   def impl_sync_to_cache(userfile) #:nodoc:
     init_connection  # s3 connection
@@ -139,11 +129,7 @@ class S3DataProvider < DataProvider
     mkdir_cache_subdirs(userfile)
     if userfile.is_a?(FileCollection)
       Dir.mkdir(localfull) unless File.directory?(localfull)
-      sourceslash="/"
-    end
-    
-    # implement streaming in here
-    if userfile.is_a?(FileCollection)
+      # implement streaming in here
       @s3_connection.copy_path_from_bucket(remotefull,localfull)  
     else
       @s3_connection.copy_object_from_bucket(remotefull,localfull)
@@ -203,7 +189,7 @@ class S3DataProvider < DataProvider
     
     # First parse the files
     fileData[:files].each do |f|
-    next if is_excluded?(f[:name])
+      next if is_excluded?(f[:name])
     
       #Adjust type (always a file here)
       type = :regular
@@ -221,10 +207,6 @@ class S3DataProvider < DataProvider
     end
    
     ## Now the folders
- 
-    fileData[:folders].each do |e|
-      puts e
-    end
     fileData[:folders].each do |d|
       next if is_excluded?(d[:name])
       
@@ -252,15 +234,14 @@ class S3DataProvider < DataProvider
     
     ## Check for missing objects
     self.userfiles.each do |uf|
-      if !@s3_connection.object_exists?(uf.name)
-        issues << {
-          :type        => :missing,
-          :message     => "Missing userfile '#{uf.name}'",
-          :severity    => :major,
-          :action      => :destroy,
-          :userfile_id => uf.id
-        }
-      end
+      next if @s3_connection.object_exists?(uf.name)
+      issues << {
+        :type        => :missing,
+        :message     => "Missing userfile '#{uf.name}'",
+        :severity    => :major,
+        :action      => :destroy,
+        :userfile_id => uf.id
+      }
     end
     ## Check for unregistered objects
     remote_files = @s3_connection.list_objects_short()
@@ -268,14 +249,12 @@ class S3DataProvider < DataProvider
     userfile_names = self.userfiles.collect { |u| u.name }
     unreg = []
     remote_files[:files].each do |rf|
-      if !userfile_names.include?(rf[:name])
-        unreg << rf 
-      end
+      next if userfile_names.include?(rf[:name])
+      unreg << rf
     end
     remote_files[:folders].each do |rf|
-      if ! userfile_names.include?(rf[:name])
-        unreg << rf
-      end
+      next if userfile_names.include?(rf[:name])
+      unreg << rf
     end
       
     unreg.each do |uf|

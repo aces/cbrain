@@ -21,13 +21,8 @@
 #
 
 class AddBucketNameAndPathStartToCloudSupport < ActiveRecord::Migration
-  def self.up
+  def change
     add_column    :data_providers, :cloud_storage_client_bucket_name, :string
-    add_column    :data_providers, :cloud_storage_client_path_start,      :string
-  end
-
-  def self.down
-    remove_column :data_providers, :cloud_storage_client_bucket_name
-    remove_column :data_providers, :cloud_storage_client_path_start
+    add_column    :data_providers, :cloud_storage_client_path_start,  :string
   end
 end

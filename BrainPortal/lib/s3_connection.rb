@@ -47,11 +47,7 @@ class S3Connection
   # Method to translate Mime types to File types
   # Redo more generally
   def translate_content_type_to_ftype(ct)
-    if ct == "application/x-directory"
-      return :directory
-    else
-      return :regular
-    end
+    ct == "application/x-directory" ? :directory : :regular
   end
       
   # Method to ensure that the paths sent start in the right place
@@ -89,16 +85,15 @@ class S3Connection
   # Returns a hash with files, folders and full path
   # If path is nil, then it uses only the start_path
   def list_objects_short(path=nil)
-    if path.nil?
-      path = @path_name + "/"
-    end
+    path = @path_name + "/" if path.nil?
+    
     pathClean = clean_starting_folder_path(path).to_s
     if object_exists?(pathClean)
-       contKey = ""
-       resp = @resource.client.list_objects_v2(bucket: @bucket_name, 
-                                               prefix: pathClean, 
-                                               delimiter: "/")
-        puts resp
+      contKey = ""
+      resp = @resource.client.list_objects_v2(bucket: @bucket_name, 
+                                              prefix: pathClean, 
+                                              delimiter: "/")
+                                               
       filenames = resp.contents.map { |x| {:name => x.key.split("/")[-1],
                                            :time => x.last_modified,
                                            :size => x.size,
@@ -111,28 +106,25 @@ class S3Connection
       folderNames = resp.common_prefixes.map { |x| {:name => x.prefix.split("/")[-1]} }      
       return {:path => pathClean, :files => filenames, :folders => folderNames}                                   
      else
-       return {:path => pathClean, :files => [], :folders => []} 
+      return {:path => pathClean, :files => [], :folders => []} 
     end
   end
   
   # List every single object recursively under a given path
   # returns a list of each object
   def list_objects_long(path=nil)
-    if path.nil?
-      path = @path_name
-    end
+    path = @path_name if path.nil?
     
     pathClean = clean_starting_folder_path(path).to_s
     list_of_objects = Array.new()
     
     if object_exists?(pathClean)
       cont_token = nil
-      #binding.pry
       while true
         if cont_token.nil?
           resp = @resource.client.list_objects_v2(bucket: @bucket_name,
                                                   prefix: pathClean).to_h
-       else
+        else
           resp = @resource.client.list_objects_v2(bucket: @bucket_name,
                                                   prefix: pathClean,
                                                   continuation_token: cont_token).to_h
@@ -156,7 +148,7 @@ class S3Connection
   def get_object_stats(objPath)
     if object_exists?(objPath)
       return @resource.client.head_object(bucket: @bucket_name,
-                                          key: objPath).to_h                            
+                                          key: objPath.to_s).to_h                            
     else
       return {}
     end
@@ -236,12 +228,12 @@ class S3Connection
     dest_path_clean = clean_starting_folder_path(destPath).to_s
     
     if object_exists?(src_path_clean)
-      listObjects = list_all_objects_under_path(src_path_clean)
+      listObjects = list_objects_long(src_path_clean)
   
       listObjects.each do |x|
         xStat = get_object_stats(x[:key])
         next if xStat[:content_type] == 'application/x-directory'
-        mod_dest_path = x[:key].dup.sub! srcPath,destPath
+        mod_dest_path = x[:key].dup.sub! src_path_clean,dest_path_clean
         rename_object(x[:key],mod_dest_path)
       end
     end
