@@ -42,17 +42,27 @@ end
 # Active tasks
 def acttasks(tasks = CbrainTask.active.all)
   no_log do
-    tasks.group_by(&:batch_id).each do |batch_id,tasklist|
+    list1 = tasks.group_by(&:batch_id).map do |batch_id,tasklist|
       tasklist.sort! { |a,b| (a.rank || 0) <=> (b.rank || 0) || a.id <=> b.id }
-      puts tasklist[0].to_summary
-      next if tasklist.size < 2
-      by_types  = tasklist.hashed_partitions { |t| t.type }
+      first = tasklist[0]
+      result = { :a_task   => first.name_and_bourreau, :b_user => first.user.login,
+                 :c_types => "", :d_statuses => "" }
+      by_types  = tasklist.hashed_partitions { |t| t.type.demodulize }
       by_status = tasklist.hashed_partitions { |t| t.status }
-      #puts " -> Total of #{tasklist.size} tasks:"
-      puts " -> Types: "  + by_types.map  { |t,list| "#{list.size} x #{t}" }.join(", ") unless by_types.size == 1
-      puts " -> Status: " + by_status.map { |s,list| "#{list.size} x #{s}" }.join(", ")
+      result[:c_types]    = by_types.map  { |t,list| "#{list.size} x #{t}" }.join(", ") unless by_types.size == 1
+      result[:d_statuses] = by_status.map { |s,list| "#{list.size} x #{s}" }.join(", ")
+      result
     end
+
+    # Remove duplicates from list1 and count them
+    seen={}
+    list2 = list1.select { |r| seen[r] ||= 0 ; seen[r] += 1 ; seen[r] == 1 }
+    list2.each { |r| r[:_] = seen[r] } # assign counts
+
+    # Hirb helper for printing pretty table
+    table list2, :unicode => true
   end
+
   true
 end
 
