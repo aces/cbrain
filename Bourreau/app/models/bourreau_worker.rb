@@ -418,15 +418,8 @@ class BourreauWorker < Worker
         else # OK, we have the go ahead to retry the task
           task.addlog("Successful recovery from '#{fromwhat}' failure, now we retry it.")
           if fromwhat == 'Cluster' # special case, we need to resubmit the task.
-            begin
-              Dir.chdir(task.full_cluster_workdir) do
-                task.instance_eval { submit_cluster_job } # will set status to 'Queued' or 'Data Ready'
-                # Line above: the eval is needed because it's a protected method, and I want to keep it so.
-              end
-            rescue => ex
-              task.addlog_exception(ex,"Job submit method raised an exception:")
-              task.status_transition(task.status, "Failed On Cluster")
-            end
+            task.meta[:submit_without_setup] = true
+            task.status_transition(task.status, "New") # basically, we will go directly to submit_cluster_job()
           else # simpler cases, we just reset the status and let the task return to main flow.
             task.status_transition(task.status, "New")                    if fromwhat    == 'Setup'
             task.status_transition(task.status, "Data Ready")             if fromwhat    == 'PostProcess'
