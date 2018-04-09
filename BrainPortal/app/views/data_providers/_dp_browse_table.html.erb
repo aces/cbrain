@@ -111,11 +111,12 @@
         )
       end
 
-      t.column('Last modified', :mtime,
-        :sortable => true
-      ) { |f| to_localtime(Time.at(f.mtime), :datetime) }
+      t.column('Last modified', :mtime, :sortable => true)  do |f|
+       mtime = f.mtime
+       next mtime.nil? ? '-' : to_localtime(Time.at(f.mtime), :datetime)
+	  end
 
-      t.column('Registered?', :registered) do |f|
+	  t.column('Registered?', :registered) do |f|
         userfile = f.userfile
         next 'No' unless userfile
 

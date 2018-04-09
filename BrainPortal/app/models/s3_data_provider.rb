@@ -206,7 +206,7 @@ class S3DataProvider < DataProvider
     init_connection
     fileData = @s3_connection.list_objects_short()
     list = []
-    
+
     # First parse the files
     fileData[:files].each do |f|
       next if is_excluded?(f[:name])
@@ -229,15 +229,15 @@ class S3DataProvider < DataProvider
     ## Now the folders
     fileData[:folders].each do |d|
       next if is_excluded?(d[:name])
-      
+
       #Adjust type (always a folder here)
       type = :directory
-      date_and_size = @s3_connection.get_mod_date_and_size_for_folder(d[:name])
+
       fileinfo               = FileInfo.new
       fileinfo.name          = d[:name]
       fileinfo.symbolic_type = type
-      fileinfo.size          = date_and_size[:content_length]
-      fileinfo.mtime         = date_and_size[:last_modified]
+      fileinfo.size          = 0
+      fileinfo.mtime         = nil
       fileinfo.owner         = "s3"
       fileinfo.group         = "s3"
 

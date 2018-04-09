@@ -30,18 +30,18 @@ class S3Connection
 
   # Establish a connection handler to S3
   def initialize(access_key, secret_key, bucket_name, path_start, 
-                 region='us-east-2',
-                 endpoint="http://s3.us-east-2.amazonaws.com")
+                 region='us-east-1')
+                 #endpoint="http://s3.us-east-1.amazonaws.com")
     credentials = Aws::Credentials.new(access_key,secret_key)
     @bucket_name = bucket_name
     @region = region
     @client = Aws::S3::Client.new(credentials: credentials,
-                                  region: @region,
-                                  endpoint: endpoint)
+                                  region: @region)
+                                  #endpoint: endpoint)
     @resource = Aws::S3::Resource.new(client: @client)
     @bucket = @resource.bucket(@bucket_name)
     @path_name = path_start
-    @endpoint = endpoint
+    #@endpoint = endpoint
   end
   
   # Method to translate Mime types to File types
@@ -111,31 +111,46 @@ class S3Connection
   # If path is nil, then it uses only the start_path
   def list_objects_short(path=nil)
     path = @path_name + "/" if path.nil?
-    
+    #binding.pry
     pathClean = clean_starting_folder_path(path).to_s
+    hash_of_objects = {:path => pathClean, :files => [], :folders => []}
     if object_exists?(pathClean)
-      contKey = ""
-      resp = @resource.client.list_objects_v2(bucket: @bucket_name, 
-                                              prefix: pathClean, 
-                                              delimiter: "/")
-      filenames = resp.contents.map { |x| {:name => x.key.split("/")[-1],
-                                           :time => x.last_modified,
-                                           :size => x.size,
-                                           :content_type => 'none'} if x.size > 0}.compact
-      filenames.each do |x|
-        new_key = File.join(pathClean,x[:name])
-        respH = @resource.client.head_object({bucket: @bucket_name, key: new_key})
-        x[:content_type] = respH.content_type
+      cont_token = nil
+      resp = { :is_truncated => true }
+      while resp[:is_truncated] == true  do
+        if cont_token.nil?
+          resp = @resource.client.list_objects_v2(bucket: @bucket_name,
+                                                  prefix: pathClean,
+                                                  delimiter: "/")
+        else
+          resp = @resource.client.list_objects_v2(bucket: @bucket_name,
+                                                  prefix: pathClean,
+                                                  delimiter: "/",
+                                                  continuation_token: cont_token)
+        end
+        filenames = resp.contents.map { |x| {:name => x.key.split("/")[-1],
+                                             :time => x.last_modified,
+                                             :size => x.size,
+                                             :content_type => 'none'} if x.size > 0}.compact
+        filenames.each do |x|
+          new_key = File.join(pathClean,x[:name])
+          respH = @resource.client.head_object({bucket: @bucket_name, key: new_key})
+          x[:content_type] = respH.content_type
+        end
+        folder_names = resp.common_prefixes.map { |x| {:name => x.prefix.split("/")[-1]} }
+
+        hash_of_objects[:files] = hash_of_objects[:files] + filenames
+        hash_of_objects[:folders] = hash_of_objects[:folders] + folder_names
+
+        cont_token = resp[:next_continuation_token]
       end
-      folderNames = resp.common_prefixes.map { |x| {:name => x.prefix.split("/")[-1]} }      
-      return {:path => pathClean, :files => filenames, :folders => folderNames}                                   
-     else
-      return {:path => pathClean, :files => [], :folders => []} 
     end
+    return hash_of_objects
   end
   
   # List every single object recursively under a given path
   # returns a list of each object
+  # loop_count_limit will be the limit of calls that have no continuation key before the loop breaks
   def list_objects_long(path=nil)
     path = @path_name if path.nil?
     
@@ -144,7 +159,8 @@ class S3Connection
     
     if object_exists?(pathClean)
       cont_token = nil
-      while true
+      resp = {:is_truncated => true}
+      while resp[:is_truncated] == true  do
         if cont_token.nil?
           resp = @resource.client.list_objects_v2(bucket: @bucket_name,
                                                   prefix: pathClean).to_h
@@ -153,16 +169,12 @@ class S3Connection
                                                   prefix: pathClean,
                                                   continuation_token: cont_token).to_h
         end
-        
+
         resp[:contents].each do |x|
           list_of_objects.insert(-1,x)
         end
-        
-        if resp[:is_truncated] == true
-          cont_token = resp[:next_continuation_token]
-        else
-          break
-        end
+
+        cont_token = resp[:next_continuation_token]
       end
     end
     return list_of_objects
