@@ -33,18 +33,18 @@ module DateRangePanelHelper
   # [date_attributes]: an array of array each entry contain a datetime and a text.
   # [without_abs]: a boolean used to know if the view displays only relative date.
   def date_range_panel(current_selection = {}, params_name = "date_range", options = {})
-    date_attributes         = options[:date_attributes] || 
-                              [ 
-                                [:created_at, "By creation date"], 
+    date_attributes         = options[:date_attributes] ||
+                              [
+                                [:created_at, "By creation date"],
                                 [:updated_at, "By update date"]
                               ]
     without_abs             = options[:without_abs]
     offset_times,
-    offset_time_hash, 
+    offset_time_hash,
     adjusted_relative_from,
     adjusted_relative_to    = cache_offsets(current_selection['relative_from'], current_selection['relative_to'])
 
-    render :partial => '/shared/date_range_panel', :locals  => {
+    render :partial => 'shared/date_range_panel', :locals  => {
            :date_attributes           => date_attributes,
            :without_abs               => without_abs,
            :offset_times              => offset_times,
@@ -60,25 +60,25 @@ module DateRangePanelHelper
         }
   end
 
-  # Display information about the date range 
-  def date_range_info(current_selection = {}, params_name = "date_range", options = {})
+  # Display information about the date range
+  def date_range_info(custom_filter)
     offset_times,
-    offset_time_hash, 
+    offset_time_hash,
     adjusted_relative_from,
-    adjusted_relative_to    = cache_offsets(current_selection['relative_from'], current_selection['relative_to'])
+    adjusted_relative_to    = cache_offsets(custom_filter.data_relative_from,
+                                            custom_filter.data_relative_to)
 
-    from     = current_selection['absolute_or_relative_from'] == 'relative' ? 
-      offset_time_hash[current_selection['relative_from']].downcase : current_selection['absolute_from']
-    to       = current_selection['absolute_or_relative_to']   == 'relative' ? 
-      offset_time_hash[current_selection['relative_to']].downcase   : current_selection['absolute_to']
+    from     = custom_filter.data_absolute_or_relative_from == 'relative' ?
+      offset_time_hash[custom_filter.data_relative_from].downcase : custom_filter.data_absolute_from
+    to       = custom_filter.data_absolute_or_relative_to   == 'relative' ?
+      offset_time_hash[custom_filter.data_relative_to].downcase   : custom_filter.data_absolute_to
 
-    from,to  = date_range(from,to)
-
-    render :partial => '/shared/date_range_info', :locals  => {
-           :type => current_selection["date_attribute"],
-           :from => from,
-           :to   => to, 
-        }
+    render :partial => 'shared/date_range_info',
+           :locals  => {
+             :type => custom_filter.data_date_attribute,
+             :from => from,
+             :to   => to,
+            }
   end
 
 
@@ -86,9 +86,9 @@ module DateRangePanelHelper
   def cache_offsets(relative_from, relative_to) #:nodoc:
     big_bang = 50.years.to_i # for convenience, because obviously 13.75 billion != 50 ! Fits in signed 32 bits int.
 
-    offset_times = 
+    offset_times =
     [
-      [ "Past 24 Hours", 
+      [ "Past 24 Hours",
         [
           [ "Right now",     0.seconds.to_i.to_s ],
           [ "1 hour ago",    1.hour.to_i.to_s    ],
@@ -97,7 +97,7 @@ module DateRangePanelHelper
           [ "12 hours ago", 12.hour.to_i.to_s    ],
         ]
       ],
-      [ "Days", 
+      [ "Days",
         [
           [ "1 day ago",     1.day.to_i.to_s     ],
           [ "2 days ago",    2.day.to_i.to_s     ],
@@ -107,14 +107,14 @@ module DateRangePanelHelper
           [ "6 days ago",    6.day.to_i.to_s     ],
         ]
       ],
-      [ "Weeks", 
+      [ "Weeks",
         [
           [ "1 week ago",    1.week.to_i.to_s    ],
           [ "2 weeks ago",   2.week.to_i.to_s    ],
           [ "3 weeks ago",   3.week.to_i.to_s    ],
         ]
       ],
-      [ "Months", 
+      [ "Months",
         [
           [ "1 month ago",   1.month.to_i.to_s   ],
           [ "2 months ago",  2.month.to_i.to_s   ],
@@ -124,7 +124,7 @@ module DateRangePanelHelper
           [ "6 months ago",  6.month.to_i.to_s   ],
         ]
       ],
-      [ "Years", 
+      [ "Years",
         [
           [ "1 year ago",     1.year.to_i.to_s    ],
           [ "18 months ago", 18.month.to_i.to_s   ],
@@ -153,6 +153,6 @@ module DateRangePanelHelper
     adjusted_relative_to = to_diffs[to_diffs.keys.sort { |a,b| a <=> b }.first]
 
     return [offset_times, offset_time_hash, adjusted_relative_from, adjusted_relative_to]
-  end           
+  end
 
 end

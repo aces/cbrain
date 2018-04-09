@@ -34,6 +34,31 @@ class TaskCustomFilter < CustomFilter
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  DATA_PARAMS =
+    ([
+      :data_provider_id,
+      :data_provider,
+      :description_term,
+      :description_type,
+      :bourreau_id,
+      :bourreau,
+      :wd_status,
+      :status,
+    ] + CustomFilter::DATA_PARAMS).freeze
+
+  # Define getter and setter for each keys in data attribute
+  DATA_PARAMS.map{|x| x.is_a?(Hash) ? x.keys : x}.flatten.each do |param|
+    # Define getter for all keys in data attribute
+    define_method("data_#{param}") do
+      self.data[param]
+    end
+
+    # Define setter for all keys in data attribute
+    define_method("data_#{param}=") do |val|
+      self.data[param] = val
+    end
+  end
+
   # See CustomFilter
   def filter_scope(scope)
     scope = scope_type(scope)         unless self.data[:type].blank?

@@ -30,7 +30,7 @@
   <% end %>
 
   <%
-    file_name_type = 
+    file_name_type =
       {
         ''        => "Don't filter description",
         'match'   => 'Matches',
@@ -40,64 +40,64 @@
       }
   %>
 
-  <% t.edit_cell(:file_name_type, :header => "Filename", 
-                 :content => "#{file_name_type[@custom_filter.data[:file_name_type]]} #{@custom_filter.data[:file_name_term]}") do %>
-    <%= select :data, :file_name_type, file_name_type.map{|k,v| [v,k]}, :selected => @custom_filter.data["file_name_type"] %> <%= text_field_tag "data[file_name_term]", @custom_filter.data["file_name_term"] %>
+  <% t.edit_cell(:data_file_name_type, :header => "Filename",
+                 :content => "#{file_name_type[@custom_filter.data_file_name_type]} #{@custom_filter.data_file_name_term}") do %>
+    <%= select :data, :file_name_type, file_name_type.map{|k,v| [v,k]}, :selected => @custom_filter.data_file_name_type %> <%= text_field_tag "data[file_name_term]", @custom_filter.data["file_name_term"] %>
   <% end %>
 
-  <% t.edit_cell(:parent_name_like, :header => "Parent name contains (lists children)", :content => @custom_filter.data[:parent_name_like])  do %>
+   <% t.edit_cell(:data_parent_name_like, :header => "Parent name contains (lists children)") do %>
     <%= text_field_tag "data[parent_name_like]", @custom_filter.data[:parent_name_like] %>
   <% end %>
 
-  <% t.edit_cell(:child_name_like, :header => "Child name contains (lists parents)", :content => @custom_filter.data[:child_name_like]) do %>
+  <% t.edit_cell(:data_child_name_like, :header => "Child name contains (lists parents)") do %>
     <%= text_field_tag "data[child_name_like]", @custom_filter.data[:parent_name_like] %>
   <% end %>
 
-  <% t.edit_cell(:type, :header => "File format", :content => (@custom_filter.data[:type]||[]).sort.join(", ")) do %>
+  <% t.edit_cell(:data_type, :header => "File format", :content => (@custom_filter.data_type||[]).sort.join(", ")) do %>
       <%= userfile_type_select("data[type]", {:selector => @custom_filter.data[:type]}, :include_blank => true, :multiple => true ) %>
   <% end %>
 
   <%
-    size = 
+    size =
      {
-        ""  => "Don't filter size", 
-        "0" => "=", 
-        "1" => "<", 
+        ""  => "Don't filter size",
+        "0" => "=",
+        "1" => "<",
         "2" => ">",
       }
   %>
 
-  <% t.edit_cell(:size, :header => "Size", :content => "#{size[@custom_filter.data[:size_type]]} #{@custom_filter.data[:size_term]}") do %>
+  <% t.edit_cell(:data_size, :header => "Size", :content => "#{size[@custom_filter.data_size_type]} #{@custom_filter.data_size_term}") do %>
     <%= select :data, :size_type, size.map{|k,v| [v,k]} , :selected  => @custom_filter.data[:size_type] %>
     <%= text_field_tag "data[size_term]", @custom_filter.data[:size_term] %> kb
   <% end %>
 
-  <% t.edit_cell(:user, :header => "Owner", :content => User.find_by_id(@custom_filter.data[:user_id]).try(:name) || "None") do %>
+  <% t.edit_cell(:data_user_id, :header => "Owner", :content => User.find_by_id(@custom_filter.data_user_id).try(:name) || "None") do %>
     <%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => @custom_filter.data["user_id"] }, :include_blank => true %>
   <% end %>
 
-  <% t.edit_cell(:group, :header => "Project", :content => Group.find_by_id(@custom_filter.data[:group_id]).try(:name) || "None") do %>
+  <% t.edit_cell(:data_group_id, :header => "Project", :content => Group.find_by_id(@custom_filter.data_group_id).try(:name) || "None") do %>
     <%= group_select("data[group_id]", { :selector => @custom_filter.data[:group_id]}, { :include_blank => true })  %>
   <% end %>
 
-  <% t.edit_cell(:data_provider, :header => "Data Provider", :content => DataProvider.find_by_id(@custom_filter.data[:data_provider_id]).try(:name) || "None") do %>
+  <% t.edit_cell(:data_data_provider_id, :header => "Data Provider", :content => DataProvider.find_by_id(@custom_filter.data_data_provider_id).try(:name) || "None") do %>
     <%= data_provider_select("data[data_provider_id]", { :selector => @custom_filter.data[:data_provider_id] || '!' }, { :include_blank => true })  %>
   <% end %>
 
   <%
-    archiving_status = 
+    archiving_status =
       {
         ""         => "Don't filter by archiving status",
         "archived" => "Archived",
         "none"     => "Not archived",
       }
-  %> 
+  %>
 
-  <% t.edit_cell(:archiving_status, :header => "Archiving status", :content => archiving_status[@custom_filter.data[:archiving_status]]) do %>
+  <% t.edit_cell(:data_archiving_status, :header => "Archiving status", :content => archiving_status[@custom_filter.data_archiving_status]) do %>
     <%= select :data, :archiving_status, archiving_status.map{|k,v| [v,k]} %>
   <% end %>
 
-  <% t.edit_cell(:sync_status, :header => "Synchronization status", :content => (@custom_filter.data[:sync_status]||[]).join(", ")) do %>
+  <% t.edit_cell(:data_sync_status, :header => "Synchronization status", :content => (@custom_filter.data_sync_status||[]).join(", ")) do %>
     <%=
     select_tag "data[sync_status]", options_for_select(["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"], :selected => @custom_filter.data[:sync_status]),
                 :multiple => true, :size => 6, :selected => @custom_filter.data[:sync_status]
@@ -106,15 +106,15 @@
 
 
   <% if current_user.available_tags.count > 0 %>
-    <% t.edit_cell(:tags, :header => "Tags", :content => Tag.where(:id => @custom_filter.data[:tag_ids]).map(&:name).join(", ")) do %>
+    <% t.edit_cell(:data_tags_id, :header => "Tags", :content => Tag.where(:id => @custom_filter.data_tag_ids).map(&:name).join(", ")) do %>
       <%=
       select_tag "data[tag_ids]", options_for_select((current_user.available_tags.map { |tags| [tags.name, tags.id] }), :selected => @custom_filter.data[:tag_ids]),
                 :multiple => true, :size => 6, :selected => @custom_filter.data[:tag_ids]
       %>
-    <% end %>  
+    <% end %>
   <% end %>
 
-  <% t.edit_cell(:date_range_display_table, :header => "Filtering by date", :content => date_range_info(@custom_filter[:data] || {}, 'data')) do %>
+  <% t.edit_cell(:date_range_display_table, :header => "Filtering by date", :content => date_range_info(@custom_filter)) do %>
     <%= date_range_panel(@custom_filter[:data] || {}, "data") %>
   <% end %>
 

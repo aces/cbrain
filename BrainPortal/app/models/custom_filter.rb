@@ -51,6 +51,40 @@ class CustomFilter < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  DATA_PARAMS =
+  [
+    # Data available on all subclass
+    :date_attribute,
+    :absolute_or_relative_to,
+    :absolute_or_relative_from,
+    :absolute_or_relative_to,
+    :rel_date_from,
+    :rel_date_to,
+    :abs_from,
+    :abs_to,
+    :relative_from,
+    :absolute_from,
+    :relative_to,
+    :absolute_to,
+    :archiving_status,
+    :user_id,
+    :user,
+
+    # Not defined in form
+    :created_date_type,
+    :date_term,
+    :created_date_term,
+
+    # all the array params need to be at the end
+    # of the allowed keys
+    {
+      :type        => [],
+      :status      => [],
+      :sync_status => [],
+      :tag_ids     => [],
+    }
+  ]
+
   include DateRangeRestriction
 
   serialize_as_indifferent_hash :data

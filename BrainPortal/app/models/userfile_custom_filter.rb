@@ -36,6 +36,35 @@ class UserfileCustomFilter < CustomFilter
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  DATA_PARAMS =
+    [
+      :size_type,
+      :size_term,
+      :file_name_type,
+      :group_id,
+      :group,
+      :data_provider_id,
+      :file_name_term,
+      :description_type,
+      :parent_name_like,
+      :child_name_like,
+      :archiving_status,
+      :sync_status,
+    ] + CustomFilter::DATA_PARAMS.freeze
+
+  # Define getter and setter for each keys in data attribute
+  DATA_PARAMS.map{|x| x.is_a?(Hash) ? x.keys : x}.flatten.each do |param|
+    # Define getter for all keys in data attribute
+    define_method("data_#{param}") do
+      self.data[param]
+    end
+
+    # Define setter for all keys in data attribute
+    define_method("data_#{param}=") do |val|
+      self.data[param] = val
+    end
+  end
+
   # See CustomFilter
   def filter_scope(scope)
     scope = scope_name(scope)        unless self.data[:file_name_type].blank? || self.data[:file_name_term].blank?

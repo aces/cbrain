@@ -55,7 +55,7 @@ class CustomFiltersController < ApplicationController
     end
 
     filter_class   = Class.const_get(filter_param)
-    @custom_filter = filter_class.new(custom_filter_params)
+    @custom_filter = filter_class.new(custom_filter_params(filter_class))
 
     @custom_filter.user_id = current_user.id
 
@@ -66,8 +66,7 @@ class CustomFiltersController < ApplicationController
     end
 
     respond_to do |format|
-      controller = @custom_filter.type.gsub(/CustomFilter$/, "").downcase.pluralize.to_sym
-      format.html { redirect_to :controller => controller, :action => :index }
+      format.html { redirect_to :controller => controller_name(), :action => :index }
     end
 
   end
@@ -77,7 +76,7 @@ class CustomFiltersController < ApplicationController
   def update #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])
 
-    custom_filter_params.each{|k,v| @custom_filter.send("#{k}=", v)}
+    custom_filter_params(@custom_filter.class).each{|k,v| @custom_filter.send("#{k}=", v)}
 
     params[:data]        ||= {}
     @custom_filter.data.merge! params[:data]
@@ -88,7 +87,7 @@ class CustomFiltersController < ApplicationController
       if @custom_filter.errors.empty?
         flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
         format.html { render :action => :show }
-      else 
+      else
         @custom_filter.reload
         format.html { render :action => :show }
         format.xml  { render :xml  => @custom_filter.errors, :status => :unprocessable_entity }
@@ -106,8 +105,7 @@ class CustomFiltersController < ApplicationController
     flash[:notice] = "Custom filter '#{@custom_filter.name}' deleted."
 
     respond_to do |format|
-      controller = @custom_filter.type.gsub(/CustomFilter$/, "").downcase.pluralize.to_sym
-      format.html { redirect_to :controller => controller, :action => :index }
+      format.html { redirect_to :controller => controller_name(), :action => :index }
       format.js
       format.xml  { head :ok }
     end
@@ -115,14 +113,18 @@ class CustomFiltersController < ApplicationController
 
   private
 
-  def custom_filter_params #:nodoc:
+  def custom_filter_params(filter_class) #:nodoc:
     custom_filter_attr = params.require(:custom_filter).permit(:name, :user_id)
 
     # A way to allow arbitrary value in data
-    data_allowed_keys  = CustomFilterData.new().allowed_keys
+    data_allowed_keys  = filter_class::DATA_PARAMS
     custom_filter_data = params.require(:data).permit(data_allowed_keys)
     custom_filter_attr[:data] = custom_filter_data
     custom_filter_attr
+  end
+
+  def controller_name
+    @custom_filter.type.gsub(/CustomFilter$/, "").downcase.pluralize.to_sym
   end
 
 end
