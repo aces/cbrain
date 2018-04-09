@@ -23,10 +23,10 @@
 -%>
 
 <li class="act-item">
-  <div>
-  <a href="/custom_filters/new?filter_class=UserfileCustomFilter">New filter</a>
+  <a style="text-decoration: none; display: block" href="/custom_filters/new?filter_class=UserfileCustomFilter">
+   New filter
   <span class="ui-icon ui-icon-plus"></span>
-  </div>
+  </a>
 </li>
 <li class="menu-separator">-</li>
 
@@ -49,10 +49,10 @@
 
   %>
   <li class="filter-item act-item" <%= apply_attr.to_html_attributes.html_safe %>>
-    <div display="inline-block">
-      <a href=<%= custom_filter_path(filter) %>>  
-        <span class="act-icon ui-icon-pencil"></span>
-      </a>
+    <div>
+      <span class="filter-edit act-icon ui-icon-pencil">
+        <a href=<%= custom_filter_path(filter) %>></a>
+      </span>
       <span class="filter-name">
         <%= filter.name %>
       </span>
