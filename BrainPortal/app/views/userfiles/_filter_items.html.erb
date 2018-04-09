@@ -50,9 +50,8 @@
   %>
   <li class="filter-item act-item" <%= apply_attr.to_html_attributes.html_safe %>>
     <div>
-      <span class="filter-edit act-icon ui-icon-pencil">
-        <a href=<%= custom_filter_path(filter) %>></a>
-      </span>
+      <a class="filter-edit act-icon ui-icon-pencil" href=<%= custom_filter_path(filter) %>>
+      </a>
       <span class="filter-name">
         <%= filter.name %>
       </span>
