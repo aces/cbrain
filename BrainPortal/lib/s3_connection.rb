@@ -81,7 +81,32 @@ class S3Connection
     end
   end
 
-  # Lists all objects by name only directly undder a given path
+  # Explores the objects under a path to determine the folder's date modified and size
+  # For S3, there are no folders, so this is the only wa to get this information
+  def get_mod_date_and_size_for_folder(path=nil)
+    path = @path_name + "/" if path.nil?
+    pathClean = clean_starting_folder_path(path).to_s
+
+    date_return = Time.parse("1901-01-01")
+    size_folder = 0
+    if object_exists?(pathClean)
+      list_of_objects = list_objects_long(pathClean)
+      list_of_objects.each do |f|
+        x = get_object_stats(f[:key])
+        if x[:last_modified] > date_return
+          date_return = x[:last_modified]
+        end
+        size_folder += x[:content_length]
+      end
+      return {:last_modified => date_return,
+              :content_length => size_folder}
+    else
+      return {:last_modified => Time.now,
+              :content_length => 0 }
+    end
+  end
+
+  # Lists all objects by name only directly under a given path
   # Returns a hash with files, folders and full path
   # If path is nil, then it uses only the start_path
   def list_objects_short(path=nil)
@@ -93,7 +118,6 @@ class S3Connection
       resp = @resource.client.list_objects_v2(bucket: @bucket_name, 
                                               prefix: pathClean, 
                                               delimiter: "/")
-                                               
       filenames = resp.contents.map { |x| {:name => x.key.split("/")[-1],
                                            :time => x.last_modified,
                                            :size => x.size,
