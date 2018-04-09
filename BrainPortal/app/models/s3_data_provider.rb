@@ -79,9 +79,8 @@ class S3DataProvider < DataProvider
   def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
     list = []
     types = allowed_types.is_a?(Array) ? allowed_types.dup : [allowed_types]
-    
     types.map!(&:to_sym)
-    
+
     init_connection
     entries = []
     if userfile.is_a? FileCollection
@@ -89,9 +88,33 @@ class S3DataProvider < DataProvider
         entriesTmp = s3_connection.list_objects_long(userfile.name)
         entriesTmp.each do |e| 
           x = @s3_connection.get_object_stats(e[:key])
-          next if x[:content_type] == "application/x-directory"
           x[:name] = e[:key]
           entries << x
+        end
+      else
+        if directory == :top or directory == "."# Think this indicates the whole bucket
+          entriesTmp = s3_connection.list_objects_short(userfile.name.to_s + "/")
+          directory_to_pass = ""
+        else
+          full_dir_name = File.join(userfile.name.to_s,directory).to_s + "/"
+          entriesTmp = s3_connection.list_objects_short(full_dir_name)
+          directory_to_pass = directory
+        end
+        fullPath = entriesTmp[:path]
+        entriesTmp[:files].each do |e|
+          fname = fullPath.to_s + e[:name]
+          entry = @s3_connection.get_object_stats(fname)
+          entry[:name] = directory_to_pass != "" ? File.join(directory_to_pass,e[:name]).to_s : e[:name]
+          entries << entry
+        end
+        entriesTmp[:folders].each do |d|
+          fname = fullPath.to_s + d[:name]
+          date_and_size = @s3_connection.get_mod_date_and_size_for_folder(fname)
+          entry = {:name => directory_to_pass != "" ? File.join(directory_to_pass,d[:name]).to_s : d[:name],
+                   :last_modified => date_and_size[:last_modified],
+                   :content_length => date_and_size[:content_length],
+                   :content_type => "application/x-directory"}
+          entries << entry
         end
       end
     else
@@ -99,17 +122,14 @@ class S3DataProvider < DataProvider
       entry[:name] = userfile.name
       entries << entry
     end
-     
+
     entries.each do |entry|
-      next if entry[:content_type] == "application/x-directory"
       type = @s3_connection.translate_content_type_to_ftype(entry[:content_type])
       next unless types.include?(type)
       next if is_excluded?(entry[:name]) # in DataProvider
     
       fileinfo = FileInfo.new
-      
       fileinfo.name          = entry[:name]
-      fileinfo               = FileInfo.new
       fileinfo.symbolic_type = type
       fileinfo.size          = entry[:content_length]
       fileinfo.mtime         = entry[:last_modified]
@@ -190,10 +210,10 @@ class S3DataProvider < DataProvider
     # First parse the files
     fileData[:files].each do |f|
       next if is_excluded?(f[:name])
-    
+
       #Adjust type (always a file here)
       type = :regular
-     
+
       # Create a FileInfo
       fileinfo               = FileInfo.new
       fileinfo.name          = f[:name]
@@ -202,25 +222,25 @@ class S3DataProvider < DataProvider
       fileinfo.mtime         = f[:time]
       fileinfo.owner         = "s3"
       fileinfo.group         = "s3"
-      
+
       list << fileinfo
     end
-   
+
     ## Now the folders
     fileData[:folders].each do |d|
       next if is_excluded?(d[:name])
       
       #Adjust type (always a folder here)
       type = :directory
-      
+      date_and_size = @s3_connection.get_mod_date_and_size_for_folder(d[:name])
       fileinfo               = FileInfo.new
       fileinfo.name          = d[:name]
       fileinfo.symbolic_type = type
-      fileinfo.size          = 0
-      fileinfo.mtime         = 0
+      fileinfo.size          = date_and_size[:content_length]
+      fileinfo.mtime         = date_and_size[:last_modified]
       fileinfo.owner         = "s3"
       fileinfo.group         = "s3"
-      
+
       list << fileinfo  
     end
     list.sort! { |a,b| a.name <=> b.name }
