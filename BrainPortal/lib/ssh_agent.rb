@@ -288,13 +288,15 @@ class SshAgent
     with_modified_env('SSH_AUTH_SOCK' => self.socket) do
       out = IO.popen("#{CONFIG[:exec_ssh_add]} -#{l_or_L} 2>&1","r") { |fh| fh.read }
       # -l "1024 9e:8a:9b:b5:33:4e:e5:b6:f1:e1:7a:82:47:de:d2:38 /Users/prioux/.ssh/id_dsa (DSA)"
+      # -l "2048 SHA256:d292WGNkAhrj5szuZf1dec9VNVr5k8W1+B3I2iaRaWI .ssh/id_cbrain_portal (RSA)"
       # -L "ssh-rsa AAAAB3NzaC1yc2E...aXdHJXq6+rmPGRAlQQWQTRSHw== /Users/prioux/.ssh/id_cbrain_portal"
       #    "Could not open a connection to your authentication agent."
       #    "The agent has no identities."
       return [] if out =~ /agent has no identities/i
-      raise "Agent doesn't seem to exist anymore." if
-       (l_or_L == 'l' && out !~ /:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:/) ||
-       (l_or_L == 'L' && out !~ /\Assh-\S+\s+[a-zA-Z0-9\+\/]{30}/) # base 64 include let, dig, +, /
+      raise "Agent doesn't seem to exist anymore." unless
+       (l_or_L == 'l' && out =~ /:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:/) ||
+       (l_or_L == 'l' && out =~ /^\d+\s+SHA\d+:/i) ||
+       (l_or_L == 'L' && out =~ /\Assh-\S+\s+[a-zA-Z0-9\+\/]{30}/) # base 64 include let, dig, +, /
       return out.split(/\r?\n/)
     end
   end

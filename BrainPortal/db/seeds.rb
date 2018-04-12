@@ -30,6 +30,7 @@ require 'socket'
 #
 # ActiveRecord extensions for seeding
 #
+ApplicationRecord.nil? # Make sure the class is loaded before re-opening it below.
 class ApplicationRecord
 
   def self.seed_record!(attlist, create_attlist = {}, options = {}) # some gems like "seed_fu" already define a "seed" method
