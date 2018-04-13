@@ -29,7 +29,7 @@ class S3Connection
   attr_accessor :resource, :bucket_name, :path_name, :region
 
   # Establish a connection handler to S3
-  def initialize(access_key, secret_key, bucket_name, path_start, 
+  def initialize(access_key, secret_key, bucket_name, path_start,
                  region='us-east-1')
                  #endpoint="http://s3.us-east-1.amazonaws.com")
     credentials = Aws::Credentials.new(access_key,secret_key)
@@ -41,26 +41,26 @@ class S3Connection
     @resource = Aws::S3::Resource.new(client: @client)
     @bucket = @resource.bucket(@bucket_name)
     @path_name = path_start
-    #@endpoint = endpoint
+
   end
-  
+
   # Method to translate Mime types to File types
   # Redo more generally
   def translate_content_type_to_ftype(ct)
     ct == "application/x-directory" ? :directory : :regular
   end
-      
+
   # Method to ensure that the paths sent start in the right place
   def clean_starting_folder_path(path)
     path_end = path
-    
+
     if not path_end.to_s.starts_with? @path_name
       return Pathname.new(File.join(@path_name, path_end))
     else
       return Pathname.new(path_end)
     end
   end
-  
+
   def execute_on_s3 #:nodoc:
      yield self
   end
@@ -75,8 +75,8 @@ class S3Connection
   def connected?
     begin
       testVar = @resource.client.list_objects(bucket: @bucket_name, delimiter: "/")
-      return true 
-    rescue 
+      return true
+    rescue
       return false
     end
   end
@@ -111,7 +111,6 @@ class S3Connection
   # If path is nil, then it uses only the start_path
   def list_objects_short(path=nil)
     path = @path_name + "/" if path.nil?
-    #binding.pry
     pathClean = clean_starting_folder_path(path).to_s
     hash_of_objects = {:path => pathClean, :files => [], :folders => []}
     if object_exists?(pathClean)
@@ -147,16 +146,16 @@ class S3Connection
     end
     return hash_of_objects
   end
-  
+
   # List every single object recursively under a given path
   # returns a list of each object
   # loop_count_limit will be the limit of calls that have no continuation key before the loop breaks
   def list_objects_long(path=nil)
     path = @path_name if path.nil?
-    
+
     pathClean = clean_starting_folder_path(path).to_s
     list_of_objects = Array.new()
-    
+
     if object_exists?(pathClean)
       cont_token = nil
       resp = {:is_truncated => true}
@@ -179,17 +178,17 @@ class S3Connection
     end
     return list_of_objects
   end
-  
+
   # Gets the object status of a given path, useful to find out whether a directory or an actual file
   def get_object_stats(objPath)
     if object_exists?(objPath)
       return @resource.client.head_object(bucket: @bucket_name,
-                                          key: objPath.to_s).to_h                            
+                                          key: objPath.to_s).to_h
     else
       return {}
     end
-  end                                            
-      
+  end
+
   # Copies an individual object from S3 back to a destination
   def copy_object_from_bucket(srcObj,dest)
     if object_exists?(srcObj)
@@ -198,40 +197,49 @@ class S3Connection
                                         key: srcObj.to_s)
     end
   end
-  
-  
+
+
   # Copies and sets up all of the directories to copy an entire path from S3 to dest
   def copy_path_from_bucket(path, dest_head)
     if object_exists?(path)
       list_of_objects = list_objects_long(path)
+      binding.pry
       list_of_objects.each do |x|
-        xStat = get_object_stats(x[:key])
-        next if xStat[:content_type] == 'application/x-directory'
-        trun_object_key = x[:key].dup.sub! "#{clean_starting_folder_path(File.dirname(path).to_s).to_s}/",''
-        fullDirName = File.join(dest_head,File.dirname(trun_object_key))
-        fullPathName = File.join(dest_head,trun_object_key)
-        FileUtils::mkdir_p fullDirName
-        copy_object_from_bucket(x[:key], fullPathName)
+        x_stat = get_object_stats(x[:key])
+        next if x_stat[:content_type] == 'application/x-directory'
+
+
+        trun_object_key = x[:key].dup.sub! "#{clean_starting_folder_path(path.to_s).to_s}/",''
+        full_dir_name = File.join(dest_head,File.dirname(trun_object_key))
+
+        trun_object_key2 = x[:key].dup.sub! "#{clean_starting_folder_path(File.dirname(path).to_s).to_s}/",''
+        full_dir_file_name = File.join(dest_head,trun_object_key)
+        FileUtils::mkdir_p full_dir_name
+        copy_object_from_bucket(x[:key], full_dir_file_name)
       end
     end
   end
-  
+
   # Copies a file to the bucket
   def copy_file_to_bucket(srcFile, dest_head)
     trun_object_key = File.basename(srcFile)
     keyPath = File.join(dest_head,trun_object_key).to_s
-    resp = @resource.client.put_object(body: srcFile,
-                                       bucket: @bucket_name,
-                                       key: keyPath)
+    File.open(srcFile,'r') do |srcIO|
+      resp = @resource.client.put_object(body: srcIO,
+                                         bucket: @bucket_name,
+                                         key: keyPath)
+    end
   end
-  
+
   # Copies a directory to the bucket, will recursively create directory in the path
   def copy_directory_to_bucket(srcDir, dest_head)
     if object_exists?(dest_head)
       Dir.glob("#{srcDir}/**/*").each do |x|
         next if File.directory?(x)
-        newDirName = "#{File.dirname(x).sub(File.dirname(srcDir),'')}"
+        sub_dir_mon = "#{File.dirname(srcDir)}/"
+        newDirName = "#{File.dirname(x).sub(sub_dir_mon,'')}"
         new_dest_path = File.join(clean_starting_folder_path(dest_head).to_s,newDirName)
+        puts "copying #{x} to #{new_dest_path}"
         copy_file_to_bucket(x,new_dest_path)
       end
     end
@@ -244,7 +252,7 @@ class S3Connection
       @resource.bucket(@bucket_name).objects({prefix: path_clean}).batch_delete!
     end
   end
-  
+
   # Renames an objects path
   def rename_object(srcPath,destPath)
     src_path_clean = clean_starting_folder_path(srcPath).to_s
@@ -257,15 +265,15 @@ class S3Connection
       delete_path_from_bucket(src_path_clean)
     end
   end
-  
+
   # Renames a Folder by renaming each object underneath
   def rename_path(srcPath,destPath)
     src_path_clean = clean_starting_folder_path(srcPath).to_s
     dest_path_clean = clean_starting_folder_path(destPath).to_s
-    
+
     if object_exists?(src_path_clean)
       listObjects = list_objects_long(src_path_clean)
-  
+
       listObjects.each do |x|
         xStat = get_object_stats(x[:key])
         next if xStat[:content_type] == 'application/x-directory'
@@ -283,8 +291,8 @@ class S3Connection
   def bucket_exists?(name)
     begin
       testVar = @resource.client.list_objects(bucket: name, delimiter: "/")
-      return true 
-    rescue 
+      return true
+    rescue
       return false
     end
   end
@@ -294,4 +302,4 @@ class S3Connection
     clean_object_name = clean_starting_folder_path(object_name).to_s
     @resource.bucket(@bucket_name).objects({prefix: clean_object_name}).limit(1).any?
   end
-end                             
+end

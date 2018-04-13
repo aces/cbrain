@@ -28,7 +28,7 @@ class S3DataProvider < DataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  validates_presence_of :cloud_storage_client_identifier, :cloud_storage_client_token, 
+  validates_presence_of :cloud_storage_client_identifier, :cloud_storage_client_token,
                         :cloud_storage_client_path_start, :cloud_storage_client_bucket_name
 
   attr_accessor :s3_connection
@@ -41,7 +41,7 @@ class S3DataProvider < DataProvider
   # Connects to the S3 service using :cloud_storage_client_identifier and :cloud_storage_client_token;
   # the connection is maintained in a instance variable!
   def init_connection
-    @s3_connection = S3Connection.new(self.cloud_storage_client_identifier, 
+    @s3_connection = S3Connection.new(self.cloud_storage_client_identifier,
                                       self.cloud_storage_client_token,
                                       self.cloud_storage_client_bucket_name,
                                       self.cloud_storage_client_path_start)
@@ -75,7 +75,7 @@ class S3DataProvider < DataProvider
     init_connection
     @s3_connection.clean_starting_folder_path(userfile.name)
   end
-  
+
   def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
     list = []
     types = allowed_types.is_a?(Array) ? allowed_types.dup : [allowed_types]
@@ -86,7 +86,7 @@ class S3DataProvider < DataProvider
     if userfile.is_a? FileCollection
       if directory == :all
         entriesTmp = s3_connection.list_objects_long(userfile.name)
-        entriesTmp.each do |e| 
+        entriesTmp.each do |e|
           x = @s3_connection.get_object_stats(e[:key])
           x[:name] = e[:key]
           entries << x
@@ -127,7 +127,7 @@ class S3DataProvider < DataProvider
       type = @s3_connection.translate_content_type_to_ftype(entry[:content_type])
       next unless types.include?(type)
       next if is_excluded?(entry[:name]) # in DataProvider
-    
+
       fileinfo = FileInfo.new
       fileinfo.name          = entry[:name]
       fileinfo.symbolic_type = type
@@ -135,51 +135,49 @@ class S3DataProvider < DataProvider
       fileinfo.mtime         = entry[:last_modified]
       fileinfo.owner         = "s3"
       fileinfo.group         = "s3"
-      list << fileinfo 
+      list << fileinfo
    end
    list.sort! { |a,b| a.name <=> b.name }
-   list 
+   list
  end
-   
+
   def impl_sync_to_cache(userfile) #:nodoc:
     init_connection  # s3 connection
     localfull = cache_full_path(userfile)
     remotefull = provider_full_path(userfile)
-    
     mkdir_cache_subdirs(userfile)
     if userfile.is_a?(FileCollection)
       Dir.mkdir(localfull) unless File.directory?(localfull)
       # implement streaming in here
-      @s3_connection.copy_path_from_bucket(remotefull,localfull)  
+      @s3_connection.copy_path_from_bucket(remotefull,localfull)
     else
       @s3_connection.copy_object_from_bucket(remotefull,localfull)
     end
   end
-  
+
   def impl_sync_to_provider(userfile) #:nodoc:
     init_connection  # s3 connection
-   
     localfull      = cache_full_pathname(userfile)
     remotefilename = provider_full_path(userfile)
-    
+
     cb_error "Error: file #{localfull} does not exist in local cache" unless File.exists?(localfull)
     if userfile.is_a?(FileCollection)
       @s3_connection.copy_directory_to_bucket(localfull.to_s,File.dirname(remotefilename))
     else
       @s3_connection.copy_file_to_bucket(localfull.to_s,File.dirname(remotefilename))
     end
-  end   
+  end
 
   def impl_provider_erase(userfile) #:nodoc:
     init_connection
-    
+
     remotefilename = provider_full_path(userfile)
     @s3_connection.delete_path_from_bucket(remotefilename)
   end
 
   def impl_provider_rename(userfile,newname) #:nodoc:
     init_connection
-    
+
     oldpath = provider_full_path(userfile)
     remotedir = oldpath.parent
     newpath = File.join(remotedir,newname)
@@ -241,17 +239,17 @@ class S3DataProvider < DataProvider
       fileinfo.owner         = "s3"
       fileinfo.group         = "s3"
 
-      list << fileinfo  
+      list << fileinfo
     end
     list.sort! { |a,b| a.name <=> b.name }
     list
   end
-  
+
   def impl_provider_report #:nodoc:
     init_connection
-    
+
     issues       = []
-    
+
     ## Check for missing objects
     self.userfiles.each do |uf|
       next if @s3_connection.object_exists?(uf.name)
@@ -265,7 +263,7 @@ class S3DataProvider < DataProvider
     end
     ## Check for unregistered objects
     remote_files = @s3_connection.list_objects_short()
-      
+
     userfile_names = self.userfiles.collect { |u| u.name }
     unreg = []
     remote_files[:files].each do |rf|
@@ -276,28 +274,19 @@ class S3DataProvider < DataProvider
       next if userfile_names.include?(rf[:name])
       unreg << rf
     end
-      
+
     unreg.each do |uf|
       issues << {
         :type     => :unregistered,
         :message  => "Unregistered file '#{uf[:name]}'",
         :severity => :trivial
       }
-    end  
+    end
     issues
   end
-  
+
   ## Really, nothing to do here
   def impl_provider_repair(issue) #:nodoc:
     return super(issue) unless issue[:action] == :delete
   end
-  
-  
-#def impl_provider_readhandle(userfile, rel_path = ".") #:nodoc:
-#  init_connection
-#  
-#  full_path = File.join(provider_full_path(userfile),rel_path)
-#  cb_error "Error: read handle cannot be provided for non-file" unless userfile.is_a?(SingleFile)
-#  @s3_connection.list
-#  end
 end
