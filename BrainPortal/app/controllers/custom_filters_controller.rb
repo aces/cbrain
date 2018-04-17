@@ -59,14 +59,18 @@ class CustomFiltersController < ApplicationController
 
     @custom_filter.user_id = current_user.id
 
-    @custom_filter.save
 
     if @custom_filter.errors.empty?
       flash[:notice] = "Filter successfully created."
     end
 
     respond_to do |format|
-      format.html { redirect_to :controller => controller_name(), :action => :index }
+      if @custom_filter.save
+        flash[:notice] = 'Filter successfully created.'
+        format.html { redirect_to :controller => controller_name(), :action => :index }
+      else
+        format.html { render :action  => :new }
+      end
     end
 
   end

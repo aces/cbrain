@@ -45,11 +45,12 @@ Child name contains <small>(lists parents)</small>:<br>
 
 Filtering by date<br>
 <%= date_range_panel(custom_filter[:data] || {}, "data") %>
-
 <p>
 Size<br>
-<%= select :data, :size_type, [["Don't filter size", ''], ['=', "0"], ['<', "1"], ['>', "2"]], :selected  => custom_filter.data["size_type"] %>
+<%= select :data, :size_type, [["Don't filter size", ''], ['<', "1"], ['>', "2"]], :selected  => custom_filter.data["size_type"] %>
 <%= text_field_tag "data[size_term]", custom_filter.data["size_term"] %> kb
+
+
 
 <p>
 Owner<br>
@@ -68,10 +69,12 @@ Project<br>
 Archiving status<br>
 <%= select :data, :archiving_status,
 [
-  ["Don't filter by archiving status", ''        ],
+  ["Don't filter by archiving status", ''         ],
   ["Archived",                         'archived' ],
-  ["Not archived",                     'none'    ],
-], :selected => custom_filter.data["archiving_status"] %>
+  ["Not archived",                     'none'     ],
+],
+:selected => custom_filter.data["archiving_status"]
+%>
 
 <p>
   Synchronization status<br>

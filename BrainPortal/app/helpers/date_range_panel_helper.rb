@@ -132,6 +132,7 @@ module DateRangePanelHelper
           [ "3 years ago",    3.year.to_i.to_s    ],
           [ "4 years ago",    4.year.to_i.to_s    ],
           [ "5 years ago",    5.year.to_i.to_s    ],
+          [ "The Big Bang",   big_bang.to_s       ]
         ]
       ]
     ]

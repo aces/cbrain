@@ -23,7 +23,7 @@
 -%>
 
 <div>
-  <% if !type %>
+  <% if type.blank? %>
     Do not filter
   <% else %>
     <%= type == "created_at" ? "created" : "updated" %>

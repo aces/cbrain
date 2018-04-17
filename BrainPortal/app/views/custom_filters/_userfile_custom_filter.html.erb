@@ -32,7 +32,7 @@
   <%
     file_name_type =
       {
-        ''        => "Don't filter description",
+        ''        => "Don't filter name",
         'match'   => 'Matches',
         'contain' => 'Contains',
         'begin'   => 'Begins with',
@@ -46,14 +46,14 @@
   <% end %>
 
    <% t.edit_cell(:data_parent_name_like, :header => "Parent name contains (lists children)") do %>
-    <%= text_field_tag "data[parent_name_like]", @custom_filter.data[:parent_name_like] %>
+    <%= text_field_tag "data[parent_name_like]", @custom_filter.data[:child_name_like] %>
   <% end %>
 
   <% t.edit_cell(:data_child_name_like, :header => "Child name contains (lists parents)") do %>
     <%= text_field_tag "data[child_name_like]", @custom_filter.data[:parent_name_like] %>
   <% end %>
 
-  <% t.edit_cell(:data_type, :header => "File format", :content => (@custom_filter.data_type||[]).sort.join(", ")) do %>
+  <% t.edit_cell(:data_type, :header => "By file type", :content => (@custom_filter.data_type||[]).sort.join(", ")) do %>
       <%= userfile_type_select("data[type]", {:selector => @custom_filter.data[:type]}, :include_blank => true, :multiple => true ) %>
   <% end %>
 
@@ -94,7 +94,7 @@
   %>
 
   <% t.edit_cell(:data_archiving_status, :header => "Archiving status", :content => archiving_status[@custom_filter.data_archiving_status]) do %>
-    <%= select :data, :archiving_status, archiving_status.map{|k,v| [v,k]} %>
+    <%= select :data, :archiving_status, archiving_status.map{|k,v| [v,k]}, selected: custom_filter.data_archiving_status %>
   <% end %>
 
   <% t.edit_cell(:data_sync_status, :header => "Synchronization status", :content => (@custom_filter.data_sync_status||[]).join(", ")) do %>

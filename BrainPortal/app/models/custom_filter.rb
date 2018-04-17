@@ -89,22 +89,116 @@ class CustomFilter < ApplicationRecord
 
   serialize_as_indifferent_hash :data
 
-  belongs_to    :user
+  belongs_to :user
 
   validates_presence_of   :name
   validates_uniqueness_of :name, :scope  => [:user_id, :type]
   validates_format_of     :name, :with => /\A[\w\-\=\.\+\?\!\s]*\z/,
                                  :message  => 'only the following characters are valid: alphanumeric characters, spaces, _, -, =, +, ., ?, !'
 
-  validate :validate_date
+  validate :valid_self_user
+  validate :valid_filename
+  validate :valid_data_type
+  validate :valid_size
+  validate :valid_data_user_id
+  validate :valid_data_group_id
+  validate :valid_data_data_provider_id
+  validate :valid_data_archiving_status
+  validate :valid_data_sync_status
+  validate :valid_data_tag_ids
+  validate :valid_data_date
+
+  ###############################
+  # Validation of Custom Filter #
+  ###############################
+
+  def valid_self_user #:nodocs:
+    return true if self.user
+    errors.add(:base, 'a custom filter should have a user')
+    return false
+  end
+
+  def valid_filename #:nodocs:
+    if !["", "match", "contain", "begin", "end"].include? self.data_file_name_type
+      errors.add(:data_file_name_type, 'is not a valid file name matcher')
+      return false
+    end
+    if self.data_file_name_type.blank? && !self.data_file_name_term.blank?
+      errors.add(:data_file_name_type, 'should be set if you want to filter, otherwise remove the pattern for filtration')
+      return false
+    end
+    true
+  end
+
+  def valid_data_type #:nodocs:
+    return true if self.data_type.blank?
+    return true if ( Array(self.data_type) - Userfile.sti_descendant_names).empty?
+    errors.add(:data_data_type, 'some file type are invalid')
+  end
+
+  def valid_size #:nodocs:
+    return true if self.data_size_type.blank?
+    if !["1","2"].include? self.data_size_type
+      errors.add(:data_size_type, 'is not a valid operator for size comparaison')
+      return false
+    end
+    if self.data_size_term.blank?
+      errors.add(:data_size_term, 'should be set')
+      return false
+    end
+    return true
+  end
+
+  def valid_data_user_id #:nodocs:
+    return true if self.data_user_id.blank?
+    return true if self.user.available_users.pluck(:id).include? self.data_user_id.to_i
+    errors.add(:data_user_id, 'is not an accessible user')
+    false
+  end
+
+  def valid_data_group_id #:nodocs:
+    return true if self.data_group_id.blank?
+    return true if self.user.available_groups.pluck(:id).include? self.data_group_id.to_i
+    errors.add(:data_group_id, 'is not an accessible group')
+    false
+  end
+
+  def valid_data_data_provider_id #:nodocs:
+    return true if self.data_data_provider_id.blank?
+    return true if DataProvider.find_all_accessible_by_user(self.user).pluck(:id).include? self.data_group_id.to_i
+    errors.add(:data_data_provider_id, 'is not an accessible data provider')
+    false
+    end
+
+  def valid_data_archiving_status #:nodocs:
+    return true if ["", "archived", "none"].include? self.data_archiving_status
+    errors.add(:data_archiving_status, 'is not a valid archiving status')
+    return false
+  end
+
+  def valid_data_sync_status #:nodocs:
+    return true if self.data_sync_status.blank?
+    return true if
+    ["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"].include? self.data_sync_status
+    errors.add(:data_sync_status, 'is not a valid sync status')
+    return false
+  end
+
+  def valid_data_tag_ids #:nodocs:
+    return true if self.data_tag_ids.blank?
+    return true if ( Array(self.data_tag_ids) - self.user.available_tags ).empty?
+    errors.add(:data_tag_ids, 'some tags are not accessible')
+    false
+  end
 
   # Do some validation on the date range filtering
-  def validate_date
+  def valid_data_date #:nodocs:
     error_mess = check_filter_date(self.data["date_attribute"],  self.data["absolute_or_relative_from"], self.data["absolute_or_relative_to"],
                                    self.data["absolute_from"], self.data["absolute_to"], self.data["relative_from"], self.data["relative_to"])
 
     return true if error_mess == ""
     errors.add(:base, error_mess)
+    false
   end
 
   # Main method used for custom filtering. Should be redefined in subclasses to
