@@ -326,7 +326,7 @@ module ShowTableHelper
     html << "<fieldset>"
     html << "<legend>#{header}"
     if tb.editable?
-      html << "<span class=\"show_table_edit\">(#{link_to "Edit", "#", :class => "show_table_edit_link inline_edit_field_link"})<span>"
+      html << "<span class=\"show_table_edit\">(#{link_to "Edit", "#", :class => "show_table_edit_link inline_edit_field_link"})</span>"
     end
     html << "</legend>"
     html << "<table class=\"show_table\">"
