@@ -124,19 +124,5 @@ describe TaskCustomFilter do
     end
   end
 
-  describe "#created_date_term" do
-    it "should return nil if date_term is not defined" do
-      expect(filter.created_date_term).to be nil
-    end
-  end
-
-  describe "#date_term=" do
-    it "should assign the date_term in the data hash" do
-      date = {"date_term(1i)"=>"2011", "date_term(2i)"=>"05", "date_term(3i)"=>"24"}
-      filter.created_date_term=(date)
-      expect(filter.created_date_term).to eq("#{date["created_date_term(1i)"]}-#{date["created_date_term(2i)"]}-#{date["created_date_term(3i)"]}")
-    end
-  end
-
 end
 

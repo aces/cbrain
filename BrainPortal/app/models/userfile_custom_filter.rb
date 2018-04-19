@@ -25,8 +25,6 @@
 # =Parameters filtered:
 # [*file_name_type*] The type of filtering done on the filename (+matches+, <tt>begins with</tt>, <tt>ends with</tt> or +contains+).
 # [*file_name_term*] The string or substring to search for in the filename.
-# [*created_date_type*] The type of filtering done on the creation date (+before+, +on+ or +after+).
-# [*created_date_term*] The date to filter against.
 # [*size_type*] The type of filtering done on the file size (>, < or =).
 # [*size_term*] The file size to filter against.
 # [*group_id*] The id of the group to filter on.
@@ -95,16 +93,6 @@ class UserfileCustomFilter < CustomFilter
   # Convenience method returning only the tags in the data hash.
   def tag_ids
     self.data[:tag_ids] || []
-  end
-
-  # Convenience method returning only the date_term in the data hash.
-  def date_term
-    self.data[:date_term]
-  end
-
-  # Virtual attribute for assigning the data_term to the data hash.
-  def date_term=(date)
-    self.data[:date_term] = "#{date["date_term(1i)"]}-#{date["date_term(2i)"]}-#{date["date_term(3i)"]}"
   end
 
   private

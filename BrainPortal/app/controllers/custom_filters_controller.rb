@@ -94,8 +94,6 @@ class CustomFiltersController < ApplicationController
       else
         @custom_filter.reload
         format.html { render :action => :show }
-        format.xml  { render :xml  => @custom_filter.errors, :status => :unprocessable_entity }
-        format.js
       end
     end
   end
@@ -128,7 +126,7 @@ class CustomFiltersController < ApplicationController
   end
 
   def controller_name
-    @custom_filter.type.gsub(/CustomFilter$/, "").downcase.pluralize.to_sym
+    @custom_filter.type.sub(/CustomFilter$/, "").underscore.pluralize.to_sym
   end
 
 end

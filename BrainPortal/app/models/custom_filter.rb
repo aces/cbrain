@@ -51,9 +51,11 @@ class CustomFilter < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # A Custom filter have a hash containing the filter parameters
+  # The DATA_PARAMS array is used to withelist these params.
   DATA_PARAMS =
   [
-    # Data available on all subclass
+    # Data available on all subclasses
     :date_attribute,
     :absolute_or_relative_to,
     :absolute_or_relative_from,
@@ -69,11 +71,6 @@ class CustomFilter < ApplicationRecord
     :archiving_status,
     :user_id,
     :user,
-
-    # Not defined in form
-    :created_date_type,
-    :date_term,
-    :created_date_term,
 
     # all the array params need to be at the end
     # of the allowed keys
@@ -217,7 +214,7 @@ class CustomFilter < ApplicationRecord
 
   end
 
-  def valide_data_wd_status #:nodocs:
+  def valid_data_wd_status #:nodocs:
     return true if self.data_wd_status.blank?
     return true if [ 'shared', 'not_shared', 'exists', 'none' ].include? self.data_wd_status
     errors.add(:data_wd_status, 'is not a valid work directory status')
