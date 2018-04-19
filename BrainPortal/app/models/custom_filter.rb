@@ -97,16 +97,24 @@ class CustomFilter < ApplicationRecord
                                  :message  => 'only the following characters are valid: alphanumeric characters, spaces, _, -, =, +, ., ?, !'
 
   validate :valid_self_user
-  validate :valid_filename
+
   validate :valid_data_type
-  validate :valid_size
   validate :valid_data_user_id
-  validate :valid_data_group_id
-  validate :valid_data_data_provider_id
   validate :valid_data_archiving_status
-  validate :valid_data_sync_status
-  validate :valid_data_tag_ids
   validate :valid_data_date
+
+  validate :valid_filename,              if: -> { self.is_a?(UserfileCustomFilter)}
+  validate :valid_size,                  if: -> { self.is_a?(UserfileCustomFilter)}
+  validate :valid_data_group_id,         if: -> { self.is_a?(UserfileCustomFilter)}
+  validate :valid_data_tag_ids,          if: -> { self.is_a?(UserfileCustomFilter)}
+  validate :valid_data_data_provider_id, if: -> { self.is_a?(UserfileCustomFilter)}
+  validate :valid_data_sync_status,      if: -> { self.is_a?(UserfileCustomFilter)}
+
+
+  validate :valid_data_wd_status,        if: -> { self.is_a?(TaskCustomFilter)}
+  validate :valid_data_bourreau_id,      if: -> { self.is_a?(TaskCustomFilter)}
+  validate :valid_data_status,           if: -> { self.is_a?(TaskCustomFilter)}
+
 
   ###############################
   # Validation of Custom Filter #
@@ -132,8 +140,17 @@ class CustomFilter < ApplicationRecord
 
   def valid_data_type #:nodocs:
     return true if self.data_type.blank?
-    return true if ( Array(self.data_type) - Userfile.sti_descendant_names).empty?
+    valid_type = self.is_a?(TaskCustomFilter) ? CbrainTask.sti_descendant_names : Userfile.sti_descendant_names
+    return true if ( Array(self.data_type) - valid_type ).empty?
     errors.add(:data_data_type, 'some file type are invalid')
+    return false
+  end
+
+  def valid_data_status #:nodocs:
+    return true if self.data_status.blank?
+    return true if ( Array(self.data_status) -  (CbrainTask::ALL_STATUS - ["Preset", "SitePreset", "Duplicated"])).empty?
+    errors.add(:data_data_status, 'some task status are invalid')
+    return false
   end
 
   def valid_size #:nodocs:
@@ -171,7 +188,9 @@ class CustomFilter < ApplicationRecord
     end
 
   def valid_data_archiving_status #:nodocs:
-    return true if ["", "archived", "none"].include? self.data_archiving_status
+    return true if self.data_archiving_status.blank?
+    valid_status = self.is_a?(TaskCustomFilter) ? ["none", "cluster", "file"] : ["archived", "none"]
+    return true if valid_status.include? self.data_archiving_status
     errors.add(:data_archiving_status, 'is not a valid archiving status')
     return false
   end
@@ -179,7 +198,7 @@ class CustomFilter < ApplicationRecord
   def valid_data_sync_status #:nodocs:
     return true if self.data_sync_status.blank?
     return true if
-    ["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"].include? self.data_sync_status
+      ["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"].include? self.data_sync_status
     errors.add(:data_sync_status, 'is not a valid sync status')
     return false
   end
@@ -188,7 +207,20 @@ class CustomFilter < ApplicationRecord
     return true if self.data_tag_ids.blank?
     return true if ( Array(self.data_tag_ids) - self.user.available_tags ).empty?
     errors.add(:data_tag_ids, 'some tags are not accessible')
-    false
+    return false
+  end
+
+  def valid_data_bourreau_id #:nodocs:
+    return true if self.data_bourreau_id.blank?
+    Bourreau.find_all_accessible_by_user(self.user).pluck(:id).include? self.data_bourreau_id.to_i
+    errors.add(:data_bourreau_id, 'is not an accessible bourreau')
+
+  end
+
+  def valide_data_wd_status #:nodocs:
+    return true if self.data_wd_status.blank?
+    return true if [ 'shared', 'not_shared', 'exists', 'none' ].include? self.data_wd_status
+    errors.add(:data_wd_status, 'is not a valid work directory status')
   end
 
   # Do some validation on the date range filtering
@@ -198,7 +230,7 @@ class CustomFilter < ApplicationRecord
 
     return true if error_mess == ""
     errors.add(:base, error_mess)
-    false
+    return false
   end
 
   # Main method used for custom filtering. Should be redefined in subclasses to

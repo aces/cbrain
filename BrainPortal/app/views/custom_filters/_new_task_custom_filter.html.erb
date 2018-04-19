@@ -41,7 +41,7 @@ Owner<br>
 
 <p>
 Execution Server<br>
-<%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => custom_filter.data["bourreau_id"] }, :include_blank => true %>
+<%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => custom_filter.data["bourreau_id"], :offline_is_ok => true }, :include_blank => true %>
 </p>
 
 Filtering by date<br>
