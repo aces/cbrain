@@ -26,16 +26,14 @@
 #=Parameters filtered:
 #[*type*] The CbrainTask subclass to filter.
 #[*description*] The CbrainTask description to filter.
-#[*created_date_type*] The type of filtering done on the creation date (+before+, +on+ or +after+).
-#[*created_date_term*] The date to filter against.
 #[*user_id*] The user_id of the CbrainTask owner to filter against.
 #[*bourreau_id*] The bourreau_id of the bourreau to filter against.
 class TaskCustomFilter < CustomFilter
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  DATA_PARAMS =
-    ([
+  DATA_PARAMS = merge_data_params(
+    [
       :data_provider_id,
       :data_provider,
       :description_term,
@@ -44,7 +42,7 @@ class TaskCustomFilter < CustomFilter
       :bourreau,
       :wd_status,
       :status,
-    ] + CustomFilter::DATA_PARAMS).freeze
+    ])
 
   # Define getter and setter for each keys in data attribute
   DATA_PARAMS.map{|x| x.is_a?(Hash) ? x.keys : x}.flatten.each do |param|
@@ -61,14 +59,14 @@ class TaskCustomFilter < CustomFilter
 
   # See CustomFilter
   def filter_scope(scope)
-    scope = scope_type(scope)         unless self.data[:type].blank?
-    scope = scope_description(scope)  unless self.data[:description_type].blank? || self.data[:description_term].blank?
-    scope = scope_user(scope)         unless self.data[:user_id].blank?
-    scope = scope_bourreau(scope)     unless self.data[:bourreau_id].blank?
-    scope = scope_date(scope)         unless self.data[:date_attribute].blank?
-    scope = scope_status(scope)       unless self.data[:status].blank?
-    scope = scope_archive(scope)      unless self.data[:archiving_status].blank?
-    scope = scope_wd_status(scope)    unless self.data[:wd_status].blank?
+    scope = scope_type(scope)         if self.data_type
+    scope = scope_description(scope)  if self.data_description_type && self.data_description_term
+    scope = scope_user(scope)         if self.data_user_id
+    scope = scope_bourreau(scope)     if self.data_bourreau_id
+    scope = scope_date(scope)         if self.data_date_attribute
+    scope = scope_status(scope)       if self.data_status
+    scope = scope_archive(scope)      if self.data_archiving_status
+    scope = scope_wd_status(scope)    if self.data_wd_status
     scope
   end
 
@@ -77,39 +75,29 @@ class TaskCustomFilter < CustomFilter
     "cbrain_tasks"
   end
 
-  # Convenience method returning only the created_date_term in the data hash.
-  def created_date_term
-    self.data[:created_date_term]
-  end
-
-  # Virtual attribute for assigning the data_term to the data hash.
-  def created_date_term=(date)
-    self.data[:created_date_term] = "#{date["created_date_term(1i)"]}-#{date["created_date_term(2i)"]}-#{date["created_date_term(3i)"]}"
-  end
-
   private
 
   # Returns +scope+ modified to filter the CbrainTask entry's type.
   def scope_type(scope)
-    return scope if self.data[:type].is_a?(Array) && self.data[:type].all? { |v| v.blank? }
-    scope.where(:type => self.data[:type])
+    return scope if self.data_type.is_a?(Array) && self.data_type.all? { |v| v.blank? }
+    scope.where(:type => self.data_type)
   end
 
   # Returns +scope+ modified to filter the CbrainTask entry's description.
   def scope_description(scope)
     query = 'cbrain_tasks.description'
-    term = self.data[:description_term]
-    if self.data[:description_type] == 'match'
+    term = self.data_description_term
+    if self.data_description_type == 'match'
       query += ' = ?'
     else
       query += ' LIKE ?'
     end
 
-    if self.data[:description_type] == 'contain' || self.data[:description_type] == 'begin'
+    if self.data_description_type == 'contain' || self.data_description_type == 'begin'
       term += '%'
     end
 
-    if self.data[:description_type] == 'contain' || self.data[:description_type] == 'end'
+    if self.data_description_type == 'contain' || self.data_description_type == 'end'
       term = '%' + term
     end
 
@@ -118,23 +106,23 @@ class TaskCustomFilter < CustomFilter
 
   # Returns +scope+ modified to filter the CbrainTask entry's owner.
   def scope_user(scope)
-    scope.where(["cbrain_tasks.user_id = ?", self.data[:user_id]])
+    scope.where(["cbrain_tasks.user_id = ?", self.data_user_id])
   end
 
   # Return +scope+ modified to filter the CbrainTask entry's bourreau.
   def scope_bourreau(scope)
-    scope.where(["cbrain_tasks.bourreau_id = ?", self.data[:bourreau_id]])
+    scope.where(["cbrain_tasks.bourreau_id = ?", self.data_bourreau_id])
   end
 
   # Returns +scope+ modified to filter the CbrainTask entry's status.
   def scope_status(scope)
-    return scope if self.data[:status].is_a?(Array) && self.data[:status].all? { |v| v.blank? }
-    scope.where(:status => self.data[:status])
+    return scope if self.data_status.is_a?(Array) && self.data_status.all? { |v| v.blank? }
+    scope.where(:status => self.data_status)
   end
 
   # Returns +scope+ modified to filter the CbrainTask entry's archive.
   def scope_archive(scope)
-    keyword = self.data[:archiving_status] || ""
+    keyword = self.data_archiving_status || ""
     return scope.not_archived        if keyword == "none"
     return scope.archived_on_cluster if keyword == "cluster"
     return scope.archived_as_file    if keyword == "file"
@@ -143,7 +131,7 @@ class TaskCustomFilter < CustomFilter
 
   # Returns +scope+ modified to filter the CbrainTask entry's work directory.
   def scope_wd_status(scope)
-    keyword = self.data[:wd_status] || ""
+    keyword = self.data_wd_status || ""
     return scope.shared_wd      if keyword == 'shared'
     return scope.not_shared_wd  if keyword == 'not_shared'
     return scope.wd_present     if keyword == 'exists'

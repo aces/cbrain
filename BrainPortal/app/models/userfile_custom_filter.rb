@@ -34,7 +34,7 @@ class UserfileCustomFilter < CustomFilter
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  DATA_PARAMS =
+  DATA_PARAMS = merge_data_params(
     [
       :size_type,
       :size_term,
@@ -48,7 +48,7 @@ class UserfileCustomFilter < CustomFilter
       :child_name_like,
       :archiving_status,
       :sync_status,
-    ] + CustomFilter::DATA_PARAMS.freeze
+    ])
 
   # Define getter and setter for each keys in data attribute
   DATA_PARAMS.map{|x| x.is_a?(Hash) ? x.keys : x}.flatten.each do |param|
@@ -65,18 +65,18 @@ class UserfileCustomFilter < CustomFilter
 
   # See CustomFilter
   def filter_scope(scope)
-    scope = scope_name(scope)        unless self.data[:file_name_type].blank? || self.data[:file_name_term].blank?
-    scope = scope_parent_name(scope) unless self.data[:parent_name_like].blank?
-    scope = scope_child_name(scope)  unless self.data[:child_name_like].blank?
-    scope = scope_date(scope)        unless self.data[:date_attribute].blank?
-    scope = scope_size(scope)        unless self.data[:size_type].blank? || self.data[:size_term].blank?
-    scope = scope_user(scope)        unless self.data[:user_id].blank?
-    scope = scope_group(scope)       unless self.data[:group_id].blank?
-    scope = scope_dp(scope)          unless self.data[:data_provider_id].blank?
-    scope = scope_type(scope)        unless self.data[:type].blank?
-    scope = scope_archive(scope)     unless self.data[:archiving_status].blank?
-    scope = scope_syncstatus(scope)  unless self.data[:sync_status].blank?
-    scope = scope_tags(scope)        unless self.data[:tag_ids].blank?
+    scope = scope_name(scope)        if self.data_file_name_type && self.data_file_name_term
+    scope = scope_parent_name(scope) if self.data_parent_name_like
+    scope = scope_child_name(scope)  if self.data_child_name_like
+    scope = scope_date(scope)        if self.data_date_attribute
+    scope = scope_size(scope)        if self.data_size_type      && self.data_size_term
+    scope = scope_user(scope)        if self.data_user_id
+    scope = scope_group(scope)       if self.data_group_id
+    scope = scope_dp(scope)          if self.data_data_provider_id
+    scope = scope_type(scope)        if self.data_type
+    scope = scope_archive(scope)     if self.data_archiving_status
+    scope = scope_syncstatus(scope)  if self.data_sync_status
+    scope = scope_tags(scope)        if self.data_tag_ids
     scope
   end
 
@@ -85,33 +85,25 @@ class UserfileCustomFilter < CustomFilter
     "userfiles"
   end
 
-  # Virtual attribute for assigning tags to the data hash.
-  def tag_ids=(ids)
-    self.data[:tag_ids] = Tag.find(ids).collect{ |tag| "#{tag.id}"}
-  end
 
-  # Convenience method returning only the tags in the data hash.
-  def tag_ids
-    self.data[:tag_ids] || []
-  end
 
   private
 
   # Return +scope+ modified to filter the Userfile entry's name.
   def scope_name(scope)
     query = 'userfiles.name'
-    term = self.data[:file_name_term]
-    if self.data[:file_name_type] == 'match'
+    term = self.data_file_name_term
+    if self.data_file_name_type == 'match'
       query += ' = ?'
     else
       query += ' LIKE ?'
     end
 
-    if self.data[:file_name_type] == 'contain' || self.data[:file_name_type] == 'begin'
+    if self.data_file_name_type == 'contain' || self.data_file_name_type == 'begin'
       term += '%'
     end
 
-    if self.data[:file_name_type] == 'contain' || self.data[:file_name_type] == 'end'
+    if self.data_file_name_type == 'contain' || self.data_file_name_type == 'end'
       term = '%' + term
     end
 
@@ -120,37 +112,37 @@ class UserfileCustomFilter < CustomFilter
 
   # Return +scope+ modified to filter the Userfile with parent name.
   def scope_parent_name(scope)
-    scope.parent_name_like(self.data[:parent_name_like])
+    scope.parent_name_like(self.data_parent_name_like)
   end
 
   # Return +scope+ modified to filter the Userfile with child name.
   def scope_child_name(scope)
-    scope.child_name_like(self.data[:child_name_like])
+    scope.child_name_like(self.data_child_name_like)
   end
 
   # Return +scope+ modified to filter the Userfile entry's size.
   def scope_size(scope)
-    scope.where( ["userfiles.size #{inequality_type(self.data[:size_type])} ?", (self.data[:size_term].to_f * 1000)])
+    scope.where( ["userfiles.size #{inequality_type(self.data_size_type)} ?", (self.data_size_term.to_f * 1000)])
   end
 
   # Return +scope+ modified to filter the Userfile entry's owner.
   def scope_user(scope)
-    scope.where( ["userfiles.user_id = ?", self.data[:user_id]])
+    scope.where( ["userfiles.user_id = ?", self.data_user_id])
   end
 
   # Return +scope+ modified to filter the Userfile entry's group ownership.
   def scope_group(scope)
-    scope.where( ["userfiles.group_id = ?", self.data[:group_id]])
+    scope.where( ["userfiles.group_id = ?", self.data_group_id])
   end
 
   # Return +scope+ modified to filter the Userfile entry's data provider.
   def scope_dp(scope)
-    scope.where( ["userfiles.data_provider_id = ?", self.data[:data_provider_id]])
+    scope.where( ["userfiles.data_provider_id = ?", self.data_data_provider_id])
   end
 
   # Return +scope+ modified to filter the Userfile entry's type.
   def scope_type(scope)
-    scope.where( :type => self.data[:type] )
+    scope.where( :type => self.data_type )
   end
 
   # Return +scope+ modified to filter the Userfile entry's type.
@@ -168,7 +160,7 @@ class UserfileCustomFilter < CustomFilter
 
   # Return +scope+ modified to filter the Userfile entry's by archived status.
   def scope_archive(scope)
-    keyword = self.data[:archiving_status] || ""
+    keyword = self.data_archiving_status || ""
     case keyword
     when "none"
       return scope.where( :archived => false )
@@ -181,12 +173,12 @@ class UserfileCustomFilter < CustomFilter
   # Return +scope+ modified to filter the Userfile entry's sync_status.
   # note that the scope will return 1 entry by status/file combination.
   def scope_syncstatus(scope)
-    scope.joins(:sync_status).where(:sync_status => {:status => self.data[:sync_status]})
+    scope.joins(:sync_status).where(:sync_status => {:status => self.data_sync_status})
   end
 
   # Return +scope+ modified to filter the Userfile entry's by tag_ids.
   def scope_tags(scope)
-    scope.contain_tags((self.data[:tag_ids]).flatten.uniq)
+    scope.contain_tags((self.data_tag_ids).flatten.uniq)
   end
 
 end

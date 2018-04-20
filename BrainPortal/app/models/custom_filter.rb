@@ -195,14 +195,14 @@ class CustomFilter < ApplicationRecord
   def valid_data_sync_status #:nodocs:
     return true if self.data_sync_status.blank?
     return true if
-      ["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"].include? self.data_sync_status
+      ( self.data_sync_status - ["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"] ).empty?
     errors.add(:data_sync_status, 'is not a valid sync status')
     return false
   end
 
   def valid_data_tag_ids #:nodocs:
     return true if self.data_tag_ids.blank?
-    return true if ( Array(self.data_tag_ids) - self.user.available_tags ).empty?
+    return true if ( Array(self.data_tag_ids) - self.user.available_tags.pluck(:id).map(&:to_s) ).empty?
     errors.add(:data_tag_ids, 'some tags are not accessible')
     return false
   end
@@ -245,13 +245,13 @@ class CustomFilter < ApplicationRecord
   # Return +scope+ modified to filter the CbrainTask entry's dates.
   def scope_date(scope)
 
-    date_at               = self.data[:date_attribute] # assignation ...
-    mode_is_absolute_from = self.data[:absolute_or_relative_from] == "absolute"
-    mode_is_absolute_to   = self.data[:absolute_or_relative_to]   == "absolute"
-    absolute_from         = self.data[:absolute_from]
-    absolute_to           = self.data[:absolute_to]
-    relative_from         = self.data[:relative_from]
-    relative_to           = self.data[:relative_to]
+    date_at               = self.data_date_attribute # assignation ...
+    mode_is_absolute_from = self.data_absolute_or_relative_from == "absolute"
+    mode_is_absolute_to   = self.data_absolute_or_relative_to   == "absolute"
+    absolute_from         = self.data_absolute_from
+    absolute_to           = self.data_absolute_to
+    relative_from         = self.data_relative_from
+    relative_to           = self.data_relative_to
     table_name            = self.target_filtered_table
 
     scope = add_time_condition_to_scope(scope,table_name,mode_is_absolute_from,mode_is_absolute_to,
@@ -292,4 +292,12 @@ class CustomFilter < ApplicationRecord
       "="
     end
   end
+
+  # Merge extra data params for example from
+  # Task or Userfile custom filter.
+  def self.merge_data_params(extra) #:nodocs:
+    (extra + DATA_PARAMS).freeze
+  end
+
+
 end
