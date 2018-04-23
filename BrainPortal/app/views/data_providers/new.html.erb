@@ -132,14 +132,14 @@
         <p><%= f.label :cloud_storage_client_token, "Client Token" %><br/>
         <%= f.password_field :cloud_storage_client_token, :size => 80 %></p>
       </span>
-      
+
       <span title="Bucket Name for cloud storage service.">
-        <p><%= f.label :cloud_storage_client_bucket_name, "Client Bucket Name" %><br/>
+        <p><%= f.label :cloud_storage_client_bucket_name, "Client Bucket Name (Only needed for S3FlatDataProvider)" %><br/>
         <%= f.text_field :cloud_storage_client_bucket_name %></p>
       </span>
-      
+
       <span title="Starting path for cloud storage service.">
-        <p><%= f.label :cloud_storage_client_path_start, "Client Starting Path" %><br/>
+        <p><%= f.label :cloud_storage_client_path_start, "Client Starting Path (Only needed for S3FlatDataProvider)</b>" %><br/>
         <%= f.text_field :cloud_storage_client_path_start %></p>
       </span>
     </fieldset>

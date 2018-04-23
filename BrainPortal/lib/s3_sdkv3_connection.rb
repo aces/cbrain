@@ -22,7 +22,7 @@ require 'aws-sdk-s3'
 require 'fileutils'
 
 # A handler connections to Amazon's S3 service.
-class S3Connection
+class S3Sdkv3Connection
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
@@ -40,7 +40,9 @@ class S3Connection
                                   #endpoint: endpoint)
     @resource = Aws::S3::Resource.new(client: @client)
     @bucket = @resource.bucket(@bucket_name)
+    #create_bucket(@bucket) if not bucket_exists?(@bucket)
     @path_name = path_start
+    @symlink_ending = "_symlink_s3_object"
 
   end
 
@@ -53,8 +55,9 @@ class S3Connection
   # Method to ensure that the paths sent start in the right place
   def clean_starting_folder_path(path)
     path_end = path
+    return Pathname.new(path_end) if @path_name.nil?
 
-    if not path_end.to_s.starts_with? @path_name
+    if not path_end.to_s.starts_with? @path_name.to_s
       return Pathname.new(File.join(@path_name, path_end))
     else
       return Pathname.new(path_end)
@@ -66,8 +69,18 @@ class S3Connection
   end
 
   # Create a bucket on the current connection. Not used, included for completeness
-  def self.create_bucket(bucket_name)
-    @bucket.create(bucket_name)
+  def create_bucket(bucket_name)
+    @resource.create_bucket({bucket: bucket_name})
+  end
+
+  # Returns true if a particular bucket exists.
+  def bucket_exists?(name)
+    begin
+      testVar = @resource.client.list_objects(bucket: name, delimiter: "/")
+      return true
+    rescue
+      return false
+    end
   end
 
   # Returns true if the connection is alive
@@ -83,6 +96,8 @@ class S3Connection
 
   # Explores the objects under a path to determine the folder's date modified and size
   # For S3, there are no folders, so this is the only wa to get this information
+  # This is very very slow if you do it for a large directory, so I have disabled for
+  # now, but it is here for future
   def get_mod_date_and_size_for_folder(path=nil)
     path = @path_name + "/" if path.nil?
     pathClean = clean_starting_folder_path(path).to_s
@@ -192,18 +207,35 @@ class S3Connection
   # Copies an individual object from S3 back to a destination
   def copy_object_from_bucket(srcObj,dest)
     if object_exists?(srcObj)
-      resp = @resource.client.get_object(response_target: dest.to_s,
-                                        bucket: @bucket_name,
-                                        key: srcObj.to_s)
+      if srcObj.to_s.ends_with? @symlink_ending
+        #binding.pry
+        tmpfile = Tempfile.new()
+        resp = @resource.client.get_object(bucket: @bucket_name,
+                                           key: srcObj.to_s) do |chunk|
+            tmpfile.write(chunk)
+        end
+        tmpfile.rewind
+        lnk_dest = tmpfile.read
+        FileUtils::ln_s(lnk_dest,dest.sub(@symlink_ending,""))
+        tmpfile.unlink
+        tmpfile.close
+      elsif dest.class == IO or dest.class == File
+        resp = @resource.client.get_object(bucket: @bucket_name,
+                                           key: srcObj.to_s) do |chunk|
+          dest.write(chunk)
+        end
+      else
+        resp = @resource.client.get_object(response_target: dest.to_s,
+                                           bucket: @bucket_name,
+                                           key: srcObj.to_s)
+      end
     end
   end
-
 
   # Copies and sets up all of the directories to copy an entire path from S3 to dest
   def copy_path_from_bucket(path, dest_head)
     if object_exists?(path)
       list_of_objects = list_objects_long(path)
-      binding.pry
       list_of_objects.each do |x|
         x_stat = get_object_stats(x[:key])
         next if x_stat[:content_type] == 'application/x-directory'
@@ -221,13 +253,19 @@ class S3Connection
   end
 
   # Copies a file to the bucket
-  def copy_file_to_bucket(srcFile, dest_head)
+  def copy_file_to_bucket(srcFile, dest_head, srcStream=nil)
     trun_object_key = File.basename(srcFile)
-    keyPath = File.join(dest_head,trun_object_key).to_s
-    File.open(srcFile,'r') do |srcIO|
-      resp = @resource.client.put_object(body: srcIO,
-                                         bucket: @bucket_name,
-                                         key: keyPath)
+    keyPath = dest_head.nil? ? trun_object_key : File.join(dest_head,trun_object_key).to_s
+    if srcStream.nil?
+      File.open(srcFile,'r') do |srcIO|
+        resp = @resource.client.put_object(body: srcIO,
+                                           bucket: @bucket_name,
+                                           key: keyPath)
+      end
+    else
+        resp = @resource.client.put_object(body: srcStream,
+                                           bucket: @bucket_name,
+                                           key: keyPath)
     end
   end
 
@@ -239,8 +277,18 @@ class S3Connection
         sub_dir_mon = "#{File.dirname(srcDir)}/"
         newDirName = "#{File.dirname(x).sub(sub_dir_mon,'')}"
         new_dest_path = File.join(clean_starting_folder_path(dest_head).to_s,newDirName)
-        puts "copying #{x} to #{new_dest_path}"
-        copy_file_to_bucket(x,new_dest_path)
+        srcStream = nil
+        if File.symlink?(x)
+          symlink_filename = "#{x}#{@symlink_ending}"
+          srcStream = Tempfile.new()
+          srcStream.write(File.readlink(x))
+          srcStream.rewind
+          copy_file_to_bucket(symlink_filename,new_dest_path,srcStream)
+          srcStream.unlink
+          srcStream.close
+        else
+          copy_file_to_bucket(x,new_dest_path)
+        end
       end
     end
   end
@@ -282,20 +330,13 @@ class S3Connection
       end
     end
   end
+
   # List the buckets available
   def list_buckets
     @resource.buckets.map { |x| x.name }
   end
 
-  # Returns true if a particular bucket exists.
-  def bucket_exists?(name)
-    begin
-      testVar = @resource.client.list_objects(bucket: name, delimiter: "/")
-      return true
-    rescue
-      return false
-    end
-  end
+
 
   # Returns true if object specified exists in the bucket
   def object_exists?(object_name)
