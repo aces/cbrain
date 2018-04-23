@@ -26,43 +26,41 @@
 
 <p>
 Filename<br>
-<%= select :data, :file_name_type, [["Don't filter name", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => custom_filter.data["file_name_type"]    %>
-<%= text_field_tag "data[file_name_term]", custom_filter.data["file_name_term"] %>
+<%= select :data, :file_name_type, [["Don't filter name", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => custom_filter.data_file_name_type%>
+<%= text_field_tag "data[file_name_term]", custom_filter.data_file_name_term %>
 
 <p>
 Parent name contains <small>(lists children)</small>:<br>
-<%= text_field_tag "data[parent_name_like]", custom_filter.data["parent_name_like"] %>
+<%= text_field_tag "data[parent_name_like]", custom_filter.data_parent_name_like %>
 
 <p>
 Child name contains <small>(lists parents)</small>:<br>
-<%= text_field_tag "data[child_name_like]", custom_filter.data["child_name_like"] %>
+<%= text_field_tag "data[child_name_like]", custom_filter.data_child_name_like %>
 
 
 <p>
   File format<br>
-  <%= userfile_type_select("data[type]", {:selector => custom_filter.data["type"]}, :include_blank => true, :multiple => true ) %>
+  <%= userfile_type_select("data[type]", {:selector => custom_filter.data_type}, :include_blank => true, :multiple => true ) %>
 </p>
 
 Filtering by date<br>
 <%= date_range_panel(custom_filter[:data] || {}, "data") %>
 <p>
 Size<br>
-<%= select :data, :size_type, [["Don't filter size", ''], ['<', "1"], ['>', "2"]], :selected  => custom_filter.data["size_type"] %>
-<%= text_field_tag "data[size_term]", custom_filter.data["size_term"] %> kb
-
-
+<%= select :data, :size_type, [["Don't filter size", ''], ['<', "1"], ['>', "2"]], :selected  => custom_filter.data_size_type %>
+<%= text_field_tag "data[size_term]", @custom_filter.data_size_type == "" ? "" : @custom_filter.data_size_term %> kb
 
 <p>
 Owner<br>
-<%= user_select("data[user_id]", { :selector => custom_filter.data["user_id"] }, { :include_blank => true })  %>
+<%= user_select("data[user_id]", { :selector => custom_filter.data_user_id }, { :include_blank => true })  %>
 
 <p>
 Project<br>
-<%= group_select("data[group_id]", { :selector => custom_filter.data["group_id"]}, { :include_blank => true })  %>
+<%= group_select("data[group_id]", { :selector => custom_filter.data_group_id}, { :include_blank => true })  %>
 
 <p>
   Data Provider<br>
-  <%= data_provider_select("data[data_provider_id]", { :selector => custom_filter.data["data_provider_id"] || '!' }, { :include_blank => true })  %>
+  <%= data_provider_select("data[data_provider_id]", { :selector => custom_filter.data_data_provider_id || '!' }, { :include_blank => true })  %>
 </p>
 
 <p>
@@ -73,21 +71,21 @@ Archiving status<br>
   ["Archived",                         'archived' ],
   ["Not archived",                     'none'     ],
 ],
-:selected => custom_filter.data["archiving_status"]
+:selected => custom_filter.data_archiving_status
 %>
 
 <p>
   Synchronization status<br>
   <%=
-  select_tag "data[sync_status]", options_for_select(["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"], :selected => custom_filter.data["sync_status"]),
-              :multiple => true, :size => 6, :selected => custom_filter.data["sync_status"]
+  select_tag "data[sync_status]", options_for_select(["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"], :selected => custom_filter.data_sync_status),
+              :multiple => true, :size => 6, :selected => custom_filter.data_sync_status
   %>
 </p>
 
 <% if current_user.available_tags.count > 0 %>
   Tags <br>
   <%=
-  select_tag "data[tag_ids]", options_for_select((current_user.available_tags.map { |tags| [tags.name, tags.id] }), :selected => custom_filter.data["tag_ids"]),
-              :multiple => true, :size => 6, :selected => custom_filter.data["tag_ids"]
+  select_tag "data[tag_ids]", options_for_select((current_user.available_tags.map { |tags| [tags.name, tags.id] }), :selected => custom_filter.data_tag_ids),
+              :multiple => true, :size => 6, :selected => custom_filter.data_tag_ids
   %>
 <% end %>

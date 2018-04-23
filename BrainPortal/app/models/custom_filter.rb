@@ -125,39 +125,49 @@ class CustomFilter < ApplicationRecord
 
   def valid_filename #:nodocs:
     if !["", "match", "contain", "begin", "end"].include? self.data_file_name_type
-      errors.add(:data_file_name_type, 'is not a valid file name matcher')
+      errors.add(:file_name_type, 'is not a valid file name matcher')
       return false
     end
     if self.data_file_name_type.blank? && !self.data_file_name_term.blank?
-      errors.add(:data_file_name_type, 'both filename fields should be set if you want to filter by filename')
+      errors.add(:file_name_type, 'both filename fields should be set if you want to filter by filename')
       return false
     end
     true
   end
 
   def valid_data_type #:nodocs:
-    return true if self.data_type.blank?
+    self.data_type = Array(self.data_type).reject { |item| item.blank? }
+    return true if self.data_type.empty?
     valid_type = self.is_a?(TaskCustomFilter) ? CbrainTask.sti_descendant_names : Userfile.sti_descendant_names
-    return true if ( Array(self.data_type) - valid_type ).empty?
+    return true if ( self.data_type - valid_type ).empty?
     errors.add(:data_data_type, 'some file type are invalid')
     return false
   end
 
   def valid_data_status #:nodocs:
-    return true if self.data_status.blank?
-    return true if ( Array(self.data_status) -  (CbrainTask::ALL_STATUS - ["Preset", "SitePreset", "Duplicated"])).empty?
+    self.data_status = Array(self.data_status).reject { |item| item.blank? }
+    return true if self.data_status.empty?
+    return true if ( self.data_status -  (CbrainTask::ALL_STATUS - ["Preset", "SitePreset", "Duplicated"])).empty?
     errors.add(:data_data_status, 'some task status are invalid')
     return false
   end
 
   def valid_size #:nodocs:
-    return true if self.data_size_type.blank?
+    return true if self.data_size_type.blank? && self.data_size_term.blank?
+    if self.data_size_type.blank? && self.data_size_term.present?
+      errors.add(:data_size, 'both size fields should be set if you want to filter by size')
+      return false
+    end
     if !["1","2"].include? self.data_size_type
-      errors.add(:data_size_type, 'is not a valid operator for size comparaison')
+      errors.add(:data_size_term, 'is not a valid operator for size comparaison')
       return false
     end
     if self.data_size_term.blank?
       errors.add(:data_size_term, 'should be set')
+      return false
+    end
+    if self.data_size_term !~ /^\d+$/
+      errors.add(:data_size_term, "should be an integer")
       return false
     end
     return true
@@ -193,7 +203,8 @@ class CustomFilter < ApplicationRecord
   end
 
   def valid_data_sync_status #:nodocs:
-    return true if self.data_sync_status.blank?
+    self.data_sync_status = Array(self.data_sync_status).reject { |item| item.blank? }
+    return true if self.data_sync_status.empty?
     return true if
       ( self.data_sync_status - ["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"] ).empty?
     errors.add(:data_sync_status, 'is not a valid sync status')
@@ -201,8 +212,9 @@ class CustomFilter < ApplicationRecord
   end
 
   def valid_data_tag_ids #:nodocs:
-    return true if self.data_tag_ids.blank?
-    return true if ( Array(self.data_tag_ids) - self.user.available_tags.pluck(:id).map(&:to_s) ).empty?
+    self.data_tag_ids = Array(self.data_tag_ids).reject { |item| item.blank? }
+    return true if self.data_tag_ids.empty?
+    return true if ( self.data_tag_ids - self.user.available_tags.pluck(:id).map(&:to_s) ).empty?
     errors.add(:data_tag_ids, 'some tags are not accessible')
     return false
   end
