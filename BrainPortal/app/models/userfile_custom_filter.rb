@@ -65,18 +65,18 @@ class UserfileCustomFilter < CustomFilter
 
   # See CustomFilter
   def filter_scope(scope)
-    scope = scope_name(scope)        if self.data_file_name_type && self.data_file_name_term
-    scope = scope_parent_name(scope) if self.data_parent_name_like
-    scope = scope_child_name(scope)  if self.data_child_name_like
-    scope = scope_date(scope)        if self.data_date_attribute
-    scope = scope_size(scope)        if self.data_size_type      && self.data_size_term
-    scope = scope_user(scope)        if self.data_user_id
-    scope = scope_group(scope)       if self.data_group_id
-    scope = scope_dp(scope)          if self.data_data_provider_id
-    scope = scope_type(scope)        if self.data_type
-    scope = scope_archive(scope)     if self.data_archiving_status
-    scope = scope_syncstatus(scope)  if self.data_sync_status
-    scope = scope_tags(scope)        if self.data_tag_ids
+    scope = scope_name(scope)        if self.data_file_name_type.present? && self.data_file_name_term.present?
+    scope = scope_parent_name(scope) if self.data_parent_name_like.present?
+    scope = scope_child_name(scope)  if self.data_child_name_like.present?
+    scope = scope_date(scope)        if self.data_date_attribute.present?
+    scope = scope_size(scope)        if self.data_size_type.present?      && self.data_size_term.present?
+    scope = scope_user(scope)        if self.data_user_id.present?
+    scope = scope_group(scope)       if self.data_group_id.present?
+    scope = scope_dp(scope)          if self.data_data_provider_id.present?
+    scope = scope_type(scope)        if self.data_type.present?
+    scope = scope_archive(scope)     if self.data_archiving_status.present?
+    scope = scope_syncstatus(scope)  if self.data_sync_status.present?
+    scope = scope_tags(scope)        if self.data_tag_ids.present?
     scope
   end
 

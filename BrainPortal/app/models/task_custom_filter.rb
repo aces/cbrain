@@ -59,14 +59,14 @@ class TaskCustomFilter < CustomFilter
 
   # See CustomFilter
   def filter_scope(scope)
-    scope = scope_type(scope)         if self.data_type
-    scope = scope_description(scope)  if self.data_description_type && self.data_description_term
-    scope = scope_user(scope)         if self.data_user_id
-    scope = scope_bourreau(scope)     if self.data_bourreau_id
-    scope = scope_date(scope)         if self.data_date_attribute
-    scope = scope_status(scope)       if self.data_status
-    scope = scope_archive(scope)      if self.data_archiving_status
-    scope = scope_wd_status(scope)    if self.data_wd_status
+    scope = scope_type(scope)         if self.data_type.present?
+    scope = scope_description(scope)  if self.data_description_type.present? && self.data_description_term.present?
+    scope = scope_user(scope)         if self.data_user_id.present?
+    scope = scope_bourreau(scope)     if self.data_bourreau_id.present?
+    scope = scope_date(scope)         if self.data_date_attribute.present?
+    scope = scope_status(scope)       if self.data_status.present?
+    scope = scope_archive(scope)      if self.data_archiving_status.present?
+    scope = scope_wd_status(scope)    if self.data_wd_status.present?
     scope
   end
 

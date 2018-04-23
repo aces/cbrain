@@ -129,7 +129,7 @@ class CustomFilter < ApplicationRecord
       return false
     end
     if self.data_file_name_type.blank? && !self.data_file_name_term.blank?
-      errors.add(:data_file_name_type, 'should be set if you want to filter, otherwise remove the pattern for filtration')
+      errors.add(:data_file_name_type, 'both filename fields should be set if you want to filter by filename')
       return false
     end
     true
