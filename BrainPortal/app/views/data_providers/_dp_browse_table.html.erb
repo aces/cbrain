@@ -116,7 +116,7 @@
        next mtime.nil? ? '-' : to_localtime(Time.at(f.mtime), :datetime)
 	  end
 
-	  t.column('Registered?', :registered) do |f|
+    t.column('Registered?', :registered) do |f|
         userfile = f.userfile
         next 'No' unless userfile
 
