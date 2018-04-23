@@ -45,6 +45,7 @@ class S3FlatDataProvider < DataProvider
                                            self.cloud_storage_client_token,
                                            self.cloud_storage_client_bucket_name,
                                            self.cloud_storage_client_path_start)
+    @s3_connection.create_bucket(@s3_connection.bucket_name) unless @s3_connection.bucket_exists?(@s3_connection.bucket_name)
   end
 
   # Get the bucket name for the Data Provider specified at creation
