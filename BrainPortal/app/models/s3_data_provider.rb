@@ -29,8 +29,8 @@ class S3DataProvider < DataProvider
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   validates_presence_of :cloud_storage_client_identifier, :cloud_storage_client_token
-
-  attr_accessor :s3_connection
+  validates :cloud_storage_client_identifier, length: { is: 20 }
+  validates :cloud_storage_client_token,      length: { is: 40 }
 
   # This returns the category of the data provider
   def self.pretty_category_name #:nodoc:
@@ -42,9 +42,10 @@ class S3DataProvider < DataProvider
   # it is not a real connection, because it is acoomplished through rest interfaces,
   # so the connection is never persistent.
   def init_connection
+    clean_bucket_name = "gbrain-" + self.name.sub("_","-")
     @s3_connection = S3Sdkv3Connection.new(self.cloud_storage_client_identifier,
                                            self.cloud_storage_client_token,
-                                           "gbrain-#{self.name}",
+                                           clean_bucket_name,
                                            nil)
     @s3_connection.create_bucket(@s3_connection.bucket_name) unless @s3_connection.bucket_exists?(@s3_connection.bucket_name)
   end

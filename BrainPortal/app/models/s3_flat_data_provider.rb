@@ -1,4 +1,3 @@
-
 #
 # CBRAIN Project
 #
@@ -30,8 +29,13 @@ class S3FlatDataProvider < DataProvider
 
   validates_presence_of :cloud_storage_client_identifier, :cloud_storage_client_token,
                         :cloud_storage_client_path_start, :cloud_storage_client_bucket_name
+  validates :cloud_storage_client_identifier,  length: { is: 20 }
+  validates :cloud_storage_client_token,       length: { is: 40 }
+  validates :cloud_storage_client_bucket_name, format: {
+    with: /\A([a-z]|(d(?!d{0,2}.d{1,3}.d{1,3}.d{1,3})))([a-zd]|(.(?!(.|-)))|(-(?!.))){1,61}[a-zd.]\z/,
+    message: "invalid S3 bucket name, for rules see https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-s3-bucket-naming-requirements.html"
+  }
 
-  attr_accessor :s3_connection
 
   # This returns the category of the data provider
   def self.pretty_category_name #:nodoc:
@@ -46,6 +50,8 @@ class S3FlatDataProvider < DataProvider
                                            self.cloud_storage_client_bucket_name,
                                            self.cloud_storage_client_path_start)
     @s3_connection.create_bucket(@s3_connection.bucket_name) unless @s3_connection.bucket_exists?(@s3_connection.bucket_name)
+    ### need to create a dummy file for the folder path to exist in the first place
+    @s3_connection.create_object_from_string("This is a placeholder file","cbrain_hidden_placeholder")
   end
 
   # Get the bucket name for the Data Provider specified at creation
@@ -128,7 +134,7 @@ class S3FlatDataProvider < DataProvider
       type = @s3_connection.translate_content_type_to_ftype(entry[:content_type])
       next unless types.include?(type)
       next if is_excluded?(entry[:name]) # in DataProvider
-
+      #next if entry[:name].to_s.begins_with("cbrain_hidden_")
       fileinfo = FileInfo.new
       fileinfo.name          = entry[:name]
       fileinfo.symbolic_type = type
@@ -160,7 +166,6 @@ class S3FlatDataProvider < DataProvider
     init_connection  # s3 connection
     localfull      = cache_full_pathname(userfile)
     remotefilename = provider_full_path(userfile)
-
     cb_error "Error: file #{localfull} does not exist in local cache" unless File.exists?(localfull)
     if userfile.is_a?(FileCollection)
       @s3_connection.copy_directory_to_bucket(localfull.to_s,File.dirname(remotefilename))
@@ -209,6 +214,7 @@ class S3FlatDataProvider < DataProvider
     # First parse the files
     fileData[:files].each do |f|
       next if is_excluded?(f[:name])
+      next if f[:name].starts_with? 'cbrain_hidden_' # ignore the hidden file needed to instantiate folder
 
       #Adjust type (always a file here)
       type = :regular

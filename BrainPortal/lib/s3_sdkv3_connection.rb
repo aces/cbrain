@@ -40,7 +40,6 @@ class S3Sdkv3Connection
                                   #endpoint: endpoint)
     @resource = Aws::S3::Resource.new(client: @client)
     @bucket = @resource.bucket(@bucket_name)
-    #create_bucket(@bucket) if not bucket_exists?(@bucket)
     @path_name = path_start
     @symlink_ending = "_symlink_s3_object"
 
@@ -71,6 +70,18 @@ class S3Sdkv3Connection
   # Create a bucket on the current connection. Not used, included for completeness
   def create_bucket(bucket_name)
     @resource.create_bucket({bucket: bucket_name})
+  end
+
+  def create_object_from_string(string_to_write,path)
+    path_clean = clean_starting_folder_path(path).to_s
+    object_name = File.basename(path_clean)
+    path_lead = File.dirname(path_clean)
+    tmpfile = Tempfile.new()
+    tmpfile.write(string_to_write)
+    tmpfile.rewind
+    copy_file_to_bucket(object_name,path_lead,tmpfile)
+    tmpfile.unlink
+    tmpfile.close
   end
 
   # Returns true if a particular bucket exists.
