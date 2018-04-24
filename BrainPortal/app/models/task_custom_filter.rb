@@ -32,6 +32,65 @@ class TaskCustomFilter < CustomFilter
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  ###############################
+  # Validation of Custom Filter #
+  ###############################
+
+  validate :valid_data_wd_status
+  validate :valid_data_bourreau_id
+  validate :valid_data_status
+  validate :valid_description
+
+  def valid_data_wd_status #:nodocs:
+    return true if self.data_wd_status.blank?
+    return true if [ 'shared', 'not_shared', 'exists', 'none' ].include? self.data_wd_status
+    errors.add(:data_wd_status, 'is not a valid work directory status')
+  end
+
+  def valid_data_bourreau_id #:nodocs:
+    return true if self.data_bourreau_id.blank?
+    Bourreau.find_all_accessible_by_user(self.user).pluck(:id).include? self.data_bourreau_id.to_i
+    errors.add(:data_bourreau_id, 'is not an accessible bourreau')
+    return false
+  end
+
+  def valid_data_status #:nodocs:
+    self.data_status = Array(self.data_status).reject { |item| item.blank? }
+    return true if self.data_status.empty?
+    return true if ( self.data_status -  (CbrainTask::ALL_STATUS - ["Preset", "SitePreset", "Duplicated"])).empty?
+    errors.add(:data_data_status, 'some task status are invalid')
+    return false
+  end
+
+  def valid_filename #:nodocs:
+    if !["", "match", "contain", "begin", "end"].include? self.data_file_name_type
+      errors.add(:file_name_type, 'is not a valid file name matcher')
+      return false
+    end
+    if self.data_file_name_type.blank? && !self.data_file_name_term.blank?
+      errors.add(:file_name_type, 'both filename fields should be set if you want to filter by filename')
+      return false
+    end
+    true
+  end
+
+  def valid_description #:nodocs:
+    if !["", "match", "contain", "begin", "end"].include? self.data_description_type
+      errors.add(:data_description_type, 'is not a valid description matcher')
+      return false
+    end
+    if self.data_description_type.blank? && self.data_description_term.present?
+      errors.add(:data_description_type, 'both description fields should be set if you want to filter by description')
+      return false
+    end
+    true
+  end
+
+  #####################################
+  # Define getter and setter for data #
+  #####################################
+
+
   DATA_PARAMS = merge_data_params(
     [
       :data_provider_id,

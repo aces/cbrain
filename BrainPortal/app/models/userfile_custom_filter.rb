@@ -34,6 +34,86 @@ class UserfileCustomFilter < CustomFilter
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  ###############################
+  # Validation of Custom Filter #
+  ###############################
+
+  validate :valid_filename
+  validate :valid_size
+  validate :valid_data_group_id
+  validate :valid_data_tag_ids
+  validate :valid_data_data_provider_id
+  validate :valid_data_sync_status
+
+  def valid_filename #:nodocs:
+    if !["", "match", "contain", "begin", "end"].include? self.data_file_name_type
+      errors.add(:file_name_type, 'is not a valid file name matcher')
+      return false
+    end
+    if self.data_file_name_type.blank? && !self.data_file_name_term.blank?
+      errors.add(:file_name_type, 'both filename fields should be set if you want to filter by filename')
+      return false
+    end
+    true
+  end
+
+  def valid_size #:nodocs:
+    return true if self.data_size_type.blank? && self.data_size_term.blank?
+    if self.data_size_type.blank? && self.data_size_term.present?
+      errors.add(:data_size, 'both size fields should be set if you want to filter by size')
+      return false
+    end
+    if !["1","2"].include? self.data_size_type
+      errors.add(:data_size_term, 'is not a valid operator for size comparaison')
+      return false
+    end
+    if self.data_size_term.blank?
+      errors.add(:data_size_term, 'should be set')
+      return false
+    end
+    if self.data_size_term !~ /^\d+$/
+      errors.add(:data_size_term, "should be an integer")
+      return false
+    end
+    return true
+  end
+
+  def valid_data_group_id #:nodocs:
+    return true if self.data_group_id.blank?
+    return true if self.user.available_groups.pluck(:id).include? self.data_group_id.to_i
+    errors.add(:data_group_id, 'is not an accessible group')
+    false
+  end
+
+  def valid_data_tag_ids #:nodocs:
+    self.data_tag_ids = Array(self.data_tag_ids).reject { |item| item.blank? }
+    return true if self.data_tag_ids.empty?
+    return true if ( self.data_tag_ids - self.user.available_tags.pluck(:id).map(&:to_s) ).empty?
+    errors.add(:data_tag_ids, 'some tags are not accessible')
+    return false
+  end
+
+  def valid_data_data_provider_id #:nodocs:
+    return true if self.data_data_provider_id.blank?
+    return true if DataProvider.find_all_accessible_by_user(self.user).pluck(:id).include? self.data_group_id.to_i
+    errors.add(:data_data_provider_id, 'is not an accessible data provider')
+    false
+  end
+
+  def valid_data_sync_status #:nodocs:
+    self.data_sync_status = Array(self.data_sync_status).reject { |item| item.blank? }
+    return true if self.data_sync_status.empty?
+    return true if
+      ( self.data_sync_status - ["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"] ).empty?
+    errors.add(:data_sync_status, 'is not a valid sync status')
+    return false
+  end
+
+  #####################################
+  # Define getter and setter for data #
+  #####################################
+
+
   DATA_PARAMS = merge_data_params(
     [
       :size_type,

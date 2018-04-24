@@ -100,19 +100,6 @@ class CustomFilter < ApplicationRecord
   validate :valid_data_archiving_status
   validate :valid_data_date
 
-  validate :valid_filename,              if: -> { self.is_a?(UserfileCustomFilter)}
-  validate :valid_size,                  if: -> { self.is_a?(UserfileCustomFilter)}
-  validate :valid_data_group_id,         if: -> { self.is_a?(UserfileCustomFilter)}
-  validate :valid_data_tag_ids,          if: -> { self.is_a?(UserfileCustomFilter)}
-  validate :valid_data_data_provider_id, if: -> { self.is_a?(UserfileCustomFilter)}
-  validate :valid_data_sync_status,      if: -> { self.is_a?(UserfileCustomFilter)}
-
-
-  validate :valid_data_wd_status,        if: -> { self.is_a?(TaskCustomFilter)}
-  validate :valid_data_bourreau_id,      if: -> { self.is_a?(TaskCustomFilter)}
-  validate :valid_data_status,           if: -> { self.is_a?(TaskCustomFilter)}
-
-
   ###############################
   # Validation of Custom Filter #
   ###############################
@@ -121,18 +108,6 @@ class CustomFilter < ApplicationRecord
     return true if self.user
     errors.add(:base, 'a custom filter should have a user')
     return false
-  end
-
-  def valid_filename #:nodocs:
-    if !["", "match", "contain", "begin", "end"].include? self.data_file_name_type
-      errors.add(:file_name_type, 'is not a valid file name matcher')
-      return false
-    end
-    if self.data_file_name_type.blank? && !self.data_file_name_term.blank?
-      errors.add(:file_name_type, 'both filename fields should be set if you want to filter by filename')
-      return false
-    end
-    true
   end
 
   def valid_data_type #:nodocs:
@@ -144,55 +119,12 @@ class CustomFilter < ApplicationRecord
     return false
   end
 
-  def valid_data_status #:nodocs:
-    self.data_status = Array(self.data_status).reject { |item| item.blank? }
-    return true if self.data_status.empty?
-    return true if ( self.data_status -  (CbrainTask::ALL_STATUS - ["Preset", "SitePreset", "Duplicated"])).empty?
-    errors.add(:data_data_status, 'some task status are invalid')
-    return false
-  end
-
-  def valid_size #:nodocs:
-    return true if self.data_size_type.blank? && self.data_size_term.blank?
-    if self.data_size_type.blank? && self.data_size_term.present?
-      errors.add(:data_size, 'both size fields should be set if you want to filter by size')
-      return false
-    end
-    if !["1","2"].include? self.data_size_type
-      errors.add(:data_size_term, 'is not a valid operator for size comparaison')
-      return false
-    end
-    if self.data_size_term.blank?
-      errors.add(:data_size_term, 'should be set')
-      return false
-    end
-    if self.data_size_term !~ /^\d+$/
-      errors.add(:data_size_term, "should be an integer")
-      return false
-    end
-    return true
-  end
-
   def valid_data_user_id #:nodocs:
     return true if self.data_user_id.blank?
     return true if self.user.available_users.pluck(:id).include? self.data_user_id.to_i
     errors.add(:data_user_id, 'is not an accessible user')
     false
   end
-
-  def valid_data_group_id #:nodocs:
-    return true if self.data_group_id.blank?
-    return true if self.user.available_groups.pluck(:id).include? self.data_group_id.to_i
-    errors.add(:data_group_id, 'is not an accessible group')
-    false
-  end
-
-  def valid_data_data_provider_id #:nodocs:
-    return true if self.data_data_provider_id.blank?
-    return true if DataProvider.find_all_accessible_by_user(self.user).pluck(:id).include? self.data_group_id.to_i
-    errors.add(:data_data_provider_id, 'is not an accessible data provider')
-    false
-    end
 
   def valid_data_archiving_status #:nodocs:
     return true if self.data_archiving_status.blank?
@@ -202,35 +134,6 @@ class CustomFilter < ApplicationRecord
     return false
   end
 
-  def valid_data_sync_status #:nodocs:
-    self.data_sync_status = Array(self.data_sync_status).reject { |item| item.blank? }
-    return true if self.data_sync_status.empty?
-    return true if
-      ( self.data_sync_status - ["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"] ).empty?
-    errors.add(:data_sync_status, 'is not a valid sync status')
-    return false
-  end
-
-  def valid_data_tag_ids #:nodocs:
-    self.data_tag_ids = Array(self.data_tag_ids).reject { |item| item.blank? }
-    return true if self.data_tag_ids.empty?
-    return true if ( self.data_tag_ids - self.user.available_tags.pluck(:id).map(&:to_s) ).empty?
-    errors.add(:data_tag_ids, 'some tags are not accessible')
-    return false
-  end
-
-  def valid_data_bourreau_id #:nodocs:
-    return true if self.data_bourreau_id.blank?
-    Bourreau.find_all_accessible_by_user(self.user).pluck(:id).include? self.data_bourreau_id.to_i
-    errors.add(:data_bourreau_id, 'is not an accessible bourreau')
-
-  end
-
-  def valid_data_wd_status #:nodocs:
-    return true if self.data_wd_status.blank?
-    return true if [ 'shared', 'not_shared', 'exists', 'none' ].include? self.data_wd_status
-    errors.add(:data_wd_status, 'is not a valid work directory status')
-  end
 
   # Do some validation on the date range filtering
   def valid_data_date #:nodocs:
@@ -256,7 +159,6 @@ class CustomFilter < ApplicationRecord
 
   # Return +scope+ modified to filter the CbrainTask entry's dates.
   def scope_date(scope)
-
     date_at               = self.data_date_attribute # assignation ...
     mode_is_absolute_from = self.data_absolute_or_relative_from == "absolute"
     mode_is_absolute_to   = self.data_absolute_or_relative_to   == "absolute"
