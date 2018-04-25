@@ -219,7 +219,6 @@ class S3Sdkv3Connection
   def copy_object_from_bucket(srcObj,dest)
     if object_exists?(srcObj)
       if srcObj.to_s.ends_with? @symlink_ending
-        #binding.pry
         tmpfile = Tempfile.new()
         resp = @resource.client.get_object(bucket: @bucket_name,
                                            key: srcObj.to_s) do |chunk|
@@ -346,8 +345,6 @@ class S3Sdkv3Connection
   def list_buckets
     @resource.buckets.map { |x| x.name }
   end
-
-
 
   # Returns true if object specified exists in the bucket
   def object_exists?(object_name)

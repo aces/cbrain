@@ -114,16 +114,16 @@
       t.column('Last modified', :mtime, :sortable => true)  do |f|
        mtime = f.mtime
        next mtime.nil? ? '-' : to_localtime(Time.at(f.mtime), :datetime)
-	  end
-
-    t.column('Registered?', :registered) do |f|
-        userfile = f.userfile
-        next 'No' unless userfile
-
-        owner = "(belongs to user #{userfile.user.login})" unless
-          userfile.user_id == current_user.id
-        link_to("Registered", { :controller => 'userfiles', :action => 'show', :id => userfile.id }) + " #{owner}"
       end
+
+      t.column('Registered?', :registered) do |f|
+          userfile = f.userfile
+          next 'No' unless userfile
+
+          owner = "(belongs to user #{userfile.user.login})" unless
+            userfile.user_id == current_user.id
+          link_to("Registered", { :controller => 'userfiles', :action => 'show', :id => userfile.id }) + " #{owner}"
+        end
 
       t.column('Note', :message)
     %>
