@@ -488,6 +488,7 @@ class Bourreau < RemoteResource
         if newstatus == 'Duplicated'
           new_bourreau_id = command.new_bourreau_id || task.bourreau_id || myself.id
           new_task = task.class.new(task.attributes) # a kind of DUP!
+          new_task.id                          = nil
           new_task.bourreau_id                 = new_bourreau_id
           new_task.cluster_jobid               = nil
           new_task.cluster_workdir             = nil
