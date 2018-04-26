@@ -46,7 +46,7 @@
 <br>
 <%= error_messages_for @userfile, :header_message => "#{@userfile.name} could not be updated." %>
 <div class="display_inline_block" style="min-width: 50%">
-  <%= show_table(@userfile) do |t| %>
+  <%= show_table(@userfile, :edit_condition => true) do |t| %>
 
     <% t.edit_cell(:name, :disabled => !@userfile.has_owner_access?(current_user)) do %>
       <%= text_field_tag "userfile[name]", @userfile.name %>

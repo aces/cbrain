@@ -72,7 +72,7 @@ module ShowTableHelper
       # Layout variables
       @template        = template
       @width           = options[:width] || 2
-      @edit_disabled   = false
+      @edit_disabled   = true
       @edit_disabled   = !options[:edit_condition] if options.has_key?(:edit_condition)
       @cells           = []
       @edit_cell_count = 0
@@ -82,7 +82,7 @@ module ShowTableHelper
 
       # Form information
       @url             = options[:url].presence
-      @method          = options[:method].presence || (object.new_record? ? :post : :put)
+      @method          = options[:method].presence || ((object.is_a?(ApplicationRecord) && object.new_record?) ? :post : :put)
       @form_helper     = nil
       @as              = options[:as].presence || @object.class.to_s.underscore
 
@@ -324,7 +324,7 @@ module ShowTableHelper
   def show_table(object, options = {}, &block)
 
     url = options[:url].presence
-    if url.blank?
+    if url.blank? && object.is_a?(ApplicationRecord)
       url = { :controller  => params[:controller] }
       if object.new_record?
         url[:action] = :create

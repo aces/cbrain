@@ -117,14 +117,14 @@
   <% end %>
 
   <% if @user.signed_license_agreements.present? %>
-    <%= show_table(@user, :as => :user, :header => "License Agreements", :width => 3, :edit_condition => false) do |t| %>
+    <%= show_table(@user, :as => :user, :header => "License Agreements", :width => 3) do |t| %>
       <% @user.signed_license_agreements.each  do |la| %>
         <% t.cell("", :no_header => true) { link_to la, "/show_license/#{la}" } %>
       <% end  %>
     <% end %>
   <% end %>
 
-  <%= show_table(@user, :as => :user, :header => 'Resources', :edit_condition => false) do |t| %>
+  <%= show_table(@user, :as => :user, :header => 'Resources') do |t| %>
 
     <% t.cell("Files") do
          size = Userfile.where(:user_id => @user.id).sum(:size)
@@ -162,7 +162,7 @@
        user_access_profiles = "(None)" if user_access_profiles.blank?
     %>
 
-    <%= show_table(@user, :as => :user, :header => 'Access Profiles') do |t| %>
+    <%= show_table(@user, :as => :user, :header => 'Access Profiles', :edit_condition => true) do |t| %>
       <% t.edit_cell(:access_profile_ids, :show_width => 2, :no_header => true, :content => user_access_profiles ) do %>
 
         <%= render :partial => 'shared/access_profile_checkbox_table',

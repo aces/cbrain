@@ -123,7 +123,7 @@
   <% end %>
 
   <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-    <%= show_table(@provider, :header => "SSH parameters for remote Data Providers") do |t| %>
+    <%= show_table(@provider, :header => "SSH parameters for remote Data Providers", :edit_condition => true) do |t| %>
       <% t.edit_cell(:remote_host)  do %>
         <%= text_field_tag "data_provider[remote_host]", @provider.remote_host %>
       <% end %>
@@ -139,7 +139,7 @@
       <% end %>
     <% end %>
 
-    <%= show_table(@provider, :header => "Cloud Storage Configuration") do |t| %>
+    <%= show_table(@provider, :header => "Cloud Storage Configuration", :edit_condition => true) do |t| %>
       <% t.edit_cell(:cloud_storage_client_identifier, :header => 'Client Identifier', :show_width => 2)  do %>
         <%= text_field_tag "data_provider[cloud_storage_client_identifier]", @provider.cloud_storage_client_identifier %>
       <% end %>
