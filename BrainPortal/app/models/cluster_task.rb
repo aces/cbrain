@@ -697,7 +697,8 @@ class ClusterTask < CbrainTask
       self.make_cluster_workdir
       self.apply_tool_config_environment do
         Dir.chdir(self.full_cluster_workdir) do
-          if ! self.setup  # as defined by subclass
+          setup_success = self.meta[:submit_without_setup] || self.setup
+          if ! setup_success  # as defined by subclass
             self.addlog("Failed to setup: 'false' returned by setup().")
             self.status_transition(self.status, "Failed To Setup")
           elsif ! self.submit_cluster_job
@@ -707,6 +708,7 @@ class ClusterTask < CbrainTask
             self.addlog("Setup and submit process successful.")
             # the status is moving forward at its own pace now
           end
+          self.meta[:submit_without_setup] = nil # reset special skip
         end
       end
       self.update_size_of_cluster_workdir

@@ -41,7 +41,7 @@ class CbrainTask::Parallelizer < ClusterTask #:nodoc:
   end
 
   def cluster_commands #:nodoc:
-    subtasks = self.enabled_subtasks
+    subtasks   = self.enabled_subtasks
 
     commands = [
       "#",
@@ -63,6 +63,7 @@ class CbrainTask::Parallelizer < ClusterTask #:nodoc:
       oscript = otask.qsub_script_basename
       oout    = otask.qsub_stdout_basename
       oerr    = otask.qsub_stderr_basename
+      touchfile = done_touchfile(otask)
       commands += [
         "",
         "# Run task #{otask.fullname.bash_escape}",
@@ -70,7 +71,11 @@ class CbrainTask::Parallelizer < ClusterTask #:nodoc:
         "if test -d #{odir.to_s.bash_escape} ; then",
         "  echo Starting script for task '#{otask.fullname.bash_escape}' in background.",
         "  cd #{odir.to_s.bash_escape}",
-        "  /bin/bash #{oscript.bash_escape} > #{oout.bash_escape} 2> #{oerr.bash_escape} &",
+        "  (",
+        "    /bin/bash #{oscript.bash_escape} > #{oout.bash_escape} 2> #{oerr.bash_escape}",
+        "    sleep 5",
+        "    touch #{touchfile.bash_escape}",
+        "  ) &",
         "else",
         "  echo Could not find workdir of task #{otask.fullname.to_s.bash_escape}. Skipping.",
         "fi"
@@ -121,12 +126,81 @@ class CbrainTask::Parallelizer < ClusterTask #:nodoc:
     return false
   end
 
-  # Since the 'setup' of a parallelizer does nothing (see above in setup()),
-  # a failure to setup is rather unlikely! It if happens, it's some sort of system
-  # problem, so we just allow 'recovery' by retrying the whole thing.
+
+
+  # =========================================================
+  # Error Recovery Callbacks
+  # =========================================================
+
+  # The only known way for setup to fail is when
+  # one of the subtask fails its own settin up,
+  # and this causes the parallelizer to enter
+  # "Failed Setup Prerequisites". So we just
+  # trigger error recovery on the subtasks and
+  # try again.
   def recover_from_setup_failure #:nodoc:
+    subtasks   = self.enabled_subtasks
+
+    subtasks.each do |otask|
+      if otask.recover
+        self.addlog("Triggering error recovery for subtask #{otask.tname_tid}")
+      end
+    end
+
     return true
   end
+
+  # A failure on cluster can only be caused by a system problem,
+  # since the basic parallelizer script is just a simple bash script
+  # that runs the bash scripts of other tasks. It happens mostly when
+  # the CPU time of the parallelizer has been exceeded. In that case
+  # we will try to fix the situation and identify which parallelized
+  # tasks are OK and which are not.
+  def recover_from_cluster_failure #:nodoc:
+    subtasks   = self.enabled_subtasks
+
+    subtasks.each do |otask|
+      status    = otask.status
+      touchfile = done_touchfile(otask)
+
+      if status == 'Configured'
+        if File.exists?(touchfile)
+          self.addlog("Subtask #{otask.tname_tid} seems to have finished, marking it as Data Ready.")
+          disable_subtask(otask) # we no longer control it
+          otask.status_transition!('Configured','Data Ready')
+        else
+          self.addlog("Subtask #{otask.tname_tid} interrupted, triggering recovery.")
+          otask.status_transition!('Configured','Recover Cluster')
+        end
+        next
+      end
+
+      # We'll take this opportunity to stop caring about
+      # subtasks that somehow have progressed by themselves.
+      if status =~ /Completed|Terminated/
+        self.addlog("Subtask #{otask.tname_tid} is #{status}, rescinding control.")
+        disable_subtask(otask) # we no longer control it
+        next
+      end
+
+      # Not sure about this
+      if status =~ /Fail/
+        self.addlog("Subtask #{otask.tname_tid} failed, triggering recovery.")
+        otask.meta[:configure_only] = true
+        otask.recover
+      end
+
+    end # each subtask
+
+    self.save
+    true # we're OK for retyring the parallelizer now
+  end
+
+
+
+  # =========================================================
+  # Restartability Callbacks
+  # =========================================================
 
   def restart_at_setup #:nodoc:
     unless self.all_subtasks_are?(/Completed|Failed|Terminated/)
@@ -183,6 +257,18 @@ class CbrainTask::Parallelizer < ClusterTask #:nodoc:
       otask.status_transition(otask.status, 'Failed Setup Prerequisites') rescue true
     end
     return true
+  end
+
+  private
+
+  # When a subtask completes, the parallelizer will record
+  # that fact in the parallelizer's work directory
+  # using a touchfile named ".done-{subtask_run_id}".
+  # This method returns the full path of that touchfile.
+  def done_touchfile(subtask) #:nodoc
+    subtask_touchfile_prefix = Pathname.new(self.full_cluster_workdir) + ".done-"
+    s_runid = subtask.run_id
+    subtask_touchfile_prefix.to_s + s_runid
   end
 
 end
