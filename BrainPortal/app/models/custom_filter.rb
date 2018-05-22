@@ -213,5 +213,25 @@ class CustomFilter < ApplicationRecord
     (extra + DATA_PARAMS).freeze
   end
 
+  #####################################
+  # Define getter and setter for data #
+  #####################################
+
+  def self.data_setter_and_getter(data_params=DATA_PARAMS)
+  # Define getter and setter for each keys in data attribute
+    data_params.map{|x| x.is_a?(Hash) ? x.keys : x}.flatten.each do |param|
+      # Define getter for all keys in data attribute
+      define_method("data_#{param}") do
+        self.data[param]
+      end
+
+      # Define setter for all keys in data attribute
+      define_method("data_#{param}=") do |val|
+        self.data[param] = val
+      end
+    end
+  end
+
+  CustomFilter.data_setter_and_getter()
 
 end

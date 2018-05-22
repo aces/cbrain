@@ -29,10 +29,28 @@
 # [*size_term*] The file size to filter against.
 # [*group_id*] The id of the group to filter on.
 # [*tags*] A serialized hash of tags to filter on.
-
+require 'pry'
 class UserfileCustomFilter < CustomFilter
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  DATA_PARAMS = merge_data_params(
+    [
+      :size_type,
+      :size_term,
+      :file_name_type,
+      :group_id,
+      :group,
+      :data_provider_id,
+      :file_name_term,
+      :description_type,
+      :parent_name_like,
+      :child_name_like,
+      :archiving_status,
+      :sync_status,
+    ])
+
+  CustomFilter.data_setter_and_getter(DATA_PARAMS)
 
   ###############################
   # Validation of Custom Filter #
@@ -46,11 +64,12 @@ class UserfileCustomFilter < CustomFilter
   validate :valid_data_sync_status
 
   def valid_filename #:nodocs:
-    if !["", "match", "contain", "begin", "end"].include? self.data_file_name_type
+    if self.data_file_name_type.present? && !["match", "contain", "begin", "end"].include?(self.data_file_name_type)
       errors.add(:file_name_type, 'is not a valid file name matcher')
       return false
     end
-    if self.data_file_name_type.blank? && !self.data_file_name_term.blank?
+    if self.data_file_name_type.present? && !self.data_file_name_term.present? ||
+       !self.data_file_name_type.present? && self.data_file_name_term.present?
       errors.add(:file_name_type, 'both filename fields should be set if you want to filter by filename')
       return false
     end
@@ -107,40 +126,6 @@ class UserfileCustomFilter < CustomFilter
       ( self.data_sync_status - ["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"] ).empty?
     errors.add(:data_sync_status, 'is not a valid sync status')
     return false
-  end
-
-  #####################################
-  # Define getter and setter for data #
-  #####################################
-
-
-  DATA_PARAMS = merge_data_params(
-    [
-      :size_type,
-      :size_term,
-      :file_name_type,
-      :group_id,
-      :group,
-      :data_provider_id,
-      :file_name_term,
-      :description_type,
-      :parent_name_like,
-      :child_name_like,
-      :archiving_status,
-      :sync_status,
-    ])
-
-  # Define getter and setter for each keys in data attribute
-  DATA_PARAMS.map{|x| x.is_a?(Hash) ? x.keys : x}.flatten.each do |param|
-    # Define getter for all keys in data attribute
-    define_method("data_#{param}") do
-      self.data[param]
-    end
-
-    # Define setter for all keys in data attribute
-    define_method("data_#{param}=") do |val|
-      self.data[param] = val
-    end
   end
 
   # See CustomFilter

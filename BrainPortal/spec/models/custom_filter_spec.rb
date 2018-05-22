@@ -42,8 +42,10 @@ describe CustomFilter do
     end
   end
 
+  
   describe "#data" do
-    it "should return an empty hash if no data was defined" do
+    # no more define in a hash
+    xit "should return an empty hash if no data was defined" do
       expect(cf.data).to be_empty
     end
   end

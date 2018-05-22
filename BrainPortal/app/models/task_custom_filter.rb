@@ -75,11 +75,13 @@ class TaskCustomFilter < CustomFilter
   end
 
   def valid_description #:nodocs:
-    if !["", "match", "contain", "begin", "end"].include? self.data_description_type
+    return true if self.data_description_type.blank?
+    if !["match", "contain", "begin", "end"].include? self.data_description_type
       errors.add(:data_description_type, 'is not a valid description matcher')
       return false
     end
-    if self.data_description_type.blank? && self.data_description_term.present?
+    if self.data_description_type.present? && !self.data_description_term.present? || 
+       !self.data_description_type.present? && self.data_description_term.present?
       errors.add(:data_description_type, 'both description fields should be set if you want to filter by description')
       return false
     end
@@ -103,18 +105,7 @@ class TaskCustomFilter < CustomFilter
       :status,
     ])
 
-  # Define getter and setter for each keys in data attribute
-  DATA_PARAMS.map{|x| x.is_a?(Hash) ? x.keys : x}.flatten.each do |param|
-    # Define getter for all keys in data attribute
-    define_method("data_#{param}") do
-      self.data[param]
-    end
-
-    # Define setter for all keys in data attribute
-    define_method("data_#{param}=") do |val|
-      self.data[param] = val
-    end
-  end
+  CustomFilter.data_setter_and_getter(DATA_PARAMS)
 
   # See CustomFilter
   def filter_scope(scope)
