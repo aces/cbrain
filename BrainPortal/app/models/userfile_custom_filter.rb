@@ -50,6 +50,7 @@ class UserfileCustomFilter < CustomFilter
       :sync_status,
     ])
 
+
   CustomFilter.data_setter_and_getter(DATA_PARAMS)
 
   ###############################

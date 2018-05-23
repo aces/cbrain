@@ -47,6 +47,7 @@
 #= Associations:
 #*Belongs* *to*:
 #* User
+require 'pry'
 class CustomFilter < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -217,9 +218,10 @@ class CustomFilter < ApplicationRecord
   # Define getter and setter for data #
   #####################################
 
-  def self.data_setter_and_getter(data_params=DATA_PARAMS)
   # Define getter and setter for each keys in data attribute
+  def self.data_setter_and_getter(data_params=DATA_PARAMS)
     data_params.map{|x| x.is_a?(Hash) ? x.keys : x}.flatten.each do |param|
+      
       # Define getter for all keys in data attribute
       define_method("data_#{param}") do
         self.data[param]

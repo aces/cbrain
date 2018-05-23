@@ -136,38 +136,22 @@ describe UserfileCustomFilter do
 
     describe "#tag_ids=" do
       it "should assign tags to the data hash" do
-        filter.tag_ids=( [tag1.id.to_i] )
-        expect(filter.tag_ids).to match_array([tag1.id.to_s])
+        filter.data_tag_ids=( [tag1.id] )
+        expect(filter.data_tag_ids).to match_array([tag1.id])
       end
     end
 
     describe "#tags" do
 
       it "should return empty array if no tags is used" do
-        filter.data = nil
-        expect(filter.tag_ids).to be_empty
+        filter.data = { :tag_ids => []}
+        expect(filter.data_tag_ids).to be_empty
       end
       it "should return only the tags in the data hash" do
         filter.data = { :tag_ids => [tag1.id,tag2.id]}
-        expect(filter.tag_ids).to match_array([tag1.id,tag2.id])
+        expect(filter.data_tag_ids).to match_array([tag1.id,tag2.id])
       end
     end
   end
-
-  describe "#date_term=" do
-    it "should assign the date_term in the data hash" do
-      date = {"date_term(1i)"=>"2011", "date_term(2i)"=>"05", "date_term(3i)"=>"24"}
-      filter.date_term=(date)
-      expect(filter.date_term).to eq("#{date["date_term(1i)"]}-#{date["date_term(2i)"]}-#{date["date_term(3i)"]}")
-    end
-  end
-
-
-  describe "#date_term" do
-    it "should return nil if date_term is not defined" do
-      expect(filter.date_term).to be nil
-    end
-  end
-
 end
 
