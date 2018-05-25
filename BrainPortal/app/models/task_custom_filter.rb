@@ -49,7 +49,7 @@ class TaskCustomFilter < CustomFilter
 
   def valid_data_bourreau_id #:nodocs:
     return true if self.data_bourreau_id.blank?
-    Bourreau.find_all_accessible_by_user(self.user).pluck(:id).include? self.data_bourreau_id.to_i
+    return true if Bourreau.find_all_accessible_by_user(self.user).pluck(:id).include? self.data_bourreau_id.to_i
     errors.add(:data_bourreau_id, 'is not an accessible bourreau')
     return false
   end
@@ -62,25 +62,12 @@ class TaskCustomFilter < CustomFilter
     return false
   end
 
-  def valid_filename #:nodocs:
-    if !["", "match", "contain", "begin", "end"].include? self.data_file_name_type
-      errors.add(:file_name_type, 'is not a valid file name matcher')
-      return false
-    end
-    if self.data_file_name_type.blank? && !self.data_file_name_term.blank?
-      errors.add(:file_name_type, 'both filename fields should be set if you want to filter by filename')
-      return false
-    end
-    true
-  end
-
   def valid_description #:nodocs:
-    return true if self.data_description_type.blank?
-    if !["match", "contain", "begin", "end"].include? self.data_description_type
+    if self.data_description_type.present? && !["match", "contain", "begin", "end"].include?(self.data_description_type)
       errors.add(:data_description_type, 'is not a valid description matcher')
       return false
     end
-    if self.data_description_type.present? && !self.data_description_term.present? || 
+    if self.data_description_type.present?  && !self.data_description_term.present? ||
        !self.data_description_type.present? && self.data_description_term.present?
       errors.add(:data_description_type, 'both description fields should be set if you want to filter by description')
       return false

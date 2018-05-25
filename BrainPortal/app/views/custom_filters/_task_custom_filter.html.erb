@@ -58,7 +58,7 @@
   <% end %>
 
   <% t.edit_cell(:data_bourreau_id, :header => "Execution Server", :content => Bourreau.find_by_id(@custom_filter.data_bourreau_id).try(:name) || "None") do %>
-    <%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => @custom_filter.data["bourreau_id"] }, :include_blank => true %>
+    <%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => @custom_filter.data["bourreau_id"], :offline_is_ok => true },  :include_blank => true %>
   <% end %>
 
   <%
@@ -72,7 +72,7 @@
   %>
 
   <% t.edit_cell(:data_archiving_status, :header => "Archiving status", :content => archiving_status[@custom_filter.data_archiving_status]) do %>
-    <%= select :data, :archiving_status, archiving_status.map{|k,v| [v,k]} %>
+    <%= select :data, :archiving_status, archiving_status.map{|k,v| [v,k]}, selected: @custom_filter.data_archiving_status %>
   <% end %>
 
   <%
@@ -87,7 +87,7 @@
   %>
 
   <% t.edit_cell(:data_wd_status, :header => "Work Directory status", :content => wd_status[@custom_filter.data_wd_status]) do %>
-    <%= select :data, :wd_status, wd_status.map{|k,v| [v,k]}%>
+    <%= select :data, :wd_status, wd_status.map{|k,v| [v,k]}, :selected => @custom_filter.data_wd_status %>
   <% end %>
 
   <% t.edit_cell(:date_range_display_table, :header => "Filtering by date", :content => date_range_info(@custom_filter)) do %>

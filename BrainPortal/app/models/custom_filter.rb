@@ -47,7 +47,6 @@
 #= Associations:
 #*Belongs* *to*:
 #* User
-require 'pry'
 class CustomFilter < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:

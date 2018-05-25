@@ -29,7 +29,6 @@
 # [*size_term*] The file size to filter against.
 # [*group_id*] The id of the group to filter on.
 # [*tags*] A serialized hash of tags to filter on.
-require 'pry'
 class UserfileCustomFilter < CustomFilter
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -69,7 +68,7 @@ class UserfileCustomFilter < CustomFilter
       errors.add(:file_name_type, 'is not a valid file name matcher')
       return false
     end
-    if self.data_file_name_type.present? && !self.data_file_name_term.present? ||
+    if self.data_file_name_type.present?  && !self.data_file_name_term.present? ||
        !self.data_file_name_type.present? && self.data_file_name_term.present?
       errors.add(:file_name_type, 'both filename fields should be set if you want to filter by filename')
       return false
@@ -79,7 +78,8 @@ class UserfileCustomFilter < CustomFilter
 
   def valid_size #:nodocs:
     return true if self.data_size_type.blank? && self.data_size_term.blank?
-    if self.data_size_type.blank? && self.data_size_term.present?
+    if self.data_size_type.present?  && !self.data_size_term.present? ||
+       !self.data_size_type.present? && self.data_size_term.present? 
       errors.add(:data_size, 'both size fields should be set if you want to filter by size')
       return false
     end
