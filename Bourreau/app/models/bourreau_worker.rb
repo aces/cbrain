@@ -465,6 +465,7 @@ class BourreauWorker < Worker
           task.run_number = task.run_number + 1
           task.addlog("Preparation for restarting at '#{fromwhat}' succeeded, now we restart it.")
           task.addlog("This task's Run Number was increased to '#{task.run_number}'.")
+          task.meta[:no_end_keyword_check] = "nope" if fromwhat == 'PostProcess'
           if fromwhat == 'Cluster' # special case, we need to resubmit the task.
             begin
               Dir.chdir(task.full_cluster_workdir) do

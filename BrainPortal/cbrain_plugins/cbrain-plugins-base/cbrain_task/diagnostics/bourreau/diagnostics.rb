@@ -408,22 +408,36 @@ class CbrainTask::Diagnostics < ClusterTask
       sleep params[:restart_postpro_delay].to_i
     end
 
+    # In most case, that's it. We have an option to copy the
+    # out and err files of the previous run if we want, for
+    # debugging other situations.
+    return true unless mybool(params[:restart_postpro_copy_outerr])
+
     # We simply copy the out and err of the previous run when we restart at post-pro.
-    cur_out = self.stdout_cluster_filename
-    cur_err = self.stderr_cluster_filename
-    if File.exists?(cur_out)
-      system("cp",cur_out,self.stdout_cluster_filename(self.run_number + 1))
+    # There are up to four files to copy... :-(
+    qsub_out = qsub_stdout_basename(    self.run_number )
+    qsub_err = qsub_stderr_basename(    self.run_number )
+    sci_out  = science_stdout_basename( self.run_number )
+    sci_err  = science_stderr_basename( self.run_number )
+    if File.exists?(qsub_out)
+      system("cp",qsub_out,qsub_stdout_basename(self.run_number + 1))
     end
-    if File.exists?(cur_err)
-      system("cp",cur_err,self.stderr_cluster_filename(self.run_number + 1))
+    if File.exists?(qsub_err)
+      system("cp",qsub_err,qsub_stderr_basename(self.run_number + 1))
+    end
+    if File.exists?(sci_out)
+      system("cp",sci_out,science_stdout_basename(self.run_number + 1))
+    end
+    if File.exists?(sci_err)
+      system("cp",sci_err,science_stderr_basename(self.run_number + 1))
     end
     return true
   end
 
-  # My old convention was '1' for true, "" for false;
-  # the new form helpers send '1' for true and '0' for false.
   private
 
+  # My old convention was '1' for true, "" for false;
+  # the new form helpers send '1' for true and '0' for false.
   def mybool(value) #:nodoc:
     return false if value.blank?
     return false if value.is_a?(String)  and value == "0"
