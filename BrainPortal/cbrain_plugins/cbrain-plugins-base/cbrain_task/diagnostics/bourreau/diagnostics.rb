@@ -408,9 +408,9 @@ class CbrainTask::Diagnostics < ClusterTask
       sleep params[:restart_postpro_delay].to_i
     end
 
-    # In most case, that's it. We have an option top copy the
-    # the out and err files of the previous run if we want, for
-    # debugging outer things.
+    # In most case, that's it. We have an option to copy the
+    # out and err files of the previous run if we want, for
+    # debugging other situations.
     return true unless mybool(params[:restart_postpro_copy_outerr])
 
     # We simply copy the out and err of the previous run when we restart at post-pro.
@@ -434,10 +434,10 @@ class CbrainTask::Diagnostics < ClusterTask
     return true
   end
 
-  # My old convention was '1' for true, "" for false;
-  # the new form helpers send '1' for true and '0' for false.
   private
 
+  # My old convention was '1' for true, "" for false;
+  # the new form helpers send '1' for true and '0' for false.
   def mybool(value) #:nodoc:
     return false if value.blank?
     return false if value.is_a?(String)  and value == "0"
