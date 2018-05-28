@@ -79,7 +79,7 @@ class UserfileCustomFilter < CustomFilter
   def valid_size #:nodocs:
     return true if self.data_size_type.blank? && self.data_size_term.blank?
     if self.data_size_type.present?  && !self.data_size_term.present? ||
-       !self.data_size_type.present? && self.data_size_term.present? 
+       !self.data_size_type.present? && self.data_size_term.present?
       errors.add(:data_size, 'both size fields should be set if you want to filter by size')
       return false
     end
@@ -115,7 +115,7 @@ class UserfileCustomFilter < CustomFilter
 
   def valid_data_data_provider_id #:nodocs:
     return true if self.data_data_provider_id.blank?
-    return true if DataProvider.find_all_accessible_by_user(self.user).pluck(:id).include? self.data_group_id.to_i
+    return true if DataProvider.find_all_accessible_by_user(self.user).pluck(:id).include? self.data_data_provider_id.to_i
     errors.add(:data_data_provider_id, 'is not an accessible data provider')
     false
   end
