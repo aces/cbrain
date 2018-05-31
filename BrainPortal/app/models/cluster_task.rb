@@ -2509,7 +2509,7 @@ chmod o+x . .. ../.. ../../..
       # of these blocks can be scheduled to run, but only one will execute at at any given time.
       next if File.exists?(cache_path.to_s) && File.size(cache_path.to_s) > 0
       # Run singularity build command
-      tool_config_system("umask 002; #{singularity_executable_name} build #{cache_path.to_s.bash_escape} #{singularity_index_location.bash_escape}#{singularity_image_name.bash_escape}")
+      tool_config_system("umask 000; #{singularity_executable_name} build #{cache_path.to_s.bash_escape} #{singularity_index_location.bash_escape}#{singularity_image_name.bash_escape}")
       # Singularity command can generate 'implausibly old time stamp' when pulling a docker image (due to tar), we ignore it.
       # Not sure if it is still true for `build` command, leave it just in case.
       # Remove all lines (use ^ and $) that contains this message.
