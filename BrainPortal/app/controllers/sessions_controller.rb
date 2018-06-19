@@ -203,6 +203,7 @@ class SessionsController < ApplicationController
     # Record the best guess for browser's remote host name
     reqenv      = request.env
     from_ip     = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
+    from_ip     = Regexp.last_match[1] if ((from_ip || "") =~ /(\d+\.\d+\.\d+\.\d+)/) # sometimes we get several IPs with commas
     from_host   = hostname_from_ip(from_ip)
     from_ip   ||= '0.0.0.0'
     from_host ||= 'unknown'
