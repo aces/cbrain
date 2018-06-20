@@ -42,17 +42,17 @@
 <%= error_messages_for @user, :header_message => "User could not be updated." %>
 
 <div class="display_inline_block" style="min-width: 50%">
-  <%= show_table(@user, :edit_condition => edit_permission?(@user)) do |t| %>
+  <%= show_table(@user, :as => :user, :edit_condition => edit_permission?(@user)) do |t| %>
 
     <% t.attribute_cell(:login) %>
 
     <%
-      t.edit_cell(:type, :content => @user.type.underscore.titleize, :disabled => !((current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)) && not_admin_user(@user))) do
-        select_tag "user[type]", options_for_select(roles_for_user(current_user), :selected => @user.type)
+      t.edit_cell(:type, :content => @user.type.underscore.titleize, :disabled => !((current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)) && not_admin_user(@user))) do |f|
+        f.select :type, options_for_select(roles_for_user(current_user))
       end
     %>
 
-    <% t.edit_cell(:full_name) { text_field_tag "user[full_name]", @user.full_name } %>
+    <% t.edit_cell(:full_name) { |f| f.text_field :full_name } %>
 
     <%
       t.edit_cell(:site_id, :content => link_to_site_if_accessible(@user.site), :disabled => !current_user.has_role?(:admin_user)) do
@@ -60,7 +60,7 @@
       end
     %>
 
-    <% t.edit_cell(:email, :content => mail_to(h(@user.email))) { text_field_tag "user[email]", @user.email } %>
+    <% t.edit_cell(:email, :content => mail_to(h(@user.email))) { |f| f.text_field :email } %>
 
     <%
       t.cell("Last Connected") do
@@ -68,7 +68,7 @@
       end
     %>
 
-    <% t.edit_cell(:city) { text_field_tag "user[city]", @user.city } %>
+    <% t.edit_cell(:city) { |f| f.text_field :city } %>
 
     <%
       t.edit_cell("meta[pref_data_provider_id]", :header => "Default Data Provider", :content => link_to_data_provider_if_accessible(DataProvider.find_by_id(@user.meta["pref_data_provider_id"])) ) do
@@ -78,7 +78,7 @@
       end
     %>
 
-    <% t.edit_cell(:country) { text_field_tag "user[country]", @user.country } %>
+    <% t.edit_cell(:country) { |f| f.text_field :country } %>
 
     <%
       t.edit_cell("meta[pref_bourreau_id]", :header => "Default Execution Server", :content => link_to_bourreau_if_accessible(Bourreau.find_by_id(@user.meta["pref_bourreau_id"])) ) do
@@ -90,8 +90,8 @@
     %>
 
     <%
-      t.edit_cell(:time_zone, :content => (@user.time_zone || "(Unset)") ) do
-        select_tag "user[time_zone]", time_zone_options_for_select(@user.time_zone, /canada/i), :include_blank => true
+      t.edit_cell(:time_zone, :content => (@user.time_zone || "(Unset)") ) do |f|
+        f.select :time_zone, time_zone_options_for_select(@user.time_zone, /canada/i), :include_blank => true
       end
     %>
 
@@ -117,14 +117,14 @@
   <% end %>
 
   <% if @user.signed_license_agreements.present? %>
-    <%= show_table(@user, :header => "License Agreements", :width => 3) do |t| %>
+    <%= show_table(@user, :as => :user, :header => "License Agreements", :width => 3) do |t| %>
       <% @user.signed_license_agreements.each  do |la| %>
         <% t.cell("", :no_header => true) { link_to la, "/show_license/#{la}" } %>
       <% end  %>
     <% end %>
   <% end %>
 
-  <%= show_table(@user, :header => 'Resources') do |t| %>
+  <%= show_table(@user, :as => :user, :header => 'Resources') do |t| %>
 
     <% t.cell("Files") do
          size = Userfile.where(:user_id => @user.id).sum(:size)
@@ -162,7 +162,7 @@
        user_access_profiles = "(None)" if user_access_profiles.blank?
     %>
 
-    <%= show_table(@user, :header => 'Access Profiles') do |t| %>
+    <%= show_table(@user, :as => :user, :header => 'Access Profiles', :edit_condition => true) do |t| %>
       <% t.edit_cell(:access_profile_ids, :show_width => 2, :no_header => true, :content => user_access_profiles ) do %>
 
         <%= render :partial => 'shared/access_profile_checkbox_table',
