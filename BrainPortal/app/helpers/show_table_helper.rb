@@ -75,15 +75,15 @@ module ShowTableHelper
       @edit_disabled   = true
       @edit_disabled   = !options[:edit_condition] if options.has_key?(:edit_condition)
       @cells           = []
-      @edit_cell_count = 0
 
       # Appearance
       @header          = options[:header].presence || "Info"
 
-      # Form information
+      # Form information; this will be provider to Rails' FormBuilder if the
+      # ShowTable helpers are used with blocks that receive an argument.
+      @form_helper     = nil
       @url             = options[:url].presence
       @method          = options[:method].presence || ((object.is_a?(ApplicationRecord) && object.new_record?) ? :post : :put)
-      @form_helper     = nil
       @as              = options[:as].presence || @object.class.to_s.underscore
 
       # Template code
@@ -98,7 +98,7 @@ module ShowTableHelper
     # Whether or not this table has editable content. An editable table will
     # have a toggle button to switch to edition mode.
     def editable?
-      !@edit_disabled # && @edit_cell_count > 0
+      !@edit_disabled
     end
 
     # Generate a single cell for the table, optionally along with a header cell
@@ -172,7 +172,6 @@ module ShowTableHelper
       header    = options.delete(:header) || field.to_s.humanize
       object    = @object
       options[:disabled] ||= @edit_disabled
-      @edit_cell_count += 1 unless options[:disabled]
       wrapper = -> { @form_helper ? block.call(@form_helper) : block.call }
       build_cell(ERB::Util.html_escape(header), @template.instance_eval { inline_edit_field(object, field, options, &wrapper) }, options)
     end
