@@ -321,12 +321,10 @@ module ShowTableHelper
   #  table is editable (+edit_condition+ is specified as true), an edit toggle
   #  will be added next to the header/title to switch into edition mode.
   def show_table(object, options = {}, &block)
-    tb_options = options.merge(block: block)
-    url = options[:url].presence
-    # '', ' '... should be interpreted as false (non-editable for some reason)
-    tb_options[:edit_condition] = edit_condition = options[:edit_condition].presence
 
-    if url.blank? && object.is_a?(ApplicationRecord) && edit_condition
+    url = options[:url].presence
+    edit_condition = options[:edit_condition].present?
+    if url.blank? && edit_condition && object.is_a?(ApplicationRecord)
       url = { :controller  => params[:controller] }
       if object.new_record?
         url[:action] = :create
@@ -334,10 +332,10 @@ module ShowTableHelper
         url[:action] = :update
         url[:id]     = object.id
       end
-      tb_options[:url] = url_for(url)
+      url = url_for(url)
     end
-
-    tb = TableBuilder.new(object, self, tb_options)
+    tb = TableBuilder.new(object, self, options.merge(:block => block, :url => url,
+                                                      :edit_condition => edit_condition))
 
     render :partial => 'shared/show_table', :locals => { :tb => tb }
   end
