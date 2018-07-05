@@ -323,7 +323,8 @@ module ShowTableHelper
   def show_table(object, options = {}, &block)
 
     url = options[:url].presence
-    if url.blank? && object.is_a?(ApplicationRecord)
+    edit_condition = options[:edit_condition].present?
+    if url.blank? && edit_condition && object.is_a?(ApplicationRecord)
       url = { :controller  => params[:controller] }
       if object.new_record?
         url[:action] = :create
@@ -333,8 +334,8 @@ module ShowTableHelper
       end
       url = url_for(url)
     end
-
-    tb = TableBuilder.new(object, self, options.merge(:block => block, :url => url))
+    tb = TableBuilder.new(object, self, options.merge(:block => block, :url => url,
+                                                      :edit_condition => edit_condition))
 
     render :partial => 'shared/show_table', :locals => { :tb => tb }
   end
