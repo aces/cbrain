@@ -57,15 +57,21 @@ class ExceptionLogsController < ApplicationController
   end
 
   def destroy #:nodoc:
-    @exception_logs = ExceptionLog.find(params[:exception_log_ids])
-    @exception_logs.each(&:destroy)
 
-    flash[:notice] = "#{view_pluralize(@exception_logs.count, "exception")} deleted."
+    if params[:exception_log_ids].present?
 
-    respond_to do |format|
-      format.html { redirect_to(:action => :index) }
-      format.js   { redirect_to(:action => :index) }
-      format.xml  { head :ok }
+      @exception_logs = ExceptionLog.find(params[:exception_log_ids])
+      @exception_logs.each(&:destroy)
+
+      flash[:notice] = "#{view_pluralize(@exception_logs.count, "exception")} deleted."
+    else
+      flash[:error] = "Please select exceptions to be deleted then hit the delete button."
     end
+      respond_to do |format|
+        format.html { redirect_to(:action => :index) }
+        format.js   { redirect_to(:action => :index) }
+        format.xml  { head :ok }
+      end
+
   end
 end
