@@ -35,9 +35,9 @@
 <div class="display_inline_block" style="min-width: 50%">
 
   <%= show_table(@site, :edit_condition => check_role(:admin_user)) do |t| %>
-    <% t.edit_cell(:name) { text_field_tag "site[name]", @site.name } %>
-    <% t.edit_cell(:description, :content => full_description(@site.description)) do %>
-      <%= text_area_tag "site[description]", @site.description, :rows => 10, :cols => 40 %><br/>
+    <% t.edit_cell(:name) { |f| f.text_field :name } %>
+    <% t.edit_cell(:description, content: full_description(@site.description)) do |f|%>
+      <%= f.text_area :description, cols:40, rows: 10 %><br/>
       <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div><br>
     <% end %>
   <% end %>
