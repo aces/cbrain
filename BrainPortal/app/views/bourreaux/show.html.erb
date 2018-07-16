@@ -67,16 +67,16 @@
 
     <% t.attribute_cell(:class) %>
 
-    <% t.edit_cell(:online, :header => "Status", :content => (@bourreau.online ? "Online" : "Offline")) do %>
-      <%= select_tag "bourreau[online]", options_for_select([["Online", true], ["Offline", false]], :selected => @bourreau.online) %>
+    <% t.edit_cell(:online, :header => "Status", :content => (@bourreau.online ? "Online" : "Offline")) do |f| %>
+      <%=  f.select  :online, [["Online", true], ["Offline", false]] %>
     <% end %>
 
     <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@bourreau.user), :disabled => ! current_user.has_role?(:admin_user)) do %>
       <%= user_select("bourreau[user_id]", { :selector => @bourreau } ) %>
     <% end %>
 
-    <% t.edit_cell(:time_zone, :content => (@bourreau.time_zone || "(Unset)") ) do %>
-      <%= select_tag "bourreau[time_zone]", time_zone_options_for_select(@bourreau.time_zone, /canada/i), :include_blank => true %>
+    <% t.edit_cell(:time_zone, :content => (@bourreau.time_zone || "(Unset)") ) do |f| %>
+      <%=  f.select :time_zone, time_zone_options_for_select(@bourreau.time_zone, /canada/i), :include_blank => true %>
     <% end %>
 
     <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@bourreau.group)) do %>
@@ -89,7 +89,7 @@
 
     <% licenses = @bourreau.license_agreements.count == 0 ? "(None)": @bourreau.license_agreements.join("\n") %>
     <% t.edit_cell(:license_agreements, :content => licenses) do |f| %>
-      <%= f.text_area :license_agreements, :value => licenses, :rows => 5, :cols => 40 %><br>
+      <%= f.text_area :license_agreements, :value => @bourreau.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
       <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
     <% end %>
 
@@ -227,8 +227,8 @@
         <%= f.text_field :spaced_dp_ignore_patterns, :size => 60 %><br/>
         <div class="field_explanation">Separate several patterns with spaces; each pattern can contain single '*'s, but no '/'s or special characters.</div>
       <% end %>
-      <% t.edit_cell(:cache_trust_expire, :header => "Cache Expiration Timeout (in seconds)", :content => (@bourreau.cache_trust_expire == 0 ? "Never" : @bourreau.cache_trust_expire)) do %>
-        <%= select_tag("bourreau[cache_trust_expire]", options_for_select([
+      <% t.edit_cell(:cache_trust_expire, :header => "Cache Expiration Timeout (in seconds)", :content => (@bourreau.cache_trust_expire == 0 ? "Never" : @bourreau.cache_trust_expire)) do |f| %>
+        <%= f.select :cache_trust_expire, [
                 [ "Never",        "0"                  ],
                 [ "Six hours",     6.hours.to_i.to_s   ],
                 [ "Twelve hours", 12.hours.to_i.to_s   ],
@@ -240,7 +240,7 @@
                 [ "Two months",    2.months.to_i.to_s  ],
                 [ "Three months",  3.months.to_i.to_s  ],
                 [ "Six months",    6.months.to_i.to_s  ]
-            ], :selected => @bourreau.cache_trust_expire ))
+            ]
         %></br>
         <div class="field_explanation">This means that in the execution server's cache, files that have been recorded
         as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy
@@ -254,8 +254,8 @@
     <% if is_bourreau %>
       <%= show_table(@bourreau, :header => "Cluster Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
-        <% t.edit_cell(:cms_class, :header => "Type of cluster") do %>
-          <%= select_tag "bourreau[cms_class]", options_for_select([
+        <% t.edit_cell(:cms_class, :header => "Type of cluster") do |f| %>
+          <%= f.select :cms_class, [
                   [ "(Unconfigured)",  "" ],
                   [ "Sun GridEngine",  "ScirSge" ],
                   [ "PBS",             "ScirPbs" ],
@@ -265,7 +265,7 @@
                   [ "Amazon EC2",      "ScirAmazon" ],
                   [ "SLURM",           "ScirSlurm" ],
                   [ "UNIX processes",  "ScirUnix" ]
-              ], :selected => @bourreau.cms_class)
+              ]
           %>
         <% end %>
 
@@ -274,8 +274,8 @@
           <div class="field_explanation">Optional.</div>
         <% end %>
 
-        <% t.edit_cell 'meta[task_limit_total]', :header => "Maximum total number of active tasks", :content => (@bourreau.meta["task_limit_total"].blank? ? "Unlimited" : @bourreau.meta["task_limit_total"]) do %>
-          <%= select_tag 'meta[task_limit_total]',
+        <% t.edit_cell 'meta[task_limit_total]', :header => "Maximum total number of active tasks", :content => (@bourreau.meta["task_limit_total"].blank? ? "Unlimited" : @bourreau.meta["task_limit_total"]) do |f| %>
+          <%=  select_tag  'meta[task_limit_total]',
               options_for_select( [ [ "Unlimited", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
                                   @bourreau.meta[:task_limit_total] )
           %>
@@ -369,8 +369,8 @@
         <% end %>
       <% end %>
       <%= show_table(@bourreau, :header => "Worker Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
-        <% t.edit_cell :workers_instances, :header => "Number of workers" do %>
-          <%= select_tag "bourreau[workers_instances]", options_for_select([
+        <% t.edit_cell :workers_instances, :header => "Number of workers" do |f| %>
+          <%=  f.select :workers_instances, [
                   [ "None (for debug)",  0 ],
                   [ "1",                 1 ],
                   [ "2",                 2 ],
@@ -379,11 +379,11 @@
                   [ "5",                 5 ],
                   [ "10",                10 ],
                   [ "20",                20 ]
-              ], :selected => @bourreau.workers_instances)
+              ]
           %>
         <% end %>
-        <% t.edit_cell :workers_chk_time, :header => "Check interval" do %>
-          <%= select_tag "bourreau[workers_chk_time]", options_for_select([
+        <% t.edit_cell :workers_chk_time, :header => "Check interval" do |f| %>
+          <%=  f.select :workers_chk_time, [
                   [ "5 seconds",               5 ],
                   [ "10 seconds",              10 ],
                   [ "30 seconds",              30 ],
@@ -392,11 +392,11 @@
                   [ "5 minutes",               300 ],
                   [ "15 minutes",              900 ],
                   [ "1 hour",                  3600 ]
-              ], :selected => @bourreau.workers_chk_time)
+              ]
           %>
         <% end %>
-        <% t.edit_cell :workers_log_to, :header => "Log destination" do %>
-          <%= select_tag "bourreau[workers_log_to]", options_for_select([
+        <% t.edit_cell :workers_log_to, :header => "Log destination" do |f| %>
+          <%= f.select :workers_log_to, [
                   [ "Combined file (recommended)", "combined" ],
                   [ "Separate files",              "separate" ],
                   [ "RAILS log",                   "bourreau" ],
@@ -404,14 +404,14 @@
                   [ "RAILS stderr",                "stderr" ],
                   [ "RAILS stdout and stderr",     "stdout|stderr" ],
                   [ "No logging",                  "none" ]
-              ], :selected => @bourreau.workers_log_to)
+              ]
           %>
         <% end %>
-        <% t.edit_cell :workers_verbose, :header => "Log verbosity", :content => ['(Not configured)', 'Normal', 'Debug info' ][@bourreau.workers_verbose || 0]  do %>
-          <%= select_tag "bourreau[workers_verbose]", options_for_select([
+        <% t.edit_cell :workers_verbose, :header => "Log verbosity", :content => ['(Not configured)', 'Normal', 'Debug info' ][@bourreau.workers_verbose || 0]  do |f| %>
+          <%=  f.select :workers_verbose, [
                   [ "Normal",      1 ],
                   [ "Debug info",  2 ]
-              ], :selected => @bourreau.workers_verbose)
+              ]
           %>
         <% end %>
       <% end %>
