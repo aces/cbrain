@@ -51,17 +51,17 @@
 <div class="display_inline_block" style="min-width: 50%">
   <%= show_table(@bourreau, :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
-    <% t.edit_cell(:name) do %>
-      <%= text_field_tag "bourreau[name]", @bourreau.name %><br>
-      <div class="field_explanation">
+    <% t.edit_cell(:name) do |f| %>
+      <%= f.text_field :name %><br>
+      <div class="field_explanation"  >
         Important note: this name must also be changed accordingly in the config file
         <em><%= is_bourreau ? "Bourreau/config/initializers/config_bourreau.rb" : "BrainPortal/config/initializers/config_portal.rb" %></em>
         for this server to restart properly later on.
       </div>
     <% end %>
 
-    <% t.edit_cell(:description, :content =>  full_description(@bourreau.description)) do %>
-      <%= text_area_tag "bourreau[description]", @bourreau.description, :rows => 10, :cols => 40 %><br>
+    <% t.edit_cell(:description, :content =>  full_description(@bourreau.description)) do |f| %>
+      <%= f.text_area :description, :rows => 10, :cols => 40 %><br>
       <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div><br>
     <% end %>
 
@@ -88,16 +88,16 @@
     <% t.cell("Site") { link_to_site_if_accessible(@bourreau.site_affiliation) } %>
 
     <% licenses = @bourreau.license_agreements.count == 0 ? "(None)": @bourreau.license_agreements.join("\n") %>
-    <% t.edit_cell(:license_agreements, :content => licenses) do %>
-      <%= text_area_tag "bourreau[license_agreements]", @bourreau.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
+    <% t.edit_cell(:license_agreements, :content => licenses) do |f| %>
+      <%= f.text_area :license_agreements, :value => licenses, :rows => 5, :cols => 40 %><br>
       <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
     <% end %>
 
     <% if is_bourreau %>
       <% external_status_page_url = @bourreau.external_status_page_url.nil? ?
                                       "(None)" : link_to(@bourreau.external_status_page_url, @bourreau.external_status_page_url, :class => "action_link", :target => "_blank") %>
-      <% t.edit_cell(:external_status_page_url, :header => "External status page URL", :content => external_status_page_url ) do %>
-        <%= text_field_tag "bourreau[external_status_page_url]", @bourreau.external_status_page_url, :size => 60 %><br>
+      <% t.edit_cell(:external_status_page_url, :header => "External status page URL", :content => external_status_page_url ) do |f| %>
+        <%= f.text_field :external_status_page_url, :size => 60 %><br>
         <div class="field_explanation">Link to external status page for the server.</div>
       <% end %>
     <% end %>
@@ -107,30 +107,30 @@
       <% t.edit_cell :site_url_prefix,
                      :header => "Base Portal URL",
                      :content => (@bourreau.site_url_prefix.blank? ? "(None)" : @bourreau.site_url_prefix),
-                     :show_width => 1 do %>
-        <%= text_field_tag "bourreau[site_url_prefix]", @bourreau.site_url_prefix, :size => 40 %><br/>
+                     :show_width => 1 do |f| %>
+        <%= f.text_field :site_url_prefix, :size => 40 %><br/>
         <div class="field_explanation">
           Required to direct new users to the portal, this should be filled in with the <em>base</em> URL of the portal
         </div>
       <% end %>
 
-      <% t.edit_cell(:help_url, :header => "User Manual URL", :show_width => 1) do %>
-        <%= text_field_tag "bourreau[help_url]", @bourreau.help_url, :size => 40 %><br/>
+      <% t.edit_cell(:help_url, :header => "User Manual URL", :show_width => 1) do |f| %>
+        <%= f.text_field :help_url, :size => 40 %><br/>
         <div class="field_explanation">If set, the portal will show a link called 'User Manual' in the account bar at the top.</div>
       <% end %>
 
       <% t.edit_cell :small_logo,
                      :header => "Small logo",
                      :content => (@bourreau.small_logo.blank? ? "(None)" : @bourreau.small_logo),
-                     :show_width => 1 do %>
-        <%= text_field_tag "bourreau[small_logo]", @bourreau.small_logo, :size => 40 %><br/>
+                     :show_width => 1 do |f| %>
+        <%= f.text_field :small_logo, :size => 40 %><br/>
       <% end %>
 
       <% t.edit_cell :large_logo,
                      :header => "Large logo",
                      :content => (@bourreau.large_logo.blank? ? "(None)" : @bourreau.large_logo),
-                     :show_width => 1 do %>
-        <%= text_field_tag "bourreau[large_logo]", @bourreau.large_logo, :size => 40 %><br/>
+                     :show_width => 1 do |f| %>
+        <%= f.text_field :large_logo, :size => 40 %><br/>
       <% end %>
 
       <% t.edit_cell 'meta[large_upload_url]',
@@ -161,12 +161,12 @@
 
   <% if is_portal %>
     <%= show_table(@bourreau, :header => "Mail configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
-      <% t.edit_cell(:support_email, :header => "Support email address") do %>
-        <%= text_field_tag "bourreau[support_email]", @bourreau.support_email, :size => 30 %><br/>
+      <% t.edit_cell(:support_email, :header => "Support email address") do |f| %>
+        <%= f.text_field :support_email, :size => 30 %><br/>
         <div class="field_explanation">If set, the portal will show a <em>mailto:</em> link for letting users contact support.</div>
       <% end %>
-      <% t.edit_cell(:system_from_email, :header => "System 'From' reply address") do %>
-        <%= text_field_tag "bourreau[system_from_email]", @bourreau.system_from_email, :size => 30 %><br/>
+      <% t.edit_cell(:system_from_email, :header => "System 'From' reply address") do |f| %>
+        <%= f.text_field :system_from_email, :size => 30 %><br/>
         <div class="field_explanation">If set, messages sent automatically by this system will contain this return address.</div>
       <% end %>
       <% t.edit_cell("meta[error_message_mailing_list]", :header => "Error notifications sent to members of project", :content => link_to_group_if_accessible(@bourreau.meta[:error_message_mailing_list])) do %>
@@ -182,32 +182,32 @@
 
       <%= show_table(@bourreau, :header => "Connection Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
-        <% t.edit_cell(:ssh_control_host, :header => "SSH Hostname") do %>
-          <%= text_field_tag "bourreau[ssh_control_host]", @bourreau.ssh_control_host %>
+        <% t.edit_cell(:ssh_control_host, :header => "SSH Hostname") do |f| %>
+          <%= f.text_field :ssh_control_host %>
         <% end %>
 
-        <% t.edit_cell(:ssh_control_rails_dir, :header => "Rails Server Directory") do %>
-          <%= text_field_tag "bourreau[ssh_control_rails_dir]", @bourreau.ssh_control_rails_dir, :size => 60 %>
+        <% t.edit_cell(:ssh_control_rails_dir, :header => "Rails Server Directory") do |f| %>
+          <%= f.text_field :ssh_control_rails_dir, :size => 60 %>
         <% end %>
 
-        <% t.edit_cell(:ssh_control_user, :header => "SSH User") do %>
-          <%= text_field_tag "bourreau[ssh_control_user]", @bourreau.ssh_control_user %>
+        <% t.edit_cell(:ssh_control_user, :header => "SSH User") do |f| %>
+          <%= f.text_field :ssh_control_user %>
         <% end %>
 
-        <% t.edit_cell(:tunnel_mysql_port, :header => "Database Server Remote Tunnel Port") do %>
-          <%= text_field_tag "bourreau[tunnel_mysql_port]", @bourreau.tunnel_mysql_port, :size => 6 %>
+        <% t.edit_cell(:tunnel_mysql_port, :header => "Database Server Remote Tunnel Port") do |f| %>
+          <%= f.text_field :tunnel_mysql_port, :size => 6 %>
         <% end %>
 
-        <% t.edit_cell(:ssh_control_port, :header => "SSH Port") do %>
-          <%= text_field_tag "bourreau[ssh_control_port]", @bourreau.ssh_control_port, :size => 6 %>
+        <% t.edit_cell(:ssh_control_port, :header => "SSH Port") do |f| %>
+          <%= f.text_field :ssh_control_port, :size => 6 %>
         <% end %>
 
-        <% t.edit_cell(:tunnel_actres_port, :header => "ActiveResource Remote Tunnel Port") do %>
-          <%= text_field_tag "bourreau[tunnel_actres_port]", @bourreau.tunnel_actres_port, :size => 6 %>
+        <% t.edit_cell(:tunnel_actres_port, :header => "ActiveResource Remote Tunnel Port") do |f| %>
+          <%= f.text_field :tunnel_actres_port, :size => 6 %>
         <% end %>
 
-        <% t.edit_cell(:proxied_host, :header => "Second-level Hostname") do %>
-          <%= text_field_tag "bourreau[proxied_host]", @bourreau.proxied_host %>
+        <% t.edit_cell(:proxied_host, :header => "Second-level Hostname") do |f| %>
+          <%= f.text_field :proxied_host %>
         <% end %>
 
       <% end %>
@@ -217,14 +217,14 @@
 
 
     <%= show_table(@bourreau, :header => "Cache Management Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
-      <% t.edit_cell(:dp_cache_dir, :header => "Path to Data Provider caches") do %>
-        <%= text_field_tag "bourreau[dp_cache_dir]", @bourreau.dp_cache_dir, :size => 60 %><br/>
+      <% t.edit_cell(:dp_cache_dir, :header => "Path to Data Provider caches") do |f| %>
+        <%= f.text_field :dp_cache_dir, :size => 60 %><br/>
         <div class="field_explanation">Warning! Changing this field will result in resetting the synchronization
         status of all files from all Data Providers! Also, the Rails app will have to
         be restarted, and all files in that directory will be erased!</div>
       <% end %>
-      <% t.edit_cell(:spaced_dp_ignore_patterns, :header => "Patterns for filenames to ignore", :content => @bourreau.spaced_dp_ignore_patterns) do %>
-        <%= text_field_tag "bourreau[spaced_dp_ignore_patterns]", @bourreau.spaced_dp_ignore_patterns, :size => 60 %><br/>
+      <% t.edit_cell(:spaced_dp_ignore_patterns, :header => "Patterns for filenames to ignore", :content => @bourreau.spaced_dp_ignore_patterns) do |f| %>
+        <%= f.text_field :spaced_dp_ignore_patterns, :size => 60 %><br/>
         <div class="field_explanation">Separate several patterns with spaces; each pattern can contain single '*'s, but no '/'s or special characters.</div>
       <% end %>
       <% t.edit_cell(:cache_trust_expire, :header => "Cache Expiration Timeout (in seconds)", :content => (@bourreau.cache_trust_expire == 0 ? "Never" : @bourreau.cache_trust_expire)) do %>
@@ -269,8 +269,8 @@
           %>
         <% end %>
 
-        <% t.edit_cell(:cms_default_queue, :header => "Default queue name") do %>
-          <%= text_field_tag "bourreau[cms_default_queue]", @bourreau.cms_default_queue %><br/>
+        <% t.edit_cell(:cms_default_queue, :header => "Default queue name") do |f| %>
+          <%= f.text_field :cms_default_queue %><br/>
           <div class="field_explanation">Optional.</div>
         <% end %>
 
@@ -281,8 +281,8 @@
           %>
         <% end %>
 
-        <% t.edit_cell(:cms_extra_qsub_args, :header => "Extra 'qsub' options") do %>
-          <%= text_field_tag "bourreau[cms_extra_qsub_args]", @bourreau.cms_extra_qsub_args, :size => 60 %><br/>
+        <% t.edit_cell(:cms_extra_qsub_args, :header => "Extra 'qsub' options") do |f| %>
+          <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
           <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
         <% end %>
 
@@ -339,8 +339,8 @@
           <%= tool_config_edit_link || tool_config_create_link %>
         <% end %>
 
-        <% t.edit_cell(:cms_shared_dir, :header => "Path to shared work directory", :show_width => 2) do %>
-          <%= text_field_tag "bourreau[cms_shared_dir]", @bourreau.cms_shared_dir, :size => 60 %><br/>
+        <% t.edit_cell(:cms_shared_dir, :header => "Path to shared work directory", :show_width => 2) do |f| %>
+          <%= f.text_field :cms_shared_dir, :size => 60 %><br/>
           <div class="field_explanation">Mandatory. This directory must be visible and writable from all nodes.
                  This is were the work subdirectories for all tasks will be created.</div>
         <% end %>
@@ -418,13 +418,13 @@
       <!-- Container -->
       <%= show_table(@bourreau, :header => "Container Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
         <!-- Docker -->
-        <% t.edit_cell :docker_executable_name, :header => "Docker executable" do %>
-          <%= text_field_tag "bourreau[docker_executable_name]", @bourreau.docker_executable_name, :size => 60 %><br/>
+        <% t.edit_cell :docker_executable_name, :header => "Docker executable" do |f| %>
+          <%= f.text_field :docker_executable_name, :size => 60 %><br/>
            <div class="field_explanation">Name of the Docker executable available on the machines where tasks will run. It should always be set if Docker is present.</div>
         <% end %>
         <!-- Singularity -->
-        <% t.edit_cell :singularity_executable_name, :header => "Singularity executable" do %>
-          <%= text_field_tag "bourreau[singularity_executable_name]", @bourreau.singularity_executable_name, :size => 60 %><br/>
+        <% t.edit_cell :singularity_executable_name, :header => "Singularity executable" do |f| %>
+          <%= f.text_field :singularity_executable_name, :size => 60 %><br/>
            <div class="field_explanation">Name of the Singularity executable available on the machines where tasks will run. It should always be set if Singularity is present.</div>
         <% end %>
       <% end %>
