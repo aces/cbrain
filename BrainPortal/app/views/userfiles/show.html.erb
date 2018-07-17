@@ -46,7 +46,7 @@
 <br>
 <%= error_messages_for @userfile, :header_message => "#{@userfile.name} could not be updated." %>
 <div class="display_inline_block" style="min-width: 50%">
-  <%= show_table(@userfile, :edit_condition => true) do |t| %>
+  <%= show_table(@userfile, :as => :userfile, :edit_condition => true) do |t| %>
 
     <% t.edit_cell(:name, :disabled => !@userfile.has_owner_access?(current_user)) do |f| %>
       <%= f.text_field :name %>
@@ -130,15 +130,14 @@
       <%= f.select :group_writable, [['Read Only', false],['Read/Write', true]] %>
     <% end %>
 
-    <% t.edit_cell("Hidden file", :content => check_box_tag(nil ,nil, @userfile.hidden?, :disabled => true) + "&nbsp;".html_safe + hidden_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do %>
-      <%= hidden_field_tag "userfile[hidden]", "0" %>
-      <%= check_box_tag("userfile[hidden]",    "1", @userfile.hidden?) %>
+    <% t.edit_cell("Hidden file", :content => check_box_tag(nil ,nil, @userfile.hidden?, :disabled => true) + "&nbsp;".html_safe + hidden_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do |f|%>
+      <%= f.check_box(:hidden) %>
       <%= hidden_icon %>
     <% end %>
 
-    <% t.edit_cell("Immutable file", :content => check_box_tag(nil ,nil, @userfile.immutable?, :disabled => true) + "&nbsp;".html_safe + immutable_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do %>
-      <%= hidden_field_tag "userfile[immutable]", "0" %>
-      <%= check_box_tag("userfile[immutable]",    "1", @userfile.immutable?) %>
+    <% t.edit_cell("Immutable file", :content => check_box_tag(nil ,nil, @userfile.immutable?, :disabled => true) + "&nbsp;".html_safe + immutable_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do |f|%>
+
+      <%= f.check_box :immutable %>
       <%= immutable_icon %>
     <% end %>
 

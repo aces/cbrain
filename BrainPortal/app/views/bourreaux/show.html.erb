@@ -49,7 +49,7 @@
 <%= error_messages_for @bourreau, :header_message => "Server could not be updated." %>
 
 <div class="display_inline_block" style="min-width: 50%">
-  <%= show_table(@bourreau, :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+  <%= show_table(@bourreau, :as => :bourreau, :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
     <% t.edit_cell(:name) do |f| %>
       <%= f.text_field :name %><br>
@@ -216,7 +216,7 @@
 
 
 
-    <%= show_table(@bourreau, :header => "Cache Management Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+    <%= show_table(@bourreau, :as => :bourreau, :header => "Cache Management Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
       <% t.edit_cell(:dp_cache_dir, :header => "Path to Data Provider caches") do |f| %>
         <%= f.text_field :dp_cache_dir, :size => 60 %><br/>
         <div class="field_explanation">Warning! Changing this field will result in resetting the synchronization
@@ -252,7 +252,7 @@
 
 
     <% if is_bourreau %>
-      <%= show_table(@bourreau, :header => "Cluster Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <%= show_table(@bourreau, :as => :bourreau, :header => "Cluster Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
         <% t.edit_cell(:cms_class, :header => "Type of cluster") do |f| %>
           <%= f.select :cms_class, [
@@ -368,7 +368,7 @@
           <% end %>
         <% end %>
       <% end %>
-      <%= show_table(@bourreau, :header => "Worker Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <%= show_table(@bourreau, :as => :bourreau, :header => "Worker Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
         <% t.edit_cell :workers_instances, :header => "Number of workers" do |f| %>
           <%=  f.select :workers_instances, [
                   [ "None (for debug)",  0 ],
@@ -416,7 +416,7 @@
         <% end %>
       <% end %>
       <!-- Container -->
-      <%= show_table(@bourreau, :header => "Container Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <%= show_table(@bourreau, :as => :bourreau, :header => "Container Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
         <!-- Docker -->
         <% t.edit_cell :docker_executable_name, :header => "Docker executable" do |f| %>
           <%= f.text_field :docker_executable_name, :size => 60 %><br/>
