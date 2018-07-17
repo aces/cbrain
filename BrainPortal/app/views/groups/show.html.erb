@@ -69,7 +69,7 @@
     <% end %>
 
     <% if current_user.has_role?(:admin_user) && @group.is_a?(WorkGroup) %>
-      <% t.edit_cell("Invisible", :content => check_box_tag(nil ,nil, @group.invisible?, :disabled => true)) do |f|%>
+      <% t.edit_cell("Invisible", :content => check_box_tag(nil ,nil, @group.invisible?, :disabled => true)) do |f| %>
         <%= f.check_box :invisible %>
       <% end %>
     <% end %>

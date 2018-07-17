@@ -130,13 +130,12 @@
       <%= f.select :group_writable, [['Read Only', false],['Read/Write', true]] %>
     <% end %>
 
-    <% t.edit_cell("Hidden file", :content => check_box_tag(nil ,nil, @userfile.hidden?, :disabled => true) + "&nbsp;".html_safe + hidden_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do |f|%>
-      <%= f.check_box(:hidden) %>
+    <% t.edit_cell("Hidden file", :content => check_box_tag(nil ,nil, @userfile.hidden?, :disabled => true) + "&nbsp;".html_safe + hidden_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do |f| %>
+      <%= f.check_box :hidden %>
       <%= hidden_icon %>
     <% end %>
 
-    <% t.edit_cell("Immutable file", :content => check_box_tag(nil ,nil, @userfile.immutable?, :disabled => true) + "&nbsp;".html_safe + immutable_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do |f|%>
-
+    <% t.edit_cell("Immutable file", :content => check_box_tag(nil ,nil, @userfile.immutable?, :disabled => true) + "&nbsp;".html_safe + immutable_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do |f| %>
       <%= f.check_box :immutable %>
       <%= immutable_icon %>
     <% end %>
