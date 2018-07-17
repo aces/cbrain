@@ -48,8 +48,8 @@
 <div class="display_inline_block" style="min-width: 50%">
   <%= show_table(@userfile, :edit_condition => true) do |t| %>
 
-    <% t.edit_cell(:name, :disabled => !@userfile.has_owner_access?(current_user)) do %>
-      <%= text_field_tag "userfile[name]", @userfile.name %>
+    <% t.edit_cell(:name, :disabled => !@userfile.has_owner_access?(current_user)) do |f| %>
+      <%= f.text_field :name %>
     <% end %>
 
     <% t.cell("Created at") do %>
@@ -126,8 +126,8 @@
       </select>
     <% end %>
 
-    <% t.edit_cell(:group_writable, :header => "Project permission on file", :content => (@userfile.group_writable? ? "Read/Write" : "Read"), :disabled => !@userfile.has_owner_access?(current_user)) do %>
-      <%= select_tag("userfile[group_writable]", options_for_select([['Read Only', false],['Read/Write', true]])) %>
+    <% t.edit_cell(:group_writable, :header => "Project permission on file", :content => (@userfile.group_writable? ? "Read/Write" : "Read"), :disabled => !@userfile.has_owner_access?(current_user)) do |f| %>
+      <%= f.select :group_writable, [['Read Only', false],['Read/Write', true]] %>
     <% end %>
 
     <% t.edit_cell("Hidden file", :content => check_box_tag(nil ,nil, @userfile.hidden?, :disabled => true) + "&nbsp;".html_safe + hidden_icon, :disabled => (!@userfile.has_owner_access?(current_user))) do %>
@@ -166,8 +166,8 @@
       <% end %>
     <% end %>
 
-    <% t.edit_cell(:description, :content => simple_format(@userfile.description, :sanitize => true), :show_width => 2, :disabled => (!@userfile.has_owner_access?(current_user))) do %>
-      <%= text_area_tag "userfile[description]", @userfile.description, :rows => 10, :cols => 80 %>
+    <% t.edit_cell(:description, :content => simple_format(@userfile.description, :sanitize => true), :show_width => 2, :disabled => (!@userfile.has_owner_access?(current_user))) do |f| %>
+      <%= f.text_area :description, :rows => 10, :cols => 80 %>
     <% end %>
 
   <% end %>

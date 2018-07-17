@@ -48,8 +48,8 @@
 
   <%= show_table(@group, :edit_condition => @group.can_be_edited_by?(current_user)) do |t| %>
 
-    <% t.edit_cell(:name) do %>
-      <%= text_field_tag "group[name]", @group.name %>
+    <% t.edit_cell(:name) do |f| %>
+      <%= f.text_field :name %>
     <% end %>
 
     <% t.edit_cell(:creator_id, :content => link_to_user_with_tooltip(@group.creator), :header => "Creator") do %>
@@ -63,8 +63,8 @@
 
     <% t.cell("Type") { @group.pretty_category_name(current_user) } %>
 
-    <% t.edit_cell(:description, :content =>  full_description(@group.description)) do %>
-        <%= text_area_tag "group[description]", @group.description, :rows => 4, :cols => 40 %><br>
+    <% t.edit_cell(:description, :content =>  full_description(@group.description)) do |f| %>
+        <%= f.text_area :description, :rows => 4, :cols => 40 %><br>
         <div class="field_explanation">The first line should be a short summary, and the rest are for details.</div><br>
     <% end %>
 
