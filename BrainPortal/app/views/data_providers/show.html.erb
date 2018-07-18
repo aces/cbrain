@@ -57,7 +57,7 @@
   <%= show_table(@provider, :as => :data_provider, :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
 
     <% t.edit_cell(:name) do |f| %>
-      <%= f.text_field :name, @provider.name %>
+      <%= f.text_field :name %>
     <% end %>
 
     <% t.edit_cell(:description, :content => full_description(@provider.description)) do  |f| %>
@@ -87,7 +87,7 @@
     <% end %>
 
     <% t.edit_cell(:online, :content => (@provider.not_syncable ? "NOT syncable" : "Fully syncable"), :header => "Syncability") do |f| %>
-      <%= f.select_tag :not_syncable, [["Fully syncable", false], ["NOT syncable", true]] %>
+      <%= f.select :not_syncable, [["Fully syncable", false], ["NOT syncable", true]] %>
     <% end %>
 
     <% t.cell("Site") { link_to_site_if_accessible(@provider.site) } %>
@@ -105,7 +105,7 @@
     <% end %>
 
     <% t.edit_cell(:time_zone, :content => (@provider.time_zone || "(Unset)") ) do |f| %>
-      <%= f.select "data_provider[time_zone]", time_zone_options_for_select(@provider.time_zone, /canada/i), :include_blank => true %>
+      <%= f.select :time_zone, time_zone_options_for_select(@provider.time_zone, /canada/i), :include_blank => true %>
     <% end %>
 
     <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
@@ -116,7 +116,7 @@
 
     <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
       <% t.edit_cell(:remote_dir, :header => "Physical Data Location", :show_width => 2) do |f| %>
-        <%= f.text_fielt :remote_dir, :size => 60 %>
+        <%= f.text_field :remote_dir, :size => 60 %>
       <% end %>
     <% end %>
 
@@ -125,7 +125,7 @@
   <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
     <%= show_table(@provider, :as => :data_provider, :header => "SSH parameters for remote Data Providers", :edit_condition => true) do |t| %>
       <% t.edit_cell(:remote_host)  do |f| %>
-        <%= f.text_field remote_host %>
+        <%= f.text_field :remote_host %>
       <% end %>
       <% t.edit_cell(:alternate_host, :header => "Alternate hostname(s)")  do |f| %>
         <%= f.text_field :alternate_host, :size => 60 %><br />
