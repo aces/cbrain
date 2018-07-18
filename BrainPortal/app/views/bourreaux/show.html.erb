@@ -160,7 +160,7 @@
   <% end %>
 
   <% if is_portal %>
-    <%= show_table(@bourreau, :header => "Mail configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+    <%= show_table(@bourreau, :as => :bourreau, :header => "Mail configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
       <% t.edit_cell(:support_email, :header => "Support email address") do |f| %>
         <%= f.text_field :support_email, :size => 30 %><br/>
         <div class="field_explanation">If set, the portal will show a <em>mailto:</em> link for letting users contact support.</div>
@@ -180,7 +180,7 @@
 
     <% if is_bourreau %>
 
-      <%= show_table(@bourreau, :header => "Connection Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+      <%= show_table(@bourreau, :as => :bourreau, :header => "Connection Configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
 
         <% t.edit_cell(:ssh_control_host, :header => "SSH Hostname") do |f| %>
           <%= f.text_field :ssh_control_host %>
