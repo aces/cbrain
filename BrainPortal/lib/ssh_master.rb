@@ -93,7 +93,20 @@ class SshMaster
     :SPAWN_WAIT_TIME      => 40,
   }
 
+  # Ssh options defaults; these must be legal options as defined in ssh_config(5) and
+  # will be inserted in the ssh command line as a series of "-o key=value". These options
+  # are used for both permanent SSH masters and transient ones too.
+  DEFAULT_SSH_CONFIG_OPTIONS = {
+    :BatchMode                      => :yes,
+    :StrictHostKeyChecking          => :no,
+    :PasswordAuthentication         => :no,
+    :KbdInteractiveAuthentication   => :no,
+    :KbdInteractiveDevices          => :none,
+  }.with_indifferent_access
+
+  # ---------------------------------------------
   # Advanced options for instances of SshMaster
+  # ---------------------------------------------
 
   # if true, turn on verbose logging of subprocess tracking stuff
   attr_accessor :debug
@@ -120,6 +133,7 @@ class SshMaster
     ssh_masters[key]
   end
 
+  # TODO: Use Rails caching ?
   def self.ssh_master_cache #:nodoc:
     #@@ssh_masters ||= {}
     #@@ssh_masters
@@ -187,6 +201,10 @@ class SshMaster
     @category   =   options[:category]
     @uniq       =   options[:uniq]
     @nomaster   = !!options[:nomaster]
+
+    @ssh_config_options = DEFAULT_SSH_CONFIG_OPTIONS
+                          .dup
+                          .merge(options[:ssh_config_options] || {})
 
     raise "SSH master's \"user\" is not a simple identifier." unless
       @user =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\z/
@@ -493,12 +511,10 @@ class SshMaster
     args_string =
                       " -p #{@port}"                          +
                       " -A"                                   +
-                      " -o BatchMode=yes"                     +
                       " -o ConnectTimeout=10"                 +
-                      " -o StrictHostKeyChecking=no"          +
-                      " -o PasswordAuthentication=no"         +
-                      " -o KbdInteractiveAuthentication=no"   +
-                      " -o KbdInteractiveDevices=none"        +
+
+                      " " + ssh_config_options_as_string()    +
+
     (@nomaster ?      "" :
                       " -o ServerAliveInterval=30"            +
                       " -o ServerAliveCountMax=5"             +
@@ -714,6 +730,18 @@ class SshMaster
   end
 
   private
+
+  # Returns as a single string the set of configurable ssh options
+  # e.g. "-o BatchMode=yes -o Something=SomeValue"; by default
+  # the options are defined in DEFAULT_SSH_CONFIG_OPTIONS
+  # If a value is nil, the options will not be inserted at all in the
+  # string.
+  def ssh_config_options_as_string #:nodoc:
+    @ssh_config_options
+      .reject { |var,value| value.nil? }
+      .map    { |var,value| "-o #{shell_escape(var)}=#{shell_escape(value)}" }
+      .join(" ")
+  end
 
   # This utility method escapes properly any string such that
   # it becomes a literal in a bash command; the string returned
