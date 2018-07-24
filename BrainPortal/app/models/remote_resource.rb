@@ -243,7 +243,7 @@ class RemoteResource < ApplicationRecord
     category = "#{self.class}_#{Process.uid}"
     uniq     = "#{self.id}"
     master   = SshMaster.find_or_create(self.ssh_control_user,self.ssh_control_host,self.ssh_control_port || 22,
-               :category => category, :uniq => uniq)
+               :category => category, :uniq => uniq, :ssh_config_options => self.meta[:ssh_config_options])
     master
   end
 
@@ -633,11 +633,11 @@ class RemoteResource < ApplicationRecord
     running = self.is_alive?(what) # this updates @info or @ping as a side-effect
     if running
       if what == :info
-        self.meta[:info_cache]             = @info
+        self.meta[:info_cache]             = @info rescue nil # save from rare race conditions
         self.meta[:info_cache_last_update] = Time.now.utc
         return @info
       else
-        self.meta[:ping_cache]             = @ping
+        self.meta[:ping_cache]             = @ping rescue nil # save from rare race condition
         self.meta[:ping_cache_last_update] = Time.now.utc
         return @ping
       end
@@ -901,10 +901,10 @@ class RemoteResource < ApplicationRecord
       syncs = syncs.where( 'userfiles.user_id' => user_id_list )                  if user_id_list
       syncs = syncs.where( 'userfiles.type'    => types_list )                    if types_list
 
-      syncs = syncs.all
+      syncs = syncs.all.to_a.shuffle
       syncs.each_with_index do |ss,i|
         userfile = ss.userfile
-        $0 = "CacheCleanup ID=#{userfile.id} #{i+1}/#{syncs.size}"
+        $0 = "CacheCleanup ID=#{userfile.try :id} #{i+1}/#{syncs.size}"
         userfile.cache_erase rescue nil
         ss.delete rescue nil
       end
