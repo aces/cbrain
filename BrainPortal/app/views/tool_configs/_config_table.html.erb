@@ -1,0 +1,203 @@
+
+<%-
+  #
+  # CBRAIN Project
+  #
+  # Copyright (C) 2008-2012
+  # The Royal Institution for the Advancement of Learning
+  # McGill University
+  #
+  # This program is free software: you can redistribute it and/or modify
+  # it under the terms of the GNU General Public License as published by
+  # the Free Software Foundation, either version 3 of the License, or
+  # (at your option) any later version.
+  #
+  # This program is distributed in the hope that it will be useful,
+  # but WITHOUT ANY WARRANTY; without even the implied warranty of
+  # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  # GNU General Public License for more details.
+  #
+  # You should have received a copy of the GNU General Public License
+  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  #
+-%>
+
+<div class="groupentry">
+
+  <%= hidden_field_tag "tool_config[tool_id]",     @tool_config.tool_id %>
+  <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
+
+  <% if @tool_config.tool_id && @tool_config.bourreau_id %>
+  <span title="Project access for this configuration.">
+<% t.edit_cell(:group_id, :header => "Available to members of project:") do |f|  %>
+      <%= group_select "tool_config[group_id]", @tool_config.group_id %>
+    </p>
+  </span>
+
+    <span title="Version.">
+<% t.edit_cell(:version_name, :header => "Version:") do |f|  %>
+      <%= f.text_field :version_name %>
+    <% end %><br/>
+    <div class="field_explanation">Must be a simple string that represent a short identifier for the version. First character must be alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'</div>
+      </p>
+  </span>
+
+    <span title="Brief description for this configuration.">
+<% t.edit_cell(:description, :header => "Description:") do |f|  %><br/>
+      <%= f.text_area :description, :rows => 10, :cols => 40 %>
+    <% end %><br/>
+    <div class="field_explanation">The first line must be a short summary, and the rest are for any special notes for the users.</div>
+      </p>
+  </span>
+
+    <span title="Suggested number of CPUs to use in parallel, per task">
+<% t.edit_cell(:ncpus, :header => "Suggested number of CPUs to use in parallel, per task:") do |f|  %>
+      <%= f.select :ncpus, [ 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 32, 36, 40, 48, 56, 64, 128, 192, 256, 320, 384, 512 ] %>
+    <% end %>
+    </p>
+  </span>
+  <% end %>
+
+  <% context = @tool_config.tool_id ? "tool" : "Execution Server" %>
+  <span title="Environment variables needed for this <%= context %>">
+    <p><label>Environment variables needed for this <%= context %>:</label><br/>
+      <% @tool_config.env_array.each do |env_name_value| %>
+      <% env_name  = env_name_value[0] %>
+        <% env_value = env_name_value[1] %>
+        <%= render :partial => 'env_key_value_pair', :locals => { :env_name => env_name, :env_value => env_value } %>
+    <% end %>
+      <% 1.upto(5) do %>
+      <%= render :partial => 'env_key_value_pair', :locals => { :env_name => "", :env_value => "" } %>
+    <% end %>
+    <div class="field_explanation">In the generated script, the values shown here will be placed in double quotes automatically.</div>
+    </p>
+  </span>
+
+  <span title="BASH initialization prologue">
+<% t.edit_cell(:script_prologue, :header => "BASH initialization prologue:") do |f|  %><br/>
+      <%= f.text_area :script_prologue, :cols => 80, :rows => 10 %>
+    <% end %><br/>
+    <div class="field_explanation">This is a multi line partial BASH script. It can use the environment variables defined above,
+           and do anything else you feel is needed to activate this configuration.
+           Note that this script should usually be silent, as outputing text (like in <em>echo</em> statements)
+           could interfere with the proper processing of the task's output.</div>
+    </p>
+  </span>
+
+  <p>
+    Option: Merge configuration from another existing entry:
+    <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
+    <%= submit_tag 'Merge Configuration', :name => :merge %><br/>
+  <div class="field_explanation">
+    <% if @tool_config.tool_id && @tool_config.bourreau_id %>
+      The description, environment variables and prologue script will be appended to whatever
+      values are currently in the form. The project and suggested number of CPUs will be changed.
+    <% else %>
+      The environment variables and prologue script will be appended to whatever
+      values are currently in the form.
+    <% end %>
+  </div>
+  </p>
+
+  <span title="Container type">
+<% t.edit_cell(:container_engine, :header => "Container engine:") do |f|  %>
+      <%= f.select :container_engine, [["None", ''], ['Docker', 'Docker'], ['Singularity', 'Singularity']] %>
+    <% end %>
+  </span>
+
+  <span title="Index of the container image">
+<% t.edit_cell(:container_index_location, :header => "Index of the container image:") do |f|  %><br/>
+      <%= f.text_field :container_index_location %>
+    <% end %><br>
+      <div class="field_explanation">
+        The index/url of the container image in which the docker/singularity container is
+        accessible through.
+        Examples for Docker are: quay.io, index.docker.io (default).
+        Examples for Singularity are: docker://, shub:// (default).
+      </div>
+    </p>
+  </span>
+
+  <span title="Container image name">
+<% t.edit_cell(:containerhub_image_name, :header => "Container image name:") do |f|  %><br/>
+      <%= f.text_field :containerhub_image_name %>
+    <% end %><br/>
+      <div class="field_explanation">
+        The name and tag of the container image in which the tool is installed,
+        for instance "centos:latest". This name refers to the Docker/Singulariry index
+        accessed by the Bourreau, which is configured manually in the Bourreau
+        for now.
+      </div>
+    </p>
+  </span>
+
+  <span title="ID of the container image">
+<% t.edit_cell(:container_image_userfile_id, :header => "ID of the container image:") do |f|  %><br/>
+      <%= f.text_field :container_image_userfile_id %> <%= link_to_userfile_if_accessible(@tool_config.container_image) %>
+    <% end %><br>
+      <div class="field_explanation">
+        The ID number of the container image in which the tool is installed.
+        This ID refers to userfile registered in CBRAIN.
+      </div>
+    </p>
+  </span>
+
+  <span title="Extra 'qsub' options:">
+<% t.edit_cell(:extra_qsub_args, :header => "Extra 'qsub' options:") do |f|  %><br/>
+      <%= f.text_field :extra_qsub_args %>
+    <% end %><br/>
+      <div class="field_explanation"><b>Note:</b> This option will be appended to the extra 'qsub' option defined at the bourreau level.</div>
+    </p>
+  </span>
+
+  <% bourreau = @tool_config.bourreau %>
+  <% if !bourreau.nil? && bourreau.scir_class < ScirCloud %>
+    <% available_disk_images    = bourreau.scir_class.get_available_disk_images(bourreau)
+       available_instance_types = bourreau.scir_class.get_available_instance_types(bourreau)
+       available_ssh_key_pairs  = bourreau.scir_class.get_available_key_pairs(bourreau)
+    %>
+
+    <span title="Cloud configuration">
+    <h4>Cloud configuration</h4>
+    <p><%= t.label :cloud_disk_image, "Disk image:" %><br/>
+      <%= f.select :cloud_disk_image,  available_disk_images %><br/>
+      <div class="field_explanation">
+      </div>
+      </p>
+      <p><%= t.label :cloud_vm_user, "VM user:" %><br/>
+        <%= f.text_field :cloud_vm_user%><br/>
+      <div class="field_explanation">
+      </div>
+      </p>
+      <p><%= t.label :cloud_ssh_key_pair, "SSH key pair:" %><br/>
+        <%= f.select :cloud_ssh_key_pair,  available_ssh_key_pairs %><br/>
+      <div class="field_explanation">
+      </div>
+      </p>
+      <p><%= t.label :cloud_instance_type, "Instance type:" %><br/>
+        <%= f.select :cloud_instance_type,  available_instance_types %><br/>
+    <div class="field_explanation">
+    </div>
+      </p>
+      <p><%= t.label :cloud_job_slots, "Job slots:" %><br/>
+        <%= f.text_field :cloud_job_slots%><br/>
+    <div class="field_explanation">
+    </div>
+      </p>
+      <p><%= t.label :cloud_vm_boot_timeout, "VM boot timeout (s):" %><br/>
+        <%= f.text_field :cloud_vm_boot_timeout%><br/>
+    <div class="field_explanation">
+    </div>
+      </p>
+      <p><%= t.label :cloud_vm_ssh_tunnel_port, "VM SSH tunnel port:" %><br/>
+        <%= f.text_field :cloud_vm_ssh_tunnel_port%><br/>
+    <div class="field_explanation">
+    </div>
+      </p>
+  </span>
+  <% end %>
+
+
+</div>
+
+<% end %>

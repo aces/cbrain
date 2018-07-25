@@ -1,25 +1,25 @@
 
 <%-
-#
-# CBRAIN Project
-#
-# Copyright (C) 2008-2012
-# The Royal Institution for the Advancement of Learning
-# McGill University
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+  #
+  # CBRAIN Project
+  #
+  # Copyright (C) 2008-2012
+  # The Royal Institution for the Advancement of Learning
+  # McGill University
+  #
+  # This program is free software: you can redistribute it and/or modify
+  # it under the terms of the GNU General Public License as published by
+  # the Free Software Foundation, either version 3 of the License, or
+  # (at your option) any later version.
+  #
+  # This program is distributed in the hope that it will be useful,
+  # but WITHOUT ANY WARRANTY; without even the implied warranty of
+  # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  # GNU General Public License for more details.
+  #
+  # You should have received a copy of the GNU General Public License
+  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  #
 -%>
 
 <% title 'Show Tool Configuration' %>
@@ -45,15 +45,13 @@
       </li>
     <% end %>
     <% if @tool_config %>
-      <li>
-        <strong>Config #<%= @tool_config.id %></strong>
-        (<%= link_to "edit", edit_tool_config_path(@tool_config) %>):
-        For tool <strong><%= @tool_config.tool.name %></strong> running on Execution Server <strong><%= @tool_config.bourreau.name %></strong>
-        <br>Named: <%= full_description(@tool_config.description) %>
-        <br>Available to members of project <%= link_to_group_if_accessible(@tool_config.group) %>
-        <% if @tool_config.ncpus.present? && @tool_config.ncpus.to_i > 0 %>
-          <br>Suggested number of CPUs: <%= @tool_config.ncpus.to_i.to_s %>
+        <%= show_table(@tool_config, :header => "Configuration", :edit_condition => check_role(:admin_user)) do |t| %>
+          <%= render :partial => 'config_table', :locals => { :t => t } %>
         <% end %>
+
+
+
+
       </li>
     <% end %>
   </ul>
@@ -62,24 +60,24 @@
   <strong>Important note:</strong>
   This section displays the full BASH initialization prologue script for the configurations
   listed above.
-  <% if ( (@tool_config ? 1 : 0) + (@tool_glob_config ? 1 : 0) + (@bourreau_glob_config ? 1 : 0) ) > 1 %>
+  <% if ( (@bourreau_glob_config ? 1 : 0) + (@tool_glob_config ? 1 : 0) + (@tool_config? 1 : 0) ) > 1 %>
     <br>
     Several distinct configurations are involved and shown in order of execution.
   <% end %>
   </p>
 
-  <pre class="script_preview"><%= @bourreau_glob_config.to_bash_prologue if @bourreau_glob_config %><%= @tool_glob_config.to_bash_prologue if @tool_glob_config %><%= @tool_config.to_bash_prologue if @tool_config %></pre>
+  <pre class="script_preview"><%= @tool_config.to_bash_prologue if @bourreau_glob_config %><%= @tool_config.to_bash_prologue if @is_tool_glob_config %><%= @tool_config.to_bash_prologue if @tool_config %></pre>
 
 </div>
 
 <% if @bourreau_glob_config %>
   <p>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @bourreau_glob_config.getlog, :title => "Log of Global Bourreau Tool Config ##{@bourreau_glob_config.id}" } %>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_config.getlog, :title => "Log of Global Bourreau Tool Config ##{@tool_config.id}" } %>
 <% end %>
 
 <% if @tool_glob_config %>
   <p>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_glob_config.getlog, :title => "Log of Global Tool Config ##{@tool_glob_config.id}" } %>
+  <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_config.getlog, :title => "Log of Global Tool Config ##{@tool_config.id}" } %>
 <% end %>
 
 <% if @tool_config %>
