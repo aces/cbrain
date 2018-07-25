@@ -29,13 +29,14 @@
 
   <% if @tool_config.tool_id && @tool_config.bourreau_id %>
   <span title="Project access for this configuration.">
-<% t.edit_cell(:group_id, :header => "Available to members of project:") do |f|  %>
+    <% t.edit_cell(:group_id, :header => "Available to members of project:") do %>
       <%= group_select "tool_config[group_id]", @tool_config.group_id %>
+      <% end %><br/>
     </p>
   </span>
 
     <span title="Version.">
-<% t.edit_cell(:version_name, :header => "Version:") do |f|  %>
+    <% t.edit_cell(:version_name, :header => "Version") do |f|  %>
       <%= f.text_field :version_name %>
     <% end %><br/>
     <div class="field_explanation">Must be a simple string that represent a short identifier for the version. First character must be alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'</div>
@@ -43,15 +44,15 @@
   </span>
 
     <span title="Brief description for this configuration.">
-<% t.edit_cell(:description, :header => "Description:") do |f|  %><br/>
+    <% t.edit_cell(:description, :header => "Description") do |f|  %><br/>
       <%= f.text_area :description, :rows => 10, :cols => 40 %>
     <% end %><br/>
     <div class="field_explanation">The first line must be a short summary, and the rest are for any special notes for the users.</div>
       </p>
-  </span>
+    </span>
 
     <span title="Suggested number of CPUs to use in parallel, per task">
-<% t.edit_cell(:ncpus, :header => "Suggested number of CPUs to use in parallel, per task:") do |f|  %>
+    <% t.edit_cell(:ncpus, :header => "Suggested number of CPUs to use in parallel, per task") do |f|  %>
       <%= f.select :ncpus, [ 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 32, 36, 40, 48, 56, 64, 128, 192, 256, 320, 384, 512 ] %>
     <% end %>
     </p>
@@ -62,19 +63,19 @@
   <span title="Environment variables needed for this <%= context %>">
     <p><label>Environment variables needed for this <%= context %>:</label><br/>
       <% @tool_config.env_array.each do |env_name_value| %>
-      <% env_name  = env_name_value[0] %>
+        <% env_name  = env_name_value[0] %>
         <% env_value = env_name_value[1] %>
         <%= render :partial => 'env_key_value_pair', :locals => { :env_name => env_name, :env_value => env_value } %>
-    <% end %>
+      <% end %>
       <% 1.upto(5) do %>
-      <%= render :partial => 'env_key_value_pair', :locals => { :env_name => "", :env_value => "" } %>
+        <%= render :partial => 'env_key_value_pair', :locals => { :env_name => "", :env_value => "" } %>
     <% end %>
     <div class="field_explanation">In the generated script, the values shown here will be placed in double quotes automatically.</div>
     </p>
   </span>
 
   <span title="BASH initialization prologue">
-<% t.edit_cell(:script_prologue, :header => "BASH initialization prologue:") do |f|  %><br/>
+  <% t.edit_cell(:script_prologue, :header => "BASH initialization prologue:") do |f|  %><br/>
       <%= f.text_area :script_prologue, :cols => 80, :rows => 10 %>
     <% end %><br/>
     <div class="field_explanation">This is a multi line partial BASH script. It can use the environment variables defined above,
@@ -100,13 +101,13 @@
   </p>
 
   <span title="Container type">
-<% t.edit_cell(:container_engine, :header => "Container engine:") do |f|  %>
+  <% t.edit_cell(:container_engine, :header => "Container engine:") do |f|  %>
       <%= f.select :container_engine, [["None", ''], ['Docker', 'Docker'], ['Singularity', 'Singularity']] %>
     <% end %>
   </span>
 
   <span title="Index of the container image">
-<% t.edit_cell(:container_index_location, :header => "Index of the container image:") do |f|  %><br/>
+  <% t.edit_cell(:container_index_location, :header => "Index of the container image:") do |f|  %><br/>
       <%= f.text_field :container_index_location %>
     <% end %><br>
       <div class="field_explanation">
@@ -119,7 +120,7 @@
   </span>
 
   <span title="Container image name">
-<% t.edit_cell(:containerhub_image_name, :header => "Container image name:") do |f|  %><br/>
+  <% t.edit_cell(:containerhub_image_name, :header => "Container image name:") do |f|  %><br/>
       <%= f.text_field :containerhub_image_name %>
     <% end %><br/>
       <div class="field_explanation">
@@ -132,7 +133,7 @@
   </span>
 
   <span title="ID of the container image">
-<% t.edit_cell(:container_image_userfile_id, :header => "ID of the container image:") do |f|  %><br/>
+  <% t.edit_cell(:container_image_userfile_id, :header => "ID of the container image:") do |f|  %><br/>
       <%= f.text_field :container_image_userfile_id %> <%= link_to_userfile_if_accessible(@tool_config.container_image) %>
     <% end %><br>
       <div class="field_explanation">
@@ -143,7 +144,7 @@
   </span>
 
   <span title="Extra 'qsub' options:">
-<% t.edit_cell(:extra_qsub_args, :header => "Extra 'qsub' options:") do |f|  %><br/>
+    <% t.edit_cell(:extra_qsub_args, :header => "Extra 'qsub' options:") do |f|  %><br/>
       <%= f.text_field :extra_qsub_args %>
     <% end %><br/>
       <div class="field_explanation"><b>Note:</b> This option will be appended to the extra 'qsub' option defined at the bourreau level.</div>
@@ -159,45 +160,30 @@
 
     <span title="Cloud configuration">
     <h4>Cloud configuration</h4>
-    <p><%= t.label :cloud_disk_image, "Disk image:" %><br/>
+    <% t.edit_cell(:cloud_disk_image, header: "Disk image:") do |f| %>
       <%= f.select :cloud_disk_image,  available_disk_images %><br/>
-      <div class="field_explanation">
-      </div>
-      </p>
-      <p><%= t.label :cloud_vm_user, "VM user:" %><br/>
+    <% end %>
+    <% t.edit_cell(:cloud_vm_user, header: "VM user:") do |f| %>
         <%= f.text_field :cloud_vm_user%><br/>
-      <div class="field_explanation">
-      </div>
-      </p>
-      <p><%= t.label :cloud_ssh_key_pair, "SSH key pair:" %><br/>
+    <% end %>
+    <% t.edit_cell(:cloud_ssh_key_pair, header: "SSH key pair:") do |f| %>
         <%= f.select :cloud_ssh_key_pair,  available_ssh_key_pairs %><br/>
-      <div class="field_explanation">
-      </div>
-      </p>
-      <p><%= t.label :cloud_instance_type, "Instance type:" %><br/>
+    <% end %>
+    <% t.edit_cell(:cloud_instance_type, header: "Instance type:") do |f| %>
         <%= f.select :cloud_instance_type,  available_instance_types %><br/>
-    <div class="field_explanation">
-    </div>
-      </p>
-      <p><%= t.label :cloud_job_slots, "Job slots:" %><br/>
+    <% end %>
+    <% t.edit_cell(:cloud_job_slots, header: "Job slots:") do |f| %>
         <%= f.text_field :cloud_job_slots%><br/>
-    <div class="field_explanation">
-    </div>
-      </p>
-      <p><%= t.label :cloud_vm_boot_timeout, "VM boot timeout (s):" %><br/>
+    <% end %>
+    <% t.edit_cell(:cloud_vm_boot_timeout, header: "VM boot timeout (s):") do |f| %>
         <%= f.text_field :cloud_vm_boot_timeout%><br/>
-    <div class="field_explanation">
-    </div>
-      </p>
-      <p><%= t.label :cloud_vm_ssh_tunnel_port, "VM SSH tunnel port:" %><br/>
+    <% end %>
+    <% t.edit_cell(:cloud_vm_ssh_tunnel_port, header: "VM SSH tunnel port:") do |f| %>
         <%= f.text_field :cloud_vm_ssh_tunnel_port%><br/>
-    <div class="field_explanation">
-    </div>
-      </p>
+    <% end %>
   </span>
-  <% end %>
 
+  <% end %>
 
 </div>
 
-<% end %>
