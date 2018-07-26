@@ -28,31 +28,30 @@
 
 <div class="generalbox">
 
-  Configurations shown here:
-  <ul>
+
     <% if @bourreau_glob_config %>
-      <li>
-        <strong>Config #<%= @bourreau_glob_config.id %></strong>
-        (<%= link_to "edit", edit_tool_config_path(@bourreau_glob_config) %>):
-        For <strong>ALL tools</strong> running on Execution Server <strong><%= @bourreau_glob_config.bourreau.name %></strong>
-      </li>
-    <% end %>
-    <% if @tool_glob_config %>
-      <li>
-        <strong>Config #<%= @tool_glob_config.id %></strong>
-        (<%= link_to "edit", edit_tool_config_path(@tool_glob_config) %>):
-        For tool <strong><%= @tool_glob_config.tool.name %></strong> running on <strong>ALL Execution Servers</strong>
-      </li>
-    <% end %>
-    <% if @tool_config %>
-        <%= show_table(@tool_config, :header => "Configuration", :edit_condition => check_role(:admin_user)) do |t| %>
-          <%= render :partial => 'config_table', :locals => { :t => t } %>
+
+      <%= show_table(@bourreau_glob_config, :header => "Default tool config for the server") do |t| %>
+        <% t.row() do %>
+          <%= "Config \##{@bourreau_glob_config.id}" %>
+          (<%= link_to "edit", edit_tool_config_path(@bourreau_glob_config) %>):
+          For <strong>ALL tools</strong> running on Execution Server <strong><%= @bourreau_glob_config.bourreau.name %></strong>
         <% end %>
+      <% end %>
+    <% end %>
 
+    <% if @tool_glob_config %>
+      <%= show_table(@tool_glob_config, :header => "Default config for the tool on all the servers") do |t| %>
+        <% t.row() do %>
+          <%= "Config \##{@tool_glob_config.id}" %>
+          (<%= link_to "edit", edit_tool_config_path(@tool_glob_config) %>):
+          For tool <strong><%= @tool_glob_config.tool.name %></strong> running on <strong>ALL Execution Servers</strong>
+        <% end %>
+      <% end %>
+    <% end %>
 
-
-
-      </li>
+    <% if @tool_config %>
+      <%= render :partial => 'config_table', :locals => { :config => @tool_config } %>
     <% end %>
   </ul>
 

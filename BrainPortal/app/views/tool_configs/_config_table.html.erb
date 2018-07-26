@@ -22,57 +22,63 @@
   #
 -%>
 
-<div class="groupentry">
+<div class="display_inline_block" style="min-width: 50%">
 
-  <%= hidden_field_tag "tool_config[tool_id]",     @tool_config.tool_id %>
-  <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
+
+
+
+
 
   <% if @tool_config.tool_id && @tool_config.bourreau_id %>
-  <span title="Project access for this configuration.">
-    <% t.edit_cell(:group_id, :header => "Available to members of project:") do %>
-      <%= group_select "tool_config[group_id]", @tool_config.group_id %>
-      <% end %><br/>
-    </p>
-  </span>
 
-    <span title="Version.">
-    <% t.edit_cell(:version_name, :header => "Version") do |f|  %>
-      <%= f.text_field :version_name %>
-    <% end %><br/>
-    <div class="field_explanation">Must be a simple string that represent a short identifier for the version. First character must be alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'</div>
-      </p>
-  </span>
 
-    <span title="Brief description for this configuration.">
-    <% t.edit_cell(:description, :header => "Description") do |f|  %><br/>
-      <%= f.text_area :description, :rows => 10, :cols => 40 %>
-    <% end %><br/>
-    <div class="field_explanation">The first line must be a short summary, and the rest are for any special notes for the users.</div>
-      </p>
-    </span>
+    <%= show_table(@tool_config, :header => "Configuration", :edit_condition => check_role(:admin_user)) do |t| %>
 
-    <span title="Suggested number of CPUs to use in parallel, per task">
-    <% t.edit_cell(:ncpus, :header => "Suggested number of CPUs to use in parallel, per task") do |f|  %>
-      <%= f.select :ncpus, [ 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 32, 36, 40, 48, 56, 64, 128, 192, 256, 320, 384, 512 ] %>
+      <%= hidden_field_tag "tool_config[tool_id]",     @tool_config.tool_id %>
+      <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
+
+
+      <% t.edit_cell(:group_id, :header => "Available to members of project", td_options: {:title => "Project access for this configuration."}) do %>
+        <%= group_select "tool_config[group_id]", @tool_config.group_id %>
+      <% end %>
+
+
+      <% t.edit_cell(:version_name, :header => "Version", td_options: {:title => "Version"}) do |f|  %>
+        <%= f.text_field :version_name %>
+        <%=raw '<div class="field_explanation"> Must be a simple string that represent a short identifier for the version. First character must be alphanum, and can contain only alphanums, \'.\', \'-\', \'_\', \':\' and \'@\' </div>' %>
+      <% end %>
+
+
+
+      <% t.edit_cell(:description, :header => "Description", td_options: {:title => "Brief description for this configuration"}) do |f|  %>
+        <%= f.text_area :description, :rows => 10, :cols => 40 %>
+        <%=raw '<div class="field_explanation">The first line must be a short summary, and the rest are for any special notes for the users.</div>' %>
+      <% end %>
+
+      <% t.edit_cell(:ncpus, :header => "Suggested number of CPUs per task", td_options: {:title => "Suggested number of CPUs to use in parallel, per task"}) do |f|  %>
+        <%= f.select :ncpus, [ 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 32, 36, 40, 48, 56, 64, 128, 192, 256, 320, 384, 512 ] %>
+      <% end %>
+
     <% end %>
-    </p>
-  </span>
   <% end %>
 
+
   <% context = @tool_config.tool_id ? "tool" : "Execution Server" %>
-  <span title="Environment variables needed for this <%= context %>">
-    <p><label>Environment variables needed for this <%= context %>:</label><br/>
+  <% show_table @tool_config,  :header => "Environment variables needed for this " do |t| %>
+
+      <%= hidden_field_tag "tool_config[tool_id]",     @tool_config.tool_id %>
+      <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
+
       <% @tool_config.env_array.each do |env_name_value| %>
         <% env_name  = env_name_value[0] %>
         <% env_value = env_name_value[1] %>
-        <%= render :partial => 'env_key_value_pair', :locals => { :env_name => env_name, :env_value => env_value } %>
+        <%= render :partial => 'env_key_value_pair_2', :locals => { :env_name => env_name, :env_value => env_value } %>
       <% end %>
       <% 1.upto(5) do %>
-        <%= render :partial => 'env_key_value_pair', :locals => { :env_name => "", :env_value => "" } %>
+        <%= render :partial => 'env_key_value_pair_2', :locals => { :env_name => "", :env_value => "" } %>
     <% end %>
     <div class="field_explanation">In the generated script, the values shown here will be placed in double quotes automatically.</div>
-    </p>
-  </span>
+  <% end %>
 
   <span title="BASH initialization prologue">
   <% t.edit_cell(:script_prologue, :header => "BASH initialization prologue:") do |f|  %><br/>
