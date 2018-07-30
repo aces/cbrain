@@ -22,7 +22,7 @@
   #
 -%>
   <div class="field_explanation"
-<% if txt.is_a(String) %>
+<% if txt.is_a?(String) %>
     <%= txt %>
 <% else %>
   <%= txt.join("\n") %>
