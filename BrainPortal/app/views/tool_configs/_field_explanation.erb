@@ -21,5 +21,10 @@
   # along with this program.  If not, see <http://www.gnu.org/licenses/>.
   #
 -%>
-
-<div class="field_explanation" <%= txt %> </div>
+  <div class="field_explanation"
+<% if txt.is_a(String) %>
+    <%= txt %>
+<% else %>
+  <%= txt.join("\n") %>
+<% end %>
+  </div>
