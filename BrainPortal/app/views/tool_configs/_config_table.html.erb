@@ -27,7 +27,7 @@
 <% if @tool_config.tool_id && @tool_config.bourreau_id %>
   <div class="display_inline_block" style="min-width: 50%">
 
-    <%= show_table(@tool_config, :header => "Configuration", :edit_condition => check_role(:admin_user)) do |t| %>
+    <%= show_table(@tool_config, :header => "Configuration info", :edit_condition => check_role(:admin_user)) do |t| %>
 
       <%= hidden_field_tag "tool_config[tool_id]",     @tool_config.tool_id %>
       <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
@@ -55,25 +55,26 @@
   </div>
 <% end %>
 
-
 <div class="display_inline_block" style="min-width: 50%">
   <% context = @tool_config.tool_id ? "tool" : "Execution Server" %>
-  <%= show_table @tool_config,  :header => "Environment variables needed for this", :edit_condition => check_role(:admin_user) do |t| %>
-    <% t.row(:env_array) do |f| %>
-      <% hidden_field_tag "tool_config[tool_id]",     @tool_config.tool_id %>
-      <% hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
-    <% end %>
-      <% @tool_config.env_array.each do |env_name_value| %>
+  <%= show_table @tool_config,  :header => "Environment variables", :edit_condition => check_role(:admin_user) do |t| %>
+    <% @tool_config.env_array.each do |env_name_value| %>
         <% env_name  = env_name_value[0] %>
         <% env_value = env_name_value[1] %>
-        <%= render :partial => 'env_key_value_pair_2', :locals => { :env_name => env_name, :env_value => env_value, :t => t } %>
-      <% end %>
-      <% 1.upto(5) do %>
-        <%= render :partial => 'env_key_value_pair_2', :locals => { :env_name => "", :env_value => "", :t => t } %>
+        <% render :partial => 'env_key_value_pair_2', :locals => { :env_name => env_name, :env_value => env_value, :t => t } %>
+    <% end %>
+    <% 1.upto(5) do %>
+        <% render :partial => 'env_key_value_pair_2', :locals => { :env_name => "", :env_value => "", :t => t } %>
 
-      <% end %>
-    <%= render :partial => 'field_explanation', :locals => { :txt =>
-         "In the generated script, the values shown here will be placed in double quotes automatically."}  %>
+    <% end %>
+    <% t.row() do |f| %>
+      <% hidden_field_tag "tool_config[tool_id]",     @tool_config.tool_id %>
+      <% hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
+      <%= render :partial => 'field_explanation', :locals => { :txt =>
+             "In the generated script, the values shown here will be placed in double quotes automatically."}  %>
+
+    <% end %>
+
 
   <% end %>
 </div>
@@ -97,18 +98,7 @@ TEXT
 <div class="display_inline_block" style="min-width: 50%">
 
   <%= show_table @tool_config,  :header => "Option: Merge configuration from another existing entry", :edit_condition => check_role(:admin_user) do |t| %>
-      <% @tool_config.env_array.each do |env_name_value| %>
-        <% env_name  = env_name_value[0] %>
-        <% env_value = env_name_value[1] %>
-        <%= render :partial => 'env_key_value_pair', :locals => { :env_name => env_name, :env_value => env_value } %>
-      <% end %>
-      <% 1.upto(5) do %>
-        <%= render :partial => 'env_key_value_pair', :locals => { :env_name => "", :env_value => "" } %>
-      <% end %>
-    <% render :partial => "field_explanation", :locals => {
-        :txt => '<div class="field_explanation">In the generated script, the values shown here will be placed in double quotes automatically.</div>'
-         }
-     %>
+
   <% end %>
 
 </div>
@@ -128,19 +118,20 @@ TEXT
         Examples for Docker are: quay.io, index.docker.io (default).
         Examples for Singularity are: docker://, shub:// (default).
 TEXT
-      }%>
+      } %>
     <% end %>
 
     <% t.edit_cell(:containerhub_image_name, :header => "Container image name") do |f|  %>
-      <%= f.text_field :containerhub_image_name %>
-    <% end %>
-      <div class="field_explanation">
+      <% f.text_field :containerhub_image_name %>
+      <% render :partial => "field_explanation", :locals => {:txt => <<-TEXT.chomp
+
         The name and tag of the container image in which the tool is installed,
         for instance "centos:latest". This name refers to the Docker/Singulariry index
         accessed by the Bourreau, which is configured manually in the Bourreau
         for now.
-      </div>
-
+TEXT
+      } %>
+    <% end %>
     <% t.edit_cell(:container_image_userfile_id, :header => "ID of the container image") do |f|  %>
       <%= f.text_field :container_image_userfile_id %> <%= link_to_userfile_if_accessible(@tool_config.container_image) %>
       <%= '<div class="field_explanation"> The ID number of the container image in which the tool is installed. This ID refers to userfile registered in CBRAIN.  </div>' %>
@@ -186,6 +177,6 @@ TEXT
     <% end %>
   <% end %>
   </div>
-  <% end %>
+
 
 
