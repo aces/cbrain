@@ -22,10 +22,12 @@
 #
 -%>
 
-<%= t.edit_cell(:env_array, as: :'env_list[]', :header => "Name",  content: env_name, :size => 30) do |f|  %>
-  <% f.text_field :name %>
+<%= t.edit_cell(:env_array, as: :'env_list[]', :header => "Name",  content: env_name, :size => 30) do %>
+  <% text_field_tag 'env_list[][name]',  env_name,  :size => 30 %>
 <% end %>
-<%= t.edit_cell(:env_array, as: :'env_list[]', :header => "Value",  content: env_value, :size => 30) { |f| f.text_field :value}  %>
+<% t.edit_cell(:env_array, as: :'env_list[]', :header => "Value",  content: env_value, :size => 60) do %>
+    <%= text_field_tag 'env_list[][value]',  env_value,  :size => 60 %>
+<% end %>
 
-</span><br/>
+
 
