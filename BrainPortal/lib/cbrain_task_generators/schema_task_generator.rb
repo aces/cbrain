@@ -336,6 +336,17 @@ module SchemaTaskGenerator
       ), nil, '%<>>-').result(binding)
     end
 
+    # descriptor_path is a full path to a CBRAIN file
+    # that describe where this task comes from. It is used
+    # in the templates below.
+    if descriptorInput.is_a?(String)
+      descriptor_path = descriptorInput
+    else
+      # Extract the path of the most recent CBRAIN ruby file in caller stack
+      descriptor_path   = caller.to_a.detect { |c| c.starts_with? Rails.root.to_s }.try(:sub,/:.*/,"")
+      descriptor_path ||= __file__ # fallback: the generator himself
+    end
+
     GeneratedTask.new(
       :name              => name,
       :descriptor        => descriptor,

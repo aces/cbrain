@@ -478,9 +478,7 @@ class CbrainFileRevision
     git_last_commit_info = ""
 
     #Dir.chdir(dirname) do
-      # If symlink, try to deref
-      target = File.symlink?(@basename) ? File.readlink(@basename) : @basename
-      IO.popen("cd #{dirname.to_s.bash_escape} ; git rev-list --max-count=1 --date=iso --pretty=format:'%H %ad %an' HEAD -- ./#{target.to_s.bash_escape} 2>/dev/null","r") do |fh|
+      IO.popen("cd #{dirname.to_s.bash_escape} ; git rev-list --max-count=1 --date=iso --pretty=format:'%H %ad %an' HEAD -- ./#{@basename.to_s.bash_escape} 2>/dev/null","r") do |fh|
         line = fh.readline.strip rescue ""
         if line =~ /\d\d\d\d-\d\d-\d\d/
           git_last_commit_info = line
