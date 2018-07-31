@@ -60,7 +60,7 @@ if program_name =~ /console/
     CbrainSystemChecks.check(:all)
     PortalSystemChecks.check(:all)
   end
-  $0 = "Rails Console #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
+  $0 = "CBRAIN Console #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
 
 # ----- SERVER -----
 elsif program_name =~ /server|puma/ # normal server mode
@@ -70,7 +70,7 @@ elsif program_name =~ /server|puma/ # normal server mode
   # Note, because the puma server insists on renaming its process,
   # the assignment below is also performed whenever a show
   # action is sent to the controls controller.
-  $0 = "Rails Server #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
+  $0 = "CBRAIN Server #{RemoteResource.current_resource.class} #{RemoteResource.current_resource.name} #{CBRAIN::Instance_Name}"
 
 # ----- RSPEC TESTS -----
 elsif program_name =~ /rspec/ # test suite
