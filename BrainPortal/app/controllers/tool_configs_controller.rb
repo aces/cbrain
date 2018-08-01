@@ -87,16 +87,15 @@ class ToolConfigsController < ApplicationController
 
   def show #:nodoc:
     id     = params[:id]
-    config = ToolConfig.find(id)
-    @config = config
-    @config.env_array ||= []
+    @tool_config = ToolConfig.find(id)
+
     # @config.group = Group.everyone if @config.group_id.blank?
 
-    @tool_config          = config if   config.tool_id &&   config.bourreau_id # leaves nil otherwise
-    @tool_glob_config     = config if   config.tool_id && ! config.bourreau_id # leaves nul otherwise
-    @bourreau_glob_config = config if ! config.tool_id &&   config.bourreau_id # leaves nil otherwise
+    @tool_config          = @tool_config
+    @tool_glob_config     = @tool_config if   @tool_config.tool_id && ! @tool_config.bourreau_id # leaves nul otherwise
+    @bourreau_glob_config = @tool_config if ! @tool_config.tool_id &&   @tool_config.bourreau_id # leaves nil otherwise
 
-    @about_tool_config          = !!@tool_config
+    @about_tool_config          = @tool_config.tool_id &&  @tool_config.bourreau_id
     @about_tool_glob_config     = !!@tool_glob_config
     @about_bourreau_glob_config = !!@bourreau_glob_config # leaves nil otherwise
 

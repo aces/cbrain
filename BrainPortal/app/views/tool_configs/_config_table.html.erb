@@ -106,17 +106,26 @@
 
     <% end %>
   <% end %>
-</div>
 
-<div class="display_inline_block" style="min-width: 50%">
 
-  <%= show_table @tool_config, :header => "Option: Merge configuration from another existing entry", :edit_condition => check_role(:admin_user) do |t| %>
+  <%= show_table @tool_config, :header => "Merge configs",
+                 :edit_condition => check_role(:admin_user) do |t| %>
+    <% t.edit_cell(:'name', :content => 'Add configuration from another existing entry', :no_header => true) do |f| %>
+      <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
 
+      <%= f.submit 'Merge Configuration', :name => :merge %><br/>
+        <div class="field_explanation">
+        <% if @tool_config.tool_id && @tool_config.bourreau_id %>
+          The description, environment variables and prologue script will be appended to whatever
+          values are currently in the form. The project and suggested number of CPUs will be changed.
+        <% else %>
+          The environment variables and prologue script will be appended to whatever
+          values are currently in the form.
+        <% end %>
+        </div>
+    <% end %>
   <% end %>
 
-</div>
-
-<div class="display_inline_block" style="min-width: 50%">
 
   <%= show_table @tool_config, :header => "Container", :edit_condition => check_role(:admin_user) do |t| %>
     <% t.edit_cell(:container_engine, :header => "Container engine") do |f| %>
@@ -157,7 +166,7 @@
       <%= raw '<div class="field_explanation"><b>Note:</b> This option will be appended to the extra \'qsub\' option defined at the bourreau level.</div>' %>
     <% end %>
   <% end %>
-</div>
+
 
 <% bourreau = @tool_config.bourreau %>
 <% if !bourreau.nil? && bourreau.scir_class < ScirCloud %>
@@ -165,9 +174,6 @@
      available_instance_types = bourreau.scir_class.get_available_instance_types(bourreau)
      available_ssh_key_pairs = bourreau.scir_class.get_available_key_pairs(bourreau)
   %>
-
-
-  <div class="display_inline_block" style="min-width: 50%">
 
     <%= show_table @tool_config, :header => "Cloud configuration", :edit_condition => check_role(:admin_user) do |t| %>
 
