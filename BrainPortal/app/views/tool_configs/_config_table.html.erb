@@ -22,9 +22,9 @@
 -%>
 
 
-
+<div class="display_inline_block" style="min-width: 50%">
 <% if @tool_config.tool_id && @tool_config.bourreau_id %>
-  <div class="display_inline_block" style="min-width: 50%">
+
 
     <%= show_table(@tool_config, :header => "Version configuration info",
                                  :edit_condition => check_role(:admin_user)) do |t| %>
@@ -60,10 +60,10 @@
       <% end %>
 
     <% end %>
-  </div>
+
 <% end %>
 
-<div class="display_inline_block" style="min-width: 50%">
+
   <% context = @tool_config.tool_id ? "tool" : "Execution Server" %>
   <%= show_table @tool_config, :header => "Environment variables",
                                :edit_condition => check_role(:admin_user) do |t| %>
@@ -86,13 +86,11 @@
     <% end %>
 
   <% end %>
-</div>
 
-<div class="display_inline_block" style="min-width: 50%">
   <%= show_table @tool_config, :header => "BASH initialization prologue",
                  :edit_condition => check_role(:admin_user) do |t| %>
     <% t.edit_cell(:script_prologue, :content => full_description(@tool_config.script_prologue),
-                   :no_header => true, ) do |f| %>
+                   :no_header => true, :td_options => {:title => "BASH prologue script"}) do |f| %>
       <%= f.text_area :script_prologue, :cols => 80, :rows => 10 %>
 
       <%=raw '<br><div class="wide_field_explanation" >

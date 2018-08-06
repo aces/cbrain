@@ -92,12 +92,13 @@ class ToolConfigsController < ApplicationController
     # @config.group = Group.everyone if @config.group_id.blank?
 
     @tool_config          = @tool_config
+    @tool_local_config    = @tool_config if   @tool_config.tool_id && @tool_config.bourreau_id # leaves nul otherwise
     @tool_glob_config     = @tool_config if   @tool_config.tool_id && ! @tool_config.bourreau_id # leaves nul otherwise
     @bourreau_glob_config = @tool_config if ! @tool_config.tool_id &&   @tool_config.bourreau_id # leaves nil otherwise
 
-    @about_tool_config          = @tool_config.tool_id &&  @tool_config.bourreau_id
-    @about_tool_glob_config     = !!@tool_glob_config
-    @about_bourreau_glob_config = !!@bourreau_glob_config # leaves nil otherwise
+    # @about_local_tool_config          = @tool_config.tool_id &&  @tool_config.bourreau_id
+    # @about_tool_glob_config     = !!@tool_glob_config
+    # @about_bourreau_glob_config = !!@bourreau_glob_config
 
     @tool_glob_config     ||=
       ToolConfig.where( :tool_id => @tool_config.tool_id, :bourreau_id => nil                      ).first if @tool_config
@@ -159,7 +160,7 @@ class ToolConfigsController < ApplicationController
   def update #:nodoc:
     id                = params[:id] || "NEW" # can be 'new' if we create()
     id                = nil if id == "NEW"
-    tc_params = tool_config_params
+    tc_params         = tool_config_params
     form_tool_config  = ToolConfig.new(tc_params) # just to store the new attributes
     form_tool_id      = form_tool_config.tool_id.presence
     form_bourreau_id  = form_tool_config.bourreau_id.presence
@@ -184,7 +185,7 @@ class ToolConfigsController < ApplicationController
 
          end
        end
-       # danger zone not sure did this break any initialization rules
+       # not sure does conditional break any initialization rules
 
     if tc_params.has_key?(:envlist) || id.blank?
       @tool_config.env_array = []
@@ -238,6 +239,7 @@ class ToolConfigsController < ApplicationController
 
     if @tool_config.tool_id && @tool_config.bourreau_id && @tool_config.description.blank?
       @tool_config.errors.add(:description, "requires at least one line of text as a name for the version")
+
     end
 
     respond_to do |format|

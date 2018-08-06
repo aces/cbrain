@@ -43,7 +43,7 @@
 
   <%= link_to "Common Config for tool #{@tool_glob_config.tool.name} on ALL Servers ",
       tool_config_path(@bourreau_glob_config), :class => :button, :title =>
-      "Show or edit Config \##{@tool_glob_config.id} that affect every version or configuation of tool
+      "Show or edit Config \##{@tool_glob_config.id} that affect every version/configuration of tool
          #{@tool_glob_config.tool.name} running on
       each server "
     %>
@@ -87,22 +87,22 @@
   <% end %>
   </p>
 
-  <pre class="script_preview"><%= @tool_config.to_bash_prologue if @bourreau_glob_config %><%= @tool_config.to_bash_prologue if @is_tool_glob_config %><%= @tool_config.to_bash_prologue if @tool_config %></pre>
+  <pre class="script_preview"><%= @bourreau_glob_config.to_bash_prologue if @bourreau_glob_config %><%= @tool_glob_config.to_bash_prologue if @tool_glob_config %><%= @tool_local_config.to_bash_prologue if @tool_local_config %></pre>
 
 </div>
 
 <% if @bourreau_glob_config %>
   <p>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_config.getlog, :title => "Log of Global Bourreau Tool Config ##{@tool_config.id}" } %>
+    <%= render :partial => "layouts/log_report", :locals  => { :log  => @bourreau_glob_config.getlog, :title => "Log of Global Bourreau Tool Config ##{@bourreau_glob_config.id}" } %>
 <% end %>
 
 <% if @tool_glob_config %>
   <p>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_config.getlog, :title => "Log of Global Tool Config ##{@tool_config.id}" } %>
+    <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_glob_config.getlog, :title => "Log of Global Tool Config ##{@tool_glob_config.id}" } %>
 <% end %>
 
-<% if @tool_config %>
+<% if @tool_local_config %>
   <p>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_config.getlog, :title => "Log of Specific Tool Config ##{@tool_config.id}" } %>
+    <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_local_config.getlog, :title => "Log of Specific Tool Config ##{@tool_local_config.id}" } %>
 <% end %>
 
