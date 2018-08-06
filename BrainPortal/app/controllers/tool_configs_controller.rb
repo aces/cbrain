@@ -234,7 +234,6 @@ class ToolConfigsController < ApplicationController
          flash[:notice] = "No changes made."
        end
        render :action => :show
-       # maybe go back?
        return
     end
 
@@ -246,9 +245,12 @@ class ToolConfigsController < ApplicationController
     respond_to do |format|
       if @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus ))
         flash[:notice] = "Tool configuration was successfully updated."
-        format.html { if id.present?
-                        render :action => "show"
-                        # redirect_to tool_config_path(@tool_config)
+        format.html {
+
+
+          if id.present?
+                        # render :action => "show"
+                        redirect_to tool_config_path(@tool_config)
                       elsif  @tool_config.tool_id
                         redirect_to edit_tool_path(@tool_config.tool)
                       else
