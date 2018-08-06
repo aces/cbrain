@@ -187,7 +187,7 @@ class ToolConfigsController < ApplicationController
        end
        # not sure does conditional break any initialization rules
 
-    if tc_params.has_key?(:envlist) || id.blank?
+    if params.has_key?(:env_list) || id.blank?
       @tool_config.env_array = []
       envlist = params[:env_list] || []
       envlist.each do |keyval|
@@ -233,7 +233,8 @@ class ToolConfigsController < ApplicationController
        else
          flash[:notice] = "No changes made."
        end
-       render :action => :edit
+       render :action => :show
+       # maybe go back?
        return
     end
 
@@ -247,14 +248,12 @@ class ToolConfigsController < ApplicationController
         flash[:notice] = "Tool configuration was successfully updated."
         format.html { if id.present?
                         render :action => "show"
-                        # tool_config_path(@tool_config)
+                        # redirect_to tool_config_path(@tool_config)
                       elsif  @tool_config.tool_id
                         redirect_to edit_tool_path(@tool_config.tool)
                       else
                         redirect_to bourreau_path(@tool_config.bourreau)
                       end
-
-
                     }
         format.xml  { head :ok }
       else

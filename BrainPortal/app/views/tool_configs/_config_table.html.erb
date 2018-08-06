@@ -110,7 +110,8 @@
                  :edit_condition => check_role(:admin_user) do |t| %>
     <% t.edit_cell(:'name', :content => 'Add configuration from another existing entry', :no_header => true) do |f| %>
       <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
-
+      <%= hidden_field_tag "tool_config[tool_id]", @tool_config.tool_id %>
+      <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
       <%= f.submit 'Merge Configuration', :name => :merge %><br/>
         <div class="field_explanation">
         <% if @tool_config.tool_id && @tool_config.bourreau_id %>
