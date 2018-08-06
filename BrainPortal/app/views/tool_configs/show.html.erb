@@ -36,7 +36,8 @@
                 Execution Server #{@bourreau_glob_config.bourreau.name} "
   %>
 
-%>
+<% end %>
+
 
 <% if @tool_glob_config && @tool_glob_config.id != @tool_config.id%>
 
@@ -46,6 +47,8 @@
          #{@tool_glob_config.tool.name} running on
       each server "
     %>
+<% end %>
+
 
 </div>
 
