@@ -309,7 +309,7 @@ class UserfilesController < ApplicationController
       Message.send_message(current_user,
         :message_type => 'error',
         :header => "Could not view #{@userfile.name}",
-        :description => "An internal error occured when trying to display the contents of #{@userfile.name}."
+        :description => "An internal error occurred when trying to display the contents of #{@userfile.name}."
       )
 
       render :html => "<div class=\"warning\">Error generating view code for viewer #{params[:viewer]}.</div>".html_safe, :status => "500"
@@ -1072,7 +1072,7 @@ class UserfilesController < ApplicationController
     CBRAIN.spawn_with_active_records_if(! api_request?, current_user, "Delete files") do
       idlist = to_delete.raw_first_column(:id).shuffle
       idlist.each_with_index do |userfile_id,count|
-        userfile = Userfile.find(userfile_id) rescue nil # that way we instanciate one record at a time
+        userfile = Userfile.find(userfile_id) rescue nil # that way we instantiate one record at a time
         next unless userfile # in case it was destroyed externally
         $0 = "Delete ID=#{userfile.id} #{count+1}/#{idlist.size}\0"
         begin
@@ -1239,7 +1239,7 @@ class UserfilesController < ApplicationController
         end
       end
       if success > 0
-        flash[:notice] = "#{success} files were successfuly extracted."
+        flash[:notice] = "#{success} files were successfully extracted."
       end
       if failure > 0
         flash[:error] =  "#{failure} files could not be extracted."
@@ -1570,7 +1570,7 @@ class UserfilesController < ApplicationController
       Message.send_message(current_user.own_group,
         :message_type  => 'error',
         :header  => "File extraction failed",
-        :description  => "Some errors occured while extracting files from archive '#{archive_file_name}'",
+        :description  => "Some errors occurred while extracting files from archive '#{archive_file_name}'",
         :variable_text  => report
       )
     end
@@ -1584,7 +1584,7 @@ class UserfilesController < ApplicationController
   # TODO: FIXME . Not sure how to fix.
   #
   # Note on the name of the method: a previous version tried to
-  # create a symlink structure, but that transfered hte values of
+  # create a symlink structure, but that transferred hte values of
   # all symbolic links internal to the userfiles on LINUX.
   # See also: the -H option of tar on MacOS X which would do the trick,
   # but doesn't exist on LINUX.

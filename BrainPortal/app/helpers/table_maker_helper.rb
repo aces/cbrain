@@ -164,7 +164,7 @@ module TableMakerHelper
         cellent  = size.to_f / rattot.to_f    # entries per ratio grid cell (float)
         cellrows = Math.sqrt(cellent)         # rows per ratio grid cell
         rows     = (cellrows * rrat + 0.5).to_i
-        # cols will be infered in the cols.nil? block later
+        # cols will be inferred in the cols.nil? block later
       else
         rows = (Math.sqrt(size)+0.5).to_i
       end

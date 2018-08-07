@@ -27,7 +27,7 @@ module DateRangePanelHelper
 
   # Display a panel in order to select a date range,
   # with relative date and absolute date.
-  # You can add on wich datetime attribute you
+  # You can add on which datetime attribute you
   # would perform the filtering.
   # The +options+ hash can contain either or both of the following:
   # [date_attributes]: an array of array each entry contain a datetime and a text.

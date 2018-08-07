@@ -21,7 +21,7 @@
 #
 
 # Rails console initialization code.
-puts "C> CBRAIN Rails Console Initalization starting"
+puts "C> CBRAIN Rails Console Initialization starting"
 
 #####################################################
 # Load CBRAIN console utilities

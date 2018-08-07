@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# A Site is an adminstrative sub-domain which can
+# A Site is an administrative sub-domain which can
 # be run with out the need for intervention from a
 # system administrator. A Site is generally associated
 # with one or more Site Managers who can act as admistrators

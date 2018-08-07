@@ -26,7 +26,7 @@ window.SwaggerTranslator.learn({
     "List Operations":"Mostra operazioni",
     "Expand Operations":"Espandi operazioni",
     "Raw":"Grezzo (raw)",
-    "can't parse JSON.  Raw result":"non è possibile parsare il JSON. Risultato grezzo (raw).",
+    "can't parse JSON.  Raw result":"non è possible parsare il JSON. Risultato grezzo (raw).",
     "Model Schema":"Schema del modello",
     "Model":"Modello",
     "apply":"applica",
@@ -42,11 +42,11 @@ window.SwaggerTranslator.learn({
     "fetching resource list":"recuperando lista risorse",
     "Explore":"Esplora",
     "Show Swagger Petstore Example Apis":"Mostra le api di esempio di Swagger Petstore",
-    "Can't read from server.  It may not have the appropriate access-control-origin settings.":"Non è possibile leggere dal server. Potrebbe non avere le impostazioni di controllo accesso origine (access-control-origin) appropriate.",
+    "Can't read from server.  It may not have the appropriate access-control-origin settings.":"Non è possible leggere dal server. Potrebbe non avere le impostazioni di controllo accesso origine (access-control-origin) appropriate.",
     "Please specify the protocol for":"Si prega di specificare il protocollo per",
-    "Can't read swagger JSON from":"Impossibile leggere JSON swagger da:",
+    "Can't read swagger JSON from":"Impossible leggere JSON swagger da:",
     "Finished Loading Resource Information. Rendering Swagger UI":"Lettura informazioni risorse termianta. Swagger UI viene mostrata",
-    "Unable to read api":"Impossibile leggere la api",
+    "Unable to read api":"Impossible leggere la api",
     "from path":"da cartella",
     "server returned":"il server ha restituito"
 });

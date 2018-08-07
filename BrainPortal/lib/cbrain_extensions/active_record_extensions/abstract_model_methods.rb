@@ -54,7 +54,7 @@ module CBRAINExtensions #:nodoc:
 
         # Returns whether or not the current class
         # is abstract, as far as CBRAIN is concerned;
-        # such class should not be used to instanciate
+        # such class should not be used to instantiate
         # real objects in STI contexts.
         def cbrain_abstract_model?
           defined?(@_cbrain_abstract_model_) && @_cbrain_abstract_model_ == true

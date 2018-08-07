@@ -92,7 +92,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 % unless files.empty?
     params = self.params
 
-    # An error occured. Log +message+ and return false immediately.
+    # An error occurred. Log +message+ and return false immediately.
     retn  = Proc.new { |r| return r }
     error = lambda do |message|
       self.addlog(message)

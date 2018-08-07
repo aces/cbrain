@@ -140,7 +140,7 @@ class SyncStatus < ApplicationRecord
     end
     puts "SYNC: ToCache: #{state.pretty} Proceed" if DebugMessages
 
-    if ! allok # means timeout occured
+    if ! allok # means timeout occurred
       oldstate = state.status
       #state.status_transition(oldstate, "ProvNewer") # do our best; not needed?
       raise "Sync error: timeout waiting for file '#{userfile_id}' " +
@@ -164,7 +164,7 @@ class SyncStatus < ApplicationRecord
     puts "SYNC: ToCache: #{state.pretty} Update" if DebugMessages
 
     # Wait until all other clients out there are done
-    # transfering content to the DP side. We don't care
+    # transferring content to the DP side. We don't care
     # if other clients are also copying to their cache, though.
     allok = repeat_every_formax_untilblock(CheckInterval,CheckMaxWait) do
       others = self.get_status_of_other_caches(userfile_id)
@@ -173,7 +173,7 @@ class SyncStatus < ApplicationRecord
       uploading.nil?
     end
 
-    if ! allok # means timeout occured
+    if ! allok # means timeout occurred
       state.status_transition("ToCache", "ProvNewer") # checked OK
       raise "Sync error: timeout waiting for other clients for " +
             "file '#{userfile_id}' for operation 'ToCache'."
@@ -234,7 +234,7 @@ class SyncStatus < ApplicationRecord
     end
     puts "SYNC: ToProv: #{state.pretty} Proceed" if DebugMessages
 
-    if ! allok # means timeout occured
+    if ! allok # means timeout occurred
       oldstate = state.status
       #state.status_transition(oldstate, "CacheNewer") # do our best; not needed?
       raise "Sync error: timeout waiting for file '#{userfile_id}' " +
@@ -253,7 +253,7 @@ class SyncStatus < ApplicationRecord
     puts "SYNC: ToProv: #{state.pretty} Update" if DebugMessages
 
     # Wait until all other clients out there are done
-    # transfering content to/from the provider, one way or the other.
+    # transferring content to/from the provider, one way or the other.
     allok = repeat_every_formax_untilblock(CheckInterval,CheckMaxWait) do
       others = self.get_status_of_other_caches(userfile_id)
       uploading = others.detect { |o| o.status =~ /^To/ }
@@ -261,7 +261,7 @@ class SyncStatus < ApplicationRecord
       uploading.nil?
     end
 
-    if ! allok # means timeout occured
+    if ! allok # means timeout occurred
       state.status_transition("ToProvider", "CacheNewer") # checked OK
       raise "Sync error: timeout waiting for other clients for " +
             "file '#{userfile_id}' for operation 'ToProvider'."
@@ -332,7 +332,7 @@ class SyncStatus < ApplicationRecord
     end
     puts "SYNC: ModCache: #{state.pretty} Proceed" if DebugMessages
 
-    if ! allok # means timeout occured
+    if ! allok # means timeout occurred
       oldstate = state.status
       raise "Sync error: timeout waiting for file '#{userfile_id}' " +
             "in '#{oldstate}' for operation 'ModifyCache'."
@@ -404,7 +404,7 @@ class SyncStatus < ApplicationRecord
     end
     puts "SYNC: ModProv: #{state.pretty} Proceed" if DebugMessages
 
-    if ! allok # means timeout occured
+    if ! allok # means timeout occurred
       oldstate = state.status
       #state.status_transition(oldstate, "CacheNewer") # do our best; not needed?
       raise "Sync error: timeout waiting for file '#{userfile_id}' " +
@@ -420,7 +420,7 @@ class SyncStatus < ApplicationRecord
     puts "SYNC: ModProv: #{state.pretty} Update" if DebugMessages
 
     # Wait until all other clients out there are done
-    # transfering content to/from the provider, one way or the other.
+    # transferring content to/from the provider, one way or the other.
     allok = repeat_every_formax_untilblock(CheckInterval,CheckMaxWait) do
       others = self.get_status_of_other_caches(userfile_id)
       uploading = others.detect { |o| o.status =~ /^To/ }
@@ -428,7 +428,7 @@ class SyncStatus < ApplicationRecord
       uploading.nil?
     end
 
-    if ! allok # means timeout occured
+    if ! allok # means timeout occurred
       raise "Sync error: timeout waiting for other clients for " +
             "file '#{userfile_id}' for operation 'ModifyProvider'."
     end

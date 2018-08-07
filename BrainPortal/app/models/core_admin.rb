@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 
-# Model representing a user with adminstrative rights.
+# Model representing a user with administrative rights.
 # Admin users are meant to have access to all parts of the system.
 class CoreAdmin < AdminUser
 

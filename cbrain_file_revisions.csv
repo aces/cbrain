@@ -826,7 +826,7 @@ f33935aebfa75955675f5ccd87e46e0d0ed5d255 -#- 2016-09-14 14:44:43 -0400 -#- Andre
 3bc234861f72f94728b11347b705337fc4489ca3 -#- 2017-03-24 11:35:43 -0400 -#- Natacha Beck -#- BrainPortal/db/migrate/20170303205119_add_singularity_executable_name_and_singularity_present_to_remote_resources.rb
 1f148aedfd3409cc292428e6e157332454e2a1c0 -#- 2017-04-07 11:41:18 -0400 -#- Andrew Doyle -#- BrainPortal/db/migrate/20170306210331_logos.rb
 fe9a27057ddb585380760bf993e23dc69c3ba869 -#- 2017-03-09 13:04:40 -0500 -#- Pierre Rioux -#- BrainPortal/db/migrate/20170308220959_remove_old_actres_attributes.rb
-c82fef78eba3638da7e797f771e00e76ac0f5a97 -#- 2017-04-21 12:22:41 -0400 -#- Natacha Beck -#- BrainPortal/db/migrate/20170418124708_remove_docker_present_and_singularty_present_from_remote_resources.rb
+c82fef78eba3638da7e797f771e00e76ac0f5a97 -#- 2017-04-21 12:22:41 -0400 -#- Natacha Beck -#- BrainPortal/db/migrate/20170418124708_remove_docker_present_and_singularity_present_from_remote_resources.rb
 c82fef78eba3638da7e797f771e00e76ac0f5a97 -#- 2017-04-21 12:22:41 -0400 -#- Natacha Beck -#- BrainPortal/db/migrate/20170418125733_rename_container_fields_in_tool_config.rb
 c184bd8f84d7984c04b7581a61a6b3abc8f8c5bd -#- 2017-08-23 14:26:13 -0400 -#- Pierre Rioux -#- BrainPortal/db/migrate/20170823174959_standardize_to_pbkdf2.rb
 f1313b2fad911425b7dee7f0686510892d46deae -#- 2017-09-19 14:16:48 -0400 -#- Greg Kiar -#- BrainPortal/db/migrate/20170913185428_add_container_index_to_tool_configs.rb

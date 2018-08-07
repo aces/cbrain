@@ -263,7 +263,7 @@ describe ClusterTask do
         cluster_task.safe_userfile_find_or_new(NiakFmriStudy, attlist).should be == niak_fmri_study
       end 
       
-      it "should raise an error if found more than one file taht match attribute list." do
+      it "should raise an error if found more than one file that match attribute list." do
         attlist = {:name => niak_fmri_study.name, :data_provider_id => niak_fmri_study.data_provider_id, :user_id => niak_fmri_study.user_id, :group_id => niak_fmri_study.group_id }
         MincFile.stub!(:where).and_return(Userfile)
         lambda{cluster_task.safe_userfile_find_or_new(MincFile, attlist)}.should raise_error(/Found more than one file/)

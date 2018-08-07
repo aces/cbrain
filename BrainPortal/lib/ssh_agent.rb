@@ -35,7 +35,7 @@ require 'active_support'
 # command to connect to them: SSH_AUTH_SOCK and SSH_AGENT_PID.
 #
 # Each ssh-agent process is given a simple identifier as a name.
-# They are persistent accross multiple Ruby processes, and even
+# They are persistent across multiple Ruby processes, and even
 # when the Ruby processes exit. These are called 'named agents'
 # and their parameters (the values of the environment variables)
 # are stored in small files in BASH format.

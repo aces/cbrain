@@ -533,7 +533,7 @@ RSpec.describe UserfilesController, :type => :controller do
         expect(user_userfile.type).to match("TextFile")
       end
 
-      it "should display the number of succesful updates" do
+      it "should display the number of successful updates" do
         post :update_multiple, params: {:file_ids => [user_userfile.id], :type => "TextFile"}
         expect(flash[:notice]).to match(" successful ")
       end
@@ -1042,7 +1042,7 @@ RSpec.describe UserfilesController, :type => :controller do
         get :show, params: {:id => 1}
       end
 
-      it "should retreive the sync status" do
+      it "should retrieve the sync status" do
         allow(mock_status).to receive(:status).and_return("userfile_status")
         get :show, params: {:id => 1}
         expect(assigns[:sync_status]).to eq("userfile_status")
@@ -1054,13 +1054,13 @@ RSpec.describe UserfilesController, :type => :controller do
         expect(assigns[:sync_status]).to eq("ProvNewer")
       end
 
-      it "should retreive the default viewer" do
+      it "should retrieve the default viewer" do
         allow(mock_userfile).to receive_message_chain(:viewers, :first).and_return("default_viewer")
         get :show, params: {:id => 1}
         expect(assigns[:viewer]).to eq("default_viewer")
       end
 
-      it "should retreive the userfile's log" do
+      it "should retrieve the userfile's log" do
         allow(mock_userfile).to receive(:getlog).and_return("userfile_log")
         get :show, params: {:id => 1}
         expect(assigns[:log]).to eq("userfile_log")
@@ -1143,7 +1143,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
 
 
-      context "when the update is unsuccesful" do
+      context "when the update is unsuccessful" do
 
         it "should render the show action" do
           allow(mock_userfile).to receive(:errors).and_return({:type => "Some errors"})
@@ -1208,7 +1208,7 @@ RSpec.describe UserfilesController, :type => :controller do
 
         it "should display a flash message" do
           post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
-          expect(flash[:notice]).to match("successfuly extracted")
+          expect(flash[:notice]).to match("successfully extracted")
         end
       end
 

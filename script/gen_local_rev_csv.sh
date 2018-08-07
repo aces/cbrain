@@ -82,9 +82,9 @@ fi
 # This block's output is sent to the CSV file
 {
   # These two statements generate the first two entries:
-  # 1) an artifical __CBRAIN_TAG__ for the whole project, in format e.g. "4.4.0-123"
+  # 1) an artificial __CBRAIN_TAG__ for the whole project, in format e.g. "4.4.0-123"
   echo "${RELEASE_TAG_NUM}${CSV_SEP}${CURRENT_DATE}${CSV_SEP}CBRAIN Team${CSV_SEP}__${LOCATION_TYPE}_TAG__"
-  # 2) an artifical __CBRAIN_HEAD__ for the whole project.
+  # 2) an artificial __CBRAIN_HEAD__ for the whole project.
   git log -n1 --format="%H${CSV_SEP}%ai${CSV_SEP}%an${CSV_SEP}__${LOCATION_TYPE}_HEAD__" -- .
 
   # This loop generates one entry per file in the project.

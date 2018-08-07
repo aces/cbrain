@@ -101,7 +101,7 @@ describe User do
 
     it "should prevent me from changing my login name" do
       normal_user.save
-      normal_user.login = "not_my_orginal_login"
+      normal_user.login = "not_my_original_login"
       expect(normal_user.save).to  be(false)
     end
 

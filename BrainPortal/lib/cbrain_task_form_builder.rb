@@ -88,7 +88,7 @@ require 'action_view/helpers/form_helper'
 #      <option          value="yellow">yellow</option>
 #    </select>
 #
-# Note that some generated IDs for the tags are ommitted in this example.
+# Note that some generated IDs for the tags are omitted in this example.
 # Also, there are two input fields created by params_check_box() and
 # that their default checked and unchecked values are "1" and "0".
 class CbrainTaskFormBuilder < ActionView::Helpers::FormBuilder

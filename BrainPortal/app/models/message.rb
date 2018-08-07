@@ -47,7 +47,7 @@ class Message < ApplicationRecord
   # The +message_type+ option should be one of :notice, :error or :system.
   # The +description+ and +var_text+ are optional. An +expiry+
   # date can also be provided, such that unacknowledged messages
-  # disappear from view when they are no longer relevent (for
+  # disappear from view when they are no longer relevant (for
   # instance, for system broadcast messages).
   #
   # This method will create and update a single Message object for
@@ -61,7 +61,7 @@ class Message < ApplicationRecord
   # the timestamp.
   #
   # The method returns the list of the messages objects created,
-  # updated or simply found (if no update occured).
+  # updated or simply found (if no update occurred).
   def self.send_message(destination, options = {})
     type         = options[:message_type]  || options["message_type"]  ||
                    options[:type]          || options["type"]          || :notice
@@ -197,7 +197,7 @@ class Message < ApplicationRecord
         :message_type => :error,
         :header       => "Internal error: #{header}",
 
-        :description  => "An internal error occured inside the CBRAIN code.\n"     +
+        :description  => "An internal error occurred inside the CBRAIN code.\n"     +
                          "The CBRAIN admins have been alerted are working\n"       +
                          "towards solving the problem.\n",
 
@@ -206,7 +206,7 @@ class Message < ApplicationRecord
     end
 
 
-    error_description = "An internal error occured inside the CBRAIN code.\n" +
+    error_description = "An internal error occurred inside the CBRAIN code.\n" +
                         "The last 30 caller entries are in attachment.\n"
     if options[:exception_log]
       error_description += "[[View Exception Log][/exception_logs/#{options[:exception_log].id}]]\n"

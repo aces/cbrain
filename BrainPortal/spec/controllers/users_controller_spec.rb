@@ -239,7 +239,7 @@ RSpec.describe UsersController, :type => :controller do
 
         end
 
-        context "when reset is succesful" do
+        context "when reset is successful" do
 
           it "should send an e-mail" do
             expect(CbrainMailer).to receive(:forgotten_password)

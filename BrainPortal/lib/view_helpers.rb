@@ -176,7 +176,7 @@ module ViewHelpers
 
   # This method returns the same thing as pretty_size,
   # except that the different size orders are colored
-  # distinctly. Colors can be overriden in +options+, with
+  # distinctly. Colors can be overridden in +options+, with
   # the default looking like:
   #   { :gb => 'red', :mb => 'purple', :kb => 'blue', :bytes => nil }
   def colored_pretty_size(size, options = {})

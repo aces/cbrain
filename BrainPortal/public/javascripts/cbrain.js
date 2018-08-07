@@ -866,7 +866,7 @@
           onclick_elem.find(".ajax_onclick_hide_child").show();
         },
         error:function(e) {
-          var new_data = $("Error occured while processing this request");
+          var new_data = $("Error occurred while processing this request");
 
           new_data.data("parents", parents);
           new_data.addClass(parents);

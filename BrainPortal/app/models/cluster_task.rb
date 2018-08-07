@@ -272,7 +272,7 @@ class ClusterTask < CbrainTask
   # Utility method for developers to use while writing
   # a task's setup() or save_results() methods.
   # This method creates a subdirectory in your work directory.
-  # To make it partical when writing restartable or recoverable
+  # To make it particular when writing restartable or recoverable
   # code, it will not complain of the directory already exists,
   # unlike Dir.mkdir() which raises an exception.
   # The +relpath+ MUST be relative and the current directory MUST
@@ -288,7 +288,7 @@ class ClusterTask < CbrainTask
   # Utility method for developers to use while writing
   # a task's setup() or save_results() methods.
   # This method creates a symbolic link in your work directory.
-  # To make it partical when writing restartable or recoverable
+  # To make it particular when writing restartable or recoverable
   # code, it will silently replace a symbolic link that already
   # exists instead of raising an exception like File.symlink().
   # The +relpath+ MUST be relative and the current directory MUST
@@ -613,7 +613,7 @@ class ClusterTask < CbrainTask
 
   # Used to add some more initialization code specific to
   # the CBRAIN system itself, after all other tool_config
-  # initalizations. Returns a few lines of BASH code as
+  # initializations. Returns a few lines of BASH code as
   # a single string. If overrriden in subclasses, make sure
   # to append the bash code to the one returned by super()!
   def supplemental_cbrain_tool_config_init #:nodoc:
@@ -1079,21 +1079,21 @@ class ClusterTask < CbrainTask
 
   # Returns a basename for the QSUB script for the task.
   # This is not a full path, just a filename relative to the work directory.
-  # The file itself is not garanteed to exist.
+  # The file itself is not guaranteed to exist.
   def qsub_script_basename(run_number=nil)
     "#{QSUB_SCRIPT_BASENAME}.#{self.name}.#{self.run_id(run_number)}.sh"
   end
 
   # Returns the basename for the QSUB standard output capture file for the task.
   # This is not a full path, just a filename relative to the work directory.
-  # The file itself is not garanteed to exist.
+  # The file itself is not guaranteed to exist.
   def qsub_stdout_basename(run_number=nil) #:nodoc:
     "#{QSUB_STDOUT_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
   end
 
   # Returns the basename for the QSUB standard error capture file for the task.
   # This is not a full path, just a filename relative to the work directory.
-  # The file itself is not garanteed to exist.
+  # The file itself is not guaranteed to exist.
   def qsub_stderr_basename(run_number=nil) #:nodoc:
     "#{QSUB_STDERR_BASENAME}.#{self.name}.#{self.run_id(run_number)}"
   end
@@ -1175,7 +1175,7 @@ class ClusterTask < CbrainTask
   # Returns the filename for the job's captured STDOUT.
   # Returns nil if the work directory has not yet been
   # created, or no longer exists. The file itself is not
-  # garanteed to exist, either. The returned value is
+  # guaranteed to exist, either. The returned value is
   # a full path.
   #
   # Because the output of the science script is redirected
@@ -1208,7 +1208,7 @@ class ClusterTask < CbrainTask
 
   # Read back the STDOUT and STDERR files for the job, and
   # store (part of) their contents in the task's object;
-  # this is called explicitely only in the case when the
+  # this is called explicitly only in the case when the
   # portal performs a 'show' request on a single task
   # otherwise it's too expensive to do it every time. The
   # pseudo attributes :cluster_stdout and :cluster_stderr
@@ -2002,7 +2002,7 @@ exit $status
 
   # Compute size in bytes of the work directory; save it in the task's
   # attribute :cluster_workdir_size . Leaves nil if the directory doesn't
-  # exist or any error occured. Sets to '0' if the task uses another task's
+  # exist or any error occurred. Sets to '0' if the task uses another task's
   # work directory.
   def update_size_of_cluster_workdir
     if self.share_wd_tid
@@ -2294,7 +2294,7 @@ chmod o+x . .. ../.. ../../..
   # online data providers that are local to the current
   # system (including smart ones). This is often needed
   # when setting up container environments so that these
-  # DPs are mounted explicitely inside the containers.
+  # DPs are mounted explicitly inside the containers.
   def local_dp_storage_paths #:nodoc:
     dirs = DataProvider
       .where(:online => true)

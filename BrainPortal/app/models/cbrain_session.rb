@@ -123,7 +123,7 @@ class CbrainSession
   #   apply_changes([{ ... }, { ... }]) # List of hashes
   #   apply_changes([[:append, { ... }], [:delete, { ... }]]) # List of pairs
   #
-  # While similiar to Hash's merge method, this method has a few key
+  # While similar to Hash's merge method, this method has a few key
   # differences:
   #
   # - Hashes in +hash+ and session attributes are recursively merged:
@@ -155,7 +155,7 @@ class CbrainSession
   # [:delete]
   #  Remove any non-colliding value present in +hash+ from session
   #  attributes, except for collections (Array or Set), from which the elements
-  #  in +changes+ are substracted.
+  #  in +changes+ are subtracted.
   #
   # While oddly specified, this method is hopefully intuitive to use and allow
   # a wide range of operations from just an input hash and a mode switch.

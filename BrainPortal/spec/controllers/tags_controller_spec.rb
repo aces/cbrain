@@ -60,7 +60,7 @@ RSpec.describe TagsController, :type => :controller do
         end
       end
 
-      context "when save is unsuccesful" do
+      context "when save is unsuccessful" do
         before(:each) do
           allow(Tag).to receive(:new).and_return(tag)
           allow(tag).to receive(:save).and_return(false)

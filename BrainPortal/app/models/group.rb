@@ -67,7 +67,7 @@ class Group < ApplicationRecord
     @everyone ||= EveryoneGroup.find_by_name('everyone')
   end
 
-  # Returns itself; this method is here to make it symetrical
+  # Returns itself; this method is here to make it symmetrical
   # with other resource classes such as User and Site, which
   # both have a meaningful own_group() method.
   def own_group

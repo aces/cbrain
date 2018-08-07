@@ -26,7 +26,7 @@ module AuthenticatedSystem #:nodoc:
     # Returns the currently logged-in user, if any.
     def current_user
       return @current_user if @current_user.present?
-      return nil if @current_user == false # false means we previously explicitely set current_user=(nil)
+      return nil if @current_user == false # false means we previously explicitly set current_user=(nil)
       user ||= user_from_api_token
       user ||= user_from_session
       self.current_user=user # user can be nil, in that case @current_user is set to false

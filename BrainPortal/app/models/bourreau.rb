@@ -553,7 +553,7 @@ class Bourreau < RemoteResource
       end
     end
 
-    # Artifically trigger a 'wakeup workers' commmand if any task was
+    # Artificially trigger a 'wakeup workers' command if any task was
     # affected locally. Unfortunately we can't wake up workers on
     # a different Bourreau yet.
     if tasks_affected > 0

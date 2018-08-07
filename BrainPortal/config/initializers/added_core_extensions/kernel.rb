@@ -38,7 +38,7 @@ module Kernel
 
   # Raises a CbrainError exception, with a default redirect to
   # the current controller's index action.
-  def cb_error(message = "Some error occured.",  options = {} )
+  def cb_error(message = "Some error occurred.",  options = {} )
     options[:status]       ||= :bad_request
     options[:shift_caller]   = 2
     raise CbrainError.new(message, options)

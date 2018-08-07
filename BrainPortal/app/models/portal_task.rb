@@ -203,7 +203,7 @@ class PortalTask < CbrainTask
 
   # This method will be called before the view for the
   # task object is rendered. It doesn't have to do
-  # anything but it can initalize some parameters based
+  # anything but it can initialize some parameters based
   # on the list of interface_userfile_ids for instance.
   #
   # If the method returns a non-empty string, this
@@ -233,7 +233,7 @@ class PortalTask < CbrainTask
   # This method is called after the user has clicked
   # to submit the form for the task, but before it
   # is launched. Just like before_form(), it doesn't have
-  # to do anything but it can initalize some parameters based
+  # to do anything but it can initialize some parameters based
   # on the list of interface_userfile_ids for instance.
   #
   # If the method returns a non-empty string, this
@@ -273,8 +273,8 @@ class PortalTask < CbrainTask
   #
   # The values in this default hash WILL be
   # added to whatever other values are returned
-  # by overriden versions of this method (in other
-  # words, even if you don't explicitely include
+  # by overridden versions of this method (in other
+  # words, even if you don't explicitly include
   # :interface_userfile_ids in the hash, it will
   # be in there).
   def untouchable_params_attributes

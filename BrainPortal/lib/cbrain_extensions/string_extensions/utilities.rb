@@ -95,7 +95,7 @@ module CBRAINExtensions #:nodoc:
       #    "abc[def]" => "cbrain_task_BRA_params_KET__BRA_abc_KET__BRA_def_KET_"
       #
       # The string is first run through .to_la(), which adds the constant prefix
-      # "cbrain_task[params][abc]", then the brackets are tranformed into identifier
+      # "cbrain_task[params][abc]", then the brackets are transformed into identifier
       # friendly characters.
       #
       # This is also the name of the input field's HTML ID

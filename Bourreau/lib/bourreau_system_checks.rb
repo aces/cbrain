@@ -104,7 +104,7 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     # the current process will disappear once the HTTP server
     # forks, and the workers want their parent to keep
     # existing. A separate 'start_workers' command must
-    # be sent to the control channel explicitely later on.
+    # be sent to the control channel explicitly later on.
 
   end
 
@@ -262,8 +262,8 @@ class BourreauSystemChecks < CbrainChecker #:nodoc:
     # CASE workdir_archived?  workdir_archive_userfile_id (waui)  cluster_workdir_size (cws)
     # 1    true,              nil,                                nil,    # workdir_archived? should be turned to false
     # 2    false,             id,                                 nil,    # workdir_archived? should be turned to true
-    # 3    false,             id,                                 size,   # If waui and cws: verify existance of waui if it exist turn cws to nil and turn workdir_archived to true
-    # 4    true,              id,                                 size,   # If waui and cws: verify existance of waui if it exist turn cws to nil
+    # 3    false,             id,                                 size,   # If waui and cws: verify existence of waui if it exist turn cws to nil and turn workdir_archived to true
+    # 4    true,              id,                                 size,   # If waui and cws: verify existence of waui if it exist turn cws to nil
 
     # Other cases:
     # 5 workdir_archived == true but the task have no workdir_archive.    # workdir_archived? should be turned false

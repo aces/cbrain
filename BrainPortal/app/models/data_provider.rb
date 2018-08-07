@@ -172,7 +172,7 @@ require 'digest/md5'
 # they are given in argument; this means that after a successful
 # provider_rename(), provider_move_to_otherprovider() or
 # provider_copy_to_otherprovider(), the caller must call
-# the save() method explicitely.
+# the save() method explicitly.
 #
 # = Implementations In Subclasses
 #
@@ -532,7 +532,7 @@ class DataProvider < ApplicationRecord
 
   # This method provides a quick way to set the cache's file content
   # to an exact copy of +localpath+, a locally accessible file or directory.
-  # The syncronization method +sync_to_provider+ will automatically
+  # The synchronization method +sync_to_provider+ will automatically
   # be called after the copy is performed.
   def cache_copy_from_local_file(userfile, localpath)
     localpath = localpath.to_s # in case we get a Pathname
@@ -1572,7 +1572,7 @@ class DataProvider < ApplicationRecord
   #
   #   'Mike O'\''Connor'
   def shell_escape(s) #:nodoc:
-    s.to_s.bash_escape(true)  # in config/initializers/core_extentions/string.rb
+    s.to_s.bash_escape(true)  # in config/initializers/core_extensions/string.rb
   end
 
   # This method is used to escape properly any string such that

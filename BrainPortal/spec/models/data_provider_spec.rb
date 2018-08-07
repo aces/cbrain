@@ -775,11 +775,11 @@ describe DataProvider do
   end
 
   describe "#validate_destroy" do
-    it "should prevent desctruction if associated userfiles still exist" do
+    it "should prevent destruction if associated userfiles still exist" do
       destroyed_provider = create(:data_provider, :userfiles => [create(:single_file)])
       expect{ destroyed_provider.destroy }.to raise_error(ActiveRecord::DeleteRestrictionError)
     end
-    it "should allow desctruction if no associated userfiles still exist" do
+    it "should allow destruction if no associated userfiles still exist" do
       destroyed_provider = create(:data_provider)
       expect { destroyed_provider.destroy }.to change{ DataProvider.count }.by(-1)
     end

@@ -27,7 +27,7 @@ module DateRangeRestriction
 
   # Checks consistence of values for filtering by date.
   # The values in argument usually come from values posted by the partial 'shared/_date_range_panel.html.erb'.
-  # For exemple if filtering by absolute_date_from will be process
+  # For example if filtering by absolute_date_from will be process
   # then the absolute date 'from' is required.
   # Returns an empty string if everything is good,
   # else returns an explicit message in order to know what's wrong.

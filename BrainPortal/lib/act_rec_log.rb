@@ -307,7 +307,7 @@ module ActRecLog
   end
 
   # This method records in the object's log a list of
-  # all currenly pending changes to the object's attribute,
+  # all currently pending changes to the object's attribute,
   # if any. +by_user+ is an optional User object indicating
   # who made the changes. +white_list+ is a list of attributes
   # to look for; to this list will be added a standard hardcoded

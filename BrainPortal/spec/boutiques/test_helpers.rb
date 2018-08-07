@@ -301,7 +301,7 @@ module TestHelpers
   # Helper method for internally generating an argument dictionary similar to the "parameters" hash from a string
   # This is used to unit test the after_form method of the portal_task, in isolation.
   # It is also used to simulate argument "parsing" when the portal arguments are sent for execution (see Bourreau-side tests).
-  # Occurences with lists after the flag become arrays. Lone flags become booleans indicating their presence.
+  # Occurrences with lists after the flag become arrays. Lone flags become booleans indicating their presence.
   # e.g. {:a => val_a, :l => [1,2], :v => true, ...} when "-a val_a -l 1 2 -v" appears in the string
   ArgumentDictionary = lambda do |argsIn, idsForFiles=nil|
     # This will hold the output hash arguments

@@ -245,7 +245,7 @@ class SshDataProvider < DataProvider
   end
 
   # Returns the full path to the content of +userfile+ on
-  # the data provider's side. This is to be overriden
+  # the data provider's side. This is to be overridden
   # by subclasses where files are stored differently
   # on the provider's side.
   def provider_full_path(userfile)

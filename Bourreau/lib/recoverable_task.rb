@@ -26,7 +26,7 @@ module RecoverableTask
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # Just returns true; it's the responsability
+  # Just returns true; it's the responsibility
   # of the CbrainTask developer to write the
   # setup() method such that it recovers from
   # failure naturally.
@@ -34,7 +34,7 @@ module RecoverableTask
     true
   end
 
-  # Just returns true; it's the responsability
+  # Just returns true; it's the responsibility
   # of the CbrainTask developer to write the
   # bash commands returned by the cluster_commands() method
   # such that they recover from failure naturally.
@@ -42,7 +42,7 @@ module RecoverableTask
     true
   end
 
-  # Just returns true; it's the responsability
+  # Just returns true; it's the responsibility
   # of the CbrainTask developer to write the
   # save_results() method such that it recovers from
   # failure naturally.
