@@ -1040,7 +1040,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  templateSpec.main.decorator = templateSpec.main_d;
 
 	  // Note: Using env.VM references rather than local var references throughout this section to allow
-	  // for external users to override these as pseudo-supported APIs.
+	  // for external users to override these as psuedo-supported APIs.
 	  env.VM.checkRevision(templateSpec.compiler);
 
 	  function invokePartialWrapper(partial, context, options) {
@@ -2316,7 +2316,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	//
 	// If i is undefined, then the first child will be marked as such.
 	//
-	// If multiple is truthy then all whitespace will be stripped out until non-whitespace
+	// If mulitple is truthy then all whitespace will be stripped out until non-whitespace
 	// content is met.
 	function omitRight(body, i, multiple) {
 	  var current = body[i == null ? 0 : i + 1];
@@ -2334,7 +2334,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	//
 	// If i is undefined then the last child will be marked as such.
 	//
-	// If multiple is truthy then all whitespace will be stripped out until non-whitespace
+	// If mulitple is truthy then all whitespace will be stripped out until non-whitespace
 	// content is met.
 	function omitLeft(body, i, multiple) {
 	  var current = body[i == null ? body.length - 1 : i - 1];
@@ -2342,7 +2342,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  // We omit the last node if it's whitespace only and not preceded by a non-content node.
+	  // We omit the last node if it's whitespace only and not preceeded by a non-content node.
 	  var original = current.value;
 	  current.value = current.value.replace(multiple ? /\s+$/ : /[ \t]+$/, '');
 	  current.leftStripped = current.value !== original;

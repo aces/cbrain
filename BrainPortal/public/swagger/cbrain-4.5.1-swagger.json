@@ -612,7 +612,7 @@
         "/data_providers/{id}/register": {
             "post": {
                 "summary": "Registers a file as a Userfile in CBRAIN.",
-                "description": "This method allows new files to be added to CBRAIN. The files must first\nbe transferred to the Data Provider via SFTP. For more information on\nSFTP file transfers, consult the CBRAIN Wiki documentation. Once files\nare present on the Data Provider, this method registers them in CBRAIN\nby specifying the file type. You can also specify to copy/move the files\nto another Data Provider after file registration.\n",
+                "description": "This method allows new files to be added to CBRAIN. The files must first\nbe transfered to the Data Provider via SFTP. For more information on\nSFTP file transfers, consult the CBRAIN Wiki documentation. Once files\nare present on the Data Provider, this method registers them in CBRAIN\nby specifying the file type. You can also specify to copy/move the files\nto another Data Provider after file registration.\n",
                 "tags": [
                     "DataProviders"
                 ],

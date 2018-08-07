@@ -44,7 +44,7 @@ window.SwaggerTranslator.learn({
     "Explore":"Keşfet",
     "Show Swagger Petstore Example Apis":"Swagger Petstore Örnek Api'yi Gör",
     "Can't read from server.  It may not have the appropriate access-control-origin settings.":"Sunucudan okuma yapılamıyor. Sunucu access-control-origin ayarlarınızı kontrol edin.",
-    "Please specify the protocol for":"Lütfen istenen address için protokol belirtiniz",
+    "Please specify the protocol for":"Lütfen istenen adres için protokol belirtiniz",
     "Can't read swagger JSON from":"Swagger JSON bu kaynaktan okunamıyor",
     "Finished Loading Resource Information. Rendering Swagger UI":"Kaynak baglantısı tamamlandı. Swagger UI gösterime hazırlanıyor",
     "Unable to read api":"api okunamadı",

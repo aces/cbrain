@@ -481,7 +481,7 @@ paths:
       summary: Registers a file as a Userfile in CBRAIN.
       description: |
         This method allows new files to be added to CBRAIN. The files must first
-        be transferred to the Data Provider via SFTP. For more information on
+        be transfered to the Data Provider via SFTP. For more information on
         SFTP file transfers, consult the CBRAIN Wiki documentation. Once files
         are present on the Data Provider, this method registers them in CBRAIN
         by specifying the file type. You can also specify to copy/move the files
