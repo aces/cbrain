@@ -22,6 +22,36 @@
             "description": "Tool description.",
             "type": "string"
         },
+        "author": {
+            "id": "http://github.com/boutiques/boutiques-schema/author",
+            "minLength": 1,
+            "description": "Tool author name(s).",
+            "type": "string"
+        },
+        "url": {
+            "id": "http://github.com/boutiques/boutiques-schema/url",
+            "minLength": 1,
+            "description": "Tool URL.",
+            "type": "string"
+        },
+        "doi": {
+            "id": "http://github.com/boutiques/boutiques-schema/doi",
+            "minLength": 1,
+            "description": "DOI of the descriptor (not of the tool itself).",
+            "type": "string"
+        },
+        "shell": {
+            "id": "http://github.com/boutiques/boutiques-schema/shell",
+            "minLength": 1,
+            "description": "Absolute path of the shell interpreter to use in the container (defaults to /bin/sh).",
+            "type": "string"
+        },
+        "tool-doi": {
+            "id": "http://github.com/boutiques/boutiques-schema/tool-doi",
+            "minLength": 1,
+            "description": "DOI of the tool (not of the descriptor).",
+            "type": "string"
+        },
         "command-line": {
             "id": "http://github.com/boutiques/boutiques-schema/command-line",
             "minLength": 1,
@@ -57,9 +87,9 @@
                             "type": "string"
                         },
                         "entrypoint": {
-                          "id": "http://github.com/boutiques/boutiques-schema/container/entrypoint",
-                          "description": "Flag indicating whether or not the container uses an entrypoint.",
-                          "type": "boolean"
+                            "id": "http://github.com/boutiques/boutiques-schema/container/entrypoint",
+                            "description": "Flag indicating whether or not the container uses an entrypoint.",
+                            "type": "boolean"
                         },
                         "index": {
                             "id": "http://github.com/boutiques/boutiques-schema/container/index",
@@ -128,7 +158,9 @@
                     "value"
                 ],
                 "additionalProperties": false
-            }
+            },
+        "minItems": 1,
+        "uniqueItems": true
         },
         "groups": {
             "id": "http://github.com/boutiques/boutiques-schema/groups",
@@ -188,7 +220,9 @@
                     "members"
                 ],
                 "additionalProperties": false
-            }
+            },
+        "minItems": 1,
+        "uniqueItems": true
         },
         "inputs": {
             "id": "http://github.com/boutiques/boutiques-schema/inputs",
@@ -277,6 +311,20 @@
                             ]
                         }
                     },
+                    "value-requires": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/value-requires",
+                        "description": "Ids of the inputs that are required when the corresponding value choice is selected.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": true
+                    },
+                    "value-disables": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/value-disables",
+                        "description": "Ids of the inputs that are disabled when the corresponding value choice is selected.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": true
+                    },
                     "integer": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/integer",
                         "description": "Specify whether the input should be an integer. May only be used with Number type inputs.",
@@ -357,25 +405,95 @@
                             "type": {"enum": ["Number"]}
                         }
                     },
-                    "exclusive-minimum": {
-                        "properties": {
-                            "type": {"enum": ["Number"]}
-                        }
-                    },
-                    "exclusive-maximum": {
-                        "properties": {
-                            "type": {"enum": ["Number"]}
-                        }
-                    },
                     "uses-absolute-path": {
                         "properties": {
                             "type": {"enum": ["File"]}
                         }
                     },
                     "exclusive-minimum": ["minimum"],
-                    "exclusive-maximum": ["maximum"]
+                    "exclusive-maximum": ["maximum"],
+                    "value-disables": ["value-choices"],
+                    "value-enables": ["value-choices"]
                 },
                 "additionalProperties": false
+            },
+        "minItems": 1,
+        "uniqueItems": true
+        },
+        "tests": {
+            "id": "http://github.com/boutiques/boutiques-schema/tests",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "id": "http://github.com/boutiques/boutiques-schema/tests/test-case",
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/name",
+                        "minLength": 1,
+                        "description": "Name of the test-case",
+                        "type": "string"
+                    },
+                    "invocation": {
+                        "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/invocation",
+                        "type": "object"
+                    },
+                    "assertions": {
+                        "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions",
+                        "type": "object",
+                        "properties": {
+                            "exit-code": {
+                                "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/exit-code",
+                                "description": "Expected code returned by the program.",
+                                "type": "integer"
+                            },
+                            "output-files": {
+                                "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/out-files",
+                                "type": "array",
+                                "minItems": 1,
+                                "items": {
+                                    "id": "http://github.com/boutiques/boutiques-schema/test-case/assertions/out-files/output",
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/out-files/output/id",
+                                            "description": "Id referring to an output-file",
+                                            "minLength": 1,
+                                            "pattern": "^[0-9,_,a-z,A-Z]*$",
+                                            "type": "string"
+                                        },
+                                        "md5-reference": {
+                                            "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/out-files/output/reference",
+                                            "description": "MD5 checksum string to match against the MD5 checksum of the output-file specified by the id object",
+                                            "minLength": 1,
+                                            "type": "string"
+                                        }
+                                    },
+                                "required": [
+                                    "id"
+                                ]
+                                }
+                          }
+                        },
+                        "anyOf": [
+                          {
+                            "required": [
+                              "exit-code"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "output-files"
+                            ]
+                          }
+                        ]
+                    }
+                },
+                "required": [
+                  "name",
+                  "assertions",
+                  "invocation"
+                ]
             }
         },
         "output-files": {
@@ -479,7 +597,9 @@
                     "command-line-flag-separator": ["command-line-flag"]
                 },
                 "additionalProperties": false
-            }
+            },
+        "minItems": 1,
+        "uniqueItems": true
         },
         "invocation-schema": {
             "id": "http://github.com/boutiques/boutiques-schema/invocation-schema",
@@ -513,14 +633,51 @@
                     "type": "integer",
                     "minimum": 1
                 },
-                 "walltime-estimate": {
-                     "id": "http://github.com/boutiques/boutiques-schema/suggested-resources/walltime-estimate",
-                     "type": "number",
-                     "description": "Estimated wall time of a task in seconds.",
-                     "minimum": 0
-                 }
+                "walltime-estimate": {
+                    "id": "http://github.com/boutiques/boutiques-schema/suggested-resources/walltime-estimate",
+                    "type": "number",
+                    "description": "Estimated wall time of a task in seconds.",
+                    "minimum": 0
+                }
             }
         },
+    "tags": {
+            "id": "http://github.com/boutiques/boutiques-schema/tags",
+            "type": "object",
+            "description": "An set of key-value pairs specifying tags describing the pipeline. The tag names are open, they might be more constrained in the future.",
+            "additionalProperties": {
+                "type": "string",
+                "description": "Tag values"
+            }
+        },
+    "error-codes": {
+            "id": "http://github.com/boutiques/boutiques-schema/error-codes",
+            "type": "array",
+            "description": "An array of key-value pairs specifying exit codes and their description. Can be used for tools to specify the meaning of particular exit codes. Exit code 0 is assumed to indicate a successful execution.",
+            "items": {
+                "id": "http://github.com/boutiques/boutiques-schema/error-codes",
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "id": "http://github.com/boutiques/boutiques-schema/error-codes/code",
+                        "description": "Value of the exit code",
+                        "type": "integer"
+                    },
+                    "description": {
+                        "id": "http://github.com/boutiques/boutiques-schema/error-codes/description",
+                        "description": "Description of the error code.",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "code",
+                    "description"
+                ],
+                "additionalProperties": false
+            },
+        "minItems": 1,
+        "uniqueItems": true
+    },
         "custom": {
             "id": "http://github.com/boutiques/boutiques-schema/custom",
             "type": "object"
@@ -532,9 +689,7 @@
         "command-line",
         "schema-version",
         "inputs",
-        "output-files",
         "tool-version"
     ],
     "additionalProperties": false
 }
-
