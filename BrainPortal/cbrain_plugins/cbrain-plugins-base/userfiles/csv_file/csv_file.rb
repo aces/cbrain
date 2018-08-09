@@ -89,26 +89,26 @@ class CSVFile < TextFile
 
     quote_char_list.each do |qc|
       col_sep_list.each  do |cs|
-        combinations_key = [qc,cs]
+        combinaison_key = [qc,cs]
         double_qc    = qc == "\"" ? "''" : "\"\""
-        poss_combination[combinations_key] = []
+        poss_combination[combinaison_key] = []
         begin
           CSV.parse(csv_content, :quote_char => qc, :col_sep => cs, :row_sep =>:auto) do |row|
             if row.size == 1
-              poss_combination.delete(combinations_key)
+              poss_combination.delete(combinaison_key)
               break
             end
             need_to_quit = false
             row.each do |field|
               # Two '' or ""
               if field && field.index(double_qc)
-                poss_combination.delete(combinations_key)
+                poss_combination.delete(combinaison_key)
                 need_to_quit = true
                 break
               end
             end
             break if need_to_quit
-            poss_combination[combinations_key] << row.size
+            poss_combination[combinaison_key] << row.size
           end
         rescue => exception
           if exception.is_a?(ArgumentError) && exception.message =~ /invalid byte sequence in/
@@ -117,16 +117,16 @@ class CSVFile < TextFile
             invalid_encoding = true
             retry
           else
-            poss_combination.delete(combinations_key)
+            poss_combination.delete(combinaison_key)
           end
         end
       end
     end
 
     # Keep poss_combination which unique value
-    poss_combination.each do |combinations_key,count_by_line|
+    poss_combination.each do |combinaison_key,count_by_line|
       count_by_line.uniq!
-      poss_combination.delete(combinations_key) if count_by_line.size != 1
+      poss_combination.delete(combinaison_key) if count_by_line.size != 1
     end
 
     # Sort solution useful when we have multiple solution
