@@ -272,7 +272,7 @@ class ClusterTask < CbrainTask
   # Utility method for developers to use while writing
   # a task's setup() or save_results() methods.
   # This method creates a subdirectory in your work directory.
-  # To make it particular when writing restartable or recoverable
+  # To make it practical when writing restartable or recoverable
   # code, it will not complain of the directory already exists,
   # unlike Dir.mkdir() which raises an exception.
   # The +relpath+ MUST be relative and the current directory MUST
@@ -288,7 +288,7 @@ class ClusterTask < CbrainTask
   # Utility method for developers to use while writing
   # a task's setup() or save_results() methods.
   # This method creates a symbolic link in your work directory.
-  # To make it particular when writing restartable or recoverable
+  # To make it practical when writing restartable or recoverable
   # code, it will silently replace a symbolic link that already
   # exists instead of raising an exception like File.symlink().
   # The +relpath+ MUST be relative and the current directory MUST
