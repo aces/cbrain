@@ -154,8 +154,8 @@ class ToolConfigsController < ApplicationController
 
   # Also used instead of create()
   # This method is special in that only one instance of
-  # an object is permitted to exist for a pair of [:tool_id, :bourreau_id],
-  # so an object being created is FIRST loaded from the DB if it exists to
+  # an object is permitted to exist for global ( per tool or per bourreau) config
+  # so an global config object being created is FIRST loaded from the DB if it exists to
   # prevent duplication.
   def update #:nodoc:
     id                = params[:id] || "NEW" # can be 'new' if we create()
