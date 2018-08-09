@@ -27,7 +27,7 @@ describe RemoteResource do
   let(:remote_resource) {create(:remote_resource)}
 
   describe "#spaced_dp_ignore_patterns" do
-    it "should return the ignore patterns as a space-seperated string" do
+    it "should return the ignore patterns as a space-separated string" do
       expect(remote_resource.spaced_dp_ignore_patterns).to match(/#{remote_resource.dp_ignore_patterns.join("\\s+")}/)
     end
   end

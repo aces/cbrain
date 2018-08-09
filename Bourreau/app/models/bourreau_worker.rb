@@ -127,7 +127,7 @@ class BourreauWorker < Worker
         process_task_list(tasks_todo_rel)
       rescue => ex
         worker_log.fatal "Exception processing tasklist: #{ex.class.to_s} #{ex.message}\n" + ex.backtrace[0..10].join("\n")
-        Kernel.exit!(99) # exit!(), and not exit() # used by parent to know an exception occured.
+        Kernel.exit!(99) # exit!(), and not exit() # used by parent to know an exception occurred.
       end
       worker_log.debug "Exiting properly."
       Kernel.exit!(0) # exit!(), and not exit()

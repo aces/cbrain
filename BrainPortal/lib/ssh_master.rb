@@ -39,7 +39,7 @@ require 'active_support'
 # a set of tunnels.
 #
 # Tunnels are tied to a master, persistent SSH process running in
-# a subprocess; the master SSH process is controled using the
+# a subprocess; the master SSH process is controlled using the
 # instance methods of this class, where each instance represent
 # one of these master SSH process. There can only be at most
 # one master SSH process per combination of remote host,
@@ -420,7 +420,7 @@ class SshMaster
   # Returns true if the master SEEMS to be alive;
   # this check is performed by checking that the
   # socket file exists and a process is running,
-  # so it's not garanteed that the other end of
+  # so it's not guaranteed that the other end of
   # the connection is responding.
   def quick_is_alive?
     self.properly_registered?
@@ -612,7 +612,7 @@ class SshMaster
     base      = simple_base
     base      = "#{@category}/#{simple_base}" if @category
     sock_dir  = "#{CONFIG[:CONTROL_SOCKET_DIR_1]}"
-    sock_path = "#{sock_dir}/#{base}" # prefered location
+    sock_path = "#{sock_dir}/#{base}" # preferred location
     if sock_path.size >= CONFIG[:CONTROL_SOCKET_MAX_LENGTH] || ! File.directory?(sock_dir) # limitation in control path length in ssh
       sock_dir  = "#{CONFIG[:CONTROL_SOCKET_DIR_2]}"
       sock_path = "#{sock_dir}/#{base}" # alternative, hopefully shorter than 80 chars long!

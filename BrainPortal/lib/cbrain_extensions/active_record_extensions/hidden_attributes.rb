@@ -32,7 +32,7 @@ module CBRAINExtensions #:nodoc:
       # of all attributes listed in attr_list (an array of symbols).
       # Fetching their values will return instead either "N/A" (default)
       # or the custom value supplied in options[:replacement].
-      # The object's save() and save!() methods will be overriden
+      # The object's save() and save!() methods will be overridden
       # to raise an exception ActiveRecord::RecordNotSaved
       def hide_attributes(attr_list, options={})
         newvalue = options.has_key?(:replacement) ? options[:replacement] : "N/A"

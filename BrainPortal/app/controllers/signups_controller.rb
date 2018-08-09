@@ -59,7 +59,7 @@ class SignupsController < ApplicationController
     end
 
     unless send_confirm_email(@signup)
-      flash[:error] = "It seems some error occured. The email notification was probably not sent. There's nothing we can do about this."
+      flash[:error] = "It seems some error occurred. The email notification was probably not sent. There's nothing we can do about this."
     end
 
     send_admin_notification(@signup)
@@ -150,7 +150,7 @@ class SignupsController < ApplicationController
     if send_confirm_email(@signup)
       flash[:notice] = "A new confirmation email has been sent."
     else
-      flash[:error] = "It seems some error occured. Email notification was probably not sent. Try again later, or contact the admins."
+      flash[:error] = "It seems some error occurred. Email notification was probably not sent. Try again later, or contact the admins."
     end
 
     sleep 1

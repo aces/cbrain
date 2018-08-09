@@ -428,7 +428,7 @@ class Worker
     self.worker_log.info "Finishing main worker loop."
 
   # Error handling: all errors at this level are fatal.
-  # It is the responsability of the worker subclass to deal
+  # It is the responsibility of the worker subclass to deal
   # with its own errors and trap them.
   rescue => itswrong
 
@@ -530,7 +530,7 @@ class Worker
   # These methods are meant to be overridden by subclasses.
   #####################################################################
 
-  # Can be overriden to perform some initialization
+  # Can be overridden to perform some initialization
   # code one time only, after a worker is spawned in background.
   def setup
     self.validate_I_am_a_worker
@@ -547,7 +547,7 @@ class Worker
     cb_error "Worker implementation error: no method do_regular_work() implemented?"
   end
 
-  # Can be overriden to do some cleanup after a worker
+  # Can be overridden to do some cleanup after a worker
   # finishes. This method will not be invoked if the
   # worker ended because of a raised exception, only
   # after a normal 'stop' is performed.
@@ -609,7 +609,7 @@ class Worker
   # Worker-side method.
   #
   # Returns true if an external or internal stop signal was received.
-  # If the worker's do_regular_work() method calls stop_signal_recived?
+  # If the worker's do_regular_work() method calls stop_signal_received?
   # and gets a true value then it means that the worker is scheduled
   # to stop completely as soon as do_regular_work() returns.
   def stop_signal_received?

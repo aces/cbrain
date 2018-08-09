@@ -36,7 +36,7 @@
 #                                          should match the underscored version of the class
 #                                          name. E.g. _userfile_custom_filter.html.erb for
 #                                          UserfileCustomFilter.
-#[<b>Type parameter</b>] A type paramter will be sent to the new and create actions of the
+#[<b>Type parameter</b>] A type parameter will be sent to the new and create actions of the
 #                        CustomFilterController. This parameter should match the part of
 #                        of the class name excluding "CustomFilter". E.g. for UserfileCustomFilter,
 #                        the type parameter should be "userfile".

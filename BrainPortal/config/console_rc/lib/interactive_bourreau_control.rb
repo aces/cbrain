@@ -31,7 +31,7 @@
 #
 # The simplest use is to create an object for the
 # interactive session then invoke the method for the
-# command line interace:
+# command line interface:
 #
 #   ibc = InteactiveBourreauControl.new
 #   ibc.interactive_control

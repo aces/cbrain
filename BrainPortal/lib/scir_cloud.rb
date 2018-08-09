@@ -194,7 +194,7 @@ class ScirCloud < Scir
 
       # VM tasks can be monitored with the regular cache mechanism
       # implemented in Scir (update_job_info_cache is of course
-      # overriden in the children classes of ScirCloud).
+      # overridden in the children classes of ScirCloud).
       return super if ScirCloud.is_vm_task?(cbrain_task)
 
       # Monitoring of tasks running in VMs

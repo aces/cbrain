@@ -106,14 +106,14 @@ class CbrainTask::Diagnostics < ClusterTask
       end
     end
 
-    # Artifical delays
+    # Artificial delays
     setup_delay = params[:setup_delay] ? params[:setup_delay].to_i : 0
     if setup_delay > 0
       self.addlog "Sleeping for #{setup_delay} seconds."
       sleep setup_delay
     end
 
-    # Artifical crash
+    # Artificial crash
     if mybool(params[:setup_crash])
       params[:setup_crash]=nil if mybool(params[:crash_will_reset])
       cb_error "This program crashed on purpose, as ordered."

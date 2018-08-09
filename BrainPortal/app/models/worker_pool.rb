@@ -22,7 +22,7 @@
 
 # = WorkerPool
 #
-# This class is reponsible for providing worker pool management commands:
+# This class is responsible for providing worker pool management commands:
 # [create_or_find_pool] Creates a pool of workers if it cannot find ones already running. Created workers are automatically started.
 # [wake_up_workers]     Wakes up all workers in the pool.
 # [stop_workers]        Terminates all workers in the pool.

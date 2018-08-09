@@ -323,7 +323,7 @@ class Userfile < ApplicationRecord
   # [For regular users:] all files that belong to the user all
   #                      files assigned to a group to which the user belongs.
   def self.find_accessible_by_user(id, user, options = {})
-    # Seems weird, it is to accomodate rails5 deprecation warnin for find (accept only id)
+    # Seems weird, it is to accommodate rails5 deprecation warnin for find (accept only id)
     id = id.id if id.is_a?(Userfile)
     self.accessible_for_user(user, options).find(id)
   end
@@ -454,7 +454,7 @@ class Userfile < ApplicationRecord
   end
 
   # This method returns, if it exists, the SyncStatus
-  # object that represents the syncronization state of
+  # object that represents the synchronization state of
   # the content of this userfile on the local RAILS
   # application's DataProvider cache. Returns nil if
   # no SyncStatus object currently exists for the file.
@@ -870,7 +870,7 @@ class Userfile < ApplicationRecord
   # [method] an instance method defined for the
   #          class that will prepare the data for
   #          transfer.
-  # [type]   the type of data being transfered.
+  # [type]   the type of data being transferred.
   #          Generally, this is the the key to be
   #          used in the hash given to a render
   #          call in the controller. One special

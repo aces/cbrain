@@ -109,7 +109,7 @@ module CBRAINExtensions #:nodoc:
         new_object
       end
 
-      # Redifine persistance methods to check if
+      # Redefine persistence methods to check if
       # type condition should be applied.
       [:reload, :destroy, :delete].each do |m|
         define_method(m) do |*args|

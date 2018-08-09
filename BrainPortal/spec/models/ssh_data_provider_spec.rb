@@ -167,7 +167,7 @@ describe SshDataProvider do
       expect(sftp).to receive(:rename!)
       provider.impl_provider_rename(single_file, "new_name")
     end
-    it "should return true if the rename is succesful" do
+    it "should return true if the rename is successful" do
       expect(provider.impl_provider_rename(single_file, "new_name")).to be_truthy
     end
     it "should return false if rename fails" do

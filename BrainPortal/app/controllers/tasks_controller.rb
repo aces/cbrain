@@ -187,7 +187,7 @@ class TasksController < ApplicationController
     # Our new task object needs some initializing
     @task.params         = @task.class.wrapper_default_launch_args.clone
     @task.bourreau_id    = params[:bourreau_id]     # Just for compatibility with old code
-    @task.tool_config_id = params[:tool_config_id]  # Normaly sent by interface but it's optional
+    @task.tool_config_id = params[:tool_config_id]  # Normally sent by interface but it's optional
     @task.user           = current_user
     @task.group_id       = current_project.try(:id) || current_user.own_group.id
     @task.status         = "New"
@@ -281,7 +281,7 @@ class TasksController < ApplicationController
     end
 
     # In order to edit older tasks that don't have :interface_userfile_ids
-    # set, we initalize an empty one.
+    # set, we initialize an empty one.
     params = @task.params
     params[:interface_userfile_ids] ||= []
 
@@ -1085,7 +1085,7 @@ class TasksController < ApplicationController
     }
 
     # Create a new blank StatusFilter. Only present to pre-set *attribute*.
-    def initalize
+    def initialize
       @attribute = 'status'
     end
 

@@ -84,7 +84,7 @@ class Scir
   # Builds and return a session object for the implementation
   # +subclassname+ ; the object will be of class
   # subclassname::Session, as defined in +subclassname+.
-  # A side effect of this is to record and cache permenantly
+  # A side effect of this is to record and cache permanently
   # the session object in a global Ruby variable, so only
   # one such session can be created, ever.
   def self.session_builder(subclassname,*args)

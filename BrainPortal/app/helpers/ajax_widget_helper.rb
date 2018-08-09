@@ -41,7 +41,7 @@ module AjaxWidgetHelper
   #   loading...
   # <% end %>
   #
-  # This will ouput the following html
+  # This will output the following html
   # <span data-url="/data_providers" class="left right center ajax_element" >
   #   loading...
   # </span>
@@ -94,7 +94,7 @@ module AjaxWidgetHelper
   #   loading...
   # <% end %>
   #
-  # This will ouput the following html
+  # This will output the following html
   # <span data-url="/data_providers" class="left right center ajax_onclick_element" >
   #   loading...
   # </span>

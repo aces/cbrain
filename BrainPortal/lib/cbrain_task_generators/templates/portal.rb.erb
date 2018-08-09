@@ -251,7 +251,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 %#
 %# Min/max/int Number check
 % if params.any? { |p| p['minimum'] || p['maximum'] || p['integer'] }
-    # Check that number parameters with contraints have been given permissable values
+    # Check that number parameters with contraints have been given permissible values
 % nerrmsg = lambda { |prm,str| "\"violates #{prm['exclusive-'+str] ? 'exclusive' : 'inclusive'} #{str} value #{prm[str].to_s}\"" }
 % for p in params.select{ |q| q['type'].downcase == 'number'} # since we support arbitrary fields regardless of type
 %  if p['minimum']

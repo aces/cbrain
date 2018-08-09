@@ -27,7 +27,7 @@ require 'socket'
 # Original author: Nicolas Kassis
 #
 # This file contains a singleton Portal sanity checker class
-# Each sanity(database consitency) check is created in a instance method of the class
+# Each sanity(database consistency) check is created in a instance method of the class
 # The class will run all instance methods named ensure_* when self.become is
 # called after a new revision.
 # The class creates new sanity check records when it is run after a new revision

@@ -33,7 +33,7 @@
 #
 #   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 #
-# This initalize the constant to a handler object of
+# This initialize the constant to a handler object of
 # class CbrainFileRevision which records the file path
 # in one of its internal attribute. Later one, if
 # a piece of code wants to extract from it its revision
@@ -45,7 +45,7 @@
 #
 # Objects of this class, otherwise, belong much like
 # strings, but sometimes you might want to call to_s()
-# or self_update() explicitely.
+# or self_update() explicitly.
 #
 # Examples:
 #
@@ -337,7 +337,7 @@ class CbrainFileRevision
     self
   end
 
-  # Returns the artifical revision info for
+  # Returns the artificial revision info for
   # the head of the CBRAIN code base (internally known
   # as __CBRAIN_HEAD__) or of one of the plugins packages
   # (known as e.g. __cbrain-plugins-xyz_HEAD__)
@@ -375,7 +375,7 @@ class CbrainFileRevision
     #end
   end
 
-  # Returns the artifical tag name info for
+  # Returns the artificial tag name info for
   # the CBRAIN code base (internally known
   # as __CBRAIN_TAG__) or of one of the plugins packages
   # (known as e.g. __cbrain-plugins-xyz_TAG__)

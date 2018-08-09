@@ -129,7 +129,7 @@ class CSVFile < TextFile
       poss_combination.delete(combinaison_key) if count_by_line.size != 1
     end
 
-    # Sort solution usefull when we have multiple solution
+    # Sort solution useful when we have multiple solution
     solutions = poss_combination.keys
     sorted_sols = solutions.sort do |ck1,ck2|
       q1,s1 = *ck1

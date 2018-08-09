@@ -46,13 +46,13 @@ class NocController < ApplicationController
 
     # Timescale for most reports: from midnight to right now.
     this_morning    = @hours_ago.try(:hours).try(:ago) || DateTime.now.midnight
-    #this_morning = 7.years.ago # uncomment to artifically show all historical data
+    #this_morning = 7.years.ago # uncomment to artificially show all historical data
 
     # RemoteResources, including the portal itself
     @myself        = RemoteResource.current_resource
     @bourreaux     = Bourreau.where([ "updated_at > ?", offline_resource_limit.ago ]).order(:name).all # must have been toggled within a month
 
-    # Three numbers: active users, active tasks, sum of files sizes being transfered.
+    # Three numbers: active users, active tasks, sum of files sizes being transferred.
     @active_users  = CbrainSession.session_model
                                   .where([ "updated_at > ?", this_morning ])
                                   .where(:active => true)

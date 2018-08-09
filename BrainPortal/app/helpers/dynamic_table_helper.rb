@@ -374,7 +374,7 @@ module DynamicTableHelper
     #
     # [select_hidden]
     #  If true, when rows are selectable, the table cell for the check box will be
-    #  left emtpy; the values for :selected, :select_value and :select_params will
+    #  left empty; the values for :selected, :select_value and :select_params will
     #  all be ignored. This option allows the layout of a table to include a placeholder
     #  for the check box even when it is not there.
     #

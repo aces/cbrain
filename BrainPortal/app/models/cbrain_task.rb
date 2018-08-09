@@ -225,7 +225,7 @@ class CbrainTask < ApplicationRecord
   # hash table. Used by CBRAIN rendering code to control
   # default elements. Advanced feature. The defaults
   # for all properties are 'false' so that subclass
-  # only have to explicitely set the special properties
+  # only have to explicitly set the special properties
   # that they want 'true' (since nil is also false).
   def self.properties
     {
@@ -414,7 +414,7 @@ class CbrainTask < ApplicationRecord
 
   # Returns the 'run_number' of a task; this allows running the same
   # task multiple times in the same work directory. The run number
-  # is increased after each succesful 'restart' operation, but it
+  # is increased after each successful 'restart' operation, but it
   # stays the same in error recovery modes.
   def run_number
     super || 1
@@ -667,7 +667,7 @@ class CbrainTask < ApplicationRecord
 
   # The previous table is missing lots of entries that are common
   # to all prereq states; we add them here. By default, any
-  # current state other than those specified explicitely above
+  # current state other than those specified explicitly above
   # mean :wait .
   PREREQS_STATES_COVERED_BY.each_value do |states_go_wait_fail|
     states_go_wait_fail.reverse_merge!(

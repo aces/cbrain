@@ -206,7 +206,7 @@ class ServiceController < ApplicationController
   # exception list to ignore actions that can
   # be invoked externally without authentication
   # (for instance, /service/* or /portal/welcome)
-  # Returns the sum of successful and unsuccesful
+  # Returns the sum of successful and unsuccessful
   # actions.
   def count_authenticated_actions(stats_by_contr_action = {}) #:nodoc:
     tot = 0;

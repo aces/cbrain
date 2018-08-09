@@ -88,7 +88,7 @@ module LicenseAgreements
   # to the meta data store whenever the object is being saved.
   def register_license_agreements
     return true if @license_agreements.nil? # nothing to do if they were never loaded or updated
-    # To keep pre_register licenses agreement, usefull when the console is used to save the object
+    # To keep pre_register licenses agreement, useful when the console is used to save the object
     new_agreements  = (license_agreements || []).sort
     orig_agreements = (@_license_agreements_original || []).sort
     return true if new_agreements == orig_agreements

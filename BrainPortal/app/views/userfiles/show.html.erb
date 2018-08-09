@@ -261,7 +261,7 @@
               <% end %>
             <% rescue ActionView::Template::Error => e %>
               <span class="warning">
-                An error occured when loading the viewer plugin.
+                An error occurred when loading the viewer plugin.
               </span>
               <% raise e.original_exception unless Rails.env == 'production' %>
               <% ExceptionLog.log_exception(e.original_exception, current_user, request) %>
