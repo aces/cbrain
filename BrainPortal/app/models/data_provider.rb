@@ -1572,7 +1572,7 @@ class DataProvider < ApplicationRecord
   #
   #   'Mike O'\''Connor'
   def shell_escape(s) #:nodoc:
-    s.to_s.bash_escape(true)  # in config/initializers/core_extensions/string.rb
+    s.to_s.bash_escape(true)  # lib/cbrain_extensions/string_extensions/utilities.rb
   end
 
   # This method is used to escape properly any string such that
