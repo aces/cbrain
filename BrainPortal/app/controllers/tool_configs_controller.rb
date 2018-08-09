@@ -205,7 +205,7 @@ class ToolConfigsController < ApplicationController
     end
 
     @tool_config.group = Group.everyone if @tool_config.group_id.blank?
-
+    flash[:notice] = ""
     # Merge with an existing tool config
     if params.has_key?(:merge)
        other_tc = ToolConfig.find_by_id(params[:merge_from_tc_id] || 0)
@@ -244,13 +244,13 @@ class ToolConfigsController < ApplicationController
 
     respond_to do |format|
       if @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus ))
-        flash[:notice] = "Tool configuration was successfully updated."
+        flash[:notice] ||= "Tool configuration was successfully updated."
         format.html {
 
 
           if id.present?
-                        # render :action => "show"
-                        redirect_to tool_config_path(@tool_config)
+                      render :action => "show"
+                        # redirect_to tool_config_path(@tool_config)
                       elsif  @tool_config.tool_id
                         redirect_to edit_tool_path(@tool_config.tool)
                       else
