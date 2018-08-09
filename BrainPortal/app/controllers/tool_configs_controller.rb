@@ -233,7 +233,10 @@ class ToolConfigsController < ApplicationController
        else
          flash[:notice] = "No changes made."
        end
-       render :action => :show
+            # add xml?
+           @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus ))
+           render :action => "show"
+
        return
     end
 
