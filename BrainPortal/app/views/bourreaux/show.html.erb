@@ -332,11 +332,10 @@
 
         <% tool_config = ToolConfig.where(:bourreau_id => @bourreau.id, :tool_id => nil).first %>
         <% tool_config_show_link   = tool_config ? (link_to "Show",   tool_config_path(tool_config)) : "No tool config" %>
-        <% tool_config_edit_link   = tool_config ? (link_to "Edit",   edit_tool_config_path(tool_config)) : nil %>
         <% tool_config_create_link =                link_to "Create", new_tool_config_path(:bourreau_id => @bourreau.id) %>
 
         <% t.edit_cell("Common configuration for all tasks", :content => tool_config_show_link) do %>
-          <%= tool_config_edit_link || tool_config_create_link %>
+          <%= tool_config ? tool_config_show_link_1 : tool_config_create_link %>
         <% end %>
 
         <% t.edit_cell(:cms_shared_dir, :header => "Path to shared work directory", :show_width => 2) do |f| %>

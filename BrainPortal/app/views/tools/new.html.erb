@@ -133,7 +133,6 @@
                   <td><%= overlay_description(tc.version_name + "\n" + tc.description) %></td>
                   <td><%= link_to_group_if_accessible(tc.group) %></td>
                   <td><%= pluralize((tc.ncpus || 1), "cpu") %></td>
-                  <td><%= link_to "Edit", edit_tool_config_path(tc) %></td>
                   <td><%= link_to "Show", tool_config_path(tc) %></td>
                   <td><%= link_to 'Delete', tc, :confirm => "Are you sure you want to delete version configuration '#{tc.version_name}'?", :method => :delete %></td>
                 <% end %>

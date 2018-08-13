@@ -175,7 +175,7 @@ tot_tcs += tcs.size > 0 ? tcs.size : 1
             </td>
           <% end %>
           <td class="left_align">
-              <%= link_to tc.version_name, edit_tool_config_path(tc) %>
+              <%= link_to tc.version_name, tool_config_path(tc) %>
               in project '<%= link_to_group_if_editable(tc.group) %>'
           </td>
           <td class="left_align">

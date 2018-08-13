@@ -126,7 +126,15 @@ class ToolConfigsController < ApplicationController
     bourreau_id = nil if bourreau_id.blank? # allowed, means ALL remote resources
     cb_error "Need at least one of tool ID or bourreau ID." unless tool_id || bourreau_id
 
-    @tool_config   = ToolConfig.where( :tool_id => tool_id, :bourreau_id => bourreau_id ).first if tool_id.blank? || bourreau_id.blank?
+    is_new = true
+
+    # for shared configs, we check that object indeed new,
+    # if not then show user existing object
+    if tool_id.blank? || bourreau_id.blank?
+      @tool_config   = ToolConfig.where( :tool_id => tool_id, :bourreau_id => bourreau_id ).first
+      is_new = ! @tool_config
+    end
+
     @tool_config ||= ToolConfig.new(   :tool_id => tool_id, :bourreau_id => bourreau_id )
 
     @tool_config.env_array ||= []
@@ -134,7 +142,7 @@ class ToolConfigsController < ApplicationController
     @tool_config.group = Group.everyone
 
     respond_to do |format|
-      format.html { render :action => :edit }
+      format.html { render :action => is_new ? :edit : :show}
       format.xml  { render :xml => @tool_config }
     end
   end
@@ -253,7 +261,6 @@ class ToolConfigsController < ApplicationController
 
           if id.present?
                       render :action => "show"
-                        # redirect_to tool_config_path(@tool_config)
                       elsif  @tool_config.tool_id
                         redirect_to edit_tool_path(@tool_config.tool)
                       else
