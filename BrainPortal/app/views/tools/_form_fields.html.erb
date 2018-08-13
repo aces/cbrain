@@ -24,76 +24,64 @@
 
 <%= error_messages_for(@tool) %>
 
-<p>
- <%= f.label :name, "Tool Name:" %>
- <%= f.text_field :name %>
-</p>
+<%= show_table(@tool, :edit_condition => true, :header => "General info") do |t| %>
 
-<p>
-  <span title="PortalTask subclass which implements this tool.">
-     <%= f.label :cbrain_task_class_name, "CbrainTask Class name:" %>
-     <%= f.text_field :cbrain_task_class_name %>
-  </span>
-</p>
+ <% t.edit_cell :name, :header => "Tool Name" do |f|%>
+   <%= f.text_field :name %>
+ <% end %>
 
-<p>
- <%= f.label :user_id, "Belongs to:" %>
- <%= user_select "tool[user_id]", @tool, :id => 'tool_user_id' %>
-</p>
+ <% t.edit_cell :cbrain_task_class_name, :header => "CbrainTask Class name",
+                     :td_options => {:title => "PortalTask subclass which implements this tool."} do |f| %>
+   <%= f.text_field :cbrain_task_class_name %>
+ <% end %>
 
-<p>
- <%= f.label :group_id, "Available to members of project:" %>
- <%= group_select "tool[group_id]", @tool, :id => 'tool_group_id' %>
-</p>
+ <% t.edit_cell :user_id, :header => "Belongs to" do |f| %>
+   <%= user_select "tool[user_id]", @tool, :id => 'tool_user_id' %>
+ <% end %>
 
-<p>
-  <%= f.label :category, "Category:" %>
-  <%= f.select :category, Tool::Categories %>
-</p>
+ <% t.edit_cell :group_id, :header => "Available to members of project" do |f| %>
+   <%= group_select "tool[group_id]", @tool, :id => 'tool_group_id' %>
+ <% end %>
 
+ <% t.edit_cell :category, :header => "Category:" do |f| %>
+    <%= f.select :category, Tool::Categories %>
+ <% end %>
 
-<p>
-  <%= f.label :license_agreements, "License agreements:" %><br>
-  <%= f.text_area :license_agreements, :value => @tool.new_record? ? "" : @tool.license_agreements.join("\n") , :rows => 5, :cols => 40 %>
-  <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
-</p>
+  <% t.edit_cell :license_agreements, :header => "License agreements:" do |f| %>
+    <%= f.text_area :license_agreements, :value => @tool.new_record? ? "" : @tool.license_agreements.join("\n") , :rows => 5, :cols => 40 %>
+    <%=raw '<div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>' %>
+  <% end %>
 
-<p>
-  <%= f.label :description, "Description:" %><br>
-  <%= f.text_area :description, :cols => 80, :rows => 10 %><br>
-  <div class="field_explanation">The first line must should be a short summary, and the rest are for any special notes for the users.</div>
-</p>
+  <% t.edit_cell :description, :header => "Description", :content => full_description(@tool.description) do |f|%>
+    <%= f.text_area :description, :cols => 80, :rows => 10 %>
+    <%=raw '<div class="field_explanation">The first line must should be a short summary, and the rest are for any special notes for the users.</div>' %>
+  <% end %>
 
-<p>
-  <%= f.label :application_package_name, "Package name:" %><br>
-  <%= f.text_field :application_package_name %><br>
-</p>
+  <% t.edit_cell :application_package_name, :header => "Package name" do |f| %>
+    <%= f.text_field :application_package_name %>
+  <% end %>
 
-<p>
-  <%= f.label :application_type, "Tool type:" %><br>
-  <%= f.text_field :application_type %><br>
-</p>
+  <% t.edit_cell :application_type, :header => "Tool type" do |f| %>
+    <%= f.text_field :application_type %>
+  <% end %>
 
-<p>
-  <%= f.label :application_tags, "Comma separated tags:" %><br>
-  <%= f.text_field :application_tags %><br>
-</p>
+  <% t.edit_cell :application_tags, :header => "Comma separated tags" do |f| %>
+    <%= f.text_field :application_tags %>
+  <% end %>
 
-<p>
-  <%= f.label :url, "Tool URL:" %><br>
-  <%= f.text_field :url %><br>
-</p>
+  <% t.edit_cell :url, :header => "Tool URL" do |f| %>
+    <%= f.text_field :url %>
+  <% end %>
 
-
-<p>
-  <%= f.label :select_menu_text, "Text for select box on the userfiles page:" %>
-  <%= f.text_field :select_menu_text %>
-</p>
+  <% t.edit_cell :select_menu_text, :header => "Text for select box on the userfiles page" do |f| %>
+    <%= f.text_field :select_menu_text %>
+  <% end %>
+<% end %>
 
 <% if @tool && !@tool.new_record? %>
 <p>
   Common configuration for all servers: <%= link_to "Edit", new_tool_config_path( :tool_id => @tool.id ) %><br/>
-</p>
+
 <p>
   Versions installed on the following execution servers:<br/>
   <table class="simple" width="100%">
