@@ -79,15 +79,38 @@
 
   <p>
   <strong>Important note:</strong>
-  This section displays the full BASH initialization prologue script for the configurations
-  listed above.
+  This section displays the full BASH initialization prologue script for the configuration
+  listed above
   <% if ( (@bourreau_glob_config ? 1 : 0) + (@tool_glob_config ? 1 : 0) + (@tool_config? 1 : 0) ) > 1 %>
     <br>
-    Several distinct configurations are involved and shown in order of execution.
+    combined with relevant global configurations
+
+      <% if @bourreau_glob_config && @bourreau_glob_config.id != @tool_config.id %>
+        <br>
+        <%= link_to "Common Config for ALL tools on
+                 #{@bourreau_glob_config.bourreau.name} Server ",
+                    tool_config_path(@bourreau_glob_config), :title =>
+                        "Config \##{@bourreau_glob_config.id} for ALL tools running on
+                Execution Server #{@bourreau_glob_config.bourreau.name} "
+        %>
+
+      <% end %>
+
+
+      <% if @tool_glob_config && @tool_glob_config.id != @tool_config.id%>
+        <br>
+        <%= link_to "Common Config for tool #{@tool_glob_config.tool.name} on ALL Servers ",
+                    tool_config_path(@bourreau_glob_config),  :title =>
+                        "Config \##{@tool_glob_config.id} that affect every version/configuration of tool
+         #{@tool_glob_config.tool.name} running on
+      each server"
+        %>
+      <% end %> . The commands are shown in the order of execution
   <% end %>
+    .
   </p>
 
-  <pre class="script_preview"><%= @bourreau_glob_config.to_bash_prologue if @bourreau_glob_config %><%= @tool_glob_config.to_bash_prologue if @tool_glob_config %><%= @tool_local_config.to_bash_prologue if @tool_local_config %></pre>
+  <pre class="script_preview"><%= @bourreau_glob_config.to_bash_prologue if @bourreau_glob_config %><%= @tool_glob_config.to_bash_prologue if @tool_glob_config %><%= @tool_config.to_bash_prologue if @tool_config %></pre>
 
 </div>
 
