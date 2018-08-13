@@ -22,7 +22,7 @@
 #
 -%>
 
-<div class="groupentry">
+
 
   <%= hidden_field_tag "tool_config[tool_id]",     @tool_config.tool_id %>
   <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
@@ -72,9 +72,9 @@
   </span>
   </fieldset>
   <fieldset class="groupentry">
-    <legend>BASH initialization prologue</legend>
-  <span title="script that BASH initialization prologue ">
-    <p><%= f.label :script_prologue, "BASH prologue:" %><br/>
+    <legend>BASH prologue</legend>
+  <span title="BASH script for tool initialization">
+    <p><%= f.label :script_prologue, "Enter BASH code here:" %><br/>
     <%= f.text_area :script_prologue, :cols => 80, :rows => 10 %><br/>
     <div class="field_explanation">This is a multi line partial BASH script. It can use the environment variables defined above,
            and do anything else you feel is needed to activate this configuration.
@@ -196,9 +196,10 @@
     <div class="field_explanation">
     </div>
     </p>
+  </fieldset>
   </span>
   <% end %>
-  </fieldset>
 
-</div>
+
+
 
