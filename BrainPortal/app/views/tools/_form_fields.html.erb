@@ -26,35 +26,36 @@
 
 <%= show_table(@tool, :edit_condition => true, :header => "General info") do |t| %>
 
- <% t.edit_cell :name, :header => "Tool Name" do |f|%>
-   <%= f.text_field :name %>
- <% end %>
+  <% t.edit_cell :name, :header => "Tool Name" do |f|%>
+    <%= f.text_field :name %>
+  <% end %>
 
- <% t.edit_cell :cbrain_task_class_name, :header => "CbrainTask Class name",
-                     :td_options => {:title => "PortalTask subclass which implements this tool."} do |f| %>
-   <%= f.text_field :cbrain_task_class_name %>
- <% end %>
+  <% t.edit_cell :cbrain_task_class_name, :header => "CbrainTask Class name",
+                      :td_options => {:title => "PortalTask subclass which implements this tool."} do |f| %>
+    <%= f.text_field :cbrain_task_class_name %>
+  <% end %>
 
- <% t.edit_cell :user_id, :header => "Belongs to" do |f| %>
-   <%= user_select "tool[user_id]", @tool, :id => 'tool_user_id' %>
- <% end %>
+  <% t.edit_cell :user_id, :header => "Belongs to" do |f| %>
+    <%= user_select "tool[user_id]", @tool, :id => 'tool_user_id' %>
+  <% end %>
 
- <% t.edit_cell :group_id, :header => "Available to members of project" do |f| %>
-   <%= group_select "tool[group_id]", @tool, :id => 'tool_group_id' %>
- <% end %>
+  <% t.edit_cell :group_id, :header => "Available to members of project" do |f| %>
+    <%= group_select "tool[group_id]", @tool, :id => 'tool_group_id' %>
+  <% end %>
 
- <% t.edit_cell :category, :header => "Category:" do |f| %>
-    <%= f.select :category, Tool::Categories %>
- <% end %>
-
-  <% t.edit_cell :license_agreements, :header => "License agreements:" do |f| %>
-    <%= f.text_area :license_agreements, :value => @tool.new_record? ? "" : @tool.license_agreements.join("\n") , :rows => 5, :cols => 40 %>
+  <% t.edit_cell :category, :header => "Category" do |f| %>
+     <%= f.select :category, Tool::Categories %>
+  <% end %>
+  <% joint_licenses = @tool.license_agreements.join("\n") %>
+  <% licenses = @tool.license_agreements.count == 0 ? "(None)": joint_licenses %>
+  <% t.edit_cell :license_agreements, :header => "License agreements", :content => licenses do |f| %>
+    <%= f.text_area :license_agreements, :value => @tool.new_record? ? "" : joint_licenses, :rows => 5, :cols => 40 %>
     <%=raw '<div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>' %>
   <% end %>
 
   <% t.edit_cell :description, :header => "Description", :content => full_description(@tool.description) do |f|%>
     <%= f.text_area :description, :cols => 80, :rows => 10 %>
-    <%=raw '<div class="field_explanation">The first line must should be a short summary, and the rest are for any special notes for the users.</div>' %>
+    <%=raw '<div class="field_explanation">The first line is a short summary, and the rest are for any special notes for the users.</div>' %>
   <% end %>
 
   <% t.edit_cell :application_package_name, :header => "Package name" do |f| %>
