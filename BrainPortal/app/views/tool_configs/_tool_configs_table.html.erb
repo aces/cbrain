@@ -137,7 +137,7 @@
       end
 
       t.column("Operations") do |tc|
-        ( link_to("Edit",   edit_tool_config_path(tc), :class => "action_link") + " " +
+        ( link_to("Show/Edit",   tool_config_path(tc), :class => "action_link") + " " +
           link_to('Delete', tool_config_path(tc),      :class => "action_link",
               :confirm => "Are you sure you want to delete version configuration '#{tc.version_name}'?",
               :method => :delete)

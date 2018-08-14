@@ -1,0 +1,44 @@
+<%-
+  #
+  # CBRAIN Project
+  #
+  # Copyright (C) 2008-2012
+  # The Royal Institution for the Advancement of Learning
+  # McGill University
+  #
+  # This program is free software: you can redistribute it and/or modify
+  # it under the terms of the GNU General Public License as published by
+  # the Free Software Foundation, either version 3 of the License, or
+  # (at your option) any later version.
+  #
+  # This program is distributed in the hope that it will be useful,
+  # but WITHOUT ANY WARRANTY; without even the implied warranty of
+  # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  # GNU General Public License for more details.
+  #
+  # You should have received a copy of the GNU General Public License
+  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  #
+-%>
+
+<%= t.edit_cell(:env_array, as: :'env_list[]', :header => "Name", content: env_name) do %>
+  <% text_field_tag 'env_list[][name]', env_name, :size => 30 %>
+<% end %>
+<% t.edit_cell(:env_array, as: :'env_list[]', :header => "Value", content: env_value, show_width: 3) do %>
+  <%= text_field_tag 'env_list[][value]', env_value,  :size => 60 %>
+<% end %>
+<% if explanation_and_hidden_ids %>
+  <% t.edit_cell(:bourreau_id, :header => '',:content => '') {|f| f.hidden_field :bourreau_id }%>
+
+  <% t.edit_cell(:tool_id, :header => '', :content => '', :td_options => {:style => 'empty-cells: hide;'}) do |f| %>
+    <%= f.hidden_field :tool_id %>
+    <%=raw '<div class="field_explanation" style="display: inline;">
+       In the generated script, the values shown here will be placed in double quotes automatically.
+     </div>'
+     %>
+
+  <% end %>
+<% end %>
+
+
+

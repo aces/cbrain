@@ -43,6 +43,21 @@ class CbrainTask::Parallelizer #:nodoc:
     return CbrainTask.where(:id => task_ids)
   end
 
+  def disable_subtask(subtask) #:nodoc:
+    params           = self.params || {}
+    task_ids_enabled = (params[:task_ids_enabled] ||= {})
+    task_ids_enabled[subtask.id.to_s] = "0"
+    subtask.meta[:configure_only] = nil
+    self.remove_prerequisites_for_setup(subtask.id)
+  end
+
+  def enable_subtask(subtask) #:nodoc:
+    params           = self.params || {}
+    task_ids_enabled = (params[:task_ids_enabled] ||= {})
+    task_ids_enabled[subtask.id.to_s] = "1"
+    self.add_prerequisites_for_setup(subtask.id, 'Configured')
+  end
+
   # Creates and launch a set of Parallelizers for a set of other
   # CbrainTasks supplied in +tasklist+. All the tasks in +tasklist+
   # are assumed to already have been created with status 'Standby'.

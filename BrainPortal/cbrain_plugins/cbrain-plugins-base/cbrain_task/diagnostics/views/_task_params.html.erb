@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -47,7 +47,7 @@
   <th></th>
     <th COLSPAN="2">Normal Cycle</th>
     <th COLSPAN="2">Error Recovery</th>
-    <th COLSPAN="2">Restart Capabilities</th>
+    <th COLSPAN="3">Restart Capabilities</th>
 </tr>
 
 <tr>
@@ -58,6 +58,7 @@
     <TD>Delay:  <%= form.params_text_field :recover_setup_delay,   :size => 6 %></TD>
     <TD>Enable? <%= form.params_check_box  :restart_setup                     %></TD>
     <TD>Delay:  <%= form.params_text_field :restart_setup_delay,   :size => 6 %></TD>
+    <TD></TD>
 </tr>
 
 <tr>
@@ -68,6 +69,7 @@
     <TD>Delay:  <%= form.params_text_field :recover_cluster_delay, :size => 6 %></TD>
     <TD>Enable? <%= form.params_check_box  :restart_cluster                   %></TD>
     <TD>Delay:  <%= form.params_text_field :restart_cluster_delay, :size => 6 %></TD>
+    <TD></TD>
 </tr>
 
 <tr>
@@ -78,6 +80,8 @@
     <TD>Delay:  <%= form.params_text_field :recover_postpro_delay, :size => 6 %></TD>
     <TD>Enable? <%= form.params_check_box  :restart_postpro                   %></TD>
     <TD>Delay:  <%= form.params_text_field :restart_postpro_delay, :size => 6 %></TD>
+    <TD>Restart copies out/err?
+                <%= form.params_check_box  :restart_postpro_copy_outerr       %></TD>
 </tr>
 
 </table>

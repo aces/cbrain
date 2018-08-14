@@ -779,7 +779,7 @@ module ScopeHelper
     controller = 'bourreaux' if controller == 'remote_resources'
 
     scope_filter_link(count,
-      (options[:scope_name] || controller),
+      (options[:scope_name] || "#{controller}#index"),
       :replace, filters.map do |attr, value|
         value = value.to_s if value.is_a?(Symbol)
         { :a => attr, :v => value }

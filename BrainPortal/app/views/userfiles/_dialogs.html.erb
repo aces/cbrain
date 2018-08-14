@@ -28,7 +28,7 @@
   writable_dps = DataProvider
     .find_all_accessible_by_user(current_user)
     .all
-    .reject { |dp| dp.read_only? }
+    .reject { |dp| dp.read_only? || dp.meta[:no_uploads].present? }
 %>
 
 <div id="upload-dialog"

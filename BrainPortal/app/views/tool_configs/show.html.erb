@@ -1,71 +1,112 @@
 
 <%-
-#
-# CBRAIN Project
-#
-# Copyright (C) 2008-2012
-# The Royal Institution for the Advancement of Learning
-# McGill University
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+  #
+  # CBRAIN Project
+  #
+  # Copyright (C) 2008-2012
+  # The Royal Institution for the Advancement of Learning
+  # McGill University
+  #
+  # This program is free software: you can redistribute it and/or modify
+  # it under the terms of the GNU General Public License as published by
+  # the Free Software Foundation, either version 3 of the License, or
+  # (at your option) any later version.
+  #
+  # This program is distributed in the hope that it will be useful,
+  # but WITHOUT ANY WARRANTY; without even the implied warranty of
+  # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  # GNU General Public License for more details.
+  #
+  # You should have received a copy of the GNU General Public License
+  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  #
 -%>
 
-<% title 'Show Tool Configuration' %>
+<% title 'Tool Version' %>
 
-<h2>Show Tool Configuration</h2>
+
+
+<div class="menu_bar">
+<% if @bourreau_glob_config && @bourreau_glob_config.id != @tool_config.id %>
+
+  <%= link_to "Common Config for ALL tools on
+                 #{@bourreau_glob_config.bourreau.name} Server ",
+              tool_config_path(@bourreau_glob_config), :class => :button, :title =>
+      "Show or edit Config \##{@bourreau_glob_config.id} for ALL tools running on
+                Execution Server #{@bourreau_glob_config.bourreau.name} "
+  %>
+
+<% end %>
+
+
+<% if @tool_glob_config && @tool_glob_config.id != @tool_config.id%>
+
+  <%= link_to "Common Config for tool #{@tool_glob_config.tool.name} on ALL Servers ",
+      tool_config_path(@bourreau_glob_config), :class => :button, :title =>
+      "Show or edit Config \##{@tool_glob_config.id} that affect every version/configuration of tool
+         #{@tool_glob_config.tool.name} running on
+      each server "
+    %>
+<% end %>
+
+
+</div>
 
 <div class="generalbox">
 
-  Configurations shown here:
-  <ul>
-    <% if @bourreau_glob_config %>
-      <li>
-        <strong>Config #<%= @bourreau_glob_config.id %></strong>
-        (<%= link_to "edit", edit_tool_config_path(@bourreau_glob_config) %>):
-        For <strong>ALL tools</strong> running on Execution Server <strong><%= @bourreau_glob_config.bourreau.name %></strong>
-      </li>
-    <% end %>
-    <% if @tool_glob_config %>
-      <li>
-        <strong>Config #<%= @tool_glob_config.id %></strong>
-        (<%= link_to "edit", edit_tool_config_path(@tool_glob_config) %>):
-        For tool <strong><%= @tool_glob_config.tool.name %></strong> running on <strong>ALL Execution Servers</strong>
-      </li>
-    <% end %>
+
+
+  <strong>Important note:</strong>
+  <% if @tool_config.tool_id %>
+    This form applies to tool <strong><%= @tool_config.tool.name %></strong>
+  <% else %>
+    This form applies to <strong>ALL tools</strong>
+  <% end %>
+
+  <% if @tool_config.bourreau_id.blank? %>
+    running on <strong>ALL Execution Servers</strong>.<br>
+  <% else %>
+    running on Execution Server <strong><%= @tool_config.bourreau.name %></strong>.
+  <% end %>
+
+  <p>
+
+
     <% if @tool_config %>
-      <li>
-        <strong>Config #<%= @tool_config.id %></strong>
-        (<%= link_to "edit", edit_tool_config_path(@tool_config) %>):
-        For tool <strong><%= @tool_config.tool.name %></strong> running on Execution Server <strong><%= @tool_config.bourreau.name %></strong>
-        <br>Named: <%= full_description(@tool_config.description) %>
-        <br>Available to members of project <%= link_to_group_if_accessible(@tool_config.group) %>
-        <% if @tool_config.ncpus.present? && @tool_config.ncpus.to_i > 0 %>
-          <br>Suggested number of CPUs: <%= @tool_config.ncpus.to_i.to_s %>
-        <% end %>
-      </li>
+      <%= render :partial => 'config_table', :locals => { :config => @tool_config } %>
     <% end %>
   </ul>
 
   <p>
   <strong>Important note:</strong>
-  This section displays the full BASH initialization prologue script for the configurations
-  listed above.
-  <% if ( (@tool_config ? 1 : 0) + (@tool_glob_config ? 1 : 0) + (@bourreau_glob_config ? 1 : 0) ) > 1 %>
+  This section displays the full BASH initialization prologue script for the configuration
+  listed above
+  <% if ( (@bourreau_glob_config ? 1 : 0) + (@tool_glob_config ? 1 : 0) + (@tool_config? 1 : 0) ) > 1 %>
     <br>
-    Several distinct configurations are involved and shown in order of execution.
+    combined with relevant global configurations
+
+      <% if @bourreau_glob_config && @bourreau_glob_config.id != @tool_config.id %>
+        <br>
+        <%= link_to "Common Config for ALL tools on
+                 #{@bourreau_glob_config.bourreau.name} Server ",
+                    tool_config_path(@bourreau_glob_config), :title =>
+                        "Config \##{@bourreau_glob_config.id} for ALL tools running on
+                Execution Server #{@bourreau_glob_config.bourreau.name} "
+        %>
+
+      <% end %>
+
+      <% if @tool_glob_config && @tool_glob_config.id != @tool_config.id%>
+        <br>
+        <%= link_to "Common Config for tool #{@tool_glob_config.tool.name} on ALL Servers ",
+                    tool_config_path(@bourreau_glob_config),  :title =>
+                        "Config \##{@tool_glob_config.id} that affect every version/configuration of tool
+         #{@tool_glob_config.tool.name} running on
+      each server"
+        %>
+      <% end %> . The commands are shown in the order of execution
   <% end %>
+    .
   </p>
 
   <pre class="script_preview"><%= @bourreau_glob_config.to_bash_prologue if @bourreau_glob_config %><%= @tool_glob_config.to_bash_prologue if @tool_glob_config %><%= @tool_config.to_bash_prologue if @tool_config %></pre>
@@ -74,16 +115,16 @@
 
 <% if @bourreau_glob_config %>
   <p>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @bourreau_glob_config.getlog, :title => "Log of Global Bourreau Tool Config ##{@bourreau_glob_config.id}" } %>
+    <%= render :partial => "layouts/log_report", :locals  => { :log  => @bourreau_glob_config.getlog, :title => "Log of Global Bourreau Tool Config ##{@bourreau_glob_config.id}" } %>
 <% end %>
 
 <% if @tool_glob_config %>
   <p>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_glob_config.getlog, :title => "Log of Global Tool Config ##{@tool_glob_config.id}" } %>
+    <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_glob_config.getlog, :title => "Log of Global Tool Config ##{@tool_glob_config.id}" } %>
 <% end %>
 
-<% if @tool_config %>
+<% if @tool_local_config %>
   <p>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_config.getlog, :title => "Log of Specific Tool Config ##{@tool_config.id}" } %>
+    <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_local_config.getlog, :title => "Log of Specific Tool Config ##{@tool_local_config.id}" } %>
 <% end %>
 

@@ -1,0 +1,26 @@
+
+<%
+# This partial receives a single local variable,
+# tb, a ShowTableHelper::TableBuilder object
+%>
+
+<div class="inline_edit_field_group">
+
+  <% if tb.editable? %>
+    <%= form_for(tb.object,
+          :url => tb.url,
+          :method => tb.method,
+          :as => tb.as,
+          :html => { :id => "edit_#{tb.as}_#{tb.header}".gsub(/\W+/,"_") },
+        ) do |f| %>
+      <% tb.form_helper = f %>
+      <% tb.invoke_block %>
+      <%= render :partial => 'shared/show_table_content', :locals => { :tb => tb, :f => f } %>
+    <% end %>
+  <% else %>
+      <% tb.invoke_block %>
+      <%= render :partial => 'shared/show_table_content', :locals => { :tb => tb, :f => nil } %>
+  <% end %>
+
+</div>
+
