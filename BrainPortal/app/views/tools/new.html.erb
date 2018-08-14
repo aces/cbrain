@@ -34,6 +34,7 @@
 
 	<%= error_messages_for(@tool) %>
 
+  <div class="generalbox">
       <p>
        <%= f.label :name, "Tool Name:" %>
        <%= f.text_field :name %>
@@ -142,6 +143,7 @@
         </table>
       </p>
       <% end %>
+  </div>
 	<p><%= f.submit "Create new tool" %></p>
 
 <% end %>
