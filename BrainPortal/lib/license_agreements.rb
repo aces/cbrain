@@ -69,8 +69,7 @@ module LicenseAgreements
 
   # Returns true if the set of licenses are identifiers that
   # properly match files on the filesystem, in public/licenses/{name}.html
-  def valid_license_agreements? (pass_new=true)
-    return true if self.new_record? || pass_new
+  def valid_license_agreements?
     invalid_licenses = license_agreements.select do |license|
       ! File.exists?(Rails.root + "public/licenses/#{license}.html")
     end
