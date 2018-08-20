@@ -23,7 +23,11 @@
 require 'rails_helper'
 
 describe Tool do
-  let(:tool) { build(:tool) }
+  let(:tool) do
+    allow(File).to receive(:exists?).and_return(true)
+    build(:tool)
+  end
+
 
   it "should keep description if present" do
    tool.description = "keep this"
