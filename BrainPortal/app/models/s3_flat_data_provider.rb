@@ -1,3 +1,4 @@
+
 #
 # CBRAIN Project
 #
@@ -28,14 +29,15 @@ class S3FlatDataProvider < DataProvider
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   validates_presence_of :cloud_storage_client_identifier, :cloud_storage_client_token,
-                        :cloud_storage_client_path_start, :cloud_storage_client_bucket_name
+                        :cloud_storage_client_bucket_name
+
   validates :cloud_storage_client_identifier,  length: { is: 20 }
   validates :cloud_storage_client_token,       length: { is: 40 }
+
   validates :cloud_storage_client_bucket_name, format: {
-    with: /\A([a-z]|(d(?!d{0,2}.d{1,3}.d{1,3}.d{1,3})))([a-zd]|(.(?!(.|-)))|(-(?!.))){1,61}[a-zd.]\z/,
+    with: /\A[A-Za-z0-9][A-Za-z0-9\-.]{1,61}[A-Za-z0-9]\z/, # this is good enough; DP will just crash on bad names
     message: "invalid S3 bucket name, for rules see https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-s3-bucket-naming-requirements.html"
   }
-
 
   # This returns the category of the data provider
   def self.pretty_category_name #:nodoc:
@@ -43,25 +45,23 @@ class S3FlatDataProvider < DataProvider
   end
 
   # Connects to the S3 service using :cloud_storage_client_identifier and :cloud_storage_client_token;
-  # the connection is maintained in a instance variable!
-  def init_connection
+  # the connection object is maintained in a instance variable.
+  def s3_connection
+    return @s3_connection if @s3_connection
     @s3_connection = S3Sdkv3Connection.new(self.cloud_storage_client_identifier,
                                            self.cloud_storage_client_token,
                                            self.cloud_storage_client_bucket_name,
-                                           self.cloud_storage_client_path_start)
-    @s3_connection.create_bucket(@s3_connection.bucket_name) unless @s3_connection.bucket_exists?(@s3_connection.bucket_name)
-    ### need to create a dummy file for the folder path to exist in the first place
-    @s3_connection.create_object_from_string("This is a placeholder file","cbrain_hidden_placeholder")
-  end
-
-  # Get the bucket name for the Data Provider specified at creation
-  def bucket_name
-    @s3_connection.bucket_name
+                                          )
   end
 
   def impl_is_alive? #:nodoc:
-    init_connection
-    @s3_connection.connected?
+    return true if s3_connection.connected?
+    # Try to create the bucket once
+    s3_connection.create_bucket(cloud_storage_client_bucket_name) unless s3_connection.bucket_exists?(cloud_storage_client_bucket_name)
+    # Check again
+    s3_connection.connected?
+  rescue
+    false
   end
 
   def is_browsable?(by_user = nil) #:nodoc:
@@ -79,221 +79,241 @@ class S3FlatDataProvider < DataProvider
   end
 
   def provider_full_path(userfile)
-    init_connection
-    @s3_connection.clean_starting_folder_path(userfile.name)
+    #"Bucket: #{s3_connection.bucket} Prefix key: #{userfile.name}"
+    userfile.name
   end
 
   def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
-    list = []
-    types = allowed_types.is_a?(Array) ? allowed_types.dup : [allowed_types]
-    types.map!(&:to_sym)
 
-    init_connection
-    entries = []
-    if userfile.is_a? FileCollection
-      if directory == :all
-        entriesTmp = s3_connection.list_objects_long(userfile.name)
-        entriesTmp.each do |e|
-          x = @s3_connection.get_object_stats(e[:key])
-          x[:name] = e[:key]
-          entries << x
-        end
-      else
-        if directory == :top or directory == "."# Think this indicates the whole bucket
-          entriesTmp = s3_connection.list_objects_short(userfile.name.to_s + "/")
-          directory_to_pass = ""
-        else
-          full_dir_name = File.join(userfile.name.to_s,directory).to_s + "/"
-          entriesTmp = s3_connection.list_objects_short(full_dir_name)
-          directory_to_pass = directory
-        end
-        fullPath = entriesTmp[:path]
-        entriesTmp[:files].each do |e|
-          fname = fullPath.to_s + e[:name]
-          entry = @s3_connection.get_object_stats(fname)
-          entry[:name] = directory_to_pass != "" ? File.join(directory_to_pass,e[:name]).to_s : e[:name]
-          entries << entry
-        end
-        entriesTmp[:folders].each do |d|
-          fname = fullPath.to_s + d[:name]
-          date_and_size = @s3_connection.get_mod_date_and_size_for_folder(fname)
-          entry = {:name => directory_to_pass != "" ? File.join(directory_to_pass,d[:name]).to_s : d[:name],
-                   :last_modified => date_and_size[:last_modified],
-                   :content_length => date_and_size[:content_length],
-                   :content_type => "application/x-directory"}
-          entries << entry
-        end
-      end
+    prefix = Pathname.new(userfile.name)
+    if directory == :all
+      s3method = :list_objects_recursive
     else
-      entry = @s3_connection.get_object_stats(provider_full_path(userfile))
-      entry[:name] = userfile.name
-      entries << entry
+      s3method = :list_objects_one_level
+      prefix = prefix + directory unless directory == '.' || directory == :top
     end
 
-    entries.each do |entry|
-      type = @s3_connection.translate_content_type_to_ftype(entry[:content_type])
-      next unless types.include?(type)
-      next if is_excluded?(entry[:name]) # in DataProvider
-      #next if entry[:name].to_s.begins_with("cbrain_hidden_")
-      fileinfo = FileInfo.new
-      fileinfo.name          = entry[:name]
-      fileinfo.symbolic_type = type
-      fileinfo.size          = entry[:content_length]
-      fileinfo.mtime         = entry[:last_modified]
-      fileinfo.owner         = "s3"
-      fileinfo.group         = "s3"
-      list << fileinfo
-   end
-   list.sort! { |a,b| a.name <=> b.name }
-   list
- end
+    allowed_types = Array(allowed_types)
+
+    s3_objlist = s3_connection.send(:s3_method,prefix)
+
+    s3_fileinfos = s3_objlist_to_fileinfos(s3_objlist)
+                   .reject { |fi| is_excluded?(fi.name) }
+                   .select { |fi| allowed_types.include? fi.symbolic_type }
+
+    s3_fileinfos.sort! { |a,b| a.name <=> b.name }
+    s3_fileinfos
+  end
 
   def impl_sync_to_cache(userfile) #:nodoc:
-    init_connection  # s3 connection
-    localfull = cache_full_path(userfile)
-    remotefull = provider_full_path(userfile)
+
+    # Prep cache area
     mkdir_cache_subdirs(userfile)
+    localfull   = cache_full_path(userfile)
+    localparent = localfull.parent
+
+    # Prep one more level for FileCollections
     if userfile.is_a?(FileCollection)
       Dir.mkdir(localfull) unless File.directory?(localfull)
-      # implement streaming in here
-      @s3_connection.copy_path_from_bucket(remotefull,localfull)
-    else
-      @s3_connection.copy_object_from_bucket(remotefull,localfull)
     end
+
+    # Figure out what to do
+    to_add, to_remove = rsync_emulation(
+       provider_recursive_fileinfos( userfile ),
+       cache_recursive_fileinfos(    userfile ),
+    )
+
+    # Remove files that exist locally but shouldn't
+    to_remove.each do |fi|
+      relpath  = Pathname.new(fi.name) # "abc" or "abc/def" or "abc/dev/gih.txt", always files or symlinks
+      fullpath = localparent + relpath
+      FileUtils.remove_entry(fullpath.to_s, true) rescue true
+      if relpath.parent.to_s != '.'
+        FileUtils.rmdir(fullpath.parent.to_s, :parents => true) rescue true # Attempt removing as many parents as possible
+      end
+    end
+
+    # Add files locally. Regular and symlinks are supported.
+    to_add.each do |fi|
+      relpath  = Pathname.new(fi.name) # "abc" or "abc/def" or "abc/dev/gih.txt", always files or symlinks
+      fullpath = localparent + relpath
+      if relpath.parent.to_s != '.'
+        FileUtils.mkpath fullpath.parent.to_s
+      end
+      if fi.symbolic_type == :regular
+        s3_connection.download_object_to_file(relpath, fullpath.to_s)
+        FileUtils.touch( fullpath.to_s, :mtime => fi.mtime, :nocreate => true ) if fi.mtime
+      elsif fi.symbolic_type == :symlink
+        linkval = s3_connection.download_symlink_value(relpath)
+        File.unlink(fullpath.to_s) if File.symlink?(fullpath.to_s) # we force re-creation... because can't compare timestamps
+        File.symlink(linkval, fullpath.to_s)
+        # Prob: it doesn't seem we can restore the mtime for a symlink... maybe this will cause
+        # some unnecessary sync up and down, but we don't want to affect the mtime of the
+        # the target of the symlink.
+      elsif fi.symbolic_type == :directory
+        FileUtils.mkpath fullpath.to_s
+      else
+        # unknown/unsupported file type?
+      end
+    end
+
+    true
   end
 
   def impl_sync_to_provider(userfile) #:nodoc:
-    init_connection  # s3 connection
-    localfull      = cache_full_pathname(userfile)
-    remotefilename = provider_full_path(userfile)
-    cb_error "Error: file #{localfull} does not exist in local cache" unless File.exists?(localfull)
-    if userfile.is_a?(FileCollection)
-      @s3_connection.copy_directory_to_bucket(localfull.to_s,File.dirname(remotefilename))
-    else
-      @s3_connection.copy_file_to_bucket(localfull.to_s,File.dirname(remotefilename))
+
+    # Cache area info
+    localfull   = cache_full_path(userfile)
+    localparent = localfull.parent
+
+    # Figure out what to do
+    to_add, to_remove = rsync_emulation(
+       cache_recursive_fileinfos(    userfile ),
+       provider_recursive_fileinfos( userfile ),
+    )
+
+    # Remove files that exist remotely but shouldn't
+    adj_keys = s3_fileinfos_to_realkeys(to_remove)
+    s3_connection.delete_multiple_objects(adj_keys)
+
+    # Add files remotely. Regular and symlinks are supported.
+    to_add.each do |fi|
+      relpath  = Pathname.new(fi.name) # "abc" or "abc/def" or "abc/dev/gih.txt", always files or symlinks
+      fullpath = localparent + relpath
+      if fi.symbolic_type == :symlink
+        linkvalue = File.readlink(fullpath.to_s)
+        s3_connection.upload_symlink_value_to_object(linkvalue, relpath)
+      elsif fi.symbolic_type == :regular
+        s3_connection.upload_file_content_to_object(fullpath, relpath)
+      elsif fi.symbolic_type == :directory
+        s3_connection.upload_subdir_placeholder_to_object(relpath)
+      else
+        # unknown/unsupported file type?
+      end
     end
+
+    true
   end
 
   def impl_provider_erase(userfile) #:nodoc:
-    init_connection
-
-    remotefilename = provider_full_path(userfile)
-    @s3_connection.delete_path_from_bucket(remotefilename)
-  end
-
-  def impl_provider_rename(userfile,newname) #:nodoc:
-    init_connection
-
-    oldpath = provider_full_path(userfile)
-    remotedir = oldpath.parent
-    newpath = File.join(remotedir,newname)
-
-    if userfile.is_a?(FileCollection)
-      begin
-        @s3_connection.rename_path(oldpath,newpath)
-        return true
-      rescue
-        return false
-      end
+    if userfile.is_a?(SingleFile)
+      s3_connection.delete_object(userfile.name)
     else
-      begin
-        @s3_connection.rename_object(oldpath,newpath)
-        return true
-      rescue
-        return false
-      end
+      to_remove = provider_recursive_fileinfos(userfile)
+      adj_keys  = s3_fileinfos_to_realkeys(to_remove)
+      s3_connection.delete_multiple_objects(adj_keys)
     end
+    true
   end
 
   def impl_provider_list_all(user=nil) #:nodoc:
-
-    init_connection
-    fileData = @s3_connection.list_objects_short()
-    list = []
-
-    # First parse the files
-    fileData[:files].each do |f|
-      next if is_excluded?(f[:name])
-      next if f[:name].starts_with? 'cbrain_hidden_' # ignore the hidden file needed to instantiate folder
-
-      #Adjust type (always a file here)
-      type = :regular
-
-      # Create a FileInfo
-      fileinfo               = FileInfo.new
-      fileinfo.name          = f[:name]
-      fileinfo.symbolic_type = type
-      fileinfo.size          = f[:size]
-      fileinfo.mtime         = f[:time]
-      fileinfo.owner         = "s3"
-      fileinfo.group         = "s3"
-
-      list << fileinfo
-    end
-
-    ## Now the folders
-    fileData[:folders].each do |d|
-      next if is_excluded?(d[:name])
-
-      #Adjust type (always a folder here)
-      type = :directory
-
-      fileinfo               = FileInfo.new
-      fileinfo.name          = d[:name]
-      fileinfo.symbolic_type = type
-      fileinfo.size          = 0
-      fileinfo.mtime         = nil
-      fileinfo.owner         = "s3"
-      fileinfo.group         = "s3"
-
-      list << fileinfo
-    end
-    list.sort! { |a,b| a.name <=> b.name }
-    list
+    dp_list = s3_connection.list_objects_one_level("") # top level
+    s3_objlist_to_fileinfos(dp_list)
   end
 
-  def impl_provider_report #:nodoc:
-    init_connection
-
-    issues       = []
-
-    ## Check for missing objects
-    self.userfiles.each do |uf|
-      next if @s3_connection.object_exists?(uf.name)
-      issues << {
-        :type        => :missing,
-        :message     => "Missing userfile '#{uf.name}'",
-        :severity    => :major,
-        :action      => :destroy,
-        :userfile_id => uf.id
-      }
+  def impl_provider_rename(userfile,newname) #:nodoc:
+    return false if s3_connection.get_object_info(newname)
+    return false if s3_connection.list_objects_one_level(newname).present?
+    if userfile.is_a?(SingleFile)
+      s3_connection.rename_object(userfile.name,newname)
+    else
+      s3_connection.list_objects_recursive(userfile.name).each do |s3obj|
+        oldkey = s3obj.key
+        newkey = oldkey.starts_with?("#{userfile.name}/") ? (newname + oldkey[userfile.name.size,99999]) : newkey
+        s3_connection.rename_object(oldkey,newkey) if newkey != oldkey
+      end
     end
-    ## Check for unregistered objects
-    remote_files = @s3_connection.list_objects_short()
-
-    userfile_names = self.userfiles.collect { |u| u.name }
-    unreg = []
-    remote_files[:files].each do |rf|
-      next if userfile_names.include?(rf[:name])
-      unreg << rf
-    end
-    remote_files[:folders].each do |rf|
-      next if userfile_names.include?(rf[:name])
-      unreg << rf
-    end
-
-    unreg.each do |uf|
-      issues << {
-        :type     => :unregistered,
-        :message  => "Unregistered file '#{uf[:name]}'",
-        :severity => :trivial
-      }
-    end
-    issues
+    true
   end
 
-  ## Really, nothing to do here
-  def impl_provider_repair(issue) #:nodoc:
-    return super(issue) unless issue[:action] == :delete
+  private
+
+  def cache_recursive_fileinfos(userfile)
+    cache_fullpath = userfile.cache_full_path
+    cache_parent   = cache_fullpath.parent
+    parent_length  = "#{cache_parent}/".length # used in substr below
+    glob_pattern   = userfile.is_a?(FileCollection) ? "/**/*" : ""
+    Dir.glob("#{userfile.cache_full_path}#{glob_pattern}").map do |fullpath|   # /path/to/userfilebase/d1/d2/f1.txt
+      stats   = File.lstat(fullpath) # not stat() !
+      relpath = fullpath[parent_length,999999]                # userfilebase/d1/d2/f1.txt
+      # This struct is defined in DataProvider
+      FileInfo.new(
+        :name          => relpath,
+        :symbolic_type => (stats.directory? ? :directory :
+                          (stats.symlink?   ? :symlink   :
+                          (stats.file?      ? :regular   :
+                                              :unknown   ))),
+        :size          => stats.size,
+        :permissions   => stats.mode, # not used
+        :uid           => stats.uid,
+        :gid           => stats.gid,
+        # (Not filling :owner and :group here)
+        :atime         => stats.atime,
+        :ctime         => stats.ctime,
+        :mtime         => stats.mtime,
+      )
+    end.compact # the compact is in case we ever insert a 'next' in the map() above
   end
+
+  def provider_recursive_fileinfos(userfile)
+    objlist = s3_connection.list_objects_recursive(userfile.name)
+    s3_objlist_to_fileinfos(objlist)
+  end
+
+  def s3_objlist_to_fileinfos(s3_objlist)
+    s3_objlist.map do |objinfo| # S3 obj contains just a bit of info, not a full FileInfo struct
+      name,type = s3_connection.real_name_and_symbolic_type(objinfo[:key])
+      FileInfo.new(
+        :name          => name,
+        :symbolic_type => type,
+        :mtime         => objinfo[:last_modified],
+        :atime         => objinfo[:last_modified], # no separate a and c times
+        :ctime         => objinfo[:last_modified],
+        :size          => objinfo[:size],
+      )
+    end
+  end
+
+  def s3_fileinfos_to_realkeys(s3_fileinfos)
+    s3_fileinfos.map do |fi|
+      next s3_connection.encode_symlink_key(fi.name) if fi.symbolic_type == :symlink
+      next s3_connection.encode_subdir_key(fi.name)  if fi.symbolic_type == :directory
+      fi.name
+    end
+  end
+
+  def rsync_emulation(src_fileinfos,dst_fileinfos)
+
+    # Index of all relative pathnames
+    src_idx = src_fileinfos.index_by { |fi| fi.name }
+    dst_idx = dst_fileinfos.index_by { |fi| fi.name }
+
+    # Build two lists
+    delete_dest = dst_fileinfos.select { |fi| ! src_idx[fi.name] }
+    add_dest    = src_fileinfos.select do |src_fi|
+
+      # 1st sanity check: by type
+      src_type = src_fi.symbolic_type
+      next false if src_type != :regular && src_type != :symlink && src_type != :directory # only these three supported
+
+      # Extract some info we'll reuse often
+      name     = src_fi.name
+      dst_fi   = dst_idx[name] # matching entry at destination
+
+      # Now let's see whether or not we transfer:
+      next true  if ! dst_fi # not at destination? always add these
+      next false if src_type == :directory && dst_fi.symbolic_type == :directory # directory already at dest, so skip it
+      #next true if src_type != dst_fi.symbolic_type # type mismatch?!?
+      next true  if src_fi.size != dst_fi.size # their sizes differ
+#puts_green "FILE=#{name} SRC MTIME=#{src_fi.mtime} DST MTIME=#{dst_fi.mtime}" if name =~ /symlink_l1/ # debug
+      next true  if (src_fi.mtime.to_i - dst_fi.mtime.to_i).abs > 1 # mtimes differ too much
+      false # well it seems the file is the same on both sides; do not add it
+    end.compact
+
+    # What to add/update, and what to delete
+    return [ add_dest.sort    { |a,b| a.name <=> b.name },
+             delete_dest.sort { |a,b| a.name <=> b.name },
+           ]
+  end
+
 end
