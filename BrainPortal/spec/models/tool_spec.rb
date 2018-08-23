@@ -49,7 +49,9 @@ describe Tool do
   it "should be able assign multiple license to a tool" do
     tool.license_agreements = "keep_this\nkeep_that"
     tool.save
-    expect(tool.license_agreements).to eq(["keep_that", "keep_this"]) # order is changed
+    expect(tool.license_agreements).to eq(["keep_that", "keep_this"])
+    tool.reload
+    expect(tool.license_agreements).to eq(["keep_that", "keep_this"])
   end
 
   it "should be able able remove license from a tool" do
@@ -58,6 +60,8 @@ describe Tool do
     expect(tool.license_agreements).to eq([])
     tool.save
     expect(tool.license_agreements).to eq([])
+    tool.reload
+    expect(tool.license_agreements).to eq([])
   end
 
   it "should keep license if present" do
@@ -65,12 +69,16 @@ describe Tool do
     expect(tool.license_agreements).to eq(["keep_this"])
     tool.save
     expect(tool.license_agreements).to eq(["keep_this"])
+    tool.reload
+    expect(tool.license_agreements).to eq(["keep_this"])
   end
 
   it "should keep singleton license list" do
     tool.license_agreements = ["keep_this"]
     expect(tool.license_agreements).to eq(["keep_this"])
     tool.save
+    expect(tool.license_agreements).to eq(["keep_this"])
+    tool.reload
     expect(tool.license_agreements).to eq(["keep_this"])
   end
 
@@ -80,6 +88,8 @@ describe Tool do
     tool.license_agreements = "keep_that"
     expect(tool.license_agreements).to eq(['keep_that'])
     tool.save
+    expect(tool.license_agreements).to eq(["keep_that"])
+    tool.reload
     expect(tool.license_agreements).to eq(["keep_that"])
   end
 
@@ -94,11 +104,15 @@ describe Tool do
   end
 
   it "should invalidate incorrect license" do
+    allow(File).to receive(:exists?).with("keep").and_return(false)
+    allow(File).to receive(:exists?).with("this").and_return(false)
     tool.license_agreements = "keep this"
     expect(tool.valid?).to eq(false)
   end
 
   it "should invalidate incorrect license after save" do
+    allow(File).to receive(:exists?).with("keep").and_return(false)
+    allow(File).to receive(:exists?).with("this").and_return(false)
     tool.license_agreements = "keep this"
     tool.save
     expect(tool.valid?).to eq(false)
