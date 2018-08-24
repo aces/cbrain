@@ -97,6 +97,9 @@ class S3Sdkv3Connection
   # Listing objects
   ####################################################################
 
+  # Invokes head_object on the key.
+  # Returns the AWS::S3::Types::HeadObjectOutput.
+  # Returns nil of the key doesn't exist.
   def get_object_info(key)
     @client.head_object( :bucket => @bucket_name, :key => key )
   rescue
@@ -105,18 +108,37 @@ class S3Sdkv3Connection
 
   # List every single object recursively under a given path.
   # Returns a list of each object. Prefix cannot be blank.
-  # The list contains fake directory entries for common prefixes.
+  # The list returned contains fake directory entries for object
+  # keys that are longer than the prefix and contains the '/'
+  # character later on.
   def list_objects_recursive(prefix)
     list_objects_general(prefix,true) # 'true' means recursive
   end
 
   # List objects under a particular prefix, but not recursively.
   # Returns a list of each object.
-  # The list contains fake subdirectory entries for common
-  # prefixes that are keys that are longer.
+  # The list returned contains fake directory entries for object
+  # keys that are longer than the prefix and contains the '/'
+  # character later on.
   def list_objects_one_level(prefix)
     list_objects_general(prefix,false) # 'false' means not recursive
   end
+
+  # Returns a list similar to the other list_objects_* methods
+  # above, but containing the information for a single object
+  # with +key+ .
+  def list_single_object(key)
+    info = get_object_info(key)
+    return [] unless info
+    [
+       Aws::S3::Types::Object.new( :key           => key,
+                                   :last_modified => info.last_modified,
+                                   :size          => info.content_length,
+                                 ).freeze
+    ]
+  end
+
+  private
 
   def list_objects_general(prefix,recursive=false)
 
@@ -160,6 +182,10 @@ class S3Sdkv3Connection
   # Object operations
   ####################################################################
 
+  public
+
+  # Basic renaming. This is tricky as objects are fully copied
+  # and then the old one with the old name is destroyed.
   def rename_object(oldkey,newkey)
     @client.copy_object( :copy_source => "/#{@bucket_name}/#{oldkey}",
                          :bucket      => @bucket_name,
@@ -171,6 +197,9 @@ class S3Sdkv3Connection
   # Normal files I/O
   ####################################################################
 
+  # Uploads a piece of data to an object.
+  # If src is anything but a IO, it will be send
+  # as-is. If src is a IO, the data read from it will be sent.
   def upload_data_to_object(src, key)
     @client.put_object( bucket: @bucket_name,
                         key:    key.to_s,
@@ -178,24 +207,39 @@ class S3Sdkv3Connection
                       )
   end
 
+  # Upload the content of a file *src*. The file will be
+  # opened and sent as an object.
   def upload_file_content_to_object(src, key)
     src = File.open(src.to_s,'r:BINARY') unless src.is_a?(IO)
     upload_data_to_object(src, key)
   end
 
+  # Download the content of an object; if dest
+  # is a IO, the content will be streamed to it.
+  # Otherwise, dest will be opened as a file in
+  # write mode.
   def download_object_to_file(key, dest)
-    @client.get_object( bucket:          @bucket_name,
-                        key:             key.to_s,
-                        response_target: (dest.is_a?(IO) ? dest : dest.to_s),
-                      )
+    if dest.is_a?(IO)
+      @client.get_object( bucket:          @bucket_name,
+                          key:             key.to_s,
+                        ) { |chunk| dest.write(chunk) }
+    else
+      @client.get_object( bucket:          @bucket_name,
+                          key:             key.to_s,
+                          response_target: dest.to_s,
+                        )
+    end
   end
 
+  # Delete an object.
   def delete_object(key)
     @client.delete_object( bucket: @bucket_name,
                            key:    key.to_s,
                          )
   end
 
+  # Delete a bunch of object; +keylist+ is an array
+  # of all their keys.
   def delete_multiple_objects(keylist)
     keylist.each_slice(999) do |sublist| # we can only do up to 1000 in the S3 API
       @client.delete_objects( bucket: @bucket_name,
@@ -210,6 +254,8 @@ class S3Sdkv3Connection
   # Subdirectory I/O
   ####################################################################
 
+  # This create an empty object with a special name
+  # for representing a subdirectory +key+.
   def upload_subdir_placeholder_to_object(key)
     upload_data_to_object("",encode_subdir_key(key))
   end
@@ -218,10 +264,14 @@ class S3Sdkv3Connection
   # Symbolic link I/O
   ####################################################################
 
+  # This create an empty object with a special name
+  # for representing a symbolic link named +key+ with +symlinkvalue+ .
   def upload_symlink_value_to_object(symlinkvalue, key)
     upload_data_to_object(symlinkvalue,encode_symlink_key(key))
   end
 
+  # Given a path 'key' representing a symlink, will fetch
+  # and return the symlink value.
   def download_symlink_value(key)
     linkvalue = ""
     @client.get_object( bucket: @bucket_name,
@@ -234,11 +284,11 @@ class S3Sdkv3Connection
   # Special renaming methods for symlinks and subdirs
   ####################################################################
 
-  def encode_symlink_key(key)
+  def encode_symlink_key(key) #:nodoc:
     "#{key}#{SYMLINK_ENDING}"
   end
 
-  def decode_symlink_key(symkey)
+  def decode_symlink_key(symkey) #:nodoc:
     if symkey.to_s.ends_with? SYMLINK_ENDING
       (symkey.to_s)[0..-(SYMLINK_ENDING.size+1)]
     else
@@ -246,11 +296,11 @@ class S3Sdkv3Connection
     end
   end
 
-  def encode_subdir_key(key)
+  def encode_subdir_key(key) #:nodoc:
     "#{key}#{SUBDIR_ENDING}"
   end
 
-  def decode_subdir_key(subkey)
+  def decode_subdir_key(subkey) #:nodoc:
     if subkey.to_s.ends_with? SUBDIR_ENDING
       (subkey.to_s)[0..-(SUBDIR_ENDING.size+1)]
     else
@@ -258,6 +308,13 @@ class S3Sdkv3Connection
     end
   end
 
+  # Given a key that may or may not encode
+  # a special naming convention for symbolic links
+  # or subdirectories, will return the 'normal'
+  # key name (usually looks like a normal path)
+  # and a symbol for the encoded type (one of
+  # :regular, :directory, or :symlink) as
+  # used in DataProvider::FileInfo objects.
   def real_name_and_symbolic_type(key)
     if key.ends_with? SYMLINK_ENDING
       return [ decode_symlink_key(key), :symlink ]

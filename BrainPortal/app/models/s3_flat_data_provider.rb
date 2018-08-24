@@ -21,9 +21,24 @@
 #
 
 # Implements a DataProvider that stores its files
-# in a Amazon S3 bucket. Single files are saved
-# as-is, FileCollections are tar'ed and untar'ed
-# as needed.
+# in a Amazon S3 bucket.
+#
+# The encoding system tries to use the bucket as a standard file system:
+#
+# Amazon keys:
+#
+#   "file1.txt"
+#   "dir1/abc.txt"
+#   "dir1/subdir/file.txt"
+#
+# The 'browse' API will see two entries, 'file1' and 'dir1'.
+#
+# When uploading and downloading file collections, special objects
+# are also created to indicate subdirectories and symbolic links.
+#
+# The syncing code implements an internal 'rsync'-like algorithm
+# to try to transfer only files that have changed between Amazon
+# and the local cache.
 class S3FlatDataProvider < DataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
@@ -78,11 +93,14 @@ class S3FlatDataProvider < DataProvider
     true
   end
 
+  # This is, for the moment, entirely esthetic. On the Amazon
+  # side, the a CBRAIN file named 'abcd' is also stored as 'abcd'.
   def provider_full_path(userfile)
     #"Bucket: #{s3_connection.bucket} Prefix key: #{userfile.name}"
     userfile.name
   end
 
+  # Standard implementation
   def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
 
     prefix = Pathname.new(userfile.name)
@@ -105,6 +123,7 @@ class S3FlatDataProvider < DataProvider
     s3_fileinfos
   end
 
+  # Use our own internal rsync-like algorithm.
   def impl_sync_to_cache(userfile) #:nodoc:
 
     # Prep cache area
@@ -128,15 +147,16 @@ class S3FlatDataProvider < DataProvider
       relpath  = Pathname.new(fi.name) # "abc" or "abc/def" or "abc/dev/gih.txt", always files or symlinks
       fullpath = localparent + relpath
       FileUtils.remove_entry(fullpath.to_s, true) rescue true
-      if relpath.parent.to_s != '.'
-        FileUtils.rmdir(fullpath.parent.to_s, :parents => true) rescue true # Attempt removing as many parents as possible
-      end
+      #if relpath.parent.to_s != '.'
+      #  FileUtils.rmdir(fullpath.parent.to_s, :parents => true) rescue true # Attempt removing as many parents as possible
+      #end
     end
 
     # Add files locally. Regular and symlinks are supported.
     to_add.each do |fi|
       relpath  = Pathname.new(fi.name) # "abc" or "abc/def" or "abc/dev/gih.txt", always files or symlinks
       fullpath = localparent + relpath
+      FileUtils.remove_entry(fullpath.to_s, true) rescue true # destroy whatever is in the way
       if relpath.parent.to_s != '.'
         FileUtils.mkpath fullpath.parent.to_s
       end
@@ -160,6 +180,7 @@ class S3FlatDataProvider < DataProvider
     true
   end
 
+  # Use our own internal rsync-like algorithm.
   def impl_sync_to_provider(userfile) #:nodoc:
 
     # Cache area info
@@ -228,7 +249,9 @@ class S3FlatDataProvider < DataProvider
 
   private
 
-  def cache_recursive_fileinfos(userfile)
+  # Scan the local cache and returns a list of FileInfo objects
+  # descriving all the files and directories.
+  def cache_recursive_fileinfos(userfile) #:nodoc:
     cache_fullpath = userfile.cache_full_path
     cache_parent   = cache_fullpath.parent
     parent_length  = "#{cache_parent}/".length # used in substr below
@@ -255,12 +278,20 @@ class S3FlatDataProvider < DataProvider
     end.compact # the compact is in case we ever insert a 'next' in the map() above
   end
 
+  # Scan the Amazon bucket and returns a list of FileInfo objects
+  # descriving all the files and directories inside a userfile
+  # (if a FileCollection) or describing the single entry (if a SingleFile).
   def provider_recursive_fileinfos(userfile)
-    objlist = s3_connection.list_objects_recursive(userfile.name)
-    s3_objlist_to_fileinfos(objlist)
+    single_head = s3_connection.list_single_object(userfile.name)
+    objlist     = s3_connection.list_objects_recursive(userfile.name)
+    s3_objlist_to_fileinfos(single_head + objlist)
   end
 
-  def s3_objlist_to_fileinfos(s3_objlist)
+  private
+
+  # Turns an array of objects infos built on the Amazon side
+  # into an array of FileInfo objects.
+  def s3_objlist_to_fileinfos(s3_objlist) #:nodoc:
     s3_objlist.map do |objinfo| # S3 obj contains just a bit of info, not a full FileInfo struct
       name,type = s3_connection.real_name_and_symbolic_type(objinfo[:key])
       FileInfo.new(
@@ -274,7 +305,10 @@ class S3FlatDataProvider < DataProvider
     end
   end
 
-  def s3_fileinfos_to_realkeys(s3_fileinfos)
+  # Turns an array of FileInfo objects representing S3 objects
+  # into an array of simply S3 key names (with special encoding
+  # for symlinks and directories if necessary).
+  def s3_fileinfos_to_realkeys(s3_fileinfos) #:nodoc:
     s3_fileinfos.map do |fi|
       next s3_connection.encode_symlink_key(fi.name) if fi.symbolic_type == :symlink
       next s3_connection.encode_subdir_key(fi.name)  if fi.symbolic_type == :directory
@@ -282,15 +316,23 @@ class S3FlatDataProvider < DataProvider
     end
   end
 
-  def rsync_emulation(src_fileinfos,dst_fileinfos)
+  # Given to arrays of FileInfo objects, produces two
+  # list of things to do to synchronize the source at
+  # the destination:
+  #  - a list of FileInfo objects for things to remove
+  #    at the destination.
+  #  - a list of FileInfo objects for things in the source
+  #    to copy to the destination.
+  def rsync_emulation(src_fileinfos,dst_fileinfos) #:nodoc:
 
     # Index of all relative pathnames
     src_idx = src_fileinfos.index_by { |fi| fi.name }
     dst_idx = dst_fileinfos.index_by { |fi| fi.name }
 
     # Build two lists
-    delete_dest = dst_fileinfos.select { |fi| ! src_idx[fi.name] }
-    add_dest    = src_fileinfos.select do |src_fi|
+    delete_dest  = dst_fileinfos.select { |fi| ! src_idx[fi.name] }
+    delete_dest += dst_fileinfos.select { |fi| src_idx[fi.name] && src_idx[fi.name].symbolic_type != fi.symbolic_type }
+    add_dest     = src_fileinfos.select do |src_fi|
 
       # 1st sanity check: by type
       src_type = src_fi.symbolic_type
@@ -303,9 +345,8 @@ class S3FlatDataProvider < DataProvider
       # Now let's see whether or not we transfer:
       next true  if ! dst_fi # not at destination? always add these
       next false if src_type == :directory && dst_fi.symbolic_type == :directory # directory already at dest, so skip it
-      #next true if src_type != dst_fi.symbolic_type # type mismatch?!?
+      next true  if src_type != dst_fi.symbolic_type # type mismatch?!?
       next true  if src_fi.size != dst_fi.size # their sizes differ
-#puts_green "FILE=#{name} SRC MTIME=#{src_fi.mtime} DST MTIME=#{dst_fi.mtime}" if name =~ /symlink_l1/ # debug
       next true  if (src_fi.mtime.to_i - dst_fi.mtime.to_i).abs > 1 # mtimes differ too much
       false # well it seems the file is the same on both sides; do not add it
     end.compact

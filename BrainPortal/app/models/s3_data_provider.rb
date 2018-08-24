@@ -46,7 +46,7 @@ class S3DataProvider < DataProvider
     @s3_connection = S3Sdkv3Connection.new(self.cloud_storage_client_identifier,
                                            self.cloud_storage_client_token,
                                            bucket_name(),
-                                           nil)
+                                          )
   end
 
   # Hardcoded bucket name is "gbrain_{self.id}"
@@ -153,7 +153,7 @@ class S3DataProvider < DataProvider
     old_path   = provider_full_path(userfile)
     remote_dir = old_path.parent
     new_path   = File.join(remote_dir,newname)
-    s3_connection.rename_path(old_path,new_path)
+    s3_connection.rename_object(old_path,new_path)
   end
 
   def impl_provider_list_all(user) #:nodoc:
