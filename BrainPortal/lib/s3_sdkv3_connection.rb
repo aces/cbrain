@@ -138,20 +138,21 @@ class S3Sdkv3Connection
                                      :continuation_token  => cont_token)
       break if resp.blank?
       list_of_objects += resp.contents if resp.contents.present?
-      list_of_objects += make_fake_subdir_entries(resp.common_prefixes)
+      list_of_objects += create_fake_subdir_s3objs(prefix,resp.common_prefixes)
       cont_token       = resp[:next_continuation_token]
     end
 
     list_of_objects
   end
 
-  def make_fake_subdir_entries(s3_common_prefixes)
-    return [] if s3_common_prefixes.blank?
+  def create_fake_subdir_s3objs(prefix,s3_common_prefixes)
+    return [] if s3_common_prefixes.blank? # in case it's nil
     s3_common_prefixes.map do |pref_obj|
-      prefix = pref_obj.prefix
-      prefix.sub!(/\/$/,"") # remove trailing / if any
-      next nil if prefix.index('/') # reject if there are any other slashes (e.g. "a/b"), we want just "a"
-      Aws::S3::Types::Object.new(:key => encode_subdir_key(prefix), :last_modified => Time.now, :size => 0).freeze
+      subprefix = pref_obj.prefix
+      subprefix.sub!(/\/$/,"") # remove trailing / if any
+      subprefix[0,(prefix.size)] = "" if prefix.present?
+      next nil if subprefix.index('/') # reject if there are any other slashes (e.g. "a/b"), we want just "a"
+      Aws::S3::Types::Object.new(:key => encode_subdir_key(subprefix), :last_modified => Time.now, :size => 0).freeze
     end.compact
   end
 
@@ -170,12 +171,16 @@ class S3Sdkv3Connection
   # Normal files I/O
   ####################################################################
 
-  def upload_file_content_to_object(src, key)
-    src = File.open(src.to_s,'r:BINARY') unless src.is_a?(IO)
+  def upload_data_to_object(src, key)
     @client.put_object( bucket: @bucket_name,
                         key:    key.to_s,
                         body:   src,
                       )
+  end
+
+  def upload_file_content_to_object(src, key)
+    src = File.open(src.to_s,'r:BINARY') unless src.is_a?(IO)
+    upload_data_to_object(src, key)
   end
 
   def download_object_to_file(key, dest)
@@ -206,11 +211,7 @@ class S3Sdkv3Connection
   ####################################################################
 
   def upload_subdir_placeholder_to_object(key)
-    upload_file_content_to_object("",encode_subdir_key(key))
-    #@client.put_object( bucket: @bucket_name,
-    #                    key:    encode_subdir_key(key),
-    #                    body:   "",
-    #                  )
+    upload_data_to_object("",encode_subdir_key(key))
   end
 
   ####################################################################
@@ -218,11 +219,7 @@ class S3Sdkv3Connection
   ####################################################################
 
   def upload_symlink_value_to_object(symlinkvalue, key)
-    upload_file_content_to_object(symlinkvalue,encode_symlink_key(key))
-    #@client.put_object( bucket: @bucket_name,
-    #                    key:    encode_symlink_key(key),
-    #                    body:   symlinkvalue,
-    #                  )
+    upload_data_to_object(symlinkvalue,encode_symlink_key(key))
   end
 
   def download_symlink_value(key)

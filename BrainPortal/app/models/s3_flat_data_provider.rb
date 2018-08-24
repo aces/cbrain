@@ -95,7 +95,7 @@ class S3FlatDataProvider < DataProvider
 
     allowed_types = Array(allowed_types)
 
-    s3_objlist = s3_connection.send(:s3_method,prefix)
+    s3_objlist = s3_connection.send(s3method,prefix)
 
     s3_fileinfos = s3_objlist_to_fileinfos(s3_objlist)
                    .reject { |fi| is_excluded?(fi.name) }
