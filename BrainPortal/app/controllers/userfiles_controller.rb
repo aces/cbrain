@@ -1589,9 +1589,9 @@ class UserfilesController < ApplicationController
   # See also: the -H option of tar on MacOS X which would do the trick,
   # but doesn't exist on LINUX.
   def create_relocatable_tar_for_userfiles(ulist,username) #:nodoc:
-    timestamp    = Time.now.to_i.to_s[-4..-1]  # four digits long
+    timestamp    = sprintf("%6.6d",rand(1000000)) # six digits long
     tarfilename  = Pathname.new("/tmp/cbrain_files_#{username}.#{timestamp}.tar.gz") # must be outside the tmp work dir
-    errfile      = Pathname.new("/tmp/tar.#{Process.pid}.stderr")
+    errfile      = Pathname.new("/tmp/tar.#{Process.pid}.#{timestamp}.stderr")
 
     tar_cd_arg_list = []; # properly escaped list of args for the tar command
     ulist.each do |u|
@@ -1604,7 +1604,7 @@ class UserfilesController < ApplicationController
     end
 
     system("tar -cf - #{tar_cd_arg_list.join(" ")} 2> #{errfile.to_s.bash_escape} | gzip -c > #{tarfilename.to_s.bash_escape}")
-    err = File.read(errfile)
+    err = File.read(errfile) rescue "Oops, the error file has disappeared..."
     cb_error "Error creating the download file. The file list might be too long, or some files are missing. Sorry." if err.present?
 
     return tarfilename
