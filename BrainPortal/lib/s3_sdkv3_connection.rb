@@ -1,3 +1,4 @@
+
 #
 # CBRAIN Project
 #
@@ -18,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
 require 'aws-sdk-s3'
 require 'fileutils'
 
@@ -26,329 +28,301 @@ class S3Sdkv3Connection
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  attr_accessor :resource, :bucket_name, :path_name, :region
+  SYMLINK_ENDING = "_symlink_s3_object" #:nodoc:
+
+  # Note: it is important that when sorted, the string
+  #  "dirname#{SUBDIR_ENDING}"
+  # appears BEFORE
+  #  "dirname/"
+  # for all strings "dirname". Thus the "-", which comes before "/".
+  SUBDIR_ENDING  = "-subdir_s3_object"  #:nodoc:
+
+  # Sets a logger for the AWS layer (default, STDOUT)
+  def self.set_logger(logger=Logger.new(STDOUT))
+    Aws.config.update(:logger => logger)
+  end
+
+  # This invokes the class method of the same name;
+  # it is unfortunately not possible to have separate loggers
+  # for different instances of S3Sdkv3Connection
+  # because the logger is global to the AWS layer.
+  def set_logger(logger=Logger.new(STDOUT))
+    self.class.set_logger(logger)
+  end
 
   # Establish a connection handler to S3
-  def initialize(access_key, secret_key, bucket_name, path_start,
-                 region='us-east-1')
-                 #endpoint="http://s3.us-east-1.amazonaws.com")
-    credentials = Aws::Credentials.new(access_key,secret_key)
-    @bucket_name = bucket_name
-    @region = region
-    @client = Aws::S3::Client.new(credentials: credentials,
-                                  region: @region)
-                                  #endpoint: endpoint)
-    @resource = Aws::S3::Resource.new(client: @client)
-    @bucket = @resource.bucket(@bucket_name)
-    @path_name = path_start
-    @symlink_ending = "_symlink_s3_object"
+  def initialize(access_key, secret_key, bucket_name,
+                 region   = "us-east-1",
+                 endpoint = nil)
+                 #endpoint = "http://s3.us-east-1.amazonaws.com")
 
+    credentials     = Aws::Credentials.new(access_key,secret_key)
+
+    @bucket_name    = bucket_name
+
+    client_connection = {
+      :credentials => credentials,
+      :region      => region,
+    }
+    client_connection[:endpoint] = endpoint if endpoint.present?
+
+    @client         = Aws::S3::Client.new(client_connection)
+    self
   end
 
-  # Method to translate Mime types to File types
-  # Redo more generally
-  def translate_content_type_to_ftype(ct)
-    ct == "application/x-directory" ? :directory : :regular
-  end
+  ####################################################################
+  # Bucket methods
+  ####################################################################
 
-  # Method to ensure that the paths sent start in the right place
-  def clean_starting_folder_path(path)
-    path_end = path
-    return Pathname.new(path_end) if @path_name.nil?
-
-    if not path_end.to_s.starts_with? @path_name.to_s
-      return Pathname.new(File.join(@path_name, path_end))
-    else
-      return Pathname.new(path_end)
-    end
-  end
-
-  def execute_on_s3 #:nodoc:
-     yield self
-  end
-
-  # Create a bucket on the current connection. Not used, included for completeness
+  # Create a bucket on the current connection.
   def create_bucket(bucket_name)
-    @resource.create_bucket({bucket: bucket_name})
-  end
-
-  def create_object_from_string(string_to_write,path)
-    path_clean = clean_starting_folder_path(path).to_s
-    object_name = File.basename(path_clean)
-    path_lead = File.dirname(path_clean)
-    tmpfile = Tempfile.new()
-    tmpfile.write(string_to_write)
-    tmpfile.rewind
-    copy_file_to_bucket(object_name,path_lead,tmpfile)
-    tmpfile.unlink
-    tmpfile.close
+    @client.create_bucket(bucket: bucket_name)
   end
 
   # Returns true if a particular bucket exists.
   def bucket_exists?(name)
-    begin
-      testVar = @resource.client.list_objects(bucket: name, delimiter: "/")
-      return true
-    rescue
-      return false
-    end
+    @client.head_bucket(bucket: name)
+    return true
+  rescue
+    false
   end
 
-  # Returns true if the connection is alive
-  # Need to figure out how to return the actual error message so that one can debug
+  # Returns true if the connection is alive.
+  # This is the same as checking if the bucket exists.
   def connected?
-    begin
-      testVar = @resource.client.list_objects(bucket: @bucket_name, delimiter: "/")
-      return true
-    rescue
-      return false
-    end
+    bucket_exists?(@bucket_name)
   end
 
-  # Explores the objects under a path to determine the folder's date modified and size
-  # For S3, there are no folders, so this is the only wa to get this information
-  # This is very very slow if you do it for a large directory, so I have disabled for
-  # now, but it is here for future
-  def get_mod_date_and_size_for_folder(path=nil)
-    path = @path_name + "/" if path.nil?
-    pathClean = clean_starting_folder_path(path).to_s
+  ####################################################################
+  # Listing objects
+  ####################################################################
 
-    date_return = Time.parse("1901-01-01")
-    size_folder = 0
-    if object_exists?(pathClean)
-      list_of_objects = list_objects_long(pathClean)
-      list_of_objects.each do |f|
-        x = get_object_stats(f[:key])
-        if x[:last_modified] > date_return
-          date_return = x[:last_modified]
-        end
-        size_folder += x[:content_length]
-      end
-      return {:last_modified => date_return,
-              :content_length => size_folder}
+  # Invokes head_object on the key.
+  # Returns the AWS::S3::Types::HeadObjectOutput.
+  # Returns nil of the key doesn't exist.
+  def get_object_info(key)
+    @client.head_object( :bucket => @bucket_name, :key => key )
+  rescue
+    nil
+  end
+
+  # List every single object recursively under a given path.
+  # Returns a list of each object. Prefix cannot be blank.
+  # The list returned contains fake directory entries for object
+  # keys that are longer than the prefix and contains the '/'
+  # character later on.
+  def list_objects_recursive(prefix)
+    list_objects_general(prefix,true) # 'true' means recursive
+  end
+
+  # List objects under a particular prefix, but not recursively.
+  # Returns a list of each object.
+  # The list returned contains fake directory entries for object
+  # keys that are longer than the prefix and contains the '/'
+  # character later on.
+  def list_objects_one_level(prefix)
+    list_objects_general(prefix,false) # 'false' means not recursive
+  end
+
+  # Returns a list similar to the other list_objects_* methods
+  # above, but containing the information for a single object
+  # with +key+ .
+  def list_single_object(key)
+    info = get_object_info(key)
+    return [] unless info
+    [
+       Aws::S3::Types::Object.new( :key           => key,
+                                   :last_modified => info.last_modified,
+                                   :size          => info.content_length,
+                                 ).freeze
+    ]
+  end
+
+  private
+
+  def list_objects_general(prefix,recursive=false)
+
+    # prefix must be present IF listing recursively, otherwise
+    # we would list all objects in the bucket.
+    raise "Prefix cannot be blank." if prefix.to_s.blank? && recursive.present?
+    delimiter = recursive.present? ? "" : "/"
+
+    list_of_objects = []
+    resp            = { :is_truncated => true }
+    cont_token      = nil
+    prefix          = prefix.to_s
+    prefix         += '/' if prefix.present? && ! prefix.ends_with?('/')
+
+    while resp[:is_truncated] do
+      resp = @client.list_objects_v2(:bucket              => @bucket_name,
+                                     :prefix              => prefix,
+                                     :delimiter           => delimiter, # empty string is OK
+                                     :continuation_token  => cont_token)
+      break if resp.blank?
+      list_of_objects += resp.contents if resp.contents.present?
+      list_of_objects += create_fake_subdir_s3objs(prefix,resp.common_prefixes)
+      cont_token       = resp[:next_continuation_token]
+    end
+
+    list_of_objects
+  end
+
+  def create_fake_subdir_s3objs(prefix,s3_common_prefixes)
+    return [] if s3_common_prefixes.blank? # in case it's nil
+    s3_common_prefixes.map do |pref_obj|
+      subprefix = pref_obj.prefix
+      subprefix.sub!(/\/$/,"") # remove trailing / if any
+      subprefix[0,(prefix.size)] = "" if prefix.present?
+      next nil if subprefix.index('/') # reject if there are any other slashes (e.g. "a/b"), we want just "a"
+      Aws::S3::Types::Object.new(:key => encode_subdir_key(subprefix), :last_modified => Time.now, :size => 0).freeze
+    end.compact
+  end
+
+  ####################################################################
+  # Object operations
+  ####################################################################
+
+  public
+
+  # Basic renaming. This is tricky as objects are fully copied
+  # and then the old one with the old name is destroyed.
+  def rename_object(oldkey,newkey)
+    @client.copy_object( :copy_source => "/#{@bucket_name}/#{oldkey}",
+                         :bucket      => @bucket_name,
+                         :key         => newkey )
+    delete_object(oldkey)
+  end
+
+  ####################################################################
+  # Normal files I/O
+  ####################################################################
+
+  # Uploads a piece of data to an object.
+  # If src is anything but a IO, it will be send
+  # as-is. If src is a IO, the data read from it will be sent.
+  def upload_data_to_object(src, key)
+    @client.put_object( bucket: @bucket_name,
+                        key:    key.to_s,
+                        body:   src,
+                      )
+  end
+
+  # Upload the content of a file *src*. The file will be
+  # opened and sent as an object.
+  def upload_file_content_to_object(src, key)
+    src = File.open(src.to_s,'r:BINARY') unless src.is_a?(IO)
+    upload_data_to_object(src, key)
+  end
+
+  # Download the content of an object; if dest
+  # is a IO, the content will be streamed to it.
+  # Otherwise, dest will be opened as a file in
+  # write mode.
+  def download_object_to_file(key, dest)
+    if dest.is_a?(IO)
+      @client.get_object( bucket:          @bucket_name,
+                          key:             key.to_s,
+                        ) { |chunk| dest.write(chunk) }
     else
-      return {:last_modified => Time.now,
-              :content_length => 0 }
+      @client.get_object( bucket:          @bucket_name,
+                          key:             key.to_s,
+                          response_target: dest.to_s,
+                        )
     end
   end
 
-  # Lists all objects by name only directly under a given path
-  # Returns a hash with files, folders and full path
-  # If path is nil, then it uses only the start_path
-  def list_objects_short(path=nil)
-    path = @path_name + "/" if path.nil?
-    pathClean = clean_starting_folder_path(path).to_s
-    hash_of_objects = {:path => pathClean, :files => [], :folders => []}
-    if object_exists?(pathClean)
-      cont_token = nil
-      resp = { :is_truncated => true }
-      while resp[:is_truncated] == true  do
-        if cont_token.nil?
-          resp = @resource.client.list_objects_v2(bucket: @bucket_name,
-                                                  prefix: pathClean,
-                                                  delimiter: "/")
-        else
-          resp = @resource.client.list_objects_v2(bucket: @bucket_name,
-                                                  prefix: pathClean,
-                                                  delimiter: "/",
-                                                  continuation_token: cont_token)
-        end
-        filenames = resp.contents.map { |x| {:name => x.key.split("/")[-1],
-                                             :time => x.last_modified,
-                                             :size => x.size,
-                                             :content_type => 'none'} if x.size > 0}.compact
-        filenames.each do |x|
-          new_key = File.join(pathClean,x[:name])
-          respH = @resource.client.head_object({bucket: @bucket_name, key: new_key})
-          x[:content_type] = respH.content_type
-        end
-        folder_names = resp.common_prefixes.map { |x| {:name => x.prefix.split("/")[-1]} }
-
-        hash_of_objects[:files] = hash_of_objects[:files] + filenames
-        hash_of_objects[:folders] = hash_of_objects[:folders] + folder_names
-
-        cont_token = resp[:next_continuation_token]
-      end
-    end
-    return hash_of_objects
+  # Delete an object.
+  def delete_object(key)
+    @client.delete_object( bucket: @bucket_name,
+                           key:    key.to_s,
+                         )
   end
 
-  # List every single object recursively under a given path
-  # returns a list of each object
-  # loop_count_limit will be the limit of calls that have no continuation key before the loop breaks
-  def list_objects_long(path=nil)
-    path = @path_name if path.nil?
-
-    pathClean = clean_starting_folder_path(path).to_s
-    list_of_objects = Array.new()
-
-    if object_exists?(pathClean)
-      cont_token = nil
-      resp = {:is_truncated => true}
-      while resp[:is_truncated] == true  do
-        if cont_token.nil?
-          resp = @resource.client.list_objects_v2(bucket: @bucket_name,
-                                                  prefix: pathClean).to_h
-        else
-          resp = @resource.client.list_objects_v2(bucket: @bucket_name,
-                                                  prefix: pathClean,
-                                                  continuation_token: cont_token).to_h
-        end
-
-        resp[:contents].each do |x|
-          list_of_objects.insert(-1,x)
-        end
-
-        cont_token = resp[:next_continuation_token]
-      end
+  # Delete a bunch of object; +keylist+ is an array
+  # of all their keys.
+  def delete_multiple_objects(keylist)
+    keylist.each_slice(999) do |sublist| # we can only do up to 1000 in the S3 API
+      @client.delete_objects( bucket: @bucket_name,
+                              delete: {
+                                        objects: sublist.map { |k| { key: k.to_s } },
+                                      },
+                            )
     end
-    return list_of_objects
   end
 
-  # Gets the object status of a given path, useful to find out whether a directory or an actual file
-  def get_object_stats(objPath)
-    if object_exists?(objPath)
-      return @resource.client.head_object(bucket: @bucket_name,
-                                          key: objPath.to_s).to_h
+  ####################################################################
+  # Subdirectory I/O
+  ####################################################################
+
+  # This create an empty object with a special name
+  # for representing a subdirectory +key+.
+  def upload_subdir_placeholder_to_object(key)
+    upload_data_to_object("",encode_subdir_key(key))
+  end
+
+  ####################################################################
+  # Symbolic link I/O
+  ####################################################################
+
+  # This create an empty object with a special name
+  # for representing a symbolic link named +key+ with +symlinkvalue+ .
+  def upload_symlink_value_to_object(symlinkvalue, key)
+    upload_data_to_object(symlinkvalue,encode_symlink_key(key))
+  end
+
+  # Given a path 'key' representing a symlink, will fetch
+  # and return the symlink value.
+  def download_symlink_value(key)
+    linkvalue = ""
+    @client.get_object( bucket: @bucket_name,
+                        key:    encode_symlink_key(key),
+                      ) { |chunk| linkvalue += chunk }
+    linkvalue
+  end
+
+  ####################################################################
+  # Special renaming methods for symlinks and subdirs
+  ####################################################################
+
+  def encode_symlink_key(key) #:nodoc:
+    "#{key}#{SYMLINK_ENDING}"
+  end
+
+  def decode_symlink_key(symkey) #:nodoc:
+    if symkey.to_s.ends_with? SYMLINK_ENDING
+      (symkey.to_s)[0..-(SYMLINK_ENDING.size+1)]
     else
-      return {}
+      symkey.to_s
     end
   end
 
-  # Copies an individual object from S3 back to a destination
-  def copy_object_from_bucket(srcObj,dest)
-    if object_exists?(srcObj)
-      if srcObj.to_s.ends_with? @symlink_ending
-        tmpfile = Tempfile.new()
-        resp = @resource.client.get_object(bucket: @bucket_name,
-                                           key: srcObj.to_s) do |chunk|
-            tmpfile.write(chunk)
-        end
-        tmpfile.rewind
-        lnk_dest = tmpfile.read
-        FileUtils::ln_s(lnk_dest,dest.sub(@symlink_ending,""))
-        tmpfile.unlink
-        tmpfile.close
-      elsif dest.class == IO or dest.class == File
-        resp = @resource.client.get_object(bucket: @bucket_name,
-                                           key: srcObj.to_s) do |chunk|
-          dest.write(chunk)
-        end
-      else
-        resp = @resource.client.get_object(response_target: dest.to_s,
-                                           bucket: @bucket_name,
-                                           key: srcObj.to_s)
-      end
-    end
+  def encode_subdir_key(key) #:nodoc:
+    "#{key}#{SUBDIR_ENDING}"
   end
 
-  # Copies and sets up all of the directories to copy an entire path from S3 to dest
-  def copy_path_from_bucket(path, dest_head)
-    if object_exists?(path)
-      list_of_objects = list_objects_long(path)
-      list_of_objects.each do |x|
-        x_stat = get_object_stats(x[:key])
-        next if x_stat[:content_type] == 'application/x-directory'
-
-
-        trun_object_key = x[:key].dup.sub! "#{clean_starting_folder_path(path.to_s).to_s}/",''
-        full_dir_name = File.join(dest_head,File.dirname(trun_object_key))
-
-        trun_object_key2 = x[:key].dup.sub! "#{clean_starting_folder_path(File.dirname(path).to_s).to_s}/",''
-        full_dir_file_name = File.join(dest_head,trun_object_key)
-        FileUtils::mkdir_p full_dir_name
-        copy_object_from_bucket(x[:key], full_dir_file_name)
-      end
-    end
-  end
-
-  # Copies a file to the bucket
-  def copy_file_to_bucket(srcFile, dest_head, srcStream=nil)
-    trun_object_key = File.basename(srcFile)
-    keyPath = dest_head.nil? ? trun_object_key : File.join(dest_head,trun_object_key).to_s
-    if srcStream.nil?
-      File.open(srcFile,'r') do |srcIO|
-        resp = @resource.client.put_object(body: srcIO,
-                                           bucket: @bucket_name,
-                                           key: keyPath)
-      end
+  def decode_subdir_key(subkey) #:nodoc:
+    if subkey.to_s.ends_with? SUBDIR_ENDING
+      (subkey.to_s)[0..-(SUBDIR_ENDING.size+1)]
     else
-        resp = @resource.client.put_object(body: srcStream,
-                                           bucket: @bucket_name,
-                                           key: keyPath)
+      subkey.to_s
     end
   end
 
-  # Copies a directory to the bucket, will recursively create directory in the path
-  def copy_directory_to_bucket(srcDir, dest_head)
-    if object_exists?(dest_head)
-      Dir.glob("#{srcDir}/**/*").each do |x|
-        next if File.directory?(x)
-        sub_dir_mon = "#{File.dirname(srcDir)}/"
-        newDirName = "#{File.dirname(x).sub(sub_dir_mon,'')}"
-        new_dest_path = File.join(clean_starting_folder_path(dest_head).to_s,newDirName)
-        srcStream = nil
-        if File.symlink?(x)
-          symlink_filename = "#{x}#{@symlink_ending}"
-          srcStream = Tempfile.new()
-          srcStream.write(File.readlink(x))
-          srcStream.rewind
-          copy_file_to_bucket(symlink_filename,new_dest_path,srcStream)
-          srcStream.unlink
-          srcStream.close
-        else
-          copy_file_to_bucket(x,new_dest_path)
-        end
-      end
+  # Given a key that may or may not encode
+  # a special naming convention for symbolic links
+  # or subdirectories, will return the 'normal'
+  # key name (usually looks like a normal path)
+  # and a symbol for the encoded type (one of
+  # :regular, :directory, or :symlink) as
+  # used in DataProvider::FileInfo objects.
+  def real_name_and_symbolic_type(key)
+    if key.ends_with? SYMLINK_ENDING
+      return [ decode_symlink_key(key), :symlink ]
+    elsif key.ends_with? SUBDIR_ENDING
+      return [ decode_subdir_key(key),  :directory ]
+    else
+      return [ key, :regular ]
     end
   end
 
-  # Delete an object from the bucket
-  def delete_path_from_bucket(path)
-    path_clean = clean_starting_folder_path(path).to_s
-    if object_exists?(path_clean)
-      @resource.bucket(@bucket_name).objects({prefix: path_clean}).batch_delete!
-    end
-  end
-
-  # Renames an objects path
-  def rename_object(srcPath,destPath)
-    src_path_clean = clean_starting_folder_path(srcPath).to_s
-    dest_path_clean = clean_starting_folder_path(destPath).to_s
-    if object_exists?(src_path_clean)
-      src_path_w_bucket = "/#{File.join(@bucket_name,src_path_clean)}"
-      resp = @resource.client.copy_object(bucket:@bucket_name,
-                                          copy_source: src_path_w_bucket,
-                                          key: dest_path_clean)
-      delete_path_from_bucket(src_path_clean)
-    end
-  end
-
-  # Renames a Folder by renaming each object underneath
-  def rename_path(srcPath,destPath)
-    src_path_clean = clean_starting_folder_path(srcPath).to_s
-    dest_path_clean = clean_starting_folder_path(destPath).to_s
-
-    if object_exists?(src_path_clean)
-      listObjects = list_objects_long(src_path_clean)
-
-      listObjects.each do |x|
-        xStat = get_object_stats(x[:key])
-        next if xStat[:content_type] == 'application/x-directory'
-        mod_dest_path = x[:key].dup.sub! src_path_clean,dest_path_clean
-        rename_object(x[:key],mod_dest_path)
-      end
-    end
-  end
-
-  # List the buckets available
-  def list_buckets
-    @resource.buckets.map { |x| x.name }
-  end
-
-  # Returns true if object specified exists in the bucket
-  def object_exists?(object_name)
-    clean_object_name = clean_starting_folder_path(object_name).to_s
-    @resource.bucket(@bucket_name).objects({prefix: clean_object_name}).limit(1).any?
-  end
 end

@@ -29,8 +29,8 @@ class S3DataProvider < DataProvider
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   validates_presence_of :cloud_storage_client_identifier, :cloud_storage_client_token
-  validates :cloud_storage_client_identifier, length: { is: 20 }
-  validates :cloud_storage_client_token,      length: { is: 40 }
+  validates             :cloud_storage_client_identifier, length: { is: 20 }
+  validates             :cloud_storage_client_token,      length: { is: 40 }
 
   # This returns the category of the data provider
   def self.pretty_category_name #:nodoc:
@@ -41,49 +41,41 @@ class S3DataProvider < DataProvider
   # the connection is maintained in a instance variable!
   # it is not a real connection, because it is acoomplished through rest interfaces,
   # so the connection is never persistent.
-  def init_connection
-    clean_bucket_name = "gbrain-" + self.name.sub("_","-")
+  def s3_connection
+    return @s3_connection if @s3_connection
     @s3_connection = S3Sdkv3Connection.new(self.cloud_storage_client_identifier,
                                            self.cloud_storage_client_token,
-                                           clean_bucket_name,
-                                           nil)
-    @s3_connection.create_bucket(@s3_connection.bucket_name) unless @s3_connection.bucket_exists?(@s3_connection.bucket_name)
+                                           bucket_name(),
+                                          )
   end
 
-  # Hardcoded bucket name is "gbrain_{self.name}"
+  # Hardcoded bucket name is "gbrain_{self.id}"
   def bucket_name
-    @s3_connection.bucket_name
+    "gbrain-#{self.id}"
   end
 
   # Mapping between a userfile's name and the name
   # of the S3 file
   def s3_filename(userfile,newname=nil)
     namekey = newname.presence || userfile.name
-    ext = userfile.is_a?(FileCollection) ? ".TGZ" : ""
+    ext     = userfile.is_a?(FileCollection) ? ".TGZ" : ""
     "#{userfile.id}_#{namekey}#{ext}"
   end
 
   # Informational: translates to full path on provider
   def provider_full_path(userfile)
-    init_connection
-    @s3_connection.clean_starting_folder_path(s3_filename(userfile))
-  end
-
-  # Mapping between S3 filename and CBRAIN's userfile ID and filename.
-  def filename_from_s3_filename(s3_filename)
-    userfile_id,filename=s3_filename.split('_', 2)
-    return [ userfile_id,filename ]
+    "#{bucket_name}/#{s3_filename(userfile)}"
   end
 
   # Create the bucket on S3
-  def create_base_bucket
-    init_connection
-    @s3_connection.create_bucket(bucket_name)
+  def create_base_bucket #:nodoc:
+    s3_connection.create_bucket(bucket_name) unless s3_connection.bucket_exists?(bucket_name)
   end
 
   def impl_is_alive? #:nodoc:
-    init_connection
-    @s3_connection.connected?
+    return false unless s3_connection.connected?
+    create_base_bucket
+    true
   rescue
     false
   end
@@ -101,8 +93,6 @@ class S3DataProvider < DataProvider
   end
 
   def impl_sync_to_cache(userfile) #:nodoc:
-    init_connection  # s3 connection
-
     mkdir_cache_subdirs(userfile)
     local_full      = cache_full_pathname(userfile)
     remote_filename = provider_full_path(userfile)
@@ -114,7 +104,7 @@ class S3DataProvider < DataProvider
       else
         dest_fh = File.new(local_full,"w:BINARY")
       end
-      s3_connection.copy_object_from_bucket(remote_filename,dest_fh)
+      s3_connection.download_object_to_file(remote_filename,dest_fh)
       dest_fh.close
     end
     true
@@ -125,62 +115,49 @@ class S3DataProvider < DataProvider
   # Note: storing FileCollections on S3 is very innefficient:
   # we .tar.gz the entire collection and save it as a single S3 file... :-(
   def impl_sync_to_provider(userfile)
-    init_connection  # s3 connection
-    #create_base_bucket unless @s3_connection.bucket_exists?(bucket_name)
     local_full      = cache_full_pathname(userfile)
     remote_filename = provider_full_path(userfile)
-    #remote_filename = s3_filename(userfile)
-    src_fh          = nil
     tmp_tar_file    = "/tmp/s3_tar_#{Process.pid}_#{Time.now.to_i}.tgz"
+    src_fh          = nil # scoped here for ensure block below
 
-    Dir.chdir(Pathname.new(local_full).parent) do
-      if userfile.is_a?(FileCollection)
+    if userfile.is_a?(FileCollection)
+      Dir.chdir(Pathname.new(local_full).parent) do
         # Amazon does NOT provide chunked streaming.
         # This means that IO.popen and File.popen both fail
         # because they cannot provide a size for the content.
+        # IO.popen is refused by AWS because it doesn't respond to .size() and .rewind().
         #src_fh = IO.popen("tar -czf - #{userfile.name.bash_escape}","r:BINARY")
         # So, we have to make a local tarball instead. Hurgh.
         system("tar", "-czf", tmp_tar_file, userfile.name)
         src_fh = File.new(tmp_tar_file, "r:BINARY")
-      else
-        src_fh = File.new(local_full,"r:BINARY")
       end
-      dest_head = File.dirname(remote_filename) == '.' ? nil : File.dirname(remote_filename)
-      @s3_connection.copy_file_to_bucket(remote_filename,dest_head,src_fh)
-      src_fh.close
+    else
+      src_fh = File.new(local_full, "r:BINARY")
     end
+
+    # Transfer file content to S3
+    s3_connection.upload_file_content_to_object(src_fh,remote_filename)
+
     true
-  ensure
+  ensure # clean up
     src_fh.close rescue true
     File.unlink(tmp_tar_file) rescue true
   end
 
   def impl_provider_erase(userfile) #:nodoc:
-    init_connection
-    remote_filename= provider_full_path(userfile)
-    @s3_connection.delete_path_from_bucket(remote_filename)
+    remote_filename = provider_full_path(userfile)
+    s3_connection.delete_object(remote_filename)
   end
 
   def impl_provider_rename(userfile,newname) #:nodoc:
-    init_connection
-    old_path = provider_full_path(userfile)
+    old_path   = provider_full_path(userfile)
     remote_dir = old_path.parent
-    new_path = File.join(remote_dir,newname)
-    @s3_connection.rename_path(old_path,new_path)
+    new_path   = File.join(remote_dir,newname)
+    s3_connection.rename_object(old_path,new_path)
   end
 
   def impl_provider_list_all(user) #:nodoc:
     raise "Disabled"
-  #  init_connection
-  #  s3_connection.bucket.find(bucket_name).objects.map do |object|
-  #    file               = DataProvider::FileInfo.new()
-  #    filename           = filename_from_s3_filename(object.key)[1]
-  #    file.name          = filename
-  #    file.symbolic_type = :regular
-  #    file.mtime         = Time.parse(object.about()["date"]).to_i
-  #    file.size          = 0
-  #    file
-  #  end
   end
 
 end
