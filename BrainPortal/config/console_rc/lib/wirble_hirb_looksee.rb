@@ -69,11 +69,31 @@ extend Hirb::Console
   }
 end
 
+# Table view with all attributes
+def tv(*args)
+  no_log do
+    to_show = args.flatten
+    to_show.each_with_index do |obj,idx|
+      if obj.respond_to?(:attributes)
+        table obj.attributes, :unicode => true
+      else
+        table obj, :unicode => true
+      end
+      if idx+1 >= $_PV_MAX_SHOW && to_show.size > $_PV_MAX_SHOW
+        puts "Not showing #{to_show.size - $_PV_MAX_SHOW} other entries..."
+        break
+      end
+    end
+  end
+  true
+end
+
 (CbrainConsoleFeatures ||= []) << <<FEATURES
 ========================================================
 Feature: Hirb pretty model tables, and table helpers
 ========================================================
   Models have pretty unicode tables: User.limit(4)
+  Full attributes in tables with: 'tv obj'
   Console commands 'table' and 'view'
   Toggle with: Hirb.enable ; Hirb.disable
   (See the doc for the gem Hirb for more info)
