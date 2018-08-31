@@ -29,7 +29,7 @@ module ActiveRecord #:nodoc:
   class Relation #:nodoc:
 
     #####################################################################
-    # ActiveRecord::Relation safety net to avoid OOM conditions
+    # ActiveRecord::Relation safety net to avoid OoM conditions
     #####################################################################
 
     prepend CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::SafeInspect
@@ -46,6 +46,21 @@ module ActiveRecord #:nodoc:
 
     include CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::ForApiRequests
 
+  end
+
+
+  #####################################################################
+  # Prettier inspect() for associations (mostly for console)
+  #####################################################################
+
+  class AssociationRelation
+    prepend CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::SafeInspect
+  end
+
+  module Associations
+    class CollectionProxy
+      prepend CBRAINExtensions::ActiveRecordExtensions::RelationExtensions::SafeInspect
+    end
   end
 
 end

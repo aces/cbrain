@@ -17,7 +17,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 module CBRAINExtensions #:nodoc:
@@ -32,14 +32,21 @@ module CBRAINExtensions #:nodoc:
         # Keep the original +inspect+ method available
         alias :original_inspect :inspect
 
+        def cbrain_sql_inspect(*args) #:nodoc:
+          "#<#{self.class}:0x#{self.object_id.to_s(16)} #{self.to_sql}>"
+        end
+
         # Behaves just like +inspect+, but will throw a NoMemoryError instead of
-        # eating up tons of memory if the relation would return (and try to
+        # eating up tons of memory if the relation would return (and try) to
         # instantiate too many records. Note that this monkey-patch is mainly
         # intended for development and debugging purposes, and might be too
         # restrictive; in some cases, invoking +inspect+ is fine even with a
         # high record count.
+        #
+        # The method is also used to override the default inspect() in other
+        # classes, even when there isn't a risk of a large number of objects.
         def inspect(*args)
-          return self.original_inspect(*args) unless self.count > 5000
+          return self.cbrain_sql_inspect(*args) unless self.respond_to?(:count) && self.count > 5000
 
           raise NoMemoryError.new("#{self.to_s} is too large to be inspected")
         end
