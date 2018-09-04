@@ -6,7 +6,7 @@
 
 <div class="inline_edit_field_group">
 
-  <% if tb.editable? %>
+  <% if tb.editable? && ! tb.form_helper %>
     <%= form_for(tb.object,
           :url => tb.url,
           :method => tb.method,
@@ -17,6 +17,9 @@
       <% tb.invoke_block %>
       <%= render :partial => 'shared/show_table_content', :locals => { :tb => tb, :f => f } %>
     <% end %>
+  <% elsif tb.editable? && tb.form_helper %>
+      <% tb.invoke_block %>
+      <%= render :partial => 'shared/show_table_content', :locals => { :tb => tb, :f => tb.form_helper } %>
   <% else %>
       <% tb.invoke_block %>
       <%= render :partial => 'shared/show_table_content', :locals => { :tb => tb, :f => nil } %>

@@ -84,7 +84,7 @@
     <% end %>
 
     <!-- TERMINATE & REMOVE -->
-    <% if CbrainTask::QUEUED_STATUS.include?(@task.status) %>
+    <% if CbrainTask::QUEUED_STATUS.include?(@task.status) or CbrainTask::PROCESSING_STATUS.include?(@task.status) %>
       <%= link_to 'Terminate Task', { :action => 'operation', :operation => 'terminate', 'tasklist[]' => @task.id }, :confirm => "Are you sure you want to terminate this task?", :class  => "button menu_button", :method => :post %>
     <% end %>
 
