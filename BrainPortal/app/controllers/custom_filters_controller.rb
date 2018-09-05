@@ -92,7 +92,6 @@ class CustomFiltersController < ApplicationController
         flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
         format.html { render :action => :show }
       else
-        @custom_filter.reload
         format.html { render :action => :show }
       end
     end
