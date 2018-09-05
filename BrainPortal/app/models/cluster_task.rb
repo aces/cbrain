@@ -697,7 +697,8 @@ class ClusterTask < CbrainTask
       self.make_cluster_workdir
       self.apply_tool_config_environment do
         Dir.chdir(self.full_cluster_workdir) do
-          if ! self.setup  # as defined by subclass
+          setup_success = self.meta[:submit_without_setup] || self.setup
+          if ! setup_success  # as defined by subclass
             self.addlog("Failed to setup: 'false' returned by setup().")
             self.status_transition(self.status, "Failed To Setup")
           elsif ! self.submit_cluster_job
@@ -707,6 +708,7 @@ class ClusterTask < CbrainTask
             self.addlog("Setup and submit process successful.")
             # the status is moving forward at its own pace now
           end
+          self.meta[:submit_without_setup] = nil # reset special skip
         end
       end
       self.update_size_of_cluster_workdir
@@ -774,11 +776,14 @@ class ClusterTask < CbrainTask
         saveok = false
         Dir.chdir(self.full_cluster_workdir) do
           # Verifies the captured output contains the proper
-          # token line 'CBRAIN Task Exiting' as created by qsub wrapper
-          saveok = check_task_ending_keyword(qsub_stdout_basename)
+          # token line 'CBRAIN Task Exiting' as created by qsub wrapper.
+          # If a special meta keyword :no_end_keyword_check, we don't verify it;
+          # this happens usually after a "Restart PostProcess".
+          saveok = self.meta[:no_end_keyword_check].present? || check_task_ending_keyword(qsub_stdout_basename)
           self.addlog("Could not find completion keywords at end of output. Process might have been interrupted.") if ! saveok
           # Call the subclass-provided save_results()
           saveok = saveok && self.save_results
+          self.meta[:no_end_keyword_check] = nil
         end
         if ! saveok
           self.status_transition(self.status, "Failed On Cluster")

@@ -46,10 +46,10 @@
 
 <div class="display_inline_block" style="min-width: 50%">
 
-  <%= show_table(@group, :edit_condition => @group.can_be_edited_by?(current_user)) do |t| %>
+  <%= show_table(@group, :as => :group, :edit_condition => @group.can_be_edited_by?(current_user)) do |t| %>
 
-    <% t.edit_cell(:name) do %>
-      <%= text_field_tag "group[name]", @group.name %>
+    <% t.edit_cell(:name) do |f| %>
+      <%= f.text_field :name %>
     <% end %>
 
     <% t.edit_cell(:creator_id, :content => link_to_user_with_tooltip(@group.creator), :header => "Creator") do %>
@@ -63,15 +63,14 @@
 
     <% t.cell("Type") { @group.pretty_category_name(current_user) } %>
 
-    <% t.edit_cell(:description, :content =>  full_description(@group.description)) do %>
-        <%= text_area_tag "group[description]", @group.description, :rows => 4, :cols => 40 %><br>
+    <% t.edit_cell(:description, :content =>  full_description(@group.description)) do |f| %>
+        <%= f.text_area :description, :rows => 4, :cols => 40 %><br>
         <div class="field_explanation">The first line should be a short summary, and the rest are for details.</div><br>
     <% end %>
 
     <% if current_user.has_role?(:admin_user) && @group.is_a?(WorkGroup) %>
-      <% t.edit_cell("Invisible", :content => check_box_tag(nil ,nil, @group.invisible?, :disabled => true)) do %>
-        <%= hidden_field_tag "group[invisible]", "0" %>
-        <%= check_box_tag("group[invisible]", "1", @group.invisible?) %>
+      <% t.edit_cell("Invisible", :content => check_box_tag(nil ,nil, @group.invisible?, :disabled => true)) do |f| %>
+        <%= f.check_box :invisible %>
       <% end %>
     <% end %>
 
@@ -114,7 +113,7 @@
     open_invites   = Invitation.where(sender_id: current_user.id, group_id: @group.id, active: true).to_a
   %>
 
-  <%= show_table(@group, :header => 'Members', :edit_condition => @group.can_be_edited_by?(current_user) && (!current_user.has_role?(:normal_user) || group_members.count > 1 || open_invites.count > 0 )) do |t| %>
+  <%= show_table(@group, :as => :group, :header => 'Members', :edit_condition => @group.can_be_edited_by?(current_user) && (!current_user.has_role?(:normal_user) || group_members.count > 1 || open_invites.count > 0 )) do |t| %>
 
     <% default_text = array_to_table(group_members.sort{ |a,b| a.login.casecmp(b.login)}, :table_class => 'simple bordered float_left', :cols => 20, :min_data => 20, :fill_by_columns => true ) { |u,r,c| link_to_user_with_tooltip(u) } %>
 

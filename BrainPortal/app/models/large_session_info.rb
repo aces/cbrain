@@ -29,7 +29,7 @@ class LargeSessionInfo < ApplicationRecord
 
   serialize :data
 
-  belongs_to :user
+  belongs_to :user # we no longer allow them to be nil
 
 end
 

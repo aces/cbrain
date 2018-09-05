@@ -998,8 +998,7 @@ class TasksController < ApplicationController
 
       # Cleanup stuff that don't need to go into a preset
       preset.status               = params[:save_as_site_preset].blank? ? 'Preset' : 'SitePreset'
-      preset.bourreau             = nil # convention: presets have bourreau id set to 0
-      preset.bourreau_id          = 0 # convention: presets have bourreau id set to 0
+      preset.bourreau_id          = 0   # convention: presets have bourreau id set to 0
       preset.batch_id             = nil
       preset.cluster_jobid        = nil
       preset.cluster_workdir      = nil

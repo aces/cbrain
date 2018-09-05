@@ -62,7 +62,7 @@
       </p>
 
       <%= array_to_table(CbrainSession.recent_activity, :table_class => 'simple', :cols => 1) do |entry,r,c| %>
-        <%= link_to_user_with_tooltip entry[:user] %><%= ", #{h entry[:user].city}" if entry[:user].city %>:
+        <%= link_to_user_with_tooltip entry[:user] %><%= ", #{entry[:user].city}" if entry[:user].city %>:
         <%= entry[:active] ? "Active" : "Logged out" %>
         <%= distance_of_time_in_words(entry[:last_access], Time.now) %> ago
         <% if entry[:remote_host] || entry[:raw_user_agent] %>
@@ -98,7 +98,8 @@
              [ "One month ago",     1.month.seconds.to_i   ],
              [ "One week ago",      1.week.seconds.to_i    ],
              [ "One day ago",       1.day.seconds.to_i     ],
-             [ "One hour ago",      1.hour.seconds.to_i    ]
+             [ "One hour ago",      1.hour.seconds.to_i    ],
+             [ "Now! (Including yours!)", 1.seconds.to_i   ],
            ]) %>
         <%= submit_tag "Clear", :confirm => "Are you sure you want to clear the sessions?" %>
       <% end %>

@@ -124,13 +124,13 @@ module SchemaTaskGenerator
       # Make sure the task class about to be generated does not already exist,
       # to avoid mixing the classes up.
       name = SchemaTaskGenerator.classify(@name)
-      [ Object, CbrainTask ].select { |m| m.const_defined?(name) }.each do |m|
+      if CbrainTask.const_defined?(name)
         Rails.logger.warn(
-          "WARNING: #{name} is already defined in #{m.name}; " +
+          "WARNING: #{name} is already defined in CbrainTask; " +
           "undefining to avoid collisions"
         ) unless multi_version
 
-        m.send(:remove_const, name)
+        CbrainTask.send(:remove_const, name)
       end
 
       # As the same code is used to dynamically load tasks descriptors and
@@ -171,7 +171,7 @@ module SchemaTaskGenerator
       task.define_singleton_method(:help_filepath){ File.join(helpFileDir, helpFileName) }
 
       # If multi-versioning is enabled, replace the task class object constant
-      # in CbrainTask (or Object) by a version switcher wrapper class.
+      # in CbrainTask by a version switcher wrapper class.
       if multi_version
         # Build the corresponding switcher and add the task's version and class
         # to it.
@@ -181,9 +181,9 @@ module SchemaTaskGenerator
 
         # Redefine the CbrainTask or Object constant pointing to the task's
         # class to point to the switcher instead.
-        [ CbrainTask ].select { |m| m.const_defined?(name) }.each do |m|
-          m.send(:remove_const, name)
-          m.const_set(name, switcher)
+        if CbrainTask.const_defined?(name)
+          CbrainTask.send(:remove_const, name)
+          CbrainTask.const_set(name, switcher)
         end
       end
 
@@ -334,6 +334,17 @@ module SchemaTaskGenerator
       ERB.new(IO.read(
         Rails.root.join('lib/cbrain_task_generators/templates', template).to_s
       ), nil, '%<>>-').result(binding)
+    end
+
+    # descriptor_path is a full path to a CBRAIN file
+    # that describe where this task comes from. It is used
+    # in the templates below.
+    if descriptorInput.is_a?(String)
+      descriptor_path = descriptorInput
+    else
+      # Extract the path of the most recent CBRAIN ruby file in caller stack
+      descriptor_path   = caller.to_a.detect { |c| c.starts_with? Rails.root.to_s }.try(:sub,/:.*/,"")
+      descriptor_path ||= __file__ # fallback: the generator himself
     end
 
     GeneratedTask.new(
