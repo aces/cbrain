@@ -58,7 +58,7 @@ module ShowTableHelper
     attr_reader   :header
     attr_reader   :as
     attr_reader   :object
-    attr_writer   :form_helper
+    attr_accessor :form_helper # can be set externally
 
     # Create a new TableBuilder for +object+ using +template+ for rendering.
     # Available +options+ are the same as for the +show_table+ helper method.
@@ -79,12 +79,20 @@ module ShowTableHelper
       # Appearance
       @header          = options[:header].presence || "Info"
 
-      # Form information; this will be provider to Rails' FormBuilder if the
+      # Form information; this will be provided to Rails' FormBuilder if the
       # ShowTable helpers are used with blocks that receive an argument.
-      @form_helper     = nil
+      @form_helper     = options[:form_helper].presence
+
+      # If no form_helper is provided explicitely, we build our own
+      # out of these options. This is the default behavior in fact.
       @url             = options[:url].presence
       @method          = options[:method].presence || ((object.is_a?(ApplicationRecord) && object.new_record?) ? :post : :put)
       @as              = options[:as].presence || @object.class.to_s.underscore
+
+      # Safety check to prevent devs from mixing up forms and objects
+      if @form_helper && @form_helper.object != @object
+        raise "Error: the form helper provided is not associated with our object!"
+      end
 
       # Template code
       @block           = options[:block]
@@ -322,22 +330,57 @@ module ShowTableHelper
   #  will be added next to the header/title to switch into edition mode.
   def show_table(object, options = {}, &block)
 
-    url = options[:url].presence
     edit_condition = options[:edit_condition].present?
+    url            = options[:url].presence
+
     if url.blank? && edit_condition && object.is_a?(ApplicationRecord)
-      url = { :controller  => params[:controller] }
-      if object.new_record?
-        url[:action] = :create
-      else
-        url[:action] = :update
-        url[:id]     = object.id
-      end
-      url = url_for(url)
+      url = url_for_object_form(object)
     end
+
     tb = TableBuilder.new(object, self, options.merge(:block => block, :url => url,
                                                       :edit_condition => edit_condition))
 
     render :partial => 'shared/show_table', :locals => { :tb => tb }
+  end
+
+  # This method is similar to show_table(), except it only creates
+  # the form helper for the object and yields it to its block. It does
+  # not generate a show table, but can be used to wrap several show_table()
+  # calls as along as each of them is provided explicitely that helper
+  # to their :form_helper option.
+  #
+  # E.g. template code (abridged):
+  #
+  #    show_table_context(object) do |cf|
+  #      show_table(object, :form_helper => cf) do |f|
+  #        f.cell_stuff etc
+  #      end
+  #      show_table(object, :form_helper => cf) do |f|
+  #        f.cell_stuff etc
+  #      end
+  #    end
+  def show_table_context(object, options = {}, &block)
+
+    url     = options[:url].presence
+    method  = options[:method].presence || ((object.is_a?(ApplicationRecord) && object.new_record?) ? :post : :put)
+    as      = options[:as].presence     || object.class.to_s.underscore
+
+    if url.blank? && object.is_a?(ApplicationRecord)
+      url   = url_for_object_form(object)
+    end
+
+    render :partial => 'shared/show_table_context', :locals => { :object => object, :url => url, :method => method, :as => as, :block => block }
+  end
+
+  private
+
+  # Returns a create or update URL for the object
+  def url_for_object_form(object) #:nodoc:
+    if object.new_record?
+      url_for( :controller  => params[:controller], :action => :create )
+    else
+      url_for( :controller  => params[:controller], :action => :update, :id => object.id )
+    end
   end
 
 end
