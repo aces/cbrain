@@ -2,24 +2,42 @@
 <%
 # This partial receives a single local variable,
 # tb, a ShowTableHelper::TableBuilder object
+#
+# There are three modes of using show_table:
+#
+# 1- (more common case) We build a form and put the show table inside.
+# 2- We build a show_table and pass it a form_helper already created elsewhere
+# 3- We build a show_table with no form_helper at all (just showing information).
+#
 %>
 
 <div class="inline_edit_field_group">
 
+  <%
+   # Case 1: build our form for a single table.
+  %>
   <% if tb.editable? && ! tb.form_helper %>
     <%= form_for(tb.object,
-          :url => tb.url,
+          :url    => tb.url,
           :method => tb.method,
-          :as => tb.as,
-          :html => { :id => "edit_#{tb.as}_#{tb.header}".gsub(/\W+/,"_") },
+          :as     => tb.as,
+          :html   => { :id => "edit_#{tb.as}_#{tb.header}".gsub(/\W+/,"_") },
         ) do |f| %>
       <% tb.form_helper = f %>
       <% tb.invoke_block %>
       <%= render :partial => 'shared/show_table_content', :locals => { :tb => tb, :f => f } %>
     <% end %>
+  <%
+   # Case 2: don't build a form, but provide a form_helper to it
+   # (probably created by show_table_context())
+  %>
   <% elsif tb.editable? && tb.form_helper %>
       <% tb.invoke_block %>
       <%= render :partial => 'shared/show_table_content', :locals => { :tb => tb, :f => tb.form_helper } %>
+  <%
+   # Case 3: build a table with no form and no form_helper.
+   # This is generally for table with no editable attributes.
+  %>
   <% else %>
       <% tb.invoke_block %>
       <%= render :partial => 'shared/show_table_content', :locals => { :tb => tb, :f => nil } %>

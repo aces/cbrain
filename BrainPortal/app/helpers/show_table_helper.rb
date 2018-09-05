@@ -79,12 +79,20 @@ module ShowTableHelper
       # Appearance
       @header          = options[:header].presence || "Info"
 
-      # Form information; this will be provider to Rails' FormBuilder if the
+      # Form information; this will be provided to Rails' FormBuilder if the
       # ShowTable helpers are used with blocks that receive an argument.
       @form_helper     = options[:form_helper].presence
+
+      # If no form_helper is provided explicitely, we build our own
+      # out of these options. This is the default behavior in fact.
       @url             = options[:url].presence
       @method          = options[:method].presence || ((object.is_a?(ApplicationRecord) && object.new_record?) ? :post : :put)
       @as              = options[:as].presence || @object.class.to_s.underscore
+
+      # Safety check to prevent devs from mixing up forms and objects
+      if @form_helper && @form_helper.object != @object
+        raise "Error: the form helper provided is not associated with our object!"
+      end
 
       # Template code
       @block           = options[:block]
@@ -366,6 +374,7 @@ module ShowTableHelper
 
   private
 
+  # Returns a create or update URL for the object
   def url_for_object_form(object) #:nodoc:
     if object.new_record?
       url_for( :controller  => params[:controller], :action => :create )

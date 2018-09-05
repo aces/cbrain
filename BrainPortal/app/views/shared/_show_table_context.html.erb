@@ -1,0 +1,16 @@
+
+<%
+# This template provides a way to regroup together several
+# show_table() into a single form. It is invoked from the helper
+# method show_table_context().
+%>
+
+<%= form_for(object,
+               :url    => url,
+               :method => method,
+               :as     => as,
+               :html   => { :id => "edit_#{as}_#{object.id}".gsub(/\W+/,"_") },
+            ) do |form_helper| %>
+    <% block.call(form_helper) %>
+<% end %>
+
