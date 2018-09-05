@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -27,7 +27,6 @@
 <% title "#{filter_type.capitalize.gsub('_',' ')}" %>
 
 <div class="menu_bar">
-  <%= overlay_ajax_link "Help", "/doc/sites/custom_filter_info.html", :class  => "button" %>
   <%= link_to 'Delete', custom_filter_path(@custom_filter),  { :method => :delete, :class => "button"} %>
 </div>
 
