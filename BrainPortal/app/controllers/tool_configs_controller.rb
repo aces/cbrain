@@ -91,14 +91,9 @@ class ToolConfigsController < ApplicationController
 
     # @config.group = Group.everyone if @config.group_id.blank?
 
-    @tool_config          = @tool_config
     @tool_local_config    = @tool_config if   @tool_config.tool_id && @tool_config.bourreau_id # leaves nul otherwise
     @tool_glob_config     = @tool_config if   @tool_config.tool_id && ! @tool_config.bourreau_id # leaves nul otherwise
     @bourreau_glob_config = @tool_config if ! @tool_config.tool_id &&   @tool_config.bourreau_id # leaves nil otherwise
-
-    # @about_local_tool_config          = @tool_config.tool_id &&  @tool_config.bourreau_id
-    # @about_tool_glob_config     = !!@tool_glob_config
-    # @about_bourreau_glob_config = !!@bourreau_glob_config
 
     @tool_glob_config     ||=
       ToolConfig.where( :tool_id => @tool_config.tool_id, :bourreau_id => nil                      ).first if @tool_config
@@ -126,13 +121,10 @@ class ToolConfigsController < ApplicationController
     bourreau_id = nil if bourreau_id.blank? # allowed, means ALL remote resources
     cb_error "Need at least one of tool ID or bourreau ID." unless tool_id || bourreau_id
 
-    is_new = true
-
     # for shared configs, we check that object indeed new,
     # if not then show user existing object
     if tool_id.blank? || bourreau_id.blank?
       @tool_config   = ToolConfig.where( :tool_id => tool_id, :bourreau_id => bourreau_id ).first
-      is_new = ! @tool_config
     end
 
     @tool_config ||= ToolConfig.new(   :tool_id => tool_id, :bourreau_id => bourreau_id )
@@ -142,7 +134,7 @@ class ToolConfigsController < ApplicationController
     @tool_config.group = Group.everyone
 
     respond_to do |format|
-      format.html { render :action => is_new ? :edit : :show}
+      format.html { render :action => @tool_config.new_record?() ? :edit : :show}
       format.xml  { render :xml => @tool_config }
     end
   end
@@ -184,10 +176,8 @@ class ToolConfigsController < ApplicationController
 
     # Update everything else
     # or just form fields if config already existing
-    [ :version_name, :description, :script_prologue, :group_id, :ncpus, :container_engine,
-      :container_index_location, :containerhub_image_name, :container_image_userfile_id,
-      :extra_qsub_args, :cloud_disk_image, :cloud_vm_user, :cloud_ssh_key_pair, :cloud_instance_type,
-      :cloud_job_slots, :cloud_vm_boot_timeout, :cloud_vm_ssh_tunnel_port ].each do |att|
+    attributes = ToolConfig.columns.map(&:name).map(&:to_sym) - %i[ id tool_id bourreau_id ]
+    attributes.each do |att|
          if tc_params.has_key?(att) || id.blank?
            @tool_config[att] = form_tool_config[att]
 
@@ -213,7 +203,7 @@ class ToolConfigsController < ApplicationController
     end
 
     @tool_config.group = Group.everyone if @tool_config.group_id.blank?
-    flash[:notice] = ""
+
     # Merge with an existing tool config
     if params.has_key?(:merge)
        other_tc = ToolConfig.find_by_id(params[:merge_from_tc_id] || 0)
@@ -250,23 +240,20 @@ class ToolConfigsController < ApplicationController
 
     if @tool_config.tool_id && @tool_config.bourreau_id && @tool_config.description.blank?
       @tool_config.errors.add(:description, "requires at least one line of text as a name for the version")
-
     end
 
     respond_to do |format|
       if @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus ))
-        flash[:notice] ||= "Tool configuration was successfully updated."
+        flash[:notice] = "Tool configuration was successfully updated."
         format.html {
-
-
-          if id.present?
-                      render :action => "show"
+                      if not ?
+                        render :action => "show"
                       elsif  @tool_config.tool_id
                         redirect_to edit_tool_path(@tool_config.tool)
                       else
                         redirect_to bourreau_path(@tool_config.bourreau)
                       end
-                    }
+        }
         format.xml  { head :ok }
       else
         format.html { render :action => "show" }
