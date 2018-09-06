@@ -76,36 +76,33 @@
       }
       %>
     <% end %>
-    <% 1.upto(5) do |i| %>
+    <% 1.upto(5) do %>
       <% render :partial => 'env_key_value_pair_2', :locals => {:env_name => "",
                                                                 :env_value => "",
                                                                 :t => t
       } %>
-
     <% end %>
-    <% t.edit_cell(:bourreau_id, :header => '',:content => '') {|f| f.hidden_field :bourreau_id }%
+    <% t.edit_cell(:bourreau_id, :header => '',:content => '') {|f| f.hidden_field :bourreau_id } %>
     <% t.edit_cell(:tool_id, :header => '', :content => '', :td_options => {:style => 'empty-cells: hide;'}) do |f| %>
       <%= f.hidden_field :tool_id %>
       <div class="field_explanation" style="display: inline;">
         In the generated script, the values shown here will be placed in double quotes automatically.
       </div>
       %>
-
     <% end %>
-
   <% end %>
-
+  
   <%= show_table @tool_config, :header => "BASH initialization prologue",
                  :edit_condition => check_role(:admin_user) do |t| %>
     <% t.edit_cell(:script_prologue, :content => full_description(@tool_config.script_prologue),
                    :no_header => true, :td_options => {:title => "BASH prologue script"}) do |f| %>
       <%= f.text_area :script_prologue, :cols => 80, :rows => 10 %>
 
-      <%=raw '<br><div class="wide_field_explanation" >
+      <br><div class="wide_field_explanation" >
            This is a multi line partial BASH script. It can use the environment variables defined above
            and do anything else you feel is needed to activate this configuration.
            Note that this script should usually be silent, as outputing text (like in <em>echo</em> statements)
-           could interfere with the proper processing of the task\'s output. </div>'    %>
+           could interfere with the proper processing of the tasks output. </div>
 
       <%= hidden_field_tag "tool_config[tool_id]", @tool_config.tool_id %>
       <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
@@ -143,34 +140,33 @@
 
     <% t.edit_cell(:container_index_location, :header => "Index of the container image") do |f| %>
       <%= f.text_field :container_index_location %>
-      <%= raw render :partial => "field_explanation", :locals => {:txt => <<-TEXT.chomp
+      <div class="field_explanation"
         The index/url of the container image in which the docker/singularity container is
         accessible through.
         Examples for Docker are: quay.io, index.docker.io (default).
         Examples for Singularity are: docker://, shub:// (default).
-                                                                  TEXT
+
       } %>
     <% end %>
 
     <% t.edit_cell(:containerhub_image_name, :header => "Container image name") do |f| %>
       <%= f.text_field :containerhub_image_name %>
-      <%= raw txt = <<-TEXT.chomp
         <div class="field_explanation">
         The name and tag of the container image in which the tool is installed,
         for instance "centos:latest". This name refers to the Docker/Singularity index
         accessed by the Bourreau, which is configured manually in the Bourreau
         for now.
         <\div>
-          TEXT
+
       %>
     <% end %>
     <% t.edit_cell(:container_image_userfile_id, :header => "ID of the container image") do |f| %>
       <%= f.text_field :container_image_userfile_id %> <%= link_to_userfile_if_accessible(@tool_config.container_image) %>
-      <%= raw '<div class="field_explanation"> The ID number of the container image in which the tool is installed. This ID refers to userfile registered in CBRAIN.  </div>' %>
+      <div class="field_explanation"> The ID number of the container image in which the tool is installed. This ID refers to userfile registered in CBRAIN.  </div>
     <% end %>
     <% t.edit_cell(:extra_qsub_args, :header => "Extra 'qsub' options") do |f| %>
       <%= f.text_field :extra_qsub_args %>
-      <%= raw '<div class="field_explanation"><b>Note:</b> This option will be appended to the extra \'qsub\' option defined at the bourreau level.</div>' %>
+      <div class="field_explanation"><b>Note:</b> This option will be appended to the extra 'qsub' option defined at the bourreau level.</div>
     <% end %>
   <% end %>
 
