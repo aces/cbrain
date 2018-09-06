@@ -63,7 +63,7 @@ class UserfileCustomFilter < CustomFilter
   validate :valid_data_data_provider_id
   validate :valid_data_sync_status
 
-  def valid_filename #:nodocs:
+  def valid_filename #:nodoc:
     if self.data_file_name_type.present? && !["match", "contain", "begin", "end"].include?(self.data_file_name_type)
       errors.add(:file_name_type, 'is not a valid file name matcher')
       return false
@@ -76,7 +76,7 @@ class UserfileCustomFilter < CustomFilter
     true
   end
 
-  def valid_size #:nodocs:
+  def valid_size #:nodoc:
     return true if self.data_size_type.blank? && self.data_size_term.blank?
     if self.data_size_type.present?  && !self.data_size_term.present? ||
        !self.data_size_type.present? && self.data_size_term.present?
@@ -98,14 +98,14 @@ class UserfileCustomFilter < CustomFilter
     return true
   end
 
-  def valid_data_group_id #:nodocs:
+  def valid_data_group_id #:nodoc:
     return true if self.data_group_id.blank?
     return true if self.user.available_groups.pluck(:id).include? self.data_group_id.to_i
     errors.add(:data_group_id, 'is not an accessible group')
     false
   end
 
-  def valid_data_tag_ids #:nodocs:
+  def valid_data_tag_ids #:nodoc:
     self.data_tag_ids = Array(self.data_tag_ids).reject { |item| item.blank? }
     return true if self.data_tag_ids.empty?
     return true if ( self.data_tag_ids - self.user.available_tags.pluck(:id).map(&:to_s) ).empty?
@@ -113,14 +113,14 @@ class UserfileCustomFilter < CustomFilter
     return false
   end
 
-  def valid_data_data_provider_id #:nodocs:
+  def valid_data_data_provider_id #:nodoc:
     return true if self.data_data_provider_id.blank?
     return true if DataProvider.find_all_accessible_by_user(self.user).pluck(:id).include? self.data_data_provider_id.to_i
     errors.add(:data_data_provider_id, 'is not an accessible data provider')
     false
   end
 
-  def valid_data_sync_status #:nodocs:
+  def valid_data_sync_status #:nodoc:
     self.data_sync_status = Array(self.data_sync_status).reject { |item| item.blank? }
     return true if self.data_sync_status.empty?
     return true if
@@ -216,7 +216,7 @@ class UserfileCustomFilter < CustomFilter
   # Not used by interface yet.
   def scope_type_tree(scope)
     flatlist = []
-    Array(self.data[:type]).each do |klassname|
+    Array(self.data_type).each do |klassname|
       subtypes = klassname.constantize.descendants.map(&:name)
       subtypes << klassname  # because descendants() does not include the class itself
       flatlist += subtypes

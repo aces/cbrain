@@ -25,23 +25,23 @@
 <% custom_filter ||= @custom_filter %>
 
 Task<br>
-<%= task_type_select("data[type]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name).sort, :selector => custom_filter.data["type"], :include_top => true }, :multiple => true, :size => 10) %>
+<%= task_type_select("data[type]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name).sort, :selector => custom_filter.data_type, :include_top => true }, :multiple => true, :size => 10) %>
 
 <p>
 Status<br>
-<%= task_status_select("data[status]", {:selector => custom_filter.data["status"]}, :multiple => true, :size => 10) %>
+<%= task_status_select("data[status]", {:selector => custom_filter.data_status}, :multiple => true, :size => 10) %>
 
 <p>
 Description<br>
-<%= select :data, :description_type, [["Don't filter description", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => custom_filter.data["description_type"] %> <%= text_field_tag "data[description_term]", custom_filter.data["description_term"] %>
+<%= select :data, :description_type, [["Don't filter description", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => custom_filter.data_description_type %> <%= text_field_tag "data[description_term]", custom_filter.data_description_term %>
 
 <p>
 Owner<br>
-<%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => custom_filter.data["user_id"] }, :include_blank => true %>
+<%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => custom_filter.data_user_id }, :include_blank => true %>
 
 <p>
 Execution Server<br>
-<%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => custom_filter.data["bourreau_id"], :offline_is_ok => true }, :include_blank => true %>
+<%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => custom_filter.data_bourreau_id, :offline_is_ok => true }, :include_blank => true %>
 </p>
 
 Filtering by date<br>
@@ -55,7 +55,7 @@ Archiving status<br>
   ["Not archived",                     'none'    ],
   ["Archived on cluster",              'cluster' ],
   ["Archived as file",                 'file'    ]
-], :selected => custom_filter.data["archiving_status"] %>
+], :selected => custom_filter.data_archiving_status %>
 
 <p>
 Work Directory status<br>
@@ -66,4 +66,4 @@ Work Directory status<br>
   [ "Have own Work Directory",                  'not_shared' ],
   [ "Work Directory exists on cluster",         'exists'     ],
   [ "Work Directory does not exist on cluster", 'none'       ]
-], :selected => custom_filter.data["wd_status"] %>
+], :selected => custom_filter.data_wd_status %>

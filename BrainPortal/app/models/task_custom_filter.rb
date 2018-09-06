@@ -41,20 +41,20 @@ class TaskCustomFilter < CustomFilter
   validate :valid_data_status
   validate :valid_description
 
-  def valid_data_wd_status #:nodocs:
+  def valid_data_wd_status #:nodoc:
     return true if self.data_wd_status.blank?
     return true if [ 'shared', 'not_shared', 'exists', 'none' ].include? self.data_wd_status
     errors.add(:data_wd_status, 'is not a valid work directory status')
   end
 
-  def valid_data_bourreau_id #:nodocs:
+  def valid_data_bourreau_id #:nodoc:
     return true if self.data_bourreau_id.blank?
     return true if Bourreau.find_all_accessible_by_user(self.user).pluck(:id).include? self.data_bourreau_id.to_i
     errors.add(:data_bourreau_id, 'is not an accessible bourreau')
     return false
   end
 
-  def valid_data_status #:nodocs:
+  def valid_data_status #:nodoc:
     self.data_status = Array(self.data_status).reject { |item| item.blank? }
     return true if self.data_status.empty?
     return true if ( self.data_status -  (CbrainTask::ALL_STATUS - ["Preset", "SitePreset", "Duplicated"])).empty?
@@ -62,7 +62,7 @@ class TaskCustomFilter < CustomFilter
     return false
   end
 
-  def valid_description #:nodocs:
+  def valid_description #:nodoc:
     if self.data_description_type.present? && !["match", "contain", "begin", "end"].include?(self.data_description_type)
       errors.add(:data_description_type, 'is not a valid description matcher')
       return false

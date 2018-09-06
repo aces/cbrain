@@ -104,13 +104,13 @@ class CustomFilter < ApplicationRecord
   # Validation of Custom Filter #
   ###############################
 
-  def valid_self_user #:nodocs:
+  def valid_self_user #:nodoc:
     return true if self.user
     errors.add(:base, 'a custom filter should have a user')
     return false
   end
 
-  def valid_data_type #:nodocs:
+  def valid_data_type #:nodoc:
     self.data_type = Array(self.data_type).reject { |item| item.blank? }
     return true if self.data_type.empty?
     valid_type = self.is_a?(TaskCustomFilter) ? CbrainTask.sti_descendant_names : Userfile.sti_descendant_names
@@ -119,14 +119,14 @@ class CustomFilter < ApplicationRecord
     return false
   end
 
-  def valid_data_user_id #:nodocs:
+  def valid_data_user_id #:nodoc:
     return true if self.data_user_id.blank?
     return true if self.user.available_users.pluck(:id).include? self.data_user_id.to_i
     errors.add(:data_user_id, 'is not an accessible user')
     false
   end
 
-  def valid_data_archiving_status #:nodocs:
+  def valid_data_archiving_status #:nodoc:
     return true if self.data_archiving_status.blank?
     valid_status = self.is_a?(TaskCustomFilter) ? ["none", "cluster", "file"] : ["archived", "none"]
     return true if valid_status.include? self.data_archiving_status
@@ -136,7 +136,7 @@ class CustomFilter < ApplicationRecord
 
 
   # Do some validation on the date range filtering
-  def valid_data_date #:nodocs:
+  def valid_data_date #:nodoc:
     error_mess = check_filter_date(self.data["date_attribute"],  self.data["absolute_or_relative_from"], self.data["absolute_or_relative_to"],
                                    self.data["absolute_from"], self.data["absolute_to"], self.data["relative_from"], self.data["relative_to"])
 
@@ -209,7 +209,7 @@ class CustomFilter < ApplicationRecord
 
   # Merge extra data params for example from
   # Task or Userfile custom filter.
-  def self.merge_data_params(extra) #:nodocs:
+  def self.merge_data_params(extra) #:nodoc:
     (extra + DATA_PARAMS).freeze
   end
 
@@ -220,7 +220,7 @@ class CustomFilter < ApplicationRecord
   # Define getter and setter for each keys in data attribute
   def self.data_setter_and_getter(data_params=DATA_PARAMS)
     data_params.map{|x| x.is_a?(Hash) ? x.keys : x}.flatten.each do |param|
-      
+
       # Define getter for all keys in data attribute
       define_method("data_#{param}") do
         self.data[param]

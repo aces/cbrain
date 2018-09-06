@@ -304,38 +304,6 @@ $(function() {
       return defer(function () { uform.submit(); }).promise();
     },
 
-    // /*
-    //  * Custom filter operations; generic CRUD for custom filters using the
-    //  * corresponding custom filter form (+form+ argument). Note that these
-    //  * operations are rather bare and inflexible as they rely on +form+ to do
-    //  * most of their work.
-    //  */
-    // filters: {
-    //   add: function (form) {
-    //     return ajax_submit($(form));
-    //   },
-
-    //   update: function (form) {
-    //     return ajax_submit($(form));
-    //   },
-
-
-    //    * Note that this function expects the custom filter's 'edit' form, which
-    //    * contains, in particular, the filter's proper URL
-
-    //   remove: function (form) {
-    //     return $.ajax({
-    //       url:         $(form).attr('action'),
-    //       type:        'DELETE',
-    //       method:      'DELETE',
-    //       headers:     {
-    //         'Accept':       'application/xml, text/xml, text/plain, */*',
-    //         'Content-Type': 'application/xml'
-    //       }
-    //     });
-    //   }
-    // },
-
     /*
      * Tag-related operations; generic CRUD with parameters +id+ (tag ID) and
      * +data+ (tag attributes as a JS object)
