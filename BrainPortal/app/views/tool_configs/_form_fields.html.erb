@@ -22,7 +22,7 @@
 #
 -%>
 
-<div class="groupentry">
+
 
   <%= hidden_field_tag "tool_config[tool_id]",     @tool_config.tool_id %>
   <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
@@ -56,7 +56,8 @@
   <% end %>
 
   <% context = @tool_config.tool_id ? "tool" : "Execution Server" %>
-  <span title="Environment variables needed for this <%= context %>">
+  <fieldset class="groupentry">
+    <legend>Environment variables</legend>
     <p><label>Environment variables needed for this <%= context %>:</label><br/>
     <% @tool_config.env_array.each do |env_name_value| %>
       <% env_name  = env_name_value[0] %>
@@ -69,9 +70,11 @@
     <div class="field_explanation">In the generated script, the values shown here will be placed in double quotes automatically.</div>
     </p>
   </span>
-
-  <span title="BASH initialization prologue">
-    <p><%= f.label :script_prologue, "BASH initialization prologue:" %><br/>
+  </fieldset>
+  <fieldset class="groupentry">
+    <legend>BASH prologue</legend>
+  <span title="BASH script for tool initialization">
+    <p><%= f.label :script_prologue, "Enter BASH code here:" %><br/>
     <%= f.text_area :script_prologue, :cols => 80, :rows => 10 %><br/>
     <div class="field_explanation">This is a multi line partial BASH script. It can use the environment variables defined above,
            and do anything else you feel is needed to activate this configuration.
@@ -79,7 +82,9 @@
            could interfere with the proper processing of the task's output.</div>
     </p>
   </span>
-
+  </fieldset>
+  <fieldset class="groupentry">
+    <legend>Merge configs</legend>
   <p>
   Option: Merge configuration from another existing entry:
   <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
@@ -94,7 +99,9 @@
   <% end %>
   </div>
   </p>
-
+  </fieldset>
+  <fieldset class="groupentry">
+    <legend>Container</legend>
   <span title="Container type">
     <p><%= f.label :container_engine, "Container engine:" %>
     <%= f.select :container_engine, [["None", ''], ['Docker', 'Docker'], ['Singularity', 'Singularity']] %>
@@ -148,6 +155,10 @@
      available_ssh_key_pairs  = bourreau.scir_class.get_available_key_pairs(bourreau)
   %>
 
+  </fieldset>
+  <fieldset class="groupentry">
+  <legend>Cloud</legend>
+
   <span title="Cloud configuration">
     <h4>Cloud configuration</h4>
     <p><%= f.label :cloud_disk_image, "Disk image:" %><br/>
@@ -185,9 +196,10 @@
     <div class="field_explanation">
     </div>
     </p>
+  </fieldset>
   </span>
   <% end %>
 
 
-</div>
+
 
