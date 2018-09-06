@@ -246,7 +246,7 @@ class ToolConfigsController < ApplicationController
       if @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus ))
         flash[:notice] = "Tool configuration was successfully updated."
         format.html {
-                      if not ?
+                      if id?
                         render :action => "show"
                       elsif  @tool_config.tool_id
                         redirect_to edit_tool_path(@tool_config.tool)

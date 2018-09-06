@@ -72,17 +72,25 @@
       <% env_value = env_name_value[1] %>
       <% render :partial => 'env_key_value_pair_2', :locals => {:env_name => env_name,
                                                                 :env_value => env_value,
-                                                                :t => t,
-                                                                :explanation_and_hidden_ids => false
+                                                                :t => t
       }
       %>
     <% end %>
     <% 1.upto(5) do |i| %>
       <% render :partial => 'env_key_value_pair_2', :locals => {:env_name => "",
                                                                 :env_value => "",
-                                                                :t => t,
-                                                                :explanation_and_hidden_ids => (i == 5)
+                                                                :t => t
       } %>
+
+    <% end %>
+    <% t.edit_cell(:bourreau_id, :header => '',:content => '') {|f| f.hidden_field :bourreau_id }%
+    <% t.edit_cell(:tool_id, :header => '', :content => '', :td_options => {:style => 'empty-cells: hide;'}) do |f| %>
+      <%= f.hidden_field :tool_id %>
+      <div class="field_explanation" style="display: inline;">
+        In the generated script, the values shown here will be placed in double quotes automatically.
+      </div>
+      %>
+
     <% end %>
 
   <% end %>

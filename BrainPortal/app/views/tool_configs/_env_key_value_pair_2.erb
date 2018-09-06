@@ -27,18 +27,7 @@
 <% t.edit_cell(:env_array, as: :'env_list[]', :header => "Value", content: env_value, show_width: 3) do %>
   <%= text_field_tag 'env_list[][value]', env_value,  :size => 60 %>
 <% end %>
-<% if explanation_and_hidden_ids %>
-  <% t.edit_cell(:bourreau_id, :header => '',:content => '') {|f| f.hidden_field :bourreau_id }%>
 
-  <% t.edit_cell(:tool_id, :header => '', :content => '', :td_options => {:style => 'empty-cells: hide;'}) do |f| %>
-    <%= f.hidden_field :tool_id %>
-    <%=raw '<div class="field_explanation" style="display: inline;">
-       In the generated script, the values shown here will be placed in double quotes automatically.
-     </div>'
-     %>
-
-  <% end %>
-<% end %>
 
 
 
