@@ -31,56 +31,56 @@ describe UserfileCustomFilter do
 
   describe "#filter_scope" do
 
-    it "should remove all task without 'data['user_id']'" do
-      filter.data = { "user_id" => userfile1.user_id }
+    it "should remove all task without 'data[:user_id]'" do
+      filter.data = { :user_id => userfile1.user_id }
       expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile1.id])
     end
 
-    it "should remove all task without 'data['group_id']'" do
-      filter.data = { "group_id" => userfile1.group_id }
+    it "should remove all task without 'data[:group_id]'" do
+      filter.data = { :group_id => userfile1.group_id }
       expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile1.id])
     end
 
-    it "should remove all task without 'data['data_provider_id']'" do
-      filter.data = { "data_provider_id" => userfile1.data_provider_id }
+    it "should remove all task without 'data[:data_provider_id]'" do
+      filter.data = { :data_provider_id => userfile1.data_provider_id }
       expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile1.id])
     end
 
-    it "should remove all non 'data['type']' userfile" do
+    it "should remove all non 'data[:type]' userfile" do
       u1 = create(:text_file)
            create(:single_file)
-      filter.data = { "type" => u1.class.to_s }
+      filter.data = { :type => [u1.class.to_s] }
       expect(filter.filter_scope(Userfile.where(nil))).to match_array([u1])
     end
 
     context "with date" do
 
-      it "should only keep userfile created between 'data['absolute_from'] and 'data['absolute_to']'" do
+      it "should only keep userfile created between 'data[:absolute_from] and 'data[:absolute_to]'" do
         userfile1
-        filter.data = { "date_attribute" => "created_at", "absolute_or_relative_from"=>"absolute", "absolute_or_relative_to"=>"absolute", "absolute_from" => "04/04/2011", "absolute_to" => "04/04/2011" }
+        filter.data = { :date_attribute => :created_at, :absolute_or_relative_from=>"absolute", :absolute_or_relative_to=>"absolute", :absolute_from => "04/04/2011", :absolute_to => "04/04/2011" }
         expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile1.id])
       end
 
-      it "should only keep task updates between 'data['absolute_from'] and 'data['absolute_to']'" do
+      it "should only keep task updates between 'data[:absolute_from] and 'data[:absolute_to]'" do
         userfile1
-        filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"absolute", "absolute_or_relative_to"=>"absolute", "absolute_from" => "04/05/2011", "absolute_to" => "04/05/2011" }
+        filter.data = { :date_attribute => "updated_at", :absolute_or_relative_from=>"absolute", :absolute_or_relative_to=>"absolute", :absolute_from => "04/05/2011", :absolute_to => "04/05/2011" }
         expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile1.id])
       end
 
       it "should only keep task created between 'data['absolute_from'] and 'data['relative_date_to']'" do
         userfile2
-        filter.data = { "date_attribute" => "created_at", "absolute_or_relative_from"=>"absolute", "absolute_or_relative_to"=>"relative", "absolute_from" => "29/04/2011", "relative_date_to" => "0" }
+        filter.data = { :date_attribute => "created_at", :absolute_or_relative_from=>"absolute", :absolute_or_relative_to=>"relative", :absolute_from => "29/04/2011", :relative_date_to => "0" }
         expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile2.id])
       end
 
-      it "should only keep task updated between 'data['absolute_from'] and 'data['relative_date_to']'" do
+      it "should only keep task updated between 'data[:absolute_from] and 'data[:relative_date_to]'" do
         userfile2
-        filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"absolute", "absolute_or_relative_to"=>"relative", "absolute_from" => "29/05/2011", "relative_date_to" => "0" }
+        filter.data = { :date_attribute => "updated_at", :absolute_or_relative_from=>"absolute", :absolute_or_relative_to=>"relative", :absolute_from => "29/05/2011", :relative_date_to => "0" }
         expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile2.id])
       end
 
       it "should only keep task updated last week" do
-        filter.data = { "date_attribute" => "updated_at", "absolute_or_relative_from"=>"relative", "absolute_or_relative_to"=>"relative", "relative_from" => "#{1.week}", "relative_to" => "0" }
+        filter.data = { :date_attribute => "updated_at", :absolute_or_relative_from =>"relative", :absolute_or_relative_to =>"relative", :relative_from => "#{1.week}", :relative_to => "0" }
         userfile1.updated_at = Date.today - 1.day
         userfile1.save!
         expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile1.id])
@@ -90,41 +90,41 @@ describe UserfileCustomFilter do
 
     context "with size" do
       before(:each) { userfile1; userfile2 }
-      it "should remove all userfile with size lower than 'data['size_term']'" do
-        filter.data = { "size_type" => "1", "size_term" => (userfile2.size.to_f/1000) }
+      it "should remove all userfile with size lower than 'data[:size_term]'" do
+        filter.data = { :size_type => "1", :size_term => (userfile2.size.to_f/1000) }
         expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile1.id])
       end
 
-      it "should remove all userfile with size equal 'data['size_term']'" do
-        filter.data = { "size_type" => "0", "size_term" => (userfile2.size.to_f/1000) }
+      it "should remove all userfile with size equal 'data[:size_term]'" do
+        filter.data = { :size_type => "0", :size_term => (userfile2.size.to_f/1000) }
         expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile2.id])
       end
 
-      it "should remove all userfile with size greater than 'data['size_term']'" do
-        filter.data = { "size_type" => "2", "size_term" => (userfile1.size.to_f/1000) }
+      it "should remove all userfile with size greater than 'data[:size_term]'" do
+        filter.data = { :size_type => "2", :size_term => (userfile1.size.to_f/1000) }
         expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile2.id])
       end
     end
 
     context "with name scope" do
       before(:each) { userfile1; userfile2 }
-      it "should remove all userfile doesn't match with 'data['file_name_term']'" do
-        filter.data = { "file_name_type" => "match", "file_name_term" => userfile1.name }
+      it "should remove all userfile doesn't match with 'data[:file_name_term]'" do
+        filter.data = { :file_name_type => "match", :file_name_term => userfile1.name }
         expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile1.id])
       end
 
-      it "should remove all userfile doesn't begin with 'data['file_name_term']'" do
-        filter.data = { "file_name_type" => "begin", "file_name_term" => userfile1.name[0..2] }
+      it "should remove all userfile doesn't begin with 'data[:file_name_term]'" do
+        filter.data = { :file_name_type => "begin", :file_name_term => userfile1.name[0..2] }
         expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile1.id,userfile2.id])
       end
 
-      it "should remove all userfile doesn't end with 'data['file_name_term']'" do
-        filter.data = { "file_name_type" => "end", "file_name_term" => userfile1.name[-1].chr }
+      it "should remove all userfile doesn't end with 'data[:file_name_term]'" do
+        filter.data = { :file_name_type => "end", :file_name_term => userfile1.name[-1].chr }
         expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile1.id])
       end
 
-      it "should remove all userfile doesn't contain 'data['file_name_term']'" do
-        filter.data = { "file_name_type" => "contain", "file_name_term" => userfile1.name[1..3] }
+      it "should remove all userfile doesn't contain 'data[:file_name_term]'" do
+        filter.data = { :file_name_type => "contain", :file_name_term => userfile1.name[1..3] }
         expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile1.id,userfile2.id])
       end
     end
@@ -136,38 +136,22 @@ describe UserfileCustomFilter do
 
     describe "#tag_ids=" do
       it "should assign tags to the data hash" do
-        filter.tag_ids=( [tag1.id.to_i] )
-        expect(filter.tag_ids).to match_array([tag1.id.to_s])
+        filter.data_tag_ids=( [tag1.id] )
+        expect(filter.data_tag_ids).to match_array([tag1.id])
       end
     end
 
     describe "#tags" do
 
       it "should return empty array if no tags is used" do
-        filter.data = nil
-        expect(filter.tag_ids).to be_empty
+        filter.data = { :tag_ids => []}
+        expect(filter.data_tag_ids).to be_empty
       end
       it "should return only the tags in the data hash" do
-        filter.data = { "tag_ids" => [tag1.id,tag2.id]}
-        expect(filter.tag_ids).to match_array([tag1.id,tag2.id])
+        filter.data = { :tag_ids => [tag1.id,tag2.id]}
+        expect(filter.data_tag_ids).to match_array([tag1.id,tag2.id])
       end
     end
   end
-
-  describe "#date_term=" do
-    it "should assign the date_term in the data hash" do
-      date = {"date_term(1i)"=>"2011", "date_term(2i)"=>"05", "date_term(3i)"=>"24"}
-      filter.date_term=(date)
-      expect(filter.date_term).to eq("#{date["date_term(1i)"]}-#{date["date_term(2i)"]}-#{date["date_term(3i)"]}")
-    end
-  end
-
-
-  describe "#date_term" do
-    it "should return nil if date_term is not defined" do
-      expect(filter.date_term).to be nil
-    end
-  end
-
 end
 

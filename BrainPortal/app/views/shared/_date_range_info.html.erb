@@ -22,26 +22,13 @@
 #
 -%>
 
-<% custom_filter ||= @custom_filter %>
-<% filter_type = custom_filter.class.name.underscore %>
+<div>
+  <% if type.blank? %>
+    Do not filter
+  <% else %>
+    <%= type == "created_at" ? "created" : "updated" %>
+	from <%= from %>
+	to <%= to %>
+  <% end %>
+</div>
 
-<h2> New <%= filter_type.humanize %> </h2>
-
-<%= form_for @custom_filter, :as => :custom_filter, :url => { :action => "create" }, :datatype => "script" do |f| -%>
-
-  <div class="generalbox">
-      <%= hidden_field_tag :filter_class, filter_type %>
-      <%= error_messages_for(custom_filter, :object_name => "custom filter") %>
-
-      <p>
-      <%= f.label :name, "Filter name" %><br>
-      <%= f.text_field :name %>
-
-      <p>
-      <%= render :partial => "custom_filters/new_#{filter_type}" %>
-
-      <p>
-      <%= f.submit "Create" %>
-
-  </div>  <!-- End class="generalbox" -->
-<% end %>

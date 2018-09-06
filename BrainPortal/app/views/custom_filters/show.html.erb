@@ -22,26 +22,16 @@
 #
 -%>
 
-<% custom_filter ||= @custom_filter %>
-<% filter_type = custom_filter.class.name.underscore %>
+<% filter_type = @custom_filter.class.name.underscore %>
 
-<h2> New <%= filter_type.humanize %> </h2>
+<% title "#{filter_type.capitalize.gsub('_',' ')}" %>
 
-<%= form_for @custom_filter, :as => :custom_filter, :url => { :action => "create" }, :datatype => "script" do |f| -%>
+<div class="menu_bar">
+  <%= link_to 'Delete', custom_filter_path(@custom_filter),  { :method => :delete, :class => "button"} %>
+</div>
 
-  <div class="generalbox">
-      <%= hidden_field_tag :filter_class, filter_type %>
-      <%= error_messages_for(custom_filter, :object_name => "custom filter") %>
+<br>
 
-      <p>
-      <%= f.label :name, "Filter name" %><br>
-      <%= f.text_field :name %>
+<%= error_messages_for @custom_filter, :header_message => "custom filter could not be updated." %>
 
-      <p>
-      <%= render :partial => "custom_filters/new_#{filter_type}" %>
-
-      <p>
-      <%= f.submit "Create" %>
-
-  </div>  <!-- End class="generalbox" -->
-<% end %>
+<%= render :partial => "custom_filters/#{filter_type}", :locals  => {:custom_filter  => @custom_filter}  %>

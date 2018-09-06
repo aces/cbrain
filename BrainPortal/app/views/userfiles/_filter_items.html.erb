@@ -22,21 +22,11 @@
 #
 -%>
 
-<%
-  new_attr = {
-    'data-dialog'      => 'filter-dialog',
-    'data-overlay-url' => url_for({
-      :controller   => :custom_filters,
-      :action       => :new,
-      :filter_class => 'UserfileCustomFilter'
-    })
-  }
-%>
-<li id="filter-new" class="act-item" <%= new_attr.to_html_attributes.html_safe %>>
-  <div>
-  New filter
+<li class="act-item">
+  <a style="text-decoration: none; display: block" href="/custom_filters/new?filter_class=UserfileCustomFilter">
+   New filter
   <span class="ui-icon ui-icon-plus"></span>
-  </div>
+  </a>
 </li>
 <li class="menu-separator">-</li>
 
@@ -57,20 +47,14 @@
       )
     }
 
-    edit_attr = {
-      'data-dialog'      => 'filter-dialog',
-      'data-overlay-url' => edit_custom_filter_path(filter),
-      'data-filter-id'   => filter.id
-    }
   %>
   <li class="filter-item act-item" <%= apply_attr.to_html_attributes.html_safe %>>
     <div>
-    <span class="filter-edit act-icon ui-icon-pencil"
-      <%= edit_attr.to_html_attributes.html_safe %>
-    ></span>
-    <span class="filter-name">
-      <%= filter.name %>
-    </span>
+      <a class="filter-edit act-icon ui-icon-pencil" href=<%= custom_filter_path(filter) %>>
+      </a>
+      <span class="filter-name">
+        <%= filter.name %>
+      </span>
     </div>
   </li>
 <% end %>

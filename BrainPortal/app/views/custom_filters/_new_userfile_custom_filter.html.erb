@@ -1,0 +1,91 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% custom_filter ||= @custom_filter %>
+
+<p>
+Filename<br>
+<%= select :data, :file_name_type, [["Don't filter name", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => custom_filter.data_file_name_type%>
+<%= text_field_tag "data[file_name_term]", custom_filter.data_file_name_term %>
+
+<p>
+Parent name contains <small>(lists children)</small>:<br>
+<%= text_field_tag "data[parent_name_like]", custom_filter.data_parent_name_like %>
+
+<p>
+Child name contains <small>(lists parents)</small>:<br>
+<%= text_field_tag "data[child_name_like]", custom_filter.data_child_name_like %>
+
+
+<p>
+  By file type<br>
+  <%= userfile_type_select("data[type]", {:selector => custom_filter.data_type}, :include_blank => true, :multiple => true ) %>
+</p>
+
+Filtering by date<br>
+<%= date_range_panel(custom_filter[:data] || {}, "data") %>
+<p>
+Size<br>
+<%= select :data, :size_type, [["Don't filter size", ''], ['<', "1"], ['>', "2"]], :selected  => custom_filter.data_size_type %>
+<%= text_field_tag "data[size_term]", @custom_filter.data_size_type == "" ? "" : @custom_filter.data_size_term %> kb
+
+<p>
+Owner<br>
+<%= user_select("data[user_id]", { :selector => custom_filter.data_user_id }, { :include_blank => true })  %>
+
+<p>
+Project<br>
+<%= group_select("data[group_id]", { :selector => custom_filter.data_group_id}, { :include_blank => true })  %>
+
+<p>
+  Data Provider<br>
+  <%= data_provider_select("data[data_provider_id]", { :selector => custom_filter.data_data_provider_id || '!' }, { :include_blank => true })  %>
+</p>
+
+<p>
+Archiving status<br>
+<%= select :data, :archiving_status,
+[
+  ["Don't filter by archiving status", ''         ],
+  ["Archived",                         'archived' ],
+  ["Not archived",                     'none'     ],
+],
+:selected => custom_filter.data_archiving_status
+%>
+
+<p>
+  Synchronization status<br>
+  <%=
+  select_tag "data[sync_status]", options_for_select(["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"], :selected => custom_filter.data_sync_status),
+              :multiple => true, :size => 6, :selected => custom_filter.data_sync_status
+  %>
+</p>
+
+<% if current_user.available_tags.count > 0 %>
+  Tags <br>
+  <%=
+  select_tag "data[tag_ids]", options_for_select((current_user.available_tags.map { |tags| [tags.name, tags.id] }), :selected => custom_filter.data_tag_ids),
+              :multiple => true, :size => 6, :selected => custom_filter.data_tag_ids
+  %>
+<% end %>

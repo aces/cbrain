@@ -29,8 +29,6 @@ class CustomFiltersController < ApplicationController
 
   before_action :login_required
 
-  layout false
-
   def new #:nodoc:
     filter_param = "#{params[:filter_class]}".classify
     unless CustomFilter.descendants.map(&:name).include?(filter_param)
@@ -38,6 +36,10 @@ class CustomFiltersController < ApplicationController
     end
     filter_class  = Class.const_get(filter_param)
     @custom_filter = filter_class.new
+  end
+
+  def show #:nodoc:
+    @custom_filter = current_user.custom_filters.find(params[:id])
   end
 
   def edit #:nodoc:
@@ -51,18 +53,24 @@ class CustomFiltersController < ApplicationController
     unless CustomFilter.descendants.map(&:name).include?(filter_param)
       cb_error "Filter class required", :status  => :unprocessable_entity
     end
-    params[:data] ||= {}
 
-    filter_class  = Class.const_get(filter_param)
-    @custom_filter = filter_class.new(custom_filter_params)
-    @custom_filter.data.merge! params[:data]
+    filter_class   = Class.const_get(filter_param)
+    @custom_filter = filter_class.new(custom_filter_params(filter_class))
 
     @custom_filter.user_id = current_user.id
 
-    @custom_filter.save
 
     if @custom_filter.errors.empty?
       flash[:notice] = "Filter successfully created."
+    end
+
+    respond_to do |format|
+      if @custom_filter.save
+        flash[:notice] = 'Filter successfully created.'
+        format.html { redirect_to :controller => controller_name(), :action => :index }
+      else
+        format.html { render :action  => :new }
+      end
     end
 
   end
@@ -72,22 +80,20 @@ class CustomFiltersController < ApplicationController
   def update #:nodoc:
     @custom_filter = current_user.custom_filters.find(params[:id])
 
-    custom_filter_params.each{|k,v| @custom_filter.send("#{k}=", v)}
+    custom_filter_params(@custom_filter.class).each{|k,v| @custom_filter.send("#{k}=", v)}
 
     params[:data]        ||= {}
     @custom_filter.data.merge! params[:data]
 
     @custom_filter.save
 
-    if @custom_filter.errors.empty?
-      flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
-      return
-    end
-
-
     respond_to do |format|
-      format.xml  { render :xml => @custom_filter.errors, :status => :unprocessable_entity }
-      format.js
+      if @custom_filter.errors.empty?
+        flash[:notice] = "Custom filter '#{@custom_filter.name}' was successfully updated."
+        format.html { render :action => :show }
+      else
+        format.html { render :action => :show }
+      end
     end
   end
 
@@ -100,6 +106,7 @@ class CustomFiltersController < ApplicationController
     flash[:notice] = "Custom filter '#{@custom_filter.name}' deleted."
 
     respond_to do |format|
+      format.html { redirect_to :controller => controller_name(), :action => :index }
       format.js
       format.xml  { head :ok }
     end
@@ -107,7 +114,18 @@ class CustomFiltersController < ApplicationController
 
   private
 
-  def custom_filter_params #:nodoc:
-    params.require(:custom_filter).permit(:name, :user_id)
+  def custom_filter_params(filter_class) #:nodoc:
+    custom_filter_attr = params.require(:custom_filter).permit(:name, :user_id)
+
+    # A way to allow arbitrary value in data
+    data_allowed_keys  = filter_class::DATA_PARAMS
+    custom_filter_data = params.require(:data).permit(data_allowed_keys)
+    custom_filter_attr[:data] = custom_filter_data
+    custom_filter_attr
   end
+
+  def controller_name
+    @custom_filter.type.sub(/CustomFilter$/, "").underscore.pluralize.to_sym
+  end
+
 end
