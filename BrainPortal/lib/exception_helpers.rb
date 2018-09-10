@@ -1,5 +1,4 @@
 
-#
 # CBRAIN Project
 #
 # Copyright (C) 2008-2012
@@ -44,7 +43,19 @@ module ExceptionHelpers
     respond_to do |format|
       format.html { redirect_to default_redirect }
       format.js   { render :partial  => "shared/flash_update",     :status => 404 }
-      format.xml  { render :xml => {:error  => exception.message}, :status => 404 }
+      format.xml  { render :xml =>  {:error => exception.message}, :status => 404 }
+      format.json { render :json => {:error => exception.message}, :status => 404 }
+    end
+  end
+
+  def record_not_deleted(exception)
+    raise unless Rails.env == 'production' #Want to see stack trace in dev.
+    flash[:error] = "The requested object could not be deleted"
+    respond_to do |format|
+      format.html { redirect_to default_redirect }
+      format.js   { render :partial  => "shared/flash_update",     :status => 403 }
+      format.xml  { render :xml =>  {:error => exception.message}, :status => 403 }
+      format.json { render :json => {:error => exception.message}, :status => 403 }
     end
   end
 
@@ -55,7 +66,8 @@ module ExceptionHelpers
     respond_to do |format|
       format.html { redirect_to default_redirect }
       format.js   { render :partial  => "shared/flash_update",     :status => 400 }
-      format.xml  { render :xml => {:error  => exception.message}, :status => 400 }
+      format.xml  { render :xml =>  {:error => exception.message}, :status => 400 }
+      format.json { render :json => {:error => exception.message}, :status => 400 }
     end
   end
 
@@ -93,7 +105,8 @@ module ExceptionHelpers
     respond_to do |format|
       format.html { redirect_to default_redirect }
       format.js   { render :partial  => "shared/flash_update",     :status => 500 }
-      format.xml  { render :xml => {:error  => exception.message}, :status => 500 }
+      format.xml  { render :xml  => {:error => exception.message}, :status => 500 }
+      format.json { render :json => {:error => exception.message}, :status => 500 }
     end
   end
 

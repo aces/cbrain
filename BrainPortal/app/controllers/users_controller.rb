@@ -74,7 +74,7 @@ class UsersController < ApplicationController
   def show #:nodoc:
     @user = User.find(params[:id])
 
-    cb_error "You don't have permission to view this page.", :redirect  => start_page_path unless edit_permission?(@user)
+    cb_error "You don't have permission to view this user.", :redirect  => start_page_path unless edit_permission?(@user)
 
     @default_data_provider  = DataProvider.find_by_id(@user.meta["pref_data_provider_id"])
     @default_bourreau       = Bourreau.find_by_id(@user.meta["pref_bourreau_id"])
@@ -181,7 +181,7 @@ class UsersController < ApplicationController
   # PUT /users/1.xml
   def update #:nodoc:
     @user          = User.where(:id => params[:id]).includes(:groups).first
-    cb_error "You don't have permission to view this page.", :redirect => start_page_path unless edit_permission?(@user)
+    cb_error "You don't have permission to update this user.", :redirect => start_page_path unless edit_permission?(@user)
 
     new_user_attr = user_params
     if new_user_attr[:group_ids] # the ID adjustment logic in this paragraph is awful FIXME
