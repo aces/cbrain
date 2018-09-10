@@ -1,3 +1,8 @@
+# Swagger description of the CBRAIN API
+# Pierre Rioux, August - October 2016
+# Andrew Doyle, November - December 2016
+# Natacha Beck, January - February 2017
+# Natacha Beck, Shawn Brown - Summer 2018
 swagger: '2.0'
 consumes:
   - application/x-www-form-urlencoded
@@ -12,7 +17,7 @@ info:
   contact:
     name: CBRAIN Development Team
     url: https://github.com/aces/cbrain
-host: 'localhost:3001'
+host: portal.cbrain.mcgill.ca
 securityDefinitions:
   BrainPortalSession:
     type: apiKey
@@ -21,12 +26,15 @@ securityDefinitions:
 security:
   - BrainPortalSession: []
 schemes:
-  - http
+  - https
 basePath: /
 produces:
   - application/json
   - application/xml
 paths:
+#=============================================================================
+# SESSIONS ACTIONS
+#=============================================================================
   /session:
     post:
       summary: Create a new session
@@ -45,7 +53,7 @@ paths:
           required: true
         - name: password
           in: formData
-          description: The CBRAIN User's password
+          description: The password of the CBRAIN User
           type: string
           format: password
           required: true
@@ -84,7 +92,7 @@ paths:
     delete:
       summary: Destroy the current session
       description: |
-        This destroys the current session, effectively terminating the API's
+        This destroys the current session, effectively terminating the
         access to the service.
       tags:
         - Sessions
@@ -93,6 +101,9 @@ paths:
           description: Session terminated
         '401':
           description: No session created yet.
+#=============================================================================
+# USERS ACTIONS
+#=============================================================================
   /users:
     get:
       summary: Returns all of the users in CBRAIN.
@@ -214,6 +225,9 @@ paths:
           description: Not authorized to delete this user.
         '404':
           description: User not found with the specified ID
+#=============================================================================
+# TOOL CONFIGS ACTIONS
+#=============================================================================
   /tool_configs:
     get:
       summary: Get a list of tool versions installed.
@@ -254,6 +268,9 @@ paths:
             A single ToolConfig object describing the configuration.
           schema:
             $ref: '#/definitions/ToolConfig'
+#=============================================================================
+# TAGS ACTIONS
+#=============================================================================
   /tags:
     get:
       summary: Get a list of the tags currently in CBRAIN.
@@ -375,6 +392,9 @@ paths:
           description: No session created yet.
         '422':
           description: Tag could not be deleted.
+#=============================================================================
+# BOURREAU ACTIONS
+#=============================================================================
   /bourreaux:
     get:
       summary: Get a list of the Bourreaux available to be used by the current user.
@@ -417,6 +437,9 @@ paths:
             $ref: '#/definitions/Bourreau'
         '401':
           description: No session created yet.
+#=============================================================================
+# DATA PROVIDER ACTIONS
+#=============================================================================
   /data_providers:
     get:
       summary: Get a list of the Data Providers available to the current user.
@@ -463,13 +486,8 @@ paths:
       summary: List the files on a Data Provider.
       description: >
         This method allows the inspection of what files are present on a Data
-
-        Provider specified by the ID parameter. Files that are not yet
-        registered
-
-        as Userfiles are visible using this method, as well as regularly
-        accessible
-
+        Provider specified by the ID parameter. Files that are not yet registered
+        as Userfiles are visible using this method, as well as regularly accessible
         Userfiles.
       tags:
         - DataProviders
@@ -660,10 +678,10 @@ paths:
           description: You cannot delete files from this provider.
   '/data_providers/{id}/is_alive':
     get:
-      summary: Pings a Data Provider to check if it's running.
+      summary: Pings a Data Provider to check if it is running.
       description: |
         This method allows the querying of a Data Provider specified by the ID
-        parameter to see if it's running or not.
+        parameter to see if it is running or not.
       tags:
         - DataProviders
       parameters:
@@ -679,13 +697,14 @@ paths:
           description: Returns "true" or "false".
           schema:
             type: string
+#=============================================================================
+# GROUP ACTIONS
+#=============================================================================
   /groups:
     get:
       summary: Get a list of the Groups (projects) available to the current user.
       description: >
-        This method returns a list of all of the groups that the current user
-        has
-
+        This method returns a list of all of the groups that the current user has
         access to.
       tags:
         - Groups
@@ -702,9 +721,7 @@ paths:
     post:
       summary: Creates a new Group.
       description: >
-        This method creates a new Group, which allows users to organize their
-        files
-
+        This method creates a new Group, which allows users to organize their files
         and tasks.
       tags:
         - Groups
@@ -723,8 +740,7 @@ paths:
           description: The description of the new Group.
           required: true
           default: >-
-            This new Group represents a new, exciting, possibly
-            neuroscience-related Project.
+            This new Group represents a new Project.
         - name: 'group[site_id]'
           in: formData
           type: integer
@@ -743,7 +759,7 @@ paths:
             type: integer
           description: An array of IDs of Users that will be members of the new Group.
           default:
-            - 1
+            - '1'
         - name: authenticity_token
           in: formData
           type: string
@@ -833,8 +849,7 @@ paths:
           type: string
           description: The description of the new Group.
           default: >-
-            This project will group all of the files for a large neuroscience
-            study to figure out how the brain works once and for all.
+            This project will group some files and tasks.
         - name: 'group[site_id]'
           in: formData
           type: integer
@@ -853,7 +868,7 @@ paths:
             type: integer
           description: An array of IDs of Users that will be members of the new Group.
           default:
-            - 1
+            - '1'
       responses:
         '200':
           description: Group updated successfully.
@@ -888,6 +903,9 @@ paths:
           description: Successfully deleted the Group (project).
         '401':
           description: No Session created yet.
+#=============================================================================
+# USERFILE ACTIONS
+#=============================================================================
   /userfiles:
     get:
       summary: List of the Userfiles accessible to the current user.
@@ -1163,7 +1181,7 @@ paths:
           items:
             type: integer
           description: >-
-            The ID's of the Userfiles to be moved or copied to a new Data
+            The IDs of the Userfiles to be moved or copied to a new Data
             Provider.
           required: true
         - name: data_provider_id_for_mv_cp
@@ -1234,9 +1252,9 @@ paths:
           description: Indicates that files are being uncompressed in the background.
   /userfiles/sync_multiple:
     post:
-      summary: Syncs Userfiles to their Data Providers' cache.
+      summary: Syncs Userfiles to the local Data Providers cache.
       description: >-
-        Synchronizing files to their Data Providers' caches allows you to
+        Synchronizing files to their the local cache allows you to
         download, visualize and do processing on them that is not available if
         not synced. CBRAIN operations will sync files automatically, and this is
         only necessary if a file is changed on its host Data Provdier by an
@@ -1271,6 +1289,9 @@ paths:
       responses:
         '200':
           description: Indicates that synchronization is starting in the background
+#=============================================================================
+# TASK ACTIONS
+#=============================================================================
   /tasks:
     get:
       summary: Get the list of Tasks.
@@ -1400,6 +1421,9 @@ paths:
       responses:
         '200':
           description: Indicates that the Task is being deleted in the background.
+#=============================================================================
+# TOOLS ACTIONS
+#=============================================================================
   /tools:
     get:
       summary: Get the list of Tools.
@@ -1418,6 +1442,9 @@ paths:
               $ref: '#/definitions/Tool'
         '401':
           description: No Session created yet.
+#=============================================================================
+# MODELS
+#=============================================================================
 definitions:
   User:
     type: object
@@ -1480,7 +1507,7 @@ definitions:
         description: Unique numerical ID for the ToolConfig.
       version_name:
         type: string
-        description: the version name of the tool's configuration
+        description: the version name of the configuration
       description:
         type: string
         description: a description of the configuration
@@ -1615,8 +1642,8 @@ definitions:
         format: boolean
         description: >-
           Boolean variable that indicates that the data residing on the Data
-          Provider is not available to be transferred to an execution server's
-          cache.
+          Provider is not available to be transferred to any caches within the
+          CBRAIN platform.
       time_zone:
         type: string
         description: Time zone of the system that hosts the Data Provider.
@@ -1827,7 +1854,7 @@ definitions:
         format: int64
         description: >-
           ID of the userfile created as part of the archival process, if the
-          task's working directory has been archived.
+          working directory of the task has been archived.
   Tool:
     type: object
     properties:
@@ -1876,13 +1903,13 @@ definitions:
         description: the base filename
       group:
         type: string
-        description: string representation of gid, the group's name
+        description: string representation of gid, the name of the group
       gid:
         type: integer
         description: numeric group id of the file
       owner:
         type: string
-        description: string representation of uid, the owner's name
+        description: string representation of uid, the name of the owner
       uid:
         type: integer
         description: numeric uid of owner
@@ -1894,7 +1921,7 @@ definitions:
         description: size of file in bytes
       state_ok:
         type: boolean
-        description: flag that tell whether or not it's OK to register/unregister
+        description: flag that tell whether or not it is OK to register/unregister
       message:
         type: string
         description: a message to give more information about the state_ok flag
