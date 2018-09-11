@@ -42,10 +42,10 @@
 <% if @tool_glob_config && @tool_glob_config.id != @tool_config.id%>
 
   <%= link_to "Common Config for tool #{@tool_glob_config.tool.name} on ALL Servers ",
-      tool_config_path(@bourreau_glob_config), :class => :button, :title =>
+      tool_config_path(@tool_glob_config), :class => :button, :title =>
       "Show or edit Config \##{@tool_glob_config.id} that affect every version/configuration of tool
          #{@tool_glob_config.tool.name} running on
-      each server "
+      each server"
     %>
 <% end %>
 
