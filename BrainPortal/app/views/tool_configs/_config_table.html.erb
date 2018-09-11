@@ -1,30 +1,28 @@
 <%-
-  #
-  # CBRAIN Project
-  #
-  # Copyright (C) 2008-2012
-  # The Royal Institution for the Advancement of Learning
-  # McGill University
-  #
-  # This program is free software: you can redistribute it and/or modify
-  # it under the terms of the GNU General Public License as published by
-  # the Free Software Foundation, either version 3 of the License, or
-  # (at your option) any later version.
-  #
-  # This program is distributed in the hope that it will be useful,
-  # but WITHOUT ANY WARRANTY; without even the implied warranty of
-  # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  # GNU General Public License for more details.
-  #
-  # You should have received a copy of the GNU General Public License
-  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  #
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 -%>
 
 
-<div class="display_inline_block" style="min-width: 50%">
 <% if @tool_config.tool_id && @tool_config.bourreau_id %>
-
 
     <%= show_table(@tool_config, :header => "Version configuration info",
                                  :edit_condition => check_role(:admin_user)) do |t| %>
@@ -39,16 +37,16 @@
 
       <% t.edit_cell(:version_name, :header => "Version", td_options: {:title => "Version"}) do |f| %>
         <%= f.text_field :version_name %>
-        <%= raw '<div class="field_explanation"> Must be a simple string that represent
+        <div class="field_explanation"> Must be a simple string that represent
         a short identifier for the version. First character must be alphanum,
-        and can contain only alphanums, \'.\', \'-\', \'_\', \':\' and \'@\' </div>' %>
+        and can contain only alphanums, \'.\', \'-\', \'_\', \':\' and \'@\' </div>
       <% end %>
 
       <% t.edit_cell(:description, :header => "Description", :content => @tool_config.description,
                                      td_options: {:title => "Brief description for this configuration"}) do |f| %>
         <%= f.text_area :description, :rows => 10, :cols => 40 %>
-        <%=raw '<div class="field_explanation">The first line must be a short summary, and the rest are for any special
-         notes for the users.</div>' %>
+        <div class="field_explanation">The first line must be a short summary, and the rest are for any special
+         notes for the users.</div>'
       <% end %>
 
       <% t.edit_cell(:ncpus,
@@ -56,11 +54,8 @@
                      :td_options => {:title => "Suggested number of CPUs to use in parallel, per task"}) do |f| %>
         <%= f.select :ncpus, [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 32, 36, 40, 48, 56, 64, 128, 192, 256,
                               320, 384, 512] %>
-
       <% end %>
-
     <% end %>
-
 <% end %>
 
 
@@ -106,10 +101,8 @@
 
       <%= hidden_field_tag "tool_config[tool_id]", @tool_config.tool_id %>
       <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
-
     <% end %>
   <% end %>
-
 
   <%= show_table @tool_config, :header => "Merge configs",
                  :edit_condition => check_role(:admin_user) do |t| %>
@@ -130,7 +123,6 @@
     <% end %>
   <% end %>
 
-
   <%= show_table @tool_config, :header => "Container", :edit_condition => check_role(:admin_user) do |t| %>
     <% t.edit_cell(:container_engine, :header => "Container engine") do |f| %>
       <%= hidden_field_tag "tool_config[tool_id]", @tool_config.tool_id %>
@@ -141,10 +133,10 @@
     <% t.edit_cell(:container_index_location, :header => "Index of the container image") do |f| %>
       <%= f.text_field :container_index_location %>
       <div class="field_explanation"
-        The index/url of the container image in which the docker/singularity container is
+        The index (url) of the container image in which the docker or singularity container is
         accessible through.
         Examples for Docker are: quay.io, index.docker.io (default).
-        Examples for Singularity are: docker://, shub:// (default).
+        Examples for Singularity are: docker:&sol;&sol;, shub:&sol;&sol; (default).
 
       } %>
     <% end %>
@@ -169,7 +161,6 @@
       <div class="field_explanation"><b>Note:</b> This option will be appended to the extra 'qsub' option defined at the bourreau level.</div>
     <% end %>
   <% end %>
-
 
 <% bourreau = @tool_config.bourreau %>
 <% if !bourreau.nil? && bourreau.scir_class < ScirCloud %>
@@ -205,5 +196,4 @@
 <% end %>
 </div>
 </div>
-
-
+</div>
