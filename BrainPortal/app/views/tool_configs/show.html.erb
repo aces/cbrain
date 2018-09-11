@@ -65,15 +65,10 @@
     running on Execution Server <strong><%= @tool_config.bourreau.name %></strong>.
   <% end %>
 
-  <p>
-
-
-    <% if @tool_config %>
+  <% if @tool_config %>
       <%= render :partial => 'config_table', :locals => { :config => @tool_config } %>
-    <% end %>
-  </ul>
+  <% end %>
 
-  <p>
   <strong>Important note:</strong>
   This section displays the full BASH initialization prologue script for the configuration
   listed above
@@ -91,7 +86,7 @@
         %>
 
       <% end %>
-
+      <p>
       <% if @tool_glob_config && @tool_glob_config.id != @tool_config.id%>
         <br>
         <%= link_to "Common Config for tool #{@tool_glob_config.tool.name} on ALL Servers ",
@@ -102,11 +97,7 @@
         %>
       <% end %> . The commands are shown in the order of execution
   <% end %>
-    .
-  </p>
-
   <pre class="script_preview"><%= @bourreau_glob_config.to_bash_prologue if @bourreau_glob_config %><%= @tool_glob_config.to_bash_prologue if @tool_glob_config %><%= @tool_config.to_bash_prologue if @tool_config %></pre>
-
 
 
 <% if @bourreau_glob_config %>

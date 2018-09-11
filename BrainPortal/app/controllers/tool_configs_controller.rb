@@ -232,7 +232,7 @@ class ToolConfigsController < ApplicationController
          flash[:notice] = "No changes made."
        end
             # add xml?
-           @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus ))
+           # @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus ))
            render :action => "show"
 
        return
@@ -246,7 +246,7 @@ class ToolConfigsController < ApplicationController
       if @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus ))
         flash[:notice] = "Tool configuration was successfully updated."
         format.html {
-                      if id?
+                      if not id
                         render :action => "show"
                       elsif  @tool_config.tool_id
                         redirect_to edit_tool_path(@tool_config.tool)

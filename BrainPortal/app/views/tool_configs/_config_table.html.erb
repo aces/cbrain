@@ -22,9 +22,11 @@
 -%>
 
 
-<% if @tool_config.tool_id && @tool_config.bourreau_id %>
 
-    <%= show_table(@tool_config, :header => "Version configuration info",
+
+<% if @tool_config.tool_id && @tool_config.bourreau_id %>
+  <%= show_table_context(@tool_config) do |cf| %>
+    <%= show_table(@tool_config,  :form_helper => cf, :header => "Version configuration info",
                                  :edit_condition => check_role(:admin_user)) do |t| %>
 
       <% t.edit_cell(:group_id, :header => "Project access",
@@ -56,12 +58,10 @@
                               320, 384, 512] %>
       <% end %>
     <% end %>
-<% end %>
-
 
   <% context = @tool_config.tool_id ? "tool" : "Execution Server" %>
-  <%= show_table @tool_config, :header => "Environment variables",
-                               :edit_condition => check_role(:admin_user) do |t| %>
+  <%= show_table(@tool_config, :form_helper => cf, :header => "Environment variables",
+                               :edit_condition => check_role(:admin_user)) do |t| %>
     <% @tool_config.env_array.each do |env_name_value| %>
       <% env_name = env_name_value[0] %>
       <% env_value = env_name_value[1] %>
@@ -87,7 +87,7 @@
     <% end %>
   <% end %>
   
-  <%= show_table @tool_config, :header => "BASH initialization prologue",
+  <%= show_table @tool_config, :form_helper => cf, :form_helper => cf, :header => "BASH initialization prologue",
                  :edit_condition => check_role(:admin_user) do |t| %>
     <% t.edit_cell(:script_prologue, :content => full_description(@tool_config.script_prologue),
                    :no_header => true, :td_options => {:title => "BASH prologue script"}) do |f| %>
@@ -104,7 +104,7 @@
     <% end %>
   <% end %>
 
-  <%= show_table @tool_config, :header => "Merge configs",
+  <%= show_table @tool_config, :form_helper => cf, :form_helper => cf, :header => "Merge configs",
                  :edit_condition => check_role(:admin_user) do |t| %>
     <% t.edit_cell(:'name', :content => 'Add configuration from another existing entry', :no_header => true) do |f| %>
       <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
@@ -123,7 +123,7 @@
     <% end %>
   <% end %>
 
-  <%= show_table @tool_config, :header => "Container", :edit_condition => check_role(:admin_user) do |t| %>
+  <%= show_table(@tool_config, :form_helper => cf, :header => "Container", :edit_condition => check_role(:admin_user)) do |t| %>
     <% t.edit_cell(:container_engine, :header => "Container engine") do |f| %>
       <%= hidden_field_tag "tool_config[tool_id]", @tool_config.tool_id %>
       <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
@@ -169,7 +169,7 @@
      available_ssh_key_pairs = bourreau.scir_class.get_available_key_pairs(bourreau)
   %>
 
-    <%= show_table @tool_config, :header => "Cloud configuration", :edit_condition => check_role(:admin_user) do |t| %>
+    <%= show_table(@tool_config, :form_helper => cf, :header => "Cloud configuration", :edit_condition => check_role(:admin_user)) do |t| %>
 
       <% t.edit_cell(:cloud_vm_user, header: "VM user") do |f| %>
         <%= hidden_field_tag "tool_config[tool_id]", @tool_config.tool_id %>
@@ -193,7 +193,9 @@
       <% end %>
 
     <% end %>
+  <% end %>  
 <% end %>
-</div>
-</div>
+<% end %>
+
+  </div>
 </div>
