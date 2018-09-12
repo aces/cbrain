@@ -224,6 +224,7 @@ namespace :cbrain do
           absFile = File.absolute_path(f.to_s)
           # Generate the task from the templates and JSON descriptor
           generatedTask = SchemaTaskGenerator.generate(schema, absFile)
+          next if generatedTask.nil? # this happens with bad descriptors
           helpFileName  = SchemaTaskGenerator.classify(generatedTask.name) + "_help.html"
           helpFilePath  = basePath.join(helpFileName).to_s
           # Prevent broken symlinks from stopping the whole rake task
