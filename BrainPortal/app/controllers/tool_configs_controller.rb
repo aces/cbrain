@@ -247,11 +247,12 @@ class ToolConfigsController < ApplicationController
         flash[:notice] = "Tool configuration was successfully updated."
         format.html {
                       if not id
-                        render :action => "show"
-                      elsif  @tool_config.tool_id
-                        redirect_to edit_tool_path(@tool_config.tool)
-                      else
-                        redirect_to bourreau_path(@tool_config.bourreau)
+
+                        if  @tool_config.tool_id
+                          redirect_to edit_tool_path(@tool_config.tool)
+                        else
+                          redirect_to bourreau_path(@tool_config.bourreau)
+                        end
                       end
         }
         format.xml  { head :ok }
