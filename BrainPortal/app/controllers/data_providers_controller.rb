@@ -132,6 +132,7 @@ class DataProvidersController < ApplicationController
          %w(
            remote_user remote_host remote_port remote_dir
            not_syncable cloud_storage_client_identifier cloud_storage_client_token
+           cloud_storage_client_bucket_name cloud_storage_client_path_start
          )
       )
       meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/\Adp_no_copy_\d+\z|\Arr_no_sync_\d+\z/)
@@ -816,7 +817,8 @@ class DataProvidersController < ApplicationController
       :name, :user_id, :group_id, :remote_user, :remote_host, :alternate_host,
       :remote_port, :remote_dir, :online, :read_only, :description, :type,
       :not_syncable, :time_zone, :cloud_storage_client_identifier,
-      :cloud_storage_client_token, :license_agreements
+      :cloud_storage_client_token, :cloud_storage_client_bucket_name,
+      :cloud_storage_client_path_start, :license_agreements
     )
   end
 

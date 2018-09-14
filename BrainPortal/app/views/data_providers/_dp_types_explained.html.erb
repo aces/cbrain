@@ -99,3 +99,14 @@ Usage of this Data Provider requires obtaining an access key
 and secret token. Do not rename this Data Provider if files
 are registered with it, unless you also rename the bucket!
 
+<p>
+
+<strong> S3SFlatDataProvider:</strong> This is a class that connects to
+Amazon's S3 cloud storage service using the new AWS SDK for S3 Version 3.0.
+A Bucket and a Starting Path must be specified that have already been created
+through AWS.  Usage of this Data Provider also requires obtaining an access key
+and secret token for Amazon Web Services.  For more information, please visit
+<a href="https://aws.amazon.com">https://aws.amazon.com</a> for more details.
+File will stored as objects in the S3Object store and the data provider mainly
+acts like a FlatDataProvider.
+

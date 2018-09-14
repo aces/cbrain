@@ -32,7 +32,7 @@ gem "log4r"
 gem "puma"
 gem "pbkdf2-ruby"
 gem "json-schema"
-gem "aws-sdk", '<2.0'
+gem "aws-sdk-s3", '~> 1'
 
 # User interface gems
 gem "will_paginate"
