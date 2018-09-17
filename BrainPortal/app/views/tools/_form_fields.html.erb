@@ -50,12 +50,12 @@
   <% licenses = @tool.license_agreements.count == 0 ? "(None)": joint_licenses %>
   <% t.edit_cell :license_agreements, :header => "License agreements", :content => licenses do |f| %>
     <%= f.text_area :license_agreements, :value => @tool.new_record? ? "" : joint_licenses, :rows => 5, :cols => 40 %>
-    <%=raw '<div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>' %>
+    <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
   <% end %>
 
   <% t.edit_cell :description, :header => "Description", :content => full_description(@tool.description) do |f|%>
     <%= f.text_area :description, :cols => 80, :rows => 10 %>
-    <%=raw '<div class="field_explanation">The first line is a short summary, and the rest are for any special notes for the users.</div>' %>
+    <div class="field_explanation">The first line is a short summary, and the rest are for any special notes for the users.</div>
   <% end %>
 
   <% t.edit_cell :application_package_name, :header => "Package name" do |f| %>
