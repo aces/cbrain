@@ -100,6 +100,7 @@ class ToolConfigsController < ApplicationController
     @bourreau_glob_config ||=
       ToolConfig.where( :tool_id => nil,                  :bourreau_id => @tool_config.bourreau_id ).first if @tool_config
 
+    @tool_config.env_array ||= []
 
     respond_to do |format|
       format.html
@@ -177,6 +178,7 @@ class ToolConfigsController < ApplicationController
     # Update everything else
     # or just form fields if config already existing
     attributes = ToolConfig.columns.map(&:name).map(&:to_sym) - %i[ id tool_id bourreau_id ]
+    puts "attribs", attributes
     attributes.each do |att|
          if tc_params.has_key?(att) || id.blank?
            @tool_config[att] = form_tool_config[att]
@@ -206,6 +208,7 @@ class ToolConfigsController < ApplicationController
 
     # Merge with an existing tool config
     if params.has_key?(:merge)
+       puts "merging"
        other_tc = ToolConfig.find_by_id(params[:merge_from_tc_id] || 0)
        if other_tc
          if @tool_config.tool_id &&  @tool_config.bourreau_id
@@ -244,20 +247,23 @@ class ToolConfigsController < ApplicationController
 
     respond_to do |format|
       if @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus ))
+        puts "successfull save"
         flash[:notice] = "Tool configuration was successfully updated."
-        format.html {
-                      if not id
-
+        if not id
+          format.html {
                         if  @tool_config.tool_id
                           redirect_to edit_tool_path(@tool_config.tool)
                         else
                           redirect_to bourreau_path(@tool_config.bourreau)
                         end
-                      end
-        }
+          }
+        else
+          format.html { render :action => show}
+        end
         format.xml  { head :ok }
       else
-        format.html { render :action => "show" }
+        puts "bad save"
+        format.html { render :action => :show}
         format.xml  { render :xml => @tool_config.errors, :status => :unprocessable_entity }
       end
     end
@@ -300,6 +306,7 @@ class ToolConfigsController < ApplicationController
     )
   end
 
+
   # Create list of TC visible to current user.
   def base_scope #:nodoc:
     scope = ToolConfig.where(nil)
@@ -316,4 +323,5 @@ class ToolConfigsController < ApplicationController
     scope
   end
 
+  # alias_method :create, :update;
 end
