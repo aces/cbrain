@@ -23,7 +23,7 @@
 
 
 
-
+<%= error_messages_for @tool_config %>
 <% if @tool_config.tool_id && @tool_config.bourreau_id %>
   <%= show_table_context(@tool_config) do |cf| %>
     <%= show_table(@tool_config,  :form_helper => cf, :header => "Version configuration info",
