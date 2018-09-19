@@ -263,7 +263,7 @@ class ToolConfigsController < ApplicationController
         format.xml  { head :ok }
       else
         puts "bad save"
-        format.html
+        format.html { render :action => :show}
         format.xml  { render :xml => @tool_config.errors, :status => :unprocessable_entity }
       end
     end
