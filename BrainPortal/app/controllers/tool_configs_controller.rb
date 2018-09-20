@@ -135,12 +135,13 @@ class ToolConfigsController < ApplicationController
     @tool_config.group = Group.everyone
 
     respond_to do |format|
-      format.html { render :action => @tool_config.new_record?() ? :edit : :show}
+      format.html { render :action => :show}
       format.xml  { render :xml => @tool_config }
     end
   end
 
-  def edit #:nodoc:
+  def edit #:nodoc: Depricated page # To be deleted with a major revision
+    # Keep for now for accidental usage (bookmarks, cache, bugs etc)
     id           = params[:id]
     @tool_config = ToolConfig.find(id)
     @tool_config.env_array ||= []
@@ -148,8 +149,8 @@ class ToolConfigsController < ApplicationController
     @tool_config.group = Group.everyone if @tool_config.group_id.blank?
 
     respond_to do |format|
-      format.html # edit.html.erb
-      format.xml  { render :xml => @tool_config }
+      format.html { redirect_to tool_config_path(@tool_config) }# edit.html.erb
+      format.xml { @tool_configonfig }
     end
   end
 
@@ -160,7 +161,8 @@ class ToolConfigsController < ApplicationController
   # prevent duplication.
   def update #:nodoc:
     id                = params[:id] || "NEW" # can be 'new' if we create()
-    id                = nil if id == "NEW"
+    # id                = nil if id == "NEW"
+
     tc_params         = tool_config_params
     form_tool_config  = ToolConfig.new(tc_params) # just to store the new attributes
     form_tool_id      = form_tool_config.tool_id.presence
@@ -170,7 +172,7 @@ class ToolConfigsController < ApplicationController
     cb_error "Need at least one of tool ID or bourreau ID." if @tool_config.blank? && form_tool_id.blank? && form_bourreau_id.blank?
     @tool_config ||= ToolConfig.where( :tool_id => form_tool_id, :bourreau_id => form_bourreau_id ).first if form_tool_id.blank? || form_bourreau_id.blank?
     @tool_config ||= ToolConfig.new(   :tool_id => form_tool_id, :bourreau_id => form_bourreau_id )
-
+    new_rec = @tool_config.new_record?
     # Security: no matter what the form says, we use the ids from the DB if the object existed.
     form_tool_config.tool_id     = @tool_config.tool_id
     form_tool_config.bourreau_id = @tool_config.bourreau_id
@@ -248,20 +250,15 @@ class ToolConfigsController < ApplicationController
     respond_to do |format|
       if @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus ))
         flash[:notice] = "Tool configuration was successfully updated."
-        if not id
-          format.html {
-                        if  @tool_config.tool_id
-                          redirect_to edit_tool_path(@tool_config.tool)
-                        else
-                          redirect_to bourreau_path(@tool_config.bourreau)
-                        end
-          }
+        if new_rec
+          flash[:notice] = "Tool configuration is successfully created."
         else
-          format.html { render :action => :show  }
+          flash[:notice] = "Tool configuration was successfully updated."
         end
+        format.html { render :action => :show }
         format.xml  { head :ok }
       else
-        format.html { render :show} # @tool_config.reload  ? or may be just bad fields?
+        format.html { render :action => :show } # @tool_config.reload  ? or may be just bad fields?
         format.xml  { render :xml => @tool_config.errors, :status => :unprocessable_entity }
       end
     end
@@ -321,5 +318,5 @@ class ToolConfigsController < ApplicationController
     scope
   end
 
-  # alias_method :create, :update;
+  alias_method :create, :update;
 end

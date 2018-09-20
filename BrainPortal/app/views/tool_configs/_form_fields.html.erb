@@ -1,4 +1,3 @@
-
 <%-
 #
 # CBRAIN Project
@@ -24,183 +23,183 @@
 
 
 
-  <%= hidden_field_tag "tool_config[tool_id]",     @tool_config.tool_id %>
-  <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
+<%= error_messages_for @tool_config %>
 
+<%= show_table_context(@tool_config) do |cf| %>
   <% if @tool_config.tool_id && @tool_config.bourreau_id %>
-  <span title="Project access for this configuration.">
-    <p><%= f.label :group_id, "Available to members of project:" %>
-    <%= group_select "tool_config[group_id]", @tool_config.group_id %>
-    </p>
-  </span>
+    <%= show_table(@tool_config,  :form_helper => cf, :header => "Version configuration info",
+                                 :edit_condition => check_role(:admin_user)) do |t| %>
 
-  <span title="Version.">
-    <p><%= f.label :version_name, "Version:" %>
-    <%= f.text_field :version_name %><br/>
-    <div class="field_explanation">Must be a simple string that represent a short identifier for the version. First character must be alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'</div>
-    </p>
-  </span>
+      <% t.edit_cell(:group_id, :header => "Project access",
+                     :content => link_to_group_if_accessible(@tool_config.group_id),
+                     :td_options => {:title => "The version is available to members of project"}) do %>
+        <%= group_select "tool_config[group_id]", @tool_config.group_id %>
+        <%= hidden_field_tag "tool_config[tool_id]", @tool_config.tool_id %>
+        <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
+      <% end %>
 
-  <span title="Brief description for this configuration.">
-    <p><%= f.label :description, "Description:" %><br/>
-    <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
-    <div class="field_explanation">The first line must be a short summary, and the rest are for any special notes for the users.</div>
-    </p>
-  </span>
+      <% t.edit_cell(:version_name, :header => "Version", td_options: {:title => "Version"}) do |f| %>
+        <%= f.text_field :version_name %>
+        <div class="field_explanation"> Must be a simple string that represent
+        a short identifier for the version. First character must be alphanum,
+        and can contain only alphanums, \'.\', \'-\', \'_\', \':\' and \'@\' </div>
+      <% end %>
 
-  <span title="Suggested number of CPUs to use in parallel, per task">
-    <p><%= f.label :ncpus, "Suggested number of CPUs to use in parallel, per task:" %>
-    <%= f.select :ncpus, [ 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 32, 36, 40, 48, 56, 64, 128, 192, 256, 320, 384, 512 ] %>
-    </p>
-  </span>
+      <% t.edit_cell(:description, :header => "Description", :content => full_description(@tool_config.description),
+                                     td_options: {:title => "Brief description for this configuration"}) do |f| %>
+        <%= f.text_area :description, :rows => 10, :cols => 40 %>
+        <div class="field_explanation">The first line must be a short summary, and the rest are for any special
+         notes for the users.</div>
+      <% end %>
+
+      <% t.edit_cell(:ncpus,
+                     :header => "Suggested CPUs per task",
+                     :td_options => {:title => "Suggested number of CPUs to use in parallel, per task"}) do |f| %>
+        <%= f.select :ncpus, [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 32, 36, 40, 48, 56, 64, 128, 192, 256,
+                              320, 384, 512] %>
+      <% end %>
+    <% end %>
   <% end %>
-
-  <% context = @tool_config.tool_id ? "tool" : "Execution Server" %>
-  <fieldset class="groupentry">
-    <legend>Environment variables</legend>
-    <p><label>Environment variables needed for this <%= context %>:</label><br/>
+  <%= show_table(@tool_config, :form_helper => cf, :header => "Environment variables",
+                               :edit_condition => check_role(:admin_user)) do |t| %>
     <% @tool_config.env_array.each do |env_name_value| %>
-      <% env_name  = env_name_value[0] %>
+      <% env_name = env_name_value[0] %>
       <% env_value = env_name_value[1] %>
-      <%= render :partial => 'env_key_value_pair', :locals => { :env_name => env_name, :env_value => env_value } %>
+      <% render :partial => 'env_key_value_pair_2', :locals => {:env_name => env_name,
+                                                                :env_value => env_value,
+                                                                :t => t
+      }
+      %>
     <% end %>
     <% 1.upto(5) do %>
-      <%= render :partial => 'env_key_value_pair', :locals => { :env_name => "", :env_value => "" } %>
+      <% render :partial => 'env_key_value_pair_2', :locals => {:env_name => "",
+                                                                :env_value => "",
+                                                                :t => t
+      } %>
     <% end %>
-    <div class="field_explanation">In the generated script, the values shown here will be placed in double quotes automatically.</div>
-    </p>
-  </span>
-  </fieldset>
-  <fieldset class="groupentry">
-    <legend>BASH prologue</legend>
-  <span title="BASH script for tool initialization">
-    <p><%= f.label :script_prologue, "Enter BASH code here:" %><br/>
-    <%= f.text_area :script_prologue, :cols => 80, :rows => 10 %><br/>
-    <div class="field_explanation">This is a multi line partial BASH script. It can use the environment variables defined above,
+    <% t.edit_cell(:bourreau_id, :header => '',:content => '') {|f| f.hidden_field :bourreau_id } %>
+    <% t.edit_cell(:tool_id, :header => '', :content => '', :td_options => {:style => 'empty-cells: hide;'}) do |f| %>
+      <%= f.hidden_field :tool_id %>
+      <div class="field_explanation" style="display: inline;">
+        In the generated script, the values shown here will be placed in double quotes automatically.
+      </div>
+    <% end %>
+  <% end %>
+
+  <%= show_table @tool_config, :form_helper => cf,:header => "BASH initialization prologue",
+                 :edit_condition => check_role(:admin_user) do |t| %>
+    <% t.edit_cell(:script_prologue, :content => full_description(@tool_config.script_prologue),
+                   :no_header => true, :td_options => {:title => "BASH prologue script"}) do |f| %>
+      <%= f.text_area :script_prologue, :cols => 80, :rows => 10 %>
+
+      <br><div class="wide_field_explanation" >
+           This is a multi line partial BASH script. It can use the environment variables defined above
            and do anything else you feel is needed to activate this configuration.
            Note that this script should usually be silent, as outputing text (like in <em>echo</em> statements)
-           could interfere with the proper processing of the task's output.</div>
-    </p>
-  </span>
-  </fieldset>
-  <fieldset class="groupentry">
-    <legend>Merge configs</legend>
-  <p>
-  Option: Merge configuration from another existing entry:
-  <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
-  <%= submit_tag 'Merge Configuration', :name => :merge %><br/>
-  <div class="field_explanation">
-  <% if @tool_config.tool_id && @tool_config.bourreau_id %>
-    The description, environment variables and prologue script will be appended to whatever
-    values are currently in the form. The project and suggested number of CPUs will be changed.
-  <% else %>
-    The environment variables and prologue script will be appended to whatever
-    values are currently in the form.
-  <% end %>
-  </div>
-  </p>
-  </fieldset>
-  <fieldset class="groupentry">
-    <legend>Container</legend>
-  <span title="Container type">
-    <p><%= f.label :container_engine, "Container engine:" %>
-    <%= f.select :container_engine, [["None", ''], ['Docker', 'Docker'], ['Singularity', 'Singularity']] %>
-  </span>
+           could interfere with the proper processing of the tasks output. </div>
 
-  <span title="Index of the container image">
-    <p><%= f.label :container_index_location, "Index of the container image:" %><br/>
-      <%= f.text_field :container_index_location %><br>
-      <div class="field_explanation">
-        The index/url of the container image in which the docker/singularity container is
+      <%= hidden_field_tag "tool_config[tool_id]", @tool_config.tool_id %>
+      <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
+    <% end %>
+  <% end %>
+
+  <%= show_table(@tool_config, :form_helper => cf, :header => "Container", :edit_condition => check_role(:admin_user)) do |t| %>
+    <% t.edit_cell(:container_engine, :header => "Container engine") do |f| %>
+      <%= hidden_field_tag "tool_config[tool_id]", @tool_config.tool_id %>
+      <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
+      <%= f.select :container_engine, [["None", ''], ['Docker', 'Docker'], ['Singularity', 'Singularity']], :title => 'Container type' %>
+    <% end %>
+
+    <% t.edit_cell(:container_index_location, :header => "Index of the container image") do |f| %>
+      <%= f.text_field :container_index_location %>
+      <div class="field_explanation"
+        The index (url) of the container image in which the docker or singularity container is
         accessible through.
         Examples for Docker are: quay.io, index.docker.io (default).
-        Examples for Singularity are: docker://, shub:// (default).
-      </div>
-    </p>
-  </span>
+        Examples for Singularity are: docker:&sol;&sol;, shub:&sol;&sol; (default).
 
-  <span title="Container image name">
-    <p><%= f.label :containerhub_image_name, "Container image name:" %><br/>
-      <%= f.text_field :containerhub_image_name %><br/>
-      <div class="field_explanation">
+      } %>
+    <% end %>
+
+    <% t.edit_cell(:containerhub_image_name, :header => "Container image name") do |f| %>
+      <%= f.text_field :containerhub_image_name %>
+        <div class="field_explanation">
         The name and tag of the container image in which the tool is installed,
-        for instance "centos:latest". This name refers to the Docker/Singulariry index
+        for instance "centos:latest". This name refers to the Docker/Singularity index
         accessed by the Bourreau, which is configured manually in the Bourreau
         for now.
-      </div>
-    </p>
-  </span>
-
-  <span title="ID of the container image">
-    <p><%= f.label :container_image_userfile_id, "ID of the container image:" %><br/>
-      <%= f.text_field :container_image_userfile_id %> <%= link_to_userfile_if_accessible(@tool_config.container_image) %><br>
-      <div class="field_explanation">
-        The ID number of the container image in which the tool is installed.
-        This ID refers to userfile registered in CBRAIN.
-      </div>
-    </p>
-  </span>
-
-  <span title="Extra 'qsub' options:">
-    <p><%= f.label :extra_qsub_args, "Extra 'qsub' options:" %><br/>
-      <%= f.text_field :extra_qsub_args %><br/>
+        <\div>
+      %>
+    <% end %>
+    <% t.edit_cell(:container_image_userfile_id, :header => "ID of the container image") do |f| %>
+      <%= f.text_field :container_image_userfile_id %> <%= link_to_userfile_if_accessible(@tool_config.container_image) %>
+      <div class="field_explanation"> The ID number of the container image in which the tool is installed. This ID refers to userfile registered in CBRAIN.  </div>
+    <% end %>
+    <% t.edit_cell(:extra_qsub_args, :header => "Extra 'qsub' options") do |f| %>
+      <%= f.text_field :extra_qsub_args %>
       <div class="field_explanation"><b>Note:</b> This option will be appended to the extra 'qsub' option defined at the bourreau level.</div>
-    </p>
-  </span>
+    <% end %>
+  <% end %>
 
   <% bourreau = @tool_config.bourreau %>
   <% if !bourreau.nil? && bourreau.scir_class < ScirCloud %>
-  <% available_disk_images    = bourreau.scir_class.get_available_disk_images(bourreau)
-     available_instance_types = bourreau.scir_class.get_available_instance_types(bourreau)
-     available_ssh_key_pairs  = bourreau.scir_class.get_available_key_pairs(bourreau)
-  %>
+    <% available_disk_images = bourreau.scir_class.get_available_disk_images(bourreau)
+       available_instance_types = bourreau.scir_class.get_available_instance_types(bourreau)
+       available_ssh_key_pairs = bourreau.scir_class.get_available_key_pairs(bourreau)
+    %>
 
-  </fieldset>
-  <fieldset class="groupentry">
-  <legend>Cloud</legend>
+    <%= show_table(@tool_config, :form_helper => cf, :header => "Cloud configuration", :edit_condition => check_role(:admin_user)) do |t| %>
 
-  <span title="Cloud configuration">
-    <h4>Cloud configuration</h4>
-    <p><%= f.label :cloud_disk_image, "Disk image:" %><br/>
-      <%= f.select :cloud_disk_image,  available_disk_images %><br/>
-      <div class="field_explanation">
-      </div>
-    </p>
-    <p><%= f.label :cloud_vm_user, "VM user:" %><br/>
-      <%= f.text_field :cloud_vm_user%><br/>
-      <div class="field_explanation">
-      </div>
-    </p>
-    <p><%= f.label :cloud_ssh_key_pair, "SSH key pair:" %><br/>
-      <%= f.select :cloud_ssh_key_pair,  available_ssh_key_pairs %><br/>
-      <div class="field_explanation">
-      </div>
-    </p>
-    <p><%= f.label :cloud_instance_type, "Instance type:" %><br/>
-      <%= f.select :cloud_instance_type,  available_instance_types %><br/>
-    <div class="field_explanation">
-    </div>
-    </p>
-    <p><%= f.label :cloud_job_slots, "Job slots:" %><br/>
-      <%= f.text_field :cloud_job_slots%><br/>
-    <div class="field_explanation">
-    </div>
-    </p>
-    <p><%= f.label :cloud_vm_boot_timeout, "VM boot timeout (s):" %><br/>
-      <%= f.text_field :cloud_vm_boot_timeout%><br/>
-    <div class="field_explanation">
-    </div>
-    </p>
-    <p><%= f.label :cloud_vm_ssh_tunnel_port, "VM SSH tunnel port:" %><br/>
-      <%= f.text_field :cloud_vm_ssh_tunnel_port%><br/>
-    <div class="field_explanation">
-    </div>
-    </p>
+      <% t.edit_cell(:cloud_vm_user, header: "VM user") do |f| %>
+        <%= hidden_field_tag "tool_config[tool_id]", @tool_config.tool_id %>
+        <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
+        <%= f.text_field :cloud_vm_user %>
+      <% end %>
+      <% t.edit_cell(:cloud_ssh_key_pair, header: "SSH key pair") do |f| %>
+        <%= f.select :cloud_ssh_key_pair, available_ssh_key_pairs %>
+      <% end %>
+      <% t.edit_cell(:cloud_instance_type, header: "Instance type") do |f| %>
+        <%= f.select :cloud_instance_type, available_instance_types %>
+      <% end %>
+      <% t.edit_cell(:cloud_job_slots, header: "Job slots") do |f| %>
+        <%= f.text_field :cloud_job_slots %>
+      <% end %>
+      <% t.edit_cell(:cloud_vm_boot_timeout, header: "VM boot timeout (s)") do |f| %>
+        <%= f.text_field :cloud_vm_boot_timeout %>
+      <% end %>
+      <% t.edit_cell(:cloud_vm_ssh_tunnel_port, header: "VM SSH tunnel port") do |f| %>
+        <%= f.text_field :cloud_vm_ssh_tunnel_port %>
+      <% end %>
 
-  </span>
-  </fieldset>
+    <% end %>
   <% end %>
+  </div>
+  </div>
+  <div class="generalbox">
+      <fieldset class="groupentry">
+      <legend>Merge (an option)</legend>
+      <p>
+        Merge configuration from another existing entry:
+        <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
+        <%= submit_tag 'Merge Configuration (Preview)', :name => :merge %><br/>
+      <div class="field_explanation">
+        <% if @tool_config.tool_id && @tool_config.bourreau_id %>
+          The description, environment variables and prologue script will be appended to whatever
+          values are currently in the form. The project and suggested number of CPUs will be changed.
+        <% else %>
+          The environment variables and prologue script will be appended to whatever
+          values are currently in the form.
+        <% end %>
+      </div>
 
+      <%= submit_tag 'Update', :name => :update %>
 
+      <%= submit_tag 'Cancel', :name => :cancel %><br/>
+      <div class="field_explanation">
+        You need to first click the Merge Configuration (Preview), carefully check the results, and only if
+        everything is ok click this or any other Update button, and the changed values will persist
+      </div>
 
-
+    </fieldset>
+  </div>
+<% end %>
