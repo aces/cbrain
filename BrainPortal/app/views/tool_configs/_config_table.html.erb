@@ -24,8 +24,9 @@
 
 
 <%= error_messages_for @tool_config %>
-<% if @tool_config.tool_id && @tool_config.bourreau_id %>
-  <%= show_table_context(@tool_config) do |cf| %>
+
+<%= show_table_context(@tool_config) do |cf| %>
+  <% if @tool_config.tool_id && @tool_config.bourreau_id %>
     <%= show_table(@tool_config,  :form_helper => cf, :header => "Version configuration info",
                                  :edit_condition => check_role(:admin_user)) do |t| %>
 
@@ -58,8 +59,7 @@
                               320, 384, 512] %>
       <% end %>
     <% end %>
-
-  <% context = @tool_config.tool_id ? "tool" : "Execution Server" %>
+  <% end %>
   <%= show_table(@tool_config, :form_helper => cf, :header => "Environment variables",
                                :edit_condition => check_role(:admin_user)) do |t| %>
     <% @tool_config.env_array.each do |env_name_value| %>
@@ -202,8 +202,6 @@
     </div>
 
   </fieldset>
-
-<% end %>
 
   </div>
 </div>
