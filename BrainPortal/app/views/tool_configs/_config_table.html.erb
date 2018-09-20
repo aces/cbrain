@@ -103,25 +103,6 @@
     <% end %>
   <% end %>
 
-  <%= show_table @tool_config, :form_helper => cf, :header => "Merge configs",
-                 :edit_condition => check_role(:admin_user) do |t| %>
-    <% t.edit_cell(:'name', :content => 'Add configuration from another existing entry', :no_header => true) do |f| %>
-      <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
-      <%= hidden_field_tag "tool_config[tool_id]", @tool_config.tool_id %>
-      <%= hidden_field_tag "tool_config[bourreau_id]", @tool_config.bourreau_id %>
-      <%= f.submit 'Merge Configuration', :name => :merge %><br/>
-        <div class="field_explanation">
-        <% if @tool_config.tool_id && @tool_config.bourreau_id %>
-          The description, environment variables and prologue script will be appended to whatever
-          values are currently in the form. The project and suggested number of CPUs will be changed.
-        <% else %>
-          The environment variables and prologue script will be appended to whatever
-          values are currently in the form.
-        <% end %>
-        </div>
-    <% end %>
-  <% end %>
-
   <%= show_table(@tool_config, :form_helper => cf, :header => "Container", :edit_condition => check_role(:admin_user)) do |t| %>
     <% t.edit_cell(:container_engine, :header => "Container engine") do |f| %>
       <%= hidden_field_tag "tool_config[tool_id]", @tool_config.tool_id %>
@@ -192,8 +173,36 @@
       <% end %>
 
     <% end %>
-  <% end %>
+
+    <% end %>
 <% end %>
+
+  <fieldset class="groupentry">
+    <legend>Merge configs (an option)</legend>
+    <p>
+      Merge configuration from another existing entry:
+      <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
+      <%= submit_tag 'Merge Configuration (Preview)', :name => :merge %><br/>
+    <div class="field_explanation">
+      <% if @tool_config.tool_id && @tool_config.bourreau_id %>
+        The description, environment variables and prologue script will be appended to whatever
+        values are currently in the form. The project and suggested number of CPUs will be changed.
+      <% else %>
+        The environment variables and prologue script will be appended to whatever
+        values are currently in the form.
+      <% end %>
+    </div>
+
+    <%= submit_tag 'Update permanently', :name => :update %>
+
+    <%= submit_tag 'Cancel changes', :name => :cancel %><br/>
+    <div class="field_explanation">
+      You need to first click the Merge Configuration (Preview), carefully check the results, and only if
+      everything is ok click this or any other Update button, and the changed values will persist
+    </div>
+
+  </fieldset>
+
 <% end %>
 
   </div>

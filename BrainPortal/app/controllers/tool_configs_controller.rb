@@ -178,13 +178,11 @@ class ToolConfigsController < ApplicationController
     # Update everything else
     # or just form fields if config already existing
     attributes = ToolConfig.columns.map(&:name).map(&:to_sym) - %i[ id tool_id bourreau_id ]
-    puts "attribs", attributes
     attributes.each do |att|
-         if tc_params.has_key?(att) || id.blank?
-           @tool_config[att] = form_tool_config[att]
-
-         end
-       end
+        if tc_params.has_key?(att) || id.blank?
+          @tool_config[att] = form_tool_config[att]
+        end
+      end
        # not sure does conditional break any initialization rules
 
     if params.has_key?(:env_list) || id.blank?
@@ -208,7 +206,6 @@ class ToolConfigsController < ApplicationController
 
     # Merge with an existing tool config
     if params.has_key?(:merge)
-       puts "merging"
        other_tc = ToolConfig.find_by_id(params[:merge_from_tc_id] || 0)
        if other_tc
          if @tool_config.tool_id &&  @tool_config.bourreau_id
@@ -237,8 +234,11 @@ class ToolConfigsController < ApplicationController
             # add xml?
            # @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus ))
            render :action => "show"
-
        return
+
+    elsif params.has_key?(:cancel)
+      @tool_config.reload
+      render :action => "show"
     end
 
     if @tool_config.tool_id && @tool_config.bourreau_id && @tool_config.description.blank?
@@ -247,7 +247,6 @@ class ToolConfigsController < ApplicationController
 
     respond_to do |format|
       if @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus ))
-        puts "successfull save"
         flash[:notice] = "Tool configuration was successfully updated."
         if not id
           format.html {
@@ -258,12 +257,11 @@ class ToolConfigsController < ApplicationController
                         end
           }
         else
-          format.html { render :action => :show}
+          format.html { render :action => :show  }
         end
         format.xml  { head :ok }
       else
-        puts "bad save"
-        format.html { render :action => :show}
+        format.html { render :show} # @tool_config.reload  ? or may be just bad fields?
         format.xml  { render :xml => @tool_config.errors, :status => :unprocessable_entity }
       end
     end
