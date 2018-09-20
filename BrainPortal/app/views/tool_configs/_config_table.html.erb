@@ -142,12 +142,12 @@
     <% end %>
   <% end %>
 
-<% bourreau = @tool_config.bourreau %>
-<% if !bourreau.nil? && bourreau.scir_class < ScirCloud %>
-  <% available_disk_images = bourreau.scir_class.get_available_disk_images(bourreau)
-     available_instance_types = bourreau.scir_class.get_available_instance_types(bourreau)
-     available_ssh_key_pairs = bourreau.scir_class.get_available_key_pairs(bourreau)
-  %>
+  <% bourreau = @tool_config.bourreau %>
+  <% if !bourreau.nil? && bourreau.scir_class < ScirCloud %>
+    <% available_disk_images = bourreau.scir_class.get_available_disk_images(bourreau)
+       available_instance_types = bourreau.scir_class.get_available_instance_types(bourreau)
+       available_ssh_key_pairs = bourreau.scir_class.get_available_key_pairs(bourreau)
+    %>
 
     <%= show_table(@tool_config, :form_helper => cf, :header => "Cloud configuration", :edit_condition => check_role(:admin_user)) do |t| %>
 
@@ -173,35 +173,34 @@
       <% end %>
 
     <% end %>
-
-    <% end %>
-<% end %>
-
-  <fieldset class="groupentry">
-    <legend>Merge configs (an option)</legend>
-    <p>
-      Merge configuration from another existing entry:
-      <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
-      <%= submit_tag 'Merge Configuration (Preview)', :name => :merge %><br/>
-    <div class="field_explanation">
-      <% if @tool_config.tool_id && @tool_config.bourreau_id %>
-        The description, environment variables and prologue script will be appended to whatever
-        values are currently in the form. The project and suggested number of CPUs will be changed.
-      <% else %>
-        The environment variables and prologue script will be appended to whatever
-        values are currently in the form.
-      <% end %>
-    </div>
-
-    <%= submit_tag 'Update permanently', :name => :update %>
-
-    <%= submit_tag 'Cancel changes', :name => :cancel %><br/>
-    <div class="field_explanation">
-      You need to first click the Merge Configuration (Preview), carefully check the results, and only if
-      everything is ok click this or any other Update button, and the changed values will persist
-    </div>
-
-  </fieldset>
-
+  <% end %>
   </div>
-</div>
+  </div>
+  <div class="generalbox">
+      <fieldset class="groupentry">
+      <legend>Merge (an option)</legend>
+      <p>
+        Merge configuration from another existing entry:
+        <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
+        <%= submit_tag 'Merge Configuration (Preview)', :name => :merge %><br/>
+      <div class="field_explanation">
+        <% if @tool_config.tool_id && @tool_config.bourreau_id %>
+          The description, environment variables and prologue script will be appended to whatever
+          values are currently in the form. The project and suggested number of CPUs will be changed.
+        <% else %>
+          The environment variables and prologue script will be appended to whatever
+          values are currently in the form.
+        <% end %>
+      </div>
+
+      <%= submit_tag 'Update', :name => :update %>
+
+      <%= submit_tag 'Cancel', :name => :cancel %><br/>
+      <div class="field_explanation">
+        You need to first click the Merge Configuration (Preview), carefully check the results, and only if
+        everything is ok click this or any other Update button, and the changed values will persist
+      </div>
+
+    </fieldset>
+  </div>
+<% end %>
