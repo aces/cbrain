@@ -133,7 +133,7 @@ class ToolConfigsController < ApplicationController
     @tool_config.env_array ||= []
 
     @tool_config.group = Group.everyone
-
+    # todo better config message?
     respond_to do |format|
       format.html { render :action => :show}
       format.xml  { render :xml => @tool_config }
@@ -154,25 +154,25 @@ class ToolConfigsController < ApplicationController
     end
   end
 
-  # Also used instead of create()
+  # Also used synonym of create()
   # This method is special in that only one instance of
   # an object is permitted to exist for global ( per tool or per bourreau) config
   # so an global config object being created is FIRST loaded from the DB if it exists to
   # prevent duplication.
   def update #:nodoc:
     id                = params[:id] || "NEW" # can be 'new' if we create()
-    # id                = nil if id == "NEW"
+    id                = nil if id == "NEW"
 
     tc_params         = tool_config_params
     form_tool_config  = ToolConfig.new(tc_params) # just to store the new attributes
     form_tool_id      = form_tool_config.tool_id.presence
     form_bourreau_id  = form_tool_config.bourreau_id.presence
-    @tool_config   = nil
+
     @tool_config   = ToolConfig.find(id) unless id.blank?
     cb_error "Need at least one of tool ID or bourreau ID." if @tool_config.blank? && form_tool_id.blank? && form_bourreau_id.blank?
     @tool_config ||= ToolConfig.where( :tool_id => form_tool_id, :bourreau_id => form_bourreau_id ).first if form_tool_id.blank? || form_bourreau_id.blank?
     @tool_config ||= ToolConfig.new(   :tool_id => form_tool_id, :bourreau_id => form_bourreau_id )
-    new_rec = @tool_config.new_record?
+    new_rec = not(id) && @tool_config.new_record?
     # Security: no matter what the form says, we use the ids from the DB if the object existed.
     form_tool_config.tool_id     = @tool_config.tool_id
     form_tool_config.bourreau_id = @tool_config.bourreau_id
