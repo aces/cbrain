@@ -29,6 +29,9 @@ puts "C> CBRAIN Rails Console Initalization starting"
 
 CbrainConsoleFeatures ||= []  # where we store help documents
 
+# Adds misc admin commands
+require __dir__ + "/lib/admin.rb"
+
 # Adds "no_log" and "do_log"
 require __dir__ + "/lib/logger_rc.rb"
 
