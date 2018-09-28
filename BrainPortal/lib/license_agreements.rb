@@ -71,7 +71,7 @@ module LicenseAgreements
   # properly match files on the filesystem, in public/licenses/{name}.html
   def valid_license_agreements?
     invalid_licenses = license_agreements.select do |license|
-      ! File.exists?(Rails.root + "public/licenses/#{license}.html")
+      ! File.exist?(Rails.root + "public/licenses/#{license}.html")
     end
 
     if invalid_licenses.presence
