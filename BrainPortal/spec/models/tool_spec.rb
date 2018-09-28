@@ -24,15 +24,27 @@ require 'rails_helper'
 
 describe Tool do
   let(:tool) do
-    allow(File).to receive(:exists?).and_return(true)
+    allow(File).to receive(:exist?).and_return(true)
+    allow(File).to receive(:exist?).with(Rails.root + "public/licenses/bad.html").and_return(false)
     build(:tool)
   end
-
 
   it "should keep description if present" do
    tool.description = "keep this"
    tool.save
    expect(tool.description).to eq("keep this")
+  end
+
+  it "should invalidated incorrect license" do
+    tool.license_agreements = ["bad"]
+    expect(tool.__send__(:valid_license_agreements?)).to eq(false)
+    expect(tool.valid?).to eq(false)
+  end
+
+  it "should invalidate incorrect license after save" do
+    tool.license_agreements = "bad"
+    tool.save
+    expect(tool.valid?).to eq(false)
   end
 
   it "should be able assign license to a new tool" do
@@ -65,7 +77,7 @@ describe Tool do
   end
 
   it "should keep license if present" do
-    tool.license_agreements = "keep_this"
+    tool.license_agreements = ["keep_this"]
     expect(tool.license_agreements).to eq(["keep_this"])
     tool.save
     expect(tool.license_agreements).to eq(["keep_this"])
@@ -103,24 +115,8 @@ describe Tool do
     tool.save
   end
 
-  it "should invalidate incorrect license" do
-    allow(File).to receive(:exists?).with("keep").and_return(false)
-    allow(File).to receive(:exists?).with("this").and_return(false)
-    tool.license_agreements = "keep this"
-    expect(tool.valid?).to eq(false)
-  end
-
-  it "should invalidate incorrect license after save" do
-    allow(File).to receive(:exists?).with("keep").and_return(false)
-    allow(File).to receive(:exists?).with("this").and_return(false)
-    tool.license_agreements = "keep this"
-    tool.save
-    expect(tool.valid?).to eq(false)
-  end
 
   it "should validate license " do
-    allow(File).to receive(:exists?).and_return(true)
-    # File.stub(:exists?).and_return(true)
     tool.license_agreements = "keep_this"
     tool.save
     expect(tool.valid?).to eq(true)
