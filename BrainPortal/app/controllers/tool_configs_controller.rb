@@ -90,7 +90,7 @@ class ToolConfigsController < ApplicationController
     config = ToolConfig.find(id)
 
     @tool_config          = config if   config.tool_id &&   config.bourreau_id # leaves nil otherwise
-    @tool_glob_config     = config if   config.tool_id && ! config.bourreau_id # leaves nul otherwise
+    @tool_glob_config     = config if   config.tool_id && ! config.bourreau_id # leaves nil otherwise
     @bourreau_glob_config = config if ! config.tool_id &&   config.bourreau_id # leaves nil otherwise
 
     @tool_glob_config     ||=
@@ -226,7 +226,9 @@ class ToolConfigsController < ApplicationController
     end
 
     respond_to do |format|
-      if @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus ))
+      if @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus extra_qsub_args
+                                                          container_image_userfile_id containerhub_image_name
+                                                          container_engine container_index_location ))
         flash[:notice] = "Tool configuration was successfully updated."
         format.html {
                     if @tool_config.tool_id

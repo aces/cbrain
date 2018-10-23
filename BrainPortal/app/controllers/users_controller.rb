@@ -60,7 +60,7 @@ class UsersController < ApplicationController
       format.html # index.html.erb
       format.js
       format.xml  do
-        render :xml  => @users.for_api
+        render :xml  => @users.for_api_xml
       end
       format.json do
         render :json => @users.for_api
@@ -83,7 +83,7 @@ class UsersController < ApplicationController
     respond_to do |format|
       format.html # show.html.erb
       format.xml  do
-        render :xml  => @user.for_api
+        render :xml  => @user.for_api_xml
       end
       format.json do
         render :json => @user.for_api

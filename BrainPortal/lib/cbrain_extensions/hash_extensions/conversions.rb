@@ -74,6 +74,19 @@ module CBRAINExtensions #:nodoc:
         end
       end
 
+      # For API calls that receive Hash objects,
+      # we need the XML to use underscores instead of dashes.
+      # If the hash was generated out of an ActiveRecord (e.g.
+      # by the helper for_api() ) and it contains a 'type' attribute,
+      # then we will also try to fetch the root of the STI hierarchy
+      # for the XML root tag.
+      # This generates and return such XML.
+      def to_api_xml(options = {})
+        root_tag   = self[:type] || self["type"]
+        root_tag &&= root_tag.constantize.sti_root_class.name rescue nil
+        to_xml({ :dasherize => false, :root => root_tag }.merge(options))
+      end
+
     end
   end
 end

@@ -3,13 +3,14 @@
 # Andrew Doyle, November - December 2016
 # Natacha Beck, January - February 2017
 # Natacha Beck, Shawn Brown - Summer 2018
+# Pierre Rioux, August 2018 - October 2018
 swagger: '2.0'
 consumes:
   - application/x-www-form-urlencoded
   - multipart/form-data
 info:
   title: CBRAIN API
-  description: REST API for interacting with the CBRAIN Platform
+  description: API for interacting with the CBRAIN Platform
   version: 5.0.2
   license:
     name: GNU Public License, Version 3
@@ -17,7 +18,7 @@ info:
   contact:
     name: CBRAIN Development Team
     url: https://github.com/aces/cbrain
-host: portal.cbrain.mcgill.ca
+host: "localhost:3000"
 securityDefinitions:
   BrainPortalSession:
     type: apiKey
@@ -26,7 +27,7 @@ securityDefinitions:
 security:
   - BrainPortalSession: []
 schemes:
-  - https
+  - http
 basePath: /
 produces:
   - application/json
@@ -40,20 +41,20 @@ paths:
       summary: Create a new session
       description: |
         This is the main entry point to create a CBRAIN session. Note that if
-        a user is currently logged in, a new session will not be available to
-        be created, and the current session will be re-used.
+        a user is currently logged in, a new session will not be created,
+        and the current session will be re-used.
       consumes:
         - multipart/form-data
+      security: []
       parameters:
         - name: login
           in: formData
-          description: The username of the User trying to connect.
+          description: The username of the user trying to connect.
           type: string
-          default: admin
           required: true
         - name: password
           in: formData
-          description: The password of the CBRAIN User
+          description: The password of the user
           type: string
           format: password
           required: true
@@ -61,16 +62,9 @@ paths:
         - Sessions
       responses:
         '200':
-          description: An object with the session ID and the CBRAIN user ID
+          description: An object with the API token and the CBRAIN user ID
           schema:
-            type: object
-            properties:
-              session_id:
-                type: string
-              user_id:
-                type: number
-              cbrain_api_token:
-                type: string
+            $ref: '#/definitions/SessionInfo'
         '401':
           description: Password authentication failed.
     get:
@@ -83,10 +77,7 @@ paths:
         '200':
           description: An object with the CBRAIN user ID
           schema:
-            type: object
-            properties:
-              user_id:
-                type: number
+            $ref: '#/definitions/SessionInfo'
         '401':
           description: No session created yet.
     delete:
@@ -149,6 +140,10 @@ paths:
           description: User created successfully
           schema:
             $ref: '#/definitions/User'
+        '422':
+          description: Attributes are invalid, or user already exists
+          schema:
+            type: object
   '/users/{id}':
     get:
       summary: Returns information about a user
@@ -162,7 +157,6 @@ paths:
           description: ID of the user
           required: true
           type: integer
-          default: 0
       tags:
         - Users
       responses:
@@ -188,7 +182,6 @@ paths:
           description: Boolean to force a password change
           required: false
           type: boolean
-          default: false
         - name: user
           in: body
           description: An object representing any parameter of the user that you would like to alter, only put ones that you would like to change.
@@ -205,6 +198,14 @@ paths:
           description: An object with the CBRAIN user information
           schema:
             $ref: '#/definitions/User'
+        '400':
+          description: User does not exist
+          schema:
+            type: object
+        '422':
+          description: Attributes are invalid
+          schema:
+            type: object
     delete:
       summary: Deletes a CBRAIN user
       description: |
@@ -215,7 +216,6 @@ paths:
           description: ID of user to update
           required: true
           type: integer
-          default: 0
       tags:
         - Users
       responses:
@@ -225,6 +225,8 @@ paths:
           description: Not authorized to delete this user.
         '404':
           description: User not found with the specified ID
+        '409':
+          description: User cannot be deleted, as it has resources allocated to them.
 #=============================================================================
 # TOOL CONFIGS ACTIONS
 #=============================================================================
@@ -359,7 +361,6 @@ paths:
           in: formData
           description: The Group that the Tag will be used in.
           type: integer
-          default: 1
         - name: id
           in: path
           description: ID of the tag to update.
@@ -427,7 +428,6 @@ paths:
           description: ID of the Bourreau to get information on.
           required: true
           type: integer
-          default: 1
       responses:
         '200':
           description: |
@@ -472,7 +472,6 @@ paths:
           description: ID of the Data Provider to get information on.
           required: true
           in: path
-          default: 1
       responses:
         '200':
           description: |
@@ -497,7 +496,6 @@ paths:
           description: The ID of the Data Provider to browse.
           required: true
           in: path
-          default: 1
       responses:
         '200':
           description: |
@@ -557,28 +555,7 @@ paths:
         '200':
           description: Files were successfully registered.
           schema:
-            type: object
-            properties:
-              notice:
-                type: string
-              error:
-                type: string
-              newly_registered_userfiles:
-                type: array
-                items:
-                  $ref: '#/definitions/Userfile'
-              previously_registered_userfiles:
-                type: array
-                items:
-                  $ref: '#/definitions/Userfile'
-              userfiles_in_transit:
-                type: array
-                items:
-                  $ref: '#/definitions/Userfile'
-              num_unregistered:
-                type: number
-              num_erased:
-                type: number
+            $ref: '#/definitions/RegistrationInfo'
         '401':
           description: No session created yet.
         '403':
@@ -768,34 +745,6 @@ paths:
       responses:
         '200':
           description: Successfully created Group.
-        '401':
-          description: No session created yet.
-  /groups/switch:
-    post:
-      summary: Switches the active group.
-      description: |
-        This method switches the active Group to a new one. This is useful if
-        the analysis that the user is performing is for different projects, and
-        involves separate Userfiles and Tasks.
-      tags:
-        - Groups
-      consumes:
-        - application/x-www-form-urlencoded
-      parameters:
-        - name: id
-          in: formData
-          description: ID number of the Group to switch to
-          type: integer
-          required: true
-          default: 1
-        - name: authenticity_token
-          in: formData
-          description: The token returned by /session/new
-          type: string
-          required: true
-      responses:
-        '200':
-          description: Successfully switched the active Group.
         '401':
           description: No session created yet.
   '/groups/{id}':
@@ -1069,31 +1018,6 @@ paths:
           description: Userfile updated successfully.
         '401':
           description: No session created yet.
-    delete:
-      summary: Delete a Userfile.
-      description: |
-        This method allows a User to delete a Userfile.
-      tags:
-        - Userfiles
-      consumes:
-        - application/x-www-form-urlencoded
-      parameters:
-        - name: id
-          in: path
-          description: The ID number of the Userfile to delete.
-          required: true
-          type: integer
-          default: 1
-        - name: authenticity_token
-          in: formData
-          description: The token returned by /session/new
-          type: string
-          required: true
-      responses:
-        '200':
-          description: Userfile deleted successfully.
-        '401':
-          description: No session created yet.
   '/userfiles/{id}/content':
     get:
       summary: Get the content of a Userfile
@@ -1361,66 +1285,6 @@ paths:
             $ref: '#/definitions/CbrainTask'
         '401':
           description: No Session created yet.
-    put:
-      summary: Update information on a Task.
-      description: |
-        This method updates information about a Task in CBRAIN.
-      tags:
-        - Tasks
-      parameters:
-        - name: id
-          in: path
-          description: The ID number of the Task to update.
-          required: true
-          type: integer
-          default: 1
-        - name: 'cbrain_task[results_data_provider_id]'
-          type: integer
-          in: formData
-          description: ID of the DataProvider to store the results of the Task on.
-          default: 1
-        - name: 'cbrain_task[description]'
-          in: formData
-          type: string
-          description: Description of the Task.
-          required: true
-        - name: 'cbrain_task[user_id]'
-          in: formData
-          type: integer
-          description: ID of the User the Task should be associated with.
-        - name: 'cbrain_task[group_id]'
-          in: formData
-          type: integer
-          description: ID of the Group the Task should be associated with.
-          default: 1
-        - name: authenticity_token
-          in: formData
-          type: string
-          description: The token returned by /session/new
-          required: true
-      responses:
-        '200':
-          description: Task updated successfully.
-        '401':
-          description: No Session created yet.
-    delete:
-      summary: Deletes a Task
-      description: Deletes a Task from CBRAIN.
-      tags:
-        - Tasks
-      parameters:
-        - name: authenticity_token
-          in: formData
-          type: string
-          description: The token returned by /session/new
-        - name: id
-          in: path
-          description: The ID number of the Task to delete.
-          required: true
-          type: integer
-      responses:
-        '200':
-          description: Indicates that the Task is being deleted in the background.
 #=============================================================================
 # TOOLS ACTIONS
 #=============================================================================
@@ -1446,11 +1310,19 @@ paths:
 # MODELS
 #=============================================================================
 definitions:
+  SessionInfo:
+    type: object
+    properties:
+      user_id:
+        type: integer
+        format: int64
+      cbrain_api_token:
+        type: string
   User:
     type: object
     properties:
       id:
-        type: number
+        type: integer
         format: int64
         description: Unique numerical ID for the user.
       login:
@@ -1486,7 +1358,7 @@ definitions:
         description:
           Classification of user permission level
       site_id:
-        type: number
+        type: integer
         format: int64
         description: ID of the site affiliation for the user. If this is not specified, the user will go into the default Site
       last_connected_at:
@@ -1502,7 +1374,7 @@ definitions:
     type: object
     properties:
       id:
-        type: number
+        type: integer
         format: int64
         description: Unique numerical ID for the ToolConfig.
       version_name:
@@ -1512,31 +1384,21 @@ definitions:
         type: string
         description: a description of the configuration
       tool_id:
-        type: number
+        type: integer
         format: int64
         description: the ID of the tool associated with this configuration
       bourreau_id:
-        type: number
+        type: integer
         format: int64
         description: |
           The ID of the execution server where this tool
           configuration is available.
-      env_array:
-        description: additional environment variables
-        type: array
-        items:
-          type: string
-      script_prologue:
-        type: string
-        description: |
-          A piece of bash script configured by the administrator to
-          run before the tool is launched.
       group_id:
-        type: number
+        type: integer
         format: int64
         description: the ID of the project controlling access to this ToolConfig
       ncpus:
-        type: number
+        type: integer
         format: int32
         description: |
           A hint at how many CPUs the CBRAIN task will allocate
@@ -1545,7 +1407,7 @@ definitions:
     type: object
     properties:
       id:
-        type: number
+        type: integer
         format: int64
         description: Unique identifier for the tag
       name:
@@ -1554,12 +1416,12 @@ definitions:
           Name of the tag. This holds all the information about what the tag is
           supposed to indicate about your files.
       user_id:
-        type: number
+        type: integer
         format: int64
         description: |
           The ID of the user that the tag belongs to.
       group_id:
-        type: number
+        type: integer
         format: int64
         description: |
           The ID of the group that the tag belongs to.
@@ -1567,18 +1429,18 @@ definitions:
     type: object
     properties:
       id:
-        type: number
+        type: integer
         format: int64
         description: Unique numerical ID for the bourreau.
       name:
         type: string
         description: Name given by the creator to the bourreau.
       user_id:
-        type: number
+        type: integer
         format: int64
         description: ID of the creator of the bourreau.
       group_id:
-        type: number
+        type: integer
         format: int64
         description: ID of the group allowed to use the bourreau.
       online:
@@ -1596,7 +1458,7 @@ definitions:
     type: object
     properties:
       id:
-        type: number
+        type: integer
         format: int64
         description: Unique ID for the Data Provider.
       name:
@@ -1609,11 +1471,11 @@ definitions:
           Data Provider, has a flat internal directory structure, or is meant
           for file uploading to CBRAIN.
       user_id:
-        type: number
+        type: integer
         format: int64
         description: Creator and owner of the Data Provider.
       group_id:
-        type: number
+        type: integer
         format: int64
         description: ID of the group that has access to this Data Provider.
       online:
@@ -1693,11 +1555,11 @@ definitions:
         format: int64
         description: Number of bytes used to store the file.
       user_id:
-        type: number
+        type: integer
         format: int64
         description: ID of the owner of the file.
       parent_id:
-        type: number
+        type: integer
         format: int64
         description: 'ID of the parent Userfile, if any exists, or null otherwise.'
       type:
@@ -1708,13 +1570,13 @@ definitions:
           which represents one file, and the File Collection, which represents a
           directory full of files.
       group_id:
-        type: number
+        type: integer
         format: int64
         description: >-
           ID of the group that owns the file, which determines its visibility
           status.
       data_provider_id:
-        type: number
+        type: integer
         format: int64
         description: >-
           ID of the Data Provider that is hosting the persistent copy of the
@@ -1728,7 +1590,7 @@ definitions:
           Boolean variable that specifies whether members of the owner group
           have access to modify or overwrite the file.
       num_files:
-        type: number
+        type: integer
         format: int64
         description: >-
           Number of files that the Userfiles represents. For Single Files, this
@@ -1794,11 +1656,11 @@ definitions:
         format: dateTime
         description: Last updated.
       user_id:
-        type: number
+        type: integer
         format: int64
         description: ID of the User who created the Task.
       bourreau_id:
-        type: number
+        type: integer
         format: int64
         description: ID of the Bourreau the Task was launched on.
       description:
@@ -1807,40 +1669,41 @@ definitions:
         type: string
         description: List of prerequisites.
       share_wd_tid:
-        type: number
+        type: integer
         format: int64
         description: share_wd_tid
       run_number:
-        type: number
+        type: integer
         format: int64
         description: The number of attempts that it has taken to run the task.
       group_id:
-        type: number
+        type: integer
         format: int64
         description: ID of the group that this task is being run in.
       tool_config_id:
-        type: number
+        type: integer
         format: int64
         description: >-
           ID number that specifies which Tool Config to use. The Tool Config
           specifies environment variables and other system-specific scripts
           necessary for the Task to be run in the target environment.
       level:
-        type: number
+        type: integer
         format: int64
         description: level
       rank:
-        type: number
+        type: integer
         format: int64
         description: rank
       results_data_provider_id:
-        type: number
+        type: integer
         format: int64
         description: >-
           ID of the Data Provider that contains the Userfile that represents the
           results of the task.
       cluster_workdir_size:
         type: integer
+        format: int64
         description: size of workdirectory
       workdir_archived:
         type: string
@@ -1850,7 +1713,7 @@ definitions:
           task is available on the processing server or has been archived and is
           no longer accessible.
       workdir_archive_userfile_id:
-        type: number
+        type: integer
         format: int64
         description: >-
           ID of the userfile created as part of the archival process, if the
@@ -1866,11 +1729,11 @@ definitions:
         type: string
         description: Name of the Tool.
       user_id:
-        type: number
+        type: integer
         format: int64
         description: Creator of the Tool.
       group_id:
-        type: number
+        type: integer
         format: int64
         description: Group that has access to the Tool.
       category:
@@ -1892,11 +1755,37 @@ definitions:
         description: >-
           URL of the website that describes the Tool and possibly has code for
           the Tool.
+  RegistrationInfo:
+    type: object
+    properties:
+      notice:
+        type: string
+      error:
+        type: string
+      newly_registered_userfiles:
+        type: array
+        items:
+          $ref: '#/definitions/Userfile'
+      previously_registered_userfiles:
+        type: array
+        items:
+          $ref: '#/definitions/Userfile'
+      userfiles_in_transit:
+        type: array
+        items:
+          $ref: '#/definitions/Userfile'
+      num_unregistered:
+        type: integer
+        format: int64
+      num_erased:
+        type: integer
+        format: int64
   FileInfo:
     type: object
     properties:
       userfile_id:
         type: integer
+        format: int64
         description: id of the userfile
       name:
         type: string
@@ -1906,18 +1795,22 @@ definitions:
         description: string representation of gid, the name of the group
       gid:
         type: integer
+        format: int64
         description: numeric group id of the file
       owner:
         type: string
         description: string representation of uid, the name of the owner
       uid:
         type: integer
+        format: int64
         description: numeric uid of owner
       permissions:
         type: integer
+        format: int64
         description: an int interpreted in octal, e.g. 0640
       size:
-        type: number
+        type: integer
+        format: int64
         description: size of file in bytes
       state_ok:
         type: boolean

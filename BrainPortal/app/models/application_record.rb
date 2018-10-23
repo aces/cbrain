@@ -60,7 +60,8 @@ class ApplicationRecord < ActiveRecord::Base #:nodoc:
   # ActiveRecord Added Behavior For Serialization
   ###################################################################
 
-  include CBRAINExtensions::ActiveRecordExtensions::Serialization
+  include CBRAINExtensions::ActiveRecordExtensions::AttributeSerialization
+  include CBRAINExtensions::ActiveRecordExtensions::RecordSerialization
 
   ###################################################################
   # ActiveRecord Added Behavior For Core Models

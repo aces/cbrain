@@ -54,6 +54,28 @@ module CBRAINExtensions #:nodoc:
         each_with_index { |elem,idx| yield(elem,idx,size) }
       end
 
+      # When invoked on an array of ActiveRecord objects,
+      # or Hash objects obtained with for_api(),
+      # creates the XML with underscores instead of dashes;
+      # also will try to properly set the XML root tag to
+      # represent the types of the objects in the array (using
+      # the first object of the array to guess it). An array
+      # of User objects would be rendered as
+      #    "<Users><User>...</User>...</Users>"
+      def to_api_xml(options = {})
+        root_tag   = self[0].type    rescue nil
+        root_tag ||= self[0][:type]  rescue nil
+        root_tag ||= self[0]["type"] rescue nil
+        root_tag &&= root_tag.constantize.sti_root_class.name rescue nil
+        root_tag &&= root_tag.pluralize
+        to_xml({ :dasherize => false, :root => root_tag }.merge(options))
+      end
+
+      # This method is a shorthand for self.for_api.to_api_xml
+      def for_api_xml
+        for_api.to_api_xml
+      end
+
     end
   end
 end

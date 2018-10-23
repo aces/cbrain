@@ -404,10 +404,16 @@ class UserfilesController < ApplicationController
 
     flash[:notice] = "Synchronization started in background. Files that cannot be synchronized will be skipped."
 
-    if @userfiles.size == 1 && params[:back_to_show_page]
-      redirect_to :controller => :userfiles, :action  => :show, :id => @userfiles[0].id
-    else
-      redirect_to :action  => :index
+    respond_to do |format|
+      format.html do
+        if @userfiles.size == 1 && params[:back_to_show_page]
+          redirect_to :controller => :userfiles, :action  => :show, :id => @userfiles[0].id
+        else
+          redirect_to :action  => :index
+        end
+      end
+      format.xml  { head :ok }
+      format.json { head :ok }
     end
   end
 
@@ -643,6 +649,8 @@ class UserfilesController < ApplicationController
       old_name = @userfile.name
       new_name = new_userfile_attr.delete(:name) || old_name
 
+      new_userfile_attr.delete :data_provider_id # cannot be changed here
+
       @userfile.attributes = new_userfile_attr
       @userfile.type       = type         if type
       @userfile.user_id    = new_user_id  if current_user.available_users.where(:id => new_user_id).first
@@ -662,8 +670,8 @@ class UserfilesController < ApplicationController
       if @userfile.errors.empty?
         flash[:notice] += "#{@userfile.name} successfully updated."
         format.html { redirect_to(:action  => 'show') }
-        format.xml  { head :ok, :content_type => 'text/plain' }
-        format.json { head :ok, :content_type => 'text/plain' }
+        format.xml  { head :ok }
+        format.json { head :ok }
       else
         @userfile.reload
         format.html { render(:action  => 'show') }
@@ -1253,14 +1261,22 @@ class UserfilesController < ApplicationController
   # +manage_compression+ with operation :compress.
   def compress #:nodoc:
     manage_compression(params[:file_ids] || [], :compress)
-    redirect_to(:action => :index)
+    respond_to do |format|
+      format.html { redirect_to(:action => :index) }
+      format.json { head :ok }
+      format.xml  { head :ok }
+    end
   end
 
   # Uncompress/unarchive a set of userfiles. Wrapper action for
   # +manage_compression+ with operation :uncompress.
   def uncompress #:nodoc:
     manage_compression(params[:file_ids] || [], :uncompress)
-    redirect_to(:action => :index)
+    respond_to do |format|
+      format.html { redirect_to(:action => :index) }
+      format.json { head :ok }
+      format.xml  { head :ok }
+    end
   end
 
   # Given a set of files selected by the user, creates a new
