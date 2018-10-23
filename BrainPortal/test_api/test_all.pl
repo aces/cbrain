@@ -36,7 +36,7 @@ sub Usage { # private
 
 This is $BASENAME $VERSION by Pierre Rioux
 
-Usage: $BASENAME [-v[0-6]] [-h server] [-p port] [-s scheme] [test_substring]
+Usage: $BASENAME [-v[0-6]] [-h server] [-p port] [-s scheme] [-R] [test_substring]
 
 Important: Make sure your RAILS_ENV is set to "test", and that your
 rails configuration for it DOES point to a test database, because
@@ -62,6 +62,8 @@ Verbose levels:
   -v4 : Shows the HTTP content of the responses and curl's STDERR
   -v5 : When HTTP content differs from expected, shows them both
 
+The option -R tells the script to NOT run the rake seeding command first.
+
 USAGE
     exit 1;
 }
@@ -75,6 +77,7 @@ my $HOST    = "localhost";
 my $PORT    = 3000;
 my $SCHEME  = 'http';
 my $TEST_SUBSTRING = "";
+my $SEED_DB = 1; # -R sets this to false and then no rake task is run
 
 # These tokens must match what will be seeded by the
 # rake task 'db:seed:test:api'.
@@ -91,7 +94,7 @@ my %FAILED_TESTS = (); # test_name => [ type, type, ... ] ; type any of CURL, CO
 
 for (;@ARGV;) {
     # Add in the regex [] ALL single-character command-line options
-    my ($opt,$arg) = ($ARGV[0] =~ /^-([vhps])(.*)$/);
+    my ($opt,$arg) = ($ARGV[0] =~ /^-([vhpsR])(.*)$/);
     last if ! defined $opt;
     # Add in regex [] ONLY single-character options that
     # REQUIRE an argument, except for the '@' debug switch.
@@ -107,6 +110,7 @@ for (;@ARGV;) {
     $HOST=$arg                                         if $opt eq 'h';
     $PORT=$arg                                         if $opt eq 'p';
     $SCHEME=$arg                                       if $opt eq 's';
+    $SEED_DB=0                                         if $opt eq 'R';
     shift;
 }
 
@@ -150,18 +154,20 @@ API Tests Starting
 HELLO
 
 # Init the RAILS_ENV=test DB
-print "Seeding DB with API test data...\n" if $VERBOSE > 0;
-my $ret = system "rake db:seed:test:api >/tmp/rake.$$.out 2>&1";
-if ($ret != 0) {
-  print "\n";
-  print "Cannot init test DB with API seed values:\n";
-  print "Rake task 'db:seed:test:api' failed.\n";
-  print "Captured output of rake task:\n";
-  system "cat /tmp/rake.$$.out";
+if ($SEED_DB) {
+  print "Seeding DB with API test data...\n" if $VERBOSE > 0;
+  my $ret = system "rake db:seed:test:api >/tmp/rake.$$.out 2>&1";
+  if ($ret != 0) {
+    print "\n";
+    print "Cannot init test DB with API seed values:\n";
+    print "Rake task 'db:seed:test:api' failed.\n";
+    print "Captured output of rake task:\n";
+    system "cat /tmp/rake.$$.out";
+    unlink "/tmp/rake.$$.out";
+    exit(2);
+  }
   unlink "/tmp/rake.$$.out";
-  exit(2);
 }
-unlink "/tmp/rake.$$.out";
 
 # Generate list of tests
 my @list = qx( find curltests -type f -name '*req' -print );

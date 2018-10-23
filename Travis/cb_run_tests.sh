@@ -93,7 +93,7 @@ fi
 if test $(dir_list_cksum "$cb_base/BrainPortal/cbrain_plugins") != \
         $(dir_list_cksum "$cb_test/BrainPortal/cbrain_plugins") ; then
   printf "${YELLOW}Installing plugins symbolic links.${NC}\n"
-  rake cbrain:plugins:install:plugins || die "Cannot install cbrain:plugins" # works for Bourreau too
+  rake "cbrain:plugins:install:plugins" || die "Cannot install cbrain:plugins" # works for Bourreau too
 else
   printf "${BLUE}No need to install the plugins symbolic links, yippee!${NC}\n"
 fi
@@ -145,9 +145,11 @@ rake "db:sanity:check" || die "Cannot sanity check DB"
 # ------------------------------
 # Finally, run the tests!
 # ------------------------------
-# In order to always run both rspec commands, we save the failures in a string.
+# We save the failures of the main test commands in strings.
+# That way we run them all and report everything at the end.
 fail_portal=""
 fail_bourreau=""
+fail_api=""
 
 # ------------------------------
 # Portal-Side Testing
@@ -177,14 +179,27 @@ rspec spec/boutiques || fail_bourreau="rspec on Bourreau failed with return code
 
 
 # ------------------------------
+# Portal-Side Testing of API
+# ------------------------------
+printf "${BLUE}Running API tests with curl on the Portal side.${NC}\n"
+cd $cb_test/BrainPortal      || die "Cannot cd to Bourreau directory"
+rake "db:seed:test:api"      || die "Cannot re-seed the DB for API testing"
+rails server puma -p 3000 -d || die "Cannot start local puma server?"
+cd test_api                  || die "Cannot cd to test_api directory?"
+perl test_all.pl -h localhost -p 3000 -s http -R || fail_api="API testing with CURL failed"
+
+
+
+# ------------------------------
 # Return status of both rspec
 # ------------------------------
-test -z "$fail_portal$fail_bourreau" && exit 0  # Pangloss
+test -z "$fail_portal$fail_bourreau$fail_api" && exit 0  # Pangloss
 echo ""
-printf "${YELLOW}**** rspec commands failures summary ****${NC}\n"
+printf "${YELLOW}**** Summary of command failures ****${NC}\n"
 test -n "$fail_portal"   && printf "${RED}$fail_portal${NC}\n"
 test -n "$fail_bourreau" && printf "${RED}$fail_bourreau${NC}\n"
-printf "${YELLOW}**** ------------------------------- ****${NC}\n"
+test -n "$fail_api"      && printf "${RED}$fail_api${NC}\n"
+printf "${YELLOW}**** --------------------------- ****${NC}\n"
 echo ""
 exit 2
 
