@@ -402,7 +402,7 @@ paths:
       description: |
         This method returns a list of Bourreau objects.
       tags:
-        - Bourreau
+        - Bourreaux
       responses:
         '200':
           description: |
@@ -421,7 +421,7 @@ paths:
         This method returns a single Bourreau object based on the
         ID parameter.
       tags:
-        - Bourreau
+        - Bourreaux
       parameters:
         - name: id
           in: path
@@ -546,11 +546,6 @@ paths:
           items:
             type: string
           required: true
-        - name: authenticity_token
-          in: formData
-          type: string
-          description: The token returned by /session/new
-          required: true
       responses:
         '200':
           description: Files were successfully registered.
@@ -597,11 +592,6 @@ paths:
           type: boolean
           description: Specifies to delete the files once they are unregistered.
           default: true
-        - name: authenticity_token
-          type: string
-          in: formData
-          description: The token returned by /session/new
-          required: true
       responses:
         '200':
           description: |
@@ -639,11 +629,6 @@ paths:
           in: formData
           type: integer
           description: The ID of the user to delete files as.
-        - name: authenticity_token
-          type: string
-          description: The token returned by /session/new
-          in: formData
-          required: true
       responses:
         '200':
           description: >-
@@ -737,11 +722,6 @@ paths:
           description: An array of IDs of Users that will be members of the new Group.
           default:
             - '1'
-        - name: authenticity_token
-          in: formData
-          type: string
-          description: The token returned by /session/new
-          required: true
       responses:
         '200':
           description: Successfully created Group.
@@ -842,11 +822,6 @@ paths:
           required: true
           type: integer
           default: 1
-        - name: authenticity_token
-          in: formData
-          type: string
-          description: The token returned by /session/new
-          required: true
       responses:
         '200':
           description: Successfully deleted the Group (project).
@@ -911,11 +886,6 @@ paths:
           in: formData
           description: Archive
           type: string
-        - name: authenticity_token
-          in: formData
-          description: The token returned by /session/new
-          type: string
-          required: true
         - name: _up_ex_mode
           in: formData
           description: usually "collection"
@@ -1008,11 +978,6 @@ paths:
           in: formData
           type: string
           description: Description of the Userfile.
-        - name: authenticity_token
-          in: formData
-          description: The token returned by /session/new
-          type: string
-          required: true
       responses:
         '200':
           description: Userfile updated successfully.
@@ -1060,16 +1025,11 @@ paths:
           description: >-
             The name of the archive file that the Userfiles will be compressed
             into for downloading.
-        - name: authenticity_token
-          in: formData
-          type: string
-          description: The token returned by /session/new
-          required: true
       responses:
         '200':
           description: Indicates that the files are being compressed and downloaded.
   /userfiles/delete_files:
-    post:
+    delete:
       summary: Delete several files that have been registered as Userfiles
       tags:
         - Userfiles
@@ -1082,11 +1042,6 @@ paths:
           items:
             type: integer
           description: The ID numbers of the files to be deleted
-          required: true
-        - name: authenticity_token
-          in: formData
-          description: The token returned by /session/new
-          type: string
           required: true
       responses:
         '200':
@@ -1120,11 +1075,6 @@ paths:
             Specifies whether to overwrite files on the destination Data
             Provider if a file already exists there with the same name
           default: false
-        - name: authenticity_token
-          in: formData
-          type: string
-          description: The token returned by /session/new
-          required: true
       responses:
         '200':
           description: >-
@@ -1143,11 +1093,6 @@ paths:
             type: integer
           description: A list of Userfile ID numbers to compress.
           required: true
-        - name: authenticity_token
-          in: formData
-          type: string
-          description: The token returned by /session/new
-          required: true
       responses:
         '200':
           description: Indicates that the compression is starting in the background.
@@ -1165,11 +1110,6 @@ paths:
           items:
             type: integer
           description: A list of Userfile ID numbers to uncompress.
-          required: true
-        - name: authenticity_token
-          in: formData
-          type: string
-          description: The token returned by /session/new
           required: true
       responses:
         '200':
@@ -1205,11 +1145,6 @@ paths:
             ensure that ALL caches known to CBRAIN are updated with the most
             recent version of the files in the host Data Provider.
           default: sync_local
-        - name: authenticity_token
-          in: formData
-          type: string
-          description: The token returned by /session/new
-          required: true
       responses:
         '200':
           description: Indicates that synchronization is starting in the background

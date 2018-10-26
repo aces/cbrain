@@ -83,7 +83,7 @@ elsif program_name =~ /rake/
   #
   # Rake Exceptions By First Argument
   #
-  skip_validations_for = [ /^db:/, /^cbrain:plugins/, /^route/, /^assets/ ]
+  skip_validations_for = [ /^db:/, /^cbrain:plugins/, /^cbrain:test/, /^route/, /^assets/ ]
   if skip_validations_for.any? { |p| first_arg =~ p }
     #------------------------------------------------------------------------------
     puts "C> \t- No validations needed for rake task '#{first_arg}'. Skipping."

@@ -186,7 +186,8 @@ cd $cb_test/BrainPortal      || die "Cannot cd to Bourreau directory"
 rake "db:seed:test:api"      || die "Cannot re-seed the DB for API testing"
 rails server puma -p 3000 -d || die "Cannot start local puma server?"
 cd test_api                  || die "Cannot cd to test_api directory?"
-perl test_all.pl -h localhost -p 3000 -s http -R || fail_api="API testing with CURL failed"
+sleep 5 # must wait a bit for puma to be ready
+perl curl_client.pl -h localhost -p 3000 -s http -R || fail_api="API testing with CURL failed"
 
 
 
