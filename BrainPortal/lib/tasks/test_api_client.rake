@@ -39,7 +39,17 @@ namespace :cbrain do
           (ENV["RAILS_ENV"].presence || "Unk") =~ /test/
         CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
         #PortalSystemChecks.check(PortalSystemChecks.all - [:a020_check_database_sanity])
-        load "test_api/ruby_client.rb"
+        load "test_api/client_req_tester.rb"
+        tester = ClientReqTester.new
+        tester.reqfiles_root = Rails.root + "test_api" + "req_files"
+        tester.run_all_tests(2,"") # verbose level, substring filter
+        if tester.failed_tests.present?
+          puts "Some tests failed:\n"
+          tester.failed_tests.each do |name,errors|
+            printf " => %-40s : %s\n",name,errors.join(", ")
+          end
+        end
+        Kernel.exit 1 + tester.failed_tests.size
       end
     end
   end

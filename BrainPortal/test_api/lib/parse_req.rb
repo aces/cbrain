@@ -142,7 +142,7 @@ class ParseReq #:nodoc:
     # Verify that the method exists for the class
     handler = klass.new
     unless handler.respond_to? @method
-      raise "Error parsing testfile '#{testfile}: class #{klass} has not method '#{@method}'"
+      raise "Parsing testfile '#{testfile}: class #{klass} has not method '#{@method}'"
     end
 
     self
@@ -161,7 +161,7 @@ class ParseReq #:nodoc:
     supplied       = @in_array ? @in_array.size : 0
     supplied      += 1 if @reqid
     if needed != supplied
-      raise TestConfigurationError.new("Error: not enough params for #{@klass}.new.#{@method}(): got #{supplied}, needed #{needed}")
+      raise TestConfigurationError.new("Not enough params for #{@klass}.new.#{@method}(): got #{supplied}, needed #{needed}")
     end
 
     # Invoke the method with the proper client.
@@ -180,7 +180,8 @@ class ParseReq #:nodoc:
     end
 
     # CONTENT TYPE
-    got_ctype = headers['Content-Type']
+    got_ctype = headers['Content-Type'] # 'application/json ; charset=utf8'
+    got_ctype.sub!(/\s*;.*/,"")
     exp_ctype = 'application/json' # FIXME hardcoded for the moment, make it changeable in the future
     if got_ctype != exp_ctype
       errors << "C_TYPE: #{got_ctype}"
@@ -199,7 +200,8 @@ class ParseReq #:nodoc:
   private
 
   # Used for content comparisons
-  def clean_content(string, options={}) #:nodoc:
+  def clean_content(content, options={}) #:nodoc:
+    string = content.class.name =~ /^CbrainClient::/ ? content.to_json : content.to_s
     clean = string.gsub(/\s+/,"")
     # remove dates: "2018-10-19T22:12:42.000Z"
     clean = clean.gsub(/"\d\d\d\d-\d\d-\d\d[T\s]\d\d:\d\d:\d\d[\d\.Z]*"/, "null")

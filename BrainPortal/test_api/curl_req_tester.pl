@@ -47,7 +47,7 @@ Default port (-p)   : 3000
 Default scheme (-s) : "http"
 
 The "test_substring" argument can be used to filter out any part of the
-relative paths to the "req" files under "curltests/", e.g. "normget"
+relative paths to the "req" files under "req_files/", e.g. "normget"
 or "users/normget" or "users" etc. This is not a regex or a pattern,
 just a substring match.
 
@@ -140,7 +140,7 @@ $SIG{'ALRM'} = \&SigCleanup;
 ###############################
 
 # Just a quick check for a proper cwd
-die "This program must be run in the BrainPortal/test_api directory.\n" unless -f "test_all.pl" && -d "curltests";
+die "This program must be run in the BrainPortal/test_api directory.\n" unless -f "curl_req_tester.pl" && -d "req_files";
 
 # Rails 'test'
 die "This program must be run with the RAILS_ENV environment set to 'test'.\n" unless ($ENV{'RAILS_ENV'} || "") eq 'test';
@@ -170,7 +170,7 @@ if ($SEED_DB) {
 }
 
 # Generate list of tests
-my @list = qx( find curltests -type f -name '*req' -print );
+my @list = qx( find req_files -type f -name '*req' -print );
 chomp(@list);
 print "\nFound ",scalar(@list)," CURL test files.\n" if $VERBOSE > 0;
 print " => ",join("\n => ",@list),"\n"               if $VERBOSE > 2;
@@ -200,7 +200,7 @@ my $captE = "/tmp/capt-E.$$.curl";  # capture stderr content
 for (my $ti = 0;$ti < @list;$ti++) {
   my $testfile = $list[$ti];
   my $pretty_name = $testfile;
-  $pretty_name =~ s#^curltests/##;
+  $pretty_name =~ s#^req_files/##;
   $pretty_name =~ s#/req$##;
   print "\n\n------------------------------------------\n" if $VERBOSE > 1;
   printf("%3.3d/%3.3d Running test '%s'\n",$ti+1,scalar(@list),$pretty_name) if $VERBOSE > 0;
@@ -210,7 +210,7 @@ for (my $ti = 0;$ti < @list;$ti++) {
   my $req = qx( cat "$testfile" );
   my ($method,$path,$rest) = split(/\s+/,$req);
   die "Illegal method '$method' in file '$testfile'. Expected GET or POST etc.\n"
-    unless $method =~ /^(GET|POST|PATCH|DELETE)$/i;
+    unless $method =~ /^(GET|POST|PATCH|PUT|DELETE)$/i;
   $path =~ s#^/+##;
   $path =~ s#ATOK#cbrain_api_token=$ADMIN_TOKEN#;
   $path =~ s#NTOK#cbrain_api_token=$NORMAL_TOKEN#;
@@ -316,7 +316,7 @@ if (scalar(keys(%FAILED_TESTS)) == 0) {
 print "\nSome tests failed.\n"                         if $VERBOSE > 0;
 
 foreach my $pretty_name (sort keys %FAILED_TESTS) {
-  printf " => %-32s : ",$pretty_name                    if $VERBOSE > 0;
+  printf " => %-40s : ",$pretty_name                    if $VERBOSE > 0;
   print join(", ",@{$FAILED_TESTS{$pretty_name}}),"\n" if $VERBOSE > 0;
 }
 exit(1 + scalar(keys(%FAILED_TESTS)));
