@@ -183,13 +183,8 @@ if ($TEST_SUBSTRING) {
 }
 
 # Shuffle the list; really dumb shuffle and oh do I miss Ruby's .shuffle().
-for (my $i=0;$i<@list;$i++) {
-  my $j = int(rand(@list));
-  my $vi = $list[$i];
-  my $vj = $list[$j];
-  $list[$i] = $vj;
-  $list[$j] = $vi;
-}
+my $new_order = &shuffle_req_files(\@list);
+@list = @$new_order; # replace
 print "\nReordered list.\n"            if $VERBOSE > 1;
 print " => ",join("\n => ",@list),"\n" if $VERBOSE > 2;
 
@@ -329,4 +324,44 @@ sub record_failure {
   my ($testname, $message) = @_;
   my $messages = $FAILED_TESTS{$testname} ||= [];
   push(@$messages, $message);
+}
+
+# Shuffling req files is special, in that
+# req files at the lowest level of a directory
+# tree must be tried in alphabetcal order,
+# but aside from that they shoudl be able to be
+# run in arbitrary order compared to any other req
+# files elsewhere.
+sub shuffle_req_files {
+  my $listref = $_[0]; # array of relative path names of req files
+
+  # Build index of common dir prefixes
+  my %regrouping = ();
+  foreach my $req (@$listref) {
+    my $prefix = $req;
+    $prefix =~ s#/[^\/]+$##; # remove trailing "/anything"
+    my $sublist = $regrouping{$prefix} ||= [];
+    push(@$sublist, $req);
+  }
+
+  # Build shuffled list of prefixes
+  # Oh do I miss Ruby's .shuffle().
+  my @prefixes = keys %regrouping;
+  for (my $i=0;$i<@prefixes;$i++) {
+    my $j = int(rand(@prefixes));
+    my $vi = $prefixes[$i];
+    my $vj = $prefixes[$j];
+    $prefixes[$i] = $vj;
+    $prefixes[$j] = $vi;
+  }
+
+  # Return list of all req files such that
+  # prefixes are shuffled, yet files with same
+  # prefixes are ordered.
+  my $new_order = [];
+  foreach my $prefix (@prefixes) { # now shuffled
+    my $sublist = $regrouping{$prefix};
+    push(@$new_order,sort(@$sublist));
+  }
+  return $new_order;
 }

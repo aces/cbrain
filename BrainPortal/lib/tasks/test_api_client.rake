@@ -42,7 +42,9 @@ namespace :cbrain do
         load "test_api/client_req_tester.rb"
         tester = ClientReqTester.new
         tester.reqfiles_root = Rails.root + "test_api" + "req_files"
-        tester.run_all_tests(2,"") # verbose level, substring filter
+        tester.verbose = ENV['CBRAIN_TEST_API_VERBOSE'].presence.try(:to_i) || 1 # TODO make it an arg
+        substring      = ENV['CBRAIN_TEST_API_FILTER']  || "" # substring filter, TODO make it an arg
+        tester.run_all_tests(substring)
         if tester.failed_tests.present?
           puts "Some tests failed:\n"
           tester.failed_tests.each do |name,errors|

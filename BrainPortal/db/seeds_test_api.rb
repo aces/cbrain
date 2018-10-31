@@ -154,6 +154,7 @@ admin=CoreAdmin.first
   admin.password              = 'admin_123'
   admin.password_confirmation = 'admin_123'
   admin.password_reset        = false
+  admin.full_name             = 'CBRAIN Administrator'
   admin.last_connected_at     = nil
   admin.save!
 end
@@ -364,6 +365,7 @@ dp = FlatDirLocalDataProvider.seed_record!(
   }
 )
 
+system("rm -rf '#{default_support_dir}/test_api/localdp/'*")
 system("touch '#{default_support_dir}/test_api/localdp/new1.txt' '#{default_support_dir}/test_api/localdp/new2.log'")
 system("touch '#{default_support_dir}/test_api/localdp/del1'     '#{default_support_dir}/test_api/localdp/del2'")
 

@@ -61,6 +61,7 @@ class ClientReqTester #:nodoc:
   attr_writer :reqfiles_root # Path to the root of the reqfiles directory tree
   attr_reader :reqfiles      # [ 'a/b/req', 'a/c/req' ... ]
   attr_reader :test_results  # { 'a/b/req' => [ 'error1', 'error2' ] }
+  attr_accessor :verbose
 
   def self.client_switcher(reqtoken)
     @client_switcher[reqtoken]
@@ -73,7 +74,8 @@ class ClientReqTester #:nodoc:
       raise "No proper root for the reqfiles"
   end
 
-  def run_all_tests(verbose = 1, filter = nil)
+  def run_all_tests(filter = nil)
+    @verbose ||= 1
     verify_config()
     load_all_reqfiles()
     filter_reqfiles(filter) if filter.present?
@@ -84,7 +86,7 @@ class ClientReqTester #:nodoc:
       test_base   = Pathname.new(test).relative_path_from(Pathname.new(@reqfiles_root)).to_s
       test_base.sub!(/[\.\/]req$/,"") # make pretty
       pretty_name = sprintf("%3.3d/%3.3d : %s", i+1, total, test_base)
-      result = run_one_test(test,pretty_name,verbose)
+      result = run_one_test(test,pretty_name)
       #break if i > 10 # temp
       # todo
     end
@@ -95,14 +97,37 @@ class ClientReqTester #:nodoc:
   def load_all_reqfiles
     @reqfiles = IO.popen("find #{@reqfiles_root.to_s.bash_escape} -name \"*req\" -print","r") { |fh| fh.readlines }
     @reqfiles.map! { |x| x.chomp } # just line in Perl, almost
+    puts "\nFound #{@reqfiles.size} req files." if @verbose > 0
+    if @verbose > 2
+      @reqfiles.each { |file| puts " => #{file}" }
+    end
   end
 
   def filter_reqfiles(substring)
+    return if substring.blank?
     @reqfiles.select! { |x| x.index(substring) }
+    puts "\nFiltered down to #{@reqfiles.size} req files." if @verbose > 1
+    if @verbose > 2
+      @reqfiles.each { |file| puts " => #{file}" }
+    end
   end
 
+  # Shuffling req files is special, in that
+  # req files at the lowest level of a directory
+  # tree must be tried in alphabetcal order,
+  # but aside from that they should be able to be
+  # run in arbitrary order compared to any other req
+  # files elsewhere.
   def reorder_reqfiles
-    # NYI
+    by_prefixes = @reqfiles.hashed_partitions { |f| f.sub(/\/[^\/]+$/,"") }
+    shuffled_prefixes = by_prefixes.keys.shuffle
+    @reqfiles = shuffled_prefixes.inject([]) do |final,prefix|
+      final += (by_prefixes[prefix].sort)
+    end
+    puts "\nShuffled req files." if @verbose > 1
+    if @verbose > 2
+      @reqfiles.each { |file| puts " => #{file}" }
+    end
   end
 
   def failed_tests
@@ -110,14 +135,14 @@ class ClientReqTester #:nodoc:
   end
 
   # Note: the arg list is fantastic, but it's Matsumoto's "least surprise"
-  def run_one_test(testfile, pretty_name = testfile, verbose = 1)
+  def run_one_test(testfile, pretty_name = testfile)
     @test_results ||= {}
-    puts "Testing #{pretty_name}" if verbose > 0
+    puts "Testing #{pretty_name}" if @verbose > 0
     parsed = ParseReq.new(testfile)
 
-    if verbose > 2
+    if @verbose > 2
       puts_green "REQ: Klass=#{parsed.klass} | Method=#{parsed.method} | ID=#{parsed.reqid} | Tok=#{parsed.toktype}"
-      puts_green "IN : InArray=#{parsed.in_array.try(size)} bytes"
+      puts_green "IN : InArray=#{parsed.in_array.try(:size)} bytes"
       puts_green "OUT: Code=#{parsed.expected_code} | Output=#{parsed.expected_out.try(:size)} bytes"
     end
 
@@ -128,7 +153,7 @@ class ClientReqTester #:nodoc:
       errors = [ "Exception: #{ex.class} #{ex.message}" ]
     end
 
-    puts_red " => " + errors.join(", ") if errors.present? && verbose > 1
+    puts_red " => " + errors.join(", ") if errors.present? && @verbose > 1
     @test_results[pretty_name] = errors
   end
 

@@ -209,5 +209,13 @@ class ParseReq #:nodoc:
     clean = clean.gsub(/"id":\d+/,'"id":new') if (options[:method] || "").upcase == "POST"
   end
 
+  # Utility that can be used inside a "in.rb" file: it
+  # will read the "in.json" file that is at the exact same level
+  # and return it all parsed.
+  def read_local_json
+    jscontent = File.read(@req_file_path.sub(/req$/,"in.json"))
+    JSON.parse(jscontent)
+  end
+
 end
 
