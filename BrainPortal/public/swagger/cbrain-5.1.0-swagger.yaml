@@ -6,6 +6,7 @@
 # Pierre Rioux, August 2018 - November 2018
 swagger: '2.0'
 consumes:
+  - application/json
   - application/x-www-form-urlencoded
   - multipart/form-data
 info:
@@ -110,7 +111,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/CbUser'
+              $ref: '#/definitions/User'
         '401':
           description: No session created yet.
       tags:
@@ -125,23 +126,17 @@ paths:
         - application/json
         - multipart/form-data
       parameters:
-        - name: new_user_req
+        - name: user_mod_req
           in: body
           description: An object representing a request for a new User
           schema:
-            type: object
-            properties:
-              user:
-                $ref: '#/definitions/CbUser'
-              no_password_reset_needed:
-                type: integer
-                default: 0
+            $ref: '#/definitions/UserModReq'
           required: true
       responses:
         '200':
           description: User created successfully
           schema:
-            $ref: '#/definitions/CbUser'
+            $ref: '#/definitions/User'
         '422':
           description: Attributes are invalid, or user already exists
           schema:
@@ -165,7 +160,7 @@ paths:
         '200':
           description: An object with the CBRAIN user information
           schema:
-            $ref: '#/definitions/CbUser'
+            $ref: '#/definitions/User'
         '404':
           description: User not found with the specified ID
     patch:
@@ -179,27 +174,19 @@ paths:
           required: true
           type: integer
           default: 0
-        - name: force_password_reset
-          in: query
-          description: Boolean to force a password change
-          required: false
-          type: boolean
-        - name: user
+        - name: user_mod_req
           in: body
-          description: An object representing any parameter of the user that you would like to alter, only put ones that you would like to change.
-          required: true
+          description: An object representing a request for a new User
           schema:
-            type: object
-            properties:
-              user:
-                $ref: '#/definitions/CbUser'
+            $ref: '#/definitions/UserModReq'
+          required: true
       tags:
           - Users
       responses:
         '200':
           description: An object with the CBRAIN user information
           schema:
-            $ref: '#/definitions/CbUser'
+            $ref: '#/definitions/User'
         '400':
           description: User does not exist
           schema:
@@ -293,25 +280,14 @@ paths:
         '401':
           description: No session created yet.
     post:
-      summary: Create a tag.
+      summary: Create a new tag.
       description: |
         Create a new tag in CBRAIN.
-      consumes:
-        - application/x-www-form-urlencoded
       parameters:
-        - name: 'tag[name]'
-          in: formData
-          description: The name of the Tag. No spaces or special chars allowed.
-          type: string
-          default: NewTag
-          required: true
-        - name: 'tag[group_id]'
-          in: formData
-          description: >-
-            The Group that the Tag will be used in. All Users are part of Group
-            1
-          type: integer
-          default: 1
+        - name: tag_mod_req
+          in: body
+          schema:
+            $ref: '#/definitions/TagModReq'
           required: true
       tags:
         - Tags
@@ -349,20 +325,12 @@ paths:
             No session created yet.
     put:
       summary: Update a tag.
-      description: |
-        Update the tag specified by the ID parameter.
-      consumes:
-        - application/x-www-form-urlencoded
+      description: "Update the tag specified by the ID parameter."
       parameters:
-        - name: 'tag[name]'
-          in: formData
-          description: The new name for the Tag.
-          type: string
-          default: NewTagName
-        - name: 'tag[group_id]'
-          in: formData
-          description: The Group that the Tag will be used in.
-          type: integer
+        - name: tag_mod_req
+          in: body
+          schema:
+            $ref: '#/definitions/TagModReq'
         - name: id
           in: path
           description: ID of the tag to update.
@@ -581,9 +549,6 @@ paths:
           type: array
           items:
             type: string
-          default:
-            - file1
-            - file2
           required: true
         - name: as_user_id
           in: formData
@@ -622,9 +587,6 @@ paths:
           type: array
           items:
             type: string
-          default:
-            - file1
-            - file2
           required: true
           description: An array containing the filenames to delete.
         - name: as_user_id
@@ -689,41 +651,12 @@ paths:
         and tasks.
       tags:
         - Groups
-      consumes:
-        - application/x-www-form-urlencoded
       parameters:
-        - name: 'group[name]'
-          in: formData
-          type: string
-          description: The name of the new Group.
-          default: NewGroupName
-          required: true
-        - name: 'group[description]'
-          in: formData
-          type: string
-          description: The description of the new Group.
-          required: true
-          default: >-
-            This new Group represents a new Project.
-        - name: 'group[site_id]'
-          in: formData
-          type: integer
-          description: The ID of the site associated with the Group.
-        - name: 'group[invisible]'
-          in: formData
-          type: boolean
-          description: >-
-            Specifies whether to make the group invisible or not. Invisible
-            groups exist solely to control access to resources.
-          default: false
-        - name: 'group[user_ids]'
-          in: formData
-          type: array
-          items:
-            type: integer
-          description: An array of IDs of Users that will be members of the new Group.
-          default:
-            - '1'
+        - name: group_mod_req
+          in: body
+          description: An object describing the group to create
+          schema:
+            $ref: '#/definitions/GroupModReq'
       responses:
         '200':
           description: Successfully created Group.
@@ -745,7 +678,6 @@ paths:
           description: ID of the Group to get information on.
           required: true
           type: integer
-          default: 1
       responses:
         '200':
           description: |
@@ -767,39 +699,15 @@ paths:
       parameters:
         - name: id
           in: path
-          description: ID of the Group to be updated.
+          description: ID of the Group
           required: true
           type: integer
-        - name: 'group[name]'
-          in: formData
-          type: string
-          description: The new name of the Group.
-          default: NewGroupName
-        - name: 'group[description]'
-          in: formData
-          type: string
-          description: The description of the new Group.
-          default: >-
-            This project will group some files and tasks.
-        - name: 'group[site_id]'
-          in: formData
-          type: integer
-          description: The ID of the site associated with the Group.
-        - name: 'group[invisible]'
-          in: formData
-          type: boolean
-          description: >-
-            Specifies whether to make the group invisible or not. Invisible
-            groups exist solely to control access to resources.
-          default: false
-        - name: 'group[user_ids]'
-          in: formData
-          type: array
-          items:
-            type: integer
-          description: An array of IDs of Users that will be members of the new Group.
-          default:
-            - '1'
+        - name: group_mod_req
+          in: body
+          description: An object with the group information to update
+          required: true
+          schema:
+            $ref: '#/definitions/GroupModReq'
       responses:
         '200':
           description: Group updated successfully.
@@ -852,7 +760,7 @@ paths:
         '401':
           description: No Session created yet.
     post:
-      summary: Creates a new Userfile.
+      summary: Creates a new Userfile and upload its content.
       description: |
         This method creates a new Userfile in CBRAIN, with the current user
         as the owner of the file.
@@ -863,7 +771,7 @@ paths:
       parameters:
         - name: upload_file
           in: formData
-          description: File to upload to CBRAIN
+          description: File content to upload to CBRAIN
           type: file
           required: true
         - name: data_provider_id
@@ -926,8 +834,6 @@ paths:
         This method allows a User to update information on a userfile.
       tags:
         - Userfiles
-      consumes:
-        - application/x-www-form-urlencoded
       parameters:
         - name: id
           in: path
@@ -935,51 +841,10 @@ paths:
           type: integer
           format: int64
           required: true
-        - name: 'userfile[type]'
-          in: formData
-          type: string
-          description: >-
-            Type of file that the Userfile is registered in CBRAIN as. This
-            parameter affects what kinds of Tools can be used on the file.
-          default: SingleFile
-        - name: 'userfile[user_id]'
-          in: formData
-          type: integer
-          description: ID of the user who owns the file.
-          default: 1
-        - name: 'userfile[group_id]'
-          in: formData
-          type: integer
-          description: ID of the group that will have access to the Userfile.
-          default: 1
-        - name: 'tag_ids[]'
-          in: formData
-          type: array
-          items:
-            type: integer
-          description: ID numbers of the tags that describe the Userfile.
-        - name: 'userfile[group_writable]'
-          in: formData
-          type: boolean
-          description: >-
-            Specifies whether other members of the group that owns the file can
-            modify the Userfile.
-        - name: 'userfile[hidden]'
-          in: formData
-          type: boolean
-          description: >-
-            Specifies whether the Userfile is hidden or visible in the normal
-            file listing.
-          default: false
-        - name: 'userfile[immutable]'
-          in: formData
-          type: boolean
-          description: Specifies whether the Userfile can be modified.
-          default: false
-        - name: 'userfile[description]'
-          in: formData
-          type: string
-          description: Description of the Userfile.
+        - name: userfile_mod_req
+          in: body
+          schema:
+            $ref: '#/definitions/UserfileModReq'
       responses:
         '200':
           description: Userfile updated successfully.
@@ -988,7 +853,7 @@ paths:
   '/userfiles/{id}/content':
     get:
       summary: Get the content of a Userfile
-      description: This method allows you to download Userfiles.
+      description: This method allows you to download the content of a userfile.
       tags:
         - Userfiles
       parameters:
@@ -1010,10 +875,8 @@ paths:
         to be downloaded.
       tags:
         - Userfiles
-      consumes:
-        - application/x-www-form-urlencoded
       parameters:
-        - name: 'file_ids[]'
+        - name: 'file_ids'
           in: formData
           type: array
           items:
@@ -1035,10 +898,8 @@ paths:
       summary: Delete several files that have been registered as Userfiles
       tags:
         - Userfiles
-      consumes:
-        - application/x-www-form-urlencoded
       parameters:
-        - name: 'file_ids[]'
+        - name: 'file_ids'
           in: formData
           type: array
           items:
@@ -1053,10 +914,8 @@ paths:
       summary: Moves the Userfiles from their current Data Provider to a new one.
       tags:
         - Userfiles
-      consumes:
-        - application/x-www-form-urlencoded
       parameters:
-        - name: 'file_ids[]'
+        - name: 'file_ids'
           in: formData
           type: array
           items:
@@ -1088,7 +947,7 @@ paths:
       tags:
         - Userfiles
       parameters:
-        - name: 'file_ids[]'
+        - name: 'file_ids'
           in: formData
           type: array
           items:
@@ -1103,10 +962,8 @@ paths:
       summary: Uncompresses many Userfiles.
       tags:
         - Userfiles
-      consumes:
-        - application/x-www-form-urlencoded
       parameters:
-        - name: 'file_ids[]'
+        - name: 'file_ids'
           in: formData
           type: array
           items:
@@ -1127,10 +984,8 @@ paths:
         external process.
       tags:
         - Userfiles
-      consumes:
-        - application/x-www-form-urlencoded
       parameters:
-        - name: 'file_ids[]'
+        - name: 'file_ids'
           in: formData
           type: array
           items:
@@ -1175,22 +1030,12 @@ paths:
         This method allows the creation of a new Task.
       tags:
         - Tasks
-      consumes:
-        - application/json
       parameters:
         - in: body
           name: cbrain_task
           description: The task to create.
           schema:
-            type: object
-            required:
-              - tool_id
-              - cbrain_task
-            properties:
-              tool_id:
-                type: integer
-              cbrain_task:
-                type: object
+            $ref: '#/definitions/CbrainTask'
       responses:
         '200':
           description: Task created successfully.
@@ -1255,7 +1100,7 @@ definitions:
         format: int64
       cbrain_api_token:
         type: string
-  CbUser:  # Unfortunately the Ruby CodeGen has bugs if the model is named User
+  User:
     type: object
     properties:
       id:
@@ -1558,6 +1403,25 @@ definitions:
       type:
         type: string
         description: The task type
+      user_id:
+        type: integer
+        format: int64
+        description: ID of the User who created the Task.
+      group_id:
+        type: integer
+        format: int64
+        description: ID of the group that this task is being run in.
+      bourreau_id:
+        type: integer
+        format: int64
+        description: ID of the Bourreau the Task was launched on.
+      tool_config_id:
+        type: integer
+        format: int64
+        description: >-
+          ID number that specifies which Tool Config to use. The Tool Config
+          specifies environment variables and other system-specific scripts
+          necessary for the Task to be run in the target environment.
       batch_id:
         type: integer
         format: int64
@@ -1565,14 +1429,8 @@ definitions:
           ID of the batch this task was launched as part of. Batches of tasks
           consist of the same task, with the same parameters, being run on many
           different input files.
-      cluster_jobid:
-        type: string
-        description: ID of the task on the cluster associated with this task.
-      cluster_workdir:
-        type: string
-        description: Path on the cluster to the working directory.
       params:
-        type: string
+        type: object
         description: >-
           Parameters used as inputs to the scientific calculation associated
           with the task.
@@ -1587,46 +1445,10 @@ definitions:
         type: string
         format: dateTime
         description: Last updated.
-      user_id:
-        type: integer
-        format: int64
-        description: ID of the User who created the Task.
-      bourreau_id:
-        type: integer
-        format: int64
-        description: ID of the Bourreau the Task was launched on.
-      description:
-        description: Description of the Task.
-      prerequisites:
-        type: string
-        description: List of prerequisites.
-      share_wd_tid:
-        type: integer
-        format: int64
-        description: share_wd_tid
       run_number:
         type: integer
         format: int64
-        description: The number of attempts that it has taken to run the task.
-      group_id:
-        type: integer
-        format: int64
-        description: ID of the group that this task is being run in.
-      tool_config_id:
-        type: integer
-        format: int64
-        description: >-
-          ID number that specifies which Tool Config to use. The Tool Config
-          specifies environment variables and other system-specific scripts
-          necessary for the Task to be run in the target environment.
-      level:
-        type: integer
-        format: int64
-        description: level
-      rank:
-        type: integer
-        format: int64
-        description: rank
+        description: The number of times that this task was run.
       results_data_provider_id:
         type: integer
         format: int64
@@ -1650,6 +1472,8 @@ definitions:
         description: >-
           ID of the userfile created as part of the archival process, if the
           working directory of the task has been archived.
+      description:
+        description: Description of the Task.
   Tool:
     type: object
     properties:
@@ -1759,3 +1583,33 @@ definitions:
       mtime:
         type: integer
         description: modification time (an int, since Epoch)
+#=============================================================================
+# "ModReq" Objects: Wrappers For Model Updates And Creates
+#=============================================================================
+  UserModReq:
+    type: object
+    properties:
+      user:
+        $ref: '#/definitions/User'
+      no_password_reset_needed:
+        description: "For new user accounts, the user must reset the password at first login"
+        type: integer
+        default: 0
+      force_password_reset:
+        description: "For existing accounts, boolean to force a password change"
+        type: boolean
+  TagModReq:
+    type: object
+    properties:
+      tag:
+        $ref: '#/definitions/Tag'
+  GroupModReq:
+    type: object
+    properties:
+      group:
+        $ref: '#/definitions/Group'
+  UserfileModReq:
+    type: object
+    properties:
+      userfile:
+        $ref: '#/definitions/Userfile'
