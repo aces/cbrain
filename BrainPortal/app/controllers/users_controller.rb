@@ -105,11 +105,6 @@ class UsersController < ApplicationController
   end
 
   def create #:nodoc:
-    cookies.delete :auth_token
-    # protects against session fixation attacks, wreaks havoc with
-    # request forgery protection.
-    # uncomment at your own risk
-    # reset_session
     new_user_attr = user_params
 
     no_password_reset_needed = params[:no_password_reset_needed] == "1"

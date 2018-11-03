@@ -1,2 +1,2 @@
-200
+200 application/json "last_connected_at":.*?, "\w+":null,?
 {"id":1,"login":"admin","full_name":"CBRAIN Administrator","email":"nobody@localhost","type":"CoreAdmin","site_id":null,"time_zone":null,"city":null,"last_connected_at":null,"account_locked":false}

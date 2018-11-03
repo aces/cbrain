@@ -138,12 +138,12 @@ class ClientReqTester #:nodoc:
   def run_one_test(testfile, pretty_name = testfile)
     @test_results ||= {}
     puts "Testing #{pretty_name}" if @verbose > 0
-    parsed = ParseReq.new(testfile)
+    parsed = ParseReq.new(testfile, @verbose)
 
     if @verbose > 2
       puts_green "REQ: Klass=#{parsed.klass} | Method=#{parsed.method} | ID=#{parsed.reqid} | Tok=#{parsed.toktype}"
-      puts_green "IN : InArray=#{parsed.in_array.try(:size)} bytes"
-      puts_green "OUT: Code=#{parsed.expected_code} | Output=#{parsed.expected_out.try(:size)} bytes"
+      puts_green "IN : InArray=#{parsed.in_array.try(:size) || 'none'}"
+      puts_green "OUT: Code=#{parsed.expected_code} | Ctype=#{parsed.expected_ctype} | Zap=#{parsed.zap_regex.try(:size) || 'none'} | Output=#{parsed.expected_out.try(:size) || 'none'}"
     end
 
     begin

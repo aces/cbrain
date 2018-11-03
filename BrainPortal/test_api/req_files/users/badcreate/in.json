@@ -3,7 +3,7 @@
     "login": "norm",
     "password": "test1Z-Z",
     "password_confirmation": "test1Z-Z",
-    "full_name": "This user already exist in the seed",
+    "full_name": "This user already exists in the seed",
     "email": "test@localhost",
     "city": "City",
     "country": "Country",

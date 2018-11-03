@@ -167,8 +167,8 @@ class TasksController < ApplicationController
 
     respond_to do |format|
       format.html # show.html.erb
-      format.xml   { render :xml  => @task }
-      format.json  { render :json => @task }
+      format.xml   { render :xml  => @task.for_api_xml }
+      format.json  { render :json => @task.for_api     }
     end
   end
 

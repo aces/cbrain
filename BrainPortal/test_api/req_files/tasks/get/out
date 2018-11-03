@@ -1,2 +1,0 @@
-200
-{"id":2,"batch_id":2,"cluster_jobid":null,"cluster_workdir":null,"params":{},"status":"Completed","created_at":null,"updated_at":null,"user_id":2,"bourreau_id":13,"description":"ExistTest","prerequisites":null,"share_wd_tid":null,"run_number":1,"group_id":3,"tool_config_id":20,"level":null,"rank":null,"results_data_provider_id":null,"cluster_workdir_size":123456,"workdir_archived":false,"workdir_archive_userfile_id":null}

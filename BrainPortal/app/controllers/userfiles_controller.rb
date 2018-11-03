@@ -328,18 +328,18 @@ class UserfilesController < ApplicationController
 
     @log                = @userfile.getlog        rescue nil
 
-    # Add some information for json
+    # Add some information for API
     if api_request?
-      rr_ids_accessible   = RemoteResource.find_all_accessible_by_user(current_user).map(&:id)
-      @remote_sync_status = SyncStatus.where(:userfile_id => @userfile.id, :remote_resource_id => rr_ids_accessible)
-                            .select([:id, :remote_resource_id, :status, :accessed_at, :synced_at])
-                            .all.to_a
-      @children_ids       = @userfile.children_ids  rescue []
+      #rr_ids_accessible   = RemoteResource.find_all_accessible_by_user(current_user).map(&:id)
+      #@remote_sync_status = SyncStatus.where(:userfile_id => @userfile.id, :remote_resource_id => rr_ids_accessible)
+      #                      .select([:id, :remote_resource_id, :status, :accessed_at, :synced_at])
+      #                      .all.to_a.map(&:attributes)
+      #@children_ids       = @userfile.children_ids  rescue []
 
       userfile_for_api = @userfile.for_api # transforms into a plain Hash
-      userfile_for_api["cbrain_log"]         = @log
-      userfile_for_api["remote_sync_status"] = @remote_sync_status
-      userfile_for_api["children_ids"]       = @children_ids
+      #userfile_for_api["cbrain_log"]         = @log
+      #userfile_for_api["remote_sync_status"] = @remote_sync_status
+      #userfile_for_api["children_ids"]       = @children_ids
     # Prepare next/previous userfiles for html
     elsif request.format.to_sym == :html
       @sort_index  = [ 0, params[:sort_index].to_i, 999_999_999 ].sort[1]
@@ -440,7 +440,7 @@ class UserfilesController < ApplicationController
     flash[:notice]    ||= ""
 
     # Mode of upload; this is determined by the values of the
-    # params :archive, :_do_extract, and :_up_ex_mode
+    # params :_do_extract, and :_up_ex_mode
     mode = :save           # standard upload of one file
     mode = :collection if  params[:_do_extract] == "on" && params[:_up_ex_mode] == "collection" # create a single collection
     mode = :extract    if  params[:_do_extract] == "on" && params[:_up_ex_mode] == "multiple"   # create many many files
@@ -487,6 +487,8 @@ class UserfilesController < ApplicationController
                      :tag_ids          => params[:tags]
                    )
                  )
+      userfile.group_id = current_user.own_group.id unless
+        current_user.available_groups.pluck(:id).include?(userfile.group_id.to_i)
 
       if !userfile.save
         flash[:error]  += "File '#{basename}' could not be added.\n"
@@ -495,7 +497,7 @@ class UserfilesController < ApplicationController
         end
         respond_to do |format|
           format.html { redirect_to redirect_path }
-          format.json { render :json => { :notice => flash[:error] } }
+          format.json { render :json => { :notice => flash[:error] }, :status => :unprocessable_entity }
         end
         return
       end

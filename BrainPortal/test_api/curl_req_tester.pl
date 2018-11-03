@@ -86,7 +86,7 @@ my $NORMAL_TOKEN = "0123456789abcdeffedcba9876543210";
 my $DEL_TOKEN    = "0123456789abcdefffffffffffffffff";
 
 # Record all test failures
-my %FAILED_TESTS = (); # test_name => [ type, type, ... ] ; type any of CURL, CONTENT-TYPE, CONTENT, HTTPCODE
+my %FAILED_TESTS = (); # pretty_test_name => [ type, type, ... ] ; type any of CURL, CONTENT-TYPE, CONTENT, HTTPCODE
 
 ##############################
 # Parse command-line options #
@@ -194,16 +194,18 @@ my $captC = "/tmp/capt-C.$$.curl";  # capture response content
 my $captE = "/tmp/capt-E.$$.curl";  # capture stderr content
 for (my $ti = 0;$ti < @list;$ti++) {
   my $testfile = $list[$ti];
-  my $pretty_name = $testfile;
+  my $testbase = $testfile; $testbase =~ s/req$//; # used to build other related files
+  my $pretty_name = $testbase;
   $pretty_name =~ s#^req_files/##;
-  $pretty_name =~ s#/req$##;
+  $pretty_name =~ s#[\/\.\-]?$##;
+  $pretty_name = sprintf("%2.2d/%2.2d : %s",$ti+1,scalar(@list),$pretty_name);
   print "\n\n------------------------------------------\n" if $VERBOSE > 1;
-  printf("%3.3d/%3.3d Running test '%s'\n",$ti+1,scalar(@list),$pretty_name) if $VERBOSE > 0;
+  print "Running test $pretty_name\n"                      if $VERBOSE > 0;
   print "------------------------------------------\n"     if $VERBOSE > 1;
 
   # Read request specificaltion in .req file
   my $req = qx( cat "$testfile" );
-  my ($method,$path,$rest) = split(/\s+/,$req);
+  my ($method,$path,$ctype) = split(/\s+/,$req);
   die "Illegal method '$method' in file '$testfile'. Expected GET or POST etc.\n"
     unless $method =~ /^(GET|POST|PATCH|PUT|DELETE)$/i;
   $path =~ s#^/+##;
@@ -213,53 +215,72 @@ for (my $ti = 0;$ti < @list;$ti++) {
 
   # If a .in.json file exist, we will post this in content
   my $indata = "";
-  my $infile = $testfile;
-  $infile =~ s/req$/in.json/;
+  my $infile = $testbase . "in.json";
   $indata = "--data @\"$infile\"" if -f $infile;
 
-  # JSON in and out
-  my $accept = 'application/json';
-  my $ctype  = 'application/json';
-  my $curl_accept = "-H \"Accept: $accept\"";
-  my $curl_type   = "-H \"Content-Type: $ctype\"";
+  # If a .in.form file exist, we will read its content and
+  # build a set of key=value to post as a multipart
+  my $inform = "";
+  my $formfile = $testbase . "in.form";
+  if (-f $formfile) {
+    my @content=`cat $formfile`;
+    chomp @content;
+    foreach (@content) { # mutate
+      s/__REQBASE__/$testbase/g;
+      $inform .= " -F '$_' ";
+    }
+  }
+
+  # JSON in and out by default
+  my $accept   = 'application/json';
+  $ctype     ||= 'application/json';
+
+  # Extract expected HTTP response code from .out file, if any
+  my $outfile = $testbase . "out";
+  my @outfile = split(/\n/,qx( cat $outfile )) if -f $outfile;
+  my $expcode = "200";
+  my @zap_regex = ();
+  if (@outfile > 0) {
+    $outfile[0] =~ s/^\s*//;
+    $outfile[0] =~ s/\s*$//;
+    my @info = split(/\s+/,$outfile[0]); # "200 application/json regex regex regex"
+    $expcode = $info[0] if @info > 0;
+    $accept  = $info[1] if @info > 1;
+    @zap_regex = @info[2..$#info] if @info > 2;
+  }
+
+  # Extract expected HTTP content
+  my $expcontent = (@outfile > 1 ? join("",@outfile[1 .. $#outfile]) : "");
+  $expcontent = &filter_content($expcontent, \@zap_regex );
+  # remove "id":nnn if a POST (create operation)
+  $expcontent = &filter_content($expcontent, [ '"id":\d+' ]) if $method eq "POST";
 
   # Prepare curl command
-  my $bashcom = "curl -s -S -D $captH -X $method $indata $curl_accept $curl_type $SCHEME://$HOST:$PORT/$path > $captC 2> $captE";
+  my $curl_accept = "-H \"Accept: $accept\"";
+  my $curl_type   = "-H \"Content-Type: $ctype\"";
+  my $bashcom = "curl -s -S -D $captH -X $method $indata $inform $curl_accept $curl_type $SCHEME://$HOST:$PORT/$path > $captC 2> $captE";
   print " => Curl command: $bashcom\n" if $VERBOSE > 1;
   my $ret = system($bashcom);
 
   # Extract HTTP response code from header
   my @headers = split(/\n/,qx( cat $captH ));
-  my ($httpcode) = ($headers[0] =~ /\s(\d\d\d)\s/);
-  $httpcode ||= "UNK";
+  my $httpcode = "UNK";
+  foreach my $header (reverse @headers) {
+    next unless $header =~ /HTTP\/[\d\.]+\s+(\d\d\d+)/;
+    $httpcode = $1;
+    last;
+  }
 
   # Extract HTTP content type
   my $resptype = $1 if join("",@headers) =~ /content-type: (\S+)/i;
   $resptype ||= "Unknown";
   $resptype =~ s/;.*//;
 
-  # Extract expected HTTP response code from .out file, if any
-  my $outfile = $testfile;
-  $outfile =~ s/req$/out/;
-  my @outfile = split(/\n/,qx( cat $outfile )) if -f $outfile;
-  my $expcode = $outfile[0] || ""; $expcode =~ s/\s+//;
-  $expcode ||= "200";
-
-  # Extract expected HTTP content
-  my $expcontent = (@outfile > 1 ? join("",@outfile[1 .. $#outfile]) : "");
-  $expcontent =~ s/\s+//g;
-  # remove dates: "2018-10-19T22:12:42.000Z"
-  $expcontent =~ s/"\d\d\d\d-\d\d-\d\d[T\s]\d\d:\d\d:\d\d[\d\.Z]*"/null/g;
-  # remove "id":nnn if a POST (create operation)
-  $expcontent =~ s/"id":\d+/"id":new/ if $method eq "POST";
-
   # Extract response HTTP content
   my $content = qx( cat $captC );
-  $content =~ s/\s+//g;
-  # remove dates: "2018-10-19T22:12:42.000Z"
-  $content =~ s/"\d\d\d\d-\d\d-\d\d[T\s]\d\d:\d\d:\d\d[\d\.Z]*"/null/g;
+  $content = &filter_content($content, \@zap_regex );
   # remove "id":nnn if a POST (create operation)
-  $content =~ s/"id":\d+/"id":new/ if $method eq "POST";
+  $content = &filter_content($content, [ '"id":\d+' ]) if $method eq "POST";
 
   # Compare responde to expected response
   if ($ret != 0) { # This failure hides all others
@@ -270,7 +291,7 @@ for (my $ti = 0;$ti < @list;$ti++) {
       &record_failure($pretty_name, "HTTPCODE: $httpcode <> $expcode");
       print " => Failed: got HTTP response code '$httpcode', expected '$expcode'\n" if $VERBOSE > 0;
     }
-    if (lc($ctype) ne lc($resptype)) {
+    if (lc($accept) ne lc($resptype)) {
       &record_failure($pretty_name, "C_TYPE: $resptype");
       print " => Failed: got type '$resptype', expected '$ctype'\n" if $VERBOSE > 0;
     }
@@ -311,7 +332,7 @@ if (scalar(keys(%FAILED_TESTS)) == 0) {
 print "\nSome tests failed.\n"                         if $VERBOSE > 0;
 
 foreach my $pretty_name (sort keys %FAILED_TESTS) {
-  printf " => %-40s : ",$pretty_name                    if $VERBOSE > 0;
+  printf " => %-50s : ",$pretty_name                    if $VERBOSE > 0;
   print join(", ",@{$FAILED_TESTS{$pretty_name}}),"\n" if $VERBOSE > 0;
 }
 exit(1 + scalar(keys(%FAILED_TESTS)));
@@ -365,3 +386,13 @@ sub shuffle_req_files {
   }
   return $new_order;
 }
+
+sub filter_content {
+  my ($content,$regex_list) = @_;
+  $content =~ s/:(true|false)/:"$1"/g;
+  foreach my $regex ('\s+', '"\d\d\d\d-\d\d-\d\d[T\s]\d\d:\d\d:\d\d[\d\.Z]*"', @$regex_list) {
+    $content =~ s/$regex//g;
+  }
+  return $content;
+}
+

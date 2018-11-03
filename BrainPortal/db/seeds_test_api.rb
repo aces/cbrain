@@ -135,8 +135,8 @@ Userfile.delete_all
 CbrainTask.delete_all
 Bourreau.delete_all
 DataProvider.delete_all
-User.all.to_a.each  { |x| x.delete unless x.is_a?(CoreAdmin)     && x.login == 'admin' } # keep 1
-Group.all.to_a.each { |x| x.delete unless x.is_a?(EveryoneGroup) || x.name  == 'admin' } # keep 2
+User.all.delete_all
+Group.all.delete_all
 puts "All done.";
 
 
@@ -149,14 +149,23 @@ Step 2: Admin User Updated
 
 STEP
 
-admin=CoreAdmin.first
-1.times do
-  admin.password              = 'admin_123'
-  admin.password_confirmation = 'admin_123'
-  admin.password_reset        = false
-  admin.full_name             = 'CBRAIN Administrator'
-  admin.last_connected_at     = nil
+eg=EveryoneGroup.new(:name => 'everyone')
+eg.save!
+
+admin=CoreAdmin.new
+admin.id = 1
+admin.login                 = 'admin'
+admin.email                 = 'nobody@localhost'
+admin.password              = 'adMin_123_=/'
+admin.password_confirmation = 'adMin_123_=/'
+admin.password_reset        = false
+admin.full_name             = 'CBRAIN Administrator'
+begin
   admin.save!
+rescue => ex
+  puts "Error: cannot re-create admin record.\n"
+  puts admin.errors.inspect
+  raise ex
 end
 
 # Fix admin's own_group to ID '2'
@@ -165,6 +174,7 @@ admin_group=orig_admin_group.dup
 orig_admin_group.delete
 admin_group.id=2
 admin_group.save!
+admin_group.user_ids = [ 1 ]
 admin = CoreAdmin.first # must reload afresh
 
 puts "Updated #{admin.inspect}"
@@ -460,7 +470,7 @@ Step 10: Userfiles
 STEP
 
 f1 = TextFile.seed_record!(
-  { :name => 'admin.pdf' },
+  { :name => 'admin.txt' },
   { :id   => 1,
     :user_id => admin.id,
     :group_id => admin.own_group.id,
@@ -532,6 +542,7 @@ f5.name = "todelmult.txt";
 f5.id   = 5
 f5.save! # we don't care for actual content for this one
 
+SyncStatus.delete_all # clean all sync info again
 
 
 puts <<STEP

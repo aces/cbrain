@@ -34,6 +34,7 @@
 class ParseReq #:nodoc:
 
   attr_reader :req_file_path
+  attr_reader :req_file_base
 
   # Extracted from "req" file:
   attr_reader :klass, :method, :reqid, :toktype
@@ -42,7 +43,13 @@ class ParseReq #:nodoc:
   attr_reader :in_array
 
   # Extracted from "out" file:
-  attr_reader :expected_code, :expected_out
+  attr_reader :expected_code, :expected_ctype, :zap_regex, :expected_out
+
+  # Produced by test
+  attr_reader :got_code, :got_ctype, :got_content
+
+  # Config
+  attr_writer :verbose
 
   class TestConfigurationError < ::RuntimeError ; end
 
@@ -62,11 +69,13 @@ class ParseReq #:nodoc:
   #
   # The argument is only the path to the "req" file,
   # the others will be loaded if found.
-  def initialize(testfile) #:nodoc:
+  def initialize(testfile,verbose = 1) #:nodoc:
     @req_file_path = testfile
+    @req_file_base = testfile.sub(/req$/,"")
+    @verbose = verbose
     parse_req_file(@req_file_path)
-    parse_in_file(@req_file_path.sub(/req$/,"in.rb"))
-    parse_out_file(@req_file_path.sub(/req$/,"out"))
+    parse_in_file("#{req_file_base}in.rb")
+    parse_out_file("#{req_file_base}out")
     self
   end
 
@@ -76,20 +85,20 @@ class ParseReq #:nodoc:
     return if content.blank?
     @in_array = Array(eval content)
   rescue => ex
-    raise TestConfigurationError.new("Bad file '#{infile}: got exception: #{ex.class} #{ex.message}")
+    raise TestConfigurationError.new("Bad file '#{infile}': got exception: #{ex.class} #{ex.message}")
   end
 
   # Parses test file "path/to/out"
   def parse_out_file(outfile) #:nodoc:
     content = File.read(outfile) rescue nil
     return if content.blank?
-    content = content.split # first line is special
-    if content[0] =~ /^\s*(\d\d\d)/ # first line is special: "200"
-      @expected_code = Regexp.last_match[1].to_i
-    else
-      raise TestConfigurationError.new("Bad first line in '#{outfile}. Expected HTTP code.")
-    end
-    @expected_out = content[1,content.size-1].join("\n") if content.size > 1
+    content    = content.split(/\n/)
+    first_line = content.shift.strip
+    elems      = first_line.split(/\s+/) # "200 application/json regex regex regex"
+    @expected_code  = elems[0].to_i
+    @expected_ctype = elems[1] if elems.size > 1
+    @zap_regex      = elems[2..elems.size-1] if elems.size > 2
+    @expected_out   = content.join("\n")     if content.size > 0
   end
 
   # Parses main test file "path/to/req"
@@ -100,6 +109,7 @@ class ParseReq #:nodoc:
     # GET /userfiles/1?NTOK
     # POST /userfiles/delete_files
     # GET /userfiles/2/content
+    # POST /userfiles/create?NTOK multipart/form-data
     unless req.match( /
                       \A
                       (\S+)        # CAPT 1: verb "POST" "GET" etc
@@ -111,13 +121,15 @@ class ParseReq #:nodoc:
                           (\/[a-z]\w+)? # CAPT 4: "slash action"
                         )?           # end group
                       (\?[AND]TOK)? # CAPT 5: "?ATOK" or "?NTOK" or "?DTOK"
+                      \s*
+                      (\S*)         # CAPT 6: optional Content-type, not used here
                       $
                       /x
                     )
-      raise TestConfigurationError.new("Oh oh bad unparsable red line in '$testfile': #{req}")
+      raise TestConfigurationError.new("Oh oh bad unparsable req line in '$testfile'.")
     end
 
-    verb, controller, @reqid, action, @toktype = Regexp.last_match[1,5]
+    verb, controller, @reqid, action, @toktype, _ctype  = Regexp.last_match[1,6]
 
     #puts "MATCH: #{verb} | #{controller} | #{reqid.inspect} | #{action.inspect} | #{an_token.inspect}"
 
@@ -137,12 +149,12 @@ class ParseReq #:nodoc:
     @method += "_#{action}" if action.present?
     @method += "_#{verb.downcase}"
     @method = @method.to_sym
-    #puts_green "=======> #{klass}.#{@method}"
+    puts_green " => #{klass}.#{@method}" if @verbose > 1
 
     # Verify that the method exists for the class
     handler = klass.new
     unless handler.respond_to? @method
-      raise "Parsing testfile '#{testfile}: class #{klass} has not method '#{@method}'"
+      raise "Parsing testfile '#{testfile}': class #{klass} has no such method '#{@method}'"
     end
 
     self
@@ -169,28 +181,38 @@ class ParseReq #:nodoc:
     extra_method = "#{@method}_with_http_info".to_sym # these enhanced methods return triplets
     argarray     = @in_array ? @in_array.dup : []
     argarray.unshift(@reqid) if @reqid.present?
-    result, code, headers = handler.send(extra_method,*argarray) # the splat operator sends nothing if argarray is empty!
+    begin
+      # Yeah, the splat operator doesn't add arguments if argarray is empty!
+      result, @got_code, headers = handler.send(extra_method,*argarray)
+    rescue CbrainClient::ApiError => ex
+      result, @got_code, headers = ex.response_body, ex.code, ex.response_headers
+    end
 
     # Let's verify everything now
     errors = []
 
     # HTTP CODE
-    if (@expected_code || 200) != code
-      errors << "HTTPCODE: #{code} <> #{@expected_code}"
+    if (@expected_code || 200) != @got_code
+      errors << "HTTPCODE: #{@got_code} <> #{@expected_code}"
     end
 
     # CONTENT TYPE
-    got_ctype = headers['Content-Type'] # 'application/json ; charset=utf8'
-    got_ctype.sub!(/\s*;.*/,"")
-    exp_ctype = 'application/json' # FIXME hardcoded for the moment, make it changeable in the future
-    if got_ctype != exp_ctype
-      errors << "C_TYPE: #{got_ctype}"
+    @got_ctype = headers['Content-Type'] || "unk" # 'application/json ; charset=utf8'
+    @got_ctype.sub!(/\s*;.*/,"")
+    if @got_ctype != (@expected_ctype || 'application/json')
+      errors << "C_TYPE: #{@got_ctype}"
     end
 
     # CONTENT
     if @expected_out.present?
-      if clean_content(@expected_out) != clean_content(result)
+      @expected_out = clean_content(@expected_out)
+      @got_content  = clean_content(result)
+      if @expected_out != @got_content
         errors << "CONTENT DIFFERS"
+        if @verbose > 1
+          puts_red "Got: #{@got_content}"
+          puts_red "Exp: #{@expected_out}"
+        end
       end
     end
 
@@ -200,21 +222,80 @@ class ParseReq #:nodoc:
   private
 
   # Used for content comparisons
-  def clean_content(content, options={}) #:nodoc:
-    string = content.class.name =~ /^CbrainClient::/ ? content.to_json : content.to_s
+  def clean_content(content) #:nodoc:
+    return "" if content.blank?
+    #content = content.map { |x| x.respond_to?(:to_json) x.to_json : x } if content.is_a?(Enumerable)
+    string  = if content.is_a?(String)
+                 content
+              elsif content.respond_to?(:to_json)
+                 content.to_json
+              else
+                 content.to_s
+              end
     clean = string.gsub(/\s+/,"")
     # remove dates: "2018-10-19T22:12:42.000Z"
     clean = clean.gsub(/"\d\d\d\d-\d\d-\d\d[T\s]\d\d:\d\d:\d\d[\d\.Z]*"/, "null")
     # remove "id":nnn if a POST (create operation)
-    clean = clean.gsub(/"id":\d+/,'"id":new') if (options[:method] || "").upcase == "POST"
+    clean = clean.gsub(/"id":\d+/,'"id":new') if @method =~ /_post$/
+    # fix some inconsistencies in serializing json for true/false
+    clean = clean.gsub(/:(true|false)/,':"\1"')
+    # finaly, our customizable zappable substrings
+    (@zap_regex || []).each do |sregex|
+      #puts_yellow "==== Cleaning #{sregex}"
+      regex = Regexp.new(sregex)
+      #puts_yellow "Before: #{clean}"
+      clean.gsub!(regex,"")
+      #puts_yellow "After : #{clean}"
+    end
+    clean
   end
 
-  # Utility that can be used inside a "in.rb" file: it
+  # Utility that can be used inside a "in.rb" file. It
   # will read the "in.json" file that is at the exact same level
-  # and return it all parsed.
-  def read_local_json
-    jscontent = File.read(@req_file_path.sub(/req$/,"in.json"))
-    JSON.parse(jscontent)
+  # and return it all parsed. If arguments are given,
+  # the top properties named by them will be fetched and
+  # their values returned, in order, as elements of an array.
+  #
+  # Ex: given a in.json file with
+  #
+  #   {"user":{"login":"root"},"hello":"true"}
+  #
+  # Then the ruby code in in.rb could refer to
+  # it with:
+  #
+  #   read_local_json "user", "hello"
+  #
+  # and this would produce the array:
+  #
+  #   [ { "login" => "root" }, "true" ]
+  def read_local_json(*args)
+    @_jscontent ||= File.read("#{@req_file_base}in.json")
+    @_jsparsed  ||= JSON.parse(@_jscontent)
+    return @_jsparsed.dup if args.size == 0
+    @_jsparsed.slice(*args).values
+  end
+
+  # Utility that can be used in a "in.rb" file.
+  # It creates a new instance of +klass+
+  # and pass it, as an initialization argument,
+  # a value fetched from the sibling jason file;
+  # the value will be what's associated with the
+  # top-level +property+ in the json.
+  #
+  # Ex: given a in.json file with
+  #
+  #   {"user":{"login":"root"}}
+  #
+  # Then the ruby code in in.rb could refer to
+  # it with:
+  #
+  #   from_json("user",CbrainClient::CbUser)
+  #
+  # and this will have the effect of executing
+  #
+  #   CbrainClient::CbUser.new( :login => 'root' )
+  def new_from_json(property,swagger_klass)
+    swagger_klass.new(read_local_json[property])
   end
 
 end

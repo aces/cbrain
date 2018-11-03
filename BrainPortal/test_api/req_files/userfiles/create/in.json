@@ -1,9 +1,0 @@
-{
-  "userfile": {
-    "name": "newfile.txt",
-    "data_provider_id": 15,
-    "type": "TextFile",
-    "description": "new from test",
-    "group_id": 10
-  }
-}
