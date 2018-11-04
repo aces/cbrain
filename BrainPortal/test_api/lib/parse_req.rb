@@ -90,6 +90,8 @@ class ParseReq #:nodoc:
 
   # Parses test file "path/to/out"
   def parse_out_file(outfile) #:nodoc:
+    @expected_code  = 200
+    @expected_ctype = 'application/json' # not used in ruby
     content = File.read(outfile) rescue nil
     return if content.blank?
     content    = content.split(/\n/)
@@ -123,13 +125,15 @@ class ParseReq #:nodoc:
                       (\?[AND]TOK)? # CAPT 5: "?ATOK" or "?NTOK" or "?DTOK"
                       \s*
                       (\S*)         # CAPT 6: optional Content-type, not used here
+                      \s*
+                      (\S*)         # CAPT 7: test control keyword eg NoRubyClient
                       $
                       /x
                     )
       raise TestConfigurationError.new("Oh oh bad unparsable req line in '$testfile'.")
     end
 
-    verb, controller, @reqid, action, @toktype, _ctype  = Regexp.last_match[1,6]
+    verb, controller, @reqid, action, @toktype, _ctype, @control  = Regexp.last_match[1,7]
 
     #puts "MATCH: #{verb} | #{controller} | #{reqid.inspect} | #{action.inspect} | #{an_token.inspect}"
 
@@ -165,6 +169,12 @@ class ParseReq #:nodoc:
   # that contains the appropriate credentials for the test.
   def runtest(cbclient) #:nodoc:
 
+    # Special case for tests that MUST be skipped in this framework
+    if (@control ||"") =~ /NoRubyClient/
+      puts_yellow " => Test Skipped" if @verbose > 1
+      return []
+    end
+
     # Let's verify we have all the information from the in.rb file.
     # This is a nice bit of meta programming btw.
     inspect_method = @klass.new.method(@method) # E.g. inspect users_post() of CbrainClient::UsersApi.new
@@ -192,15 +202,15 @@ class ParseReq #:nodoc:
     errors = []
 
     # HTTP CODE
-    if (@expected_code || 200) != @got_code
+    if (@expected_code) != @got_code
       errors << "HTTPCODE: #{@got_code} <> #{@expected_code}"
     end
 
     # CONTENT TYPE
     @got_ctype = headers['Content-Type'] || "unk" # 'application/json ; charset=utf8'
     @got_ctype.sub!(/\s*;.*/,"")
-    if @got_ctype != (@expected_ctype || 'application/json')
-      errors << "C_TYPE: #{@got_ctype}"
+    if @got_ctype != (@expected_ctype)
+      errors << "C_TYPE: #{@got_ctype} <> #{@expected_ctype}"
     end
 
     # CONTENT
@@ -234,9 +244,9 @@ class ParseReq #:nodoc:
               end
     clean = string.gsub(/\s+/,"")
     # remove dates: "2018-10-19T22:12:42.000Z"
-    clean = clean.gsub(/"\d\d\d\d-\d\d-\d\d[T\s]\d\d:\d\d:\d\d[\d\.Z]*"/, "null")
+    clean = clean.gsub(/"\d\d\d\d-\d\d-\d\d[T\s]\d\d:\d\d:\d\d[\d\.Z]*"/, "")
     # remove "id":nnn if a POST (create operation)
-    clean = clean.gsub(/"id":\d+/,'"id":new') if @method =~ /_post$/
+    clean = clean.gsub(/"id":\d+/,'') if @method =~ /_post$/
     # fix some inconsistencies in serializing json for true/false
     clean = clean.gsub(/:(true|false)/,':"\1"')
     # finaly, our customizable zappable substrings

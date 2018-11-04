@@ -1,1 +1,1 @@
-POST /session?NTOK
+POST /session?NTOK application/json NoRubyClient

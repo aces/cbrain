@@ -580,8 +580,8 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :action => :browse }
+      format.xml  { render :xml  => api_response }
       format.json { render :json => api_response }
-      format.json { render :xml  => api_response }
     end
   end
 
@@ -651,8 +651,8 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :action => :browse }
+      format.xml  { render :xml  => api_response }
       format.json { render :json => api_response }
-      format.json { render :xml  => api_response }
     end
   end
 
@@ -735,8 +735,8 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :action => :browse }
+      format.xml  { render :xml  => api_response }
       format.json { render :json => api_response }
-      format.json { render :xml  => api_response }
     end
   end
 

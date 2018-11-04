@@ -72,7 +72,7 @@ namespace :cbrain do
         CbrainSystemChecks.check([:a002_ensure_Rails_can_find_itself])
 
         # We load the tester class explicitely, it's not in the load path.
-        load "test_api/client_req_tester.rb"
+        load "test_api/ruby_req_tester.rb"
 
         # Run the tests and report
         tester = ClientReqTester.new

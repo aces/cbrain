@@ -1,1 +1,1 @@
-POST /session?ATOK
+POST /session?ATOK application/json NoRubyClient

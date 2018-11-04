@@ -203,9 +203,15 @@ for (my $ti = 0;$ti < @list;$ti++) {
   print "Running test $pretty_name\n"                      if $VERBOSE > 0;
   print "------------------------------------------\n"     if $VERBOSE > 1;
 
-  # Read request specificaltion in .req file
+  # Read request specification in .req file
   my $req = qx( cat "$testfile" );
-  my ($method,$path,$ctype) = split(/\s+/,$req);
+  my ($method,$path,$ctype,$control) = split(/\s+/,$req);
+
+  if (($control || "") =~ /NoCurlClient/) {
+    print " => Test skipped.\n";
+    next;
+  }
+
   die "Illegal method '$method' in file '$testfile'. Expected GET or POST etc.\n"
     unless $method =~ /^(GET|POST|PATCH|PUT|DELETE)$/i;
   $path =~ s#^/+##;

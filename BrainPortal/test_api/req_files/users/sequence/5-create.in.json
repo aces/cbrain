@@ -1,8 +1,8 @@
 {
   "user": {
     "login": "test1",
-    "password": "test1Z-Z",
-    "password_confirmation": "test1Z-Z",
+    "password": "__test1Z-Z__",
+    "password_confirmation": "__test1Z-Z__",
     "full_name": "Test 1",
     "email": "test@localhost",
     "city": "City",

@@ -523,8 +523,8 @@ class UserfilesController < ApplicationController
 
       respond_to do |format|
         format.html { redirect_to redirect_path }
-        format.json { render :json => {:notice => "File Uploaded"} }
-        format.xml  { render :xml  => {:notice => "File Uploaded"} }
+        format.json { render :json => {:notice => "File Uploaded"}, :status => :created }
+        format.xml  { render :xml  => {:notice => "File Uploaded"}, :status => :created }
       end
       return
     end # save

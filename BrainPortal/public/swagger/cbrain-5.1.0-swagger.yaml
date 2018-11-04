@@ -44,9 +44,9 @@ paths:
         This is the main entry point to create a CBRAIN session. Note that if
         a user is currently logged in, a new session will not be created,
         and the current session will be re-used.
-      consumes:
-        - multipart/form-data
       security: []
+      consumes:
+        - application/x-www-form-urlencoded
       parameters:
         - name: login
           in: formData
@@ -76,7 +76,7 @@ paths:
         - Sessions
       responses:
         '200':
-          description: An object with the CBRAIN user ID
+          description: An object with the API token and the CBRAIN user ID
           schema:
             $ref: '#/definitions/SessionInfo'
         '401':
@@ -98,7 +98,7 @@ paths:
 #=============================================================================
   /users:
     get:
-      summary: Returns all of the users in CBRAIN.
+      summary: Returns all of the users in CBRAIN. Only available to admins.
       description: >-
         Returns all of the users registered in CBRAIN, as well as information on their
         permissions and group/site memberships.
@@ -117,7 +117,7 @@ paths:
       tags:
         - Users
     post:
-      summary: Create a new user in CBRAIN.
+      summary: Create a new user in CBRAIN. Only available to admins.
       description: |
         Creates a new user in CBRAIN. Only admins can create new users.
       tags:
@@ -173,7 +173,6 @@ paths:
           description: ID of user to update
           required: true
           type: integer
-          default: 0
         - name: user_mod_req
           in: body
           description: An object representing a request for a new User
@@ -250,7 +249,6 @@ paths:
           description: the ID of the configuration
           required: true
           type: integer
-          default: 0
       tags:
         - ToolConfigs
       responses:
@@ -311,7 +309,6 @@ paths:
           description: The ID of the tag to get.
           required: true
           type: integer
-          default: 1
       tags:
         - Tags
       responses:
@@ -327,15 +324,16 @@ paths:
       summary: Update a tag.
       description: "Update the tag specified by the ID parameter."
       parameters:
-        - name: tag_mod_req
-          in: body
-          schema:
-            $ref: '#/definitions/TagModReq'
         - name: id
           in: path
           description: ID of the tag to update.
           required: true
           type: integer
+        - name: tag_mod_req
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/TagModReq'
       tags:
         - Tags
       responses:
@@ -492,29 +490,18 @@ paths:
       tags:
         - DataProviders
       consumes:
-        - application/x-www-form-urlencoded
+        - application/json
       parameters:
         - name: id
           in: path
           required: true
           description: The ID of the Data Provider to register files on.
           type: integer
-          default: 1
-        - name: 'basenames[]'
-          in: formData
-          description: An array containing the filenames to register.
-          type: array
-          items:
-            type: string
-          required: true
-        - name: 'filetypes[]'
-          in: formData
-          description: >-
-            An array containing the filetypes associated with the files to
-            register
-          type: array
-          items:
-            type: string
+        - name: multi_registration_mod_req
+          in: body
+          description: Arrays containing the filenames and types to register.
+          schema:
+            $ref: '#/definitions/MultiRegistrationModReq'
           required: true
       responses:
         '200':
@@ -535,34 +522,25 @@ paths:
       tags:
         - DataProviders
       consumes:
-        - application/x-www-form-urlencoded
+        - application/json
       parameters:
         - name: id
           in: path
           description: The ID of the Data Provider to unregister files from.
           required: true
           type: integer
-          default: 1
-        - name: 'basenames[]'
-          in: formData
-          description: An array containing the filenames to unregister.
-          type: array
-          items:
-            type: string
+        - name: multi_registration_mod_req
+          in: body
+          description: Arrays containing the filenames to unregister.
+          schema:
+            $ref: '#/definitions/MultiRegistrationModReq'
           required: true
-        - name: as_user_id
-          in: formData
-          type: integer
-          description: The ID of the user to unregister files as.
-        - name: delete
-          in: formData
-          type: boolean
-          description: Specifies to delete the files once they are unregistered.
-          default: true
       responses:
         '200':
           description: |
             Files were successfully unregistered.
+          schema:
+            $ref: '#/definitions/RegistrationInfo'
         '401':
           description: No session created yet.
         '403':
@@ -576,28 +554,27 @@ paths:
         they were unregistered but not immediately deleted.
       tags:
         - DataProviders
+      consumes:
+        - application/json
       parameters:
         - name: id
           in: path
           description: The ID of the Data Provider to delete files from.
           required: true
           type: integer
-        - name: 'basenames[]'
-          in: formData
-          type: array
-          items:
-            type: string
+        - name: multi_registration_mod_req
+          in: body
+          description: Arrays containing the files to delete.
+          schema:
+            $ref: '#/definitions/MultiRegistrationModReq'
           required: true
-          description: An array containing the filenames to delete.
-        - name: as_user_id
-          in: formData
-          type: integer
-          description: The ID of the user to delete files as.
       responses:
         '200':
           description: >-
             Successfully launched the operation in the background to delete
             files.
+          schema:
+            $ref: '#/definitions/RegistrationInfo'
         '401':
           description: No session created yet.
         '403':
@@ -617,7 +594,6 @@ paths:
           format: int64
           description: The ID of the Data Provider to query.
           required: true
-          default: 1
       responses:
         '200':
           description: Returns "true" or "false".
@@ -655,11 +631,14 @@ paths:
         - name: group_mod_req
           in: body
           description: An object describing the group to create
+          required: true
           schema:
             $ref: '#/definitions/GroupModReq'
       responses:
-        '200':
+        '201':
           description: Successfully created Group.
+          schema:
+            $ref: '#/definitions/Group'
         '401':
           description: No session created yet.
   '/groups/{id}':
@@ -731,7 +710,6 @@ paths:
           description: ID of the Group to delete.
           required: true
           type: integer
-          default: 1
       responses:
         '200':
           description: Successfully deleted the Group (project).
@@ -745,9 +723,7 @@ paths:
       summary: List of the Userfiles accessible to the current user.
       description: >
         This method returns a list of Userfiles that are available to the
-        current
-
-        User.
+        current User.
       tags:
         - Userfiles
       responses:
@@ -778,13 +754,11 @@ paths:
           in: formData
           description: The ID of the Data Provider to upload the file to.
           type: integer
-          default: 1
           required: true
         - name: 'userfile[group_id]'
           in: formData
           type: integer
           description: ID of the group that will have access to the Userfile
-          default: 1
           required: true
         - name: file_type
           in: formData
@@ -792,17 +766,19 @@ paths:
           type: string
           default: SingleFile
           required: true
-        - name: archive
+        - name: "_do_extract"
           in: formData
-          description: Archive
+          description: "set to the string 'on' to indicate that the uploaded content is a tar.gz or .zip archive that need to be extracted. See also the parameter _up_ex_mode"
           type: string
-        - name: _up_ex_mode
+        - name: "_up_ex_mode"
           in: formData
-          description: usually "collection"
+          description: "if '_do_extract' is set to 'on', set this to 'collection' to create a single collection, or 'multiple' to create one file per entry in the uploaded content"
           type: string
       responses:
         '201':
           description: Userfile successfully created.
+          schema:
+            type: object
         '401':
           description: No Session created yet.
   '/userfiles/{id}':
@@ -822,7 +798,6 @@ paths:
           description: The ID number of the Userfile to get information on.
           type: integer
           required: true
-          default: 1
       responses:
         '200':
           description: Returns the information about the Userfile.
@@ -843,6 +818,7 @@ paths:
           required: true
         - name: userfile_mod_req
           in: body
+          required: true
           schema:
             $ref: '#/definitions/UserfileModReq'
       responses:
@@ -865,6 +841,8 @@ paths:
       responses:
         '200':
           description: The contents of the file
+          schema:
+            type: string
         '403':
           description: Forbidden
   /userfiles/download:
@@ -876,20 +854,14 @@ paths:
       tags:
         - Userfiles
       parameters:
-        - name: 'file_ids'
-          in: formData
-          type: array
-          items:
-            type: integer
+        - name: multi_userfile_mod_req
+          in: body
+          required: true
           description: >-
-            The ID numbers of the files to be downloaded. If more than one file
+            The IDs of the files to be downloaded. If more than one file
             is specified, they will be zipped into a gzip archive.
-        - name: specified_filename
-          in: formData
-          type: string
-          description: >-
-            The name of the archive file that the Userfiles will be compressed
-            into for downloading.
+          schema:
+            $ref: '#/definitions/MultiUserfilesModReq'
       responses:
         '200':
           description: Indicates that the files are being compressed and downloaded.
@@ -899,13 +871,12 @@ paths:
       tags:
         - Userfiles
       parameters:
-        - name: 'file_ids'
-          in: formData
-          type: array
-          items:
-            type: integer
-          description: The ID numbers of the files to be deleted
+        - name: multi_userfile_mod_req
+          in: body
           required: true
+          description: The IDs of the files to destroy.
+          schema:
+            $ref: '#/definitions/MultiUserfilesModReq'
       responses:
         '200':
           description: Indicates that the files are being deleted.
@@ -915,27 +886,12 @@ paths:
       tags:
         - Userfiles
       parameters:
-        - name: 'file_ids'
-          in: formData
-          type: array
-          items:
-            type: integer
-          description: >-
-            The IDs of the Userfiles to be moved or copied to a new Data
-            Provider.
+        - name: multi_userfile_mod_req
+          in: body
           required: true
-        - name: data_provider_id_for_mv_cp
-          in: formData
-          type: integer
-          description: The ID of the Data Provider to move or copy the files to.
-          required: true
-        - name: crush_destination
-          in: formData
-          type: boolean
-          description: >-
-            Specifies whether to overwrite files on the destination Data
-            Provider if a file already exists there with the same name
-          default: false
+          description: The IDs of the files to move.
+          schema:
+            $ref: '#/definitions/MultiUserfilesModReq'
       responses:
         '200':
           description: >-
@@ -947,13 +903,12 @@ paths:
       tags:
         - Userfiles
       parameters:
-        - name: 'file_ids'
-          in: formData
-          type: array
-          items:
-            type: integer
-          description: A list of Userfile ID numbers to compress.
+        - name: multi_userfile_mod_req
+          in: body
           required: true
+          description: The IDs of the files to compress.
+          schema:
+            $ref: '#/definitions/MultiUserfilesModReq'
       responses:
         '200':
           description: Indicates that the compression is starting in the background.
@@ -963,13 +918,12 @@ paths:
       tags:
         - Userfiles
       parameters:
-        - name: 'file_ids'
-          in: formData
-          type: array
-          items:
-            type: integer
-          description: A list of Userfile ID numbers to uncompress.
+        - name: multi_userfile_mod_req
+          in: body
           required: true
+          description: The IDs of the files to uncompress.
+          schema:
+            $ref: '#/definitions/MultiUserfilesModReq'
       responses:
         '200':
           description: Indicates that files are being uncompressed in the background.
@@ -985,23 +939,12 @@ paths:
       tags:
         - Userfiles
       parameters:
-        - name: 'file_ids'
-          in: formData
-          type: array
-          items:
-            type: integer
-          description: A list of Userfile ID numbers to synchronize.
+        - name: multi_userfile_mod_req
+          in: body
           required: true
-        - name: operation
-          in: formData
-          type: string
-          description: >-
-            Either "sync_local" or "all_newer". "sync_local" will ensure that
-            the version of the file in the CBRAIN portal cache is the most
-            recent version that exists on the Data Provider. "all_newer" will
-            ensure that ALL caches known to CBRAIN are updated with the most
-            recent version of the files in the host Data Provider.
-          default: sync_local
+          description: The IDs of the files to synchronize.
+          schema:
+            $ref: '#/definitions/MultiUserfilesModReq'
       responses:
         '200':
           description: Indicates that synchronization is starting in the background
@@ -1034,8 +977,9 @@ paths:
         - in: body
           name: cbrain_task
           description: The task to create.
+          required: true
           schema:
-            $ref: '#/definitions/CbrainTask'
+            $ref: '#/definitions/CbrainTaskModReq'
       responses:
         '200':
           description: Task created successfully.
@@ -1059,7 +1003,6 @@ paths:
           description: The ID number of the Task to delete.
           required: true
           type: integer
-          default: 1
       responses:
         '200':
           description: Information about a Task.
@@ -1141,7 +1084,7 @@ definitions:
       site_id:
         type: integer
         format: int64
-        description: ID of the site affiliation for the user. If this is not specified, the user will go into the default Site
+        description: ID of the site affiliation for the user.
       last_connected_at:
         type: string
         format: dateTime
@@ -1149,7 +1092,6 @@ definitions:
       account_locked:
         type: string
         format: boolean
-        default: false
         description: Whether or not the account is locked.
   ToolConfig:
     type: object
@@ -1277,10 +1219,10 @@ definitions:
       is_browsable:
         type: string
         format: boolean
-      allow_file_owner_change:
+      is_fast_syncing:
         type: string
         format: boolean
-      is_fast_syncing:
+      allow_file_owner_change:
         type: string
         format: boolean
       content_storage_shared_between_users:
@@ -1296,6 +1238,9 @@ definitions:
       name:
         type: string
         description: Name of the group.
+      description:
+        type: string
+        description: Description of the group.
       type:
         type: string
         description: Type of group.
@@ -1314,9 +1259,6 @@ definitions:
           Specifies whether or not the group is visible to Normal Users.
           Invisible groups exist to specify levels of access to Userfiles,
           DataProviders and Bourreaux.
-      description:
-        type: string
-        description: Description of the group.
   Userfile:
     type: object
     properties:
@@ -1473,6 +1415,7 @@ definitions:
           ID of the userfile created as part of the archival process, if the
           working directory of the task has been archived.
       description:
+        type: string
         description: Description of the Task.
   Tool:
     type: object
@@ -1613,3 +1556,54 @@ definitions:
     properties:
       userfile:
         $ref: '#/definitions/Userfile'
+  CbrainTaskModReq:
+    type: object
+    properties:
+      cbrain_task:
+        $ref: '#/definitions/CbrainTask'
+  MultiUserfilesModReq:
+    type: object
+    properties:
+      file_ids:
+        type: array
+        items:
+          type: string
+      data_provider_id_for_mv_cp:
+        type: integer
+      specified_filename:
+        type: string
+        description: >-
+          The name of the archive file that the Userfiles will be compressed
+          into when downloading.
+      operation:
+        type: string
+        description: >-
+          Used when affecting the synchronization status of files.
+          Either "sync_local" or "all_newer". "sync_local" will ensure that
+          the version of the file in the CBRAIN portal cache is the most
+          recent version that exists on the Data Provider. "all_newer" will
+          ensure that ALL caches known to CBRAIN are updated with the most
+          recent version of the files in the host Data Provider.
+        default: sync_local
+  MultiRegistrationModReq:
+    type: object
+    properties:
+      basenames:
+        type: array
+        items:
+          type: string
+      filetypes:
+        description: >-
+          An array containing the filetypes associated with the files to
+          register; each element must be a string containing the cbrain file type, a single dash, and then
+          a repeat of the basename found in the basenames parameters. For example, "TextFile-abc.txt"
+        type: array
+        items:
+          type: string
+      as_user_id:
+        type: integer
+        description: The ID of the user to unregister files as.
+      delete:
+        type: boolean
+        description: Specifies to delete the files once when unregistering.
+        default: false

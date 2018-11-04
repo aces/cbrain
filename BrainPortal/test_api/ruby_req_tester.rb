@@ -143,6 +143,7 @@ class ClientReqTester #:nodoc:
     if @verbose > 2
       puts_green "REQ: Klass=#{parsed.klass} | Method=#{parsed.method} | ID=#{parsed.reqid} | Tok=#{parsed.toktype}"
       puts_green "IN : InArray=#{parsed.in_array.try(:size) || 'none'}"
+      puts_green "ARG: #{parsed.in_array.inspect}" if @verbose > 3
       puts_green "OUT: Code=#{parsed.expected_code} | Ctype=#{parsed.expected_ctype} | Zap=#{parsed.zap_regex.try(:size) || 'none'} | Output=#{parsed.expected_out.try(:size) || 'none'}"
     end
 
@@ -151,9 +152,13 @@ class ClientReqTester #:nodoc:
       errors = parsed.runtest(client)
     rescue => ex
       errors = [ "Exception: #{ex.class} #{ex.message}" ]
+      if @verbose > 3
+        puts_red "Exception: #{ex.class} #{ex.message}"
+        puts_red "Backtrace:\n" + ex.backtrace.join("\n") if @verbose > 4
+      end
     end
 
-    puts_red " => " + errors.join(", ") if errors.present? && @verbose > 1
+    puts_yellow " => " + errors.join(", ") if errors.present? && @verbose > 1
     @test_results[pretty_name] = errors
   end
 

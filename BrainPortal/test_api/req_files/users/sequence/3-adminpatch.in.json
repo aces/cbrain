@@ -1,5 +1,6 @@
 {
   "user": {
-    "full_name": "Admin New Name"
+    "full_name": "Admin New Name",
+    "type": "CoreAdmin"
   }
 }

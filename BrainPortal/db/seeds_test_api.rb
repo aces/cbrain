@@ -149,23 +149,22 @@ Step 2: Admin User Updated
 
 STEP
 
-eg=EveryoneGroup.new(:name => 'everyone')
+eg=EveryoneGroup.new(:id => 1, :name => 'everyone')
 eg.save!
 
-admin=CoreAdmin.new
-admin.id = 1
-admin.login                 = 'admin'
-admin.email                 = 'nobody@localhost'
-admin.password              = 'adMin_123_=/'
-admin.password_confirmation = 'adMin_123_=/'
-admin.password_reset        = false
-admin.full_name             = 'CBRAIN Administrator'
-begin
-  admin.save!
-rescue => ex
-  puts "Error: cannot re-create admin record.\n"
-  puts admin.errors.inspect
-  raise ex
+admin = CoreAdmin.seed_record!(
+  { :full_name => "CBRAIN Administrator",
+    :login     => "admin",
+  },
+  {
+    :id => 1,
+    :email => 'nobody@localhost',
+    :password_reset => false,
+  },
+  { :info_name_method => :login }
+) do |u|
+  u.password              = u.login + "_123"
+  u.password_confirmation = u.login + "_123"
 end
 
 # Fix admin's own_group to ID '2'
@@ -177,7 +176,7 @@ admin_group.save!
 admin_group.user_ids = [ 1 ]
 admin = CoreAdmin.first # must reload afresh
 
-puts "Updated #{admin.inspect}"
+puts "Updated UserGroup for admin: #{admin_group.inspect}"
 
 
 
@@ -398,6 +397,7 @@ to = Tool.seed_record!(
     :cbrain_task_class_name => 'CbrainTask::SimpleMonitor',
     :select_menu_text => 'Mon',
     :description  => 'TestMon',
+    :url          => 'http://localhost',
   }
 )
 
@@ -418,6 +418,7 @@ tca = ToolConfig.seed_record!(
     :description  => 'admin_only',
     :tool_id      => to.id,
     :bourreau_id  => bo.id,
+    :ncpus        => 99,
     :env_array    => [],
   }
 )
@@ -429,6 +430,7 @@ tcn = ToolConfig.seed_record!(
     :description  => 'all_users',
     :tool_id      => to.id,
     :bourreau_id  => bo.id,
+    :ncpus        => 99,
     :env_array    => [],
   }
 )
@@ -567,10 +569,10 @@ t2 = CbrainTask::SimpleMonitor.seed_record!(
     :tool_config_id => tcn.id,
     :level => nil,
     :rank => nil,
-    :results_data_provider_id => nil,
+    :results_data_provider_id => 15,
     :cluster_workdir_size => 123456,
     :workdir_archived => false,
-    :workdir_archive_userfile_id => nil,
+    :workdir_archive_userfile_id => 9876,
   }
 )
 

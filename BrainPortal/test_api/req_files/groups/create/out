@@ -1,2 +1,2 @@
-201
+201 application/json "site_id":null,
 {"id":48,"name":"new1","description":"new test","type":"WorkGroup","site_id":null,"invisible":false}
