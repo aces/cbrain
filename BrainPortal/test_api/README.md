@@ -8,7 +8,7 @@ This directory contains several frameworks for testing the network API for CBRAI
 
 Alongside these, a subdirectory called __req_files__ contains a set of short text
 files that specify, in a framework-independent way, the tests to run.
-More information about them can be found in the included [README.me](req_files/README.me) file.
+More information about them can be found in the included [README.md](req_files/README.md) file.
 
 Each of these require that a proper test environment be set up.
 
