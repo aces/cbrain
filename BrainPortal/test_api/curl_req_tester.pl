@@ -48,7 +48,7 @@ Default scheme (-s) : "http"
 
 The "test_substring" argument can be used to filter out any part of the
 relative paths to the "req" files under "req_files/", e.g. "normget"
-or "users/normget" or "users" etc. This is not a regex or a pattern,
+or "groups/create" or "groups" etc. This is not a regex or a pattern,
 just a substring match.
 
 The option -v controls the verbose level. The level can be set explicitely
@@ -101,6 +101,7 @@ for (;@ARGV;) {
     if ($opt =~ /[hps]/ && $arg eq "") {
         if (@ARGV < 2) {
             print "Argument required for option \"$opt\".\n";
+            &Usage;
             exit 1;
         }
         shift;
@@ -118,6 +119,7 @@ for (;@ARGV;) {
 # Validate command-line options #
 #################################
 
+&Usage if @ARGV != 0 && $ARGV[0] =~ /^-/;
 $TEST_SUBSTRING=shift if @ARGV;
 &Usage if @ARGV != 0;
 
