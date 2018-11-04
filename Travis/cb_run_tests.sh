@@ -149,7 +149,8 @@ rake "db:sanity:check" || die "Cannot sanity check DB"
 # That way we run them all and report everything at the end.
 fail_portal=""
 fail_bourreau=""
-fail_api=""
+fail_api_curl=""
+fail_api_ruby=""
 
 # ------------------------------
 # Portal-Side Testing
@@ -187,7 +188,7 @@ rake "db:seed:test:api" >/dev/null || die "Cannot re-seed the DB for API testing
 rails server puma -p 3000 -d       || die "Cannot start local puma server?"
 cd test_api                        || die "Cannot cd to test_api directory?"
 sleep 5 # must wait a bit for puma to be ready
-perl curl_req_tester.pl -h localhost -p 3000 -s http -R || fail_api="API testing with CURL failed"
+perl curl_req_tester.pl -h localhost -p 3000 -s http -R || fail_api_curl="API testing with CURL failed"
 kill $(cat $cb_test/BrainPortal/tmp/pids/server.pid)
 
 
@@ -201,7 +202,7 @@ rake "db:seed:test:api" >/dev/null || die "Cannot re-seed the DB for API testing
 rails server puma -p 3000 -d       || die "Cannot start local puma server?"
 cd test_api                        || die "Cannot cd to test_api directory?"
 sleep 5 # must wait a bit for puma to be ready
-rake "cbrain:test:api:client"
+rake "cbrain:test:api:client" || fail_api_ruby="API testing with Ruby CbrainClient failed"
 kill $(cat $cb_test/BrainPortal/tmp/pids/server.pid)
 
 
@@ -209,12 +210,13 @@ kill $(cat $cb_test/BrainPortal/tmp/pids/server.pid)
 # ------------------------------
 # Return status of both rspec
 # ------------------------------
-test -z "$fail_portal$fail_bourreau$fail_api" && exit 0  # Pangloss
+test -z "$fail_portal$fail_bourreau$fail_api_curl$fail_api_ruby" && exit 0  # Pangloss
 echo ""
 printf "${YELLOW}**** Summary of command failures ****${NC}\n"
 test -n "$fail_portal"   && printf "${RED}$fail_portal${NC}\n"
 test -n "$fail_bourreau" && printf "${RED}$fail_bourreau${NC}\n"
-test -n "$fail_api"      && printf "${RED}$fail_api${NC}\n"
+test -n "$fail_api_curl" && printf "${RED}$fail_api_curl${NC}\n"
+test -n "$fail_api_ruby" && printf "${RED}$fail_api_ruby${NC}\n"
 printf "${YELLOW}**** --------------------------- ****${NC}\n"
 echo ""
 exit 2
