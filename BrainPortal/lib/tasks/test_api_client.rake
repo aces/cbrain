@@ -88,7 +88,7 @@ namespace :cbrain do
 
         # If we don't exit explicitely, rake will complain
         # about anything left on ARGV...
-        Kernel.exit 1 + tester.failed_tests.size
+        Kernel.exit tester.failed_tests.size
       end
     end
   end

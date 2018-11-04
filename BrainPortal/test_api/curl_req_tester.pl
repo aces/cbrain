@@ -341,7 +341,7 @@ foreach my $pretty_name (sort keys %FAILED_TESTS) {
   printf " => %-50s : ",$pretty_name                    if $VERBOSE > 0;
   print join(", ",@{$FAILED_TESTS{$pretty_name}}),"\n" if $VERBOSE > 0;
 }
-exit(1 + scalar(keys(%FAILED_TESTS)));
+exit(scalar(keys(%FAILED_TESTS)));
 
 #############################
 #   S U B R O U T I N E S   #
