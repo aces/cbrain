@@ -1,2 +1,2 @@
-200
-[{"id":13,"name":"TestExec","user_id":1,"group_id":1,"online":true,"read_only":false,"description":"Test Exec"},{"id":1,"name":"Bianca","user_id":1,"group_id":1,"online":true,"read_only":false,"description":"TestPortal"}]
+200 application/json "name":".*?",
+[{"id":13,"name":"TestExec","user_id":1,"group_id":1,"online":true,"read_only":false,"description":"Test Exec"},{"id":1,"name":"Portal","user_id":1,"group_id":1,"online":true,"read_only":false,"description":"TestPortal"}]

@@ -318,7 +318,7 @@ STEP
 # Adjust attributes to the Portal object
 po=BrainPortal.first.dup
 po.id          = CBRAIN::SelfRemoteResourceId = 1 # reassign just to be sure
-po.description = 'TestPortal'
+po.description = 'Test Portal'
 po.user_id     = admin.id
 po.group_id    = EveryoneGroup.first.id
 BrainPortal.first.delete
