@@ -187,8 +187,8 @@ rake "db:seed:test:api" >/dev/null || die "Cannot re-seed the DB for API testing
 rails server puma -p 3000 -d       || die "Cannot start local puma server?"
 cd test_api                        || die "Cannot cd to test_api directory?"
 sleep 5 # must wait a bit for puma to be ready
-perl ruby_req_tester.pl -h localhost -p 3000 -s http -R || fail_api="API testing with CURL failed"
-kill $(cat tmp/pids/server.pid)
+perl curl_req_tester.pl -h localhost -p 3000 -s http -R || fail_api="API testing with CURL failed"
+kill $(cat $cb_test/BrainPortal/tmp/pids/server.pid)
 
 
 
@@ -202,7 +202,7 @@ rails server puma -p 3000 -d       || die "Cannot start local puma server?"
 cd test_api                        || die "Cannot cd to test_api directory?"
 sleep 5 # must wait a bit for puma to be ready
 rake "cbrain:test:api:client"
-kill $(cat tmp/pids/server.pid)
+kill $(cat $cb_test/BrainPortal/tmp/pids/server.pid)
 
 
 
