@@ -32,6 +32,16 @@ abc.out       | description of expected output
 abc.in.data   | raw content (rarely used)
 abc.in.form   | curl description of form data
 
+## Testing order of the __req__ files
+
+The testing frameworks are expected to run their tests in a randomized
+order; however, given that some tests can depend on others, a
+convention has been established to force some tests to happen before
+others. The convention is simply that all tests contained
+**within the very same subdirectory** will all be run in alphabetical order
+within that directory, and back to back too (no tests from elsewhere
+in the directory tree will be inserted in between).
+
 ## Format of __req__ file
 
 The __req__ file contains a single line with pieces of information
