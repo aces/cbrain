@@ -82,5 +82,11 @@ class ApplicationRecord < ActiveRecord::Base #:nodoc:
     1000
   end
 
+  # Useful generic scopes for console users.
+  scope :utoday, -> { where [ "#{self.quoted_table_name}.updated_at >= ?", Time.now.midnight ] }
+  scope :ctoday, -> { where [ "#{self.quoted_table_name}.created_at >= ?", Time.now.midnight ] }
+  scope :uweek , -> { where [ "#{self.quoted_table_name}.updated_at >= ?", Time.now.at_beginning_of_week ] } # starts Monday
+  scope :cweek , -> { where [ "#{self.quoted_table_name}.created_at >= ?", Time.now.at_beginning_of_week ] } # starts Monday
+
 end
 
