@@ -102,8 +102,20 @@ The first line is special an contains, in order:
 
 - An expected HTTP return code (here 201)
 - An expected content-type for the response (optional, default application/json)
-- A series of regular expressions; all matches will be **removed** from both
-  the API response and the provided expected content that starts on line 2.
+- An options series of regular expressions; all matches will be **removed** from both
+  the API response and the provided expected content that starts on line 2
+
+Aside from the regex described above, test frameworks are encouraged
+to hardcode a few removal operations before comparing outputs (gotten
+vs expected):
+
+- Remove all white spaces
+- Remove all timestamps that match things like "2018-11-03T23:04:07.000Z"
+- Remove "id":ddd when the action is a POST
+- Transform all :true and :false into :"true" and :"false" (note the double quotes)
+
+These transformations are implemented in the curl testing framework
+as well as the Ruby CbrainClient testing framework.
 
 ## Format of the __in.rb__ file
 
