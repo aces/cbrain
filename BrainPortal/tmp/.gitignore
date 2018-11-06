@@ -4,3 +4,5 @@
 #
 *.bashrc
 AgentLocker.lock
+restart.txt
+test_api

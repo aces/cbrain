@@ -149,7 +149,7 @@ class TasksController < ApplicationController
     @stderr_lim        = params[:stderr_lim].to_i
     @stderr_lim        = 2000 if @stderr_lim <= 100 || @stderr_lim > 999999
 
-    if ((! api_request?) || params[:get_task_outputs]) && ! @task.workdir_archived?
+    if ((! api_request?) || params[:get_task_outputs]) && @task.full_cluster_workdir.present? && ! @task.workdir_archived?
       begin
         @task.capture_job_out_err(@run_number,@stdout_lim,@stderr_lim) # PortalTask method: sends command to bourreau to get info
       rescue Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError, ActiveResource::TimeoutError, ActiveResource::MethodNotAllowed
