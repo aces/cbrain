@@ -575,14 +575,14 @@ class DataProvidersController < ApplicationController
     # Generate a complete response matching the old API
     flash[:notice] += "Registering #{userfiles_count} userfile(s) in background.\n"
     api_response = generate_register_response.merge({
-      :newly_registered_userfiles      => registered,
-      :previously_registered_userfiles => already_registered
+      :newly_registered_userfiles      => registered.for_api,
+      :previously_registered_userfiles => already_registered.for_api,
     })
 
     respond_to do |format|
       format.html { redirect_to :action => :browse }
+      format.xml  { render :xml  => api_response }
       format.json { render :json => api_response }
-      format.json { render :xml  => api_response }
     end
   end
 
@@ -652,8 +652,8 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :action => :browse }
+      format.xml  { render :xml  => api_response }
       format.json { render :json => api_response }
-      format.json { render :xml  => api_response }
     end
   end
 
@@ -736,8 +736,8 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :action => :browse }
+      format.xml  { render :xml  => api_response }
       format.json { render :json => api_response }
-      format.json { render :xml  => api_response }
     end
   end
 

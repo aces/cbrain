@@ -1,0 +1,12 @@
+{
+  "user": {
+    "login": "norm",
+    "password": "__test1Z-Z__",
+    "password_confirmation": "__test1Z-Z__",
+    "full_name": "This user already exists in the seed",
+    "email": "test@localhost",
+    "city": "City",
+    "country": "Country",
+    "type": "NormalUser"
+  }
+}

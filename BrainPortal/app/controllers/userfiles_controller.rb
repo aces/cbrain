@@ -328,20 +328,8 @@ class UserfilesController < ApplicationController
 
     @log                = @userfile.getlog        rescue nil
 
-    # Add some information for json
-    if api_request?
-      rr_ids_accessible   = RemoteResource.find_all_accessible_by_user(current_user).map(&:id)
-      @remote_sync_status = SyncStatus.where(:userfile_id => @userfile.id, :remote_resource_id => rr_ids_accessible)
-                            .select([:id, :remote_resource_id, :status, :accessed_at, :synced_at])
-                            .all.to_a
-      @children_ids       = @userfile.children_ids  rescue []
-
-      userfile_for_api = @userfile.for_api # transforms into a plain Hash
-      userfile_for_api["cbrain_log"]         = @log
-      userfile_for_api["remote_sync_status"] = @remote_sync_status
-      userfile_for_api["children_ids"]       = @children_ids
     # Prepare next/previous userfiles for html
-    elsif request.format.to_sym == :html
+    if ! api_request?
       @sort_index  = [ 0, params[:sort_index].to_i, 999_999_999 ].sort[1]
 
       # Rebuild the sorted Userfile scope
@@ -357,8 +345,8 @@ class UserfilesController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml  { render :xml  => userfile_for_api }
-      format.json { render :json => userfile_for_api }
+      format.xml  { render :xml  => @userfile.for_api }
+      format.json { render :json => @userfile.for_api }
     end
   end
 
@@ -404,10 +392,16 @@ class UserfilesController < ApplicationController
 
     flash[:notice] = "Synchronization started in background. Files that cannot be synchronized will be skipped."
 
-    if @userfiles.size == 1 && params[:back_to_show_page]
-      redirect_to :controller => :userfiles, :action  => :show, :id => @userfiles[0].id
-    else
-      redirect_to :action  => :index
+    respond_to do |format|
+      format.html do
+        if @userfiles.size == 1 && params[:back_to_show_page]
+          redirect_to :controller => :userfiles, :action  => :show, :id => @userfiles[0].id
+        else
+          redirect_to :action  => :index
+        end
+      end
+      format.xml  { head :ok }
+      format.json { head :ok }
     end
   end
 
@@ -434,7 +428,7 @@ class UserfilesController < ApplicationController
     flash[:notice]    ||= ""
 
     # Mode of upload; this is determined by the values of the
-    # params :archive, :_do_extract, and :_up_ex_mode
+    # params :_do_extract, and :_up_ex_mode
     mode = :save           # standard upload of one file
     mode = :collection if  params[:_do_extract] == "on" && params[:_up_ex_mode] == "collection" # create a single collection
     mode = :extract    if  params[:_do_extract] == "on" && params[:_up_ex_mode] == "multiple"   # create many many files
@@ -481,6 +475,8 @@ class UserfilesController < ApplicationController
                      :tag_ids          => params[:tags]
                    )
                  )
+      userfile.group_id = current_user.own_group.id unless
+        current_user.available_groups.pluck(:id).include?(userfile.group_id.to_i)
 
       if !userfile.save
         flash[:error]  += "File '#{basename}' could not be added.\n"
@@ -489,7 +485,7 @@ class UserfilesController < ApplicationController
         end
         respond_to do |format|
           format.html { redirect_to redirect_path }
-          format.json { render :json => { :notice => flash[:error] } }
+          format.json { render :json => { :notice => flash[:error] }, :status => :unprocessable_entity }
         end
         return
       end
@@ -515,8 +511,8 @@ class UserfilesController < ApplicationController
 
       respond_to do |format|
         format.html { redirect_to redirect_path }
-        format.json { render :json => {:notice => "File Uploaded"} }
-        format.xml  { render :xml  => {:notice => "File Uploaded"} }
+        format.json { render :json => {:notice => "File Uploaded"}, :status => :created }
+        format.xml  { render :xml  => {:notice => "File Uploaded"}, :status => :created }
       end
       return
     end # save
@@ -643,6 +639,8 @@ class UserfilesController < ApplicationController
       old_name = @userfile.name
       new_name = new_userfile_attr.delete(:name) || old_name
 
+      new_userfile_attr.delete :data_provider_id # cannot be changed here
+
       @userfile.attributes = new_userfile_attr
       @userfile.type       = type         if type
       @userfile.user_id    = new_user_id  if current_user.available_users.where(:id => new_user_id).first
@@ -662,8 +660,8 @@ class UserfilesController < ApplicationController
       if @userfile.errors.empty?
         flash[:notice] += "#{@userfile.name} successfully updated."
         format.html { redirect_to(:action  => 'show') }
-        format.xml  { head :ok, :content_type => 'text/plain' }
-        format.json { head :ok, :content_type => 'text/plain' }
+        format.xml  { head :ok }
+        format.json { head :ok }
       else
         @userfile.reload
         format.html { render(:action  => 'show') }
@@ -1253,14 +1251,22 @@ class UserfilesController < ApplicationController
   # +manage_compression+ with operation :compress.
   def compress #:nodoc:
     manage_compression(params[:file_ids] || [], :compress)
-    redirect_to(:action => :index)
+    respond_to do |format|
+      format.html { redirect_to(:action => :index) }
+      format.json { head :ok }
+      format.xml  { head :ok }
+    end
   end
 
   # Uncompress/unarchive a set of userfiles. Wrapper action for
   # +manage_compression+ with operation :uncompress.
   def uncompress #:nodoc:
     manage_compression(params[:file_ids] || [], :uncompress)
-    redirect_to(:action => :index)
+    respond_to do |format|
+      format.html { redirect_to(:action => :index) }
+      format.json { head :ok }
+      format.xml  { head :ok }
+    end
   end
 
   # Given a set of files selected by the user, creates a new

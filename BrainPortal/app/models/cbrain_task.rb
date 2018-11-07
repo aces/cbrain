@@ -68,6 +68,13 @@ class CbrainTask < ApplicationRecord
   # as necessary.
   serialize_as_indifferent_hash :params
 
+  # What API users can see from a task
+  api_attr_visible :type, :user_id, :group_id, :bourreau_id, :tool_config_id,
+                   :batch_id, :params, :status, :created_at, :updated_at,
+                   :run_number, :results_data_provider_id,
+                   :cluster_workdir_size, :workdir_archived, :workdir_archive_userfile_id,
+                   :description
+
   scope :status, lambda { |s|
                          case s.to_sym
                          when :completed

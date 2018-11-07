@@ -1,0 +1,2 @@
+200 application/json "batch_id":\d+ "\w+":null,
+[{"id":298,"type":"CbrainTask::SimpleMonitor","user_id":2,"group_id":10,"bourreau_id":13,"tool_config_id":20,"batch_id":298,"params":{},"status":"New","created_at":"2018-11-03T23:04:07.000Z","updated_at":"2018-11-03T23:04:07.000Z","run_number":null,"results_data_provider_id":null,"cluster_workdir_size":null,"workdir_archived":false,"workdir_archive_userfile_id":null,"description":"TestCreate"}]

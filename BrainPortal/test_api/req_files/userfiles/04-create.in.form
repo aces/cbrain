@@ -1,0 +1,4 @@
+upload_file=@__REQBASE__in.data
+data_provider_id=15
+file_type=TextFile
+userfile[group_id]=10

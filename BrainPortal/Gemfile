@@ -63,5 +63,6 @@ group :test do
   gem "rspec-activemodel-mocks"
   gem "rspec-collection_matchers"
   gem "database_cleaner"
+  gem 'cbrain_client', :git => 'https://github.com/aces/cbrain-client-gem'
 end
 

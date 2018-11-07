@@ -60,7 +60,7 @@ class UsersController < ApplicationController
       format.html # index.html.erb
       format.js
       format.xml  do
-        render :xml  => @users.for_api
+        render :xml  => @users.for_api_xml
       end
       format.json do
         render :json => @users.for_api
@@ -83,7 +83,7 @@ class UsersController < ApplicationController
     respond_to do |format|
       format.html # show.html.erb
       format.xml  do
-        render :xml  => @user.for_api
+        render :xml  => @user.for_api_xml
       end
       format.json do
         render :json => @user.for_api
@@ -105,11 +105,6 @@ class UsersController < ApplicationController
   end
 
   def create #:nodoc:
-    cookies.delete :auth_token
-    # protects against session fixation attacks, wreaks havoc with
-    # request forgery protection.
-    # uncomment at your own risk
-    # reset_session
     new_user_attr = user_params
 
     no_password_reset_needed = params[:no_password_reset_needed] == "1"

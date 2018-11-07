@@ -1,0 +1,2 @@
+200 application/json "last_connected_at":.*?, "site_id":.*?, "time_zone":.*?, "city":.*?,
+{"id":2,"login":"norm","full_name":"Normal User","email":"norm@localhost","type":"NormalUser","site_id":null,"time_zone":"UTC","city":"London","last_connected_at":,"account_locked":false}

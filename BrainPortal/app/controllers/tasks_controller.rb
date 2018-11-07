@@ -71,8 +71,10 @@ class TasksController < ApplicationController
       @tasks.compact!
     else
       @tasks = @scope.pagination.apply(@view_scope).to_a
-      @tasks.map! do |task|
-        { :batch => task.batch_id, :first => task, :count => 1 }
+      if ! api_request?
+        @tasks.map! do |task|
+          { :batch => task.batch_id, :first => task, :count => 1 }
+        end
       end
     end
 
@@ -87,22 +89,8 @@ class TasksController < ApplicationController
     respond_to do |format|
       format.html
       format.js
-
-      # For backwards compatibility with old XML/JSON API clients.
-      format.xml do
-        render :xml => (@tasks.map do |task|
-          task = task[:first]
-          [task.id, {
-            :first_task => task,
-            :statuses   => [task.status],
-            :num_tasks  => 1
-          }]
-        end).to_h
-      end
-
-      format.json do
-        render :json => @tasks.map { |task| task[:first] }
-      end
+      format.xml  { render :xml  => @tasks.sort_by(&:id).for_api_xml }
+      format.json { render :json => @tasks.sort_by(&:id).for_api     }
     end
   end
 
@@ -167,8 +155,8 @@ class TasksController < ApplicationController
 
     respond_to do |format|
       format.html # show.html.erb
-      format.xml   { render :xml  => @task }
-      format.json  { render :json => @task }
+      format.xml   { render :xml  => @task.for_api_xml }
+      format.json  { render :json => @task.for_api     }
     end
   end
 
@@ -501,8 +489,8 @@ class TasksController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :controller => :tasks, :action => :index }
-      format.xml  { render :xml  => tasklist }
-      format.json { render :json => tasklist }
+      format.xml  { render :xml  => tasklist.sort_by(&:id).for_api_xml }
+      format.json { render :json => tasklist.sort_by(&:id).for_api     }
     end
   end
 
