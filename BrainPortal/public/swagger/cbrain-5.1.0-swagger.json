@@ -14,7 +14,7 @@
       "url" : "https://github.com/aces/cbrain"
     }
   },
-  "host" : "localhost:3000",
+  "host" : "portal.cbrain.mcgill.ca",
   "securityDefinitions" : {
     "BrainPortalSession" : {
       "type" : "apiKey",
@@ -25,7 +25,7 @@
   "security" : [ {
     "BrainPortalSession" : [ ]
   } ],
-  "schemes" : [ "http" ],
+  "schemes" : [ "https" ],
   "basePath" : "/",
   "produces" : [ "application/json", "application/xml" ],
   "paths" : {

@@ -383,7 +383,8 @@ class PortalController < ApplicationController
     end
     respond_to do |format|
       format.html
-      format.json { send_file "public/swagger/#{@specfile}", :stream  => true }
+      format.json { send_file "public/swagger/#{@specfile}",                     :stream  => true }
+      format.yaml { send_file "public/swagger/#{@specfile.sub(/json$/,"yaml")}", :stream  => true }
     end
   end
 

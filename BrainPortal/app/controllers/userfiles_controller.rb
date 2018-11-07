@@ -328,20 +328,8 @@ class UserfilesController < ApplicationController
 
     @log                = @userfile.getlog        rescue nil
 
-    # Add some information for API
-    if api_request?
-      #rr_ids_accessible   = RemoteResource.find_all_accessible_by_user(current_user).map(&:id)
-      #@remote_sync_status = SyncStatus.where(:userfile_id => @userfile.id, :remote_resource_id => rr_ids_accessible)
-      #                      .select([:id, :remote_resource_id, :status, :accessed_at, :synced_at])
-      #                      .all.to_a.map(&:attributes)
-      #@children_ids       = @userfile.children_ids  rescue []
-
-      userfile_for_api = @userfile.for_api # transforms into a plain Hash
-      #userfile_for_api["cbrain_log"]         = @log
-      #userfile_for_api["remote_sync_status"] = @remote_sync_status
-      #userfile_for_api["children_ids"]       = @children_ids
     # Prepare next/previous userfiles for html
-    elsif request.format.to_sym == :html
+    if ! api_request?
       @sort_index  = [ 0, params[:sort_index].to_i, 999_999_999 ].sort[1]
 
       # Rebuild the sorted Userfile scope
@@ -357,8 +345,8 @@ class UserfilesController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.xml  { render :xml  => userfile_for_api }
-      format.json { render :json => userfile_for_api }
+      format.xml  { render :xml  => @userfile.for_api }
+      format.json { render :json => @userfile.for_api }
     end
   end
 

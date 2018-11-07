@@ -19,7 +19,7 @@ info:
   contact:
     name: CBRAIN Development Team
     url: https://github.com/aces/cbrain
-host: "localhost:3000"
+host: "portal.cbrain.mcgill.ca"
 securityDefinitions:
   BrainPortalSession:
     type: apiKey
@@ -28,7 +28,7 @@ securityDefinitions:
 security:
   - BrainPortalSession: []
 schemes:
-  - http
+  - https
 basePath: /
 produces:
   - application/json
