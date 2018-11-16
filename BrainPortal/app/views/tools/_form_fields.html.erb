@@ -26,34 +26,39 @@
 
 <%= show_table(@tool, :edit_condition => true, :header => "General info") do |t| %>
 
-  <% t.edit_cell :name, :header => "Tool Name" do |f|%>
+  <% t.edit_cell :name, :show_width => 2, :header => "Tool Name" do |f|%>
     <%= f.text_field :name %>
   <% end %>
 
-  <% t.edit_cell :cbrain_task_class_name, :header => "CbrainTask Class name",
+  <% t.edit_cell :cbrain_task_class_name, :show_width => 2, :header => "CbrainTask Class name",
                       :td_options => {:title => "PortalTask subclass which implements this tool."} do |f| %>
-    <%= f.text_field :cbrain_task_class_name %>
+    <%= f.text_field :cbrain_task_class_name, :size => 30 %>
   <% end %>
 
-  <% t.edit_cell :user_id, :header => "Belongs to" do |f| %>
-    <%= user_select "tool[user_id]", @tool, :id => 'tool_user_id' %>
+  <% t.edit_cell :user_id, :content => link_to_user_with_tooltip(@tool.user), :header => "Belongs to" do |f| %>
+    <%= user_select "tool[user_id]", @tool.user, :id => 'tool_user_id' %>
   <% end %>
 
-  <% t.edit_cell :group_id, :header => "Available to members of project" do |f| %>
-    <%= group_select "tool[group_id]", @tool, :id => 'tool_group_id' %>
+  <% t.cell("Created")      { @tool.created_at.present? ? to_localtime(@tool.created_at,:datetime) : "" } %>
+
+  <% t.edit_cell :group_id, :content => link_to_group_if_accessible(@tool.group), :header => "Available to members of project" do |f| %>
+    <%= group_select "tool[group_id]", @tool.group, :id => 'tool_group_id' %>
   <% end %>
+
+  <% t.cell("Last Updated") { @tool.updated_at.present? ? to_localtime(@tool.updated_at,:datetime) : "" } %>
 
   <% t.edit_cell :category, :header => "Category" do |f| %>
      <%= f.select :category, Tool::Categories %>
   <% end %>
+
   <% joint_licenses = @tool.license_agreements.join("\n") %>
   <% licenses = @tool.license_agreements.count == 0 ? "(None)": joint_licenses %>
   <% t.edit_cell :license_agreements, :header => "License agreements", :content => licenses do |f| %>
-    <%= f.text_area :license_agreements, :value => @tool.new_record? ? "" : joint_licenses, :rows => 5, :cols => 40 %>
+    <%= f.text_area :license_agreements, :value => @tool.new_record? ? "" : joint_licenses, :rows => 3, :cols => 30 %>
     <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
   <% end %>
 
-  <% t.edit_cell :description, :header => "Description", :content => full_description(@tool.description) do |f|%>
+  <% t.edit_cell :description, :show_width => 2, :header => "Description", :content => full_description(@tool.description) do |f|%>
     <%= f.text_area :description, :cols => 80, :rows => 10 %>
     <div class="field_explanation">The first line is a short summary, and the rest are for any special notes for the users.</div>
   <% end %>
@@ -66,17 +71,19 @@
     <%= f.text_field :application_type %>
   <% end %>
 
-  <% t.edit_cell :application_tags, :header => "Comma separated tags" do |f| %>
-    <%= f.text_field :application_tags %>
+  <% t.edit_cell :application_tags, :show_width => 2, :header => "Comma separated tags" do |f| %>
+    <%= f.text_field :application_tags, :size => 60 %>
   <% end %>
 
-  <% t.edit_cell :url, :header => "Tool URL" do |f| %>
-    <%= f.text_field :url %>
+  <% t.edit_cell :url, :show_width => 2, :header => "Tool URL" do |f| %>
+    <%= f.text_field :url, :size => 60 %>
   <% end %>
 
-  <% t.edit_cell :select_menu_text, :header => "Text for select box on the userfiles page" do |f| %>
-    <%= f.text_field :select_menu_text %>
+  <% "" # Not used anymore? %>
+  <% false and t.edit_cell :select_menu_text, :header => "Text for select box on the userfiles page" do |f| %>
+    <%= f.text_field :select_menu_text, :size => 40 %>
   <% end %>
+
 <% end %>
 
 <% if @tool && !@tool.new_record? %>
