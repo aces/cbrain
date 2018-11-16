@@ -231,7 +231,7 @@ class ToolConfig < ApplicationRecord
     return false if self.cloud_job_slots.present?
     return false if self.cloud_vm_boot_timeout.present?
     return false if self.cloud_vm_ssh_tunnel_port.present?
-    return false if (self.env_array || []).size > 0
+    return false if (self.env_array || []).any?(&:present?)
     text = self.script_prologue
     return true if text.blank?
     text_array = text.split(/\n/).reject { |line| line =~ /\A\s*#|\A\s*\z/ }

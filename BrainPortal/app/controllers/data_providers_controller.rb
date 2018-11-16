@@ -132,6 +132,7 @@ class DataProvidersController < ApplicationController
          %w(
            remote_user remote_host remote_port remote_dir
            not_syncable cloud_storage_client_identifier cloud_storage_client_token
+           cloud_storage_client_bucket_name cloud_storage_client_path_start
          )
       )
       meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/\Adp_no_copy_\d+\z|\Arr_no_sync_\d+\z/)
@@ -522,9 +523,8 @@ class DataProvidersController < ApplicationController
       end
 
       # Notify user of registration successes and failures.
-      mangled_action = (post_action == :move ? 'mov' : 'copy')
       generic_notice_messages('register', succeeded, failed,
-        "Files will now be #{mangled_action}ed in background.")
+        "Files will now be #{post_action == :move ? 'moved' : 'copied'} in background.")
 
       # Prepare to copy/move the files to the new DP
       succeeded, failed = [], {}
@@ -568,20 +568,21 @@ class DataProvidersController < ApplicationController
         end
       end
 
+      mangled_action = (post_action == :move ? 'mov' : 'copy') # most work with 'ing' appended
       generic_notice_messages(mangled_action, succeeded, failed)
     end
 
     # Generate a complete response matching the old API
     flash[:notice] += "Registering #{userfiles_count} userfile(s) in background.\n"
     api_response = generate_register_response.merge({
-      :newly_registered_userfiles      => registered,
-      :previously_registered_userfiles => already_registered
+      :newly_registered_userfiles      => registered.for_api,
+      :previously_registered_userfiles => already_registered.for_api,
     })
 
     respond_to do |format|
       format.html { redirect_to :action => :browse }
+      format.xml  { render :xml  => api_response }
       format.json { render :json => api_response }
-      format.json { render :xml  => api_response }
     end
   end
 
@@ -651,8 +652,8 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :action => :browse }
+      format.xml  { render :xml  => api_response }
       format.json { render :json => api_response }
-      format.json { render :xml  => api_response }
     end
   end
 
@@ -735,8 +736,8 @@ class DataProvidersController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to :action => :browse }
+      format.xml  { render :xml  => api_response }
       format.json { render :json => api_response }
-      format.json { render :xml  => api_response }
     end
   end
 
@@ -816,7 +817,8 @@ class DataProvidersController < ApplicationController
       :name, :user_id, :group_id, :remote_user, :remote_host, :alternate_host,
       :remote_port, :remote_dir, :online, :read_only, :description, :type,
       :not_syncable, :time_zone, :cloud_storage_client_identifier,
-      :cloud_storage_client_token, :license_agreements
+      :cloud_storage_client_token, :cloud_storage_client_bucket_name,
+      :cloud_storage_client_path_start, :license_agreements
     )
   end
 

@@ -54,14 +54,14 @@
 
 <div class="display_inline_block" style="min-width: 50%">
 
-  <%= show_table(@provider, :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+  <%= show_table(@provider, :as => :data_provider, :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
 
-    <% t.edit_cell(:name) do %>
-      <%= text_field_tag "data_provider[name]", @provider.name %>
+    <% t.edit_cell(:name) do |f| %>
+      <%= f.text_field :name %>
     <% end %>
 
-    <% t.edit_cell(:description, :content => full_description(@provider.description)) do %>
-      <%= text_area_tag "data_provider[description]", @provider.description, :rows => 10, :cols => 40 %><br>
+    <% t.edit_cell(:description, :content => full_description(@provider.description)) do  |f| %>
+      <%= f.text_area :description, :rows => 10, :cols => 40 %><br>
     <% end %>
 
     <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
@@ -70,24 +70,24 @@
       <% t.empty_cell %>
     <% end %>
 
-    <% t.edit_cell(:online, :content => (@provider.online ? "Online" : "Offline")) do %>
-      <%= select_tag "data_provider[online]", options_for_select([["Online", true], ["Offline", false]], :selected => @provider.online) %>
+    <% t.edit_cell(:online, :content => (@provider.online ? "Online" : "Offline")) do |f| %>
+      <%= f.select :online, [["Online", true], ["Offline", false]] %>
     <% end %>
 
     <% t.edit_cell(:user_id, :header => "Owner", :content => link_to_user_with_tooltip(@provider.user), :disabled => ! current_user.has_role?(:admin_user) ) do %>
       <%= user_select("data_provider[user_id]", { :selector => @provider } ) %>
     <% end %>
 
-    <% t.edit_cell(:online, :content => (@provider.read_only ? "Read Only" : "Read/Write"), :header => "Mode") do %>
-      <%= select_tag "data_provider[read_only]", options_for_select([["Read/Write", false], ["Read Only", true]], :selected => @provider.read_only) %>
+    <% t.edit_cell(:read_only, :content => (@provider.read_only ? "Read Only" : "Read/Write"), :header => "Mode") do |f| %>
+      <%= f.select :read_only, [["Read/Write", false], ["Read Only", true]] %>
     <% end %>
 
     <% t.edit_cell(:group_id, :header => "Project", :content => link_to_group_if_accessible(@provider.group) ) do %>
       <%= group_select("data_provider[group_id]", { :selector => @provider }) %>
     <% end %>
 
-    <% t.edit_cell(:online, :content => (@provider.not_syncable ? "NOT syncable" : "Fully syncable"), :header => "Syncability") do %>
-      <%= select_tag "data_provider[not_syncable]", options_for_select([["Fully syncable", false], ["NOT syncable", true]], :selected => @provider.not_syncable) %>
+    <% t.edit_cell(:not_syncable, :content => (@provider.not_syncable ? "NOT syncable" : "Fully syncable"), :header => "Syncability") do |f| %>
+      <%= f.select :not_syncable, [["Fully syncable", false], ["NOT syncable", true]] %>
     <% end %>
 
     <% t.cell("Site") { link_to_site_if_accessible(@provider.site) } %>
@@ -97,15 +97,15 @@
     <% else %>
       <% t.empty_cell %>
     <% end %>
-
+    <% joint_licenses = @provider.license_agreements.join("\n") %>
     <% licenses = @provider.license_agreements.count == 0 ? "(None)": @provider.license_agreements.join("\n") %>
-    <% t.edit_cell(:license_agreements, :content => licenses) do %>
-      <%= text_area_tag "data_provider[license_agreements]", @provider.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
+    <% t.edit_cell(:license_agreements, :content => licenses) do |f| %>
+      <%= f.text_area :license_agreements, :value => joint_licenses, :content => joint_licenses, :rows => 5, :cols => 40 %><br>
       <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
     <% end %>
 
-    <% t.edit_cell(:time_zone, :content => (@provider.time_zone || "(Unset)") ) do %>
-      <%= select_tag "data_provider[time_zone]", time_zone_options_for_select(@provider.time_zone, /canada/i), :include_blank => true %>
+    <% t.edit_cell(:time_zone, :content => (@provider.time_zone || "(Unset)") ) do |f| %>
+      <%= f.select :time_zone, time_zone_options_for_select(@provider.time_zone, /canada/i), :include_blank => true %>
     <% end %>
 
     <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
@@ -115,43 +115,48 @@
     <% end %>
 
     <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-      <% t.edit_cell(:remote_dir, :header => "Physical Data Location", :show_width => 2) do %>
-        <%= text_field_tag "data_provider[remote_dir]", @provider.remote_dir, :size => 60 %>
+      <% t.edit_cell(:remote_dir, :header => "Physical Data Location", :show_width => 2) do |f| %>
+        <%= f.text_field :remote_dir, :size => 60 %>
       <% end %>
     <% end %>
 
   <% end %>
 
   <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-    <%= show_table(@provider, :header => "SSH parameters for remote Data Providers") do |t| %>
-      <% t.edit_cell(:remote_host)  do %>
-        <%= text_field_tag "data_provider[remote_host]", @provider.remote_host %>
+    <%= show_table(@provider, :as => :data_provider, :header => "SSH parameters for remote Data Providers", :edit_condition => true) do |t| %>
+      <% t.edit_cell(:remote_host)  do |f| %>
+        <%= f.text_field :remote_host %>
       <% end %>
-      <% t.edit_cell(:alternate_host, :header => "Alternate hostname(s)")  do %>
-        <%= text_field_tag "data_provider[alternate_host]", @provider.alternate_host, :size => 60 %><br />
+      <% t.edit_cell(:alternate_host, :header => "Alternate hostname(s)")  do |f| %>
+        <%= f.text_field :alternate_host, :size => 60 %><br />
         <div class="field_explanation">Comma-separated list of alternate hostnames; hostname1,hostname2,hostname3,...</div>
       <% end %>
-      <% t.edit_cell(:remote_port) do %>
-        <%= text_field_tag "data_provider[remote_port]", @provider.remote_port, :size => 6 %>
+      <% t.edit_cell(:remote_port) do |f| %>
+        <%= f.text_field :remote_port, :size => 6 %>
       <% end %>
-      <% t.edit_cell(:remote_user) do %>
-        <%= text_field_tag "data_provider[remote_user]", @provider.remote_user %>
-      <% end %>
-    <% end %>
-
-    <%= show_table(@provider, :header => "Cloud Storage Configuration") do |t| %>
-      <% t.edit_cell(:cloud_storage_client_identifier, :header => 'Client Identifier', :show_width => 2)  do %>
-        <%= text_field_tag "data_provider[cloud_storage_client_identifier]", @provider.cloud_storage_client_identifier %>
-      <% end %>
-      <% t.edit_cell(:cloud_storage_client_token, :content => '****************', :header => 'Client Token', :show_width => 2) do %>
-        <%= password_field_tag "data_provider[cloud_storage_client_token]", @provider.cloud_storage_client_token, :size => 80 %>
+      <% t.edit_cell(:remote_user) do |f| %>
+        <%= f.text_field :remote_user %>
       <% end %>
     <% end %>
 
+    <%= show_table(@provider, :as => :data_provider, :header => "Cloud Storage Configuration", :edit_condition => true) do |t| %>
+      <% t.edit_cell(:cloud_storage_client_identifier, :header => 'Client Identifier', :show_width => 2)  do |f| %>
+        <%= f.text_field :cloud_storage_client_identifier %>
+      <% end %>
+      <% t.edit_cell(:cloud_storage_client_token, :content => '****************', :header => 'Client Token', :show_width => 2) do |f| %>
+        <%= f.password_field :cloud_storage_client_token, :size => 80 %>
+      <% end %>
+      <% t.edit_cell(:cloud_storage_client_bucket_name, :header => 'Client Bucket Name', :show_width => 2) do %>
+        <%= text_field_tag "data_provider[cloud_storage_client_bucket_name]", @provider.cloud_storage_client_bucket_name, :size => 80 %>
+      <% end %>
+      <% t.edit_cell(:cloud_storage_client_path_start, :header => 'Client Starting Path', :show_width => 2) do %>
+        <%= text_field_tag "data_provider[cloud_storage_client_path_start]", @provider.cloud_storage_client_path_start, :size => 80 %>
+      <% end %>
+    <% end %>
   <% end %>
 
 
-  <%= show_table(@provider, :header => "Other Properties", :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+  <%= show_table(@provider, :as => :data_provider, :header => "Other Properties", :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
 
     <% t.boolean_edit_cell("meta[no_uploads]", @provider.meta["no_uploads"],  "on", "", :header => "Cannot be used for uploading files in the file manager") %>
 
@@ -180,7 +185,7 @@
 
   <% if other_dps.size > 0 %>
 
-    <%= show_table(@provider, :width => 5, :header => 'Files can be copied or moved to these other Data Providers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+    <%= show_table(@provider, :as => :data_provider, :width => 5, :header => 'Files can be copied or moved to these other Data Providers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
       <% if dps_by_category[:official] %>
         <% t.row(:class => 'subheader') { "<strong>Official Storage</strong>".html_safe } %>
         <% dps_by_category[:official].sort_by(&:name).each do |dp| %>
@@ -206,7 +211,7 @@
 
   <% if other_rrs.size > 0 %>
 
-    <%= show_table(@provider, :width => 5, :header => 'File contents can be accessed by these Servers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
+    <%= show_table(@provider, :as => :data_provider, :width => 5, :header => 'File contents can be accessed by these Servers', :edit_condition => (check_role(:admin_user) || @provider.user_id == current_user.id)) do |t| %>
       <% if rrs_by_category[:portal] %>
         <% t.row(:class => 'subheader') { "<strong>Portals<strong>".html_safe } %>
         <% rrs_by_category[:portal].sort_by(&:name).each do |rr| %>

@@ -160,6 +160,7 @@ class ApplicationController < ActionController::Base
 
     # Compute the host and IP from the request (when not logged in)
     from_ip   ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
+    from_ip     = Regexp.last_match[1] if ((from_ip || "") =~ /(\d+\.\d+\.\d+\.\d+)/) # sometimes we get several IPs with commas
     from_host ||= hostname_from_ip(from_ip)
 
     # Pretty user agent string

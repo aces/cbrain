@@ -23,12 +23,103 @@
 require 'rails_helper'
 
 describe Tool do
-  let(:tool) { build(:tool) }
+  let(:tool) do
+    allow(File).to receive(:exist?).and_return(true)
+    allow(File).to receive(:exist?).with(Rails.root + "public/licenses/bad.html").and_return(false)
+    build(:tool)
+  end
 
   it "should keep description if present" do
    tool.description = "keep this"
    tool.save
    expect(tool.description).to eq("keep this")
+  end
+
+  it "should invalidated incorrect license" do
+    tool.license_agreements = ["bad"]
+    expect(tool.__send__(:valid_license_agreements?)).to eq(false)
+    expect(tool.valid?).to eq(false)
+  end
+
+  it "should invalidate incorrect license after save" do
+    tool.license_agreements = "bad"
+    tool.save
+    expect(tool.valid?).to eq(false)
+  end
+
+  it "should be able assign license to a new tool" do
+    tool.license_agreements = "keep_this"
+    # needs underscore because spaces are not well supported, backend splits the string (which is default on whitespaces)
+    expect(tool.license_agreements).to eq(["keep_this"])
+  end
+
+  it "should be able assign multiple license to a new tool" do
+    tool.license_agreements = "keep_this\nkeep_that"
+    expect(tool.license_agreements).to eq(["keep_that", "keep_this"])
+  end
+
+  it "should be able assign multiple license to a tool" do
+    tool.license_agreements = "keep_this\nkeep_that"
+    tool.save
+    expect(tool.license_agreements).to eq(["keep_that", "keep_this"])
+    tool.reload
+    expect(tool.license_agreements).to eq(["keep_that", "keep_this"])
+  end
+
+  it "should be able able remove license from a tool" do
+    tool.license_agreements = "keep_this"
+    tool.license_agreements = ""
+    expect(tool.license_agreements).to eq([])
+    tool.save
+    expect(tool.license_agreements).to eq([])
+    tool.reload
+    expect(tool.license_agreements).to eq([])
+  end
+
+  it "should keep license if present" do
+    tool.license_agreements = ["keep_this"]
+    expect(tool.license_agreements).to eq(["keep_this"])
+    tool.save
+    expect(tool.license_agreements).to eq(["keep_this"])
+    tool.reload
+    expect(tool.license_agreements).to eq(["keep_this"])
+  end
+
+  it "should keep singleton license list" do
+    tool.license_agreements = ["keep_this"]
+    expect(tool.license_agreements).to eq(["keep_this"])
+    tool.save
+    expect(tool.license_agreements).to eq(["keep_this"])
+    tool.reload
+    expect(tool.license_agreements).to eq(["keep_this"])
+  end
+
+  it "should change license" do
+    tool.license_agreements = "keep_this"
+    expect(tool.license_agreements).to eq(["keep_this"])
+    tool.license_agreements = "keep_that"
+    expect(tool.license_agreements).to eq(['keep_that'])
+    tool.save
+    expect(tool.license_agreements).to eq(["keep_that"])
+    tool.reload
+    expect(tool.license_agreements).to eq(["keep_that"])
+  end
+
+  it "should let change saved license after save" do
+    tool.license_agreements = "keep_this"
+    tool.save
+    expect(tool.license_agreements).to eq(["keep_this"])
+    tool.save
+    tool.license_agreements = "keep_that"
+    expect(tool.license_agreements).to eq(["keep_that"])
+    tool.save
+  end
+
+
+  it "should validate license " do
+    tool.license_agreements = "keep_this"
+    tool.save
+    expect(tool.valid?).to eq(true)
   end
 
   it "should keep select_menu_text if present" do

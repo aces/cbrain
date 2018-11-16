@@ -60,7 +60,7 @@ class UsersController < ApplicationController
       format.html # index.html.erb
       format.js
       format.xml  do
-        render :xml  => @users.for_api
+        render :xml  => @users.for_api_xml
       end
       format.json do
         render :json => @users.for_api
@@ -74,7 +74,7 @@ class UsersController < ApplicationController
   def show #:nodoc:
     @user = User.find(params[:id])
 
-    cb_error "You don't have permission to view this page.", :redirect  => start_page_path unless edit_permission?(@user)
+    cb_error "You don't have permission to view this user.", :redirect  => start_page_path unless edit_permission?(@user)
 
     @default_data_provider  = DataProvider.find_by_id(@user.meta["pref_data_provider_id"])
     @default_bourreau       = Bourreau.find_by_id(@user.meta["pref_bourreau_id"])
@@ -83,7 +83,7 @@ class UsersController < ApplicationController
     respond_to do |format|
       format.html # show.html.erb
       format.xml  do
-        render :xml  => @user.for_api
+        render :xml  => @user.for_api_xml
       end
       format.json do
         render :json => @user.for_api
@@ -105,11 +105,6 @@ class UsersController < ApplicationController
   end
 
   def create #:nodoc:
-    cookies.delete :auth_token
-    # protects against session fixation attacks, wreaks havoc with
-    # request forgery protection.
-    # uncomment at your own risk
-    # reset_session
     new_user_attr = user_params
 
     no_password_reset_needed = params[:no_password_reset_needed] == "1"
@@ -181,7 +176,7 @@ class UsersController < ApplicationController
   # PUT /users/1.xml
   def update #:nodoc:
     @user          = User.where(:id => params[:id]).includes(:groups).first
-    cb_error "You don't have permission to view this page.", :redirect => start_page_path unless edit_permission?(@user)
+    cb_error "You don't have permission to update this user.", :redirect => start_page_path unless edit_permission?(@user)
 
     new_user_attr = user_params
     if new_user_attr[:group_ids] # the ID adjustment logic in this paragraph is awful FIXME

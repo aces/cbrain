@@ -57,6 +57,8 @@ class CbrainTask::Diagnostics < PortalTask
       :restart_cluster_delay => 10,
       :restart_postpro_delay => 10,
 
+      :restart_postpro_copy_outerr => false,
+
       :num_copies            => 1,
       :crash_will_reset      => true,
 

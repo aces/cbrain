@@ -45,8 +45,25 @@ class CbrainSession
       return
     end
     sid = session_or_largeinfo[:session_id].presence || self.class.random_session_id
-    @model   = self.class.session_model.where(:session_id => sid).first ||
-               self.class.session_model.new(  :session_id => sid, :data => {})
+
+    # Find an existing LargeSession object
+    @model   = self.class.session_model.where(
+                 :session_id => sid,
+                 :active     => true,
+               ).first
+
+    # Otherwise, create a new LargeSession object
+    # The user_id can be nil if the Rails session is not logged in.
+    # If it's set, it means we're creating a new LargeSession object because a previous
+    # one was deleted or inactivated.
+    # The current object here may or may not be saved at the end of the
+    # request (it will certainly not if the user_id is missing).
+    @model ||= self.class.session_model.new(
+                 :session_id => sid,
+                 :active     => true,
+                 :data       => {},
+                 :user_id    => session_or_largeinfo[:user_id],
+               )
   end
 
   # ActiveRecord model class for Rails session info
@@ -341,7 +358,7 @@ class CbrainSession
   # an attached user.
   def self.clean_sessions(since: 1.hour.ago)
     session_model
-      .where('user_id IS NULL')
+      .where(:active => false)
       .where('updated_at < ?', since)
       .destroy_all
   end

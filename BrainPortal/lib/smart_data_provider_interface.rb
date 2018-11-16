@@ -38,7 +38,7 @@ module SmartDataProviderInterface
 
     # Check for crucial attributes needed for proper initializaton
     dp_remote_dir = self.remote_dir  rescue nil
-    dp_hostnames  = self.alternate_host.split(',').select { |host| host && ! host.blank? } rescue []
+    dp_hostnames  = (self.alternate_host.presence || "").split(/[\s,]+/).map(&:presence).compact
     dp_hostnames << self.remote_host rescue nil
     if dp_hostnames.empty? || dp_remote_dir.blank? # special case : usually when doing special select() on DPs with missing columns
       @real_provider = nil

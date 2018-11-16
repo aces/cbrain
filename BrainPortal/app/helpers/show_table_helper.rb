@@ -53,24 +53,60 @@ module ShowTableHelper
     # column/row-based.
     attr_accessor :width
 
+    attr_reader   :url
+    attr_reader   :method
+    attr_reader   :header
+    attr_reader   :as
+    attr_reader   :object
+    attr_accessor :form_helper # can be set externally
+
     # Create a new TableBuilder for +object+ using +template+ for rendering.
     # Available +options+ are the same as for the +show_table+ helper method.
     # Internal method; use +show_table+ (which uses this class) to create and
     # render show tables.
     def initialize(object, template, options = {}) #:nodoc:
+
+      # Main Object
       @object          = object
+
+      # Layout variables
       @template        = template
       @width           = options[:width] || 2
-      @edit_disabled   = false
+      @edit_disabled   = true
       @edit_disabled   = !options[:edit_condition] if options.has_key?(:edit_condition)
       @cells           = []
-      @edit_cell_count = 0
+
+      # Appearance
+      @header          = options[:header].presence || "Info"
+
+      # Form information; this will be provided to Rails' FormBuilder if the
+      # ShowTable helpers are used with blocks that receive an argument.
+      @form_helper     = options[:form_helper].presence
+
+      # If no form_helper is provided explicitely, we build our own
+      # out of these options. This is the default behavior in fact.
+      @url             = options[:url].presence
+      @method          = options[:method].presence || ((object.is_a?(ApplicationRecord) && object.new_record?) ? :post : :put)
+      @as              = options[:as].presence || @object.class.to_s.underscore
+
+      # Safety check to prevent devs from mixing up forms and objects
+      if @form_helper && @form_helper.object != @object
+        raise "Error: the form helper provided is not associated with our object!"
+      end
+
+      # Template code
+      @block           = options[:block]
+    end
+
+    def invoke_block #:nodoc:
+      @block.call(self)               if @block.arity == 1
+      @block.call(self, @form_helper) if @block.arity == 2 # in case we want the helper in the main block
     end
 
     # Whether or not this table has editable content. An editable table will
     # have a toggle button to switch to edition mode.
     def editable?
-      !@edit_disabled && @edit_cell_count > 0
+      !@edit_disabled
     end
 
     # Generate a single cell for the table, optionally along with a header cell
@@ -101,7 +137,7 @@ module ShowTableHelper
     #  All other options are added as HTML attributes to both the generated
     #  header and content cells.
     def cell(header = "", options = {}, &block)
-      build_cell(ERB::Util.html_escape(header), @template.capture(&block), options)
+      build_cell(ERB::Util.html_escape(header), @template.capture(@form_helper,&block), options)
     end
 
     # Generate a new table row containing a single cell as wide as the table.
@@ -114,7 +150,7 @@ module ShowTableHelper
     # (see +pad_row_with_blank_cells+).
     def row(options = {}, &block)
       pad_row_with_blank_cells(options)
-      build_cell("", @template.capture(&block), options.dup.merge( { :no_header => true, :show_width => @width } ) )
+      build_cell("", @template.capture(@form_helper,&block), options.dup.merge( { :no_header => true, :show_width => @width } ) )
     end
 
     # Generate a cell for a field named +field+ inside the table's source
@@ -144,8 +180,8 @@ module ShowTableHelper
       header    = options.delete(:header) || field.to_s.humanize
       object    = @object
       options[:disabled] ||= @edit_disabled
-      @edit_cell_count += 1 unless options[:disabled]
-      build_cell(ERB::Util.html_escape(header), @template.instance_eval{ inline_edit_field(object, field, options, &block) }, options)
+      wrapper = -> { @form_helper ? block.call(@form_helper) : block.call }
+      build_cell(ERB::Util.html_escape(header), @template.instance_eval { inline_edit_field(object, field, options, &wrapper) }, options)
     end
 
     # Generates an editable checkbox cell for +field+, of which the current
@@ -249,17 +285,17 @@ module ShowTableHelper
     default_text = h(options.delete(:content) || object.send(attribute))
     return default_text if options.delete(:disabled)
     if object.errors.include?(attribute)
-      default_text = "<span class=\"show_table_error\">#{default_text}</span>"
+      default_text = "<div class=\"show_table_error\">#{default_text}</div>"
     end
 
     html = <<-HTML.html_safe
-      <span class="inline_edit_field_default_text">
+      <div class="inline_edit_field_default_text">
       #{default_text}
-      </span>
-      <span class="inline_edit_field_input" style="display:none">
+      </div>
+      <div class="inline_edit_field_input" style="display:none">
     HTML
     html += capture(&block) +
-            "</span>".html_safe
+            "</div>".html_safe
     return html
   end
 
@@ -292,76 +328,60 @@ module ShowTableHelper
   #  Whether or not to make the table's fields editable by the user. If the
   #  table is editable (+edit_condition+ is specified as true), an edit toggle
   #  will be added next to the header/title to switch into edition mode.
-  def show_table(object, options = {})
-    header = options.delete(:header) || "Info"
-    url    = options.delete :url
-    method = options.delete :method
+  def show_table(object, options = {}, &block)
 
-    tb = TableBuilder.new(object, self, options)
-    yield(tb)
+    edit_condition = options[:edit_condition].present?
+    url            = options[:url].presence
 
-    if tb.editable? && object.is_a?(ApplicationRecord)
-      unless url
-        url = {:controller  => params[:controller]}
-        if object.new_record?
-          url[:action] = :create
-        else
-          url[:action] = :update
-          url[:id]     = object.id
-        end
-        url = url_for(url)
-      end
-
-      unless method
-        method = object.new_record? ? "post" : "put"
-      end
+    if url.blank? && edit_condition && object.is_a?(ApplicationRecord)
+      url = url_for_object_form(object)
     end
 
+    tb = TableBuilder.new(object, self, options.merge(:block => block, :url => url,
+                                                      :edit_condition => edit_condition))
 
-    html = []
-    html << "<div class=\"inline_edit_field_group\">"
-    if tb.editable?
-      html << form_tag(url, :method => method)
-    end
-    html << "<fieldset>"
-    html << "<legend>#{header}"
-    if tb.editable?
-      html << "<span class=\"show_table_edit\">(#{link_to "Edit", "#", :class => "show_table_edit_link inline_edit_field_link"})<span>"
-    end
-    html << "</legend>"
-    html << "<table class=\"show_table\">"
-    col_count = 0
-    tb.cells.each do |cell|
-      if col_count == 0
-        html << "<tr>"
-      end
-      html      << cell[0] # content
-      col_count += cell[1] # show_width of cell (1, 2, 3 etc)
-      if col_count >= tb.width
-        html << "</tr>"
-        col_count = 0
-      end
-    end
-
-    html << "</table>"
-
-    if tb.editable?
-      html << "<div class=\"inline_edit_field_input\" style=\"display:none\">"
-      html << "<BR>"
-      if object.new_record?
-        html << submit_button("Create")
-      else
-        html << submit_button("Update")
-      end
-      html << "</div>"
-      html << "</fieldset>"
-      html << "</form>"
-    else
-      html << "</fieldset>"
-    end
-
-    html << "</div>"
-    html.join("\n").html_safe
+    render :partial => 'shared/show_table', :locals => { :tb => tb }
   end
+
+  # This method is similar to show_table(), except it only creates
+  # the form helper for the object and yields it to its block. It does
+  # not generate a show table, but can be used to wrap several show_table()
+  # calls as along as each of them is provided explicitely that helper
+  # to their :form_helper option.
+  #
+  # E.g. template code (abridged):
+  #
+  #    show_table_context(object) do |cf|
+  #      show_table(object, :form_helper => cf) do |f|
+  #        f.cell_stuff etc
+  #      end
+  #      show_table(object, :form_helper => cf) do |f|
+  #        f.cell_stuff etc
+  #      end
+  #    end
+  def show_table_context(object, options = {}, &block)
+
+    url     = options[:url].presence
+    method  = options[:method].presence || ((object.is_a?(ApplicationRecord) && object.new_record?) ? :post : :put)
+    as      = options[:as].presence     || object.class.to_s.underscore
+
+    if url.blank? && object.is_a?(ApplicationRecord)
+      url   = url_for_object_form(object)
+    end
+
+    render :partial => 'shared/show_table_context', :locals => { :object => object, :url => url, :method => method, :as => as, :block => block }
+  end
+
+  private
+
+  # Returns a create or update URL for the object
+  def url_for_object_form(object) #:nodoc:
+    if object.new_record?
+      url_for( :controller  => params[:controller], :action => :create )
+    else
+      url_for( :controller  => params[:controller], :action => :update, :id => object.id )
+    end
+  end
+
 end
 

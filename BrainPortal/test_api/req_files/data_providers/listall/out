@@ -1,0 +1,2 @@
+200
+[{"id":15,"name":"TestDP","type":"FlatDirLocalDataProvider","user_id":1,"group_id":1,"online":true,"read_only":false,"description":"Test DP","is_browsable":true,"is_fast_syncing":true,"allow_file_owner_change":true,"content_storage_shared_between_users":true}]

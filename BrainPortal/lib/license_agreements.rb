@@ -49,7 +49,6 @@ module LicenseAgreements
   # Can be provided with an array of license names, or a single string with
   # a space-or-comma-separated list of license names.
   def license_agreements=(agreements)
-    raise "Cannot set license agreements to a #{self.class} which hasn't been saved yet." if self.new_record?
     license_agreements # loads them if not already loaded
     agrs = agreements
     unless agrs.is_a? Array
@@ -71,9 +70,8 @@ module LicenseAgreements
   # Returns true if the set of licenses are identifiers that
   # properly match files on the filesystem, in public/licenses/{name}.html
   def valid_license_agreements?
-    return true if self.new_record?
     invalid_licenses = license_agreements.select do |license|
-      ! File.exists?(Rails.root + "public/licenses/#{license}.html")
+      ! File.exist?(Rails.root + "public/licenses/#{license}.html")
     end
 
     if invalid_licenses.presence

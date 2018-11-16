@@ -345,7 +345,7 @@ ToolConfig #%d "%s"
       container_index_location || "",
       containerhub_image_name.presence || "",
       container_image_userfile_id.presence || 0,
-      container_image || "none",
+      container_image.try(:name) || "none",
       extra_qsub_args.presence || ""
   end
 end

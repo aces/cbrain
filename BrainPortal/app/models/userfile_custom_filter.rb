@@ -25,8 +25,6 @@
 # =Parameters filtered:
 # [*file_name_type*] The type of filtering done on the filename (+matches+, <tt>begins with</tt>, <tt>ends with</tt> or +contains+).
 # [*file_name_term*] The string or substring to search for in the filename.
-# [*created_date_type*] The type of filtering done on the creation date (+before+, +on+ or +after+).
-# [*created_date_term*] The date to filter against.
 # [*size_type*] The type of filtering done on the file size (>, < or =).
 # [*size_term*] The file size to filter against.
 # [*group_id*] The id of the group to filter on.
@@ -35,20 +33,116 @@ class UserfileCustomFilter < CustomFilter
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  DATA_PARAMS = merge_data_params(
+    [
+      :size_type,
+      :size_term,
+      :file_name_type,
+      :group_id,
+      :group,
+      :data_provider_id,
+      :file_name_term,
+      :description_type,
+      :parent_name_like,
+      :child_name_like,
+      :archiving_status,
+      :sync_status,
+    ])
+
+
+  CustomFilter.data_setter_and_getter(DATA_PARAMS)
+
+  ###############################
+  # Validation of Custom Filter #
+  ###############################
+
+  validate :valid_filename
+  validate :valid_size
+  validate :valid_data_group_id
+  validate :valid_data_tag_ids
+  validate :valid_data_data_provider_id
+  validate :valid_data_sync_status
+
+  def valid_filename #:nodoc:
+    if self.data_file_name_type.present? && !["match", "contain", "begin", "end"].include?(self.data_file_name_type)
+      errors.add(:file_name_type, 'is not a valid file name matcher')
+      return false
+    end
+    if self.data_file_name_type.present?  && !self.data_file_name_term.present? ||
+       !self.data_file_name_type.present? && self.data_file_name_term.present?
+      errors.add(:file_name_type, 'both filename fields should be set if you want to filter by filename')
+      return false
+    end
+    true
+  end
+
+  def valid_size #:nodoc:
+    return true if self.data_size_type.blank? && self.data_size_term.blank?
+    if self.data_size_type.present?  && !self.data_size_term.present? ||
+       !self.data_size_type.present? && self.data_size_term.present?
+      errors.add(:data_size, 'both size fields should be set if you want to filter by size')
+      return false
+    end
+    if !["1","2"].include? self.data_size_type
+      errors.add(:data_size_term, 'is not a valid operator for size comparaison')
+      return false
+    end
+    if self.data_size_term.blank?
+      errors.add(:data_size_term, 'should be set')
+      return false
+    end
+    if self.data_size_term !~ /^\d+$/
+      errors.add(:data_size_term, "should be an integer")
+      return false
+    end
+    return true
+  end
+
+  def valid_data_group_id #:nodoc:
+    return true if self.data_group_id.blank?
+    return true if self.user.available_groups.pluck(:id).include? self.data_group_id.to_i
+    errors.add(:data_group_id, 'is not an accessible group')
+    false
+  end
+
+  def valid_data_tag_ids #:nodoc:
+    self.data_tag_ids = Array(self.data_tag_ids).reject { |item| item.blank? }
+    return true if self.data_tag_ids.empty?
+    return true if ( self.data_tag_ids - self.user.available_tags.pluck(:id).map(&:to_s) ).empty?
+    errors.add(:data_tag_ids, 'some tags are not accessible')
+    return false
+  end
+
+  def valid_data_data_provider_id #:nodoc:
+    return true if self.data_data_provider_id.blank?
+    return true if DataProvider.find_all_accessible_by_user(self.user).pluck(:id).include? self.data_data_provider_id.to_i
+    errors.add(:data_data_provider_id, 'is not an accessible data provider')
+    false
+  end
+
+  def valid_data_sync_status #:nodoc:
+    self.data_sync_status = Array(self.data_sync_status).reject { |item| item.blank? }
+    return true if self.data_sync_status.empty?
+    return true if
+      ( self.data_sync_status - ["InSync","ProvNewer","CacheNewer","Corrupted","ToCache","ToProvider"] ).empty?
+    errors.add(:data_sync_status, 'is not a valid sync status')
+    return false
+  end
+
   # See CustomFilter
   def filter_scope(scope)
-    scope = scope_name(scope)        unless self.data["file_name_type"].blank? || self.data["file_name_term"].blank?
-    scope = scope_parent_name(scope) unless self.data["parent_name_like"].blank?
-    scope = scope_child_name(scope)  unless self.data["child_name_like"].blank?
-    scope = scope_date(scope)        unless self.data["date_attribute"].blank?
-    scope = scope_size(scope)        unless self.data["size_type"].blank? || self.data["size_term"].blank?
-    scope = scope_user(scope)        unless self.data["user_id"].blank?
-    scope = scope_group(scope)       unless self.data["group_id"].blank?
-    scope = scope_dp(scope)          unless self.data["data_provider_id"].blank?
-    scope = scope_type(scope)        unless self.data["type"].blank?
-    scope = scope_archive(scope)     unless self.data["archiving_status"].blank?
-    scope = scope_syncstatus(scope)  unless self.data["sync_status"].blank?
-    scope = scope_tags(scope)        unless self.data["tag_ids"].blank?
+    scope = scope_name(scope)        if self.data_file_name_type.present? && self.data_file_name_term.present?
+    scope = scope_parent_name(scope) if self.data_parent_name_like.present?
+    scope = scope_child_name(scope)  if self.data_child_name_like.present?
+    scope = scope_date(scope)        if self.data_date_attribute.present?
+    scope = scope_size(scope)        if self.data_size_type.present?      && self.data_size_term.present?
+    scope = scope_user(scope)        if self.data_user_id.present?
+    scope = scope_group(scope)       if self.data_group_id.present?
+    scope = scope_dp(scope)          if self.data_data_provider_id.present?
+    scope = scope_type(scope)        if self.data_type.present?
+    scope = scope_archive(scope)     if self.data_archiving_status.present?
+    scope = scope_syncstatus(scope)  if self.data_sync_status.present?
+    scope = scope_tags(scope)        if self.data_tag_ids.present?
     scope
   end
 
@@ -57,43 +151,25 @@ class UserfileCustomFilter < CustomFilter
     "userfiles"
   end
 
-  # Virtual attribute for assigning tags to the data hash.
-  def tag_ids=(ids)
-    self.data["tag_ids"] = Tag.find(ids).collect{ |tag| "#{tag.id}"}
-  end
 
-  # Convenience method returning only the tags in the data hash.
-  def tag_ids
-    self.data["tag_ids"] || []
-  end
-
-  # Convenience method returning only the date_term in the data hash.
-  def date_term
-    self.data["date_term"]
-  end
-
-  # Virtual attribute for assigning the data_term to the data hash.
-  def date_term=(date)
-    self.data["date_term"] = "#{date["date_term(1i)"]}-#{date["date_term(2i)"]}-#{date["date_term(3i)"]}"
-  end
 
   private
 
   # Return +scope+ modified to filter the Userfile entry's name.
   def scope_name(scope)
     query = 'userfiles.name'
-    term = self.data["file_name_term"]
-    if self.data["file_name_type"] == 'match'
+    term = self.data_file_name_term
+    if self.data_file_name_type == 'match'
       query += ' = ?'
     else
       query += ' LIKE ?'
     end
 
-    if self.data["file_name_type"] == 'contain' || self.data["file_name_type"] == 'begin'
+    if self.data_file_name_type == 'contain' || self.data_file_name_type == 'begin'
       term += '%'
     end
 
-    if self.data["file_name_type"] == 'contain' || self.data["file_name_type"] == 'end'
+    if self.data_file_name_type == 'contain' || self.data_file_name_type == 'end'
       term = '%' + term
     end
 
@@ -102,37 +178,37 @@ class UserfileCustomFilter < CustomFilter
 
   # Return +scope+ modified to filter the Userfile with parent name.
   def scope_parent_name(scope)
-    scope.parent_name_like(self.data["parent_name_like"])
+    scope.parent_name_like(self.data_parent_name_like)
   end
 
   # Return +scope+ modified to filter the Userfile with child name.
   def scope_child_name(scope)
-    scope.child_name_like(self.data["child_name_like"])
+    scope.child_name_like(self.data_child_name_like)
   end
 
   # Return +scope+ modified to filter the Userfile entry's size.
   def scope_size(scope)
-    scope.where( ["userfiles.size #{inequality_type(self.data["size_type"])} ?", (self.data["size_term"].to_f * 1000)])
+    scope.where( ["userfiles.size #{inequality_type(self.data_size_type)} ?", (self.data_size_term.to_f * 1000)])
   end
 
   # Return +scope+ modified to filter the Userfile entry's owner.
   def scope_user(scope)
-    scope.where( ["userfiles.user_id = ?", self.data["user_id"]])
+    scope.where( ["userfiles.user_id = ?", self.data_user_id])
   end
 
   # Return +scope+ modified to filter the Userfile entry's group ownership.
   def scope_group(scope)
-    scope.where( ["userfiles.group_id = ?", self.data["group_id"]])
+    scope.where( ["userfiles.group_id = ?", self.data_group_id])
   end
 
   # Return +scope+ modified to filter the Userfile entry's data provider.
   def scope_dp(scope)
-    scope.where( ["userfiles.data_provider_id = ?", self.data["data_provider_id"]])
+    scope.where( ["userfiles.data_provider_id = ?", self.data_data_provider_id])
   end
 
   # Return +scope+ modified to filter the Userfile entry's type.
   def scope_type(scope)
-    scope.where( :type => self.data["type"] )
+    scope.where( :type => self.data_type )
   end
 
   # Return +scope+ modified to filter the Userfile entry's type.
@@ -140,7 +216,7 @@ class UserfileCustomFilter < CustomFilter
   # Not used by interface yet.
   def scope_type_tree(scope)
     flatlist = []
-    Array(self.data["type"]).each do |klassname|
+    Array(self.data_type).each do |klassname|
       subtypes = klassname.constantize.descendants.map(&:name)
       subtypes << klassname  # because descendants() does not include the class itself
       flatlist += subtypes
@@ -150,7 +226,7 @@ class UserfileCustomFilter < CustomFilter
 
   # Return +scope+ modified to filter the Userfile entry's by archived status.
   def scope_archive(scope)
-    keyword = self.data["archiving_status"] || ""
+    keyword = self.data_archiving_status || ""
     case keyword
     when "none"
       return scope.where( :archived => false )
@@ -163,12 +239,12 @@ class UserfileCustomFilter < CustomFilter
   # Return +scope+ modified to filter the Userfile entry's sync_status.
   # note that the scope will return 1 entry by status/file combination.
   def scope_syncstatus(scope)
-    scope.joins(:sync_status).where(:sync_status => {:status => self.data["sync_status"]})
+    scope.joins(:sync_status).where(:sync_status => {:status => self.data_sync_status})
   end
 
   # Return +scope+ modified to filter the Userfile entry's by tag_ids.
   def scope_tags(scope)
-    scope.contain_tags((self.data["tag_ids"]).flatten.uniq)
+    scope.contain_tags((self.data_tag_ids).flatten.uniq)
   end
 
 end

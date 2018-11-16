@@ -96,7 +96,7 @@ class TagsController < ApplicationController
 
     respond_to do |format|
       format.xml  { head :ok, :content_type => 'text/plain' }
-      format.json { head :ok, :content_type => 'text/plain' }
+      format.json { head :ok }
     end
   end
 

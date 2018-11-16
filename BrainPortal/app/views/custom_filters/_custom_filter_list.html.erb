@@ -24,7 +24,7 @@
 
 <h4>By Custom Filter</h4>
 
-<%= overlay_ajax_link 'Create Custom Filter', {:controller => :custom_filters, :action => :new, :filter_class => @custom_filter.class.name} %>
+<%= link_to 'Create Custom Filter', {:controller => :custom_filters, :action => :new, :filter_class => @custom_filter.class.name} %>
 
 <ul class="filter_menu">
   <%  @custom_filter.class.where(:user_id  => current_user.id).each do |filter| %>

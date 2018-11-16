@@ -24,8 +24,6 @@
 # of class Scir implements a dummy cluster interface that still runs
 # jobs locally as standard unix subprocesses.
 
-require 'aws-sdk'
-
 # A ScirCloud class to handle VMs on Amazon EC2. 
 # This type of Scir can only handle tasks of type CBRAIN::StartVM.
 class ScirAmazon < ScirCloud

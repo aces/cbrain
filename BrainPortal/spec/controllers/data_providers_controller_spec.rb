@@ -41,6 +41,7 @@ RSpec.describe DataProvidersController, :type => :controller do
         let!(:local_dp) { create(:flat_dir_local_data_provider) }
         it "should assign @data_providers" do
           get :index
+          # BTW: fails if the rake task 'db:sanity:check' was not run
           expect(assigns[:data_providers].to_a).to match_array([scratch_dp,local_dp])
         end
         it "should render the index page" do

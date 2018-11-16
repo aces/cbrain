@@ -40,21 +40,23 @@
 
 <div class="display_inline_block" style="min-width: 50%">
 
-  <%= show_table(@access_profile, :edit_condition => check_role(:admin_user)) do |t| %>
+<%= show_table_context(@access_profile) do |cf| %>
 
-    <% t.edit_cell(:name, :content => access_profile_label(@access_profile)) do %>
-      <%= text_field_tag "access_profile[name]", @access_profile.name, :class => "cb_colorpick_bg_target" %>
+  <%= show_table(@access_profile, :form_helper => cf, :edit_condition => check_role(:admin_user)) do |t| %>
+
+    <% t.edit_cell(:name, :content => access_profile_label(@access_profile)) do |f| %>
+      <%= f.text_field :name, :class => "cb_colorpick_bg_target" %>
     <% end %>
 
-    <% t.edit_cell(:color) do %>
-      <%= text_field_tag "access_profile[color]", @access_profile.color, :class => "cb_colorpick_val_target" %><br>
+    <% t.edit_cell(:color) do |f| %>
+      <%= f.text_field :color, :class => "cb_colorpick_val_target" %><br>
       <span class="field_explanation">Use a CSS-compliant <strong>pale</strong> color:<br>
       e.g. <em>#ff0</em> or <em>yellow</em> etc.</span><br>
       <%= render :partial => 'shared/color_picker', :locals => { :step => 30, :greys => false, :dark => false } %>
     <% end %>
 
-    <% t.edit_cell(:description, :content => full_description(@access_profile.description), :show_width => 2 ) do %>
-      <%= text_area_tag "access_profile[description]", @access_profile.description, :rows => 6, :cols => 60 %><br/>
+    <% t.edit_cell(:description, :content => full_description(@access_profile.description), :show_width => 2 ) do |f| %>
+      <%= f.text_area :description, :rows => 6, :cols => 60 %><br/>
       <span class="field_explanation">These are your private notes about this profile.</span>
     <% end %>
 
@@ -62,7 +64,7 @@
 
   <% myusers = @access_profile.users.all.sort_by(&:login) %>
 
-  <%= show_table(@access_profile, :edit_condition => check_role(:admin_user), :header => 'Projects In This Profile') do |t| %>
+  <%= show_table(@access_profile, :form_helper => cf, :edit_condition => check_role(:admin_user), :header => 'Projects In This Profile') do |t| %>
     <% group_names = (@access_profile.groups.sort_by(&:name).map { |g| link_to_group_if_accessible(g) }.join(", ").html_safe.presence) || "(None)" %>
     <% t.edit_cell(:group_ids, :show_width => 2, :no_header => "Projects", :content => group_names) do %>
 
@@ -86,7 +88,7 @@
     <% end %>
   <% end %>
 
-  <%= show_table(@access_profile, :edit_condition => check_role(:admin_user), :header => 'Users With This Profile') do |t| %>
+  <%= show_table(@access_profile, :form_helper => cf, :edit_condition => check_role(:admin_user), :header => 'Users With This Profile') do |t| %>
 
     <% if myusers.present? && myusers.count > 0 %>
       <% user_names = (array_to_table(myusers.map { |u| link_to_user_if_accessible(u) }, :table_class => 'simple', :cols => 12).html_safe) %>
@@ -117,6 +119,8 @@
 
     <% end %>
   <% end %>
+
+<% end # show_table_context %>
 
   <p>
   <%= render :partial => "layouts/log_report", :locals  => { :log  => @access_profile.getlog, :title => 'Access Profile Log' } %>

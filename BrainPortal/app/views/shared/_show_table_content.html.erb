@@ -1,0 +1,50 @@
+
+<fieldset>
+
+  <legend><%= tb.header %>
+    <% if tb.editable? %>
+      <span class="show_table_edit">(<%= link_to "Edit", "#", :class => "show_table_edit_link inline_edit_field_link" %>)</span>
+    <% end %>
+  </legend>
+
+  <table class="show_table">
+
+  <% col_count = 0 %>
+  <% tb.cells.each do |cell| %>
+
+    <% if col_count == 0 %>
+      <tr>
+    <% end %>
+
+    <%
+       # The content
+    %>
+    <%= cell[0] %>
+
+    <%
+      # show_width of cell (1, 2, 3 etc)
+      col_count += cell[1]
+    %>
+
+    <% if col_count >= tb.width %>
+      </tr>
+      <% col_count = 0 %>
+    <% end %>
+
+  <% end %>
+
+  </table>
+
+  <% if tb.editable? %>
+    <div class="inline_edit_field_input" style="display:none">
+      <br>
+      <% if tb.object.new_record? %>
+        <%= submit_button("Create") %>
+      <% else %>
+        <%= submit_button("Update") %>
+      <% end %>
+    </div>
+  <% end %>
+
+</fieldset>
+

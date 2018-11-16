@@ -1,0 +1,1936 @@
+# Swagger description of the CBRAIN API
+# Pierre Rioux, August - October 2016
+# Andrew Doyle, November - December 2016
+# Natacha Beck, January - February 2017
+# Natacha Beck, Shawn Brown - Summer 2018
+swagger: '2.0'
+consumes:
+  - application/x-www-form-urlencoded
+  - multipart/form-data
+info:
+  title: CBRAIN API
+  description: REST API for interacting with the CBRAIN Platform
+  version: 5.0.2
+  license:
+    name: GNU Public License, Version 3
+    url: https://opensource.org/licenses/GPL-3.0
+  contact:
+    name: CBRAIN Development Team
+    url: https://github.com/aces/cbrain
+host: portal.cbrain.mcgill.ca
+securityDefinitions:
+  BrainPortalSession:
+    type: apiKey
+    name: cbrain_api_token
+    in: query
+security:
+  - BrainPortalSession: []
+schemes:
+  - https
+basePath: /
+produces:
+  - application/json
+  - application/xml
+paths:
+#=============================================================================
+# SESSIONS ACTIONS
+#=============================================================================
+  /session:
+    post:
+      summary: Create a new session
+      description: |
+        This is the main entry point to create a CBRAIN session. Note that if
+        a user is currently logged in, a new session will not be available to
+        be created, and the current session will be re-used.
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: login
+          in: formData
+          description: The username of the User trying to connect.
+          type: string
+          default: admin
+          required: true
+        - name: password
+          in: formData
+          description: The password of the CBRAIN User
+          type: string
+          format: password
+          required: true
+      tags:
+        - Sessions
+      responses:
+        '200':
+          description: An object with the session ID and the CBRAIN user ID
+          schema:
+            type: object
+            properties:
+              session_id:
+                type: string
+              user_id:
+                type: number
+              cbrain_api_token:
+                type: string
+        '401':
+          description: Password authentication failed.
+    get:
+      summary: Get session information
+      description: |
+        This returns information about the current session.
+      tags:
+        - Sessions
+      responses:
+        '200':
+          description: An object with the CBRAIN user ID
+          schema:
+            type: object
+            properties:
+              user_id:
+                type: number
+        '401':
+          description: No session created yet.
+    delete:
+      summary: Destroy the current session
+      description: |
+        This destroys the current session, effectively terminating the
+        access to the service.
+      tags:
+        - Sessions
+      responses:
+        '200':
+          description: Session terminated
+        '401':
+          description: No session created yet.
+#=============================================================================
+# USERS ACTIONS
+#=============================================================================
+  /users:
+    get:
+      summary: Returns all of the users in CBRAIN.
+      description: >-
+        Returns all of the users registered in CBRAIN, as well as information on their
+        permissions and group/site memberships.
+      produces:
+        - application/json
+        - application/xml
+      responses:
+        '200':
+          description: A list of all the users in CBRAIN.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+        '401':
+          description: No session created yet.
+      tags:
+        - Users
+    post:
+      summary: Create a new user in CBRAIN.
+      description: |
+        Creates a new user in CBRAIN.
+      tags:
+        - Users
+      parameters:
+        - name: user
+          in: body
+          description: An object representing a new User and the autenticity token.
+          schema:
+            type: object
+            properties:
+              user:
+                $ref: '#/definitions/User'
+        - name: no_password_reset_needed
+          in: query
+          description: Do you want to force the user to reset their password upon first login
+          type: integer
+          default: 0
+      responses:
+        '200':
+          description: User created successfully
+          schema:
+            $ref: '#/definitions/User'
+  '/users/{id}':
+    get:
+      summary: Returns information about a user
+      description: |
+        Returns the information about the user associated with the ID given in
+        argument. A normal user only has access to her own information, while an
+        administrator or site manager can have access to a larger set of users.
+      parameters:
+        - name: id
+          in: path
+          description: ID of the user
+          required: true
+          type: integer
+          default: 0
+      tags:
+        - Users
+      responses:
+        '200':
+          description: An object with the CBRAIN user information
+          schema:
+            $ref: '#/definitions/User'
+        '404':
+          description: User not found with the specified ID
+    patch:
+      summary: Update information about a user
+      description: |
+        Updates the information about a user
+      parameters:
+        - name: id
+          in: path
+          description: ID of user to update
+          required: true
+          type: integer
+          default: 0
+        - name: force_password_reset
+          in: query
+          description: Boolean to force a password change
+          required: false
+          type: boolean
+          default: false
+        - name: user
+          in: body
+          description: An object representing any parameter of the user that you would like to alter, only put ones that you would like to change.
+          required: true
+          schema:
+            type: object
+            properties:
+              user:
+                $ref: '#/definitions/User'
+      tags:
+          - Users
+      responses:
+        '200':
+          description: An object with the CBRAIN user information
+          schema:
+            $ref: '#/definitions/User'
+    delete:
+      summary: Deletes a CBRAIN user
+      description: |
+        Deletes a CBRAIN User from the database
+      parameters:
+        - name: id
+          in: path
+          description: ID of user to update
+          required: true
+          type: integer
+          default: 0
+      tags:
+        - Users
+      responses:
+        '200':
+          description: User successfully deleted
+        '401':
+          description: Not authorized to delete this user.
+        '404':
+          description: User not found with the specified ID
+#=============================================================================
+# TOOL CONFIGS ACTIONS
+#=============================================================================
+  /tool_configs:
+    get:
+      summary: Get a list of tool versions installed.
+      description: |
+        This method returns a list of tool config objects.
+      tags:
+        - ToolConfigs
+      responses:
+        '200':
+          description: |
+            An array of ToolConfig objects describing for each tool
+            and execution server the available version numbers and the
+            information about their local configuration.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ToolConfig'
+        '401':
+          description: No session created yet.
+  '/tool_configs/{id}':
+    get:
+      summary: Get information about a particular tool configuration
+      description: |
+        Returns the information about how a particular configuration of a
+        tool on an execution server.
+      parameters:
+        - name: id
+          in: path
+          description: the ID of the configuration
+          required: true
+          type: integer
+          default: 0
+      tags:
+        - ToolConfigs
+      responses:
+        '200':
+          description: |
+            A single ToolConfig object describing the configuration.
+          schema:
+            $ref: '#/definitions/ToolConfig'
+#=============================================================================
+# TAGS ACTIONS
+#=============================================================================
+  /tags:
+    get:
+      summary: Get a list of the tags currently in CBRAIN.
+      description: |
+        This method returns a list of tag objects.
+      tags:
+        - Tags
+      responses:
+        '200':
+          description: |
+            An array of Tag objects that are used to group Tasks or Userfiles.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Tag'
+        '401':
+          description: No session created yet.
+    post:
+      summary: Create a tag.
+      description: |
+        Create a new tag in CBRAIN.
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: 'tag[name]'
+          in: formData
+          description: The name of the Tag. No spaces or special chars allowed.
+          type: string
+          default: NewTag
+          required: true
+        - name: 'tag[group_id]'
+          in: formData
+          description: >-
+            The Group that the Tag will be used in. All Users are part of Group
+            1
+          type: integer
+          default: 1
+          required: true
+      tags:
+        - Tags
+      responses:
+        '201':
+          description: |
+            Returns the created Tag object.
+          schema:
+            $ref: '#/definitions/Tag'
+        '401':
+          description: |
+            No session created yet.
+  '/tags/{id}':
+    get:
+      summary: Get one tag.
+      description: |
+        Returns a single tag with the ID specified.
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the tag to get.
+          required: true
+          type: integer
+          default: 1
+      tags:
+        - Tags
+      responses:
+        '200':
+          description: |
+            Returns the Tag object.
+          schema:
+            $ref: '#/definitions/Tag'
+        '401':
+          description: |
+            No session created yet.
+    put:
+      summary: Update a tag.
+      description: |
+        Update the tag specified by the ID parameter.
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: 'tag[name]'
+          in: formData
+          description: The new name for the Tag.
+          type: string
+          default: NewTagName
+        - name: 'tag[group_id]'
+          in: formData
+          description: The Group that the Tag will be used in.
+          type: integer
+          default: 1
+        - name: id
+          in: path
+          description: ID of the tag to update.
+          required: true
+          type: integer
+      tags:
+        - Tags
+      responses:
+        '200':
+          description: Tag was updated successfully.
+        '401':
+          description: No session created yet.
+        '422':
+          description: Could not update Tag.
+    delete:
+      summary: Delete a tag.
+      description: Delete the tag specified by the ID parameter.
+      parameters:
+        - name: id
+          in: path
+          description: ID of the tag to delete.
+          required: true
+          type: integer
+      tags:
+        - Tags
+      responses:
+        '200':
+          description: Tag was deleted.
+        '401':
+          description: No session created yet.
+        '422':
+          description: Tag could not be deleted.
+#=============================================================================
+# BOURREAU ACTIONS
+#=============================================================================
+  /bourreaux:
+    get:
+      summary: Get a list of the Bourreaux available to be used by the current user.
+      description: |
+        This method returns a list of Bourreau objects.
+      tags:
+        - Bourreau
+      responses:
+        '200':
+          description: |
+            An array of Bourreau objects describing an execution
+            server available to be used by the current user.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Bourreau'
+        '401':
+          description: No session created yet.
+  '/bourreaux/{id}':
+    get:
+      summary: Get information about a Bourreau.
+      description: |
+        This method returns a single Bourreau object based on the
+        ID parameter.
+      tags:
+        - Bourreau
+      parameters:
+        - name: id
+          in: path
+          description: ID of the Bourreau to get information on.
+          required: true
+          type: integer
+          default: 1
+      responses:
+        '200':
+          description: |
+            A Bourreau object with information about the status
+            of the execution server.
+          schema:
+            $ref: '#/definitions/Bourreau'
+        '401':
+          description: No session created yet.
+#=============================================================================
+# DATA PROVIDER ACTIONS
+#=============================================================================
+  /data_providers:
+    get:
+      summary: Get a list of the Data Providers available to the current user.
+      description: |
+        This method returns a list of Data Provider objects that represent
+        servers with disk space accessible for storing Userfiles.
+      tags:
+        - DataProviders
+      responses:
+        '200':
+          description: >
+            An array of Data Provider objects describing servers that store
+            data.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/DataProvider'
+        '401':
+          description: No session created yet.
+  '/data_providers/{id}':
+    get:
+      summary: Get information on a particular Data Provider.
+      description: |
+        This method returns a single Data Provider specified by the ID parameter
+      tags:
+        - DataProviders
+      parameters:
+        - name: id
+          type: integer
+          description: ID of the Data Provider to get information on.
+          required: true
+          in: path
+          default: 1
+      responses:
+        '200':
+          description: |
+            A Data Provider object.
+          schema:
+            $ref: '#/definitions/DataProvider'
+        '401':
+          description: No session created yet.
+  '/data_providers/{id}/browse':
+    get:
+      summary: List the files on a Data Provider.
+      description: >
+        This method allows the inspection of what files are present on a Data
+        Provider specified by the ID parameter. Files that are not yet registered
+        as Userfiles are visible using this method, as well as regularly accessible
+        Userfiles.
+      tags:
+        - DataProviders
+      parameters:
+        - name: id
+          type: integer
+          description: The ID of the Data Provider to browse.
+          required: true
+          in: path
+          default: 1
+      responses:
+        '200':
+          description: |
+            A list of files present in the Data Provider, with their associated
+            registration status, FileType, and other information.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/FileInfo'
+        '401':
+          description: No session created yet.
+        '403':
+          description: Data Provider is not browsable.
+  '/data_providers/{id}/register':
+    post:
+      summary: Registers a file as a Userfile in CBRAIN.
+      description: |
+        This method allows new files to be added to CBRAIN. The files must first
+        be transfered to the Data Provider via SFTP. For more information on
+        SFTP file transfers, consult the CBRAIN Wiki documentation. Once files
+        are present on the Data Provider, this method registers them in CBRAIN
+        by specifying the file type. You can also specify to copy/move the files
+        to another Data Provider after file registration.
+      tags:
+        - DataProviders
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the Data Provider to register files on.
+          type: integer
+          default: 1
+        - name: 'basenames[]'
+          in: formData
+          description: An array containing the filenames to register.
+          type: array
+          items:
+            type: string
+          required: true
+        - name: 'filetypes[]'
+          in: formData
+          description: >-
+            An array containing the filetypes associated with the files to
+            register
+          type: array
+          items:
+            type: string
+          required: true
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
+      responses:
+        '200':
+          description: Files were successfully registered.
+          schema:
+            type: object
+            properties:
+              notice:
+                type: string
+              error:
+                type: string
+              newly_registered_userfiles:
+                type: array
+                items:
+                  $ref: '#/definitions/Userfile'
+              previously_registered_userfiles:
+                type: array
+                items:
+                  $ref: '#/definitions/Userfile'
+              userfiles_in_transit:
+                type: array
+                items:
+                  $ref: '#/definitions/Userfile'
+              num_unregistered:
+                type: number
+              num_erased:
+                type: number
+        '401':
+          description: No session created yet.
+        '403':
+          description: The current user does not have access to register files.
+  '/data_providers/{id}/unregister':
+    post:
+      summary: Unregisters files as Userfile in CBRAIN.
+      description: |
+        This method allows files to be unregistered from CBRAIN. This will not
+        delete the files, but removes them from the CBRAIN database, so Tools
+        may no longer be run on them.
+      tags:
+        - DataProviders
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the Data Provider to unregister files from.
+          required: true
+          type: integer
+          default: 1
+        - name: 'basenames[]'
+          in: formData
+          description: An array containing the filenames to unregister.
+          type: array
+          items:
+            type: string
+          default:
+            - file1
+            - file2
+          required: true
+        - name: as_user_id
+          in: formData
+          type: integer
+          description: The ID of the user to unregister files as.
+        - name: delete
+          in: formData
+          type: boolean
+          description: Specifies to delete the files once they are unregistered.
+          default: true
+        - name: authenticity_token
+          type: string
+          in: formData
+          description: The token returned by /session/new
+          required: true
+      responses:
+        '200':
+          description: |
+            Files were successfully unregistered.
+        '401':
+          description: No session created yet.
+        '403':
+          description: The current user does not have access to unregister files.
+  '/data_providers/{id}/delete':
+    post:
+      summary: Deletes unregistered files from a CBRAIN Data provider.
+      description: |
+        This method allows files that have not been registered from CBRAIN to be
+        deleted. This may be necessary if files were uploaded in error, or if
+        they were unregistered but not immediately deleted.
+      tags:
+        - DataProviders
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the Data Provider to delete files from.
+          required: true
+          type: integer
+        - name: 'basenames[]'
+          in: formData
+          type: array
+          items:
+            type: string
+          default:
+            - file1
+            - file2
+          required: true
+          description: An array containing the filenames to delete.
+        - name: as_user_id
+          in: formData
+          type: integer
+          description: The ID of the user to delete files as.
+        - name: authenticity_token
+          type: string
+          description: The token returned by /session/new
+          in: formData
+          required: true
+      responses:
+        '200':
+          description: >-
+            Successfully launched the operation in the background to delete
+            files.
+        '401':
+          description: No session created yet.
+        '403':
+          description: You cannot delete files from this provider.
+  '/data_providers/{id}/is_alive':
+    get:
+      summary: Pings a Data Provider to check if it is running.
+      description: |
+        This method allows the querying of a Data Provider specified by the ID
+        parameter to see if it is running or not.
+      tags:
+        - DataProviders
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          description: The ID of the Data Provider to query.
+          required: true
+          default: 1
+      responses:
+        '200':
+          description: Returns "true" or "false".
+          schema:
+            type: string
+#=============================================================================
+# GROUP ACTIONS
+#=============================================================================
+  /groups:
+    get:
+      summary: Get a list of the Groups (projects) available to the current user.
+      description: >
+        This method returns a list of all of the groups that the current user has
+        access to.
+      tags:
+        - Groups
+      responses:
+        '200':
+          description: |
+            A list of Group objects.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Group'
+        '401':
+          description: No session created yet.
+    post:
+      summary: Creates a new Group.
+      description: >
+        This method creates a new Group, which allows users to organize their files
+        and tasks.
+      tags:
+        - Groups
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: 'group[name]'
+          in: formData
+          type: string
+          description: The name of the new Group.
+          default: NewGroupName
+          required: true
+        - name: 'group[description]'
+          in: formData
+          type: string
+          description: The description of the new Group.
+          required: true
+          default: >-
+            This new Group represents a new Project.
+        - name: 'group[site_id]'
+          in: formData
+          type: integer
+          description: The ID of the site associated with the Group.
+        - name: 'group[invisible]'
+          in: formData
+          type: boolean
+          description: >-
+            Specifies whether to make the group invisible or not. Invisible
+            groups exist solely to control access to resources.
+          default: false
+        - name: 'group[user_ids]'
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: An array of IDs of Users that will be members of the new Group.
+          default:
+            - '1'
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
+      responses:
+        '200':
+          description: Successfully created Group.
+        '401':
+          description: No session created yet.
+  /groups/switch:
+    post:
+      summary: Switches the active group.
+      description: |
+        This method switches the active Group to a new one. This is useful if
+        the analysis that the user is performing is for different projects, and
+        involves separate Userfiles and Tasks.
+      tags:
+        - Groups
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: formData
+          description: ID number of the Group to switch to
+          type: integer
+          required: true
+          default: 1
+        - name: authenticity_token
+          in: formData
+          description: The token returned by /session/new
+          type: string
+          required: true
+      responses:
+        '200':
+          description: Successfully switched the active Group.
+        '401':
+          description: No session created yet.
+  '/groups/{id}':
+    get:
+      summary: Get information on a Group (project).
+      description: |
+        This method returns information on a single Group (project), specified
+        by the ID parameter. Information returned includes the list of Users
+        who are members of the group, the ID of the Site the Group is part of,
+        and whether or not the group is visible to Regular Users.
+      tags:
+        - Groups
+      parameters:
+        - name: id
+          in: path
+          description: ID of the Group to get information on.
+          required: true
+          type: integer
+          default: 1
+      responses:
+        '200':
+          description: |
+            Successfully retrieved information on the Group.
+          schema:
+            $ref: '#/definitions/Group'
+        '401':
+          description: No Session created yet.
+    put:
+      summary: Update the properties of a Group (project).
+      description: |
+        This method allows the properties of a Group (project) to be updated.
+        This includes the User membership, the ID of the site the Group belongs
+        to, and the visibility status of the group to Regular Users.
+      tags:
+        - Groups
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: path
+          description: ID of the Group to be updated.
+          required: true
+          type: integer
+        - name: 'group[name]'
+          in: formData
+          type: string
+          description: The new name of the Group.
+          default: NewGroupName
+        - name: 'group[description]'
+          in: formData
+          type: string
+          description: The description of the new Group.
+          default: >-
+            This project will group some files and tasks.
+        - name: 'group[site_id]'
+          in: formData
+          type: integer
+          description: The ID of the site associated with the Group.
+        - name: 'group[invisible]'
+          in: formData
+          type: boolean
+          description: >-
+            Specifies whether to make the group invisible or not. Invisible
+            groups exist solely to control access to resources.
+          default: false
+        - name: 'group[user_ids]'
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: An array of IDs of Users that will be members of the new Group.
+          default:
+            - '1'
+      responses:
+        '200':
+          description: Group updated successfully.
+        '401':
+          description: No session created yet.
+        '403':
+          description: Current user is forbidden from editing this group.
+    delete:
+      summary: Deletes a Group (project).
+      description: |
+        This method allows the removal of Groups (projects) that are no longer
+        necessary. Groups that have Userfiles associated with them may not be
+        deleted.
+      tags:
+        - Groups
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: path
+          description: ID of the Group to delete.
+          required: true
+          type: integer
+          default: 1
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
+      responses:
+        '200':
+          description: Successfully deleted the Group (project).
+        '401':
+          description: No Session created yet.
+#=============================================================================
+# USERFILE ACTIONS
+#=============================================================================
+  /userfiles:
+    get:
+      summary: List of the Userfiles accessible to the current user.
+      description: >
+        This method returns a list of Userfiles that are available to the
+        current
+
+        User.
+      tags:
+        - Userfiles
+      responses:
+        '200':
+          description: List of accessible Userfiles.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Userfile'
+        '401':
+          description: No Session created yet.
+    post:
+      summary: Creates a new Userfile.
+      description: |
+        This method creates a new Userfile in CBRAIN, with the current user
+        as the owner of the file.
+      tags:
+        - Userfiles
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: upload_file
+          in: formData
+          description: File to upload to CBRAIN
+          type: file
+          required: true
+        - name: data_provider_id
+          in: formData
+          description: The ID of the Data Provider to upload the file to.
+          type: integer
+          default: 1
+          required: true
+        - name: 'userfile[group_id]'
+          in: formData
+          type: integer
+          description: ID of the group that will have access to the Userfile
+          default: 1
+          required: true
+        - name: file_type
+          in: formData
+          description: The type of the file
+          type: string
+          default: SingleFile
+          required: true
+        - name: archive
+          in: formData
+          description: Archive
+          type: string
+        - name: authenticity_token
+          in: formData
+          description: The token returned by /session/new
+          type: string
+          required: true
+        - name: _up_ex_mode
+          in: formData
+          description: usually "collection"
+          type: string
+      responses:
+        '201':
+          description: Userfile successfully created.
+        '401':
+          description: No Session created yet.
+  '/userfiles/{id}':
+    get:
+      summary: Get information on a Userfile.
+      description: |
+        This method returns information about a single Userfile, specified by
+        its ID. Information returned includes the ID of the owner, the Group
+        (project) it is a part of, a description, information about where the
+        acutal copy of the file currently is, and what the status is of any
+        synhronization operations that may have been requested.
+      tags:
+        - Userfiles
+      parameters:
+        - name: id
+          in: path
+          description: The ID number of the Userfile to get information on.
+          type: integer
+          required: true
+          default: 1
+      responses:
+        '200':
+          description: Returns the information about the Userfile.
+          schema:
+            $ref: '#/definitions/Userfile'
+    put:
+      summary: Update information on a Userfile.
+      description: |
+        This method allows a User to update information on a userfile.
+      tags:
+        - Userfiles
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: path
+          description: The ID number of the Userfile to update.
+          type: integer
+          format: int64
+          required: true
+        - name: 'userfile[type]'
+          in: formData
+          type: string
+          description: >-
+            Type of file that the Userfile is registered in CBRAIN as. This
+            parameter affects what kinds of Tools can be used on the file.
+          default: SingleFile
+        - name: 'userfile[user_id]'
+          in: formData
+          type: integer
+          description: ID of the user who owns the file.
+          default: 1
+        - name: 'userfile[group_id]'
+          in: formData
+          type: integer
+          description: ID of the group that will have access to the Userfile.
+          default: 1
+        - name: 'tag_ids[]'
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: ID numbers of the tags that describe the Userfile.
+        - name: 'userfile[group_writable]'
+          in: formData
+          type: boolean
+          description: >-
+            Specifies whether other members of the group that owns the file can
+            modify the Userfile.
+        - name: 'userfile[hidden]'
+          in: formData
+          type: boolean
+          description: >-
+            Specifies whether the Userfile is hidden or visible in the normal
+            file listing.
+          default: false
+        - name: 'userfile[immutable]'
+          in: formData
+          type: boolean
+          description: Specifies whether the Userfile can be modified.
+          default: false
+        - name: 'userfile[description]'
+          in: formData
+          type: string
+          description: Description of the Userfile.
+        - name: authenticity_token
+          in: formData
+          description: The token returned by /session/new
+          type: string
+          required: true
+      responses:
+        '200':
+          description: Userfile updated successfully.
+        '401':
+          description: No session created yet.
+    delete:
+      summary: Delete a Userfile.
+      description: |
+        This method allows a User to delete a Userfile.
+      tags:
+        - Userfiles
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: path
+          description: The ID number of the Userfile to delete.
+          required: true
+          type: integer
+          default: 1
+        - name: authenticity_token
+          in: formData
+          description: The token returned by /session/new
+          type: string
+          required: true
+      responses:
+        '200':
+          description: Userfile deleted successfully.
+        '401':
+          description: No session created yet.
+  '/userfiles/{id}/content':
+    get:
+      summary: Get the content of a Userfile
+      description: This method allows you to download Userfiles.
+      tags:
+        - Userfiles
+      parameters:
+        - name: id
+          in: path
+          description: The ID number of the Userfile to download
+          type: integer
+          required: true
+      responses:
+        '200':
+          description: The contents of the file
+        '403':
+          description: Forbidden
+  /userfiles/download:
+    post:
+      summary: Download several files
+      description: >-
+        This method compresses several Userfiles in .gz format and prepares them
+        to be downloaded.
+      tags:
+        - Userfiles
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: 'file_ids[]'
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: >-
+            The ID numbers of the files to be downloaded. If more than one file
+            is specified, they will be zipped into a gzip archive.
+        - name: specified_filename
+          in: formData
+          type: string
+          description: >-
+            The name of the archive file that the Userfiles will be compressed
+            into for downloading.
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
+      responses:
+        '200':
+          description: Indicates that the files are being compressed and downloaded.
+  /userfiles/delete_files:
+    post:
+      summary: Delete several files that have been registered as Userfiles
+      tags:
+        - Userfiles
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: 'file_ids[]'
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: The ID numbers of the files to be deleted
+          required: true
+        - name: authenticity_token
+          in: formData
+          description: The token returned by /session/new
+          type: string
+          required: true
+      responses:
+        '200':
+          description: Indicates that the files are being deleted.
+  /userfiles/change_provider:
+    post:
+      summary: Moves the Userfiles from their current Data Provider to a new one.
+      tags:
+        - Userfiles
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: 'file_ids[]'
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: >-
+            The IDs of the Userfiles to be moved or copied to a new Data
+            Provider.
+          required: true
+        - name: data_provider_id_for_mv_cp
+          in: formData
+          type: integer
+          description: The ID of the Data Provider to move or copy the files to.
+          required: true
+        - name: crush_destination
+          in: formData
+          type: boolean
+          description: >-
+            Specifies whether to overwrite files on the destination Data
+            Provider if a file already exists there with the same name
+          default: false
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
+      responses:
+        '200':
+          description: >-
+            Indicates that the files are being moved or copied in the
+            background.
+  /userfiles/compress:
+    post:
+      summary: Compresses many Userfiles each into their own GZIP archive.
+      tags:
+        - Userfiles
+      parameters:
+        - name: 'file_ids[]'
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: A list of Userfile ID numbers to compress.
+          required: true
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
+      responses:
+        '200':
+          description: Indicates that the compression is starting in the background.
+  /userfiles/uncompress:
+    post:
+      summary: Uncompresses many Userfiles.
+      tags:
+        - Userfiles
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: 'file_ids[]'
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: A list of Userfile ID numbers to uncompress.
+          required: true
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
+      responses:
+        '200':
+          description: Indicates that files are being uncompressed in the background.
+  /userfiles/sync_multiple:
+    post:
+      summary: Syncs Userfiles to the local Data Providers cache.
+      description: >-
+        Synchronizing files to their the local cache allows you to
+        download, visualize and do processing on them that is not available if
+        not synced. CBRAIN operations will sync files automatically, and this is
+        only necessary if a file is changed on its host Data Provdier by an
+        external process.
+      tags:
+        - Userfiles
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: 'file_ids[]'
+          in: formData
+          type: array
+          items:
+            type: integer
+          description: A list of Userfile ID numbers to synchronize.
+          required: true
+        - name: operation
+          in: formData
+          type: string
+          description: >-
+            Either "sync_local" or "all_newer". "sync_local" will ensure that
+            the version of the file in the CBRAIN portal cache is the most
+            recent version that exists on the Data Provider. "all_newer" will
+            ensure that ALL caches known to CBRAIN are updated with the most
+            recent version of the files in the host Data Provider.
+          default: sync_local
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
+      responses:
+        '200':
+          description: Indicates that synchronization is starting in the background
+#=============================================================================
+# TASK ACTIONS
+#=============================================================================
+  /tasks:
+    get:
+      summary: Get the list of Tasks.
+      description: |
+        This method returns the list of Tasks accessible to the current user.
+      tags:
+        - Tasks
+      responses:
+        '200':
+          description: List of all accessible Tasks.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CbrainTask'
+        '401':
+          description: No Session created yet.
+    post:
+      summary: Create a new Task.
+      description: |
+        This method allows the creation of a new Task.
+      tags:
+        - Tasks
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: cbrain_task
+          description: The task to create.
+          schema:
+            type: object
+            required:
+              - tool_id
+              - cbrain_task
+            properties:
+              tool_id:
+                type: integer
+              cbrain_task:
+                type: object
+      responses:
+        '200':
+          description: Task created successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CbrainTask'
+        '401':
+          description: No Session created yet.
+  '/tasks/{id}':
+    get:
+      summary: Get information on a Task.
+      description: |
+        This method returns information on a Task, including its status,
+        Task restartability and information on where the results are kept.
+      tags:
+        - Tasks
+      parameters:
+        - name: id
+          in: path
+          description: The ID number of the Task to delete.
+          required: true
+          type: integer
+          default: 1
+      responses:
+        '200':
+          description: Information about a Task.
+          schema:
+            $ref: '#/definitions/CbrainTask'
+        '401':
+          description: No Session created yet.
+    put:
+      summary: Update information on a Task.
+      description: |
+        This method updates information about a Task in CBRAIN.
+      tags:
+        - Tasks
+      parameters:
+        - name: id
+          in: path
+          description: The ID number of the Task to update.
+          required: true
+          type: integer
+          default: 1
+        - name: 'cbrain_task[results_data_provider_id]'
+          type: integer
+          in: formData
+          description: ID of the DataProvider to store the results of the Task on.
+          default: 1
+        - name: 'cbrain_task[description]'
+          in: formData
+          type: string
+          description: Description of the Task.
+          required: true
+        - name: 'cbrain_task[user_id]'
+          in: formData
+          type: integer
+          description: ID of the User the Task should be associated with.
+        - name: 'cbrain_task[group_id]'
+          in: formData
+          type: integer
+          description: ID of the Group the Task should be associated with.
+          default: 1
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+          required: true
+      responses:
+        '200':
+          description: Task updated successfully.
+        '401':
+          description: No Session created yet.
+    delete:
+      summary: Deletes a Task
+      description: Deletes a Task from CBRAIN.
+      tags:
+        - Tasks
+      parameters:
+        - name: authenticity_token
+          in: formData
+          type: string
+          description: The token returned by /session/new
+        - name: id
+          in: path
+          description: The ID number of the Task to delete.
+          required: true
+          type: integer
+      responses:
+        '200':
+          description: Indicates that the Task is being deleted in the background.
+#=============================================================================
+# TOOLS ACTIONS
+#=============================================================================
+  /tools:
+    get:
+      summary: Get the list of Tools.
+      description: |
+        This method returns a list of all of the Tools that exist in CBRAIN.
+        Tools encapsulate a scientific program designed to extract information
+        from an input Userfile.
+      tags:
+        - Tools
+      responses:
+        '200':
+          description: List of Tools.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Tool'
+        '401':
+          description: No Session created yet.
+#=============================================================================
+# MODELS
+#=============================================================================
+definitions:
+  User:
+    type: object
+    properties:
+      id:
+        type: number
+        format: int64
+        description: Unique numerical ID for the user.
+      login:
+        type: string
+        description: UNIX-style username.
+      password:
+        type: string
+        format: password
+        description: Password field
+      password_confirmation:
+        type: string
+        format: password
+        description: Password field (generally same as 'password')
+      full_name:
+        type: string
+        description: Full name of the user.
+      email:
+        type: string
+        description: email address of the user.
+      city:
+        type: string
+        description: city where the user is located
+      country:
+        type: string
+        description: country where the user is located
+      time_zone:
+        type: string
+        description: time-zone (should make it this an enum)
+      type:
+        type: string
+        enum: ["CoreAdmin","SiteManager","NormalUser"]
+        default: "NormalUser"
+        description:
+          Classification of user permission level
+      site_id:
+        type: number
+        format: int64
+        description: ID of the site affiliation for the user. If this is not specified, the user will go into the default Site
+      last_connected_at:
+        type: string
+        format: dateTime
+        description: time of last connection by the user. (can be empty)
+      account_locked:
+        type: string
+        format: boolean
+        default: false
+        description: Whether or not the account is locked.
+  ToolConfig:
+    type: object
+    properties:
+      id:
+        type: number
+        format: int64
+        description: Unique numerical ID for the ToolConfig.
+      version_name:
+        type: string
+        description: the version name of the configuration
+      description:
+        type: string
+        description: a description of the configuration
+      tool_id:
+        type: number
+        format: int64
+        description: the ID of the tool associated with this configuration
+      bourreau_id:
+        type: number
+        format: int64
+        description: |
+          The ID of the execution server where this tool
+          configuration is available.
+      env_array:
+        description: additional environment variables
+        type: array
+        items:
+          type: string
+      script_prologue:
+        type: string
+        description: |
+          A piece of bash script configured by the administrator to
+          run before the tool is launched.
+      group_id:
+        type: number
+        format: int64
+        description: the ID of the project controlling access to this ToolConfig
+      ncpus:
+        type: number
+        format: int32
+        description: |
+          A hint at how many CPUs the CBRAIN task will allocate
+          to run this tool configuration
+  Tag:
+    type: object
+    properties:
+      id:
+        type: number
+        format: int64
+        description: Unique identifier for the tag
+      name:
+        type: string
+        description: >
+          Name of the tag. This holds all the information about what the tag is
+          supposed to indicate about your files.
+      user_id:
+        type: number
+        format: int64
+        description: |
+          The ID of the user that the tag belongs to.
+      group_id:
+        type: number
+        format: int64
+        description: |
+          The ID of the group that the tag belongs to.
+  Bourreau:
+    type: object
+    properties:
+      id:
+        type: number
+        format: int64
+        description: Unique numerical ID for the bourreau.
+      name:
+        type: string
+        description: Name given by the creator to the bourreau.
+      user_id:
+        type: number
+        format: int64
+        description: ID of the creator of the bourreau.
+      group_id:
+        type: number
+        format: int64
+        description: ID of the group allowed to use the bourreau.
+      online:
+        type: string
+        format: boolean
+        description: online
+      read_only:
+        type: string
+        format: boolean
+        description: Specifies whether the bourreau is read-only or can be modified.
+      description:
+        type: string
+        description: Description of the bourreau.
+  DataProvider:
+    type: object
+    properties:
+      id:
+        type: number
+        format: int64
+        description: Unique ID for the Data Provider.
+      name:
+        type: string
+        description: Name of the Data Provider.
+      type:
+        type: string
+        description: >-
+          Type of Data Provider, which usually indicates whether it is a local
+          Data Provider, has a flat internal directory structure, or is meant
+          for file uploading to CBRAIN.
+      user_id:
+        type: number
+        format: int64
+        description: Creator and owner of the Data Provider.
+      group_id:
+        type: number
+        format: int64
+        description: ID of the group that has access to this Data Provider.
+      online:
+        type: string
+        format: boolean
+        description: >-
+          Boolean variable that indicates whether the system hosting the Data
+          Provider is accessible.
+      read_only:
+        type: string
+        format: boolean
+        description: >-
+          Boolean variable that indicates whether the Data Provider can be
+          written to.
+      description:
+        type: string
+        description: Description of the Data Provider.
+      time_of_death:
+        type: string
+        format: dateTime
+        description: >-
+          The time, in the time zone of the system that hosts the Data Provider,
+          that the Data Provider last successfully transmitted.
+      not_syncable:
+        type: string
+        format: boolean
+        description: >-
+          Boolean variable that indicates that the data residing on the Data
+          Provider is not available to be transferred to any caches within the
+          CBRAIN platform.
+      time_zone:
+        type: string
+        description: Time zone of the system that hosts the Data Provider.
+  Group:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: ID number of the group.
+      name:
+        type: string
+        description: Name of the group.
+      type:
+        type: string
+        description: Type of group.
+      site_id:
+        type: integer
+        format: int64
+        description: ID of the site associated with the group.
+      creator_id:
+        type: integer
+        format: int64
+        description: |
+          ID of the User who created the group.
+      invisible:
+        type: boolean
+        description: |
+          Specifies whether or not the group is visible to Normal Users.
+          Invisible groups exist to specify levels of access to Userfiles,
+          DataProviders and Bourreaux.
+      description:
+        type: string
+        description: Description of the group.
+  Userfile:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: ID number of the file.
+      name:
+        type: string
+        description: Name of the file that the Userfile represents
+      size:
+        type: integer
+        format: int64
+        description: Number of bytes used to store the file.
+      user_id:
+        type: number
+        format: int64
+        description: ID of the owner of the file.
+      parent_id:
+        type: number
+        format: int64
+        description: 'ID of the parent Userfile, if any exists, or null otherwise.'
+      type:
+        type: string
+        description: >-
+          Type of the file. This is important in determining what tools can be
+          run on the file. The most generic file types, are the Single File,
+          which represents one file, and the File Collection, which represents a
+          directory full of files.
+      group_id:
+        type: number
+        format: int64
+        description: >-
+          ID of the group that owns the file, which determines its visibility
+          status.
+      data_provider_id:
+        type: number
+        format: int64
+        description: >-
+          ID of the Data Provider that is hosting the persistent copy of the
+          file. It may exist in caches across the systems that make up CBRAIN,
+          as copies of the file are made in order to run scientific programs on
+          them on remote systems.
+      group_writable:
+        type: string
+        format: boolean
+        description: >-
+          Boolean variable that specifies whether members of the owner group
+          have access to modify or overwrite the file.
+      num_files:
+        type: number
+        format: int64
+        description: >-
+          Number of files that the Userfiles represents. For Single Files, this
+          is always 1.
+      hidden:
+        type: string
+        format: boolean
+        description: >-
+          Boolean variable that specifies whether this file is hidden or not in
+          the user interface.
+      immutable:
+        type: string
+        format: boolean
+        description: >-
+          Boolean variable that specifies whether any user can modify the
+          contents of the file.
+      archived:
+        type: string
+        format: boolean
+        description: >-
+          Boolean variable that specifies whether the file is available,
+          uncompressed, or has been archived.
+      description:
+        type: string
+        description: Description of the file.
+  CbrainTask:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: Unique identifier for the Task.
+      type:
+        type: string
+        description: The task type
+      batch_id:
+        type: integer
+        format: int64
+        description: >-
+          ID of the batch this task was launched as part of. Batches of tasks
+          consist of the same task, with the same parameters, being run on many
+          different input files.
+      cluster_jobid:
+        type: string
+        description: ID of the task on the cluster associated with this task.
+      cluster_workdir:
+        type: string
+        description: Path on the cluster to the working directory.
+      params:
+        type: string
+        description: >-
+          Parameters used as inputs to the scientific calculation associated
+          with the task.
+      status:
+        type: string
+        description: Current status of the task.
+      created_at:
+        type: string
+        format: dateTime
+        description: Date created.
+      updated_at:
+        type: string
+        format: dateTime
+        description: Last updated.
+      user_id:
+        type: number
+        format: int64
+        description: ID of the User who created the Task.
+      bourreau_id:
+        type: number
+        format: int64
+        description: ID of the Bourreau the Task was launched on.
+      description:
+        description: Description of the Task.
+      prerequisites:
+        type: string
+        description: List of prerequisites.
+      share_wd_tid:
+        type: number
+        format: int64
+        description: share_wd_tid
+      run_number:
+        type: number
+        format: int64
+        description: The number of attempts that it has taken to run the task.
+      group_id:
+        type: number
+        format: int64
+        description: ID of the group that this task is being run in.
+      tool_config_id:
+        type: number
+        format: int64
+        description: >-
+          ID number that specifies which Tool Config to use. The Tool Config
+          specifies environment variables and other system-specific scripts
+          necessary for the Task to be run in the target environment.
+      level:
+        type: number
+        format: int64
+        description: level
+      rank:
+        type: number
+        format: int64
+        description: rank
+      results_data_provider_id:
+        type: number
+        format: int64
+        description: >-
+          ID of the Data Provider that contains the Userfile that represents the
+          results of the task.
+      cluster_workdir_size:
+        type: integer
+        description: size of workdirectory
+      workdir_archived:
+        type: string
+        format: boolean
+        description: >-
+          Boolean variable that indicates whether the working directory of the
+          task is available on the processing server or has been archived and is
+          no longer accessible.
+      workdir_archive_userfile_id:
+        type: number
+        format: int64
+        description: >-
+          ID of the userfile created as part of the archival process, if the
+          working directory of the task has been archived.
+  Tool:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: Unique identifier for the Tool.
+      name:
+        type: string
+        description: Name of the Tool.
+      user_id:
+        type: number
+        format: int64
+        description: Creator of the Tool.
+      group_id:
+        type: number
+        format: int64
+        description: Group that has access to the Tool.
+      category:
+        type: string
+        description: Category of the Tool
+      cbrain_task_class_name:
+        type: string
+        description: >-
+          The name of the Task class that will be created when jobs are launched
+          using the Tool.
+      select_menu_text:
+        type: string
+        description: Text that appears for Tool selection.
+      description:
+        type: string
+        description: Description of the Tool.
+      url:
+        type: string
+        description: >-
+          URL of the website that describes the Tool and possibly has code for
+          the Tool.
+  FileInfo:
+    type: object
+    properties:
+      userfile_id:
+        type: integer
+        description: id of the userfile
+      name:
+        type: string
+        description: the base filename
+      group:
+        type: string
+        description: string representation of gid, the name of the group
+      gid:
+        type: integer
+        description: numeric group id of the file
+      owner:
+        type: string
+        description: string representation of uid, the name of the owner
+      uid:
+        type: integer
+        description: numeric uid of owner
+      permissions:
+        type: integer
+        description: an int interpreted in octal, e.g. 0640
+      size:
+        type: number
+        description: size of file in bytes
+      state_ok:
+        type: boolean
+        description: flag that tell whether or not it is OK to register/unregister
+      message:
+        type: string
+        description: a message to give more information about the state_ok flag
+      symbolic_type:
+        type: string
+        description: one of :regular, :symlink, :directory
+      atime:
+        type: integer
+        description: access time (an int, since Epoch)
+      mtime:
+        type: integer
+        description: modification time (an int, since Epoch)

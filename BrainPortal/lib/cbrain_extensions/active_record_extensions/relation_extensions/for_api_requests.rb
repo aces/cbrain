@@ -41,6 +41,11 @@ module CBRAINExtensions #:nodoc:
           rel.to_a.for_api
         end
 
+        # This method is a shorthand for self.for_api.to_api_xml
+        def for_api_xml
+          for_api.to_api_xml
+        end
+
       end
     end
   end

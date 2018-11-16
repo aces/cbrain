@@ -1,0 +1,69 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% custom_filter ||= @custom_filter %>
+
+Task<br>
+<%= task_type_select("data[type]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name).sort, :selector => custom_filter.data_type, :include_top => true }, :multiple => true, :size => 10) %>
+
+<p>
+Status<br>
+<%= task_status_select("data[status]", {:selector => custom_filter.data_status}, :multiple => true, :size => 10) %>
+
+<p>
+Description<br>
+<%= select :data, :description_type, [["Don't filter description", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => custom_filter.data_description_type %> <%= text_field_tag "data[description_term]", custom_filter.data_description_term %>
+
+<p>
+Owner<br>
+<%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => custom_filter.data_user_id }, :include_blank => true %>
+
+<p>
+Execution Server<br>
+<%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => custom_filter.data_bourreau_id, :offline_is_ok => true }, :include_blank => true %>
+</p>
+
+Filtering by date<br>
+<%= date_range_panel(custom_filter[:data] || {}, "data") %>
+
+<p>
+Archiving status<br>
+<%= select :data, :archiving_status,
+[
+  ["Don't filter by archiving status", ''        ],
+  ["Not archived",                     'none'    ],
+  ["Archived on cluster",              'cluster' ],
+  ["Archived as file",                 'file'    ]
+], :selected => custom_filter.data_archiving_status %>
+
+<p>
+Work Directory status<br>
+<%= select :data, :wd_status,
+[
+  [ "Don't filter by work directory status",    ''           ],
+  [ "Use another task's",                       'shared'     ],
+  [ "Have own Work Directory",                  'not_shared' ],
+  [ "Work Directory exists on cluster",         'exists'     ],
+  [ "Work Directory does not exist on cluster", 'none'       ]
+], :selected => custom_filter.data_wd_status %>

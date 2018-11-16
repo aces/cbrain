@@ -18,12 +18,15 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
-<span class="no_wrap">
-Name:  <%= text_field_tag 'env_list[][name]',  env_name,  :size => 30 %>
-Value: <%= text_field_tag 'env_list[][value]', env_value, :size => 60 %>
-</span><br/>
+
+<% t.edit_cell(:env_array, :header => "Name", content: env_name) do %>
+  <%= text_field_tag 'env_list[][name]', env_name, :size => 30 %>
+<% end %>
+<% t.edit_cell(:env_array, :header => "Value", content: env_value) do %>
+  <%= text_field_tag 'env_list[][value]', env_value,  :size => 60 %>
+<% end %>
 

@@ -98,7 +98,8 @@
              [ "One month ago",     1.month.seconds.to_i   ],
              [ "One week ago",      1.week.seconds.to_i    ],
              [ "One day ago",       1.day.seconds.to_i     ],
-             [ "One hour ago",      1.hour.seconds.to_i    ]
+             [ "One hour ago",      1.hour.seconds.to_i    ],
+             [ "Now! (Including yours!)", 1.seconds.to_i   ],
            ]) %>
         <%= submit_tag "Clear", :confirm => "Are you sure you want to clear the sessions?" %>
       <% end %>

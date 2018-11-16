@@ -190,13 +190,13 @@ class SshDataProvider < DataProvider
 
     types.map!(&:to_sym)
 
+    base_dir = "/"
     self.master # triggers unlocking the agent
     Net::SFTP.start(remote_host,remote_user, :port => (remote_port.presence || 22), :auth_methods => [ 'publickey' ] ) do |sftp|
       entries = []
       if userfile.is_a? FileCollection
         if directory == :all
           entries = sftp.dir.glob(provider_full_path(userfile).to_s, "**/*")
-          entries.each { |e| e.instance_eval { @name = userfile.name + "/" + @name } }
         else
           directory = "." if directory == :top
           base_dir = "/" + directory + "/"
@@ -272,7 +272,7 @@ class SshDataProvider < DataProvider
     remote_files.select { |u| ! self.userfiles.where(:name => u).exists? }.each do |unreg|
       issues << {
         :type     => :unregistered,
-        :message  => "Unregisted file '#{unreg}'",
+        :message  => "Unregistered file '#{unreg}'",
         :severity => :trivial
       }
     end

@@ -975,6 +975,12 @@ class DataProvider < ApplicationRecord
   #
   # When called, the method accesses the provider's side
   # and returns an array of FileInfo objects.
+  #
+  # The argument "directory" can have a value that is:
+  #    :all, which returns an array of all of the files in the collection
+  #    :top, which returns only the files in the top level directory of the collection
+  #    directory string, which returns only the files in the directory that is under the collection with that name
+  #
   def provider_collection_index(userfile, directory = :all, allowed_types = :regular)
     cb_error "Error: provider #{self.name} is offline." unless self.online?
     rr_allowed_syncing!("fetch file content list from")

@@ -35,13 +35,13 @@ Rails.application.routes.draw do
 
   # Standard CRUD resources
   resources :sites,           :except => [ :edit ]
-  resources :custom_filters,  :except => [ :index, :show ]
+  resources :custom_filters,  :except => [ :index ]
   resources :tags,            :except => [ :new, :edit ]
   resources :access_profiles, :except => [ :edit ]
 
   # Standard CRUD resources, with extra actions
 
-  resources :tool_configs,    :except => [ :create ] do
+  resources :tool_configs, :except => [ :edit ] do
     collection do
       get  'report'
     end

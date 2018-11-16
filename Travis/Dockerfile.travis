@@ -106,6 +106,13 @@ ARG CBRAIN_BRANCH=dev
 ENV CBRAIN_REPO=$CBRAIN_REPO
 ENV CBRAIN_BRANCH=$CBRAIN_BRANCH
 
+# Edit manually the following line to have your docker installation
+# skip its cache of the previous container build, if necessary.
+# Just having a different commit number in the echo statement will do.
+# This can be necessary if you know that the code on the GitHub
+# repo has changed since that last build.
+RUN echo Force install using CBRAIN at commit 337bd0bd39d7777f060c62e0070411b05ba5ccb6
+
 # Extract initial CBRAIN source (will be replaced at test time)
 # but having an initial installation speeds up bundling,
 # migrations, etc.

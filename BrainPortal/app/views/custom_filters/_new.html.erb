@@ -18,30 +18,30 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
 <% custom_filter ||= @custom_filter %>
 <% filter_type = custom_filter.class.name.underscore %>
 
-<h2>New Custom Filter</h2>
+<h2> New <%= filter_type.humanize %> </h2>
 
-<div class="generalbox">
+<%= form_for @custom_filter, :as => :custom_filter, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
-  <%= ajax_form_for custom_filter, :as => :custom_filter, :url => {:controller  => "custom_filters", :action => "create" }, :datatype  => "script" do |f| %>
-    <%= hidden_field_tag :filter_class, filter_type %>
-    <%= error_messages_for(custom_filter, :object_name => "custom filter") %>
+  <div class="generalbox">
+      <%= hidden_field_tag :filter_class, filter_type %>
+      <%= error_messages_for(custom_filter, :object_name => "custom filter") %>
 
-    <p>
-    <%= f.label :name, "Filter name" %><br>
-    <%= f.text_field :name %>
+      <p>
+      <%= f.label :name, "Filter name" %><br>
+      <%= f.text_field :name %>
 
-    <p>
-    <%= render :partial => "custom_filters/#{filter_type}" %>
+      <p>
+      <%= render :partial => "custom_filters/new_#{filter_type}" %>
 
-    <p>
-    <%= f.submit "Create" %>
-  <% end %>
+      <p>
+      <%= f.submit "Create" %>
 
-</div>  <!-- End class="generalbox" -->
+  </div>  <!-- End class="generalbox" -->
+<% end %>

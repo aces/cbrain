@@ -1,0 +1,2 @@
+200 application/json "\w+":null,? "last_connected_at":.*?,
+{"id":1,"login":"admin","full_name":"CBRAIN Administrator","email":"nobody@localhost","type":"CoreAdmin","site_id":null,"time_zone":null,"city":null,"last_connected_at":,"account_locked":false}
