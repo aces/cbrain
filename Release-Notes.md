@@ -1,4 +1,42 @@
+
 ## CBRAIN Release Notes
+
+#### Version 5.1.0 Released 2018-11-16
+
+It is the age of wisdom, it is the age of foolishness.
+
+General changes:
+
+- The old S3DataProvider code has been revamped
+  to use the new Amazon SDK
+- A new S3FlatDataProvider was added; it can browse the
+  objects in a bucket and register them as files
+- Parallelized tasks are better are recovery
+- Restarting PostProcessing on tasks now works again
+- The show_table helpers can pass around the FormBuilder form handler
+- Several show_tables can be linked into a single form
+- Links to the ExceptionLog objects now work
+- Plugins and Boutiques tasks provide proper revision info
+- The Tool show page use the show table helpers
+- The ToolConfig show page is used to create and edit them
+- Better error messages when a Boutiques descriptor fails to integrate
+- New rspec test set for the ParamsErrors class
+- Improved Travis CI integration scripts
+
+Some changes are related to the console environment:
+
+- New helpers: `online`, `offline`, `tv`
+- New generic scopes: `utoday`, `ctodat`, `uweek`, `cweek`
+
+Several changes are related to the API:
+
+- The Swagger API spec has been updated; it is still a Swagger 2.0 spec
+- The controller code has all been adjusted to match it
+- A curl-based testing framework was added to test API calls
+- A Ruby-based testing framework was added too
+- Both testing frameworks use the same set of 'req' files for testing
+- A Ruby gem, `CbrainClient`, was created out of the swagger spec
+- The gem is at https://github.com/aces/cbrain-client-gem
 
 #### Version 5.0.2 Released 2018-03-09
 
