@@ -86,17 +86,14 @@ class ToolConfigsController < ApplicationController
   end
 
   def show #:nodoc:
-    id     = params[:id]
-    config = ToolConfig.find(id)
+    id           = params[:id]
+    @tool_config = ToolConfig.find(id)
 
-    @tool_config          = config if   config.tool_id &&   config.bourreau_id # leaves nil otherwise
-    @tool_glob_config     = config if   config.tool_id && ! config.bourreau_id # leaves nil otherwise
-    @bourreau_glob_config = config if ! config.tool_id &&   config.bourreau_id # leaves nil otherwise
+    # Sets variables that are only used to show some info in about other
+    # relevant TCs in the show/edit/create HTML page
+    find_other_tool_configs()
 
-    @tool_glob_config     ||=
-      ToolConfig.where( :tool_id => @tool_config.tool_id, :bourreau_id => nil                      ).first if @tool_config
-    @bourreau_glob_config ||=
-      ToolConfig.where( :tool_id => nil,                  :bourreau_id => @tool_config.bourreau_id ).first if @tool_config
+    @tool_config.env_array ||= []
 
     respond_to do |format|
       format.html
@@ -112,85 +109,90 @@ class ToolConfigsController < ApplicationController
   # them is nil. A brand new object is created when they are both
   # provided.
   def new
-    tool_id     = params[:tool_id]
-    bourreau_id = params[:bourreau_id]
-    tool_id     = nil if tool_id.blank?     # allowed, means ALL tools
-    bourreau_id = nil if bourreau_id.blank? # allowed, means ALL remote resources
+    tool_id     = params[:tool_id].presence     # nil allowed, means ALL tools
+    bourreau_id = params[:bourreau_id].presence # nil allowed, means ALL remote resources
     cb_error "Need at least one of tool ID or bourreau ID." unless tool_id || bourreau_id
 
-    @tool_config   = ToolConfig.where( :tool_id => tool_id, :bourreau_id => bourreau_id ).first if tool_id.blank? || bourreau_id.blank?
+    # For shared configs, we check that the object is indeed new,
+    # if not then show user existing object
+    if tool_id.blank? || bourreau_id.blank?
+      @tool_config = ToolConfig.where( :tool_id => tool_id, :bourreau_id => bourreau_id ).first
+    end
+
+    # If we haven't found an existing one of the globals, we create a new TC (either global
+    # or specific)
     @tool_config ||= ToolConfig.new(   :tool_id => tool_id, :bourreau_id => bourreau_id )
 
+    # Set a few defaults
     @tool_config.env_array ||= []
-
-    @tool_config.group = Group.everyone
+    @tool_config.group_id  ||= Group.everyone.id
 
     respond_to do |format|
-      format.html { render :action => :edit }
-      format.xml  { render :xml => @tool_config }
+      format.html { render :action => :show        }  # our show is also edit/create
+      format.xml  { render :xml    => @tool_config }
     end
   end
 
-  def edit #:nodoc:
-    id           = params[:id]
-    @tool_config = ToolConfig.find(id)
-    @tool_config.env_array ||= []
-
-    @tool_config.group = Group.everyone if @tool_config.group_id.blank?
-
-    respond_to do |format|
-      format.html # edit.html.erb
-      format.xml  { render :xml => @tool_config }
-    end
-  end
-
-  # Also used instead of create()
+  # This method is also used for the +create+ action.
+  #
   # This method is special in that only one instance of
-  # an object is permitted to exist for a pair of [:tool_id, :bourreau_id],
-  # so an object being created is FIRST loaded from the DB if it exists to
-  # prevent duplication.
+  # an object is permitted to exist for global ( per tool or per bourreau) config.
+  # A global config object being created is first loaded from the DB if
+  # it exists to prevent duplication.
   def update #:nodoc:
-    id                = params[:id] || "NEW" # can be 'new' if we create()
-    id                = nil if id == "NEW"
-    form_tool_config  = ToolConfig.new(tool_config_params) # just to store the new attributes
+    id                = params[:id].presence # can be nil if we create() with tool_id and bourreau_id
+
+    # What we get from the POST/PUT/PATCH
+    tc_params         = tool_config_params
+
+    form_tool_config  = ToolConfig.new(tc_params) # just to store the new attributes
     form_tool_id      = form_tool_config.tool_id.presence
     form_bourreau_id  = form_tool_config.bourreau_id.presence
 
-    @tool_config   = nil
+    # Build the true object for the form
     @tool_config   = ToolConfig.find(id) unless id.blank?
     cb_error "Need at least one of tool ID or bourreau ID." if @tool_config.blank? && form_tool_id.blank? && form_bourreau_id.blank?
     @tool_config ||= ToolConfig.where( :tool_id => form_tool_id, :bourreau_id => form_bourreau_id ).first if form_tool_id.blank? || form_bourreau_id.blank?
     @tool_config ||= ToolConfig.new(   :tool_id => form_tool_id, :bourreau_id => form_bourreau_id )
 
+    # Sets variables that are only used to show some info in about other
+    # relevant TCs in the show/edit/create HTML page
+    find_other_tool_configs()
+
     # Security: no matter what the form says, we use the ids from the DB if the object existed.
     form_tool_config.tool_id     = @tool_config.tool_id
     form_tool_config.bourreau_id = @tool_config.bourreau_id
 
-    # Update everything else
-    [ :version_name, :description, :script_prologue, :group_id, :ncpus, :container_engine, :container_index_location, :containerhub_image_name, :container_image_userfile_id,
-      :extra_qsub_args, :cloud_disk_image, :cloud_vm_user, :cloud_ssh_key_pair, :cloud_instance_type,
-      :cloud_job_slots, :cloud_vm_boot_timeout, :cloud_vm_ssh_tunnel_port ].each do |att|
-       @tool_config[att] = form_tool_config[att]
+    # Update everything else.
+    # or just form fields if config already existing
+    attributes = ToolConfig.column_names.map(&:to_sym) - %i[ id tool_id bourreau_id ]
+    attributes.each do |att|
+      if id.blank? || tc_params.has_key?(att) # we always copy everything if new
+        @tool_config[att] = form_tool_config[att]
+      end
     end
+    @tool_config.group_id ||= Group.everyone.id
 
-    @tool_config.env_array = []
-    envlist = params[:env_list] || []
-    envlist.each do |keyval|
-       env_name = keyval[:name].strip
-       env_val  = keyval[:value].strip
-       next if env_name.blank? && env_val.blank?
-       if env_name !~ /\A[A-Z][A-Z0-9_]+\z/i
-         @tool_config.errors.add(:base, "Invalid environment variable name '#{env_name}'")
-       elsif env_val !~ /\S/
-         @tool_config.errors.add(:base, "Invalid blank variable value for '#{env_name}'")
-       else
-         @tool_config.env_array << [ env_name, env_val ]
-       end
+    # Copy environment variables, if any
+    if params.has_key?(:env_list) || id.blank?
+      @tool_config.env_array = []
+      envlist = params[:env_list] || []
+      envlist.each do |keyval|
+        env_name = keyval[:name].strip
+        env_val  = keyval[:value].strip
+        next if env_name.blank? && env_val.blank?
+        if env_name !~ /\A[A-Z][A-Z0-9_]+\z/i
+          @tool_config.errors.add(:base, "Invalid environment variable name '#{env_name}'")
+        elsif env_val !~ /\S/
+          @tool_config.errors.add(:base, "Invalid blank variable value for '#{env_name}'")
+        else
+          @tool_config.env_array << [ env_name, env_val ]
+        end
+      end
     end
-
-    @tool_config.group = Group.everyone if @tool_config.group_id.blank?
 
     # Merge with an existing tool config
+    # HTML only, always renders 'show'
     if params.has_key?(:merge)
        other_tc = ToolConfig.find_by_id(params[:merge_from_tc_id] || 0)
        if other_tc
@@ -217,33 +219,41 @@ class ToolConfigsController < ApplicationController
        else
          flash[:notice] = "No changes made."
        end
-       render :action => :edit
+
+       render :action => "show"
        return
     end
 
-    if @tool_config.tool_id && @tool_config.bourreau_id && @tool_config.description.blank?
-      @tool_config.errors.add(:description, "requires at least one line of text as a name for the version")
+    # Cancel a merge
+    # HTML only, always renders 'show'
+    if params.has_key?(:cancel)
+      @tool_config.reload if ! @tool_config.new_record?
+      render :action => "show"
+      return
     end
 
     respond_to do |format|
+      new_record = @tool_config.new_record?
       if @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus extra_qsub_args
                                                           container_image_userfile_id containerhub_image_name
                                                           container_engine container_index_location ))
-        flash[:notice] = "Tool configuration was successfully updated."
-        format.html {
-                    if @tool_config.tool_id
-                      redirect_to edit_tool_path(@tool_config.tool)
-                    else
-                      redirect_to bourreau_path(@tool_config.bourreau)
-                    end
-                    }
-        format.xml  { head :ok }
+        if new_record
+          flash[:notice] = "Tool configuration is successfully created."
+        else
+          flash[:notice] = "Tool configuration was successfully updated."
+        end
+        format.html { redirect_to tool_config_path(@tool_config) }
+        format.xml  { head     :ok                                   }
       else
-        format.html { render :action => "edit" }
-        format.xml  { render :xml => @tool_config.errors, :status => :unprocessable_entity }
+        format.html { render :action => :show } # @tool_config.reload  ? or may be just bad fields?
+        format.json { render :json => @tool_config.errors, :status => :unprocessable_entity }
+        format.xml  { render :xml  => @tool_config.errors, :status => :unprocessable_entity }
       end
     end
   end
+
+  # The create and update methods are the same.
+  alias_method :create, :update #:nodoc:
 
   def destroy #:nodoc:
     id = params[:id]
@@ -269,7 +279,8 @@ class ToolConfigsController < ApplicationController
   def tool_config_params #:nodoc:
     params.require(:tool_config).permit(
       :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue,
-      :group_id, :ncpus, :container_image_userfile_id, :containerhub_image_name, :container_index_location, :container_engine, :extra_qsub_args,
+      :group_id, :ncpus, :container_image_userfile_id, :containerhub_image_name, :container_index_location,
+      :container_engine, :extra_qsub_args,
       # The configuration of a tool in a VM managed by a
       # ScirCloud Bourreau is defined by the following
       # parameters which specify the disk image where the
@@ -280,6 +291,7 @@ class ToolConfigsController < ApplicationController
       :cloud_job_slots, :cloud_vm_boot_timeout, :cloud_vm_ssh_tunnel_port
     )
   end
+
 
   # Create list of TC visible to current user.
   def base_scope #:nodoc:
@@ -297,4 +309,18 @@ class ToolConfigsController < ApplicationController
     scope
   end
 
+  # Given a @tool_config, finds other relevant objects and
+  # returns them in instance variables. Used by views.
+  def find_other_tool_configs #:nodoc:
+    @tool_local_config    = @tool_config if   @tool_config.tool_id &&   @tool_config.bourreau_id # leaves nil otherwise
+    @tool_glob_config     = @tool_config if   @tool_config.tool_id && ! @tool_config.bourreau_id # leaves nil otherwise
+    @bourreau_glob_config = @tool_config if ! @tool_config.tool_id &&   @tool_config.bourreau_id # leaves nil otherwise
+
+    @tool_glob_config     ||=
+      ToolConfig.where( :tool_id => @tool_config.tool_id, :bourreau_id => nil                      ).first if @tool_config.tool_id
+    @bourreau_glob_config ||=
+      ToolConfig.where( :tool_id => nil,                  :bourreau_id => @tool_config.bourreau_id ).first if @tool_config.bourreau_id
+  end
+
 end
+

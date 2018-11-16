@@ -22,68 +22,71 @@
 #
 -%>
 
-<% title 'Show Tool Configuration' %>
+<% title @tool_config.new_record? ? 'Create Tool Version' : 'Edit Tool Version' %>
 
-<h2>Show Tool Configuration</h2>
+  <strong>Important note:</strong>
 
-<div class="generalbox">
+  <% if @tool_config.tool_id %>
+    This form applies to tool <strong><%= link_to @tool_config.tool.name, edit_tool_path(@tool_config.tool) %></strong>
+  <% else %>
+    This form applies to <strong>ALL tools</strong>
+  <% end %>
 
-  Configurations shown here:
-  <ul>
-    <% if @bourreau_glob_config %>
-      <li>
-        <strong>Config #<%= @bourreau_glob_config.id %></strong>
-        (<%= link_to "edit", edit_tool_config_path(@bourreau_glob_config) %>):
-        For <strong>ALL tools</strong> running on Execution Server <strong><%= @bourreau_glob_config.bourreau.name %></strong>
-      </li>
+  <% if @tool_config.bourreau_id.blank? %>
+    running on <strong>ALL Execution Servers</strong>.<br>
+  <% else %>
+    running on Execution Server <strong><%= link_to_bourreau_if_accessible(@tool_config.bourreau) %></strong>.
+  <% end %>
+
+  <div class="menu_bar">
+    <% if @tool_glob_config && @tool_glob_config.id != @tool_config.id %>
+      <%= link_to "Common Config for tool #{@tool_glob_config.tool.name} on ALL Servers",
+          tool_config_path(@tool_glob_config), :class => :button %>
     <% end %>
-    <% if @tool_glob_config %>
-      <li>
-        <strong>Config #<%= @tool_glob_config.id %></strong>
-        (<%= link_to "edit", edit_tool_config_path(@tool_glob_config) %>):
-        For tool <strong><%= @tool_glob_config.tool.name %></strong> running on <strong>ALL Execution Servers</strong>
-      </li>
+    <% if @bourreau_glob_config && @bourreau_glob_config.id != @tool_config.id %>
+      <%= link_to "Common Config for ALL tools on #{@bourreau_glob_config.bourreau.name} Server",
+          tool_config_path(@bourreau_glob_config), :class => :button %>
     <% end %>
-    <% if @tool_config %>
-      <li>
-        <strong>Config #<%= @tool_config.id %></strong>
-        (<%= link_to "edit", edit_tool_config_path(@tool_config) %>):
-        For tool <strong><%= @tool_config.tool.name %></strong> running on Execution Server <strong><%= @tool_config.bourreau.name %></strong>
-        <br>Named: <%= full_description(@tool_config.description) %>
-        <br>Available to members of project <%= link_to_group_if_accessible(@tool_config.group) %>
-        <% if @tool_config.ncpus.present? && @tool_config.ncpus.to_i > 0 %>
-          <br>Suggested number of CPUs: <%= @tool_config.ncpus.to_i.to_s %>
-        <% end %>
-      </li>
-    <% end %>
-  </ul>
+    <p>
+  </div>
+
+  <div class="display_inline_block" style="min-width: 50%">
+
+  <% if @tool_config %>
+    <%= render :partial => 'form_fields' %>
+  <% end %>
 
   <p>
-  <strong>Important note:</strong>
-  This section displays the full BASH initialization prologue script for the configurations
-  listed above.
-  <% if ( (@tool_config ? 1 : 0) + (@tool_glob_config ? 1 : 0) + (@bourreau_glob_config ? 1 : 0) ) > 1 %>
-    <br>
-    Several distinct configurations are involved and shown in order of execution.
-  <% end %>
-  </p>
 
-  <pre class="script_preview"><%= @bourreau_glob_config.to_bash_prologue if @bourreau_glob_config %><%= @tool_glob_config.to_bash_prologue if @tool_glob_config %><%= @tool_config.to_bash_prologue if @tool_config %></pre>
+  <fieldset>
+    <legend>BASH script prologues</legend>
+    This section displays the full BASH initialization prologue script for the configuration shown above.
+    <% if ( (@bourreau_glob_config ? 1 : 0) + (@tool_glob_config ? 1 : 0) + (@tool_config? 1 : 0) ) > 1 %>
+      It is preceded by the BASH prologues of other relevant global configurations.
+    <% end %>
+    The commands are shown in the order of execution.
+    <p>
 
-</div>
+    <pre class="script_preview">
+      <%= @bourreau_glob_config.to_bash_prologue if @bourreau_glob_config %><%= @tool_glob_config.to_bash_prologue if @tool_glob_config %><%= @tool_local_config.to_bash_prologue if @tool_local_config %>
+    </pre>
+
+  </fieldset>
+
+  </div>
 
 <% if @bourreau_glob_config %>
   <p>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @bourreau_glob_config.getlog, :title => "Log of Global Bourreau Tool Config ##{@bourreau_glob_config.id}" } %>
+    <%= render :partial => "layouts/log_report", :locals  => { :log  => @bourreau_glob_config.getlog, :title => "Log of Global Bourreau Tool Config ##{@bourreau_glob_config.id}" } %>
 <% end %>
 
 <% if @tool_glob_config %>
   <p>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_glob_config.getlog, :title => "Log of Global Tool Config ##{@tool_glob_config.id}" } %>
+    <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_glob_config.getlog, :title => "Log of Global Tool Config ##{@tool_glob_config.id}" } %>
 <% end %>
 
-<% if @tool_config %>
+<% if @tool_local_config %>
   <p>
-  <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_config.getlog, :title => "Log of Specific Tool Config ##{@tool_config.id}" } %>
+    <%= render :partial => "layouts/log_report", :locals  => { :log  => @tool_local_config.getlog, :title => "Log of Specific Tool Config ##{@tool_local_config.id}" } %>
 <% end %>
 

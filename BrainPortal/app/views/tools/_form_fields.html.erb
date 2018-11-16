@@ -24,76 +24,72 @@
 
 <%= error_messages_for(@tool) %>
 
-<p>
- <%= f.label :name, "Tool Name:" %>
- <%= f.text_field :name %>
-</p>
+<%= show_table(@tool, :edit_condition => true, :header => "General info") do |t| %>
 
-<p>
-  <span title="PortalTask subclass which implements this tool.">
-     <%= f.label :cbrain_task_class_name, "CbrainTask Class name:" %>
-     <%= f.text_field :cbrain_task_class_name %>
-  </span>
-</p>
+  <% t.edit_cell :name, :show_width => 2, :header => "Tool Name" do |f|%>
+    <%= f.text_field :name %>
+  <% end %>
 
-<p>
- <%= f.label :user_id, "Belongs to:" %>
- <%= user_select "tool[user_id]", @tool, :id => 'tool_user_id' %>
-</p>
+  <% t.edit_cell :cbrain_task_class_name, :show_width => 2, :header => "CbrainTask Class name",
+                      :td_options => {:title => "PortalTask subclass which implements this tool."} do |f| %>
+    <%= f.text_field :cbrain_task_class_name, :size => 30 %>
+  <% end %>
 
-<p>
- <%= f.label :group_id, "Available to members of project:" %>
- <%= group_select "tool[group_id]", @tool, :id => 'tool_group_id' %>
-</p>
+  <% t.edit_cell :user_id, :content => link_to_user_with_tooltip(@tool.user), :header => "Belongs to" do |f| %>
+    <%= user_select "tool[user_id]", @tool.user, :id => 'tool_user_id' %>
+  <% end %>
 
-<p>
-  <%= f.label :category, "Category:" %>
-  <%= f.select :category, Tool::Categories %>
-</p>
+  <% t.cell("Created")      { @tool.created_at.present? ? to_localtime(@tool.created_at,:datetime) : "" } %>
 
+  <% t.edit_cell :group_id, :content => link_to_group_if_accessible(@tool.group), :header => "Available to members of project" do |f| %>
+    <%= group_select "tool[group_id]", @tool.group, :id => 'tool_group_id' %>
+  <% end %>
 
-<p>
-  <%= f.label :license_agreements, "License agreements:" %><br>
-  <%= f.text_area :license_agreements, :value => @tool.new_record? ? "" : @tool.license_agreements.join("\n") , :rows => 5, :cols => 40 %>
-  <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
-</p>
+  <% t.cell("Last Updated") { @tool.updated_at.present? ? to_localtime(@tool.updated_at,:datetime) : "" } %>
 
-<p>
-  <%= f.label :description, "Description:" %><br>
-  <%= f.text_area :description, :cols => 80, :rows => 10 %><br>
-  <div class="field_explanation">The first line must should be a short summary, and the rest are for any special notes for the users.</div>
-</p>
+  <% t.edit_cell :category, :header => "Category" do |f| %>
+     <%= f.select :category, Tool::Categories %>
+  <% end %>
 
-<p>
-  <%= f.label :application_package_name, "Package name:" %><br>
-  <%= f.text_field :application_package_name %><br>
-</p>
+  <% joint_licenses = @tool.license_agreements.join("\n") %>
+  <% licenses = @tool.license_agreements.count == 0 ? "(None)": joint_licenses %>
+  <% t.edit_cell :license_agreements, :header => "License agreements", :content => licenses do |f| %>
+    <%= f.text_area :license_agreements, :value => @tool.new_record? ? "" : joint_licenses, :rows => 3, :cols => 30 %>
+    <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
+  <% end %>
 
-<p>
-  <%= f.label :application_type, "Tool type:" %><br>
-  <%= f.text_field :application_type %><br>
-</p>
+  <% t.edit_cell :description, :show_width => 2, :header => "Description", :content => full_description(@tool.description) do |f|%>
+    <%= f.text_area :description, :cols => 80, :rows => 10 %>
+    <div class="field_explanation">The first line is a short summary, and the rest are for any special notes for the users.</div>
+  <% end %>
 
-<p>
-  <%= f.label :application_tags, "Comma separated tags:" %><br>
-  <%= f.text_field :application_tags %><br>
-</p>
+  <% t.edit_cell :application_package_name, :header => "Package name" do |f| %>
+    <%= f.text_field :application_package_name %>
+  <% end %>
 
-<p>
-  <%= f.label :url, "Tool URL:" %><br>
-  <%= f.text_field :url %><br>
-</p>
+  <% t.edit_cell :application_type, :header => "Tool type" do |f| %>
+    <%= f.text_field :application_type %>
+  <% end %>
 
+  <% t.edit_cell :application_tags, :show_width => 2, :header => "Comma separated tags" do |f| %>
+    <%= f.text_field :application_tags, :size => 60 %>
+  <% end %>
 
-<p>
-  <%= f.label :select_menu_text, "Text for select box on the userfiles page:" %>
-  <%= f.text_field :select_menu_text %>
-</p>
+  <% t.edit_cell :url, :show_width => 2, :header => "Tool URL" do |f| %>
+    <%= f.text_field :url, :size => 60 %>
+  <% end %>
+
+  <% "" # Not used anymore? %>
+  <% false and t.edit_cell :select_menu_text, :header => "Text for select box on the userfiles page" do |f| %>
+    <%= f.text_field :select_menu_text, :size => 40 %>
+  <% end %>
+
+<% end %>
 
 <% if @tool && !@tool.new_record? %>
 <p>
   Common configuration for all servers: <%= link_to "Edit", new_tool_config_path( :tool_id => @tool.id ) %><br/>
-</p>
+
 <p>
   Versions installed on the following execution servers:<br/>
   <table class="simple" width="100%">
@@ -123,7 +119,6 @@
             <td><%= overlay_description(tc.version_name + "\n" + tc.description) %></td>
             <td><%= link_to_group_if_accessible(tc.group) %></td>
             <td><%= pluralize((tc.ncpus || 1), "cpu") %></td>
-            <td><%= link_to "Edit", edit_tool_config_path(tc) %></td>
             <td><%= link_to "Show", tool_config_path(tc) %></td>
             <td><%= link_to 'Delete', tc, :confirm => "Are you sure you want to delete version configuration '#{tc.version_name}'?", :method => :delete %></td>
           <% end %>

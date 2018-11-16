@@ -41,7 +41,7 @@ Rails.application.routes.draw do
 
   # Standard CRUD resources, with extra actions
 
-  resources :tool_configs,    :except => [ :create ] do
+  resources :tool_configs, :except => [ :edit ] do
     collection do
       get  'report'
     end
