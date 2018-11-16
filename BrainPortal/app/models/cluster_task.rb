@@ -463,8 +463,16 @@ class ClusterTask < CbrainTask
 
     # Create the symlink
     Dir.chdir(self.full_cluster_workdir) do
-      File.symlink(target.to_s, file_path.to_s)
+      # Do nothing is symlink already exists with proper value.
+      # If there is something not a symlink in the way, or a symlink with a different
+      # value, the symlink() method will crash, which is what we want to
+      # catch the error in the situation.
+      unless File.symlink?(file_path.to_s) && File.readlink(file_path.to_s) == target.to_s
+        File.symlink(target.to_s, file_path.to_s)
+      end
     end
+
+    true
   end
 
   # Returns true if +path+ points to a file or
@@ -2093,7 +2101,7 @@ cat << \"DOCKERJOB\" > #{docker_wrapper_basename.bash_escape}
 #   #{CbrainTask::ClusterTask.revision_info.to_s}
 
 # CBRAIN internal consistency test
-if test "$UID" -ne "#{Process.uid}" ; then
+if test -n "$UID" -a "X$UID" != "X#{Process.uid}" ; then
   echo "Docker internal script running with wrong UID (expected UID=#{Process.uid})"
   echo "Runtime IDs: `id`"
   exit 2

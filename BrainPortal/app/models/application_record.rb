@@ -60,7 +60,8 @@ class ApplicationRecord < ActiveRecord::Base #:nodoc:
   # ActiveRecord Added Behavior For Serialization
   ###################################################################
 
-  include CBRAINExtensions::ActiveRecordExtensions::Serialization
+  include CBRAINExtensions::ActiveRecordExtensions::AttributeSerialization
+  include CBRAINExtensions::ActiveRecordExtensions::RecordSerialization
 
   ###################################################################
   # ActiveRecord Added Behavior For Core Models
@@ -81,6 +82,12 @@ class ApplicationRecord < ActiveRecord::Base #:nodoc:
   def self.default_api_limit #:nodoc:
     1000
   end
+
+  # Useful generic scopes for console users.
+  scope :utoday, -> { where [ "#{self.quoted_table_name}.updated_at >= ?", Time.now.midnight ] }
+  scope :ctoday, -> { where [ "#{self.quoted_table_name}.created_at >= ?", Time.now.midnight ] }
+  scope :uweek , -> { where [ "#{self.quoted_table_name}.updated_at >= ?", Time.now.at_beginning_of_week ] } # starts Monday
+  scope :cweek , -> { where [ "#{self.quoted_table_name}.created_at >= ?", Time.now.at_beginning_of_week ] } # starts Monday
 
 end
 

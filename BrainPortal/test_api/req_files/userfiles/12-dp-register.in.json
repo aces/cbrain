@@ -1,0 +1,4 @@
+{
+  "basenames": [ "new1.txt", "new2.log" ],
+  "filetypes": [ "TextFile-new1.txt", "LogFile-new2.log" ]
+}

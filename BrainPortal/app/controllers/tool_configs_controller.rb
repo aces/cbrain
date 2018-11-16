@@ -234,7 +234,9 @@ class ToolConfigsController < ApplicationController
 
     respond_to do |format|
       new_record = @tool_config.new_record?
-      if @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus ))
+      if @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus extra_qsub_args
+                                                          container_image_userfile_id containerhub_image_name
+                                                          container_engine container_index_location ))
         if new_record
           flash[:notice] = "Tool configuration is successfully created."
         else

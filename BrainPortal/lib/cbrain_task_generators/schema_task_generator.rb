@@ -321,11 +321,13 @@ module SchemaTaskGenerator
     # we were in strict or non-strict mode.
     if (errors.length rescue 0) > 0
       # Error message
-      msg = 'Encountered validation error(s) ' + errors.to_s + "\n\n" +
+      msg = "Encountered JSON schema validation error(s)\n " +
+             Array(errors).map(&:to_s).join("\n") + "\n\n" +
             "WARNING: Boutiques application descriptor #{descriptor['name']} failed validation!\n" +
             "\tSkipping task generation. Check " + descriptorInput.to_s + "."
       # Log it
       Rails.logger.warn( msg )
+      puts msg # in rake tasks, we have no Rails.logger
       # Return now to skip task generation (prevent catastrophic failure of cbrain)
       return
     end

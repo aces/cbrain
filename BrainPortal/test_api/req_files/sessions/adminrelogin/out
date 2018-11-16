@@ -1,0 +1,2 @@
+200 application/json "cbrain_api_token":"\w+"
+{"user_id":1,"cbrain_api_token":"0123456789abcdef0123456789abcdef"}

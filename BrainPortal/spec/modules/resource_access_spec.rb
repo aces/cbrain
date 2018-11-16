@@ -146,6 +146,7 @@ describe ResourceAccess do
         group_resource
         site_resource
         owned_resource
+        # BTW: fails if the rake task 'db:sanity:check' was not run
         expect(DataProvider.find_all_accessible_by_user(admin).map(&:id)).to match_array([scratch_dp.id, free_resource.id, group_resource.id, site_resource.id, owned_resource.id])
       end
     end

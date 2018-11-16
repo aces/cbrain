@@ -1,0 +1,10 @@
+{
+  "cbrain_task": {
+    "tool_config_id": 20,
+    "bourreau_id": 13,
+    "user_id": 2,
+    "group_id": 10,
+    "params": { },
+    "description": "TestCreate"
+  }
+}

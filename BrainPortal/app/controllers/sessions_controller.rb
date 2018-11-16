@@ -62,8 +62,8 @@ class SessionsController < ApplicationController
     if current_user
       respond_to do |format|
         format.html { head   :ok                                                         }
-        format.xml  { render :xml     => { :user_id => current_user.id }, :status => 200 }
-        format.json { render :json    => { :user_id => current_user.id }, :status => 200 }
+        format.xml  { render :xml  =>  xml_session_info, :status => 200 }
+        format.json { render :json => json_session_info, :status => 200 }
       end
     else
       head :unauthorized
@@ -115,8 +115,8 @@ class SessionsController < ApplicationController
     if current_user
       respond_to do |format|
         format.html { redirect_to start_page_path }
-        format.json { render :json => { :cbrain_api_token => cbrain_session.cbrain_api_token, :user_id => current_user.id }, :status => 200 }
-        format.xml  { render :xml  => { :cbrain_api_token => cbrain_session.cbrain_api_token, :user_id => current_user.id }, :status => 200 }
+        format.json { render :json => json_session_info, :status => 200 }
+        format.xml  { render :xml  =>  xml_session_info, :status => 200 }
       end
     end
   end
@@ -163,8 +163,8 @@ class SessionsController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_back_or_default(start_page_path) }
-      format.json { render :json => { :cbrain_api_token => cbrain_session.cbrain_api_token, :user_id => current_user.id }, :status => 200 }
-      format.xml  { render :xml  => { :cbrain_api_token => cbrain_session.cbrain_api_token, :user_id => current_user.id }, :status => 200 }
+      format.json { render :json => json_session_info, :status => 200 }
+      format.xml  { render :xml  =>  xml_session_info, :status => 200 }
     end
 
   end
@@ -243,6 +243,25 @@ class SessionsController < ApplicationController
     if user.has_role?(:admin_user)
       session[:active_group_id] = "all"
     end
+  end
+
+  # ------------------------------------
+  # SessionInfo fake model for API calls
+  # ------------------------------------
+
+  def session_info #:nodoc:
+    {
+      :user_id          => current_user.try(:id),
+      :cbrain_api_token => cbrain_session.try(:cbrain_api_token),
+    }
+  end
+
+  def xml_session_info #:nodoc:
+    session_info.to_xml(:root => 'SessionInfo', :dasherize => false)
+  end
+
+  def json_session_info #:nodoc:
+    session_info
   end
 
 end
