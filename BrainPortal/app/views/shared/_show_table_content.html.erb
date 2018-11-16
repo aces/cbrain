@@ -36,8 +36,8 @@
   </table>
 
   <% if tb.editable? %>
-    <br>
     <div class="inline_edit_field_input" style="display:none">
+      <br>
       <% if tb.object.new_record? %>
         <%= submit_button("Create") %>
       <% else %>

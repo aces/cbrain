@@ -22,36 +22,12 @@
 #
 -%>
 
-<% title 'Tool Version' %>
-
-<div class="menu_bar">
-<% if @bourreau_glob_config && @bourreau_glob_config.id != @tool_config.id %>
-
-  <%= link_to "Common Config for ALL tools on
-                 #{@bourreau_glob_config.bourreau.name} Server ",
-              tool_config_path(@bourreau_glob_config), :class => :button, :title =>
-      "Show or edit Config \##{@bourreau_glob_config.id} for ALL tools running on
-                Execution Server #{@bourreau_glob_config.bourreau.name} "
-  %>
-
-<% end %>
-
-
-<% if @tool_glob_config && @tool_glob_config.id != @tool_config.id%>
-
-  <%= link_to "Common Config for tool #{@tool_glob_config.tool.name} on ALL Servers ",
-      tool_config_path(@tool_glob_config), :class => :button, :title =>
-      "Show or edit Config \##{@tool_glob_config.id} that affect every version/configuration of tool
-         #{@tool_glob_config.tool.name} running on
-      each server"
-    %>
-<% end %>
-
-</div>
+<% title @tool_config.new_record? ? 'Create Tool Version' : 'Edit Tool Version' %>
 
   <strong>Important note:</strong>
+
   <% if @tool_config.tool_id %>
-    This form applies to tool <strong><%= @tool_config.tool.name %></strong>
+    This form applies to tool <strong><%= link_to @tool_config.tool.name, edit_tool_path(@tool_config.tool) %></strong>
   <% else %>
     This form applies to <strong>ALL tools</strong>
   <% end %>
@@ -59,43 +35,45 @@
   <% if @tool_config.bourreau_id.blank? %>
     running on <strong>ALL Execution Servers</strong>.<br>
   <% else %>
-    running on Execution Server <strong><%= @tool_config.bourreau.name %></strong>.
+    running on Execution Server <strong><%= link_to_bourreau_if_accessible(@tool_config.bourreau) %></strong>.
   <% end %>
+
+  <div class="menu_bar">
+    <% if @tool_glob_config && @tool_glob_config.id != @tool_config.id %>
+      <%= link_to "Common Config for tool #{@tool_glob_config.tool.name} on ALL Servers",
+          tool_config_path(@tool_glob_config), :class => :button %>
+    <% end %>
+    <% if @bourreau_glob_config && @bourreau_glob_config.id != @tool_config.id %>
+      <%= link_to "Common Config for ALL tools on #{@bourreau_glob_config.bourreau.name} Server",
+          tool_config_path(@bourreau_glob_config), :class => :button %>
+    <% end %>
+    <p>
+  </div>
+
+  <div class="display_inline_block" style="min-width: 50%">
 
   <% if @tool_config %>
-      <%= render :partial => 'form_fields'%>
+    <%= render :partial => 'form_fields' %>
   <% end %>
 
-  <strong>Important note:</strong>
-  This section displays the full BASH initialization prologue script for the configuration
-  listed above
-  <% if ( (@bourreau_glob_config ? 1 : 0) + (@tool_glob_config ? 1 : 0) + (@tool_config? 1 : 0) ) > 1 %>
-    <br>
-    combined with relevant global configurations
+  <p>
 
-      <% if @bourreau_glob_config && @bourreau_glob_config.id != @tool_config.id %>
-        <br>
-        <%= link_to "Common Config for ALL tools on
-                 #{@bourreau_glob_config.bourreau.name} Server ",
-                    tool_config_path(@bourreau_glob_config), :title =>
-                        "Config \##{@bourreau_glob_config.id} for ALL tools running on
-                Execution Server #{@bourreau_glob_config.bourreau.name} "
-        %>
+  <fieldset>
+    <legend>BASH script prologues</legend>
+    This section displays the full BASH initialization prologue script for the configuration shown above.
+    <% if ( (@bourreau_glob_config ? 1 : 0) + (@tool_glob_config ? 1 : 0) + (@tool_config? 1 : 0) ) > 1 %>
+      It is preceded by the BASH prologues of other relevant global configurations.
+    <% end %>
+    The commands are shown in the order of execution.
+    <p>
 
-      <% end %>
-      <p>
-      <% if @tool_glob_config && @tool_glob_config.id != @tool_config.id%>
-        <br>
-        <%= link_to "Common Config for tool #{@tool_glob_config.tool.name} on ALL Servers ",
-                    tool_config_path(@tool_glob_config),  :title =>
-                        "Config \##{@tool_glob_config.id} that affect every version/configuration of tool
-         #{@tool_glob_config.tool.name} running on
-      each server"
-        %>
-      <% end %> . The commands are shown in the order of execution
-  <% end %>
-  <pre class="script_preview"><%= @bourreau_glob_config.to_bash_prologue if @bourreau_glob_config %><%= @tool_glob_config.to_bash_prologue if @tool_glob_config %><%= @tool_config.to_bash_prologue if @tool_config %></pre>
+    <pre class="script_preview">
+      <%= @bourreau_glob_config.to_bash_prologue if @bourreau_glob_config %><%= @tool_glob_config.to_bash_prologue if @tool_glob_config %><%= @tool_local_config.to_bash_prologue if @tool_local_config %>
+    </pre>
 
+  </fieldset>
+
+  </div>
 
 <% if @bourreau_glob_config %>
   <p>
