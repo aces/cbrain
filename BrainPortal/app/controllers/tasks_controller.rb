@@ -432,7 +432,7 @@ class TasksController < ApplicationController
           if share_wd_Nid.present? && share_wd_Nid <= 0
             task.share_wd_tid = share_wd_Nid_to_tid[share_wd_Nid] # will be nil for first task in set, which is right
             task.save! # this sets batch_id if it's still nil, in an after_save callback
-            share_wd_Nid_to_tid[share_wd_Nid] = task.id
+            share_wd_Nid_to_tid[share_wd_Nid] ||= task.id # first task in group
           else
             task.save! # this sets batch_id if it's still nil, in an after_save callback
           end

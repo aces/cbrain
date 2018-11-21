@@ -27,7 +27,7 @@ namespace :cbrain do
     logger = lambda do |action, package, type, model|
       # action is what we do to the symlink
       # package is a name such as 'cbrain-plugins-base'
-      # type is either 'userfile' or 'cbrain_task'
+      # type is either 'userfile' or 'cbrain_task' or 'descriptor'
       # model is the userfile or cbrain_task model name
       pretty_type = type ; pretty_package = package
       pretty_type    = 'file' if type =~ /userfile/i
@@ -334,7 +334,7 @@ namespace :cbrain do
 
       puts "Removing orphan userfiles..."
       Userfile
-        .where("type NOT IN ('#{userfile_classes.join("','")}')")
+        .where("type not in (?)", userfile_classes)
         .update_all(:type => "Userfile")
       deleted_userfiles = Userfile
         .destroy_all(:type => "Userfile")
@@ -342,7 +342,7 @@ namespace :cbrain do
 
       puts "Removing orphan tasks..."
       CbrainTask
-        .where("type NOT IN ('#{task_classes.join("','")}')")
+        .where("type not in (?)", task_classes)
         .update_all(:type => "CbrainTask")
       deleted_tasks = CbrainTask
         .destroy_all(:type => "CbrainTask")
@@ -386,7 +386,7 @@ namespace :cbrain do
 
       puts "Checking for orphan userfiles..."
       orphan_userfiles = Userfile
-        .where("type NOT IN ('#{userfile_classes.join("','")}')")
+        .where("type not in (?)", userfile_classes)
         .raw_rows([:id, :type])
         .to_a
       unless orphan_userfiles.empty?
@@ -398,7 +398,7 @@ namespace :cbrain do
 
       puts "Checking for orphan tasks..."
       orphan_tasks = CbrainTask
-        .where("type NOT IN ('#{task_classes.join("','")}')")
+        .where("type not in (?)", task_classes)
         .raw_rows([:id, :type])
         .to_a
       unless orphan_tasks.empty?
