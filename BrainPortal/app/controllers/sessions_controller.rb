@@ -55,7 +55,18 @@ class SessionsController < ApplicationController
       verify_authenticity_token  # from Rails; will raise exception if not present.
     end
     user = User.authenticate(params[:login], params[:password]) # can be nil if it fails
-    create_from_user(user)
+    all_ok = create_from_user(user)
+
+    if ! all_ok
+      auth_fail
+      return
+    end
+
+    respond_to do |format|
+      format.html { redirect_back_or_default(start_page_path) }
+      format.json { render :json => json_session_info, :status => 200 }
+      format.xml  { render :xml  =>  xml_session_info, :status => 200 }
+    end
   end
 
   def show #:nodoc:
@@ -129,9 +140,7 @@ class SessionsController < ApplicationController
     unless user
       flash.now[:error] = 'Invalid user name or password.'
       Kernel.sleep 3 # Annoying, as it blocks the instance for other users too. Sigh.
-      self.current_user = nil
-      auth_failed
-      return
+      return false
     end
 
     # Not in IP whitelist?
@@ -141,31 +150,23 @@ class SessionsController < ApplicationController
       .reject(&:blank?)
     if whitelist.present? && ! whitelist.any? { |ip| ip.include? cbrain_request_remote_ip }
       flash.now[:error] = 'Untrusted source IP address.'
-      self.current_user = nil
-      auth_failed
-      return
+      return false
     end
 
-    self.current_user = user
-    session[:user_id] = user.id  if request.format.to_sym == :html
-    portal = BrainPortal.current_resource
-
     # Check if the user or the portal is locked
-    locked_message  = portal_or_account_locked?(portal)
-    if !locked_message.blank?
+    portal = BrainPortal.current_resource
+    locked_message  = portal_or_account_locked?(portal,user)
+    if locked_message.present?
       flash[:error] = locked_message
-      auth_failed
-      return
+      return false
     end
 
     # Everything OK
+    self.current_user = user # this ALSO ACTIVATE THE SESSION
+    session[:user_id] = user.id  if request.format.to_sym == :html
     user_tracking(portal) # Figures out IP address, user agent, etc, once.
 
-    respond_to do |format|
-      format.html { redirect_back_or_default(start_page_path) }
-      format.json { render :json => json_session_info, :status => 200 }
-      format.xml  { render :xml  =>  xml_session_info, :status => 200 }
-    end
+    return true
 
   end
 
@@ -179,17 +180,15 @@ class SessionsController < ApplicationController
     end
   end
 
-  def portal_or_account_locked?(portal) #:nodoc:
+  def portal_or_account_locked?(portal,user) #:nodoc:
 
     # Portal locked?
-    if portal.portal_locked? && !current_user.has_role?(:admin_user)
-      self.current_user = nil
+    if portal.portal_locked? && !user.has_role?(:admin_user)
       return "The system is currently locked. Please try again later."
     end
 
     # Account locked?
-    if self.current_user.account_locked?
-      self.current_user = nil
+    if user.account_locked?
       return "This account is locked, please write to #{User.admin.email.presence || "the support staff"} to get this account unlocked."
     end
 

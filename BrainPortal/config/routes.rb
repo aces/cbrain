@@ -191,6 +191,11 @@ Rails.application.routes.draw do
   # Portal log
   get   '/portal_log',            :controller => :portal, :action => :portal_log
 
+  # CARMIN platform routes
+  get   '/platform',              :controller => :carmin, :action => :platform
+  post  '/authenticate',          :controller => :carmin, :action => :authenticate
+  get   '/executions',            :controller => :carmin, :action => :executions
+
   # Service; most of these actions are only needed
   # for the CANARIE monitoring system, and are therefore
   # shipped disabled by default, because it's not needed
