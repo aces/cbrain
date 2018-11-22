@@ -192,9 +192,16 @@ Rails.application.routes.draw do
   get   '/portal_log',            :controller => :portal, :action => :portal_log
 
   # CARMIN platform routes
-  get   '/platform',              :controller => :carmin, :action => :platform
-  post  '/authenticate',          :controller => :carmin, :action => :authenticate
-  get   '/executions',            :controller => :carmin, :action => :executions
+  get    '/platform',               :controller => :carmin, :action => :platform
+  post   '/authenticate',           :controller => :carmin, :action => :authenticate
+  get    '/executions',             :controller => :carmin, :action => :executions
+  get    '/executions/count',       :controller => :carmin, :action => :exec_count
+  get    '/executions/:id/results', :controller => :carmin, :action => :exec_results
+  get    '/executions/:id/stdout',  :controller => :carmin, :action => :exec_stdout
+  get    '/executions/:id/stderr',  :controller => :carmin, :action => :exec_stderr
+  put    '/executions/:id/play',    :controller => :carmin, :action => :exec_play
+  get    '/executions/:id',         :controller => :carmin, :action => :exec_show
+  delete '/executions/:id',         :controller => :carmin, :action => :exec_delete
 
   # Service; most of these actions are only needed
   # for the CANARIE monitoring system, and are therefore

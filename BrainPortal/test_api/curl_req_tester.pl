@@ -290,7 +290,7 @@ for (my $ti = 0;$ti < @list;$ti++) {
   # remove "id":nnn if a POST (create operation)
   $content = &filter_content($content, [ '"id":\d+' ]) if $method eq "POST";
 
-  # Compare responde to expected response
+  # Compare response to expected response
   if ($ret != 0) { # This failure hides all others
     &record_failure($pretty_name, "CURL: $ret");
     print " => Failed: curl did not execute properly\n" if $VERBOSE > 0;
@@ -299,7 +299,7 @@ for (my $ti = 0;$ti < @list;$ti++) {
       &record_failure($pretty_name, "HTTPCODE: $httpcode <> $expcode");
       print " => Failed: got HTTP response code '$httpcode', expected '$expcode'\n" if $VERBOSE > 0;
     }
-    if (lc($accept) ne lc($resptype)) {
+    if ($accept ne '*/*' and lc($accept) ne lc($resptype)) {
       &record_failure($pretty_name, "C_TYPE: $resptype");
       print " => Failed: got type '$resptype', expected '$ctype'\n" if $VERBOSE > 0;
     }

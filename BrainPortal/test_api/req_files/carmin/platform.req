@@ -1,1 +1,1 @@
-GET /platform
+GET /platform application/json NoRubyClient

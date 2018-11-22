@@ -756,6 +756,7 @@ class TasksController < ApplicationController
     batch_ids << nil if batch_ids.delete('nil')
     tasklist  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).raw_first_column("cbrain_tasks.id")
     tasklist   = tasklist.map(&:to_i).uniq
+    tasklist   = current_user.available_tasks.where(:id => tasklist).pluck(:id)
 
     flash[:error]  ||= ""
     flash[:notice] ||= ""
@@ -767,47 +768,76 @@ class TasksController < ApplicationController
     end
 
     if tasklist.empty?
-      flash[:error] += "No task selected? Selection cleared.\n"
+      flash[:error] += "No task selected?.\n"
       redirect_to :action => :index
       return
     end
+
+    # Some security validations
+    new_bourreau_id = params[:dup_bourreau_id].presence # for 'duplicate' operation
+    archive_dp_id   = params[:archive_dp_id].presence   # for 'archive as file' operation
+    new_bourreau_id = nil unless new_bourreau_id && Bourreau.find_all_accessible_by_user(current_user).where(:id => new_bourreau_id).exists?
+    archive_dp_id   = nil unless archive_dp_id   && DataProvider.find_all_accessible_by_user(current_user).where(:id => archive_dp_id).exists?
+
+    # Decide in which conditions we spawn a background job to send
+    # the operation to the tasks...
+    do_in_spawn  = tasklist.size > 5
+
+    # This does the actual work and returns info about the
+    # successes and failures.
+    results = apply_operation(operation, tasklist, do_in_spawn,
+      :dup_bourreau_id => new_bourreau_id,
+      :archive_dp_id   => archive_dp_id,
+    )
+
+    # Prepare counters for how many tasks affected.
+    skipped_list = results[:skipped_list]
+    success_list = results[:success_list]
+    failed_list  = results[:failed_list]
+
+    if do_in_spawn
+      flash[:notice] += "The tasks are being notified in background."
+    else
+      failure_size  = 0
+      failed_list.each_value  { |v| failure_size += v.size }
+      skipped_size  = 0
+      skipped_list.each_value { |v| skipped_size += v.size }
+      flash[:notice] += "Number of tasks notified: #{success_list.size} OK, #{skipped_size} skipped, #{failure_size} failed.\n"
+    end
+
+    respond_to do |format|
+      format.html { redirect_to :action => :index }
+      format.js   { redirect_to :action => :index }
+      format.json { head :ok }
+      format.xml  { head :ok }
+    end
+  end # method 'operation'
+
+  # This applies an 'operation' to a set of tasks, like 'delete', or
+  # 'archive' or 'terminate'. Since the operations are performed by
+  # the bourreaux, not the portals, a message is sent to those bourreaux.
+  #
+  # +options+ contains some more parameters for tasks being archived
+  # or duplicated.
+  #
+  # Returns a simple hash with some list for successes, failures and
+  # skipped operations (only meaningful when do_in_spawn is false).
+  def apply_operation(operation, taskids, do_in_spawn = false, options = {})
+
+    # Some other parameters
+    new_bourreau_id = options[:dup_bourreau_id] # for 'duplicate' operation
+    archive_dp_id   = options[:archive_dp_id]   # for 'archive as file' operation
 
     # Prepare counters for how many tasks affected.
     skipped_list = {}
     success_list = []
     failed_list  = {}
 
-    # Decide in which conditions we spawn a background job to send
-    # the operation to the tasks...
-    do_in_spawn  = tasklist.size > 5
-
     # This block will either run in background or not depending
     # on do_in_spawn
     CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending #{operation} to tasks") do
 
-      tasks = []
-      tasklist.each do |task_id|
-
-        begin
-          task = current_user.available_tasks.find(task_id)
-        rescue
-          (failed_list["Task not available"] ||= [])
-          next
-        end
-
-        if task.user_id != current_user.id && ! current_user.has_role?(:admin_user)
-          (skipped_list["you not allowed to #{operation} this task(s)"] ||= []) << task
-          next
-        end
-
-        tasks << task
-      end
-
-      # Some security validations
-      new_bourreau_id = params[:dup_bourreau_id].presence
-      archive_dp_id   = params[:archive_dp_id].presence
-      new_bourreau_id = nil unless new_bourreau_id && Bourreau.find_all_accessible_by_user(current_user).where(:id => new_bourreau_id).exists?
-      archive_dp_id   = nil unless archive_dp_id   && DataProvider.find_all_accessible_by_user(current_user).where(:id => archive_dp_id).exists?
+      tasks = CbrainTask.where(:id => taskids).to_a
 
       # Go through tasks, grouped by bourreau
       grouped_tasks = tasks.group_by(&:bourreau_id)
@@ -816,6 +846,7 @@ class TasksController < ApplicationController
         btasklist = pair_bid_tasklist[1]
         bourreau  = Bourreau.find(bid)
         begin
+          # MASS DELETE
           if operation == 'delete'
             # Two sublists, to optimize the delete
             can_be_just_deleted = btasklist.select { |t| t.cluster_workdir.blank? }
@@ -833,6 +864,7 @@ class TasksController < ApplicationController
             success_list += must_remote_delete
             next
           end
+          # MASS NEW STATUS
           new_status  = PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
           oktasks = btasklist.select do |t|
             cur_status  = t.status
@@ -849,7 +881,7 @@ class TasksController < ApplicationController
             success_list += oktasks
           end
           skippedtasks = btasklist - oktasks
-          skipped_list["you are not allowed to #{operation} for"] = skippedtasks if skippedtasks.present?
+          skipped_list["Tasks have incompatible states"] = skippedtasks if skippedtasks.present?
         rescue => e
           failed_list[e.message] ||= []
           failed_list[e.message]  += btasklist
@@ -865,30 +897,17 @@ class TasksController < ApplicationController
         end
       end
 
-    end # End of spawn_if block
+    end # SPAWN
 
-    if do_in_spawn
-      flash[:notice] += "The tasks are being notified in background."
-    else
-      failure_size  = 0
-      failed_list.each_value  { |v| failure_size += v.size }
-      skipped_size  = 0
-      skipped_list.each_value { |v| skipped_size += v.size }
-      flash[:notice] += "Number of tasks notified: #{success_list.size} OK, #{skipped_size} skipped, #{failure_size} failed.\n"
-    end
+    # This may contain nothing at all if all work was done in background...
+    results =  {
+      :skipped_list => skipped_list,
+      :success_list => success_list,
+      :failed_list  => failed_list,
+    }
 
-    #current_user.addlog_context(self,"Sent '#{operation}' to #{tasklist.size} tasks.")
-
-    respond_to do |format|
-      format.html { redirect_to :action => :index }
-      format.js   { redirect_to :action => :index }
-      format.json { head :ok }
-      format.xml  { head :ok }
-    end
-
-
-
-  end # method 'operation'
+    return results
+  end
 
 
 

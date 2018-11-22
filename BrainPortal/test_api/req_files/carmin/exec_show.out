@@ -1,0 +1,2 @@
+200 application/json :\d+
+{"identifier":"2","name":"SimpleMonitor","pipelineIdentifier":"SimpleMonitor","status":"Finished","inputValues":{},"returnedFiles":[],"studyIdentifier":"norm","errorCode":0,"startDate":1542844799,"endDate":1542844799}

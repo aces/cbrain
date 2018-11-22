@@ -58,7 +58,7 @@ class SessionsController < ApplicationController
     all_ok = create_from_user(user)
 
     if ! all_ok
-      auth_fail
+      auth_failed()
       return
     end
 

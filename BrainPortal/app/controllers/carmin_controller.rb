@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Controller implementing the CARMIN API
+# Controller implementing the CARMIN API.
 #
 # https://github.com/CARMIN-org/CARMIN-API
 class CarminController < ApplicationController
@@ -79,9 +79,7 @@ class CarminController < ApplicationController
     username = params[:username] # in CBRAIN we use 'login'
     password = params[:password]
 
-    context = SessionsController.new
-    context.request = self.request # that's messy
-    all_ok = context.instance_eval do
+    all_ok = eval_in_controller(::SessionsController) do
       user = User.authenticate(username,password) # can be nil if it fails
       create_from_user(user)
     end
@@ -91,9 +89,10 @@ class CarminController < ApplicationController
       return
     end
 
+    token = cbrain_session.try(:cbrain_api_token) || "badtoken"
+
     respond_to do |format|
       format.json do
-        token = cbrain_session.try(:cbrain_api_token) || "badtoken"
         render :json => { :httpHeader => 'Authorization', :httpHeaderValue => "Bearer: #{token}" }
       end
     end
@@ -101,7 +100,7 @@ class CarminController < ApplicationController
 
   # GET /executions
   # I guess these are our tasks...
-  def executions
+  def executions #:nodoc:
     group_name = params[:studyIdentifier].presence
     offset     = params[:offset].presence
     limit      = params[:limit].presence
@@ -115,14 +114,100 @@ class CarminController < ApplicationController
     tasks = tasks.where(:group_id => (group.try(:id) || 0)) if group_name
     tasks = tasks.order("created_at DESC")
     tasks = tasks.offset(offset.to_i) if offset
-    tasks = tasks.limite(limit.to_i)  if limit
+    tasks = tasks.limit(limit.to_i)   if limit
     tasks = tasks.to_a
 
     respond_to do |format|
-      format.json do
-        render :json => tasks.map(&:to_carmin)
-      end
+      format.json { render :json => tasks.map(&:to_carmin) }
     end
+  end
+
+  # GET /executions/:id
+  def exec_show #:nodoc:
+    task = current_user.available_tasks.real_tasks.find(params[:id])
+
+    respond_to do |format|
+      format.json { render :json => task.to_carmin }
+    end
+  end
+
+  # GET /executions/count
+  def exec_count #:nodoc:
+    count = current_user.available_tasks.real_tasks.count
+
+    respond_to do |format|
+      format.text { render :plain => count } # what the CARMIN spec say we should return
+      format.json { render :json  => count }
+    end
+  end
+
+  # DELETE /executions/:id
+  def exec_delete #:nodoc:
+    del_files = params[:deleteFiles] || ""  # not used in CBRAIN
+    del_files = del_files.to_s =~ /^(0|no|false)$/i ? false : del_files.present?
+    task = current_user.available_tasks.real_tasks.find(params[:id])
+    results = eval_in_controller(::TasksController) do
+      apply_operation('delete', [ task.id ])
+    end
+
+    head :no_content # :no_content is 204, CARMIN wants that
+  end
+
+  # GET /executions/:id/results
+  # We don't have an official way to link a task to its result files yet.
+  def exec_results #:nodoc:
+    task = current_user.available_tasks.real_tasks.find(params[:id])
+
+    respond_to do |format|
+      format.json { render :json => [] }
+    end
+  end
+
+  # GET /executions/:id/stdout
+  def exec_stdout #:nodoc:
+    task = current_user.available_tasks.real_tasks.find(params[:id])
+    get_remote_task_info(task) # contacts Bourreau for the info
+
+    respond_to do |format|
+      format.text { render :plain => task.cluster_stdout }
+    end
+  end
+
+  # GET /executions/:id/stderr
+  def exec_stderr #:nodoc:
+    task = current_user.available_tasks.real_tasks.find(params[:id])
+    get_remote_task_info(task) # contacts Bourreau for the info
+
+    respond_to do |format|
+      format.text { render :plain => task.cluster_stderr }
+    end
+  end
+
+  # PUT /executions/:id/play
+  def exec_play #:nodoc:
+    task = current_user.available_tasks.real_tasks.find(params[:id])
+    # Nothing to do
+    head :no_content # :no_content is 204, CARMIN wants that
+  end
+
+  ####################################################################
+
+  private
+
+  def get_remote_task_info(task) #:nodoc:
+    task.capture_job_out_err() # PortalTask method: sends command to bourreau to get info
+  rescue Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError, ActiveResource::TimeoutError, ActiveResource::MethodNotAllowed
+    task.cluster_stdout = "Execution Server is DOWN!"
+    task.cluster_stderr = "Execution Server is DOWN!"
+  end
+
+  # Messy utility, poking through layers. Tricky.
+  def eval_in_controller(mycontroller,&block) #:nodoc:
+    cb_error "Controller is not a ApplicationController?" unless mycontroller < ApplicationController
+    cb_error "Block needed." unless block_given?
+    context = mycontroller.new
+    context.request = self.request
+    context.instance_eval &block
   end
 
 end

@@ -580,3 +580,9 @@ t3=t2.dup
 t3.id = 3
 t3.description = 'DelTest'
 t3.save!
+
+t4=t2.dup
+t4.id = 4
+t4.description = 'CarminDelTest'
+t4.save!
+

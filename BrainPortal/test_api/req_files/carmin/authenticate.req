@@ -1,1 +1,1 @@
-POST /authenticate
+POST /authenticate application/json NoRubyClient
