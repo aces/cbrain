@@ -200,8 +200,13 @@ Rails.application.routes.draw do
   get    '/executions/:id/stdout',  :controller => :carmin, :action => :exec_stdout
   get    '/executions/:id/stderr',  :controller => :carmin, :action => :exec_stderr
   put    '/executions/:id/play',    :controller => :carmin, :action => :exec_play
+  put    '/executions/:id/kill',    :controller => :carmin, :action => :exec_kill
   get    '/executions/:id',         :controller => :carmin, :action => :exec_show
   delete '/executions/:id',         :controller => :carmin, :action => :exec_delete
+  get    '/pipelines',              :controller => :carmin, :action => :pipelines
+  get    '/pipelines/:id',          :controller => :carmin, :action => :pipelines_show
+  get    '/pipelines/:id/boutiquesdescriptor',
+                                    :controller => :carmin, :action => :pipelines_boutiques
 
   # Service; most of these actions are only needed
   # for the CANARIE monitoring system, and are therefore

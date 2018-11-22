@@ -51,7 +51,7 @@ class CarminController < ApplicationController
         }
       ],
       "supportedModules": [
-        "Processing", "Data", "AdvancedData", "Management", "Commercial",
+        "Processing", "Data", # "AdvancedData", "Management", "Commercial",
       ],
       "defaultLimitListExecutions": 0,
       "email":               (portal.support_email.presence || "unset@example.com"),
@@ -63,8 +63,10 @@ class CarminController < ApplicationController
       "studiesSupport": true,
       "defaultStudy": "none",
       "supportedAPIVersion": "unknown",
-      "supportedPipelineProperties": [
-        "name"
+      "supportedPipelineProperties": [ # update these in ToolConfig#to_carmin
+        "tool_name",
+        "exec_name",
+        "version_name"
       ],
       "additionalProp1": {}
     }
@@ -149,6 +151,8 @@ class CarminController < ApplicationController
     results = eval_in_controller(::TasksController) do
       apply_operation('delete', [ task.id ])
     end
+    # We should check 'results' here and return something else
+    # if the job couldn't be destroyed.
 
     head :no_content # :no_content is 204, CARMIN wants that
   end
@@ -186,8 +190,71 @@ class CarminController < ApplicationController
   # PUT /executions/:id/play
   def exec_play #:nodoc:
     task = current_user.available_tasks.real_tasks.find(params[:id])
+    # Nothing to do: TODO decide if we want to restart tasks
+    # that are completed, or terminated, etc.
+    head :no_content # :no_content is 204, CARMIN wants that
+  end
+
+  # PUT /executions/:id/kill
+  def exec_kill #:nodoc:
+    task = current_user.available_tasks.real_tasks.find(params[:id])
+    results = eval_in_controller(::TasksController) do
+      apply_operation('Terminated', [ task.id ])
+    end
+    # We should check 'results' here and return something else
+    # if the job couldn't be terminated.
+
     # Nothing to do
     head :no_content # :no_content is 204, CARMIN wants that
+rescue => ex
+Rails.logger.info "EX: #{ex.class} #{ex.message} #{ex.backtrace.join("\n")}"
+  end
+
+  # GET /pipelines
+  def pipelines #:nodoc:
+    group_name = params[:studyIdentifier].presence
+    property   = params[:property].presence
+    propvalue  = params[:propvalue].presence
+
+    if group_name
+      group = current_user.available_groups.where('group.name' => group_name).first
+    end
+
+    # Get all tool config; filter by group if user wants it so.
+    mytcs = all_accessible_tool_configs(current_user)
+    mytcs = mytcs.where(:group_id => (group.try(:id) || 0)) if group_name
+    mytcs = mytcs.to_a.map(&:to_carmin)
+
+    # Filter by carmin properties
+    if property && propvalue
+      mytcs.select! { |x| x.properties[property] == propvalue }
+    end
+
+    respond_to do |format|
+      format.json { render :json => mytcs }
+    end
+  end
+
+  # GET /pipelines/:id
+  def pipelines_show #:nodoc:
+    mytc = all_accessible_tool_configs(current_user).find(params[:id])
+
+    respond_to do |format|
+      format.json { render :json => mytc.to_carmin }
+    end
+  end
+
+  # GET /pipelines/:id/boutiquesdescriptor
+  def pipelines_boutiques #:nodoc:
+    mytc = all_accessible_tool_configs(current_user).find(params[:id])
+
+    # The descriptor is only available from CbrainTask classes
+    # that have been generated from them.
+    desc = mytc.cbrain_task_class.generated_from.descriptor rescue { :no_boutiques_descriptor => 'sorry' }
+
+    respond_to do |format|
+      format.json { render :json => desc }
+    end
   end
 
   ####################################################################
@@ -199,6 +266,9 @@ class CarminController < ApplicationController
   rescue Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError, ActiveResource::TimeoutError, ActiveResource::MethodNotAllowed
     task.cluster_stdout = "Execution Server is DOWN!"
     task.cluster_stderr = "Execution Server is DOWN!"
+  rescue # other runtime errors
+    task.cluster_stdout = "Execution Server is MISCONFIGURED!"
+    task.cluster_stderr = "Execution Server is MISCONFIGURED!"
   end
 
   # Messy utility, poking through layers. Tricky.
@@ -208,6 +278,18 @@ class CarminController < ApplicationController
     context = mycontroller.new
     context.request = self.request
     context.instance_eval &block
+  end
+
+  # Just a really safe way to build a relation for all them tool_configs.
+  def all_accessible_tool_configs(user = current_user) #:nodoc:
+    # Tools
+    tids = Tool.find_all_accessible_by_user(user).pluck(:id)
+    # Bourreaux
+    bids = Bourreau.find_all_accessible_by_user(user).pluck(:id)
+    # ToolConfig
+    tcs  = ToolConfig.find_all_accessible_by_user(user).where(:tool_id => tids, :bourreau_id => bids)
+
+    return tcs
   end
 
 end

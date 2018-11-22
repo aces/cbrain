@@ -24,9 +24,9 @@
 # running on the test database, to check the CbrainClient Swagger API.
 # It should be run on the BrainPortal side with:
 #
-#    RAILS_ENV=test rake cbrain:api:test:client
+#    RAILS_ENV=test rake cbrain:test:api:client
 # or
-#    RAILS_ENV=test rake cbrain:api:test:client -- -v5 myfilter
+#    RAILS_ENV=test rake cbrain:test:api:client -- -v5 myfilter
 #
 # It is necessary to have first prepared the test DB with:
 #

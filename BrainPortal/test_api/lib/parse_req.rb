@@ -142,6 +142,8 @@ class ParseReq #:nodoc:
     action.gsub!("/","")   if action.present?
     @toktype.gsub!("?","") if @toktype.present?
 
+    return self if @control =~ /NoRubyClient/ # no need to do anything else
+
     # Figure out the full class name
     controller_klass = controller.classify.pluralize # "tool_configs" => "ToolConfigs"
     @klass    = "CbrainClient::#{controller_klass}Api".constantize rescue nil
