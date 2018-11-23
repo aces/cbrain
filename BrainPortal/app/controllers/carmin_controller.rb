@@ -280,7 +280,7 @@ class CarminController < ApplicationController
 
   def get_remote_task_info(task) #:nodoc:
     task.capture_job_out_err() # PortalTask method: sends command to bourreau to get info
-  rescue Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError, ActiveResource::TimeoutError, ActiveResource::MethodNotAllowed
+  rescue Errno::EADDRNOTAVAIL, Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError, ActiveResource::TimeoutError, ActiveResource::MethodNotAllowed
     task.cluster_stdout = "Execution Server is DOWN!"
     task.cluster_stderr = "Execution Server is DOWN!"
   end
