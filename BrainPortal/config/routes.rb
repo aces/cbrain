@@ -201,6 +201,7 @@ Rails.application.routes.draw do
   get    '/executions/:id/stderr',  :controller => :carmin, :action => :exec_stderr
   put    '/executions/:id/play',    :controller => :carmin, :action => :exec_play
   put    '/executions/:id/kill',    :controller => :carmin, :action => :exec_kill
+  put    '/executions/:id',         :controller => :carmin, :action => :exec_update
   get    '/executions/:id',         :controller => :carmin, :action => :exec_show
   delete '/executions/:id',         :controller => :carmin, :action => :exec_delete
   get    '/pipelines',              :controller => :carmin, :action => :pipelines

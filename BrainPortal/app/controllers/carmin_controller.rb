@@ -153,6 +153,7 @@ class CarminController < ApplicationController
     end
     # We should check 'results' here and return something else
     # if the job couldn't be destroyed.
+    results.nil? # just so 'ruby -c' doesn't complain.
 
     head :no_content # :no_content is 204, CARMIN wants that
   end
@@ -161,6 +162,7 @@ class CarminController < ApplicationController
   # We don't have an official way to link a task to its result files yet.
   def exec_results #:nodoc:
     task = current_user.available_tasks.real_tasks.find(params[:id])
+    task.nil? # just so 'ruby -c' leaves us alone until we implement more code here
 
     respond_to do |format|
       format.json { render :json => [] }
@@ -190,6 +192,8 @@ class CarminController < ApplicationController
   # PUT /executions/:id/play
   def exec_play #:nodoc:
     task = current_user.available_tasks.real_tasks.find(params[:id])
+    task.nil? # just so 'ruby -c' leaves us alone until we implement more code here
+
     # Nothing to do: TODO decide if we want to restart tasks
     # that are completed, or terminated, etc.
     head :no_content # :no_content is 204, CARMIN wants that
@@ -203,11 +207,24 @@ class CarminController < ApplicationController
     end
     # We should check 'results' here and return something else
     # if the job couldn't be terminated.
+    results.nil? # just so 'ruby -c' doesn't complain.
 
     # Nothing to do
     head :no_content # :no_content is 204, CARMIN wants that
-rescue => ex
-Rails.logger.info "EX: #{ex.class} #{ex.message} #{ex.backtrace.join("\n")}"
+  end
+
+  # PUT /executions/:id
+  def exec_update #:nodoc:
+    task = current_user.available_tasks.real_tasks.find(params[:id])
+    new_name    = params[:name]
+    new_timeout = params[:timeout]
+
+    # We actually don't do anything with the new name and timeout...
+    # Names are immutable in CBRAIN, and there is no timeout either.
+    task.nil? ; new_name.nil? ; new_timeout.nil? # just so 'ruby -c' says nothing
+
+    # Nothing to do
+    head :no_content # :no_content is 204, CARMIN wants that
   end
 
   # GET /pipelines
@@ -266,9 +283,6 @@ Rails.logger.info "EX: #{ex.class} #{ex.message} #{ex.backtrace.join("\n")}"
   rescue Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError, ActiveResource::TimeoutError, ActiveResource::MethodNotAllowed
     task.cluster_stdout = "Execution Server is DOWN!"
     task.cluster_stderr = "Execution Server is DOWN!"
-  rescue # other runtime errors
-    task.cluster_stdout = "Execution Server is MISCONFIGURED!"
-    task.cluster_stderr = "Execution Server is MISCONFIGURED!"
   end
 
   # Messy utility, poking through layers. Tricky.
@@ -277,7 +291,7 @@ Rails.logger.info "EX: #{ex.class} #{ex.message} #{ex.backtrace.join("\n")}"
     cb_error "Block needed." unless block_given?
     context = mycontroller.new
     context.request = self.request
-    context.instance_eval &block
+    context.instance_eval(&block)
   end
 
   # Just a really safe way to build a relation for all them tool_configs.

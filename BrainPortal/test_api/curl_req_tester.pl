@@ -62,6 +62,9 @@ Verbose levels:
   -v4 : Shows the HTTP content of the responses and curl's STDERR
   -v5 : When HTTP content differs from expected, shows them both
 
+If no -v option is provided, the verbose level can be set
+by the CBRAIN_TEST_API_VERBOSE environment variable.
+
 The option -R tells the script to NOT run the rake seeding command first.
 
 USAGE
@@ -72,7 +75,7 @@ USAGE
 # Global variables and constants #
 ##################################
 
-my $VERBOSE = 1; # use -v0 to disable all messages
+my $VERBOSE = undef; # The default is '1', see below. Use -v0 to disable all messages.
 my $HOST    = "localhost";
 my $PORT    = 3000;
 my $SCHEME  = 'http';
@@ -122,6 +125,14 @@ for (;@ARGV;) {
 &Usage if @ARGV != 0 && $ARGV[0] =~ /^-/;
 $TEST_SUBSTRING=shift if @ARGV;
 &Usage if @ARGV != 0;
+
+# Verbose level:
+# If an explicit level is provided with -v, we use it.
+# Otherwise, we check for the CBRAIN_TEST_API_VERBOSE env variable.
+# And if not set, then we default to 1'
+if (!defined($VERBOSE)) {
+  $VERBOSE = $ENV{'CBRAIN_TEST_API_VERBOSE'} || 1
+}
 
 ################
 # Trap Signals #
