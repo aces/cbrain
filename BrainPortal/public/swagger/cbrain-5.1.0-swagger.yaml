@@ -34,9 +34,9 @@ produces:
   - application/json
   - application/xml
 paths:
-#=============================================================================
-# SESSIONS ACTIONS
-#=============================================================================
+  #=============================================================================
+  # SESSIONS ACTIONS
+  #=============================================================================
   /session:
     post:
       summary: Create a new session
@@ -93,9 +93,9 @@ paths:
           description: Session terminated
         '401':
           description: No session created yet.
-#=============================================================================
-# USERS ACTIONS
-#=============================================================================
+  #=============================================================================
+  # USERS ACTIONS
+  #=============================================================================
   /users:
     get:
       summary: Returns all of the users in CBRAIN. Only available to admins.
@@ -180,7 +180,7 @@ paths:
             $ref: '#/definitions/UserModReq'
           required: true
       tags:
-          - Users
+        - Users
       responses:
         '200':
           description: An object with the CBRAIN user information
@@ -215,9 +215,9 @@ paths:
           description: User not found with the specified ID
         '409':
           description: User cannot be deleted, as it has resources allocated to them.
-#=============================================================================
-# TOOL CONFIGS ACTIONS
-#=============================================================================
+  #=============================================================================
+  # TOOL CONFIGS ACTIONS
+  #=============================================================================
   /tool_configs:
     get:
       summary: Get a list of tool versions installed.
@@ -257,9 +257,9 @@ paths:
             A single ToolConfig object describing the configuration.
           schema:
             $ref: '#/definitions/ToolConfig'
-#=============================================================================
-# TAGS ACTIONS
-#=============================================================================
+  #=============================================================================
+  # TAGS ACTIONS
+  #=============================================================================
   /tags:
     get:
       summary: Get a list of the tags currently in CBRAIN.
@@ -361,9 +361,9 @@ paths:
           description: No session created yet.
         '422':
           description: Tag could not be deleted.
-#=============================================================================
-# BOURREAU ACTIONS
-#=============================================================================
+  #=============================================================================
+  # BOURREAU ACTIONS
+  #=============================================================================
   /bourreaux:
     get:
       summary: Get a list of the Bourreaux available to be used by the current user.
@@ -405,9 +405,9 @@ paths:
             $ref: '#/definitions/Bourreau'
         '401':
           description: No session created yet.
-#=============================================================================
-# DATA PROVIDER ACTIONS
-#=============================================================================
+  #=============================================================================
+  # DATA PROVIDER ACTIONS
+  #=============================================================================
   /data_providers:
     get:
       summary: Get a list of the Data Providers available to the current user.
@@ -599,9 +599,9 @@ paths:
           description: Returns "true" or "false".
           schema:
             type: string
-#=============================================================================
-# GROUP ACTIONS
-#=============================================================================
+  #=============================================================================
+  # GROUP ACTIONS
+  #=============================================================================
   /groups:
     get:
       summary: Get a list of the Groups (projects) available to the current user.
@@ -715,9 +715,9 @@ paths:
           description: Successfully deleted the Group (project).
         '401':
           description: No Session created yet.
-#=============================================================================
-# USERFILE ACTIONS
-#=============================================================================
+  #=============================================================================
+  # USERFILE ACTIONS
+  #=============================================================================
   /userfiles:
     get:
       summary: List of the Userfiles accessible to the current user.
@@ -948,9 +948,9 @@ paths:
       responses:
         '200':
           description: Indicates that synchronization is starting in the background
-#=============================================================================
-# TASK ACTIONS
-#=============================================================================
+  #=============================================================================
+  # TASK ACTIONS
+  #=============================================================================
   /tasks:
     get:
       summary: Get the list of Tasks.
@@ -1010,9 +1010,9 @@ paths:
             $ref: '#/definitions/CbrainTask'
         '401':
           description: No Session created yet.
-#=============================================================================
-# TOOLS ACTIONS
-#=============================================================================
+  #=============================================================================
+  # TOOLS ACTIONS
+  #=============================================================================
   /tools:
     get:
       summary: Get the list of Tools.
@@ -1087,11 +1087,11 @@ definitions:
         description: ID of the site affiliation for the user.
       last_connected_at:
         type: string
-        format: dateTime
+        format: date-time
         description: time of last connection by the user. (can be empty)
       account_locked:
         type: string
-        format: boolean
+        enum: [true, false]
         description: Whether or not the account is locked.
   ToolConfig:
     type: object
@@ -1168,11 +1168,11 @@ definitions:
         description: ID of the group allowed to use the bourreau.
       online:
         type: string
-        format: boolean
+        enum: [true, false]
         description: online
       read_only:
         type: string
-        format: boolean
+        enum: [true, false]
         description: Specifies whether the bourreau is read-only or can be modified.
       description:
         type: string
@@ -1203,13 +1203,13 @@ definitions:
         description: ID of the group that has access to this Data Provider.
       online:
         type: string
-        format: boolean
+        enum: [true, false]
         description: >-
           Boolean variable that indicates whether the system hosting the Data
           Provider is accessible.
       read_only:
         type: string
-        format: boolean
+        enum: [true, false]
         description: >-
           Boolean variable that indicates whether the Data Provider can be
           written to.
@@ -1218,16 +1218,16 @@ definitions:
         description: Description of the Data Provider.
       is_browsable:
         type: string
-        format: boolean
+        enum: [true, false]
       is_fast_syncing:
         type: string
-        format: boolean
+        enum: [true, false]
       allow_file_owner_change:
         type: string
-        format: boolean
+        enum: [true, false]
       content_storage_shared_between_users:
         type: string
-        format: boolean
+        enum: [true, false]
   Group:
     type: object
     properties:
@@ -1304,7 +1304,7 @@ definitions:
           them on remote systems.
       group_writable:
         type: string
-        format: boolean
+        enum: [true, false]
         description: >-
           Boolean variable that specifies whether members of the owner group
           have access to modify or overwrite the file.
@@ -1316,19 +1316,19 @@ definitions:
           is always 1.
       hidden:
         type: string
-        format: boolean
+        enum: [true, false]
         description: >-
           Boolean variable that specifies whether this file is hidden or not in
           the user interface.
       immutable:
         type: string
-        format: boolean
+        enum: [true, false]
         description: >-
           Boolean variable that specifies whether any user can modify the
           contents of the file.
       archived:
         type: string
-        format: boolean
+        enum: [true, false]
         description: >-
           Boolean variable that specifies whether the file is available,
           uncompressed, or has been archived.
@@ -1381,11 +1381,11 @@ definitions:
         description: Current status of the task.
       created_at:
         type: string
-        format: dateTime
+        format: date-time
         description: Date created.
       updated_at:
         type: string
-        format: dateTime
+        format: date-time
         description: Last updated.
       run_number:
         type: integer
@@ -1403,7 +1403,7 @@ definitions:
         description: size of workdirectory
       workdir_archived:
         type: string
-        format: boolean
+        enum: [true, false]
         description: >-
           Boolean variable that indicates whether the working directory of the
           task is available on the processing server or has been archived and is
@@ -1526,9 +1526,9 @@ definitions:
       mtime:
         type: integer
         description: modification time (an int, since Epoch)
-#=============================================================================
-# "ModReq" Objects: Wrappers For Model Updates And Creates
-#=============================================================================
+  #=============================================================================
+  # "ModReq" Objects: Wrappers For Model Updates And Creates
+  #=============================================================================
   UserModReq:
     type: object
     properties:

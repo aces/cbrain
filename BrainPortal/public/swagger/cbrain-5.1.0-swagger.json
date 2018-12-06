@@ -1215,12 +1215,12 @@
         },
         "last_connected_at" : {
           "type" : "string",
-          "format" : "dateTime",
+          "format" : "date-time",
           "description" : "time of last connection by the user. (can be empty)"
         },
         "account_locked" : {
           "type" : "string",
-          "format" : "boolean",
+          "enum": ["true", "false"],
           "description" : "Whether or not the account is locked."
         }
       }
@@ -1311,12 +1311,12 @@
         },
         "online" : {
           "type" : "string",
-          "format" : "boolean",
+          "enum": ["true", "false"],
           "description" : "online"
         },
         "read_only" : {
           "type" : "string",
-          "format" : "boolean",
+          "enum": ["true", "false"],
           "description" : "Specifies whether the bourreau is read-only or can be modified."
         },
         "description" : {
@@ -1353,12 +1353,12 @@
         },
         "online" : {
           "type" : "string",
-          "format" : "boolean",
+          "enum": ["true", "false"],
           "description" : "Boolean variable that indicates whether the system hosting the Data Provider is accessible."
         },
         "read_only" : {
           "type" : "string",
-          "format" : "boolean",
+          "enum": ["true", "false"],
           "description" : "Boolean variable that indicates whether the Data Provider can be written to."
         },
         "description" : {
@@ -1367,19 +1367,19 @@
         },
         "is_browsable" : {
           "type" : "string",
-          "format" : "boolean"
+          "enum": ["true", "false"]
         },
         "is_fast_syncing" : {
           "type" : "string",
-          "format" : "boolean"
+          "enum": ["true", "false"]
         },
         "allow_file_owner_change" : {
           "type" : "string",
-          "format" : "boolean"
+          "enum": ["true", "false"]
         },
         "content_storage_shared_between_users" : {
           "type" : "string",
-          "format" : "boolean"
+          "enum": ["true", "false"]
         }
       }
     },
@@ -1462,7 +1462,7 @@
         },
         "group_writable" : {
           "type" : "string",
-          "format" : "boolean",
+          "enum": ["true", "false"],
           "description" : "Boolean variable that specifies whether members of the owner group have access to modify or overwrite the file."
         },
         "num_files" : {
@@ -1472,17 +1472,17 @@
         },
         "hidden" : {
           "type" : "string",
-          "format" : "boolean",
+          "enum": ["true", "false"],
           "description" : "Boolean variable that specifies whether this file is hidden or not in the user interface."
         },
         "immutable" : {
           "type" : "string",
-          "format" : "boolean",
+          "enum": ["true", "false"],
           "description" : "Boolean variable that specifies whether any user can modify the contents of the file."
         },
         "archived" : {
           "type" : "string",
-          "format" : "boolean",
+          "enum": ["true", "false"],
           "description" : "Boolean variable that specifies whether the file is available, uncompressed, or has been archived."
         },
         "description" : {
@@ -1538,12 +1538,12 @@
         },
         "created_at" : {
           "type" : "string",
-          "format" : "dateTime",
+          "format" : "date-time",
           "description" : "Date created."
         },
         "updated_at" : {
           "type" : "string",
-          "format" : "dateTime",
+          "format" : "date-time",
           "description" : "Last updated."
         },
         "run_number" : {
@@ -1563,7 +1563,7 @@
         },
         "workdir_archived" : {
           "type" : "string",
-          "format" : "boolean",
+          "enum": ["true", "false"],
           "description" : "Boolean variable that indicates whether the working directory of the task is available on the processing server or has been archived and is no longer accessible."
         },
         "workdir_archive_userfile_id" : {
