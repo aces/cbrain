@@ -17,7 +17,7 @@
       By user:          <%= select_tag :user_login, options_for_select(@user_counts.keys.sort.map{ |k| ["#{k} (#{@user_counts[k]})", k]  }, selected: params[:user_login]), include_blank: true %>
       By instance name: <%= text_field_tag :log_inst, params[:log_inst], :size => 8 %>
       By method:        <%= select_tag :log_meth, options_for_select(
-         [ '', 'GET', 'POST', 'PUT', 'DELETE' ], params[:log_meth]) %>
+         [ '', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE' ], params[:log_meth]) %>
       <%
          # In development env, only the controllers accessed at least once show up as descendants of
          # ApplicationController, so we hardcode a initial 'good enough' list.

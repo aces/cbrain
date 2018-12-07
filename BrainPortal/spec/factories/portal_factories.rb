@@ -30,8 +30,8 @@ FactoryBot.define do
     sequence(:login)      { |n| "user#{n}" }
     sequence(:full_name)  { |n| "Bob #{n}" }
     sequence(:email)      { |n| "user#{n}@example.com" }
-    password              "1Password!"
-    password_confirmation "1Password!"
+    password              { "1Password!" }
+    password_confirmation { "1Password!" }
 
     after(:build) do |user|
       user.define_singleton_method(:encrypt_password) do
@@ -107,7 +107,7 @@ FactoryBot.define do
 
   factory :invisible_group, parent: :group  do
     sequence(:name) { |n| "invisible_group_#{n}" }
-    invisible true
+    invisible { true }
   end
 
 
@@ -118,8 +118,8 @@ FactoryBot.define do
 
   factory :data_provider do
     sequence(:name) { |n| "dataprovider_#{n}" }
-    read_only       true
-    type "FlatDirLocalDataProvider"
+    read_only       { true }
+    type            { "FlatDirLocalDataProvider" }
     association     :user, factory: :normal_user
     association     :group
   end
@@ -194,8 +194,8 @@ FactoryBot.define do
 
   factory :remote_resource do
     sequence(:name)    { |n| "rr_#{n}" }
-    online             true
-    dp_ignore_patterns ["x", "y", "z"]
+    online             { true }
+    dp_ignore_patterns { ["x", "y", "z"] }
     association        :user, factory: :normal_user
     association        :group
   end
@@ -206,7 +206,7 @@ FactoryBot.define do
 
   factory :bourreau, parent: :remote_resource, class: Bourreau do
     sequence(:name) { |n| "bourreau_#{n}"}
-    cms_class       "ScirSge"
+    cms_class       { "ScirSge" }
   end
 
 
@@ -242,7 +242,7 @@ FactoryBot.define do
 
   PortalTask.nil? # force pre-load of all constants under CbrainTask
   factory :cbrain_task do
-    status      "New"
+    status      { "New" }
     association :bourreau
     association :user, factory: :normal_user
     association :group
@@ -257,7 +257,7 @@ FactoryBot.define do
 
 
   factory "cbrain_task/diagnostics", parent: :cbrain_task, class: "cbrain_task/diagnostics" do
-    status      "New"
+    status      { "New" }
     association :bourreau
     association :user, factory: :normal_user
     association :group
@@ -272,15 +272,15 @@ FactoryBot.define do
 
   factory :tool do
     sequence(:name)        { |n| "tool_#{n}" }
-    category               "scientific tool"
+    category               { "scientific tool" }
     cbrain_task_class_name { |n| "CbrainTask::Snoozer#{n}"}
     association            :user, factory: :normal_user
     association            :group
   end
 
   factory :tool_config do
-    description  "desc1"
-    version_name "1.1.12"
+    description  { "desc1" }
+    version_name { "1.1.12" }
     association  :bourreau
     association  :tool
     association  :group
@@ -301,8 +301,8 @@ FactoryBot.define do
   end
 
   factory :feedback do
-    summary     "subject"
-    details     "core"
+    summary     { "subject" }
+    details     { "core" }
     association :user, factory: :normal_user
   end
 
