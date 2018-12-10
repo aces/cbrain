@@ -27,21 +27,21 @@
   <%= button_with_dropdown_menu("Update Attributes") do %>
     <% if !current_user.has_role?(:normal_user) %>
       Change Owner:
-      <%= user_select('task[user_id]', {}, { :include_blank => "(Select another Owner)" } ) %>
-      <%= hijacker_submit_button("Update", :name => :update_user_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
+      <%= user_select('cbrain_task[user_id]', {}, { :include_blank => "(Select another Owner)" } ) %>
+      <%= hijacker_submit_button("Update", :url => url_for(:action => :update_multiple, :update_user_id => 1), :method => :post, :datatype => :script, :class => "button") %>
       <hr>
     <% end %>
     Change Project:
-    <%= group_select('task[group_id]', {}, { :include_blank => "(Select another Project)" } ) %>
-    <%= hijacker_submit_button("Update", :name => :update_group_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
+    <%= group_select('cbrain_task[group_id]', {}, { :include_blank => "(Select another Project)" } ) %>
+    <%= hijacker_submit_button("Update", :url => url_for(:action => :update_multiple, :update_group_id => 1), :method => :post, :datatype => :script, :class => "button") %>
     <hr>
     Change Data Provider For Results:
-    <%= data_provider_select('task[results_data_provider_id]', {}, { :include_blank => "(Select another Data Provider)" } ) %>
-    <%= hijacker_submit_button("Update", :name => :update_results_data_provider_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
+    <%= data_provider_select('cbrain_task[results_data_provider_id]', {}, { :include_blank => "(Select another Data Provider)" } ) %>
+    <%= hijacker_submit_button("Update", :url => url_for(:action => :update_multiple, :update_results_data_provider_id => 1), :method => :post, :datatype => :script, :class => "button") %>
     <hr>
     Change Tool Version:
-    <%= tool_config_select('task[tool_config_id]', {}, :include_blank => "(Select another Tool Version)"  ) %>
-    <%= hijacker_submit_button("Update", :name => :update_tool_config_id, :url  => url_for(:action  => :update_multiple), :method => :post, :datatype => :script, :class => "button") %>
+    <%= tool_config_select('cbrain_task[tool_config_id]', {}, :include_blank => "(Select another Tool Version)"  ) %>
+    <%= hijacker_submit_button("Update", :url => url_for(:action => :update_multiple, :update_tool_config_id => 1), :method => :post, :datatype => :script, :class => "button") %>
   <% end %>
 
 

@@ -644,7 +644,7 @@ class TasksController < ApplicationController
 
     CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending update to tasks") do
       accessible_bourreau = Bourreau.find_all_accessible_by_user(current_user)
-      tasklist            = CbrainTask.where(:id => task_ids, :bourreau_id => accessible_bourreau).all
+      tasklist            = CbrainTask.where(:id => task_ids, :bourreau_id => accessible_bourreau).all.to_a
 
       # Remove tasks who aren't accessible by current_user
       new_tasklist = tasklist.dup

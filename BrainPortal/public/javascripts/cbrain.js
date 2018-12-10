@@ -786,7 +786,8 @@
       } else {
         enclosing_form.attr("action", url);
         enclosing_form.attr("method", method);
-        enclosing_form.submit();
+        return true; // let the browser do the submit and send the form with the button info
+        //enclosing_form.submit();
       }
 
       return false;
