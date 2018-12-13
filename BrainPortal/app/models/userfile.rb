@@ -654,9 +654,13 @@ class Userfile < ApplicationRecord
     refresh = atts.delete(:force_content_update)
     file    = self.find_or_create_by(atts)
     file.save!
-    return file if !refresh &&
-                   file.local_sync_status.try(:status) == 'InSync' &&
-                   file.sync_to_provider # always true: this does nothing but record the timestamp of last access
+
+    # If the data is already there, just use it.
+    if !refresh && file.local_sync_status.try(:status) == 'InSync'
+      file.local_sync_status.touch :accessed_at
+      return file
+    end
+
     file.cache_prepare
     SyncStatus.ready_to_modify_cache(file) do
       yield file.cache_full_path # allow programmer to provide content for the file
