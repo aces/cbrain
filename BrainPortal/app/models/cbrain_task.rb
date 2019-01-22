@@ -947,7 +947,7 @@ class CbrainTask < ApplicationRecord
     {
       :identifier         => self.id.to_s,
       :name               => self.name,
-      :pipelineIdentifier => self.tool.name,
+      :pipelineIdentifier => self.tool_config.id,
       :status             => (CARMIN_STATUS_MAP[self.status] || "Unknown"),
       :inputValues        => self.params.dup,
       :returnedFiles      => [],

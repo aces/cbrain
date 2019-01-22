@@ -607,6 +607,10 @@ class DataProvider < ApplicationRecord
         #FileUtils.remove_entry(fullpath, true) rescue true
         # 2- Remove the last level of the cache, "45", if possible
         level2 = fullpath.parent
+        # In case some dump programmer decided to change perms in the cache to
+        # settings that don't allow the remove_entry() to work properly...
+        #system "find", level2, "-type", "d", "!", "-perm", "-u=rwx", "-exec", "chmod", "u+rwx", "{}", ";" # exec ftw!
+        # Erase it all
         FileUtils.remove_entry(level2,true) rescue true
         # 3- Remove the medium level of the cache, "23", if possible
         level1 = level2.parent

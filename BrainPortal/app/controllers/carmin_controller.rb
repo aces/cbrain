@@ -32,6 +32,12 @@ class CarminController < ApplicationController
   api_available
   before_action :login_required, :except => [ :platform, :authenticate ]
 
+  #############################################################################
+  #
+  # PLATFORM/AUTHENTICATION ACTIONS
+  #
+  #############################################################################
+
   # GET /platform
   #
   # Information about this CARMIN platform
@@ -99,6 +105,14 @@ class CarminController < ApplicationController
       end
     end
   end
+
+
+
+  #############################################################################
+  #
+  # EXECUTIONS ACTIONS (CBRAIN'S tasks)
+  #
+  #############################################################################
 
   # GET /executions
   # I guess these are our tasks...
@@ -227,6 +241,30 @@ class CarminController < ApplicationController
     head :no_content # :no_content is 204, CARMIN wants that
   end
 
+  # POST /executions
+  def exec_post
+    tool_config_id = params[:pipelineIdentifier].presence
+    task_params    = params[:inputValues].presence
+    group_name     = params[:studyIdentifier].presence
+
+    if group_name
+      group = current_user.available_groups.where('group.name' => group_name).first
+    else
+      group = current_user.own_group
+    end
+
+    blank_task = CbrainTask
+    xxx
+  end
+
+
+
+  #############################################################################
+  #
+  # PIPELINES ACTIONS (CBRAIN's Tools and Tool_configs)
+  #
+  #############################################################################
+
   # GET /pipelines
   def pipelines #:nodoc:
     group_name = params[:studyIdentifier].presence
@@ -274,9 +312,21 @@ class CarminController < ApplicationController
     end
   end
 
-  ####################################################################
 
-  private
+
+  #############################################################################
+  #
+  # PATH ACTIONS (CBRAIN's Userfiles)
+  #
+  #############################################################################
+
+  # NYI
+
+
+
+  #############################################################################
+  private # Support methods
+  #############################################################################
 
   def get_remote_task_info(task) #:nodoc:
     task.capture_job_out_err() # PortalTask method: sends command to bourreau to get info
@@ -285,7 +335,7 @@ class CarminController < ApplicationController
     task.cluster_stderr = "Execution Server is DOWN!"
   end
 
-  # Messy utility, poking through layers. Tricky.
+  # Messy utility, poking through layers. Tricky and brittle.
   def eval_in_controller(mycontroller,&block) #:nodoc:
     cb_error "Controller is not a ApplicationController?" unless mycontroller < ApplicationController
     cb_error "Block needed." unless block_given?
