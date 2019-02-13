@@ -57,7 +57,6 @@ class CustomFilter < ApplicationRecord
   [
     # Data available on all subclasses
     :date_attribute,
-    :absolute_or_relative_to,
     :absolute_or_relative_from,
     :absolute_or_relative_to,
     :rel_date_from,

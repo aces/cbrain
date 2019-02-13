@@ -94,7 +94,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
       # single cluster node; each job's generated shell script will be run
       # as a background job on the node at the same time and CBRAIN will wait
       # for all tasks to be done before moving to the data processing stage.
-      :use_parallelizer => false,
+      #:use_parallelizer => false, # use superclass default
 
       # Indicate that this task may alter its input files, and thus the task's
       # owner must have write access to the input files to be allowed to launch
@@ -125,7 +125,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # reflect the defaults taken by the tool's developer; feel free to change
   # them to match your platform's requirements.
   def self.default_launch_args #:nodoc:
-    {
+    super.merge({
 %   id_width = max_width.(defaults, 'id') + "'".length
 %   defaults.each do |default|
       <%=
@@ -135,7 +135,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
         ]
       %>
 %   end
-    }
+    })
   end
 
 % end
@@ -143,6 +143,15 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # the task's params hash contains at least the default list of input
   # userfiles under the key :interface_userfile_ids.
   def before_form #:nodoc:
+
+    # If the superclass returns error messages,
+    # we don't even bother proceeding with the rest
+    # here.
+    if self.class.superclass < PortalTask
+      super_messages = super
+      return super_messages if super_messages.present?
+    end
+
 % file_types = descriptor['inputs']
 %   .select { |i| ! i['optional'] && i['type'] == 'File' }
 %   .map    { |i| i['cbrain-file-type'] }
@@ -178,6 +187,15 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # At this point, all the task's params will be filled. This is where most
   # validations happen.
   def after_form #:nodoc:
+
+    # If the superclass returns error messages,
+    # we don't even bother proceeding with the rest
+    # here.
+    if self.class.superclass < PortalTask
+      super_messages = super
+      return super_messages if super_messages.present?
+    end
+
 % unless params.empty?
     params = self.params
 
@@ -489,12 +507,12 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # Add pretty parameter names for the error messages to use
   # Associates the id symbol with the name field
   def self.pretty_params_names
-    {
+    super.merge({
 %     id_width = max_width.(params,"id") + "''".length
 %     for param in params
       <%= ":%-#{id_width}s => '%s'," % ["'" + param["id"] + "'", param["name"]]  %>
 %     end
-    }
+    })
   end
 
   # Returns all the cbcsv files present (i.e. set by the user as inputs), as tuples (id, Userfile)
@@ -512,10 +530,18 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # instead of just one.
   def final_task_list #:nodoc:
 
+    # OK so this is crazy stuff again, if we have a superclass
+    # that is not the default PortalTask, we trust that it knows
+    # how to generate a task list better than we do, so we
+    # just delegate all the work to it.
+    if self.class.superclass < PortalTask
+      return super
+    end
+
 % if single_file
     # Create a list of tasks out of the default input file list
     # (interface_userfile_ids), each file going into parameter '<%= single_file['id'] %>'
-    self.params[:interface_userfile_ids].map do |id|
+    tasklist = self.params[:interface_userfile_ids].map do |id|
       task = self.dup
       # Helper for filling in the changing task parameters
       fillTask = lambda do |id,tsk|
@@ -541,9 +567,12 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
         fillTask.( id, task )
       end
     end.flatten
+    return tasklist
 % else
     # Grab all the cbcsv input files
     cbcsvs = self.cbcsv_files
+    # Default case: just return self as a single task
+    tasklist = [ self ]
     # If one or more cbcsv files is present, generate a task for each entry
     # Note they should have been validated in after_form
     if (cbcsvs || []).length > 0
@@ -565,11 +594,9 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
         # Add the new task to our tasklist
         taskList << currTask
       end
-      # Return the final set of tasks
-      return taskList
     end
-    # Default case: just return self as a single task
-    [ self ]
+    # Return the final set of tasks
+    return taskList
 % end
   end
 
@@ -578,16 +605,16 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # be present on the form and thus lost when the task is edited.
   def untouchable_params_attributes #:nodoc:
 % if outputs.empty?
-    { }
+    super || { }
 % else
     # Output parameters will be present after the task has run and need to be
     # preserved.
-    {
+    super.merge({
 %   id_width = max_width.(outputs, 'id') + "'".length
 %   outputs.each do |output|
       <%= ":'%-#{id_width}s => true," % (output['id'] + "'") %>
 %   end
-    }
+    })
 % end
   end
 
