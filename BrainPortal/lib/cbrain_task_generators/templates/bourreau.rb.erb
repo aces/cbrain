@@ -95,13 +95,6 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 % unless files.empty?
     params = self.params
 
-    # An error occurred. Log +message+ and return false immediately.
-    retn  = Proc.new { |r| return r }
-    error = lambda do |message|
-      self.addlog(message)
-      retn.(false)
-    end
-
     # Set results data provider if missing via file inputs
     # Check that the file can be resolved as well
     isFile = lambda { |p| [<%= files.map { |f| ":'#{f['id']}'" }.join(',') %>].include?(p) }
@@ -551,7 +544,12 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # +directory+.
   def multi_make_available_to_dir(files, directory, userfile_sub_path = nil, start_dir = nil)
     files = [files] unless files.is_a?(Enumerable)
-    files.compact.each { |file| make_available(file, directory + '/', userfile_sub_path, start_dir) }
+    files
+      .map(&:presence)
+      .compact
+      .each do |file| # an ID or a userfile object
+        make_available(file, directory + '/', userfile_sub_path, start_dir)
+      end
   end
 
   # Apply substitution keys +keys+ to +template+ in order to format a

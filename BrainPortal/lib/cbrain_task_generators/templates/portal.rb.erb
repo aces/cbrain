@@ -188,6 +188,8 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # validations happen.
   def after_form #:nodoc:
 
+    self.params[:interface_userfile_ids] ||= [] # make sure array is there
+
     # If the superclass returns error messages,
     # we don't even bother proceeding with the rest
     # here.

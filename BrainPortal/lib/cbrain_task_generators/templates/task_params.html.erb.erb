@@ -235,8 +235,6 @@
       <span class="tsk-prm-sel-lbl">
         <%% if (pair = options.detect { |o| o.first == value }) %>
           <%%= pair.last %>
-        <%% elsif (pair = options.detect { |o| o.first == default }) %>
-          <%%= pair.last %>
         <%% end %>
       </span>
       <ul class="tsk-prm-sel-opt">
@@ -327,9 +325,9 @@
     <%- if single_file -%>
         # Automatic single file input
         dropdown.(id, id,
-          [ [ input_files[0].id.to_s, input_files[0].name ] ],
+          [ [ input_files[0].try(:id).to_s, input_files[0].try(:name).to_s ] ],
           optional: <%= opt %>,
-          default: input_files[0].id.to_s
+          default: input_files[0].try(:id).to_s
         )
     <%- elsif param['cbrain-file-type'] -%>
         # File input dropdown
