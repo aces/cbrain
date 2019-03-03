@@ -35,15 +35,28 @@
 
   schema     = SchemaTaskGenerator.default_schema
   descriptor = __FILE__.sub(/.rb\z/,'.json')
+  next unless File.exists?(descriptor) # Bad or broken symlink? Missing json? Ignore.
+
+  descriptor_basename = Pathname.new(descriptor).basename
 
   begin
-    SchemaTaskGenerator.generate(schema, descriptor).integrate if
-      File.exists?(descriptor)
+    generator = SchemaTaskGenerator.generate(schema, descriptor)
+  rescue StandardError => e
+    generator = nil
+    #puts "================="
+    puts "C> Failed to generate CbrainTask from descriptor '#{descriptor_basename}'."
+    puts "C> Error Message: #{e.class} #{e.message}"
+    #puts e.backtrace.join("\n");
+    #puts "================="
+  end
+
+  begin
+    generator.integrate if generator
+    puts "C> Integrated CbrainTask::#{generator.name} from descriptor '#{descriptor_basename}'"
   rescue StandardError => e
     #puts "================="
-    puts "Failed to generate or integrate task from descriptor #{descriptor}"
-    puts "\tNil errors are common for descriptors that fail to validate"
-    puts "\tError Message: #{e.message}"
+    puts "C> Failed to integrate CbrainTask from descriptor '#{descriptor_basename}'."
+    puts "C> Error Message: #{e.class} #{e.message}"
     #puts e.backtrace.join("\n");
     #puts "================="
   end

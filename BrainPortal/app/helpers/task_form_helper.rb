@@ -42,9 +42,12 @@ module TaskFormHelper
   # don't have to know exactly where their partial will end up on the
   # filesystem and can just use the plain name of their file in their own
   # task's 'views'.
-  def task_partial(partial_name)
+  #
+  # An optional +taskname+ can be provided; the default is the value
+  # of @task.name, which will be demodulized and underscored.
+  def task_partial(partial_name, taskname = @task.name)
     plain = partial_name.to_s.sub(/\A_/,"").sub(/(\.html)?(\.erb)?/i,"")
-    "tasks/cbrain_plugins/installed-plugins/cbrain_task/#{@task.name.underscore}/views/#{plain}.html.erb"
+    "tasks/cbrain_plugins/installed-plugins/cbrain_task/#{taskname.demodulize.underscore}/views/#{plain}.html.erb"
   end
 
   # This method can be used to insert in a task's parameters panel

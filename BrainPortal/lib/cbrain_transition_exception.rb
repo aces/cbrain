@@ -17,13 +17,13 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 # This class provides an exception class for
 # representing a state transition error. Currently
 # used on CbrainTask objects.
-class CbrainTransitionException < StandardError
+class CbrainTransitionException < CbrainException
 
    Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
