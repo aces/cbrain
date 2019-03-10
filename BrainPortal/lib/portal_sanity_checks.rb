@@ -72,10 +72,10 @@ class PortalSanityChecks < CbrainChecker #:nodoc:
       #-----------------------------------------------------------------------------
     rescue => error
 
-      if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
+      if error.to_s.match(/Mysql.*Table.*doesn't exist/i)
         puts "C> Skipping validation:"
         puts "C> \t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
-      elsif error.to_s.match(/Mysql::Error: Unknown column/i)
+      elsif error.to_s.match(/Mysql.*Unknown column/i)
         puts "C> Skipping validation:"
         puts "C> \t- Some database table is missing a column. It's likely that migrations aren't up to date yet."
       elsif error.to_s.match(/Unknown database/i)

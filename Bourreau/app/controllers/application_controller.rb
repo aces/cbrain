@@ -43,7 +43,7 @@ class ApplicationController < ActionController::Base #:nodoc:
       end
     end
   rescue => error
-    if error.to_s.match(/Mysql::Error.*Table.*doesn't exist/i)
+    if error.to_s.match(/Mysql.*Table.*doesn't exist/i)
       puts "Skipping model load:\n\t- Database table doesn't exist yet. It's likely this system is new and the migrations have not been run yet."
     elsif error.to_s.match(/Unknown database/i)
       puts "Skipping model load:\n\t- System database doesn't exist yet. It's likely this system is new and the migrations have not been run yet."

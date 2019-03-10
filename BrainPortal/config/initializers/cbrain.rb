@@ -138,9 +138,9 @@ class CBRAIN
           yield
 
         # Background untrapped exception handling
-        rescue ActiveRecord::StatementInvalid, Mysql::Error
+        rescue ActiveRecord::StatementInvalid, Mysql2::Error
           puts "#{taskname} PID #{Process.pid}: Oh oh. The DB connection was closed! Nothing to do but exit!"
-        rescue => itswrong
+        rescue RuntimeError => itswrong
           destination = User.find_by_login('admin') if destination.blank? || destination == :admin
           Message.send_internal_error_message(destination,taskname,itswrong) unless destination == :nobody
         ensure
