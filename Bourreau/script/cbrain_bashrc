@@ -30,9 +30,17 @@
 # script for the Bourreau side through a SSH persistent
 # connection.
 
-if test -z "$rvm_version$CBRAIN_BASHRC_SOURCED"; then
+if test "X$rvm_version$CBRAIN_BASHRC_SOURCED" = "X" ; then
   source $HOME/.bashrc  # let's try that, hoping that rvm is setup there.
-  CBRAIN_BASHRC_SOURCED="OK"
+  export CBRAIN_BASHRC_SOURCED="OK"
 fi
 
+# Rails server on Bourreau side does not use sessions, but we still need
+# to provide a fake key for the useless session cookies.
 export SECRET_KEY_BASE=JUNK-NOT-USED-IN-BOURREAU-THERE-ARE-NO-SESSIONS-ANYWAY
+
+# This is a fix for MacOS Sierra, High Sierra and Mojave, where our Kernel.fork()
+# would fail because of new ObjectiveC restrictions.
+# There is anecdotal evidence that Ruby >2.4.4 don't need it.
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+

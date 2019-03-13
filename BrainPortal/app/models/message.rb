@@ -95,7 +95,6 @@ class Message < ApplicationRecord
                :message_type => type,
                :header       => header,
                :description  => description,
-               :read         => false,
                :critical     => critical
              ).first ||
              self.new(
