@@ -290,18 +290,21 @@ module SchemaTaskGenerator
 
   end
 
-  # Generates a CbrainTask from +descriptor+, which is expected to validate
+  # Generates a CbrainTask from +descriptorInput+, which is expected to validate
   # against +schema+. +schema+ is expected to be either a +Schema+ instance,
   # a path to a schema file, the schema in string format or a hash
   # representing the schema.
-  # Similarly to +schema+, +descriptor+ is expected to be either a path to a
+  # Similarly to +schema+, +descriptorInput+ is expected to be either a path to a
   # descriptor file, the descriptor in string format or a hash representing
   # the descriptor.
-  # By default, the validation of +descriptor+ against +schema+ is strict
+  # By default, the validation of +descriptorInput+ against +schema+ is strict
   # and +generate+ will abort at any validation error. Set +strict_validation+
   # to false if you wish for the generator to try and generate the task despite
   # validation issues.
-  def self.generate(schema, descriptorInput, strict_validation = true)
+  # If the +descriptorInput+ is not a path to a file, an alternative +file_for_revision_info+
+  # can be provided to be used as the source for the CBRAIN Revision_info constant
+  # that will be created inside the generated task class.
+  def self.generate(schema, descriptorInput, strict_validation = true, file_for_revision_info = nil)
     descriptor = self.expand_json(descriptorInput)
     name       = self.classify(descriptor['name'])
     schema     = Schema.new(schema) unless schema.is_a?(Schema)
@@ -343,6 +346,8 @@ module SchemaTaskGenerator
     # in the templates below.
     if descriptorInput.is_a?(String)
       descriptor_path = descriptorInput
+    elsif file_for_revision_info.present?
+      descriptor_path = file_for_revision_info
     else
       # Extract the path of the most recent CBRAIN ruby file in caller stack
       descriptor_path   = caller.to_a.detect { |c| c.starts_with? Rails.root.to_s }.try(:sub,/:.*/,"")

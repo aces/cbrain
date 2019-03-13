@@ -26,26 +26,26 @@
 
 <%= show_table(@tool, :edit_condition => true, :header => "General info") do |t| %>
 
-  <% t.edit_cell :name, :show_width => 2, :header => "Tool Name" do |f|%>
+  <% t.edit_cell :name, :header => "Tool Name" do |f|%>
     <%= f.text_field :name %>
-  <% end %>
-
-  <% t.edit_cell :cbrain_task_class_name, :show_width => 2, :header => "CbrainTask Class name",
-                      :td_options => {:title => "PortalTask subclass which implements this tool."} do |f| %>
-    <%= f.text_field :cbrain_task_class_name, :size => 30 %>
-  <% end %>
-
-  <% t.edit_cell :user_id, :content => link_to_user_with_tooltip(@tool.user), :header => "Belongs to" do |f| %>
-    <%= user_select "tool[user_id]", @tool.user, :id => 'tool_user_id' %>
   <% end %>
 
   <% t.cell("Created")      { @tool.created_at.present? ? to_localtime(@tool.created_at,:datetime) : "" } %>
 
-  <% t.edit_cell :group_id, :content => link_to_group_if_accessible(@tool.group), :header => "Available to members of project" do |f| %>
-    <%= group_select "tool[group_id]", @tool.group, :id => 'tool_group_id' %>
+  <% t.edit_cell :cbrain_task_class_name, :header => "CbrainTask Class name",
+                      :td_options => {:title => "PortalTask subclass which implements this tool."} do |f| %>
+    <%= f.text_field :cbrain_task_class_name, :size => 30 %>
   <% end %>
 
   <% t.cell("Last Updated") { @tool.updated_at.present? ? to_localtime(@tool.updated_at,:datetime) : "" } %>
+
+  <% t.edit_cell :user_id, :show_width => 2, :content => link_to_user_with_tooltip(@tool.user), :header => "Belongs to" do |f| %>
+    <%= user_select "tool[user_id]", @tool.user, :id => 'tool_user_id' %>
+  <% end %>
+
+  <% t.edit_cell :group_id, :show_width => 2, :content => link_to_group_if_accessible(@tool.group), :header => "Available to members of project" do |f| %>
+    <%= group_select "tool[group_id]", @tool.group, :id => 'tool_group_id' %>
+  <% end %>
 
   <% t.edit_cell :category, :header => "Category" do |f| %>
      <%= f.select :category, Tool::Categories %>

@@ -12,12 +12,45 @@ More information about them can be found in the included [README.md](req_files/R
 
 Each of these require that a proper test environment be set up.
 
-Given that your CBRAIN's __database.yml__ file properly defines a test
+Given that that CBRAIN's __database.yml__ file properly defines a *test*
 database, then it can be seeded properly with this rake task:
 
 ```bash
+cd BrainPortal
 rake db:seed:test:api
 ```
+
+
+
+## Starting the server in the test environment
+
+Before running any of the tests, a rails server needs to be started
+within the *test* environment of the __database.yml__ file. There
+are several ways of doing this, but the simplest is with:
+
+```bash
+cd BrainPortal
+rails server puma -p 3000 -e test
+```
+
+You might want to perform a `tail -f log/test.log` in a separate
+window to view the server's trace. If you prefer to launch the
+server and monitor its logs all within the same window, then this
+variation will work too:
+
+```bash
+cd BrainPortal
+test -f tmp/pids/server.pid && kill $(cat tmp/pids/server.pid) ; rails server puma -p 3000 -e test -d ; sleep 5 ; tail -f log/test.log
+```
+
+This command allows you to hit *CTRL-C* and *up arrow* to restart
+it as often as needed, when (for instance) modifying the CBRAIN
+code base during test.
+
+This will leave the server running in background (because of `-d`),
+so consider killing it when you are done.
+
+
 
 ## Running the curl-based tests
 
@@ -32,9 +65,10 @@ perl curl_res_tester.pl users # select by substring match just a subset of all t
 perl curl_res_tester.pl groups/list # another more specific subset
 ```
 
-
 More information about its usage statement can be obtained by running it with __--help__.
 **Note that it will automatically run the rake seeding task by default!**
+
+
 
 ## Running the ruby CbrainClient tests
 

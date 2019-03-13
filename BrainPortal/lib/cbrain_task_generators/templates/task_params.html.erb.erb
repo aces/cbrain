@@ -233,7 +233,7 @@
     <%% else %>
       <span class="tsk-prm-sel-icon ui-icon ui-icon-triangle-1-s"></span>
       <span class="tsk-prm-sel-lbl">
-        <%% if (pair = options.select { |o| o.first == value }.first) %>
+        <%% if (pair = options.detect { |o| o.first == value }) %>
           <%%= pair.last %>
         <%% end %>
       </span>
@@ -325,8 +325,9 @@
     <%- if single_file -%>
         # Automatic single file input
         dropdown.(id, id,
-          [], nothing: short_repr.(input_files.map(&:name), 65),
-          optional: <%= opt %>
+          [ [ input_files[0].try(:id).to_s, input_files[0].try(:name).to_s ] ],
+          optional: <%= opt %>,
+          default: input_files[0].try(:id).to_s
         )
     <%- elsif param['cbrain-file-type'] -%>
         # File input dropdown

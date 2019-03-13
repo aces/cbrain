@@ -225,14 +225,16 @@ describe PortalTask do
       expect { portal_task.wrapper_after_form }.not_to raise_error
     end
 
-    it "should reraise CbrainErrors" do
+    it "should log CbrainErrors in the errors object" do
       allow(portal_task).to receive(:after_form).and_raise(CbrainError)
-      expect { portal_task.wrapper_after_form }.to raise_error(CbrainError)
+      portal_task.wrapper_after_form
+      expect(portal_task.errors[:base].first).to match(/Error in form/)
     end
 
-    it "should reraise CbrainNotices" do
+    it "should log CbrainNotices in the errors object" do
       allow(portal_task).to receive(:after_form).and_raise(CbrainNotice)
-      expect { portal_task.wrapper_after_form }.to raise_error(CbrainNotice)
+      portal_task.wrapper_after_form
+      expect(portal_task.errors[:base].first).to match(/Notice in form/)
     end
 
     it "should convert other errors to ScriptErrors" do

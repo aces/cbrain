@@ -95,7 +95,6 @@ class Message < ApplicationRecord
                :message_type => type,
                :header       => header,
                :description  => description,
-               :read         => false,
                :critical     => critical
              ).first ||
              self.new(
@@ -212,7 +211,7 @@ class Message < ApplicationRecord
       error_description += "[[View Exception Log][/exception_logs/#{options[:exception_log].id}]]\n"
     end
 
-    admin_list = WorkGroup.find_by_id(RemoteResource.current_resource.meta[:error_message_mailing_list]) || User.all_admins
+    admin_list = WorkGroup.find_by_id(RemoteResource.current_resource.meta[:error_message_mailing_list]) || User.all_admins.to_a
 
     # Message for developers/admin
     Message.send_message(admin_list,

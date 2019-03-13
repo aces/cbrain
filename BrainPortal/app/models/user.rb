@@ -296,6 +296,18 @@ class User < ApplicationRecord
     LargeSessionInfo.where(:user_id => self.id).destroy_all
   end
 
+  # Returns the timestamp of last activity, based on session info.
+  # Returns nil if no record is found in the LargeSessionInfo table.
+  # +active+ can be set to true, false, or [ true, false ] (default).
+  def last_activity_at(active = [true, false])
+    LargeSessionInfo
+      .where(:user_id => self.id, :active => active)
+      .order("updated_at desc")
+      .limit(1)
+      .pluck(:updated_at)
+      .first
+  end
+
 
 
   ##############################################

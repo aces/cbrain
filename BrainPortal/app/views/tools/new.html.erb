@@ -30,10 +30,6 @@
 
 <%= form_for @tool, :as => :tool, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
-	<% @bourreaux ||= Bourreau.find_all_accessible_by_user(current_user).all %>
-
-	<%= error_messages_for(@tool) %>
-
   <div class="generalbox">
       <p>
        <%= f.label :name, "Tool Name:" %>

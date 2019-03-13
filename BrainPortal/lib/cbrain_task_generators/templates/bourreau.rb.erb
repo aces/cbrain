@@ -89,15 +89,11 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # directories, prepare symlinks to input files, set environment variables,
   # etc. Returns true if the task was correctly set up.
   def setup #:nodoc:
+
+    return false unless super
+
 % unless files.empty?
     params = self.params
-
-    # An error occurred. Log +message+ and return false immediately.
-    retn  = Proc.new { |r| return r }
-    error = lambda do |message|
-      self.addlog(message)
-      retn.(false)
-    end
 
     # Set results data provider if missing via file inputs
     # Check that the file can be resolved as well
@@ -113,7 +109,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     end
 
     # And make them all available to <%= name %>
-%   make_available = format_call('make_available', files) { |file| [
+%   make_available = format_call('multi_make_available_to_dir', files) { |file| [
 %     "params[:'#{file['id']}']",
 %     "'.'"
 %   ] }
@@ -123,7 +119,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 %   containerImage = descriptor['container-image']
 %   launchDir = containerImage['working-directory'] rescue nil
 %   make_all_available = lambda do |changeBase|
-%     baseChanged = lambda { |f| "make_available(params[:'#{f['id']}'], '.', nil, \"#{launchDir}\")" }
+%     baseChanged = lambda { |f| "multi_make_available_to_dir(params[:'#{f['id']}'], '.', nil, \"#{launchDir}\")" }
 %     files.each do |file|
       <%= changeBase ? baseChanged.(file) : make_available.(file)   %>
 %     end
@@ -162,6 +158,14 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # Note that this function also generates the list of output filenames
   # in params.
   def cluster_commands #:nodoc:
+
+    # OK so this is crazy stuff, if we have a superclass
+    # that is not the default ClusterTask, we trust that it knows
+    # how to generate the commands better than we do, so we
+    # just delegate all the work to it.
+    if self.class.superclass < ClusterTask
+      return super
+    end
 
     # Environment variables from Boutiques descriptor
 % if eVars.empty?
@@ -355,6 +359,15 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # saves its output files to the Bourreau's cache before registering them into
   # CBRAIN for later retrieval. Returns true on success.
   def save_results #:nodoc:
+
+    # OK so this is crazy stuff, if we have a superclass
+    # that is not the default ClusterTask, we trust that it knows
+    # how to save results better than we do, so we
+    # just delegate all the work to it.
+    if self.class.superclass < ClusterTask
+      return super
+    end
+
 % unless outputs.empty?
     # No matter how many errors occur, we need to save as many output
     # files as possible and carry the error state to the end.
@@ -529,9 +542,14 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # +directory+. Simple variation on +ClusterTask+::+make_available+
   # to allow +files+ to be an Enumerable of files to make available under
   # +directory+.
-  def make_available(files, directory, userfile_sub_path = nil, start_dir = nil)
+  def multi_make_available_to_dir(files, directory, userfile_sub_path = nil, start_dir = nil)
     files = [files] unless files.is_a?(Enumerable)
-    files.compact.each { |file| super(file, directory + '/', userfile_sub_path, start_dir) }
+    files
+      .map(&:presence)
+      .compact
+      .each do |file| # an ID or a userfile object
+        make_available(file, directory + '/', userfile_sub_path, start_dir)
+      end
   end
 
   # Apply substitution keys +keys+ to +template+ in order to format a

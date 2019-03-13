@@ -451,7 +451,8 @@ class PortalTask < CbrainTask
         (was_new && ! self.new_record?) && ! self.class.properties[:i_save_my_task_in_after_form]
       return ret
     rescue CbrainError, CbrainNotice => cber
-      raise cber
+      self.errors.add(:base, "#{cber.class.to_s.sub(/Cbrain/,"")} in form: #{cber.message}\n")
+      return ret || ""
     rescue => other
       cber = ScriptError.new("Coding error: method after_form() for #{self.class} raised an exception: #{other.class}: #{other.message}")
       cber.set_backtrace(other.backtrace.dup)

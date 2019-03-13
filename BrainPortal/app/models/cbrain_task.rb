@@ -568,6 +568,7 @@ class CbrainTask < ApplicationRecord
         nv = new_params[ck]
         begin
           next if cv == nv
+          next if cv.is_a?(String) && nv.is_a?(String) && cv.strip == nv.strip
           self.addlog("Changed key #{ck.inspect}, old=#{cv.inspect}, new=#{nv.inspect}")
         rescue
           self.addlog("Uncomparable key #{ck.inspect}, old=#{cv.inspect}, new=#{nv.inspect}")
