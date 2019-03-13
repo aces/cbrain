@@ -1,6 +1,27 @@
 
 ## CBRAIN Release Notes
 
+#### Version 5.1.1 Released 2019-03-13
+
+This is mostly a bugfix release. There is one major new
+feature: the Boutiques integrator now has hooks to
+allow a superclass to override its subclasses behavior (!),
+which is useful when coding special integrators. The
+current use case is the BidsAppHandler class in the
+cbrain-plugins-neuro package.
+
+Bugs fixed:
+
+- Spawned subprocesses woudl no longer log exceptions and just
+  disappear; handler code was still using the old Mysql::Error
+  instead of Mysql2::Error
+- Bourreaux now set the env variable OBJC_DISABLE_INITIALIZE_FORK_SAFETY=yes
+  this is needed on latest maxOS versions
+- User messages are properly appended to 'read' messages
+- Tool forms are adjusted slightly
+- The boot process now lists each task descriptor has it is being integrated
+- Some better docs
+
 #### Version 5.1.0 Released 2018-11-16
 
 It is the age of wisdom, it is the age of foolishness.
