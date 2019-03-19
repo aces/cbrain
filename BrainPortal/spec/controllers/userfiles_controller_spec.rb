@@ -925,9 +925,8 @@ RSpec.describe UserfilesController, :type => :controller do
           data_provider           = DataProvider.find(user_userfile.data_provider_id)
           data_provider.read_only = false
           data_provider.save
-          $0="Testing"
+          expect(Process).to receive(:setproctitle).with(/GzipFile ID=#{user_userfile.id}/) # Ah! what a test!
           post :compress, params: {:file_ids => [user_userfile.id]}
-          expect($0).to match(/GzipFile ID=#{user_userfile.id}/) # Ah! what a test!
         end
 
         it "Really tricky part to test since the method do lot of stuff!"
