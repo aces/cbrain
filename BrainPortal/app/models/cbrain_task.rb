@@ -626,7 +626,7 @@ class CbrainTask < ApplicationRecord
                   'Failed To PostProcess'            => :fail,
                   'Failed On Cluster'                => :fail,
                   'Failed Setup Prerequisites'       => :fail,
-                  'Failed PostProcess Prerequisites' => :fail
+                  'Failed PostProcess Prerequisites' => :fail,
                 },
 
     'Completed' => { # Task must be 'Completed'.
@@ -636,7 +636,7 @@ class CbrainTask < ApplicationRecord
                   'Failed To PostProcess'            => :fail,
                   'Failed On Cluster'                => :fail,
                   'Failed Setup Prerequisites'       => :fail,
-                  'Failed PostProcess Prerequisites' => :fail
+                  'Failed PostProcess Prerequisites' => :fail,
                 },
 
     'Failed' => { # Task must have failed.
@@ -646,7 +646,7 @@ class CbrainTask < ApplicationRecord
                   'Failed To PostProcess'            => :go,
                   'Failed On Cluster'                => :go,
                   'Failed Setup Prerequisites'       => :go,
-                  'Failed PostProcess Prerequisites' => :go
+                  'Failed PostProcess Prerequisites' => :go,
                 },
 
     'Standby' => { # Task must be in special 'Standby' mode (to be used by programmers for special stuff)
@@ -657,7 +657,7 @@ class CbrainTask < ApplicationRecord
                   'Failed To PostProcess'            => :fail,
                   'Failed On Cluster'                => :fail,
                   'Failed Setup Prerequisites'       => :fail,
-                  'Failed PostProcess Prerequisites' => :fail
+                  'Failed PostProcess Prerequisites' => :fail,
                 },
 
     'Configured' => { # Task must be in 'Configured' mode (to be used by programmers for special stuff)
@@ -668,8 +668,11 @@ class CbrainTask < ApplicationRecord
                   'Failed To PostProcess'            => :fail,
                   'Failed On Cluster'                => :fail,
                   'Failed Setup Prerequisites'       => :fail,
-                  'Failed PostProcess Prerequisites' => :fail
-                }
+                  'Failed PostProcess Prerequisites' => :fail,
+                },
+
+    'AnyGo'     => ALL_STATUS.map { |s| [ s, :go   ] }.to_h,  # This can be used as a placeholder
+    'AnyWait'   => ALL_STATUS.map { |s| [ s, :wait ] }.to_h,  # This can be used as a placeholder
 
   }
 
@@ -711,7 +714,7 @@ class CbrainTask < ApplicationRecord
           'Restarting Cluster'               => :wait,
           'Restarting PostProcess'           => :wait,
           'Preset'                           => :wait,
-          'SitePreset'                       => :wait
+          'SitePreset'                       => :wait,
         }
     )
   end
