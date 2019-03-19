@@ -1353,7 +1353,7 @@ class DataProvider < ApplicationRecord
         maybe_spurious_parents={}
         uids2path.keys.sort.each_with_index do |id,i|  # 12345
           path = uids2path[id]                         # "01/23/45"
-          $0="Cache Spurious PATH=#{path} #{i+1}/#{uids2path.size}" if options[:update_dollar_zero]
+          Process.setproctitle "Cache Spurious PATH=#{path} #{i+1}/#{uids2path.size}" if options[:update_dollar_zero]
           system("chmod","-R","u+rwX",path)   # uppercase X affects only directories
           FileUtils.remove_entry(path, true) rescue true
           maybe_spurious_parents[path.sub(/\/\d+\z/,"")]      = 1  # "01/23"

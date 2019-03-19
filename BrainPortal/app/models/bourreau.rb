@@ -465,7 +465,7 @@ class Bourreau < RemoteResource
     CBRAIN.spawn_with_active_records(:admin, "AlterTask #{newstatus}") do
 
     taskids.shuffle.each_with_index do |task_id,count|
-      $0 = "AlterTask #{newstatus} ID=#{task_id} #{count+1}/#{taskids.size}"
+      Process.setproctitle "AlterTask #{newstatus} ID=#{task_id} #{count+1}/#{taskids.size}"
       task = CbrainTask.where(:id => task_id, :bourreau_id => myself.id).first
       next unless task # doesn't even exist? just ignore it
 

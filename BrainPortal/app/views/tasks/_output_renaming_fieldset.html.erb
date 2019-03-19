@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -41,10 +41,14 @@
    #
 
    param_name ||= :output_renaming_pattern
+   uniq_class = "output_renaming_#{rand(10000)}"
 %>
 
 <fieldset class="groupentry">
-<legend>Output filenames renaming</legend>
+<legend>Output filenames renaming
+<%= show_hide_toggle "(show/hide)", ".#{uniq_class}", :class => 'task_help_link', :slide_effect => true, :slide_duration => 'fast'  %>
+</legend>
+<div class="<%= uniq_class %>" style="display: none;">
 
 <p>
 
@@ -57,7 +61,9 @@ Output files can be named or renamed automatically using this pattern:
 
 Patterns can include the following special
 <em>{keywords}</em> in curly brackets that will be substituted
-automatically. The supported keywords are:
+automatically.
+<p>
+The supported keywords are:
 
 <dl>
 
@@ -68,5 +74,6 @@ automatically. The supported keywords are:
 
 </dl>
 
+</div>
 </fieldset>
 

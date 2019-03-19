@@ -119,7 +119,7 @@ class BourreauWorker < Worker
     @process_task_list_pid = nil # make sure it's unset in child
     @process_task_list_pid = Kernel.fork do
       begin
-        $0=$0.to_s.sub(/(BourreauWorker)?/, "SubWorker")
+        Process.setproctitle "SubWorker #{@rr.name}"
         @pretty_name = "SubWorker-#{Process.pid}"
         self.worker_log.prefix = @pretty_name + ": " if self.worker_log.is_a?(LoggerPrefixer)
 
