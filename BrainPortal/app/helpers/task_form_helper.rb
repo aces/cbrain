@@ -92,7 +92,7 @@ module TaskFormHelper
   def output_renaming_fieldset(form, param_name = :output_renaming_pattern, extra_dt_dd_pairs = [], options = {})
     dt_dd_pairs  = options[:no_default_keywords] ? [] : output_renaming_default_dt_dd_keywords()
     dt_dd_pairs += extra_dt_dd_pairs
-    render :partial => 'tasks/output_renaming_fieldset', :locals => { :form => form, :param_name => :output_renaming_pattern, :dt_dd_pairs => dt_dd_pairs }
+    render :partial => 'tasks/output_renaming_fieldset', :locals => { :form => form, :param_name => param_name, :dt_dd_pairs => dt_dd_pairs }
   end
 
   private

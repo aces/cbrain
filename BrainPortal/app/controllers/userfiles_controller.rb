@@ -1008,7 +1008,7 @@ class UserfilesController < ApplicationController
     failed_list   = {}
     CBRAIN.spawn_with_active_records_if(! api_request?, current_user, "#{word_move.capitalize} To Other Data Provider") do
       filelist.shuffle.each_with_index do |id,count|
-        $0 = "#{word_move.capitalize} ID=#{id} #{count+1}/#{filelist.size} To #{new_provider.name}\0"
+        Process.setproctitle "#{word_move.capitalize} ID=#{id} #{count+1}/#{filelist.size} To #{new_provider.name}"
         begin
           u = Userfile.find_accessible_by_user(id, current_user, :access_requested => (task == :copy ? :read : :write) )
           next unless u
@@ -1072,7 +1072,7 @@ class UserfilesController < ApplicationController
       idlist.each_with_index do |userfile_id,count|
         userfile = Userfile.find(userfile_id) rescue nil # that way we instantiate one record at a time
         next unless userfile # in case it was destroyed externally
-        $0 = "Delete ID=#{userfile.id} #{count+1}/#{idlist.size}\0"
+        Process.setproctitle "Delete ID=#{userfile.id} #{count+1}/#{idlist.size}"
         begin
           userfile.destroy
           deleted_success_list << userfile
@@ -1401,17 +1401,17 @@ class UserfilesController < ApplicationController
 
           # SingleFiles
           if userfile.is_a?(SingleFile)
-            $0 = "GzipFile ID=#{userfile.id} #{idx+1}/#{count_todo}\0"
+            Process.setproctitle "GzipFile ID=#{userfile.id} #{idx+1}/#{count_todo}"
             userfile.gzip_content(operation) # :compress or :uncompress
             next
           end
 
           # FileCollections
           if compressing && ! userfile.archived?
-            $0 = "ArchiveFile ID=#{userfile.id} #{idx+1}/#{count_todo}\0"
+            Process.setproctitle "ArchiveFile ID=#{userfile.id} #{idx+1}/#{count_todo}"
             failure = userfile.provider_archive
           elsif ! compressing && userfile.archived?
-            $0 = "UnarchiveFile ID=#{userfile.id} #{idx+1}/#{count_todo}\0"
+            Process.setproctitle "UnarchiveFile ID=#{userfile.id} #{idx+1}/#{count_todo}"
             failure = userfile.provider_unarchive
           end
           raise failure unless failure.blank?

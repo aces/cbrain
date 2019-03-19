@@ -473,7 +473,7 @@ class DataProvidersController < ApplicationController
       "Register files DP=#{@provider.id}"
     ) do
       userfiles.keys.shuffle.each_with_index_and_size do |basename,idx,size|
-        $0 = "Register DP=#{@provider.id} NAME=#{basename} #{idx+1}/#{size}"
+        Process.setproctitle "Register DP=#{@provider.id} NAME=#{basename} #{idx+1}/#{size}"
         begin
           # Is the file already registered?
           if userfiles[basename].present?
@@ -547,7 +547,7 @@ class DataProvidersController < ApplicationController
 
       # Copy/move each file
       userfiles.shuffle.each_with_index do |userfile, ix|
-        $0 = "#{post_action.to_s.humanize} registered files ID=#{userfile.id} #{ix + 1}/#{userfiles.size}"
+        Process.setproctitle "#{post_action.to_s.humanize} registered files ID=#{userfile.id} #{ix + 1}/#{userfiles.size}"
 
         begin
           case post_action
@@ -619,7 +619,7 @@ class DataProvidersController < ApplicationController
     ) do
       userfiles.reject { |b,u| u.blank? }.to_a.shuffle.each_with_index_and_size do |base_uf,idx,size|
         basename, userfile = *base_uf  # pair of values
-        $0 = "Unregister DP=#{@provider.id} ID=#{userfile.id} #{idx+1}/#{size}"
+        Process.setproctitle "Unregister DP=#{@provider.id} ID=#{userfile.id} #{idx+1}/#{size}"
         begin
           # Make sure the current user can unregister the file
           unless userfile.has_owner_access?(current_user)
@@ -690,7 +690,7 @@ class DataProvidersController < ApplicationController
       userfiles.to_a.shuffle.each_with_index_and_size do |base_uf,idx,size|
         basename, userfile = *base_uf  # pair of values
         label = userfile.present? ? "ID=#{userfile.id}" : "NAME=#{basename}"
-        $0 = "Delete DP=#{@provider.id} #{label} #{idx+1}/#{size}"
+        Process.setproctitle "Delete DP=#{@provider.id} #{label} #{idx+1}/#{size}"
         begin
           # Is the userfile registered?
           if userfile.present?

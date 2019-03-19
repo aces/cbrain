@@ -82,7 +82,7 @@ class Worker
   public
 
   # A name for the worker; this will be assigned
-  # to the content of $0 in the worker process,
+  # to the name of the worker's UNIX process,
   # so it should be a simple identifier, likely
   # limited to 9 characters long on many OSes.
   # The default name is the worker's class.
@@ -137,7 +137,7 @@ class Worker
   #
   #  :log_level      => Log4r::DEBUG    # If :auto was provided to :worker_log, the log level for it.
   #
-  #  :name           => 'Xyz',          # A name saved in Worker's $0; will show up with 'ps'.
+  #  :name           => 'Xyz',          # A name saved in Worker's process; will show up with 'ps'.
   #
   #  :message_notifiee => => u_or_g     # A CBRAIN User or Group; will receive the 'Internal Error
   #                                     # Message' if an exception is raised in the worker.

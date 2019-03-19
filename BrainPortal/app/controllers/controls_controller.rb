@@ -42,7 +42,7 @@ class ControlsController < ApplicationController
 
     if keyword == 'info' || keyword == 'ping'
       myself = RemoteResource.current_resource
-      $0 = "CBRAIN Server #{myself.class} #{myself.name} #{CBRAIN::Instance_Name}" # to override puma's process name
+      Process.setproctitle "CBRAIN Server #{myself.class} #{myself.name} #{CBRAIN::Instance_Name}" # to override puma's process name
       @info  = myself.remote_resource_info(keyword)
       respond_to do |format|
         format.html { head :method_not_allowed }
