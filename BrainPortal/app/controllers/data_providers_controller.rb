@@ -133,6 +133,7 @@ class DataProvidersController < ApplicationController
            remote_user remote_host remote_port remote_dir
            not_syncable cloud_storage_client_identifier cloud_storage_client_token
            cloud_storage_client_bucket_name cloud_storage_client_path_start
+           datalad_repository_url datalad_relative_path
          )
       )
       meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/\Adp_no_copy_\d+\z|\Arr_no_sync_\d+\z/)
@@ -468,10 +469,12 @@ class DataProvidersController < ApplicationController
     succeeded, failed = [], {}
 
     CBRAIN.spawn_with_active_records_if(
-      [:html, :js].include?(request.format.to_sym),
+      #[:html, :js].include?(request.format.to_sym),
+      false,
       current_user,
       "Register files DP=#{@provider.id}"
     ) do
+      binding.pry
       userfiles.keys.shuffle.each_with_index_and_size do |basename,idx,size|
         Process.setproctitle "Register DP=#{@provider.id} NAME=#{basename} #{idx+1}/#{size}"
         begin
@@ -617,6 +620,7 @@ class DataProvidersController < ApplicationController
       current_user,
       "Unregister files DP=#{@provider.id}"
     ) do
+      puts "FUCK ME I AM HERE"
       userfiles.reject { |b,u| u.blank? }.to_a.shuffle.each_with_index_and_size do |base_uf,idx,size|
         basename, userfile = *base_uf  # pair of values
         Process.setproctitle "Unregister DP=#{@provider.id} ID=#{userfile.id} #{idx+1}/#{size}"
@@ -818,7 +822,8 @@ class DataProvidersController < ApplicationController
       :remote_port, :remote_dir, :online, :read_only, :description, :type,
       :not_syncable, :time_zone, :cloud_storage_client_identifier,
       :cloud_storage_client_token, :cloud_storage_client_bucket_name,
-      :cloud_storage_client_path_start, :license_agreements
+      :cloud_storage_client_path_start, :datalad_repository_url,
+      :datalad_relative_path,:license_agreements
     )
   end
 

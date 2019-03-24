@@ -149,6 +149,21 @@
 
     <p>
 
+     <fieldset class="groupentry">
+      <legend>Datalad Storage Configuration</legend>
+
+      <span title="Datalad Repository URL.">
+        <p><%= f.label :datalad_repository_url, "Datalad URL" %><br/>
+        <%= f.text_field :datalad_repository_url %></p>
+      </span>
+      <span title="Datalad Relative Path.">
+        <p><%= f.label :datalad_relative_path, "Datalad Path" %><br/>
+        <%= f.text_field :datalad_relative_path %></p>
+      </span>
+    </fieldset>
+
+    <p>
+
     <fieldset class="groupentry">
     <legend>Physical data location</legend>
 
