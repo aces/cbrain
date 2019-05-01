@@ -153,6 +153,15 @@
         <%= text_field_tag "data_provider[cloud_storage_client_path_start]", @provider.cloud_storage_client_path_start, :size => 80 %>
       <% end %>
     <% end %>
+
+    <%= show_table(@provider, :as => :data_provider, :header => "Datalad Configuration", :edit_condition => true) do |t| %>
+      <% t.edit_cell(:datalad_repository_url, :header => 'Datalad Repository URL', :show_width => 2)  do |f| %>
+        <%= f.text_field :datalad_repository_url %>
+      <% end %>
+      <% t.edit_cell(:datalad_relative_path, :header => 'Datalad Relative Path', :show_width => 2) do |f| %>
+        <%= f.text_field :datalad_relative_path %>
+      <% end %>
+    <% end %>
   <% end %>
 
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180304210000) do
+ActiveRecord::Schema.define(version: 20190322141543) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -96,19 +96,21 @@ ActiveRecord::Schema.define(version: 20180304210000) do
     t.string   "remote_host"
     t.integer  "remote_port"
     t.string   "remote_dir"
-    t.boolean  "online",                                        default: false, null: false
-    t.boolean  "read_only",                                     default: false, null: false
-    t.text     "description",                     limit: 65535
+    t.boolean  "online",                                         default: false, null: false
+    t.boolean  "read_only",                                      default: false, null: false
+    t.text     "description",                      limit: 65535
     t.datetime "created_at"
     t.datetime "updated_at"
     t.datetime "time_of_death"
-    t.boolean  "not_syncable",                                  default: false, null: false
+    t.boolean  "not_syncable",                                   default: false, null: false
     t.string   "time_zone"
     t.string   "cloud_storage_client_identifier"
     t.string   "cloud_storage_client_token"
     t.string   "alternate_host"
     t.string   "cloud_storage_client_bucket_name"
     t.string   "cloud_storage_client_path_start"
+    t.string   "datalad_repository_url"
+    t.string   "datalad_relative_path"
     t.index ["group_id"], name: "index_data_providers_on_group_id", using: :btree
     t.index ["type"], name: "index_data_providers_on_type", using: :btree
     t.index ["user_id"], name: "index_data_providers_on_user_id", using: :btree
