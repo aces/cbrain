@@ -39,7 +39,7 @@ class CSVFile < TextFile
 
   def is_viewable? #:nodoc:
     return false unless self.size.presence
-    return false unless self.size < 200_000  # smaller than the limit in TextFile
+    return false unless self.size < 400_000  # smaller than the limit in TextFile
     return false unless is_locally_synced?
     true
   end
