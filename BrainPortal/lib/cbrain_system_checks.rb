@@ -192,6 +192,16 @@ class CbrainSystemChecks < CbrainChecker #:nodoc:
       puts "C> \t- No SyncStatus objects are associated with obsolete files."
     end
 
+    #-----------------------------------------------------------------------------
+    puts "C> Handling duplicated SyncStatus objects..." # very rare normally
+    #-----------------------------------------------------------------------------
+    myself = RemoteResource.current_resource
+    report = SyncStatus.clean_duplications(myself.id)
+    report.each do |pair,count|
+      puts "C> \t- #{count} x (#{pair[0]},#{pair[1]})"
+    end
+    puts "C> \t- No duplicated SyncStatus objects found." if report.blank?
+
   end
 
 
