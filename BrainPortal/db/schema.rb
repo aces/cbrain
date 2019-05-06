@@ -70,6 +70,7 @@ ActiveRecord::Schema.define(version: 20190322141543) do
     t.index ["group_id", "bourreau_id", "status"], name: "index_cbrain_tasks_on_group_id_and_bourreau_id_and_status", using: :btree
     t.index ["group_id"], name: "index_cbrain_tasks_on_group_id", using: :btree
     t.index ["status"], name: "index_cbrain_tasks_on_status", using: :btree
+    t.index ["tool_config_id"], name: "index_cbrain_tasks_on_tool_config_id", using: :btree
     t.index ["type"], name: "index_cbrain_tasks_on_type", using: :btree
     t.index ["user_id", "bourreau_id", "status"], name: "index_cbrain_tasks_on_user_id_and_bourreau_id_and_status", using: :btree
     t.index ["user_id"], name: "index_cbrain_tasks_on_user_id", using: :btree
