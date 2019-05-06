@@ -32,7 +32,6 @@ namespace :doc do
      rdoc.main = 'README.md'
      rdoc.rdoc_files.include('README.md')
      rdoc.rdoc_files.include('app/*/*.rb')
-     rdoc.rdoc_files.include('app/models/userfiles/*.rb')
      rdoc.rdoc_files.include('lib/*.rb')
      rdoc.rdoc_files.include('lib/cbrain_extensions/**/*.rb')
      rdoc.rdoc_files.include('cbrain_plugins/installed-plugins/cbrain_task/*/portal/*.rb')
@@ -40,6 +39,7 @@ namespace :doc do
      rdoc.rdoc_files.include('cbrain_plugins/installed-plugins/userfiles/*/*.rb')
      rdoc.rdoc_files.include('config/initializers/cbrain.rb')
      rdoc.rdoc_files.include('config/initializers/core_extensions/*.rb')
+     rdoc.rdoc_files.include('config/initializers/added_core_extensions/kernel.rb')
   }
 end
 

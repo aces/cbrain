@@ -66,6 +66,25 @@ def acttasks(tasks = CbrainTask.active.all)
   true
 end
 
+# Last connected users.
+# Try "last -20", just like in a shell!
+def last(lim=20)
+  table LargeSessionInfo
+        .where(:active => true)
+        .order("large_session_infos.updated_at desc")
+        .joins(:user)
+        .select(%w( users.login users.id large_session_infos.updated_at large_session_infos.data ))
+        .limit(lim.abs)
+        .map { |x|
+          { :a_id          => x.id,
+            :b_login       => x.login,
+            :from          => x.data[:guessed_remote_host],
+            :last_activity => pretty_past_date(x.updated_at),
+          }
+        },
+        :unicode => true
+end
+
 (CbrainConsoleFeatures ||= []) << <<FEATURES
 ========================================================
 Feature: Reports
@@ -73,5 +92,6 @@ Feature: Reports
   In the console simply type:
     trans    : report of active transfers between resources and DP
     acttasks : active tasks
+    last [n] : last connected users (n = limit, default 20)
 FEATURES
 

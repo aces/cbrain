@@ -47,8 +47,8 @@ end
 #####################################################
 
 # Make sure the classes are loaded
-# Note that it's important to load PortalTask too, because of its own pre-loading of subclasses.
-[ Userfile, CbrainTask, User, Group, DataProvider, RemoteResource, Site, Tool, ToolConfig, Bourreau ]
+[ Userfile, CbrainTask, User, Group, DataProvider, RemoteResource, RemoteResourceInfo, Site, Tool, ToolConfig, Bourreau ]
+# Note that it's important to load PortalTask and/or ClusterTask too, because of its own pre-loading of subclasses.
 PortalTask.nil? rescue true
 ClusterTask.nil? rescue true
 
