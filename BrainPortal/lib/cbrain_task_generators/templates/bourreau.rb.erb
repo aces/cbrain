@@ -513,7 +513,7 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 %     if input_ids.present?
 
         # Add provenance data when multiple input files exist
-        parent_names = [ :<%= input_ids.join(", :") %> ]
+        parent_names = [ <%= input_ids.map { |x| ":'#{x}', " }.join %> ]
         parent_ids   = parent_names.map { |n| params[n] || params[n.to_s] }.compact
         parents      = parent_ids.map   { |i| Userfile.where(:id => i).first }.compact
         self.addlog_to_userfiles_these_created_these(parents, [output]) if parents.present?
