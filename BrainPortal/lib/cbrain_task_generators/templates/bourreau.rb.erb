@@ -508,6 +508,16 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
         parent = Userfile.find_by_id(params[:'<%= single_file['id'] %>'])
         output.move_to_child_of(parent) if parent
         self.addlog_to_userfiles_these_created_these([parent], [output]) if parent
+%   else
+%     input_ids = files.map { |i| i['id'] } # strings, like "minc", "baseline" etc
+%     if input_ids.present?
+
+        # Add provenance data when multiple input files exist
+        parent_names = [ :<%= input_ids.join(", :") %> ]
+        parent_ids   = parent_names.map { |n| params[n] || params[n.to_s] }.compact
+        parents      = parent_ids.map   { |i| Userfile.where(:id => i).first }.compact
+        self.addlog_to_userfiles_these_created_these(parents, [output]) if parents.present?
+%     end
 %   end
       end
     end
