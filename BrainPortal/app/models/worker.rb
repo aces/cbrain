@@ -21,6 +21,7 @@
 #
 
 require 'log4r'
+require 'sys/proctable'
 
 # = Worker Class
 # This class is responsible for managing a separate UNIX worker subprocess.
@@ -66,9 +67,6 @@ require 'log4r'
 #   wake_up()
 #   is_alive?()
 #
-
-require 'sys/proctable'
-
 class Worker
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:

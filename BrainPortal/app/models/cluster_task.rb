@@ -721,6 +721,7 @@ class ClusterTask < CbrainTask
       end
       self.update_size_of_cluster_workdir
     rescue => e
+      self.meta[:submit_without_setup] = nil # reset special skip
       self.addlog_exception(e,"Exception raised while setting up:")
       self.status_transition(self.status, "Failed To Setup")
     end
