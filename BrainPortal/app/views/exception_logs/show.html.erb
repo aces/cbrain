@@ -28,7 +28,7 @@
 
   <%= form_tag(url_for(:action => :destroy), :method => :delete) do %>
     <%= hidden_field_tag "exception_log_ids[]", @exception_log.id %>
-    <%= submit_tag "Delete", :class => "button" %>
+    <%= submit_tag "Delete", :class => "button", :data => { :confirm => 'Delete this exception report?' } %>
   <% end %>
 
   <div class="exception_spaced exception_description">
