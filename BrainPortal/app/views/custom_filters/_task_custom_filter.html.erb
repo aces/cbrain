@@ -29,7 +29,7 @@
     <%= text_field_tag "custom_filter[name]", @custom_filter.name %>
   <% end %>
 
-  <% t.edit_cell(:data_type, :header => "Tasks", :content => (@custom_filter.data_type||[]).map(&:constantize).map(&:pretty_name).sort.join(", ")) do %>
+  <% t.edit_cell(:data_type, :header => "Tasks", :content => (@custom_filter.data_type.presence||[]).map(&:constantize).map(&:pretty_name).sort.join(", ")) do %>
     <%= task_type_select("data[type]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name).sort, :selector => @custom_filter.data_description_type, :include_top => true }, :multiple => true, :size => 10) %>
   <% end %>
 

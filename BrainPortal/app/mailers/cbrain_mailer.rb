@@ -37,8 +37,10 @@ class CbrainMailer < ActionMailer::Base
     @plain_password           = plain_password
     @no_password_reset_needed = no_password_reset_needed
     return unless @user.is_a?(User) && ! @user.email.blank?
+    from = build_from
+    return unless from
     mail(
-      :from    => build_from,
+      :from    => from,
       :to      => user.email,
       :subject => 'Welcome to CBRAIN!'
     )
@@ -48,8 +50,10 @@ class CbrainMailer < ActionMailer::Base
   def forgotten_password(user)
     @user = user
     return unless @user.is_a?(User) && ! @user.email.blank?
+    from = build_from
+    return unless from
     mail(
-      :from    => build_from,
+      :from    => from,
       :to      => user.email,
       :subject => 'Account Reset'
     )
@@ -69,8 +73,11 @@ class CbrainMailer < ActionMailer::Base
     emails = users.map(&:email).compact.uniq.reject { |email| email.blank? || email =~ /\A(nobody|no-?reply|sink)@/i }
     return false if emails.empty?
 
+    from = build_from
+    return unless from
+
     mail(
-      :from    => build_from,
+      :from    => from,
       :to      => emails.size == 1 ? emails : [],
       :bcc     => emails.size  > 1 ? emails : [],
       :subject => "CBRAIN Message: #{@subject}"
@@ -82,8 +89,10 @@ class CbrainMailer < ActionMailer::Base
     @signup      = signup
     @confirm_url = confirm_url
     return if signup.confirm_token.blank? || signup.email.blank? || confirm_url.blank?
+    from = build_from
+    return unless from
     mail(
-      :from    => RemoteResource.current_resource.system_from_email,
+      :from    => from,
       :to      => @signup.email,
       :subject => "Confirmation of CBRAIN Account Request"
     )
@@ -97,8 +106,10 @@ class CbrainMailer < ActionMailer::Base
     return if admin_email.blank?
     subject  = "CBRAIN Account Request from '#{@signup.full}'"
     subject += " at '#{@signup.institution}'" if @signup.institution.present?
+    from = build_from
+    return unless from
     mail(
-      :from    => RemoteResource.current_resource.system_from_email,
+      :from    => from,
       :to      => admin_email,
       :subject => subject
     )
@@ -106,9 +117,13 @@ class CbrainMailer < ActionMailer::Base
 
   private
 
+  # In production mode, we must have a properly configured FROM email.
+  # In other modes, if it's not configured, we build a fake one using
+  # the login name and hostname of the current process.
   def build_from #:nodoc:
-    RemoteResource.current_resource.system_from_email.presence ||
-    "#{CBRAIN::Rails_UserName}@#{Socket.gethostname}"
+    from_email   = RemoteResource.current_resource.system_from_email.presence
+    from_email ||= "#{CBRAIN::Rails_UserName}@#{Socket.gethostname}" if Rails.env != 'production'
+    from_email
   end
 
 end
