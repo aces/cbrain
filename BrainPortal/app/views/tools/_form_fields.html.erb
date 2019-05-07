@@ -120,7 +120,7 @@
             <td><%= link_to_group_if_accessible(tc.group) %></td>
             <td><%= pluralize((tc.ncpus || 1), "cpu") %></td>
             <td><%= link_to "Show", tool_config_path(tc) %></td>
-            <td><%= link_to 'Delete', tc, :confirm => "Are you sure you want to delete version configuration '#{tc.version_name}'?", :method => :delete %></td>
+            <td><%= link_to 'Delete', tc, :data => { :confirm => "Are you sure you want to delete version configuration '#{tc.version_name}'?" }, :method => :delete %></td>
           <% end %>
         </tr>
       <% end %>

@@ -69,7 +69,7 @@
 <% end %>
 
 <p>
-You can <%= link_to "delete", signup_path(@signup), :action => :destroy, :method => :delete, :confirm => "Are you sure you want to delete the request of \"#{@signup.full}\" ?" %> this request.
+You can <%= link_to "delete", signup_path(@signup), :action => :destroy, :method => :delete, :data => { :confirm => "Are you sure you want to delete the request of \"#{@signup.full}\" ?" } %> this request.
 
 <p>
 Below is a summary of the information in this account request.

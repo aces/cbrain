@@ -33,7 +33,7 @@
   <%= link_to 'Report Maker', report_path, :class => "button" %>
 
   <% if delete_permission?(@user) %>
-    <%= link_to 'Delete', user_path(@user), { :confirm => "Are you sure you want to delete '#{@user.name}' ?", :method => :delete, :class => "button" } %>
+    <%= link_to 'Delete', user_path(@user), :data => { :confirm => "Are you sure you want to delete '#{@user.name}' ?" }, :method => :delete, :class => "button" %>
   <% end %>
 </div>
 

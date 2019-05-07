@@ -39,13 +39,13 @@
       <%= form_tag home_path do %>
         <% if BrainPortal.current_resource.portal_locked? %>
               <%= hidden_field_tag :lock_portal, "unlock" %>
-              <%= submit_tag "Unlock this Portal", {:confirm => "Are you sure you wish to unlock this portal?"} %>
+              <%= submit_tag "Unlock this Portal", :data => { :confirm => "Are you sure you wish to unlock this portal?" } %>
         <% else %>
               <% message = BrainPortal.current_resource.meta[:portal_lock_message] %>
               <% message = "(lock message)" if message.blank? %>
               <%= hidden_field_tag :lock_portal, "lock" %>
               <%= text_field_tag :message, message, :size => 30 %>
-              <%= submit_tag "Lock this Portal", {:confirm => "Are you sure you wish to lock this portal?"} %>
+              <%= submit_tag "Lock this Portal", :data => { :confirm => "Are you sure you wish to lock this portal?" } %>
         <% end %>
       <% end %>
 
@@ -101,7 +101,7 @@
              [ "One hour ago",      1.hour.seconds.to_i    ],
              [ "Now! (Including yours!)", 1.seconds.to_i   ],
            ]) %>
-        <%= submit_tag "Clear", :confirm => "Are you sure you want to clear the sessions?" %>
+        <%= submit_tag "Clear", :data => { :confirm => "Are you sure you want to clear the sessions?" } %>
       <% end %>
 
 

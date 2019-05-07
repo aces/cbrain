@@ -43,7 +43,7 @@
                 ), :class => "button" %>
 
   <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
-    <%= link_to 'Delete', data_provider_path(@provider), { :confirm => "Are you sure you want to delete '#{@provider.name}' ?", :method => :delete, :class => "button" } %>
+    <%= link_to 'Delete', data_provider_path(@provider), { :data => { :confirm => "Are you sure you want to delete '#{@provider.name}' ?" }, :method => :delete, :class => "button" } %>
   <% end %>
 
 </div>
