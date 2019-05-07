@@ -83,10 +83,10 @@ def cbhelp ; print CbrainConsoleFeatures.join("\n") ; end
 #####################################################
 rr_name = no_log { RemoteResource.current_resource.name rescue "Rails Console" }
 IRB.conf[:PROMPT][:CUSTOM] = {
-  :PROMPT_I => "#{rr_name} :%03n > ",
-  :PROMPT_S => "#{rr_name} :%03n%l> ",
-  :PROMPT_C => "#{rr_name} :%03n > ",
-  :PROMPT_N => "#{rr_name} :%03n?> ",
+  :PROMPT_I => "#{rr_name} %m :%03n > ",
+  :PROMPT_S => "#{rr_name} %m :%03n%l> ",
+  :PROMPT_C => "#{rr_name} %m :%03n > ",
+  :PROMPT_N => "#{rr_name} %m :%03n?> ",
   :RETURN   => " => %s \n",
   :AUTO_INDENT => true
 }
