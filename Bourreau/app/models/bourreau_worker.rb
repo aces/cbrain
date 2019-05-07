@@ -421,6 +421,7 @@ class BourreauWorker < Worker
             task.meta[:submit_without_setup] = true
             task.status_transition(task.status, "New") # basically, we will go directly to submit_cluster_job()
           else # simpler cases, we just reset the status and let the task return to main flow.
+            task.meta[:submit_without_setup] = nil
             task.status_transition(task.status, "New")                    if fromwhat    == 'Setup'
             task.status_transition(task.status, "Data Ready")             if fromwhat    == 'PostProcess'
           end
