@@ -1219,19 +1219,34 @@ class UserfilesController < ApplicationController
 
     collection       = FileCollection.find_accessible_by_user(params[:id], current_user, :access_requested  => :read)
     collection_path  = collection.cache_full_path
-    data_provider_id = collection.data_provider_id
+    data_provider    = collection.data_provider
+
+    if data_provider.read_only?
+      flash[:error] = "Unfortunately this file is located on a DataProvider that is not writable, so we can't extract its internal files."
+      redirect_to :action => :show
+      return
+    end
+
     params[:file_names].each do |file|
-      userfile = SingleFile.new(
-          :name             => File.basename(file),
+      basename = File.basename(file)
+      file_type ||= Userfile.suggested_file_type(basename) || SingleFile
+      userfile = file_type.new(
+          :name             => basename,
           :user_id          => current_user.id,
           :group_id         => collection.group_id,
-          :data_provider_id => data_provider_id
+          :data_provider_id => data_provider.id
       )
       Dir.chdir(collection_path.parent) do
         if userfile.save
           userfile.addlog("Extracted from collection '#{collection.name}'.")
-          userfile.cache_copy_from_local_file(file)
-          success += 1
+          begin
+            userfile.cache_copy_from_local_file(file)
+            success += 1
+          rescue
+            userfile.data_provider_id = nil # nullifying will skip the provider_erase() in the destroy()
+            userfile.destroy
+            failure +=1
+          end
         else
           failure += 1
         end
