@@ -167,6 +167,21 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
       return super
     end
 
+%   shell            = descriptor['shell'].presence
+%   cmdline_template = descriptor['command-line']
+%   shell_wrap_start = "#{shell} <<'BoutiquesShellWrapper'"
+%   shell_wrap_end   = "BoutiquesShellWrapper"
+%   shell_wrap_start=shell_wrap_end="" if shell.nil? || shell =~ /\A(bash|\/bin\/bash|sh|\/bin\/sh)\z/
+    # Command template from the descriptor.
+% if shell_wrap_end.present?
+    # The descriptor specified that it is to be run with: <%= shell %>
+% end
+    command_template = <<-'COMMAND_TEMPLATE'
+<%= shell_wrap_start %>
+<%= cmdline_template %>
+<%= shell_wrap_end %>
+    COMMAND_TEMPLATE
+
     # Environment variables from Boutiques descriptor
 % if eVars.empty?
     envVars = []
@@ -200,10 +215,8 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     envVars + [ <<-'CMD' ]
 %   else
     # Command-line to run <%= name %> and save its exit status
-    envVars + [ <<-'CMD', "echo $? > ./#{exit_cluster_filename.bash_escape}" ]
+    envVars + [ command_template, "echo $? > ./#{exit_cluster_filename.bash_escape}" ]
 %   end
-      <%= descriptor['command-line'] %>
-    CMD
 % else
     params = self.params
 
@@ -340,14 +353,10 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 %   end
 %   if (descriptor['custom'] || {})['cbrain:ignore-exit-status']
     # Generate the final command-line to run <%= name %>
-    envVars + [ apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %>) ] + outfileMoveCommands
-      <%= descriptor['command-line'] %>
-    CMD
+    envVars + [ apply_template(command_template, keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %>) ] + outfileMoveCommands
 %   else
     # Generate the final command-line to run <%= name %>
-    command = apply_template(<<-'CMD', keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %>)
-      <%= descriptor['command-line'] %>
-    CMD
+    command = apply_template(command_template, keys<%= flags.empty? ? '' : ', flags: flags' %><%= seps.empty? ? '' : ', separators: seps' %>)
 
     # And save its exit status
     envVars + [ command, "echo $? > ./#{exit_cluster_filename.bash_escape}" ] + outfileMoveCommands
