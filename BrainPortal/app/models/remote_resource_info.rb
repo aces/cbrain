@@ -42,6 +42,7 @@ class RemoteResourceInfo < RestrictedHash
      # General fields about a Remote Resource
      :id, :name,            # Rails app RemoteResource info
      :uptime,               # Rails app uptime in seconds
+     :environment,          # Rails environment
 
      # Host info
      :host_name,            # Value returned by Socket.gethostname

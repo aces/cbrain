@@ -65,8 +65,11 @@
       :hidden => true
     ) do |r|
       if loaded.(r)
-        revision = r.info(:ping).starttime_revision
-        red_if(revision != '???' && revision != CBRAIN::CBRAIN_StartTime_Revision, revision, nil, :color2 => 'red')
+        revision    = r.info(:ping).starttime_revision
+        environment = r.info(:ping).environment
+        environment = 'Unk Env' if environment == '???'
+        red_if(revision != '???' && revision    != CBRAIN::CBRAIN_StartTime_Revision, revision, nil, :color2 => 'red') +
+        red_if(revision != '???' && environment != Rails.env, "", " (#{environment}!)")
       else
         html_colorize("(...)", "magenta")
       end

@@ -520,6 +520,7 @@ class RemoteResource < ApplicationRecord
       :id                 => myself.id,
       :name               => myself.name,
       :uptime             => elapsed,
+      :environment        => Rails.env,
 
       # Host info
       :host_name          => @host_name,
@@ -551,6 +552,7 @@ class RemoteResource < ApplicationRecord
     info.name               = rr.name
     info.starttime_revision = CBRAIN::CBRAIN_StartTime_Revision
     info.uptime             = Time.now.localtime - CBRAIN::Startup_LocalTime
+    info.environment        = Rails.env
     info
   end
 
