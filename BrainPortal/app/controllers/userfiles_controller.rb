@@ -1229,7 +1229,7 @@ class UserfilesController < ApplicationController
 
     params[:file_names].each do |file|
       basename = File.basename(file)
-      file_type ||= Userfile.suggested_file_type(basename) || SingleFile
+      file_type = Userfile.suggested_file_type(basename) || SingleFile
       userfile = file_type.new(
           :name             => basename,
           :user_id          => current_user.id,
