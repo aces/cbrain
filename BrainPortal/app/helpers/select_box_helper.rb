@@ -500,7 +500,7 @@ module SelectBoxHelper
   def task_type_select(parameter_name = "task_type", options = {}, select_tag_options = {} )
     options              = { :selector => options } unless options.is_a?(Hash)
     generate_descendants =  options.has_key?(:generate_descendants) ? options[:generate_descendants] : true
-    task_types           = (options[:task_types] || ["PortalTask"]).collect!{|type| type.constantize}
+    task_types           = (options[:task_types] || ["PortalTask"]).map { |type| type.constantize rescue nil }.compact
     include_top          = options.has_key?(:include_top) ? options[:include_top] : false
 
     type_select(parameter_name, options.dup.merge({:types => task_types, :generate_descendants => generate_descendants, :include_top => include_top}), select_tag_options)

@@ -20,17 +20,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#This model represents a user defined filter. The class is not meant
+#This model represents a user defined filter. This is an abstract class, not meant
 #to be used directly, but instead to be subclassed for the particular
 #resource to be filtered. The most critical aspect in the subclass
-#is it's redifinition of the method filter_scope.
+#is its redefinition of the method filter_scope.
 #
 #=*IMPORTANT*: Naming conventions
 #[*Controller*] The name of the subclass should be the camelcased name of
 #               of the filtered resource as it appears in its controller. E.g.
 #               UserfileCustomFilter filters on the UserfilesController,
 #               TaskCustomFilter filters on the TasksController. Alternatively,
-#               the method filtered_class_controller can be redifined to return the
+#               the method filtered_class_controller can be redefined to return the
 #               the name of the controller being filtered on.
 #[<b>Partial for new and edit actions</b>] This should saved in app/view/custom_filter/ and
 #                                          should match the underscored version of the class
@@ -51,36 +51,6 @@ class CustomFilter < ApplicationRecord
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # A Custom filter have a hash containing the filter parameters
-  # The DATA_PARAMS array is used to withelist these params.
-  DATA_PARAMS =
-  [
-    # Data available on all subclasses
-    :date_attribute,
-    :absolute_or_relative_from,
-    :absolute_or_relative_to,
-    :rel_date_from,
-    :rel_date_to,
-    :abs_from,
-    :abs_to,
-    :relative_from,
-    :absolute_from,
-    :relative_to,
-    :absolute_to,
-    :archiving_status,
-    :user_id,
-    :user,
-
-    # all the array params need to be at the end
-    # of the allowed keys
-    {
-      :type        => [],
-      :status      => [],
-      :sync_status => [],
-      :tag_ids     => [],
-    }
-  ]
-
   include DateRangeRestriction
 
   serialize_as_indifferent_hash :data
@@ -92,84 +62,11 @@ class CustomFilter < ApplicationRecord
   validates_format_of     :name, :with => /\A[\w\-\=\.\+\?\!\s]*\z/,
                                  :message  => 'only the following characters are valid: alphanumeric characters, spaces, _, -, =, +, ., ?, !'
 
-  validate :valid_self_user
-
-  validate :valid_data_type
-  validate :valid_data_user_id
-  validate :valid_data_archiving_status
-  validate :valid_data_date
-
-  ###############################
-  # Validation of Custom Filter #
-  ###############################
-
-  def valid_self_user #:nodoc:
-    return true if self.user
-    errors.add(:base, 'a custom filter should have a user')
-    return false
-  end
-
-  def valid_data_type #:nodoc:
-    self.data_type = Array(self.data_type).reject { |item| item.blank? }
-    return true if self.data_type.empty?
-    valid_type = self.is_a?(TaskCustomFilter) ? CbrainTask.sti_descendant_names : Userfile.sti_descendant_names
-    return true if ( self.data_type - valid_type ).empty?
-    errors.add(:data_data_type, 'some file type are invalid')
-    return false
-  end
-
-  def valid_data_user_id #:nodoc:
-    return true if self.data_user_id.blank?
-    return true if self.user.available_users.pluck(:id).include? self.data_user_id.to_i
-    errors.add(:data_user_id, 'is not an accessible user')
-    false
-  end
-
-  def valid_data_archiving_status #:nodoc:
-    return true if self.data_archiving_status.blank?
-    valid_status = self.is_a?(TaskCustomFilter) ? ["none", "cluster", "file"] : ["archived", "none"]
-    return true if valid_status.include? self.data_archiving_status
-    errors.add(:data_archiving_status, 'is not a valid archiving status')
-    return false
-  end
 
 
-  # Do some validation on the date range filtering
-  def valid_data_date #:nodoc:
-    error_mess = check_filter_date(self.data["date_attribute"],  self.data["absolute_or_relative_from"], self.data["absolute_or_relative_to"],
-                                   self.data["absolute_from"], self.data["absolute_to"], self.data["relative_from"], self.data["relative_to"])
-
-    return true if error_mess == ""
-    errors.add(:base, error_mess)
-    return false
-  end
-
-  # Main method used for custom filtering. Should be redefined in subclasses to
-  # modify +scope+ according to the filter parameters and return it.
-  def filter_scope(scope)
-    raise "Using filter_scope in CustomFilter base class. Should be used from a subclass."
-  end
-
-  # Returns the name of the controller of the resource being filtered.
-  def filtered_class_controller
-    @filtered_class_controller ||= self.class.to_s.sub(/CustomFilter\z/, "").tableize
-  end
-
-
-  # Return +scope+ modified to filter the CbrainTask entry's dates.
-  def scope_date(scope)
-    date_at               = self.data_date_attribute # assignation ...
-    mode_is_absolute_from = self.data_absolute_or_relative_from == "absolute"
-    mode_is_absolute_to   = self.data_absolute_or_relative_to   == "absolute"
-    absolute_from         = self.data_absolute_from
-    absolute_to           = self.data_absolute_to
-    relative_from         = self.data_relative_from
-    relative_to           = self.data_relative_to
-    table_name            = self.target_filtered_table
-
-    scope = add_time_condition_to_scope(scope,table_name,mode_is_absolute_from,mode_is_absolute_to,
-                                     absolute_from, absolute_to, relative_from, relative_to,date_at );
-  end
+  ########################################
+  # Serialized 'data' attribute wrappers #
+  ########################################
 
   # Wrapper for the data attribute. Ensures it's always initialized.
   def data
@@ -184,7 +81,95 @@ class CustomFilter < ApplicationRecord
     write_attribute(:data, new_data)
   end
 
+
+
+  ##########################################
+  # Common Custom Attributes For Filtering #
+  ##########################################
+
+  # A Custom filter have a hash 'data' containing the filter parameters
+  # The DATA_PARAMS array is used to whitelist these params.
+  # This here defines just a set of generic attributes that together
+  # implement filtering by created_at or updated_at.
+  DATA_PARAMS =
+  [
+    # Attrivutes for filtering, available for all subclasses
+    :date_attribute,
+    :absolute_or_relative_from,
+    :absolute_or_relative_to,
+    :relative_from,
+    :relative_to,
+    :absolute_from,
+    :absolute_to,
+  ]
+
+  #self.data_setter_and_getter(DATA_PARAMS) # see at end of file!
+
+
+
+  ######################################
+  # Validation of Filtering Attributes #
+  ######################################
+
+  validate :valid_data_date_structure
+
+  # Do some validation on the date range filtering
+  def valid_data_date_structure #:nodoc:
+    error_mess = check_filter_date(
+      self.data["date_attribute"],
+      self.data["absolute_or_relative_from"], self.data["absolute_or_relative_to"],
+      self.data["absolute_from"],             self.data["absolute_to"],
+      self.data["relative_from"],             self.data["relative_to"]
+    )
+
+    return true if error_mess.blank?
+    errors.add(:base, error_mess)
+    return false
+  end
+
+
+
+  ############################
+  # Filtering Scope Builders #
+  ############################
+
+  # Returns the name of the controller of the resource being filtered.
+  def filtered_class_controller
+    @filtered_class_controller ||= self.class.to_s.sub(/CustomFilter\z/, "").tableize
+  end
+
+  # Main method used for custom filtering. Should be redefined in subclasses to
+  # modify +scope+ according to the filter parameters and return it.
+  def filter_scope(scope)
+    scope = scope_date(scope) if self.data_date_attribute.present?
+    scope
+  end
+
   private
+
+  # Return +scope+ modified to filter the CbrainTask entry's dates.
+  def scope_date(scope)
+    date_attribute        = self.data_date_attribute # assignation ...
+    mode_is_absolute_from = self.data_absolute_or_relative_from == "absolute"
+    mode_is_absolute_to   = self.data_absolute_or_relative_to   == "absolute"
+    absolute_from         = self.data_absolute_from
+    absolute_to           = self.data_absolute_to
+    relative_from         = self.data_relative_from
+    relative_to           = self.data_relative_to
+    table_name            = self.target_filtered_table # must be provided in a subclass
+
+    scope = add_time_condition_to_scope(scope, table_name,
+            mode_is_absolute_from, mode_is_absolute_to,
+            absolute_from,         absolute_to,
+            relative_from,         relative_to,
+            date_attribute)
+  end
+
+
+
+  #############
+  # Utilities #
+  #############
 
   # Convert number codes for inequalities into
   # the string representation:
@@ -206,32 +191,41 @@ class CustomFilter < ApplicationRecord
     end
   end
 
-  # Merge extra data params for example from
-  # Task or Userfile custom filter.
+
+
+  #############################################
+  # DATA Attributes Accessor Method Builders  #
+  #############################################
+
+  protected
+
+  # Utility to merge a set of DATA_PARAMS
+  # with the ones in the superclass. To
+  # be invoked by a subclass.
   def self.merge_data_params(extra) #:nodoc:
-    (extra + DATA_PARAMS).freeze
+    (DATA_PARAMS + extra).freeze
   end
 
-  #####################################
-  # Define getter and setter for data #
-  #####################################
-
-  # Define getter and setter for each keys in data attribute
+  # Define a getter and setter method for each keys
+  # in the filtered attributes list.
   def self.data_setter_and_getter(data_params=DATA_PARAMS)
-    data_params.map{|x| x.is_a?(Hash) ? x.keys : x}.flatten.each do |param|
+    data_params.map {|x| x.is_a?(Hash) ? x.keys : x}.flatten.each do |param|
 
-      # Define getter for all keys in data attribute
+      #puts_red "Class #{self} building accessor methods for #{param}"
+
+      # Define getter method
       define_method("data_#{param}") do
         self.data[param]
       end
 
-      # Define setter for all keys in data attribute
+      # Define setter method
       define_method("data_#{param}=") do |val|
         self.data[param] = val
       end
+
     end
   end
 
-  CustomFilter.data_setter_and_getter()
+  self.data_setter_and_getter(DATA_PARAMS) # see at end of file!
 
 end

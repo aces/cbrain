@@ -33,37 +33,65 @@ class UserfileCustomFilter < CustomFilter
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  DATA_PARAMS = merge_data_params(
+  #############################################
+  # Userfiles Custom Attributes For Filtering #
+  #############################################
+
+  USERFILES_DATA_PARAMS =
     [
+      :user_id,
+      :group_id,
+      :file_name_type,
+      :file_name_term,
       :size_type,
       :size_term,
-      :file_name_type,
-      :group_id,
-      :group,
       :data_provider_id,
-      :file_name_term,
-      :description_type,
       :parent_name_like,
       :child_name_like,
       :archiving_status,
-      :sync_status,
-    ])
+      {
+        :type        => [],
+        :sync_status => [],
+        :tag_ids     => [],
+      }
+    ]
+  self.data_setter_and_getter(USERFILES_DATA_PARAMS)
+
+  DATA_PARAMS = merge_data_params(USERFILES_DATA_PARAMS) # merge from superclasses too
 
 
-  CustomFilter.data_setter_and_getter(DATA_PARAMS)
 
-  ###############################
-  # Validation of Custom Filter #
-  ###############################
+  ######################################
+  # Validation of Filtering Attributes #
+  ######################################
 
-  validate :valid_filename
-  validate :valid_size
+  validate :valid_data_user_id
   validate :valid_data_group_id
+  validate :valid_data_type
+  validate :valid_data_filename
+  validate :valid_data_size
   validate :valid_data_tag_ids
   validate :valid_data_data_provider_id
   validate :valid_data_sync_status
+  validate :valid_data_archiving_status
 
-  def valid_filename #:nodoc:
+  def valid_data_type #:nodoc:
+    self.data_type = Array(self.data_type).reject { |item| item.blank? }
+    return true if self.data_type.empty?
+    valid_type = Userfile.sti_descendant_names
+    return true if ( self.data_type - valid_type ).empty?
+    errors.add(:data_data_type, 'some file types are invalid')
+    return false
+  end
+
+  def valid_data_user_id #:nodoc:
+    return true if self.data_user_id.blank?
+    return true if self.user.available_users.pluck(:id).include? self.data_user_id.to_i
+    errors.add(:data_user_id, 'is not an accessible user')
+    false
+  end
+
+  def valid_data_filename #:nodoc:
     if self.data_file_name_type.present? && !["match", "contain", "begin", "end"].include?(self.data_file_name_type)
       errors.add(:file_name_type, 'is not a valid file name matcher')
       return false
@@ -76,7 +104,7 @@ class UserfileCustomFilter < CustomFilter
     true
   end
 
-  def valid_size #:nodoc:
+  def valid_data_size #:nodoc:
     return true if self.data_size_type.blank? && self.data_size_term.blank?
     if self.data_size_type.present?  && !self.data_size_term.present? ||
        !self.data_size_type.present? && self.data_size_term.present?
@@ -129,12 +157,32 @@ class UserfileCustomFilter < CustomFilter
     return false
   end
 
+  def valid_data_archiving_status #:nodoc:
+    return true if self.data_archiving_status.blank?
+    return true if ["archived", "none"].include? self.data_archiving_status
+    errors.add(:data_archiving_status, 'is not a valid archiving status')
+    return false
+  end
+
+
+
+  ############################
+  # Filtering Scope Builders #
+  ############################
+
+  # Returns table name for SQL filtering.
+  # Used during datetime filtering implemented
+  # in superclass CustomFilter
+  def target_filtered_table
+    "userfiles"
+  end
+
   # See CustomFilter
   def filter_scope(scope)
+    scope = super(scope)
     scope = scope_name(scope)        if self.data_file_name_type.present? && self.data_file_name_term.present?
     scope = scope_parent_name(scope) if self.data_parent_name_like.present?
     scope = scope_child_name(scope)  if self.data_child_name_like.present?
-    scope = scope_date(scope)        if self.data_date_attribute.present?
     scope = scope_size(scope)        if self.data_size_type.present?      && self.data_size_term.present?
     scope = scope_user(scope)        if self.data_user_id.present?
     scope = scope_group(scope)       if self.data_group_id.present?
@@ -145,13 +193,6 @@ class UserfileCustomFilter < CustomFilter
     scope = scope_tags(scope)        if self.data_tag_ids.present?
     scope
   end
-
-  # Return table name for SQL filtering
-  def target_filtered_table
-    "userfiles"
-  end
-
-
 
   private
 

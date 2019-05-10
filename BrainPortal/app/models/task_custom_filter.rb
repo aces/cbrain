@@ -32,19 +32,45 @@ class TaskCustomFilter < CustomFilter
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  ###############################
-  # Validation of Custom Filter #
-  ###############################
+  ########################################
+  # Task Custom Attributes For Filtering #
+  ########################################
 
-  validate :valid_data_wd_status
+  TASKS_DATA_PARAMS =
+    [
+      :user_id,
+      :bourreau_id,
+      :description_term,
+      :description_type,
+      :wd_status,
+      :archiving_status,
+      {
+        :type        => [],
+        :status      => [],
+      }
+    ]
+  self.data_setter_and_getter(TASKS_DATA_PARAMS)
+  DATA_PARAMS = merge_data_params(TASKS_DATA_PARAMS) # merge from superclasses too
+
+
+
+  ######################################
+  # Validation of Filtering Attributes #
+  ######################################
+
+  validate :valid_data_user_id
   validate :valid_data_bourreau_id
+  validate :valid_data_type
+  validate :valid_data_description
+  validate :valid_data_wd_status
   validate :valid_data_status
-  validate :valid_description
+  validate :valid_data_archiving_status
 
-  def valid_data_wd_status #:nodoc:
-    return true if self.data_wd_status.blank?
-    return true if [ 'shared', 'not_shared', 'exists', 'none' ].include? self.data_wd_status
-    errors.add(:data_wd_status, 'is not a valid work directory status')
+  def valid_data_user_id #:nodoc:
+    return true if self.data_user_id.blank?
+    return true if self.user.available_users.pluck(:id).include? self.data_user_id.to_i
+    errors.add(:data_user_id, 'is not an accessible user')
+    false
   end
 
   def valid_data_bourreau_id #:nodoc:
@@ -54,15 +80,16 @@ class TaskCustomFilter < CustomFilter
     return false
   end
 
-  def valid_data_status #:nodoc:
-    self.data_status = Array(self.data_status).reject { |item| item.blank? }
-    return true if self.data_status.empty?
-    return true if ( self.data_status -  (CbrainTask::ALL_STATUS - ["Preset", "SitePreset", "Duplicated"])).empty?
-    errors.add(:data_data_status, 'some task status are invalid')
+  def valid_data_type #:nodoc:
+    self.data_type = Array(self.data_type).reject { |item| item.blank? }
+    return true if self.data_type.empty?
+    valid_type = CbrainTask.sti_descendant_names
+    return true if ( self.data_type - valid_type ).empty?
+    errors.add(:data_data_type, 'some file types are invalid')
     return false
   end
 
-  def valid_description #:nodoc:
+  def valid_data_description #:nodoc:
     if self.data_description_type.present? && !["match", "contain", "begin", "end"].include?(self.data_description_type)
       errors.add(:data_description_type, 'is not a valid description matcher')
       return false
@@ -75,41 +102,51 @@ class TaskCustomFilter < CustomFilter
     true
   end
 
-  #####################################
-  # Define getter and setter for data #
-  #####################################
+  def valid_data_wd_status #:nodoc:
+    return true if self.data_wd_status.blank?
+    return true if [ 'shared', 'not_shared', 'exists', 'none' ].include? self.data_wd_status
+    errors.add(:data_wd_status, 'is not a valid work directory status')
+  end
+
+  def valid_data_status #:nodoc:
+    self.data_status = Array(self.data_status).reject { |item| item.blank? }
+    return true if self.data_status.empty?
+    return true if ( self.data_status -  (CbrainTask::ALL_STATUS - ["Preset", "SitePreset", "Duplicated"])).empty?
+    errors.add(:data_data_status, 'some task status are invalid')
+    return false
+  end
+
+  def valid_data_archiving_status #:nodoc:
+    return true if self.data_archiving_status.blank?
+    return true if ["none", "cluster", "file"].include? self.data_archiving_status
+    errors.add(:data_archiving_status, 'is not a valid archiving status')
+    return false
+  end
 
 
-  DATA_PARAMS = merge_data_params(
-    [
-      :data_provider_id,
-      :data_provider,
-      :description_term,
-      :description_type,
-      :bourreau_id,
-      :bourreau,
-      :wd_status,
-      :status,
-    ])
 
-  CustomFilter.data_setter_and_getter(DATA_PARAMS)
+  ############################
+  # Filtering Scope Builders #
+  ############################
+
+  # Returns table name for SQL filtering.
+  # Used during datetime filtering implemented
+  # in superclass CustomFilter
+  def target_filtered_table
+    "cbrain_tasks"
+  end
 
   # See CustomFilter
   def filter_scope(scope)
+    scope = super(scope)
     scope = scope_type(scope)         if self.data_type.present?
     scope = scope_description(scope)  if self.data_description_type.present? && self.data_description_term.present?
     scope = scope_user(scope)         if self.data_user_id.present?
     scope = scope_bourreau(scope)     if self.data_bourreau_id.present?
-    scope = scope_date(scope)         if self.data_date_attribute.present?
     scope = scope_status(scope)       if self.data_status.present?
     scope = scope_archive(scope)      if self.data_archiving_status.present?
     scope = scope_wd_status(scope)    if self.data_wd_status.present?
     scope
-  end
-
-  # Returns table name for SQL filtering
-  def target_filtered_table
-    "cbrain_tasks"
   end
 
   private
