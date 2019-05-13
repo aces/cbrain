@@ -25,12 +25,6 @@ require 'rails_helper'
 describe CustomFilter do
   let(:cf)  {create(:custom_filter)}
 
-  describe "#filter_scope" do
-    it "should raise an exception, this method should be redefined in subclasses" do
-      expect{cf.filter_scope(CustomFilter.where(nil))}.to raise_error("Using filter_scope in CustomFilter base class. Should be used from a subclass.")
-    end
-  end
-
   describe "#filtered_class_controller" do
     it "should return the name of the controllerof the ressource being filtered (userfiles)" do
       ucf = create(:userfile_custom_filter)

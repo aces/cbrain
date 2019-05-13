@@ -36,17 +36,19 @@ class TaskCustomFilter < CustomFilter
   # Task Custom Attributes For Filtering #
   ########################################
 
+  # This structure must match the argument syntax of
+  # the permit() method of ActionController::Parameters
   TASKS_DATA_PARAMS =
     [
-      :user_id,
-      :bourreau_id,
       :description_term,
       :description_type,
       :wd_status,
       :archiving_status,
       {
-        :type        => [],
-        :status      => [],
+        :user_ids     => [],
+        :bourreau_ids => [],
+        :types        => [],
+        :status       => [],
       }
     ]
   self.data_setter_and_getter(TASKS_DATA_PARAMS)
@@ -58,34 +60,36 @@ class TaskCustomFilter < CustomFilter
   # Validation of Filtering Attributes #
   ######################################
 
-  validate :valid_data_user_id
-  validate :valid_data_bourreau_id
-  validate :valid_data_type
+  validate :valid_data_user_ids
+  validate :valid_data_bourreau_ids
+  validate :valid_data_types
   validate :valid_data_description
   validate :valid_data_wd_status
   validate :valid_data_status
   validate :valid_data_archiving_status
 
-  def valid_data_user_id #:nodoc:
-    return true if self.data_user_id.blank?
-    return true if self.user.available_users.pluck(:id).include? self.data_user_id.to_i
-    errors.add(:data_user_id, 'is not an accessible user')
+  def valid_data_user_ids #:nodoc:
+    my_ids = cleaned_array_for_attribute(:user_ids)
+    return true if my_ids.empty?
+    return true if (my_ids.map(&:to_i) - self.user.available_users.pluck(:id)).empty?
+    errors.add(:data_user_ids, 'are not all accessible users')
     false
   end
 
-  def valid_data_bourreau_id #:nodoc:
-    return true if self.data_bourreau_id.blank?
-    return true if Bourreau.find_all_accessible_by_user(self.user).pluck(:id).include? self.data_bourreau_id.to_i
-    errors.add(:data_bourreau_id, 'is not an accessible bourreau')
+  def valid_data_bourreau_ids #:nodoc:
+    my_ids = cleaned_array_for_attribute(:bourreau_ids)
+    return true if my_ids.empty?
+    return true if (my_ids.map(&:to_i) - Bourreau.find_all_accessible_by_user(self.user).pluck(:id)).empty?
+    errors.add(:data_bourreau_ids, 'are not all accessible bourreaux')
     return false
   end
 
-  def valid_data_type #:nodoc:
-    self.data_type = Array(self.data_type).reject { |item| item.blank? }
-    return true if self.data_type.empty?
-    valid_type = CbrainTask.sti_descendant_names
-    return true if ( self.data_type - valid_type ).empty?
-    errors.add(:data_data_type, 'some file types are invalid')
+  def valid_data_types #:nodoc:
+    self.data_types = cleaned_array_for_attribute(:types)
+    return true if self.data_types.empty?
+    valid_types = CbrainTask.sti_descendant_names
+    return true if ( self.data_types - valid_types ).empty?
+    errors.add(:data_types, 'contains invalid file types')
     return false
   end
 
@@ -109,7 +113,7 @@ class TaskCustomFilter < CustomFilter
   end
 
   def valid_data_status #:nodoc:
-    self.data_status = Array(self.data_status).reject { |item| item.blank? }
+    self.data_status = cleaned_array_for_attribute(:status)
     return true if self.data_status.empty?
     return true if ( self.data_status -  (CbrainTask::ALL_STATUS - ["Preset", "SitePreset", "Duplicated"])).empty?
     errors.add(:data_data_status, 'some task status are invalid')
@@ -139,10 +143,10 @@ class TaskCustomFilter < CustomFilter
   # See CustomFilter
   def filter_scope(scope)
     scope = super(scope)
-    scope = scope_type(scope)         if self.data_type.present?
+    scope = scope_types(scope)        if self.data_types.present?
     scope = scope_description(scope)  if self.data_description_type.present? && self.data_description_term.present?
-    scope = scope_user(scope)         if self.data_user_id.present?
-    scope = scope_bourreau(scope)     if self.data_bourreau_id.present?
+    scope = scope_user_ids(scope)     if self.data_user_ids.present?
+    scope = scope_bourreau_ids(scope) if self.data_bourreau_ids.present?
     scope = scope_status(scope)       if self.data_status.present?
     scope = scope_archive(scope)      if self.data_archiving_status.present?
     scope = scope_wd_status(scope)    if self.data_wd_status.present?
@@ -152,9 +156,8 @@ class TaskCustomFilter < CustomFilter
   private
 
   # Returns +scope+ modified to filter the CbrainTask entry's type.
-  def scope_type(scope)
-    return scope if self.data_type.is_a?(Array) && self.data_type.all? { |v| v.blank? }
-    scope.where(:type => self.data_type)
+  def scope_types(scope)
+    filter_by_attribute(scope, :type, self.data_types)
   end
 
   # Returns +scope+ modified to filter the CbrainTask entry's description.
@@ -179,19 +182,18 @@ class TaskCustomFilter < CustomFilter
   end
 
   # Returns +scope+ modified to filter the CbrainTask entry's owner.
-  def scope_user(scope)
-    scope.where(["cbrain_tasks.user_id = ?", self.data_user_id])
+  def scope_user_ids(scope)
+    filter_by_attribute(scope, :user_id, self.data_user_ids)
   end
 
   # Return +scope+ modified to filter the CbrainTask entry's bourreau.
-  def scope_bourreau(scope)
-    scope.where(["cbrain_tasks.bourreau_id = ?", self.data_bourreau_id])
+  def scope_bourreau_ids(scope)
+    filter_by_attribute(scope, :bourreau_id, self.data_bourreau_ids)
   end
 
   # Returns +scope+ modified to filter the CbrainTask entry's status.
   def scope_status(scope)
-    return scope if self.data_status.is_a?(Array) && self.data_status.all? { |v| v.blank? }
-    scope.where(:status => self.data_status)
+    filter_by_attribute(scope, :status, self.data_status)
   end
 
   # Returns +scope+ modified to filter the CbrainTask entry's archive.

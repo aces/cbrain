@@ -91,9 +91,14 @@ class CustomFilter < ApplicationRecord
   # The DATA_PARAMS array is used to whitelist these params.
   # This here defines just a set of generic attributes that together
   # implement filtering by created_at or updated_at.
+  #
+  # This structure must match the argument syntax of
+  # the permit() method of ActionController::Parameters
+  # Subclasses must provide their own constant DATA_PARAMS
+  # with added values.
   DATA_PARAMS =
   [
-    # Attrivutes for filtering, available for all subclasses
+    # Attributes for filtering, available for all subclasses
     :date_attribute,
     :absolute_or_relative_from,
     :absolute_or_relative_to,
@@ -102,8 +107,6 @@ class CustomFilter < ApplicationRecord
     :absolute_from,
     :absolute_to,
   ]
-
-  #self.data_setter_and_getter(DATA_PARAMS) # see at end of file!
 
 
 
@@ -138,6 +141,13 @@ class CustomFilter < ApplicationRecord
     @filtered_class_controller ||= self.class.to_s.sub(/CustomFilter\z/, "").tableize
   end
 
+  # Returns the table name associated with the filters.
+  # This is generally like the contoller name, but it COULD be
+  # different. E.g. tasks vs cbrain_tasks
+  def target_filtered_table
+    filtered_class_controller
+  end
+
   # Main method used for custom filtering. Should be redefined in subclasses to
   # modify +scope+ according to the filter parameters and return it.
   def filter_scope(scope)
@@ -145,18 +155,36 @@ class CustomFilter < ApplicationRecord
     scope
   end
 
+  # Generic utility to add a filtering rule based on a standard
+  # +attribute+ of the model being filtered. Single or multiple values
+  # are allowed.
+  def filter_by_attribute(scope, attribute, values, filtered_table = target_filtered_table())
+    values = Array(values).map(&:presence).compact
+    return scope if values.blank?
+    values = values[0] if values.size == 1
+    scope.where("#{filtered_table}.#{attribute}" => values)
+  end
+
+  # Given a data attribute xyz, calls :data_xyz
+  # and returned a cleaned array where blanks are removed.
+  def cleaned_array_for_attribute(attribute)
+    Array(self.send("data_#{attribute}"))
+      .map(&:presence)
+      .compact
+  end
+
   private
 
   # Return +scope+ modified to filter the CbrainTask entry's dates.
   def scope_date(scope)
-    date_attribute        = self.data_date_attribute # assignation ...
+    date_attribute        = self.data_date_attribute
     mode_is_absolute_from = self.data_absolute_or_relative_from == "absolute"
     mode_is_absolute_to   = self.data_absolute_or_relative_to   == "absolute"
     absolute_from         = self.data_absolute_from
     absolute_to           = self.data_absolute_to
     relative_from         = self.data_relative_from
     relative_to           = self.data_relative_to
-    table_name            = self.target_filtered_table # must be provided in a subclass
+    table_name            = self.target_filtered_table()
 
     scope = add_time_condition_to_scope(scope, table_name,
             mode_is_absolute_from, mode_is_absolute_to,

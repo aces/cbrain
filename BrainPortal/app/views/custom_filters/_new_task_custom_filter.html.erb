@@ -24,8 +24,8 @@
 
 <% custom_filter ||= @custom_filter %>
 
-Task<br>
-<%= task_type_select("data[type]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name).sort, :selector => custom_filter.data_type, :include_top => true }, :multiple => true, :size => 10) %>
+Task types<br>
+<%= task_type_select("data[types]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name).sort, :selector => custom_filter.data_types, :include_top => true }, :multiple => true, :size => 10) %>
 
 <p>
 Status<br>
@@ -36,12 +36,12 @@ Description<br>
 <%= select :data, :description_type, [["Don't filter description", ''], ['Matches', 'match'], ['Contains', 'contain'], ['Begins with', 'begin'], ['Ends with', 'end']], :selected => custom_filter.data_description_type %> <%= text_field_tag "data[description_term]", custom_filter.data_description_term %>
 
 <p>
-Owner<br>
-<%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => custom_filter.data_user_id }, :include_blank => true %>
+Owners<br>
+<%= user_select 'data[user_ids]', { :users => current_user.available_users, :selector => custom_filter.data_user_ids }, :include_blank => true, :multiple => true %>
 
 <p>
-Execution Server<br>
-<%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => custom_filter.data_bourreau_id, :offline_is_ok => true }, :include_blank => true %>
+Execution Servers<br>
+<%= bourreau_select 'data[bourreau_ids]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => custom_filter.data_bourreau_ids, :offline_is_ok => true }, :include_blank => true, :multiple => true %>
 </p>
 
 Filtering by date<br>
