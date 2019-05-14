@@ -46,6 +46,7 @@ class TaskCustomFilter < CustomFilter
       :archiving_status,
       {
         :user_ids     => [],
+        :group_ids    => [],
         :bourreau_ids => [],
         :types        => [],
         :status       => [],
@@ -61,6 +62,7 @@ class TaskCustomFilter < CustomFilter
   ######################################
 
   validate :valid_data_user_ids
+  validate :valid_data_group_ids
   validate :valid_data_bourreau_ids
   validate :valid_data_types
   validate :valid_data_description
@@ -73,6 +75,14 @@ class TaskCustomFilter < CustomFilter
     return true if my_ids.empty?
     return true if (my_ids.map(&:to_i) - self.user.available_users.pluck(:id)).empty?
     errors.add(:data_user_ids, 'are not all accessible users')
+    false
+  end
+
+  def valid_data_group_ids #:nodoc:
+    my_ids = cleaned_array_for_attribute(:group_ids)
+    return true if my_ids.blank?
+    return true if (my_ids.map(&:to_i) - self.user.available_groups.pluck(:id)).empty?
+    errors.add(:data_group_ids, 'have groups that are not accessible')
     false
   end
 
@@ -146,6 +156,7 @@ class TaskCustomFilter < CustomFilter
     scope = scope_types(scope)        if self.data_types.present?
     scope = scope_description(scope)  if self.data_description_type.present? && self.data_description_term.present?
     scope = scope_user_ids(scope)     if self.data_user_ids.present?
+    scope = scope_group_ids(scope)    if self.data_group_ids.present?
     scope = scope_bourreau_ids(scope) if self.data_bourreau_ids.present?
     scope = scope_status(scope)       if self.data_status.present?
     scope = scope_archive(scope)      if self.data_archiving_status.present?
@@ -184,6 +195,11 @@ class TaskCustomFilter < CustomFilter
   # Returns +scope+ modified to filter the CbrainTask entry's owner.
   def scope_user_ids(scope)
     filter_by_attribute(scope, :user_id, self.data_user_ids)
+  end
+
+  # Return +scope+ modified to filter the Userfile entry's group ownership.
+  def scope_group_ids(scope)
+    filter_by_attribute(scope, :group_id, self.data_group_ids)
   end
 
   # Return +scope+ modified to filter the CbrainTask entry's bourreau.

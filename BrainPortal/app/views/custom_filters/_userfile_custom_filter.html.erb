@@ -75,7 +75,7 @@
     <%= user_select 'data[user_ids]', { :users => current_user.available_users, :selector => @custom_filter.data_user_ids }, :include_blank => true, :multiple => true %>
   <% end %>
 
-  <% t.edit_cell(:data_group_ids, :header => "Projects", :content => Group.where(:id => @custom_filter.data_group_ids).pluck(:name).presence || "None") do %>
+  <% t.edit_cell(:data_group_ids, :header => "Projects", :content => Group.where(:id => @custom_filter.data_group_ids).pluck(:name).join(", ").presence || "None") do %>
     <%= group_select("data[group_ids]", { :selector => @custom_filter.data_group_ids }, { :include_blank => true, :multiple => true })  %>
   <% end %>
 

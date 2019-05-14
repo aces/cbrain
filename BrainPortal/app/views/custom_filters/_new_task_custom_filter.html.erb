@@ -40,6 +40,10 @@ Owners<br>
 <%= user_select 'data[user_ids]', { :users => current_user.available_users, :selector => custom_filter.data_user_ids }, :include_blank => true, :multiple => true %>
 
 <p>
+Projects<br>
+<%= group_select("data[group_ids]", { :selector => custom_filter.data_group_ids}, { :include_blank => true, :multiple => true })  %>
+
+<p>
 Execution Servers<br>
 <%= bourreau_select 'data[bourreau_ids]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => custom_filter.data_bourreau_ids, :offline_is_ok => true }, :include_blank => true, :multiple => true %>
 </p>

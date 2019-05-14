@@ -59,6 +59,10 @@
     <%= user_select 'data[user_ids]', { :users => current_user.available_users, :selector => @custom_filter.data_user_ids }, :include_blank => true, :multiple => true %>
   <% end %>
 
+  <% t.edit_cell(:data_group_ids, :header => "Projects", :content => Group.where(:id => @custom_filter.data_group_ids).pluck(:name).join(", ").presence || "None") do %>
+    <%= group_select("data[group_ids]", { :selector => @custom_filter.data_group_ids }, { :include_blank => true, :multiple => true })  %>
+  <% end %>
+
   <% t.edit_cell(:data_bourreau_ids, :header => "Execution Servers", :content => Bourreau.where(:id => @custom_filter.data_bourreau_ids).pluck(:name).join(", ").presence || "None") do %>
     <%= bourreau_select 'data[bourreau_ids]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => @custom_filter.data_bourreau_ids, :offline_is_ok => true }, :include_blank => true, :multiple => true %>
   <% end %>
