@@ -156,10 +156,12 @@
       :class      => [ :resource_list ],
       :scope      => @scope,
       :order_map  => {
-        :site => { :a => 'sites.name', :j => Site }
+        :site    => { :a => 'sites.name',  :j => Site },
+        :creator => { :a => 'users.login', :j => User }
       },
       :filter_map => {
-        :site => { :a => 'site_id' }
+        :site    => { :a => 'site_id'    },
+        :creator => { :a => 'creator_id' }
       }
     ) do |t|
       t.paginate
@@ -184,7 +186,12 @@
 
       t.column("Creator", :creator_id,
         :sortable => true,
-        :filters => default_filters_for(@base_scope, @custom_scope, :creator_id)
+        :filters => scoped_filters_for(
+          @base_scope, @view_scope, :creator_id,
+          scope: @scope,
+          label: 'users.login',
+          association: [User, 'id', 'creator_id']
+        )
       ) { |g| link_to_user_if_accessible(g.creator) }
 
       t.column("Users", :users) do |g|
