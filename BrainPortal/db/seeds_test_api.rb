@@ -234,7 +234,7 @@ LargeSessionInfo.seed_record!(
   {
     user_id:    admin.id,
     active:     true,
-    data:       {  :guessed_remote_ip   => "::1",
+    data:       {  :guessed_remote_ip   => "127.0.0.1",
                    :guessed_remote_host => "api_test_host",
                    :raw_user_agent      => "Rake_API_Test/ruby",
                    :api                 => "yes",
@@ -249,7 +249,7 @@ LargeSessionInfo.seed_record!(
   {
     user_id:    normal.id,
     active:     true,
-    data:       {  :guessed_remote_ip   => "::1",
+    data:       {  :guessed_remote_ip   => "127.0.0.1",
                    :guessed_remote_host => "api_test_host",
                    :raw_user_agent      => "Rake_API_Test/ruby",
                    :api                 => "yes",
@@ -265,7 +265,7 @@ LargeSessionInfo.seed_record!(
   {
     user_id:    normal.id,
     active:     true,
-    data:       {  :guessed_remote_ip   => "::1",
+    data:       {  :guessed_remote_ip   => "127.0.0.1",
                    :guessed_remote_host => "api_test_host",
                    :raw_user_agent      => "Rake_API_Test/ruby",
                    :api                 => "yes",

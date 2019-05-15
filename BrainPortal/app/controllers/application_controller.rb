@@ -42,10 +42,16 @@ class ApplicationController < ActionController::Base
 
   helper_method :start_page_path
 
+  # These will be executed in order
   before_action :check_account_validity
   before_action :prepare_messages
   before_action :adjust_system_time_zone
+  before_action :adjust_remote_ip_and_host
+
+  # This wraps the main action
   around_action :activate_user_time_zone
+
+  # These will be executed in REVERSE of the order listed here
   after_action  :update_session_info       # touch timestamp of session at least once per minute
   after_action  :action_counter            # counts all action/controller/user agents
   after_action  :log_user_info             # add to log a single line with user info.
@@ -59,6 +65,19 @@ class ApplicationController < ActionController::Base
   ########################################################################
 
   private
+
+  # Re-compute the host and IP from the request (when not logged in, or changed)
+  def adjust_remote_ip_and_host #:nodoc:
+    from_ip = cbrain_session[:guessed_remote_ip] # what we had previously
+    cur_ip  = request.remote_ip rescue nil # utility from Rails
+    if cur_ip.present? && from_ip != cur_ip # changed?
+      cur_host = hostname_from_ip(cur_ip)
+      cbrain_session[:guessed_remote_ip]   = cur_ip
+      cbrain_session[:guessed_remote_host] = cur_host
+      current_user.addlog("IP address changed: #{from_ip} to #{cur_ip}") if current_user
+    end
+    true
+  end
 
   # This method adjust the Rails app's time zone in the rare
   # cases where the admin has changed it in the DB using the
@@ -156,12 +175,7 @@ class ApplicationController < ActionController::Base
 
     # Get host and IP from session (when logged in)
     from_ip   = cbrain_session[:guessed_remote_ip].presence
-    from_host = cbrain_session[:guessed_remote_host].presence # only set when logged in
-
-    # Compute the host and IP from the request (when not logged in)
-    from_ip   ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
-    from_ip     = Regexp.last_match[1] if ((from_ip || "") =~ /(\d+\.\d+\.\d+\.\d+)/) # sometimes we get several IPs with commas
-    from_host ||= hostname_from_ip(from_ip)
+    from_host = cbrain_session[:guessed_remote_host].presence
 
     # Pretty user agent string
     brow  = parsed_http_user_agent.browser_name.presence    || "(UnknownClient)"

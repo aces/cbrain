@@ -135,7 +135,7 @@ class NocController < ApplicationController
 
     # Show IP address
     reqenv = request.env || {}
-    @ip_address ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR'] || ""
+    @ip_address ||= request.remote_ip rescue 'UnknownIP'
 
     # Number of exceptions
     @num_exceptions = ExceptionLog.where([ "created_at > ?", this_morning ]).count

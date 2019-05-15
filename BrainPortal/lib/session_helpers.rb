@@ -64,11 +64,33 @@ module SessionHelpers
   # object will also provide us later with the associated user account.
   def cbrain_session_from_api_token
     return nil unless @cbrain_api_token
+
+    # 1) Try to find a record for that session on LargeSessionInfo table:
     large_info = CbrainSession.session_model.where(
       :session_id => @cbrain_api_token,
       :active     => true,
     ).where( "updated_at > ?", SESSION_API_TOKEN_VALIDITY.ago ).first
     return nil unless large_info
+
+    # 2) Make sure the current request's IP matches the IP
+    # recorded when login/password was first sent
+    orig_ip   = large_info.data[:guessed_remote_ip]
+    remote_ip = request.remote_ip rescue "UnknownIP-#{rand(1000000)}"
+    if orig_ip != remote_ip
+      # Log the error in many places
+      user = large_info.user
+      userlogin = user.try(:login) || 'Unknown'
+      message = "API token has changed IP address: user=#{userlogin}, orig=#{orig_ip}, current=#{remote_ip}"
+      Rails.logger.error message
+      user.addlog(message) if user
+      # Clean up
+      large_info.active = false # deactivate
+      large_info.save
+      # Token is invalid!
+      return nil
+    end
+
+    # 3) Build and return CbrainSession wrapper around the LargeSessionInfo object
     CbrainSession.new(large_info)
   end
 

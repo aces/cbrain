@@ -200,9 +200,10 @@ class SessionsController < ApplicationController
     user   = current_user
     cbrain_session.activate(user.id)
 
-    # Record the best guess for browser's remote host name
+    # Record the best guess for browser's remote host IP and name
     reqenv      = request.env
-    from_ip     = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
+    from_ip     = request.remote_ip rescue nil # utility from Rails
+    from_ip   ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR'] # fallbacks?
     from_ip     = Regexp.last_match[1] if ((from_ip || "") =~ /(\d+\.\d+\.\d+\.\d+)/) # sometimes we get several IPs with commas
     from_host   = hostname_from_ip(from_ip)
     from_ip   ||= '0.0.0.0'
