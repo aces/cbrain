@@ -607,7 +607,7 @@ RSpec.describe UsersController, :type => :controller do
 
     describe "switch" do
       # NOTE: the mock model below is not right.... :-( cbrain_sesssion() returns a CbrainSession object!
-      let(:cbrain_session) { mock_model(LargeSessionInfo, "_csrf_token" => 'dummy csrf', "session_id" => 'session_id', "user_id" => admin.id).as_null_object }
+      let(:cbrain_session) { mock_model(LargeSessionInfo, "guessed_remote_ip" => '0.0.0.0', "_csrf_token" => 'dummy csrf', "session_id" => 'session_id', "user_id" => admin.id).as_null_object }
 
       before(:each) do
         allow(controller).to receive(:cbrain_session).and_return(cbrain_session)
