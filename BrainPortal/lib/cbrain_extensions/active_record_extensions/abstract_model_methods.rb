@@ -34,6 +34,12 @@ module CBRAINExtensions #:nodoc:
         end
       end
 
+      def before_create_check_if_abstract_model #:nodoc:
+        cb_error "Cannot create object of class #{self.class}: it's an abstract model." if
+          self.class.cbrain_abstract_model?
+        true
+      end
+
       # ActiveRecord extensions to tag some ActiveRecord single table
       # inheritance models as 'abstract'.
       module ClassMethods
@@ -48,8 +54,9 @@ module CBRAINExtensions #:nodoc:
         # Turns on a flag to label a class as abstract,
         # so that the user interface doesn't provide it
         # as an option for the users.
-        def cbrain_abstract_model!(on_off = true)
-          @_cbrain_abstract_model_ = (on_off == true)
+        def cbrain_abstract_model!
+          @_cbrain_abstract_model_ = true
+          before_create :before_create_check_if_abstract_model
         end
 
         # Returns whether or not the current class
