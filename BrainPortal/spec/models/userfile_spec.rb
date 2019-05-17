@@ -450,8 +450,7 @@ describe Userfile do
       userfile.list_files
     end
 
-    it "should call provider_collection_index if is_locally_cached? is true" do
-      userfile.data_provider = data_provider
+    it "should call provider_collection_index if is_locally_cached? is false" do
       allow(userfile).to receive(:is_locally_cached?).and_return(false)
       expect(userfile).to receive(:provider_collection_index)
       userfile.list_files
@@ -668,6 +667,7 @@ describe Userfile do
     end
 
     it "should return true if syncstat.status is CacheNewer" do
+      allow(userfile).to receive(:is_locally_synced?).and_return(false)
       syncstat = double("syncstat", :status => "CacheNewer")
       allow(userfile).to receive(:local_sync_status).and_return(syncstat)
       expect(userfile.is_locally_cached?).to be_truthy
@@ -676,7 +676,7 @@ describe Userfile do
 
   context "data provider easy acces methods" do
 
-    let(:data_provider) {create(:data_provider, :online => true, :read_only => false)}
+    let(:data_provider) {create(:ssh_data_provider, :online => true, :read_only => false)}
 
     describe "#sync_to_cache" do
 
@@ -751,7 +751,7 @@ describe Userfile do
 
     describe "#provider_move_to_otherprovider" do
 
-      let(:data_provider_other) {create(:data_provider, :online => true, :read_only => false)}
+      let(:data_provider_other) {create(:ssh_data_provider, :online => true, :read_only => false)}
 
       it "should call data_provider.provider_move_to_otherprovider" do
         expect(userfile).to receive(:data_provider).and_return(data_provider)
@@ -762,7 +762,7 @@ describe Userfile do
 
     describe "#provider_copy_to_otherprovider" do
 
-      let(:data_provider_other) {create(:data_provider, :online => true, :read_only => false)}
+      let(:data_provider_other) {create(:ssh_data_provider, :online => true, :read_only => false)}
 
       it "should call data_provider.provider_copy_to_otherprovider" do
         expect(userfile).to receive(:data_provider).and_return(data_provider)

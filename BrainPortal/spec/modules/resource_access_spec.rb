@@ -27,10 +27,10 @@ describe ResourceAccess do
   let(:site_manager)   { create(:site_manager) }
   let(:admin)          { create(:admin_user) }
   let(:scratch_dp)     { ScratchDataProvider.main }
-  let(:free_resource)  { create(:data_provider) }
-  let(:group_resource) { create(:data_provider, :group => user.groups.last) }
-  let(:site_resource)  { create(:data_provider, :user => create(:normal_user, :site => user.site)) }
-  let(:owned_resource) { create(:data_provider, :user => user) }
+  let(:free_resource)  { create(:ssh_data_provider) }
+  let(:group_resource) { create(:ssh_data_provider, :group => user.groups.last) }
+  let(:site_resource)  { create(:ssh_data_provider, :user => create(:normal_user, :site => user.site)) }
+  let(:owned_resource) { create(:ssh_data_provider, :user => user) }
 
 
   describe "#can_be_accessed_by?" do
