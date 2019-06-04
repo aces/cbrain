@@ -24,7 +24,8 @@ require 'rails_helper'
 
 RSpec.describe SessionsController, :type => :controller do
   let(:cookie_session) { ActionController::TestSession.new(:_csrf_token => 'dummy') }
-  let(:cbrain_session) { mock_model(LargeSessionInfo).as_null_object }
+  # NOTE: the mock model below is not right.... :-( cbrain_sesssion() returns a CbrainSession object!
+  let(:cbrain_session) { mock_model(LargeSessionInfo, :guessed_remote_ip => '0.0.0.0').as_null_object }
   let(:portal)         { double("portal", :portal_locked? => false).as_null_object }
 
   before(:each) do
