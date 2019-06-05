@@ -34,4 +34,6 @@
 
 <%= error_messages_for @custom_filter, :header_message => "custom filter could not be updated." %>
 
+<div id="show_edit_custom_filter">
 <%= render :partial => "custom_filters/#{filter_type}", :locals  => {:custom_filter  => @custom_filter}  %>
+</div>

@@ -39,8 +39,8 @@ Child name contains <small>(lists parents)</small>:<br>
 
 
 <p>
-  By file type<br>
-  <%= userfile_type_select("data[type]", {:selector => custom_filter.data_type}, :include_blank => true, :multiple => true ) %>
+  File types<br>
+  <%= userfile_type_select("data[types]", {:selector => custom_filter.data_types}, :include_blank => true, :multiple => true ) %>
 </p>
 
 Filtering by date<br>
@@ -51,16 +51,16 @@ Size<br>
 <%= text_field_tag "data[size_term]", @custom_filter.data_size_type == "" ? "" : @custom_filter.data_size_term %> kb
 
 <p>
-Owner<br>
-<%= user_select("data[user_id]", { :selector => custom_filter.data_user_id }, { :include_blank => true })  %>
+Owners<br>
+<%= user_select("data[user_ids]", { :selector => custom_filter.data_user_ids }, { :include_blank => true, :multiple => true })  %>
 
 <p>
-Project<br>
-<%= group_select("data[group_id]", { :selector => custom_filter.data_group_id}, { :include_blank => true })  %>
+Projects<br>
+<%= group_select("data[group_ids]", { :selector => custom_filter.data_group_ids}, { :include_blank => true, :multiple => true })  %>
 
 <p>
-  Data Provider<br>
-  <%= data_provider_select("data[data_provider_id]", { :selector => custom_filter.data_data_provider_id || '!' }, { :include_blank => true })  %>
+  Data Providers<br>
+  <%= data_provider_select("data[data_provider_ids]", { :selector => custom_filter.data_data_provider_ids || '!' }, { :include_blank => true, :multiple => true })  %>
 </p>
 
 <p>

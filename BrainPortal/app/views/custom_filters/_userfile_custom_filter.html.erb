@@ -53,8 +53,8 @@
     <%= text_field_tag "data[child_name_like]", @custom_filter.data_child_name_like %>
   <% end %>
 
-  <% t.edit_cell(:data_type, :header => "By file type", :content => (@custom_filter.data_type || []).sort.join(", ")) do %>
-      <%= userfile_type_select("data[type]", {:selector => @custom_filter.data_type}, :include_blank => true, :multiple => true ) %>
+  <% t.edit_cell(:data_types, :header => "By file types", :content => (@custom_filter.data_types || []).sort.join(", ")) do %>
+      <%= userfile_type_select("data[types]", { :selector => @custom_filter.data_types }, :include_blank => true, :multiple => true ) %>
   <% end %>
 
   <%
@@ -71,16 +71,18 @@
     <%= text_field_tag "data[size_term]", @custom_filter.data_size_type == "" ? "" : @custom_filter.data_size_term %> kb
   <% end %>
 
-  <% t.edit_cell(:data_user_id, :header => "Owner", :content => User.find_by_id(@custom_filter.data_user_id).try(:name) || "None") do %>
-    <%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => @custom_filter.data_user_id }, :include_blank => true %>
+  <% t.edit_cell(:data_user_ids, :header => "Owner", :content => User.where(:id => @custom_filter.data_user_ids).pluck(:login).join(", ").presence || "None") do %>
+    <%= user_select 'data[user_ids]', { :users => current_user.available_users, :selector => @custom_filter.data_user_ids }, :include_blank => true, :multiple => true %>
   <% end %>
 
-  <% t.edit_cell(:data_group_id, :header => "Project", :content => Group.find_by_id(@custom_filter.data_group_id).try(:name) || "None") do %>
-    <%= group_select("data[group_id]", { :selector => @custom_filter.data_group_id}, { :include_blank => true })  %>
+  <% t.edit_cell(:data_group_ids, :header => "Projects", :content => Group.where(:id => @custom_filter.data_group_ids).pluck(:name).join(", ").presence || "None") do %>
+    <%= group_select("data[group_ids]", { :selector => @custom_filter.data_group_ids }, { :include_blank => true, :multiple => true })  %>
   <% end %>
 
-  <% t.edit_cell(:data_data_provider_id, :header => "Data Provider", :content => DataProvider.find_by_id(@custom_filter.data_data_provider_id).try(:name) || "None") do %>
-    <%= data_provider_select("data[data_provider_id]", { :selector => @custom_filter.data_data_provider_id || '!' }, { :include_blank => true })  %>
+  <% t.edit_cell(:data_data_provider_ids, :header => "Data Providers",
+     :content => (DataProvider.where(:id => @custom_filter.data_data_provider_ids).pluck(:name).join(", ").presence || "None")
+    ) do %>
+    <%= data_provider_select("data[data_provider_ids]", { :selector => @custom_filter.data_data_provider_ids }, { :include_blank => true, :multiple => true })  %>
   <% end %>
 
   <%
@@ -105,7 +107,7 @@
 
 
   <% if current_user.available_tags.count > 0 %>
-    <% t.edit_cell(:data_tags_id, :header => "Tags", :content => Tag.where(:id => @custom_filter.data_tag_ids).map(&:name).join(", ")) do %>
+    <% t.edit_cell(:data_tags_id, :header => "Tags", :content => Tag.where(:id => @custom_filter.data_tag_ids).pluck(:name).join(", ")) do %>
       <%=
       select_tag "data[tag_ids]", options_for_select((current_user.available_tags.map { |tags| [tags.name, tags.id] }), :selected => @custom_filter.data_tag_ids),
                 :multiple => true, :size => 6, :selected => @custom_filter.data_tag_ids

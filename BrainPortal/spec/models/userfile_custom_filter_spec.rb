@@ -31,25 +31,25 @@ describe UserfileCustomFilter do
 
   describe "#filter_scope" do
 
-    it "should remove all task without 'data[:user_id]'" do
-      filter.data = { :user_id => userfile1.user_id }
+    it "should filter by user_ids" do
+      filter.data = { :user_ids => [ userfile1.user_id.to_s ] }
       expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile1.id])
     end
 
     it "should remove all task without 'data[:group_id]'" do
-      filter.data = { :group_id => userfile1.group_id }
+      filter.data = { :group_ids => [ userfile1.group_id.to_s ] }
       expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile1.id])
     end
 
     it "should remove all task without 'data[:data_provider_id]'" do
-      filter.data = { :data_provider_id => userfile1.data_provider_id }
+      filter.data = { :data_provider_ids => [ userfile1.data_provider_id.to_s ] }
       expect(filter.filter_scope(Userfile.where(nil)).map(&:id)).to match_array([userfile1.id])
     end
 
     it "should remove all non 'data[:type]' userfile" do
       u1 = create(:text_file)
            create(:single_file)
-      filter.data = { :type => [u1.class.to_s] }
+      filter.data = { :types => [ u1.class.to_s ] }
       expect(filter.filter_scope(Userfile.where(nil))).to match_array([u1])
     end
 

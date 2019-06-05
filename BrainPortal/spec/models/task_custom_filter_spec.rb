@@ -45,28 +45,28 @@ describe TaskCustomFilter do
 
   describe "#filter_scope" do
     it "should scope type if type filter given" do
-      filter.data = { :type => "CbrainTask::Diagnostics" }
-      expect(filter).to receive(:scope_type).and_return(task_scope)
+      filter.data = { :types => [ "CbrainTask::Diagnostics" ] }
+      expect(filter).to receive(:scope_types).and_return(task_scope)
       filter.filter_scope(task_scope)
     end
 
     it "should not scope type if type filter not given" do
-      expect(filter).not_to receive(:scope_type)
+      expect(filter).not_to receive(:scope_types)
       filter.filter_scope(task_scope)
     end
 
-    it "should remove all task without 'data[:user_id]'" do
-      filter.data = { :user_id => cbrain_task1.user_id }
+    it "should filter tasks by user_ids" do
+      filter.data = { :user_ids => [ cbrain_task1.user_id.to_s ] }
       expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
     end
 
-    it "should remove all task without 'data[:bourreau_id]'" do
-      filter.data = { :bourreau_id => cbrain_task1.bourreau_id }
+    it "should filter tasks by bourreau_ids" do
+      filter.data = { :bourreau_id => [ cbrain_task1.bourreau_id.to_s ] }
       expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
     end
 
-    it "should remove all task without 'data[:status]'" do
-      filter.data = { :status => cbrain_task1.status }
+    it "should filter tasks by status" do
+      filter.data = { :status => [ cbrain_task1.status ] }
       expect(filter.filter_scope(CbrainTask.where(nil))).to match_array([cbrain_task1])
     end
 

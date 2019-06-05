@@ -29,8 +29,10 @@
     <%= text_field_tag "custom_filter[name]", @custom_filter.name %>
   <% end %>
 
-  <% t.edit_cell(:data_type, :header => "Tasks", :content => (@custom_filter.data_type.presence||[]).map(&:constantize).map(&:pretty_name).sort.join(", ")) do %>
-    <%= task_type_select("data[type]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name).sort, :selector => @custom_filter.data_description_type, :include_top => true }, :multiple => true, :size => 10) %>
+  <% t.edit_cell(:data_types, :header => "Types",
+     :content => (@custom_filter.data_types.presence || [])
+                 .map(&:constantize).map(&:pretty_name).sort.join(", ")) do %>
+    <%= task_type_select("data[types]", {:task_types => current_user.available_tools.map(&:cbrain_task_class_name).sort, :selector => @custom_filter.data_types, :include_top => true }, :multiple => true, :size => 10) %>
   <% end %>
 
   <% t.edit_cell(:data_status, :header => "Status", :content => (@custom_filter.data_status||[]).join(", ")) do %>
@@ -53,12 +55,16 @@
     <%= select :data, :description_type, description_type.map{|k,v| [v,k]}, :selected => @custom_filter.data_description_type %> <%= text_field_tag "data[description_term]", @custom_filter.data_description_term %>
   <% end %>
 
-  <% t.edit_cell(:data_user_id, :header => "Owner", :content => User.find_by_id(@custom_filter.data_user_id).try(:name) || "None") do %>
-    <%= user_select 'data[user_id]', { :users => current_user.available_users, :selector => @custom_filter.data_user_id }, :include_blank => true %>
+  <% t.edit_cell(:data_user_ids, :header => "Owners", :content => User.where(:id => @custom_filter.data_user_ids).pluck(:login).join(", ").presence || "None") do %>
+    <%= user_select 'data[user_ids]', { :users => current_user.available_users, :selector => @custom_filter.data_user_ids }, :include_blank => true, :multiple => true %>
   <% end %>
 
-  <% t.edit_cell(:data_bourreau_id, :header => "Execution Server", :content => Bourreau.find_by_id(@custom_filter.data_bourreau_id).try(:name) || "None") do %>
-    <%= bourreau_select 'data[bourreau_id]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => @custom_filter.data_bourreau_id, :offline_is_ok => true },  :include_blank => true %>
+  <% t.edit_cell(:data_group_ids, :header => "Projects", :content => Group.where(:id => @custom_filter.data_group_ids).pluck(:name).join(", ").presence || "None") do %>
+    <%= group_select("data[group_ids]", { :selector => @custom_filter.data_group_ids }, { :include_blank => true, :multiple => true })  %>
+  <% end %>
+
+  <% t.edit_cell(:data_bourreau_ids, :header => "Execution Servers", :content => Bourreau.where(:id => @custom_filter.data_bourreau_ids).pluck(:name).join(", ").presence || "None") do %>
+    <%= bourreau_select 'data[bourreau_ids]', { :bourreaux => Bourreau.find_all_accessible_by_user(current_user).all, :selector => @custom_filter.data_bourreau_ids, :offline_is_ok => true }, :include_blank => true, :multiple => true %>
   <% end %>
 
   <%
