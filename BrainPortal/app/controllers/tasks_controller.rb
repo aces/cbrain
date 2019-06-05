@@ -312,6 +312,11 @@ class TasksController < ApplicationController
       new_task_info[:tool_config_id] = nil # ZAP value, it's incorrect; will likely cause a validation error later on.
     end
 
+    # Validate the batch_id
+    new_task_info[:batch_id] = nil unless
+      new_task_info[:batch_id].present? &&
+      current_user.cbrain_tasks.real_tasks.where(:id => new_task_info[:batch_id]).count == 1
+
     @tool_config = tool_config # for acces in view
 
     # A brand new task object!
@@ -509,6 +514,7 @@ class TasksController < ApplicationController
     # Save old attributes and update the current task to reflect
     # the form's content.
     new_task_attr          = task_params # not the TASK's params[], the REQUEST's params[]
+    new_task_attr.delete(:batch_id) # cannot be changed.
 
     old_tool_config  = @task.tool_config
     old_bourreau     = @task.bourreau
@@ -896,6 +902,7 @@ class TasksController < ApplicationController
     task_attr = params.require_as_params(:cbrain_task).permit(
       :user_id, :group_id, :description,
       :bourreau_id, :tool_config_id,
+      :batch_id,
       :results_data_provider_id, :params => {}
     )
     # There are way too many 'params' in the next bit of code. Two different
