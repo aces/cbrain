@@ -73,7 +73,8 @@ FactoryBot.define do
   # Group         #
   #################
 
-  factory :group do
+  # Group is an abstract model and cannot be saved in the DB
+  factory :group, class: WorkGroup do
     sequence(:name) { |n| "group_#{n}" }
   end
 
@@ -124,7 +125,7 @@ FactoryBot.define do
     association     :group
   end
 
-  factory :ssh_data_provider, parent: :data_provider, class: SshDataProvider do
+  factory :ssh_data_provider, parent: :data_provider, class: FlatDirSshDataProvider do
     sequence(:name) { |n| "ssh_dataprovider_#{n}" }
   end
 
@@ -166,16 +167,18 @@ FactoryBot.define do
   # Userfile      #
   #################
 
+  Userfile.nil? # force pre-load of all constants under Userfile
+
   factory :userfile do
     sequence(:name) { |n| "file_#{n}" }
     association     :user, factory: :normal_user
     association     :group
-    association     :data_provider
+    association     :data_provider, factory: :ssh_data_provider
   end
 
-  Userfile.nil? # force pre-load of all constants under Userfile
   factory :text_file, parent: :userfile, class: TextFile do
     sequence(:name) { |n| "text_file_#{n}" }
+    association     :data_provider, factory: :ssh_data_provider
   end
 
   factory :single_file, parent: :userfile, class: SingleFile do
@@ -192,7 +195,8 @@ FactoryBot.define do
   # Remote Resource #
   ###################
 
-  factory :remote_resource do
+  # RemoteResource is an abstract model and cannot be saved in the DB
+  factory :remote_resource, class: Bourreau do
     sequence(:name)    { |n| "rr_#{n}" }
     online             { true }
     dp_ignore_patterns { ["x", "y", "z"] }
@@ -241,7 +245,9 @@ FactoryBot.define do
   ###################
 
   PortalTask.nil? # force pre-load of all constants under CbrainTask
-  factory :cbrain_task do
+
+  # CbrainTask is an abstract model and cannot be saved in the DB
+  factory :cbrain_task, class: "cbrain_task/diagnostics" do
     status      { "New" }
     association :bourreau
     association :user, factory: :normal_user

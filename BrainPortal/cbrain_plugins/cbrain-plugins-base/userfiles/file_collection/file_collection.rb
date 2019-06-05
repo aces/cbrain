@@ -217,7 +217,7 @@ class FileCollection < Userfile
   # and all other files will be removed.
   # Restoring the state of the workdir can be performed with
   # provider_unarchive().
-  # Returns an empty string if everithing is ok otherwise returns
+  # Returns an empty string if everything is ok otherwise returns
   # the error message.
   def provider_archive()
 

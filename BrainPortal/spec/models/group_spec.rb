@@ -33,10 +33,10 @@ describe Group do
     end
   end
 
-  describe "#pretty_category_name" do
+  describe ".pretty_type" do
     it "should convert the suffix 'Group' of a class name to 'Project'" do
-      allow(group).to receive(:class).and_return(SystemGroup)
-      expect(group.pretty_category_name(user)).to eq("System Project")
+      #allow(group).to receive(:class).and_return(SystemGroup)
+      expect(group.pretty_category_name(user)).to eq("Empty Work Project")
     end
   end
 
@@ -58,7 +58,7 @@ describe Group do
 
   describe "#can_be_edited_by?" do
     it "should not allow edit access" do
-      expect(group.can_be_edited_by?(user)).to be_falsey
+      expect(Group.new.can_be_edited_by?(user)).to be_falsey
     end
   end
 

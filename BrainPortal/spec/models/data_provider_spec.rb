@@ -29,6 +29,19 @@ describe DataProvider do
   let(:singlefile)      { mock_model(SingleFile,     :name => "singlefile_mock",     :user_id => 1).as_null_object }
   let(:filecollection)  { mock_model(FileCollection, :name => "filecollection_mock", :user_id => 1).as_null_object }
 
+  before :all do
+    # We want to be able to create objects of the base class
+    # DataProvider in order to test its methods, even though
+    # normally it's not allowed. FIXME by adjusting the tests?
+    # (Warning: it's a lot of changes).
+    DataProvider.instance_eval { @_cbrain_abstract_model_ = false }
+  end
+
+  after :all do
+    # Return to strict behavior, see above
+    DataProvider.instance_eval { @_cbrain_abstract_model_ = true }
+  end
+
   describe "validations" do
     it "should create a new instance given valid attributes" do
       expect(provider.valid?).to be(true)
