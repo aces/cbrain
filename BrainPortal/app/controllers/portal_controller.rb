@@ -373,14 +373,23 @@ class PortalController < ApplicationController
   # A HTML GET request produces a SwaggerUI information page.
   # A JSON GET request sends the swagger specification.
   def swagger
-    # Find latest JSON swagger spec.
+    # Find latest JSON swagger spec. E.g. from the directory, scan these files:
+    #   cbrain-4.5.1-swagger.json
+    #   cbrain-5.0.2-swagger.json
+    #   cbrain-5.1.0-swagger.json
+    #   cbrain-5.1.1-swagger.json
     # FIXME sort() will break when comparing versions...
     @specfile = Dir.entries(Rails.root + "public" + "swagger").grep(/\Acbrain-.*.json\z/).sort.last
+
     if (@specfile.blank?)
       flash[:error] = "Cannot find SWAGGER specification for the service. Sorry."
       redirect_to start_page_path
       return
     end
+
+    # FIXME the way we exatrct the version number from the file name is brittle...
+    @spec_version = @specfile.sub("cbrain-","").sub(/-swagger.*/,"")
+
     respond_to do |format|
       format.html
       format.json { send_file "public/swagger/#{@specfile}",                     :stream  => true }
