@@ -224,6 +224,19 @@ describe "Bourreau Boutiques Tests" do
           expect( task.cluster_commands[0].strip ).to eq( '/minimalApp -a value' )
         end
 
+        # Test that optional "shell" in descriptor trigger the creation of a wrapper
+        it "should create wrapper commands for alternate shells" do
+          @descriptor['shell'] = 'myFakeShell'
+          task = @generateTask.( { a: 'value' } )
+          expect( task.cluster_commands[0].strip ).to match(
+            /
+            myFakeShell\s*<<'BoutiquesShellWrapper'\s+
+            \/minimalApp\s-a\svalue\s+
+            BoutiquesShellWrapper
+            /x
+          )
+        end
+
         # Test output flag substitution
         it "should correctly subsitute cluster_commands with output keys" do
           @descriptor['command-line'] += ' [OUT-KEY]'
@@ -320,7 +333,7 @@ describe "Bourreau Boutiques Tests" do
             next # after_form does not need to check this here, since rails puts a value in the hash
           end
           # Run the generated command line from cluster_commands (-2 to ignore export lines and the echo log at -1)
-          exit_code = runTestScript( FileNamesToPaths.( @task.cluster_commands[-2].gsub('./'+TestScriptName,'') ), test[3] || [] )
+          exit_code = runTestScript( FileNamesToPaths.( @task.cluster_commands[-2].strip.gsub('./'+TestScriptName,'') ), test[3] || [] )
           # Check that the exit code is appropriate
           expect( exit_code ).to eq( test[2] )
         end
