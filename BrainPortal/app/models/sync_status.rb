@@ -581,6 +581,25 @@ class SyncStatus < ApplicationRecord
     states
   end
 
+  # Unfortunately, even with the validates_uniqueness_of restriction
+  # defined at the top of this file, we sometimes end up with
+  # duplicated entries in the DB. This code finds them and in the darkness
+  # binds them.
+  def self.clean_duplications(rrid = RemoteResource.current_resource.id) #:nodoc:
+    self.where(:remote_resource_id => rrid)
+        .group([:userfile_id, :remote_resource_id])
+        .count
+        .select { |_,v| v > 1 }
+        .each do |pair,count|
+           userfile_id,remote_resource_id = *pair
+           #puts_red "Duplicated SyncStatus entries: #{count} times: (#{userfile_id}, #{remote_resource_id})"
+           dups = SyncStatus.order(:created_at)
+                  .where(:userfile_id => userfile_id, :remote_resource_id => remote_resource_id)
+                  .all.to_a
+           dups[1..-1].each { |ss| ss.delete rescue nil } # keep first one, delete the others
+        end
+  end
+
 
 
   private
