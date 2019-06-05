@@ -26,7 +26,7 @@
 
 <div class="menu_bar">
   <%= link_to 'Delete', access_profile_path(@access_profile),  {
-        :confirm => "Are you sure you want to delete '#{@access_profile.name}' ?",
+        :data => { :confirm => "Are you sure you want to delete '#{@access_profile.name}' ?" } ,
         :method  => :delete,
         :class => "button"
         }

@@ -40,7 +40,7 @@
 
     <%end%>
 
-    <%= link_to 'Delete', bourreau_path(@bourreau), { :confirm => "Are you sure you want to delete '#{@bourreau.name}' ?", :method => :delete, :class => "button" } %>
+    <%= link_to 'Delete', bourreau_path(@bourreau), { :data => { :confirm => "Are you sure you want to delete '#{@bourreau.name}' ?" }, :method => :delete, :class => "button" } %>
   </div>
 <% end %>
 

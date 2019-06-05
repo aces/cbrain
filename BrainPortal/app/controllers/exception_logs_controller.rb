@@ -57,7 +57,7 @@ class ExceptionLogsController < ApplicationController
   end
 
   def destroy #:nodoc:
-    @exception_logs = ExceptionLog.find(params[:exception_log_ids])
+    @exception_logs = ExceptionLog.find(params[:exception_log_ids]) rescue []
     @exception_logs.each(&:destroy)
 
     flash[:notice] = "#{view_pluralize(@exception_logs.count, "exception")} deleted."

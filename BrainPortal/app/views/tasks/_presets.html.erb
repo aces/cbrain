@@ -18,7 +18,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
 
@@ -35,13 +35,16 @@
     grouped_options_for_select(@all_presets)
       %>
   </td>
-  <td><%= submit_tag "Load Preset", :name => :load_preset %><%= submit_tag "Delete Preset", :name => :delete_preset %></td>
+  <td>
+    <%= submit_tag "Load Preset",   :name => :load_preset %>
+    <%= submit_tag "Delete Preset", :name => :delete_preset, :data => { :confirm => 'Delete this preset?' } %>
+ </td>
 </tr>
 
 <tr>
   <td><strong>Save as a preset configuration:</strong></td>
   <td><%= select_tag :save_preset_id,
-          "<option value=\"\">(Select a preset to save)</option>".html_safe +
+          "<option value=\"\">(Select a preset to overwrite)</option>".html_safe +
           options_for_select(@own_presets)
       %><strong> or as new name:</strong>
       <%= text_field_tag :save_preset_name, "", :size => 20 %>

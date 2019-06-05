@@ -32,7 +32,7 @@
        # to select which multi action to perform. Change them at both places.
     %>
 
-    <%= submit_tag "Delete",                :class => "button" %>
+    <%= submit_tag "Delete",                :class => "button", :data => { :confirm =>  'Delete the selected signup requests?' } %>
     <%= submit_tag "Adjust Login",          :class => "button" %>
     <%= submit_tag "Resend Confirm Email",  :class => "button" %>
     <%= submit_tag "Toggle Hidden",         :class => "button" %>
