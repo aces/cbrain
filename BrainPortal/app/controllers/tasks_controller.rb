@@ -811,8 +811,20 @@ class TasksController < ApplicationController
         bourreau  = Bourreau.find(bid)
         begin
           if operation == 'delete'
-            bourreau.send_command_alter_tasks(btasklist,'Destroy') # TODO parse returned command object?
-            success_list += btasklist
+            # Two sublists, to optimize the delete
+            can_be_just_deleted = btasklist.select { |t| t.cluster_workdir.blank? }
+            must_remote_delete  = btasklist - can_be_just_deleted
+            can_be_just_deleted.each do |t|
+              begin
+                t.destroy
+                success_list << t
+              rescue => e
+                failed_list[e.message] ||= []
+                failed_list[e.message] << t
+              end
+            end
+            bourreau.send_command_alter_tasks(must_remote_delete,'Destroy') # TODO parse returned command object?
+            success_list += must_remote_delete
             next
           end
           new_status  = PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
@@ -822,9 +834,9 @@ class TasksController < ApplicationController
             new_status && allowed_new.include?(new_status)
           end
           if oktasks.size > 0
-            bourreau.send_command_alter_tasks(oktasks, new_status, 
-                                               { :requester_user_id        => current_user.id, 
-                                                 :new_bourreau_id          => new_bourreau_id, 
+            bourreau.send_command_alter_tasks(oktasks, new_status,
+                                               { :requester_user_id        => current_user.id,
+                                                 :new_bourreau_id          => new_bourreau_id,
                                                  :archive_data_provider_id => archive_dp_id
                                                }
                                               ) # TODO parse returned command object?
