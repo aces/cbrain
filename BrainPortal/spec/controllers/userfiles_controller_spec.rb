@@ -1154,16 +1154,32 @@ RSpec.describe UserfilesController, :type => :controller do
 
 
     describe "extract_from_collection" do
-      let(:mock_collection) {mock_model(FileCollection).as_null_object}
+      let(:mock_collection)       { mock_model(FileCollection).as_null_object }
+      let(:mock_dp)               { mock_model(DataProvider) }
+      let(:mock_singlefile_class) { double("FakeSingleFileClass") }
 
       before(:each) do
         session[:session_id] = 'session_id'
-        allow(FileCollection).to receive(:find_accessible_by_user).and_return(mock_collection)
-        allow(SingleFile).to receive(:new).and_return(mock_userfile)
-        allow(Dir).to receive(:chdir).and_yield
+        allow(FileCollection).to        receive(:find_accessible_by_user).and_return(mock_collection)
+        allow(mock_collection).to       receive(:data_provider).and_return(mock_dp)
+        allow(mock_dp).to               receive(:id).and_return(1)
+        allow(mock_dp).to               receive(:read_only?).and_return(false)
+        allow(Userfile).to              receive(:suggested_file_type).and_return(mock_singlefile_class)
+        allow(mock_singlefile_class).to receive(:new).and_return(mock_userfile)
+        allow(Dir).to                   receive(:chdir).and_yield
       end
 
 
+
+      context "when the DataProvider is read-only" do
+
+        it "should display a flash message" do
+          allow(mock_dp).to               receive(:read_only?).and_return(true)
+          post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
+          expect(flash[:error]).to match(/DataProvider.*not.*writable/)
+        end
+
+      end
 
       context "when no files are selected" do
 
@@ -1179,12 +1195,12 @@ RSpec.describe UserfilesController, :type => :controller do
       end
 
       it "should find the collection" do
-         expect(FileCollection).to receive(:find_accessible_by_user).and_return(mock_collection)
-         post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
+        expect(FileCollection).to receive(:find_accessible_by_user).and_return(mock_collection)
+        post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
       end
 
       it "should create a new single file" do
-        expect(SingleFile).to receive(:new).and_return(mock_userfile)
+        expect(mock_singlefile_class).to receive(:new).and_return(mock_userfile)
         post :extract_from_collection, params: {:id => 1, :file_names => ["file_name"]}
       end
 

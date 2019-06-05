@@ -577,6 +577,7 @@ class Userfile < ApplicationRecord
 
   # See the description in class DataProvider
   def provider_erase
+    return true if ! self.data_provider_id
     self.data_provider.provider_erase(self)
   end
 
