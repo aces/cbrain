@@ -30,6 +30,10 @@
 
   <% else %>
 
+    <% t.cell("Rails Environment",                  :show_width => 2) { red_if(@info.environment != Rails.env,@info.environment) } %>
+
+    <% t.blank_row %>
+
     <% t.cell("Process Start Revision",             :show_width => 2) { @info.starttime_revision } %>
     <% t.cell("Process Start Last Change Author",   :show_width => 2) { @info.lc_author } %>
     <% t.cell("Process Start Last Change Revision", :show_width => 2) { @info.lc_rev } %>
