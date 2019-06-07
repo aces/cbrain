@@ -44,7 +44,8 @@ module RequestHelpers
     return @_remote_ip if @_remote_ip.present? && @_remote_ip != '127.0.0.1'
 
     # Custom fallback code
-    env_ip   ||= reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
+    reqenv      = request.env || {}
+    env_ip      = reqenv['HTTP_X_FORWARDED_FOR'] || reqenv['HTTP_X_REAL_IP'] || reqenv['REMOTE_ADDR']
     @_remote_ip = Regexp.last_match[1] if ((env_ip || "") =~ /(\d+\.\d+\.\d+\.\d+)/) # sometimes we get several IPs with commas
     @_remote_ip
   end
