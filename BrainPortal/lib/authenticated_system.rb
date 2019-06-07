@@ -153,6 +153,15 @@ module AuthenticatedSystem #:nodoc:
 
     # Called from #current_user.  First attempt to login by the user id stored in the session.
     def user_from_session
+      # Check in case we marked the session as inactive through outside channels
+      if CbrainSession.session_model.where(
+          :session_id => session[:session_id],
+          :active     => false,
+         ).exists?
+       session[:user_id] = nil
+        reset_session # Rails
+        return nil
+      end
       User.find_by_id(session[:user_id]) if session[:user_id]
     end
 

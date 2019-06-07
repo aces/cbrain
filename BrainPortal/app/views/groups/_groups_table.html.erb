@@ -142,7 +142,7 @@
             <% end %>
             <%= link_to g.can_be_edited_by?(current_user) ? "Edit" : "Show", group_path(g), :class => "project_edit_button project_button_bottom_link", :title => "Edit" %>
             <% if g.is_a?(WorkGroup) && g.can_be_edited_by?(current_user) %>
-              <%= delete_button "X", group_path(g), :class => "project_delete_button project_button_bottom_link", :title => "Delete", :confirm => "Are you sure you want to delete project '#{h g.name}'?" %>
+              <%= link_to "X", group_path(g), :method => :delete, :class => "project_delete_button project_button_bottom_link", :title => "Delete", :data => { :confirm => "Are you sure you want to delete project '#{h g.name}'?" } %>
             <% end %>
           </div>
         </div>

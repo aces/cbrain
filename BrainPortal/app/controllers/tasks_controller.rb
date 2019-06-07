@@ -829,7 +829,7 @@ class TasksController < ApplicationController
                 failed_list[e.message] << t
               end
             end
-            bourreau.send_command_alter_tasks(must_remote_delete,'Destroy') # TODO parse returned command object?
+            bourreau.send_command_alter_tasks(must_remote_delete,'Destroy') if must_remote_delete.present? # TODO parse returned command object?
             success_list += must_remote_delete
             next
           end

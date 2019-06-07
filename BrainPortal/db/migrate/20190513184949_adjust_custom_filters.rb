@@ -11,8 +11,8 @@ class AdjustCustomFilters < ActiveRecord::Migration[5.0]
   )
   # Note: tag_ids is UserfileCustomFilters are already OK
 
-  PortalTask # force load of subclasses
-  Userfile   # force load of subclasses
+  PortalTask.nil? # force load of subclasses
+  Userfile.nil?   # force load of subclasses
 
   def up
     adjust_all(:unchanged_attribute_name,      :pluralize_data_attribute_name)
@@ -40,7 +40,15 @@ class AdjustCustomFilters < ActiveRecord::Migration[5.0]
       end
       next unless changed
       cf.data = cf_data
-      cf.save!
+      begin
+        cf.save!
+      rescue
+        # If we can't update it, we just delete it; the user will have to re-create it.
+        # A whole lot of old filters contained information that won't validate anymore
+        # and it's too difficult to try to fix them now.
+        puts_red "Deleting invalid filter: #{cf.class}/#{cf.id}"
+        cf.delete
+      end
     end
   end
 

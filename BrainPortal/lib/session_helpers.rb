@@ -65,7 +65,7 @@ module SessionHelpers
   def cbrain_session_from_api_token
     return nil unless @cbrain_api_token
 
-    # 1) Try to find a record for that session on LargeSessionInfo table:
+    # 1) We must find a record for the session in LargeSessionInfo table:
     large_info = CbrainSession.session_model.where(
       :session_id => @cbrain_api_token,
       :active     => true,
@@ -75,7 +75,8 @@ module SessionHelpers
     # 2) Make sure the current request's IP matches the IP
     # recorded when login/password was first sent
     orig_ip   = large_info.data[:guessed_remote_ip]
-    remote_ip = request.remote_ip rescue "UnknownIP-#{rand(1000000)}"
+    # The method cbrain_request_remote_ip comes from RequestHelpers module
+    remote_ip = cbrain_request_remote_ip rescue "UnknownIP-#{rand(1000000)}"
     if orig_ip != remote_ip
       # Log the error in many places
       user = large_info.user
