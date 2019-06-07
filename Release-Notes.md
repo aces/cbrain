@@ -1,6 +1,44 @@
 
 ## CBRAIN Release Notes
 
+#### Version 5.1.2 Released 2019-06-07
+
+The release includes new features and bug fixes.
+
+New features:
+
+- Boutiques descriptors can request their shell to
+  be something other than 'bash'
+- Boutiques tasks that work on a multiple input files
+  now properly record provenance of their outputs
+- Custom filters now support multi-select lists for
+  many attributes
+- API requests will be refused if they suddenly come from
+  a different origin
+- DataProviders have two new fields to support Datalad servers
+- The swagger spec defines page and per_page query parameters
+- Tasks that no longer have a workdir are deleted by the portal
+- API users can group together new tasks under the same batch_id
+- The server list will show red indicators if a Bourreau is
+  running in an environment different from the portal (e.g.
+  production vs development)
+- The admin console now has a 'last' command just like in UNIX
+
+Bugs fixed:
+
+- We use Process.setproctitle() instead of writing to $0
+- The custom 'confirm' dialog was changed to a standard Rails one
+- Project list show the creators properly
+- Project buttons allow deletion
+- Roaming users will see their IP address update properly
+- Extracting files from FileCollections now guess their types
+  and will not proceed if the DP is not writable
+- The system won't attempt to send emails if it's not configured
+  for email anyway
+- Very rare duplications of SyncStatus objects, caused by race
+  conditions, are detected and fixed at boot time
+- Miscellaneous other small fixes
+
 #### Version 5.1.1 Released 2019-03-13
 
 This is mostly a bugfix release. There is one major new
