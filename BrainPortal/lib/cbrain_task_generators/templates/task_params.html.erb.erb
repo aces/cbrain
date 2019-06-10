@@ -175,7 +175,10 @@
     type  = name ? 'chk' : 'opt'
   %>
   <%% if name %>
-    <%% check = @task.params[name.to_sym] if check.nil? %>
+    <%% if check.nil? %>
+    <%%   check = @task.params[name.to_sym].presence %>
+    <%%   check = false if check == "0" %>
+    <%% end %>
     <%%#
       As a checkbox's value is not sent if left unchecked, a hidden 'back' field
       sends the unchecked state is used to send. Rails overwrites this 'back'
