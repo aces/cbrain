@@ -54,6 +54,13 @@ group :development do
   gem "listen", '~> 3.0.5'
 end
 
+group :assets do
+  gem 'therubyracer'
+  gem 'sassc'
+  gem 'coffee-rails'
+  gem 'uglifier'
+end
+
 group :test do
   gem "rspec"
   gem "rspec-rails"
