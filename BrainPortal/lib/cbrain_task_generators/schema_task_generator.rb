@@ -338,7 +338,7 @@ module SchemaTaskGenerator
     apply_template = lambda do |template|
       ERB.new(IO.read(
         Rails.root.join('lib/cbrain_task_generators/templates', template).to_s
-      ), nil, '%<>>-').result(binding)
+      ), nil, '%-').result(binding)
     end
 
     # descriptor_path is a full path to a CBRAIN file

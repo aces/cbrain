@@ -26,7 +26,7 @@ describe Tool do
   let(:tool) do
     allow(File).to receive(:exist?).and_return(true)
     allow(File).to receive(:exist?).with(Rails.root + "public/licenses/bad.html").and_return(false)
-    build(:tool)
+    create(:tool)
   end
 
   it "should keep description if present" do

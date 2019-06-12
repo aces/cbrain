@@ -22,7 +22,8 @@ test_user="cbrain"            # normal user to run test suite
 test_script="cb_run_tests.sh" # the script for running the suite
 
 echo "Starting DB server as root"
-service mysqld start || exit 2
+mysqld_safe &
+test $? -ne 0 && exit 2
 echo "Running test script '$test_script' as user '$test_user'"
 su -c "bash --login -c /home/cbrain/cbrain_travis/Travis/$test_script" $test_user
 

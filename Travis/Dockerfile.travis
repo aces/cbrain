@@ -9,7 +9,7 @@
 # from docker is also a possibility.
 ############################################
 
-FROM centos:6
+FROM centos:latest
 
 
 
@@ -24,6 +24,8 @@ RUN yum update -y
 RUN yum install -y \
       autoconf \
       automake \
+      make \
+      bzip2 \
       bison \
       gcc-c++ \
       git \
@@ -36,13 +38,14 @@ RUN yum install -y \
       libxml2 \
       libxml2-devel \
       libyaml-devel \
-      mysql-devel \
-      mysql-server \
+      mariadb-devel \
+      mariadb-server \
       openssl-devel \
       patch \
       readline-devel \
       sqlite-devel \
       zlib-devel \
+      which \
       wget
 
 # The following UID and GID are chosen
@@ -61,14 +64,19 @@ ENV MYSQL_ROOT_PASSWORD="my-secret-pw" MYSQL_USER="cb_user" MYSQL_DATABASE="cb_d
 # MySQL server installation and configuration
 #############################################
 
-RUN service mysqld start && \
-    /usr/bin/mysqladmin -u root password "$MYSQL_ROOT_PASSWORD" && \
-    /usr/bin/mysqladmin -u root -h `hostname` password "$MYSQL_ROOT_PASSWORD"
+RUN mysql_install_db
+RUN mkdir -p /var/lib/mysql /var/run/mysqld
+RUN chown -R mysql:mysql /var/lib/mysql /var/run/mysqld && \
+    chmod 777 /var/run/mysqld
+RUN rm -f /var/lib/mysql/aria_log_control
 
-RUN service mysqld start && \
+RUN mysqld_safe & sleep 3 && \
+    /usr/bin/mysqladmin -u root password "$MYSQL_ROOT_PASSWORD"
+
+RUN mysqld_safe & sleep 3 && \
     /usr/bin/mysql -u root --password="$MYSQL_ROOT_PASSWORD" -e "create database $MYSQL_DATABASE;"
 
-RUN service mysqld start && \
+RUN mysqld_safe & sleep 3 && \
     /usr/bin/mysql -u root --password="$MYSQL_ROOT_PASSWORD" -e "grant all on $MYSQL_DATABASE.* to '$MYSQL_USER'@'localhost' identified by '$MYSQL_PASSWORD';"
 
 
@@ -79,15 +87,16 @@ RUN service mysqld start && \
 
 USER cbrain
 
-ENV RUBY_VERSION=2.4.1
+ENV RUBY_VERSION=2.6.3
 
 RUN cd $HOME && curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -
+RUN cd $HOME && curl -sSL https://rvm.io/pkuczynski.asc | gpg2 --import -
 
 RUN cd $HOME && curl -sSL https://get.rvm.io | bash -s stable
 
 RUN cd $HOME && echo "source $HOME/.rvm/scripts/rvm" >> $HOME/.bashrc
 
-RUN bash --login -c 'rvm install $RUBY_VERSION'
+RUN bash --login -c 'rvm install $RUBY_VERSION --autolibs=read'
 
 RUN bash --login -c 'rvm --default $RUBY_VERSION'
 
@@ -111,7 +120,7 @@ ENV CBRAIN_BRANCH=$CBRAIN_BRANCH
 # Just having a different commit number in the echo statement will do.
 # This can be necessary if you know that the code on the GitHub
 # repo has changed since that last build.
-RUN echo Force install using CBRAIN at commit 337bd0bd39d7777f060c62e0070411b05ba5ccb6
+RUN echo Force install using CBRAIN at commit 80fd1518a7
 
 # Extract initial CBRAIN source (will be replaced at test time)
 # but having an initial installation speeds up bundling,
@@ -124,7 +133,7 @@ RUN cd $HOME && \
 # Install and configure the portal
 ENV RAILS_ENV=test
 
-RUN bash --login -c 'cd $HOME/cbrain_base/BrainPortal && gem install bundler --no-ri --no-rdoc'
+RUN bash --login -c 'cd $HOME/cbrain_base/BrainPortal && gem install bundler'
 
 RUN bash --login -c 'cd $HOME/cbrain_base/BrainPortal && bundle install'
 
@@ -144,16 +153,16 @@ RUN  chown cbrain /home/cbrain/cbrain_base/BrainPortal/config/database.yml && \
 
 RUN su -c "bash --login -c 'cd \$HOME/cbrain_base/BrainPortal && rake cbrain:plugins:install:plugins'" cbrain
 
-RUN service mysqld start && \
+RUN mysqld_safe & sleep 2 && \
     su -c "bash --login -c 'cd \$HOME/cbrain_base/BrainPortal && rake db:schema:load'" cbrain
 
-RUN service mysqld start && \
+RUN mysqld_safe & sleep 2 && \
     su -c "bash --login -c 'cd \$HOME/cbrain_base/BrainPortal && rake db:seed'" cbrain
 
-RUN service mysqld start && \
+RUN mysqld_safe & sleep 2 && \
     su -c "bash --login -c 'cd \$HOME/cbrain_base/BrainPortal && rake db:seed:test:bourreau'" cbrain
 
-RUN service mysqld start && \
+RUN mysqld_safe & sleep 2 && \
     su -c "bash --login -c 'cd \$HOME/cbrain_base/BrainPortal && rake db:sanity:check'" cbrain
 
 

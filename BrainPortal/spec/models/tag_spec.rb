@@ -23,25 +23,28 @@
 require 'rails_helper'
 
 describe Tag do
-  let (:tag) { create(:tag) }
+  let (:user)   { create(:normal_user) }
+  let (:group)  { create(:work_group) }
+  let (:group2) { create(:work_group) }
+  let (:tag)    { create(:tag, :user_id => user.id, :group_id => group.id) }
 
   it "should check that name is unique" do
-    bad_name = build(:tag, :group_id => tag.group_id, :name => tag.name)
+    bad_name = build(:tag, :user_id => user.id, :group_id => tag.group_id, :name => tag.name)
     expect(bad_name).not_to be_valid
   end
 
   it "should check that name is unique only for same scope" do
-    bad_name= build(:tag, :name => tag.name)
-    expect(bad_name).to be_valid
+    dup_name = build(:tag, :user_id => user.id, :group_id => group2.id, :name => tag.name)
+    expect(dup_name).to be_valid
   end
 
   it "should check that name have specific format" do
-    good_name = build(:tag, :name => "Abcdef")
+    good_name = build(:tag, :user_id => user.id, :group_id => tag.group_id, :name => "Abcdef")
     expect(good_name).to be_valid
   end
 
   it "should not be valid if the name is invalid" do
-    bad_name = build(:tag, :name => "Ab@cdef")
+    bad_name = build(:tag, :user_id => user.id, :group_id => tag.group_id, :name => "Ab@cdef")
     expect(bad_name).not_to be_valid
   end
 

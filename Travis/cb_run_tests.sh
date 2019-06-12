@@ -183,7 +183,7 @@ rspec spec/boutiques || fail_bourreau="rspec on Bourreau failed with return code
 # Testing of API (curl)
 # ------------------------------
 printf "${BLUE}Running API tests with curl.${NC}\n"
-cd $cb_test/BrainPortal            || die "Cannot cd to Bourreau directory"
+cd $cb_test/BrainPortal            || die "Cannot cd to BrainPortal directory"
 rake "db:seed:test:api" >/dev/null || die "Cannot re-seed the DB for API testing"
 rails server puma -p 3000 -d       || die "Cannot start local puma server?"
 cd test_api                        || die "Cannot cd to test_api directory?"
@@ -197,7 +197,7 @@ kill $(cat $cb_test/BrainPortal/tmp/pids/server.pid)
 # Testing of API (Ruby)
 # ------------------------------
 printf "${BLUE}Running API tests with Ruby CbrainClient gem.${NC}\n"
-cd $cb_test/BrainPortal            || die "Cannot cd to Bourreau directory"
+cd $cb_test/BrainPortal            || die "Cannot cd to BrainPortal directory"
 rake "db:seed:test:api" >/dev/null || die "Cannot re-seed the DB for API testing"
 rails server puma -p 3000 -d       || die "Cannot start local puma server?"
 cd test_api                        || die "Cannot cd to test_api directory?"
