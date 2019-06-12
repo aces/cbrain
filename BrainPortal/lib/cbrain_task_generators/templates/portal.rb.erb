@@ -147,10 +147,8 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     # If the superclass returns error messages,
     # we don't even bother proceeding with the rest
     # here.
-    if self.class.superclass < PortalTask
-      super_messages = super
-      return super_messages if super_messages.present?
-    end
+    super_messages = super
+    return super_messages if super_messages.present?
 
 % file_types = descriptor['inputs']
 %   .select { |i| ! i['optional'] && i['type'] == 'File' }
@@ -193,10 +191,8 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     # If the superclass returns error messages,
     # we don't even bother proceeding with the rest
     # here.
-    if self.class.superclass < PortalTask
-      super_messages = super
-      return super_messages if super_messages.present?
-    end
+    super_messages = super
+    return super_messages if super_messages.present?
 
 % unless params.empty?
     params = self.params
@@ -532,11 +528,11 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # instead of just one.
   def final_task_list #:nodoc:
 
-    # OK so this is crazy stuff again, if we have a superclass
-    # that is not the default PortalTask, we trust that it knows
-    # how to generate a task list better than we do, so we
+    # If we have a superclass that informs us that it knows
+    # how to generate a task list better than we do, we
     # just delegate all the work to it.
-    if self.class.superclass < PortalTask
+    if self.class.superclass.respond_to?(:override_final_task_list) &&
+       self.class.superclass.override_final_task_list.present?
       return super
     end
 

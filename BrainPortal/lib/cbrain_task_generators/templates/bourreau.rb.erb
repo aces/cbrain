@@ -159,11 +159,10 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # in params.
   def cluster_commands #:nodoc:
 
-    # OK so this is crazy stuff, if we have a superclass
-    # that is not the default ClusterTask, we trust that it knows
-    # how to generate the commands better than we do, so we
-    # just delegate all the work to it.
-    if self.class.superclass < ClusterTask
+    # If we have a superclass that knows how to generate the commands
+    # better than we do, we just delegate all the work to it.
+    if self.class.superclass.respond_to?(:override_cluster_commands) &&
+       self.class.superclass.override_cluster_commands.present?
       return super
     end
 
@@ -369,11 +368,11 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   # CBRAIN for later retrieval. Returns true on success.
   def save_results #:nodoc:
 
-    # OK so this is crazy stuff, if we have a superclass
-    # that is not the default ClusterTask, we trust that it knows
-    # how to save results better than we do, so we
+    # If we have a superclass that knows
+    # how to save results better than we do, we
     # just delegate all the work to it.
-    if self.class.superclass < ClusterTask
+    if self.class.superclass.respond_to?(:override_save_results) &&
+       self.class.superclass.override_save_results.present?
       return super
     end
 
