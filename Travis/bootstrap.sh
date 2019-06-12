@@ -23,7 +23,21 @@ test_script="cb_run_tests.sh" # the script for running the suite
 
 echo "Starting DB server as root"
 mysqld_safe &
-test $? -ne 0 && exit 2
+started=""
+for n in 1 2 3 4 5 ; do
+  echo "Waiting for DB server ($n/5)"
+  sleep 3
+  started=$(ps ax -o cmd | grep -v mysqld_safe | grep mysql | grep -v grep | head -1 | cut -d" " -f1 )
+  test -n "$started" && break
+done
+if test -z "$started" ; then
+  echo "Error: cannot start DB server?!?"
+  exit 2
+else
+  echo "DB server started."
+  echo ""
+fi
+
 echo "Running test script '$test_script' as user '$test_user'"
 su -c "bash --login -c /home/cbrain/cbrain_travis/Travis/$test_script" $test_user
 

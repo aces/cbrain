@@ -120,7 +120,7 @@ ENV CBRAIN_BRANCH=$CBRAIN_BRANCH
 # Just having a different commit number in the echo statement will do.
 # This can be necessary if you know that the code on the GitHub
 # repo has changed since that last build.
-RUN echo Force install using CBRAIN at commit 80fd1518a7
+RUN echo Force install using CBRAIN at commit d4eca710772
 
 # Extract initial CBRAIN source (will be replaced at test time)
 # but having an initial installation speeds up bundling,
