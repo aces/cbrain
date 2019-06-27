@@ -130,7 +130,7 @@
   <%%
     values = @task.params[name.to_sym] if name && values.nil?
     values = values.is_a?(Enumerable) ? values.compact : [values].compact
-    first = values.pop
+    first  = values.shift
   %>
   <ul class="tsk-prm-list">
     <li>
@@ -343,7 +343,8 @@
         )
     <%- else -%>
         # File input dropdown
-        dropdown.(id, id,
+        name = id <%= list ? '+ "[]"' : '' %>
+        dropdown.(id, name,
           input_files.map { |f| [ f.id.to_s, f.name ] },
           optional: <%= opt %>
         )

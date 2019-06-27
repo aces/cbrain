@@ -47,7 +47,7 @@ class CbrainTask < ApplicationRecord
   validates_presence_of :tool_config_id
 
   # Rails5 make belongs_to association required by default
-  # Task presets have bourreau id set to 0, 
+  # Task presets have bourreau id set to 0,
   # that's why the :bourreau assocition should be optionnal
   belongs_to            :bourreau, optional: true
   belongs_to            :user
@@ -889,7 +889,23 @@ class CbrainTask < ApplicationRecord
     archive.destroy
     true
   rescue
+    if archive
+      archive.tag_ids |= [ self.class.destroyed_archived_tag.id ]
+    end
     true
+  end
+
+  # This returns (and if necessary creates the first time)
+  # a Tag object named 'TaskDestroyed', belonging to the main
+  # admin, that is used to mark any TaskWorkdirArchive that
+  # a user tried to delete but couldn't (e.g on unaccessible
+  # or read-only DPs etc). The admin can later find and delete them
+  # himself.
+  def self.destroyed_archived_tag #:nodoc:
+    @_destroyed_task_tag_ ||=
+      Tag.find_or_create_by( :name     => 'TaskDestroyed',
+                             :user_id  => User.admin.id,
+                             :group_id => User.admin.own_group.id )
   end
 
 end

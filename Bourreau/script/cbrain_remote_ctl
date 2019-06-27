@@ -47,13 +47,7 @@
 #   script/rails server thin -d -e <environment> -p <port> -b 127.0.0.1 -P pidfile
 #
 # and finally removing the database.yml file. Any database.yml file
-# already present before doing all this will be backed up in
-#
-#     database.yml.cbrain_remote_bak.
-#
-# Note that if stdin contains nothing (zero bytes) the current
-# database.yml file will be used, or the script will restore and use
-# the backup file 'database.yml.cbrain_remote_bak'.
+# already present before doing all this will be erased.
 #
 #
 # To stop the Rails app:
@@ -197,25 +191,16 @@ fatal("Port argument must be a number greater than 1024 and less than 65530") un
 
 db_yml_text = mode == "start" ? (STDIN.read || "") : ""
 db_file     = rails_home + "/config/database.yml"
-db_file_bak = rails_home + "/config/database.yml.cbrain_remote_bak"
 
 # Install or restore database.yml if necessary
 db_exists  = File.exist?(db_file)
-bak_exists = File.exist?(db_file_bak)
 blank_yml  = db_yml_text !~ /\S/
 
 if blank_yml #  blank? use what db.yml is already here
-  if db_exists
-    # nothing to do
-  elsif bak_exists
-    File.rename(db_file_bak,db_file)
-  else
+  if ! db_exists
     fatal("Could not find a database.yml file for the Rails application!")
   end
 else # db text is provided to us
-  if db_exists
-    File.rename(db_file,db_file_bak) # will crush existing bak file
-  end
   # Optional: change stuff in it, depending on the environment
   unless ENV['CBRAIN_FRONTEND_HOSTNAME'].nil? || ENV['CBRAIN_FRONTEND_HOSTNAME'] =~ /^\s*$/
     db_yml_text.sub!(/hostname:\s*\S+/,"hostname: #{ENV['CBRAIN_FRONTEND_HOSTNAME']}")
