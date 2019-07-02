@@ -720,6 +720,8 @@ class Userfile < ApplicationRecord
     def valid_for?(userfile) #:nodoc:
       return true if @conditions.empty?
       @conditions.all? { |condition| condition.call(userfile) }
+    rescue
+      false
     end
 
     def ==(other) #:nodoc:

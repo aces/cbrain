@@ -353,6 +353,15 @@ class Bourreau < RemoteResource
 
   public
 
+  # Utility method to sends a +stop_yourself+ command to a
+  # Bourreau RemoteResource, whether local or not.
+  def send_command_stop_yourself
+    command = RemoteCommand.new(
+      :command     => 'stop_yourself',
+    )
+    send_command(command)
+  end
+
   # Utility method to send a +get_task_outputs+ command to a
   # Bourreau RemoteResource, whether local or not.
   def send_command_get_task_outputs(task_id,run_number=nil,stdout_lim=nil,stderr_lim=nil)
@@ -392,6 +401,18 @@ class Bourreau < RemoteResource
   ############################################################################
 
   protected
+
+  # This comaand is a bit dangerous: it will first trigger a +stop_workers+
+  # command to be sent locally, and then the rails app will kill itself with
+  # a TERM signal, thus exiting right after the current request. The user should
+  # really make sure the workers are inactive and there is no other background
+  # activity.
+  def self.process_command_stop_yourself(command)
+    process_command_stop_workers(
+      command.dup.tap { |com| com.command = "stop_workers" }
+    )
+    Process.kill('TERM',Process.pid) # the rails server will shut down after the current request
+  end
 
   # Starts Bourreau worker processes.
   # This also triggers a 'wakeup' command if they are already

@@ -255,7 +255,7 @@ module ResourceLinkHelper
     return "(None)" if user.blank?
     cb_error "This method requires the first argument to be a User object." unless user.is_a?(User)
     capture do
-      html_tool_tip(link_to_user_if_accessible(user,current_user,options), :offset_x => 60 ) do
+      html_tool_tip(link_to_user_if_accessible(user,current_user,options), :offset_x => 0, :offset_y => 20 ) do
         (
         "<div class=\"left_align\">\n" +
         "#{h(user.full_name)}<br>\n" +
