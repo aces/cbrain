@@ -2523,12 +2523,15 @@ chmod o+x . .. ../.. ../../..
       # of these blocks can be scheduled to run, but only one will execute at at any given time.
       next if File.exists?(cache_path.to_s) && File.size(cache_path.to_s) > 0
       # Run singularity build command
-      tool_config_system("umask 000; #{singularity_executable_name} build #{cache_path.to_s.bash_escape} #{singularity_index_location.bash_escape}#{singularity_image_name.bash_escape}")
-      # Singularity command can generate 'implausibly old time stamp' when pulling a docker image (due to tar), we ignore it.
-      # Not sure if it is still true for `build` command, leave it just in case.
-      # Remove all lines (use ^ and $) that contains this message.
-      cb_error "Cannot build singularity image" if
-        !File.size?(cache_path.to_s)
+      out, err = tool_config_system("umask 000; #{singularity_executable_name} build #{cache_path.to_s.bash_escape} #{singularity_index_location.bash_escape}#{singularity_image_name.bash_escape}")
+      # Check that all is OK; if not we store the captured outputs for investigation
+      if ! File.exists?(cache_path.to_s) || File.size(cache_path.to_s) < 500.kilobytes
+        capfile = "singularity_build_traces-#{self.run_id}.txt"
+        File.open(capfile,"w") do |fh|
+          fh.write("=== Stdout ===\n#{out}\n=== Stderr ===\n#{err}\n=== ====== ===\n")
+        end
+        cb_error "Cannot build singularity image. Captured outputs are in #{capfile}"
+      end
     end
 
     self.addlog("Image stored as scratch userfile '#{scratch_userfile.name}' (ID #{scratch_userfile.id})")
