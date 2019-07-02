@@ -122,13 +122,13 @@ class CarminController < ApplicationController
     limit      = params[:limit].presence
 
     if group_name
-      group = current_user.available_groups.where('group.name' => group_name).first
+      group = current_user.available_groups.where('groups.name' => group_name).first
     end
 
     tasks = current_user.available_tasks.real_tasks
     # Next line will purposely filter down to nothing if group_name is not a proper name for the user.
     tasks = tasks.where(:group_id => (group.try(:id) || 0)) if group_name
-    tasks = tasks.order("created_at DESC")
+    tasks = tasks.order("created_at DESC, id DESC")
     tasks = tasks.offset(offset.to_i) if offset
     tasks = tasks.limit(limit.to_i)   if limit
     tasks = tasks.to_a
@@ -242,19 +242,42 @@ class CarminController < ApplicationController
   end
 
   # POST /executions
-  def exec_post
+  def exec_create
     tool_config_id = params[:pipelineIdentifier].presence
     task_params    = params[:inputValues].presence
     group_name     = params[:studyIdentifier].presence
 
     if group_name
-      group = current_user.available_groups.where('group.name' => group_name).first
+      group = current_user.available_groups.where('groups.name' => group_name).first
     else
       group = current_user.own_group
     end
 
-    blank_task = CbrainTask
-    xxx
+    post_params = ActionController::Parameters.new(
+      {
+        :user_id        => current_user.id,
+        :group_id       => group.id,
+        :tool_config_id => tool_config_id,
+        :params         => task_params,
+      }
+    ).permit!
+
+    task = eval_in_controller(::TasksController, :current_user_patch => current_user) do
+      create_initial_task_from_form(post_params)
+    end
+
+    messages = ""
+    messages += task.wrapper_after_form
+
+    tasklist,messages = eval_in_controller(::TasksController, :current_user_patch => current_user) do
+      create_tasklist_from_initial_task(task)
+    end
+
+    first_task = tasklist.first # too bad, CARMIN user won't ever see the full task list
+
+    respond_to do |format|
+      format.json { render :json => first_task.to_carmin }
+    end
   end
 
 
@@ -272,7 +295,7 @@ class CarminController < ApplicationController
     propvalue  = params[:propvalue].presence
 
     if group_name
-      group = current_user.available_groups.where('group.name' => group_name).first
+      group = current_user.available_groups.where('groups.name' => group_name).first
     end
 
     # Get all tool config; filter by group if user wants it so.
@@ -336,11 +359,14 @@ class CarminController < ApplicationController
   end
 
   # Messy utility, poking through layers. Tricky and brittle.
-  def eval_in_controller(mycontroller,&block) #:nodoc:
+  def eval_in_controller(mycontroller, options={}, &block) #:nodoc:
     cb_error "Controller is not a ApplicationController?" unless mycontroller < ApplicationController
     cb_error "Block needed." unless block_given?
     context = mycontroller.new
     context.request = self.request
+    if options.has_key?(:current_user_patch)
+      context.define_singleton_method(:current_user) { options[:current_user_patch] }
+    end
     context.instance_eval(&block)
   end
 

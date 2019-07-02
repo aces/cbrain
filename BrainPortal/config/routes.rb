@@ -204,6 +204,7 @@ Rails.application.routes.draw do
   put    '/executions/:id',         :controller => :carmin, :action => :exec_update
   get    '/executions/:id',         :controller => :carmin, :action => :exec_show
   delete '/executions/:id',         :controller => :carmin, :action => :exec_delete
+  post   '/executions',             :controller => :carmin, :action => :exec_create
   get    '/pipelines',              :controller => :carmin, :action => :pipelines
   get    '/pipelines/:id',          :controller => :carmin, :action => :pipelines_show
   get    '/pipelines/:id/boutiquesdescriptor',

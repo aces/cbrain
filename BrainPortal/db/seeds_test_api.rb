@@ -215,6 +215,7 @@ norm_group=orig_norm_group.dup
 orig_norm_group.delete
 norm_group.id=3
 norm_group.save!
+norm_group.user_ids = [ 2 ]
 normal = NormalUser.first # must reload afresh
 
 
