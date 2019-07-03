@@ -30,7 +30,10 @@ class CarminController < ApplicationController
   CARMIN_revision = '0.3.1'
 
   api_available
+
   before_action :login_required, :except => [ :platform, :authenticate ]
+
+  rescue_from CbrainCarminError, :with => :carmin_error_handler
 
   #############################################################################
   #
@@ -242,7 +245,7 @@ class CarminController < ApplicationController
   end
 
   # POST /executions
-  def exec_create
+  def exec_create #:nodoc:
     tool_config_id = params[:pipelineIdentifier].presence
     task_params    = params[:inputValues].presence
     group_name     = params[:studyIdentifier].presence
@@ -262,14 +265,14 @@ class CarminController < ApplicationController
       }
     ).permit!
 
-    task = eval_in_controller(::TasksController, :current_user_patch => current_user) do
+    task = eval_in_controller(::TasksController, :define_current_user => current_user) do
       create_initial_task_from_form(post_params)
     end
 
     messages = ""
     messages += task.wrapper_after_form
 
-    tasklist,messages = eval_in_controller(::TasksController, :current_user_patch => current_user) do
+    tasklist,messages = eval_in_controller(::TasksController, :define_current_user => current_user) do
       create_tasklist_from_initial_task(task)
     end
 
@@ -343,13 +346,118 @@ class CarminController < ApplicationController
   #
   #############################################################################
 
-  # NYI
+  def path_show #:nodoc:
+    path   = params[:path]
+    action = params[:action2]
+    dp     = CarminPathDataProvider.find_default_carmin_provider_for_user(current_user)
+puts_magenta "DP=#{dp.inspect}"
+    userfile,subpath = dp.carmin_path_to_userfile_and_subpath(path, current_user)
+puts_red    "USERFILE=#{userfile.inspect}"
+puts_yellow "SUBPATH=#{subpath.inspect}"
+    return path_show_content(    userfile, subpath ) if action == 'content'
+    return path_show_exists(     userfile, subpath ) if action == 'exists'
+    return path_show_properties( userfile, subpath ) if action == 'properties'
+    return path_show_list(       userfile, subpath ) if action == 'list'
+    return path_show_md5(        userfile, subpath ) if action == 'md5'
+    raise CbrainCarminError.new("Unknown action '#{action}'", :error_code => 12) # TODO assign/define error codes
+  end
+
+  def path_update #:nodoc:
+  end
+
+  def path_delete #:nodoc:
+  end
+
+
+
+  #############################################################################
+  # Path handling utilities
+  #############################################################################
+
+  def path_show_content(userfile, subpath) #:nodoc:
+
+    # Verifications
+    carmin_error("Path doesn't exist: #{userfile.name}", Errno::ENOENT) if
+      userfile.new_record?
+    carmin_error("Not a directory: #{userfile.name}", Errno::ENOTDIR) if
+      subpath.to_s.present? && userfile.is_a?(SingleFile)
+
+    # Build final target
+    userfile.sync_to_cache
+    full_path = userfile.cache_full_path
+    full_path = full_path + subpath if subpath.to_s.present?
+
+    if File.file?(full_path.to_s)
+      send_file full_path.to_s
+      return
+    end
+
+    if File.directory?(full_path.to_s)
+      stream_tar_directory(full_path)
+      return
+    end
+
+    if subpath.to_s.present?
+      carmin_error("Subpath #{subpath} doesn't exist inside #{userfile.name}", Errno::ENOENT)
+    else
+      carmin_error("File #{userfile.name} doesn't exist?!?",                   Errno::ENOENT)
+    end
+
+  end
+
+  #############################################################################
+  # Error handling
+  #############################################################################
+
+  def carmin_error(message, error_code = 0)
+    error_code = error_code::Errno rescue error_code
+    raise CbrainCarminError.new(
+      message,
+      :error_code   => error_code,
+      :shift_caller => 2, # TODO check that this number is OK
+    )
+  end
+
+  # Handles exceptions of class CbrainCarminError
+  def carmin_error_handler(exception)
+    error = {
+      :errorCode    => (exception.error_code rescue 1),
+      :errorMessage => exception.message,
+      :errorDetails => {
+        :ruby_class     => exception.class.to_s,
+        :ruby_backtrace => [ 'Nope' ], # exception.backtrace,
+      }
+    }
+    render :json => error, :status => :unprocessable_entity
+  end
 
 
 
   #############################################################################
   private # Support methods
   #############################################################################
+
+  # OMG I've been wondering how to do this for years, and now I know.
+  # Even amazon AWS S3 doesn't have a streaming API like that.
+  def stream_tar_directory(full_path) #:nodoc:
+    send_file_headers!(
+      :type     => 'application/octet-stream',
+      :filename => full_path.basename.to_s + ".tar.gz",
+    )
+    tar_content_fh = IO.popen("cd #{full_path.parent};tar -czf - #{full_path.basename}","r")
+    stream_out     = response.stream
+    begin
+      while block = tar_content_fh.read(64.kilobytes)
+        stream_out.write block
+        sleep 0.0001 # based on https://gist.github.com/njakobsen/6257887
+      end
+    rescue IOError
+      # Client closed connection?
+    ensure
+      tar_content_fh.close rescue nil
+      stream_out.close     rescue nil
+    end
+  end
 
   def get_remote_task_info(task) #:nodoc:
     task.capture_job_out_err() # PortalTask method: sends command to bourreau to get info
@@ -364,8 +472,8 @@ class CarminController < ApplicationController
     cb_error "Block needed." unless block_given?
     context = mycontroller.new
     context.request = self.request
-    if options.has_key?(:current_user_patch)
-      context.define_singleton_method(:current_user) { options[:current_user_patch] }
+    if options.has_key?(:define_current_user)
+      context.define_singleton_method(:current_user) { options[:define_current_user] }
     end
     context.instance_eval(&block)
   end

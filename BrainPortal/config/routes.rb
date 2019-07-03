@@ -207,8 +207,11 @@ Rails.application.routes.draw do
   post   '/executions',             :controller => :carmin, :action => :exec_create
   get    '/pipelines',              :controller => :carmin, :action => :pipelines
   get    '/pipelines/:id',          :controller => :carmin, :action => :pipelines_show
-  get    '/pipelines/:id/boutiquesdescriptor',
+  get    '/pipelines/:id/boutiquesdescriptor', # man is this long!
                                     :controller => :carmin, :action => :pipelines_boutiques
+  get    '/path/*path',             :controller => :carmin, :action => :path_show,    :constraints => { :path => nil }
+  put    '/path/*path',             :controller => :carmin, :action => :path_update,  :constraints => { :path => nil }
+  delete '/path/*path',             :controller => :carmin, :action => :path_delete,  :constraints => { :path => nil }
 
   # Service; most of these actions are only needed
   # for the CANARIE monitoring system, and are therefore
