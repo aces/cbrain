@@ -348,17 +348,26 @@ class CarminController < ApplicationController
 
   def path_show #:nodoc:
     path   = params[:path]
-    action = params[:action2]
+    action = params[:action2] # TODO: find out 'action' instead from request
     dp     = CarminPathDataProvider.find_default_carmin_provider_for_user(current_user)
 puts_magenta "DP=#{dp.inspect}"
     userfile,subpath = dp.carmin_path_to_userfile_and_subpath(path, current_user)
 puts_red    "USERFILE=#{userfile.inspect}"
 puts_yellow "SUBPATH=#{subpath.inspect}"
+
+    # Verifications
+    carmin_error("Path doesn't exist: #{userfile.name}", Errno::ENOENT) if
+      userfile.new_record?
+    carmin_error("Not a directory: #{userfile.name}", Errno::ENOTDIR) if
+      subpath.to_s.present? && userfile.is_a?(SingleFile)
+
+    # Sub actions
     return path_show_content(    userfile, subpath ) if action == 'content'
     return path_show_exists(     userfile, subpath ) if action == 'exists'
     return path_show_properties( userfile, subpath ) if action == 'properties'
     return path_show_list(       userfile, subpath ) if action == 'list'
     return path_show_md5(        userfile, subpath ) if action == 'md5'
+
     raise CbrainCarminError.new("Unknown action '#{action}'", :error_code => 12) # TODO assign/define error codes
   end
 
@@ -376,12 +385,6 @@ puts_yellow "SUBPATH=#{subpath.inspect}"
 
   def path_show_content(userfile, subpath) #:nodoc:
 
-    # Verifications
-    carmin_error("Path doesn't exist: #{userfile.name}", Errno::ENOENT) if
-      userfile.new_record?
-    carmin_error("Not a directory: #{userfile.name}", Errno::ENOTDIR) if
-      subpath.to_s.present? && userfile.is_a?(SingleFile)
-
     # Build final target
     userfile.sync_to_cache
     full_path = userfile.cache_full_path
@@ -393,7 +396,7 @@ puts_yellow "SUBPATH=#{subpath.inspect}"
     end
 
     if File.directory?(full_path.to_s)
-      stream_tar_directory(full_path)
+      stream_tar_directory full_path
       return
     end
 
@@ -404,6 +407,114 @@ puts_yellow "SUBPATH=#{subpath.inspect}"
     end
 
   end
+
+  def path_show_exists(userfile, subpath) #:nodoc:
+    exists = false
+
+    if userfile.is_a?(SingleFile)
+      exists = true # checking a SingleFile; no FS check
+    elsif subpath.to_s.blank?
+      exists = true # checking the root of a FileCollection; no FS check
+    else # checking a component inside a FileCollection; FS check needed
+      userfile.sync_to_cache
+      full_path = userfile.cache_full_path + subpath
+      exists = File.exists? full_path.to_s
+    end
+
+    respond_to do |format|
+      format.json { render :json => { :exists => exists } }
+    end
+  end
+
+  def path_show_properties(userfile, subpath) #:nodoc:
+    relpath      = Pathname.new(userfile.name) + subpath
+    size         = userfile.size
+    is_directory = userfile.is_a?(FileCollection)
+    updated_at   = userfile.updated_at
+
+    if is_directory && subpath.to_s.present?
+      userfile.sync_to_cache
+      content_path = userfile.cache_full_path + subpath
+      stat         = File.lstat(content_path.to_s) rescue nil
+      if ! stat
+        carmin_error("Subpath #{subpath} doesn't exist inside #{userfile.name}", Errno::ENOENT)
+      end
+      is_directory = stat.directory?
+      size         = is_directory ? nil : stat.size
+      updated_at   = stat.mtime
+    end
+
+    respond_to do |format|
+      format.json {
+        render :json => {
+                 :platformPath         => relpath.to_s,
+                 :lastModificationDate => updated_at.to_i,
+                 :isDirectory          => is_directory,
+                 :size                 => size,
+               }
+        }
+    end
+  end
+
+  def path_show_list(userfile, subpath) #:nodoc:
+
+    carmin_error("Not a directory: #{userfile.name}", Errno::ENOTDIR) if
+      userfile.is_a?(SingleFile)
+
+    userfile.sync_to_cache
+    content_path = userfile.cache_full_path + subpath
+    carmin_error("Subpath #{subpath} doesn't exist inside #{userfile.name}", Errno::ENOENT) if
+      ! File.directory?(content_path.to_s)
+
+    # Scan and build JSON path objects
+    paths = Dir.open(content_path.to_s).map do |entry|
+      next nil if entry == '.' || entry == '..'
+      stat = File.lstat((content_path + entry).to_s)
+      {
+        :platformPath         => (subpath + entry).to_s,
+        :lastModificationDate => stat.mtime,
+        :isDirectory          => stat.directory?,
+        :size                 => stat.directory? ? nil : stat.size,
+      }
+    end.compact
+
+    respond_to do |format|
+      format.json { render :json => paths }
+    end
+  end
+
+  def path_show_md5(userfile, subpath) #:nodoc:
+    carmin_error("Not a directory: #{userfile.name}", Errno::ENOTDIR) if
+      userfile.is_a?(SingleFile) && subpath.to_s.present?
+
+    userfile.sync_to_cache
+    content_path = userfile.cache_full_path + subpath
+
+    carmin_error("Subpath #{subpath} is not a file inside #{userfile.name}", Errno::ENOENT) if
+      ! File.file?(content_path.to_s)
+
+    md5command =
+      case CBRAIN::System_Uname
+      when /Linux/i
+        "md5sum"
+      when /Darwin/i
+        "md5"
+      else
+        "md5sum" # hope it works
+      end
+
+    md5 = IO.popen("#{md5command} < #{content_path.to_s.bash_escape}","r") { |fh| fh.read }
+    md5 = Regexp.last_match[1] if md5.present? && md5.match(/\b([0-9a-fA-F]{32})\b/)
+
+    carmin_error("Can't compute MD5 for path #{Pathname.new(userfile.name) + subpath}", Errno::EIO) if
+      md5.blank? || md5.size != 32
+
+    respond_to do |format|
+      format.json { render :json => { :md5 => md5 } }
+    end
+  end
+
+
 
   #############################################################################
   # Error handling
@@ -420,6 +531,7 @@ puts_yellow "SUBPATH=#{subpath.inspect}"
 
   # Handles exceptions of class CbrainCarminError
   def carmin_error_handler(exception)
+
     error = {
       :errorCode    => (exception.error_code rescue 1),
       :errorMessage => exception.message,
@@ -428,7 +540,16 @@ puts_yellow "SUBPATH=#{subpath.inspect}"
         :ruby_backtrace => [ 'Nope' ], # exception.backtrace,
       }
     }
-    render :json => error, :status => :unprocessable_entity
+
+    plain_text = <<-ERROR # TODO add more details? Backtrace?
+    #{exception.class} #{exception.message}
+    ERROR
+
+    respond_to do |format|
+      format.json { render :json  => error,      :status => :unprocessable_entity }
+      format.text { render :plain => plain_text, :status => :unprocessable_entity }
+      format.html { render :plain => plain_text, :status => :unprocessable_entity }
+    end
   end
 
 
