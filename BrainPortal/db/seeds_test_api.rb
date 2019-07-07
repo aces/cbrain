@@ -578,6 +578,7 @@ SyncStatus.delete_all # clean all sync info again
 carmindir = FileCollection.seed_record!(
   { :name => 'topdir' },
   { :id   => 10,
+    :size => 0,
     :user_id => normal.id,
     :group_id => normal.own_group.id,
     :data_provider_id => carmindp.id,
@@ -592,6 +593,7 @@ carmindir = FileCollection.seed_record!(
 carminfile = TextFile.seed_record!(
   { :name => 'topfile.txt' },
   { :id   => 11,
+    :size => 7,
     :user_id => normal.id,
     :group_id => normal.own_group.id,
     :data_provider_id => carmindp.id,
