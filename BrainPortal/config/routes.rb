@@ -191,7 +191,9 @@ Rails.application.routes.draw do
   # Portal log
   get   '/portal_log',            :controller => :portal, :action => :portal_log
 
+  ####################################################################################
   # CARMIN platform routes
+  ####################################################################################
   get    '/platform',               :controller => :carmin, :action => :platform
   post   '/authenticate',           :controller => :carmin, :action => :authenticate
   get    '/executions',             :controller => :carmin, :action => :executions
@@ -209,14 +211,20 @@ Rails.application.routes.draw do
   get    '/pipelines/:id',          :controller => :carmin, :action => :pipelines_show
   get    '/pipelines/:id/boutiquesdescriptor', # man is this long!
                                     :controller => :carmin, :action => :pipelines_boutiques
+  # Note: the constraints below prevent the parser from processing and removing the extensions
+  # to the paths given, e.g. for '/path/mydir/hello.txt', the :path will be 'mydir/hello.txt'
   get    '/path/*path',             :controller => :carmin, :action => :path_show,    :constraints => { :path => nil }
-  put    '/path/*path',             :controller => :carmin, :action => :path_update,  :constraints => { :path => nil }
+  put    '/path/*path',             :controller => :carmin, :action => :path_create,  :constraints => { :path => nil }
   delete '/path/*path',             :controller => :carmin, :action => :path_delete,  :constraints => { :path => nil }
 
+
+
+  ####################################################################################
   # Service; most of these actions are only needed
   # for the CANARIE monitoring system, and are therefore
   # shipped disabled by default, because it's not needed
   # anywhere else.
+  ####################################################################################
   #get   '/service/info',           :controller => :service, :action => :info
   #get   '/service/stats',          :controller => :service, :action => :stats
   #get   '/service/detailed_stats', :controller => :service, :action => :detailed_stats

@@ -31,6 +31,7 @@ class CarminController < ApplicationController
 
   api_available
 
+  skip_before_action :verify_authenticity_token
   before_action :login_required, :except => [ :platform, :authenticate ]
 
   rescue_from CbrainCarminError, :with => :carmin_error_handler
@@ -348,16 +349,13 @@ class CarminController < ApplicationController
 
   def path_show #:nodoc:
     path   = params[:path]
-    action = params[:action2] # TODO: find out 'action' instead from request
-    dp     = CarminPathDataProvider.find_default_carmin_provider_for_user(current_user)
-puts_magenta "DP=#{dp.inspect}"
-    userfile,subpath = dp.carmin_path_to_userfile_and_subpath(path, current_user)
-puts_red    "USERFILE=#{userfile.inspect}"
-puts_yellow "SUBPATH=#{subpath.inspect}"
+    action = request.query_parameters[:action] # Can't use params[:action], it's used by Rails
+    dp     = find_default_carmin_provider_for_user(current_user)
+    userfile,subpath = carmin_path_to_userfile_and_subpath(path, current_user, dp)
 
     # Verifications
     carmin_error("Path doesn't exist: #{userfile.name}", Errno::ENOENT) if
-      userfile.new_record?
+      userfile.new_record? && action != 'exists'
     carmin_error("Not a directory: #{userfile.name}", Errno::ENOTDIR) if
       subpath.to_s.present? && userfile.is_a?(SingleFile)
 
@@ -368,19 +366,81 @@ puts_yellow "SUBPATH=#{subpath.inspect}"
     return path_show_list(       userfile, subpath ) if action == 'list'
     return path_show_md5(        userfile, subpath ) if action == 'md5'
 
-    raise CbrainCarminError.new("Unknown action '#{action}'", :error_code => 12) # TODO assign/define error codes
+    carmin_error("Unknown action '#{action}'", Errno::EINVAL)
   end
 
-  def path_update #:nodoc:
+  def path_create #:nodoc:
+    path   = params[:path]
+
+    dp     = find_default_carmin_provider_for_user(current_user)
+    userfile,subpath = carmin_path_to_userfile_and_subpath(path, current_user, dp)
+
+    carmin_error("Not a directory: #{userfile.name}", Errno::ENOTDIR) if
+      subpath.to_s.present? && (userfile.is_a?(SingleFile) || userfile.new_record?)
+
+    content_type = request.content_type
+    if content_type == 'application/carmin+json'
+      params.merge!(JSON.parse(request.raw_post)) # because Rails won't do it with content-type 'carmin+json'
+      fileaction = params[:type]
+      content    = params[:base64Content]
+      carmin_error('Missing/bad type',     Errno::EINVAL) if fileaction.blank? || fileaction.to_s !~ /\A(File|Archive)\z/
+      carmin_error('Missing file content', Errno::EINVAL) if content.nil?
+      content    = Base64.decode64(content) rescue nil
+      carmin_error('Bad Base64 content',   Errno::EINVAL) if content.nil?
+    else
+      fileaction = 'File'
+      content    = request.raw_post
+      if content.nil? || content.size == 0
+        fileaction = 'Mkdir' # what a stupid convention
+      end
+    end
+
+    path_create_mkdir(   userfile, subpath         ) if fileaction == 'Mkdir'
+    path_create_file(    userfile, subpath, content) if fileaction == 'File'
+    path_create_archive( userfile, subpath, content) if fileaction == 'Archive'
+
+    userfile = Userfile.find(userfile.id) # reload so we get proper type
+    return path_show_properties(userfile, subpath, :created)
   end
 
   def path_delete #:nodoc:
+    path   = params[:path]
+
+    dp     = find_default_carmin_provider_for_user(current_user)
+    userfile,subpath = carmin_path_to_userfile_and_subpath(path, current_user, dp)
+
+    carmin_error("Not a directory: #{userfile.name}", Errno::ENOTDIR) if
+      userfile.new_record? ||
+      (subpath.to_s.present? && ! userfile.is_a?(FileCollection))
+
+    # Check to delete userfile outright
+    if subpath.to_s.blank?
+      userfile.destroy
+    else # Delete part of a file collection
+      userfile.sync_to_cache
+      full_path, _ = check_filecollection_structure_exists(userfile, subpath)
+      carmin_error("Entry doesn't exist: #{userfile.name}/#{subpath}", Errno::ENOENT) unless
+        File.exists?(full_path.to_s)
+      FileUtils.remove_dir(full_path.to_s, true)
+      userfile.cache_is_newer
+      userfile.sync_to_provider
+    end
+
+    head :no_content
   end
 
 
 
   #############################################################################
-  # Path handling utilities
+  #
+  # END OF MAIN CARMIN API ACTIONS
+  #
+  #############################################################################
+
+
+
+  #############################################################################
+  # Path handling utilities: PATH SHOW
   #############################################################################
 
   def path_show_content(userfile, subpath) #:nodoc:
@@ -411,7 +471,9 @@ puts_yellow "SUBPATH=#{subpath.inspect}"
   def path_show_exists(userfile, subpath) #:nodoc:
     exists = false
 
-    if userfile.is_a?(SingleFile)
+    if userfile.new_record?
+      exists = false
+    elsif userfile.is_a?(SingleFile)
       exists = true # checking a SingleFile; no FS check
     elsif subpath.to_s.blank?
       exists = true # checking the root of a FileCollection; no FS check
@@ -426,7 +488,7 @@ puts_yellow "SUBPATH=#{subpath.inspect}"
     end
   end
 
-  def path_show_properties(userfile, subpath) #:nodoc:
+  def path_show_properties(userfile, subpath, http_status = :ok ) #:nodoc:
     relpath      = Pathname.new(userfile.name) + subpath
     size         = userfile.size
     is_directory = userfile.is_a?(FileCollection)
@@ -447,11 +509,12 @@ puts_yellow "SUBPATH=#{subpath.inspect}"
     respond_to do |format|
       format.json {
         render :json => {
-                 :platformPath         => relpath.to_s,
+                 :platformPath         => relpath.basename.to_s,
                  :lastModificationDate => updated_at.to_i,
                  :isDirectory          => is_directory,
                  :size                 => size,
-               }
+               },
+               :status => http_status
         }
     end
   end
@@ -467,12 +530,12 @@ puts_yellow "SUBPATH=#{subpath.inspect}"
       ! File.directory?(content_path.to_s)
 
     # Scan and build JSON path objects
-    paths = Dir.open(content_path.to_s).map do |entry|
+    paths = Dir.open(content_path.to_s).sort.map do |entry|
       next nil if entry == '.' || entry == '..'
       stat = File.lstat((content_path + entry).to_s)
       {
-        :platformPath         => (subpath + entry).to_s,
-        :lastModificationDate => stat.mtime,
+        :platformPath         => entry,
+        :lastModificationDate => stat.mtime.to_i,
         :isDirectory          => stat.directory?,
         :size                 => stat.directory? ? nil : stat.size,
       }
@@ -517,7 +580,99 @@ puts_yellow "SUBPATH=#{subpath.inspect}"
 
 
   #############################################################################
-  # Error handling
+  # Path handling utilities: PATH CREATE
+  #############################################################################
+
+  def path_create_mkdir(userfile, subpath) #:nodoc:
+    if subpath.to_s.blank?
+      path_create_mkdir_base_filecollection(userfile)
+    else
+      path_create_mkdir_in_collection(userfile, subpath)
+    end
+  end
+
+  # If we have no subpath, we're creating a base FileCollection
+  def path_create_mkdir_base_filecollection(userfile) #:nodoc:
+    carmin_error("Directory exists: #{userfile.name}", Errno::EEXIST) if ! userfile.new_record?
+    userfile.type = FileCollection if userfile.class == Userfile # exact comparison
+    userfile.save!
+    userfile = FileCollection.find(userfile.id) # reload with proper type
+    userfile.cache_prepare
+    Dir.mkdir(userfile.cache_full_path.to_s)
+    userfile.sync_to_provider
+  end
+
+  # Create a subdirectory in the FileCollection
+  def path_create_mkdir_in_collection(userfile, subpath) #:nodoc:
+    userfile.sync_to_cache
+    full_path, _ = check_filecollection_structure_exists(userfile, subpath)
+    carmin_error("Entry exists: #{full_path.basename}", Errno::EEXIST) if
+      File.exists?(full_path.to_s)
+    Dir.mkdir(full_path.to_s)
+    userfile.sync_to_provider
+  end
+
+  def path_create_file(userfile, subpath, content) #:nodoc:
+    if subpath.to_s.present?
+      return path_create_file_in_collection(userfile, subpath, content)
+    else
+      return path_create_file_as_singlefile(userfile, content)
+    end
+  end
+
+  def path_create_file_as_singlefile(userfile, content) #:nodoc:
+    userfile.type = SingleFile if userfile.class == Userfile # exact comparison
+    userfile.save!
+    userfile = SingleFile.find(userfile.id) # reload with proper type
+    userfile.cache_writehandle do
+      File.write(userfile.cache_full_path.to_s, content)
+    end # sync_to_provider automatically called
+  end
+
+  def path_create_file_in_collection(userfile, subpath, content) #:nodoc:
+    userfile.sync_to_cache
+    full_path, _ = check_filecollection_structure_exists(userfile, subpath)
+    carmin_error("Entry exists: #{full_path.basename}", Errno::EEXIST) if
+      File.exists?(full_path.to_s)
+    userfile.cache_writehandle do
+      File.write(full_path.to_s, content)
+    end # sync_to_provider automatically called
+  end
+
+  def path_create_archive(userfile, subpath, archive) #:nodoc:
+    if subpath.to_s.present?
+      return path_create_archive_in_collection(userfile, subpath, archive)
+    else
+      return path_create_archive_as_collection(userfile, archive)
+    end
+  end
+
+  def path_create_archive_as_collection(userfile, archive) #:nodoc:
+    carmin_error("Entry exists: #{userfile.name}", Errno::EEXIST) if
+      userfile.is_a?(SingleFile)
+    carmin_error("Entry doesn't exist: #{userfile.name}", Errno::ENOENT) unless
+      userfile.is_a?(FileCollection) && ! userfile.new_record?
+
+    userfile.sync_to_cache
+    full_path = userfile.cache_full_path
+    capt = extract_archive_in_collection(userfile, full_path, archive)
+    carmin_error("Cannot extract archive", Errno::EINVAL) if capt.present?
+  end
+
+  def path_create_archive_in_collection(userfile, subpath, archive) #:nodoc:
+    userfile.sync_to_cache
+    full_path, _ = check_filecollection_structure_exists(userfile, subpath)
+    carmin_error("Entry doesn't exist: #{userfile.name}/#{subpath}", Errno::ENOENT) unless
+      File.directory?(full_path.to_s)
+
+    capt = extract_archive_in_collection(userfile, full_path, archive)
+    carmin_error("Cannot extract archive", Errno::EINVAL) if capt.present?
+  end
+
+
+
+  #############################################################################
+  # General Error handling
   #############################################################################
 
   def carmin_error(message, error_code = 0)
@@ -525,7 +680,7 @@ puts_yellow "SUBPATH=#{subpath.inspect}"
     raise CbrainCarminError.new(
       message,
       :error_code   => error_code,
-      :shift_caller => 2, # TODO check that this number is OK
+      :shift_caller => 3,
     )
   end
 
@@ -537,7 +692,7 @@ puts_yellow "SUBPATH=#{subpath.inspect}"
       :errorMessage => exception.message,
       :errorDetails => {
         :ruby_class     => exception.class.to_s,
-        :ruby_backtrace => [ 'Nope' ], # exception.backtrace,
+        :ruby_backtrace => Rails.backtrace_cleaner.clean(exception.backtrace),
       }
     }
 
@@ -555,7 +710,7 @@ puts_yellow "SUBPATH=#{subpath.inspect}"
 
 
   #############################################################################
-  private # Support methods
+  private # Misc Support methods
   #############################################################################
 
   # OMG I've been wondering how to do this for years, and now I know.
@@ -609,6 +764,79 @@ puts_yellow "SUBPATH=#{subpath.inspect}"
     tcs  = ToolConfig.find_all_accessible_by_user(user).where(:tool_id => tids, :bourreau_id => bids)
 
     return tcs
+  end
+
+  # Returns the first CarminPathDataProvider that +user+
+  # has access to. If the user has a prefered DP ID configured
+  # and it happens to be a CarminPathDataProvider, then that's
+  # the one returned.
+  def find_default_carmin_provider_for_user(user, klass = CarminPathDataProvider)
+    pref_id  = user.meta[:pref_data_provider_id] # in case it's a CarminPathDataProvider
+    if pref_id.present?
+      dp = klass.find_all_accessible_by_user(user).where(:id => pref_id).first
+      return dp if dp
+    end
+    klass.find_all_accessible_by_user(user).first
+  end
+
+  # This method is used to find the storage userfile
+  # associated with a CARMIN path.
+  #
+  # Given a path such as 'abcd/xyz/hello.txt', it will
+  # search for and return the FileCollection 'abcd' belonging to +user+
+  # on the current data provider, and return "xyz/hello.txt" as
+  # a Pathname object. The FileCollection object might be
+  # a new record, not yet saved.
+  #
+  # If the given path has only one component, the returned
+  # object will be the first match in the database, or
+  # a Userfile object which will also be a new record. Note
+  # that in the latter case, objects of class Userfile cannot be
+  # saved, so it's expected that the user of the method will
+  # change the object to a proper subclass before saving it.
+  def carmin_path_to_userfile_and_subpath(path, user, dp) #:nodoc:
+    cb_error "CARMIN path is illegal: #{path}" if path.blank?
+    path = Pathname.new(path)
+    cb_error "CARMIN path is not relative: #{path}" unless path.relative?
+    components     = path.each_filename.to_a
+    userfile_name  = components.shift
+    subpath        = Pathname.new("").join(*components)
+    userfile_class = subpath.to_s.blank? ? Userfile : FileCollection # not SingleFile!
+    userfile       = userfile_class.find_or_initialize_by(
+                       :name             => userfile_name,
+                       :user_id          => user.id,
+                       :group_id         => user.own_group.id,
+                       :data_provider_id => dp.id,
+                     )
+    return userfile, subpath
+  end
+
+  # Builds a path inside the file collection,
+  # and makes sure all components already exists up to
+  # (but NOT including) the last component.
+  # Returns (for convenience) the full_path and the parent path.
+  def check_filecollection_structure_exists(userfile, subpath) #:nodoc:
+    full_path = userfile.cache_full_path + subpath
+    parent    = full_path.parent
+    carmin_error("Path doesn't exist: #{parent.basename}", Errno::ENOENT) if
+      ! File.directory?(parent.to_s)
+    return full_path, parent # useful
+  end
+
+  # The +userfile+ is usually a file collection;
+  # +full_path+ can be any path it its cache, but it must exist.
+  def extract_archive_in_collection(userfile, full_path, archive) #:nodoc:
+    capt_outerr = "/tmp/capt.#{Process.pid}.#{rand(100000)}.outerr"
+    userfile.cache_writehandle do
+      IO.popen("cd #{full_path.to_s.bash_escape};tar -xzf - 1>#{capt_outerr} 2>&1","wb") do |fh|
+        fh.write archive
+      end
+    end # sync_to_provider automatically called
+    capt = File.read(capt_outerr)
+    # TODO clean up ignorabled messages here maybe?
+    return capt
+  ensure
+    File.unlink(capt_outerr) rescue nil
   end
 
 end

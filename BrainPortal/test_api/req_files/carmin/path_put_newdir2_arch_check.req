@@ -1,0 +1,1 @@
+GET /path/newdir1/newdir2/hello.txt?NTOK&action=properties application/json NoRubyClient

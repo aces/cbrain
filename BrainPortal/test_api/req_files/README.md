@@ -28,9 +28,10 @@ Basename      | Description
 abc.req       | main req file
 abc.in.json   | input in json format, for PUT, POST, PATCH etc
 abc.in.rb     | input in rb format, for CbrainClient tests
-abc.out       | description of expected output
-abc.in.data   | raw content (rarely used)
 abc.in.form   | curl description of form data
+abc.in.data   | raw content (rarely used, specified for curl forms)
+abc.in.raw    | direct raw data (rarely used)
+abc.out       | description of expected output
 
 ## Testing order of the __req__ files
 

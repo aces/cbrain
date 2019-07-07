@@ -1,4 +1,4 @@
-200 application/json :\d+ :"\d+"
+200 application/json we_delete_all_after_first_entry :\d+ :"\d+" ,\{.*
 [
 {"identifier":"784","name":"SimpleMonitor","pipelineIdentifier","status":"Initializing","inputValues":{"dummy":"val"},"returnedFiles":[],"studyIdentifier":"norm","errorCode","startDate","endDate"},
 {"identifier":"3","name":"SimpleMonitor","pipelineIdentifier","status":"Finished","inputValues":{},"returnedFiles":[],"studyIdentifier":"norm","errorCode":0,"startDate":1542844799,"endDate":1542844799},

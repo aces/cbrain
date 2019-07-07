@@ -237,6 +237,10 @@ for (my $ti = 0;$ti < @list;$ti++) {
   my $infile = $testbase . "in.json";
   $indata = "--data @\"$infile\"" if -f $infile;
 
+  # If a .in.raw file exist, we post this raw
+  $infile = $testbase . "in.raw";
+  $indata = "--data @\"$infile\"" if -f $infile;
+
   # If a .in.form file exist, we will read its content and
   # build a set of key=value to post as a multipart
   my $inform = "";
@@ -277,7 +281,7 @@ for (my $ti = 0;$ti < @list;$ti++) {
   # Prepare curl command
   my $curl_accept = "-H \"Accept: $accept\"";
   my $curl_type   = "-H \"Content-Type: $ctype\"";
-  my $bashcom = "curl -s -S -D $captH -X $method $indata $inform $curl_accept $curl_type $SCHEME://$HOST:$PORT/$path > $captC 2> $captE";
+  my $bashcom = "curl -s -S -D $captH -X $method $indata $inform $curl_accept $curl_type '$SCHEME://$HOST:$PORT/$path' > $captC 2> $captE";
   print " => Curl command: $bashcom\n" if $VERBOSE > 1;
   my $ret = system($bashcom);
 
