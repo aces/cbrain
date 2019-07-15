@@ -45,7 +45,6 @@ class ServiceController < ApplicationController
               :releaseTime     => Time.parse(CbrainFileRevision.cbrain_head_revinfo.datetime).utc.iso8601,
               :researchSubject => "Multi-discipline",
               :supportEmail    => RemoteResource.current_resource.support_email,
-              :category        => "Data Manipulation",
               :tags            => [ "neurology", "CBRAIN", "data transfer", "cluster",
                                     "supercomputer", "task", "data modeling", "visualization",
                                   ],
@@ -84,30 +83,13 @@ class ServiceController < ApplicationController
 
   # Return the online documentation.
   def doc
-    @doc = { :description => <<-DESCRIPTION,
-
-             The CBRAIN Framework is a sophisticated piece of software
-             that provides numerous layers for storing data sets,
-             moving them about, launching tasks on supercomputers clusters
-             and managing all of that through a Web interface or external APIs.
-
-             DESCRIPTION
-             :perl_doc_text   => "/doc/APIs/perl/CbrainPerlAPI.txt",    # must be a URL
-             :perl_doc_html   => "/doc/APIs/perl/CbrainPerlAPI.html",   # must be a URL
-             :ruby_doc_html   => "/doc/APIs/ruby/CbrainRubyAPI.html"    # must be a URL
-           }
-
-    respond_to do |format|
-      format.html
-      format.xml  { render :xml  => @doc }
-      format.json { render :json => @doc }
-    end
+    redirect_to 'https://github.com/aces/cbrain/wiki'
   end
 
   # Return release note describing the current version
   # of the platform APIs.
   def releasenotes
-    redirect_to 'https://github.com/aces/cbrain-apis/blob/master/Release-Notes.md'
+    redirect_to 'https://github.com/aces/cbrain/blob/master/Release-Notes.md'
   end
 
   # Provides information on how to get support
@@ -125,14 +107,14 @@ class ServiceController < ApplicationController
     end
   end
 
-  # Return link to the source code of the APIs for the platform
+  # Return link to the source code of the platform
   def source
-    redirect_to 'https://github.com/aces/cbrain-apis'
+    redirect_to 'https://github.com/aces/cbrain'
   end
 
   # Redirects to the main login page.
   def tryme
-    redirect_to 'https://github.com/aces/cbrain-apis/blob/master/demonstration.pdf'
+    redirect_to '/login'
   end
 
   # Allows users to view platform's
@@ -154,6 +136,14 @@ class ServiceController < ApplicationController
     end
   end
 
+  # Base information
+  def factsheet
+    respond_to do |format|
+      format.html  { redirect_to :controller => :portal, :action => :about_us }
+      format.xml   { head :not_acceptable }
+      format.json  { head :not_acceptable }
+    end
+  end
 
   # Return information about the usage of the platform.
   def detailed_stats

@@ -195,15 +195,16 @@ Rails.application.routes.draw do
   # for the CANARIE monitoring system, and are therefore
   # shipped disabled by default, because it's not needed
   # anywhere else.
-  #get   '/service/info',           :controller => :service, :action => :info
-  #get   '/service/stats',          :controller => :service, :action => :stats
-  #get   '/service/detailed_stats', :controller => :service, :action => :detailed_stats
-  #get   '/service/doc',            :controller => :service, :action => :doc
-  #get   '/service/releasenotes',   :controller => :service, :action => :releasenotes
-  #get   '/service/support',        :controller => :service, :action => :support
-  #get   '/service/source',         :controller => :service, :action => :source
-  #get   '/service/tryme',          :controller => :service, :action => :tryme
-  #get   '/service/licence',        :controller => :service, :action => :licence
-  #get   '/service/provenance',     :controller => :service, :action => :provenance
+  #get   '/platform/info',           :controller => :service, :action => :info
+  #get   '/platform/stats',          :controller => :service, :action => :stats
+  #get   '/platform/detailed_stats', :controller => :service, :action => :detailed_stats
+  #get   '/platform/doc',            :controller => :service, :action => :doc
+  #get   '/platform/releasenotes',   :controller => :service, :action => :releasenotes
+  #get   '/platform/support',        :controller => :service, :action => :support
+  #get   '/platform/source',         :controller => :service, :action => :source
+  #get   '/platform/tryme',          :controller => :service, :action => :tryme
+  #get   '/platform/factsheet',      :controller => :service, :action => :factsheet
+  #get   '/platform/licence',        :controller => :service, :action => :licence
+  #get   '/platform/provenance',     :controller => :service, :action => :provenance
 
 end
