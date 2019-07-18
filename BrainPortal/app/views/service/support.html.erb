@@ -24,10 +24,13 @@
 
 <% title 'Service Support' %>
 
-  <h1>CBRAIN Web Service Support</h1>
+  <h1>CBRAIN Basic Support</h1>
   <dl>
-    <dt>Email</dt><dd><%= @support[:supportEmail] %></dd>
-    <dt>About us</dt><dd><%= link_to 'About_us', @support[:aboutUs] %></dd>
+    <% if @support[:helpUrl].present? %>
+      <dt>Help URL:</dt><dd><%= link_to 'Support', @support[:helpUrl] %> (<%= @support[:helpUrl] %>)</dd>
+    <% end %>
+    <dt>Email</dt><dd><%= mail_to(@support[:supportEmail]) %></dd>
+    <dt>Information</dt><dd><%= link_to 'About Us', @support[:aboutUs] %></dd>
   </dl>
 
 

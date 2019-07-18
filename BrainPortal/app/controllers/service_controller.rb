@@ -34,12 +34,20 @@ class ServiceController < ApplicationController
   # Return basic identification and provenance
   # information about the platform
   def info
-    @info = { :name            => "CBRAIN Data Service",
-              :synopsis        => "A service that leverages the previously-funded
-                                   \"Canadian Brain Research And Informatics Network\"
-                                   platform to provide the research community with
-                                   web-based access to powerful supercomputers across
-                                   Canada and around the world.".gsub(/\s\s+/, " "),  # the ugly gsub is because of CANARIE
+    @info = { :name            => "CBRAIN Data Platform",
+              :synopsis        =>  <<-SYNOPSYS.strip.gsub(/\s\s+/, " "),  # the ugly gsub is because of CANARIE
+
+                The CBRAIN platform is a web-based, collaborative research platform
+                designed to address major issues in "Big Data" research through a
+                single consistent framework by providing researchers the ability
+                to easily execute large-scale pipelines for computational research.
+                The platform's primary objective is to provide a user-friendly,
+                extensible, integrated, and robust yet lightweight collaborative
+                neuroimaging research platform providing transparent access to the
+                heterogeneous computing and data resources available across Canada
+                and around the world.
+
+                                   SYNOPSYS
               :version         => CbrainFileRevision.cbrain_head_tag,
               :institution     => "McGill University",
               :releaseTime     => Time.parse(CbrainFileRevision.cbrain_head_revinfo.datetime).utc.iso8601,
@@ -98,6 +106,7 @@ class ServiceController < ApplicationController
     about_us_url =  url_for(:controller => :portal, :action => :about_us)
     @support     = { :supportEmail => RemoteResource.current_resource.support_email,
                      :aboutUs      => about_us_url,
+                     :helpUrl      => RemoteResource.current_resource.help_url,
                    }
 
     respond_to do |format|
