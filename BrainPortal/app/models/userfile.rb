@@ -662,11 +662,17 @@ class Userfile < ApplicationRecord
       return file
     end
 
+    # Update or create the actual content by invoking the block
     file.cache_prepare
-    SyncStatus.ready_to_modify_cache(file) do
+    SyncStatus.ready_to_modify_cache(file, 'InSync') do
       yield file.cache_full_path # allow programmer to provide content for the file
     end
-    file.sync_to_provider
+
+    # A bit of info tracking
+    myself       = RemoteResource.current_resource
+    backtrace    = (Rails.backtrace_cleaner.clean caller).first || "Unknown"
+    file.addlog("Scratch file content created or updated on #{myself.name} (#{file.size || '?'} bytes) from #{backtrace}")
+
     file
   end
 

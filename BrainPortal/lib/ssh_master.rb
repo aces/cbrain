@@ -508,20 +508,26 @@ class SshMaster
   # string as part of another 'ssh' command.
   def ssh_shared_options(control_master="no")
     socket = self.control_path
-    args_string =
-                      " -p #{@port}"                          +
-                      " -A"                                   +
-                      " -o ConnectTimeout=10"                 +
 
-                      " " + ssh_config_options_as_string()    +
+    # Base options that are always present
+    args_string  = " -p #{@port}"
+    args_string += " -A"
+    args_string += " -o ConnectTimeout=10"
+    args_string += " -o ExitOnForwardFailure=yes"
+    args_string += " " + ssh_config_options_as_string()
 
-    (@nomaster ?      "" :
-                      " -o ServerAliveInterval=30"            +
-                      " -o ServerAliveCountMax=5"             +
-                      " -o ControlMaster=#{control_master}"   +
-                      " -o ControlPath=#{socket}"
-    )                                                         +
-                      " #{@user}@#{@host} "
+    # When @nomaster is true, it means we're not even building
+    # the options for an existing master.
+    if ! @nomaster
+      args_string += " -o ServerAliveInterval=30"
+      args_string += " -o ServerAliveCountMax=5"
+      args_string += " -o ControlMaster=#{control_master}"
+      args_string += " -o ControlPath=#{socket}"
+    end
+
+    # Finally, user and host
+    args_string += " #{@user}@#{@host} "
+
     args_string
   end
 

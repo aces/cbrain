@@ -56,13 +56,7 @@ class CustomFiltersController < ApplicationController
 
     filter_class   = Class.const_get(filter_param)
     @custom_filter = filter_class.new(custom_filter_params(filter_class))
-
     @custom_filter.user_id = current_user.id
-
-
-    if @custom_filter.errors.empty?
-      flash[:notice] = "Filter successfully created."
-    end
 
     respond_to do |format|
       if @custom_filter.save
