@@ -319,11 +319,14 @@ class SshDataProvider < DataProvider
   # Addendum, Aug 1st 2012: the connection is no longer necessary persistent, by
   # passing the :nomaster=true option to SshMaster when on a Bourreau!
   def master
-    persistent = RemoteResource.current_resource.is_a?(BrainPortal)
+    myself     = RemoteResource.current_resource
+    persistent = myself.meta[:use_persistent_ssh_masters_for_dps] # true, false, or string versions
+    # Default 'persistent' is TRUE for BrainPortals, FALSE for others (e.g. Bourreaux)
+    persistent = RemoteResource.current_resource.is_a?(BrainPortal) if persistent.to_s !~ /\A(true|false)\z/
     @master ||= SshMaster.find_or_create(remote_user,remote_host,remote_port,
                   :category => "DP_#{Process.uid}",
                   :uniq     => self.id.to_s,
-                  :nomaster => ! persistent
+                  :nomaster => (persistent.to_s != 'true')
                 )
     # Unlock agent, in preparation for doing stuff on it
     CBRAIN.with_unlocked_agent(:caller_level => 1)
