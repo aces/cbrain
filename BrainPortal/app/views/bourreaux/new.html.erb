@@ -31,22 +31,23 @@
 
 <%= form_for @bourreau, :as => :bourreau, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
-  <div class="generalbox">
-      <p><%= f.label :name %><br/>
-      <%= f.text_field :name %><br/>
-      <div class="field_explanation">
+      <div class="generalbox">
+
+        <p><%= f.label :name %><br/>
+        <%= f.text_field :name %><br/>
+        <span class="field_explanation">
         Important note: this name must also be changed accordingly in the config file
           <em>Bourreau/config/initializers/config_bourreau.rb</em>
           for this server to restart properly later on.
-        </div>
+        </span>
 
         <p><%= f.label :system_from_email, "System 'From' reply address" %><br/>
         <%= f.text_field :system_from_email %><br/>
-        <div class="field_explanation">If set, messages sent automatically by this system will contain this return address.</div>
+        <span class="field_explanation">If set, messages sent automatically by this system will contain this return address.</span>
 
         <p><%= f.label :description %><br/>
         <%= f.text_area :description, :rows => 10, :cols => 40 %><br/>
-        <div class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</div>
+        <span class="field_explanation">The first line should be a short summary, and the rest are for any special notes for the users.</span>
 
         <p><%= f.label :user_id, "Owner" %><br/>
         <%= user_select("bourreau[user_id]", { :selector => @bourreau }, { :disabled => ! current_user.has_role?(:admin_user) } ) %>
@@ -70,28 +71,30 @@
         </span>
 
         <p>
+
         <fieldset class="groupentry">
           <legend>SSH Remote Control Configuration</legend>
           <p><%= f.label :ssh_control_host, "Hostname" %><br/>
-                 <%= f.text_field :ssh_control_host %>
+             <%= f.text_field :ssh_control_host %>
 
-        <p><%= f.label :ssh_control_user, "Username" %><br/>
-               <%= f.text_field :ssh_control_user %>
+          <p><%= f.label :ssh_control_user, "Username" %><br/>
+             <%= f.text_field :ssh_control_user %>
 
-         <p><%= f.label :ssh_control_port, "Port Number" %><br/>
-                     <%= f.text_field :ssh_control_port, :size => 6 %>
+          <p><%= f.label :ssh_control_port, "Port Number" %><br/>
+             <%= f.text_field :ssh_control_port, :size => 6 %>
 
-         <p><%= f.label :ssh_control_rails_dir, "Rails Server Directory" %><br/>
-                     <%= f.text_field :ssh_control_rails_dir, :size => 60 %>
+          <p><%= f.label :ssh_control_rails_dir, "Rails Server Directory" %><br/>
+             <%= f.text_field :ssh_control_rails_dir, :size => 60 %>
 
-            <p><%= f.label :proxied_host, "Second-level effective host" %><br/>
-                     <%= f.text_field :proxied_host %><br/>
-                <div class="field_explanation">This is an experimental field for advanced and non-standard setups
+          <p><%= f.label :proxied_host, "Second-level effective host" %><br/>
+             <%= f.text_field :proxied_host %><br/>
+                <span class="field_explanation">This is an experimental field for advanced and non-standard setups
                   where the remote hostname, above, is actually just a login node and
-                  the real host where we run the server is one step further.</div>
+                  the real host where we run the server is one step further.</span>
         </fieldset>
 
         <p>
+
         <fieldset class="groupentry">
           <legend>Tunnelling Configuration</legend>
 
@@ -102,7 +105,6 @@
                    <%= f.text_field :tunnel_actres_port, :size => 6 %>
         </fieldset>
 
-
         <p>
 
         <fieldset class="groupentry">
@@ -110,13 +112,13 @@
 
           <p><%= f.label :dp_cache_dir, "Path to Data Provider caches" %><br/>
                  <%= f.text_field :dp_cache_dir, :size => 60 %><br/>
-          <div class="field_explanation">Warning! Changing this field will result in resetting the synchronization
+          <span class="field_explanation">Warning! Changing this field will result in resetting the synchronization
               status of all files from all Data Providers! Also, the Rails app will have to
-              be restarted, and all files in that directory will be erased!</div>
+              be restarted, and all files in that directory will be erased!</span>
 
           <p><%= f.label :spaced_dp_ignore_patterns, "Patterns for filenames to ignore" %><br/>
                  <%= f.text_field :spaced_dp_ignore_patterns, :size => 80 %><br/>
-          <div class="field_explanation">Separate several patterns with spaces; each pattern can contain single '*'s, but no '/'s or special characters.</div>
+          <span class="field_explanation">Separate several patterns with spaces; each pattern can contain single '*'s, but no '/'s or special characters.</span>
 
         <p><%= f.label :cache_trust_expire, "Cache Expiration Timeout" %><br/>
                   <%= f.select :cache_trust_expire, [
@@ -133,23 +135,18 @@
                       [ "Six months",    6.months.to_i.to_s  ]
                   ]
                   %></br>
-           <div class="field_explanation">This means that in the execution server's cache, files that have been recorded
+           <span class="field_explanation">This means that in the execution server's cache, files that have been recorded
              as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy
              and will be re-synchronized the next time they are accessed. Set this to a value less than <em>N</em>
-             if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days.</div>
-      </fieldset>
+             if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days.</span>
+        </fieldset>
 
-      <p>
+        <p>
+
         <fieldset class="groupentry">
           <legend>Tool Version Configuration</legend>
-
-          <% if @bourreau.new_record? %>
-         <p><label>A tool configuration for this Execution Server can be made once the server is created.</label>
-          <% else %>
-            <p><label>Common configuration for all tasks:</label> <%= link_to "Edit", new_tool_config_path( :bourreau_id => @bourreau.id ) %>
-          <% end %>
-
-     </fieldset>
+          A tool configuration for this Execution Server can be made once the server is created.
+        </fieldset>
 
         <p>
 
@@ -169,18 +166,18 @@
                   ]
           %>
 
-          <p><%= f.label :cms_shared_dir, "Path to shared work directory" %><br/>
-          <%= f.text_field :cms_shared_dir, :size => 60 %><br/>
-          <div class="field_explanation">Mandatory. This directory must be visible and writable from all nodes.
-                 This is were the work subdirectories for all tasks will be created.</div>
+          <p><%= f.label :cms_shared_dir, "Path to shared work directory" %><br>
+          <%= f.text_field :cms_shared_dir, :size => 60 %><br>
+          <span class="field_explanation">Mandatory. This directory must be visible and writable from all nodes.
+                 This is were the work subdirectories for all tasks will be created.</span>
 
           <p><%= f.label :cms_default_queue, "Default queue name" %><br/>
           <%= f.text_field :cms_default_queue %><br/>
-          <div class="field_explanation">Optional.</div>
+          <span class="field_explanation">Optional.</span>
 
           <p><%= f.label :cms_extra_qsub_args, "Extra 'qsub' options" %><br/>
           <%= f.text_field :cms_extra_qsub_args, :size => 60 %><br/>
-          <div class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</div>
+          <span class="field_explanation">Optional. Careful, this is inserted as-is in the command-line for submitting jobs.</span>
 
         </fieldset>
 
@@ -233,49 +230,18 @@
                     [ "Debug info",  2 ]
                 ]
           %><br/>
-          <div class="field_explanation">This option has no affect if the logs are sent to the RAILS log.</div>
+          <span class="field_explanation">This option has no affect if the logs are sent to the RAILS log.</span>
 
         </fieldset>
 
         <p>
 
         <fieldset class="groupentry">
-        <legend>Task Limits</legend>
-
-        <% if @bourreau.new_record? %>
-
-          <p><label>Task limits can be set once the Execution Server is created.</label>
-
-        <% else %>
-
-          <p><label for="meta_task_limit_total">Maximum total number of active tasks:</label>
-          <%= select_tag 'meta[task_limit_total]',
-              options_for_select( [ [ "Unlimited", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
-                      @bourreau.meta[:task_limit_total] )
-          %>
-
-          <p><label for="meta_task_limit_user">Default maximum number of active tasks for each user:</label>
-          <%= select_tag 'meta[task_limit_user_default]',
-              options_for_select( [ [ "Server's max", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
-                                  @bourreau.meta[:task_limit_user_default] )
-          %>
-          <div class="field_explanation">(Unless specified below)</div>
-
-          <p><label>Override maximum number of active tasks per user:</label>
-          <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'simple', :td_class => 'right', :cols => 4, :fill_by_columns => true) do |user,r,c| %>
-            <% metkey = "task_limit_user_#{user.id}".to_sym %>
-            <%= link_to_user_with_tooltip(user) %>:
-            <td class="some_left_right_padding">
-            <%= select_tag "meta[#{metkey}]",
-                options_for_select( [ [ "Default", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 150 200 250 300 400 500 750 1000 ) ,
-                                    @bourreau.meta[metkey] )
-            %></td>
-          <% end %>
-
-        <% end %>
-
+          <legend>Task Limits</legend>
+            Task limits can be set once the Execution Server is created.
         </fieldset>
-        </div>
+
+      </div>
 
     <p><%= submit_tag 'Create New Server' %></p>
 

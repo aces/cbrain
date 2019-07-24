@@ -101,7 +101,7 @@
     <% licenses = @provider.license_agreements.count == 0 ? "(None)": @provider.license_agreements.join("\n") %>
     <% t.edit_cell(:license_agreements, :content => licenses) do |f| %>
       <%= f.text_area :license_agreements, :value => joint_licenses, :content => joint_licenses, :rows => 5, :cols => 40 %><br>
-      <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
+      <span class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</span>
     <% end %>
 
     <% t.edit_cell(:time_zone, :content => (@provider.time_zone || "(Unset)") ) do |f| %>
@@ -129,7 +129,7 @@
       <% end %>
       <% t.edit_cell(:alternate_host, :header => "Alternate hostname(s)")  do |f| %>
         <%= f.text_field :alternate_host, :size => 60 %><br />
-        <div class="field_explanation">Comma-separated list of alternate hostnames; hostname1,hostname2,hostname3,...</div>
+        <span class="field_explanation">Comma-separated list of alternate hostnames; hostname1,hostname2,hostname3,...</span>
       <% end %>
       <% t.edit_cell(:remote_port) do |f| %>
         <%= f.text_field :remote_port, :size => 6 %>

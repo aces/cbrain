@@ -39,8 +39,8 @@
 
     <p>
     <%= f.label :description, "Description" %><br />
-    <%= f.text_area :description, :rows => 4, :cols => 40 %>
-    <div class="field_explanation">The first line should be a short summary, and the rest are for details.</div>
+    <%= f.text_area :description, :rows => 4, :cols => 40 %><br>
+    <span class="field_explanation">The first line should be a short summary, and the rest are for details.</span>
     </p>
     <% if current_user.has_role?(:admin_user) %>
       <p>

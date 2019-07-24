@@ -108,9 +108,9 @@
     <% if current_user.has_role?(:admin_user) %>
       <% t.edit_cell('meta[ip_whitelist]', :header => 'Source IP Whitelist', :content => @user.meta['ip_whitelist'] || '') do %>
         <%= text_field_tag "meta[ip_whitelist]", @user.meta['ip_whitelist'], :size => 40 %><br />
-        <div class="field_explanation">
+        <span class="field_explanation">
           Comma-separated list of allowed source IPs (X.X.X.X/XX) for the user to connect from.
-        </div>
+        </span>
       <% end %>
     <% end %>
 

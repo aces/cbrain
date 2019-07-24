@@ -54,13 +54,13 @@
   <% joint_licenses = @tool.license_agreements.join("\n") %>
   <% licenses = @tool.license_agreements.count == 0 ? "(None)": joint_licenses %>
   <% t.edit_cell :license_agreements, :header => "License agreements", :content => licenses do |f| %>
-    <%= f.text_area :license_agreements, :value => @tool.new_record? ? "" : joint_licenses, :rows => 3, :cols => 30 %>
-    <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
+    <%= f.text_area :license_agreements, :value => @tool.new_record? ? "" : joint_licenses, :rows => 3, :cols => 30 %><br>
+    <span class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</span>
   <% end %>
 
   <% t.edit_cell :description, :show_width => 2, :header => "Description", :content => full_description(@tool.description) do |f|%>
-    <%= f.text_area :description, :cols => 80, :rows => 10 %>
-    <div class="field_explanation">The first line is a short summary, and the rest are for any special notes for the users.</div>
+    <%= f.text_area :description, :cols => 80, :rows => 10 %><br>
+    <span class="field_explanation">The first line is a short summary, and the rest are for any special notes for the users.</span>
   <% end %>
 
   <% t.edit_cell :application_package_name, :header => "Package name" do |f| %>
@@ -88,7 +88,7 @@
 
 <% if @tool && !@tool.new_record? %>
 <p>
-  Common configuration for all servers: <%= link_to "Edit", new_tool_config_path( :tool_id => @tool.id ) %><br/>
+  Common configuration for this tool on all servers: <%= link_to "Edit", new_tool_config_path( :tool_id => @tool.id ) %><br/>
 
 <p>
   Versions installed on the following execution servers:<br/>

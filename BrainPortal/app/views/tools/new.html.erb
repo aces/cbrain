@@ -61,14 +61,14 @@
 
       <p>
         <%= f.label :license_agreements, "License agreements:" %><br>
-        <%= f.text_area :license_agreements, :value => @tool.new_record? ? "" : @tool.license_agreements.join("\n") , :rows => 5, :cols => 40 %>
-        <div class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</div>
+        <%= f.text_area :license_agreements, :value => @tool.new_record? ? "" : @tool.license_agreements.join("\n") , :rows => 5, :cols => 40 %><br>
+        <span class="field_explanation">Enter one agreement name per line. Note that only alphanumeric characters, underscores (_) and dashes (-) are accepted.</span>
       </p>
 
       <p>
         <%= f.label :description, "Description:" %><br>
         <%= f.text_area :description, :cols => 80, :rows => 10 %><br>
-        <div class="field_explanation">The first line must should be a short summary, and the rest are for any special notes for the users.</div>
+        <span class="field_explanation">The first line must should be a short summary, and the rest are for any special notes for the users.</span>
       </p>
 
       <p>

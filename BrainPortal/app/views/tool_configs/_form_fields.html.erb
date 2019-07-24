@@ -35,12 +35,12 @@
                                  :edit_condition => check_role(:admin_user)) do |t| %>
 
       <% t.edit_cell(:version_name, :header => "Version") do |f| %>
-        <%= f.text_field :version_name, :size => 20 %>
-        <div class="field_explanation">
+        <%= f.text_field :version_name, :size => 20 %><br>
+        <span class="field_explanation">
            Must be a simple string that represent
            a short identifier for the version. First character must be alphanum,
            and can contain only alphanums, '.', '-', '_', ':' and '@'
-        </div>
+        </span>
       <% end %>
 
       <% t.cell("Created") { @tool_config.created_at.present? ? to_localtime(@tool_config.created_at,:datetime) : "" } %>
@@ -60,11 +60,11 @@
       <% t.empty_cell %>
 
       <% t.edit_cell(:description, :header => "Description", :show_width => 2, :content => full_description(@tool_config.description)) do |f| %>
-        <%= f.text_area :description, :rows => 10, :cols => 120 %>
-        <div class="wide_field_explanation">
+        <%= f.text_area :description, :rows => 10, :cols => 120 %><br>
+        <span class="wide_field_explanation">
           The first line must be a short summary, and the rest are for any special
           notes for the users.
-        </div>
+        </span>
       <% end %>
 
     <% end %>
@@ -76,10 +76,10 @@
   <%= show_table(@tool_config, :form_helper => cf, :header => "Execution Server Control", :edit_condition => check_role(:admin_user)) do |t| %>
 
     <% t.edit_cell(:extra_qsub_args, :header => "Extra 'qsub' options", :show_width => 2) do |f| %>
-      <%= f.text_field :extra_qsub_args, :size => 80 %>
-      <div class="wide_field_explanation">
-        <b>Note:</b>This string will be appended to the extra 'qsub' option defined at the bourreau level.
-      </div>
+      <%= f.text_field :extra_qsub_args, :size => 80 %><br>
+      <span class="wide_field_explanation">
+        <b>Note:</b> This string will be appended to the extra 'qsub' option defined at the bourreau level.
+      </span>
     <% end %>
 
   <% end %>
@@ -121,14 +121,13 @@
     <% t.edit_cell(:script_prologue, :content => full_description(@tool_config.script_prologue),
                    :no_header => true) do |f| %>
       <%= f.text_area :script_prologue, :cols => 80, :rows => 10 %>
-
-      <p>
-      <div class="wide_field_explanation">
+      <br>
+      <span class="wide_field_explanation">
         This is a multi line partial BASH script. It can use the environment variables defined above
         and do anything else you feel is needed to activate this configuration.
         Note that this script should usually be silent, as outputing text (like in <em>echo</em> statements)
         could interfere with the proper processing of the tasks output.
-      </div>
+      </span>
     <% end %>
 
   <% end %>
@@ -141,32 +140,32 @@
     <% end %>
 
     <% t.edit_cell(:container_index_location, :header => "Index of the container image") do |f| %>
-      <%= f.text_field :container_index_location %>
-      <div class="field_explanation">
+      <%= f.text_field :container_index_location %><br>
+      <span class="field_explanation">
         The index (url) of the container image in which the docker or singularity container is
         accessible through.
         Examples for Docker are: quay.io, index.docker.io (default).
         Examples for Singularity are: docker:&sol;&sol;, shub:&sol;&sol; (default).
-      </div>
+      </span>
     <% end %>
 
     <% t.edit_cell(:containerhub_image_name, :header => "Container image name") do |f| %>
-      <%= f.text_field :containerhub_image_name %>
-        <div class="field_explanation">
+      <%= f.text_field :containerhub_image_name %><br>
+        <span class="field_explanation">
         The name and tag of the container image in which the tool is installed,
         for instance "centos:latest". This name refers to the Docker/Singularity index
         accessed by the Bourreau, which is configured manually in the Bourreau
         for now.
-        </div>
+        </span>
     <% end %>
 
     <% t.edit_cell(:container_image_userfile_id, :header => "ID of the container image") do |f| %>
       <%= f.text_field :container_image_userfile_id %> :
-      <%= link_to_userfile_if_accessible(@tool_config.container_image) %>
-      <div class="field_explanation">
+      <%= link_to_userfile_if_accessible(@tool_config.container_image) %><br>
+      <span class="field_explanation">
         The ID number of the container image in which the tool is installed.
         This ID refers to a proper image file registered in CBRAIN by the admin.
-      </div>
+      </span>
     <% end %>
 
   <% end %>
@@ -214,7 +213,7 @@
 
     <fieldset class="groupentry" style="margin: 0.2em;">
       <legend>Import and merge</legend>
-      <div class="wide_field_explanation">
+      <span class="wide_field_explanation">
         This panel allows you to merge another configuration into the current form.
         <p>
         <% if @tool_config.tool_id && @tool_config.bourreau_id %>
@@ -224,10 +223,13 @@
           The environment variables and prologue script will be appended to whatever
           values are currently in the form.
         <% end %>
-      </div>
+      </span>
+      <p>
 
       <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
       <%= submit_tag 'Merge Configuration (Preview)', :name => :merge %><br/>
+
+      <hr>
 
       <%= submit_tag 'Save everything!', :name => :update %>
 
@@ -235,10 +237,11 @@
         <%= submit_tag 'Reload original', :name => :cancel %>
       <% end %>
 
-      <div class="wide_field_explanation">
+      <br>
+      <span class="wide_field_explanation">
         You need to first click the Merge Configuration (Preview), carefully check the results, and only if
         everything is ok click this or any other Update button, and the changed values will persist
-      </div>
+      </span>
     </fieldset>
 
 <% end # show_table_context %>
