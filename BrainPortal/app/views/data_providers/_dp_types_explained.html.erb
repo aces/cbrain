@@ -123,4 +123,7 @@ a Singularity container handler. The requirements are:<br>
   <li>that this image contains a basic Linux system with at least <em>rsync</em> installed in it,
   <li>and that the path to the data root inside the container must be provided in the <em>Client Starting Path</em> under the <em>Cloud Storage Configuration</em> section.
 </ul>
+Note that this DP is already 'smart' in that if the <em>Remote Host</em>
+configured for it matches the current host, it will not perform its
+data operation through a SSH master.
 

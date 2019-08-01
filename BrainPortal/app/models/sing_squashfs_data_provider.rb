@@ -74,10 +74,13 @@ class SingSquashfsDataProvider < SshDataProvider
     # Check we have singularity version 3.2 or better
     remote_cmd = "singularity --version"
     text       = self.remote_bash_this(remote_cmd)
-    return false unless text =~ /^(\d+)\.(\d+)/
-    major,minor = Regexp.last_match[1,2].map(&:to_i)
-    return false if  major  < 2
+    return false unless text =~ /^(singularity version )?(\d+)\.(\d+)/
+    major,minor = Regexp.last_match[2,2].map(&:to_i)
+    return false if  major  < 3
     return false if  major == 3 && minor < 2
+
+    # Well, we passed all the tests
+    true
   end
 
   def impl_sync_to_cache(userfile) #:nodoc:
@@ -92,8 +95,11 @@ class SingSquashfsDataProvider < SshDataProvider
 
     rsync = rsync_over_ssh_prefix
 
-    # It's IMPORTANT that the source be specified with a bare ':' in front.
-    text = bash_this("#{rsync} -a -l --no-p --no-g --chmod=u=rwX,g=rX,o=r --delete #{self.rsync_excludes} :#{remote_shell_escape(remotefull)}#{sourceslash} #{shell_escape(localfull)} 2>&1")
+    # When using ssh, It's IMPORTANT that the source be specified with a bare ':' in front.
+    source_colon   = provider_is_remote ? ":" : "localhost:"
+    # If our rsync is running remotely, we need to escape the source twice.
+    source_escaped = provider_is_remote ? remote_shell_escape(remotefull) : remotefull.to_s.bash_escape
+    text = bash_this("#{rsync} -a -l --no-p --no-g --chmod=u=rwX,g=rX,o=r --delete #{self.rsync_excludes} #{source_colon}#{source_escaped}#{sourceslash} #{shell_escape(localfull)} 2>&1")
     text.sub!(/Warning: Permanently added[^\n]+known hosts.\s*/i,"") # a common annoying warning
     cb_error "Error syncing userfile to local cache, rsync returned:\n#{text}" unless text.blank?
     unless File.exist?(localfull)
@@ -102,13 +108,6 @@ class SingSquashfsDataProvider < SshDataProvider
     end
     true
   end
-
-#    AttrList = [
-#                  :name, :symbolic_type, :size, :permissions,
-#                  :uid, :gid, :owner, :group,
-#                  :atime, :mtime, :ctime,
-#               ]
-
 
   def impl_provider_list_all(user=nil) #:nodoc:
     text       = remote_in_sing_stat_all(self.cloud_storage_client_path_start,".",true)
@@ -162,8 +161,11 @@ class SingSquashfsDataProvider < SshDataProvider
   # Unimplementable API methods
   ########################################################
 
+  # Note: this one COULD be provided with a bit of
+  # coding. The implmentation is to run 'cat' inside the
+  # container.
   def impl_provider_readhandle(userfile, *args) #:nodoc:
-    raise "Error: No streaming allowed for the DP."
+    raise "Error: Not Yet Implemented."
   end
 
   def impl_sync_to_provider(userfile) #:nodoc:
@@ -185,6 +187,35 @@ class SingSquashfsDataProvider < SshDataProvider
   ########################################################
 
   protected
+
+  # Returns true if we have to use 'ssh' to
+  # connect to the remote server. Returns false
+  # when we can optimize requests by running
+  # singularity locally. The local situation is
+  # detected pretty much like in the Smart DP
+  # module: if the hostname is the same as *remote_host*
+  # or *alternate_host*, and if the *remote_dir* exists
+  # locally.
+  def provider_is_remote #:nodoc:
+    return @provider_is_remote if ! @provider_is_remote.nil?
+    dp_hostnames  = (self.remote_host || "")
+                    .+(',')
+                    .+(self.alternate_host || "")
+                    .split(",")
+                    .map(&:strip)
+                    .map(&:presence)
+                    .compact
+
+    # Or test is biased so that we try local only if we have a local dir
+    # and the hostname match.
+    if dp_hostnames.include?(Socket.gethostname) && File.directory?(self.remote_dir)
+      @provider_is_remote = false
+    else
+      @provider_is_remote = true # basically, anything else and we try through SSH
+    end
+
+    @provider_is_remote
+  end
 
   def get_squashfs_basenames(force = false) #:nodoc:
     @sq_files ||= self.meta[:squashfs_basenames] # cached_values
@@ -219,9 +250,13 @@ class SingSquashfsDataProvider < SshDataProvider
   #
   #   rsync -e 'ssh_options_here user_host'  :/remote/file  local/file
   def rsync_over_ssh_prefix
-    ssh_opts = self.ssh_shared_options
-    ssh      = "ssh -q -x #{ssh_opts}"
-    rsync    = "rsync -e #{shell_escape(ssh)} --rsync-path=#{shell_escape(remote_rsync_command)}"
+    rsync_dash_e = ""
+    if provider_is_remote
+      ssh_opts     = self.ssh_shared_options
+      ssh          = "ssh -q -x #{ssh_opts}"
+      rsync_dash_e = "-e #{ssh.bash_escape}"
+    end
+    rsync    = "rsync #{rsync_dash_e} --rsync-path=#{remote_rsync_command.bash_escape}"
     rsync
   end
 
@@ -289,16 +324,22 @@ class SingSquashfsDataProvider < SshDataProvider
     file_infos.compact
   end
 
-# DEBUG
-def remote_bash_this(com)
-puts_red "REMOTE: #{com}"
-super
-end
+  # Unlike the superclass, we
+  # here can switch between remote
+  # and local mode.
+  def remote_bash_this(com) #:nodoc:
+    #puts_red "REMOTE: #{com}" # DEBUG
+    if provider_is_remote
+      super
+    else
+      bash_this(com)
+    end
+  end
 
-# DEBUG
-def bash_this(com)
-puts_yellow "BASH: #{com}"
-super
-end
+  # DEBUG
+  def bash_this(com) #:nodoc:
+    #puts_yellow "BASH: #{com}" # DEBUG
+    super
+  end
 
 end
