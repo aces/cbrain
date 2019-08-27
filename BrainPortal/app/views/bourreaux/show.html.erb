@@ -159,7 +159,7 @@
 
   <% end %>
 
-  <% if is_portal %>
+  <% if check_role(:admin_user) && is_portal %>
     <%= show_table(@bourreau, :as => :bourreau, :header => "Mail configuration", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
       <% t.edit_cell(:support_email, :header => "Support email address") do |f| %>
         <%= f.text_field :support_email, :size => 30 %><br/>
@@ -249,6 +249,32 @@
       <% end %>
     <% end %>
 
+    <%= show_table(@bourreau, :as => :bourreau, :header => "Data Providers Options", :edit_condition => @bourreau.has_owner_access?(current_user)) do |t| %>
+        <% persistent = @bourreau.meta[:use_persistent_ssh_masters_for_dps] %>
+        <% persistent = is_portal if persistent.nil? %>
+        <% t.edit_cell 'meta[use_persistent_ssh_masters_for_dps]',
+                       :header  => "Use persistent SSH masters for SSH-based DataProviders",
+                       :content => (persistent.to_s == 'true' ? 'Always' : 'Never') do %>
+          <%= select_tag  'meta[use_persistent_ssh_masters_for_dps]',
+              options_for_select( [ [ "Always", "true" ], [ 'Never', "false" ] ], persistent )
+          %>
+          <br>
+          <p class="wide_field_explanation">
+            When set to 'always', the SSH connections to a data
+            provider's host will persist after the first use. This
+            makes successive data transfers a bit faster because
+            the connection doesn't have to be re-opened every time
+            it is needed. The default it to have this behavior ON
+            ('always') for portals and OFF ('never') for execution
+            servers.
+          </p>
+          <%
+          # The following hidden field is needed so this table receives at least one attribute
+          # when the form is posted.
+          %>
+          <%= hidden_field_tag 'bourreau[ignore_this]', 'meta_update' %>
+        <% end %>
+    <% end %>
 
 
     <% if is_bourreau %>
