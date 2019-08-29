@@ -39,8 +39,8 @@ class SingSquashfsDataProvider < SshDataProvider
 
   # We use this to point to the directory INSIDE the container
   # were the root of the data is stored
-  validates_presence_of :cloud_storage_client_path_start
-  validates_format_of   :cloud_storage_client_path_start, :with => /\A\//
+  validates_presence_of :containerized_path
+  validates_format_of   :containerized_path, :with => /\A\//
 
   # We can't write to this provider. This method
   # overrides the ActiveRecord attribute of the same name.
@@ -60,24 +60,31 @@ class SingSquashfsDataProvider < SshDataProvider
 
   def impl_is_alive? #:nodoc:
     return false unless super # basic SSH checks
+    check_remote_config!
+  rescue
+    false
+  end
 
+  # Raise an exception with a message indicating what is wrong with the config.
+  # This method is not part of the official method API
+  def check_remote_config! #:nodoc:
     # Check we have one singularity image file
     remote_cmd  = "cd #{self.remote_dir.bash_escape};test -f #{SINGULARITY_IMAGE_BASENAME} && echo OK-Exists"
     text        = self.remote_bash_this(remote_cmd)
     # The following check will also make sure the remote shell is clean!
-    return false unless text =~ /\AOK-Exists\s*\z/
+    cb_error "No installed singularity image #{SINGULARITY_IMAGE_BASENAME}, or remote shell is unclean" unless text =~ /\AOK-Exists\s*\z/
 
     # Check we have at least one .squashfs file in the remote_dir
     sq_files = get_squashfs_basenames
-    return false unless sq_files.present?
+    cb_error "No .squashfs files found" unless sq_files.present?
 
     # Check we have singularity version 3.2 or better
     remote_cmd = "singularity --version"
     text       = self.remote_bash_this(remote_cmd)
-    return false unless text =~ /^(singularity version )?(\d+)\.(\d+)/
+    cb_error "Can't find singularity version number on remote host" unless text =~ /^(singularity version )?(\d+)\.(\d+)/
     major,minor = Regexp.last_match[2,2].map(&:to_i)
-    return false if  major  < 3
-    return false if  major == 3 && minor < 2
+    cb_error "singularity version number on remote host is less than 3.0" if major  < 3
+    cb_error "singularity version number on remote host is less than 3.2" if major == 3 && minor < 2
 
     # Well, we passed all the tests
     true
@@ -109,9 +116,17 @@ class SingSquashfsDataProvider < SshDataProvider
     true
   end
 
+  # Returns (and cache for one week) the entries in the DP. +user+ is not used here.
+  # Note that the DataProvider controller also caches this list in a YAML file in /tmp,
+  # and it considers it valid for only one minute, so it will refresh that way more
+  # often than our 1-week long caching here. The thing is, fetching the list from the
+  # DP side is the real expensive operation, and also we don't expect the list to change
+  # since this DP type is for static, read-only data.
   def impl_provider_list_all(user=nil) #:nodoc:
-    text       = remote_in_sing_stat_all(self.cloud_storage_client_path_start,".",true)
-    file_infos = stat_reports_to_fileinfos(text)
+    file_infos = Rails.cache.fetch("#{self.class}-#{self.id}-file_infos", :expires_in => 7.days) do
+      text = remote_in_sing_stat_all(self.containerized_path,".",true)
+      stat_reports_to_fileinfos(text)
+    end
     file_infos
   end
 
@@ -119,7 +134,7 @@ class SingSquashfsDataProvider < SshDataProvider
     allowed_types = Array(allowed_types)
 
     # The behavior of the *collection_index methods is weird.
-    basedir    = Pathname.new(self.cloud_storage_client_path_start)
+    basedir = Pathname.new(self.containerized_path)
     if directory == :all
       subdir     = userfile.name
       one_level  = false
@@ -152,7 +167,7 @@ class SingSquashfsDataProvider < SshDataProvider
   end
 
   def provider_full_path(userfile)
-    Pathname.new(self.cloud_storage_client_path_start) + userfile.name
+    Pathname.new(self.containerized_path) + userfile.name
   end
 
 
@@ -220,8 +235,8 @@ class SingSquashfsDataProvider < SshDataProvider
   def get_squashfs_basenames(force = false) #:nodoc:
     @sq_files ||= self.meta[:squashfs_basenames] # cached_values
 
-    if @sq_files.nil? || force
-      remote_cmd  = "cd #{self.remote_dir.bash_escape} && ls -1 | grep -F .squashfs"
+    if @sq_files.blank? || force
+      remote_cmd  = "cd #{self.remote_dir.bash_escape} && ls -1 | grep '\.squashfs$'"
       text        = self.remote_bash_this(remote_cmd)
       lines       = text.split("\n")
       @sq_files   = lines.select { |l| l =~ /\A\S+\.squashfs\z/ }.sort

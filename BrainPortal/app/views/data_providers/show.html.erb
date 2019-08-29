@@ -116,7 +116,7 @@
 
     <% if check_role(:admin_user) || @provider.user_id == current_user.id %>
       <% t.edit_cell(:remote_dir, :header => "Physical Data Location", :show_width => 2) do |f| %>
-        <%= f.text_field :remote_dir, :size => 60 %>
+        <%= f.text_field :remote_dir, :size => 80 %>
       <% end %>
     <% end %>
 
@@ -137,6 +137,14 @@
       <% t.edit_cell(:remote_user) do |f| %>
         <%= f.text_field :remote_user %>
       <% end %>
+    <% end %>
+
+    <% if @provider.is_a?(SingSquashfsDataProvider) %>
+    <%= show_table(@provider, :as => :data_provider, :header => "Containerized Storage Configuration", :edit_condition => true) do |t| %>
+      <% t.edit_cell(:containerized_path, :header => 'Containerized Data Path', :show_width => 2) do %>
+        <%= text_field_tag "data_provider[containerized_path]", @provider.containerized_path, :size => 80 %>
+      <% end %>
+    <% end %>
     <% end %>
 
     <%= show_table(@provider, :as => :data_provider, :header => "Cloud Storage Configuration", :edit_condition => true) do |t| %>

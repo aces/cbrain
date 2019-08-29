@@ -134,6 +134,7 @@ class DataProvidersController < ApplicationController
            not_syncable cloud_storage_client_identifier cloud_storage_client_token
            cloud_storage_client_bucket_name cloud_storage_client_path_start
            datalad_repository_url datalad_relative_path
+           containerized_path
          )
       )
       meta_flags_for_restrictions = (params[:meta] || {}).keys.grep(/\Adp_no_copy_\d+\z|\Arr_no_sync_\d+\z/)
@@ -820,7 +821,8 @@ class DataProvidersController < ApplicationController
       :not_syncable, :time_zone, :cloud_storage_client_identifier,
       :cloud_storage_client_token, :cloud_storage_client_bucket_name,
       :cloud_storage_client_path_start, :datalad_repository_url,
-      :datalad_relative_path, :license_agreements
+      :datalad_relative_path, :license_agreements,
+      :containerized_path
     )
   end
 

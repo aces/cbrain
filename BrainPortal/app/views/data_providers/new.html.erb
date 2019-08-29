@@ -121,6 +121,29 @@
     <p>
 
     <fieldset class="groupentry">
+    <legend>Physical Data Location</legend>
+
+      <span title="Directory used for storing files">
+        <p><%= f.label :remote_dir, "Full Directory Path" %><br/>
+        <%= f.text_field :remote_dir, :size => 80 %></p>
+      </span>
+
+    </fieldset>
+
+    <p>
+
+    <fieldset class="groupentry">
+      <legend>Containerized Storage Configuration</legend>
+
+      <span title="Data path inside container">
+        <p><%= f.label :containerized_path, "Containerized Data Path" %><br/>
+        <%= f.text_field :containerized_path, :size => 80 %></p>
+      </span>
+    </fieldset>
+
+    <p>
+
+    <fieldset class="groupentry">
       <legend>Cloud Storage Configuration</legend>
 
       <span title="Identifier for cloud storage service.">
@@ -143,7 +166,7 @@
 
       <span title="Starting path for cloud storage service.">
         <p><%= f.label :cloud_storage_client_path_start, "Client Starting Path (Only needed for S3FlatDataProvider)" %><br/>
-        <%= f.text_field :cloud_storage_client_path_start %></p>
+        <%= f.text_field :cloud_storage_client_path_start, :size => 80 %></p>
       </span>
     </fieldset>
 
@@ -154,25 +177,13 @@
 
       <span title="URL for the Datalad repository.">
         <p><%= f.label :datalad_repository_url, "Datalad URL" %><br/>
-        <%= f.text_field :datalad_repository_url, :size => 60 %></p>
+        <%= f.text_field :datalad_repository_url, :size => 80 %></p>
       </span>
 
       <span title="Relative path for the Datalad repository">
         <p><%= f.label :datalad_relative_path, "Datalad Relative Path" %><br/>
-        <%= f.text_field :datalad_relative_path, :size => 60 %></p>
+        <%= f.text_field :datalad_relative_path, :size => 80 %></p>
       </span>
-    </fieldset>
-
-    <p>
-
-    <fieldset class="groupentry">
-    <legend>Physical data location</legend>
-
-      <span title="Directory used for storing files">
-        <p><%= f.label :remote_dir, "Full Directory Path" %><br/>
-        <%= f.text_field :remote_dir, :size => 60 %></p>
-      </span>
-
     </fieldset>
 
     <p>
