@@ -52,9 +52,9 @@
       <%= f.text_field :name %>
     <% end %>
 
-    <% t.edit_cell(:creator_id, :content => link_to_user_with_tooltip(@group.creator), :header => "Creator") do %>
+    <% t.edit_cell(:creator_id, :content => link_to_user_with_tooltip(@group.creator), :header => "Maintainer") do %>
       <%= user_select "group[creator_id]", { :users => ( current_user.available_users | @group.users), :selector => @group.creator } %>
-      <div class="field_explanation"><span class="warning">Warning</span>: If you change the Creator to someone else you won't be able to edit this project any more</div>
+      <div class="field_explanation"><span class="warning">Warning</span>: If you change the maintainer to someone else you won't be able to edit this project any more</div>
     <% end %>
 
     <% t.edit_cell(:site_id, :content => link_to_site_if_accessible(@group.site), :disabled => !current_user.has_role?(:admin_user)) do %>
@@ -72,9 +72,9 @@
       <% t.edit_cell("Invisible", :content => check_box_tag(nil ,nil, @group.invisible?, :disabled => true)) do |f| %>
         <%= f.check_box :invisible %>
       <% end %>
+    <% else %>
+      <% t.empty_cell %>
     <% end %>
-
-    <% t.empty_cell %>
 
   <% end %>
 

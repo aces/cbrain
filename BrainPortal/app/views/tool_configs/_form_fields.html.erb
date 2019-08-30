@@ -229,6 +229,8 @@
       <%= tool_config_select :merge_from_tc_id, {:allow_offline => true}, { :include_blank => 'Merge from...' } %>
       <%= submit_tag 'Merge Configuration (Preview)', :name => :merge %><br/>
 
+      <hr>
+
       <%= submit_tag 'Save everything!', :name => :update %>
 
       <% if ! @tool_config.new_record? %>

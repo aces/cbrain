@@ -53,7 +53,7 @@
 
     <% t.edit_cell(:name) do |f| %>
       <%= f.text_field :name %><br>
-      <div class="field_explanation"  >
+      <div class="field_explanation">
         Important note: this name must also be changed accordingly in the config file
         <em><%= is_bourreau ? "Bourreau/config/initializers/config_bourreau.rb" : "BrainPortal/config/initializers/config_portal.rb" %></em>
         for this server to restart properly later on.

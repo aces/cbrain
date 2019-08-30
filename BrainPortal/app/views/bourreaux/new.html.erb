@@ -32,10 +32,11 @@
 <%= form_for @bourreau, :as => :bourreau, :url => { :action => "create" }, :datatype => "script" do |f| -%>
 
   <div class="generalbox">
-      <p><%= f.label :name %><br/>
-      <%= f.text_field :name %><br/>
-      <div class="field_explanation">
-        Important note: this name must also be changed accordingly in the config file
+
+        <p><%= f.label :name %><br/>
+        <%= f.text_field :name %><br/>
+        <div class="field_explanation">
+          Important note: this name must also be changed accordingly in the config file
           <em>Bourreau/config/initializers/config_bourreau.rb</em>
           for this server to restart properly later on.
         </div>
@@ -70,6 +71,7 @@
         </span>
 
         <p>
+
         <fieldset class="groupentry">
           <legend>SSH Remote Control Configuration</legend>
           <p><%= f.label :ssh_control_host, "Hostname" %><br/>
@@ -102,7 +104,6 @@
                    <%= f.text_field :tunnel_actres_port, :size => 6 %>
         </fieldset>
 
-
         <p>
 
         <fieldset class="groupentry">
@@ -118,7 +119,7 @@
                  <%= f.text_field :spaced_dp_ignore_patterns, :size => 80 %><br/>
           <div class="field_explanation">Separate several patterns with spaces; each pattern can contain single '*'s, but no '/'s or special characters.</div>
 
-        <p><%= f.label :cache_trust_expire, "Cache Expiration Timeout" %><br/>
+          <p><%= f.label :cache_trust_expire, "Cache Expiration Timeout" %><br/>
                   <%= f.select :cache_trust_expire, [
                       [ "Never",        "0"                  ],
                       [ "Six hours",     6.hours.to_i.to_s   ],
@@ -137,19 +138,14 @@
              as 'InSync' but were last accessed more than this amount of time will be considered untrustworthy
              and will be re-synchronized the next time they are accessed. Set this to a value less than <em>N</em>
              if the cluster's file policy, for instance, deletes all scratch files older than <em>N</em> days.</div>
-      </fieldset>
+        </fieldset>
 
-      <p>
+        <p>
+
         <fieldset class="groupentry">
           <legend>Tool Version Configuration</legend>
-
-          <% if @bourreau.new_record? %>
-         <p><label>A tool configuration for this Execution Server can be made once the server is created.</label>
-          <% else %>
-            <p><label>Common configuration for all tasks:</label> <%= link_to "Edit", new_tool_config_path( :bourreau_id => @bourreau.id ) %>
-          <% end %>
-
-     </fieldset>
+          A tool configuration for this Execution Server can be made once the server is created.
+        </fieldset>
 
         <p>
 
@@ -240,45 +236,14 @@
         <p>
 
         <fieldset class="groupentry">
-        <legend>Task Limits</legend>
-
-        <% if @bourreau.new_record? %>
-
-          <p><label>Task limits can be set once the Execution Server is created.</label>
-
-        <% else %>
-
-          <p><label for="meta_task_limit_total">Maximum total number of active tasks:</label>
-          <%= select_tag 'meta[task_limit_total]',
-              options_for_select( [ [ "Unlimited", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
-                      @bourreau.meta[:task_limit_total] )
-          %>
-
-          <p><label for="meta_task_limit_user">Default maximum number of active tasks for each user:</label>
-          <%= select_tag 'meta[task_limit_user_default]',
-              options_for_select( [ [ "Server's max", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 200 500 1000 ) ,
-                                  @bourreau.meta[:task_limit_user_default] )
-          %>
-          <div class="field_explanation">(Unless specified below)</div>
-
-          <p><label>Override maximum number of active tasks per user:</label>
-          <%= array_to_table(@users.sort { |a,b| a.login <=> b.login }, :table_class => 'simple', :td_class => 'right', :cols => 4, :fill_by_columns => true) do |user,r,c| %>
-            <% metkey = "task_limit_user_#{user.id}".to_sym %>
-            <%= link_to_user_with_tooltip(user) %>:
-            <td class="some_left_right_padding">
-            <%= select_tag "meta[#{metkey}]",
-                options_for_select( [ [ "Default", "" ] ] + %w( 1 2 3 4 5 8 10 15 20 25 30 35 40 45 50 60 75 100 150 200 250 300 400 500 750 1000 ) ,
-                                    @bourreau.meta[metkey] )
-            %></td>
-          <% end %>
-
-        <% end %>
-
+          <legend>Task Limits</legend>
+          Task limits can be set once the Execution Server is created.
         </fieldset>
-        </div>
 
-    <p><%= submit_tag 'Create New Server' %></p>
+  </div>
 
-    <% end -%>
+  <p><%= submit_tag 'Create New Server' %></p>
 
-    <%= render :partial => "notes" %>
+<% end -%>
+
+<%= render :partial => "notes" %>
