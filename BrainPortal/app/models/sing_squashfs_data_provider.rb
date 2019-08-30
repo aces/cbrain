@@ -28,6 +28,8 @@
 # commands and the 'rsync' command too.
 class SingSquashfsDataProvider < SshDataProvider
 
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
   # This is the basename of the singularity image
   # we use to access the squashfs filesystems; we
   # expect this image to be installed in the same
@@ -86,6 +88,14 @@ class SingSquashfsDataProvider < SshDataProvider
     cb_error "singularity version number on remote host is less than 3.0" if major  < 3
     cb_error "singularity version number on remote host is less than 3.2" if major == 3 && minor < 2
 
+    # Check that inside the container
+    all_sq_files = @sq_files
+    @sq_files    = [ @sq_files.first ] # To speed up check, use only the first squashfs file
+    checkdir     = "test -d #{self.containerized_path.bash_escape} && echo OK-Exists"
+    text         = remote_in_sing_bash_this(checkdir)
+    @sq_files    = all_sq_files # return it to proper full list
+    cb_error "No path '#{self.containerized_path}' inside container" unless text =~ /\AOK-Exists\s*\z/
+
     # Well, we passed all the tests
     true
   end
@@ -123,10 +133,17 @@ class SingSquashfsDataProvider < SshDataProvider
   # DP side is the real expensive operation, and also we don't expect the list to change
   # since this DP type is for static, read-only data.
   def impl_provider_list_all(user=nil) #:nodoc:
-    file_infos = Rails.cache.fetch("#{self.class}-#{self.id}-file_infos", :expires_in => 7.days) do
+    cache_key  = "#{self.class}-#{self.id}-file_infos"
+
+    file_infos = Rails.cache.fetch(cache_key, :expires_in => 7.days) do
       text = remote_in_sing_stat_all(self.containerized_path,".",true)
       stat_reports_to_fileinfos(text)
     end
+
+    # Generally no entries mean an error in the config, so we don't want
+    # to cache that empty array for one week.
+    Rails.cache.delete(cache_key) if file_infos.blank?
+
     file_infos
   end
 
@@ -295,7 +312,7 @@ class SingSquashfsDataProvider < SshDataProvider
     #com = "cd #{basedir.to_s.bash_escape};find #{subdir.to_s.bash_escape} #{max_depth} -exec stat --format \"#{stat_format}\" \"{}\" \";\""
     # Linux 'find' command format:
     find_format = "E=%y,%m,%s,%U,%u,%G,%g,%A@,%T@,%C@,%p\\n"
-    com = "cd #{basedir.to_s.bash_escape};find #{subdir.to_s.bash_escape} #{max_depth} #{type_opt} -printf \"#{find_format}\""
+    com = "cd #{basedir.to_s.bash_escape} && find #{subdir.to_s.bash_escape} #{max_depth} #{type_opt} -printf \"#{find_format}\""
     remote_in_sing_bash_this(com)
   end
 
