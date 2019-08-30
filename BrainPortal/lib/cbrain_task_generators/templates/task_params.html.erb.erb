@@ -319,7 +319,8 @@
   <%- enum_vals = param["value-choices"] %>
   <%- if not enum_vals.nil? -%>
         # Enum value dropdown
-        dropdown.(id, id,
+        name = id <%= list ? '+ "[]"' : '' %>
+        dropdown.(id, name,
           <%= enum_vals.map { |v| [v, v] } %>,
           optional: <%= opt %>,
           default:  <%= "\"#{defaults.find { |d| d['id']==id }['default-value']}\"" rescue "nil" %>
