@@ -34,8 +34,15 @@ module ApiHelpers
 
   # Returns true if the current request is an API request (JSON or XML)
   def api_request?
-    return @_is_api_request unless @_is_api_request.nil?
-    @_is_api_request = (request.format.json? || request.format.xml?)
+    #puts_red "CAT=#{@cbrain_api_token} #{params[:controller]} #{params[:action]}"
+    #if ! @cbrain_api_token
+    #  puts_yellow (Rails.backtrace_cleaner.clean caller).join("\n")
+    #  puts_yellow "-------"
+    #end
+    return true if @cbrain_api_token
+    return true if request.format.json?
+    return true if request.format.xml?
+    false
   end
 
   # Before filter that blocks certain actions from the API
