@@ -544,6 +544,23 @@ f5.name = "todelmult.txt";
 f5.id   = 5
 f5.save! # we don't care for actual content for this one
 
+f6 = DatFile.seed_record!(
+  { :name => 'binary.dat' },
+  { :id   => 6,
+    :user_id => normal.id,
+    :group_id => normal.own_group.id,
+    :data_provider_id => dp.id,
+    :num_files => 1,
+    :group_writable => false,
+    :hidden => false,
+    :immutable => false,
+    :archived => false,
+    :description => 'binary data',
+  }
+)
+f6.cache_writehandle { |fh| fh.binmode;fh.write "\xff" }
+f6.set_size
+
 SyncStatus.delete_all # clean all sync info again
 
 
