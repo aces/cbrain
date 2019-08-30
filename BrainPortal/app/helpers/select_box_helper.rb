@@ -30,7 +30,7 @@ module SelectBoxHelper
   # when the form is submitted and the +select_tag_options+ hash will be sent
   # directly as options to the +select_tag+ helper method called to create the element.
   # The +options+ hash can contain either or both of the following:
-  # [selector] used for default selection. This can be a User object, a user id (String or Fixnum),
+  # [selector] used for default selection. This can be a User object, a user id (String or Integer),
   #            or any model that has a user_id attribute.
   # [users] the array of User objects used to build the select box. Defaults to +current_user.available_users+.
   def user_select(parameter_name = "user_id", options = {}, select_tag_options = {} )
@@ -66,7 +66,7 @@ module SelectBoxHelper
   # when the form is submitted and the +select_tag_options+ hash will be sent
   # directly as options to the +select_tag+ helper method called to create the element.
   # The +options+ hash can contain either or both of the following:
-  # [selector] used for default selection. This can be a Site object, a site id (String or Fixnum),
+  # [selector] used for default selection. This can be a Site object, a site id (String or Integer),
   #            or any model that has a site_id attribute.
   # [sites] the array of Site objects used to build the select box. Defaults to +Site.order(:name).all+.
   # +options+ need not be hash, the default selected item can be passed as an argument.
@@ -99,7 +99,7 @@ module SelectBoxHelper
   # when the form is submitted and the +select_tag_options+ hash will be sent
   # directly as options to the +select_tag+ helper method called to create the element.
   # The +options+ hash can contain either or both of the following:
-  # [selector] used for default selection. This can be a Group object, a group id (String or Fixnum),
+  # [selector] used for default selection. This can be a Group object, a group id (String or Integer),
   #            or any model that has a group_id attribute.
   # [groups] the array of Group objects used to build the select box. Defaults to +current_user.available_groups+.
   def group_select(parameter_name = "group_id", options = {}, select_tag_options = {} )
@@ -178,7 +178,7 @@ module SelectBoxHelper
   # when the form is submitted and the +select_tag_options+ hash will be sent
   # directly as options to the +select_tag+ helper method called to create the element.
   # The +options+ hash can contain either or both of the following:
-  # [selector] used for default selection. This can be a DataProvider object, a data provider id (String or Fixnum),
+  # [selector] used for default selection. This can be a DataProvider object, a data provider id (String or Integer),
   #            or any model that has a data_provider_id attribute.
   # [data_providers] the array of DataProvider objects used to build the select box. Defaults to all data providers
   #                  accessible by the current_user.
@@ -232,7 +232,7 @@ module SelectBoxHelper
   # when the form is submitted and the +select_tag_options+ hash will be sent
   # directly as options to the +select_tag+ helper method called to create the element.
   # The +options+ hash can contain either or both of the following:
-  # [selector] used for default selection. This can be a Bourreau object, a Boureau id (String or Fixnum),
+  # [selector] used for default selection. This can be a Bourreau object, a Boureau id (String or Integer),
   #            or any model that has a bourreau_id attribute.
   # [bourreaux] the array of Bourreau objects used to build the select box. Defaults to all bourreaux
   #             accessible by the current_user.
@@ -282,7 +282,7 @@ module SelectBoxHelper
   #
   # The +options+ hash can contain either or both of the following:
   #
-  # [selector] used for default selection. This can be a ToolConfig object, a ToolConfig id (String or Fixnum),
+  # [selector] used for default selection. This can be a ToolConfig object, a ToolConfig id (String or Integer),
   #            or any model that has a tool_config attribute.
   # [tool_configs] the array of ToolConfig objects used to build the select box. Defaults to all tool configs
   #                  accessible by the current_user.
