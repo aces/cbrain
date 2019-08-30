@@ -97,16 +97,33 @@ cloud storage service. The files will be stored in a bucket named
 "gbrain_{name}" where name is the name of the Data Provider.
 Usage of this Data Provider requires obtaining an access key
 and secret token. Do not rename this Data Provider if files
-are registered with it, unless you also rename the bucket!
+are registered with it, unless you also rename the bucket! All
+FileCollections are uploaded and downloaded as .tar.gz files, so
+this DP is not particularly efficient for large datasets.
 
 <p>
 
-<strong> S3SFlatDataProvider:</strong> This is a class that connects to
+<strong> S3FlatDataProvider:</strong> This is a class that connects to
 Amazon's S3 cloud storage service using the new AWS SDK for S3 Version 3.0.
 A Bucket and a Starting Path must be specified that have already been created
 through AWS.  Usage of this Data Provider also requires obtaining an access key
 and secret token for Amazon Web Services.  For more information, please visit
-<a href="https://aws.amazon.com">https://aws.amazon.com</a> for more details.
+<a href="https://aws.amazon.com" title="Amazon AWS">https://aws.amazon.com</a> for more details.
 File will stored as objects in the S3Object store and the data provider mainly
 acts like a FlatDataProvider.
+
+<p>
+
+<strong>SingSquashfsDataProvider</strong> This class connects to a set of
+one or several squashfs files (all named with a <em>.squashfs extensions</em>) through
+a Singularity container handler. The requirements are:<br>
+<ul>
+  <li>that all the squashfs files are in the <em>Remote Directory</em>,
+  <li>the Singularity image is also there and named <em><%= SingSquashfsDataProvider::SINGULARITY_IMAGE_BASENAME %></em>,
+  <li>that this image contains a basic Linux system with at least <em>rsync</em> installed in it,
+  <li>and that the path to the data root inside the container must be provided in the <em>Client Starting Path</em> under the <em>Cloud Storage Configuration</em> section.
+</ul>
+Note that this DP is already 'smart' in that if the <em>Remote Host</em>
+configured for it matches the current host, it will not perform its
+data operation through a SSH master.
 
