@@ -115,13 +115,13 @@ acts like a FlatDataProvider.
 <p>
 
 <strong>SingSquashfsDataProvider</strong> This class connects to a set of
-one or several squashfs files (all named with a <em>.squashfs extensions</em>) through
+one or several squashfs files (all named with <em>.squashfs</em> extensions) through
 a Singularity container handler. The requirements are:<br>
 <ul>
-  <li>that all the squashfs files are in the <em>Remote Directory</em>,
+  <li>that all the squashfs files are in the <em>Physical Data Location</em>,
   <li>the Singularity image is also there and named <em><%= SingSquashfsDataProvider::SINGULARITY_IMAGE_BASENAME %></em>,
   <li>that this image contains a basic Linux system with at least <em>rsync</em> installed in it,
-  <li>and that the path to the data root inside the container must be provided in the <em>Client Starting Path</em> under the <em>Cloud Storage Configuration</em> section.
+  <li>and that the path to the data root inside the container must be provided in the <em>Containerized Data Path</em> under the <em>Containerized Storage Configuration</em> section.
 </ul>
 Note that this DP is already 'smart' in that if the <em>Remote Host</em>
 configured for it matches the current host, it will not perform its
