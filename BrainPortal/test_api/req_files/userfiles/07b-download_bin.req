@@ -1,1 +1,1 @@
-POST /userfiles/download?NTOK appliction/json NoRubyClient
+POST /userfiles/download?NTOK application/json NoRubyClient
