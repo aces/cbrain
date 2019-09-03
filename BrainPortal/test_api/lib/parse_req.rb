@@ -237,6 +237,14 @@ class ParseReq #:nodoc:
     #content = content.map { |x| x.respond_to?(:to_json) x.to_json : x } if content.is_a?(Enumerable)
     string  = if content.is_a?(String)
                  content
+              elsif content.is_a?(Tempfile)
+                 content.close
+                 content.open
+                 bytes = content.read rescue ""
+                 content.close
+                 content.unlink
+                 bytes.force_encoding(Encoding::BINARY)
+                 bytes
               elsif content.respond_to?(:to_json)
                  content.to_json
               else
