@@ -68,6 +68,25 @@ export RAILS_ENV=test
 
 
 # ------------------------------
+# Report Version Numbers
+# ------------------------------
+echo ""
+printf "${YELLOW}Versions of CBRAIN code base installed:${NC}\n"
+
+cd $cb_base/BrainPortal || die "Cannot cd to base BrainPortal directory"
+printf "${BLUE}Container BASE CBRAIN:${NC} "
+git log --date=iso -n 1 --pretty="%h by %an at %ad, %s"
+
+cd $cb_test/BrainPortal || die "Cannot cd to test BrainPortal directory"
+printf "${BLUE}Travis CI TEST CBRAIN:${NC} "
+git log --date=iso -n 1 --pretty="%h by %an at %ad, %s"
+printf "${BLUE}Travis CI REV CBRAIN:${NC}  "; script/show_cbrain_rev
+
+echo ""
+
+
+
+# ------------------------------
 # Portal-Side Re-Initializations
 # ------------------------------
 
@@ -100,9 +119,9 @@ fi
 
 
 
-# ------------------------------
-# Bourreau-Side Initializations
-# ------------------------------
+# --------------------------------
+# Bourreau-Side Re-Initializations
+# --------------------------------
 
 # Go to the new code to test
 cd $cb_test/Bourreau || die "Cannot cd to Bourreau directory"
@@ -142,16 +161,6 @@ rake "db:sanity:check" || die "Cannot sanity check DB"
 
 
 
-# ------------------------------
-# Finally, run the tests!
-# ------------------------------
-# We save the failures of the main test commands in strings.
-# That way we run them all and report everything at the end.
-fail_portal=""
-fail_bourreau=""
-fail_api_curl=""
-fail_api_ruby=""
-
 # -------------------------------
 # Show TEST environment variables
 # -------------------------------
@@ -169,6 +178,20 @@ printf "${YELLOW}CBRAIN_CURL_TEST_FILTER${NC}        = '${CBRAIN_CURL_TEST_FILTE
 printf "${YELLOW}CBRAIN_GEM_TEST_VERBOSE_LEVEL${NC}  = '${CBRAIN_GEM_TEST_VERBOSE_LEVEL:=1}'\n"
 printf "${YELLOW}CBRAIN_GEM_TEST_FILTER${NC}         = '${CBRAIN_GEM_TEST_FILTER}'\n"
 echo   ""
+
+
+
+# ------------------------------
+# Finally, run the tests!
+# ------------------------------
+# We save the failures of the main test commands in strings.
+# That way we run them all and report everything at the end.
+fail_portal=""
+fail_bourreau=""
+fail_api_curl=""
+fail_api_ruby=""
+
+
 
 # ------------------------------
 # Portal-Side Testing
