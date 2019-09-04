@@ -92,7 +92,7 @@ class ParseReq #:nodoc:
   def parse_out_file(outfile) #:nodoc:
     @expected_code  = 200
     @expected_ctype = 'application/json' # not used in ruby
-    content = File.read(outfile) rescue nil
+    content = File.open(outfile, "r:binary") { |fh| fh.read } rescue nil
     return if content.blank?
     content    = content.split(/\n/)
     first_line = content.shift.strip
@@ -237,6 +237,14 @@ class ParseReq #:nodoc:
     #content = content.map { |x| x.respond_to?(:to_json) x.to_json : x } if content.is_a?(Enumerable)
     string  = if content.is_a?(String)
                  content
+              elsif content.is_a?(Tempfile)
+                 content.close
+                 content.open
+                 bytes = content.read rescue ""
+                 content.close
+                 content.unlink
+                 bytes.force_encoding(Encoding::BINARY)
+                 bytes
               elsif content.respond_to?(:to_json)
                  content.to_json
               else
