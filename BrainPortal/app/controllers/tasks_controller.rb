@@ -140,7 +140,7 @@ class TasksController < ApplicationController
     if ((! api_request?) || params[:get_task_outputs]) && @task.full_cluster_workdir.present? && ! @task.workdir_archived?
       begin
         @task.capture_job_out_err(@run_number,@stdout_lim,@stderr_lim) # PortalTask method: sends command to bourreau to get info
-      rescue Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError, ActiveResource::TimeoutError, ActiveResource::MethodNotAllowed
+      rescue Errno::EADDRNOTAVAIL, Errno::ECONNREFUSED, EOFError, ActiveResource::ServerError, ActiveResource::TimeoutError, ActiveResource::MethodNotAllowed
         flash.now[:notice] = "Warning: the Execution Server '#{@task.bourreau.name}' for this task is not available right now."
         @task.cluster_stdout = "Execution Server is DOWN!"
         @task.cluster_stderr = "Execution Server is DOWN!"
@@ -294,53 +294,10 @@ class TasksController < ApplicationController
     flash.now[:notice] = ""
     flash.now[:error]  = ""
 
-    new_task_info = task_params()
+    new_task_params = task_params() # filters and censors
 
-    # For historical reasons, the web interface sends both a tool_id and a tool_config_id.
-    # Only the tool_config_id is really necessary, as itself the tool_config object supplies
-    # the tool_id and the bourreau_id.
-    # For support with the external APIs, we'll try to guess missing values if we
-    # only receive a tool_config_id.
-    params_tool_config_id = new_task_info[:tool_config_id] # can be nil
-    tool_config           = ToolConfig.find(params_tool_config_id) rescue nil
-    tool_config           = nil unless tool_config && tool_config.can_be_accessed_by?(current_user) &&
-                             tool_config.bourreau_and_tool_can_be_accessed_by?(current_user)
-    if tool_config
-      params[:tool_id]            = tool_config.tool_id     # replace whatever was there or not, tool_id is not CbrainTask parameters
-      new_task_info[:bourreau_id] = tool_config.bourreau_id # replace whatever was there or not
-    else
-      new_task_info[:tool_config_id] = nil # ZAP value, it's incorrect; will likely cause a validation error later on.
-    end
-
-    # Validate the batch_id
-    new_task_info[:batch_id] = nil unless
-      new_task_info[:batch_id].present? &&
-      current_user.cbrain_tasks.real_tasks.where(:id => new_task_info[:batch_id]).count == 1
-
-    @tool_config = tool_config # for acces in view
-
-    # A brand new task object!
-    @toolname         = Tool.find(params[:tool_id]).cbrain_task_class_name.demodulize
-    @task             = CbrainTask.const_get(@toolname).new(new_task_info)
-    @task.user_id   ||= current_user.id
-    @task.group_id  ||= current_project.try(:id) || current_user.own_group.id
-    @task.status      = "New" if @task.status.blank? || @task.status !~ /Standby/ # Standby is special.
-
-    # Extract the Bourreau ID from the ToolConfig
-    tool_config    = @task.tool_config
-    if tool_config && tool_config.bourreau
-      @task.bourreau = tool_config.bourreau
-    else
-      @task.errors.add(:base, "Please select a Server and a Version for the tool.")
-    end
-
-    # Security checks
-    @task.user     = current_user           unless current_user.available_users.map(&:id).include?(@task.user_id)
-    @task.group    = current_user.own_group unless current_user.available_groups.map(&:id).include?(@task.group_id)
-
-    # Log revision number of portal.
-    @task.addlog_current_resource_revision
-    @task.addlog_context(self,"Created by #{current_user.login}")
+    @task           = create_initial_task_from_form(new_task_params, params[:tool_id])
+    @tool_config    = @task.tool_config # for acces in view
 
     # Give a task the ability to do a refresh of its form
     commit_name     = extract_params_key([ :refresh, :load_preset, :delete_preset, :save_preset ])
@@ -363,15 +320,9 @@ class TasksController < ApplicationController
       end
     end
 
-    # TODO validate @task here and if anything is wrong, render :new again
-
-    # Custom initializing
+    # Callback: custom initialization before launching
     messages = ""
-    begin
-      messages += @task.wrapper_after_form
-    rescue CbrainError, CbrainNotice => ex
-      @task.errors.add(:base, "#{ex.class.to_s.sub(/Cbrain/,"")} in form: #{ex.message}\n")
-    end
+    messages += @task.wrapper_after_form
 
     unless @task.errors.empty? && @task.valid?
       flash.now[:error] += messages
@@ -384,99 +335,8 @@ class TasksController < ApplicationController
       return
     end
 
-    # Detect automatic parallelism support; in that case
-    # the tasks are created in the 'Standby' state, then
-    # passed to the CbrainTask::Parallelizer class to
-    # launch (one or many) parallelizer objects too.
-    parallel_size = nil
-    prop_parallel = @task.class.properties[:use_parallelizer] # true, or a number
-    tc_ncpus      = @task.tool_config.ncpus || 1
-    if prop_parallel && (tc_ncpus > 1)
-      if prop_parallel.is_a?(Integer) && prop_parallel > 1
-        parallel_size = tc_ncpus < prop_parallel ? tc_ncpus : prop_parallel # min of the two
-      else
-        parallel_size = tc_ncpus
-      end
-      parallel_size = nil if parallel_size < 2 # no need then
-    end
-
-    # Disable parallelizer if no Tool object yet created.
-    if parallel_size && ! CbrainTask::Parallelizer.tool
-      parallel_size = nil
-      messages += "\nWarning: parallelization cannot be performed until the admin configures a Tool for it.\n"
-    end
-
-    # Prepare final list of tasks; from the one @task object we have,
-    # we get a full array of clones of that task in tasklist
-    tasklist,task_list_message = @task.wrapper_final_task_list
-    unless task_list_message.blank?
-      messages += "\n" unless messages.blank? || messages =~ /\n$/
-      messages += task_list_message
-    end
-
-    # Spawn a background process to launch the tasks.
-    CBRAIN.spawn_with_active_records_if(! api_request?, :admin, "Spawn Tasks") do
-
-      spawn_messages = ""
-
-      share_wd_Nid_to_tid = {} # a negative number -> task_id
-
-      batch_id = nil # all tasks will get the same batch_id ONCE the first task is saved.
-      tasklist.each do |task|
-        begin
-          if parallel_size && task.class == @task.class # Parallelize only tasks of same class as original
-            if (task.status || 'New') !~ /New|Standby/ # making sure task programmer knows what he's doing
-              raise ScriptError.new("Trying to parallelize a task, but the status was '#{task.status}' instead of 'New' or 'Standby'.")
-            end
-            task.status = "Standby" # force it there; the parallelizer with turn it back to 'New' later on
-          else
-            task.status = "New" if task.status.blank?
-          end
-          share_wd_Nid = task.share_wd_tid # the negative number for the set of tasks sharing a workdir
-          task.batch_id ||= batch_id # will be nil for the first task, but we'll reset it a bit later to a real ID
-          if share_wd_Nid.present? && share_wd_Nid <= 0
-            task.share_wd_tid = share_wd_Nid_to_tid[share_wd_Nid] # will be nil for first task in set, which is right
-            task.save! # this sets batch_id if it's still nil, in an after_save callback
-            share_wd_Nid_to_tid[share_wd_Nid] ||= task.id # first task in group
-          else
-            task.save! # this sets batch_id if it's still nil, in an after_save callback
-          end
-          # First task in the batch is the one to determine the batch_id for the other tasks
-          batch_id ||= task.batch_id
-        rescue => ex
-          spawn_messages += "This task #{task.name} seems invalid: #{ex.class}: #{ex.message}.\n"
-        end
-      end
-
-      spawn_messages += @task.wrapper_after_final_task_list_saved(tasklist)  # TODO check, use messages?
-
-      # Create parallelizers, if needed
-      if parallel_size
-        paral_tasklist = tasklist.select { |t| t.class == @task.class }
-        paral_info = CbrainTask::Parallelizer.create_from_task_list(paral_tasklist, :group_size => parallel_size)
-        paral_messages = paral_info[0] # [1] is an array of Parallelizers, [2] an array of single tasks.
-        if ! paral_messages.blank?
-          spawn_messages += "\n" unless spawn_messages.blank? || spawn_messages =~ /\n$/
-          spawn_messages += paral_messages
-        end
-      end
-
-      # Send a start worker command to each affected bourreau
-      bourreau_ids = tasklist.map(&:bourreau_id)
-      bourreau_ids.uniq.each do |bourreau_id|
-        Bourreau.find(bourreau_id).send_command_start_workers rescue true
-      end
-
-      unless spawn_messages.blank?
-        Message.send_message(current_user, {
-          :header        => "Submitted #{tasklist.size} #{@task.pretty_name} tasks; some messages follow.",
-          :message_type  => :notice,
-          :variable_text => spawn_messages
-          }
-        )
-      end
-
-    end
+    # Create a bunch of tasks and launch them, either in background or in foreground
+    tasklist,messages = create_tasklist_from_initial_task(@task)
 
     if tasklist.size == 1
       flash[:notice] += "Launching a #{@task.pretty_name} task in background."
@@ -487,10 +347,10 @@ class TasksController < ApplicationController
     flash[:notice] += messages + "\n" unless messages.blank?
 
     # Increment the number of times the user has launched this particular tool
-    tool_id                           = params[:tool_id]
+    tool_id                           = @task.tool.id
     top_tool_ids                      = current_user.meta[:top_tool_ids] || {}
     top_tool_ids[tool_id]             = (top_tool_ids[tool_id].presence || 0) + 1
-    current_user.meta[:top_tool_ids]  = top_tool_ids
+    current_user.meta[:top_tool_ids]  = top_tool_ids rescue nil # the rescue is in case of race conditions :-(
 
     respond_to do |format|
       format.html { redirect_to :controller => :tasks, :action => :index }
@@ -756,6 +616,7 @@ class TasksController < ApplicationController
     batch_ids << nil if batch_ids.delete('nil')
     tasklist  += filtered_scope(CbrainTask.where(:batch_id => batch_ids)).raw_first_column("cbrain_tasks.id")
     tasklist   = tasklist.map(&:to_i).uniq
+    tasklist   = current_user.available_tasks.where(:id => tasklist).pluck(:id)
 
     flash[:error]  ||= ""
     flash[:notice] ||= ""
@@ -767,47 +628,76 @@ class TasksController < ApplicationController
     end
 
     if tasklist.empty?
-      flash[:error] += "No task selected? Selection cleared.\n"
+      flash[:error] += "No task selected?.\n"
       redirect_to :action => :index
       return
     end
+
+    # Some security validations
+    new_bourreau_id = params[:dup_bourreau_id].presence # for 'duplicate' operation
+    archive_dp_id   = params[:archive_dp_id].presence   # for 'archive as file' operation
+    new_bourreau_id = nil unless new_bourreau_id && Bourreau.find_all_accessible_by_user(current_user).where(:id => new_bourreau_id).exists?
+    archive_dp_id   = nil unless archive_dp_id   && DataProvider.find_all_accessible_by_user(current_user).where(:id => archive_dp_id).exists?
+
+    # Decide in which conditions we spawn a background job to send
+    # the operation to the tasks...
+    do_in_spawn  = tasklist.size > 5
+
+    # This does the actual work and returns info about the
+    # successes and failures.
+    results = apply_operation(operation, tasklist, do_in_spawn,
+      :dup_bourreau_id => new_bourreau_id,
+      :archive_dp_id   => archive_dp_id,
+    )
+
+    # Prepare counters for how many tasks affected.
+    skipped_list = results[:skipped_list]
+    success_list = results[:success_list]
+    failed_list  = results[:failed_list]
+
+    if do_in_spawn
+      flash[:notice] += "The tasks are being notified in background."
+    else
+      failure_size  = 0
+      failed_list.each_value  { |v| failure_size += v.size }
+      skipped_size  = 0
+      skipped_list.each_value { |v| skipped_size += v.size }
+      flash[:notice] += "Number of tasks notified: #{success_list.size} OK, #{skipped_size} skipped, #{failure_size} failed.\n"
+    end
+
+    respond_to do |format|
+      format.html { redirect_to :action => :index }
+      format.js   { redirect_to :action => :index }
+      format.json { head :ok }
+      format.xml  { head :ok }
+    end
+  end # method 'operation'
+
+  # This applies an 'operation' to a set of tasks, like 'delete', or
+  # 'archive' or 'terminate'. Since the operations are performed by
+  # the bourreaux, not the portals, a message is sent to those bourreaux.
+  #
+  # +options+ contains some more parameters for tasks being archived
+  # or duplicated.
+  #
+  # Returns a simple hash with some list for successes, failures and
+  # skipped operations (only meaningful when do_in_spawn is false).
+  def apply_operation(operation, taskids, do_in_spawn = false, options = {})
+
+    # Some other parameters
+    new_bourreau_id = options[:dup_bourreau_id] # for 'duplicate' operation
+    archive_dp_id   = options[:archive_dp_id]   # for 'archive as file' operation
 
     # Prepare counters for how many tasks affected.
     skipped_list = {}
     success_list = []
     failed_list  = {}
 
-    # Decide in which conditions we spawn a background job to send
-    # the operation to the tasks...
-    do_in_spawn  = tasklist.size > 5
-
     # This block will either run in background or not depending
     # on do_in_spawn
     CBRAIN.spawn_with_active_records_if(do_in_spawn,current_user,"Sending #{operation} to tasks") do
 
-      tasks = []
-      tasklist.each do |task_id|
-
-        begin
-          task = current_user.available_tasks.find(task_id)
-        rescue
-          (failed_list["Task not available"] ||= [])
-          next
-        end
-
-        if task.user_id != current_user.id && ! current_user.has_role?(:admin_user)
-          (skipped_list["you not allowed to #{operation} this task(s)"] ||= []) << task
-          next
-        end
-
-        tasks << task
-      end
-
-      # Some security validations
-      new_bourreau_id = params[:dup_bourreau_id].presence
-      archive_dp_id   = params[:archive_dp_id].presence
-      new_bourreau_id = nil unless new_bourreau_id && Bourreau.find_all_accessible_by_user(current_user).where(:id => new_bourreau_id).exists?
-      archive_dp_id   = nil unless archive_dp_id   && DataProvider.find_all_accessible_by_user(current_user).where(:id => archive_dp_id).exists?
+      tasks = CbrainTask.where(:id => taskids).to_a
 
       # Go through tasks, grouped by bourreau
       grouped_tasks = tasks.group_by(&:bourreau_id)
@@ -816,6 +706,7 @@ class TasksController < ApplicationController
         btasklist = pair_bid_tasklist[1]
         bourreau  = Bourreau.find(bid)
         begin
+          # MASS DELETE
           if operation == 'delete'
             # Two sublists, to optimize the delete
             can_be_just_deleted = btasklist.select { |t| t.cluster_workdir.blank? }
@@ -833,6 +724,7 @@ class TasksController < ApplicationController
             success_list += must_remote_delete
             next
           end
+          # MASS NEW STATUS
           new_status  = PortalTask::OperationToNewStatus[operation] # from HTML form keyword to Task object keyword
           oktasks = btasklist.select do |t|
             cur_status  = t.status
@@ -849,7 +741,7 @@ class TasksController < ApplicationController
             success_list += oktasks
           end
           skippedtasks = btasklist - oktasks
-          skipped_list["you are not allowed to #{operation} for"] = skippedtasks if skippedtasks.present?
+          skipped_list["Tasks have incompatible states"] = skippedtasks if skippedtasks.present?
         rescue => e
           failed_list[e.message] ||= []
           failed_list[e.message]  += btasklist
@@ -865,30 +757,17 @@ class TasksController < ApplicationController
         end
       end
 
-    end # End of spawn_if block
+    end # SPAWN
 
-    if do_in_spawn
-      flash[:notice] += "The tasks are being notified in background."
-    else
-      failure_size  = 0
-      failed_list.each_value  { |v| failure_size += v.size }
-      skipped_size  = 0
-      skipped_list.each_value { |v| skipped_size += v.size }
-      flash[:notice] += "Number of tasks notified: #{success_list.size} OK, #{skipped_size} skipped, #{failure_size} failed.\n"
-    end
+    # This may contain nothing at all if all work was done in background...
+    results =  {
+      :skipped_list => skipped_list,
+      :success_list => success_list,
+      :failed_list  => failed_list,
+    }
 
-    #current_user.addlog_context(self,"Sent '#{operation}' to #{tasklist.size} tasks.")
-
-    respond_to do |format|
-      format.html { redirect_to :action => :index }
-      format.js   { redirect_to :action => :index }
-      format.json { head :ok }
-      format.xml  { head :ok }
-    end
-
-
-
-  end # method 'operation'
+    return results
+  end
 
 
 
@@ -911,6 +790,172 @@ class TasksController < ApplicationController
     task_params.permit!
     task_attr[:params] = task_params
     task_attr
+  end
+
+  # Part of the create() process for a task
+  #
+  # Code extracted from the old monolithic 'create'
+  def create_initial_task_from_form(new_task_info, tool_id = nil) #:nodoc:
+
+    # Safety check
+    cb_error "Got argument that is not a ActionController::Parameters set with permitted=true..." unless
+      new_task_info.is_a?(ActionController::Parameters) and new_task_info.permitted?
+
+    # For historical reasons, the web interface sends both a tool_id and a tool_config_id.
+    # Only the tool_config_id is really necessary, as itself the tool_config object supplies
+    # the tool_id and the bourreau_id.
+    # For support with the external APIs, we'll try to guess missing values if we
+    # only receive a tool_config_id.
+    params_tool_config_id = new_task_info[:tool_config_id] # can be nil
+    tool_config           = ToolConfig.find(params_tool_config_id) rescue nil
+    tool_config           = nil unless tool_config && tool_config.can_be_accessed_by?(current_user) &&
+                             tool_config.bourreau_and_tool_can_be_accessed_by?(current_user)
+    if tool_config
+      params[:tool_id]            = tool_config.tool_id     # replace whatever was there or not, tool_id is not CbrainTask parameters
+      new_task_info[:bourreau_id] = tool_config.bourreau_id # replace whatever was there or not
+    else
+      new_task_info[:tool_config_id] = nil # ZAP value, it's incorrect; will likely cause a validation error later on.
+    end
+
+    # Validate the batch_id
+    new_task_info[:batch_id] = nil unless
+      new_task_info[:batch_id].present? &&
+      current_user.cbrain_tasks.real_tasks.where(:id => new_task_info[:batch_id]).count == 1
+
+    # A brand new task object!
+    tool             = tool_config ? tool_config.tool : current_user.available_tools.where(:id => tool_id).first
+    task_class       = tool_config ? tool_config.tool.cbrain_task_class : tool.cbrain_task_class
+    task             = task_class.new(new_task_info)
+    task.user_id   ||= current_user.id
+    task.group_id  ||= current_project.try(:id) || current_user.own_group.id
+    task.status      = "New" if task.status.blank? || task.status !~ /Standby/ # Standby is special.
+
+    # Extract the Bourreau ID from the ToolConfig
+    if tool_config && tool_config.bourreau
+      task.bourreau = tool_config.bourreau
+    else
+      task.errors.add(:base, "Please select a Server and a Version for the tool.")
+    end
+
+    # Security checks
+    task.user     = current_user           unless current_user.available_users.map(&:id).include?(task.user_id)
+    task.group    = current_user.own_group unless current_user.available_groups.map(&:id).include?(task.group_id)
+
+    # Log revision number of portal.
+    task.addlog_current_resource_revision
+    task.addlog_context(self,"Created by #{current_user.login}")
+
+    return task
+  end
+
+  # Part of the create() process for a task
+  #
+  # Code extracted from the old monolithic 'create'
+  def create_tasklist_from_initial_task(maintask) #:nodoc:
+
+    messages = ""
+
+    # Detect automatic parallelism support; in that case
+    # the tasks are created in the 'Standby' state, then
+    # passed to the CbrainTask::Parallelizer class to
+    # launch (one or many) parallelizer objects too.
+    parallel_size = nil
+    prop_parallel = maintask.class.properties[:use_parallelizer] # true, or a number
+    tc_ncpus      = maintask.tool_config.ncpus || 1
+    if prop_parallel && (tc_ncpus > 1)
+      if prop_parallel.is_a?(Integer) && prop_parallel > 1
+        parallel_size = tc_ncpus < prop_parallel ? tc_ncpus : prop_parallel # min of the two
+      else
+        parallel_size = tc_ncpus
+      end
+      parallel_size = nil if parallel_size < 2 # no need then
+    end
+
+    # Disable parallelizer if no Tool object yet created.
+    if parallel_size && ! CbrainTask::Parallelizer.tool
+      parallel_size = nil
+      messages += "Warning: parallelization cannot be performed until the admin configures a Tool for it.\n"
+    end
+
+    # Prepare final list of tasks; from the one maintask object we have,
+    # we get a full array of clones of that task in tasklist
+    tasklist,task_list_message = maintask.wrapper_final_task_list
+    if task_list_message.present?
+      messages += "\n" if messages.present?
+      messages += task_list_message
+    end
+
+    # Spawn a background process to launch the tasks.
+    # In case of API requests, we don't spawn.
+    CBRAIN.spawn_with_active_records_if(! api_request?, :admin, "Spawn Tasks") do
+
+      batch_id            = nil # all tasks will get the same batch_id ONCE the first task is saved.
+      spawn_messages      = ""
+      share_wd_Nid_to_tid = {} # a negative number -> task_id
+
+      tasklist.each do |task|
+        begin
+
+          # Set initial status
+          if parallel_size && task.class == maintask.class # Parallelize only tasks of same class as original
+            if (task.status || 'New') !~ /New|Standby/ # making sure task programmer knows what he's doing
+              raise ScriptError.new("Trying to parallelize a task, but the status was '#{task.status}' instead of 'New' or 'Standby'.")
+            end
+            task.status = "Standby" # force it there; the parallelizer with turn it back to 'New' later on
+          else
+            task.status = "New" if task.status.blank?
+          end
+
+          # Save task and records batch_id, and set of shared WD task IDs
+          task.batch_id ||= batch_id # will be nil for the first task, but we'll reset it a bit later to a real ID
+          share_wd_Nid = task.share_wd_tid # the negative number for the set of tasks sharing a workdir
+          if share_wd_Nid.present? && share_wd_Nid <= 0
+            task.share_wd_tid = share_wd_Nid_to_tid[share_wd_Nid] # will be nil for first task in set, which is OK
+            task.save! # this sets batch_id if it's still nil, in an after_save() callback
+            share_wd_Nid_to_tid[share_wd_Nid] ||= task.id # first task in group
+          else
+            task.save! # this sets batch_id if it's still nil, in an after_save callback
+          end
+
+          # First task in the batch is the one to determine the batch_id for the other tasks
+          batch_id ||= task.batch_id
+
+        rescue => ex
+          spawn_messages += "This task #{task.name} seems invalid: #{ex.class}: #{ex.message}.\n"
+        end
+      end
+
+      spawn_messages += maintask.wrapper_after_final_task_list_saved(tasklist)  # TODO check, use messages?
+
+      # Create parallelizers, if needed
+      if parallel_size
+        paral_tasklist = tasklist.select { |t| t.class == maintask.class }
+        paral_info = CbrainTask::Parallelizer.create_from_task_list(paral_tasklist, :group_size => parallel_size)
+        paral_messages = paral_info[0] # [1] is an array of Parallelizers, [2] an array of single tasks.
+        if paral_messages.present?
+          spawn_messages += "\n" if spawn_messages.present?
+          spawn_messages += paral_messages
+        end
+      end
+
+      # Send a start worker command to each affected bourreau
+      bourreau_ids = tasklist.map(&:bourreau_id)
+      bourreau_ids.uniq.each do |bourreau_id|
+        Bourreau.find(bourreau_id).send_command_start_workers rescue true
+      end
+
+      if spawn_messages.present?
+        Message.send_message(current_user, {
+          :header        => "Submitted #{tasklist.size} #{maintask.pretty_name} tasks; some messages follow.",
+          :message_type  => :notice,
+          :variable_text => spawn_messages
+          }
+        )
+      end
+
+    end # CBRAIN spawn_if block
+
+    return tasklist,messages
   end
 
   # Some useful variables for the views for 'new' and 'edit'

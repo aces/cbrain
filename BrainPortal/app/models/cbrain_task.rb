@@ -908,5 +908,55 @@ class CbrainTask < ApplicationRecord
                              :group_id => User.admin.own_group.id )
   end
 
+
+
+  ##################################################################
+  # CARMIN converters
+  ##################################################################
+
+  public
+
+  # Carmin statuses:
+  # [Initializing,Ready,Running,Finished,InitializationFailed,ExecutionFailed,Unknown,Killed]
+  CARMIN_STATUS_MAP = {
+    # CBRAIN Status              => CARMIN Status
+    # -------------------------- => ---------------------
+    "New"                        => "Initializing",
+    "Setting Up"                 => "Initializing",
+    "Standby"                    => "Initializing",
+    "Configured"                 => "Initializing",
+    "Queued"                     => "Ready", # not sure about that
+    "On Hold"                    => "Ready", # not sure about that
+    "On CPU"                     => "Running",
+    "Suspended"                  => "Running",
+    "Data Ready"                 => "Running",
+    "Post Processing"            => "Running",
+    "Completed"                  => "Finished",
+    "Terminated"                 => "Killed",
+    "Failed To Setup"            => "InitializationFailed",
+    "Failed Setup Prerequisites" => "InitializationFailed",
+    "Failed On Cluster"          => "ExecutionFailed",
+  }
+  ALL_STATUS.each do |status|
+    CARMIN_STATUS_MAP[status] ||= "ExecutionFailed" if status =~ /Fail/
+    CARMIN_STATUS_MAP[status] ||= "Initializing"    if status =~ /^(Recover|Restart)/
+    CARMIN_STATUS_MAP[status] ||= "Unknown"
+  end
+
+  def to_carmin #:nodoc:
+    {
+      :identifier         => self.id.to_s,
+      :name               => self.name,
+      :pipelineIdentifier => self.tool_config.id,
+      :status             => (CARMIN_STATUS_MAP[self.status] || "Unknown"),
+      :inputValues        => self.params.dup,
+      :returnedFiles      => [],
+      :studyIdentifier    => self.group.name,
+      :errorCode          => 0,
+      :startDate          => self.created_at.to_i,
+      :endDate            => self.updated_at.to_i,
+    }
+  end
+
 end
 

@@ -35,9 +35,10 @@ module CBRAINExtensions #:nodoc:
       end
 
       def before_create_check_if_abstract_model #:nodoc:
-        cb_error "Cannot create object of class #{self.class}: it's an abstract model." if
-          self.class.cbrain_abstract_model?
-        true
+        return true if ! self.class.cbrain_abstract_model?
+        newtype = self.type rescue nil
+        return true if newtype.present? && ! newtype.constantize.cbrain_abstract_model?
+        cb_error "Cannot create object of class #{self.class}: it's an abstract model."
       end
 
       # ActiveRecord extensions to tag some ActiveRecord single table

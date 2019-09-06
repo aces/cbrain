@@ -123,17 +123,18 @@ class ParseReq #:nodoc:
                           (\/[a-z]\w+)? # CAPT 4: "slash action"
                         )?           # end group
                       (\?[AND]TOK)? # CAPT 5: "?ATOK" or "?NTOK" or "?DTOK"
+                      (\S*)         # CAPT 6: unsupported in Ruby (extra queries)
                       \s*
-                      (\S*)         # CAPT 6: optional Content-type, not used here
+                      (\S*)         # CAPT 7: optional Content-type, not used here
                       \s*
-                      (\S*)         # CAPT 7: test control keyword eg NoRubyClient
+                      (\S*)         # CAPT 8: test control keyword eg NoRubyClient
                       $
                       /x
                     )
-      raise TestConfigurationError.new("Oh oh bad unparsable req line in '$testfile'.")
+      raise TestConfigurationError.new("Oh oh bad unparsable req line in '#{testfile}'.")
     end
 
-    verb, controller, @reqid, action, @toktype, _ctype, @control  = Regexp.last_match[1,7]
+    verb, controller, @reqid, action, @toktype, _exqueries, _ctype, @control  = Regexp.last_match[1,8]
 
     #puts "MATCH: #{verb} | #{controller} | #{reqid.inspect} | #{action.inspect} | #{an_token.inspect}"
 
@@ -141,6 +142,8 @@ class ParseReq #:nodoc:
     @reqid.gsub!("/","")   if @reqid.present?
     action.gsub!("/","")   if action.present?
     @toktype.gsub!("?","") if @toktype.present?
+
+    return self if @control =~ /NoRubyClient/ # no need to do anything else
 
     # Figure out the full class name
     controller_klass = controller.classify.pluralize # "tool_configs" => "ToolConfigs"

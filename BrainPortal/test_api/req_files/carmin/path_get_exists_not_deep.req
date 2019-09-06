@@ -1,0 +1,1 @@
+GET /path/this/Is/Not/There.PDF?NTOK&action=exists */* NoRubyClient

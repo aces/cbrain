@@ -1,0 +1,1 @@
+GET /pipelines/20?NTOK application/json NoRubyClient

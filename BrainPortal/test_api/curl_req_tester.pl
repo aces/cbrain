@@ -62,6 +62,9 @@ Verbose levels:
   -v4 : Shows the HTTP content of the responses and curl's STDERR
   -v5 : When HTTP content differs from expected, shows them both
 
+If no -v option is provided, the verbose level can be set
+by the CBRAIN_TEST_API_VERBOSE environment variable.
+
 The option -R tells the script to NOT run the rake seeding command first.
 
 USAGE
@@ -72,7 +75,7 @@ USAGE
 # Global variables and constants #
 ##################################
 
-my $VERBOSE = 1; # use -v0 to disable all messages
+my $VERBOSE = undef; # The default is '1', see below. Use -v0 to disable all messages.
 my $HOST    = "localhost";
 my $PORT    = 3000;
 my $SCHEME  = 'http';
@@ -122,6 +125,14 @@ for (;@ARGV;) {
 &Usage if @ARGV != 0 && $ARGV[0] =~ /^-/;
 $TEST_SUBSTRING=shift if @ARGV;
 &Usage if @ARGV != 0;
+
+# Verbose level:
+# If an explicit level is provided with -v, we use it.
+# Otherwise, we check for the CBRAIN_TEST_API_VERBOSE env variable.
+# And if not set, then we default to 1'
+if (!defined($VERBOSE)) {
+  $VERBOSE = $ENV{'CBRAIN_TEST_API_VERBOSE'} || 1
+}
 
 ################
 # Trap Signals #
@@ -226,6 +237,10 @@ for (my $ti = 0;$ti < @list;$ti++) {
   my $infile = $testbase . "in.json";
   $indata = "--data @\"$infile\"" if -f $infile;
 
+  # If a .in.raw file exist, we post this raw
+  $infile = $testbase . "in.raw";
+  $indata = "--data @\"$infile\"" if -f $infile;
+
   # If a .in.form file exist, we will read its content and
   # build a set of key=value to post as a multipart
   my $inform = "";
@@ -266,7 +281,7 @@ for (my $ti = 0;$ti < @list;$ti++) {
   # Prepare curl command
   my $curl_accept = "-H \"Accept: $accept\"";
   my $curl_type   = "-H \"Content-Type: $ctype\"";
-  my $bashcom = "curl -s -S -D $captH -X $method $indata $inform $curl_accept $curl_type $SCHEME://$HOST:$PORT/$path > $captC 2> $captE";
+  my $bashcom = "curl -s -S -D $captH -X $method $indata $inform $curl_accept $curl_type '$SCHEME://$HOST:$PORT/$path' > $captC 2> $captE";
   print " => Curl command: $bashcom\n" if $VERBOSE > 1;
   my $ret = system($bashcom);
 
@@ -290,7 +305,7 @@ for (my $ti = 0;$ti < @list;$ti++) {
   # remove "id":nnn if a POST (create operation)
   $content = &filter_content($content, [ '"id":\d+' ]) if $method eq "POST";
 
-  # Compare responde to expected response
+  # Compare response to expected response
   if ($ret != 0) { # This failure hides all others
     &record_failure($pretty_name, "CURL: $ret");
     print " => Failed: curl did not execute properly\n" if $VERBOSE > 0;
@@ -299,7 +314,7 @@ for (my $ti = 0;$ti < @list;$ti++) {
       &record_failure($pretty_name, "HTTPCODE: $httpcode <> $expcode");
       print " => Failed: got HTTP response code '$httpcode', expected '$expcode'\n" if $VERBOSE > 0;
     }
-    if (lc($accept) ne lc($resptype)) {
+    if ($accept ne '*/*' and lc($accept) ne lc($resptype)) {
       &record_failure($pretty_name, "C_TYPE: $resptype");
       print " => Failed: got type '$resptype', expected '$accept'\n" if $VERBOSE > 0;
     }
