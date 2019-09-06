@@ -31,6 +31,8 @@ class UserfilesController < ApplicationController
 
   before_action :login_required
 
+  skip_before_action :verify_authenticity_token, :only => [ :download ] # we check it ourselves in download()
+
   around_action :permission_check, :only => [
       :download, :update_multiple, :delete_files,
       :create_collection, :change_provider, :quality_control,
@@ -1004,8 +1006,8 @@ class UserfilesController < ApplicationController
     end
 
     # Spawn subprocess to perform the move or copy operations
-    success_list  = []
-    failed_list   = {}
+    success_list  = [] # [ id, id, id ]
+    failed_list   = {} # { message1 => [id, id], message2 => [id, id] }
     CBRAIN.spawn_with_active_records_if(! api_request?, current_user, "#{word_move.capitalize} To Other Data Provider") do
       filelist.shuffle.each_with_index do |id,count|
         Process.setproctitle "#{word_move.capitalize} ID=#{id} #{count+1}/#{filelist.size} To #{new_provider.name}"
@@ -1049,7 +1051,7 @@ class UserfilesController < ApplicationController
 
     respond_to do |format|
         format.html { redirect_to :action => :index }
-        format.json { render :json => { :success_list => success_list.map(&:id), :failed_list => failed_list.map(&:id) } }
+        format.json { render :json => { :success_list => success_list.map(&:id), :failed_list => failed_list.values.flatten.map(&:id) } }
     end
   end
 
@@ -1121,6 +1123,15 @@ class UserfilesController < ApplicationController
 
   # Dowload the selected files.
   def download #:nodoc:
+
+    # We do this verification explicitely because
+    # we disable it in a skip_before_action (see top of file).
+    # The reason is that otherwise Rails won't allow a POST
+    # for an API client, which never provide the CSRF token.
+    if ! api_request?
+      verify_authenticity_token  # from Rails; will raise exception if not present.
+    end
+
     filelist           = params[:file_ids] || []
     specified_filename = params[:specified_filename]
 

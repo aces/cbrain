@@ -42,7 +42,7 @@ A) for both Bourreau and BrainPortal:
 B) for BrainPortal only:
 
   - rake db:migrate
-  - rake db:sanity:check 
+  - rake db:sanity:check
   - rake assets:precompile
   - chmod -R a+rX BrainPortal/public
 

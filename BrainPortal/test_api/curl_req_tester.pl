@@ -316,7 +316,7 @@ for (my $ti = 0;$ti < @list;$ti++) {
     }
     if ($accept ne '*/*' and lc($accept) ne lc($resptype)) {
       &record_failure($pretty_name, "C_TYPE: $resptype");
-      print " => Failed: got type '$resptype', expected '$ctype'\n" if $VERBOSE > 0;
+      print " => Failed: got type '$resptype', expected '$accept'\n" if $VERBOSE > 0;
     }
     if (@outfile > 1 && $content ne $expcontent) {
       &record_failure($pretty_name, "CONTENT DIFFERS");

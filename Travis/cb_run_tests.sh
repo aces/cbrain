@@ -68,6 +68,25 @@ export RAILS_ENV=test
 
 
 # ------------------------------
+# Report Version Numbers
+# ------------------------------
+echo ""
+printf "${YELLOW}Versions of CBRAIN code base installed:${NC}\n"
+
+cd $cb_base/BrainPortal || die "Cannot cd to base BrainPortal directory"
+printf "${BLUE}Container BASE CBRAIN:${NC} "
+git log --date=iso -n 1 --pretty="%h by %an at %ad, %s"
+
+cd $cb_test/BrainPortal || die "Cannot cd to test BrainPortal directory"
+printf "${BLUE}Travis CI TEST CBRAIN:${NC} "
+git log --date=iso -n 1 --pretty="%h by %an at %ad, %s"
+printf "${BLUE}Travis CI REV CBRAIN:${NC}  "; script/show_cbrain_rev
+
+echo ""
+
+
+
+# ------------------------------
 # Portal-Side Re-Initializations
 # ------------------------------
 
@@ -100,9 +119,9 @@ fi
 
 
 
-# ------------------------------
-# Bourreau-Side Initializations
-# ------------------------------
+# --------------------------------
+# Bourreau-Side Re-Initializations
+# --------------------------------
 
 # Go to the new code to test
 cd $cb_test/Bourreau || die "Cannot cd to Bourreau directory"
@@ -142,6 +161,26 @@ rake "db:sanity:check" || die "Cannot sanity check DB"
 
 
 
+# -------------------------------
+# Show TEST environment variables
+# -------------------------------
+# These environment variable allow the
+# user to skip over some test stages,
+# or make the API tests more verbose.
+printf "${BLUE}Environment variables for this test session:${NC}\n"
+echo   ""
+echo   "General control:"
+printf "${YELLOW}CBRAIN_SKIP_TEST_STAGES${NC}        = '${CBRAIN_SKIP_TEST_STAGES:=unset}'\n"
+echo   ""
+echo   "API test control:"
+printf "${YELLOW}CBRAIN_CURL_TEST_VERBOSE_LEVEL${NC} = '${CBRAIN_CURL_TEST_VERBOSE_LEVEL:=1}'\n"
+printf "${YELLOW}CBRAIN_CURL_TEST_FILTER${NC}        = '${CBRAIN_CURL_TEST_FILTER}'\n"
+printf "${YELLOW}CBRAIN_GEM_TEST_VERBOSE_LEVEL${NC}  = '${CBRAIN_GEM_TEST_VERBOSE_LEVEL:=1}'\n"
+printf "${YELLOW}CBRAIN_GEM_TEST_FILTER${NC}         = '${CBRAIN_GEM_TEST_FILTER}'\n"
+echo   ""
+
+
+
 # ------------------------------
 # Finally, run the tests!
 # ------------------------------
@@ -152,6 +191,8 @@ fail_bourreau=""
 fail_api_curl=""
 fail_api_ruby=""
 
+
+
 # ------------------------------
 # Portal-Side Testing
 # ------------------------------
@@ -160,7 +201,11 @@ cd $cb_test/BrainPortal || die "Cannot cd to BrainPortal directory"
 # Eventually, it would be nice if from a ENV variable set in Travis,
 # we could run only a subset of the tests.
 printf "${BLUE}Running rspec on BrainPortal side.${NC}\n"
-rspec spec || fail_portal="rspec on BrainPortal failed with return code $?"
+if echo "X$CBRAIN_SKIP_TEST_STAGES" | grep -q 'RspecPortal' >/dev/null ; then
+  printf "${YELLOW} -> Skipped by request from env CBRAIN_SKIP_TEST_STAGES${NC}\n"
+else
+  rspec spec || fail_portal="rspec on BrainPortal failed with return code $?"
+fi
 #CBRAIN_FAILTEST=1 rspec spec/modules/travis_ci_spec.rb || fail_portal="rspec on BrainPortal failed with return code $?"
 
 
@@ -175,7 +220,11 @@ cd $cb_test/Bourreau || die "Cannot cd to Bourreau directory"
 # -> NOTE FIXME TODO : hardcoded 'spec/boutiques' for <-
 # -> the moment because no other test files work on Bourreau. <-
 printf "${BLUE}Running rspec on Bourreau side.${NC}\n"
-rspec spec/boutiques || fail_bourreau="rspec on Bourreau failed with return code $?"
+if echo "X$CBRAIN_SKIP_TEST_STAGES" | grep -q 'RspecBourreau' >/dev/null ; then
+  printf "${YELLOW} -> Skipped by request from env CBRAIN_SKIP_TEST_STAGES${NC}\n"
+else
+  rspec spec/boutiques || fail_bourreau="rspec on Bourreau failed with return code $?"
+fi
 
 
 
@@ -183,27 +232,45 @@ rspec spec/boutiques || fail_bourreau="rspec on Bourreau failed with return code
 # Testing of API (curl)
 # ------------------------------
 printf "${BLUE}Running API tests with curl.${NC}\n"
-cd $cb_test/BrainPortal            || die "Cannot cd to BrainPortal directory"
-rake "db:seed:test:api" >/dev/null || die "Cannot re-seed the DB for API testing"
-rails server puma -p 3000 -d       || die "Cannot start local puma server?"
-cd test_api                        || die "Cannot cd to test_api directory?"
-sleep 5 # must wait a bit for puma to be ready
-perl curl_req_tester.pl -h localhost -p 3000 -s http -R || fail_api_curl="API testing with CURL failed"
-kill $(cat $cb_test/BrainPortal/tmp/pids/server.pid)
+if echo "X$CBRAIN_SKIP_TEST_STAGES" | grep -q 'CurlAPI' >/dev/null ; then
+  printf "${YELLOW} -> Skipped by request from env CBRAIN_SKIP_TEST_STAGES${NC}\n"
+else
+  cd $cb_test/BrainPortal            || die "Cannot cd to BrainPortal directory"
+  rake "db:seed:test:api" >/dev/null || die "Cannot re-seed the DB for API testing"
+  rails server puma -p 3000 -d       || die "Cannot start local puma server?"
+  cd test_api                        || die "Cannot cd to test_api directory?"
+  sleep 5 # must wait a bit for puma to be ready
+  perl curl_req_tester.pl                 \
+    -h localhost                          \
+    -p 3000                               \
+    -s http                               \
+    -v"${CBRAIN_CURL_TEST_VERBOSE_LEVEL}" \
+    -R                                    \
+    ${CBRAIN_CURL_TEST_FILTER}            \
+    || fail_api_curl="API testing with CURL failed"
+  kill $(cat $cb_test/BrainPortal/tmp/pids/server.pid)
+fi
 
 
 
 # ------------------------------
-# Testing of API (Ruby)
+# Testing of API (Ruby Gem)
 # ------------------------------
 printf "${BLUE}Running API tests with Ruby CbrainClient gem.${NC}\n"
-cd $cb_test/BrainPortal            || die "Cannot cd to BrainPortal directory"
-rake "db:seed:test:api" >/dev/null || die "Cannot re-seed the DB for API testing"
-rails server puma -p 3000 -d       || die "Cannot start local puma server?"
-cd test_api                        || die "Cannot cd to test_api directory?"
-sleep 5 # must wait a bit for puma to be ready
-rake "cbrain:test:api:client" || fail_api_ruby="API testing with Ruby CbrainClient failed"
-kill $(cat $cb_test/BrainPortal/tmp/pids/server.pid)
+if echo "X$CBRAIN_SKIP_TEST_STAGES" | grep -q 'GemAPI' >/dev/null ; then
+  printf "${YELLOW} -> Skipped by request from env CBRAIN_SKIP_TEST_STAGES${NC}\n"
+else
+  cd $cb_test/BrainPortal            || die "Cannot cd to BrainPortal directory"
+  rake "db:seed:test:api" >/dev/null || die "Cannot re-seed the DB for API testing"
+  rails server puma -p 3000 -d       || die "Cannot start local puma server?"
+  cd test_api                        || die "Cannot cd to test_api directory?"
+  sleep 5 # must wait a bit for puma to be ready
+  rake "cbrain:test:api:client"           \
+    -v "${CBRAIN_GEM_TEST_VERBOSE_LEVEL}" \
+    ${CBRAIN_GEM_TEST_FILTER}             \
+    || fail_api_ruby="API testing with Ruby CbrainClient failed"
+  kill $(cat $cb_test/BrainPortal/tmp/pids/server.pid)
+fi
 
 
 
