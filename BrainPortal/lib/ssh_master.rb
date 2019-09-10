@@ -221,8 +221,8 @@ class SshMaster
       self.class.find(@user,@host,@port, :category => @category, :uniq => @uniq )
 
     @pid             = nil
-    @forward_tunnels = []   # [ 1234, "some.host", 4566 ]
-    @reverse_tunnels = []   # [ 1234, "some.host", 4566 ]
+    @forward_tunnels = []   # [ "localhost", 1234, "some.host", 4566 ]
+    @reverse_tunnels = []   # [ "localhost", 1234, "some.host", 4566 ]
 
     # Register it
     @simple_key = @key = "#{@user}@#{@host}:#{@port}"
@@ -254,7 +254,9 @@ class SshMaster
   #               accessing +accept_port+ at the accepting end.
   # [*dest_port*] is the port number that will get connected to on
   #               the +dest_host+, from the +remote_host+.
-  def add_tunnel(direction, accept_port, dest_host, dest_port)
+  # [*bind*]      is an optional binding address for the +accept_port+;
+  #               the default value is 'localhost'.
+  def add_tunnel(direction, accept_port, dest_host, dest_port, bind = "localhost")
 
     self.properly_registered?
 
@@ -264,17 +266,19 @@ class SshMaster
       accept_port.is_a?(Integer) && accept_port > 1024 && accept_port < 65535
     raise "'dest_port' must be a port number." unless
       dest_port.is_a?(Integer) && dest_port > 0 && dest_port < 65535
-    raise "'dest_host' is not a simple host name." unless
+    raise "'dest_host' is not a simple host name or IP." unless
       dest_host =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\z/
+    raise "'bind' is not a simple host name or IP." unless
+      bind =~ /\A[a-zA-Z0-9][a-zA-Z0-9\-\.]*\z/
 
-    tunnel_spec = [ accept_port, dest_host, dest_port ]
+    tunnel_spec = [ bind, accept_port, dest_host, dest_port ]
     if direction == :forward
-      if @forward_tunnels.find { |spec| spec[0] == accept_port }
+      if @forward_tunnels.find { |spec| spec[1] == accept_port }
         raise "Error: there's already a forward tunnel configured for port #{accept_port}."
       end
       @forward_tunnels << tunnel_spec
     else
-      if @reverse_tunnels.find { |spec| spec[0] == accept_port }
+      if @reverse_tunnels.find { |spec| spec[1] == accept_port }
         raise "Error: there's already a reverse tunnel configured for port #{accept_port}."
       end
       @reverse_tunnels << tunnel_spec
@@ -285,8 +289,8 @@ class SshMaster
   # Get the list of currently configured tunnels (note that they
   # may not be active; only tunnels present at the moment that
   # start() was called will be active). The returned value is
-  # an array of triplets like this:
-  #    [ accept_port, dest_host, dest_port ]
+  # an array of quadruplets like this:
+  #    [ bind, accept_port, dest_host, dest_port ]
   def get_tunnels(direction)
     raise "'direction' must be :forward or :reverse." unless
       direction == :forward || direction == :reverse
@@ -294,9 +298,8 @@ class SshMaster
   end
 
   # This is like get_tunnels, except the returned array
-  # contains strings where the tree components are separated by
-  # colons, such as "1234:myhost:5678", where 1234 is always
-  # the +accept_port+ specified during add_tunnel().
+  # contains strings where the four components are separated by
+  # colons, such as "localhost:1234:myhost:5678".
   def get_tunnels_strings(direction)
     tunnels = self.get_tunnels(direction)
     tunnels.map { |s| s.join(":") }
