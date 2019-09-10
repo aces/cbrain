@@ -156,7 +156,10 @@ class BourreauWorker < Worker
   # In the subworker it will do nothing.
   def stop_signal_received_callback #:nodoc:
     if @process_task_list_pid
-      worker_log.info "Propagating STOP to subprocess #{@process_task_list_pid}"
+      # NOTE: in a signal handler it seems we can't invoke the logger.
+      # The superclass has @trap_log to capture and log instead.
+      #OLD: worker_log.info "Propagating STOP to subprocess #{@process_task_list_pid}"
+      @trap_log << [ :info, "Propagating STOP to subprocess #{@process_task_list_pid}" ]
       Process.kill('TERM',@process_task_list_pid) rescue nil
     end
   end
