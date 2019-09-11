@@ -48,7 +48,7 @@
 
     <%
       t.edit_cell(:type, :content => @user.type.underscore.titleize, :disabled => !((current_user.has_role?(:site_manager) || current_user.has_role?(:admin_user)) && not_admin_user(@user))) do |f|
-        f.select :type, roles_for_user(current_user)
+        f.select :type, options_for_select(roles_for_user(current_user), @user.type.to_s)
       end
     %>
 
