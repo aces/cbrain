@@ -1,2 +1,2 @@
-200 application/json rer:.*
-{"httpHeader":"Authorization","httpHeaderValue":"Bea
+200 application/json Bearer.*
+{"httpHeader":"Authorization","httpHeaderValue":"

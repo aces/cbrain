@@ -91,10 +91,12 @@ class CarminController < ApplicationController
     username = params[:username] # in CBRAIN we use 'login'
     password = params[:password]
 
-    all_ok = eval_in_controller(::SessionsController) do
+    all_ok, new_cb_session = eval_in_controller(::SessionsController) do
       user = User.authenticate(username,password) # can be nil if it fails
-      create_from_user(user)
+      ok   = create_from_user(user)
+      [ok, cbrain_session]
     end
+    @cbrain_session = new_cb_session # crush the session object that was created for the CarminController
 
     if ! all_ok
       head :unauthorized
@@ -105,7 +107,7 @@ class CarminController < ApplicationController
 
     respond_to do |format|
       format.json do
-        render :json => { :httpHeader => 'Authorization', :httpHeaderValue => "Bearer: #{token}" }
+        render :json => { :httpHeader => 'Authorization', :httpHeaderValue => "Bearer #{token}" }
       end
     end
   end
