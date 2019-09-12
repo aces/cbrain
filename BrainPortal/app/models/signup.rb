@@ -22,6 +22,8 @@
 
 class Signup < ApplicationRecord
 
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
   validate              :strip_blanks
 
   validates_presence_of :first, :last,

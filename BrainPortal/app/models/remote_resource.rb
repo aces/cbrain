@@ -262,7 +262,7 @@ class RemoteResource < ApplicationRecord
   # *tunnel_actres_port*:: Optional; must be an unused port number on the remote
   #                        side that it will open as its HTTP acceptor (it will become
   #                        the argument to the "-p" option for its "script/server").
-  #                        The Rails application over there will tunnel its requests to it
+  #                        The Rails application over here will tunnel its requests to it
   #                        using a port number of (3090 + the ID of the remote resource).
   def start_tunnels
 
@@ -292,6 +292,7 @@ class RemoteResource < ApplicationRecord
       remote_port = self.tunnel_actres_port
       master.add_tunnel(:forward, local_port, "localhost", remote_port)
     end
+
     # If the SSH master and tunnels have already been started by
     # another instance, the following will simply do nothing.
     CBRAIN.with_unlocked_agent if ! master.quick_is_alive? # unlock the agent so we can establish the tunnel

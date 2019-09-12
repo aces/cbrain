@@ -88,7 +88,7 @@
 
 <% if @tool && !@tool.new_record? %>
 <p>
-  Common configuration for all servers: <%= link_to "Edit", new_tool_config_path( :tool_id => @tool.id ) %><br/>
+  Common configuration this tool on all servers: <%= link_to "Edit", new_tool_config_path( :tool_id => @tool.id ) %><br/>
 
 <p>
   Versions installed on the following execution servers:<br/>

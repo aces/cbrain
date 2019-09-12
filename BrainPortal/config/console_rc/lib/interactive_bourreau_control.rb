@@ -52,8 +52,8 @@ class InteractiveBourreauControl
     @bourreaux = bourreaux_list
     @width     = term_width
     if term_width.blank? || term_width.to_i < 1
-      numrows,numcols = Readline.get_screen_size rescue [25,120]
-      @width           = numcols
+      _,numcols = Readline.get_screen_size rescue [25,120]
+      @width          = numcols
     end
     @selected = {}
   end
@@ -138,7 +138,7 @@ Operations Mode : #{@mode == "each_command" ?
   def process_user_letter(letter) #:nodoc:
 
     # Validate the user input
-    if letter !~ /^([haombwitukygsrczqx]|\d+|exit|quit)$/
+    if letter !~ /^([haombwitukygsrczqxj]|\d+|exit|quit)$/
       puts "Unknown command: #{letter} (ignored)"
       return false
     end
@@ -157,7 +157,10 @@ Operations Mode : #{@mode == "each_command" ?
         W = starts workers
         T = stops workers
         U = stops workers and waits to make sure
-        K = stops bourreaux
+        K = stops bourreaux (using shell commands)
+        J = stops workers and bourreaux (using command control
+            messages; use this only if you're sure no workers
+            are active and the SSH masters are opened)
         Y = cycle: stop workers and bourreaux then
             start bourreaux and workers (replace operation queue)
 
@@ -226,13 +229,14 @@ Operations Mode : #{@mode == "each_command" ?
     end
 
     # Operation queue commands
-    if letter =~ /^[bwtku]$/
+    if letter =~ /^[bwtkuj]$/
       @operations += " " if @operations.present?
       @operations += "StartBourreaux"     if letter == "b"
       @operations += "StartWorkers"       if letter == "w"
       @operations += "StopBourreaux"      if letter == "k"
       @operations += "StopWorkers"        if letter == "t"
       @operations += "StopWorkersAndWait" if letter == "u"
+      @operations += "StopAllByCommand"   if letter == "j"
       return false
     end
 
@@ -341,11 +345,12 @@ Operations Mode : #{@mode == "each_command" ?
   def apply_operation(op, bou) #:nodoc:
     printf "... %18s %-15s : ", op, bou.name
     res,mess = [ false, "Unknown Operation #{op}" ]
-    res,mess = start_bourreaux(bou)       if op == "StartBourreaux"
+    res,mess = start_bourreau(bou)        if op == "StartBourreaux"
     res,mess = start_workers(bou)         if op == "StartWorkers"
-    res,mess = stop_bourreaux(bou)        if op == "StopBourreaux"
+    res,mess = stop_bourreau(bou)         if op == "StopBourreaux"
     res,mess = stop_workers(bou)          if op == "StopWorkers"
     res,mess = stop_workers_and_wait(bou) if op == "StopWorkersAndWait"
+    res,mess = stop_all_by_command(bou)   if op == "StopAllByCommand"
     printf "%s\n", mess == nil ? "(nil)" : mess
     [ res, mess ]
   rescue IRB::Abort => ex
@@ -381,14 +386,22 @@ Operations Mode : #{@mode == "each_command" ?
     [ output.blank? , output.blank? ? "OK" : "Workers still active" ] # message text used to abort sequence, see earlier in code
   end
 
-  def stop_bourreaux(b) #:nodoc:
+  def stop_bourreau(b) #:nodoc:
     r1=b.stop         rescue nil
     r2=b.stop_tunnels rescue nil
     b.update_attribute(:online, false)
     [ !!(r1 && r2) , "App: #{r1 or false}\tSSH Master: #{r2 or false}" ]
   end
 
-  def start_bourreaux(b) #:nodoc:
+  def stop_all_by_command(b)
+    r1=b.send_command_stop_yourself rescue "(Exc)"
+    r1=r1.command_execution_status if r1.is_a?(RemoteCommand)
+    r2=b.stop_tunnels rescue nil
+    b.update_attribute(:online, false)
+    [ ((r1 == "OK") && r2.present?), "App: #{r1 or false}\tSSH Master: #{r2 or false}" ]
+  end
+
+  def start_bourreau(b) #:nodoc:
     r   = b.start rescue nil
     rev = "???"
     if (r == true)

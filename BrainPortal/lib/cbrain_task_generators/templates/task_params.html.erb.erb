@@ -130,7 +130,7 @@
   <%%
     values = @task.params[name.to_sym] if name && values.nil?
     values = values.is_a?(Enumerable) ? values.compact : [values].compact
-    first = values.pop
+    first  = values.shift
   %>
   <ul class="tsk-prm-list">
     <li>
@@ -319,7 +319,8 @@
   <%- enum_vals = param["value-choices"] %>
   <%- if not enum_vals.nil? -%>
         # Enum value dropdown
-        dropdown.(id, id,
+        name = id <%= list ? '+ "[]"' : '' %>
+        dropdown.(id, name,
           <%= enum_vals.map { |v| [v, v] } %>,
           optional: <%= opt %>,
           default:  <%= "\"#{defaults.find { |d| d['id']==id }['default-value']}\"" rescue "nil" %>
@@ -343,7 +344,8 @@
         )
     <%- else -%>
         # File input dropdown
-        dropdown.(id, id,
+        name = id <%= list ? '+ "[]"' : '' %>
+        dropdown.(id, name,
           input_files.map { |f| [ f.id.to_s, f.name ] },
           optional: <%= opt %>
         )

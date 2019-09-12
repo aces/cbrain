@@ -73,6 +73,7 @@ class RemoteCommand < RestrictedHash
     :archive_data_provider_id, # when new_task_status is 'ArchiveWorkdirAsFile'
 
     # -------- GET TASK OUTPUTS PARAMETERS --------
+
     # For these, :task_ids is expected to contain a single ID
     :run_number,      # supplied by queryier
     :stdout_lim,      # number of lines to return
@@ -106,41 +107,56 @@ class RemoteCommand < RestrictedHash
 
     :requester_user_id,    # an input for the command, generally the current_user
 
+    # -------- ERROR TRACES --------
+
+    :exception_class,      # filled by receiver if an exception occured
+    :exception_message,    # filled by receiver
+    :backtrace,            # array of lines
+
   ]
 
   # Transforms the object into a pretty report
   def inspect #:nodoc:
     report  = "\n"
-    #report += "RemoteCommand:\n"
-    #report += "\n"
-    report += "  Command: #{self.command}\n"
-    report += "    Status: #{command_execution_status}\n"
+    report += "RemoteCommand: #{self.command}\n"
+    report += "  Status: #{command_execution_status}\n"
     if self.command.to_s =~ /alter_tasks|get_task_outputs/
-      report += "    Task-IDs: #{self.task_ids}\n"
+      report += "  Task-IDs: #{self.task_ids}\n"
     end
     if self.command.to_s == 'alter_tasks'
-      report += "    New-Task_Status: #{self.new_task_status}\n"
-      report += "    New-Bourreau-ID: #{self.new_bourreau_id}\n"
-      report += "    Archive-DataProvider-ID: #{self.archive_data_provider_id}\n"
+      report += "  New-Task_Status: #{self.new_task_status}\n"
+      report += "  New-Bourreau-ID: #{self.new_bourreau_id}\n"
+      report += "  Archive-DataProvider-ID: #{self.archive_data_provider_id}\n"
     elsif self.command.to_s == 'get_task_outputs'
-      report += "    Run-Number: #{self.run_number}\n"
-      report += "    Cluster-Stdout: #{(self.cluster_stdout || "").size} bytes\n"
-      report += "    Cluster-Stderr: #{(self.cluster_stderr || "").size} bytes\n"
-      report += "    Script-Text: #{(self.script_text || "").size} bytes\n"
+      report += "  Run-Number: #{self.run_number}\n"
+      report += "  Cluster-Stdout: #{(self.cluster_stdout || "").size} bytes\n"
+      report += "  Cluster-Stderr: #{(self.cluster_stderr || "").size} bytes\n"
+      report += "  Script-Text: #{(self.script_text || "").size} bytes\n"
     elsif self.command.to_s == 'clean_cache'
-      report += "    User-IDs: #{self.user_ids}\n"
-      report += "    Group-IDs: #{self.group_ids}\n"
-      report += "    Types: #{self.types}\n"
-      report += "    Before-Date: #{self.before_date}\n"
-      report += "    After-Date: #{self.after_date}\n"
+      report += "  User-IDs: #{self.user_ids}\n"
+      report += "  Group-IDs: #{self.group_ids}\n"
+      report += "  Types: #{self.types}\n"
+      report += "  Before-Date: #{self.before_date}\n"
+      report += "  After-Date: #{self.after_date}\n"
     elsif self.command.to_s == 'check_data_providers'
-      report += "    Data-Provider-IDs: #{(self.data_provider_ids || []).join(", ")}\n"
+      report += "  Data-Provider-IDs: #{(self.data_provider_ids || []).join(", ")}\n"
     end
+
     report += "\n"
     report += "  Transport:\n"
     report += "    ID: #{self[:id]}\n"   # must use [] method here
     report += "    Sender-Token: #{self.sender_token}\n"
     report += "    Receiver-Token: #{self.receiver_token}\n"
+
+    if self.exception_class.present?
+      report += "\n"
+      report += "  Exception:\n"
+      report += "    Class: #{self.exception_class}\n"
+      report += "    Message: #{self.exception_message}\n"
+      (self.backtrace.presence || []).each do |line|
+        report += "    -> #{line}\n"
+      end
+    end
 
     return report
   end

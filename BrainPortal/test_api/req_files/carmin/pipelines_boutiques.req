@@ -1,0 +1,1 @@
+GET /pipelines/20/boutiquesdescriptor?NTOK application/json NoRubyClient

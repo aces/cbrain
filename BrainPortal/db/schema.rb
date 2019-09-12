@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190513184949) do
+ActiveRecord::Schema.define(version: 20190828200502) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -112,6 +112,7 @@ ActiveRecord::Schema.define(version: 20190513184949) do
     t.string   "cloud_storage_client_path_start"
     t.string   "datalad_repository_url"
     t.string   "datalad_relative_path"
+    t.string   "containerized_path"
     t.index ["group_id"], name: "index_data_providers_on_group_id", using: :btree
     t.index ["type"], name: "index_data_providers_on_type", using: :btree
     t.index ["user_id"], name: "index_data_providers_on_user_id", using: :btree

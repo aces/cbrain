@@ -1,0 +1,1 @@
+GET /path/topdir/subdir/file2.txt?NTOK&action=content */* NoRubyClient

@@ -674,8 +674,11 @@
       var trigger = $(this);
       var tool_tip_id = trigger.data("tool-tip-id");
       var tool_tip = $("#" + tool_tip_id);
-      var offset_x = trigger.data("offset-x") || '30';
+      var offset_x = trigger.data("offset-x");
       var offset_y = trigger.data("offset-y") || '0';
+      if (typeof offset_x == 'undefined') {
+        offset_x = '30';
+      }
 
       var x = trigger.position().left + parseInt(offset_x, 10);
       var y = trigger.position().top  + parseInt(offset_y, 10);

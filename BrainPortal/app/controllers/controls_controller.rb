@@ -87,11 +87,11 @@ class ControlsController < ApplicationController
       end
     end
   rescue => e  # TODO : inform client somehow ?
-    puts "Exception in create command: #{e.message}"
+    puts "Exception in create command: #{e.class}: #{e.message}"
     puts e.backtrace[0..15].join("\n")
     respond_to do |format|
       format.html { head :method_not_allowed }
-      format.xml  { head :method_not_allowed }
+      format.xml  { head :internal_server_error }
     end
   end
 
@@ -116,6 +116,9 @@ class ControlsController < ApplicationController
       exception,
       command
     )
+    command.exception_class   = exception.class.to_s
+    command.exception_message = exception.message
+    command.backtrace         = exception.backtrace
     return false
   end
 

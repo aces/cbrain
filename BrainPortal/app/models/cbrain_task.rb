@@ -47,7 +47,7 @@ class CbrainTask < ApplicationRecord
   validates_presence_of :tool_config_id
 
   # Rails5 make belongs_to association required by default
-  # Task presets have bourreau id set to 0, 
+  # Task presets have bourreau id set to 0,
   # that's why the :bourreau assocition should be optionnal
   belongs_to            :bourreau, optional: true
   belongs_to            :user
@@ -889,7 +889,73 @@ class CbrainTask < ApplicationRecord
     archive.destroy
     true
   rescue
+    if archive
+      archive.tag_ids |= [ self.class.destroyed_archived_tag.id ]
+    end
     true
+  end
+
+  # This returns (and if necessary creates the first time)
+  # a Tag object named 'TaskDestroyed', belonging to the main
+  # admin, that is used to mark any TaskWorkdirArchive that
+  # a user tried to delete but couldn't (e.g on unaccessible
+  # or read-only DPs etc). The admin can later find and delete them
+  # himself.
+  def self.destroyed_archived_tag #:nodoc:
+    @_destroyed_task_tag_ ||=
+      Tag.find_or_create_by( :name     => 'TaskDestroyed',
+                             :user_id  => User.admin.id,
+                             :group_id => User.admin.own_group.id )
+  end
+
+
+
+  ##################################################################
+  # CARMIN converters
+  ##################################################################
+
+  public
+
+  # Carmin statuses:
+  # [Initializing,Ready,Running,Finished,InitializationFailed,ExecutionFailed,Unknown,Killed]
+  CARMIN_STATUS_MAP = {
+    # CBRAIN Status              => CARMIN Status
+    # -------------------------- => ---------------------
+    "New"                        => "Initializing",
+    "Setting Up"                 => "Initializing",
+    "Standby"                    => "Initializing",
+    "Configured"                 => "Initializing",
+    "Queued"                     => "Ready", # not sure about that
+    "On Hold"                    => "Ready", # not sure about that
+    "On CPU"                     => "Running",
+    "Suspended"                  => "Running",
+    "Data Ready"                 => "Running",
+    "Post Processing"            => "Running",
+    "Completed"                  => "Finished",
+    "Terminated"                 => "Killed",
+    "Failed To Setup"            => "InitializationFailed",
+    "Failed Setup Prerequisites" => "InitializationFailed",
+    "Failed On Cluster"          => "ExecutionFailed",
+  }
+  ALL_STATUS.each do |status|
+    CARMIN_STATUS_MAP[status] ||= "ExecutionFailed" if status =~ /Fail/
+    CARMIN_STATUS_MAP[status] ||= "Initializing"    if status =~ /^(Recover|Restart)/
+    CARMIN_STATUS_MAP[status] ||= "Unknown"
+  end
+
+  def to_carmin #:nodoc:
+    {
+      :identifier         => self.id.to_s,
+      :name               => self.name,
+      :pipelineIdentifier => self.tool_config.id,
+      :status             => (CARMIN_STATUS_MAP[self.status] || "Unknown"),
+      :inputValues        => self.params.dup,
+      :returnedFiles      => [],
+      :studyIdentifier    => self.group.name,
+      :errorCode          => 0,
+      :startDate          => self.created_at.to_i,
+      :endDate            => self.updated_at.to_i,
+    }
   end
 
 end

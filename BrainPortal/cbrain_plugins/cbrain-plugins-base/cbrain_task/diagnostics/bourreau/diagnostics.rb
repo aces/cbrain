@@ -167,15 +167,21 @@ class CbrainTask::Diagnostics < ClusterTask
       uptime
       echo ""
 
-      if test -n "$(which lsb_release)" ; then
+      if test -n "$(type lsb_release)" ; then
         echo "==== LSB Release ===="
         lsb_release -a
         echo ""
       fi
 
+      if test -e /etc/os-release ; then  # ALL systemd distributions have this
+        echo "==== OS Release ===="
+        cat /etc/os-release
+        echo ""
+      fi
+
       if test -e /proc/cpuinfo ; then
-        echo "==== CPU Info ===="
-        cat /proc/cpuinfo | sort | uniq
+        echo "==== Last CPU Info ===="
+        cat /proc/cpuinfo | perl -ne '@x=grep(/./,<>);unshift(@y,pop(@x)) while @x > 0 && $y[0] !~ /^processor/; END { print @y }'
         echo ""
       fi
 

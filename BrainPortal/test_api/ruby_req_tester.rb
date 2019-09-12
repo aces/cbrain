@@ -87,8 +87,6 @@ class ClientReqTester #:nodoc:
       test_base.sub!(/[\.\/]req$/,"") # make pretty
       pretty_name = sprintf("%3.3d/%3.3d : %s", i+1, total, test_base)
       result = run_one_test(test,pretty_name)
-      #break if i > 10 # temp
-      # todo
     end
 
     @test_results

@@ -215,6 +215,7 @@ norm_group=orig_norm_group.dup
 orig_norm_group.delete
 norm_group.id=3
 norm_group.save!
+norm_group.user_ids = [ 2 ]
 normal = NormalUser.first # must reload afresh
 
 
@@ -316,11 +317,17 @@ Step 6: Portal And Bourreau
 STEP
 
 # Adjust attributes to the Portal object
+system("rm -rf   '#{default_support_dir}/test_api/portal/cache'") if
+  File.directory?("#{default_support_dir}/test_api/portal/cache")
+system("mkdir -p '#{default_support_dir}/test_api/portal/cache'")
+
 po=BrainPortal.first.dup
 po.id          = CBRAIN::SelfRemoteResourceId = 1 # reassign just to be sure
 po.description = 'Test Portal'
 po.user_id     = admin.id
 po.group_id    = EveryoneGroup.first.id
+po.dp_cache_dir = "#{default_support_dir}/test_api/portal/cache"
+po.cache_md5    = '000aaabbbc06331af4fa51d2862a96ec' # arbitrary
 BrainPortal.first.delete
 po.save!
 
@@ -357,7 +364,7 @@ Step 7: DataProvider
 
 STEP
 
-%w( test_api test_api/localdp ).each do |path|
+%w( test_api test_api/localdp test_api/carmindp ).each do |path|
   Dir.mkdir("#{default_support_dir}/#{path}") unless Dir.exists?("#{default_support_dir}/#{path}")
 end
 
@@ -377,6 +384,28 @@ dp = FlatDirLocalDataProvider.seed_record!(
 system("rm -rf '#{default_support_dir}/test_api/localdp/'*")
 system("touch '#{default_support_dir}/test_api/localdp/new1.txt' '#{default_support_dir}/test_api/localdp/new2.log'")
 system("touch '#{default_support_dir}/test_api/localdp/del1'     '#{default_support_dir}/test_api/localdp/del2'")
+
+carmindp = CarminPathDataProvider.seed_record!(
+  { :name         => 'CarminDP' },
+  { :id           => 16,
+    :user_id      => admin.id,
+    :group_id     => EveryoneGroup.first.id,
+    :online       => true,
+    :remote_dir   => "#{default_support_dir}/test_api/carmindp",
+    :read_only    => false,
+    :description  => 'Carmin DP',
+    :not_syncable => false,
+    # These two are necessary so that it acts as a local provider, and won't even try to ssh
+    :remote_host  => Socket.gethostname,
+    :remote_user  => Etc.getpwuid(Process.uid).name,
+  }
+)
+
+system("rm -rf        '#{default_support_dir}/test_api/carmindp/'*")
+system("mkdir -p      '#{default_support_dir}/test_api/carmindp/norm/topdir/subdir'")
+system("echo hello1 > '#{default_support_dir}/test_api/carmindp/norm/topdir/file1.txt'")
+system("echo hello2 > '#{default_support_dir}/test_api/carmindp/norm/topdir/subdir/file2.txt'")
+system("echo superb > '#{default_support_dir}/test_api/carmindp/norm/topfile.txt'")
 
 
 
@@ -544,7 +573,56 @@ f5.name = "todelmult.txt";
 f5.id   = 5
 f5.save! # we don't care for actual content for this one
 
+f6 = DatFile.seed_record!(
+  { :name => 'binary.dat' },
+  { :id   => 6,
+    :user_id => normal.id,
+    :group_id => normal.own_group.id,
+    :data_provider_id => dp.id,
+    :num_files => 1,
+    :group_writable => false,
+    :hidden => false,
+    :immutable => false,
+    :archived => false,
+    :description => 'binary data',
+  }
+)
+f6.cache_writehandle { |fh| fh.binmode;fh.write "\xff" }
+f6.set_size
+
 SyncStatus.delete_all # clean all sync info again
+
+carmindir = FileCollection.seed_record!(
+  { :name => 'topdir' },
+  { :id   => 10,
+    :size => 0,
+    :user_id => normal.id,
+    :group_id => normal.own_group.id,
+    :data_provider_id => carmindp.id,
+    :num_files => 2,
+    :group_writable => false,
+    :hidden => false,
+    :immutable => false,
+    :archived => false,
+    :description => 'carmin existing',
+  }
+)
+carminfile = TextFile.seed_record!(
+  { :name => 'topfile.txt' },
+  { :id   => 11,
+    :size => 7,
+    :user_id => normal.id,
+    :group_id => normal.own_group.id,
+    :data_provider_id => carmindp.id,
+    :num_files => 2,
+    :group_writable => false,
+    :hidden => false,
+    :immutable => false,
+    :archived => false,
+    :description => 'superb',
+  }
+)
+
 
 
 puts <<STEP
@@ -580,3 +658,9 @@ t3=t2.dup
 t3.id = 3
 t3.description = 'DelTest'
 t3.save!
+
+t4=t2.dup
+t4.id = 4
+t4.description = 'CarminDelTest'
+t4.save!
+

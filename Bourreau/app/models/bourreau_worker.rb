@@ -156,7 +156,10 @@ class BourreauWorker < Worker
   # In the subworker it will do nothing.
   def stop_signal_received_callback #:nodoc:
     if @process_task_list_pid
-      worker_log.info "Propagating STOP to subprocess #{@process_task_list_pid}"
+      # NOTE: in a signal handler it seems we can't invoke the logger.
+      # The superclass has @trap_log to capture and log instead.
+      #OLD: worker_log.info "Propagating STOP to subprocess #{@process_task_list_pid}"
+      @trap_log << [ :info, "Propagating STOP to subprocess #{@process_task_list_pid}" ]
       Process.kill('TERM',@process_task_list_pid) rescue nil
     end
   end
@@ -523,7 +526,7 @@ class BourreauWorker < Worker
   # Our task might have disappeared. Rare.
   # This is most likely during the reload() at the top of the method.
   rescue ActiveRecord::RecordNotFound => gone_ex
-    if gone_ex.message["Couldn't find #{task.class} with id=#{task.id}"] # our own task?
+    if gone_ex.message["#{task.class}"] && gone_ex.message =~ /=#{task.id}\b/ # our own task?
       worker_log.debug "Task '#{task.bname_tid}' has disappeared. Skipping."
       return # nothing else to do
     else

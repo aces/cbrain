@@ -45,8 +45,16 @@ SECONDS=0 # bash is great
 # Run the docker containers
 printf "${MAGENTA}Launching CBRAIN test container at %s ${NC}\n" "$(date '+%F %T')"
 
+# Note: to skip stages, set CBRAIN_SKIP_TEST_STAGES to
+# one or several of the keywords 'RspecPortal', 'RspecBourreau',
+# 'CurlAPI' or 'GemAPI', joined by commas or periods.
 docker_name="cb_travis" # pretty name of the process
 docker run -d \
+           --env CBRAIN_SKIP_TEST_STAGES        \
+           --env CBRAIN_CURL_TEST_VERBOSE_LEVEL \
+           --env CBRAIN_CURL_TEST_FILTER        \
+           --env CBRAIN_GEM_TEST_VERBOSE_LEVEL  \
+           --env CBRAIN_GEM_TEST_FILTER         \
            -v "$cbrain_travis":/home/cbrain/cbrain_travis \
            --name "$docker_name" \
            ${CBRAIN_CI_IMAGE_NAME} | perl -ne 'print unless /^[0-9a-f]{64}\n$/'

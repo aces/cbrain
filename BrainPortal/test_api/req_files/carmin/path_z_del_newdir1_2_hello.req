@@ -1,0 +1,1 @@
+DELETE /path/newdir1/newdir2/hello.txt?NTOK application/json NoRubyClient
