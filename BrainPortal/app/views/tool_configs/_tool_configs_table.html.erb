@@ -46,14 +46,14 @@
     :class => [ :resource_list ],
     :scope => @scope,
     :order_map  => {
-      :bourreau    => { :a => 'remote_resources.name', :j => [Bourreau, 'id', 'bourreau_id'] },
-      :tool        => { :a => 'tools.name',            :j =>  Tool                           },
-      :group       => { :a => 'groups.name',           :j =>  Group                          },
+      :bourreau => { :a => 'remote_resources.name', :j => [Bourreau, 'id', 'bourreau_id'] },
+      :tool     => { :a => 'tools.name',            :j =>  Tool                           },
+      :group    => { :a => 'groups.name',           :j =>  Group                          },
     },
     :filter_map => {
-      :bourreau    => { :a => 'bourreau_id'  },
-      :tool        => { :a => 'tool_id'      },
-      :group       => { :a => 'group_id'     },
+      :bourreau => { :a => 'bourreau_id'  },
+      :tool     => { :a => 'tool_id'      },
+      :group    => { :a => 'group_id'     },
     },
   ) do |t|
 %>
