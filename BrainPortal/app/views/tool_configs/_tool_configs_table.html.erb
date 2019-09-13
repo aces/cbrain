@@ -46,14 +46,14 @@
     :class => [ :resource_list ],
     :scope => @scope,
     :order_map  => {
-      :bourreau => { :a => 'remote_resources.name', :j => [Bourreau, 'id', 'bourreau_id'] },
-      :tool     => { :a => 'tools.name',            :j =>  Tool                           },
-      :group    => { :a => 'groups.name',           :j =>  Group                          },
+      :bourreau    => { :a => 'remote_resources.name', :j => [Bourreau, 'id', 'bourreau_id'] },
+      :tool        => { :a => 'tools.name',            :j =>  Tool                           },
+      :group       => { :a => 'groups.name',           :j =>  Group                          },
     },
     :filter_map => {
-      :bourreau => { :a => 'bourreau_id'  },
-      :tool     => { :a => 'tool_id'      },
-      :group    => { :a => 'group_id'     },
+      :bourreau    => { :a => 'bourreau_id'  },
+      :tool        => { :a => 'tool_id'      },
+      :group       => { :a => 'group_id'     },
     },
   ) do |t|
 %>
@@ -104,6 +104,17 @@
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :ncpus)
     ) { |tc| tc.ncpus.to_s }
+
+    t.column("Boutiques", :boutiques,
+    ) {|tc|
+      tc_self_update = tc.tool.cbrain_task_class.revision_info.self_update rescue nil
+      next if !tc_self_update
+
+      tc_basename = tc_self_update.basename
+      tc_commit   = tc_self_update.short_commit
+
+      "#{tc_commit} -- #{tc_basename}" if tc_basename =~ /\.json$/
+    }
 
     t.column("Container Engine", :container_engine,
       :sortable => true,
