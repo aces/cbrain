@@ -1,6 +1,28 @@
 
 ## CBRAIN Release Notes
 
+#### Version 5.2.0 Released 2019-09-13
+
+We added a Code Of Conduct file to the GitHub repo.
+
+New features:
+
+- The [CARMIN API](https://github.com/CARMIN-org/CARMIN-API) has been implemented
+  pretty much completely, except for some limitations (users need to find externally
+  the ID of CARMIN files in order to prepare the arguments for CBRAIN tasks)
+- A new DataProvider that can connect to SquashFS files through singularity
+- The Travis CI control scripts have been improved and one can now selectively
+  skip some test stages (e.g. just perform the Ruby curl tests...)
+- Added a Boutiques descriptor as a demonstration for developers (for the command 'du')
+
+Bug fixes:
+
+- Several fixes for Bourreau workers
+- Improvements to API (in particular, downloads of binary data)
+- Big fix when changing a user's type
+- Added latest Boutiques schema
+- Also see comments on [this commit](https://github.com/aces/cbrain/commit/13718d585c2a3345556fb79e55d7ce2977135c6a)
+
 #### Version 5.1.2 Released 2019-06-07
 
 The release includes new features and bug fixes.
