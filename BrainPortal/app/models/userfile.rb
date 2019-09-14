@@ -77,6 +77,11 @@ class Userfile < ApplicationRecord
                           :class_name   => "Userfile",
                           :foreign_key  => "parent_id"
 
+  # Resource usage is kept forever even if userfile is destroyed.
+  has_many                :resource_usage
+  before_save             :track_resource_usage_update
+  after_destroy           :track_resource_usage_destroy
+
   # For tree sorting algorithm
   attr_accessor           :level
   attr_accessor           :tree_children
@@ -1013,6 +1018,39 @@ class Userfile < ApplicationRecord
   def remove_spurious_sync_status #:nodoc:
     SyncStatus.where(:userfile_id => self.id).delete_all
     true
+  end
+
+  # before_save callback; often files are saved with
+  # no size at first, and size is updated in a later
+  # operation.
+  def track_resource_usage_update #:nodoc:
+    return true unless self.id && self.size
+    return true unless self.changed_attributes.has_key?("size")
+    prev_value = self.changed_attributes["size"]
+    return true if prev_value == self.size
+    delta = self.size - (prev_value || 0)
+    return true if delta == 0
+    SpaceResourceUsageForUserfile.create(
+      :value            => delta,
+      :user_id          => self.user_id,
+      :group_id         => self.group_id,
+      :userfile_id      => self.id,
+      :data_provider_id => self.data_provider_id,
+   )
+   true
+  end
+
+  # after_destroy callback
+  def track_resource_usage_destroy #:nodoc:
+    return true unless self.id && self.size && self.size > 0
+    SpaceResourceUsageForUserfile.create(
+      :value            => -(self.size),
+      :user_id          => self.user_id,
+      :group_id         => self.group_id,
+      :userfile_id      => self.id,
+      :data_provider_id => self.data_provider_id,
+   )
+   true
   end
 
   # This method is used as a validator, and as a before_create callback.

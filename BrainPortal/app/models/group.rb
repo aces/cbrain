@@ -60,6 +60,9 @@ class Group < ApplicationRecord
   belongs_to              :site, :optional => true
   belongs_to              :creator, :class_name => "User", :optional => true
 
+  # Resource usage is kept forever even if group is destroyed.
+  has_many                :resource_usage
+
   api_attr_visible        :name, :description, :type, :site_id, :invisible
 
   # Returns the unique and special group 'everyone'

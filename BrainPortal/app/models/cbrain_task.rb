@@ -58,6 +58,9 @@ class CbrainTask < ApplicationRecord
 
   belongs_to            :workdir_archive, :class_name => 'Userfile', :foreign_key => :workdir_archive_userfile_id, :optional => true
 
+  # Resource usage is kept forever even if task is destroyed.
+  has_many              :resource_usage
+
   # Pseudo Attributes (not saved in DB)
   # These are filled in by calling capture_job_out_err().
   attr_accessor  :cluster_stdout, :cluster_stderr, :script_text
@@ -195,10 +198,13 @@ class CbrainTask < ApplicationRecord
                         "Restarting Setup", "Restarting Cluster", "Restarting PostProcess" ]
 
   # List of status for tasks that active in any way.
-  ACTIVE_STATUS    = QUEUED_STATUS | PROCESSING_STATUS | RECOVER_STATUS | RESTART_STATUS
+  ACTIVE_STATUS     = QUEUED_STATUS | PROCESSING_STATUS | RECOVER_STATUS | RESTART_STATUS
+
+  # List of status for tasks that are in a final state.
+  FINAL_STATUS      = COMPLETED_STATUS | FAILED_STATUS | [ "Terminated" ]
 
   # List of all status keywords.
-  ALL_STATUS       = ACTIVE_STATUS | COMPLETED_STATUS | RUNNING_STATUS | FAILED_STATUS | OTHER_STATUS
+  ALL_STATUS        = ACTIVE_STATUS | COMPLETED_STATUS | RUNNING_STATUS | FAILED_STATUS | OTHER_STATUS
 
   ##################################################################
   # Core Object Methods

@@ -254,6 +254,33 @@ ActiveRecord::Schema.define(version: 20190828200502) do
     t.index ["type"], name: "index_remote_resources_on_type", using: :btree
   end
 
+  create_table "resource_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+    t.string   "type"
+    t.decimal  "value",                    precision: 24
+    t.integer  "user_id"
+    t.string   "user_type"
+    t.string   "user_login"
+    t.integer  "group_id"
+    t.string   "group_type"
+    t.string   "group_name"
+    t.integer  "userfile_id"
+    t.string   "userfile_type"
+    t.string   "userfile_name"
+    t.string   "data_provider_id"
+    t.string   "data_provider_type"
+    t.string   "data_provider_name"
+    t.integer  "cbrain_task_id"
+    t.string   "cbrain_task_type"
+    t.string   "cbrain_task_status"
+    t.integer  "remote_resource_id"
+    t.string   "remote_resource_name"
+    t.integer  "tool_id"
+    t.string   "tool_name"
+    t.integer  "tool_config_id"
+    t.string   "tool_config_version_name"
+    t.datetime "created_at",                              null: false
+  end
+
   create_table "sanity_checks", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "revision_info"
     t.datetime "created_at"

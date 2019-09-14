@@ -97,6 +97,9 @@ class RemoteResource < ApplicationRecord
   belongs_to            :group
   has_many              :sync_status
 
+  # Resource usage is kept forever even if remote resource is destroyed.
+  has_many              :resource_usage
+
   after_destroy         :after_destroy_clean_sync_status
 
 

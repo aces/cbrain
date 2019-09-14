@@ -241,6 +241,9 @@ class DataProvider < ApplicationRecord
   belongs_to              :group
   has_many                :userfiles, :dependent => :restrict_with_exception
 
+  # Resource usage is kept forever even if data provider is destroyed.
+  has_many                :resource_usage
+
   api_attr_visible        :name, :type, :user_id, :group_id, :online, :read_only, :description
 
   # A class to represent a file accessible through SFTP or available locally.

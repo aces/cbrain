@@ -45,6 +45,8 @@ class ToolConfig < ApplicationRecord
   belongs_to      :group
   belongs_to      :container_image, :class_name => 'Userfile', :foreign_key => :container_image_userfile_id, :optional => true
 
+  # Resource usage is kept forever even if tool config is destroyed.
+  has_many        :resource_usage
 
   # first character must be alphanum, and can contain only alphanums, '.', '-', '_', ':' and '@'
   # must be unique per pair [tool, server]

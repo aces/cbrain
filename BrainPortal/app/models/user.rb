@@ -106,6 +106,9 @@ class User < ApplicationRecord
   has_many                :custom_filters,  :dependent => :destroy
   has_many                :exception_logs,  :dependent => :destroy
 
+  # Resource usage is kept forever even if account is destroyed.
+  has_many                :resource_usage
+
   api_attr_visible :login, :full_name, :email, :type, :site_id, :time_zone, :city, :last_connected_at, :account_locked
 
   # Returns the admin user
