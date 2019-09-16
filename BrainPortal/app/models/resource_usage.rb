@@ -45,7 +45,7 @@ class ResourceUsage < ApplicationRecord
   before_save :record_names_and_types
 
   # If any of the "_id" attributes are provided,
-  # the we also automatically fill in the duplicated
+  # then we also automatically fill in the duplicated
   # information that we keep about the associated object.
   def record_names_and_types #:nodoc:
     if self.user

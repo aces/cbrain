@@ -1,0 +1,47 @@
+
+<% rus = ResourceUsage.where(:cbrain_task_id => @task.id).all.to_a %>
+<% if rus.present? %>
+  <fieldset>
+    <legend>Resource Usage History</legend>
+    <table class="simple">
+      <tr>
+        <th>Date</th>
+        <th>Task Status</th>
+        <th>Usage Type</th>
+        <th>Time Used</th>
+        <th>Disk Space Used</th>
+      </tr>
+      <% rus.each do |ru| %>
+        <% type = ru.is_a?(CputimeResourceUsageForCbrainTask)  ? "CPU"        :
+                  ru.is_a?(WalltimeResourceUsageForCbrainTask) ? "Walltime"   :
+                  ru.is_a?(SpaceResourceUsageForCbrainTask)    ? "Disk Space" :
+                  "Unknown"
+        %>
+        <tr>
+          <td><%= pretty_past_date ru.created_at %></td>
+          <td><%= ru.cbrain_task_status.present? ? colored_status(ru.cbrain_task_status) : "-" %></td>
+          <td><%= type %></td>
+
+          <% if type =~ /CPU|Walltime/ %>
+            <td><%= pluralize(ru.value, "second") %>
+              <% if ru.value > 59 %>
+                (<%= pretty_elapsed(ru.value, :num_components => 3) %>)
+              <% end %>
+            </td>
+          <% else %>
+            <td></td>
+          <% end %>
+
+          <% if type =~ /Disk/ %>
+            <td><%= colored_pretty_size(ru.value) %></td>
+          <% else %>
+            <td></td>
+          <% end %>
+        </tr>
+      <% end %>
+    </table>
+  </fieldset>
+
+  <br>
+<% end %>
+

@@ -1,0 +1,29 @@
+
+<% rus = @userfile.resource_usage.all.to_a %>
+<% unless rus.empty? %>
+  <%= build_accordion do |acc| %>
+    <%= acc.section "Disk Space History" do %>
+      <table class="simple">
+        <tr>
+          <th>Date</th>
+          <th>Space Delta</th>
+        </tr>
+        <% rus.each do |ru| %>
+          <tr>
+            <td><%= pretty_past_date ru.created_at %></td>
+            <td>
+              <% if ru.value > 0 %>
+                <span color="green">+</span>
+                <%= colored_pretty_size(ru.value) %>
+              <% else %>
+                <span color="red">-</span>
+                <%= colored_pretty_size(-(ru.value)) %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    <% end %>
+  <% end %>
+<% end %>
+
