@@ -107,7 +107,7 @@
 
     t.column("Boutiques", :boutiques,
     ) {|tc|
-      rev_info = tc.tool.cbrain_task_class.revision_info.self_update rescue nil
+      rev_info = tc.tool.cbrain_task_class.revision_info rescue nil
 
       if rev_info
         rev_info_basename = rev_info.basename
