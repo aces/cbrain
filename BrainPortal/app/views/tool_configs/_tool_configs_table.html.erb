@@ -105,6 +105,19 @@
       :filters  => default_filters_for(@base_scope, :ncpus)
     ) { |tc| tc.ncpus.to_s }
 
+    t.column("Boutiques", :boutiques,
+    ) {|tc|
+      rev_info = tc.tool.cbrain_task_class.revision_info rescue nil
+
+      if rev_info
+        rev_info_basename = rev_info.basename
+        rev_info_commit   = rev_info.short_commit
+
+        # rev_info_basename match *.json if cbrain use a Boutiques descriptor
+        "#{rev_info_commit} -- #{rev_info_basename}" if rev_info_basename =~ /\.json$/
+      end
+    }
+
     t.column("Container Engine", :container_engine,
       :sortable => true,
       :filters  => default_filters_for(@base_scope, :container_engine)
