@@ -107,11 +107,11 @@
 
     t.column("Boutiques", :boutiques,
     ) {|tc|
-      rev_info_self_update = tc.tool.cbrain_task_class.revision_info.self_update rescue nil
+      rev_info = tc.tool.cbrain_task_class.revision_info.self_update rescue nil
 
-      if rev_info_self_update
-        rev_info_basename = rev_info_self_update.basename
-        rev_info_commit   = rev_info_self_update.short_commit
+      if rev_info
+        rev_info_basename = rev_info.basename
+        rev_info_commit   = rev_info.short_commit
 
         # rev_info_basename match *.json if cbrain use a Boutiques descriptor
         "#{rev_info_commit} -- #{rev_info_basename}" if rev_info_basename =~ /\.json$/
