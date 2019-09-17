@@ -2611,7 +2611,7 @@ chmod o+x . .. ../.. ../../..
     false
   end
 
-  protected
+  public # the callbacks below are handled by after_status_transtion()
 
   # Add up CPU usage when a task goes to "Data Ready" state
   def track_resource_usage_cpu(prevstate) #:nodoc:
@@ -2621,6 +2621,8 @@ chmod o+x . .. ../.. ../../..
     qsub_file = Pathname.new(task_workdir) + qsub_stdout_basename
     num_seconds_info = extract_cpu_times_from_qsub_wrapper(qsub_file)
     return unless num_seconds_info.present?
+
+    #TODO sacct -n -p -o JobID,UserCPU,CPUTime,TotalCPU,CPUTimeRAW,Elapsed -j 2896567
 
     cpu_time  = num_seconds_info[:user_tot] + num_seconds_info[:syst_tot]
 
@@ -2651,7 +2653,7 @@ chmod o+x . .. ../.. ../../..
   # a final status.
   def track_resource_usage_final(prevstate) #:nodoc:
     SpaceResourceUsageForCbrainTask.create(
-      :value              => self.cluster_workdir_size, # just FYI
+      :value              => self.cluster_workdir_size || 0, # just FYI
       :user_id            => self.user_id,
       :group_id           => self.group_id,
       :cbrain_task_id     => self.id,

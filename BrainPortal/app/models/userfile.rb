@@ -1031,11 +1031,12 @@ class Userfile < ApplicationRecord
     delta = self.size - (prev_value || 0)
     return true if delta == 0
     SpaceResourceUsageForUserfile.create(
-      :value            => delta,
-      :user_id          => self.user_id,
-      :group_id         => self.group_id,
-      :userfile_id      => self.id,
-      :data_provider_id => self.data_provider_id,
+      :value              => delta,
+      :user_id            => self.user_id,
+      :group_id           => self.group_id,
+      :userfile_id        => self.id,
+      :data_provider_id   => self.data_provider_id,
+      :remote_resource_id => RemoteResource.current_resource.id,
    )
    true
   end
@@ -1044,11 +1045,12 @@ class Userfile < ApplicationRecord
   def track_resource_usage_destroy #:nodoc:
     return true unless self.id && self.size && self.size > 0
     SpaceResourceUsageForUserfile.create(
-      :value            => -(self.size),
-      :user_id          => self.user_id,
-      :group_id         => self.group_id,
-      :userfile_id      => self.id,
-      :data_provider_id => self.data_provider_id,
+      :value              => -(self.size),
+      :user_id            => self.user_id,
+      :group_id           => self.group_id,
+      :userfile_id        => self.id,
+      :data_provider_id   => self.data_provider_id,
+      :remote_resource_id => RemoteResource.current_resource.id,
    )
    true
   end

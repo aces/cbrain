@@ -33,6 +33,9 @@ Rails.application.routes.draw do
   # Documentation
   resources :docs,            :except => [ :edit ], :controller => :help_documents
 
+  # ResourceUsage
+  resources :resource_usage,  :only => [ :index ]
+
   # Standard CRUD resources
   resources :sites,           :except => [ :edit ]
   resources :custom_filters,  :except => [ :index ]

@@ -23,20 +23,17 @@
           <td><%= type %></td>
 
           <% if type =~ /CPU|Walltime/ %>
-            <td><%= pluralize(ru.value, "second") %>
-              <% if ru.value > 59 %>
-                (<%= pretty_elapsed(ru.value, :num_components => 3) %>)
-              <% end %>
-            </td>
+            <td><%= pretty_resource_usage_value(ru) %></td>
           <% else %>
             <td></td>
           <% end %>
 
           <% if type =~ /Disk/ %>
-            <td><%= colored_pretty_size(ru.value) %></td>
+            <td><%= pretty_resource_usage_value(ru) %></td>
           <% else %>
             <td></td>
           <% end %>
+
         </tr>
       <% end %>
     </table>

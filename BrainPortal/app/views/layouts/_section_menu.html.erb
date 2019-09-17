@@ -99,6 +99,9 @@
            <li <%= set_selected(params[:controller], :access_profiles) %>>
              <%= link_to 'Profiles', access_profiles_path %>
            </li>
+           <li <%= set_selected(params[:controller], :resource_usage) %>>
+             <%= link_to 'Usage', resource_usage_index_path %>
+           </li>
            <li <%= set_selected(params[:controller], :sites) %>>
              <%= link_to 'Sites', sites_path %>
            </li>

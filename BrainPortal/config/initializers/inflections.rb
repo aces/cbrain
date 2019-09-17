@@ -5,6 +5,7 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
 
   # CBRAIN Added inflections
   inflect.irregular 'bourreau', 'bourreaux'
-  inflect.irregular 'status', 'status'
+  inflect.irregular 'status',   'status'
+  inflect.irregular 'usage',    'usage'
 end
 

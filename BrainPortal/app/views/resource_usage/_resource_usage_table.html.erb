@@ -1,0 +1,290 @@
+
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+<% title @maintype =~ /Userfile/    ? 'File Deltas'      :
+         @maintype =~ /Cputime/     ? 'Task CPU times'   :
+         @maintype =~ /Walltime/    ? 'Task Walltimes'   :
+         @maintype =~ /Space.*Task/ ? 'Task Final Space' : "" %>
+
+<div class="menu_bar">
+  <% buttons =
+     [ [ 'Userfile Disk Space', 'SpaceResourceUsageForUserfile'      ],
+       [ 'Task CPU Time',       'CputimeResourceUsageForCbrainTask'  ],
+       [ 'Task Walltime',       'WalltimeResourceUsageForCbrainTask' ],
+       [ 'Task Final Status',   'SpaceResourceUsageForCbrainTask'    ],
+     ]
+  %>
+
+  <% buttons.each do |pair|
+       button_label, maintype = pair
+  %>
+    <%= link_to button_label,
+        url_for(scope_filter_params(@scope, :set, {
+          :attribute => 'type',
+          :value     => maintype,
+        })),
+        :class => "button menu_button"
+    %>
+  <% end %>
+</div>
+
+<p>
+
+<fieldset>
+  <legend>Usage Summary</legend>
+  <p class="medium_paragraphs">
+  This is a <em>very wide</em> report table. It contains
+  resource usage records for disk space and time consumed.
+  Feel free to hide columns using the <strong>+</strong>
+  menu at the left side of the main table header.
+  <p class="medium_paragraphs">
+  <% if    @maintype == 'SpaceResourceUsageForUserfile'      %>
+    It displays the <span color="green">changes of the sizes</span> of all the files,
+    existing as well as deleted.
+  <% elsif @maintype == 'CputimeResourceUsageForCbrainTask'  %>
+    It displays the <span color="green">CPU time</span> accumulated by tasks.
+  <% elsif @maintype == 'WalltimeResourceUsageForCbrainTask' %>
+    It displays the <span color="green">'wall' time</span> accumulated by tasks.
+  <% elsif @maintype == 'SpaceResourceUsageForCbrainTask'    %>
+    It displays the <span color="green">disk space</span> in the work directory,
+    as well as the <span color="green">final status</span> of past tasks. The disk space
+    is not garanteed to be accurate, as this is a expensive resource to compute
+    and is only provided FYI. The main purpose of this report is to compare the
+    final <strong>status</strong>.
+  <% end %>
+  <p class="medium_paragraphs">
+  Columns labeled <strong>Cached</strong> record pieces of information
+  about resources <em>as they were at the time the record was made</em>.
+  If a resource was destroyed (e.g. a non-<strong>Cached</strong> column is empty), these stay behind
+  and provide filtering options. It makes it possible to compute resource usage reports for
+  deleted resources.
+  <p>
+
+  <%= pluralize @resource_usages.total_entries, "usage record" %>:
+  <%= pretty_resource_usage_value(@maintype.constantize.new(:value => @total_plus)) %>
+  <%= pretty_resource_usage_value(@maintype.constantize.new(:value => @total_minus)) if @total_minus < 0 %>
+  <% if @total_plus > 0 && @total_minus < 0 %>
+    (Total: <%= pretty_resource_usage_value(@maintype.constantize.new(:value => @total)) %>)
+  <% end %>
+</fieldset>
+
+<%=
+  scope_minus_type = @scope.dup
+  scope_minus_type.filters.reject! { |f| f.attribute == 'type' }
+  render(:partial => 'shared/active_filters', :locals  => {
+    :scope => scope_minus_type,
+    :model => ResourceUsage,
+  })
+%>
+
+<div class="pagination"></div>
+
+<%=
+  dynamic_scoped_table(@resource_usages,
+    :id    => 'resource_usage_dynamic_table',
+    :class => [ :resource_list ],
+    :scope => @scope,
+    :order_map         => {
+      :user            => { :a => 'users.name',               :j => User           },
+      :group           => { :a => 'groups.name',              :j => Group          },
+      :data_provider   => { :a => 'data_providers.name',      :j => DataProvider   },
+      :remote_resource => { :a => 'remote_resources.name',    :j => RemoteResource },
+      :tool            => { :a => 'tools.name',               :j => Tool           },
+      :tool_config     => { :a => 'tool_config.version_name', :j => ToolConfig     },
+    },
+    :filter_map        => {
+      :user            => { :a => 'user_id'             },
+      :group           => { :a => 'group_id'            },
+      :data_provider   => { :a => 'data_provider_id'    },
+      :remote_resource => { :a => 'remote_resource_id'  },
+      :tool            => { :a => 'tool_id'             },
+      :tool_config     => { :a => 'tool_config_id'      },
+    },
+  ) do |t|
+%>
+  <%
+    t.pagination
+
+    #t.column("Usage Type", :type)
+
+    t.column("Date", :created_at,
+      :sortable => true,
+    ) do |ru|
+      html_tool_tip(to_localtime(ru.created_at, :datetime), :offset_x => 0, :offset_y => 20) do
+        (ru.created_at.in_time_zone.strftime("%a %b %d, %Y at %H:%M:%S %Z") + "<br>" +
+         pretty_elapsed(Time.now - ru.created_at, :num_components => 2) + " ago").html_safe
+      end
+    end
+
+    # --- Main Values ---
+
+    t.column((@maintype =~ /Space/ ? "Disk Space" : "Time"),
+      :value,
+      :sortable => true,
+    ) { |ru| pretty_resource_usage_value(ru) }
+
+    if @maintype =~ /ForUserfile/
+      t.column("Userfile", :userfile,
+        :sortable => false,
+      ) { |ru| link_to_userfile_if_accessible(ru.userfile) }
+    else
+      t.column("Task Type", :cbrain_task,
+        :sortable => true,
+        :filters  => scoped_filters_for(
+          @base_scope, @base_scope, :cbrain_task_id,
+          scope: @scope,
+          label: 'cbrain_tasks.type',
+          association: [CbrainTask, 'id', 'cbrain_task_id']
+        )
+      ) do |ru|
+        task = ru.cbrain_task
+        if task
+          link_to_task_if_accessible(ru.cbrain_task, nil, :name => ru.cbrain_task.pretty_name) +
+          "&nbsp;".html_safe +
+          "(" + colored_status(task.status) + ")"
+        end
+      end
+    end
+
+
+    # --- Common Columns: User, Group, Server ---
+
+    t.column("Owner", :user,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, User)
+    ) { |ru| link_to_user_if_accessible(ru.user) }
+
+    t.column("Project", :group,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, Group)
+    ) { |ru| link_to_group_if_accessible(ru.group) }
+
+    t.column("Server", :remote_resource,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, RemoteResource)
+    ) { |ru| link_to_bourreau_if_accessible(ru.remote_resource) }
+
+    t.column("Cached Owner Type", :user_type,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, :user_type)
+    )
+
+    t.column("Cached Owner Login", :user_login,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, :user_login)
+    )
+
+    t.column("Cached Project Type", :group_type,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, :group_type)
+    )
+
+    t.column("Cached Project Name", :group_name,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, :group_name)
+    )
+
+    t.column("Cached Server Name", :remote_resource_name,
+      :sortable => true,
+      :filters  => default_filters_for(@base_scope, :remote_resource_name)
+    )
+
+    if @maintype =~ /ForUserfile/
+
+      # --- Userfile Columns ---
+
+      t.column("Cached Userfile Type", :userfile_type,
+        :sortable => true,
+        :filters  => default_filters_for(@base_scope, :userfile_type)
+      )
+
+      t.column("Cached Userfile Name", :userfile_name,
+        :sortable => true,
+      )
+
+      # --- DataProvider Columns ---
+
+      t.column("Provider", :data_provider,
+        :sortable => true,
+        :filters  => default_filters_for(@base_scope, DataProvider)
+      ) { |ru| link_to_data_provider_if_accessible(ru.data_provider) }
+
+      t.column("Cached Provider Type", :data_provider_type,
+        :sortable => true,
+        :filters  => default_filters_for(@base_scope, :data_provider_type)
+      )
+
+      t.column("Cached Provider Name", :data_provider_name,
+        :sortable => true,
+        :filters  => default_filters_for(@base_scope, :data_provider_name)
+      )
+
+    elsif @maintype =~ /ForCbrainTask/
+
+      # --- CbrainTask Columns ---
+
+      t.column("Cached Task Type", :cbrain_task_type,
+        :sortable => true,
+        :filters  => default_filters_for(@base_scope, :cbrain_task_type)
+      ) { |ru| (ru.cbrain_task_type || "").sub(/CbrainTask::/,"") }
+
+      t.column("Cached Task Status", :cbrain_task_status,
+        :sortable => true,
+        :filters  => default_filters_for(@base_scope, :cbrain_task_status)
+      ) { |ru| colored_status(ru.cbrain_task_status) }
+
+      # --- Tool Columns ---
+
+      t.column("Tool", :tool,
+        :sortable => true,
+        :filters  => default_filters_for(@base_scope, Tool)
+      ) { |ru| ru.tool ? link_to(ru.tool.name, tool_path(ru.tool.id)) : "" }
+
+      t.column("Cached Tool Name", :tool_name,
+        :sortable => true,
+        :filters  => default_filters_for(@base_scope, :tool_name)
+      )
+
+      # --- ToolConfig Columns ---
+
+      t.column("Version", :tool_config,
+        :sortable => true,
+        :filters  => scoped_filters_for(
+          @base_scope, @base_scope, :tool_config_id,
+          scope: @scope,
+          label: 'tool_configs.version_name',
+          association: [ToolConfig, 'id', 'tool_config_id']
+        )
+      ) { |ru| ru.tool_config ? link_to(ru.tool_config.version_name, tool_config_path(ru.tool_config)) : "" }
+
+      t.column("Cached Version", :tool_config_version_name,
+        :sortable => true,
+        :filters  => default_filters_for(@base_scope, :tool_config_version_name)
+      )
+
+    end
+
+  %>
+
+<% end %>
