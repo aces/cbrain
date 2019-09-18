@@ -1,3 +1,4 @@
+
 #
 # CBRAIN Project
 #
@@ -18,3 +19,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
+# Model for text files containing JSON structures.
+class JsonFile < TextFile
+
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  has_viewer :name => 'JSON raw content', :partial => :json_raw
+
+  def self.file_name_pattern #:nodoc:
+    /\.json\z/i
+  end
+
+end

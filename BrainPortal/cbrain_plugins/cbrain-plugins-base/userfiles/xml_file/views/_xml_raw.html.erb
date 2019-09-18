@@ -1,0 +1,9 @@
+<p>
+The link below will open this XML file directly in your browser.
+<p>
+Some modern browsers have a built-in XML viewer.
+<p>
+
+<%= link_to "Browser-based viewer for XML content",
+    content_userfile_path(@userfile.id, :disposition => 'inline') %>
+
