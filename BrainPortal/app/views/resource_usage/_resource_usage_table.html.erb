@@ -87,6 +87,13 @@
   <% if @total_plus > 0 && @total_minus < 0 %>
     (Total: <%= pretty_resource_usage_value(@maintype.constantize.new(:value => @total)) %>)
   <% end %>
+  <% if @resource_usages.total_entries > 1 %>
+    (Average: <%= pretty_resource_usage_value(
+                    @maintype.constantize.new(
+                     :value => (@total.to_f / @resource_usages.total_entries.to_f)
+                    )
+                  ) %>)
+  <% end %>
 </fieldset>
 
 <%=

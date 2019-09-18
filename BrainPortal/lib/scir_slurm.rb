@@ -90,6 +90,50 @@ class ScirSlurm < Scir
       return
     end
 
+    # Returns a structure similar to ClusterTask's extract_cpu_times_from_qsub_wrapper()
+    # but obtained from the sacct command.
+    #
+    # Example sacct output for a job that used 2 minutes of user cpu,
+    # 2 minutes of system cpu, and 2 minutes of sleep:
+    #
+    #       JobID  SystemCPU    UserCPU    CPUTime   TotalCPU CPUTimeRAW    Elapsed
+    #------------ ---------- ---------- ---------- ---------- ---------- ----------
+    #2904739       01:57.261  02:01.897   00:06:04  03:59.159        364   00:06:04
+    #2904739.bat+  01:57.260  02:01.897   00:06:04  03:59.158        364   00:06:04
+    #2904739.ext+   00:00:00   00:00:00   00:06:04   00:00:00        364   00:06:04
+    def job_cpu_info(jid) #:nodoc:
+      format = 'JobID,SystemCPU,UserCPU,Elapsed'
+      out    = IO.popen("sacct -n -p -o #{format} -j #{shell_escape(jid.to_s)} 2>&1","r") { |i| i.read }
+      rows   = out.split("\n").map { |line| line.split("|") } # output above is sep by pipes
+      myrow  = rows.detect { |r| r[0].to_s == jid.to_s }
+      return nil unless myrow
+
+      syst_tot = slurm_time(myrow[1])
+      user_tot = slurm_time(myrow[2])
+      walltime = slurm_time(myrow[3])
+      {
+        :walltime => walltime,
+        :user_loc => 0       , # cpu time of wrapper process only, not useful
+        :syst_loc => 0       , # cpu time of wrapper process only, not useful
+        :user_tot => user_tot, # cpu time of wrapper and subprocesses
+        :syst_tot => syst_tot, # cpu time of wrapper and subprocesses
+      }
+    end
+
+    # Converts '1-20:30:12.1' (or shorter versions)
+    # into a number of seconds (float).
+    def slurm_time(dhms) #:nodoc:
+      comps   = dhms.split(/[:\-]/)
+      seconds = comps.pop.to_f
+      minutes = comps.pop.to_i
+      hours   = comps.pop.to_i
+      days    = comps.pop.to_i
+      return seconds             +
+             (60.0    * minutes) +
+             (3600.0  * hours)   +
+             (86400.0 * days)
+    end
+
     def queue_tasks_tot_max #:nodoc:
       used="unk" ; max = "unk"
       out = IO.popen("sinfo --noheader -o '%X,%Y,%F'","r") { |i| i.read }

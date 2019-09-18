@@ -1195,7 +1195,7 @@ class ClusterTask < CbrainTask
     return nil unless File.exists?(filename.to_s)
     content = File.read(filename.to_s).tr("\n"," ")
     return nil if content !~
-       /After\s(\d+)\sseconds
+       /CBRAIN\sTask\sEnding\sWith\sStatus.*After\s(\d+)\sseconds
         .*
         CBRAIN\sTask\sCPU\sTimes\sStart
         \s+
@@ -1827,7 +1827,7 @@ date "+CBRAIN Task Ending With Status $status After $SECONDS seconds, at %s : %F
 
 echo ''
 echo 'CBRAIN Task CPU Times Start'
-times
+times # this is very important and the output is captured and parsed
 echo 'CBRAIN Task CPU Times End'
 
 echo "CBRAIN Task Exiting"       # checked by framework
@@ -2615,19 +2615,32 @@ chmod o+x . .. ../.. ../../..
 
   # Add up CPU usage when a task goes to "Data Ready" state
   def track_resource_usage_cpu(prevstate) #:nodoc:
+
+    num_seconds_info = nil
+    recorded_status  = self.status
+
+    # Extract info from the captured qsub script output
     task_workdir = self.full_cluster_workdir
-    return unless task_workdir.present?
+    if task_workdir.present?
+      qsub_file = Pathname.new(task_workdir) + qsub_stdout_basename
+      num_seconds_info = extract_cpu_times_from_qsub_wrapper(qsub_file)
+    end
 
-    qsub_file = Pathname.new(task_workdir) + qsub_stdout_basename
-    num_seconds_info = extract_cpu_times_from_qsub_wrapper(qsub_file)
+    # Extract info by querying the scheduler (not always implemented)
+    # This happens usually when the scheduler killed the job,
+    # so our wrapper script was not able to finish with its 'times' command.
+    if num_seconds_info.blank?
+      num_seconds_info = self.scir_session.job_cpu_info(self.cluster_jobid) rescue nil
+      recorded_status  = 'KilledByScheduler' # not a real status
+    end
+
     return unless num_seconds_info.present?
-
-    #TODO sacct -n -p -o JobID,UserCPU,CPUTime,TotalCPU,CPUTimeRAW,Elapsed -j 2896567
 
     cpu_time  = num_seconds_info[:user_tot] + num_seconds_info[:syst_tot]
 
     CputimeResourceUsageForCbrainTask.create(
       :value              => cpu_time,
+      :cbrain_task_status => recorded_status,
       :user_id            => self.user_id,
       :group_id           => self.group_id,
       :cbrain_task_id     => self.id,
@@ -2640,6 +2653,7 @@ chmod o+x . .. ../.. ../../..
 
     WalltimeResourceUsageForCbrainTask.create(
       :value              => wall_time,
+      :cbrain_task_status => recorded_status,
       :user_id            => self.user_id,
       :group_id           => self.group_id,
       :cbrain_task_id     => self.id,
