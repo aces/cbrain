@@ -26,7 +26,7 @@ class ResourceUsageController < ApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   before_action :login_required
-  before_action :admin_role_required
+  #before_action :admin_role_required
 
   AllowedReports = %w( SpaceResourceUsageForUserfile
                        SpaceResourceUsageForCbrainTask
@@ -73,7 +73,11 @@ class ResourceUsageController < ApplicationController
 
   # Create list of RUs visible to current user.
   def base_scope() #:nodoc:
-    scope = ResourceUsage.where(nil)
+    if current_user.has_role? :admin_user
+      scope = ResourceUsage.where(nil)
+    else
+      scope = ResourceUsage.where('resource_usage.user_id' => current_user.id)
+    end
     scope
   end
 
