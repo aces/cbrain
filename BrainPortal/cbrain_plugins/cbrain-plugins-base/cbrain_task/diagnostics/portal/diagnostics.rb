@@ -39,6 +39,9 @@ class CbrainTask::Diagnostics < PortalTask
       :cluster_delay         => 0,
       :postpro_delay         => 0,
 
+      :user_busy_loop        => 0,
+      :system_busy_loop      => 0,
+
       :setup_crash           => false,
       :cluster_crash         => false,
       :postpro_crash         => false,
@@ -151,7 +154,7 @@ class CbrainTask::Diagnostics < PortalTask
       task                       = self.dup # not .clone, as of Rails 3.1.10
       task.description           = (desc.blank? ? "" : "#{desc} - ") + "Diagnostics with #{numfiles} files" + (num_copies > 1 ? ", copy #{i+1}." : ".")
       task.params[:copy_number]  = (i + 1)
-      task.params.keys.select { |x| x.to_s =~ /_delay/ }.each do |delay_key|
+      task.params.keys.select { |x| x.to_s =~ /_delay|_busy_loop/ }.each do |delay_key|
         next unless task.params[delay_key].to_s =~ /\A\s*(\d+)\D+(\d+)\s*\z/ #  "3-9" or "3..9" means random between 3 and 9 seconds
         del_from = Regexp.last_match[1].to_i
         del_to   = Regexp.last_match[2].to_i

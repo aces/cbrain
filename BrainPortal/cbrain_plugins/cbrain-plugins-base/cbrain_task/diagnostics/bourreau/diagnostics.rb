@@ -245,6 +245,41 @@ class CbrainTask::Diagnostics < ClusterTask
 
     end # for each diagnostic file
 
+    user_busy_loop = (params[:user_busy_loop].presence || "").strip.to_i
+    if user_busy_loop > 0
+      commands << "\n"
+      commands << "echo \"============================================================\""
+      commands << "echo \"USER CPU busy looping for #{user_busy_loop} seconds.\""
+      commands << "echo -n 'Starting: ' ; date"
+      commands << "perl <<'BUSY_USER_PERL'" # Note: the code below is std bare-bone perl!
+      commands << "  my $start=time;"
+      commands << "  while ((time-$start) < #{user_busy_loop}) {"
+      commands << "    $x=0;"
+      commands << "    for ($i=0;$i<1_000_000;$i++) {"
+      commands << "      $x += $i; $x -= ($i-1);"
+      commands << "    }"
+      commands << "  }"
+      commands << "BUSY_USER_PERL"
+      commands << "echo -n 'Ending: ' ; date"
+    end
+
+    system_busy_loop = (params[:system_busy_loop].presence || "").strip.to_i
+    if system_busy_loop > 0
+      commands << "\n"
+      commands << "echo \"============================================================\""
+      commands << "echo \"SYSTEM CPU busy looping for #{system_busy_loop} seconds.\""
+      commands << "echo -n 'Starting: ' ; date"
+      commands << "perl <<'BUSY_SYSTEM_PERL'" # Note: the code below is std bare-bone perl!
+      commands << "  my $start=time;"
+      commands << "  open(URANDOM,'</dev/urandom');"
+      commands << "  while ((time-$start) < #{system_busy_loop}) {"
+      commands << "    read(URANDOM,$buffer,100_000);"
+      commands << "  }"
+      commands << "  close(URANDOM);"
+      commands << "BUSY_SYSTEM_PERL"
+      commands << "echo -n 'Ending: ' ; date"
+    end
+
     cluster_delay = params[:cluster_delay] ? params[:cluster_delay].to_i : 0
     if cluster_delay > 0
       commands << "\n"

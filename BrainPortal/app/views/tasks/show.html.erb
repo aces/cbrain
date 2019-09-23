@@ -203,7 +203,13 @@
          <% end %>
        <% end %>
        <%= tb.tab("Raw") do %>
-         <pre><%= @task.params.to_yaml :root => "Params" -%></pre>
+         <% yamltext = @task.params.to_yaml(
+                         :root        => "Params", # no longer supported
+                         :indentation => 4,
+                         :line_width  => -1)
+                       .gsub(/!ruby.*/,"") rescue "(Error rendering YAML)"
+         %>
+         <pre><%= yamltext %></pre>
        <% end %>
      <% end %>
   </fieldset>

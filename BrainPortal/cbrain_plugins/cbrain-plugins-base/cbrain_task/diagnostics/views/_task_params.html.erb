@@ -232,7 +232,20 @@ Toggle all: <%= select_all_checkbox 'dp_check' %>
     Other Options
   </legend>
 
-  <strong>Erase report after it is created: </strong>            <%= form.params_check_box :erase_report %><br>
+  <strong>Erase report after it is created: </strong> <%= form.params_check_box :erase_report %><br>
+  <p>
+  <strong>Busy looping while processing:</strong>
+  <p>
+  <table class="simple">
+    <tr>
+      <th>User CPU:</th>
+      <td><%= form.params_text_field :user_busy_loop, :size => 6 %> seconds</td>
+    </tr>
+    <tr>
+      <th>System CPU:</th>
+      <td><%= form.params_text_field :system_busy_loop, :size => 6 %> seconds</td>
+    </tr>
+  </table>
 </fieldset>
 
 
