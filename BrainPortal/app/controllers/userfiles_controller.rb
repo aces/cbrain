@@ -253,7 +253,7 @@ class UserfilesController < ApplicationController
       end
     else
       @userfile.sync_to_cache
-      send_file @userfile.cache_full_path, :stream => true, :filename => @userfile.name
+      send_file @userfile.cache_full_path, :stream => true, :filename => @userfile.name, :disposition => (params[:disposition] || "attachment")
     end
   rescue
     respond_to do |format|

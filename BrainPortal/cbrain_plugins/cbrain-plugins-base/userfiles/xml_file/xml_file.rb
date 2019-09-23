@@ -25,6 +25,8 @@ class XMLFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  has_viewer :name => 'XML raw content', :partial => :xml_raw
+
   def self.file_name_pattern #:nodoc:
     /\.xml\z/i
   end
