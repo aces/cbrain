@@ -90,6 +90,10 @@ class ClusterTask < CbrainTask
   before_destroy :before_destroy_terminate_and_rm_workdir
   validate       :task_is_proper_subclass
 
+  # Resource usage tracking
+  after_status_transition '*', 'Data Ready',                       :track_resource_usage_cpu
+  after_status_transition '*', Regexp.new(FINAL_STATUS.join('|')), :track_resource_usage_final
+
 
 
   ##################################################################
@@ -1174,6 +1178,51 @@ class ClusterTask < CbrainTask
     content
   end
 
+  # Returns the values of the 'times' command
+  # we insert in the qsub wrapper script. Returns
+  # nil if the values can't be parsed out.
+  #
+  #   CBRAIN Task Starting At 1567533649 : 2019-09-03 14:00:49
+  #   __CBRAIN_CAPTURE_PLACEHOLDER__
+  #   CBRAIN Task Ending With Status 0 After 91844 seconds, at 1567625493 : 2019-09-04 15:31:33
+  #
+  #   CBRAIN Task CPU Times Start
+  #   0m0.015s 0m0.024s
+  #   1516m58.086s 9m50.590s
+  #   CBRAIN Task CPU Times End
+  #   CBRAIN Task Exiting
+  def extract_cpu_times_from_qsub_wrapper(filename)
+    return nil unless File.exists?(filename.to_s)
+    content = File.read(filename.to_s).tr("\n"," ")
+    return nil if content !~
+       /CBRAIN\sTask\sEnding\sWith\sStatus.*After\s(\d+)\sseconds
+        .*
+        CBRAIN\sTask\sCPU\sTimes\sStart
+        \s+
+        (\d+)m([\d\.]+)s  \s+  (\d+)m([\d\.]+)s  \s*
+        (\d+)m([\d\.]+)s  \s+  (\d+)m([\d\.]+)s  \s*
+        \s+
+        CBRAIN\sTask\sCPU\sTimes\sEnd
+       /x
+
+    (walltime,
+     user_loc_m, user_loc_s, syst_loc_m, syst_loc_s,
+     user_tot_m, user_tot_s, syst_tot_m, syst_tot_s) = Regexp.last_match[1..8]
+
+    user_loc = (user_loc_m.to_i * 60.0) + user_loc_s.to_f
+    syst_loc = (syst_loc_m.to_i * 60.0) + syst_loc_s.to_f
+    user_tot = (user_tot_m.to_i * 60.0) + user_tot_s.to_f
+    syst_tot = (syst_tot_m.to_i * 60.0) + syst_tot_s.to_f
+
+    {
+      :walltime => walltime,
+      :user_loc => user_loc, # cpu time of wrapper process only, not useful
+      :syst_loc => syst_loc, # cpu time of wrapper process only, not useful
+      :user_tot => user_tot, # cpu time of wrapper and subprocesses
+      :syst_tot => syst_tot, # cpu time of wrapper and subprocesses
+    }
+  end
+
   # Checks that the content of some output file properly
   # has the keyword "__CBRAIN_CAPTURE_PLACEHOLDER__".
   # Returns the file's content if it's true, otherwise returns nil
@@ -1778,7 +1827,7 @@ date "+CBRAIN Task Ending With Status $status After $SECONDS seconds, at %s : %F
 
 echo ''
 echo 'CBRAIN Task CPU Times Start'
-times
+times # this is very important and the output is captured and parsed
 echo 'CBRAIN Task CPU Times End'
 
 echo "CBRAIN Task Exiting"       # checked by framework
@@ -2560,6 +2609,72 @@ chmod o+x . .. ../.. ../../..
     return true if ClusterTask.descendants.include? self.class
     self.errors.add(:base, "is not a proper subclass of ClusterTask.")
     false
+  end
+
+  public # the callbacks below are handled by after_status_transtion()
+
+  # Add up CPU usage when a task goes to "Data Ready" state
+  def track_resource_usage_cpu(prevstate) #:nodoc:
+
+    num_seconds_info = nil
+    recorded_status  = self.status
+
+    # Extract info from the captured qsub script output
+    task_workdir = self.full_cluster_workdir
+    if task_workdir.present?
+      qsub_file = Pathname.new(task_workdir) + qsub_stdout_basename
+      num_seconds_info = extract_cpu_times_from_qsub_wrapper(qsub_file)
+    end
+
+    # Extract info by querying the scheduler (not always implemented)
+    # This happens usually when the scheduler killed the job,
+    # so our wrapper script was not able to finish with its 'times' command.
+    if num_seconds_info.blank?
+      num_seconds_info = self.scir_session.job_cpu_info(self.cluster_jobid) rescue nil
+      recorded_status  = 'KilledByScheduler' # not a real status
+    end
+
+    return unless num_seconds_info.present?
+
+    cpu_time  = num_seconds_info[:user_tot] + num_seconds_info[:syst_tot]
+
+    CputimeResourceUsageForCbrainTask.create(
+      :value              => cpu_time,
+      :cbrain_task_status => recorded_status,
+      :user_id            => self.user_id,
+      :group_id           => self.group_id,
+      :cbrain_task_id     => self.id,
+      :remote_resource_id => self.bourreau_id,
+      :tool_id            => self.tool.id,
+      :tool_config_id     => self.tool_config_id,
+    )
+
+    wall_time = num_seconds_info[:walltime]
+
+    WalltimeResourceUsageForCbrainTask.create(
+      :value              => wall_time,
+      :cbrain_task_status => recorded_status,
+      :user_id            => self.user_id,
+      :group_id           => self.group_id,
+      :cbrain_task_id     => self.id,
+      :remote_resource_id => self.bourreau_id,
+      :tool_id            => self.tool.id,
+      :tool_config_id     => self.tool_config_id,
+    )
+  end
+
+  # Add a task workdir size and the status of a task that reach
+  # a final status.
+  def track_resource_usage_final(prevstate) #:nodoc:
+    SpaceResourceUsageForCbrainTask.create(
+      :value              => self.cluster_workdir_size || 0, # just FYI
+      :user_id            => self.user_id,
+      :group_id           => self.group_id,
+      :cbrain_task_id     => self.id,
+      :remote_resource_id => self.bourreau_id,
+      :tool_id            => self.tool.id,
+      :tool_config_id     => self.tool_config_id,
+    )
   end
 
 end

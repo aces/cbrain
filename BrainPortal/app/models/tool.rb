@@ -57,6 +57,9 @@ class Tool < ApplicationRecord
   has_many                :tool_configs, :dependent => :destroy
   has_many                :bourreaux, -> { distinct }, :through => :tool_configs
 
+  # Resource usage is kept forever even if tool is destroyed.
+  has_many                :resource_usage
+
   api_attr_visible        :name, :user_id, :group_id, :category, :description, :url
 
   # Returns the single ToolConfig object that describes the configuration
