@@ -113,7 +113,7 @@ module ExceptionHelpers
 
   # Anything else is serious.
   def generic_exception(exception)
-    raise unless Rails.env == 'production' #Want to see stack trace in dev. Also will log it in exception logger
+    raise if Rails.env == 'development' #Want to see stack trace in dev. Also will log it in exception logger
 
     # Note that send_internal_error_message will also censure :password from the params hash
     exception_log = ExceptionLog.log_exception(exception, current_user, request) # explicit logging in exception logger, since we won't re-raise it now.

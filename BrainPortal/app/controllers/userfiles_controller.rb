@@ -306,7 +306,7 @@ class UserfilesController < ApplicationController
     rescue ActionView::Template::Error => e
       exception = e.original_exception
 
-      raise exception unless Rails.env == 'production'
+      raise if Rails.env == 'development'
       ExceptionLog.log_exception(exception, current_user, request)
       Message.send_message(current_user,
         :message_type => 'error',
