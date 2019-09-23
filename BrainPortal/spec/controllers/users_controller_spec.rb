@@ -586,7 +586,8 @@ RSpec.describe UsersController, :type => :controller do
         end
 
         it "should not allow site manager to destroy a user not from the site" do
-          expect { delete :destroy, params: {:id => user.id }}.to raise_error(ActiveRecord::RecordNotFound)
+          delete :destroy, params: {:id => user.id }
+          expect(flash['error']).to eq(ExceptionHelpers::NOT_FOUND_MSG)
         end
 
       end
@@ -645,7 +646,8 @@ RSpec.describe UsersController, :type => :controller do
         end
 
         it "should not allow switching to a user not from the site" do
-          expect { post :switch, params: {:id => user.id }}.to raise_error(ActiveRecord::RecordNotFound)
+          post :switch, params: {:id => user.id }
+          expect(flash[:error]).to eq(ExceptionHelpers::NOT_FOUND_MSG)
           expect(cbrain_session[:user_id]).not_to eq(user.id)
         end
       end
