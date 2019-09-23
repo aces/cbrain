@@ -52,7 +52,7 @@
 <p>
 
 <fieldset>
-  <legend>Usage Summary</legend>
+  <legend>Table Description</legend>
   <p class="medium_paragraphs">
   This is a <em>very wide</em> report table. It contains
   resource usage records for disk space and time consumed.
@@ -79,7 +79,12 @@
   If a resource was destroyed (e.g. a non-<strong>Cached</strong> column is empty), these stay behind
   and provide filtering options. It makes it possible to compute resource usage reports for
   deleted resources.
-  <p>
+</fieldset>
+
+<p>
+
+<fieldset>
+  <legend>Usage Summary (including filters)</legend>
 
   <%= pluralize @resource_usages.total_entries, "usage record" %>:
   <%= pretty_resource_usage_value(@maintype.constantize.new(:value => @total_plus)) %>
@@ -156,14 +161,8 @@
         :sortable => false,
       ) { |ru| link_to_userfile_if_accessible(ru.userfile) }
     else
-      t.column("Task Type", :cbrain_task,
-        :sortable => true,
-        :filters  => scoped_filters_for(
-          @base_scope, @base_scope, :cbrain_task_id,
-          scope: @scope,
-          label: 'cbrain_tasks.type',
-          association: [CbrainTask, 'id', 'cbrain_task_id']
-        )
+      t.column("Task", :cbrain_task,
+        :sortable => false,
       ) do |ru|
         task = ru.cbrain_task
         if task
@@ -253,7 +252,19 @@
 
       t.column("Cached Task Type", :cbrain_task_type,
         :sortable => true,
-        :filters  => default_filters_for(@base_scope, :cbrain_task_type)
+        :filters  => scoped_filters_for(
+          @base_scope, @scope, :cbrain_task_type,
+          format: lambda do |format_info|
+            value, label, base, view = *format_info
+            label = label.sub(/^CbrainTask::/,"")
+            {
+              :value     => value,
+              :label     => "#{label} (of #{base})",
+              :indicator => view,
+              :empty     => view == 0
+            }
+          end
+        )
       ) { |ru| (ru.cbrain_task_type || "").sub(/CbrainTask::/,"") }
 
       t.column("Cached Task Status", :cbrain_task_status,
@@ -278,7 +289,7 @@
       t.column("Version", :tool_config,
         :sortable => true,
         :filters  => scoped_filters_for(
-          @base_scope, @base_scope, :tool_config_id,
+          @base_scope, @view_scope, :tool_config_id,
           scope: @scope,
           label: 'tool_configs.version_name',
           association: [ToolConfig, 'id', 'tool_config_id']
