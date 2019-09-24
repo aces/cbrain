@@ -1049,6 +1049,8 @@ class Userfile < ApplicationRecord
       :user_id            => self.user_id,
       :group_id           => self.group_id,
       :userfile_id        => self.id,
+      :userfile_type      => self.type, # we need to provide this directly because self will be deleted
+      :userfile_name      => self.name, # we need to provide this directly because self will be deleted
       :data_provider_id   => self.data_provider_id,
       :remote_resource_id => RemoteResource.current_resource.id,
    )
