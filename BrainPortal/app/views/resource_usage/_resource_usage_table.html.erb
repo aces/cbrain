@@ -44,7 +44,8 @@
           :attribute => 'type',
           :value     => maintype,
         })),
-        :class => "button menu_button"
+        :class => "button menu_button",
+        :style => (@maintype == maintype ? "background-color: #ccc" : "")
     %>
   <% end %>
 </div>
@@ -57,18 +58,18 @@
   This is a <em>very wide</em> report table. It contains
   resource usage records for disk space and time consumed.
   Feel free to hide columns using the <strong>+</strong>
-  menu at the left side of the main table header.
+  menu at the right side of the main table header.
   <p class="medium_paragraphs">
   <% if    @maintype == 'SpaceResourceUsageForUserfile'      %>
-    It displays the <span color="green">changes of the sizes</span> of all the files,
+    It displays the <span style="color: green">changes of the sizes</span> of all the files,
     existing as well as deleted.
   <% elsif @maintype == 'CputimeResourceUsageForCbrainTask'  %>
-    It displays the <span color="green">CPU time</span> accumulated by tasks.
+    It displays the <span style="color: green">CPU time</span> accumulated by tasks.
   <% elsif @maintype == 'WalltimeResourceUsageForCbrainTask' %>
-    It displays the <span color="green">'wall' time</span> accumulated by tasks.
+    It displays the <span style="color: green">'wall' time</span> accumulated by tasks.
   <% elsif @maintype == 'SpaceResourceUsageForCbrainTask'    %>
-    It displays the <span color="green">disk space</span> in the work directory,
-    as well as the <span color="green">final status</span> of past tasks. The disk space
+    It displays the <span style="color: green">disk space</span> in the work directory,
+    as well as the <span style="color: green">final status</span> of past tasks. The disk space
     is not garanteed to be accurate, as this is a expensive resource to compute
     and is only provided FYI. The main purpose of this report is to compare the
     final <strong>status</strong>.

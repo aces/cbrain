@@ -55,6 +55,12 @@ extend Hirb::Console
                         ),
   'AccessProfile'  => %i( id name
                         ),
+  'ResourceUsage'  => %i( id type value remote_resource_name userfile_name cbrain_task_type user_login
+                        ),
+  'MetaDataStore'  => %i( id ar_id ar_table_name meta_key meta_value created_at updated_at
+                        ),
+  'Signup'         => %i( id first last email position institution confirmed approved_by user_id
+                        ),
 
 }.each do |klassname,fields|
   fields = fields.dup

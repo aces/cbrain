@@ -35,13 +35,13 @@ module ResourceUsageHelper
     return "" if ru == 0
     if ru.is_a?(TimeResourceUsage)
       report  = pluralize(val, "second")
-      report += " (" + pretty_elapsed(val) + ") " if val > 59
+      report += " (" + pretty_elapsed(val, :num_components => 2) + ") " if val > 59
       return report
     end
     if val >= 0
-       ('<span color="green">+</span>&nbsp;' + colored_pretty_size(val)).html_safe
+       ('<span style="color: green">+</span>&nbsp;' + colored_pretty_size(val)).html_safe
     else
-       ('<span color="red">-</span>&nbsp;' +   colored_pretty_size(-val)).html_safe
+       ('<span style="color: red">-</span>&nbsp;' +   colored_pretty_size(-val)).html_safe
     end
   end
 

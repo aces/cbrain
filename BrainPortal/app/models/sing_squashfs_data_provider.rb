@@ -30,6 +30,11 @@ class SingSquashfsDataProvider < SshDataProvider
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  # How long we cache the results of provider_list_all();
+  # since this DP handles only static data, it could
+  # be forever, really.
+  BROWSE_CACHE_EXPIRATION = 6.months #:nodoc:
+
   # This is the basename of the singularity image
   # we use to access the squashfs filesystems; we
   # expect this image to be installed in the same
@@ -126,16 +131,16 @@ class SingSquashfsDataProvider < SshDataProvider
     true
   end
 
-  # Returns (and cache for one week) the entries in the DP. +user+ is not used here.
+  # Returns (and caches for 6 months) the entries in the DP. +user+ is not used here.
   # Note that the DataProvider controller also caches this list in a YAML file in /tmp,
   # and it considers it valid for only one minute, so it will refresh that way more
-  # often than our 1-week long caching here. The thing is, fetching the list from the
-  # DP side is the real expensive operation, and also we don't expect the list to change
+  # often than our 6 months long caching here. The thing is, fetching the list from the
+  # DP side is the real expensive operation, but also we don't expect the list to change
   # since this DP type is for static, read-only data.
   def impl_provider_list_all(user=nil) #:nodoc:
     cache_key  = "#{self.class}-#{self.id}-file_infos"
 
-    file_infos = Rails.cache.fetch(cache_key, :expires_in => 7.days) do
+    file_infos = Rails.cache.fetch(cache_key, :expires_in => BROWSE_CACHE_EXPIRATION) do
       text = remote_in_sing_stat_all(self.containerized_path,".",true)
       stat_reports_to_fileinfos(text)
     end
