@@ -91,7 +91,8 @@ class ClusterTask < CbrainTask
   validate       :task_is_proper_subclass
 
   # Resource usage tracking
-  after_status_transition '*', 'Data Ready',                       :track_resource_usage_cpu
+  after_status_transition 'Queued', 'Data Ready',                  :track_resource_usage_cpu
+  after_status_transition 'On CPU', 'Data Ready',                  :track_resource_usage_cpu
   after_status_transition '*', Regexp.new(FINAL_STATUS.join('|')), :track_resource_usage_final
 
 
