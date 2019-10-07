@@ -4,6 +4,7 @@
     "bourreau_id": 13,
     "user_id": 2,
     "group_id": 10,
+    "results_data_provider_id": 15,
     "params": { },
     "description": "TestCreate"
   }
