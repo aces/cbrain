@@ -43,7 +43,15 @@
 
     <td>
       <strong>Save&nbsp;results&nbsp;to:</strong><br>
-      <%= data_provider_select "cbrain_task[results_data_provider_id]", { :selector => @task.results_data_provider_id } , { :include_blank => "Data provider of input files" } %><%= overlay_data_providers_descriptions %>
+      <%= data_provider_select "cbrain_task[results_data_provider_id]",
+          {
+            :data_providers => DataProvider.find_all_accessible_by_user(current_user).where(:read_only => false),
+            :selector       => @task.results_data_provider_id,
+          },
+          { :include_blank => "(Select a Data Provider for your results)",
+            :class         => (@task.errors[:results_data_provider_id].present? ? "field_with_errors" : ""),
+          }
+      %><%= overlay_data_providers_descriptions %>
     </td>
 
     <td rowspan="2">

@@ -324,6 +324,14 @@ class TasksController < ApplicationController
     messages = ""
     messages += @task.wrapper_after_form
 
+    # New behavior: user *must* provide a destination data provider;
+    # we can't really force it in the model with a require_presence_of
+    # because of the large history of old tasks that don't have
+    # the attribute set.
+    if @task.results_data_provider_id.blank? || @task.results_data_provider.blank?
+      @task.errors[:results_data_provider_id] = 'must be provided'
+    end
+
     unless @task.errors.empty? && @task.valid?
       flash.now[:error] += messages
       initialize_common_form_values
