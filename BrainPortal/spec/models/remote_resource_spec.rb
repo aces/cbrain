@@ -47,11 +47,6 @@ describe RemoteResource do
       expect(RemoteResource.current_resource_db_config).to have_key("database")
     end
   end
-  describe "#site_affiliation" do
-    it "should return the site affiliation" do
-      expect(remote_resource.site_affiliation).to eq(remote_resource.user.site)
-    end
-  end
   describe "#after_destroy" do
     it "should destroy all associated sync statuses" do
       syncstatus = SyncStatus.new(:remote_resource_id => remote_resource.id, :userfile_id => userfile.id)
