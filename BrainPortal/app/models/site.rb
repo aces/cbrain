@@ -138,7 +138,7 @@ class Site < ApplicationRecord
   end
 
   # Undoes unset_managers()
-  def restore_managers #:nodoc
+  def restore_managers #:nodoc:
     @old_managers ||= []
     @old_managers.each do |user|
       user.update_attribute(:type, "SiteManager")

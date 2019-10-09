@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190828200502) do
+ActiveRecord::Schema.define(version: 20191002174842) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -62,6 +62,8 @@ ActiveRecord::Schema.define(version: 20190828200502) do
     t.decimal  "cluster_workdir_size",                      precision: 24
     t.boolean  "workdir_archived",                                         default: false, null: false
     t.integer  "workdir_archive_userfile_id"
+    t.string   "zenodo_deposit_id"
+    t.string   "zenodo_doi"
     t.index ["batch_id"], name: "index_cbrain_tasks_on_batch_id", using: :btree
     t.index ["bourreau_id", "status", "type"], name: "index_cbrain_tasks_on_bourreau_id_and_status_and_type", using: :btree
     t.index ["bourreau_id", "status"], name: "index_cbrain_tasks_on_bourreau_id_and_status", using: :btree
@@ -418,7 +420,7 @@ ActiveRecord::Schema.define(version: 20190828200502) do
 
   create_table "userfiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name"
-    t.decimal  "size",                           precision: 24
+    t.decimal  "size",                            precision: 24
     t.integer  "user_id"
     t.integer  "parent_id"
     t.datetime "created_at"
@@ -426,12 +428,14 @@ ActiveRecord::Schema.define(version: 20190828200502) do
     t.string   "type"
     t.integer  "group_id"
     t.integer  "data_provider_id"
-    t.boolean  "group_writable",                                default: false, null: false
+    t.boolean  "group_writable",                                 default: false, null: false
     t.integer  "num_files"
-    t.boolean  "hidden",                                        default: false
-    t.boolean  "immutable",                                     default: false
-    t.boolean  "archived",                                      default: false
-    t.text     "description",      limit: 65535
+    t.boolean  "hidden",                                         default: false
+    t.boolean  "immutable",                                      default: false
+    t.boolean  "archived",                                       default: false
+    t.text     "description",       limit: 65535
+    t.string   "zenodo_deposit_id"
+    t.string   "zenodo_doi"
     t.index ["archived", "id"], name: "index_userfiles_on_archived_and_id", using: :btree
     t.index ["data_provider_id"], name: "index_userfiles_on_data_provider_id", using: :btree
     t.index ["group_id"], name: "index_userfiles_on_group_id", using: :btree
@@ -453,12 +457,14 @@ ActiveRecord::Schema.define(version: 20190828200502) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "site_id"
-    t.boolean  "password_reset",    default: false, null: false
+    t.boolean  "password_reset",       default: false, null: false
     t.string   "time_zone"
     t.string   "city"
     t.string   "country"
     t.datetime "last_connected_at"
-    t.boolean  "account_locked",    default: false, null: false
+    t.boolean  "account_locked",       default: false, null: false
+    t.string   "zenodo_main_token"
+    t.string   "zenodo_sandbox_token"
     t.index ["login"], name: "index_users_on_login", using: :btree
     t.index ["type"], name: "index_users_on_type", using: :btree
   end

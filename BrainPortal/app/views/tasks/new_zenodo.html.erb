@@ -1,0 +1,31 @@
+
+<h1>Zenodo Publishing Interface</h1>
+
+This form allows you to blah blha blah
+
+<p>
+
+Output files that will be published:
+<ul>
+<% @zenodo_userfile_ids.each do |uid| %>
+  <% userfile = Userfile.find_by_id(uid) %>
+  <li><%= link_to_userfile_if_accessible(userfile) %>
+    <% if userfile && userfile.zenodo_doi.present? %>
+      <span class="warning">Warning: already published:</span> in <%= link_to_doi(userfile.zenodo_doi) %>
+    <% end %>
+  </li>
+<% end %>
+</ul>
+
+<% to_upload = @zenodo_userfile_ids
+               .map { |uid| Userfile.find_by_id(uid) }
+               .compact
+               .select { |f| f.zenodo_doi.blank? && f.zenodo_deposit_id.blank? }
+%>
+
+<% if to_upload.empty? %>
+  <span class="warning">Error: it seems this task has no output files that can be uploaded.</span>
+<% else %>
+  <%= render :partial => 'zenodo_deposit_form' %>
+<% end %>
+

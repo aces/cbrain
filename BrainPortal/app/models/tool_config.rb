@@ -75,7 +75,7 @@ class ToolConfig < ApplicationRecord
   end
 
   # See ResourceAccess.
-  def self.find_all_accessible_by_user(user) #:nodoc
+  def self.find_all_accessible_by_user(user) #:nodoc:
     if user.has_role?(:admin_user)
       ToolConfig.specific_versions
     else

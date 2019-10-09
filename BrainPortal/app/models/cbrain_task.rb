@@ -917,6 +917,20 @@ class CbrainTask < ApplicationRecord
 
 
   ##################################################################
+  # Zenodo Publishing Support
+  ##################################################################
+
+  public
+
+  def has_zenodo_capabilities? #:nodoc:
+    return false if self.status != 'Completed'
+    return false if ! self.respond_to?(:base_zenodo_deposit) || ! self.respond_to?(:zenodo_outputfile_ids)
+    true
+  end
+
+
+
+  ##################################################################
   # CARMIN converters
   ##################################################################
 

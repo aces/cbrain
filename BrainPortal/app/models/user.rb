@@ -314,6 +314,16 @@ class User < ApplicationRecord
 
 
   ##############################################
+  # Zenodo Publishing Support
+  ##############################################
+
+  def has_zenodo_credentials? #:nodoc:
+    self.zenodo_sandbox_token.present? || self.zenodo_main_token.present?
+  end
+
+
+
+  ##############################################
   # Access Profiles Adjustments
   ##############################################
 
