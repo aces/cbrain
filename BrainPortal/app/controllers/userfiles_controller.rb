@@ -352,12 +352,6 @@ class UserfilesController < ApplicationController
     end
   end
 
-  def new #:nodoc:
-    @user_tags      = current_user.available_tags
-    @data_providers = DataProvider.find_all_accessible_by_user(current_user).all.to_a
-    @data_providers.reject! { |dp| dp.meta[:no_uploads].present? }
-  end
-
   # Triggers the mass synchronization of several userfiles
   # or mass 'desynchronization' (ProvNewer) of several userfiles.
   def sync_multiple #:nodoc:
