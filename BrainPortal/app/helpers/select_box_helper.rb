@@ -592,7 +592,8 @@ module SelectBoxHelper
     ordered_by_lock_status
   end
 
-  def writable_data_providers(user=current_user) #:nodoc:
+  # DPs where people can move/copy/extract stuff
+  def writable_data_providers(user=current_user)
 
     writable_data_providers =
       DataProvider
@@ -603,7 +604,8 @@ module SelectBoxHelper
     return writable_data_providers
   end
 
-  def uploadable_data_providers(user=current_user) #:nodoc:
+  # DPs where people can upload stuff (subset of writable_dps)
+  def uploadable_data_providers(user=current_user)
 
     uploadable_data_providers = writable_data_providers(user)
                                  .reject { |dp| dp.meta[:no_uploads].present? }

@@ -24,11 +24,7 @@
 
 <%
   default_project = current_project || current_user.own_group
-
-  # DPs where people can move/copy/extract stuff
   writable_dps    = writable_data_providers(current_user)
-
-  # DPs where people can upload stuff (subset of writable_dps)
   uploadable_dps  = uploadable_data_providers(current_user)
 %>
 
