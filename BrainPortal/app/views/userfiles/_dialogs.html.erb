@@ -24,15 +24,8 @@
 
 <%
   default_project = current_project || current_user.own_group
-
-  # DPs where people can move/copy/extract stuff
-  writable_dps = DataProvider
-    .find_all_accessible_by_user(current_user)
-    .all
-    .reject { |dp| dp.read_only? || dp.is_a?(ScratchDataProvider) }
-
-  # DPs where people can upload stuff (subset of writable_dps)
-  uploadable_dps = writable_dps.reject { |dp| dp.meta[:no_uploads].present? }
+  writable_dps    = writable_data_providers(current_user)
+  uploadable_dps  = uploadable_data_providers(current_user)
 %>
 
 <div id="upload-dialog"
