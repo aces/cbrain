@@ -144,20 +144,6 @@ class RemoteResource < ApplicationRecord
     myconfig
   end
 
-
-
-  ############################################################################
-  # Access Control Methods
-  ############################################################################
-
-  # Returns the site associated with the owner of this
-  # remote resource.
-  def site_affiliation
-    @site_affiliation ||= self.user.site
-  end
-
-
-
   ############################################################################
   # ActiveRecord callbacks
   ############################################################################

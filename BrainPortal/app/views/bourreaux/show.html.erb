@@ -85,8 +85,6 @@
 
     <% t.cell("Revision Info (Client Side)") { Bourreau.revision_info.format() } %>
 
-    <% t.cell("Site") { link_to_site_if_accessible(@bourreau.site_affiliation) } %>
-
     <% licenses = @bourreau.license_agreements.count == 0 ? "(None)": @bourreau.license_agreements.join("\n") %>
     <% t.edit_cell(:license_agreements, :content => licenses) do |f| %>
       <%= f.text_area :license_agreements, :value => @bourreau.license_agreements.join("\n"), :rows => 5, :cols => 40 %><br>
@@ -118,6 +116,8 @@
         <%= f.text_field :help_url, :size => 40 %><br/>
         <div class="field_explanation">If set, the portal will show a link called 'User Manual' in the account bar at the top.</div>
       <% end %>
+
+      <% t.empty_cell %>
 
       <% t.edit_cell :small_logo,
                      :header => "Small logo",

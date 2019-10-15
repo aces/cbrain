@@ -86,10 +86,6 @@
       :filters  => default_filters_for(@base_scope, Group)
     ) { |r| link_to_group_if_accessible(r.group) }
 
-    t.column("Site", :site,
-      :hidden => true
-    ) { |r| link_to_site_if_accessible(r.site_affiliation) }
-
     t.column("Time Zone", :time_zone,
       :hidden   => true,
       :sortable => true,
