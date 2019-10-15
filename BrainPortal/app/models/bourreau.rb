@@ -597,10 +597,12 @@ class Bourreau < RemoteResource
     command.cluster_stdout = task.cluster_stdout
     command.cluster_stderr = task.cluster_stderr
     command.script_text    = task.script_text
+    command.runtime_info   = task.runtime_info
   rescue => e
     command.cluster_stdout = "Bourreau Exception: #{e.class} #{e.message}\n"
     command.cluster_stderr = "Bourreau Exception:\n#{e.backtrace.join("\n")}\n"
     command.script_text    = ""
+    command.runtime_info   = ""
   end
 
   private

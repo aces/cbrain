@@ -63,7 +63,7 @@ class CbrainTask < ApplicationRecord
 
   # Pseudo Attributes (not saved in DB)
   # These are filled in by calling capture_job_out_err().
-  attr_accessor  :cluster_stdout, :cluster_stderr, :script_text
+  attr_accessor  :cluster_stdout, :cluster_stderr, :script_text, :runtime_info
 
   # The attribute 'params' is a serialized hash table
   # containing job-specific parameters; it's up to each
@@ -926,6 +926,40 @@ class CbrainTask < ApplicationRecord
     return false if self.status != 'Completed'
     return false if ! self.respond_to?(:base_zenodo_deposit) || ! self.respond_to?(:zenodo_outputfile_ids)
     true
+  end
+
+  # Returns a structure with miscellaneous info about the task;
+  # only really useful for a task that has completed.
+  # Anything that can be captured that is not already in
+  # the task's attributes, or its logs, is welcome here.
+  # No specific schema is yet available for this.
+  #
+  # The +runtime_textfile+ is the content of the task's
+  # .runtime_info.kv file, and if supplied the keys
+  # and values will be added to the structure returned.
+  def struct_runtime_info(runtime_textfile=self.runtime_info) #:nodoc:
+    info = {
+      :walltime_events => WalltimeResourceUsageForCbrainTask
+                          .where(:cbrain_task_id => self.id)
+                          .order(:created_at)
+                          .map { |ru| [ ru.created_at, ru.value ] },
+      :cputime_events  => CputimeResourceUsageForCbrainTask
+                          .where(:cbrain_task_id => self.id)
+                          .order(:created_at)
+                          .map { |ru| [ ru.created_at, ru.value ] },
+    }
+
+    # Expects a textfile with plain "key=val" entries
+    (runtime_textfile.presence || "").split("\n").each do |line|
+      next unless line =~ /\A\s*(\w[\w\-]*)\s*=\s*(.*\S)\s*\z/
+      key, val = Regexp.last_match[1,2]
+      val.sub!(/\A["']/,"")
+      val.sub!(/["']\z/,"")
+      # Maybe do other substitutions on val here?
+      info[key] = val
+    end
+
+    info
   end
 
 

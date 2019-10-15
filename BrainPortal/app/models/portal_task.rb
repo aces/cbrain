@@ -782,6 +782,7 @@ class PortalTask < CbrainTask
     self.cluster_stdout = control.cluster_stdout
     self.cluster_stderr = control.cluster_stderr
     self.script_text    = control.script_text
+    self.runtime_info   = control.runtime_info
     true
   end
 
