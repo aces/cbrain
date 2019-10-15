@@ -4,13 +4,13 @@
 <div class="menu_bar">
   <%= link_to 'Task Info', task_path(@task.id), :class => "button menu_button" %>
   <% if @task.zenodo_deposit_id.present? && @task.zenodo_doi.blank? %>
-    <%= link_to 'Refresh', new_zenodo_task_path(@task.id), :class => "button menu_button" %>
+    <%= link_to 'Refresh', zenodo_task_path(@task), :class => "button menu_button" %>
   <% end %>
 </div>
 <p>
 
 <%
-  step_1_status = step_2_status = step_3_status = step_1_status = "zenodo_incomplete"
+  step_1_status = step_2_status = step_3_status = "zenodo_incomplete"
 
   step_1_status = "zenodo_complete"   if @task.zenodo_deposit_id.present?
   if step_1_status == "zenodo_complete"

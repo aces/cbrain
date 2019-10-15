@@ -25,7 +25,7 @@ class TasksController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :except => [:update, :destroy, :new_zenodo, :create_zenodo ]
+  api_available :except => [:update, :destroy, :zenodo, :create_zenodo, :reset_zenodo ]
 
   before_action :login_required
 
@@ -776,19 +776,21 @@ class TasksController < ApplicationController
   #####################################################################
 
   # GET /tasks/:id/zenodo
-  def new_zenodo #:nodoc:
+  def zenodo #:nodoc:
     task_id     = params[:id]
     @task = current_user.available_tasks.find(task_id)
 
     # Check stuff
-    cb_error "This task doesn't have the capabilities to publish to Zenodo.", :redirect => task_path(task_id) unless
+    cb_error "This task doesn't have the capabilities to publish to Zenodo.", :redirect => task_path(@task) unless
       @task.has_zenodo_capabilities?
-    cb_error "You have not configured any Zenodo token in your account.", :redirect => task_path(task_id) unless
+    cb_error "You have not configured any Zenodo token in your account.", :redirect => task_path(@task) unless
       current_user.has_zenodo_credentials?
-    cb_error "This task is archived, unarchived it first.", :redirect => task_path(task_id) if
+    cb_error "This task is archived, unarchived it first.", :redirect => task_path(@task) if
       @task.archived_status
-    cb_error "This task is on an execution server that is unavailable.", :redirect => task_path(task_id) unless
+    cb_error "This task is on an execution server that is unavailable.", :redirect => task_path(@task) unless
       @task.bourreau.is_alive?
+    cb_error "You have to be the owner of the task to publish its outputs.", :redirect => task_path(@task) if
+      current_user.id != @task.user_id
 
     # Any of these can be nil
     combined_dep_id   = @task.zenodo_deposit_id.presence # 'main-1234' or 'sandbox-1234'
@@ -798,24 +800,24 @@ class TasksController < ApplicationController
     zenodo_userfile_ids = @task.zenodo_outputfile_ids
     @zenodo_userfiles   = zenodo_userfiles_from_ids(zenodo_userfile_ids)
     if (@zenodo_userfiles.compact.empty?)
-      cb_error "This task doesn't seem to have produced any publishable outputs.", :redirect => task_path(task_id)
+      cb_error "This task doesn't seem to have produced any publishable outputs.", :redirect => task_path(@task)
     end
 
-    # Figure out at what 'stage' of the process we are at:
+    # Figure out at what 'step' of the process we are at:
     #
-    #   0- Nothing done yet, so present the form for the user
-    #   1- A deposit has been created on zenodo and files are being uploaded in background
-    #   2- A deposit has been created on zenodo and files have finished uploading
-    #   3- The deposit has been published by the user
+    #   1- Nothing done yet, so present the form for the user
+    #   2- A deposit has been created on zenodo and files are being uploaded in background
+    #   3- A deposit has been created on zenodo and files have finished uploading
+    #   4- The deposit has been published by the user
     #
-    # Stages 1,2,3 and can all be repeated more than once, when
+    # All these steps can be repeated more than once: when
     # the deposits are on the zenodo sandbox (any number of times)
     # or the main zenodo (only once). This is tracked by a variable
     # 'zsite' with values of 'main' or 'sandbox', and it usually
     # prefixed the value of the deposit ID in the CbrainTask and Userfile
     # attribute :zenodo_deposit_id . See @combined_dep_id above.
 
-    # For stages 1, 2 and 3: find the zenodo deposit from Zenodo
+    # For steps 2, 3 and 4: find the zenodo deposit from Zenodo
     if deposit_id.present?
       init_zenodo_client(zsite)
       @zenodo_deposit = find_existing_deposit(deposit_id)
@@ -837,7 +839,7 @@ class TasksController < ApplicationController
         end
 
         flash.now[:notice] = message
-        combined_dep_id = zsite = deposit_id = nil
+        combined_dep_id = zsite = deposit_id = nil # so we enter step 1 code below
       else # Record DOI if needed
         if @zenodo_deposit.submitted && @zenodo_deposit.metadata.doi.present?
           zenodo_doi = @zenodo_deposit.metadata.doi
@@ -854,7 +856,7 @@ class TasksController < ApplicationController
       end
     end
 
-    # Stage 0: ask the task for what we need to build a new zenodo deposit
+    # Step 1: ask the task for what we need to build a new zenodo deposit
     # This sets up what's needed to render the initial form.
     if combined_dep_id.blank?
       @zenodo_deposit  = @task.base_zenodo_deposit
@@ -869,20 +871,20 @@ class TasksController < ApplicationController
         @zenodo_metadata.creators.any? { |a| a.name == author }
     end
 
-    # All good for rendering the status page
-    return # renders new_zenodo.html.erb
+    # All good for rendering the zenodo status page
+    return # renders zenodo.html.erb
 
   end
 
-  # POST /tasks/:id/to_zenodo
+  # POST /tasks/:id/create_zenodo
   def create_zenodo #:nodoc:
     task_id = params[:id]
     @task   = current_user.available_tasks.find(task_id)
 
     if @task.zenodo_doi.present?
-      cb_error "A deposit has already been published."
+      cb_error "A deposit has already been published.", :redirect => zenodo_task_path(@task)
     elsif @task.zenodo_deposit_id.present?
-      cb_error "A deposit is already being created."
+      cb_error "A deposit has already been created.", :redirect => zenodo_task_path(@task)
     end
 
     @zenodo_deposit     = ZenodoClient::Deposit.new(         zenodo_deposit_params.to_h          )
@@ -900,10 +902,10 @@ class TasksController < ApplicationController
       @zenodo_metadata.related_identifiers  += related
     end
 
-    # Validate here
-    if (false) # validation is false
+    # Validate here; TODO
+    if (false) # validation fails
       flash.now[:error] = 'message'
-      render :new_zenodo
+      render :zenodo
       return
     end
 
@@ -918,7 +920,7 @@ class TasksController < ApplicationController
     # Upload files and data in background
     background_upload_task_info_to_deposit(new_deposit, @task, @zenodo_userfiles) # forks
 
-    redirect_to :action => :new_zenodo
+    redirect_to :action => :zenodo
   end
 
   # This action resets a task that has been prepared or published
@@ -952,15 +954,14 @@ class TasksController < ApplicationController
       userfile.save_with_logging(current_user, [ :zenodo_deposit_id, :zenodo_doi ])
     end
 
-    # Remove deposit on Zenodo
-    if orig_doi.blank? # only works if not published
-      zsite, deposit_id = (orig_deposit_id || "").split("-") # "main", "1234"
-      init_zenodo_client(zsite)
-      depo_api = ZenodoClient::DepositsApi.new
-      depo_api.delete_deposit(deposit_id.to_i) rescue 'ignore'
-    end
+    # Attempt to remove the deposit on Zenodo; if it's published
+    # it will not be deleted no matter how much we try.
+    zsite, deposit_id = (orig_deposit_id || "").split("-") # "main", "1234"
+    init_zenodo_client(zsite)
+    depo_api = ZenodoClient::DepositsApi.new
+    depo_api.delete_deposit(deposit_id.to_i) rescue 'ignore'
 
-    redirect_to :action => :new_zenodo
+    redirect_to :action => :zenodo
   end
 
   private

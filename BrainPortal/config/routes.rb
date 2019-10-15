@@ -138,7 +138,7 @@ Rails.application.routes.draw do
 
   resources :tasks, :except => [ :destroy ] do
     member do
-      get  'new_zenodo'
+      get  'zenodo'
       post 'create_zenodo'
       post 'reset_zenodo'
     end

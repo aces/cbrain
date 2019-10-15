@@ -65,6 +65,8 @@ class ResourceUsageController < ApplicationController
     @total_minus     = @view_scope.where("resource_usage.value < 0").sum(:value)
     @total           = @total_plus + @total_minus
 
+    scope_to_session(@scope)
+
     respond_to do |format|
       format.html
       format.js
