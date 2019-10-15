@@ -362,9 +362,8 @@ class ClusterTask < CbrainTask
       [ :name, :data_provider_id ].any? { |i| attlist[i].blank? }
     # Fetch file
     results = klass.where( attlist ).all
-    cb_error "Found more than one file that match attribute list: '#{attlist.inspect}'." if results.size > 1
     # Return whether we found one or not
-    return (results.size == 1)
+    return results.count > 0
   end
 
 

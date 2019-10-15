@@ -25,10 +25,13 @@ module ZenodoHelper
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  ZenodoSandboxDOIPrefix = "10.5072/"
+  ZenodoMainDOIPrefix    = "10.5281/"
+
   # Creates a pretty link to a DOI, usually for Zenodo
-  def link_to_doi(doi)
+  def link_to_zenodo_doi(doi)
     link_to "<img src=\"https://zenodo.org/badge/DOI/#{doi}.svg\" alt=\"DOI\">".html_safe,
-            "https://doi.org/#{doi}"
+            "https://doi.org/#{doi}", :target => '_blank'
     #("<a href=\"https://doi.org/#{doi}\">" +
     #   "<img src=\"https://zenodo.org/badge/DOI/#{doi}.svg\" alt=\"DOI\">" +
     # "</a>").html_safe
@@ -40,7 +43,7 @@ module ZenodoHelper
     zsite, id = depid.split("-")
     label  = "Deposit ##{id}"
     label += " (sandbox)" if zsite == 'sandbox'
-    link_to label, url_for_deposit(depid)
+    link_to label, url_for_deposit(depid), :target => '_blank'
   end
 
   # Returns the URL for a zenodo deposit, by ID. The
@@ -60,6 +63,18 @@ module ZenodoHelper
 
   def url_for_main_deposit(depid) #:nodoc:
     "https://zenodo.org/deposit/#{depid}"
+  end
+
+  def green_checkmark_icon #:nodoc:
+    "<span class=\"green_checkmark_icon\">&#10004;</span>".html_safe
+  end
+
+  def red_x_cross_icon #:nodoc:
+    "<span class=\"red_x_cross_icon\">&#10060;</span>".html_safe
+  end
+
+  def orange_uparrow_icon #:nodoc:
+    "<span class=\"orange_uparrow_icon\">&uarr;</span>".html_safe
   end
 
 end

@@ -140,6 +140,7 @@ Rails.application.routes.draw do
     member do
       get  'new_zenodo'
       post 'create_zenodo'
+      post 'reset_zenodo'
     end
     collection do
       post 'new', :as => 'new', :via => 'new'
