@@ -124,7 +124,8 @@
                    :show_width => 2 ) do |f| %>
       <%= f.password_field :zenodo_sandbox_token, :size => 62 %><br>
       <div class="wide_field_explanation">
-        This token can be used for creating <strong>temporary/test</strong> Zenodo data deposits.
+        This token can be used for creating <strong>temporary/test</strong> Zenodo data deposits.<p>
+        You can create a token at <a href="https://sandbox.zenodo.org/account/settings/applications/" target="_blank">https://sandbox.zenodo.org/account/settings/applications/</a>.
       </div>
     <% end %>
 
@@ -134,7 +135,8 @@
                    :show_width => 2 ) do |f| %>
       <%= f.password_field :zenodo_main_token, :size => 62 %>
       <div class="wide_field_explanation">
-        This token can be used for creating <strong>real, official and permanent</strong> Zenodo data deposits.
+        This token can be used for creating <strong>real, official and permanent</strong> Zenodo data deposits.<p>
+        You can create a token at <a href="https://zenodo.org/account/settings/applications/" target="_blank">https://zenodo.org/account/settings/applications/</a>.
       </div>
     <% end %>
 
