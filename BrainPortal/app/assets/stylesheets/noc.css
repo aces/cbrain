@@ -47,7 +47,7 @@ body {
 
 .noc_count {
   display: inline-block;
-  font-size: 128px;
+  font-size: 96px;
   margin: 0.2em 0.2em 0.6em 0.2em;
   text-shadow: -1px -1px 2px black,
                -1px  1px 2px black,

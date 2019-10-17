@@ -26,49 +26,90 @@ class NocController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # Provides a graphical daily snapshot of activity
+  # Provides a graphical snapshot of activity
+
   def daily
+   @range = 'Today' # for message at top
+   gather_info(Time.now.at_beginning_of_day)
+   render 'dashboard', :layout => false # full HTML layout already in view file
+  end
+
+  def weekly
+   @range = 'This Week' # for message at top
+   gather_info(Time.now.at_beginning_of_week)
+   render 'dashboard', :layout => false # full HTML layout already in view file
+  end
+
+  def monthly
+   @range = 'This Month' # for message at top
+   gather_info(Time.now.at_beginning_of_month)
+   render 'dashboard', :layout => false # full HTML layout already in view file
+  end
+
+  def yearly
+   @range = 'This Year' # for message at top
+   gather_info(Time.now.at_beginning_of_year)
+   render 'dashboard', :layout => false # full HTML layout already in view file
+  end
+
+  private
+
+  def gather_info(since_when) #:nodoc:
 
     # Bourreaux or DataProviders that are offline yet modified in the past
     # month will be shown in red even if they have no other activity.
     offline_resource_limit = 1.month # update date must be since that time ago
 
-    # Sicrit params
-    @hours_ago       = params[:t].presence.try(:to_i)
+    # Zooper Sikrit params
+    doroll           = params[:roll].presence
     @refresh_every   = params[:r].presence.try(:to_i)
     fake             = params[:fake].presence.try(:to_i) # fake statuses / offline / disk space etc
 
-    # Validate them, give them default
-    @hours_ago       = nil if @hours_ago.present?     && @hours_ago < 1
     # Auto refresh: default every two minutes.
-    @refresh_every   = nil if @refresh_every.present? && @refresh_every < 20
+    @refresh_every   = nil if @refresh_every.present? && @refresh_every < 10
     @refresh_every ||= 120.seconds
-
-    # Timescale for most reports: from midnight to right now.
-    this_morning    = @hours_ago.try(:hours).try(:ago) || DateTime.now.midnight
-    #this_morning = 7.years.ago # uncomment to artificially show all historical data
 
     # RemoteResources, including the portal itself
     @myself        = RemoteResource.current_resource
     @bourreaux     = Bourreau.where([ "updated_at > ?", offline_resource_limit.ago ]).order(:name).all # must have been toggled within a month
 
-    # Three numbers: active users, active tasks, sum of files sizes being transferred.
+    # Some numbers: active users, active tasks, sum of files sizes being transferred, sum of CPU time
     @active_users  = CbrainSession.session_model
-                                  .where([ "updated_at > ?", this_morning ])
-                                  .where(:active => true)
-                                  .raw_first_column(:user_id)
-                                  .compact.uniq.size
+                       .where([ "updated_at > ?", since_when ])
+                       .where(:active => true)
+                       .raw_first_column(:user_id)
+                       .compact.uniq.size
     @active_tasks  = CbrainTask.active.count
-    @data_transfer = SyncStatus.where("sync_status.status" => [ 'ToCache', 'ToProvider' ])
-                               .joins(:userfile)
-                               .sum("userfiles.size")
-                               .to_i # because we sometimes get the string "0" ?!?
+    @data_transfer = SyncStatus
+                       .where("sync_status.status" => [ 'ToCache', 'ToProvider' ])
+                       .joins(:userfile)
+                       .sum("userfiles.size")
+                       .to_i # because we sometimes get the string "0" ?!?
+    @cpu_time      = CputimeResourceUsageForCbrainTask
+                       .where([ "created_at > ?", since_when ])
+                       .sum(:value)
+    @space_delta_P = SpaceResourceUsageForUserfile
+                       .where([ "created_at > ?", since_when ])
+                       .where("value > 0")
+                       .sum(:value)
+    @space_delta_M = SpaceResourceUsageForUserfile
+                       .where([ "created_at > ?", since_when ])
+                       .where("value < 0")
+                       .sum(:value)
+    @space_delta   = @space_delta_P + @space_delta_M
+
+    # This is used to adjust the color ranges
+    @num_hours     = (Time.now - since_when) / 24.hours; @num_hours = 1.0 if @num_hours < 1
 
     # This is used to debug layout issues by generating random numbers
     if fake
       @active_users  = rand(fake)
       @active_tasks  = rand(fake)
       @data_transfer = rand(fake.gigabytes)
+      @cpu_time      = rand(fake * 3600)
+      @space_delta_P = rand(fake.gigabytes)
+      @space_delta_M = - rand(fake.gigabytes)
+      @space_delta   = @space_delta_P + @space_delta_M
     end
 
     # This is where we store all info for all bourreaux, keyed by ID
@@ -81,13 +122,13 @@ class NocController < ApplicationController
 
       # Sum of task workdir space
       info[:task_space] = b.is_a?(BrainPortal) ? 0 :
-        b.cbrain_tasks.where(["updated_at > ?",this_morning])
+        b.cbrain_tasks.where(["updated_at > ?", since_when ])
                       .sum(:cluster_workdir_size)
                       .to_i
 
       # Count of active statuses
       info[:status_counts] = b.is_a?(BrainPortal) ? [] :
-        b.cbrain_tasks.where(["updated_at > ?",this_morning])
+        b.cbrain_tasks.where(["updated_at > ?", since_when ])
                       .group(:status)
                       .count
                       .to_a  # [ [ status, count ], [ status, count ] ... ]
@@ -95,7 +136,7 @@ class NocController < ApplicationController
       # Size in caches (works for Bourreaux and BrainPortals)
       info[:cache_sizes] =
         SyncStatus.where(:remote_resource_id => b.id)
-                  .where([ "sync_status.updated_at > ?", this_morning ])
+                  .where([ "sync_status.updated_at > ?", since_when ])
                   .joins(:userfile)
                   .sum("userfiles.size")
                   .to_i # because we sometimes get the string "0"  ?!?
@@ -111,7 +152,7 @@ class NocController < ApplicationController
     end
 
     # Sizes of files updated, keyed by DP ID: { dp.id => size, ... }
-    @updated_files = Userfile.where([ "userfiles.updated_at > ?", this_morning ])
+    @updated_files = Userfile.where([ "userfiles.updated_at > ?", since_when ])
                              .joins(:data_provider)
                              .order("data_providers.name")
                              .group("data_providers.id")
@@ -131,6 +172,10 @@ class NocController < ApplicationController
 
     # Trigger refresh using HTTP header.
     myurl  = "#{request.protocol}#{request.host_with_port}#{request.fullpath}"
+    if doroll
+      url_sequence = { 'daily' => 'weekly', 'weekly' => 'monthly', 'monthly' => 'daily' }
+      myurl.sub!(/\/(daily|weekly|monthly)/) { |m| "/" + url_sequence[m.sub("/","")] }
+    end
     response.headers["Refresh"] = "#{@refresh_every};#{myurl}"
 
     # Show IP address
@@ -138,10 +183,8 @@ class NocController < ApplicationController
     @ip_address ||= cbrain_request_remote_ip rescue 'UnknownIP'
 
     # Number of exceptions
-    @num_exceptions = ExceptionLog.where([ "created_at > ?", this_morning ]).count
+    @num_exceptions = ExceptionLog.where([ "created_at > ?", since_when ]).count
     @num_exceptions = rand(fake) if fake
-
-    render :action => :daily, :layout => false # full HTML layout already in view file
   end
 
 end
