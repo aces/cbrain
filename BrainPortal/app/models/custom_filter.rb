@@ -175,7 +175,7 @@ class CustomFilter < ApplicationRecord
 
   private
 
-  # Return +scope+ modified to filter the CbrainTask entry's dates.
+  # Return +scope+ modified to filter by dates.
   def scope_date(scope)
     date_attribute        = self.data_date_attribute
     mode_is_absolute_from = self.data_absolute_or_relative_from == "absolute"
