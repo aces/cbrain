@@ -1061,13 +1061,16 @@ class TasksController < ApplicationController
       # Captured special data
       pretty_json_task = JSON.pretty_generate(task.for_api)
       runtime_info     = JSON.pretty_generate(task.struct_runtime_info)
+      boutiques_path   = task.class.generated_from.descriptor_path rescue nil
+      boutiques_json   = boutiques_path.to_s.ends_with?(".json") ? File.read(boutiques_path) : nil
       er1 = upload_text_data_to_deposit(deposit, task.script_text,    "main_cbrain_script-#{task.run_id}.sh")
       er2 = upload_text_data_to_deposit(deposit, task.cluster_stdout, "captured_stdout-#{task.run_id}.log"  )
       er3 = upload_text_data_to_deposit(deposit, task.cluster_stderr, "captured_stderr-#{task.run_id}.log"  )
       er4 = upload_text_data_to_deposit(deposit, task.getlog,         "cbrain_log-#{task.run_id}.log"       )
       er5 = upload_text_data_to_deposit(deposit, pretty_json_task,    "cbrain_task-#{task.run_id}.json"     )
       er6 = upload_text_data_to_deposit(deposit, runtime_info,        "runtime_info-#{task.run_id}.json"    )
-      [ er1, er2, er3, er4, er5, er6 ].each { |er| errors << er if er.present? }
+      er7 = upload_text_data_to_deposit(deposit, boutiques_json,      "boutiques-#{task.run_id}.json"       ) if boutiques_json
+      [ er1, er2, er3, er4, er5, er6, er7 ].each { |er| errors << er if er.present? }
 
       if errors.present?
         Message.send_message(current_user,

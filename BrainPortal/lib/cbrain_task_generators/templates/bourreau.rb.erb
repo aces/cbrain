@@ -33,7 +33,7 @@
 # Bourreau-side CbrainTask subclass to launch <%= name %>
 class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherits-from-class'] || 'ClusterTask' %>
 
-  Revision_info=CbrainFileRevision["<%= descriptor_path %>"] #:nodoc:
+  Revision_info=CbrainFileRevision["<%= file_version_path %>"] #:nodoc:
 
   # Descriptor-based tasks are, by default, easily restartable and recoverable
   include RestartableTask

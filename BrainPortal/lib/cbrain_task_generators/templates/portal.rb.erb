@@ -33,7 +33,7 @@
 # Portal-side CbrainTask subclass to launch <%= name %>
 class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherits-from-class'] || 'PortalTask' %>
 
-  Revision_info=CbrainFileRevision["<%= descriptor_path %>"] #:nodoc:
+  Revision_info=CbrainFileRevision["<%= file_version_path %>"] #:nodoc:
 
 % # Maximum width of a given +key+'s value in a +list+ of hashes
 % max_width = lambda do |list, key|
