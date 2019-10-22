@@ -137,13 +137,13 @@
             <%= label_tag(:deleted_items, "Only deleted items.") %>
             <br>
 
-            <% if @maintype =~ /Userfile/ %>
-              <%= check_box_tag(:positive_file_delta, "1", params["positive_file_delta"]) %>
-              <%= label_tag(:positive_file_delta, "With positive size delta.") %>
-               <br>
-               <%= check_box_tag(:negative_file_delta, "1", params["negative_file_delta"]) %>
-               <%= label_tag(:negative_file_delta, "With negative size delta.") %>
-            <% end %>
+        <% if @maintype =~ /Userfile/ %>
+          <%= check_box_tag(:positive_file_delta, "1", params["positive_file_delta"]) %>
+          <%= label_tag(:positive_file_delta, "With positive size delta.") %>
+           <br>
+           <%= check_box_tag(:negative_file_delta, "1", params["negative_file_delta"]) %>
+           <%= label_tag(:negative_file_delta, "With negative size delta.") %>
+        <% end %>
 
       </div>
     </div>
