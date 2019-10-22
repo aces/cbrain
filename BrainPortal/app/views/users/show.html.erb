@@ -144,6 +144,25 @@
        end
     %>
 
+    <% t.cell("Historical Storage") do
+         plus  =   SpaceResourceUsageForUserfile.where(:user_id => @user.id).where("value > 0").sum(:value)
+         minus = - SpaceResourceUsageForUserfile.where(:user_id => @user.id).where("value < 0").sum(:value)
+         pretty_plus    = plus  > 0 ? colored_pretty_size(plus)  : nil
+         pretty_minus   = minus > 0 ? colored_pretty_size(minus) : nil
+         pretty_plus  &&= "<span style=\"color: green\">+</span>#{pretty_plus}".html_safe
+         pretty_minus &&= "<span style=\"color: red\">-</span>#{pretty_minus}".html_safe
+         pretty = (pretty_plus.to_s + " " + pretty_minus.to_s).html_safe
+         pretty = "(none)" if pretty.blank?
+         index_count_filter(pretty, :resource_usage, { :type => 'SpaceResourceUsageForUserfile'}, :show_zeros => true)
+       end
+    %>
+
+    <% t.cell("Historical CPU Time") do
+         pretty_val = pretty_elapsed(CputimeResourceUsageForCbrainTask.where(:user_id => @user.id).sum(:value), :num_components => 3)
+         index_count_filter(pretty_val, :resource_usage, { :type => 'CputimeResourceUsageForCbrainTask'}, :show_zeros => true)
+       end
+    %>
+
     <% if current_user.has_role?(:admin_user) %>
       <% t.cell("Tools")          { index_count_filter @user.tools.count,                             :tools,          {:user_id => @user.id} } %>
       <% t.cell("Data Providers") { index_count_filter @user.data_providers.count,                    :data_providers, {:user_id => @user.id} } %>
