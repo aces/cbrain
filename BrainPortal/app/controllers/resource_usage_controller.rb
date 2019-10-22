@@ -100,22 +100,22 @@ class ResourceUsageController < ApplicationController
 
     else
       if params[:deleted_items]
-        @base_scope = @base_scope = @base_scope.includes(:cbrain_task).where(:cbrain_task => {id: nil})
+        @base_scope = @base_scope.includes(:cbrain_task).where(:cbrain_tasks => {id: nil})
       end
     end
 
-    if params[:data]
-      date_attribute = params[:data][:date_attribute]
+    if params[:date_range]
+      date_attribute = params[:date_range][:date_attribute]
       if date_attribute == "created_at"
         @base_scope = add_time_condition_to_scope(
                         @base_scope,
                         "resource_usage",
-                        params[:data][:absolute_or_relative_from]   == "absolute" ? true : false,
-                        params[:data][:absolute_or_relative_to]     == "absolute" ? true : false,
-                        params[:data][:absolute_from],
-                        params[:data][:absolute_to],
-                        params[:data][:relative_from],
-                        params[:data][:relative_to],
+                        params[:date_range][:absolute_or_relative_from]   == "absolute" ? true : false,
+                        params[:date_range][:absolute_or_relative_to]     == "absolute" ? true : false,
+                        params[:date_range][:absolute_from],
+                        params[:date_range][:absolute_to],
+                        params[:date_range][:relative_from],
+                        params[:date_range][:relative_to],
                         date_attribute
                       )
       end

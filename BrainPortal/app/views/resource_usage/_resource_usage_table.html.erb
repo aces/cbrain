@@ -102,32 +102,37 @@
   </p>
   <% end %>
 </fieldset>
+
+<p>
+
 <fieldset>
+
   <legend>
     Additional filtering
-    <%= show_hide_toggle "(show/hide)", ".filtration", :class => 'task_help_link', :slide_effect => true, :slide_duration => 'fast'  %>
+    <%= show_hide_toggle "(show/hide)", ".filtering", :class => 'task_help_link', :slide_effect => true, :slide_duration => 'fast'  %>
   </legend>
 
 
   <%
-    is_hidden = (params[:data] && params[:data][:created_at].present?) ||
-                 params[:deleted_items].present?                       ||
-                (params[:positive_file_delta].present? && @maintype =~ /Userfile/) ||
-                (params[:negative_file_delta].present? && @maintype =~ /Userfile/) ?
-                 "" : "hidden"
+    is_hidden = true
+
+    is_hidden = false if (params[:date_range] && params[:date_range][:created_at].present?)
+    is_hidden = false if  params[:deleted_items].present?
+    is_hidden = false if (params[:positive_file_delta].present? && @maintype =~ /Userfile/)
+    is_hidden = false if (params[:negative_file_delta].present? && @maintype =~ /Userfile/)
   %>
 
-  <div class="simple filtration <%= is_hidden %>">
+  <div class="simple filtering <%= is_hidden ? "hidden" : "" %>">
     <%= form_tag({ :action  => :index }, :method => :get) do %>
 
-      <table style="border:0px">
-        <tr  style="border:0px">
-          <td rowspan=3 class="left" style="border:0px">
-            <%= date_range_panel(params[:data] || {}, "data", :date_attributes => {:created_at => "By creation date"}) %>
+      <table style="border: none">
+        <tr  style="border: none">
+          <td rowspan=3 class="left" style="border: none">
+            <%= date_range_panel(params[:date_range] || {}, "data", :date_attributes => {:created_at => "By creation date"}) %>
           </td>
 
-          <tr style="border:0px">
-            <td class ="left" style="border:0px">
+          <tr style="border: none">
+            <td rowspan=3 class ="left" style="border: none">
               <%= check_box_tag(:deleted_items, "1", params["deleted_items"]) %>
               <%= label_tag(:deleted_items, "Only deleted items.") %>
               <br>
@@ -143,9 +148,12 @@
           <tr>
         </tr>
       </table>
+
     <%= submit_tag 'Refresh Table' %>
+
     <% end %>
   </div>
+
 </fieldset>
 
 <%=

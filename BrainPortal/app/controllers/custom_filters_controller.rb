@@ -112,7 +112,7 @@ class CustomFiltersController < ApplicationController
     custom_filter_attr = params.require(:custom_filter).permit(:name, :user_id)
 
     # A way to allow arbitrary value in data
-    data_allowed_keys  = filter_class::DATA_PARAMS
+    data_allowed_keys  = filter_class::WHITELIST_FILTERING_PARAMS
     data_allowed_keys_symbols = data_allowed_keys.select { |x| x.is_a?(Symbol) }
     data_allowed_keys_hashes  = data_allowed_keys - data_allowed_keys_symbols
     data_allowed_keys_hashes  = data_allowed_keys_hashes.inject({}) { |merge,h| merge.merge(h) }

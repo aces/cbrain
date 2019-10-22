@@ -88,15 +88,15 @@ class CustomFilter < ApplicationRecord
   ##########################################
 
   # A Custom filter have a hash 'data' containing the filter parameters
-  # The DATA_PARAMS array is used to whitelist these params.
+  # The WHITELIST_FILTERING_PARAMS array is used to whitelist these params.
   # This here defines just a set of generic attributes that together
   # implement filtering by created_at or updated_at.
   #
   # This structure must match the argument syntax of
   # the permit() method of ActionController::Parameters
-  # Subclasses must provide their own constant DATA_PARAMS
+  # Subclasses must provide their own constant WHITELIST_FILTERING_PARAMS
   # with added values.
-  DATA_PARAMS =
+  WHITELIST_FILTERING_PARAMS =
   [
     # Attributes for filtering, available for all subclasses
     :date_attribute,
@@ -227,19 +227,17 @@ class CustomFilter < ApplicationRecord
 
   protected
 
-  # Utility to merge a set of DATA_PARAMS
+  # Utility to merge a set of WHITELIST_FILTERING_PARAMS
   # with the ones in the superclass. To
   # be invoked by a subclass.
-  def self.merge_data_params(extra) #:nodoc:
-    (DATA_PARAMS + extra).freeze
+  def self.merge_whitelist_filtering_params(extra) #:nodoc:
+    (WHITELIST_FILTERING_PARAMS + extra).freeze
   end
 
   # Define a getter and setter method for each keys
   # in the filtered attributes list.
-  def self.data_setter_and_getter(data_params=DATA_PARAMS)
-    data_params.map {|x| x.is_a?(Hash) ? x.keys : x}.flatten.each do |param|
-
-      #puts_red "Class #{self} building accessor methods for #{param}"
+  def self.data_setter_and_getter(whitelist_filtering_params=WHITELIST_FILTERING_PARAMS)
+    whitelist_filtering_params.map {|x| x.is_a?(Hash) ? x.keys : x}.flatten.each do |param|
 
       # Define getter method
       define_method("data_#{param}") do
@@ -254,6 +252,6 @@ class CustomFilter < ApplicationRecord
     end
   end
 
-  self.data_setter_and_getter(DATA_PARAMS) # see at end of file!
+  self.data_setter_and_getter(WHITELIST_FILTERING_PARAMS)
 
 end

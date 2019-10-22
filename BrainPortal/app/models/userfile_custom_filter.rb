@@ -39,7 +39,7 @@ class UserfileCustomFilter < CustomFilter
 
   # This structure must match the argument syntax of
   # the permit() method of ActionController::Parameters
-  USERFILES_DATA_PARAMS =
+  WHITELIST_USERFILES_FILTERING_PARAMS =
     [
       # Single value
       :file_name_type,
@@ -59,9 +59,9 @@ class UserfileCustomFilter < CustomFilter
         :tag_ids           => [],
       }
     ]
-  self.data_setter_and_getter(USERFILES_DATA_PARAMS)
+  self.data_setter_and_getter(WHITELIST_USERFILES_FILTERING_PARAMS)
 
-  DATA_PARAMS = merge_data_params(USERFILES_DATA_PARAMS) # merge from superclasses too
+  WHITELIST_FILTERING_PARAMS = merge_whitelist_filtering_params(WHITELIST_USERFILES_FILTERING_PARAMS) # merge from superclasses too
 
 
 
