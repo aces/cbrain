@@ -107,9 +107,11 @@ class ResourceUsageController < ApplicationController
       end
     end
 
-    date_range = params[:date_range]
-    if date_range
-      date_attribute = date_range[:date_attribute]
+
+    date_range     = params[:date_range]         || {}
+    date_attribute = date_range[:date_attribute]
+
+    if date_attribute == "created_at"
 
       # date_filtering verification
       error_mess = check_filter_date(date_attribute,
@@ -117,20 +119,15 @@ class ResourceUsageController < ApplicationController
                                      date_range["absolute_from"], date_range["absolute_to"],
                                      date_range["relative_from"], date_range["relative_to"])
 
-      if !error_mess
-        if date_attribute == "created_at"
-          @base_scope = add_time_condition_to_scope(
-                          @base_scope,
-                          "resource_usage",
-                          date_range[:absolute_or_relative_from]   == "absolute" ? true : false,
-                          date_range[:absolute_or_relative_to]     == "absolute" ? true : false,
-                          date_range[:absolute_from],
-                          date_range[:absolute_to],
-                          date_range[:relative_from],
-                          date_range[:relative_to],
-                          date_attribute
-                        )
-        end
+      if error_mess.blank?
+        @base_scope = add_time_condition_to_scope(
+                        @base_scope,
+                        "resource_usage",
+                        date_range[:absolute_or_relative_from]   == "absolute" ? true : false,
+                        date_range[:absolute_or_relative_to]     == "absolute" ? true : false,
+                        date_range[:absolute_from], date_range[:absolute_to],
+                        date_range[:relative_from], date_range[:relative_to],
+                        date_attribute)
       end
     end
 
