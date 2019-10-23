@@ -116,6 +116,32 @@
 
   <% end %>
 
+  <%= show_table(@user, :as => :user, :header => 'Zenodo Publishing', :edit_condition => edit_permission?(@user)) do |t| %>
+
+    <% t.edit_cell(:zenodo_sandbox_token,
+                   :header     => 'Zenodo Sandbox Token',
+                   :content    => (@user.zenodo_sandbox_token.blank? ? "" : ("*" * 60)),
+                   :show_width => 2 ) do |f| %>
+      <%= f.password_field :zenodo_sandbox_token, :size => 62 %><br>
+      <div class="wide_field_explanation">
+        This token can be used for creating <strong>temporary/test</strong> Zenodo data deposits.<p>
+        You can create a token at <a href="https://sandbox.zenodo.org/account/settings/applications/" target="_blank">https://sandbox.zenodo.org/account/settings/applications/</a>.
+      </div>
+    <% end %>
+
+    <% t.edit_cell(:zenodo_main_token,
+                   :header     => 'Zenodo Official Token',
+                   :content    => (@user.zenodo_main_token.blank? ? "" : ("*" * 60)),
+                   :show_width => 2 ) do |f| %>
+      <%= f.password_field :zenodo_main_token, :size => 62 %>
+      <div class="wide_field_explanation">
+        This token can be used for creating <strong>real, official and permanent</strong> Zenodo data deposits.<p>
+        You can create a token at <a href="https://zenodo.org/account/settings/applications/" target="_blank">https://zenodo.org/account/settings/applications/</a>.
+      </div>
+    <% end %>
+
+  <% end %>
+
   <% if @user.signed_license_agreements.present? %>
     <%= show_table(@user, :as => :user, :header => "License Agreements", :width => 3) do |t| %>
       <% @user.signed_license_agreements.each  do |la| %>

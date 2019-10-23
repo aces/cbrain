@@ -136,7 +136,12 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :tasks,           :except => [ :destroy ] do
+  resources :tasks, :except => [ :destroy ] do
+    member do
+      get  'zenodo'
+      post 'create_zenodo'
+      post 'reset_zenodo'
+    end
     collection do
       post 'new', :as => 'new', :via => 'new'
       post 'operation'

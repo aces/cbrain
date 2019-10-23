@@ -220,6 +220,10 @@ class CbrainTask::Diagnostics < PortalTask
     return errors.empty?
   end
 
+  def zenodo_outputfile_ids #:nodoc:
+    [ params[:report_id].presence ].compact
+  end
+
   private
 
   def add_errors_to_check_field(message) #:nodoc:

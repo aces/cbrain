@@ -1,0 +1,40 @@
+
+<%= form_tag(create_zenodo_task_path(@task.id), :method => :post) do %>
+
+  <fieldset>
+    <legend>Basic Deposit Information</legend>
+
+    <label for="zenodo_zsite">Select which of your Zenodo token to use:</label>
+    <%= select_tag 'zsite', options_for_select(
+          [
+            [ 'Sandbox', 'sandbox', :disabled => current_user.zenodo_sandbox_token.blank? ],
+            [ 'Main',    'main',    :disabled => current_user.zenodo_main_token.blank?    ],
+          ]
+        )
+    %>
+    <p>
+
+    <label for="zenodo_deposit_metadata_title">Title:</label>
+    <%= text_field_tag 'zenodo_deposit_metadata[title]', @zenodo_metadata.title, :size => 30 %>
+    <p>
+
+    <label for="zenodo_deposit_metadata_description">Description:</label><br>
+    <%= text_area_tag 'zenodo_deposit_metadata[description]', @zenodo_metadata.description, :rows => 5, :cols => 40 %>
+    <p>
+
+    <label for="zenodo_deposit_metadata_creators">Creators</label><br>
+    <%= text_field_tag 'zenodo_deposit_metadata[creators][][name]', @zenodo_metadata.creators[0].try(:name), :size => 30, :id => 'zenodo_deposit_metadata_creators' %><br>
+    <%= text_field_tag 'zenodo_deposit_metadata[creators][][name]', @zenodo_metadata.creators[1].try(:name), :size => 30 %><br>
+    <%= text_field_tag 'zenodo_deposit_metadata[creators][][name]', @zenodo_metadata.creators[2].try(:name), :size => 30 %><br>
+    <div class="wide_field_explanation">
+      Should be in <em>lastname, firstname</em> format.
+      You can add even more creators later on, once the deposit is created.
+    </div>
+
+    <p>
+    <%= submit_tag 'Create Deposit' %>
+
+  </fieldset>
+
+<% end %>
+

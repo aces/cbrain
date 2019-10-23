@@ -140,6 +140,21 @@
       <%= immutable_icon %>
     <% end %>
 
+    <% t.cell("Zenodo Publication") do %>
+      <% if @userfile.zenodo_doi.present? %>
+        <% if @userfile.zenodo_doi.starts_with?( ZenodoHelper::ZenodoSandboxDOIPrefix ) %>
+          Published: <%= link_to_deposit(@userfile.zenodo_deposit_id) %>
+        <% else %>
+          Published: <%= link_to_doi(@userfile.zenodo_doi) %>
+        <% end %>
+      <% elsif @userfile.zenodo_deposit_id.present? %>
+          In progress: <%= link_to_deposit(@userfile.zenodo_deposit_id) %>
+      <% else %>
+          None.
+      <% end %>
+    <% end %>
+    <% t.empty_cell %>
+
     <% if @userfile.parent %>
       <% t.cell("Parent") { link_to_userfile_if_accessible(@userfile.parent) } %>
       <% t.empty_cell %>

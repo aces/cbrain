@@ -91,6 +91,10 @@ class CbrainTask::BashScriptor < PortalTask
     return task_list
   end
 
+  def zenodo_outputfile_ids #:nodoc:
+    params[:output_userfile_ids] || []
+  end
+
   def untouchable_params_attributes #:nodoc:
     {
       :output_userfile_ids => true

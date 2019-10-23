@@ -1,0 +1,176 @@
+
+<% title(@task.name + ' Zenodo Publishing Status') %>
+
+<div class="menu_bar">
+  <%= link_to 'Task Info', task_path(@task.id), :class => "button menu_button" %>
+  <% if @task.zenodo_deposit_id.present? && @task.zenodo_doi.blank? %>
+    <%= link_to 'Refresh', zenodo_task_path(@task), :class => "button menu_button" %>
+  <% end %>
+</div>
+<p>
+
+<%
+  step_1_status = step_2_status = step_3_status = "zenodo_incomplete"
+
+  step_1_status = "zenodo_complete"   if @task.zenodo_deposit_id.present?
+  if step_1_status == "zenodo_complete"
+    step_2_status = "zenodo_inprogress" if @zenodo_userfiles.any? { |u| u.zenodo_deposit_id == @task.zenodo_deposit_id }
+    step_2_status = "zenodo_complete"   if @zenodo_userfiles.all? { |u| u.zenodo_deposit_id == @task.zenodo_deposit_id }
+  end
+
+  step_3_status = "zenodo_complete" if @task.zenodo_doi.present?
+%>
+
+<% status_label = lambda do |hklass, message| %>
+    Status:
+    <% if hklass =~ /_complete/ %>
+      <%= green_checkmark_icon %> <%= message || "complete" %>
+    <% elsif hklass =~ /_inprogress/ %>
+      <%= orange_uparrow_icon %>  <%= message || "in progress" %>
+    <% elsif hklass =~ /_incomplete/ %>
+      <%= red_x_cross_icon %>     <%= message || "incomplete" %>
+    <% else %>
+      <span class="warning">UNKNOWN!</span>
+    <% end %>
+<% end %>
+
+<%
+ #######################################
+ # STEP 1: PREPARE DEPOSIT
+ #######################################
+%>
+
+<fieldset class="<%= step_1_status %>">
+  <legend>Step 1: creation of the deposit</legend>
+  <%= status_label.(step_1_status, nil) %>
+  <p>
+  <% if step_1_status == "zenodo_complete" %>
+    Assuming you are the author, you can review and edit the deposit
+    at this link: <%= link_to "Zenodo Deposit Editor", url_for_deposit(@task.zenodo_deposit_id) %>
+  <% else %>
+    Proceed to fill the form below to create the initial deposit.
+    <p>
+    You will be able to edit the content of the form at any time
+    later on, directly on Zenodo's web site.
+  <% end %>
+</fieldset>
+
+<p>
+
+<%
+ #######################################
+ # STEP 2: UPLOAD
+ #######################################
+%>
+
+<fieldset class="<%= step_2_status %>">
+  <legend>Step 2: upload of data files</legend>
+  <%= status_label.(step_2_status, nil) %>
+  <p>
+  <ul>
+  <% @zenodo_userfiles.each do |userfile| %>
+    <li>
+      <% if userfile %>
+        <% if userfile.zenodo_doi.present? %>
+          <% if userfile.zenodo_doi == @task.zenodo_doi %>
+            <%= status_label.("zenodo_complete", "Published:") %>
+          <% else %>
+            <span class="warning">Warning: already published:</span> in <%= link_to_zenodo_doi(userfile.zenodo_doi) %>
+          <% end %>
+        <% elsif userfile.zenodo_deposit_id.present? %>
+          <% if userfile.zenodo_deposit_id == @task.zenodo_deposit_id %>
+            <%= status_label.("zenodo_complete", "Uploaded:") %>
+          <% else %>
+            <%= status_label.("zenodo_incomplete", "Conflict:") %>
+          <% end %>
+        <% else %>
+          <%= status_label.("zenodo_inprogress", "Scheduled for upload:") %>
+        <% end %>
+      <% else %>
+        <%= status_label.("zenodo_incomplete", "Will be ignored:") %>
+      <% end %>
+      <%= link_to_userfile_if_accessible(userfile) %>
+      <% if userfile %>
+        (<%= colored_pretty_size(userfile.size) %>)
+      <% end %>
+    </li>
+  <% end %>
+  </ul>
+  <% if step_1_status != "zenodo_complete" %>
+    <p>
+    Waiting for the initial deposit to be created in step 1.
+  <% elsif step_2_status != "zenodo_complete" %>
+    <p>
+    It can take some time to transfer the content of all the files to Zenodo.
+  <% end %>
+</fieldset>
+
+<p>
+
+<%
+ #######################################
+ # STEP 3: PUBLISH
+ #######################################
+%>
+
+<fieldset class="<%= step_3_status %>">
+  <legend>Step 3: publishing the deposit</legend>
+  <%= status_label.(step_3_status, nil) %>
+  <p>
+  <% if step_1_status == "zenodo_complete" && step_2_status == "zenodo_complete" %>
+    <% if @task.zenodo_doi.present? %>
+      This task's outputs have been published as DOI <%= @task.zenodo_doi %>
+      <p>
+      <%= link_to_zenodo_doi(@task.zenodo_doi) %>
+      <p>
+      You can edit further the deposit here: <%= link_to_deposit(@task.zenodo_deposit_id) %>
+    <% else %>
+      You can edit further the deposit here and click the <strong>Publish</strong> button here: <%= link_to_deposit(@task.zenodo_deposit_id) %>
+      <p>
+      Once the deposit has been published, please return to this page right here (or just <%= link_to "refresh this page", zenodo_task_path(@task) %>) so that the DOI of the deposit can be recorded in CBRAIN.
+    <% end %>
+  <% else %>
+    Waiting for steps 1 and 2.
+  <% end %>
+</fieldset>
+
+<%
+ #######################################
+ # OPTIONAL: RESET DEPOSIT
+ #######################################
+%>
+
+<% if @task.zenodo_deposit_id.present? &&
+      (@task.zenodo_doi.blank? || @task.zenodo_doi.starts_with?(ZenodoHelper::ZenodoSandboxDOIPrefix)) %>
+  <p>
+
+  <fieldset class="zenodo_incomplete">
+    <legend>Be aware: this deposit is in the <strong>Zenodo Sandbox</strong></legend>
+    You can erase all recorded information about the Zenodo deposit and publication
+    state in CBRAIN, in order to start over or publish in the main Zenodo site.
+    <p>
+    Doing this will not erase anything on Zenodo <em>that has been published</em>,
+    but will erase any unpublished deposition and uploads.
+    <p>
+    <%= link_to 'Reset Deposition', reset_zenodo_task_path(@task.id),
+          {
+            :class  => "button menu_button",
+            :method => :post,
+            :data   => {
+              :confirm => "Are you sure you want to reset the deposition information for this task?"
+            },
+          }
+    %>
+  </fieldset>
+<% end %>
+
+<%
+ #######################################
+ # Form
+ #######################################
+%>
+
+<% if @task.zenodo_deposit_id.blank? %>
+  <%= render :partial => 'zenodo_deposit_form' %>
+<% end %>
+
