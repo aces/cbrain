@@ -17,7 +17,7 @@
 # will change the key part to
 #   Some_name = some value
 function underscore_keys() {
-  perl -pe 's/^\s*(.*?\S)\s*[:=]/ $x=$1; $x =~ s#\s+#_#g; "$x="/e; $_="" if /=\s*$|^\s*$/'
+  perl -pe 's/^\s*(.*?\S)\s*[:=]/ $x=$1; $x =~ s#\s+#_#g; $x =~ s#[^\w\.\-]+##g; "$x="/e; $_="" if /=\s*$|^\s*$/'
 }
 
 # Header
@@ -32,6 +32,7 @@ echo ""
 
 # Internal version tracking
 echo "cbrain_runtime_info_version = $version"
+echo "cbrain_capture_date = $(date '+%Y-%m-%dT%H:%M:%S%z')"
 
 # Basic UNIX stuff
 echo "hostname =" $(hostname)

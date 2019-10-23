@@ -220,16 +220,6 @@ class CbrainTask::Diagnostics < PortalTask
     return errors.empty?
   end
 
-  # Maybe we could create a general version in PortalTask?
-  def base_zenodo_deposit #:nodoc:
-    ZenodoClient::Deposit.new(
-      :metadata => ZenodoClient::DepositMetadata.new(
-          :title       => 'CBRAIN Diagnostics Task Output',
-          :description => "Report produced by diagnostics task #{self.bname_tid}",
-        )
-    )
-  end
-
   def zenodo_outputfile_ids #:nodoc:
     [ params[:report_id].presence ].compact
   end

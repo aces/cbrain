@@ -123,9 +123,11 @@
       <p>
       <%= link_to_zenodo_doi(@task.zenodo_doi) %>
       <p>
-      You can edit further the record here: <%= link_to_deposit(@task.zenodo_deposit_id) %>
+      You can edit further the deposit here: <%= link_to_deposit(@task.zenodo_deposit_id) %>
     <% else %>
-      You can edit further the record here and click the <strong>Publish</strong> button here: <%= link_to_deposit(@task.zenodo_deposit_id) %>
+      You can edit further the deposit here and click the <strong>Publish</strong> button here: <%= link_to_deposit(@task.zenodo_deposit_id) %>
+      <p>
+      Once the deposit has been published, please return to this page right here (or just <%= link_to "refresh this page", zenodo_task_path(@task) %>) so that the DOI of the deposit can be recorded in CBRAIN.
     <% end %>
   <% else %>
     Waiting for steps 1 and 2.

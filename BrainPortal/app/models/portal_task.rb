@@ -840,9 +840,10 @@ class PortalTask < CbrainTask
   def base_zenodo_deposit #:nodoc:
     ZenodoClient::Deposit.new(
       :metadata => ZenodoClient::DepositMetadata.new(
-          :title       => "Outputs of #{self.pretty_name}-#{self.id}",
-          :description => "Files and meta data produced by CBRAIN task #{self.pretty_name}@#{self.bname_tid}",
-        )
+        :title       => "Outputs of #{self.pretty_name}-#{self.id}",
+        :description => ("Files and meta data for CBRAIN task #{self.pretty_name}@#{self.bname_tid}" +
+                         "\n\n#{self.description}").strip,
+      )
     )
   end
 

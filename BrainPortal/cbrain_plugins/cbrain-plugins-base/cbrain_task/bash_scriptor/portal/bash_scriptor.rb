@@ -91,15 +91,6 @@ class CbrainTask::BashScriptor < PortalTask
     return task_list
   end
 
-  def base_zenodo_deposit #:nodoc:
-    ZenodoClient::Deposit.new(
-      :metadata => ZenodoClient::DepositMetadata.new(
-        :title       => 'CBRAIN BashScriptor Task Outputs',
-        :description => "Outputs of task #{self.bname_tid}",
-      )
-    )
-  end
-
   def zenodo_outputfile_ids #:nodoc:
     params[:output_userfile_ids] || []
   end

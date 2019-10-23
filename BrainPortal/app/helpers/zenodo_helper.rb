@@ -32,9 +32,6 @@ module ZenodoHelper
   def link_to_zenodo_doi(doi)
     link_to "<img src=\"https://zenodo.org/badge/DOI/#{doi}.svg\" alt=\"DOI\">".html_safe,
             "https://doi.org/#{doi}", :target => '_blank'
-    #("<a href=\"https://doi.org/#{doi}\">" +
-    #   "<img src=\"https://zenodo.org/badge/DOI/#{doi}.svg\" alt=\"DOI\">" +
-    # "</a>").html_safe
   end
 
   # Creates a pretty link to zenodo deposit, by ID. The

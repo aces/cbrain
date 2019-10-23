@@ -814,7 +814,7 @@ class TasksController < ApplicationController
     # the deposits are on the zenodo sandbox (any number of times)
     # or the main zenodo (only once). This is tracked by a variable
     # 'zsite' with values of 'main' or 'sandbox', and it usually
-    # prefixed the value of the deposit ID in the CbrainTask and Userfile
+    # prefixes the value of the deposit ID in the CbrainTask and Userfile
     # attribute :zenodo_deposit_id . See @combined_dep_id above.
 
     # For steps 2, 3 and 4: find the zenodo deposit from Zenodo
@@ -902,9 +902,12 @@ class TasksController < ApplicationController
       @zenodo_metadata.related_identifiers  += related
     end
 
-    # Validate here; TODO
-    if (false) # validation fails
-      flash.now[:error] = 'message'
+    # Validate the deposit structure.
+    # We can't validate the metadata struct because even though
+    # many fields are mandatory, they can be left blank during the
+    # initial creation.
+    if (! @zenodo_deposit.valid?)
+      flash.now[:error] = "The deposit information seems invalid."
       render :zenodo
       return
     end
@@ -1103,16 +1106,7 @@ class TasksController < ApplicationController
     content_name = userfile.name + ".tar.gz"                   if is_col
 
     # Upload
-    filesapi = ZenodoClient::FilesApi.new
-    file_h   = File.open(content_path,"r:BINARY")
-    dep_file = filesapi.create_file(deposit.id, file_h, content_name)
-    file_h.close rescue true # hope it's ok
-
-    # Rename?
-    if dep_file.filename != content_name
-      dep_file.filename = content_name
-      filesapi.update_file(deposit.id, dep_file.id, dep_file)
-    end
+    dep_file = upload_file_content_to_deposit(deposit.id, content_path, content_name)
 
     # Log info in userfile
     zsite = deposit.links[:self].to_s =~ /sandbox/ ? 'sandbox' : 'main' # one way to guess
@@ -1131,16 +1125,7 @@ class TasksController < ApplicationController
     File.open(content_path, "w:BINARY") { |fh| fh.write(text) }
 
     # Upload
-    filesapi = ZenodoClient::FilesApi.new
-    file_h   = File.open(content_path,"r:BINARY")
-    dep_file = filesapi.create_file(deposit.id, file_h, filename)
-    file_h.close rescue true # hope it's ok
-
-    # Rename?
-    if dep_file.filename != filename
-      dep_file.filename = filename
-      filesapi.update_file(deposit.id, dep_file.id, dep_file)
-    end
+    upload_file_content_to_deposit(deposit.id, content_path, filename)
 
     return nil # it means all is OK
   rescue => ex
@@ -1156,6 +1141,22 @@ class TasksController < ApplicationController
     ret     = system "cd #{cache.parent.to_s.bash_escape} && tar -czf #{tmpbase} #{filecollection.name.bash_escape}"
     cb_error "Cannot create tmp tar file for FileCollection ##{filecollection.id}" unless ret
     tmpbase
+  end
+
+  def upload_file_content_to_deposit(deposit_id, file_path, filename) #:nodoc:
+    # Upload
+    filesapi = ZenodoClient::FilesApi.new
+    file_h   = File.open(file_path,"r:BINARY")
+    dep_file = filesapi.create_file(deposit_id, file_h, filename)
+    file_h.close rescue true # hope it's ok
+
+    # Rename? Sometimes necessary
+    if dep_file.filename != filename
+      dep_file.filename = filename
+      filesapi.update_file(deposit_id, dep_file.id, dep_file)
+    end
+
+    dep_file
   end
 
 
