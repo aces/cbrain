@@ -218,6 +218,27 @@ class ToolConfig < ApplicationRecord
     script
   end
 
+  # Generates a partial BASH script that unitializes
+  # what the script_prologue did. Unlike for to_bash_prologue,
+  # it doesn't undo the settings of the environment variables.
+  def to_bash_epilogue
+    epilogue = self.script_epilogue || ""
+    script = <<-SCRIPT_HEADER
+#---------------------------------------------------
+# Configuration: # #{self.id} #{self.version_name}
+# Script Epilogue:#{epilogue.blank? ? " (NONE SUPPLIED)" : ""}
+#---------------------------------------------------
+
+    SCRIPT_HEADER
+    epilogue.gsub!(/\r\n/,"\n")
+    epilogue.gsub!(/\r/,"\n")
+    epilogue += "\n" unless epilogue =~ /\n\z/
+
+    script += epilogue
+
+    script
+  end
+
   # Returns true if the object has no environment variables
   # and its script is blank or only contains blank lines or
   # comments.
@@ -234,7 +255,7 @@ class ToolConfig < ApplicationRecord
     return false if self.cloud_vm_boot_timeout.present?
     return false if self.cloud_vm_ssh_tunnel_port.present?
     return false if (self.env_array || []).any?(&:present?)
-    text = self.script_prologue
+    text = self.script_prologue.to_s + "\n" + self.script_epilogue.to_s
     return true if text.blank?
     text_array = text.split(/\n/).reject { |line| line =~ /\A\s*#|\A\s*\z/ }
     return true if text_array.size == 0
