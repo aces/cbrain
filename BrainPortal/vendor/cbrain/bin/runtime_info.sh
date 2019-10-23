@@ -20,13 +20,19 @@ function underscore_keys() {
   perl -pe 's/^\s*(.*?\S)\s*[:=]/ $x=$1; $x =~ s#\s+#_#g; $x =~ s#[^\w\.\-]+##g; "$x="/e; $_="" if /=\s*$|^\s*$/'
 }
 
-# Header
+# Header info
 basename=$(basename $0)
-version=$(git log -n1 --format="%h %ai %an" $0 2>/dev/null)
+
+# For git log to work, we need to temporarily cd
+pushd $(dirname $0) >/dev/null
+version=$(git log -n1 --format="%h by %an at %ai" "$basename" 2>/dev/null)
+popd >/dev/null
+
+# Pretty header
 echo ""
 echo "#"
 echo "# Captured run-time information generated automatically"
-echo "# by $basename $version"
+echo "# by $basename rev $version"
 echo "#"
 echo ""
 
