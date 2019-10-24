@@ -400,8 +400,6 @@ describe "Bourreau Boutiques Tests" do
 
     # Clean up after each test
     after(:each) do
-      # Delete any generated output files
-      destroyOutputFiles
       # Also need to get rid of the (simulated) exit file
       File.delete( @simExitFile ) if File.exists?( @simExitFile )
       # Destroy the registered userfiles and the data_provider, so as not to affect downstream tests
@@ -409,6 +407,8 @@ describe "Bourreau Boutiques Tests" do
       Userfile.all.each{ |uf| uf.destroy }
       # Return to rails base dir
       Dir.chdir PWD
+      # Delete any generated output files
+      destroyOutputFiles
     end
 
     # Test that the generated Boutiques task can handle output file saving and renaming
@@ -443,7 +443,9 @@ describe "Bourreau Boutiques Tests" do
         # Ensure that saving the results occurs error-free
         expect( @task.save_results ).to be true
         # Ensure that the file now exists in the data_provider
-        expect( @task.userfile_exists(@userfileClass, @reqOutfileProps) ).to be true
+        # Output name now contains the run_id inside it...
+        newname = "r-#{@task.run_id}.txt"
+        expect( @task.userfile_exists(@userfileClass, { :name => newname, :data_provider_id => @provider.id}) ).to be true
       end
 
       # Check that, when a required output file is not present, the task fails gracefully
@@ -467,10 +469,12 @@ describe "Bourreau Boutiques Tests" do
         # Attempt to save both the optional and required output files. Should succeed.
         expect( @task.save_results ).to be true
         # Both files should exist in the data_provider
-        expect( @task.userfile_exists(@userfileClass, @reqOutfileProps) ).to be true
-        expect( @task.userfile_exists(@optFileClass,  {:name => @optOutFileName, :data_provider_id => @provider.id}) ).to be true
+        newReqName = "r-#{@task.run_id}.txt"
+        newOptName = "o-#{@task.run_id}.txt"
+        expect( @task.userfile_exists(@userfileClass, {:name => newReqName, :data_provider_id => @provider.id}) ).to be true
+        expect( @task.userfile_exists(@optFileClass,  {:name => newOptName, :data_provider_id => @provider.id}) ).to be true
         # The log should not have warned about being unable to find the optional output file
-        expect( @task.getlog.include?( OptOutFileNotFoundWarning + @optOutFileName ) ).to be false
+        expect( @task.getlog.include?( OptOutFileNotFoundWarning ) ).to be false
       end
 
       # Check that there is no error when specified optional output files are not found
@@ -483,41 +487,17 @@ describe "Bourreau Boutiques Tests" do
         # Attempt to save both the optional and required output files. Should succeed (in terms of return value).
         expect( @task.save_results ).to be true
         # Only the required file should exist in the data_provider
-        expect( @task.userfile_exists(@userfileClass, @reqOutfileProps) ).to be true
-        expect( @task.userfile_exists(@optFileClass,  {:name => @optOutFileName, :data_provider_id => @provider.id}) ).to be false
+        newReqName = "r-#{@task.run_id}.txt"
+        newOptName = "o-#{@task.run_id}.txt"
+        expect( @task.userfile_exists(@userfileClass, {:name => newReqName, :data_provider_id => @provider.id}) ).to be true
+        expect( @task.userfile_exists(@optFileClass,  {:name => newOptName, :data_provider_id => @provider.id}) ).to be false
         # Check that a notice was logged to warn of the missing optional output file
-        expect( @task.getlog.include?( OptOutFileNotFoundWarning + @optOutFileName ) ).to be true
+        expect( @task.getlog.include?( OptOutFileNotFoundWarning ) ).to be true
       end
 
       # Ensure the files do not survive between tests
       it 'should destroy results files between tests' do
         expect( @task.userfile_exists(@userfileClass, @reqOutfileProps) ).to be false
-      end
-
-      # This test ensures that when a naming collision occurs, the second file is renamed appropriately
-      it "renames results files" do
-        # First ensure the file exists on the system
-        expect( File.exists? @fname_base ).to be true
-        # However, the file must not already exist in the data_provider
-        expect( @task.userfile_exists(@userfileClass, @reqOutfileProps) ).to be false
-        # Saving the output files via the generated task should occur error-free
-        expect( @task.save_results ).to be true
-        # The file should now exist in the data_provider
-        expect( @task.userfile_exists(@userfileClass, @reqOutfileProps) ).to be true
-        # Create a new task and have it save results as well (with the same name for the output file)
-        task2        = CbrainTask::BoutiquesTest.new
-        task2.params = {:ro => @fname_base, :interface_userfile_ids => [Userfile.all.first.id]}
-        task2.user_id, task2.group_id = UID, GID
-        # Check that there are no files that match the renamed filename pattern
-        renamedFileRegex = /^#{@fname_base.split(".")[0]}-.*-\d{9}\.txt$/
-        expect( Userfile.all.any? { |f| (f.name.to_s =~ renamedFileRegex) == 0 } ).to be false
-        # Saving the second output file should be error free
-        expect( task2.save_results ).to be true
-        # Initial file should still be there with the correct, original name
-        expect( @task.userfile_exists(@userfileClass, @reqOutfileProps) ).to be true
-        expect( Userfile.where( :name => @fname_base ).first.nil? ).not_to be true
-        # New file should exist and have been renamed appropriately
-        expect( Userfile.all.one? { |f| (f.name.to_s =~ renamedFileRegex) == 0 } ).to be true
       end
 
     end # End output file handling tests

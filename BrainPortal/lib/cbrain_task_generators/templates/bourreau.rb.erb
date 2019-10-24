@@ -435,12 +435,12 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     ensure_exists = lambda do |path|
       return if File.exists?(path)
       self.addlog("Missing output file #{path}")
-      succeeded &&= false
+      succeeded = false
     end
     ensure_matches = lambda do |glob|
       return unless Dir.glob(glob).empty?
       self.addlog("No output files matching #{glob}")
-      succeeded &&= false
+      succeeded = false
     end
 
 %     required.select { |o| ! o['list'] }.each do |output|
@@ -477,38 +477,34 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
         # Note that, since the output may be optional, the process may still be successful
         unless path.present? && File.exists?(path)
           self.addlog("Unable to find optional output file: #{path}") if isOptional.(param)
+          succeeded = false if ! isOptional.(param)
           next
         end
 
         # Get name and filetype
         self.addlog("Attempting to save result file #{path}")
         name = File.basename(path)
-        userfile_class = Userfile.suggested_file_type(name)
+        userfile_class   = Userfile.suggested_file_type(name)
         userfile_class ||= ( File.directory?(path) ? FileCollection : SingleFile )
 
-        # If the file already exists, add a tag (task id + ns time) to the name
-        if userfile_exists(userfile_class, :name => name)
-          tag = '-' + (self.id.to_s || 'unk') + '-' + (9.times.map { rand(10) }.join)
-          newName = name + tag if name.rindex(".").nil?
-          ext = File.extname( name )
-          newName ||= name.gsub( /#{ext}\z/, "#{tag + ext}" )
-          self.addlog("File with same name found. Renaming to #{newName} before saving.")
-          name = newName
-        end
+        # Add a run ID to the file name, to make sure the file doesn't exist.
+        name.sub!(/(\.\w+)?\z/) { |ext| "-#{self.run_id}" + ext }
 
         # Save the file (possible overwrite if race condition)
         output = safe_userfile_find_or_new(userfile_class, :name => name)
 
         unless output.save
-          self.addlog("Failed to save file #{path}")
-          succeeded &&= false
+          messages = output.errors.full_messages.join("; ")
+          self.addlog("Failed to save file #{path} as #{name}")
+          self.addlog(messages) if messages.present?
+          succeeded = false
           next
         end
 
         output.cache_copy_from_local_file(path)
         params["_cbrain_output_#{param}"] ||= []
         params["_cbrain_output_#{param}"]  << output.id
-        self.addlog("Saved result file #{path}")
+        self.addlog("Saved result file #{name}")
 %   if (single_file = files.first if files.count == 1 && ! files.first['list'])
 
         # As all output files were generated from a single input file,
