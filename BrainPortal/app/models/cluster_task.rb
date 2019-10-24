@@ -604,11 +604,20 @@ class ClusterTask < CbrainTask
 
     # Build script
     script  = ""
+    # Add prologues in specialization order
     script += bourreau_glob_config.to_bash_prologue if bourreau_glob_config
     script += tool_glob_config.to_bash_prologue     if tool_glob_config
     script += tool_config.to_bash_prologue          if tool_config
+    # Add CBRAIN special inits
     script += self.supplemental_cbrain_tool_config_init
+    # Add the command
     script += "\n\n" + command + "\n\n"
+    # Add epilogues in reverse order
+    script += tool_config.to_bash_epilogue          if tool_config
+    script += tool_glob_config.to_bash_epilogue     if tool_glob_config
+    script += bourreau_glob_config.to_bash_epilogue if bourreau_glob_config
+
+    # Write the temp script
     File.open(scriptfile,"w") { |fh| fh.write(script) }
 
     # Execute and capture
@@ -1795,6 +1804,9 @@ class ClusterTask < CbrainTask
 # CbrainTask '#{self.name}' commands section
 #{command_script}
 
+#{tool_config          ? tool_config.to_bash_epilogue          : ""}
+#{tool_glob_config     ? tool_glob_config.to_bash_epilogue     : ""}
+#{bourreau_glob_config ? bourreau_glob_config.to_bash_epilogue : ""}
     SCIENCE_SCRIPT
     sciencefile = self.science_script_basename.to_s
     File.open(sciencefile,"w") do |io|

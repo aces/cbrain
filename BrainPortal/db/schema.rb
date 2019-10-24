@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20191002174842) do
+ActiveRecord::Schema.define(version: 20191023211144) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -378,6 +378,7 @@ ActiveRecord::Schema.define(version: 20191002174842) do
     t.integer  "bourreau_id"
     t.text     "env_array",                   limit: 65535
     t.text     "script_prologue",             limit: 65535
+    t.text     "script_epilogue",             limit: 65535
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "group_id"

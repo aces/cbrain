@@ -135,6 +135,26 @@
 
 
 
+  <%= show_table @tool_config, :form_helper => cf, :header => "BASH initialization epilogue",
+                 :edit_condition => check_role(:admin_user) do |t| %>
+
+    <% t.edit_cell(:script_epilogue, :content => full_description(@tool_config.script_epilogue),
+                   :no_header => true) do |f| %>
+      <%= f.text_area :script_epilogue, :cols => 80, :rows => 10 %>
+
+      <p>
+      <div class="wide_field_explanation">
+        This is a multi line partial BASH script, meant to match the prologue above. The code
+        here will be execute after the task's processing code.
+        Note that this script MUST be silent, as outputing text (like in <em>echo</em> statements)
+        could interfere with the proper processing of the tasks output.
+      </div>
+    <% end %>
+
+  <% end %>
+
+
+
   <%= show_table(@tool_config, :form_helper => cf, :header => "Container", :edit_condition => check_role(:admin_user)) do |t| %>
     <% t.edit_cell(:container_engine, :header => "Container engine") do |f| %>
       <%= f.select :container_engine, [["None", ''], ['Docker', 'Docker'], ['Singularity', 'Singularity']], :title => 'Container type' %>

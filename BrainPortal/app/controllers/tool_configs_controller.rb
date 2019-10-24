@@ -214,6 +214,7 @@ class ToolConfigsController < ApplicationController
          end
          @tool_config.env_array       += (other_tc.env_array || [])
          @tool_config.script_prologue  = "#{@tool_config.script_prologue}\n#{other_tc.script_prologue}"
+         @tool_config.script_epilogue  = "#{@tool_config.script_epilogue}\n#{other_tc.script_epilogue}"
          flash[:notice] = "Appended info from another Tool Config."
        else
          flash[:notice] = "No changes made."
@@ -233,7 +234,7 @@ class ToolConfigsController < ApplicationController
 
     respond_to do |format|
       new_record = @tool_config.new_record?
-      if @tool_config.save_with_logging(current_user, %w( env_array script_prologue ncpus extra_qsub_args
+      if @tool_config.save_with_logging(current_user, %w( env_array script_prologue script_epilogue ncpus extra_qsub_args
                                                           container_image_userfile_id containerhub_image_name
                                                           container_engine container_index_location ))
         if new_record
@@ -277,7 +278,7 @@ class ToolConfigsController < ApplicationController
 
   def tool_config_params #:nodoc:
     params.require(:tool_config).permit(
-      :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue,
+      :version_name, :description, :tool_id, :bourreau_id, :env_array, :script_prologue, :script_epilogue,
       :group_id, :ncpus, :container_image_userfile_id, :containerhub_image_name, :container_index_location,
       :container_engine, :extra_qsub_args,
       # The configuration of a tool in a VM managed by a

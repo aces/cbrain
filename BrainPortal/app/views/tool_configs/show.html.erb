@@ -59,16 +59,25 @@
   <p>
 
   <fieldset>
-    <legend>BASH script prologues</legend>
-    This section displays the full BASH initialization prologue script for the configuration shown above.
+    <legend>BASH scripts wrappers</legend>
+    This section displays the full BASH initialization prologue and epilogue script for the configuration shown above.
     <% if ( (@bourreau_glob_config ? 1 : 0) + (@tool_glob_config ? 1 : 0) + (@tool_config? 1 : 0) ) > 1 %>
-      It is preceded by the BASH prologues of other relevant global configurations.
+      It is surrounded by the BASH prologues or epilogues of other relevant global configurations.
     <% end %>
     The commands are shown in the order of execution.
     <p>
 
     <pre class="script_preview">
-      <%= @bourreau_glob_config.to_bash_prologue if @bourreau_glob_config %><%= @tool_glob_config.to_bash_prologue if @tool_glob_config %><%= @tool_local_config.to_bash_prologue if @tool_local_config %>
+<%= @bourreau_glob_config.to_bash_prologue if @bourreau_glob_config %>
+<%= @tool_glob_config.to_bash_prologue     if @tool_glob_config     %>
+<%= @tool_local_config.to_bash_prologue    if @tool_local_config    %>
+##########################################
+#### [Wrapped commands would be here] ####
+##########################################
+
+<%= @tool_local_config.to_bash_epilogue    if @tool_local_config    %>
+<%= @tool_glob_config.to_bash_epilogue     if @tool_glob_config     %>
+<%= @bourreau_glob_config.to_bash_epilogue if @bourreau_glob_config %>
     </pre>
 
   </fieldset>
