@@ -60,15 +60,11 @@ class Signup < ApplicationRecord
     self.confirm_token = tok
   end
 
-  def full #:nodoc:
+  def full_name #:nodoc:
     "#{title} #{first} #{middle} #{last}".strip.gsub(/  +/, " ")
   end
 
-  def user_full #:nodoc:
-    "#{first} #{last}".strip.gsub(/  +/, " ")
-  end
-
-  alias full_name full
+  # alias full_name full
 
   def approved? #:nodoc:
     self.approved_by.present? && self.approved_at.present?
@@ -89,12 +85,12 @@ class Signup < ApplicationRecord
     user = NormalUser.new
 
    #user.title                   = self.title
-    user.full_name               = user_full
+    user.full_name               = self.full_name
     user.login                   = self.login.try :strip
     user.email                   = self.email.try :strip
    #user.institution             = self.institution
    #user.department              = self.department
-   #user.position                = self.position
+   user.position                = self.position
    #user.street1                 = self.street1
    #user.street2                 = self.street2
     user.city                    = self.city.try :strip

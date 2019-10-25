@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20191023211144) do
+ActiveRecord::Schema.define(version: 20191025141308) do
 
   create_table "access_profiles", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "name",        null: false
@@ -256,7 +256,7 @@ ActiveRecord::Schema.define(version: 20191023211144) do
     t.index ["type"], name: "index_remote_resources_on_type", using: :btree
   end
 
-  create_table "resource_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
+  create_table "resource_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1" do |t|
     t.string   "type"
     t.decimal  "value",                    precision: 24
     t.integer  "user_id"
@@ -450,6 +450,7 @@ ActiveRecord::Schema.define(version: 20191023211144) do
 
   create_table "users", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "full_name"
+    t.string   "position"
     t.string   "login"
     t.string   "email"
     t.string   "type"

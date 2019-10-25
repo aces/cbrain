@@ -34,46 +34,59 @@
 
     <h5>Basic Information</h5>
 
-    <p><%= f.label :full_name, "Full Name" %><br/>
+    <p>
+    <%= f.label :full_name, "Full Name" %><br/>
     <%= f.text_field :full_name %>
 
-    <p><%= f.label :login, "Login" %><br/>
+    <p>
+    <%= f.label :login, "Login" %><br/>
     <%= f.text_field :login %><br>
     <span class="field_explanation">For <strong>Tom Jones</strong>, use <strong>tjones</strong>, not 'tom' or 'jones'.</span>
 
-    <p><%= f.label :email, "Email" %><br/>
+    <p>
+    <%= f.label :email, "Email" %><br/>
     <%= f.text_field :email %>
 
     <p>
-      <%= f.label :city, "City" %><br/>
-      <%= f.text_field :city %>
+    <%= f.label :position, "Position" %><br/>
+    <%= f.text_field :position %>
 
     <p>
-      <%= f.label :country, "Country" %><br/>
-      <%= f.text_field :country %>
+    <%= f.label :city, "City" %><br/>
+    <%= f.text_field :city %>
 
-    <p><%= f.label :time_zone, "Time Zone" %><br/>
+    <p>
+    <%= f.label :country, "Country" %><br/>
+    <%= f.text_field :country %>
+
+    <p>
+    <%= f.label :time_zone, "Time Zone" %><br/>
     <%= f.time_zone_select :time_zone,
         ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
         { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'],
           :include_blank => true }
     %>
 
-    <p><%= f.label :type, "Type" %><br/>
+    <p>
+    <%= f.label :type, "Type" %><br/>
     <%= f.select :type, roles_for_user(current_user) %>
 
     <% if current_user.has_role? :admin_user %>
-      <p><%= f.label :site_id, "Site" %><br/>
+      <p>
+      <%= f.label :site_id, "Site" %><br/>
       <%= site_select "user[site_id]",{}, :prompt => "(Select a site)" %>
     <% end %>
 
-    <p><%= f.label :password, "Password" %><br/>
+    <p>
+    <%= f.label :password, "Password" %><br/>
     <%= f.password_field :password, :value => @random_pass, :autocomplete => "new-password" %>
 
-    <p><%= f.label :password_confirmation, "Confirm Password" %><br/>
+    <p>
+    <%= f.label :password_confirmation, "Confirm Password" %><br/>
     <%= f.password_field :password_confirmation, :value => @random_pass, :autocomplete => "new-password" %>
 
-    <p><label for="no_password_reset_needed">No need to reset initial password:</label>
+    <p>
+    <label for="no_password_reset_needed">No need to reset initial password:</label>
     <%= check_box_tag :no_password_reset_needed, "1", params[:no_password_reset_needed] == "1" %>
 
     <%= hidden_field_tag :signup_id, params[:signup_id] %>
@@ -103,7 +116,8 @@
     <% end %>
   </div>
 
-  <p><%= submit_tag 'Create User' %>
+  <p>
+  <%= submit_tag 'Create User' %>
 
 <% end %>
 

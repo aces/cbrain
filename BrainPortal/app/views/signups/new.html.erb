@@ -80,7 +80,7 @@
     <tr>
       <th><%= f.label(:position, "* Current position or role:") %></th>
       <td><%= f.select :position, options_for_select(
-              [ [ "(select one)", "" ], "Faculty", "PostDoc", "Researcher", "Student", "Industry", "Other" ],
+              [ [ "(select one)", "" ], "Undergraduate Student", "Postgraduate Student", "Post Doctoral Student", "Faculty", "Researcher", "Staff", "Industry", "Other" ],
               @signup.position)
           %></td>
     </tr>
