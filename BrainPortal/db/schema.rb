@@ -256,7 +256,7 @@ ActiveRecord::Schema.define(version: 20191025141308) do
     t.index ["type"], name: "index_remote_resources_on_type", using: :btree
   end
 
-  create_table "resource_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1" do |t|
+  create_table "resource_usage", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "type"
     t.decimal  "value",                    precision: 24
     t.integer  "user_id"
