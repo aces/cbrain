@@ -60,7 +60,12 @@
       end
     %>
 
-    <% t.edit_cell(:email, :content => mail_to(h(@user.email))) { |f| f.text_field :email } %>
+
+    <% t.edit_cell(:position,    :content => @user.position         ) { |f| f.text_field :position } %>
+
+    <% t.edit_cell(:affiliation, :content => @user.affiliation      ) { |f| f.text_field :affiliation } %>
+
+    <% t.edit_cell(:email,       :content => mail_to(h(@user.email))) { |f| f.text_field :email } %>
 
     <%
       t.cell("Last Connected") do
