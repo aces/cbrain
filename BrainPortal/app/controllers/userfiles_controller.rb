@@ -151,8 +151,8 @@ class UserfilesController < ApplicationController
     end
 
     # Handles the case when we just switched active project in group_controller/switch
-    if session[:switched_active_group]
-      session.delete(:switched_active_group)
+    if cbrain_session[:switched_active_group]
+      cbrain_session.delete(:switched_active_group)
       @force_clear_persistent = 1 # HTML page will have extra javascript code to clear the list
     end
 

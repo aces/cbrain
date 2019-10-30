@@ -239,7 +239,7 @@ class SessionsController < ApplicationController
 
     # Admin users start with some differences in behavior
     if user.has_role?(:admin_user)
-      session[:active_group_id] = "all"
+      cbrain_session[:active_group_id] = "all"
     end
   end
 
