@@ -107,6 +107,14 @@
       :sortable => true
     ) { |u| mail_to u.email }
 
+    t.column("Position", :position,
+      :sortable => true
+    )
+
+    t.column("Affiliation", :affiliation,
+      :sortable => true
+    )
+
     t.column("Last Connection", :last_connection,
       :sortable => true
     ) { |u| u.last_connected_at ? to_localtime(u.last_connected_at, :datetime) : "Unknown" }

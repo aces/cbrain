@@ -27,7 +27,7 @@ class Signup < ApplicationRecord
   validate              :strip_blanks
 
   validates_presence_of :first, :last,
-                        :institution, :department, :position, :email,
+                        :institution, :department, :position, :affiliation, :email,
                         :city, :province, :country, :confirm_token
 
   validates             :email, :format => { :with => /\A(\w[\w\-\.]*)@(\w[\w\-]*\.)+[a-z]{2,}$|^\w+@localhost\z/i }
@@ -39,7 +39,7 @@ class Signup < ApplicationRecord
   def strip_blanks #:nodoc:
     [
       :title, :first, :middle, :last,
-      :institution, :department, :position, :email,
+      :institution, :department, :position, :affiliation, :email,
       :street1, :street2, :city, :province, :country, :postal_code,
       :login, :comment, :admin_comment
     ].each do |att|
@@ -60,15 +60,9 @@ class Signup < ApplicationRecord
     self.confirm_token = tok
   end
 
-  def full #:nodoc:
+  def full_name #:nodoc:
     "#{title} #{first} #{middle} #{last}".strip.gsub(/  +/, " ")
   end
-
-  def user_full #:nodoc:
-    "#{first} #{last}".strip.gsub(/  +/, " ")
-  end
-
-  alias full_name full
 
   def approved? #:nodoc:
     self.approved_by.present? && self.approved_at.present?
@@ -89,12 +83,13 @@ class Signup < ApplicationRecord
     user = NormalUser.new
 
    #user.title                   = self.title
-    user.full_name               = user_full
+    user.full_name               = self.full_name
     user.login                   = self.login.try :strip
     user.email                   = self.email.try :strip
    #user.institution             = self.institution
    #user.department              = self.department
-   #user.position                = self.position
+   user.position                 = self.position
+   user.affiliation              = self.affiliation
    #user.street1                 = self.street1
    #user.street2                 = self.street2
     user.city                    = self.city.try :strip
@@ -112,7 +107,7 @@ class Signup < ApplicationRecord
   # This method is mostly used by the users controller, after a user is created
   # based on the information from the signup record.
   def add_extra_info_for_user(user) #:nodoc:
-    [ :institution, :department, :position, :street1, :street2, :province, :postal_code ].each do |att|
+    [ :institution, :department, :position, :affiliation, :street1, :street2, :province, :postal_code ].each do |att|
       val = self[att]
       next if val.blank?
       user.addlog("#{att.to_s.capitalize}: #{val.strip}")

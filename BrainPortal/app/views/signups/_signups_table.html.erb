@@ -97,7 +97,7 @@
     <%
       t.column("Name", :last,
         :sortable => true
-      ) { |d| link_to d.full, signup_path(d) }
+      ) { |d| link_to d.full_name, signup_path(d) }
     %>
 
     <%

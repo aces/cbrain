@@ -80,9 +80,31 @@
     <tr>
       <th><%= f.label(:position, "* Current position or role:") %></th>
       <td><%= f.select :position, options_for_select(
-              [ [ "(select one)", "" ], "Faculty", "PostDoc", "Researcher", "Student", "Industry", "Other" ],
+              [ [ "(select one)", "" ], "Faculty",
+                                        "Postdoctoral",
+                                        "PhD. candidate",
+                                        "Masters student",
+                                        "Student",
+                                        "Researcher",
+                                        "Other"
+              ],
               @signup.position)
-          %></td>
+          %>
+      </td>
+    </tr>
+
+    <tr>
+      <th><%= f.label(:affiliation, "* Current affiliation:") %></th>
+      <td><%= f.select :affiliation, options_for_select(
+              [ [ "(select one)", "" ], "Academic",
+                                        "Private sector",
+                                        "Government",
+                                        "Non-profit",
+                                        "Other",
+              ],
+              @signup.affiliation)
+          %>
+      </td>
     </tr>
 
     <tr>
