@@ -10,7 +10,7 @@ class AddPositionToUsers < ActiveRecord::Migration[5.0]
   end
 
   def extract_position_from_log(log)
-    log[/Position:\s*(\.+?)\s*\z/, 1]
+    log[/Position:\s*(.+?)\s*$/m, 1]
   end
 
   def down
