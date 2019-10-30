@@ -51,18 +51,18 @@ class GroupsController < ApplicationController
     @groups = @scope.pagination.apply(@view_scope)
     @groups = (@groups.to_a << 'ALL') if @scope.custom[:button]
 
-    @group_id_2_userfile_counts = Userfile.group("group_id").count
-    @group_id_2_task_counts     = CbrainTask.group("group_id").count
-    @group_id_2_user_counts     = User.joins(:groups).group("group_id").count.convert_keys!(&:to_i) # .joins make keys as string
-    if @scope.custom[:button]
-      @group_id_2_userfile_counts[nil] = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read).count
-      @group_id_2_task_counts[nil]     = current_user.available_tasks.count
-    else
-      @group_id_2_tool_counts          = Tool.group("group_id").count
-      @group_id_2_data_provider_counts = DataProvider.group("group_id").count
-      @group_id_2_bourreau_counts      = Bourreau.group("group_id").count
-      @group_id_2_brain_portal_counts  = BrainPortal.group("group_id").count
-    end
+    # For regular groups
+    @group_id_2_userfile_counts      = Userfile.group("group_id").count
+    @group_id_2_task_counts          = CbrainTask.group("group_id").count
+    @group_id_2_user_counts          = User.joins(:groups).group("group_id").count.convert_keys!(&:to_i) # .joins make keys as string
+    @group_id_2_tool_counts          = Tool.group("group_id").count
+    @group_id_2_data_provider_counts = DataProvider.group("group_id").count
+    @group_id_2_bourreau_counts      = Bourreau.group("group_id").count
+    @group_id_2_brain_portal_counts  = BrainPortal.group("group_id").count
+
+    # For `ALL` group
+    @group_id_2_userfile_counts[nil] = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read).count
+    @group_id_2_task_counts[nil]     = current_user.available_tasks.count
 
     scope_to_session(@scope)
 
