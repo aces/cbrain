@@ -4,7 +4,7 @@ class AddPositionToUsers < ActiveRecord::Migration[5.0]
     add_column :users, :position, :string, :after => :full_name
 
     User.all.each do |user|
-      user.position = extract_position_from_log(user.getlog || "") || "Unknown"
+      user.position = extract_position_from_log(user.getlog || "") || ""
       user.save
     end
   end
