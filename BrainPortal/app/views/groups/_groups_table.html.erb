@@ -150,6 +150,7 @@
     <% end %>
   </div>
 <% else %>
+  <% @groups = @groups.to_a.unshift('ALL')%>
   <%=
     dynamic_scoped_table(@groups,
       :id         => 'groups_table',
@@ -165,6 +166,36 @@
       }
     ) do |t|
       t.paginate
+
+      t.row do |g|
+        next unless (g == "ALL")
+        switch = link_to 'Switch', { :action => :switch, :id => "all"},
+                                    :class   => 'action_link',
+                                    :method  => :post
+        row_content =
+          {:name           => "All",
+           :description    => "Represents all the projects",
+           :type           => "All Projects",
+           :site           => "",
+           :creator_id     => "",
+           :users          => "",
+           :files          => @group_id_2_userfile_counts[nil] || "(None)",
+           :tasks          => @group_id_2_task_counts[nil] || "(None)",
+           :tools          => "",
+           :data_providers => "",
+           :portals        => "",
+           :bourreaux      => "",
+           :switch         => switch,
+          }
+        {
+          :override => lambda { |g,r,t|
+            row_content.map { |k,v|
+              "<td class=#{k} data-column=#{k}>#{v}</td>"}.join.html_safe
+          }
+        }
+      end
+
+
 
       t.column("Name", :name,
         :sortable => true

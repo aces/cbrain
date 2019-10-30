@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#This model represents an group created automatically by the system (as opposed to WorkGroup).
+#This model represents a group created automatically by the system (as opposed to WorkGroup).
 #Currently, these groups include:
 #[*everyone*]
 #   The group representing all users on the system.
