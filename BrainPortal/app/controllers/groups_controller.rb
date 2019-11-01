@@ -235,7 +235,7 @@ class GroupsController < ApplicationController
 
   def switch #:nodoc:
 
-    orig_active_group_id = session[:active_group_id]
+    orig_active_group_id = cbrain_session[:active_group_id]
 
     ['userfiles#index', 'tasks#index'].each do |name|
       scope = scope_from_session(name)
@@ -244,17 +244,17 @@ class GroupsController < ApplicationController
     end
 
     if params[:id].blank?
-      session[:active_group_id] = nil
+      cbrain_session[:active_group_id] = nil
     elsif params[:id] == "all"
-      session[:active_group_id] = "all"
+      cbrain_session[:active_group_id] = "all"
     else
       @group = current_user.available_groups.find(params[:id])
-      session[:active_group_id] = @group.id
+      cbrain_session[:active_group_id] = @group.id
     end
 
     # This flag will tell the userfiles 'index' action to add code to the page
     # to clear the persistently selected list of files.
-    session[:switched_active_group] = (session[:active_group_id] != orig_active_group_id)
+    cbrain_session[:switched_active_group] = (cbrain_session[:active_group_id] != orig_active_group_id)
 
     if api_request?
       head :ok
