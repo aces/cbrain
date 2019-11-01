@@ -389,6 +389,10 @@ class User < ApplicationRecord
   # 3- save it in crypted_password
   def encrypt_password #:nodoc:
     return true if password.blank?
+    if self.salt.present? && self.crypted_password.present? && authenticated?(password) # means the password matches the current hash
+      self.errors.add(:password, "cannot be set to be the same as the previous one!")
+      throw :abort
+    end
     self.salt             = Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{login}--#{rand(999999)}--")
     self.crypted_password = encrypt_in_pbkdf2_sha1(password)
     true
