@@ -672,6 +672,7 @@ class Userfile < ApplicationRecord
     SyncStatus.ready_to_modify_cache(file, 'InSync') do
       yield file.cache_full_path # allow programmer to provide content for the file
     end
+    file.set_size
 
     # A bit of info tracking
     myself       = RemoteResource.current_resource
