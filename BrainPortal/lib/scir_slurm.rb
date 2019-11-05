@@ -175,7 +175,7 @@ class ScirSlurm < Scir
       command  = "sbatch "
       command += "-p #{shell_escape(self.queue)} "          unless self.queue.blank?
       command += "--no-requeue "
-      command += "--workdir=#{shell_escape(self.wd)} "      if self.wd
+      command += "--chdir=#{shell_escape(self.wd)} "        if self.wd
       command += "--job-name=#{shell_escape(self.name)} "   if self.name
       command += "--output=#{shell_escape(self.stdout.sub(/\A:/,""))} "   if self.stdout
       command += "--error=#{shell_escape(self.stderr.sub(/\A:/,""))} "    if self.stderr
