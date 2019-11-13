@@ -290,12 +290,14 @@ class UserfilesController < ApplicationController
 
     # Ok, some viewers are invalid for some specific userfiles, so reject it if it's the case.
     if (params[:content_viewer] != 'off')
-      @viewer      = nil if @viewer && ! @viewer.valid_for?(@userfile)
+      @viewer.errors = @viewer.apply_conditions(@userfile)
     end
 
     begin
       if @viewer
-        if params[:apply_div] == "false"
+        if @viewer.errors.present?
+          render :partial => "viewer_errors"
+        elsif params[:apply_div] == "false"
           render :file   => @viewer.partial_path.to_s, :layout => params[:apply_layout].present?
         else
           render :action => :display,                  :layout => params[:apply_layout].present?
@@ -325,8 +327,11 @@ class UserfilesController < ApplicationController
     @sync_status        = 'ProvNewer' # same terminology as in SyncStatus
     state               = @userfile.local_sync_status
     @sync_status        = state.status if state
-    @viewer             = @userfile.find_viewer(params[:viewer]) if params[:viewer].present?
-    @viewer           ||= @userfile.viewers.first
+    @viewer             = @userfile.find_viewer_with_errors(params[:viewer]) if params[:viewer].present?
+
+    # binding.pry
+    @viewers            = @userfile.viewers_with_errors || []
+    @viewer           ||= @viewers.detect { |v| v.errors.empty?} || @viewers.first
 
     @log                = @userfile.getlog        rescue nil
 

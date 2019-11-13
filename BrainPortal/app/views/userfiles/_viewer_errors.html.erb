@@ -1,4 +1,5 @@
 
+<%-
 #
 # CBRAIN Project
 #
@@ -19,23 +20,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+-%>
 
-# Generic model for text files.
-class TextFile < SingleFile
+<%
+no_reason = "The contents of this file of type `#{@userfile.type}` cannot be viewed right now (no reason given)."
+%>
 
-  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+<div>
+  <% if @viewer.errors.all? {|e| e == false } %>
+    <%= no_reason %>
+  <% else %>
+    <% @viewer.errors.each do |error| %>
+      <% if error == false %>
+        <%= no_reason %>
+      <% else %>
+        <%= error.html_safe %>
+      <% end %>
+      <br>
+    <% end %>
+  <% end %>
+</div>
 
-  has_viewer :name => 'Text File', :partial  => :text_file, :if => :is_viewable?
-
-  def self.file_name_pattern #:nodoc:
-    /\.txt\z/i
-  end
-
-  def is_viewable? #:nodoc:
-    errors = []
-    errors.push("No size available for this file") if self.size.blank?
-    errors.push("File is too large < 500 000kb")   if self.size < 500_000
-    errors
-  end
-
-end
