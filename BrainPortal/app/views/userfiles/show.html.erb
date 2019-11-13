@@ -237,7 +237,7 @@
         <%= link_to_data_provider_if_accessible(@userfile.data_provider) %>
         is offline, so its content is not viewable for the moment)
 
-      <% elsif @userfile.is_locally_synced? && @userfile.viewers_with_errors.blank? %>
+      <% elsif @userfile.is_locally_synced? && @userfile.viewers_with_applied_conditions.blank? %>
 
         (The contents of this file cannot be viewed: no viewer code available at this moment
         for files of type '<%= @userfile.pretty_type %>')
@@ -256,9 +256,9 @@
           <br>
         <% end %>
 
-        <% if @userfile.viewers_with_errors.size > 1 %>
+        <% if @userfile.viewers_with_applied_conditions.size > 1 %>
             Change view:
-            <%= select_tag "viewer", options_for_select(@userfile.viewers_with_errors.map { |v| [v.name, v.name] }, (@viewer.try(:name) || @userfile.class.name.underscore)),
+            <%= select_tag "viewer", options_for_select(@userfile.viewers_with_applied_conditions.map { |v| [v.name, v.name] }, (@viewer.try(:name) || @userfile.class.name.underscore)),
                            :class        => :request_on_change,
                            "data-target" => "#userfile_viewer",
                            "data-url"    => display_userfile_path(@userfile)

@@ -327,10 +327,10 @@ class UserfilesController < ApplicationController
     @sync_status        = 'ProvNewer' # same terminology as in SyncStatus
     state               = @userfile.local_sync_status
     @sync_status        = state.status if state
-    @viewer             = @userfile.find_viewer_with_errors(params[:viewer]) if params[:viewer].present?
+    @viewer             = @userfile.find_viewer_with_applied_conditions(params[:viewer]) if params[:viewer].present?
 
     # binding.pry
-    @viewers            = @userfile.viewers_with_errors || []
+    @viewers            = @userfile.viewers_with_applied_conditions || []
     @viewer           ||= @viewers.detect { |v| v.errors.empty?} || @viewers.first
 
     @log                = @userfile.getlog        rescue nil

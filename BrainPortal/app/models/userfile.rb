@@ -692,7 +692,7 @@ class Userfile < ApplicationRecord
 
   class Viewer #:nodoc:
 
-    attr_reader   :userfile_class, :name, :partial
+    attr_reader   :userfile_class, :name, :partial, :conditions
     attr_accessor :errors
 
     def initialize(userfile_class, viewer) #:nodoc:
@@ -774,7 +774,7 @@ class Userfile < ApplicationRecord
   # List of viewers for this model
   # Return all available viewer for this userfile class
   # even if it is not valid for this specific userfile
-  def viewers_with_errors #:nodoc:
+  def viewers_with_applied_conditions #:nodoc:
     self.class.class_viewers.map(&:dup).each { |v| v.apply_conditions(self) }
   end
 
@@ -784,8 +784,8 @@ class Userfile < ApplicationRecord
   end
 
   # Find a viewer by name or partial for this model
-  def find_viewer_with_errors(name)
-    self.viewers_with_errors.find { |v| v.name == name || v.partial.to_s == name.to_s }
+  def find_viewer_with_applied_conditions(name)
+    self.viewers_with_applied_conditions.find { |v| v.name == name || v.partial.to_s == name.to_s }
   end
 
 
@@ -908,7 +908,7 @@ class Userfile < ApplicationRecord
   # method of the same name, no filtering is performed:
   # all viewers are examined to find a match and the first
   # one is returned.
-  def self.find_viewer_with_errors(name)
+  def self.find_viewer_with_applied_conditions(name)
     class_viewers.find { |v| v.name == name || v.partial.to_s == name.to_s }
   end
 

@@ -27,7 +27,7 @@ class CSVFile < TextFile
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  has_viewer :name => 'CSV Viewer', :partial  => :csv_file, :if => :cvs_is_viewable?
+  has_viewer :name => 'CSV Viewer', :partial  => :csv_file, :if => :csv_is_viewable?
 
   def self.pretty_type #:nodoc:
     "CSV File"
@@ -37,10 +37,10 @@ class CSVFile < TextFile
     /\.csv\z/i
   end
 
-  def cvs_is_viewable? #:nodoc:
+  def csv_is_viewable? #:nodoc:
     errors = []
     errors.push("No size available for this file") if self.size.blank?
-    errors.push("File is too large < 400 000kb")   if self.size > 400_000  # smaller than the limit in TextFile
+    errors.push("File is too large > 400 000kb")   if self.size > 400_000  # smaller than the limit in TextFile
     errors
   end
 
