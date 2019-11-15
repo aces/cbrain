@@ -135,11 +135,11 @@ module ViewHelpers
   # just after it, e.g.,
   #
   #    "2009-12-31 11:22:33 (3 days 2 hours 27 seconds ago)"
-  def pretty_past_date(pastdate, what = :datetime)
+  def pretty_past_date(pastdate, what = :datetime, num_components = 3)
     return "(Unknown)" if pastdate.blank?
     loctime = pastdate.is_a?(Time) ? pastdate : Time.parse(pastdate.to_s)
     locdate = to_localtime(pastdate,what)
-    elapsed = pretty_elapsed(Time.now - loctime, :num_components => 3)
+    elapsed = pretty_elapsed(Time.now - loctime, :num_components => num_components)
     "#{locdate} (#{elapsed} ago)"
   end
 

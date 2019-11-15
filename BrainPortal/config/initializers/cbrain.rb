@@ -22,7 +22,7 @@
 
 # Forced pre-load of some Ruby classes.
 # Because the meta data store for Bourreaux contains serialized RemoteResourceInfo
-# records, serizlied, we need to make sure this class is loaded. The PSYCH/YAML
+# records, serialized, we need to make sure this class is loaded. The PSYCH/YAML
 # deserializer does not use Rails' autoloader.
 RemoteResourceInfo.nil?
 
