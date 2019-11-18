@@ -54,6 +54,8 @@ class S3FlatDataProvider < DataProvider
     message: "invalid S3 bucket name, for rules see https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-s3-bucket-naming-requirements.html"
   }
 
+  before_save :canonify_path_start
+
   # This returns the category of the data provider
   def self.pretty_category_name #:nodoc:
     "Cloud"
@@ -93,17 +95,36 @@ class S3FlatDataProvider < DataProvider
     true
   end
 
-  # This is, for the moment, entirely esthetic. On the Amazon
-  # side, the a CBRAIN file named 'abcd' is also stored as 'abcd'.
+  # Utility method that prefixes +path+ with the value of
+  # cloud_storage_client_path_start if it is present.
+  # Will try to return an object of the same type as +path+ (e.g.
+  # a String or a Pathname)
+  def add_start(path)
+    return path if cloud_storage_client_path_start.blank?
+    joined = cloud_storage_client_path_start + "/" + path.to_s
+    joined = joined.sub(/\/\z/,"") # happens with path == ""
+    return Pathname.new(joined) if path.is_a?(Pathname)
+    joined
+  end
+
+  # The inverse of add_start().
+  def remove_start(path)
+    return path if cloud_storage_client_path_start.blank?
+    return path unless path.to_s.starts_with? "#{cloud_storage_client_path_start}/"
+    removed = path.to_s.sub("#{cloud_storage_client_path_start}/","")
+    return Pathname.new(removed) if path.is_a?(Pathname)
+    removed
+  end
+
+  # Returns the relative path of the +userfile+ on the Amazon side.
   def provider_full_path(userfile)
-    #"Bucket: #{s3_connection.bucket} Prefix key: #{userfile.name}"
-    userfile.name
+    add_start(userfile.name)
   end
 
   # Standard implementation
   def impl_provider_collection_index(userfile, directory = :all, allowed_types = :regular) #:nodoc:
 
-    prefix = Pathname.new(userfile.name)
+    prefix = Pathname.new(provider_full_path(userfile))
     if directory == :all
       s3method = :list_objects_recursive
     else
@@ -161,10 +182,10 @@ class S3FlatDataProvider < DataProvider
         FileUtils.mkpath fullpath.parent.to_s
       end
       if fi.symbolic_type == :regular
-        s3_connection.download_object_to_file(relpath, fullpath.to_s)
+        s3_connection.download_object_to_file(add_start(relpath), fullpath.to_s)
         FileUtils.touch( fullpath.to_s, :mtime => fi.mtime, :nocreate => true ) if fi.mtime
       elsif fi.symbolic_type == :symlink
-        linkval = s3_connection.download_symlink_value(relpath)
+        linkval = s3_connection.download_symlink_value(add_start(relpath))
         File.unlink(fullpath.to_s) if File.symlink?(fullpath.to_s) # we force re-creation... because can't compare timestamps
         File.symlink(linkval, fullpath.to_s)
         # Prob: it doesn't seem we can restore the mtime for a symlink... maybe this will cause
@@ -195,6 +216,7 @@ class S3FlatDataProvider < DataProvider
 
     # Remove files that exist remotely but shouldn't
     adj_keys = s3_fileinfos_to_realkeys(to_remove)
+    adj_keys = adj_keys.map { |k| add_start(k) }
     s3_connection.delete_multiple_objects(adj_keys)
 
     # Add files remotely. Regular and symlinks are supported.
@@ -203,11 +225,11 @@ class S3FlatDataProvider < DataProvider
       fullpath = localparent + relpath
       if fi.symbolic_type == :symlink
         linkvalue = File.readlink(fullpath.to_s)
-        s3_connection.upload_symlink_value_to_object(linkvalue, relpath)
+        s3_connection.upload_symlink_value_to_object(linkvalue, add_start(relpath))
       elsif fi.symbolic_type == :regular
-        s3_connection.upload_file_content_to_object(fullpath, relpath)
+        s3_connection.upload_file_content_to_object(fullpath, add_start(relpath))
       elsif fi.symbolic_type == :directory
-        s3_connection.upload_subdir_placeholder_to_object(relpath)
+        s3_connection.upload_subdir_placeholder_to_object(add_start(relpath))
       else
         # unknown/unsupported file type?
       end
@@ -218,30 +240,32 @@ class S3FlatDataProvider < DataProvider
 
   def impl_provider_erase(userfile) #:nodoc:
     if userfile.is_a?(SingleFile)
-      s3_connection.delete_object(userfile.name)
+      s3_connection.delete_object(provider_full_path(userfile))
     else
       to_remove = provider_recursive_fileinfos(userfile)
       adj_keys  = s3_fileinfos_to_realkeys(to_remove)
+      adj_keys  = adj_keys.map { |k| add_start(k) }
       s3_connection.delete_multiple_objects(adj_keys)
     end
     true
   end
 
   def impl_provider_list_all(user=nil) #:nodoc:
-    dp_list = s3_connection.list_objects_one_level("") # top level
+    dp_list = s3_connection.list_objects_one_level(add_start("")) # top level
     s3_objlist_to_fileinfos(dp_list)
   end
 
   def impl_provider_rename(userfile,newname) #:nodoc:
-    return false if s3_connection.get_object_info(newname)
-    return false if s3_connection.list_objects_one_level(newname).present?
+    return false if s3_connection.get_object_info(add_start(newname))
+    return false if s3_connection.list_objects_one_level(add_start(newname)).present?
     if userfile.is_a?(SingleFile)
-      s3_connection.rename_object(userfile.name,newname)
+      s3_connection.rename_object(provider_full_path(userfile),add_start(newname))
     else
-      s3_connection.list_objects_recursive(userfile.name).each do |s3obj|
+      s3_connection.list_objects_recursive(provider_full_path(userfile)).each do |s3obj|
         oldkey = s3obj.key
-        newkey = oldkey.starts_with?("#{userfile.name}/") ? (newname + oldkey[userfile.name.size,99999]) : newkey
-        s3_connection.rename_object(oldkey,newkey) if newkey != oldkey
+        next unless oldkey.starts_with?("#{provider_full_path(userfile)}/")
+        newkey = oldkey.sub("#{provider_full_path(userfile)}/","#{add_start(new_name)}/")
+        s3_connection.rename_object(oldkey,newkey)
       end
     end
     true
@@ -282,12 +306,24 @@ class S3FlatDataProvider < DataProvider
   # descriving all the files and directories inside a userfile
   # (if a FileCollection) or describing the single entry (if a SingleFile).
   def provider_recursive_fileinfos(userfile)
-    single_head = s3_connection.list_single_object(userfile.name)
-    objlist     = s3_connection.list_objects_recursive(userfile.name)
+    single_head = s3_connection.list_single_object(provider_full_path(userfile))
+    objlist     = s3_connection.list_objects_recursive(provider_full_path(userfile))
     s3_objlist_to_fileinfos(single_head + objlist)
   end
 
   private
+
+  # Before save callback. The client start path needs to be
+  # nil, or a relative path such as 'a/b/c' with no leading slash.
+  def canonify_path_start
+    start = (self.cloud_storage_client_path_start.presence || "")
+      .strip
+      .sub(/\A\//,"") # remove leading /
+      .sub(/\/\z/,"") # remove trailing /
+      .strip
+    self.cloud_storage_client_path_start = start.presence
+    true
+  end
 
   # Turns an array of objects infos built on the Amazon side
   # into an array of FileInfo objects.
@@ -295,7 +331,7 @@ class S3FlatDataProvider < DataProvider
     s3_objlist.map do |objinfo| # S3 obj contains just a bit of info, not a full FileInfo struct
       name,type = s3_connection.real_name_and_symbolic_type(objinfo[:key])
       FileInfo.new(
-        :name          => name,
+        :name          => remove_start(name),
         :symbolic_type => type,
         :mtime         => objinfo[:last_modified],
         :atime         => objinfo[:last_modified], # no separate a and c times
@@ -306,7 +342,7 @@ class S3FlatDataProvider < DataProvider
   end
 
   # Turns an array of FileInfo objects representing S3 objects
-  # into an array of simply S3 key names (with special encoding
+  # into an array of S3 key names (with special encoding
   # for symlinks and directories if necessary).
   def s3_fileinfos_to_realkeys(s3_fileinfos) #:nodoc:
     s3_fileinfos.map do |fi|

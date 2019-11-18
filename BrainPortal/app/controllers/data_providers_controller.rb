@@ -128,6 +128,9 @@ class DataProvidersController < ApplicationController
     new_data_provider_attr = data_provider_params
     new_data_provider_attr.delete :type # Type cannot be updated once it is set.
 
+    # Fields that stay the same if the form provides a blank entry:
+    new_data_provider_attr.delete :cloud_storage_client_token if new_data_provider_attr[:cloud_storage_client_token].blank?
+
     if @provider.update_attributes_with_logging(new_data_provider_attr, current_user,
          %w(
            remote_user remote_host remote_port remote_dir
@@ -519,7 +522,10 @@ class DataProvidersController < ApplicationController
 
       # No need to move or copy? Just set the file sizes and exit.
       unless post_action
-        registered.each { |userfile| userfile.set_size! rescue true }
+        registered.each_with_index_and_size do |userfile,idx,size|
+          Process.setproctitle "SetSize ID=#{userfile.id} #{idx+1}/#{size}      "
+          userfile.set_size rescue true
+        end
         generic_notice_messages('register', succeeded, failed)
         next
       end
