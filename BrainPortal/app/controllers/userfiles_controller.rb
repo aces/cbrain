@@ -249,7 +249,11 @@ class UserfilesController < ApplicationController
         response.headers["Content-Encoding"] = "gzip"
         render :plain => response_content
       else
-        render content_loader.type => response_content
+        if content_loader.type == :text
+          render :plain => response_content
+        else
+          render content_loader.type => response_content
+        end
       end
     else
       @userfile.sync_to_cache
@@ -832,6 +836,7 @@ class UserfilesController < ApplicationController
   def quality_control_panel #:nodoc:
     @filelist      = params[:file_ids] || []
     @current_index = params[:index]    || -1
+    @target        = params[:target]   || ""
 
     @current_index = @current_index.to_i
 
