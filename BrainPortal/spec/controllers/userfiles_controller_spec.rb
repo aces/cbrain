@@ -974,20 +974,11 @@ RSpec.describe UserfilesController, :type => :controller do
       end
 
       it "should render any other content defined by the content loader" do
-        type    = :other
-        content = "content"
-        allow(content_loader).to receive(:type).and_return(type)
-        allow(mock_userfile).to  receive(:content_loader_method).and_return(content)
-        expect(controller).to    receive(:render).with(type => content)
-        get :content, params: {:id => 1}, xhr: true
-      end
-
-      it "should render content as :plain if type is :text" do
         type    = :text
         content = "content"
         allow(content_loader).to receive(:type).and_return(type)
         allow(mock_userfile).to  receive(:content_loader_method).and_return(content)
-        expect(controller).to    receive(:render).with(:plain => content)
+        expect(controller).to    receive(:render).with(type => content)
         get :content, params: {:id => 1}, xhr: true
       end
 
