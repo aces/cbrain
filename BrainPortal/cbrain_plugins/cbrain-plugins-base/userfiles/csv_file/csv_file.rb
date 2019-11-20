@@ -38,10 +38,10 @@ class CSVFile < TextFile
   end
 
   def csv_is_viewable? #:nodoc:
-    errors = []
-    errors.push("No size available for this file") if self.size.blank?
-    errors.push("File is too large > 400 000kb")   if self.size > 400_000  # smaller than the limit in TextFile
-    errors
+    userfile_errors = []
+    userfile_errors.push("No size available for this file") if self.size.blank?
+    userfile_errors.push("File is too large > 400 000kb")   if self.size > 400_000  # smaller than the limit in TextFile
+    userfile_errors
   end
 
   # Tries to guess and return the quote character

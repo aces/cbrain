@@ -249,11 +249,7 @@ class UserfilesController < ApplicationController
         response.headers["Content-Encoding"] = "gzip"
         render :plain => response_content
       else
-        if content_loader.type == :text
-          render :plain => response_content
-        else
-          render content_loader.type => response_content
-        end
+        render content_loader.type => response_content
       end
     else
       @userfile.sync_to_cache
@@ -279,8 +275,8 @@ class UserfilesController < ApplicationController
     viewer_userfile_class = params[:viewer_userfile_class].presence.try(:constantize) || @userfile.class
 
     # Try to find out viewer among those registered in the classes
-    @viewer      = viewer_userfile_class.find_viewer_with_applied_conditions(viewer_name)
-    @viewer    ||= (viewer_name.camelcase.constantize rescue nil).try(:find_viewer_with_applied_conditions, viewer_name) rescue nil
+    @viewer      = viewer_userfile_class.find_viewer(viewer_name)
+    @viewer    ||= (viewer_name.camelcase.constantize rescue nil).try(:find_viewer, viewer_name) rescue nil
 
     # If no viewer object is found but the argument "viewer_name" correspond to a partial
     # on disk, then let's create a transient viewer object representing that file.
@@ -292,9 +288,9 @@ class UserfilesController < ApplicationController
       end
     end
 
-    # Ok, some viewers are invalid for some specific userfiles, so reject it if it's the case.
+    # Some viewers return error(s) for some specific userfiles
     if (params[:content_viewer] != 'off')
-      @viewer.errors = @viewer.apply_conditions(@userfile) if @viewer
+      @viewer.apply_conditions(@userfile) if @viewer
     end
 
     begin
@@ -840,7 +836,6 @@ class UserfilesController < ApplicationController
   def quality_control_panel #:nodoc:
     @filelist      = params[:file_ids] || []
     @current_index = params[:index]    || -1
-    @target        = params[:target]   || ""
 
     @current_index = @current_index.to_i
 

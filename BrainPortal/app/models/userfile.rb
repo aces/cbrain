@@ -692,7 +692,7 @@ class Userfile < ApplicationRecord
 
   class Viewer #:nodoc:
 
-    attr_reader   :userfile_class, :name, :partial, :conditions
+    attr_reader   :userfile_class, :name, :partial
     attr_accessor :errors
 
     def initialize(userfile_class, viewer) #:nodoc:
@@ -735,21 +735,21 @@ class Userfile < ApplicationRecord
       return true if @conditions.empty?
 
       @conditions.all? do |condition|
-        [condition.call(userfile)].flatten.all? { |error| error == true}
+        result = condition.call(userfile); result == true || result == []
       end
     rescue
       false
     end
 
     def apply_conditions(userfile) #:nodoc:
-      errors = @conditions.map do |condition|
-        condition_call = condition.call(userfile)
-        condition_call = (condition_call.is_a?(TrueClass) ? [] :
-                ( condition_call.is_a?(FalseClass) ? [false] :
-                  condition_call
-                )).flatten
+      current_errors = @conditions.map do |condition|
+        result = condition.call(userfile)
+        result =
+          ( result == true  ? []      :
+                             (result == false ? [false] : result)
+          ).flatten
       end.flatten
-      errors.each {|e| self.errors << e if self.errors.exclude?(e)}
+      current_errors.each {|e| self.errors << e if self.errors.exclude?(e)}
     end
 
     def ==(other) #:nodoc:
@@ -787,7 +787,6 @@ class Userfile < ApplicationRecord
   def find_viewer_with_applied_conditions(name)
     self.viewers_with_applied_conditions.find { |v| v.name == name || v.partial.to_s == name.to_s }
   end
-
 
   # See the class method of the same name.
   def view_path(partial_name=nil)
@@ -859,7 +858,7 @@ class Userfile < ApplicationRecord
     viewers
   end
 
-  # Synonym for .has_viewers.
+  # Synonym for .has_viewer.
   def self.has_viewers(*new_viewers)
     self.has_viewer(*new_viewers)
   end
@@ -902,16 +901,6 @@ class Userfile < ApplicationRecord
   def self.find_viewer(name)
     class_viewers.find { |v| v.name == name || v.partial.to_s == name.to_s }
   end
-
-
-  # Find viewer by name or partial; unlike the instance
-  # method of the same name, no filtering is performed:
-  # all viewers are examined to find a match and the first
-  # one is returned.
-  def self.find_viewer_with_applied_conditions(name)
-    class_viewers.find { |v| v.name == name || v.partial.to_s == name.to_s }
-  end
-
 
   ##############################################
   # Content Methods
