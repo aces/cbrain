@@ -1002,25 +1002,25 @@ RSpec.describe UserfilesController, :type => :controller do
       end
 
       it "should render :text_file partial if viewer exist" do
-        allow(TextFile).to      receive(:find_viewer_with_applied_conditions).and_return(mock_viewer)
+        allow(TextFile).to      receive(:find_viewer).and_return(mock_viewer)
         get :display, params: {:viewer => "Text File", :apply_div => "false", :id => 1}
         expect(response).to render_template(:file => "_text_file.html.erb")
       end
 
       it "should try to find a partial with the viewer name if the userfile doesn't have an associated viewer" do
-        allow(TextFile).to      receive(:find_viewer_with_applied_conditions).and_return(nil)
+        allow(TextFile).to      receive(:find_viewer).and_return(nil)
         expect(File).to receive(:exists?).and_return(true)
         get :display, params: {:id => 1, :viewer => "hello"}
       end
 
       it "should render the display partial a div is requested" do
-        allow(TextFile).to      receive(:find_viewer_with_applied_conditions).and_return(mock_viewer)
+        allow(TextFile).to      receive(:find_viewer).and_return(mock_viewer)
         get :display, params: {:viewer => "Text File", :id => 1}
         expect(response).to render_template(:display)
       end
 
       it "should render a warning if no viewer partial is found" do
-        allow(TextFile).to      receive(:find_viewer_with_applied_conditions).and_return(nil)
+        allow(TextFile).to      receive(:find_viewer).and_return(nil)
         get :display, params: {:id => 1, :viewer => "Unknown viewer"}
         expect(response.body).to match(/Could not find viewer/)
       end
