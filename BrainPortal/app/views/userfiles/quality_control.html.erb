@@ -22,7 +22,11 @@
 #
 -%>
 
-<%= button_to "Finished", {:action => :index}, :class => "button" %><br><br>
+<% title("Quality Control") %>
+
+<div class="menu_bar">
+  <%= button_to "Finished", {:action => :index}, :class => "button" %>
+</div>
 
 <div class="display_table qc_table">
   <div class="display_cell qc_panel">
