@@ -241,23 +241,23 @@ class UserfilesController < ApplicationController
     argument_list  = params[:arguments] || []
     argument_list  = [argument_list] unless argument_list.is_a?(Array)
 
-    if content_loader
-      response_content = @userfile.send(content_loader.method, *argument_list)
-      if content_loader.type == :send_file
-        send_file response_content
-      elsif content_loader.type == :gzip
-        response.headers["Content-Encoding"] = "gzip"
-        render :plain => response_content
-      else
-        if content_loader.type == :text
-          render :plain => response_content
-        else
-          render content_loader.type => response_content
-        end
-      end
-    else
+    if !content_loader
       @userfile.sync_to_cache
       send_file @userfile.cache_full_path, :stream => true, :filename => @userfile.name, :disposition => (params[:disposition] || "attachment")
+      return
+    end
+
+    response_content = @userfile.send(content_loader.method, *argument_list)
+
+    if content_loader.type == :send_file
+      send_file response_content
+    elsif content_loader.type == :gzip
+      response.headers["Content-Encoding"] = "gzip"
+      render :plain => response_content
+    elsif content_loader.type == :text
+      render :plain => response_content
+    else
+      render content_loader.type => response_content
     end
   rescue
     respond_to do |format|
