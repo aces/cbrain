@@ -34,7 +34,7 @@ class TextFile < SingleFile
   def is_viewable? #:nodoc:
     userfile_errors = []
     userfile_errors.push("No size available for this file") if self.size.blank?
-    userfile_errors.push("File is too large > 500 000kb")   if self.size > 500_000
+    userfile_errors.push("File is too large to be viewable (> 500 kB)") if self.size > 500_000
     userfile_errors
   end
 

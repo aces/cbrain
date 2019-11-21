@@ -732,24 +732,26 @@ class Userfile < ApplicationRecord
     end
 
     def valid_for?(userfile) #:nodoc:
-      return true if @conditions.empty?
-
-      @conditions.all? do |condition|
-        result = condition.call(userfile); result == true || result == []
-      end
+      self.apply_conditions(userfile)
+      self.errors.empty?
     rescue
       false
     end
 
     def apply_conditions(userfile) #:nodoc:
-      current_errors = @conditions.map do |condition|
+      current_errors = []
+      @conditions.each do |condition|
         result = condition.call(userfile)
-        result =
-          ( result == true  ? []      :
-                             (result == false ? [false] : result)
-          ).flatten
-      end.flatten
-      current_errors.each {|e| self.errors << e if self.errors.exclude?(e)}
+        if result.is_a?(Array) # new convention
+          next if result.empty? # no error messages
+          current_errors += result # we have some error messages now
+          next
+        end
+        # Old convention: any falsy or truthy values
+        next if result
+        current_errors << 'Viewer invalid for this file (no reason given)'
+      end
+      self.errors = current_errors.uniq
     end
 
     def ==(other) #:nodoc:
@@ -766,6 +768,8 @@ class Userfile < ApplicationRecord
   # Unlike the class method, this methods returns
   # just the subset of viewers that are valid for
   # this particular userfile, if conditions apply.
+  #
+  # This method should really be named valid_viewers()
   def viewers
     class_viewers = self.class.class_viewers.map(&:dup)
     @viewers      = class_viewers.select { |v| v.valid_for?(self) }
@@ -773,17 +777,17 @@ class Userfile < ApplicationRecord
 
   # List of viewers for this model
   # Return all available viewer for this userfile class
-  # even if it is not valid for this specific userfile
+  # even if they are not valid for this specific userfile
   def viewers_with_applied_conditions #:nodoc:
     self.class.class_viewers.map(&:dup).each { |v| v.apply_conditions(self) }
   end
 
-  # Find a viewer by name or partial for this model
+  # Find a VALID viewer by name or partial for this model
   def find_viewer(name)
     self.viewers.find { |v| v.name == name || v.partial.to_s == name.to_s }
   end
 
-  # Find a viewer by name or partial for this model
+  # Find a viewer by name or partial for this model (even if invalid)
   def find_viewer_with_applied_conditions(name)
     self.viewers_with_applied_conditions.find { |v| v.name == name || v.partial.to_s == name.to_s }
   end

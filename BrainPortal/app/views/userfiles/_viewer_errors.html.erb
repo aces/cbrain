@@ -27,17 +27,9 @@ no_reason = "The contents of this file of type `#{@userfile.type}` cannot be vie
 %>
 
 <div>
-  <% if @viewer.errors.all? {|e| e == false || e == nil } %>
-    <%= no_reason %>
-  <% else %>
-    <% @viewer.errors.each do |error| %>
-      <% if error == false %>
-        <%= no_reason %>
-      <% else %>
-        <%= error.html_safe %>
-      <% end %>
-      <br>
-    <% end %>
+  <% @viewer.errors.each do |error| %>
+    <%= error.html_safe %>
+    <br>
   <% end %>
 </div>
 
