@@ -241,19 +241,23 @@ class UserfilesController < ApplicationController
     argument_list  = params[:arguments] || []
     argument_list  = [argument_list] unless argument_list.is_a?(Array)
 
-    if content_loader
-      response_content = @userfile.send(content_loader.method, *argument_list)
-      if content_loader.type == :send_file
-        send_file response_content
-      elsif content_loader.type == :gzip
-        response.headers["Content-Encoding"] = "gzip"
-        render :plain => response_content
-      else
-        render content_loader.type => response_content
-      end
-    else
+    if !content_loader
       @userfile.sync_to_cache
       send_file @userfile.cache_full_path, :stream => true, :filename => @userfile.name, :disposition => (params[:disposition] || "attachment")
+      return
+    end
+
+    response_content = @userfile.send(content_loader.method, *argument_list)
+
+    if content_loader.type == :send_file
+      send_file response_content
+    elsif content_loader.type == :gzip
+      response.headers["Content-Encoding"] = "gzip"
+      render :plain => response_content
+    elsif content_loader.type == :text
+      render :plain => response_content
+    else
+      render content_loader.type => response_content
     end
   rescue
     respond_to do |format|
@@ -832,6 +836,12 @@ class UserfilesController < ApplicationController
   def quality_control_panel #:nodoc:
     @filelist      = params[:file_ids] || []
     @current_index = params[:index]    || -1
+
+    # This variable @target can be used by any custom QC viewer
+    # to distinguish between the left and right side of the main
+    # QC screen. The possible values are "qc_left_panel" and
+    # "qc_right_panel"
+    @target        = params[:target]   || ""
 
     @current_index = @current_index.to_i
 
