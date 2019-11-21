@@ -30,46 +30,47 @@
 
 <%= hidden_field_tag :index, @current_index %>
 
-<h3>
-  Quality Control Tagging for: <%= @userfile.name %> (Dataset <%= @current_index + 1 %> out of <%= @filelist.size %>)
-</h3>
+<!-- User control buttons -->
 
-<div class="menubar">
+  <fieldset class="display_inline_block">
+    <legend>Navigation: file <%= @current_index + 1 %> out of <%= @filelist.size %></legend>
+    <%= link_to_userfile_if_accessible(@userfile, current_user, :html_options => { :target => '_blank' }) %>
+    <p>
+    <% if @current_index > 0 %>
+      <%= submit_button "Previous File", :name => :previous %>
+    <% end %>
+    <% if @current_index < @filelist.size - 1 %>
+      <%= submit_button "Next File", :name => :next %>
+    <% end %>
+  </fieldset>
 
-  Quick tags:
-  <%= submit_button "Pass",    :name => :pass %>
-  <%= submit_button "Fail",    :name => :fail %>
-  <%= submit_button "Unknown", :name => :unknown %>
+  <br>
 
-  &nbsp;&nbsp;|&nbsp;&nbsp;
-
-  <% if @current_index > 0 %>
-    <%= submit_button "Previous", :name => :previous %>
-  <% end %>
-
-  <% if @current_index < @filelist.size - 1 %>
-    <%= submit_button "Next", :name => :next %>
-  <% end %>
-
-</div>
-
-<div class="display_table">
-  <div class="display_cell">
-  Full list of tags:<br>
+  <fieldset class="display_inline_block">
+    <legend>File Tags</legend>
+    <%= submit_button "Pass",    :name => :pass %>
+    <%= submit_button "Fail",    :name => :fail %>
+    <%= submit_button "Unknown", :name => :unknown %>
+    <br>
+    Full list of tags:<br>
     <select name="tag_ids[]" multiple="multiple" style="width: 15em" size="4" >
       <%= options_from_collection_for_select current_user.available_tags, 'id', 'name',
           @userfile.get_tags_for_user(current_user).raw_first_column(:id) %>
     </select>
-  </div>
-  <div class="display_cell">
-  Description:<br>
-    <%= text_area_tag "userfile[description]", @userfile.description, :rows => 3, :cols => 40 %><br>
-  </div>
-</div>
-<p>
-<%= submit_tag "Update", :name => :update %>
+  </fieldset>
+
+  <fieldset class="display_inline_block">
+    <legend>File Description</legend>
+    <%= text_area_tag "userfile[description]", @userfile.description, :rows => 5, :cols => 40 %>
+  </fieldset>
 
 <p>
+
+<%= submit_tag "Update (and go to next file)", :name => :update %>
+
+<hr>
+
+<!-- Custom QC content for the userfile -->
 
 <% begin %>
   <%= render :file => @qc_view_file %>
@@ -85,4 +86,3 @@
   <% end %>
 <% end %>
 
-<br>
