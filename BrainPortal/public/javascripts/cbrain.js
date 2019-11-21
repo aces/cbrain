@@ -323,8 +323,6 @@
       var interval        = current_element.data("interval");
       var scroll_bottom   = current_element.data("scroll-bottom");
 
-      if (data) data = jQuery.parseJSON(data);
-
       if (interval) {
         interval = parseInt(interval, 10) * 1000;
         setInterval(function() {
