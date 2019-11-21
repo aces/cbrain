@@ -1004,33 +1004,34 @@ RSpec.describe UserfilesController, :type => :controller do
 
 
     describe "display" do
-      let(:mock_viewer) {Userfile::Viewer.new(mock_userfile.class, {:userfile_class => mock_userfile.class.name, :name => "Text File", :partial => "partial"})}
+      let(:mock_viewer) {Userfile::Viewer.new(mock_userfile.class, {:userfile_class => mock_userfile.class.name, :name => "Text File", :partial => "text_file"})}
 
       before(:each) do
         session[:session_id] = 'session_id'
-        allow(mock_userfile).to receive(:find_viewer).and_return(mock_viewer)
         allow(Userfile).to      receive(:find_accessible_by_user).and_return(mock_userfile)
         allow(File).to          receive(:exists?).and_return(true)
       end
 
-      it "should render :file if viewer exist" do
-        allow(mock_viewer).to receive_message_chain(:partial_path,:to_s).and_return("file")
+      it "should render :text_file partial if viewer exist" do
+        allow(TextFile).to      receive(:find_viewer).and_return(mock_viewer)
         get :display, params: {:viewer => "Text File", :apply_div => "false", :id => 1}
         expect(response).to render_template(:file => "_text_file.html.erb")
       end
 
-      it "should to try find a partial with the viewer name if the userfile doesn't have an associated viewer" do
-        allow(mock_userfile).to receive(:find_viewer).and_return(nil)
+      it "should try to find a partial with the viewer name if the userfile doesn't have an associated viewer" do
+        allow(TextFile).to      receive(:find_viewer).and_return(nil)
         expect(File).to receive(:exists?).and_return(true)
         get :display, params: {:id => 1, :viewer => "hello"}
       end
 
       it "should render the display partial a div is requested" do
+        allow(TextFile).to      receive(:find_viewer).and_return(mock_viewer)
         get :display, params: {:viewer => "Text File", :id => 1}
         expect(response).to render_template(:display)
       end
 
       it "should render a warning if no viewer partial is found" do
+        allow(TextFile).to      receive(:find_viewer).and_return(nil)
         get :display, params: {:id => 1, :viewer => "Unknown viewer"}
         expect(response.body).to match(/Could not find viewer/)
       end
@@ -1039,7 +1040,8 @@ RSpec.describe UserfilesController, :type => :controller do
 
 
     describe "show" do
-      let(:mock_status) {double("status", :status => "ProvNewer")}
+      let(:mock_status)  { double("status", :status => "ProvNewer") }
+      let(:mock_viewers) { [Userfile::Viewer.new(mock_userfile.class, {:userfile_class => mock_userfile.class.name, :name => "Text File", :partial => "text_file"})] }
 
       before(:each) do
         session[:session_id] = 'session_id'
@@ -1064,10 +1066,10 @@ RSpec.describe UserfilesController, :type => :controller do
         expect(assigns[:sync_status]).to eq("ProvNewer")
       end
 
-      it "should retrieve the default viewer" do
-        allow(mock_userfile).to receive_message_chain(:viewers, :first).and_return("default_viewer")
+      it "should retrieve the viewer" do
+        allow(mock_userfile).to receive(:viewers_with_applied_conditions).and_return(mock_viewers)
         get :show, params: {:id => 1}
-        expect(assigns[:viewer]).to eq("default_viewer")
+        expect(assigns[:viewer]).to eq(mock_viewers[0])
       end
 
       it "should retrieve the userfile's log" do

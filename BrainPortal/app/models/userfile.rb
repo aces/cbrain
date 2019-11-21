@@ -692,7 +692,8 @@ class Userfile < ApplicationRecord
 
   class Viewer #:nodoc:
 
-    attr_reader :userfile_class, :name, :partial
+    attr_reader   :userfile_class, :name, :partial
+    attr_accessor :errors
 
     def initialize(userfile_class, viewer) #:nodoc:
       atts = viewer
@@ -727,13 +728,30 @@ class Userfile < ApplicationRecord
         cb_error "Invalid :if condition '#{method}' in model." unless method.respond_to?(:to_proc)
         @conditions << method.to_proc
       end
+      @errors = []
     end
 
     def valid_for?(userfile) #:nodoc:
-      return true if @conditions.empty?
-      @conditions.all? { |condition| condition.call(userfile) }
+      self.apply_conditions(userfile)
+      self.errors.empty?
     rescue
       false
+    end
+
+    def apply_conditions(userfile) #:nodoc:
+      current_errors = []
+      @conditions.each do |condition|
+        result = condition.call(userfile)
+        if result.is_a?(Array) # new convention
+          next if result.empty? # no error messages
+          current_errors += result # we have some error messages now
+          next
+        end
+        # Old convention: any falsy or truthy values
+        next if result
+        current_errors << 'Viewer invalid for this file (no reason given)'
+      end
+      self.errors = current_errors.uniq
     end
 
     def ==(other) #:nodoc:
@@ -750,14 +768,28 @@ class Userfile < ApplicationRecord
   # Unlike the class method, this methods returns
   # just the subset of viewers that are valid for
   # this particular userfile, if conditions apply.
+  #
+  # This method should really be named valid_viewers()
   def viewers
-    class_viewers = self.class.class_viewers
-    @viewers = class_viewers.select { |v| v.valid_for?(self) }
+    class_viewers = self.class.class_viewers.map(&:dup)
+    @viewers      = class_viewers.select { |v| v.valid_for?(self) }
   end
 
-  # Find a viewer by name or partial for this model
+  # List of viewers for this model
+  # Return all available viewer for this userfile class
+  # even if they are not valid for this specific userfile
+  def viewers_with_applied_conditions #:nodoc:
+    self.class.class_viewers.map(&:dup).each { |v| v.apply_conditions(self) }
+  end
+
+  # Find a VALID viewer by name or partial for this model
   def find_viewer(name)
     self.viewers.find { |v| v.name == name || v.partial.to_s == name.to_s }
+  end
+
+  # Find a viewer by name or partial for this model (even if invalid)
+  def find_viewer_with_applied_conditions(name)
+    self.viewers_with_applied_conditions.find { |v| v.name == name || v.partial.to_s == name.to_s }
   end
 
   # See the class method of the same name.
@@ -830,7 +862,7 @@ class Userfile < ApplicationRecord
     viewers
   end
 
-  # Synonym for #has_viewers.
+  # Synonym for .has_viewer.
   def self.has_viewers(*new_viewers)
     self.has_viewer(*new_viewers)
   end
@@ -842,7 +874,7 @@ class Userfile < ApplicationRecord
     @local_viewers    = []
   end
 
-  # Add a viewer to the calling class. Unlike #has_viewer
+  # Add a viewer to the calling class. Unlike .has_viewer
   # the argument is a single Viewer object.
   def self.add_viewer(viewer)
     if self.class_viewers.include?(viewer)
@@ -873,7 +905,6 @@ class Userfile < ApplicationRecord
   def self.find_viewer(name)
     class_viewers.find { |v| v.name == name || v.partial.to_s == name.to_s }
   end
-
 
   ##############################################
   # Content Methods
