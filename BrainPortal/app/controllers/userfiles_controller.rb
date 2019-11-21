@@ -836,6 +836,11 @@ class UserfilesController < ApplicationController
   def quality_control_panel #:nodoc:
     @filelist      = params[:file_ids] || []
     @current_index = params[:index]    || -1
+
+    # This variable @target can be used by any custom QC viewer
+    # to distinguish between the left and right side of the main
+    # QC screen. The possible values are "qc_left_panel" and
+    # "qc_right_panel"
     @target        = params[:target]   || ""
 
     @current_index = @current_index.to_i
