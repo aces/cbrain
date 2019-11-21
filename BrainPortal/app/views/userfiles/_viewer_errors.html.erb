@@ -22,13 +22,9 @@
 #
 -%>
 
-<%
-no_reason = "The contents of this file of type `#{@userfile.type}` cannot be viewed right now (no reason given)."
-%>
-
 <div>
   <% @viewer.errors.each do |error| %>
-    <%= error.html_safe %>
+    <%= error %>
     <br>
   <% end %>
 </div>
