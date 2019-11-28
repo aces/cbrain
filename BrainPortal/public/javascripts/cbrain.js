@@ -243,6 +243,18 @@
     });
 
 
+    loaded_element.find(".hide_qc_panel").click(function(event) {
+      var qc_right  = loaded_element.find(".qc_right_panel");
+      var qc_button = $(this)[0];
+      if (qc_right.is(":visible")) {
+        qc_button.innerHTML = "2 panels";
+        qc_right.hide();
+      } else {
+        qc_button.innerHTML = "1 panel";
+        qc_right.show();
+      }
+    });
+
     /////////////////////////////////////////////////////////////////////
     //
     // Project button behaviour
