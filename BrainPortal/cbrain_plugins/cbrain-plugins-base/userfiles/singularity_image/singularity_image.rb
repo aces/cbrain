@@ -25,10 +25,24 @@ class SingularityImage < FilesystemImage
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  # There really is no specific code for that model, yet.
+  has_viewer :name => 'Image Info', :partial  => :info, :if => :has_singularity_support?
 
   def self.file_name_pattern #:nodoc:
     /\.s?img\z/i
+  end
+
+  def has_singularity_support? #:nodoc:
+    self.class.has_singularity_support?
+  end
+
+  # Detects if the system has the 'singularity' command.
+  # Caches the result in the class so it won't need to
+  # be detected again after the first time, for the life
+  # of the current process.
+  def self.has_singularity_support? #:nodoc:
+    return @_has_singularity_support if ! @_has_singularity_support.nil?
+    out = IO.popen("bash -c 'type -p singularity'","r") { |f| f.read }
+    @_has_singularity_support = out.present?
   end
 
 end
