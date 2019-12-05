@@ -38,7 +38,7 @@ class TaskCustomFilter < CustomFilter
 
   # This structure must match the argument syntax of
   # the permit() method of ActionController::Parameters
-  TASKS_DATA_PARAMS =
+  WHITELIST_TASKS_FILTERING_PARAMS =
     [
       :description_term,
       :description_type,
@@ -52,8 +52,8 @@ class TaskCustomFilter < CustomFilter
         :status       => [],
       }
     ]
-  self.data_setter_and_getter(TASKS_DATA_PARAMS)
-  DATA_PARAMS = merge_data_params(TASKS_DATA_PARAMS) # merge from superclasses too
+  self.data_setter_and_getter(WHITELIST_TASKS_FILTERING_PARAMS)
+  WHITELIST_FILTERING_PARAMS = merge_whitelist_filtering_params(WHITELIST_TASKS_FILTERING_PARAMS) # merge from superclasses too
 
 
 

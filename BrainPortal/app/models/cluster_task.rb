@@ -77,6 +77,7 @@ class ClusterTask < CbrainTask
   # method.
   #
   # These basenames get modified with suffixes appended to them.
+  RUNTIME_INFO_BASENAME   = ".runtime_info"# appended: ".{name}.{run_id}.kv"
   SCIENCE_SCRIPT_BASENAME = ".science"     # appended: ".{name}.{run_id}.sh"
   SCIENCE_STDOUT_BASENAME = ".science.out" # appended: ".{name}.{run_id}"
   SCIENCE_STDERR_BASENAME = ".science.err" # appended: ".{name}.{run_id}"
@@ -363,9 +364,8 @@ class ClusterTask < CbrainTask
       [ :name, :data_provider_id ].any? { |i| attlist[i].blank? }
     # Fetch file
     results = klass.where( attlist ).all
-    cb_error "Found more than one file that match attribute list: '#{attlist.inspect}'." if results.size > 1
     # Return whether we found one or not
-    return (results.size == 1)
+    return results.count > 0
   end
 
 
@@ -605,11 +605,20 @@ class ClusterTask < CbrainTask
 
     # Build script
     script  = ""
+    # Add prologues in specialization order
     script += bourreau_glob_config.to_bash_prologue if bourreau_glob_config
     script += tool_glob_config.to_bash_prologue     if tool_glob_config
     script += tool_config.to_bash_prologue          if tool_config
+    # Add CBRAIN special inits
     script += self.supplemental_cbrain_tool_config_init
+    # Add the command
     script += "\n\n" + command + "\n\n"
+    # Add epilogues in reverse order
+    script += tool_config.to_bash_epilogue          if tool_config
+    script += tool_glob_config.to_bash_epilogue     if tool_glob_config
+    script += bourreau_glob_config.to_bash_epilogue if bourreau_glob_config
+
+    # Write the temp script
     File.open(scriptfile,"w") { |fh| fh.write(script) }
 
     # Execute and capture
@@ -1096,6 +1105,11 @@ class ClusterTask < CbrainTask
     "#{SCIENCE_SCRIPT_BASENAME}.#{self.name}.#{self.run_id(run_number)}.sh"
   end
 
+  # Returns the basename of the runtime info output capture file
+  def runtime_info_basename(run_number=nil) #:nodoc:
+    "#{RUNTIME_INFO_BASENAME}.#{self.name}.#{self.run_id(run_number)}.kv"
+  end
+
   # Returns a basename for the QSUB script for the task.
   # This is not a full path, just a filename relative to the work directory.
   # The file itself is not guaranteed to exist.
@@ -1281,6 +1295,7 @@ class ClusterTask < CbrainTask
      self.cluster_stdout = nil
      self.cluster_stderr = nil
      self.script_text    = nil
+     self.runtime_info   = nil
 
      return if self.new_record? || self.workdir_archived?
 
@@ -1292,22 +1307,31 @@ class ClusterTask < CbrainTask
      stderr_lim          = stderr_lim.to_i
      stderr_lim          = 2000 if stderr_lim <= 100 || stderr_lim > 999999
 
-     stdoutfile = self.stdout_cluster_filename(run_number)
-     stderrfile = self.stderr_cluster_filename(run_number)
-     scriptfile = Pathname.new(self.full_cluster_workdir) + self.science_script_basename(run_number) rescue nil
+     stdoutfile  = self.stdout_cluster_filename(run_number)
+     stderrfile  = self.stderr_cluster_filename(run_number)
+     scriptfile  = Pathname.new(self.full_cluster_workdir) + self.science_script_basename(run_number) rescue nil
+     runtimefile = Pathname.new(self.full_cluster_workdir) + self.runtime_info_basename(run_number)   rescue nil
+
      if stdoutfile && File.exist?(stdoutfile)
        io = IO.popen("tail -#{stdout_lim} #{stdoutfile.to_s.bash_escape}","r")
        self.cluster_stdout = io.read
        io.close
      end
+
      if stderrfile && File.exist?(stderrfile)
        io = IO.popen("tail -#{stderr_lim} #{stderrfile.to_s.bash_escape}","r")
        self.cluster_stderr = io.read
        io.close
      end
+
      if scriptfile && File.exist?(scriptfile.to_s)
        self.script_text = File.read(scriptfile.to_s) rescue ""
      end
+
+     if runtimefile && File.exist?(runtimefile.to_s)
+       self.runtime_info = File.read(runtimefile.to_s) rescue ""
+     end
+
      true
   end
 
@@ -1781,6 +1805,9 @@ class ClusterTask < CbrainTask
 # CbrainTask '#{self.name}' commands section
 #{command_script}
 
+#{tool_config          ? tool_config.to_bash_epilogue          : ""}
+#{tool_glob_config     ? tool_glob_config.to_bash_epilogue     : ""}
+#{bourreau_glob_config ? bourreau_glob_config.to_bash_epilogue : ""}
     SCIENCE_SCRIPT
     sciencefile = self.science_script_basename.to_s
     File.open(sciencefile,"w") do |io|
@@ -1815,6 +1842,9 @@ trap got_sigxfsz XFSZ
 
 date '+CBRAIN Task Starting At %s : %F %T'
 date '+CBRAIN Task Starting At %s : %F %T' 1>&2
+
+# Record runtime environment
+bash #{Rails.root.to_s.bash_escape}/vendor/cbrain/bin/runtime_info.sh > #{runtime_info_basename}
 
 # stdout and stderr captured below will be re-substituted in
 # the output and error of this script.

@@ -25,7 +25,7 @@ class TasksController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  api_available :except => [:update, :destroy]
+  api_available :except => [:update, :destroy, :zenodo, :create_zenodo, :reset_zenodo ]
 
   before_action :login_required
 
@@ -780,6 +780,396 @@ class TasksController < ApplicationController
 
 
   #####################################################################
+  # Zenodo Publishing Actions
+  #####################################################################
+
+  # GET /tasks/:id/zenodo
+  def zenodo #:nodoc:
+    task_id     = params[:id]
+    @task = current_user.available_tasks.find(task_id)
+
+    # Check stuff
+    cb_error "This task doesn't have the capabilities to publish to Zenodo.", :redirect => task_path(@task) unless
+      @task.has_zenodo_capabilities?
+    cb_error "You have not configured any Zenodo token in your account.", :redirect => task_path(@task) unless
+      current_user.has_zenodo_credentials?
+    cb_error "This task is archived, unarchived it first.", :redirect => task_path(@task) if
+      @task.archived_status
+    cb_error "This task is on an execution server that is unavailable.", :redirect => task_path(@task) unless
+      @task.bourreau.is_alive?
+    cb_error "You have to be the owner of the task to publish its outputs.", :redirect => task_path(@task) if
+      current_user.id != @task.user_id
+
+    # Any of these can be nil
+    combined_dep_id   = @task.zenodo_deposit_id.presence # 'main-1234' or 'sandbox-1234'
+    zsite, deposit_id = (combined_dep_id || "").split("-") # "main", "1234"
+
+    # What files this task is supposed to upload
+    zenodo_userfile_ids = @task.zenodo_outputfile_ids
+    @zenodo_userfiles   = zenodo_userfiles_from_ids(zenodo_userfile_ids)
+    if (@zenodo_userfiles.compact.empty?)
+      cb_error "This task doesn't seem to have produced any publishable outputs.", :redirect => task_path(@task)
+    end
+
+    # Figure out at what 'step' of the process we are at:
+    #
+    #   1- Nothing done yet, so present the form for the user
+    #   2- A deposit has been created on zenodo and files are being uploaded in background
+    #   3- A deposit has been created on zenodo and files have finished uploading
+    #   4- The deposit has been published by the user
+    #
+    # All these steps can be repeated more than once: when
+    # the deposits are on the zenodo sandbox (any number of times)
+    # or the main zenodo (only once). This is tracked by a variable
+    # 'zsite' with values of 'main' or 'sandbox', and it usually
+    # prefixes the value of the deposit ID in the CbrainTask and Userfile
+    # attribute :zenodo_deposit_id . See @combined_dep_id above.
+
+    # For steps 2, 3 and 4: find the zenodo deposit from Zenodo
+    if deposit_id.present?
+      init_zenodo_client(zsite)
+      @zenodo_deposit = find_existing_deposit(deposit_id)
+      if @zenodo_deposit.nil?
+        # Oh? It must have been deleted? TODO: check if still the case after published?
+        message = "Warning: Deposit ##{deposit_id} (#{zsite}) has disappeared from Zenodo."
+
+        # Zap task's deposit info
+        @task.zenodo_deposit_id = nil
+        @task.save!
+        @task.addlog(message)
+
+        # Zap userfiles' deposit info
+        @zenodo_userfiles.compact.each do |userfile|
+          next unless userfile.zenodo_deposit_id == combined_dep_id
+          userfile.zenodo_deposit_id = nil
+          userfile.save!
+          userfile.addlog(message)
+        end
+
+        flash.now[:notice] = message
+        combined_dep_id = zsite = deposit_id = nil # so we enter step 1 code below
+      else # Record DOI if needed
+        if @zenodo_deposit.submitted && @zenodo_deposit.metadata.doi.present?
+          zenodo_doi = @zenodo_deposit.metadata.doi
+          if @task.zenodo_doi.blank?
+            @task.update_column(:zenodo_doi, zenodo_doi)
+            @task.addlog("Zenodo DOI added: #{zenodo_doi}")
+          end
+          @zenodo_userfiles.compact.each do |userfile|
+            next if userfile.zenodo_doi.present?
+            userfile.update_column(:zenodo_doi, zenodo_doi)
+            userfile.addlog("Zenodo DOI added: #{zenodo_doi}")
+          end
+        end
+      end
+    end
+
+    # Step 1: ask the task for what we need to build a new zenodo deposit
+    # This sets up what's needed to render the initial form.
+    if combined_dep_id.blank?
+      @zenodo_deposit  = @task.base_zenodo_deposit
+      @zenodo_metadata = @zenodo_deposit.metadata || ZenodoClient::DepositMetadata.new
+
+      # Adjustments: creators
+      author = current_user.full_name.sub(/\s+(\S+)\s*$/,"")
+      last   = Regexp.last_match.try(:[],1)
+      author = "#{last}, #{author}" if last.present?
+      @zenodo_metadata.creators ||= []
+      @zenodo_metadata.creators.unshift(ZenodoClient::Author.new( :name => author )) unless
+        @zenodo_metadata.creators.any? { |a| a.name == author }
+    end
+
+    # All good for rendering the zenodo status page
+    return # renders zenodo.html.erb
+
+  end
+
+  # POST /tasks/:id/create_zenodo
+  def create_zenodo #:nodoc:
+    task_id = params[:id]
+    @task   = current_user.available_tasks.find(task_id)
+
+    if @task.zenodo_doi.present?
+      cb_error "A deposit has already been published.", :redirect => zenodo_task_path(@task)
+    elsif @task.zenodo_deposit_id.present?
+      cb_error "A deposit has already been created.", :redirect => zenodo_task_path(@task)
+    end
+
+    @zenodo_deposit     = ZenodoClient::Deposit.new(         zenodo_deposit_params.to_h          )
+    @zenodo_metadata    = ZenodoClient::DepositMetadata.new( zenodo_deposit_metadata_params.to_h )
+    zenodo_userfile_ids = @task.zenodo_outputfile_ids
+    @zenodo_userfiles   = zenodo_userfiles_from_ids(zenodo_userfile_ids)
+
+    # Adjustements: related files. All outputs that are already present
+    # with another DOI are just refered to as such.
+    related = @zenodo_userfiles
+      .select { |u| u.zenodo_doi.present? }
+      .map    { |u| ZenodoClient::RelatedIdentifier.new(:identifier => u.zenodo_doi, :relation => 'hasPart') }
+    if related.present?
+      @zenodo_metadata.related_identifiers ||= []
+      @zenodo_metadata.related_identifiers  += related
+    end
+
+    # Validate the deposit structure.
+    # We can't validate the metadata struct because even though
+    # many fields are mandatory, they can be left blank during the
+    # initial creation.
+    if (! @zenodo_deposit.valid?)
+      flash.now[:error] = "The deposit information seems invalid."
+      render :zenodo
+      return
+    end
+
+    # Create it on zenodo
+    zsite       = init_zenodo_client(params[:zsite]) # 'main' or 'sandbox'
+    new_deposit = create_initial_deposit(@zenodo_deposit, @zenodo_metadata)
+
+    # Record in task
+    @task.zenodo_deposit_id = "#{zsite}-#{new_deposit.id}"
+    @task.save_with_logging(current_user, [ :zenodo_deposit_id ])
+
+    # Upload files and data in background
+    background_upload_task_info_to_deposit(new_deposit, @task, @zenodo_userfiles) # forks
+
+    redirect_to :action => :zenodo
+  end
+
+  # This action resets a task that has been prepared or published
+  # to the zenodo sandbox, so it can be either published again on
+  # the sandbox or published to the official zenodo site. Once
+  # published on the official zenodo site, it can't be reset.
+  def reset_zenodo
+    task_id = params[:id]
+    @task   = current_user.available_tasks.find(task_id)
+
+    if @task.zenodo_doi.present? && ! @task.zenodo_doi.starts_with?(ZenodoHelper::ZenodoSandboxDOIPrefix)
+      cb_error "This task's outputs have already been published and we cannot reset its publication state any more."
+    end
+
+    # Remember original IDs
+    orig_deposit_id         = @task.zenodo_deposit_id
+    orig_doi                = @task.zenodo_doi
+
+    # Reset task
+    @task.zenodo_deposit_id = nil
+    @task.zenodo_doi        = nil
+    @task.save_with_logging(current_user, [ :zenodo_deposit_id, :zenodo_doi ])
+
+    # Reset all files
+    zenodo_userfile_ids = @task.zenodo_outputfile_ids
+    @zenodo_userfiles   = zenodo_userfiles_from_ids(zenodo_userfile_ids)
+    @zenodo_userfiles.compact.each do |userfile|
+      next if userfile.zenodo_doi.present? && ! userfile.zenodo_doi.starts_with?(ZenodoHelper::ZenodoSandboxDOIPrefix)
+      userfile.zenodo_deposit_id = nil if userfile.zenodo_deposit_id == orig_deposit_id
+      userfile.zenodo_doi        = nil if userfile.zenodo_doi        == orig_doi
+      userfile.save_with_logging(current_user, [ :zenodo_deposit_id, :zenodo_doi ])
+    end
+
+    # Attempt to remove the deposit on Zenodo; if it's published
+    # it will not be deleted no matter how much we try.
+    zsite, deposit_id = (orig_deposit_id || "").split("-") # "main", "1234"
+    init_zenodo_client(zsite)
+    depo_api = ZenodoClient::DepositsApi.new
+    depo_api.delete_deposit(deposit_id.to_i) rescue 'ignore'
+
+    redirect_to :action => :zenodo
+  end
+
+  private
+
+  # Returns a list of userfiles out of the
+  # +ids+ ; nil elements are left in the array if
+  # any id matches a missing file or a file not
+  # accessible by the current user.
+  def zenodo_userfiles_from_ids(ids) #:nodoc:
+    ids.map do |id|
+      Userfile
+        .find_all_accessible_by_user(current_user)
+        .where(:id => id)
+        .first # we allow nils: it means the task returned an ID of a missing/unaccessible file
+    end
+  end
+
+  def zenodo_server_by_zsite(zsite) #:nodoc:
+    zsite == 'main' ?
+      'zenodo.org'  :
+      'sandbox.zenodo.org'
+  end
+
+  def token_by_zsite(zsite) #:nodoc:
+    token = zsite == 'main'             ?
+      current_user.zenodo_main_token    :
+      current_user.zenodo_sandbox_token
+    token.presence.try(:strip)
+  end
+
+  def init_zenodo_client(zsite) #:nodoc:
+    zsite  = zsite == 'main' ? 'main' : 'sandbox' # sanitize
+    token  = token_by_zsite(zsite)
+    server = zenodo_server_by_zsite(zsite)
+    ZenodoClient.configure do |config|
+      config.api_key['access_token'] = token
+      config.host                    = server
+      #config.debugging               = true # will print info on stdout; WARNING binary junk!
+    end
+    # Let's be nice with the poor sysadmins who look at logs
+    ZenodoClient::ApiClient.default.user_agent =
+      "CBRAIN/#{CBRAIN::CBRAIN::CBRAIN_StartTime_Revision}/ZenodoClient/#{ZenodoClient::VERSION}"
+    zsite
+  end
+
+  def find_existing_deposit(deposit_id) #:nodoc:
+    depo_api = ZenodoClient::DepositsApi.new
+    deposit  = depo_api.get_deposit(deposit_id.to_i)
+    deposit
+  rescue ZenodoClient::ApiError => ex
+    return nil if ex.message == 'GONE'
+    raise
+  end
+
+  def create_initial_deposit(deposit, metadata) #:nodoc:
+    # Create the Deposit
+    depo_api    = ZenodoClient::DepositsApi.new
+    new_deposit = depo_api.create_deposit(deposit)
+
+    # Add metadata
+    nested               = ZenodoClient::NestedDepositMetadata.new
+    nested.metadata      = metadata
+    metadata.upload_type = 'dataset'
+    deposit              = depo_api.put_deposit(new_deposit.id, nested)
+
+    # Return the deposit
+    deposit
+  end
+
+  def background_upload_task_info_to_deposit(deposit, task, userfiles) #:nodoc:
+
+    # Select which files to upload
+    userfiles = userfiles
+      .compact
+      .reject { |u| u.zenodo_deposit_id.present? }
+      .reject { |u| u.zenodo_doi.present? }
+
+    CBRAIN.spawn_with_active_records_if(userfiles.present?, current_user, 'UploadToZenodo') do
+      errors   = [] # array of one line text messages
+      uploaded = [] # array of one line text messages
+
+      # Real userfiles
+      userfiles.each_with_index do |userfile,idx|
+        begin
+          Process.setproctitle "ZenodoUpload ID=#{userfile.id} #{idx+1}/#{userfiles.size}"
+          upload_userfile_to_deposit(deposit, userfile)
+          uploaded << "File: #{userfile.name} (ID=#{userfile.id})"
+        rescue => ex
+          errors   << "File: #{userfile.name} (ID=#{userfile.id}): #{ex.class}: #{ex.message}"
+        end
+      end
+
+      # Contact bourreau and get task's out, err and script
+      Process.setproctitle "ZenodoUpload Task Info ID=#{task.id}"
+      task.capture_job_out_err(task.run_number,100_000,100_000) rescue nil # nums are number of lines
+
+      # Captured special data
+      pretty_json_task = JSON.pretty_generate(task.for_api)
+      runtime_info     = JSON.pretty_generate(task.struct_runtime_info)
+      boutiques_path   = task.class.generated_from.descriptor_path rescue nil
+      boutiques_json   = boutiques_path.to_s.ends_with?(".json") ? File.read(boutiques_path) : nil
+      er1 = upload_text_data_to_deposit(deposit, task.script_text,    "main_cbrain_script-#{task.run_id}.sh")
+      er2 = upload_text_data_to_deposit(deposit, task.cluster_stdout, "captured_stdout-#{task.run_id}.log"  )
+      er3 = upload_text_data_to_deposit(deposit, task.cluster_stderr, "captured_stderr-#{task.run_id}.log"  )
+      er4 = upload_text_data_to_deposit(deposit, task.getlog,         "cbrain_log-#{task.run_id}.log"       )
+      er5 = upload_text_data_to_deposit(deposit, pretty_json_task,    "cbrain_task-#{task.run_id}.json"     )
+      er6 = upload_text_data_to_deposit(deposit, runtime_info,        "runtime_info-#{task.run_id}.json"    )
+      er7 = upload_text_data_to_deposit(deposit, boutiques_json,      "boutiques-#{task.run_id}.json"       ) if boutiques_json
+      [ er1, er2, er3, er4, er5, er6, er7 ].each { |er| errors << er if er.present? }
+
+      if errors.present?
+        Message.send_message(current_user,
+          :message_type  => 'error',
+          :header        => "Could not send a file to Zenodo",
+          :description   => "Some errors occurred while sending files to Zenodo",
+          :variable_text => "For #{view_pluralize(errors.size,"file")}:\n" + errors.join("\n")
+        )
+      end
+
+      if uploaded.present?
+        Message.send_message(current_user,
+          :message_type  => 'notice',
+          :header        => "Uploaded files to Zenodo",
+          :description   => "These files were uploaded to Zenodo",
+          :variable_text => "For #{view_pluralize(uploaded.size,"file")}:\n" + uploaded.join("\n")
+        )
+      end
+    end
+  end
+
+  def upload_userfile_to_deposit(deposit, userfile) #:nodoc:
+    is_col = userfile.is_a?(FileCollection)
+
+    # Identify the content
+    userfile.sync_to_cache
+    content_path = userfile.cache_full_path
+    content_name = userfile.name
+    content_path = create_tmp_tar_for_filecollection(userfile) if is_col
+    content_name = userfile.name + ".tar.gz"                   if is_col
+
+    # Upload
+    dep_file = upload_file_content_to_deposit(deposit.id, content_path, content_name)
+
+    # Log info in userfile
+    zsite = deposit.links[:self].to_s =~ /sandbox/ ? 'sandbox' : 'main' # one way to guess
+    userfile.addlog("Uploaded to Zenodo in Deposit #{deposit.id} with ID #{dep_file.id}")
+    userfile.zenodo_deposit_id = "#{zsite}-#{deposit.id}"
+    userfile.save
+  ensure
+    File.unlink(content_path) if is_col && content_path.present? && File.file?(content_path)
+  end
+
+  def upload_text_data_to_deposit(deposit, text, filename) #:nodoc:
+    cb_error "No content provided" if text.blank?
+
+    # Prep temp file
+    content_path = "/tmp/#{filename}.#{rand(1000000)}"
+    File.open(content_path, "w:BINARY") { |fh| fh.write(text) }
+
+    # Upload
+    upload_file_content_to_deposit(deposit.id, content_path, filename)
+
+    return nil # it means all is OK
+  rescue => ex
+    return "File: #{filename}: #{ex.class}: #{ex.message}"
+  ensure
+    File.unlink(content_path) rescue nil
+  end
+
+  # This assumes filecollection has already been sychronized
+  def create_tmp_tar_for_filecollection(filecollection) #:nodoc:
+    cache   = filecollection.cache_full_path
+    tmpbase = "/tmp/#{filecollection.name}-#{rand(1000000)}.tar.gz"
+    ret     = system "cd #{cache.parent.to_s.bash_escape} && tar -czf #{tmpbase} #{filecollection.name.bash_escape}"
+    cb_error "Cannot create tmp tar file for FileCollection ##{filecollection.id}" unless ret
+    tmpbase
+  end
+
+  def upload_file_content_to_deposit(deposit_id, file_path, filename) #:nodoc:
+    # Upload
+    filesapi = ZenodoClient::FilesApi.new
+    file_h   = File.open(file_path,"r:BINARY")
+    dep_file = filesapi.create_file(deposit_id, file_h, filename)
+    file_h.close rescue true # hope it's ok
+
+    # Rename? Sometimes necessary
+    if dep_file.filename != filename
+      dep_file.filename = filename
+      filesapi.update_file(deposit_id, dep_file.id, dep_file)
+    end
+
+    dep_file
+  end
+
+
+
+  #####################################################################
   # Private Methods For Form Support
   #####################################################################
 
@@ -799,6 +1189,30 @@ class TasksController < ApplicationController
     task_attr[:params] = task_params
     task_attr
   end
+
+  def zenodo_deposit_params #:nodoc:
+    zen_params = params.require_as_params(:zenodo_deposit).permit(
+      # :title # for the moment just that
+    )
+    zen_params
+  end
+
+  def zenodo_deposit_metadata_params #:nodoc:
+    zen_meta_params = params.require_as_params(:zenodo_deposit_metadata).permit(
+      :title, :description, :community, :creators => [:name]
+    )
+    zen_meta_params[:creators] ||= []
+    zen_meta_params[:creators].reject! { |creator| creator[:name].blank? }
+    zen_meta_params
+  end
+
+
+
+  #####################################################################
+  # Task Creation Private Methods
+  #####################################################################
+
+  private
 
   # Part of the create() process for a task
   #

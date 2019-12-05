@@ -136,7 +136,12 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :tasks,           :except => [ :destroy ] do
+  resources :tasks, :except => [ :destroy ] do
+    member do
+      get  'zenodo'
+      post 'create_zenodo'
+      post 'reset_zenodo'
+    end
     collection do
       post 'new', :as => 'new', :via => 'new'
       post 'operation'
@@ -182,7 +187,10 @@ Rails.application.routes.draw do
   get   "/report",                :controller => :portal, :action => :report
 
   # Network Operation Center; daily status (shows everything publicly!)
-  # get   "/noc/daily",             :controller => :noc,    :action => :daily
+  #get   "/noc/daily",             :controller => :noc,    :action => :daily
+  #get   "/noc/weekly",            :controller => :noc,    :action => :weekly
+  #get   "/noc/monthly",           :controller => :noc,    :action => :monthly
+  #get   "/noc/yearly",            :controller => :noc,    :action => :yearly
 
   # API description, by Swagger
   get   "/swagger",               :controller => :portal, :action => :swagger

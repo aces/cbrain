@@ -24,6 +24,9 @@ module ExceptionHelpers
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  NOT_FOUND_MSG = "The object you requested does not exist or is not accessible to you." #:nodoc:
+  CANNOT_DELETE_MSG = "The requested object could not be deleted." #:nodoc:
+
   def self.included(includer) #:nodoc:
     includer.class_eval do
       rescue_from StandardError,                        :with => :generic_exception
@@ -38,36 +41,51 @@ module ExceptionHelpers
 
   # Record not accessible.
   def record_not_found(exception)
-    raise unless Rails.env == 'production' #Want to see stack trace in dev.
-    flash[:error] = "The object you requested does not exist or is not accessible to you."
+    raise if Rails.env == 'development' #Want to see stack trace in dev.
+    flash[:error] = NOT_FOUND_MSG
     respond_to do |format|
       format.html { redirect_to default_redirect }
       format.js   { render :partial  => "shared/flash_update",     :status => 404 }
       format.xml  { render :xml =>  {:error => exception.message}, :status => 404 }
-      format.json { render :json => {:error => exception.message}, :status => 404 }
+      format.json { render :json => {:error => "The #{exception.model} with id = #{exception.id} doesn't exist",
+                                     :message => NOT_FOUND_MSG,
+                                     :type => "object not found",
+                                     :model => exception.model,
+                                     :id => exception.id
+                                     },
+                           :status => 404 }
     end
   end
 
   def record_not_deleted(exception)
-    raise unless Rails.env == 'production' #Want to see stack trace in dev.
-    flash[:error] = "The requested object could not be deleted"
+    raise if Rails.env == 'development' #Want to see stack trace in dev.
+    flash[:error] = CANNOT_DELETE_MSG
     respond_to do |format|
       format.html { redirect_to default_redirect }
       format.js   { render :partial  => "shared/flash_update",     :status => 403 }
       format.xml  { render :xml =>  {:error => exception.message}, :status => 403 }
-      format.json { render :json => {:error => exception.message}, :status => 403 }
+      format.json { render :json => {:error => "The #{exception.model} with id = #{exception.id}} fails to delete",
+                                     :message => CANNOT_DELETE_MSG,
+                                     :type => "delete failed",
+                                     :model => exception.model,
+                                     :id => expectation.id
+                                     },
+                           :status => 403 }
     end
   end
 
   # Action not accessible.
   def unknown_action(exception)
-    raise unless Rails.env == 'production' #Want to see stack trace in dev.
+    raise if Rails.env == 'development' #Want to see stack trace in dev.
     flash[:error] = "The page you requested does not exist."
     respond_to do |format|
       format.html { redirect_to default_redirect }
       format.js   { render :partial  => "shared/flash_update",     :status => 400 }
       format.xml  { render :xml =>  {:error => exception.message}, :status => 400 }
-      format.json { render :json => {:error => exception.message}, :status => 400 }
+      format.json { render :json => {:error => exception.message,
+                                     :message => flash[:error]
+                                     },
+                           :status => 400 }
     end
   end
 
@@ -95,7 +113,7 @@ module ExceptionHelpers
 
   # Anything else is serious.
   def generic_exception(exception)
-    raise unless Rails.env == 'production' #Want to see stack trace in dev. Also will log it in exception logger
+    raise if Rails.env == 'development' #Want to see stack trace in dev. Also will log it in exception logger
 
     # Note that send_internal_error_message will also censure :password from the params hash
     exception_log = ExceptionLog.log_exception(exception, current_user, request) # explicit logging in exception logger, since we won't re-raise it now.

@@ -60,7 +60,12 @@
       end
     %>
 
-    <% t.edit_cell(:email, :content => mail_to(h(@user.email))) { |f| f.text_field :email } %>
+
+    <% t.edit_cell(:position,    :content => @user.position         ) { |f| f.text_field :position } %>
+
+    <% t.edit_cell(:affiliation, :content => @user.affiliation      ) { |f| f.text_field :affiliation } %>
+
+    <% t.edit_cell(:email,       :content => mail_to(h(@user.email))) { |f| f.text_field :email } %>
 
     <%
       t.cell("Last Connected") do
@@ -116,6 +121,32 @@
 
   <% end %>
 
+  <%= show_table(@user, :as => :user, :header => 'Zenodo Publishing', :edit_condition => edit_permission?(@user)) do |t| %>
+
+    <% t.edit_cell(:zenodo_sandbox_token,
+                   :header     => 'Zenodo Sandbox Token',
+                   :content    => (@user.zenodo_sandbox_token.blank? ? "" : ("*" * 60)),
+                   :show_width => 2 ) do |f| %>
+      <%= f.password_field :zenodo_sandbox_token, :size => 62 %><br>
+      <div class="wide_field_explanation">
+        This token can be used for creating <strong>temporary/test</strong> Zenodo data deposits.<p>
+        You can create a token at <a href="https://sandbox.zenodo.org/account/settings/applications/" target="_blank">https://sandbox.zenodo.org/account/settings/applications/</a>.
+      </div>
+    <% end %>
+
+    <% t.edit_cell(:zenodo_main_token,
+                   :header     => 'Zenodo Official Token',
+                   :content    => (@user.zenodo_main_token.blank? ? "" : ("*" * 60)),
+                   :show_width => 2 ) do |f| %>
+      <%= f.password_field :zenodo_main_token, :size => 62 %>
+      <div class="wide_field_explanation">
+        This token can be used for creating <strong>real, official and permanent</strong> Zenodo data deposits.<p>
+        You can create a token at <a href="https://zenodo.org/account/settings/applications/" target="_blank">https://zenodo.org/account/settings/applications/</a>.
+      </div>
+    <% end %>
+
+  <% end %>
+
   <% if @user.signed_license_agreements.present? %>
     <%= show_table(@user, :as => :user, :header => "License Agreements", :width => 3) do |t| %>
       <% @user.signed_license_agreements.each  do |la| %>
@@ -141,6 +172,25 @@
            (size  > 0 && unk == 0) ? " (#{colored_pretty_size(size)} used)" :
            (size == 0 && unk  > 0) ? " (#{unk} unkn)" : ""
          ).html_safe
+       end
+    %>
+
+    <% t.cell("Historical Storage") do
+         plus  =   SpaceResourceUsageForUserfile.where(:user_id => @user.id).where("value > 0").sum(:value)
+         minus = - SpaceResourceUsageForUserfile.where(:user_id => @user.id).where("value < 0").sum(:value)
+         pretty_plus    = plus  > 0 ? colored_pretty_size(plus)  : nil
+         pretty_minus   = minus > 0 ? colored_pretty_size(minus) : nil
+         pretty_plus  &&= "<span style=\"color: green\">+</span>#{pretty_plus}".html_safe
+         pretty_minus &&= "<span style=\"color: red\">-</span>#{pretty_minus}".html_safe
+         pretty = (pretty_plus.to_s + " " + pretty_minus.to_s).html_safe
+         pretty = "(none)" if pretty.blank?
+         index_count_filter(pretty, :resource_usage, { :type => 'SpaceResourceUsageForUserfile'}, :show_zeros => true)
+       end
+    %>
+
+    <% t.cell("Historical CPU Time") do
+         pretty_val = pretty_elapsed(CputimeResourceUsageForCbrainTask.where(:user_id => @user.id).sum(:value), :num_components => 3)
+         index_count_filter(pretty_val, :resource_usage, { :type => 'CputimeResourceUsageForCbrainTask'}, :show_zeros => true)
        end
     %>
 

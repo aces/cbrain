@@ -25,6 +25,8 @@ class ResourceUsageController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
+  include DateRangeRestriction
+
   before_action :login_required
   #before_action :admin_role_required
 
@@ -51,12 +53,11 @@ class ResourceUsageController < ApplicationController
 
     scope_default_order(@scope, 'created_at')
 
-    @base_scope   = base_scope
-                    .where('resource_usage.type' => @maintype)
-                    .includes( [:user, :group,
-                                :userfile, :data_provider,
-                                :cbrain_task, :remote_resource, :tool, :tool_config] )
-    @view_scope   = @scope.apply(@base_scope)
+    @base_scope,error_mess   = restrict_scope(@maintype,@scope, params)
+
+    flash.now[:error] = "#{error_mess}" if error_mess.present?
+
+    @view_scope              = @scope.apply(@base_scope)
 
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 15 })
     @resource_usages = @scope.pagination.apply(@view_scope) # funky plural here
@@ -64,6 +65,8 @@ class ResourceUsageController < ApplicationController
     @total_plus      = @view_scope.where("resource_usage.value > 0").sum(:value)
     @total_minus     = @view_scope.where("resource_usage.value < 0").sum(:value)
     @total           = @total_plus + @total_minus
+
+    scope_to_session(@scope)
 
     respond_to do |format|
       format.html
@@ -79,6 +82,62 @@ class ResourceUsageController < ApplicationController
       scope = ResourceUsage.where('resource_usage.user_id' => current_user.id)
     end
     scope
+  end
+
+  # Create list of RUs visible to current user with restricted scope
+  def restrict_scope(maintype,scope,params) #:nodoc:
+
+    @base_scope   = base_scope
+                    .where('resource_usage.type' => @maintype)
+    if  @maintype == 'SpaceResourceUsageForUserfile'
+
+      if params[:deleted_items]
+        @base_scope = @base_scope.includes(:userfile).where(:userfiles => {id: nil})
+      end
+
+      if params[:negative_file_delta]
+        @base_scope = @base_scope.where('resource_usage.value < 0')
+      end
+
+      if params[:positive_file_delta]
+        @base_scope = @base_scope.where('resource_usage.value >= 0')
+      end
+
+    else
+      if params[:deleted_items]
+        @base_scope = @base_scope.includes(:cbrain_task).where(:cbrain_tasks => {id: nil})
+      end
+    end
+
+
+    date_range     = params[:date_range]         || {}
+    date_attribute = date_range[:date_attribute]
+
+    if date_attribute == "created_at"
+
+      # date_filtering verification
+      error_mess = check_filter_date(date_attribute,
+                                     date_range["absolute_or_relative_from"], date_range["absolute_or_relative_to"],
+                                     date_range["absolute_from"], date_range["absolute_to"],
+                                     date_range["relative_from"], date_range["relative_to"])
+
+      if error_mess.blank?
+        @base_scope = add_time_condition_to_scope(
+                        @base_scope,
+                        "resource_usage",
+                        date_range[:absolute_or_relative_from]   == "absolute" ? true : false,
+                        date_range[:absolute_or_relative_to]     == "absolute" ? true : false,
+                        date_range[:absolute_from], date_range[:absolute_to],
+                        date_range[:relative_from], date_range[:relative_to],
+                        date_attribute)
+      end
+    end
+
+    @base_scope   = @base_scope.includes( [:user, :group,
+                                :userfile, :data_provider,
+                                :cbrain_task, :remote_resource, :tool, :tool_config] )
+
+    return @base_scope, error_mess
   end
 
 end

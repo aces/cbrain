@@ -33,7 +33,7 @@
 # Portal-side CbrainTask subclass to launch <%= name %>
 class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherits-from-class'] || 'PortalTask' %>
 
-  Revision_info=CbrainFileRevision["<%= descriptor_path %>"] #:nodoc:
+  Revision_info=CbrainFileRevision["<%= file_version_path %>"] #:nodoc:
 
 % # Maximum width of a given +key+'s value in a +list+ of hashes
 % max_width = lambda do |list, key|
@@ -614,6 +614,33 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 %   end
     })
 % end
+  end
+
+  ########################
+  # Generic Zenodo Support
+  ########################
+
+  # We only provide a minimal amount of base information;
+  # The user can fill in the details later.
+  def base_zenodo_deposit #:nodoc:
+    ZenodoClient::Deposit.new(
+      :metadata => ZenodoClient::DepositMetadata.new(
+        :title       => "Outputs of #{self.pretty_name}-#{self.id}",
+        :description => ("Files and meta data for CBRAIN task #{self.pretty_name}@#{self.bname_tid}" +
+                         "\n\n#{self.description}").strip,
+      )
+    )
+  end
+
+  def zenodo_outputfile_ids #:nodoc:
+    params
+      .keys
+      .grep(/^_cbrain_output_/)
+      .select { |k| params[k].is_a?(Array) || params[k].to_s =~ /\A\d+\z/ }
+      .inject([]) { |union,k| union += Array(params[k]); union }
+      .compact
+      .sort
+      .uniq
   end
 
   # Generic helper methods

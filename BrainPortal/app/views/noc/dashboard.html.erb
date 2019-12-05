@@ -24,10 +24,8 @@
 #
 -%>
 
-<% range = @hours_ago.blank? ? "Today" : "Last " + pluralize(@hours_ago,"hour") %>
-<% title "Activity #{range}" %>
-<% title to_localtime(Time.now, :date) %>
-<% title "at " + to_localtime(Time.now, :time) %>
+<% title "Activity #{@range}" %>
+<% title to_localtime(Time.now, :date) + " at " + to_localtime(Time.now, :time) %>
 
 <head>
   <title><%= RemoteResource.current_resource.name.presence || "CBRAIN" %><%= yield :title %></title>
@@ -56,7 +54,7 @@
 
 <div class="noc_main">
   <div class="noc_panel">
-    <div class="noc_header">Users Today</div><br>
+    <div class="noc_header">Users</div><br>
     <div class="noc_count" style="color: <%= num_users_color %>"><%= @active_users %></div>
   </div>
   <div class="noc_panel">
@@ -65,8 +63,26 @@
   </div>
   <div class="noc_panel">
     <div class="noc_header">Active Transfers</div><br>
-    <div class="noc_count"><%= @data_transfer.zero? ? "none" : colored_pretty_size(@data_transfer) %></div>
+    <div class="noc_count"><%= @data_transfer.zero? ? "-" : colored_pretty_size(@data_transfer) %></div>
   </div>
+  <div class="noc_panel">
+    <div class="noc_header">CPU Time</div><br>
+    <div class="noc_count">
+      <% if @cpu_time.zero? %>
+        -
+      <% else %>
+        <span style="color: <%= colorwheel_edge_crawl(@cpu_time, @num_hours.hours) %>">
+          <%= pretty_elapsed(@cpu_time, :num_components => 2, :short => true) %>
+        </span>
+      <% end %>
+    </div>
+  </div>
+<!--
+  <div class="noc_panel">
+    <div class="noc_header">Files Deltas</div><br>
+    <div class="noc_count"><%= @space_delta_P.zero? ? "-" : colored_pretty_size(@space_delta_P) %></div>
+  </div>
+-->
   <% if @num_exceptions > 0 %>
   <div class="noc_panel">
     <div class="noc_header">Exceptions</div><br>

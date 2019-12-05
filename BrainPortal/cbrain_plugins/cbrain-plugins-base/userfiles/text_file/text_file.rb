@@ -32,10 +32,10 @@ class TextFile < SingleFile
   end
 
   def is_viewable? #:nodoc:
-    return false unless self.size.presence
-    return false unless self.size < 500_000
-    return false unless is_locally_synced?
-    true
+    userfile_errors = []
+    userfile_errors.push("No size available for this file") if self.size.blank?
+    userfile_errors.push("File is too large to be viewable (> 500 kB)") if self.size > 500_000
+    userfile_errors
   end
 
 end

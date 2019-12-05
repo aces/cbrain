@@ -65,8 +65,6 @@
     <!-- RESTART -->
     <% if @task.status =~ /Completed|Terminated|Duplicated/ %>
       <%= link_to 'Restart At Setup', { :action => 'operation', :operation => 'restart_setup', 'tasklist[]' => @task.id }, :class  => "button menu_button", :method => :post %>
-      <% if !(@task.status =~ /Completed/) %>
-      <% end %>
     <% end %>
 
     <% if @task.status == 'Completed' %>
@@ -106,6 +104,12 @@
                                                   :class    => "button"
       %>
     <% end %>
+
+    <!-- ZENODO -->
+    <% if @task.status =~ /Completed/ %>
+      <%= link_to 'Publish to Zenodo', zenodo_task_path(@task), :class => "button menu_button" %>
+    <% end %>
+
   </div>
 
 <% end %>
@@ -140,7 +144,19 @@
     <% t.cell("Last Updated") { to_localtime(@task.updated_at,:datetime) }%>
 
     <% t.cell("Data Provider For Results") { link_to_data_provider_if_accessible(@task.results_data_provider_id) } %>
-    <% t.empty_cell %>
+    <% t.cell("Zenodo Publication") do %>
+      <% if @task.zenodo_doi.present? %>
+        <% if @task.zenodo_doi.starts_with?( ZenodoHelper::ZenodoSandboxDOIPrefix ) %>
+          Published: <%= link_to_deposit(@task.zenodo_deposit_id) %>
+        <% else %>
+          Published: <%= link_to_doi(@task.zenodo_doi) %>
+        <% end %>
+      <% elsif @task.zenodo_deposit_id.present? %>
+          In progress: <%= link_to_deposit(@task.zenodo_deposit_id) %>
+      <% else %>
+          None.
+      <% end %>
+    <% end %>
 
     <% t.blank_row %>
 
@@ -271,6 +287,7 @@
     prettystdout = @task.cluster_stdout || "(None)"
     prettystderr = @task.cluster_stderr || "(None)"
     prettyscript = @task.script_text    || "(None)"
+    prettyrtinfo = @task.runtime_info   || "(None)"
   %>
 
   <fieldset>
@@ -317,6 +334,9 @@
         <% if current_user.has_role?(:admin_user) %>
           <%= tb.tab("Script") do %>
             <pre class="script_preview"><%= prettyscript %></pre>
+          <% end %>
+          <%= tb.tab("RuntimeInfo") do %>
+            <pre class="script_preview"><%= prettyrtinfo %></pre>
           <% end %>
         <% end %>
 

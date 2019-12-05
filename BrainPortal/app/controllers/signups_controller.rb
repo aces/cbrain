@@ -301,7 +301,7 @@ class SignupsController < ApplicationController
   def signup_params
     params.require(:signup).permit(
       :title, :first, :middle, :last,
-      :institution, :department, :position, :email,
+      :institution, :department, :position, :affiliation, :email,
       :street1, :street2, :city, :province, :country, :postal_code,
       :login, :time_zone, :comment, :admin_comment, :hidden, :user_id
     )

@@ -86,7 +86,8 @@ RSpec.describe AccessProfilesController, :type => :controller do
         expect(assigns[:access_profile]).to match(ap_b)
       end
       it "should fail on a unknown profile ID" do
-        expect { get :show, params: {:id => -987} }.to raise_error(ActiveRecord::RecordNotFound)
+        get :show, params: {:id => -987}
+        expect(flash[:error]).to eq(ExceptionHelpers::NOT_FOUND_MSG)
       end
     end
 
@@ -126,7 +127,8 @@ RSpec.describe AccessProfilesController, :type => :controller do
         expect(assigns[:access_profile]).to match(ap_b)
       end
       it "should fail on a unknown profile ID" do
-        expect { post :update, params: {:id => -987} }.to raise_error(ActiveRecord::RecordNotFound)
+        post :update, params: {:id => -987}
+        expect(flash[:error]).to eq(ExceptionHelpers::NOT_FOUND_MSG)
       end
       it "should change standard attributes" do
         new_att = { :name => 'new_name', :description => 'new_desc', :color => '#cababe' }

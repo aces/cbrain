@@ -310,7 +310,7 @@ class PortalController < ApplicationController
     # Add date filtering
     mode_is_absolute_from = date_filtering["absolute_or_relative_from"] == "absolute" ? true : false
     mode_is_absolute_to   = date_filtering["absolute_or_relative_to"]   == "absolute" ? true : false
-    table_content_scope = add_time_condition_to_scope(table_content_scope, table_name, mode_is_absolute_from , mode_is_absolute_to,
+    table_content_scope   = add_time_condition_to_scope(table_content_scope, table_name, mode_is_absolute_from , mode_is_absolute_to,
         date_filtering["absolute_from"], date_filtering["absolute_to"], date_filtering["relative_from"], date_filtering["relative_to"], date_filtering["date_attribute"])
 
     # Compute content fetcher

@@ -58,7 +58,7 @@ class CbrainFileList < CSVFile
   # When displayed in a web page, the associations to other models are shown by name.
   ATTRIBUTES_LIST   = [ :id, :name, :size, :type, :data_provider_id, :user_id, :group_id ]
 
-  has_viewer :name => 'CBRAIN File List', :partial  => :cb_file_list, :if => :is_viewable?
+  has_viewer :name => 'CBRAIN File List', :partial  => :cb_file_list, :if => :csv_is_viewable?
 
   def self.pretty_type #:nodoc:
     "CBRAIN List of files"

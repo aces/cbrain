@@ -773,7 +773,7 @@ module ScopeHelper
   # alternative to using scope_filter_link (:replace operation) directly with
   # a few quirks added.
   def index_count_filter(count, controller, filters, options = {})
-    return (options[:show_zeros] ? '0' : '') if (count = count.to_i) == 0
+    return (options[:show_zeros] ? '0' : '') if count.blank? || count.to_s == '0'
 
     controller = controller.to_s.downcase
     controller = 'bourreaux' if controller == 'remote_resources'

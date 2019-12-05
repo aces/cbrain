@@ -29,7 +29,8 @@ describe User do
   describe "#validate" do
 
     it "should save with valid attributes" do
-      normal_user.save
+      normal_user.password = nil # avoid re-encrypting
+      expect(normal_user.save).to eq(true)
     end
 
     it "should not save without a login" do
@@ -100,9 +101,10 @@ describe User do
     end
 
     it "should prevent me from changing my login name" do
-      normal_user.save
+      normal_user.password = nil # avoid re-encrypt check
+      expect(normal_user.save).to be(true)
       normal_user.login = "not_my_original_login"
-      expect(normal_user.save).to  be(false)
+      expect(normal_user.save).to be(false)
     end
 
   end
@@ -300,14 +302,16 @@ describe User do
 
         it "should return a tool if one of the user of the site have acces to the tool" do
           normal_user.tool_ids = [tool2.id]
-          normal_user.save
+          normal_user.password = nil # avoid re-encrypt check
+          expect(normal_user.save).to be(true)
           allow(site_manager).to receive_message_chain(:site, :user_ids).and_return([site_manager.id, normal_user.id])
           expect(site_manager.available_tools).to match_array([tool1,tool2])
         end
 
         it "should return tools available for a standard user" do
           normal_user.tool_ids = [tool2.id]
-          normal_user.save
+          normal_user.password = nil # avoid re-encrypt check
+          expect(normal_user.save).to be(true)
           expect(normal_user.available_tools).to eq([tool2])
         end
 
@@ -519,14 +523,16 @@ describe User do
 
     it "should add user to new site" do
       normal_user.site = site1
-      normal_user.save
+      normal_user.password = nil # avoid re-encrypting
+      expect(normal_user.save).to be(true)
       expect(site1.own_group.users).to include(normal_user)
     end
 
     it "should remove user to old site" do
       start_site = normal_user.site = create(:site)
       normal_user.site = site1
-      normal_user.save
+      normal_user.password = nil # avoid re-encrypting
+      expect(normal_user.save).to be(true)
       expect(start_site.own_group.users).not_to include(normal_user)
     end
   end
@@ -581,7 +587,8 @@ describe User do
     it "should add me to the site group" do
       site             = create(:site, :name => "I_should_be_part_of_this_site_group")
       normal_user.site = site
-      normal_user.save!
+      normal_user.password = nil # don't want to encrypt it here
+      expect(normal_user.save).to be(true)
       site.reload
       expect(site.user_ids).to include(normal_user.id)
     end

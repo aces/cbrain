@@ -7,9 +7,16 @@
 # Integration virtual machine,
 # although invoking its entry point manually
 # from docker is also a possibility.
+#
+# Do not use the resulting docker container
+# as a CBRAIN installation, it won't work,
+# and you'll have no persistent data because
+# the SQL server is completely inside the
+# container fileystem.
 ############################################
 
-FROM centos:latest
+# We use CentOS 7; CentOS 8 needs further adjustments, as it's new (Oct 2019)
+FROM centos:7
 
 
 
@@ -64,7 +71,7 @@ ENV MYSQL_ROOT_PASSWORD="my-secret-pw" MYSQL_USER="cb_user" MYSQL_DATABASE="cb_d
 # MySQL server installation and configuration
 #############################################
 
-RUN mysql_install_db
+RUN mysql_install_db --force # we need --force so it ignores the fake hostname
 RUN mkdir -p /var/lib/mysql /var/run/mysqld
 RUN chown -R mysql:mysql /var/lib/mysql /var/run/mysqld && \
     chmod 777 /var/run/mysqld
@@ -120,7 +127,7 @@ ENV CBRAIN_BRANCH=$CBRAIN_BRANCH
 # Just having a different commit number in the echo statement will do.
 # This can be necessary if you know that the code on the GitHub
 # repo has changed since that last build.
-RUN echo Force install using CBRAIN at commit d4eca710772
+RUN echo Force install using CBRAIN at commit c1e59cb4ac72a9ff66e76a42c607a269a043ee4d
 
 # Extract initial CBRAIN source (will be replaced at test time)
 # but having an initial installation speeds up bundling,

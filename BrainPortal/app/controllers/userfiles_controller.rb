@@ -151,8 +151,8 @@ class UserfilesController < ApplicationController
     end
 
     # Handles the case when we just switched active project in group_controller/switch
-    if session[:switched_active_group]
-      session.delete(:switched_active_group)
+    if cbrain_session[:switched_active_group]
+      cbrain_session.delete(:switched_active_group)
       @force_clear_persistent = 1 # HTML page will have extra javascript code to clear the list
     end
 
@@ -241,19 +241,23 @@ class UserfilesController < ApplicationController
     argument_list  = params[:arguments] || []
     argument_list  = [argument_list] unless argument_list.is_a?(Array)
 
-    if content_loader
-      response_content = @userfile.send(content_loader.method, *argument_list)
-      if content_loader.type == :send_file
-        send_file response_content
-      elsif content_loader.type == :gzip
-        response.headers["Content-Encoding"] = "gzip"
-        render :plain => response_content
-      else
-        render content_loader.type => response_content
-      end
-    else
+    if !content_loader
       @userfile.sync_to_cache
       send_file @userfile.cache_full_path, :stream => true, :filename => @userfile.name, :disposition => (params[:disposition] || "attachment")
+      return
+    end
+
+    response_content = @userfile.send(content_loader.method, *argument_list)
+
+    if content_loader.type == :send_file
+      send_file response_content
+    elsif content_loader.type == :gzip
+      response.headers["Content-Encoding"] = "gzip"
+      render :plain => response_content
+    elsif content_loader.type == :text
+      render :plain => response_content
+    else
+      render content_loader.type => response_content
     end
   rescue
     respond_to do |format|
@@ -288,14 +292,16 @@ class UserfilesController < ApplicationController
       end
     end
 
-    # Ok, some viewers are invalid for some specific userfiles, so reject it if it's the case.
+    # Some viewers return error(s) for some specific userfiles
     if (params[:content_viewer] != 'off')
-      @viewer      = nil if @viewer && ! @viewer.valid_for?(@userfile)
+      @viewer.apply_conditions(@userfile) if @viewer
     end
 
     begin
       if @viewer
-        if params[:apply_div] == "false"
+        if @viewer.errors.present?
+          render :partial => "viewer_errors"
+        elsif params[:apply_div] == "false"
           render :file   => @viewer.partial_path.to_s, :layout => params[:apply_layout].present?
         else
           render :action => :display,                  :layout => params[:apply_layout].present?
@@ -325,8 +331,10 @@ class UserfilesController < ApplicationController
     @sync_status        = 'ProvNewer' # same terminology as in SyncStatus
     state               = @userfile.local_sync_status
     @sync_status        = state.status if state
-    @viewer             = @userfile.find_viewer(params[:viewer]) if params[:viewer].present?
-    @viewer           ||= @userfile.viewers.first
+    @viewer             = @userfile.find_viewer_with_applied_conditions(params[:viewer]) if params[:viewer].present?
+
+    @viewers            = @userfile.viewers_with_applied_conditions || []
+    @viewer           ||= @viewers.detect { |v| v.errors.empty?} || @viewers.first
 
     @log                = @userfile.getlog        rescue nil
 
@@ -350,12 +358,6 @@ class UserfilesController < ApplicationController
       format.xml  { render :xml  => @userfile.for_api }
       format.json { render :json => @userfile.for_api }
     end
-  end
-
-  def new #:nodoc:
-    @user_tags      = current_user.available_tags
-    @data_providers = DataProvider.find_all_accessible_by_user(current_user).all.to_a
-    @data_providers.reject! { |dp| dp.meta[:no_uploads].present? }
   end
 
   # Triggers the mass synchronization of several userfiles
@@ -838,6 +840,12 @@ class UserfilesController < ApplicationController
   def quality_control_panel #:nodoc:
     @filelist      = params[:file_ids] || []
     @current_index = params[:index]    || -1
+
+    # This variable @target can be used by any custom QC viewer
+    # to distinguish between the left and right side of the main
+    # QC screen. The possible values are "qc_left_panel" and
+    # "qc_right_panel"
+    @target        = params[:target]   || ""
 
     @current_index = @current_index.to_i
 

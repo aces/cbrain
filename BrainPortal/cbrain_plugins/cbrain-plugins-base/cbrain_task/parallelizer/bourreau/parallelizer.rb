@@ -251,7 +251,7 @@ class CbrainTask::Parallelizer < ClusterTask #:nodoc:
 
   # If a parallelizer fails its setup prerequisites, then we need
   # to mark its subtasks that are New or Configured the same way.
-  def trigger_cascade_prepreq_failures(from_state) #:nodoc
+  def trigger_cascade_prepreq_failures(from_state) #:nodoc:
     self.enabled_subtasks.where(:status => [ 'New', 'Configured' ] ).each do |otask|
       otask.addlog("#{self.fullname} indicates setup prereq failure.")
       otask.status_transition(otask.status, 'Failed Setup Prerequisites') rescue true
@@ -265,7 +265,7 @@ class CbrainTask::Parallelizer < ClusterTask #:nodoc:
   # that fact in the parallelizer's work directory
   # using a touchfile named ".done-{subtask_run_id}".
   # This method returns the full path of that touchfile.
-  def done_touchfile(subtask) #:nodoc
+  def done_touchfile(subtask) #:nodoc:
     subtask_touchfile_prefix = Pathname.new(self.full_cluster_workdir) + ".done-"
     s_runid = subtask.run_id
     subtask_touchfile_prefix.to_s + s_runid

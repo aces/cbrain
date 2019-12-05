@@ -70,7 +70,7 @@
   <% if current_user %>
     <div id="main-menu" class="main_menu_left">
        <ul>
-         <% if !current_user.has_role?(:normal_user) || (session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
+         <% if !current_user.has_role?(:normal_user) || (cbrain_session[:active_group_id] && !(params[:controller] == "groups" && params[:action] == "index")) %>
            <li <%= set_selected(params[:controller], :userfiles) %>>
              <%= link_to 'Files', userfiles_path %>
            </li>

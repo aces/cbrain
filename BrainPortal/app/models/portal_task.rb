@@ -782,6 +782,7 @@ class PortalTask < CbrainTask
     self.cluster_stdout = control.cluster_stdout
     self.cluster_stderr = control.cluster_stderr
     self.script_text    = control.script_text
+    self.runtime_info   = control.runtime_info
     true
   end
 
@@ -822,6 +823,30 @@ class PortalTask < CbrainTask
   def public_path(public_file=nil)
     self.class.public_path(public_file)
   end
+
+
+
+  ##################################################################
+  # Zenodo Hooks
+  ##################################################################
+
+  public
+
+  # NOTE: implementers of tasks must also provide zenodo_outputfile_ids()
+  # for the Zenodo publishing interface to work!
+
+  # We only provide a minimal amount of base information;
+  # The user can fill in the details later.
+  def base_zenodo_deposit #:nodoc:
+    ZenodoClient::Deposit.new(
+      :metadata => ZenodoClient::DepositMetadata.new(
+        :title       => "Outputs of #{self.pretty_name}-#{self.id}",
+        :description => ("Files and meta data for CBRAIN task #{self.pretty_name}@#{self.bname_tid}" +
+                         "\n\n#{self.description}").strip,
+      )
+    )
+  end
+
 
 
   ##################################################################

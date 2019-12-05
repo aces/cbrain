@@ -132,6 +132,12 @@ class CbrainSession
     @model.data[key] = value
   end
 
+  # Delegate delete to @model.data.delete
+  def delete(key) #:nodoc:
+    @modified = true
+    @model.data.delete(key)
+  end
+
   # Update sessions attributes from the contents of +changes+. +changes+ is
   # expected to be either a +hash+ of attributes to update, a +mode+ and a
   # +hash+ (pair) or a list of those to be applied in order:

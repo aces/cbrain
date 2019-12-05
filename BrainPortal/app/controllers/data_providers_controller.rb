@@ -636,7 +636,14 @@ class DataProvidersController < ApplicationController
           end
 
           # Userfile.delete will not delete the contents, but destroy will
-          result = (erasing ? userfile.destroy : Userfile.delete(userfile.id))
+          if erasing
+            result = userfile.destroy
+          else
+            # Since the .delete operation doesn't trigger callbacks,
+            # we invoke the resource tracker method explicitely
+            userfile.send :track_resource_usage_destroy # private method
+            result = userfile.delete
+          end
           userfile.destroy_log rescue true
 
           (result ? succeeded : (failed["Unspecified error"] ||= [])) << basename

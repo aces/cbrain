@@ -144,20 +144,6 @@ class RemoteResource < ApplicationRecord
     myconfig
   end
 
-
-
-  ############################################################################
-  # Access Control Methods
-  ############################################################################
-
-  # Returns the site associated with the owner of this
-  # remote resource.
-  def site_affiliation
-    @site_affiliation ||= self.user.site
-  end
-
-
-
   ############################################################################
   # ActiveRecord callbacks
   ############################################################################
@@ -639,12 +625,12 @@ class RemoteResource < ApplicationRecord
     running = self.is_alive?(what) # this updates @info or @ping as a side-effect
     if running
       if what == :info
-        self.meta[:info_cache]             = @info        rescue nil # save from rare race conditions
-        self.meta[:info_cache_last_update] = Time.now.utc rescue nil
+        (self.meta[:info_cache]             = @info       ) rescue nil # save from rare race conditions
+        (self.meta[:info_cache_last_update] = Time.now.utc) rescue nil
         return @info
       else
-        self.meta[:ping_cache]             = @ping        rescue nil # save from rare race condition
-        self.meta[:ping_cache_last_update] = Time.now.utc rescue nil
+        (self.meta[:ping_cache]             = @ping       ) rescue nil # save from rare race condition
+        (self.meta[:ping_cache_last_update] = Time.now.utc) rescue nil
         return @ping
       end
     end

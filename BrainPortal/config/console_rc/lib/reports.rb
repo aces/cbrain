@@ -30,7 +30,7 @@ def trans
        file = ss.userfile
        what = ss.remote_resource
        dir  = (ss.status == "ToCache") ? "\342\226\274" : "\342\226\262" # UTF8 down triangle, up triangle
-       printf "%10.10s %s %-10.10s (%9s) [%8.8s] \"%s\" for %s\n",
+       printf "%12.12s %s %-12.12s (%9s) [%8.8s] \"%s\" for %s\n",
                what.name, dir, file.data_provider.name,
                pretty_size(file.size), file.user.login, file.name,
                pretty_elapsed(Time.now - ss.updated_at, :num_components => 3)
@@ -70,16 +70,22 @@ end
 # Try "last -20", just like in a shell!
 def last(lim=20)
   table LargeSessionInfo
-        .where(:active => true)
         .order("large_session_infos.updated_at desc")
         .joins(:user)
-        .select(%w( users.login users.id large_session_infos.updated_at large_session_infos.data ))
+        .select( %w( users.login
+                     users.id
+                     large_session_infos.active
+                     large_session_infos.updated_at
+                     large_session_infos.data
+                   )
+        )
         .limit(lim.abs)
         .map { |x|
-          { :a_id          => x.id,
-            :b_login       => x.login,
-            :from          => x.data[:guessed_remote_host],
-            :last_activity => pretty_past_date(x.updated_at),
+          { :a_id       => x.id,
+            :b_login    => x.login,
+            :c_from     => x.data[:guessed_remote_host],
+            :logged?    => x.active? ? 'in' : 'out',
+            :x_activity => pretty_past_date(x.updated_at, :datetime, 2),
           }
         },
         :unicode => true

@@ -592,5 +592,26 @@ module SelectBoxHelper
     ordered_by_lock_status
   end
 
+  # DPs where people can move/copy/extract stuff
+  def writable_data_providers(user=current_user)
+
+    writable_data_providers =
+      DataProvider
+        .find_all_accessible_by_user(current_user)
+        .all
+        .reject { |dp| dp.read_only? || dp.is_a?(ScratchDataProvider) }
+
+    return writable_data_providers
+  end
+
+  # DPs where people can upload stuff (subset of writable_dps)
+  def uploadable_data_providers(user=current_user)
+
+    uploadable_data_providers = writable_data_providers(user)
+                                 .reject { |dp| dp.meta[:no_uploads].present? }
+
+    return uploadable_data_providers
+  end
+
 end
 

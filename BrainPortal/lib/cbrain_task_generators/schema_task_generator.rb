@@ -87,6 +87,8 @@ module SchemaTaskGenerator
     attr_accessor :name
     # Descriptor used to generate this task, in hash form.
     attr_accessor :descriptor
+    # Path to the descriptor, if it was provided as a file
+    attr_accessor :descriptor_path
     # Schema instance used to generate this task.
     attr_accessor :schema
     # Validation errors produced when validating the task's descriptor, if any.
@@ -310,6 +312,15 @@ module SchemaTaskGenerator
     schema     = Schema.new(schema) unless schema.is_a?(Schema)
     errors     = []
 
+    # Find path of descriptor, if it was provided as a file
+    descriptor_path = nil
+    [ descriptorInput, file_for_revision_info ].each do |filepath|
+      descriptor_path ||= filepath.to_s if
+        (filepath.is_a?(String) || filepath.is_a?(Pathname)) &&
+        filepath.to_s.ends_with?(".json")                    &&
+        File.file?(filepath.to_s)
+    end
+
     # Check for validation errors, but don't let them implode the whole cbrain app
     begin
       errors = schema.send(
@@ -341,22 +352,21 @@ module SchemaTaskGenerator
       ), nil, '%-').result(binding)
     end
 
-    # descriptor_path is a full path to a CBRAIN file
-    # that describe where this task comes from. It is used
-    # in the templates below.
-    if descriptorInput.is_a?(String)
-      descriptor_path = descriptorInput
-    elsif file_for_revision_info.present?
-      descriptor_path = file_for_revision_info
-    else
-      # Extract the path of the most recent CBRAIN ruby file in caller stack
-      descriptor_path   = caller.to_a.detect { |c| c.starts_with? Rails.root.to_s }.try(:sub,/:.*/,"")
-      descriptor_path ||= __file__ # fallback: the generator himself
-    end
+    # file_version_path is a full path to any CBRAIN file
+    # that describe where this task comes from. It is usually
+    # a JSON file but could also be a Ruby file. The variable is used
+    # in the portal and bourreau templates below to record
+    # the version number of the generated code.
+    file_version_path ||= descriptor_path # the most common situation
+    file_version_path ||= file_for_revision_info # provided when the task is built from an internal JSON record instead of a file
+    # Fallbacks: extract the path of the most recent CBRAIN Ruby file in caller stack
+    file_version_path ||= caller.to_a.detect { |c| c.starts_with? Rails.root.to_s }.try(:sub,/:.*/,"")
+    file_version_path ||= __file__ # Final fallback: the generator himself
 
     GeneratedTask.new(
       :name              => name,
       :descriptor        => descriptor,
+      :descriptor_path   => descriptor_path,
       :schema            => schema,
       :validation_errors => errors,
       :source            => {

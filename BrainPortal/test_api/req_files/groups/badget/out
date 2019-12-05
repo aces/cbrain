@@ -1,0 +1,2 @@
+404 application/json
+{"error":"The Group with id = 103 doesn't exist","message":"The object you requested does not exist or is not accessible to you.","type":"object not found","model":"Group","id":"103"}

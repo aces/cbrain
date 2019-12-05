@@ -48,6 +48,7 @@ class ApplicationController < ActionController::Base
   before_action :prepare_messages
   before_action :adjust_system_time_zone
   before_action :adjust_remote_ip_and_host
+  before_action :disable_cookies_for_api   # prevent sending back the session cookie for API requests
 
   # This wraps the main action
   around_action :activate_user_time_zone
@@ -256,6 +257,14 @@ class ApplicationController < ActionController::Base
   rescue # ignore all errors.
     true
   end
+
+  # 'Before' callback. When using API requests, we never send back
+  # the session cookie.
+  def disable_cookies_for_api
+    request.session_options[:skip] = true if api_request?
+    true
+  end
+
 
 
   ########################################################################
