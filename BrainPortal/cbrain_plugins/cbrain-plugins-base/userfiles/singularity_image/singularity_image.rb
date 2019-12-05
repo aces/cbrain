@@ -28,7 +28,7 @@ class SingularityImage < FilesystemImage
   has_viewer :name => 'Image Info', :partial  => :info, :if => :has_singularity_support?
 
   def self.file_name_pattern #:nodoc:
-    /\.s?img\z/i
+    /\.s?img\z|\.sif\z/i
   end
 
   def has_singularity_support? #:nodoc:
