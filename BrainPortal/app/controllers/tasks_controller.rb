@@ -932,6 +932,13 @@ class TasksController < ApplicationController
     background_upload_task_info_to_deposit(new_deposit, @task, @zenodo_userfiles) # forks
 
     redirect_to :action => :zenodo
+
+  rescue ZenodoClient::ApiError => ex
+    if ex.message == 'FORBIDDEN'
+      cb_error "Cannot create the initial Zenodo deposit. It is likely your token is invalid or it doesn't have the proper scopes. Try using a new token.", :redirect => task_path(@task)
+    else
+      raise ex
+    end
   end
 
   # This action resets a task that has been prepared or published
@@ -1050,14 +1057,31 @@ class TasksController < ApplicationController
       .reject { |u| u.zenodo_deposit_id.present? }
       .reject { |u| u.zenodo_doi.present? }
 
-    CBRAIN.spawn_with_active_records_if(userfiles.present?, current_user, 'UploadToZenodo') do
+    # Note: because of a problem with libcurl not being thread-safe and fork-safe,
+    # I have for the moment disabled the ability to upload files in background;
+    # instead the "1.times" block below will upload in synchronous mode, blocking
+    # the user interface.... :-(
+    #
+    # Attempts made to solve this:
+    #   Typhoeus::Pool.easies.each(&:reset)
+    #   Typhoeus::Pool.clear
+    #
+    #   Ethon::Curl.cleanup (before and/or after fork)
+    #   Ethon::Curl.init
+    #
+    #   Ethon::Curl.global_cleanup (before and/or after fork)
+    #   Ethon::Curl.global_init(0x03) # not needed, Ethon::Easy.new does it already
+
+    #CBRAIN.spawn_with_active_records_if(userfiles.present?, current_user, 'UploadToZenodo') do
+    1.times do # non-forking alternative to spawn block
+
       errors   = [] # array of one line text messages
       uploaded = [] # array of one line text messages
 
       # Real userfiles
       userfiles.each_with_index do |userfile,idx|
         begin
-          Process.setproctitle "ZenodoUpload ID=#{userfile.id} #{idx+1}/#{userfiles.size}"
+          #Process.setproctitle "ZenodoUpload ID=#{userfile.id} #{idx+1}/#{userfiles.size}"
           upload_userfile_to_deposit(deposit, userfile)
           uploaded << "File: #{userfile.name} (ID=#{userfile.id})"
         rescue => ex
@@ -1066,7 +1090,7 @@ class TasksController < ApplicationController
       end
 
       # Contact bourreau and get task's out, err and script
-      Process.setproctitle "ZenodoUpload Task Info ID=#{task.id}"
+      #Process.setproctitle "ZenodoUpload Task Info ID=#{task.id}"
       task.capture_job_out_err(task.run_number,100_000,100_000) rescue nil # nums are number of lines
 
       # Captured special data
