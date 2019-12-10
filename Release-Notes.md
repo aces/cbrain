@@ -1,6 +1,38 @@
 
 ## CBRAIN Release Notes
 
+#### Version 5.3.0 Released 2019-12-10
+
+New features:
+
+- From a Task's information page, a user can now access a "Publish to Zenodo"
+  page. The task's output and runtime information will be published to
+  Zenodo. Caveat: pushing data is done synchronously, which blocks the
+  browser (TODO, as pushing as a forked process messes up the libcurl library)
+- The Network Operation Center now provides weekly, monthly and yearly reports
+- Userfile resource usage tracking: whenever files are added, deleted or change size,
+  persistent records are made about the change
+- Task resource usage tracking: whenever tasks reach a final state, persistent records
+  are made. These include the status of the tasks, but also their accumulated CPU
+  and wall times
+- Administrators can configure 'epilogue' sections of the tool configs, to match
+  the existing prologue sections. This allow the admin to surround the running
+  script with e.g. `sg newgroup bash <<TOKEN` (in the prologue) and `TOKEN` (in
+  the epilogue), making sure the script runs with a particular effective GID.
+- The QC panels for userfiles have a new layout; also users can toggle between
+  one panel or two
+- The S3FlatDataProvider class now allows confiuring a S3 provider that starts
+  with a prefixed path (e.g. "/a/b/c", and all the files are under that)
+- Users now have an 'affiliation' field, with a controled set of values for it
+- Userfile custom viewers can return an informative error message informing the
+  framework why they aren't available for a particular file
+- New built-in viewers for singularity image files, json files, xml files
+- The Diagnostics tool has options for generating busy loops (system and/or user)
+
+Bug fixes:
+
+- Many many small ones.
+
 #### Version 5.2.0 Released 2019-09-13
 
 We added a Code Of Conduct file to the GitHub repo.
