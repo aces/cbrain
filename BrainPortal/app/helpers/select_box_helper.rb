@@ -39,6 +39,9 @@ module SelectBoxHelper
     users    = options[:users] || current_user.available_users
     users    = users.all.to_a if users.is_a?(ActiveRecord::Relation)
 
+    # Enable JavaScript function chosen
+    select_tag_options.merge!( {:class => 'chosen-select'} )
+
     if selector.respond_to?(:user_id)
       selected = selector.user_id.to_s
     elsif selector.is_a?(User)
@@ -107,6 +110,9 @@ module SelectBoxHelper
     selector = options.has_key?(:selector) ? (options[:selector].presence || "") : current_project
     groups   = options.has_key?(:groups)   ? (options[:groups]            || []) : current_user.available_groups
     groups   = groups.all.to_a if groups.is_a?(ActiveRecord::Relation)
+
+    # Enable JavaScript function chosen
+    select_tag_options.merge!( {:class => 'chosen-select'} )
 
     if selector.respond_to?(:group_id)
       selected = selector.group_id.to_s
@@ -462,6 +468,9 @@ module SelectBoxHelper
     generate_descendants =  options.has_key?(:generate_descendants) ? options[:generate_descendants] : true
     userfile_types       = (options[:userfile_types] || ["SingleFile","FileCollection"]).collect!{|type| type.constantize}
     include_top          = options.has_key?(:include_top) ? options[:include_top] : true
+
+    # Enable JavaScript function chosen
+    select_tag_options.merge!( {:class => 'chosen-select'} )
 
     type_select(parameter_name, options.dup.merge({:types => userfile_types, :generate_descendants => generate_descendants, :include_top => include_top}), select_tag_options)
   end

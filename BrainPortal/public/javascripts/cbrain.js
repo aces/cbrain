@@ -990,6 +990,12 @@
 
   });
 
+  // Unable chosen functionality for select box
+  // from chosen JavaScript librairy
+  $('.chosen-select').chosen({
+    width: '25em'
+  });
+
 
   // Set a timer to update the "Last Updated" indicator
   (function () {
