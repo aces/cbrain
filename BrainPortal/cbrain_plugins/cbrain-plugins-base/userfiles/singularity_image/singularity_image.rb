@@ -25,10 +25,20 @@ class SingularityImage < FilesystemImage
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  has_viewer :name => 'Image Info', :partial  => :info, :if => :has_singularity_support?
+  has_viewer :name => 'Image Info', :partial  => :info, :if => :is_viewable?
 
   def self.file_name_pattern #:nodoc:
     /\.s?img\z|\.sif\z/i
+  end
+
+  def is_viewable? #:nodoc:
+    if ! self.has_singularity_support?
+      return [ "The local portal doesn't support inspecting Singularity images." ]
+    elsif ! self.is_locally_synced?
+      return [ "Singularity image file not yet synchronized" ]
+    else
+      true
+    end
   end
 
   def has_singularity_support? #:nodoc:
