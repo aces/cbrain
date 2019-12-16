@@ -992,7 +992,7 @@
 
   // Unable chosen functionality for select box
   // from chosen JavaScript librairy
-  $('.chosen-select').chosen({
+  $('select').chosen({
     width: '25em'
   });
 

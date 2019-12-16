@@ -39,9 +39,6 @@ module SelectBoxHelper
     users    = options[:users] || current_user.available_users
     users    = users.all.to_a if users.is_a?(ActiveRecord::Relation)
 
-    # Enable JavaScript function chosen
-    select_tag_options.merge!( {:class => 'chosen-select'} )
-
     if selector.respond_to?(:user_id)
       selected = selector.user_id.to_s
     elsif selector.is_a?(User)
@@ -76,22 +73,22 @@ module SelectBoxHelper
   # When calling site_select, set the :prompt option in select_tag_options hash, to the text you want
   # displayed when no option is selected
   def site_select(parameter_name = "site", options = {}, select_tag_options = {} )
-     options  = { :selector => options } unless options.is_a?(Hash)
-     sites = options[:sites] || Site.order(:name)
-     sites = sites.all.to_a if sites.is_a?(ActiveRecord::Relation)
-     selector = options[:selector]
+    options  = { :selector => options } unless options.is_a?(Hash)
+    sites = options[:sites] || Site.order(:name)
+    sites = sites.all.to_a if sites.is_a?(ActiveRecord::Relation)
+    selector = options[:selector]
 
-     if selector.respond_to?(:site_id)
-       selected = selector.site_id.to_s
-     elsif selector.is_a?(Site)
-       selected = selector.id.to_s
-     else
-       selected = selector.to_s
-     end
+    if selector.respond_to?(:site_id)
+      selected = selector.site_id.to_s
+    elsif selector.is_a?(Site)
+      selected = selector.id.to_s
+    else
+      selected = selector.to_s
+    end
 
-     site_options = sites.map{ |s| [s.name, s.id]}
+    site_options = sites.map{ |s| [s.name, s.id]}
 
-     select_tag parameter_name, options_for_select(site_options, selected), select_tag_options
+    select_tag parameter_name, options_for_select(site_options, selected), select_tag_options
   end
 
 
@@ -110,9 +107,6 @@ module SelectBoxHelper
     selector = options.has_key?(:selector) ? (options[:selector].presence || "") : current_project
     groups   = options.has_key?(:groups)   ? (options[:groups]            || []) : current_user.available_groups
     groups   = groups.all.to_a if groups.is_a?(ActiveRecord::Relation)
-
-    # Enable JavaScript function chosen
-    select_tag_options.merge!( {:class => 'chosen-select'} )
 
     if selector.respond_to?(:group_id)
       selected = selector.group_id.to_s
@@ -468,9 +462,6 @@ module SelectBoxHelper
     generate_descendants =  options.has_key?(:generate_descendants) ? options[:generate_descendants] : true
     userfile_types       = (options[:userfile_types] || ["SingleFile","FileCollection"]).collect!{|type| type.constantize}
     include_top          = options.has_key?(:include_top) ? options[:include_top] : true
-
-    # Enable JavaScript function chosen
-    select_tag_options.merge!( {:class => 'chosen-select'} )
 
     type_select(parameter_name, options.dup.merge({:types => userfile_types, :generate_descendants => generate_descendants, :include_top => include_top}), select_tag_options)
   end
