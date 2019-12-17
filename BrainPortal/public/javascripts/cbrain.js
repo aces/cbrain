@@ -992,10 +992,7 @@
 
   // Unable chosen functionality for select box
   // from chosen JavaScript librairy
-  $('select').chosen({
-    width: '25em'
-  });
-
+  $('select').chosen({});
 
   // Set a timer to update the "Last Updated" indicator
   (function () {
