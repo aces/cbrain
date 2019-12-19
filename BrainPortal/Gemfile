@@ -56,9 +56,9 @@ group :development do
   gem "listen", '~> 3.0.5'
 end
 
+gem 'sassc-rails' # "rake assets:precompile" fails if this gems is put into the :assets group
 group :assets do
   gem 'therubyracer'
-  gem 'sassc'
   gem 'coffee-rails'
   gem 'uglifier'
 end
