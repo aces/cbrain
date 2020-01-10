@@ -254,6 +254,39 @@
   </div>
 <%% end %>
 
+<%%#
+  Generate a drop-down list for a set of +options+ (value, label pairs) with
+  HTML id +id+ and name +name+.
+  +nothing+ corresponds to the text displayed if +options+ is empty and
+  +optional+ indicates if the parameter is optional (or not)
+%%>
+<%% html_select = lambda do |id, name, options = [], nothing: '(Nothing to select)', optional: false, default: nil| %>
+  <%% value = @task.params[name.to_sym] if name %>
+  <div class="tsk-prm-sel-mult ">
+    <%% if options.empty? %>
+      <span class="tsk-prm-sel-mult-lbl disabled">
+        <%%= nothing %>
+      </span>
+    <%% else %>
+      <select class="tsk-prm-sel-mult"
+           type="text"
+           id="<%%= id %>"
+           multiple="multiple"
+           name="<%%= name.to_la %>">
+        <%% options.each do |value, label| %>
+          <%% if default.nil? %>
+            <option data-value="<%%= value %>"><%%= label %></option>
+          <%% else %>
+            <%% dval = (default==value) ? " data-selected=\"true\"" : "" %>
+            <option data-value="<%%= value %>"<%%= dval %>><%%= label %></option>
+          <%% end %>
+        <%% end %>
+      </select>
+    <%% end %>
+  </div>
+<%% end %>
+
+
 <%%# Generate a checkbox for a parameter grouping %>
 <%% groupCheckbox = lambda do |id, defaultChecked = false| %>
   <input class='group-toggler'
@@ -311,13 +344,24 @@
   <%- end -%>
         )
 
-  <%- if opt -%>
+  <%- if opt && list != true -%>
         # Optional parameter enable/disable toggle
         checkbox.(id)
 
   <%- end -%>
+
   <%- enum_vals = param["value-choices"] %>
   <%- if not enum_vals.nil? -%>
+      <%- list = param["list"] -%>
+      <%- if list == true -%>
+        # Enum value html_select
+        name = id <%= list ? '+ "[]"' : '' %>
+        html_select.(id, name,
+          <%= enum_vals.map { |v| [v, v] } %>,
+          optional: <%= opt %>,
+          default:  <%= "\"#{defaults.find { |d| d['id']==id }['default-value']}\"" rescue "nil" %>
+        )
+      <%- else -%>
         # Enum value dropdown
         name = id <%= list ? '+ "[]"' : '' %>
         dropdown.(id, name,
@@ -325,6 +369,7 @@
           optional: <%= opt %>,
           default:  <%= "\"#{defaults.find { |d| d['id']==id }['default-value']}\"" rescue "nil" %>
         )
+      <%- end -%>
   <%- elsif type == :file -%>
     <%- if single_file -%>
         # Automatic single file input
