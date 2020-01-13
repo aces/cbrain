@@ -255,18 +255,15 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
     errmsg = "was not given an acceptable value!"
 %  for param in params
 %    next unless has_val_choices.( param )
-%    current_params = param[idsym.(param)]
-%    allowed_params = param['type'].downcase == 'number' ? param['value-choices'].map{ |s|  "#{s}"  }.join(',') :
-%                                                          param['value-choices'].map{ |s| "'#{s}'" }.join(',')
-%   check = true
-%   if current_params
-%     current_params = Array(current_params)
-%     check = (current_params - allowed_params).empty?
+%   if param['type'].downcase == 'number'
+%      check = "(Array(params[#{idsym.(param)}])" + ' - ' + '[' + param['value-choices'].map{ |s|  "#{s}"  }.join(',') + ']' + ").empty?"
+%   else
+%      check = "(Array(params[#{idsym.(param)}])" + ' - ' + '[' + param['value-choices'].map{ |s| "'#{s}'" }.join(',') + ']' + ").empty?"
 %   end
 % end
     params_errors.add(<%=idsym.(param)%>, errmsg) unless <%= nilcheck.(param) %> || <%= check %>
-
 % end # hasEnumVars check
+
 %#
 %# Min/max/int Number check
 % if params.any? { |p| p['minimum'] || p['maximum'] || p['integer'] }
