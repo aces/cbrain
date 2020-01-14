@@ -253,15 +253,15 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
 % if params.any?{ |p| has_val_choices.( p ) }
     # Check that any enum parameters have been given allowable values
     errmsg = "was not given an acceptable value!"
-%  for param in params
-%    next unless has_val_choices.( param )
-%   if param['type'].downcase == 'number'
-%      check = "(Array(params[#{idsym.(param)}])" + ' - ' + '[' + param['value-choices'].map{ |s|  "#{s}"  }.join(',') + ']' + ").empty?"
-%   else
-%      check = "(Array(params[#{idsym.(param)}])" + ' - ' + '[' + param['value-choices'].map{ |s| "'#{s}'" }.join(',') + ']' + ").empty?"
+%   for param in params
+%     next unless has_val_choices.( param )
+%    if param['type'].downcase == 'number'
+%       check = "(Array(params[#{idsym.(param)}])" + ' - ' + '[' + param['value-choices'].map{ |s|  "#{s}"  }.join(',') + ']' + ").empty?"
+%    else
+%       check = "(Array(params[#{idsym.(param)}])" + ' - ' + '[' + param['value-choices'].map{ |s| "'#{s}'" }.join(',') + ']' + ").empty?"
+%    end
+     params_errors.add(<%=idsym.(param)%>, errmsg) unless <%= nilcheck.(param) %> || <%= check %>
 %   end
-% end
-    params_errors.add(<%=idsym.(param)%>, errmsg) unless <%= nilcheck.(param) %> || <%= check %>
 % end # hasEnumVars check
 
 %#
