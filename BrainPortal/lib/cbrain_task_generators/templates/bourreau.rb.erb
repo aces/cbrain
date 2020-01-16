@@ -591,8 +591,8 @@ class CbrainTask::<%= name %> < <%= (descriptor['custom'] || {})['cbrain:inherit
   #
   def apply_template(template, keys, flags: {}, strip: [], separators: {})
     # Set of properties from the descriptor for file-type inputs
-    fileKeys = [<%= files.map { |f| '"' + f['value-key'] + '"' }.join(",") %>]
-    absPath  = [<%= files.map { |f| f['uses-absolute-path'] || false }.join(",") %>]
+    fileKeys = [<%= files.map { |f| '"' + (f['value-key'] || 'nil') + '"' }.join(",") %>]
+    absPath  = [<%= files.map { |f|      f['uses-absolute-path'] || false }.join(",") %>]
     # The working directory from which the task will be launched
     # Used to fill in absolute paths for inputs requesting it
     wd = self.container_working_directory || self.full_cluster_workdir
