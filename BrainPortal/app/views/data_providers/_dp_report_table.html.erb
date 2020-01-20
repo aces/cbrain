@@ -55,7 +55,7 @@
 
     t.column('Severity', :severity,
       :sortable => true,
-      :filters  => default_filters_for(@issues, :severity)
+      :filters  => @issues.empty? ? [] : default_filters_for(@issues, :severity)
     ) { |issue| issue[:severity].to_s.titleize }
 
     t.column('Action', :action,
