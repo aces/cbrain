@@ -163,13 +163,13 @@
     <legend><%= red_if(offline, dp.name) %></legend>
     <%= disk_space_info_display(plus.abs + minus.abs) do %>
       <% if plus > 0 %>
-        <span style="color: green">+</span>&nbsp;<%= colored_pretty_size(plus) %>
+        <span style="color: green">&plus;</span>&nbsp;<%= colored_pretty_size(plus) %>
       <% end %>
       <% if plus > 0 && minus < 0 %>
         <br>
       <% end %>
       <% if minus < 0 %>
-        <span style="color: red">-</span>&nbsp;<%= colored_pretty_size(- minus) %>
+        <span style="color: red">&minus;</span>&nbsp;<%= colored_pretty_size(- minus) %>
       <% end %>
       <% if offline %>
         <br>
