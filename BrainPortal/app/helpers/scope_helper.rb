@@ -686,7 +686,7 @@ module ScopeHelper
     model
       .order(label, attribute)
       .group(attribute, label)
-      .raw_rows(attribute, "#{label} AS #{label_alias}", "COUNT(#{attribute})")
+      .pluck(attribute, "#{label} AS #{label_alias}", "COUNT(#{attribute})")
       .reject { |r| r.first.blank? }
   end
 
