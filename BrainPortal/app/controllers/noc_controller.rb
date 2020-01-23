@@ -88,15 +88,16 @@ class NocController < ApplicationController
     @cpu_time      = CputimeResourceUsageForCbrainTask
                        .where([ "created_at > ?", since_when ])
                        .sum(:value)
-    @space_delta_P = SpaceResourceUsageForUserfile
+    @dp_space_delta_P = SpaceResourceUsageForUserfile
                        .where([ "created_at > ?", since_when ])
                        .where("value > 0")
+                       .group(:data_provider_id)
                        .sum(:value)
-    @space_delta_M = SpaceResourceUsageForUserfile
+    @dp_space_delta_M = SpaceResourceUsageForUserfile
                        .where([ "created_at > ?", since_when ])
                        .where("value < 0")
+                       .group(:data_provider_id)
                        .sum(:value)
-    @space_delta   = @space_delta_P + @space_delta_M
 
     # This is used to adjust the color ranges
     @num_hours     = (Time.now - since_when) / 24.hours; @num_hours = 1.0 if @num_hours < 1
@@ -107,9 +108,10 @@ class NocController < ApplicationController
       @active_tasks  = rand(fake)
       @data_transfer = rand(fake.gigabytes)
       @cpu_time      = rand(fake * 3600)
-      @space_delta_P = rand(fake.gigabytes)
-      @space_delta_M = - rand(fake.gigabytes)
-      @space_delta   = @space_delta_P + @space_delta_M
+      @dp_space_delta_P = DataProvider.where({}).raw_first_column(:id).shuffle[0..rand(5)]
+                                      .map { |dp| [ dp,   rand(fake.gigabytes) ] }.to_h
+      @dp_space_delta_M = DataProvider.where({}).raw_first_column(:id).shuffle[0..rand(5)]
+                                      .map { |dp| [ dp, - rand(fake.gigabytes) ] }.to_h
     end
 
     # This is where we store all info for all bourreaux, keyed by ID
@@ -152,23 +154,24 @@ class NocController < ApplicationController
     end
 
     # Sizes of files updated, keyed by DP ID: { dp.id => size, ... }
-    @updated_files = Userfile.where([ "userfiles.updated_at > ?", since_when ])
-                             .joins(:data_provider)
-                             .order("data_providers.name")
-                             .group("data_providers.id")
-                             .sum("userfiles.size")
+    #@updated_files = Userfile.where([ "userfiles.updated_at > ?", since_when ])
+    #                         .joins(:data_provider)
+    #                         .order("data_providers.name")
+    #                         .group("data_providers.id")
+    #                         .sum("userfiles.size")
     # Add entries with 0 for DPs that happen to be offline, so we see still them in red.
     DataProvider.where(:online => false)
                 .where(["updated_at > ?", offline_resource_limit.ago])
                 .raw_first_column(:id)
                 .each do |dpid|
-      @updated_files[dpid] = 0 unless @updated_files[dpid].present?
+    #  @updated_files[dpid]    = 0 unless @updated_files[dpid].present?
+      @dp_space_delta_P[dpid] = 0 unless @dp_space_delta_P[dpid].present?
     end
 
-    if fake
-      @updated_files = DataProvider.where({}).raw_first_column(:id).shuffle[0..rand(5)]
-                                   .map { |dp| [ dp, rand(fake.gigabytes) ] }.to_h
-    end
+    #if fake
+    #  @updated_files = DataProvider.where({}).raw_first_column(:id).shuffle[0..rand(5)]
+    #                               .map { |dp| [ dp, rand(fake.gigabytes) ] }.to_h
+    #end
 
     # Trigger refresh using HTTP header.
     myurl  = "#{request.protocol}#{request.host_with_port}#{request.fullpath}"

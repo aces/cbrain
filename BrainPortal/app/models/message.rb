@@ -74,6 +74,9 @@ class Message < ApplicationRecord
     group_id     = options[:group_id]      || options["group_id"]
     sender_id    = options[:sender_id]     || options["sender_id"]
 
+    # Affects how 'destination' is interpreted. Default: exclude locked users.
+    include_locked_users = options[:include_locked_users].present?
+
     # Stringify 'type' we can call with either :notice or 'notice'
     type = type.to_s unless type.is_a? String
 
@@ -85,7 +88,7 @@ class Message < ApplicationRecord
     messages_sent = []
 
     # Find the list of users who will receive the messages
-    allusers = find_users_for_destination(destination)
+    allusers = find_users_for_destination(destination, { :include_locked_users => include_locked_users } )
 
     # Send to all selected users
     allusers.each do |user|
@@ -273,7 +276,7 @@ class Message < ApplicationRecord
 
   private
 
-  def self.find_users_for_destination(destination) #:nodoc:
+  def self.find_users_for_destination(destination, options={}) #:nodoc:
 
     # Find the group(s) associated with the destination
     groups = case destination
@@ -296,7 +299,7 @@ class Message < ApplicationRecord
     # Get a unique list of all users from all these groups
     groups.compact!
     allusers = groups.inject([]) { |flat,group| flat |= group.users }
-    allusers.reject! { |u| u.account_locked? }
+    allusers.reject! { |u| u.account_locked? } if ! options[:include_locked_users]
 
     # Select the list of users in list of groups; a special case is made
     # when a single group contains only one user along with 'admin', in that case
