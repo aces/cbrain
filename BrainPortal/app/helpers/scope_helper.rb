@@ -714,9 +714,8 @@ module ScopeHelper
     # Generate the main filter values as an array of arrays:
     # [[value, label, count], [...]]
     collection
-      .map     { |i| [attr_get.(i), lbl_get.(i)].freeze }
-      .reject  { |v, l| v.blank? }
-      .sort_by { |v, l| l }
+      .map     { |i| [attr_get.(i) || nil, lbl_get.(i) || '(None)'].freeze }
+      .sort_by { |v, l| l.to_sym }
       .inject(Hash.new(0)) { |h, i| h[i] += 1; h }
       .map     { |(v, l), c| [v, l, c] }
   end

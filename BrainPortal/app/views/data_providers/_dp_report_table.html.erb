@@ -32,8 +32,8 @@
 <%
   @view_scope.each do |issue|
     issue[:userfile] = Userfile.find_by_id(issue[:userfile_id]) if issue[:userfile_id]
-    issue[:user]   = User.find_by_id(issue[:user_id]) if issue[:user_id]
-    issue[:user] ||= issue[:userfile].user if issue[:userfile]
+    issue[:user]     = User.find_by_id(issue[:user_id]) if issue[:user_id]
+    issue[:user]   ||= issue[:userfile].user if issue[:userfile]
   end
 %>
 
@@ -49,6 +49,11 @@
 
     t.row { |issue| { :class => "severity-#{issue[:severity]}" } }
 
+    t.column('Type', :type,
+      :sortable => true,
+      :filters  => default_filters_for(@issues, :type)
+    ) { |issue| issue[:type].to_s.titleize }
+
     t.column('Issue', :message,
       :sortable => true
     )
@@ -59,16 +64,17 @@
     ) { |issue| issue[:severity].to_s.titleize }
 
     t.column('Action', :action,
-      :sortable => true
-    ) { |issue| issue[:action] ? issue[:action].to_s.titleize : '-' }
+      :sortable => true,
+      :filters  => @issues.empty? ? [] : default_filters_for(@issues, :action)
+    ) { |issue| issue[:action] ? issue[:action].to_s.titleize : '(None)' }
 
     t.column('File', :userfile) do |issue|
-      next '-' unless issue[:userfile]
+      next '(None)' unless issue[:userfile]
       link_to_userfile_if_accessible(issue[:userfile], current_user)
     end
 
     t.column('User', :user) do |issue|
-      next '-' unless issue[:user]
+      next '(None)' unless issue[:user]
       link_to_user_with_tooltip(issue[:user])
     end
   %>
