@@ -261,7 +261,7 @@ class SshDataProvider < DataProvider
     self.userfiles.where("name NOT IN (?)", remote_files.empty? ? [''] : remote_files).each do |miss|
       issues << {
         :type        => :missing,
-        :message     => "Userfile 'missjhgjgfjh.name'",
+        :message     => "Userfile '#{miss.name}'",
         :severity    => :major,
         :action      => :destroy,
         :userfile_id => u.id,
