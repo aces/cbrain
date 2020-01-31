@@ -259,6 +259,11 @@ module ScopeHelper
     values.map! { |value| value.constantize.pretty_type rescue value } if
       attribute == 'type'
 
+    # Special case to get login based on a user_id when we have no model and association
+    # Use for DataProvider report table
+    values.map! { |value| User.find(value).login rescue value} if
+      attribute.to_sym == :user_id
+
     # Special case for the messages table; a null (nil) sender means the
     # message was sent by the system, and a filter for it should be displayed
     # as such.
@@ -715,7 +720,7 @@ module ScopeHelper
     # [[value, label, count], [...]]
     collection
       .map     { |i| [attr_get.(i) || nil, lbl_get.(i) || '(None)'].freeze }
-      .sort_by { |v, l| l.to_sym }
+      .sort_by { |v, l| l.to_s }
       .inject(Hash.new(0)) { |h, i| h[i] += 1; h }
       .map     { |(v, l), c| [v, l, c] }
   end

@@ -760,7 +760,7 @@ class DataProvidersController < ApplicationController
   def report
     @scope    = scope_from_session
     @provider = DataProvider.find(params[:id])
-    @issues   = @provider.provider_report(params[:reload])
+    @issues   = @provider.provider_report(params[:reload]) || []
 
     scope_default_order(@scope, :severity)
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })

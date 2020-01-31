@@ -31,10 +31,13 @@
 
 <%
   @view_scope.each do |issue|
-    issue[:userfile] = Userfile.find_by_id(issue[:userfile_id]) if issue[:userfile_id]
-    issue[:user]     = User.find_by_id(issue[:user_id]) if issue[:user_id]
-    issue[:user]   ||= issue[:userfile].user if issue[:userfile]
+    issue[:userfile]    = Userfile.find_by_id(issue[:userfile_id]) if issue[:userfile_id]
   end
+
+  user_ids    = @issues.map { |i| i[:user_id] }.uniq
+  logins      = User.where(:id => user_ids).pluck(:id,:login).to_h
+  logins[nil] = "(None)"
+  user_counts = @issues.each_with_object( Hash.new(0) ) { |issue, counts| counts[issue[:user_id]] += 1 }
 %>
 
 <%=
@@ -60,12 +63,12 @@
 
     t.column('Severity', :severity,
       :sortable => true,
-      :filters  => @issues.empty? ? [] : default_filters_for(@issues, :severity)
+      :filters  => default_filters_for(@issues, :severity)
     ) { |issue| issue[:severity].to_s.titleize }
 
     t.column('Action', :action,
       :sortable => true,
-      :filters  => @issues.empty? ? [] : default_filters_for(@issues, :action)
+      :filters  => default_filters_for(@issues, :action)
     ) { |issue| issue[:action] ? issue[:action].to_s.titleize : '(None)' }
 
     t.column('File', :userfile) do |issue|
@@ -73,9 +76,19 @@
       link_to_userfile_if_accessible(issue[:userfile], current_user)
     end
 
-    t.column('User', :user) do |issue|
-      next '(None)' unless issue[:user]
-      link_to_user_with_tooltip(issue[:user])
+    t.column('User', :user_id,
+      :filters  => filter_values_for(@issues, :user_id,
+        format: lambda do |format_info|
+          value, label, count = *format_info
+          {
+           :value     => value,
+           :label     => "#{logins[value]} (of #{user_counts[label]})" ,
+           :indicator => count,
+          }
+        end
+        )
+      ) do |issue|
+      link_to_user_if_accessible(issue[:user_id])
     end
   %>
 <% end %>
