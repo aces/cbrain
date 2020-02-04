@@ -110,7 +110,6 @@ class VaultLocalDataProvider < LocalDataProvider
           :type      => :vault_unregistered,
           :message   => "Unregisted file '#{unreg}' for user '#{user.login}'",
           :severity  => :trivial,
-          :action    => :register,
           :user_id   => user.id,
           :file_name => unreg
         }
