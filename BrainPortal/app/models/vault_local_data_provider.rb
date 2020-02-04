@@ -96,7 +96,7 @@ class VaultLocalDataProvider < LocalDataProvider
       issues << {
         :type     => :outside,
         :message  => "Unknown file '#{out}' outside user directories",
-        :severity => :minor,
+        :severity => :major,
         :user_id  => nil
       }
     end
