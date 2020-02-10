@@ -41,7 +41,7 @@ class ApplicationController < ActionController::Base
   include ExceptionHelpers
   include MessageHelpers
 
-  helper_method :start_page_path
+  helper_method :start_page_path, :_app_name_, :is_app_CBRAIN?, :is_app_NEUROHUB?
 
   # These will be executed in order
   before_action :check_account_validity
@@ -357,6 +357,24 @@ class ApplicationController < ActionController::Base
   # Use in order to return param key if it's present in params
   def extract_params_key(list=[], default=nil) #:nodoc:
     list.detect { |x| params.has_key?(x) && x } || default
+  end
+
+  ####################################################
+  #
+  # Application Switcher Helpers
+  #
+  ####################################################
+
+  def is_app_CBRAIN?
+    _app_name_ == :cbrain
+  end
+
+  def is_app_NEUROHUB?
+    _app_name_ == :neurohub
+  end
+
+  def _app_name_
+    @_app_name_ ||= ENV['CBRAIN_INSTANCE_NAME'].presence.try(:downcase).try(:to_sym) || :cbrain
   end
 
 end

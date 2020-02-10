@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <%-
 #
 # CBRAIN Project
@@ -21,8 +20,30 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
-<% if is_app_CBRAIN? %>
-  <%= render :partial => 'layouts/cbrain_application' %>
-<% elsif is_app_NEUROHUB? %>
-  <%= render :partial => 'layouts/neurohub_application' %>
-<% end %>
+<html lang="en">
+
+  <head>
+    <title>NeuroHub</title>
+
+    <%
+        # Get the CSRF meta tags, but add IDs to them
+        id_csrf_meta_tag = csrf_meta_tag || ""
+        id_csrf_meta_tag.sub!('name="csrf-token"', 'name="csrf-token" id="csrf-token"')
+        id_csrf_meta_tag.sub!('name="csrf-param"', 'name="csrf-param" id="csrf-param"')
+    %>
+    <%= id_csrf_meta_tag.html_safe %>
+
+    <%= stylesheet_link_tag  "neurohub", :media => "all" %>
+  </head>
+
+  <body id="neurohub" onunload="">
+
+<div class="nh_demo">
+Hello World:
+<%= _app_name_ %>
+</div>
+
+  </body>
+
+</html>
+

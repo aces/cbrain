@@ -1,0 +1,70 @@
+<%-
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+<html lang="en">
+
+  <head>
+    <title><%= RemoteResource.current_resource.name.presence || "CBRAIN" %><%= yield :title %></title>
+
+    <% small_logo = RemoteResource.current_resource.small_logo.blank? ? "/images/custom_logos/cb-small_white_blue.png" : RemoteResource.current_resource.small_logo %>
+    <% large_logo = RemoteResource.current_resource.large_logo.blank? ? "/images/custom_logos/cb-large_white_blue.png" : RemoteResource.current_resource.large_logo %>
+
+    <link rel="shortcut icon"                    type="image/png" href="<%= small_logo %>">
+    <link rel="apple-touch-icon" sizes="96x96"   type="image/png" href="<%= small_logo %>">
+    <link rel="apple-touch-icon" sizes="145x145" type="image/png" href="<%= large_logo %>">
+
+    <%
+        # Get the CSRF meta tags, but add IDs to them
+        id_csrf_meta_tag = csrf_meta_tag || ""
+        id_csrf_meta_tag.sub!('name="csrf-token"', 'name="csrf-token" id="csrf-token"')
+        id_csrf_meta_tag.sub!('name="csrf-param"', 'name="csrf-param" id="csrf-param"')
+    %>
+    <%= id_csrf_meta_tag.html_safe %>
+
+    <%= stylesheet_link_tag  "cbrain", "dynamic-table", "jquery-ui", "chosen_1.8.7", :media => "all" %>
+    <%= javascript_include_tag "jquery", "jquery-ui", "jquery.form", "jquery_ujs" %>
+
+    <%= yield :head %>
+  </head>
+
+  <body id="cbrain" onunload="">
+
+    <!-- Main HTML Content -->
+
+    <%= render :partial => 'layouts/section_account' %>
+    <%= render :partial => 'layouts/section_menu'    %>
+    <%= render :partial => 'layouts/section_main'    %>
+    <%= render :partial => 'layouts/section_footer'  %>
+
+    <!-- Scripts loaded after main content -->
+
+    <%= javascript_include_tag "chosen_1.8.7.jquery.min" %>
+    <%= javascript_include_tag "cbrain" %>
+    <%= javascript_include_tag "dynamic-table" %>
+    <%= yield :scripts %>
+
+    <!-- Dynamically Appended Body Elements Below This -->
+
+  </body>
+
+</html>
+
