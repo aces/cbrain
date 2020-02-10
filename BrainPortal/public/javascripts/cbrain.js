@@ -1011,10 +1011,8 @@
     var defined_width = (select.context.style.width);
     if ( defined_width !== '' ){
       select.chosen({ width: defined_width });
-    } else if (select.is(":hidden")) {
-      select.chosen({ width: '25em' });
     } else {
-      select.chosen({});
+      select.chosen({ width: '25em' });
     }
   });
 
