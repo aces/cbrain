@@ -160,17 +160,25 @@ module ViewHelpers
   # instead of "unknown".
   def pretty_size(size, options = {})
     if size.blank?
-      options[:blank] || "unknown"
-    elsif size >= 1_000_000_000_000
-      sprintf("%6.1f TB", size/1_000_000_000_000.0).strip
+      return options[:blank] || "unknown"
+    end
+
+    minus = ""
+    if size < 0
+      minus = "-"
+      size  = - size
+    end
+
+    if size >= 1_000_000_000_000
+      minus + sprintf("%6.1f TB", size/1_000_000_000_000.0).strip
     elsif size >= 1_000_000_000
-      sprintf("%6.1f GB", size/    1_000_000_000.0).strip
+      minus + sprintf("%6.1f GB", size/    1_000_000_000.0).strip
     elsif size >=     1_000_000
-      sprintf("%6.1f MB", size/        1_000_000.0).strip
+      minus + sprintf("%6.1f MB", size/        1_000_000.0).strip
     elsif size >=         1_000
-      sprintf("%6.1f kB", size/            1_000.0).strip
+      minus + sprintf("%6.1f kB", size/            1_000.0).strip
     else
-      sprintf("%d bytes", size).strip
+      minus + sprintf("%d bytes", size).strip
     end
   end
 
@@ -182,7 +190,7 @@ module ViewHelpers
   def colored_pretty_size(size, options = {})
     pretty = pretty_size(size, options)
     if pretty =~ /(\S+) (TB|GB|MB|kB|bytes)\z/i
-      val    = Regexp.last_match[1].to_f
+      val    = Regexp.last_match[1].to_f.abs
       suffix = Regexp.last_match[2].downcase.to_sym
       return html_colorize(pretty, options[:tb].presence    || 'purple') if suffix == :tb
       return html_colorize(pretty, options[:gb100].presence || 'purple') if suffix == :gb && val >= 100
