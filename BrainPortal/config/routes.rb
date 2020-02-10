@@ -23,6 +23,7 @@
 # CBRAIN Routing Table
 
 Rails.application.routes.draw do
+  if CBRAIN.is_app_CBRAIN?
 
   # Session
   resource  :session,         :only => [ :new, :create, :show, :destroy ]
@@ -247,5 +248,22 @@ Rails.application.routes.draw do
   #get   '/platform/licence',        :controller => :service, :action => :licence
   #get   '/platform/provenance',     :controller => :service, :action => :provenance
   #get   '/platform/factsheet',      :controller => :service, :action => :factsheet
+
+  end
+
+  if CBRAIN.is_app_NEUROHUB?
+
+  # Special named routes
+  root  :to                       => 'neurohub#welcome'
+  get   '/home'                   => 'neurohub#welcome'
+  get   '/welcome'                => 'neurohub#welcome'
+  get   '/login'                  => 'nhsessions#new'
+  get   '/logout'                 => 'nhsessions#destroy'
+
+  # Sessions
+  resource  :nhsession,   :only => [ :new, :create, :destroy ]
+  get       :nhsession,   :to   => 'nhsessions#new', :as => 'new_session'
+
+  end
 
 end

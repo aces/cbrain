@@ -359,24 +359,6 @@ class ApplicationController < ActionController::Base
     list.detect { |x| params.has_key?(x) && x } || default
   end
 
-  ####################################################
-  #
-  # Application Switcher Helpers
-  #
-  ####################################################
-
-  def is_app_CBRAIN?
-    _app_name_ == :cbrain
-  end
-
-  def is_app_NEUROHUB?
-    _app_name_ == :neurohub
-  end
-
-  def _app_name_
-    @_app_name_ ||= ENV['CBRAIN_INSTANCE_NAME'].presence.try(:downcase).try(:to_sym) || :cbrain
-  end
-
 end
 
 # Patch: Load all models so single-table inheritance works properly.

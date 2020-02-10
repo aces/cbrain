@@ -271,5 +271,23 @@ class CBRAIN
     block_given? ? yield : true
   end
 
+  ####################################################
+  #
+  # Application Switcher Helpers
+  #
+  ####################################################
+
+  def self.is_app_CBRAIN?
+    self.app_name == :cbrain
+  end
+
+  def self.is_app_NEUROHUB?
+    self.app_name == :neurohub
+  end
+
+  def self.app_name
+    @_app_name_ ||= ENV['CBRAIN_INSTANCE_NAME'].presence.try(:downcase).try(:to_sym) || :cbrain
+  end
+
 end  # End of CBRAIN class
 
