@@ -264,8 +264,8 @@ class SshDataProvider < DataProvider
         :message     => "Userfile '#{miss.name}'",
         :severity    => :major,
         :action      => :destroy,
-        :userfile_id => u.id,
-        :user_id     => u.user_id
+        :userfile_id => miss.id,
+        :user_id     => miss.user_id
       }
     end
 
