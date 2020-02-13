@@ -270,7 +270,7 @@ class SingSquashfsDataProvider < SshDataProvider
 
   def singularity_exec_prefix #:nodoc:
     sq_files     = get_squashfs_basenames
-    overlay_opts = "--overlay " + sq_files.join(" --overlay ")
+    overlay_opts = sq_files.map { |f| "--overlay=#{f.bash_escape}:ro" }.join(" ")
     "cd #{self.remote_dir.bash_escape} && singularity -s exec #{overlay_opts} #{SINGULARITY_IMAGE_BASENAME}"
   end
 
