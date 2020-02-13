@@ -52,7 +52,7 @@ class NeurohubController < ApplicationController
       message = "Reboot initiated by user #{current_user.login} at #{Time.now}. Server PID: #{@pid_to_restart}"
       Rails.logger.info message
 
-      system("cp","public/reboot.txt.base", "public/reboot.txt")
+      system("cp","-p","public/reboot.txt.base", "public/reboot.txt")
       File.open("public/reboot.txt","a") { |fh| fh.write( message + "\n\n" ) }
 
       Dir.chdir(cbroot.to_s) do
