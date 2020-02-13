@@ -767,6 +767,9 @@ class DataProvidersController < ApplicationController
     @view_scope = @scope.apply(@issues, paginate: true)
 
     respond_to do |format|
+      if params[:reload]
+        format.html { redirect_to :action => :report }
+      end
       format.html
       format.js
       format.xml  { render :xml  => { :issues => @issues } }
@@ -791,12 +794,13 @@ class DataProvidersController < ApplicationController
       :header        => "Repair #{@issues.size} inconsistencies in background.",
     )
 
-    CBRAIN.spawn_with_active_records(:admin, "Repair DP inconsistencies") do
+    CBRAIN.spawn_with_active_records(:admin, "Repair DP  #{self.name}") do
       # Try to repair the inconsistencies (or issues)
       failed_list  = []
       success_list = []
 
-      @issues.each do |issue|
+      @issues.each_with_index_and_size do |issue, idx, size|
+        Process.setproctitle "Repair DP=#{@provider.id} #{idx+1}/#{size}"
         begin
           @provider.provider_repair(issue)
           success_list << issue
