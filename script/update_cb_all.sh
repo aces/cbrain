@@ -112,6 +112,7 @@ for plugin in * ; do
   test ! -d "$plugin"                       && continue
   test "X$plugin" == "Xinstalled-plugins"   && continue
   test "X$plugin" == "Xcbrain-plugins-base" && continue
+  test ! -d "$plugin/.git"                  && continue
   echo " => $plugin"
   pushd "$plugin" >/dev/null || exit 20
   runcapture "git pull"

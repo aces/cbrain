@@ -41,7 +41,7 @@ class ApplicationController < ActionController::Base
   include ExceptionHelpers
   include MessageHelpers
 
-  helper_method :start_page_path, :_app_name_, :is_app_CBRAIN?, :is_app_NEUROHUB?
+  helper_method :start_page_path
 
   # These will be executed in order
   before_action :check_account_validity

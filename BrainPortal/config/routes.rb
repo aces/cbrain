@@ -263,6 +263,7 @@ Rails.application.routes.draw do
   # Sessions
   resource  :nhsession,   :only => [ :new, :create, :destroy ]
   get       :nhsession,   :to   => 'nhsessions#new', :as => 'new_session'
+  get       '/reboot',    :controller => :neurohub, :action => :reboot
 
   end
 

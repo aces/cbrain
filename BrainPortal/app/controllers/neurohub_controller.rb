@@ -26,10 +26,47 @@ class NeurohubController < ApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   before_action :login_required
+  before_action :check_if_rebooting
 
   # Main welcome/dashboard page
   def welcome #:nodoc:
     @username = current_user.login
+  end
+
+  # For development work convenience
+  def reboot #:nodoc:
+    root   = Pathname.new(Rails.root)
+    cbroot = root.parent
+
+    if params[:do_it].present?
+      system("cp","public/reboot.txt.base", "public/reboot.txt")
+      File.open("public/reboot.txt","a") do |fh|
+        fh.write(
+          "Reboot initiated by user #{current_user.login} at #{Time.now}. Server PID: #{CBRAIN::NH_PUMA_PID}\n\n"
+        )
+      end
+      Dir.chdir(cbroot.to_s) do
+        #ret = system("echo ABC | tee -a BrainPortal/public/reboot.txt")
+        CBRAIN.spawn_fully_independent do
+          ret = system("bash script/update_cb_all.sh #{root.to_s.bash_escape} >> BrainPortal/public/reboot.txt")
+          Process.kill('TERM',CBRAIN::NH_PUMA_PID) if ret
+        end
+      end
+
+      redirect_to '/reboot.txt'
+      return
+    end
+
+    # Render reboot.html.erb
+  end
+
+  private
+
+  def check_if_rebooting
+    if File.exists? "public/reboot.txt"
+      render :plain => File.read('public/reboot.txt').gsub(/\e\[[\d;]+m/,"")
+    end
+    true
   end
 
 end
