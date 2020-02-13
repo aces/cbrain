@@ -21,7 +21,7 @@
 #
 
 # Controller for the entry point into the system.
-class NeurohubController < ApplicationController
+class NeurohubPortalController < NeurohubApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 

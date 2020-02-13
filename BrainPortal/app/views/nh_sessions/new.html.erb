@@ -21,24 +21,20 @@
 #
 -%>
 
-<% title 'Lost Password?' %>
+<% title 'Login' %>
 
-<h2>Lost password? Fill this form, we'll contact you.</h2>
+<%= form_tag nh_session_path do %>
 
-<%= form_tag send_password_nh_users_path do %>
-  <table id="nhrequest_password" class="logintable">
-    <tr>
-      <td><label for="login">Neurohub login:</label></td>
-      <td class="field"><%= text_field_tag :login %></td>
-    </tr>
-    <tr>
-      <td><label for="email">E-mail address on your Neurohub account:</label></td>
-      <td class="field"><%= text_field_tag :email %></td>
-    </tr>
-    <tr>
-     <td></td>
-     <td class="field"><br><%= submit_tag 'Submit' %></td></td>
-    </tr>
-  </table>
+  Username: <%= text_field_tag 'username', nil, tabindex: 1 %>
+  <br>
+  Password: <%= password_field_tag 'password', nil, tabindex: 2 %>
+
+  <p>
+  <%= submit_tag "Sign in" %>
+
+  <p>
+  <td>
+    <%= link_to "Forgot your password?", request_password_nh_session_path %>
+  </td>
+
 <% end %>
-

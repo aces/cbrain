@@ -21,11 +21,11 @@
 #
 
 # Session management for NeuroHub
-class NhsessionsController < ApplicationController
+class NhSessionsController < NeurohubApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_action :login_required,    :except => [ :new, :create, :request_password ]
+  before_action :login_required,    :except => [ :new, :create, :request_password, :send_password ]
   before_action :already_logged_in, :except => [ :destroy ]
 
   def new #:nodoc:
@@ -59,6 +59,9 @@ class NhsessionsController < ApplicationController
   end
 
   def request_password #:nodoc:
+  end
+
+  def send_password #:nodoc:
   end
 
   private

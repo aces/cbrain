@@ -1,8 +1,8 @@
-<%-
+
 #
-# CBRAIN Project
+# NeuroHub Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2020
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -19,30 +19,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
-<html lang="en">
 
-  <head>
-    <title>NeuroHub</title>
+# Superclass to all *NeuroHub* controllers.
+# Already inherits all the methods and modules of
+# CBRAIN's ApplicationController.
+class NeurohubApplicationController < ApplicationController
 
-    <%
-        # Get the CSRF meta tags, but add IDs to them
-        id_csrf_meta_tag = csrf_meta_tag || ""
-        id_csrf_meta_tag.sub!('name="csrf-token"', 'name="csrf-token" id="csrf-token"')
-        id_csrf_meta_tag.sub!('name="csrf-param"', 'name="csrf-param" id="csrf-param"')
-    %>
-    <%= id_csrf_meta_tag.html_safe %>
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-    <%= stylesheet_link_tag  "neurohub", :media => "all" %>
-  </head>
-
-  <body id="neurohub">
-
-    <a href="/">Welcome Page</a> | <a href="/logout">Logout</a><p>
-
-    <%= yield :layout %>
-
-  </body>
-
-</html>
+end
 
