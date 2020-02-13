@@ -25,7 +25,7 @@ class NhsessionsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_action :login_required,    :except => [ :new, :create ]
+  before_action :login_required,    :except => [ :new, :create, :request_password ]
   before_action :already_logged_in, :except => [ :destroy ]
 
   def new #:nodoc:
