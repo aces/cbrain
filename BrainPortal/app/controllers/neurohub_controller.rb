@@ -33,23 +33,39 @@ class NeurohubController < ApplicationController
     @username = current_user.login
   end
 
-  # For development work convenience
+  # For development work convenience; not part of final neurohub deliverable
   def reboot #:nodoc:
     root   = Pathname.new(Rails.root)
     cbroot = root.parent
 
+    # When puma is in cluster mode, we must restart using the PPID.
+    # Otherwise we must use our own PID.
+    puma_pid  = Process.pid
+    puma_ppid = Process.ppid
+
+    parent_info = Sys::ProcTable.ps(:pid => puma_ppid)
+    clustered   = parent_info.name == 'ruby'
+
+    @pid_to_restart = clustered ? puma_ppid : puma_pid
+
     if params[:do_it].present?
+      message = "Reboot initiated by user #{current_user.login} at #{Time.now}. Server PID: #{@pid_to_restart}"
+      Rails.logger.info message
+
       system("cp","public/reboot.txt.base", "public/reboot.txt")
-      File.open("public/reboot.txt","a") do |fh|
-        fh.write(
-          "Reboot initiated by user #{current_user.login} at #{Time.now}. Server PID: #{CBRAIN::NH_PUMA_PID}\n\n"
-        )
-      end
+      File.open("public/reboot.txt","a") { |fh| fh.write( message + "\n\n" ) }
+
       Dir.chdir(cbroot.to_s) do
         #ret = system("echo ABC | tee -a BrainPortal/public/reboot.txt")
         CBRAIN.spawn_fully_independent do
           ret = system("bash script/update_cb_all.sh #{root.to_s.bash_escape} >> BrainPortal/public/reboot.txt")
-          Process.kill('TERM',CBRAIN::NH_PUMA_PID) if ret
+          if ret
+            #Process.kill('USR1',@pid_to_restart) # note: a bug in Puma makes it not restart because of pid file 
+            Process.kill('TERM',@pid_to_restart) # in production, monit will restart
+          else
+            message = "ERROR: The update processed returned an error code. Restart not attempted. Contact Pierre."
+            File.open("public/reboot.txt","a") { |fh| fh.write( message + "\n\n" ) }
+          end
         end
       end
 
