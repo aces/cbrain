@@ -767,10 +767,12 @@ class DataProvidersController < ApplicationController
     @view_scope = @scope.apply(@issues, paginate: true)
 
     respond_to do |format|
+      # Avoid to reload the page when switching page
       if params[:reload]
         format.html { redirect_to :action => :report }
+      else
+        format.html
       end
-      format.html
       format.js
       format.xml  { render :xml  => { :issues => @issues } }
       format.json { render :json => { :issues => @issues } }
