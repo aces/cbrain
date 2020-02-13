@@ -14,9 +14,9 @@ Current PUMA pid: <%= @pid_to_restart %><p>
 <p>
 <fieldset>
 <legend>Git log of GitHub branch</legend>
-<% remote=`git rev-parse --abbrev-ref --symbolic-full-name @{u}`.strip %>
+<% remote=`git rev-parse --abbrev-ref --symbolic-full-name "@{u}"`.strip %>
+<% system("git fetch") %>
 <pre class="nh-reboot-text">
-Remote branch: <%= remote %>
 <%= IO.popen("git log -n 1 --decorate=full --stat #{remote.bash_escape}","r") { |f| f.read } %>
 </pre>
 </fieldset>
