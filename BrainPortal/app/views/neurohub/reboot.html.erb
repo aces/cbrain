@@ -3,11 +3,24 @@
 
 <h2>This is a temporary feature for NeuroHub developers.</h2>
 
-Current PUMA pid: <%= @pid_to_restart %><br>
-Latest git log:
+Current PUMA pid: <%= @pid_to_restart %><p>
+
+<fieldset>
+<legend>Git log of currently running code</legend>
 <pre class="nh-reboot-text">
 <%= IO.popen("git log -n 1 --decorate=full --stat","r") { |f| f.read } %>
 </pre>
+</fieldset>
+<p>
+<fieldset>
+<legend>Git log of GitHub branch</legend>
+<% remote=`git rev-parse --abbrev-ref --symbolic-full-name @{u}`.strip %>
+<pre class="nh-reboot-text">
+Remote branch: <%= remote %>
+<%= IO.popen("git log -n 1 --decorate=full --stat #{remote.bash_escape}","r") { |f| f.read } %>
+</pre>
+</fieldset>
+<p>
 
 <h2>Read this first</h2>
 
