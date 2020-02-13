@@ -28,7 +28,7 @@
 
 <%= form_tag repair_data_provider_path(@provider), :method => :post do %>
   <div class="menu_bar">
-    <%= link_to "Reload report", report_data_provider_path(@provider, :reload => true), :class => "button" %>
+    <%= link_to "Reload report", report_data_provider_path(@provider, :reload => true), :method => :post, :class => "button" %>
     <% unless @issues.empty? %>
       <%= submit_tag "Repair selected issues", :class => "button" %>
     <% end %>

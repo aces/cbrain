@@ -116,26 +116,4 @@ module ConsistencyChecks
     Userfile.find_by_id(issue[:userfile_id]).destroy
   end
 
-  # Register a new userfile to solve consistency issues. (repair action :register)
-  # Requires the issue keys:
-  #  [:file_name] Name of the file to register
-  #  [:user_id]   ID of the user to register the file to
-  #  [:group_id]  ID of the group to register the file to.
-  #               Defaults to the user's personal group if absent.
-  def self.repair_action_register(provider, issue)
-    raise "No file name to register."        unless issue[:file_name]
-    raise "No user to register the file as." unless issue[:user_id]
-
-    user = User.find_by_id(issue[:user_id])
-    type = Userfile.suggested_file_type(issue[:file_name])
-    raise "Unable to automatically detect the file's type for registration." unless type
-
-    type.new(
-      :name             => issue[:file_name],
-      :user_id          => user.id,
-      :group_id         => user.own_group.id,
-      :data_provider_id => provider.id
-    ).save!
-  end
-
 end

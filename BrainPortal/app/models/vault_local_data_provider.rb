@@ -96,7 +96,8 @@ class VaultLocalDataProvider < LocalDataProvider
       issues << {
         :type     => :outside,
         :message  => "Unknown file '#{out}' outside user directories",
-        :severity => :minor
+        :severity => :major,
+        :user_id  => nil
       }
     end
 
@@ -109,7 +110,6 @@ class VaultLocalDataProvider < LocalDataProvider
           :type      => :vault_unregistered,
           :message   => "Unregisted file '#{unreg}' for user '#{user.login}'",
           :severity  => :trivial,
-          :action    => :register,
           :user_id   => user.id,
           :file_name => unreg
         }

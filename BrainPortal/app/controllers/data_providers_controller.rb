@@ -760,14 +760,19 @@ class DataProvidersController < ApplicationController
   def report
     @scope    = scope_from_session
     @provider = DataProvider.find(params[:id])
-    @issues   = @provider.provider_report(params[:reload])
+    @issues   = @provider.provider_report(params[:reload]) || []
 
     scope_default_order(@scope, :severity)
     @scope.pagination ||= Scope::Pagination.from_hash({ :per_page => 25 })
     @view_scope = @scope.apply(@issues, paginate: true)
 
     respond_to do |format|
-      format.html
+      # Avoid to reload the page when switching page
+      if params[:reload]
+        format.html { redirect_to :action => :report }
+      else
+        format.html
+      end
       format.js
       format.xml  { render :xml  => { :issues => @issues } }
       format.json { render :json => { :issues => @issues } }
@@ -779,20 +784,34 @@ class DataProvidersController < ApplicationController
     @provider = DataProvider.find(params[:id])
     @issues   = @provider.provider_report.select { |i| params[:issue_ids].include? i[:id].to_s }
 
-    # Try to repair the inconsistencies (or issues)
-    failed_list  = []
-    success_list = []
-    @issues.each do |issue|
-      begin
-        @provider.provider_repair(issue)
-        success_list << issue
-      rescue => ex
-        failed_list  << [issue, ex]
+    if @issues.blank?
+      respond_to do |format|
+        format.html { redirect_to :action => :report }
       end
+      return
     end
 
-    # Display a message reporting how many issues were repaired
-    unless @issues.empty?
+    Message.send_message(current_user,
+      :message_type  => :notice,
+      :header        => "Repair #{@issues.size} inconsistencies in background.",
+    )
+
+    CBRAIN.spawn_with_active_records(:admin, "Repair DP  #{self.name}") do
+      # Try to repair the inconsistencies (or issues)
+      failed_list  = []
+      success_list = []
+
+      @issues.each_with_index_and_size do |issue, idx, size|
+        Process.setproctitle "Repair DP=#{@provider.id} #{idx+1}/#{size}"
+        begin
+          @provider.provider_repair(issue)
+          success_list << issue
+        rescue => ex
+          failed_list  << [issue, ex]
+        end
+      end
+
+      # Display a message reporting how many issues were repaired
       if failed_list.empty?
         Message.send_message(current_user,
           :message_type  => :notice,
@@ -808,20 +827,13 @@ class DataProvidersController < ApplicationController
         Message.send_message(current_user,
           :message_type  => :error,
           :header        => "Out of #{@issues.size} issue(s), #{failed_list.size} could not be repaired:",
-          :variable_text => failed_list.map { |issue,ex| "|#{issue[:message]}|: #{ex.message}\n" }.join
+          :variable_text => "Report:\n" + failed_list.map { |issue,ex| "|#{issue[:message]}|: #{ex.message}" }.join("\n")
         )
       end
     end
 
-    api_response = {
-      :repaired => success_list,
-      :failed   => failed_list.map { |issue,ex| { :issue => issue, :exception => ex.message } }
-    }
-
     respond_to do |format|
       format.html { redirect_to :action => :report }
-      format.xml  { render      :xml    => api_response }
-      format.json { render      :json   => api_response }
     end
   end
 
