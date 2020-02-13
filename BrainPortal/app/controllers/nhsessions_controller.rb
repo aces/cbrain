@@ -58,6 +58,9 @@ class NhsessionsController < ApplicationController
     redirect_to '/login'
   end
 
+  def request_password #:nodoc:
+  end
+
   private
 
   def already_logged_in

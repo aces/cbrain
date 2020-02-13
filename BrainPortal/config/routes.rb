@@ -265,6 +265,13 @@ Rails.application.routes.draw do
   get       :nhsession,   :to   => 'nhsessions#new', :as => 'new_session'
   get       '/reboot',    :controller => :neurohub, :action => :reboot
 
+  resources :nhsessions,           :except => [ :edit ] do
+    collection do
+      get  'request_password'
+      #post 'send_password'
+    end
+  end
+
   end
 
 end
