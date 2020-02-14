@@ -26,10 +26,50 @@ class NhSignupsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_action :login_required, :except => [:new]
+  before_action :login_required, :except => [:new, :create]
 
   def new #:nodoc:
     @signup = Signup.new
+  end
+
+  def create #:nodoc:
+    @signup            = Signup.new(signup_params)
+    @signup.session_id = request.session_options[:id]
+    @signup.generate_token
+
+    require 'pry'
+    binding.pry
+
+    unless can_edit?(@signup)
+      redirect_to login_path
+      return
+    end
+
+    if ! @signup.save
+      render :action => :new
+      return
+    end
+
+  end
+
+
+
+  private
+
+  def signup_params
+    params.require(:signup).permit(
+      :title, :first, :middle, :last,
+      :institution, :department, :position, :affiliation, :email,
+      :street1, :street2, :city, :province, :country, :postal_code,
+      :login, :time_zone, :comment, :admin_comment, :hidden, :user_id
+    )
+  end
+
+  def can_edit?(signup) #:nodoc:
+    return false if signup.blank?
+    return true  if signup[:session_id] == request.session_options[:id]
+    return true  if current_user && current_user.has_role?(:admin_user)
+    false
   end
 
 end
