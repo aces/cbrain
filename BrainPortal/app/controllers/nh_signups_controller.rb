@@ -37,9 +37,6 @@ class NhSignupsController < ApplicationController
     @signup.session_id = request.session_options[:id]
     @signup.generate_token
 
-    require 'pry'
-    binding.pry
-
     unless can_edit?(@signup)
       redirect_to login_path
       return
