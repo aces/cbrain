@@ -1,4 +1,4 @@
-<%-
+
 #
 # NeuroHub Project
 #
@@ -19,29 +19,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<% title 'Login' %>
+require 'ipaddr'
 
-<%= form_tag nh_session_path do %>
+class NhSignupsController < ApplicationController
 
-  Username: <%= text_field_tag 'username', nil, tabindex: 1 %>
-  <br>
-  Password: <%= password_field_tag 'password', nil, tabindex: 2 %>
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  <p>
-  <%= submit_tag "Sign in" %>
+  before_action :login_required, :except => [:new]
 
-  <p>
-  <td>
-    <%= link_to "Forgot your password?", request_password_nh_session_path %>
-  </td>
+  def new #:nodoc:
+    @signup = Signup.new
+  end
 
-  <p>
-  Not a user?
-  <%= link_to 'Request an account.',
-        url_for(:controller => :nh_signups, :action => :new),
-        { tabindex: 4, :class => "action_link" }
-   %>
-
-<% end %>
+end

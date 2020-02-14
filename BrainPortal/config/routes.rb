@@ -275,6 +275,10 @@ Rails.application.routes.draw do
   # for compatibility with some CBRAIN methods.
   get       :nh_session,   :to   => 'nh_sessions#new', :as => 'new_session'
 
+  # Signups
+  resources :nh_signups do
+  end
+
   end
 
 end
