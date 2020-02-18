@@ -1,0 +1,83 @@
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+
+
+<% title "Project Info" %>
+
+<%= link_to 'Edit', {:action => :edit, :id => @nh_project.id}, :method  => :post %>
+
+
+<% unless @nh_project.is_a?(WorkGroup) %>
+  <div>
+
+    <%# For future usage & just in the case%>
+    You should not access this page, these groups are not yet fully supported in NeuroHub
+
+  </div>
+<% end %>
+
+<h2>Project Info</h2>
+
+<P>
+
+  <%= error_messages_for @ng_group, :header_message => "Project cannot be shown." %>
+
+  <div>
+
+     Name:                  <%= @nh_project.creator.name %> <br>
+     Maintainer:            <%= @nh_project.name %> <br>
+     Type:                  <%= @nh_project.pretty_category_name(current_user) %> <br>
+     Description:           <%= @nh_project.description %> <br>
+
+  </div>
+
+<%
+  group_members  = @nh_project.users
+  open_invites   = Invitation.where(sender_id: current_user.id, group_id: @nh_project.id, active: true)
+%>
+
+
+
+  <h2>Statistics</h2>
+
+     Files count:           <%= @nh_project.userfiles.count %> <br>
+     Tasks count:           <%= @nh_project.cbrain_tasks.count %> <br>
+     Member count:          <%= group_members.count %> <br>
+     Pending Invites count: <%= open_invites.count %> <br>
+
+
+  <h2>Members </h2>
+
+  <ul>
+  <% group_members.each do |member| %>
+
+      <li><%= member.name %> </li>
+
+  <% end %>
+  </ul>
+</div>
+
+
+
+
+
