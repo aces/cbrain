@@ -134,8 +134,8 @@ $variant : wordmark, lettermark, icon.
 $color   : black, white, rgb, grayscale.
 */
 
-@mixin logo($variant: "wordmark", $color: "rgb") {
-  background-image: url(<%=asset_path"/images/neurohub/NH_#{$variant}_#{$color}.png"%>);
+@mixin logo($variant: "wordmark", $color: "RGB") {
+  background-image: url(<%= asset_path"/images/neurohub/NH_\#{$variant}_\#{$color}.png"%>);
   background-repeat: no-repeat;
   background-size: contain;
 }
@@ -561,7 +561,7 @@ body {
     display: flex;
     flex-wrap: wrap;
     .nh_logo {
-      @include logo(wordmark, rgb);
+      @include logo(wordmark, RGB);
       position: absolute;
       width: 10rem;
       height: 4rem;
