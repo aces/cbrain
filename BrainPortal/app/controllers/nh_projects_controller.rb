@@ -27,17 +27,39 @@ class NhProjectsController < NeurohubApplicationController
 
   before_action :login_required
 
+  def new #:nodoc:
+    @nh_project = WorkGroup.new
+  end
+
+  def create #:nodoc:
+    attributes             = params.require_as_params(:nh_project).permit(:name, :description)
+
+    @nh_project            = WorkGroup.new(attributes)
+    @nh_project.creator_id = current_user.id
+
+    if @nh_project.save
+      @nh_project.addlog_context(self,"Created by #{current_user.login}")
+      redirect_to :action => :edit, :id => @nh_project.id
+    else
+      render :action => :new
+    end
+  end
+
   def edit #:nodoc:
-    @nh_group = current_user.available_groups.where(:type => WorkGroup).find(params[:id])
+    @nh_project = current_user.available_groups.where(:type => WorkGroup).find(params[:id])
   end
 
   def update #:nodoc:
-    @nh_group      = current_user.available_groups.where(:type => WorkGroup).find(params[:id])
+    @nh_project      = current_user.available_groups.where(:type => WorkGroup).find(params[:id])
 
-    attr_to_update = params.require_as_params(:nh_group).permit(:name, :description, :site_id, :invisible)
-    @nh_group.update_attributes_with_logging(attr_to_update,current_user)
+    attr_to_update = params.require_as_params(:nh_project).permit(:name, :description)
+    success = @nh_project.update_attributes_with_logging(attr_to_update,current_user)
 
-    redirect_to :action => "edit"
+    if success
+      redirect_to :action => :edit
+    else
+      render :action => :edit
+    end
   end
 
 end

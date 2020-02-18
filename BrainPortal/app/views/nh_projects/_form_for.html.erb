@@ -22,10 +22,17 @@
 #
 -%>
 
-<% title 'Edit Project' %>
+<%= form_for @nh_project, :as => :nh_project, :url => { :action => action }, :datatype => "script" do |f| -%>
 
-<h2>Edit Project</h2>
+  <div>
+    <%= f.label :name, "Name" %><br />
+    <%= f.text_field :name %>
 
-<%= error_messages_for @nh_project, :header_message => "Project could not be updated." %>
+    <p>
+    <%= f.label :description, "Description" %><br />
+    <%= f.text_area :description, :rows => 4, :cols => 40 %>
 
-<%= render :partial => 'form_for', :locals => {:action => :update} %>
+    <p>
+    <%= f.submit "#{action.to_s.capitalize}" %>
+  </div>
+<% end %>
