@@ -253,31 +253,33 @@ Rails.application.routes.draw do
 
   if CBRAIN.is_app_NEUROHUB?
 
-  # Special named routes
-  root  :to                       => 'neurohub_portal#welcome'
-  get   '/home'                   => 'neurohub_portal#welcome'
-  get   '/welcome'                => 'neurohub_portal#welcome'
-  get   '/login'                  => 'nh_sessions#new'
-  get   '/logout'                 => 'nh_sessions#destroy'
+    # Special named routes
+    root  :to                       => 'neurohub_portal#welcome'
+    get   '/home'                   => 'neurohub_portal#welcome'
+    get   '/welcome'                => 'neurohub_portal#welcome'
+    get   '/login'                  => 'nh_sessions#new'
+    get   '/logout'                 => 'nh_sessions#destroy'
 
-  # Temporary development route
-  get   '/reboot',         :controller => :neurohub_portal, :action => :reboot
+    # Temporary development route
+    get   '/reboot',         :controller => :neurohub_portal, :action => :reboot
 
-  # Sessions
-  resource  :nh_session,   :only => [ :new, :create, :destroy ] do
-    collection do
-      get  'request_password'
-      post 'send_password'
+    # Sessions
+    resource  :nh_session,   :only => [ :new, :create, :destroy ] do
+      collection do
+        get  'request_password'
+        post 'send_password'
+      end
     end
-  end
 
-  # Special alias to provide a fake route helper "new_session_path()"
-  # for compatibility with some CBRAIN methods.
-  get       :nh_session,   :to   => 'nh_sessions#new', :as => 'new_session'
+    # Special alias to provide a fake route helper "new_session_path()"
+    # for compatibility with some CBRAIN methods.
+    get       :nh_session,   :to   => 'nh_sessions#new', :as => 'new_session'
 
-  # Signups
-  resources :nh_signups do
-  end
+    # Signups
+    resources :nh_signups
+
+    # WorkGroups
+    resources :nh_projects
 
   end
 

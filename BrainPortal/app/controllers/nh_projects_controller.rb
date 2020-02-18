@@ -27,5 +27,18 @@ class NhProjectsController < NeurohubApplicationController
 
   before_action :login_required
 
+  def edit #:nodoc:
+    @nh_group = current_user.available_groups.where(:type => WorkGroup).find(params[:id])
+  end
+
+  def update #:nodoc:
+    @nh_group      = current_user.available_groups.where(:type => WorkGroup).find(params[:id])
+
+    attr_to_update = params.require_as_params(:nh_group).permit(:name, :description, :site_id, :invisible)
+    @nh_group.update_attributes_with_logging(attr_to_update,current_user)
+
+    redirect_to :action => "edit"
+  end
+
 end
 
