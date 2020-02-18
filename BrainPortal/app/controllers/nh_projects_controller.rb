@@ -38,6 +38,7 @@ class NhProjectsController < NeurohubApplicationController
     @nh_project.creator_id = current_user.id
 
     if @nh_project.save
+      @nh_project.user_ids = [ current_user.id ]
       @nh_project.addlog_context(self,"Created by #{current_user.login}")
       redirect_to :action => :edit, :id => @nh_project.id
     else
