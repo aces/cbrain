@@ -1,4 +1,4 @@
-@import "<%= asset_path "./normalize.css" %>";
+@import "<%= asset_path " ./normalize.css " %>";
 
 /*
 LEGEND
@@ -135,7 +135,7 @@ $color   : black, white, rgb, grayscale.
 */
 
 @mixin logo($variant: "wordmark", $color: "rgb") {
-  background-image: url("/images/neurohub/NH_#{$variant}_#{$color}.png");
+  background-image: url(<%=asset_path"/images/neurohub/NH_#{$variant}_#{$color}.png"%>);
   background-repeat: no-repeat;
   background-size: contain;
 }
@@ -595,7 +595,7 @@ body {
     @include title("sm");
     @include p(7);
     background: $PRIMARY_DK;
-    background-image: url("/images/neurohub/NH_login_backsplash.png");
+    background-image: url(<%=asset_path"/images/neurohub/NH_login_backsplash.png"%>);
     background-size: cover;
     background-blend-mode: color-dodge;
     flex: 1;
