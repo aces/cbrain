@@ -212,64 +212,68 @@ classes are generated for inline style needs.
 $sizes: 0rem, 0.25rem, 0.5rem, 0.75rem, 1rem, 1.25rem, 1.5rem, 2rem, 2.5rem,
   3rem, 4rem, 5rem, 6rem, 8rem;
 
+@function space($index) {
+  @return nth($sizes, $index + 1);
+}
+
 @mixin p($index) {
-  padding: nth($sizes, $index + 1); // lists in sass are not zero-indexed.
+  padding: space($index); // lists in scss are not zero-indexed.
 }
 
 @mixin px($index) {
-  padding-left: nth($sizes, $index + 1);
-  padding-right: nth($sizes, $index + 1);
+  padding-left: space($index);
+  padding-right: space($index);
 }
 
 @mixin pl($index) {
-  padding-left: nth($sizes, $index + 1);
+  padding-left: space($index);
 }
 
 @mixin pr($index) {
-  padding-right: nth($sizes, $index + 1);
+  padding-right: space($index);
 }
 
 @mixin py($index) {
-  padding-top: nth($sizes, $index + 1);
-  padding-bottom: nth($sizes, $index + 1);
+  padding-top: space($index);
+  padding-bottom: space($index);
 }
 
 @mixin pt($index) {
-  padding-top: nth($sizes, $index + 1);
+  padding-top: space($index);
 }
 
 @mixin pb($index) {
-  padding-bottom: nth($sizes, $index + 1);
+  padding-bottom: space($index);
 }
 
 @mixin m($index) {
-  margin: nth($sizes, $index + 1); // lists in sass are not zero-indexed.
+  margin: space($index); // lists in sass are not zero-indexed.
 }
 
 @mixin mx($index) {
-  margin-left: nth($sizes, $index + 1);
-  margin-right: nth($sizes, $index + 1);
+  margin-left: space($index);
+  margin-right: space($index);
 }
 
 @mixin ml($index) {
-  margin-left: nth($sizes, $index + 1);
+  margin-left: space($index);
 }
 
 @mixin mr($index) {
-  margin-right: nth($sizes, $index + 1);
+  margin-right: space($index);
 }
 
 @mixin my($index) {
-  margin-top: nth($sizes, $index + 1);
-  margin-bottom: nth($sizes, $index + 1);
+  margin-top: space($index);
+  margin-bottom: space($index);
 }
 
 @mixin mt($index) {
-  margin-top: nth($sizes, $index + 1);
+  margin-top: space($index);
 }
 
 @mixin mb($index) {
-  margin-bottom: nth($sizes, $index + 1);
+  margin-bottom: space($index);
 }
 
 @each $size in $sizes {
@@ -335,9 +339,8 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 */
 
 @mixin button($bg, $border_color) {
-  @include m(2);
   @include px(5);
-  @include py(1);
+  @include py(2);
   @include shadow("low");
 
   border-radius: 4px;
@@ -447,6 +450,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   border-radius: 0px !important;
   box-shadow: none !important;
   border: none !important;
+  text-align: center;
 
   &:hover {
     @include button($DEFAULT_WASH, $DEFAULT_WASH);
@@ -461,6 +465,8 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   border-radius: 0px !important;
   box-shadow: none !important;
   border: none !important;
+  text-align: center;
+
   &:hover {
     @include button($PRIMARY_WASH, $PRIMARY_WASH);
     @include text-button($PRIMARY_BG);
@@ -474,9 +480,30 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   border-radius: 0px !important;
   box-shadow: none !important;
   border: none !important;
+  text-align: center;
+
   &:hover {
     @include button($SECONDARY_WASH, $SECONDARY_WASH);
     @include text-button($SECONDARY_BG);
+  }
+}
+
+.btn-nav-primary {
+  @include button("transparent", "transparent");
+  @include text-button($PRIMARY_TEXT);
+  @include px(5);
+  @include py(4);
+  text-decoration: none;
+  border-radius: 0px !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  &:hover {
+    @include button($PRIMARY_WASH, $PRIMARY_WASH);
+    @include text-button($PRIMARY_BG);
+    @include px(5);
+    @include py(4);
+    text-decoration: underline;
   }
 }
 
@@ -489,4 +516,133 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 html,
 body {
   font-size: 16px;
+  height: 100%;
+}
+
+#nh_toolbar {
+  @include shadow("xlow");
+  display: flex;
+  align-items: center;
+  min-height: space(7);
+  .logo {
+    @include logo(icon, RGB);
+    @include mx(4);
+    height: 4rem;
+    width: space(7);
+    height: space(7);
+  }
+  .nav_buttons {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+#nh_content {
+  height: 100%;
+  &[data-isLoggedIn="true"] {
+    @include p(8);
+  }
+}
+
+/*
+=============================================================
+| SESSIONS
+=============================================================
+*/
+
+#nh_sessions {
+  height: 100%;
+  display: flex;
+  .nh_login {
+    @include p(7);
+    background: $DEFAULT_BG;
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    .nh_logo {
+      @include logo(wordmark, rgb);
+      position: absolute;
+      width: 10rem;
+      height: 4rem;
+    }
+    .nh_login_form {
+      align-self: center;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      label {
+        @include title("xs");
+        text-transform: uppercase;
+        color: $DEFAULT_DK;
+      }
+
+      .login_input,
+      .login_input:focus {
+        @include mb(4);
+        @include p(2);
+        @include text("sm");
+
+        border-color: $DEFAULT_WASH;
+        box-shadow: none;
+        outline: auto $DEFAULT_WASH 5px;
+      }
+    }
+  }
+
+  .nh_features {
+    @include title("sm");
+    @include p(7);
+    background: $PRIMARY_DK;
+    background-image: url("/images/neurohub/NH_login_backsplash.png");
+    background-size: cover;
+    background-blend-mode: color-dodge;
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+
+    .nh_features_header {
+      position: absolute;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        width: 10rem;
+      }
+      p {
+        color: $DEFAULT_BG;
+        text-align: center;
+        width: 100%;
+      }
+    }
+    .nh_features_list {
+      color: $DEFAULT_BG;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      align-items: center;
+      align-self: center;
+      .nh_feature {
+        @include pb(4);
+        display: flex;
+        flex: 1;
+        margin: 0 auto;
+        align-items: center;
+        justify-content: space-around;
+        .nh_feature_icon {
+          width: 5rem;
+          height: 5rem;
+        }
+        .nh_feature_text {
+          @include pl(4);
+          max-width: 15rem;
+        }
+      }
+    }
+  }
 }

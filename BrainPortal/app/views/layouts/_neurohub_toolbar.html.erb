@@ -1,8 +1,9 @@
+
 <%-
 #
-# NeuroHub Project
+# CBRAIN Project
 #
-# Copyright (C) 2020
+# Copyright (C) 2008-2012
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -21,11 +22,20 @@
 #
 -%>
 
-<p>
+<!-- ************************ -->
+<!-- PARTIAL: TOOLBAR SECTION -->
+<!-- ************************ -->
 
-<div class="nh_welcome title-md" >
-Hello <%= @username %>, welcome to <%= CBRAIN.app_name %>
-</div>
-<div>
-<%= link_to 'Reboot Manager', reboot_path, { :class => "button" } %>
-</div>
+<% if current_user %>
+    <div id="nh_toolbar">
+        <div class="logo"></div>
+        <div class="nav_buttons">
+            <a class="btn-nav-primary" href="/logout">Logout</a>
+        </div>
+    </div>
+    
+<% end -%>
+
+  
+
+

@@ -43,11 +43,13 @@
 
   </head>
 
-  <body id="neurohub">
+  <body id="neurohub">  
+  
+    <%= render :partial => 'layouts/neurohub_toolbar' %>
 
-    <a href="/logout">Logout</a><p>
-
-    <%= yield :layout %>
+    <%= content_tag :div, nil, :id => "nh_content", "data-isLoggedIn" => !!current_user do -%>
+        <%= yield :layout %>
+    <% end -%>
 
   </body>
 
