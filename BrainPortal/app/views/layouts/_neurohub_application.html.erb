@@ -31,9 +31,16 @@
         id_csrf_meta_tag.sub!('name="csrf-token"', 'name="csrf-token" id="csrf-token"')
         id_csrf_meta_tag.sub!('name="csrf-param"', 'name="csrf-param" id="csrf-param"')
     %>
+   
     <%= id_csrf_meta_tag.html_safe %>
 
     <%= stylesheet_link_tag  "neurohub", :media => "all" %>
+    <% 
+        # BUG: https://stackoverflow.com/questions/25404206/chrome-transition-fires-on-page-load-when-form-element-added
+        # Empty script tags necessary to stop transitions from occurring on page load
+    %>
+    <script> </script>
+
   </head>
 
   <body id="neurohub">

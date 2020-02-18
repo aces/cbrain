@@ -12,6 +12,7 @@ Rails.application.config.assets.precompile += %w( dynamic-table.css )
 Rails.application.config.assets.precompile += %w( jquery-ui.css )
 Rails.application.config.assets.precompile += %w( userfiles.css )
 Rails.application.config.assets.precompile += %w( chosen_1.8.7.scss )
+Rails.application.config.assets.precompile += %w( neurohub.scss )
 Rails.application.config.assets.precompile += %w( noc.css )
 Rails.application.config.assets.precompile += %w( boutiques.css )
 

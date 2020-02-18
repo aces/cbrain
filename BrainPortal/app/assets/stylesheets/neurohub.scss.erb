@@ -1,0 +1,492 @@
+@import "./normalize.css";
+
+/*
+LEGEND
+├── BREAKPOINTS
+├── FONTS
+├── LOGOS
+├── PALETTE
+├── SHADOWS
+├── SPACE
+├── TRANSITIONS
+├── BUTTONS
+├── PAGES
+  ├── SESSIONS
+  ├── WELCOME
+└── 
+*/
+
+/*
+=============================================================
+| BREAKPOINTS
+=============================================================
+*/
+
+$breakpoints: 30em, 48em, 62em, 80em;
+
+/*
+=============================================================
+| FONTS
+=============================================================
+$variant : xs, sm, md, lg, xl.
+*/
+
+@mixin title($variant) {
+  font-family: "system-ui", sans-serif;
+  font-weight: 600;
+  line-height: 1.5;
+
+  @if $variant == "xs" {
+    font-size: 0.875rem;
+  }
+  @if $variant == "sm" {
+    font-size: 1rem;
+  }
+  @if $variant == "md" {
+    font-size: 1.25rem;
+  }
+  @if $variant == "lg" {
+    font-size: 1.5rem;
+  }
+  @if $variant == "xl" {
+    font-size: 2rem;
+  }
+}
+
+@mixin text($variant) {
+  font-family: "Open Sans", sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
+
+  @if $variant == "xs" {
+    font-size: 0.75rem;
+  }
+  @if $variant == "sm" {
+    font-size: 0.875rem;
+  }
+  @if $variant == "md" {
+    font-size: 1rem;
+  }
+  @if $variant == "lg" {
+    font-size: 1.25rem;
+  }
+  @if $variant == "xl" {
+    font-size: 1.5rem;
+  }
+}
+
+@mixin text-button($color, $opacity: 1) {
+  @include title("xs");
+
+  -webkit-font-smoothing: antialiased;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.089em;
+  opacity: $opacity;
+  color: $color;
+}
+
+.title-xs {
+  @include title("xs");
+}
+
+.title-sm {
+  @include title("sm");
+}
+
+.title-md {
+  @include title("md");
+}
+
+.title-lg {
+  @include title("lg");
+}
+
+.title-xl {
+  @include title("xl");
+}
+
+.text-xs {
+  @include text("xs");
+}
+
+.text-sm {
+  @include text("sm");
+}
+
+.text-md {
+  @include text("md");
+}
+
+.text-lg {
+  @include text("lg");
+}
+
+.text-xl {
+  @include text("xl");
+}
+
+/*
+=============================================================
+| LOGOS
+=============================================================
+$variant : wordmark, lettermark, icon.
+$color   : black, white, rgb, grayscale.
+*/
+
+@mixin logo($variant: "wordmark", $color: "rgb") {
+  background-image: url("/images/neurohub/NH_#{$variant}_#{$color}.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+/*
+=============================================================
+| PALETTE
+=============================================================
+*/
+
+$DEFAULT_BG: #ffffff;
+$DEFAULT_WASH: #efefef;
+$DEFAULT_ALT: #787a7a;
+$DEFAULT_DK: #343434;
+$DEFAULT_TEXT: #000000;
+$DEFAULT_DISABLED: #e5e5e5;
+
+$PRIMARY_BG: #ff0000;
+$PRIMARY_WASH: #ffeeee;
+$PRIMARY_ALT: #e8182b;
+$PRIMARY_DK: #9b0000;
+$PRIMARY_TEXT: #b91f20;
+
+$SECONDARY_BG: #25bfc1;
+$SECONDARY_WASH: #effafa;
+$SECONDARY_ALT: #00a1a0;
+$SECONDARY_DK: #003943;
+$SECONDARY_TEXT: #008484;
+
+/*
+=============================================================
+| SHADOWS
+=============================================================
+$variant : xlow, low, mid, high.
+*/
+
+@mixin shadow($variant) {
+  @if $variant == "xlow" {
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+  }
+  @if $variant== "low" {
+    box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+      0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+  }
+  @if $variant == "mid" {
+    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+      0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+  }
+  @if $variant == "high" {
+    box-shadow: rgba(0, 0, 0, 0.26) 0px 1px 10px,
+      rgba(0, 0, 0, 0.26) 0px 1px 8px;
+  }
+}
+
+/*
+=============================================================
+| SPACE
+=============================================================
+$index : where 0 <= index < length of sizes array.
+
+This generates bootstrap-like padding and margin classes.
+They following classes are available:
+
+%p, %px, %py, %pt, %pb, %pl, %prs
+%m, %mx, %my, %mt, %mb, %ml, %mr
+
+followed by an integer that represents the index of the
+desired size from the sizes array e.g. py-2 = 0.5rem.
+
+Note: @mixin is used in favour of not using @extend, but
+classes are generated for inline style needs.
+*/
+
+$sizes: 0rem, 0.25rem, 0.5rem, 0.75rem, 1rem, 1.25rem, 1.5rem, 2rem, 2.5rem,
+  3rem, 4rem, 5rem, 6rem, 8rem;
+
+@mixin p($index) {
+  padding: nth($sizes, $index + 1); // lists in sass are not zero-indexed.
+}
+
+@mixin px($index) {
+  padding-left: nth($sizes, $index + 1);
+  padding-right: nth($sizes, $index + 1);
+}
+
+@mixin pl($index) {
+  padding-left: nth($sizes, $index + 1);
+}
+
+@mixin pr($index) {
+  padding-right: nth($sizes, $index + 1);
+}
+
+@mixin py($index) {
+  padding-top: nth($sizes, $index + 1);
+  padding-bottom: nth($sizes, $index + 1);
+}
+
+@mixin pt($index) {
+  padding-top: nth($sizes, $index + 1);
+}
+
+@mixin pb($index) {
+  padding-bottom: nth($sizes, $index + 1);
+}
+
+@mixin m($index) {
+  margin: nth($sizes, $index + 1); // lists in sass are not zero-indexed.
+}
+
+@mixin mx($index) {
+  margin-left: nth($sizes, $index + 1);
+  margin-right: nth($sizes, $index + 1);
+}
+
+@mixin ml($index) {
+  margin-left: nth($sizes, $index + 1);
+}
+
+@mixin mr($index) {
+  margin-right: nth($sizes, $index + 1);
+}
+
+@mixin my($index) {
+  margin-top: nth($sizes, $index + 1);
+  margin-bottom: nth($sizes, $index + 1);
+}
+
+@mixin mt($index) {
+  margin-top: nth($sizes, $index + 1);
+}
+
+@mixin mb($index) {
+  margin-bottom: nth($sizes, $index + 1);
+}
+
+@each $size in $sizes {
+  .p-#{index($sizes,$size)-1} {
+    @include p(index($sizes, $size)-1);
+  }
+  .px-#{index($sizes,$size)-1} {
+    @include px(index($sizes, $size)-1);
+  }
+  .py-#{index($sizes,$size)-1} {
+    @include py(index($sizes, $size)-1);
+  }
+  .pt-#{index($sizes,$size)-1} {
+    @include pt(index($sizes, $size)-1);
+  }
+  .pb-#{index($sizes,$size)-1} {
+    @include pb(index($sizes, $size)-1);
+  }
+  .pr-#{index($sizes,$size)-1} {
+    @include pr(index($sizes, $size)-1);
+  }
+  .pl-#{index($sizes,$size)-1} {
+    @include pl(index($sizes, $size)-1);
+  }
+  .m-#{index($sizes,$size)-1} {
+    @include m(index($sizes, $size)-1);
+  }
+  .mx-#{index($sizes,$size)-1} {
+    @include mx(index($sizes, $size)-1);
+  }
+  .my-#{index($sizes,$size)-1} {
+    @include my(index($sizes, $size)-1);
+  }
+  .mt-#{index($sizes,$size)-1} {
+    @include mt(index($sizes, $size)-1);
+  }
+  .mb-#{index($sizes,$size)-1} {
+    @include mb(index($sizes, $size)-1);
+  }
+  .mr-#{index($sizes,$size)-1} {
+    @include mr(index($sizes, $size)-1);
+  }
+  .ml-#{index($sizes,$size)-1} {
+    @include ml(index($sizes, $size)-1);
+  }
+}
+
+/*
+=============================================================
+| TRANSITIONS
+=============================================================
+$variant : hover
+$state   : on, off
+*/
+
+$TRANSITION_HOVER_ON: all 0.2s ease-in;
+$TRANSITION_HOVER_OFF: all 0.2s ease-out;
+
+/*
+=============================================================
+| BUTTONS
+=============================================================
+*/
+
+@mixin button($bg, $border_color) {
+  @include m(2);
+  @include px(5);
+  @include py(1);
+  @include shadow("low");
+
+  border-radius: 4px;
+  border: 1px solid;
+  outline: none;
+  transition: $TRANSITION_HOVER_OFF;
+
+  background-color: $bg;
+  border-color: $border_color;
+
+  &:hover {
+    @include shadow("mid");
+    cursor: pointer;
+    transition: $TRANSITION_HOVER_ON;
+  }
+}
+
+.btn-solid-default {
+  @include button($DEFAULT_ALT, $DEFAULT_ALT);
+  @include text-button($DEFAULT_BG);
+
+  &:hover {
+    @include button($DEFAULT_BG, $DEFAULT_BG);
+    @include text-button($DEFAULT_ALT);
+  }
+}
+
+.btn-solid-primary {
+  @include button($PRIMARY_ALT, $PRIMARY_ALT);
+  @include text-button($DEFAULT_BG);
+
+  &:hover {
+    @include button($PRIMARY_BG, $PRIMARY_BG);
+  }
+}
+
+.btn-solid-secondary {
+  @include button($SECONDARY_ALT, $SECONDARY_ALT);
+  @include text-button($DEFAULT_BG);
+
+  &:hover {
+    @include button($SECONDARY_BG, $SECONDARY_BG);
+  }
+}
+
+.btn-outline-default {
+  @include button($DEFAULT_BG, $DEFAULT_ALT);
+  @include text-button($DEFAULT_DK);
+
+  &:hover {
+    @include button($DEFAULT_WASH, $DEFAULT_ALT);
+  }
+}
+
+.btn-outline-primary {
+  @include button($DEFAULT_BG, $PRIMARY_ALT);
+  @include text-button($PRIMARY_ALT);
+
+  &:hover {
+    @include button($PRIMARY_WASH, $PRIMARY_ALT);
+  }
+}
+
+.btn-outline-secondary {
+  @include button($DEFAULT_BG, $SECONDARY_ALT);
+  @include text-button($SECONDARY_ALT);
+
+  &:hover {
+    @include button($SECONDARY_WASH, $SECONDARY_ALT);
+  }
+}
+
+.btn-disabled-default {
+  @include button($DEFAULT_DISABLED, $DEFAULT_DISABLED);
+  @include text-button($DEFAULT_TEXT, 0.5);
+
+  &:hover {
+    @include shadow("low");
+    cursor: not-allowed;
+  }
+}
+
+.btn-disabled-primary {
+  @include button($PRIMARY_WASH, $PRIMARY_WASH);
+  @include text-button($PRIMARY_TEXT, 0.5);
+
+  &:hover {
+    @include shadow("low");
+    cursor: not-allowed;
+  }
+}
+
+.btn-disabled-secondary {
+  @include button($SECONDARY_WASH, $SECONDARY_WASH);
+  @include text-button($SECONDARY_TEXT, 0.5);
+
+  &:hover {
+    @include shadow("low");
+    cursor: not-allowed;
+  }
+}
+
+.btn-text-default {
+  @include button("transparent", "transparent");
+  @include text-button($DEFAULT_ALT);
+  text-decoration: underline;
+  border-radius: 0px !important;
+  box-shadow: none !important;
+  border: none !important;
+
+  &:hover {
+    @include button($DEFAULT_WASH, $DEFAULT_WASH);
+    @include text-button($DEFAULT_TEXT);
+  }
+}
+
+.btn-text-primary {
+  @include button("transparent", "transparent");
+  @include text-button($PRIMARY_TEXT);
+  text-decoration: underline;
+  border-radius: 0px !important;
+  box-shadow: none !important;
+  border: none !important;
+  &:hover {
+    @include button($PRIMARY_WASH, $PRIMARY_WASH);
+    @include text-button($PRIMARY_BG);
+  }
+}
+
+.btn-text-secondary {
+  @include button("transparent", "transparent");
+  @include text-button($SECONDARY_TEXT);
+  text-decoration: underline;
+  border-radius: 0px !important;
+  box-shadow: none !important;
+  border: none !important;
+  &:hover {
+    @include button($SECONDARY_WASH, $SECONDARY_WASH);
+    @include text-button($SECONDARY_BG);
+  }
+}
+
+/*
+=============================================================
+| PAGES
+=============================================================
+*/
+
+html,
+body {
+  font-size: 16px;
+}
