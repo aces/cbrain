@@ -27,7 +27,7 @@
 <div id="nh_sessions"> 
   <div class="nh_login">
     <div class="nh_logo"></div>
-    <%= form_tag nhsession_path, :class=>"nh_login_form" do %>
+    <%= form_tag nh_session_path, :class=>"nh_login_form" do %>
       <label>Username</label> 
       <%= text_field_tag 'username', nil, tabindex: 1, :class=>"login_input" %>
       <label>Password</label> 
@@ -35,7 +35,7 @@
 
       <%= submit_tag  "Sign in", :class => 'btn-solid-primary' %>
 
-      <%= link_to "Forgot your password?", request_password_nhsessions_path, :class => "btn-text-primary" %>
+      <%= link_to "Forgot your password?", request_password_nh_session_path, :class => "btn-text-primary" %>
 
     <% end %>
  </div>
@@ -60,8 +60,14 @@
       <img class="nh_feature_icon" src="/images/neurohub/wireframe.png">
       <p class="nh_feature_text">Discoverable, accessible and reusable data.</p>
     </div>
+    <%= link_to 'Request an account.',
+    url_for(:controller => :nh_signups, :action => :new),
+    { tabindex: 4, :class => "action_link btn-text-primary nh_register" }%>
+
 
   </div>
  </div>
 
 </div>
+
+

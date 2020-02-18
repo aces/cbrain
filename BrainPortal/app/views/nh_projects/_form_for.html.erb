@@ -1,3 +1,4 @@
+
 <%-
 #
 # NeuroHub Project
@@ -21,24 +22,17 @@
 #
 -%>
 
-<% title 'Lost Password?' %>
+<%= form_for @nh_project, :as => :nh_project, :url => { :action => action }, :datatype => "script" do |f| -%>
 
-<h2>Lost password? Fill this form, we'll contact you.</h2>
+  <div>
+    <%= f.label :name, "Name" %><br />
+    <%= f.text_field :name %>
 
-<%= form_tag send_password_nh_users_path do %>
-  <table id="nhrequest_password" class="logintable">
-    <tr>
-      <td><label for="login">Neurohub login:</label></td>
-      <td class="field"><%= text_field_tag :login %></td>
-    </tr>
-    <tr>
-      <td><label for="email">E-mail address on your Neurohub account:</label></td>
-      <td class="field"><%= text_field_tag :email %></td>
-    </tr>
-    <tr>
-     <td></td>
-     <td class="field"><br><%= submit_tag 'Submit' %></td></td>
-    </tr>
-  </table>
+    <p>
+    <%= f.label :description, "Description" %><br />
+    <%= f.text_area :description, :rows => 4, :cols => 40 %>
+
+    <p>
+    <%= f.submit "#{action.to_s.capitalize}" %>
+  </div>
 <% end %>
-
