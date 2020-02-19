@@ -124,9 +124,15 @@
     ) { |dp| overlay_description(dp.description) }
 
     %>
+
     <% t.column("Operations", :operations) do |dp| %>
       <% if dp.is_browsable?(current_user) && dp.can_be_accessed_by?(current_user) && dp.online? %>
         <%= link_to 'Browse', browse_data_provider_path(dp), :class => 'action_link' %>
       <% end %>
     <% end %>
+
+    <% t.column("Inconsistency", :inconsistency) do |dp| %>
+      <%= link_to 'Report', report_data_provider_path(dp), :class => 'action_link' %>
+    <% end %>
+
 <% end %>

@@ -168,10 +168,11 @@ class LocalDataProvider < DataProvider
     self.userfiles.all.select { |u| ! File.exists?(self.provider_full_path(u)) }.each do |miss|
       issues << {
         :type        => :missing,
-        :message     => "Missing userfile '#{miss.name}'",
+        :message     => "Userfile '#{miss.name}'",
         :severity    => :major,
         :action      => :destroy,
-        :userfile_id => miss.id
+        :userfile_id => miss.id,
+        :user_id     => miss.user_id
       }
     end
 

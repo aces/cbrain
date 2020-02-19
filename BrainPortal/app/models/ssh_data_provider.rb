@@ -261,10 +261,11 @@ class SshDataProvider < DataProvider
     self.userfiles.where("name NOT IN (?)", remote_files.empty? ? [''] : remote_files).each do |miss|
       issues << {
         :type        => :missing,
-        :message     => "Missing userfile '#{miss.name}'",
+        :message     => "Userfile '#{miss.name}'",
         :severity    => :major,
         :action      => :destroy,
         :userfile_id => miss.id,
+        :user_id     => miss.user_id
       }
     end
 
@@ -272,8 +273,9 @@ class SshDataProvider < DataProvider
     remote_files.select { |u| ! self.userfiles.where(:name => u).exists? }.each do |unreg|
       issues << {
         :type     => :unregistered,
-        :message  => "Unregistered file '#{unreg}'",
-        :severity => :trivial
+        :message  => "File '#{unreg}'",
+        :severity => :trivial,
+        :user_id  => nil
       }
     end
 
