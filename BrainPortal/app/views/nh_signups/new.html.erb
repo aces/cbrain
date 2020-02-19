@@ -23,59 +23,48 @@
 
 
 <% title 'New Account Request' %>
-
-
-<%= form_for @signup, :url => { :action => (@signup.new_record? ? "create" : "update"), :id => @signup.id } do |f| %>
-
-  <table>
-
-    <tr>
-        <td colspan=2>Fields with an asterisk (*) are mandatory.</td>
-    </tr>
-
-    <tr>
-      <td colspan="2">&nbsp;</td>
-    </tr>
-
-    <tr>
-      <th><%= f.label(:title, "Title:") %></th>
-      <td><%= f.text_field :title, :size => 10 %> <span class="field_note">(e.g. 'Mr.', 'Dr.', etc.)</span></td>
-    </tr>
-
-    <tr>
-      <th><%= f.label(:first, "* First Name:") %></th>
-      <td><%= f.text_field :first, :size => 20 %></td>
-    </tr>
-
-    <tr>
-      <th><%= f.label(:middle, "Middle Name:") %></th>
-      <td><%= f.text_field :middle, :size => 20 %></td>
-    </tr>
-
-    <tr>
-      <th><%= f.label(:last, "* Last Name:") %></th>
-      <td><%= f.text_field :last, :size => 20 %></td>
-    </tr>
-
-    <tr>
-      <th><%= f.label(:login, "Preferred 'login' name:") %></th>
-      <td><%= f.text_field :login, :size => 15 %> <span class="field_note">(one letter + alphanums)</span></td>
-    </tr>
-
-
-    <tr>
-      <th><%= f.label(:institution, "* Name of Institution/Organization:") %></th>
-      <td><%= f.text_field :institution, :size => 60 %></td>
-    </tr>
-
-    <tr>
-      <th><%= f.label(:department, "* Department") %></th>
-      <td><%= f.text_field :department, :size => 60 %></td>
-    </tr>
-
-    <tr>
-      <th><%= f.label(:position, "* Current position or role:") %></th>
-      <td><%= f.select :position, options_for_select(
+<div id="nh_signups" class="nh_content"> 
+  <div class="nh_logo"></div>
+  <%= form_for @signup, :html => {:class=>"nh_form","data-secondary"=>"true"}, :url => { :action => (@signup.new_record? ? "create" : "update"), :id => @signup.id } do |f|%>
+    <p class="nh_form_title">Register</p>
+    <div class="text-xs text-italic">Fields with an asterisk (*) are mandatory.</div>
+    <fieldset class="nh_form_field">
+      <%= f.label(:title, "Title", :class => "nh_form_label") %>
+      <div>
+        <%= f.text_field(:title, :size => 10, :class => "nh_form_input") %>
+        <span class="nh_field_note">(e.g. 'Mr.', 'Dr.', etc.)</span>
+      </div>
+    </fieldset>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:first, "First Name *", :class => "nh_form_label") %>
+      <%= f.text_field :first, :size => 20, :class => "nh_form_input"%>
+    </fieldset>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:middle, "Middle Name *", :class => "nh_form_label") %>
+      <%= f.text_field :middle, :size => 20, :class => "nh_form_input" %>
+    </fieldset>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:last, "Last Name *", :class => "nh_form_label") %>
+      <%= f.text_field :last, :size => 20, :class => "nh_form_input" %>
+    </fieldset>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:login, "Preferred 'login' name", :class => "nh_form_label") %>
+      <div>
+        <%= f.text_field :login, :size => 15, :class => "nh_form_input" %>
+        <span class="nh_field_note">(one letter + alphanums)</span>
+      </div>
+    </fieldset>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:institution, "Name of Institution/Organization *", :class => "nh_form_label") %>
+      <%= f.text_field :institution, :size => 60, :class => "nh_form_input"%>
+    </fieldset>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:department, "Department *", :class => "nh_form_label") %>
+      <%= f.text_field :department, :size => 60, :class => "nh_form_input" %>
+    </fieldset>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:position, "Current position or role *", :class => "nh_form_label") %>
+      <%= f.select :position, options_for_select(
               [ [ "(select one)", "" ], "Faculty",
                                         "Postdoctoral",
                                         "PhD. candidate",
@@ -84,90 +73,69 @@
                                         "Researcher",
                                         "Other"
               ],
-              @signup.position)
+              @signup.position),{},{ class: 'nh_select'}
           %>
-      </td>
-    </tr>
-
-    <tr>
-      <th><%= f.label(:affiliation, "* Current affiliation:") %></th>
-      <td><%= f.select :affiliation, options_for_select(
+    </fieldset>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:affiliation, "Current affiliation *", :class => "nh_form_label") %>
+      <%= f.select :affiliation, options_for_select(
               [ [ "(select one)", "" ], "Academic",
                                         "Private sector",
                                         "Government",
                                         "Non-profit",
                                         "Other",
               ],
-              @signup.affiliation)
+              @signup.affiliation),{},{ class: 'nh_select'}
           %>
-      </td>
-    </tr>
+    </fieldset>
 
-    <tr>
-      <th><%= f.label(:email, "* Institutional Email address:") %></th>
-      <td><%= f.text_field :email, :size => 60 %>
-        <br><small>Please supply an address from your research institution</small>
-      </td>
-    </tr>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:email, "Institutional email address *", :class => "nh_form_label") %>
+      <%= f.text_field :email, :size => 60, :class => "nh_form_input" %>
+    </fieldset>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:street1, "Street Address (line 1)", :class => "nh_form_label") %>
+      <span class="nh_field_note">Please input the address of your institution.</span>
+      <%= f.text_field :street1, :size => 60, :class => "nh_form_input" %>
 
-    <tr>
-      <th><%= f.label(:street1, "Street Address (line 1):") %></th>
-      <td><%= f.text_field :street1, :size => 60 %></td>
-    </tr>
+      <%= f.label(:street2, "Street Address (line 2)", :class => "nh_form_label") %>
+      <%= f.text_field :street2, :size => 60, :class => "nh_form_input" %>
+    </fieldset>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:city, "City *",:class => "nh_form_label") %>
+      <%= f.text_field :city, :size => 30,:class => "nh_form_input" %>
+    </fieldset>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:province, "Province/State *",:class => "nh_form_label") %>
+      <%= f.text_field :province, :size => 30,:class => "nh_form_input" %>
+    </fieldset>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:country, "Country *",:class => "nh_form_label") %>
+      <%= f.text_field :country, :size => 30,:class => "nh_form_input" %>
+    </fieldset>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:postal_code, "Postal/ZIP Code *",:class => "nh_form_label") %>
+      <%= f.text_field :postal_code, :size => 8,:class => "nh_form_input" %>
+    </fieldset>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:time_zone, "Time Zone",:class => "nh_form_label") %>
+      <%= f.time_zone_select :time_zone,
+          ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
+          { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'], :include_blank => true }
+      %>
+    </fieldset>
+    <fieldset class="nh_form_field" >
+      <%= f.label(:comment, "Comments or special requests",:class => "nh_form_label") %>
+         <%= f.text_area :comment, :cols => 80, :rows => 5 %>
+         <span class="nh_field_note">
+               Please tell us the name of the laboratory you work for, the name of its Principal Investigator (if not you), and if possible anyone<br>
+               else you know in your lab who are already CBRAIN users. We'll use this information to create or add you to a <em>Site</em> within CBRAIN.
+         </span>
+    </fieldset>
+    <div class="nh_form_button_section">
+      <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request", { :class => "btn-solid-secondary" })  %>
+    </div>
 
-    <tr>
-      <th><%= f.label(:street2, "Street Address (line 2):") %></th>
-      <td><%= f.text_field :street2, :size => 60 %></td>
-    </tr>
 
-    <tr>
-      <th><%= f.label(:city, "* City:") %></th>
-      <td><%= f.text_field :city, :size => 30 %></td>
-    </tr>
-
-    <tr>
-      <th><%= f.label(:province, "* Province/State:") %></th>
-      <td><%= f.text_field :province, :size => 30 %></td>
-    </tr>
-
-    <tr>
-      <th><%= f.label(:country, "* Country:") %></th>
-      <td><%= f.text_field :country, :size => 30 %></td>
-    </tr>
-
-    <tr>
-      <th><%= f.label(:postal_code, "Postal/ZIP Code:") %></th>
-      <td><%= f.text_field :postal_code, :size => 8 %></td>
-    </tr>
-
-    <tr>
-      <th><%= f.label(:time_zone, "Time Zone:") %></th>
-      <td>
-        <%= f.time_zone_select :time_zone,
-            ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
-            { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'], :include_blank => true }
-        %>
-     </td>
-    </tr>
-
-        <tr>
-      <th><%= f.label(:comment, "Comments or special requests:") %></th>
-      <td>
-          <%= f.text_area :comment, :cols => 80, :rows => 5 %>
-          <br>
-          <small>
-                 Please tell us the name of the laboratory you work for, the name of its Principal Investigator (if not you), and if possible anyone<br>
-                 else you know in your lab who are already CBRAIN users. We'll use this information to create or add you to a <em>Site</em> within CBRAIN.
-          </small>
-      </td>
-    </tr>
-
-    <tr>
-      <td colspan="2" class="centered">
-        <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request") %>
-      </td>
-    </tr>
-
-  </table>
-
-<% end %>
+  <% end %>
+</div>

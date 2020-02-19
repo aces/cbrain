@@ -367,6 +367,10 @@ $sizes: 0rem, 0.25rem, 0.5rem, 0.75rem, 1rem, 1.25rem, 1.5rem, 2rem, 2.5rem,
   }
 }
 
+.text-italic {
+  font-style: italic;
+}
+
 /*
 =============================================================
 | TRANSITIONS
@@ -557,24 +561,130 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 =============================================================
 | INPUTS
 =============================================================
-$variant : text, textarea,  
 */
 
 @mixin form {
-  background: pink;
+  @include p(2);
+  @include title("sm");
+  background: $DEFAULT_BG;
 }
 
-@mixin label($variant) {
+@mixin field($theme: "default") {
+  @include title("xs");
+  @include pt(2);
+  display: flex;
+  flex-direction: column;
+
+  &:focus-within {
+    label {
+      @include label($theme);
+    }
+    input {
+      @include input($theme);
+    }
+    textarea {
+      @include input($theme);
+    }
+  }
 }
 
-@mixin input($variant) {
+@mixin label($theme: "default") {
+  @include mt(1);
+  @include title("xs");
+  color: $DEFAULT_DK;
+  @if $theme == "secondary" {
+    color: $SECONDARY_TEXT;
+  }
 }
 
-@mixin select($variant) {
+@mixin input($theme: "default") {
+  @include mt(1);
+  @include p(1);
+  @include text("sm");
+  width: 100%;
+  border: 1px solid $DEFAULT_DISABLED;
+  border-radius: 2px;
+  &:focus {
+    outline: auto $DEFAULT_DISABLED 5px;
+    border-color: $DEFAULT_WASH;
+    box-shadow: none;
+    @if $theme == "secondary" {
+      outline: auto $SECONDARY_ALT 5px;
+      border-color: $SECONDARY_ALT;
+      box-shadow: none;
+    }
+  }
 }
 
-.form {
+@mixin select($theme: "default") {
+  @include mt(1);
+  @include p(1);
+  @include text("sm");
+  background: $DEFAULT_BG;
+  width: 100%;
+  height: 2rem;
+  &:focus {
+    outline: auto $DEFAULT_DISABLED 5px;
+    border-color: $DEFAULT_WASH;
+    box-shadow: none;
+    @if $theme == "secondary" {
+      outline: auto $SECONDARY_ALT 5px;
+      border-color: $SECONDARY_ALT;
+      box-shadow: none;
+    }
+  }
+}
+
+.nh_form {
   @include form();
+  fieldset {
+    @include field("secondary");
+  }
+  select {
+    @include select("secondary");
+  }
+  textarea {
+    @include input("secondary");
+  }
+}
+
+.nh_form_title {
+  @include title("sm");
+  @include pb(2);
+}
+
+.nh_form_label {
+  @include label();
+}
+
+.nh_form_field {
+  @include field();
+  &[data-secondary] {
+    @include field("secondary");
+  }
+}
+
+.nh_form_input {
+  @include input();
+}
+
+.nh_field_note {
+  @include text("xs");
+  @include pt(1);
+  font-style: italic;
+}
+
+.nh_select {
+  @include select();
+}
+
+.nh_form_button_section {
+  @include py(7);
+  @include mt(4);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /*
@@ -610,17 +720,17 @@ body {
   }
 }
 
-.nh_content {
-  height: 100%;
-  &[data-isLoggedIn="true"] {
-    @include p(8);
-  }
-}
-
 .nh_page {
   @include p(4);
   @media (min-width: $BREAKPOINT_SM) {
     @include p(7);
+  }
+}
+
+.nh_content {
+  height: 100%;
+  &[data-isLoggedIn="true"] {
+    @extend .nh_page;
   }
 }
 
@@ -664,14 +774,13 @@ body {
 
         border-color: $DEFAULT_WASH;
         box-shadow: none;
-        outline: auto $DEFAULT_WASH 5px;
       }
     }
   }
 
   .nh_features {
+    @extend .nh_page;
     @include title("sm");
-    @include p(7);
     background: $PRIMARY_DK;
     background-image: url(<%=asset_path"/images/neurohub/NH_login_backsplash.png"%>);
     background-size: cover;
@@ -745,8 +854,17 @@ body {
 
 #nh_signups {
   @extend .nh_page;
-
   .nh_logo {
     @include logo();
+  }
+  .nh_form {
+    @media (min-width: $BREAKPOINT_MD) {
+      padding-left: 15%;
+      padding-right: 15%;
+    }
+    @media (min-width: $BREAKPOINT_LG) {
+      padding-left: 20%;
+      padding-right: 20%;
+    }
   }
 }

@@ -364,7 +364,7 @@ button:-moz-focusring,
    */
 
 fieldset {
-  padding: 0.35em 0.75em 0.625em;
+  -moz-padding: 0.35em 0.75em 0.625em;
 }
 
 /**

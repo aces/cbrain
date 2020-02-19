@@ -47,7 +47,7 @@
   
     <%= render :partial => 'layouts/neurohub_toolbar' %>
 
-    <%= content_tag :div, nil, :id => "nh_content", "data-isLoggedIn" => !!current_user do -%>
+    <%= content_tag :div, nil, :class => "nh_content", "data-isLoggedIn" => !!current_user do -%>
         <%= yield :layout %>
     <% end -%>
 
