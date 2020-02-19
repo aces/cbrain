@@ -40,7 +40,7 @@
 
 <P>
 
-  <%= error_messages_for @ng_group, :header_message => "Project cannot be shown." %>
+  <%= error_messages_for @nh_projects, :header_message => "Project cannot be shown." %>
 
   <div>
 
@@ -65,8 +65,8 @@
      Member count:          <%= group_members.count %> <br>
      Pending Invites count: <%= open_invites.count %> <br>
 
-
-  <h2>Members </h2>
+<div>
+  <h2>Members: </h2>
 
   <ul>
   <% group_members.each do |member| %>
