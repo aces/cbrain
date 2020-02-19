@@ -40,27 +40,25 @@
     <% end %>
  </div>
  <div class="nh_features">
-  <div class="nh_features_header">
-    <img src="/images/neurohub/NH_lettermark_white.png">
-  </div>
-  <div class="nh_features_list">
-    <p class="title-sm pb-7">NEUROHUB connects researchers with:</p>
-        
-    <div class="nh_feature">
-      <img class="nh_feature_icon" src="/images/neurohub/wireframe.png">
-      <p class="nh_feature_text">Computational and analytical tools.</p>
-    </div>
+    <div class="nh_features_header mb-7"></div>
+    <div class="nh_features_list">
+      <p class="title-sm pb-7">NEUROHUB connects researchers with:</p>
+          
+      <div class="nh_feature">
+        <img class="nh_feature_icon" src="/images/neurohub/wireframe.png">
+        <p class="nh_feature_text">Computational and analytical tools.</p>
+      </div>
 
-    <div class="nh_feature">
-      <img class="nh_feature_icon" src="/images/neurohub/wireframe.png">
-      <p class="nh_feature_text">A repository of standardized, machine-readable data.</p>
-    </div>
+      <div class="nh_feature">
+        <img class="nh_feature_icon" src="/images/neurohub/wireframe.png">
+        <p class="nh_feature_text">A repository of standardized, machine-readable data.</p>
+      </div>
 
-    <div class="nh_feature">
-      <img class="nh_feature_icon" src="/images/neurohub/wireframe.png">
-      <p class="nh_feature_text">Discoverable, accessible and reusable data.</p>
-    </div>
-    <%= link_to 'Request an account.',
+      <div class="nh_feature">
+        <img class="nh_feature_icon" src="/images/neurohub/wireframe.png">
+        <p class="nh_feature_text">Discoverable, accessible and reusable data.</p>
+      </div>
+    <%= link_to 'Request an account',
     url_for(:controller => :nh_signups, :action => :new),
     { tabindex: 4, :class => "action_link btn-text-primary nh_register" }%>
 

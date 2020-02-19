@@ -1,19 +1,20 @@
-@import "<%= asset_path "./normalize.css" %>";
+@import "<%= asset_path './normalize.css' %>";
 
 /*
-LEGEND
-├── BREAKPOINTS
-├── FONTS
-├── LOGOS
-├── PALETTE
-├── SHADOWS
-├── SPACE
-├── TRANSITIONS
-├── BUTTONS
-├── PAGES
-  ├── SESSIONS
-  ├── WELCOME
-└── 
+  LEGEND
+  ├── BREAKPOINTS
+  ├── FONTS
+  ├── LOGOS
+  ├── PALETTE
+  ├── SHADOWS
+  ├── SPACE
+  ├── TRANSITIONS
+  ├── BUTTONS
+  ├── INPUTS
+  ├── PAGES
+    ├── SESSIONS
+    ├── WELCOME
+  └── 
 */
 
 /*
@@ -22,7 +23,10 @@ LEGEND
 =============================================================
 */
 
-$breakpoints: 30em, 48em, 62em, 80em;
+$BREAKPOINT_XS: 20em; // 320px
+$BREAKPOINT_SM: 30em; // 480px
+$BREAKPOINT_MD: 48em; // 768px
+$BREAKPOINT_LG: 64em; // 1024px
 
 /*
 =============================================================
@@ -131,16 +135,58 @@ $variant : xs, sm, md, lg, xl.
 | LOGOS
 =============================================================
 $variant : wordmark, lettermark, icon.
-$color   : black, white, rgb, grayscale.
+$color   : black, white, RGB, grayscale.
+$size    : xs, ssm, md, lg
 */
 
-@mixin logo($variant: "wordmark", $color: "RGB") {
-  background-image: url(<%= asset_path"/images/neurohub/NH_\#{$variant}_\#{$color}.png"%>);
+@mixin logoImg($variant, $color) {
+  background-image: url(<%=asset_path"/images/neurohub/NH_\#{$variant}_\#{$color}.png"%>);
   background-repeat: no-repeat;
   background-size: contain;
 }
 
-/*
+@mixin logo($variant: "wordmark", $color: "RGB", $size: "md") {
+  @include logoImg($variant, $color);
+  @if $variant != "icon" {
+    @if $size == "sm" {
+      width: 8rem;
+      height: 3rem;
+    }
+    @if $size == "md" {
+      width: 10rem;
+      height: 4rem;
+    }
+    @if $size == "lg" {
+      width: 12rem;
+      height: 4rem;
+    }
+  } @else {
+    @if $size == "xs" {
+      width: 2rem;
+      height: 2rem;
+    }
+    @if $size == "sm" {
+      width: 3rem;
+      height: 3rem;
+    }
+    @if $size == "md" {
+      width: 4rem;
+      height: 4rem;
+    }
+    @if $size == "lg" {
+      width: 5rem;
+      height: 5rem;
+    }
+  }
+}
+
+@mixin lettermark($size) {
+}
+
+@mixin icon($size) {
+}
+
+/*z
 =============================================================
 | PALETTE
 =============================================================
@@ -509,14 +555,40 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 
 /*
 =============================================================
+| INPUTS
+=============================================================
+$variant : text, textarea,  
+*/
+
+@mixin form {
+  background: pink;
+}
+
+@mixin label($variant) {
+}
+
+@mixin input($variant) {
+}
+
+@mixin select($variant) {
+}
+
+.form {
+  @include form();
+}
+
+/*
+=============================================================
 | PAGES
 =============================================================
+Base styles for all pages.
 */
 
 html,
 body {
   font-size: 16px;
   height: 100%;
+  min-width: 18rem;
 }
 
 #nh_toolbar {
@@ -538,10 +610,17 @@ body {
   }
 }
 
-#nh_content {
+.nh_content {
   height: 100%;
   &[data-isLoggedIn="true"] {
     @include p(8);
+  }
+}
+
+.nh_page {
+  @include p(4);
+  @media (min-width: $BREAKPOINT_SM) {
+    @include p(7);
   }
 }
 
@@ -554,17 +633,16 @@ body {
 #nh_sessions {
   height: 100%;
   display: flex;
+  flex-direction: column;
   .nh_login {
-    @include p(7);
+    @extend .nh_page;
     background: $DEFAULT_BG;
     flex: 1;
     display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
     .nh_logo {
-      @include logo(wordmark, RGB);
-      position: absolute;
-      width: 10rem;
-      height: 4rem;
+      @include logo();
     }
     .nh_login_form {
       align-self: center;
@@ -604,21 +682,9 @@ body {
     position: relative;
 
     .nh_features_header {
-      position: absolute;
+      @include logo("lettermark", "white");
+      background-position-x: center;
       width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-
-      img {
-        width: 10rem;
-      }
-      p {
-        color: $DEFAULT_BG;
-        text-align: center;
-        width: 100%;
-      }
     }
     .nh_features_list {
       color: $DEFAULT_BG;
@@ -627,6 +693,9 @@ body {
       flex: 1;
       align-items: center;
       align-self: center;
+      p {
+        text-align: center;
+      }
       .nh_feature {
         @include pb(4);
         display: flex;
@@ -645,11 +714,39 @@ body {
       }
       .nh_register {
         @include my(2);
+        border-radius: 4px;
         color: $DEFAULT_BG;
         &:hover {
           color: $PRIMARY_BG;
         }
       }
     }
+  }
+  @media (min-width: $BREAKPOINT_MD) {
+    flex-direction: row;
+    .nh_login {
+      .nh_logo {
+        position: absolute;
+      }
+    }
+    .nh_features {
+      .nh_features_header {
+        position: absolute;
+      }
+    }
+  }
+}
+
+/*
+=============================================================
+| SIGNUPS
+=============================================================
+*/
+
+#nh_signups {
+  @extend .nh_page;
+
+  .nh_logo {
+    @include logo();
   }
 }
