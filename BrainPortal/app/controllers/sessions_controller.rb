@@ -233,7 +233,7 @@ class SessionsController < ApplicationController
       authentication_mechanism = 'password/api'
     end
 
-    user.addlog("Logged in with #{authentication_mechanism} from #{pretty_host} using #{pretty_brow}")
+    user.addlog("Logged in with #{authentication_mechanism} on #{portal.name} from #{pretty_host} using #{pretty_brow}")
     portal.addlog("User #{user.login} logged in with #{authentication_mechanism} from #{pretty_host} using #{pretty_brow}")
     user.update_attribute(:last_connected_at, Time.now)
 
