@@ -260,6 +260,8 @@ Rails.application.routes.draw do
     get   '/welcome'                => 'neurohub_portal#welcome'
     get   '/login'                  => 'nh_sessions#new'
     get   '/logout'                 => 'nh_sessions#destroy'
+    get   '/myaccount'              => 'nh_users#myaccount'
+
 
     # Temporary development route
     get   '/reboot',         :controller => :neurohub_portal, :action => :reboot
@@ -287,6 +289,8 @@ Rails.application.routes.draw do
 
     end
 
+    # Users
+    resources :nh_users,     :only => [ :myaccount ]
   end
 
 end

@@ -1,9 +1,8 @@
 
-<%-
 #
-# CBRAIN Project
+# NeuroHub Project
 #
-# Copyright (C) 2008-2012
+# Copyright (C) 2020
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -20,25 +19,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
--%>
 
-<!-- ************************ -->
-<!-- PARTIAL: TOOLBAR SECTION -->
-<!-- ************************ -->
+#Controller for the User resource.
+class NhUsersController < NeurohubApplicationController
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-<% if current_user %>
-    <div id="nh_toolbar">
-        <div class="logo"></div>
-        <div class="nav_buttons">
-            <!--  rails expression for the link
-            <a class="btn-nav-primary" href="/myaccount">My Account</a>-->
-            <%= link_to 'My Account', myaccount_path, { :class => "btn-text-primary" } %>
-            <a class="btn-text-primary" href="/logout">Logout</a>
-        </div>
-    </div>
-    
-<% end -%>
+  before_action :login_required
 
-  
+  def show #:nodoc:
+    @user = User.find(params[:id])
+    unless     @users=current_user.available_users.includes(:groups, :site).include?(@user)
+      cb_error "You don't have permission to view this user.", :redirect  => :welcome
+      # probably not needed until admin/manager etc added...
+    end
+  end
 
+  def myaccount #:nodoc:
+    @user=current_user
+    render :show
+  end
 
+end

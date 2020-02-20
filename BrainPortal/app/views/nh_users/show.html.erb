@@ -1,0 +1,51 @@
+<%-
+  #
+  # NeuroHub Project
+  #
+  # Copyright (C) 2008-2012
+  # The Royal Institution for the Advancement of Learning
+  # McGill University
+  #
+  # This program is free software: you can redistribute it and/or modify
+  # it under the terms of the GNU General Public License as published by
+  # the Free Software Foundation, either version 3 of the License, or
+  # (at your option) any later version.
+  #
+  # This program is distributed in the hope that it will be useful,
+  # but WITHOUT ANY WARRANTY; without even the implied warranty of
+  # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  # GNU General Public License for more details.
+  #
+  # You should have received a copy of the GNU General Public License
+  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  #
+-%>
+
+<% title "Account Info" %>
+
+<br>
+
+<div>
+    Login: <%= @user.login  %> <br>
+
+    Name: <%= @user.full_name  %> <br>
+
+    Position : <%= @user.position %> <br>
+
+    Affiliation: <%= @user.affiliation %> <br>
+
+    City: <%= @user.city %> <br>
+
+    Country: <%= @user.country%> <br>
+
+    Email: <%= @user.email%> <br>
+
+    Last visit: <%= @user.last_connected_at ? "#{to_localtime(@user.last_connected_at,
+      :datetime)} (#{pretty_elapsed(Time.now - @user.last_connected_at, :num_components => 3)} ago)" : "(Never)" %>
+
+   <br>
+
+    Files size: <%= colored_pretty_size @user.userfiles.sum(:size) %> <br>
+    File count: <%= @user.userfiles.count %>
+
+</div>
