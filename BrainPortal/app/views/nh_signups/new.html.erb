@@ -40,7 +40,7 @@
       <%= f.text_field :first, :size => 20, :class => "nh_form_input"%>
     </fieldset>
     <fieldset class="nh_form_field" >
-      <%= f.label(:middle, "Middle Name *", :class => "nh_form_label") %>
+      <%= f.label(:middle, "Middle Name", :class => "nh_form_label") %>
       <%= f.text_field :middle, :size => 20, :class => "nh_form_input" %>
     </fieldset>
     <fieldset class="nh_form_field" >
@@ -92,10 +92,12 @@
     <fieldset class="nh_form_field" >
       <%= f.label(:email, "Institutional email address *", :class => "nh_form_label") %>
       <%= f.text_field :email, :size => 60, :class => "nh_form_input" %>
+      <span class="nh_field_note">Please supply an email address from your research institution.
+      Requests made with non-institutional addresses will be ignored.</span>
+
     </fieldset>
     <fieldset class="nh_form_field" >
       <%= f.label(:street1, "Street Address (line 1)", :class => "nh_form_label") %>
-      <span class="nh_field_note">Please input the address of your institution.</span>
       <%= f.text_field :street1, :size => 60, :class => "nh_form_input" %>
 
       <%= f.label(:street2, "Street Address (line 2)", :class => "nh_form_label") %>
