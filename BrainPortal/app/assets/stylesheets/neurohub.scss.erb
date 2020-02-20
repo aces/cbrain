@@ -79,8 +79,8 @@ $variant : xs, sm, md, lg, xl.
   }
 }
 
-@mixin text-button($color, $opacity: 1) {
-  @include title("xs");
+@mixin text-button($color: $DEFAULT_TEXT, $opacity: 1, $size: "xs") {
+  @include title($size);
 
   -webkit-font-smoothing: antialiased;
   text-transform: uppercase;
@@ -178,12 +178,6 @@ $size    : xs, ssm, md, lg
       height: 5rem;
     }
   }
-}
-
-@mixin lettermark($size) {
-}
-
-@mixin icon($size) {
 }
 
 /*z
@@ -388,83 +382,102 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 =============================================================
 */
 
-@mixin button($bg, $border_color) {
+.btn {
   @include px(5);
   @include py(2);
-  @include shadow("low");
+  @include text-button($DEFAULT_BG);
 
-  border-radius: 4px;
-  border: 1px solid;
   outline: none;
   transition: $TRANSITION_HOVER_OFF;
-
-  background-color: $bg;
-  border-color: $border_color;
+  text-decoration: none;
 
   &:hover {
-    @include shadow("mid");
     cursor: pointer;
     transition: $TRANSITION_HOVER_ON;
   }
 }
 
-.btn-solid-default {
-  @include button($DEFAULT_ALT, $DEFAULT_ALT);
-  @include text-button($DEFAULT_BG);
-
+.btn-solid,
+.btn-outline {
+  @extend .btn;
+  @include shadow("low");
+  border-radius: 4px;
+  border: 1px solid;
   &:hover {
-    @include button($DEFAULT_BG, $DEFAULT_BG);
-    @include text-button($DEFAULT_ALT);
+    @include shadow("mid");
+  }
+}
+
+.btn-solid-default {
+  @extend .btn-solid;
+  background-color: $DEFAULT_ALT;
+  border-color: $DEFAULT_ALT;
+  color: $DEFAULT_BG;
+  &:hover {
+    background-color: $DEFAULT_BG;
+    border-color: $DEFAULT_BG;
+    color: $DEFAULT_ALT;
   }
 }
 
 .btn-solid-primary {
-  @include button($PRIMARY_ALT, $PRIMARY_ALT);
-  @include text-button($DEFAULT_BG);
-
+  @extend .btn-solid;
+  background-color: $PRIMARY_ALT;
+  border-color: $PRIMARY_ALT;
+  color: $DEFAULT_BG;
   &:hover {
-    @include button($PRIMARY_BG, $PRIMARY_BG);
+    background-color: $PRIMARY_BG;
+    border-color: $PRIMARY_BG;
   }
 }
 
 .btn-solid-secondary {
-  @include button($SECONDARY_ALT, $SECONDARY_ALT);
-  @include text-button($DEFAULT_BG);
-
+  @extend .btn-solid;
+  background-color: $SECONDARY_ALT;
+  border-color: $SECONDARY_ALT;
+  color: $DEFAULT_BG;
   &:hover {
-    @include button($SECONDARY_BG, $SECONDARY_BG);
+    background-color: $SECONDARY_BG;
+    border-color: $SECONDARY_BG;
+    color: $DEFAULT_BG;
   }
 }
 
 .btn-outline-default {
-  @include button($DEFAULT_BG, $DEFAULT_ALT);
-  @include text-button($DEFAULT_DK);
-
+  @extend .btn-outline;
+  background-color: $DEFAULT_BG;
+  border-color: $DEFAULT_ALT;
+  color: $DEFAULT_DK;
   &:hover {
-    @include button($DEFAULT_WASH, $DEFAULT_ALT);
+    background-color: $DEFAULT_WASH;
+    border-color: $DEFAULT_ALT;
   }
 }
 
 .btn-outline-primary {
-  @include button($DEFAULT_BG, $PRIMARY_ALT);
-  @include text-button($PRIMARY_ALT);
-
+  @extend .btn-outline;
+  background-color: $DEFAULT_BG;
+  border-color: $PRIMARY_ALT;
+  color: $PRIMARY_ALT;
   &:hover {
-    @include button($PRIMARY_WASH, $PRIMARY_ALT);
+    background-color: $PRIMARY_WASH;
+    border-color: $PRIMARY_ALT;
   }
 }
 
 .btn-outline-secondary {
-  @include button($DEFAULT_BG, $SECONDARY_ALT);
-  @include text-button($SECONDARY_ALT);
-
+  @extend .btn-outline;
+  background-color: $DEFAULT_BG;
+  border-color: $SECONDARY_ALT;
+  color: $SECONDARY_ALT;
   &:hover {
-    @include button($SECONDARY_WASH, $SECONDARY_ALT);
+    background-color: $SECONDARY_WASH;
+    border-color: $SECONDARY_ALT;
   }
 }
 
-.btn-disabled-default {
-  @include button($DEFAULT_DISABLED, $DEFAULT_DISABLED);
+.btn-disabled {
+  @extend .btn;
   @include text-button($DEFAULT_TEXT, 0.5);
 
   &:hover {
@@ -473,87 +486,59 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   }
 }
 
-.btn-disabled-primary {
-  @include button($PRIMARY_WASH, $PRIMARY_WASH);
-  @include text-button($PRIMARY_TEXT, 0.5);
-
-  &:hover {
-    @include shadow("low");
-    cursor: not-allowed;
-  }
+.btn-disabled-default {
+  @extend .btn-disabled;
+  background-color: $DEFAULT_DISABLED;
+  border-color: $DEFAULT_DISABLED;
 }
 
-.btn-disabled-secondary {
-  @include button($SECONDARY_WASH, $SECONDARY_WASH);
-  @include text-button($SECONDARY_TEXT, 0.5);
+.btn-disabled-primary {
+  @extend .btn-disabled;
+  background-color: $PRIMARY_WASH;
+  border-color: $PRIMARY_WASH;
+  color: $PRIMARY_TEXT;
+}
 
-  &:hover {
-    @include shadow("low");
-    cursor: not-allowed;
-  }
+.btn-disabled-default {
+  @extend .btn-disabled;
+  background-color: $SECONDARY_WASH;
+  border-color: $SECONDARY_WASH;
+  color: $SECONDARY_TEXT;
+}
+
+.btn-text {
+  @extend .btn;
+  text-decoration: underline;
+  text-align: center;
+  display: flex;
+  align-items: center;
 }
 
 .btn-text-default {
-  @include button("transparent", "transparent");
-  @include text-button($DEFAULT_ALT);
-  text-decoration: underline;
-  border-radius: 0px !important;
-  box-shadow: none !important;
-  border: none !important;
-  text-align: center;
-
+  @extend .btn-text;
+  color: $DEFAULT_ALT;
   &:hover {
-    @include button($DEFAULT_WASH, $DEFAULT_WASH);
-    @include text-button($DEFAULT_TEXT);
+    background-color: $DEFAULT_WASH;
+    border-color: $DEFAULT_WASH;
+    color: $DEFAULT_TEXT;
   }
 }
 
 .btn-text-primary {
-  @include button("transparent", "transparent");
-  @include text-button($PRIMARY_TEXT);
-  text-decoration: underline;
-  border-radius: 0px !important;
-  box-shadow: none !important;
-  border: none !important;
-  text-align: center;
-
+  @extend .btn-text;
+  color: $PRIMARY_TEXT;
   &:hover {
-    @include button($PRIMARY_WASH, $PRIMARY_WASH);
-    @include text-button($PRIMARY_BG);
+    background-color: $PRIMARY_WASH;
+    color: $PRIMARY_BG;
   }
 }
 
 .btn-text-secondary {
-  @include button("transparent", "transparent");
-  @include text-button($SECONDARY_TEXT);
-  text-decoration: underline;
-  border-radius: 0px !important;
-  box-shadow: none !important;
-  border: none !important;
-  text-align: center;
-
+  @extend .btn-text;
+  color: $SECONDARY_TEXT;
   &:hover {
-    @include button($SECONDARY_WASH, $SECONDARY_WASH);
-    @include text-button($SECONDARY_BG);
-  }
-}
-
-.btn-nav-primary {
-  @include button("transparent", "transparent");
-  @include text-button($PRIMARY_TEXT);
-  @include px(5);
-  @include py(4);
-  text-decoration: none;
-  border-radius: 0px !important;
-  margin: 0 !important;
-  box-shadow: none !important;
-  border: none !important;
-  &:hover {
-    @include button($PRIMARY_WASH, $PRIMARY_WASH);
-    @include text-button($PRIMARY_BG);
-    @include px(5);
-    @include py(4);
-    text-decoration: underline;
+    background-color: $SECONDARY_WASH;
+    color: $SECONDARY_BG;
   }
 }
 
@@ -689,48 +674,245 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 
 /*
 =============================================================
+| TABLE
+=============================================================
+*/
+
+$TABLE_HEIGHT: 30;
+
+.nh_table_scroll {
+  @include shadow("mid");
+  position: relative;
+  width: 100%;
+  z-index: 1;
+  margin: auto;
+  overflow: auto;
+  height: $TABLE_HEIGHT + rem;
+  max-height: -webkit-fill-available;
+  flex: 1;
+  table {
+    width: 100%;
+    margin: auto;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: $DEFAULT_BG;
+    border-radius: 4px;
+    thead {
+      th:first-child {
+        z-index: 5;
+      }
+      th {
+        @include text-button($DEFAULT_ALT, 1, "sm");
+        border-bottom: 2px solid $SECONDARY_BG;
+        border-right: 1px solid $DEFAULT_WASH;
+
+        text-transform: capitalize;
+        background: $DEFAULT_BG;
+        text-align: left;
+        position: -webkit-sticky;
+        position: sticky;
+        top: 0;
+      }
+    }
+    tbody {
+      th,
+      td {
+        border-bottom: 2px solid $DEFAULT_WASH;
+        border-right: 1px solid $DEFAULT_WASH;
+      }
+    }
+  }
+}
+
+th:first-child {
+  position: -webkit-sticky;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+.nh_table_scroll th,
+.nh_table_scroll td {
+  @include px(5);
+  @include py(2);
+  vertical-align: top;
+  min-width: 250px;
+}
+
+.nh_table_scroll {
+  td {
+    @include text("sm");
+    flex: 1;
+    color: $DEFAULT_ALT;
+    text-decoration: none;
+  }
+  td[data-type="link"],
+  th[data-type="link"] {
+    background: $DEFAULT_BG;
+    a {
+      text-transform: none;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+.nh_actions {
+  background: $DEFAULT_BG;
+  display: flex;
+}
+
+.nh_action {
+  border-radius: 0px;
+}
+
+// .nh_table_wrapper {
+//   @include shadow("mid");
+
+//   .nh_table {
+//     width: 100%;
+//     background: $DEFAULT_BG;
+//     border-radius: 4px;
+//     thead {
+//       @include shadow("xlow");
+//       tr {
+//         display: flex;
+//         th {
+//           @include text-button($DEFAULT_ALT, 1, "sm");
+//           @include px(5);
+//           @include py(2);
+//           text-transform: capitalize;
+//           flex: 1;
+//           background: $DEFAULT_BG;
+//           text-align: left;
+//         }
+//       }
+//     }
+
+//     tbody {
+//       display: block;
+//       overflow: auto;
+//       overflow-x: hidden;
+//       width: 100%;
+//       height: $TABLE_HEIGHT + rem;
+//     }
+//   }
+// }
+
+// .nh_actions {
+//   background: $DEFAULT_BG;
+//   display: flex;
+// }
+
+// .nh_action {
+//   border-radius: 0px !important;
+// }
+
+// .nh_table_tr {
+//   display: flex;
+
+//   td {
+//     @include text("sm");
+//     @include px(5);
+//     @include py(2);
+//     flex: 1;
+//     color: $DEFAULT_ALT;
+//     text-decoration: none;
+//     border-bottom: 2px solid $DEFAULT_WASH;
+//     position: relative;
+//     &[data-type="link"] {
+//       a {
+//         text-transform: none;
+//         position: absolute;
+//         left: 0;
+//         top: 0;
+//         width: 100%;
+//       }
+//     }
+//   }
+// }
+
+/*
+=============================================================
 | PAGES
 =============================================================
 Base styles for all pages.
 */
 
+$TOOLBAR_HEIGHT: 3.5;
+$TOOLBAR_ZINDEX: 1000;
+
+* {
+  box-sizing: border-box;
+}
+
 html,
 body {
   font-size: 16px;
-  height: 100%;
   min-width: 18rem;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 #nh_toolbar {
   @include shadow("xlow");
   display: flex;
   align-items: center;
-  min-height: space(7);
+  position: fixed;
+  width: 100%;
+  height: $TOOLBAR_HEIGHT + rem;
+  background: $DEFAULT_BG;
+  z-index: $TOOLBAR_ZINDEX;
   .logo {
     @include logo(icon, RGB);
     @include mx(4);
-    height: 4rem;
     width: space(7);
     height: space(7);
   }
   .nav_buttons {
     flex: 1;
+    height: 100%;
     display: flex;
     justify-content: flex-end;
   }
 }
 
-.nh_page {
+.nh_content {
   @include p(4);
   @media (min-width: $BREAKPOINT_SM) {
     @include p(7);
   }
 }
 
-.nh_content {
+.nh_page {
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   &[data-isLoggedIn="true"] {
-    @extend .nh_page;
+    padding-top: $TOOLBAR_HEIGHT + rem;
+    background: $DEFAULT_WASH;
+    > :first-child {
+      @extend .nh_content;
+    }
+  }
+}
+
+.nh_titlebar {
+  @include py(4);
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  .title {
+    @include title("sm");
+    text-transform: uppercase;
+    letter-spacing: 0.089em;
+    color: $SECONDARY_DK;
   }
 }
 
@@ -742,10 +924,11 @@ body {
 
 #nh_sessions {
   height: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
   .nh_login {
-    @extend .nh_page;
+    @extend .nh_content;
     background: $DEFAULT_BG;
     flex: 1;
     display: flex;
@@ -779,7 +962,7 @@ body {
   }
 
   .nh_features {
-    @extend .nh_page;
+    @extend .nh_content;
     @include title("sm");
     background: $PRIMARY_DK;
     background-image: url(<%=asset_path"/images/neurohub/NH_login_backsplash.png"%>);
@@ -853,7 +1036,8 @@ body {
 */
 
 #nh_signups {
-  @extend .nh_page;
+  @extend .nh_content;
+  flex: 1;
   .nh_logo {
     @include logo();
   }
@@ -867,4 +1051,16 @@ body {
       padding-right: 20%;
     }
   }
+}
+
+/*
+=============================================================
+| PROJECTS
+=============================================================
+*/
+
+#nh_projects {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
