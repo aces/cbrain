@@ -77,7 +77,8 @@ class VaultSshDataProvider < SshDataProvider
       issues << {
         :type     => :outside,
         :message  => "Unknown file '#{out}' outside user directories",
-        :severity => :minor
+        :severity => :major,
+        :user_id  => nil
       }
     end
 
@@ -92,7 +93,8 @@ class VaultSshDataProvider < SshDataProvider
           :message     => "Missing userfile '#{name}'",
           :severity    => :major,
           :action      => :destroy,
-          :userfile_id => id
+          :userfile_id => id,
+          :user_id     => user
         }
       end
 
@@ -103,7 +105,6 @@ class VaultSshDataProvider < SshDataProvider
           :type      => :vault_unregistered,
           :message   => "Unregisted file '#{unreg}' for user '#{user.login}'",
           :severity  => :trivial,
-          :action    => :register,
           :user_id   => user.id,
           :file_name => unreg
         }

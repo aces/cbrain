@@ -21,11 +21,13 @@
 #
 -%>
 
+Neurohub Dashboard.
+<p>
+This page is temporary, Candice will make this pretty.
 <p>
 
-<div class="nh_welcome title-md" >
-Hello <%= @username %>, welcome to <%= CBRAIN.app_name %>
-</div>
-<div>
+Hello <%= @username %>, welcome to NeuroHub.
+<p>
+<%= link_to 'My Projects', nh_projects_path, { :class => "button" } %>
+<p>
 <%= link_to 'Reboot Manager', reboot_path, { :class => "button" } %>
-</div>

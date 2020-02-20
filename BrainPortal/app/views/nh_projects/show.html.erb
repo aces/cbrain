@@ -24,7 +24,7 @@
 
 <% title "Project Info" %>
 
-<%= link_to 'Edit', {:action => :edit, :id => @nh_project.id}, :method  => :post %>
+<%= link_to 'Edit', {:action => :edit, :id => @nh_project.id}, :method  => :get %>
 
 
 <% unless @nh_project.is_a?(WorkGroup) %>

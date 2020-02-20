@@ -49,7 +49,7 @@ class NhSessionsController < NeurohubApplicationController
       return
     end
 
-    redirect_to '/home'
+    redirect_to nh_projects_path
   end
 
   # GET /logout

@@ -1,0 +1,45 @@
+
+<%-
+  #
+  # NeuroHub Project
+  #
+  # Copyright (C) 2020
+  # The Royal Institution for the Advancement of Learning
+  # McGill University
+  #
+  # This program is free software: you can redistribute it and/or modify
+  # it under the terms of the GNU General Public License as published by
+  # the Free Software Foundation, either version 3 of the License, or
+  # (at your option) any later version.
+  #
+  # This program is distributed in the hope that it will be useful,
+  # but WITHOUT ANY WARRANTY; without even the implied warranty of
+  # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  # GNU General Public License for more details.
+  #
+  # You should have received a copy of the GNU General Public License
+  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  #
+-%>
+
+<% title 'Projects' %>
+
+<%= link_to "New project", {:action => :new }, :method  => :get  %>
+
+<h2>Projects</h2>
+
+Number of projects: <%= @nh_projects.count %> <br>
+
+<table>
+
+  <tbody>
+  <% @nh_projects.each do |project| %>
+    <tr>
+      <td><%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get  %></td>
+      <td><%= link_to 'Edit', {:action => :edit, :id => project.id}, :method  => :get %> </td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>
+
+

@@ -130,10 +130,11 @@ class EnCbrainSshDataProvider < SshDataProvider
     userfile_paths.reject { |u,p| valid_paths.include?(p) }.each do |miss,p|
       issues << {
         :type        => :missing,
-        :message     => "Missing userfile '#{miss.name}'",
+        :message     => "Userfile '#{miss.name}'",
         :severity    => :major,
         :action      => :destroy,
-        :userfile_id => miss.id
+        :userfile_id => miss.id,
+        :user_id     => miss.user_id
       }
     end
 
@@ -142,10 +143,11 @@ class EnCbrainSshDataProvider < SshDataProvider
     (invalid_paths + (valid_paths - userfile_paths.map { |u,p| p })).each do |unk|
       issues << {
         :type      => :unknown,
-        :message   => "Unknown file or directory '#{unk.sub(base_regex, '')}'",
+        :message   => "File or directory '#{unk.sub(base_regex, '')}'",
         :severity  => :major,
         :action    => :delete,
-        :file_path => unk
+        :file_path => unk,
+        :user_id   => nil
       }
     end
 
