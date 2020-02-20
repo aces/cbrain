@@ -26,10 +26,13 @@ class NhSignupsController < ApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_action :login_required, :except => [:new, :create]
+  before_action :login_required, :except => [:new, :create, :show]
 
   def new #:nodoc:
     @signup = Signup.new
+  end
+
+  def show #:nodoc:
   end
 
   def create #:nodoc:
@@ -47,6 +50,8 @@ class NhSignupsController < ApplicationController
       return
     end
 
+    sleep 1
+    redirect_to nh_signups_path(@signup)
   end
 
 
