@@ -103,6 +103,7 @@ Rails.application.routes.draw do
       get  'is_alive'
       get  'disk_usage'
       get  'report'
+      post 'report'
       post 'repair'
     end
     collection do

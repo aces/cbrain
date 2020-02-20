@@ -1,19 +1,20 @@
-@import "<%= asset_path "./normalize.css" %>";
+@import "<%= asset_path './normalize.css' %>";
 
 /*
-LEGEND
-├── BREAKPOINTS
-├── FONTS
-├── LOGOS
-├── PALETTE
-├── SHADOWS
-├── SPACE
-├── TRANSITIONS
-├── BUTTONS
-├── PAGES
-  ├── SESSIONS
-  ├── WELCOME
-└── 
+  LEGEND
+  ├── BREAKPOINTS
+  ├── FONTS
+  ├── LOGOS
+  ├── PALETTE
+  ├── SHADOWS
+  ├── SPACE
+  ├── TRANSITIONS
+  ├── BUTTONS
+  ├── INPUTS
+  ├── PAGES
+    ├── SESSIONS
+    ├── WELCOME
+  └── 
 */
 
 /*
@@ -22,7 +23,10 @@ LEGEND
 =============================================================
 */
 
-$breakpoints: 30em, 48em, 62em, 80em;
+$BREAKPOINT_XS: 20em; // 320px
+$BREAKPOINT_SM: 30em; // 480px
+$BREAKPOINT_MD: 48em; // 768px
+$BREAKPOINT_LG: 64em; // 1024px
 
 /*
 =============================================================
@@ -131,16 +135,58 @@ $variant : xs, sm, md, lg, xl.
 | LOGOS
 =============================================================
 $variant : wordmark, lettermark, icon.
-$color   : black, white, rgb, grayscale.
+$color   : black, white, RGB, grayscale.
+$size    : xs, ssm, md, lg
 */
 
-@mixin logo($variant: "wordmark", $color: "RGB") {
-  background-image: url(<%= asset_path"/images/neurohub/NH_\#{$variant}_\#{$color}.png"%>);
+@mixin logoImg($variant, $color) {
+  background-image: url(<%=asset_path"/images/neurohub/NH_\#{$variant}_\#{$color}.png"%>);
   background-repeat: no-repeat;
   background-size: contain;
 }
 
-/*
+@mixin logo($variant: "wordmark", $color: "RGB", $size: "md") {
+  @include logoImg($variant, $color);
+  @if $variant != "icon" {
+    @if $size == "sm" {
+      width: 8rem;
+      height: 3rem;
+    }
+    @if $size == "md" {
+      width: 10rem;
+      height: 4rem;
+    }
+    @if $size == "lg" {
+      width: 12rem;
+      height: 4rem;
+    }
+  } @else {
+    @if $size == "xs" {
+      width: 2rem;
+      height: 2rem;
+    }
+    @if $size == "sm" {
+      width: 3rem;
+      height: 3rem;
+    }
+    @if $size == "md" {
+      width: 4rem;
+      height: 4rem;
+    }
+    @if $size == "lg" {
+      width: 5rem;
+      height: 5rem;
+    }
+  }
+}
+
+@mixin lettermark($size) {
+}
+
+@mixin icon($size) {
+}
+
+/*z
 =============================================================
 | PALETTE
 =============================================================
@@ -319,6 +365,10 @@ $sizes: 0rem, 0.25rem, 0.5rem, 0.75rem, 1rem, 1.25rem, 1.5rem, 2rem, 2.5rem,
   .ml-#{index($sizes,$size)-1} {
     @include ml(index($sizes, $size)-1);
   }
+}
+
+.text-italic {
+  font-style: italic;
 }
 
 /*
@@ -509,14 +559,146 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 
 /*
 =============================================================
+| INPUTS
+=============================================================
+*/
+
+@mixin form {
+  @include p(2);
+  @include title("sm");
+  background: $DEFAULT_BG;
+}
+
+@mixin field($theme: "default") {
+  @include title("xs");
+  @include pt(2);
+  display: flex;
+  flex-direction: column;
+
+  &:focus-within {
+    label {
+      @include label($theme);
+    }
+    input {
+      @include input($theme);
+    }
+    textarea {
+      @include input($theme);
+    }
+  }
+}
+
+@mixin label($theme: "default") {
+  @include mt(1);
+  @include title("xs");
+  color: $DEFAULT_DK;
+  @if $theme == "secondary" {
+    color: $SECONDARY_TEXT;
+  }
+}
+
+@mixin input($theme: "default") {
+  @include mt(1);
+  @include p(1);
+  @include text("sm");
+  width: 100%;
+  border: 1px solid $DEFAULT_DISABLED;
+  border-radius: 2px;
+  &:focus {
+    outline: auto $DEFAULT_DISABLED 5px;
+    border-color: $DEFAULT_WASH;
+    box-shadow: none;
+    @if $theme == "secondary" {
+      outline: auto $SECONDARY_ALT 5px;
+      border-color: $SECONDARY_ALT;
+      box-shadow: none;
+    }
+  }
+}
+
+@mixin select($theme: "default") {
+  @include mt(1);
+  @include p(1);
+  @include text("sm");
+  background: $DEFAULT_BG;
+  width: 100%;
+  height: 2rem;
+  &:focus {
+    outline: auto $DEFAULT_DISABLED 5px;
+    border-color: $DEFAULT_WASH;
+    box-shadow: none;
+    @if $theme == "secondary" {
+      outline: auto $SECONDARY_ALT 5px;
+      border-color: $SECONDARY_ALT;
+      box-shadow: none;
+    }
+  }
+}
+
+.nh_form {
+  @include form();
+  fieldset {
+    @include field("secondary");
+  }
+  select {
+    @include select("secondary");
+  }
+  textarea {
+    @include input("secondary");
+  }
+}
+
+.nh_form_title {
+  @include title("sm");
+  @include pb(2);
+}
+
+.nh_form_label {
+  @include label();
+}
+
+.nh_form_field {
+  @include field();
+  &[data-secondary] {
+    @include field("secondary");
+  }
+}
+
+.nh_form_input {
+  @include input();
+}
+
+.nh_field_note {
+  @include text("xs");
+  @include pt(1);
+  font-style: italic;
+}
+
+.nh_select {
+  @include select();
+}
+
+.nh_form_button_section {
+  @include py(7);
+  @include mt(4);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/*
+=============================================================
 | PAGES
 =============================================================
+Base styles for all pages.
 */
 
 html,
 body {
   font-size: 16px;
   height: 100%;
+  min-width: 18rem;
 }
 
 #nh_toolbar {
@@ -538,10 +720,17 @@ body {
   }
 }
 
-#nh_content {
+.nh_page {
+  @include p(4);
+  @media (min-width: $BREAKPOINT_SM) {
+    @include p(7);
+  }
+}
+
+.nh_content {
   height: 100%;
   &[data-isLoggedIn="true"] {
-    @include p(8);
+    @extend .nh_page;
   }
 }
 
@@ -554,17 +743,16 @@ body {
 #nh_sessions {
   height: 100%;
   display: flex;
+  flex-direction: column;
   .nh_login {
-    @include p(7);
+    @extend .nh_page;
     background: $DEFAULT_BG;
     flex: 1;
     display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
     .nh_logo {
-      @include logo(wordmark, RGB);
-      position: absolute;
-      width: 10rem;
-      height: 4rem;
+      @include logo();
     }
     .nh_login_form {
       align-self: center;
@@ -586,14 +774,13 @@ body {
 
         border-color: $DEFAULT_WASH;
         box-shadow: none;
-        outline: auto $DEFAULT_WASH 5px;
       }
     }
   }
 
   .nh_features {
+    @extend .nh_page;
     @include title("sm");
-    @include p(7);
     background: $PRIMARY_DK;
     background-image: url(<%=asset_path"/images/neurohub/NH_login_backsplash.png"%>);
     background-size: cover;
@@ -604,21 +791,9 @@ body {
     position: relative;
 
     .nh_features_header {
-      position: absolute;
+      @include logo("lettermark", "white");
+      background-position-x: center;
       width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-
-      img {
-        width: 10rem;
-      }
-      p {
-        color: $DEFAULT_BG;
-        text-align: center;
-        width: 100%;
-      }
     }
     .nh_features_list {
       color: $DEFAULT_BG;
@@ -627,6 +802,9 @@ body {
       flex: 1;
       align-items: center;
       align-self: center;
+      p {
+        text-align: center;
+      }
       .nh_feature {
         @include pb(4);
         display: flex;
@@ -645,11 +823,48 @@ body {
       }
       .nh_register {
         @include my(2);
+        border-radius: 4px;
         color: $DEFAULT_BG;
         &:hover {
           color: $PRIMARY_BG;
         }
       }
+    }
+  }
+  @media (min-width: $BREAKPOINT_MD) {
+    flex-direction: row;
+    .nh_login {
+      .nh_logo {
+        position: absolute;
+      }
+    }
+    .nh_features {
+      .nh_features_header {
+        position: absolute;
+      }
+    }
+  }
+}
+
+/*
+=============================================================
+| SIGNUPS
+=============================================================
+*/
+
+#nh_signups {
+  @extend .nh_page;
+  .nh_logo {
+    @include logo();
+  }
+  .nh_form {
+    @media (min-width: $BREAKPOINT_MD) {
+      padding-left: 15%;
+      padding-right: 15%;
+    }
+    @media (min-width: $BREAKPOINT_LG) {
+      padding-left: 20%;
+      padding-right: 20%;
     }
   }
 }

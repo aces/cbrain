@@ -46,6 +46,10 @@ class NhProjectsController < NeurohubApplicationController
     end
   end
 
+  def index  #:nodoc:
+    @nh_projects = current_user.available_groups.includes(:site).where(:type => WorkGroup)
+  end
+
   def edit #:nodoc:
     @nh_project = current_user.available_groups.where(:type => WorkGroup).find(params[:id])
   end
