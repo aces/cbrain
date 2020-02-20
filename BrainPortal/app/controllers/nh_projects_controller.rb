@@ -78,5 +78,14 @@ class NhProjectsController < NeurohubApplicationController
     end
   end
 
+  def files #:nodoc:
+    @nh_project = current_user.available_groups.where(:type => WorkGroup).find(params[:id])
+    raise ActiveRecord::RecordNotFound unless @nh_project.can_be_accessed_by?(current_user)
+
+    @files =  @nh_project.userfiles
+
+    render :action => :files
+  end
+
 end
 
