@@ -51,14 +51,14 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def edit #:nodoc:
-    @nh_project = current_user.available_groups.where(:type => WorkGroup).find(params[:id])
+    @nh_project = find_nh_project(current_user, params[:id])
   end
 
   def update #:nodoc:
-    @nh_project      = current_user.available_groups.where(:type => WorkGroup).find(params[:id])
+    @nh_project    = find_nh_project(current_user, params[:id])
 
     attr_to_update = params.require_as_params(:nh_project).permit(:name, :description)
-    success = @nh_project.update_attributes_with_logging(attr_to_update,current_user)
+    success        = @nh_project.update_attributes_with_logging(attr_to_update,current_user)
 
     if success
       redirect_to :action => :edit
@@ -71,9 +71,8 @@ class NhProjectsController < NeurohubApplicationController
   # GET /projects/1.xml
   # GET /projects/1.json
   def show #:nodoc:
-    @nh_project = current_user.available_groups.where(:type => WorkGroup).find(params[:id])
-    raise ActiveRecord::RecordNotFound unless @nh_project.can_be_accessed_by?(current_user)
-    @users = current_user.available_users.order(:login).reject { |u| u.class == CoreAdmin }
+    @nh_project = find_nh_project(current_user, params[:id])
+    @users      = current_user.available_users.order(:login).reject { |u| u.class == CoreAdmin }
 
     respond_to do |format|
       format.html
@@ -83,10 +82,8 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def files #:nodoc:
-    @nh_project = current_user.available_groups.where(:type => WorkGroup).find(params[:id])
-    raise ActiveRecord::RecordNotFound unless @nh_project.can_be_accessed_by?(current_user)
-
-    @files =  @nh_project.userfiles
+    @nh_project = find_nh_project(current_user, params[:id])
+    @files      =  @nh_project.userfiles
 
     render :action => :files
   end
