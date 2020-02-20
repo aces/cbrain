@@ -20,14 +20,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Superclass to all *NeuroHub* controllers.
-# Already inherits all the methods and modules of
-# CBRAIN's ApplicationController.
-class NeurohubApplicationController < ApplicationController
+# Helper for Neurohub interface
+module NeurohubHelpers
 
-  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+  # For the user +user+, this method will return a proper
+  # neurohub project (class WorkGroup) associated with +id_or_project+.
+  # If +id_or_project_ is already a Group, it will make sure it's
+  # a valid one. The WorkGroup is returned. If the validation fails,
+  # an exception ActiveRecord::RecordNotFound is raised.
+  def find_nh_project(user, id_or_project)
+    id      = id_or_project.is_a?(Group) ? id_or_project.id : id_or_project
+    project = user.available_groups.where(:type => "WorkGroup").find(id)
 
-  include NeurohubHelpers
+    raise ActiveRecord::RecordNotFound unless project.can_be_accessed_by?(user)
+
+    project
+  end
 
 end
-

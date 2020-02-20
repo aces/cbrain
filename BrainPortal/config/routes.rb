@@ -280,7 +280,12 @@ Rails.application.routes.draw do
     resources :nh_signups
 
     # WorkGroups
-    resources :nh_projects
+    resources :nh_projects do
+      member do
+        get 'files'
+      end
+
+    end
 
   end
 

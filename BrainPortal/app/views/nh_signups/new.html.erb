@@ -23,7 +23,7 @@
 
 
 <% title 'New Account Request' %>
-<div id="nh_signups" class="nh_content"> 
+<div id="nh_signups" class="nh_content">
   <div class="nh_logo"></div>
   <%= form_for @signup, :html => {:class=>"nh_form","data-secondary"=>"true"}, :url => { :action => (@signup.new_record? ? "create" : "update"), :id => @signup.id } do |f|%>
     <p class="nh_form_title">Register</p>
@@ -129,10 +129,12 @@
     <fieldset class="nh_form_field" >
       <%= f.label(:comment, "Comments or special requests",:class => "nh_form_label") %>
          <%= f.text_area :comment, :cols => 80, :rows => 5 %>
-         <span class="nh_field_note">
-               Please tell us the name of the laboratory you work for, the name of its Principal Investigator (if not you), and if possible anyone<br>
-               else you know in your lab who are already CBRAIN users. We'll use this information to create or add you to a <em>Site</em> within CBRAIN.
-         </span>
+    </fieldset>
+    <fieldset class="nh_form_field">
+        <span class="nh_field_note">
+          <b>Privacy note</b>: The information you supply in this form is only used in order to review your application and, when approved, to automatically generate your user account.
+            This information will not be used in any other way, or passed on to any other entities or persons.
+        </span>
     </fieldset>
     <div class="nh_form_button_section">
       <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request", { :class => "btn-solid-secondary" })  %>
