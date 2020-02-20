@@ -22,10 +22,11 @@
 #
 -%>
 
-<% title 'Project files' %>
+<% title "Project files #{@nh_project.name}" %>
+
+Project files <%= @nh_project.name %><br>
 
 <table>
-
   <tr>
     <th>Name</th>
     <th>Type</th>
@@ -36,8 +37,7 @@
     <tr>
       <td><%= file.name %></td>
       <td><%= file.pretty_type %></td>
-      <td><%= file.size %></td>
+      <td><%= colored_pretty_size(file.size) %></td>
     </tr>
   <% end %>
-
 </table>
