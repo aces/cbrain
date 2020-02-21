@@ -67,18 +67,10 @@ class NhProjectsController < NeurohubApplicationController
     end
   end
 
-  # GET /projects/1
-  # GET /projects/1.xml
-  # GET /projects/1.json
+
   def show #:nodoc:
     @nh_project = find_nh_project(current_user, params[:id])
     @users      = current_user.available_users.order(:login).reject { |u| u.class == CoreAdmin }
-
-    respond_to do |format|
-      format.html
-      format.xml  { render :xml  => @nh_project.for_api }
-      format.json { render :json => @nh_project.for_api }
-    end
   end
 
   def files #:nodoc:
