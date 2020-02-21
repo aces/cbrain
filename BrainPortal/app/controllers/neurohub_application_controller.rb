@@ -29,5 +29,14 @@ class NeurohubApplicationController < ApplicationController
 
   include NeurohubHelpers
 
+  before_action :check_if_rebooting
+
+  def check_if_rebooting
+    if File.exists?("public/reboot_in_progress")
+      render :plain => File.read('public/reboot.txt').gsub(/\e\[[\d;]+m/,"")
+    end
+    true
+  end
+
 end
 

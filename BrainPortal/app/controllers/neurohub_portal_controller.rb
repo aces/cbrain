@@ -26,7 +26,6 @@ class NeurohubPortalController < NeurohubApplicationController
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   before_action :login_required
-  before_action :check_if_rebooting
 
   # Main welcome/dashboard page
   def welcome #:nodoc:
@@ -48,11 +47,12 @@ class NeurohubPortalController < NeurohubApplicationController
 
     @pid_to_restart = clustered ? puma_ppid : puma_pid
 
-    if params[:do_it].present?
+    if params[:do_it].present? && ! File.exists?("public/reboot_in_progress")
+      system("touch","public/reboot_in_progress") # removed by BrainPortal/config/initializers/z1_neurohub_reboot_cleaner.rb
+      system("cp","-p","public/reboot.txt.base", "public/reboot.txt")
+
       message = "Reboot initiated by user #{current_user.login} at #{Time.now}. Server PID: #{@pid_to_restart}"
       Rails.logger.info message
-
-      system("cp","-p","public/reboot.txt.base", "public/reboot.txt")
       File.open("public/reboot.txt","a") { |fh| fh.write( message + "\n\n" ) }
 
       Dir.chdir(cbroot.to_s) do
@@ -60,10 +60,9 @@ class NeurohubPortalController < NeurohubApplicationController
         CBRAIN.spawn_fully_independent do
           ret = system("bash script/update_cb_all.sh #{root.to_s.bash_escape} >> BrainPortal/public/reboot.txt")
           if ret
-            #Process.kill('USR1',@pid_to_restart) # note: a bug in Puma makes it not restart because of pid file 
             Process.kill('TERM',@pid_to_restart) # in production, monit will restart
           else
-            message = "ERROR: The update processed returned an error code. Restart not attempted. Contact Pierre."
+            message = "ERROR: The update process returned an error code. Restart not attempted. Contact Pierre."
             File.open("public/reboot.txt","a") { |fh| fh.write( message + "\n\n" ) }
           end
         end
@@ -74,15 +73,6 @@ class NeurohubPortalController < NeurohubApplicationController
     end
 
     # Render reboot.html.erb
-  end
-
-  private
-
-  def check_if_rebooting
-    if File.exists? "public/reboot.txt"
-      render :plain => File.read('public/reboot.txt').gsub(/\e\[[\d;]+m/,"")
-    end
-    true
   end
 
 end
