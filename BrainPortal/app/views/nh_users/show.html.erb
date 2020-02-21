@@ -24,28 +24,18 @@
 <% title "Account Info" %>
 
 <br>
-
 <div>
-    Login: <%= @user.login  %> <br>
-
-    Name: <%= @user.full_name  %> <br>
-
-    Position : <%= @user.position %> <br>
-
-    Affiliation: <%= @user.affiliation %> <br>
-
-    City: <%= @user.city %> <br>
-
-    Country: <%= @user.country%> <br>
-
-    Email: <%= @user.email%> <br>
-
-    Last visit: <%= @user.last_connected_at ? "#{to_localtime(@user.last_connected_at,
+    Login:        <%= @user.login  %> <br>
+    Name:         <%= @user.full_name  %> <br>
+    Position:     <%= @user.position %> <br>
+    Affiliation:  <%= @user.affiliation %> <br>
+    City:         <%= @user.city %> <br>
+    Country:      <%= @user.country%> <br>
+    Email:        <%= @user.email%> <br>
+    Last visit:   <%= @user.last_connected_at ? "#{to_localtime(@user.last_connected_at,
       :datetime)} (#{pretty_elapsed(Time.now - @user.last_connected_at, :num_components => 3)} ago)" : "(Never)" %>
-
    <br>
-
-    Files size: <%= colored_pretty_size @user.userfiles.sum(:size) %> <br>
-    File count: <%= @user.userfiles.count %>
+    Files size:   <%= colored_pretty_size @user.userfiles.sum(:size) %> <br>
+    File count:   <%= @user.userfiles.count %>
 
 </div>
