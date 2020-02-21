@@ -36,21 +36,23 @@
   <table>
     <thead>
       <tr>
-        <th>projects</th>
+        <th>name</th>
+        <th>maintainer</th>
         <th>actions</th>
       </tr>
     </thead>
-    
+
     <tbody>
         <% @nh_projects.each do |project| %>
         <tr class="nh_table_tr">
           <th data-type="link"><%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get,:class => "btn-text-secondary"  %></th>
+          <td><%= project.creator.try(:login) %></td>
           <td><%= link_to 'Edit', {:action => :edit, :id => project.id}, :method  => :get %></td>
         </tr>
       <% end %>
     </tbody>
   </table>
-  
+
   </div>
 </div>
 
