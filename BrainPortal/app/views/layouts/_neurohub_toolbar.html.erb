@@ -28,12 +28,11 @@
 
 <% if current_user %>
     <div id="nh_toolbar">
-        <div class="logo"></div>
-        <div class="nav_buttons">
-            <!--  rails expression for the link
-            <a class="btn-nav-primary" href="/myaccount">My Account</a>-->
-            <%= link_to 'My Account', myaccount_path, { :class => "btn-text-primary" } %>
-            <a class="btn-text-primary" href="/logout">Logout</a>
+        <div class="nh_toolbar_logo"></div>
+        <div class="nh_toolbar_buttons">
+            <%= link_to 'Dashboard', welcome_path, { :class => "btn-nav-primary" } %>
+            <%= link_to 'My Account', myaccount_path, { :class => "btn-nav-primary" } %>
+            <a class="btn-nav-primary" href="/logout">Logout</a>
         </div>
     </div>
     

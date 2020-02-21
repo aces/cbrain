@@ -148,6 +148,10 @@ $size    : xs, ssm, md, lg
 @mixin logo($variant: "wordmark", $color: "RGB", $size: "md") {
   @include logoImg($variant, $color);
   @if $variant != "icon" {
+    @if $size == "xs" {
+      width: 5rem;
+      height: 2rem;
+    }
     @if $size == "sm" {
       width: 8rem;
       height: 3rem;
@@ -180,14 +184,14 @@ $size    : xs, ssm, md, lg
   }
 }
 
-/*z
+/*
 =============================================================
 | PALETTE
 =============================================================
 */
 
 $DEFAULT_BG: #ffffff;
-$DEFAULT_WASH: #efefef;
+$DEFAULT_WASH: #f9fcfe;
 $DEFAULT_ALT: #787a7a;
 $DEFAULT_DK: #343434;
 $DEFAULT_TEXT: #000000;
@@ -542,6 +546,31 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   }
 }
 
+.btn-nav {
+  @extend .btn-text-default;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  color: $DEFAULT_ALT;
+}
+
+.btn-nav-primary {
+  @extend .btn-nav;
+  &:hover {
+    background: $PRIMARY_WASH;
+    border-color: $PRIMARY_BG;
+    color: $PRIMARY_BG;
+  }
+}
+
+.btn-nav-secondary {
+  @extend .btn-nav;
+  &:hover {
+    background: $SECONDARY_WASH;
+    border-color: $SECONDARY_BG;
+    color: $SECONDARY_BG;
+  }
+}
+
 /*
 =============================================================
 | INPUTS
@@ -769,71 +798,35 @@ th:first-child {
   border-radius: 0px;
 }
 
-// .nh_table_wrapper {
-//   @include shadow("mid");
+/*
+=============================================================
+| TOOLBAR
+=============================================================
+*/
 
-//   .nh_table {
-//     width: 100%;
-//     background: $DEFAULT_BG;
-//     border-radius: 4px;
-//     thead {
-//       @include shadow("xlow");
-//       tr {
-//         display: flex;
-//         th {
-//           @include text-button($DEFAULT_ALT, 1, "sm");
-//           @include px(5);
-//           @include py(2);
-//           text-transform: capitalize;
-//           flex: 1;
-//           background: $DEFAULT_BG;
-//           text-align: left;
-//         }
-//       }
-//     }
+$TOOLBAR_HEIGHT: 3.5;
+$TOOLBAR_ZINDEX: 1000;
 
-//     tbody {
-//       display: block;
-//       overflow: auto;
-//       overflow-x: hidden;
-//       width: 100%;
-//       height: $TABLE_HEIGHT + rem;
-//     }
-//   }
-// }
-
-// .nh_actions {
-//   background: $DEFAULT_BG;
-//   display: flex;
-// }
-
-// .nh_action {
-//   border-radius: 0px !important;
-// }
-
-// .nh_table_tr {
-//   display: flex;
-
-//   td {
-//     @include text("sm");
-//     @include px(5);
-//     @include py(2);
-//     flex: 1;
-//     color: $DEFAULT_ALT;
-//     text-decoration: none;
-//     border-bottom: 2px solid $DEFAULT_WASH;
-//     position: relative;
-//     &[data-type="link"] {
-//       a {
-//         text-transform: none;
-//         position: absolute;
-//         left: 0;
-//         top: 0;
-//         width: 100%;
-//       }
-//     }
-//   }
-// }
+#nh_toolbar {
+  @include shadow("mid");
+  display: flex;
+  align-items: center;
+  position: fixed;
+  width: 100%;
+  height: $TOOLBAR_HEIGHT + rem;
+  background: $DEFAULT_BG;
+  z-index: $TOOLBAR_ZINDEX;
+  .nh_toolbar_logo {
+    @include logo("lettermark", "RGB", "xs");
+    @include mx(4);
+  }
+  .nh_toolbar_buttons {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
 
 /*
 =============================================================
@@ -841,9 +834,6 @@ th:first-child {
 =============================================================
 Base styles for all pages.
 */
-
-$TOOLBAR_HEIGHT: 3.5;
-$TOOLBAR_ZINDEX: 1000;
 
 * {
   box-sizing: border-box;
@@ -857,29 +847,6 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1;
-}
-
-#nh_toolbar {
-  @include shadow("xlow");
-  display: flex;
-  align-items: center;
-  position: fixed;
-  width: 100%;
-  height: $TOOLBAR_HEIGHT + rem;
-  background: $DEFAULT_BG;
-  z-index: $TOOLBAR_ZINDEX;
-  .logo {
-    @include logo(icon, RGB);
-    @include mx(4);
-    width: space(7);
-    height: space(7);
-  }
-  .nav_buttons {
-    flex: 1;
-    height: 100%;
-    display: flex;
-    justify-content: flex-end;
-  }
 }
 
 .nh_content {
