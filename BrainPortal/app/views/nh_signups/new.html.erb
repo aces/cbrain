@@ -23,8 +23,12 @@
 
 
 <% title 'New Account Request' %>
+
 <div id="nh_signups" class="nh_content">
   <div class="nh_logo"></div>
+
+  <%= error_messages_for @signup %>
+
   <%= form_for @signup, :html => {:class=>"nh_form","data-secondary"=>"true"}, :url => { :action => (@signup.new_record? ? "create" : "update"), :id => @signup.id } do |f|%>
     <p class="nh_form_title">Register</p>
     <div class="text-xs text-italic">Fields with an asterisk (*) are mandatory.</div>
