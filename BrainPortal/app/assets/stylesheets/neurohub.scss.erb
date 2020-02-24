@@ -10,15 +10,17 @@
   ├── SPACE
   ├── TRANSITIONS
   ├── BUTTONS
+  ├── BANNERS
+  ├── ERRORS
   ├── FORMS
   ├── TABLES
   ├── TOOLBAR
   ├── PAGES
     ├── BASE
     ├── SESSIONS
-    ├── WELCOME
+    ├── SIGNUPS
+    ├── PROJECTS
   └── 
-*/
 
 /*
 =============================================================
@@ -211,6 +213,15 @@ $SECONDARY_WASH: #effafa;
 $SECONDARY_ALT: #00a1a0;
 $SECONDARY_DK: #003943;
 $SECONDARY_TEXT: #008484;
+
+$SUCCESS_BG: #51b83c;
+$SUCCESS_WASH: #bbe5b3;
+$SUCCESS_DK: #00663c;
+
+$ERROR_BG: #f07171;
+$ERROR_ALT: #e22f2f;
+$ERROR_WASH: #fcc2c2;
+$ERROR_DK: #85000c;
 
 /*
 =============================================================
@@ -577,6 +588,60 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 
 /*
 =============================================================
+| BANNERS
+=============================================================
+$variant : error, notice
+*/
+
+@mixin banner($variant: "error") {
+  @include p(2);
+  @include text("sm");
+  @include shadow("low");
+  width: 100%;
+  @if ($variant == "notice") {
+    background-color: $SUCCESS_WASH;
+    border: 1px solid $SUCCESS_BG;
+    color: $SUCCESS_DK;
+  }
+  @if ($variant == "error") {
+    background-color: $ERROR_WASH;
+    border: 1px solid $ERROR_BG;
+    color: $ERROR_DK;
+  }
+}
+
+.flash-error {
+  @include banner("error");
+  @include px(7);
+}
+
+.flash-notice {
+  @include banner("notice");
+  @include px(7);
+}
+
+/*
+=============================================================
+| ERRORS
+=============================================================
+*/
+
+.errorExplanation {
+  @include banner("error");
+  h2 {
+    font-weight: 700;
+  }
+  ul {
+    @include mx(4);
+    list-style: disc;
+    li {
+      @include mx(4);
+    }
+  }
+}
+
+/*
+=============================================================
 | FORMS
 =============================================================
 */
@@ -650,11 +715,19 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   @include mt(1);
   @include title("xs");
   color: $DEFAULT_DK;
+
   @if $theme == "secondary" {
     color: $SECONDARY_TEXT;
   }
   @if $theme == "primary" {
     color: $PRIMARY_TEXT;
+  }
+  &[data-required] {
+    position: relative;
+    &:after {
+      content: "*";
+      position: absolute;
+    }
   }
 }
 
@@ -761,6 +834,21 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
         width: 100%;
       }
     }
+  }
+}
+
+.field_with_errors {
+  label {
+    color: $ERROR_ALT !important;
+    position: relative;
+    &:after {
+      content: "*";
+      position: absolute;
+    }
+  }
+  input {
+    color: $ERROR_BG !important;
+    border-color: $ERROR_BG !important;
   }
 }
 

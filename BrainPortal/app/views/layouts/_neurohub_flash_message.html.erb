@@ -1,9 +1,11 @@
 
+
+
 <%-
 #
-# NeuroHub Project
+# CBRAIN Project
 #
-# Copyright (C) 2020
+# Copyright (C) 2008-2012
 # The Royal Institution for the Advancement of Learning
 # McGill University
 #
@@ -18,16 +20,23 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 #
 -%>
 
-<% title 'New Project' %>
+<!-- ****************************** -->
+<!-- PARTIAL: FLASH MESSAGE SECTION -->
+<!-- ****************************** -->
 
-<div class="nh_content"> 
-    <div class="nh_form"> 
-        <%= error_messages_for @nh_project, :header_message => "Project could not be created." %>
-        <p class="nh_form_title">Add Project</p>
-        <%= render :partial => 'form_for', :locals => {:action => :create} %>
-    </div>
-</div>
+    <%
+    # This partial requires two variables:
+    # msg  : the content of the flash message
+    # type : either 'notice' or 'error'
+    %>
+
+    <%- flash.each do |name, msg| -%>
+        <% next if msg.blank? %>
+            <%= content_tag :div, (h(msg.to_s.strip).gsub(/\n/, '<BR/>')).html_safe, :class => "flash_#{name}" %>
+    <%- end -%>
+
+

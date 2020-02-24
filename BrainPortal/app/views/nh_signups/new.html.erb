@@ -26,7 +26,9 @@
 
 <div id="nh_signups" class="nh_content">
   <% if !current_user %>
-    <div class="nh_logo"></div>
+    <a href="/nh_session">
+      <div class="nh_logo"></div>
+    </a>
   <% end %>
   <div class="nh_form">
     <%= error_messages_for @signup %>
@@ -43,7 +45,7 @@
         </div>
       </fieldset>
       <fieldset >
-        <%= f.label(:first, "First Name *") %>
+        <%= f.label(:first, "First Name", "data-required"=>"true") %>
         <%= f.text_field :first, :size => 20%>
       </fieldset>
       <fieldset >
@@ -51,7 +53,7 @@
         <%= f.text_field :middle, :size => 20 %>
       </fieldset>
       <fieldset >
-        <%= f.label(:last, "Last Name *") %>
+        <%= f.label(:last, "Last Name", "data-required"=>"true") %>
         <%= f.text_field :last, :size => 20 %>
       </fieldset>
       <fieldset >
@@ -62,15 +64,15 @@
         </div>
       </fieldset>
       <fieldset >
-        <%= f.label(:institution, "Name of Institution/Organization *") %>
+        <%= f.label(:institution, "Name of Institution/Organization", "data-required"=>"true") %>
         <%= f.text_field :institution, :size => 60%>
       </fieldset>
       <fieldset >
-        <%= f.label(:department, "Department *") %>
+        <%= f.label(:department, "Department", "data-required"=>"true") %>
         <%= f.text_field :department, :size => 60 %>
       </fieldset>
       <fieldset >
-        <%= f.label(:position, "Current position or role *") %>
+        <%= f.label(:position, "Current position or role", "data-required"=>"true") %>
         <%= f.select :position, options_for_select(
                 [ [ "(select one)", "" ], "Faculty",
                                           "Postdoctoral",
@@ -84,7 +86,7 @@
             %>
       </fieldset>
       <fieldset >
-        <%= f.label(:affiliation, "Current affiliation *") %>
+        <%= f.label(:affiliation, "Current affiliation", "data-required"=>"true") %>
         <%= f.select :affiliation, options_for_select(
                 [ [ "(select one)", "" ], "Academic",
                                           "Private sector",
@@ -97,7 +99,7 @@
       </fieldset>
 
       <fieldset >
-        <%= f.label(:email, "Institutional email address *") %>
+        <%= f.label(:email, "Institutional email address", "data-required"=>"true") %>
         <%= f.text_field :email, :size => 60 %>
         <span class="field_note">Please supply an email address from your research institution.
         Requests made with non-institutional addresses will be ignored.</span>
@@ -111,19 +113,19 @@
         <%= f.text_field :street2, :size => 60 %>
       </fieldset>
       <fieldset >
-        <%= f.label(:city, "City *") %>
+        <%= f.label(:city, "City") %>
         <%= f.text_field :city, :size => 30 %>
       </fieldset>
       <fieldset >
-        <%= f.label(:province, "Province/State *") %>
+        <%= f.label(:province, "Province/State", "data-required"=>"true") %>
         <%= f.text_field :province, :size => 30 %>
       </fieldset>
       <fieldset >
-        <%= f.label(:country, "Country *") %>
+        <%= f.label(:country, "Country", "data-required"=>"true") %>
         <%= f.text_field :country, :size => 30 %>
       </fieldset>
       <fieldset >
-        <%= f.label(:postal_code, "Postal/ZIP Code *") %>
+        <%= f.label(:postal_code, "Postal/ZIP Code", "data-required"=>"true") %>
         <%= f.text_field :postal_code, :size => 8 %>
       </fieldset>
       <fieldset >
