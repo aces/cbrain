@@ -82,13 +82,13 @@ class ControlsController < ApplicationController
     respond_to do |format|
       format.html { head :method_not_allowed }
       format.xml do
-        headers['Location'] = url_for(:controller => "controls", :action => nil, :id => command[:id])
+        #headers['Location'] = url_for(:controller => "controls", :action => :show, :id => command[:id])
         render :xml => command.to_xml, :status => :created
       end
     end
   rescue => e  # TODO : inform client somehow ?
-    puts "Exception in create command: #{e.class}: #{e.message}"
-    puts e.backtrace[0..15].join("\n")
+    Rails.logger.error "Exception in create command: #{e.class}: #{e.message}"
+    Rails.logger.error e.backtrace[0..15].join("\n")
     respond_to do |format|
       format.html { head :method_not_allowed }
       format.xml  { head :internal_server_error }
