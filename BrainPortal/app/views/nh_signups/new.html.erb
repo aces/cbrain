@@ -23,47 +23,53 @@
 
 
 <% title 'New Account Request' %>
+
 <div id="nh_signups" class="nh_content">
-  <div class="nh_logo"></div>
-  <%= form_for @signup, :html => {:class=>"nh_form","data-secondary"=>"true"}, :url => { :action => (@signup.new_record? ? "create" : "update"), :id => @signup.id } do |f|%>
-    <p class="nh_form_title">Register</p>
-    <div class="text-xs text-italic">Fields with an asterisk (*) are mandatory.</div>
-    <fieldset class="nh_form_field">
-      <%= f.label(:title, "Title", :class => "nh_form_label") %>
+  <% if !current_user %>
+    <div class="nh_logo"></div>
+  <% end %>
+  <div class="nh_form">
+  <%= form_for @signup, :url => { :action => (@signup.new_record? ? "create" : "update"), :id => @signup.id } do |f|%>
+    <div class="nh_form_title">
+      Register
+      <p class="text-xs text-italic">Fields with an asterisk (*) are mandatory.</p>
+    </div>
+    <fieldset>
+      <%= f.label(:title, "Title") %>
       <div>
-        <%= f.text_field(:title, :size => 10, :class => "nh_form_input") %>
-        <span class="nh_field_note">(e.g. 'Mr.', 'Dr.', etc.)</span>
+        <%= f.text_field(:title, :size => 10) %>
+        <span class="field_note">(e.g. 'Mr.', 'Dr.', etc.)</span>
       </div>
     </fieldset>
-    <fieldset class="nh_form_field" >
-      <%= f.label(:first, "First Name *", :class => "nh_form_label") %>
-      <%= f.text_field :first, :size => 20, :class => "nh_form_input"%>
+    <fieldset >
+      <%= f.label(:first, "First Name *") %>
+      <%= f.text_field :first, :size => 20%>
     </fieldset>
-    <fieldset class="nh_form_field" >
-      <%= f.label(:middle, "Middle Name", :class => "nh_form_label") %>
-      <%= f.text_field :middle, :size => 20, :class => "nh_form_input" %>
+    <fieldset >
+      <%= f.label(:middle, "Middle Name") %>
+      <%= f.text_field :middle, :size => 20 %>
     </fieldset>
-    <fieldset class="nh_form_field" >
-      <%= f.label(:last, "Last Name *", :class => "nh_form_label") %>
-      <%= f.text_field :last, :size => 20, :class => "nh_form_input" %>
+    <fieldset >
+      <%= f.label(:last, "Last Name *") %>
+      <%= f.text_field :last, :size => 20 %>
     </fieldset>
-    <fieldset class="nh_form_field" >
-      <%= f.label(:login, "Preferred 'login' name", :class => "nh_form_label") %>
+    <fieldset >
+      <%= f.label(:login, "Preferred 'login' name") %>
       <div>
-        <%= f.text_field :login, :size => 15, :class => "nh_form_input" %>
-        <span class="nh_field_note">(one letter + alphanums)</span>
+        <%= f.text_field :login, :size => 15 %>
+        <span class="field_note">(one letter + alphanums)</span>
       </div>
     </fieldset>
-    <fieldset class="nh_form_field" >
-      <%= f.label(:institution, "Name of Institution/Organization *", :class => "nh_form_label") %>
-      <%= f.text_field :institution, :size => 60, :class => "nh_form_input"%>
+    <fieldset >
+      <%= f.label(:institution, "Name of Institution/Organization *") %>
+      <%= f.text_field :institution, :size => 60%>
     </fieldset>
-    <fieldset class="nh_form_field" >
-      <%= f.label(:department, "Department *", :class => "nh_form_label") %>
-      <%= f.text_field :department, :size => 60, :class => "nh_form_input" %>
+    <fieldset >
+      <%= f.label(:department, "Department *") %>
+      <%= f.text_field :department, :size => 60 %>
     </fieldset>
-    <fieldset class="nh_form_field" >
-      <%= f.label(:position, "Current position or role *", :class => "nh_form_label") %>
+    <fieldset >
+      <%= f.label(:position, "Current position or role *") %>
       <%= f.select :position, options_for_select(
               [ [ "(select one)", "" ], "Faculty",
                                         "Postdoctoral",
@@ -73,11 +79,11 @@
                                         "Researcher",
                                         "Other"
               ],
-              @signup.position),{},{ class: 'nh_select'}
+              @signup.position)
           %>
     </fieldset>
-    <fieldset class="nh_form_field" >
-      <%= f.label(:affiliation, "Current affiliation *", :class => "nh_form_label") %>
+    <fieldset >
+      <%= f.label(:affiliation, "Current affiliation *") %>
       <%= f.select :affiliation, options_for_select(
               [ [ "(select one)", "" ], "Academic",
                                         "Private sector",
@@ -85,61 +91,67 @@
                                         "Non-profit",
                                         "Other",
               ],
-              @signup.affiliation),{},{ class: 'nh_select'}
+              @signup.affiliation)
           %>
     </fieldset>
 
-    <fieldset class="nh_form_field" >
-      <%= f.label(:email, "Institutional email address *", :class => "nh_form_label") %>
-      <%= f.text_field :email, :size => 60, :class => "nh_form_input" %>
-      <span class="nh_field_note">Please supply an email address from your research institution.
+    <fieldset >
+      <%= f.label(:email, "Institutional email address *") %>
+      <%= f.text_field :email, :size => 60 %>
+      <span class="field_note">Please supply an email address from your research institution.
       Requests made with non-institutional addresses will be ignored.</span>
 
     </fieldset>
-    <fieldset class="nh_form_field" >
-      <%= f.label(:street1, "Street Address (line 1)", :class => "nh_form_label") %>
-      <%= f.text_field :street1, :size => 60, :class => "nh_form_input" %>
+    <fieldset >
+      <%= f.label(:street1, "Street Address (line 1)") %>
+      <%= f.text_field :street1, :size => 60 %>
 
-      <%= f.label(:street2, "Street Address (line 2)", :class => "nh_form_label") %>
-      <%= f.text_field :street2, :size => 60, :class => "nh_form_input" %>
+      <%= f.label(:street2, "Street Address (line 2)") %>
+      <%= f.text_field :street2, :size => 60 %>
     </fieldset>
-    <fieldset class="nh_form_field" >
-      <%= f.label(:city, "City *",:class => "nh_form_label") %>
-      <%= f.text_field :city, :size => 30,:class => "nh_form_input" %>
+    <fieldset >
+      <%= f.label(:city, "City *") %>
+      <%= f.text_field :city, :size => 30 %>
     </fieldset>
-    <fieldset class="nh_form_field" >
-      <%= f.label(:province, "Province/State *",:class => "nh_form_label") %>
-      <%= f.text_field :province, :size => 30,:class => "nh_form_input" %>
+    <fieldset >
+      <%= f.label(:province, "Province/State *") %>
+      <%= f.text_field :province, :size => 30 %>
     </fieldset>
-    <fieldset class="nh_form_field" >
-      <%= f.label(:country, "Country *",:class => "nh_form_label") %>
-      <%= f.text_field :country, :size => 30,:class => "nh_form_input" %>
+    <fieldset >
+      <%= f.label(:country, "Country *") %>
+      <%= f.text_field :country, :size => 30 %>
     </fieldset>
-    <fieldset class="nh_form_field" >
-      <%= f.label(:postal_code, "Postal/ZIP Code *",:class => "nh_form_label") %>
-      <%= f.text_field :postal_code, :size => 8,:class => "nh_form_input" %>
+    <fieldset >
+      <%= f.label(:postal_code, "Postal/ZIP Code *") %>
+      <%= f.text_field :postal_code, :size => 8 %>
     </fieldset>
-    <fieldset class="nh_form_field" >
-      <%= f.label(:time_zone, "Time Zone",:class => "nh_form_label") %>
+    <fieldset >
+      <%= f.label(:time_zone, "Time Zone") %>
       <%= f.time_zone_select :time_zone,
           ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
           { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'], :include_blank => true }
       %>
     </fieldset>
-    <fieldset class="nh_form_field" >
-      <%= f.label(:comment, "Comments or special requests",:class => "nh_form_label") %>
+    <fieldset >
+      <%= f.label(:comment, "Comments or special requests") %>
          <%= f.text_area :comment, :cols => 80, :rows => 5 %>
     </fieldset>
-    <fieldset class="nh_form_field">
-        <span class="nh_field_note">
+    <fieldset>
+        <span class="field_note">
           <b>Privacy note</b>: The information you supply in this form is only used in order to review your application and, when approved, to automatically generate your user account.
             This information will not be used in any other way, or passed on to any other entities or persons.
         </span>
     </fieldset>
-    <div class="nh_form_button_section">
+    <div class="form_button_section">
       <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request", { :class => "btn-solid-secondary" })  %>
+      <%= link_to 'Already have an account',
+      url_for(:controller => :nh_sessions, :action => :new),
+      { tabindex: 4, :class => "action_link btn-text-secondary mt-2" }%>
     </div>
 
 
   <% end %>
+  </div>
+
+
 </div>

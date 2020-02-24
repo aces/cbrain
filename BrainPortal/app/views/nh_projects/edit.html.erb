@@ -26,7 +26,9 @@
 
 <%= error_messages_for @nh_project, :header_message => "Project could not be updated." %>
 
-<div class="nh_form" data-secondary="true">
-    <p class="nh_form_title">Edit Project</p>
-    <%= render :partial => 'form_for', :locals => {:action => :update} %>
+<div class="nh_content"> 
+    <div class="nh_form"> 
+        <p class="nh_form_title">Edit Project</p>
+        <%= render :partial => 'form_for', :locals => {:action => :update} %>
+    </div>
 </div>

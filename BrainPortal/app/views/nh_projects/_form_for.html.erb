@@ -23,17 +23,16 @@
 -%>
   <%= form_for @nh_project, :as => :nh_project, :url => { :action => action }, :datatype => "script" do |f| -%>
 
-
-    <fieldset class="nh_form_field" >
-      <%= f.label :name, "Name", :class=>"nh_form_label"%>
-      <%= f.text_field :name,:class=>"nh_form_input"  %>
+    <fieldset >
+      <%= f.label :name, "Name"%>
+      <%= f.text_field :name %>
     </fieldset>
    
-    <fieldset class="nh_form_field" >
-      <%= f.label :description, "Description", :class=>"nh_form_label"%>
-      <%= f.text_field :description, :class=>"nh_form_input"  %>
+    <fieldset>
+      <%= f.label :description, "Description"%>
+      <%= f.text_field :description  %>
     </fieldset>
-    <div class="nh_form_button_section">
+    <div class="form_button_section">
       <%= f.submit "#{action.to_s.capitalize}", :class=>"btn-solid-secondary" %>
     </div>
   <% end %>

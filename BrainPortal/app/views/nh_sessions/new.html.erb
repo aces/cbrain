@@ -28,11 +28,14 @@
   <div class="nh_login">
     <div class="nh_logo"></div>
     <%= form_tag nh_session_path, :class=>"nh_login_form" do %>
-      <label>Username</label> 
-      <%= text_field_tag 'username', nil, tabindex: 1, :class=>"login_input nh_form_input" %>
-      <label>Password</label> 
-      <%= password_field_tag 'password', nil, tabindex: 2, :class=>"login_input nh_form_input" %>
-
+      <fieldset>
+       <label>Username</label> 
+       <%= text_field_tag 'username', nil, tabindex: 1, :class=>"login_input nh_form_input" %>
+      </fieldset>
+      <fieldset>
+        <label>Password</label> 
+        <%= password_field_tag 'password', nil, tabindex: 2, :class=>"login_input nh_form_input" %>
+      </fieldset>
       <%= submit_tag  "Sign in", :class => 'btn-solid-primary' %>
 
       <%= link_to "Forgot your password?", request_password_nh_session_path, :class => "btn-text-primary" %>

@@ -10,8 +10,11 @@
   ├── SPACE
   ├── TRANSITIONS
   ├── BUTTONS
-  ├── INPUTS
+  ├── FORMS
+  ├── TABLES
+  ├── TOOLBAR
   ├── PAGES
+    ├── BASE
     ├── SESSIONS
     ├── WELCOME
   └── 
@@ -394,6 +397,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   outline: none;
   transition: $TRANSITION_HOVER_OFF;
   text-decoration: none;
+  justify-content: center;
 
   &:hover {
     cursor: pointer;
@@ -573,22 +577,62 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 
 /*
 =============================================================
-| INPUTS
+| FORMS
 =============================================================
 */
 
-@mixin form {
-  @include p(2);
+@mixin form-layout() {
+  @include py(4);
+  @include px(4);
+  @media (min-width: $BREAKPOINT_SM) {
+    @include px(7);
+  }
+  @media (min-width: $BREAKPOINT_MD) {
+    padding-left: 15%;
+    padding-right: 15%;
+  }
+  @media (min-width: $BREAKPOINT_LG) {
+    padding-left: 20%;
+    padding-right: 20%;
+  }
+}
+
+@mixin form($theme: "secondary") {
   @include title("sm");
+  > * {
+    @include form-layout();
+  }
+
+  width: 100%;
+  left: 0;
   background: $DEFAULT_BG;
+
+  fieldset {
+    @include field($theme);
+  }
 }
 
 @mixin field($theme: "default") {
   @include title("xs");
-  @include pt(2);
   display: flex;
   flex-direction: column;
-
+  label {
+    @include label();
+  }
+  select {
+    @include select($theme);
+  }
+  input:not([type="submit"]) {
+    @include input($theme);
+  }
+  textarea {
+    @include textarea($theme);
+  }
+  &:hover,
+  &:focus-within {
+    background: $DEFAULT_WASH;
+    border-radius: 4px;
+  }
   &:focus-within {
     label {
       @include label($theme);
@@ -597,7 +641,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
       @include input($theme);
     }
     textarea {
-      @include input($theme);
+      @include textarea($theme);
     }
   }
 }
@@ -609,6 +653,9 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   @if $theme == "secondary" {
     color: $SECONDARY_TEXT;
   }
+  @if $theme == "primary" {
+    color: $PRIMARY_TEXT;
+  }
 }
 
 @mixin input($theme: "default") {
@@ -616,14 +663,30 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   @include p(1);
   @include text("sm");
   width: 100%;
-  border: 1px solid $DEFAULT_DISABLED;
-  border-radius: 2px;
-  &:focus {
-    outline: auto $DEFAULT_DISABLED 5px;
-    border-color: $DEFAULT_WASH;
-    box-shadow: none;
-    @if $theme == "secondary" {
-      outline: auto $SECONDARY_ALT 5px;
+  background: none;
+  border: 1px solid $DEFAULT_WASH;
+
+  @if ($theme == "primary") {
+    border: 0;
+    border-bottom: 1px solid $DEFAULT_DISABLED;
+    border-radius: 2px;
+    outline: 0;
+
+    &:focus {
+      outline: 0;
+      border-color: $PRIMARY_ALT;
+      box-shadow: none;
+    }
+  }
+
+  @if ($theme == "secondary") {
+    border: 0;
+    border-bottom: 1px solid $DEFAULT_DISABLED;
+    border-radius: 2px;
+    outline: 0;
+
+    &:focus {
+      outline: 0;
       border-color: $SECONDARY_ALT;
       box-shadow: none;
     }
@@ -649,56 +712,56 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   }
 }
 
+@mixin textarea($theme: "default") {
+  @include input($theme);
+  border: 1px solid $DEFAULT_DISABLED;
+  &:focus {
+    outline: auto $DEFAULT_DISABLED 5px;
+    border-color: $DEFAULT_WASH;
+    box-shadow: none;
+
+    @if $theme == "secondary" {
+      outline: auto $SECONDARY_ALT 5px;
+      border-color: $SECONDARY_ALT;
+      box-shadow: none;
+    }
+  }
+}
+
 .nh_form {
-  @include form();
-  fieldset {
-    @include field("secondary");
-  }
-  select {
-    @include select("secondary");
-  }
-  textarea {
-    @include input("secondary");
-  }
-}
-
-.nh_form_title {
   @include title("sm");
-  @include pb(2);
-}
-
-.nh_form_label {
-  @include label();
-}
-
-.nh_form_field {
-  @include field();
-  &[data-secondary] {
-    @include field("secondary");
-  }
-}
-
-.nh_form_input {
-  @include input();
-}
-
-.nh_field_note {
-  @include text("xs");
-  @include pt(1);
-  font-style: italic;
-}
-
-.nh_select {
-  @include select();
-}
-
-.nh_form_button_section {
-  @include py(7);
-  @include mt(4);
+  @include shadow("low");
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: $DEFAULT_BG;
+  position: relative;
+
+  .nh_form_title {
+    @include form-layout;
+    @include title("sm");
+    @include pb(2);
+  }
+  form {
+    @include form("secondary");
+    .field_note {
+      @include text("xs");
+      @include pt(1);
+      font-style: italic;
+    }
+    .form_button_section {
+      @include py(7);
+      @include mt(4);
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: $DEFAULT_WASH;
+      flex-direction: column;
+      > * {
+        flex: 1;
+        width: 100%;
+      }
+    }
+  }
 }
 
 /*
@@ -707,8 +770,6 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 =============================================================
 */
 
-$TABLE_HEIGHT: 30;
-
 .nh_table_scroll {
   @include shadow("mid");
   position: relative;
@@ -716,8 +777,6 @@ $TABLE_HEIGHT: 30;
   z-index: 1;
   margin: auto;
   overflow: auto;
-  height: $TABLE_HEIGHT + rem;
-  max-height: -webkit-fill-available;
   flex: 1;
   table {
     width: 100%;
@@ -838,19 +897,24 @@ Base styles for all pages.
 * {
   box-sizing: border-box;
 }
+html {
+  height: 100%;
+  display: flex;
+}
 
 html,
 body {
   font-size: 16px;
   min-width: 18rem;
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
   flex: 1;
 }
 
 .nh_content {
   @include p(4);
+  position: relative;
+  flex: 1;
+  background: $DEFAULT_WASH;
+
   @media (min-width: $BREAKPOINT_SM) {
     @include p(7);
   }
@@ -860,19 +924,14 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
-  flex: 1;
   &[data-isLoggedIn="true"] {
     padding-top: $TOOLBAR_HEIGHT + rem;
     background: $DEFAULT_WASH;
-    > :first-child {
-      @extend .nh_content;
-    }
   }
 }
 
 .nh_titlebar {
   @include py(4);
-  flex: 1;
   display: flex;
   justify-content: space-between;
   .title {
@@ -910,20 +969,19 @@ body {
       display: flex;
       justify-content: center;
       flex-direction: column;
-      label {
-        @include title("xs");
-        text-transform: uppercase;
-        color: $DEFAULT_DK;
-      }
-
-      .login_input,
-      .login_input:focus {
+      fieldset {
+        @include field("primary");
         @include mb(4);
-        @include p(2);
-        @include text("sm");
-
-        border-color: $DEFAULT_WASH;
-        box-shadow: none;
+        &:hover,
+        &:focus-within {
+          background: none;
+        }
+        label {
+          text-transform: uppercase;
+        }
+      }
+      input[type="submit"] {
+        @include mt(4);
       }
     }
   }
@@ -1007,16 +1065,7 @@ body {
   flex: 1;
   .nh_logo {
     @include logo();
-  }
-  .nh_form {
-    @media (min-width: $BREAKPOINT_MD) {
-      padding-left: 15%;
-      padding-right: 15%;
-    }
-    @media (min-width: $BREAKPOINT_LG) {
-      padding-left: 20%;
-      padding-right: 20%;
-    }
+    @include mb(4);
   }
 }
 
@@ -1028,6 +1077,7 @@ body {
 
 #nh_projects {
   flex: 1;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
