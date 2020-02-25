@@ -22,14 +22,19 @@
 #
 -%>
 
-<% title 'Edit Project' %>
+<% title 'New Invitation'%>
 
-<%= error_messages_for @nh_project, :header_message => "Project could not be updated." %>
+<%= error_messages_for @nh_invitation, :header_message => "Invitation could not be created." %>
 
-<%= link_to "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id) %>
-
-
-<div class="nh_form" data-secondary="true">
-    <p class="nh_form_title">Edit Project</p>
-    <%= render :partial => 'form_for', :locals => {:action => :update} %>
-</div>
+<div class="nh_form">
+  <%= form_with model: @nh_invitation, url: { action: "create" } do |f| %>
+    <fieldset>
+      <%= f.label :email, "Email", :class=>"nh_form_label"%>
+      <%= f.text_field :email,:class=>"nh_form_input"  %>
+    <end>
+    <%= hidden_field_tag "nh_project_id", @nh_project_id %>
+    <div class="nh_form_button_section">
+      <%= f.submit "Invite", :class=>"btn-solid-secondary" %>
+    </div>
+  <% end %>
+</end>

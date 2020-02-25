@@ -266,6 +266,9 @@ Rails.application.routes.draw do
     # Temporary development route
     get   '/reboot',         :controller => :neurohub_portal, :action => :reboot
 
+    #Invitations
+    resources :nh_invitations, :only => [ :new, :create ]
+
     # Sessions
     resource  :nh_session,   :only => [ :new, :create, :destroy ] do
       collection do
