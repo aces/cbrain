@@ -38,6 +38,10 @@
       </fieldset>
       <%= submit_tag  "Sign in", :class => 'btn-solid-primary' %>
 
+      <% if @orcid_uri %>
+        <%= link_to "Login with your ORCID account", @orcid_uri, :class => "btn-text-primary" %>
+      <% end %>
+
       <%= link_to "Forgot your password?", request_password_nh_session_path, :class => "btn-text-primary" %>
 
     <% end %>

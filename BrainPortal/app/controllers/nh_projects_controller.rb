@@ -47,7 +47,7 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def index  #:nodoc:
-    @nh_projects = current_user.available_groups.includes(:site).where(:type => WorkGroup)
+    @nh_projects = current_user.available_groups.where(:type => 'WorkGroup')
   end
 
   def edit #:nodoc:
@@ -61,7 +61,7 @@ class NhProjectsController < NeurohubApplicationController
     success        = @nh_project.update_attributes_with_logging(attr_to_update,current_user)
 
     if success
-      redirect_to :action => :edit
+      redirect_to :action => :show
     else
       render :action => :edit
     end
@@ -70,14 +70,11 @@ class NhProjectsController < NeurohubApplicationController
 
   def show #:nodoc:
     @nh_project = find_nh_project(current_user, params[:id])
-    @users      = current_user.available_users.order(:login).reject { |u| u.class == CoreAdmin }
   end
 
   def files #:nodoc:
     @nh_project = find_nh_project(current_user, params[:id])
-    @files      =  @nh_project.userfiles
-
-    render :action => :files
+    @files      = @nh_project.userfiles
   end
 
 end
