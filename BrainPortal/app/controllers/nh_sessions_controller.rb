@@ -25,11 +25,32 @@ class NhSessionsController < NeurohubApplicationController
 
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
-  before_action :login_required,    :except => [ :new, :create, :request_password, :send_password ]
+  before_action :login_required,    :except => [ :new, :create, :request_password, :send_password, :orcid ]
   before_action :already_logged_in, :except => [ :destroy ]
 
+  # ORCID authentication URL constants
+  ORCID_AUTHORIZE_URI = "https://orcid.org/oauth/authorize" # will be issued a GET with params
+  ORCID_TOKEN_URI     = "https://orcid.org/oauth/token"     # will be issued a POST with a single code
+
   def new #:nodoc:
-    # Nothing to do here now
+    myself              = RemoteResource.current_resource
+
+    # The following three values must be configured by the sysadmin
+    site_uri            = myself.site_url_prefix.presence.try(:strip)
+    orcid_client_id     = myself.meta[:orcid_client_id].presence.try(:strip)
+    orcid_client_secret = myself.meta[:orcid_client_secret].presence.try(:strip) # not used here but needed later
+
+    # We need all three in order to be allowed to use ORCID
+    return if site_uri.blank? || orcid_client_id.blank? || orcid_client_secret.blank?
+
+    # Created the URI to authenticate with ORCID
+    orcid_params = {
+             :client_id     => orcid_client_id,
+             :response_type => 'code',
+             :scope         => '/authenticate',
+             :redirect_uri  => orcid_url,
+    }
+    @orcid_uri = ORCID_AUTHORIZE_URI + '?' + orcid_params.to_query
   end
 
   # POST /nhsessions
@@ -42,10 +63,10 @@ class NhSessionsController < NeurohubApplicationController
       ok   = create_from_user(user)
       [ok, cbrain_session]
     end
-    @cbrain_session = new_cb_session # crush the session object that was created for the CarminController
+    @cbrain_session = new_cb_session # crush the session object that was created for the NhSessionsController
 
     if ! all_ok
-      redirect_to '/login'
+      redirect_to login_path
       return
     end
 
@@ -55,7 +76,7 @@ class NhSessionsController < NeurohubApplicationController
   # GET /logout
   def destroy
     reset_session
-    redirect_to '/login'
+    redirect_to login_path
   end
 
   def request_password #:nodoc:
@@ -64,12 +85,84 @@ class NhSessionsController < NeurohubApplicationController
   def send_password #:nodoc:
   end
 
+  def orcid #:nodoc:
+    code = params[:code].presence
+    if code.blank?
+      redirect_to login_path
+      return
+    end
+
+    myself              = RemoteResource.current_resource
+    site_uri            = myself.site_url_prefix.presence.try(:strip)
+    orcid_client_id     = myself.meta[:orcid_client_id].presence.try(:strip)
+    orcid_client_secret = myself.meta[:orcid_client_secret].presence.try(:strip) # not used here but needed later
+
+    if site_uri.blank? || orcid_client_id.blank? || orcid_client_secret.blank?
+      flash[:error] = 'ORCID authentication not configured on this service.'
+      redirect_to login_path
+      return
+    end
+
+    # Query ORCID, get a JSON record with an ORCID ID.
+    response = Typhoeus.post(ORCID_TOKEN_URI,
+      :body   => {
+                   :code          => code,
+                   :client_id     => orcid_client_id,
+                   :client_secret => orcid_client_secret,
+                   :grant_type    => 'authorization_code',
+                   :redirect_uri  => orcid_url, # is this needed?
+                 },
+      :headers => { :Accept       => 'application/json' }
+    )
+
+    # Extract the ORCID ID of the user
+    body  = response.response_body
+    json  = JSON.parse(body)
+    orcid = json['orcid'].presence || User.random_string # the random string will lead to 'no match'
+
+    # Find the users that have it. Hopefully, only one.
+    users = User.find_all_by_meta_data(:orcid, orcid)
+
+    if users.size == 0
+      flash[:error] = "No NeuroHub user matches your ORCID ID. Create a NeuroHub account, or add your ORCID ID to your account."
+      redirect_to login_path
+      return
+    elsif users.size > 1
+      flash[:notice] = "Several NeuroHub user accounts matches your ORCID ID. Using the most recently updated one."
+      users = [ users.sort_by(&:updated_at).last ]
+    end
+    user = users.first
+
+    # Login by hijacking CBRAIN's system
+    all_ok, new_cb_session = eval_in_controller(::SessionsController) do
+      ok  = create_from_user(user)
+      [ok, cbrain_session]
+    end
+    @cbrain_session = new_cb_session # crush the session object that was created for the NhSessionsController
+
+    if ! all_ok
+      redirect_to login_path
+      return
+    end
+
+    # All's good
+    user.addlog('Authenticated by ORCID')
+    redirect_to nh_projects_path
+    return
+
+  rescue => ex
+    clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
+    Rails.logger.info "ORCID auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
+    flash[:error] = 'The ORCID authentication failed'
+    redirect_to login_path
+  end
+
   private
 
   def already_logged_in
     if current_user
       respond_to do |format|
-        format.html { redirect_to "/welcome" }
+        format.html { redirect_to welcome_path }
       end
     end
   end

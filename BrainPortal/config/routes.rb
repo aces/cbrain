@@ -262,6 +262,8 @@ Rails.application.routes.draw do
     get   '/logout'                 => 'nh_sessions#destroy'
     get   '/myaccount'              => 'nh_users#myaccount'
 
+    # ORCID authentication
+    get   '/orcid'                  => 'nh_sessions#orcid'
 
     # Temporary development route
     get   '/reboot',         :controller => :neurohub_portal, :action => :reboot

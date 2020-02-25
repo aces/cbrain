@@ -10,12 +10,17 @@
   ├── SPACE
   ├── TRANSITIONS
   ├── BUTTONS
-  ├── INPUTS
+  ├── BANNERS
+  ├── ERRORS
+  ├── FORMS
+  ├── TABLES
+  ├── TOOLBAR
   ├── PAGES
+    ├── BASE
     ├── SESSIONS
-    ├── WELCOME
+    ├── SIGNUPS
+    ├── PROJECTS
   └── 
-*/
 
 /*
 =============================================================
@@ -148,6 +153,10 @@ $size    : xs, ssm, md, lg
 @mixin logo($variant: "wordmark", $color: "RGB", $size: "md") {
   @include logoImg($variant, $color);
   @if $variant != "icon" {
+    @if $size == "xs" {
+      width: 5rem;
+      height: 2rem;
+    }
     @if $size == "sm" {
       width: 8rem;
       height: 3rem;
@@ -180,14 +189,14 @@ $size    : xs, ssm, md, lg
   }
 }
 
-/*z
+/*
 =============================================================
 | PALETTE
 =============================================================
 */
 
 $DEFAULT_BG: #ffffff;
-$DEFAULT_WASH: #efefef;
+$DEFAULT_WASH: #f9fcfe;
 $DEFAULT_ALT: #787a7a;
 $DEFAULT_DK: #343434;
 $DEFAULT_TEXT: #000000;
@@ -204,6 +213,15 @@ $SECONDARY_WASH: #effafa;
 $SECONDARY_ALT: #00a1a0;
 $SECONDARY_DK: #003943;
 $SECONDARY_TEXT: #008484;
+
+$SUCCESS_BG: #51b83c;
+$SUCCESS_WASH: #bbe5b3;
+$SUCCESS_DK: #00663c;
+
+$ERROR_BG: #f07171;
+$ERROR_ALT: #e22f2f;
+$ERROR_WASH: #fcc2c2;
+$ERROR_DK: #85000c;
 
 /*
 =============================================================
@@ -390,6 +408,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   outline: none;
   transition: $TRANSITION_HOVER_OFF;
   text-decoration: none;
+  justify-content: center;
 
   &:hover {
     cursor: pointer;
@@ -542,24 +561,143 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   }
 }
 
+.btn-nav {
+  @extend .btn-text-default;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  color: $DEFAULT_ALT;
+}
+
+.btn-nav-primary {
+  @extend .btn-nav;
+  &:hover {
+    background: $PRIMARY_WASH;
+    border-color: $PRIMARY_BG;
+    color: $PRIMARY_BG;
+  }
+}
+
+.btn-nav-secondary {
+  @extend .btn-nav;
+  &:hover {
+    background: $SECONDARY_WASH;
+    border-color: $SECONDARY_BG;
+    color: $SECONDARY_BG;
+  }
+}
+
 /*
 =============================================================
-| INPUTS
+| BANNERS
+=============================================================
+$variant : error, notice
+*/
+
+@mixin banner($variant: "error") {
+  @include p(2);
+  @include text("sm");
+  @include shadow("low");
+  width: 100%;
+  @if ($variant == "notice") {
+    background-color: $SUCCESS_WASH;
+    border: 1px solid $SUCCESS_BG;
+    color: $SUCCESS_DK;
+  }
+  @if ($variant == "error") {
+    background-color: $ERROR_WASH;
+    border: 1px solid $ERROR_BG;
+    color: $ERROR_DK;
+  }
+}
+
+.flash-error {
+  @include banner("error");
+  @include px(7);
+}
+
+.flash-notice {
+  @include banner("notice");
+  @include px(7);
+}
+
+/*
+=============================================================
+| ERRORS
 =============================================================
 */
 
-@mixin form {
-  @include p(2);
+.errorExplanation {
+  @include banner("error");
+  h2 {
+    font-weight: 700;
+  }
+  ul {
+    @include mx(4);
+    list-style: disc;
+    li {
+      @include mx(4);
+    }
+  }
+}
+
+/*
+=============================================================
+| FORMS
+=============================================================
+*/
+
+@mixin form-layout() {
+  @include py(4);
+  @include px(4);
+  @media (min-width: $BREAKPOINT_SM) {
+    @include px(7);
+  }
+  @media (min-width: $BREAKPOINT_MD) {
+    padding-left: 15%;
+    padding-right: 15%;
+  }
+  @media (min-width: $BREAKPOINT_LG) {
+    padding-left: 20%;
+    padding-right: 20%;
+  }
+}
+
+@mixin form($theme: "secondary") {
   @include title("sm");
+  > * {
+    @include form-layout();
+  }
+
+  width: 100%;
+  left: 0;
   background: $DEFAULT_BG;
+
+  fieldset {
+    @include field($theme);
+  }
 }
 
 @mixin field($theme: "default") {
   @include title("xs");
-  @include pt(2);
   display: flex;
   flex-direction: column;
-
+  label {
+    @include label();
+  }
+  select {
+    @include select($theme);
+  }
+  input:not([type="submit"]) {
+    @include input($theme);
+  }
+  textarea {
+    @include textarea($theme);
+  }
+  &:hover,
+  &:focus-within {
+    background: $DEFAULT_WASH;
+    border-radius: 4px;
+  }
   &:focus-within {
     label {
       @include label($theme);
@@ -568,7 +706,7 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
       @include input($theme);
     }
     textarea {
-      @include input($theme);
+      @include textarea($theme);
     }
   }
 }
@@ -577,8 +715,19 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   @include mt(1);
   @include title("xs");
   color: $DEFAULT_DK;
+
   @if $theme == "secondary" {
     color: $SECONDARY_TEXT;
+  }
+  @if $theme == "primary" {
+    color: $PRIMARY_TEXT;
+  }
+  &[data-required] {
+    position: relative;
+    &:after {
+      content: "*";
+      position: absolute;
+    }
   }
 }
 
@@ -587,14 +736,30 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   @include p(1);
   @include text("sm");
   width: 100%;
-  border: 1px solid $DEFAULT_DISABLED;
-  border-radius: 2px;
-  &:focus {
-    outline: auto $DEFAULT_DISABLED 5px;
-    border-color: $DEFAULT_WASH;
-    box-shadow: none;
-    @if $theme == "secondary" {
-      outline: auto $SECONDARY_ALT 5px;
+  background: none;
+  border: 1px solid $DEFAULT_WASH;
+
+  @if ($theme == "primary") {
+    border: 0;
+    border-bottom: 1px solid $DEFAULT_DISABLED;
+    border-radius: 2px;
+    outline: 0;
+
+    &:focus {
+      outline: 0;
+      border-color: $PRIMARY_ALT;
+      box-shadow: none;
+    }
+  }
+
+  @if ($theme == "secondary") {
+    border: 0;
+    border-bottom: 1px solid $DEFAULT_DISABLED;
+    border-radius: 2px;
+    outline: 0;
+
+    &:focus {
+      outline: 0;
       border-color: $SECONDARY_ALT;
       box-shadow: none;
     }
@@ -620,56 +785,71 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   }
 }
 
+@mixin textarea($theme: "default") {
+  @include input($theme);
+  border: 1px solid $DEFAULT_DISABLED;
+  &:focus {
+    outline: auto $DEFAULT_DISABLED 5px;
+    border-color: $DEFAULT_WASH;
+    box-shadow: none;
+
+    @if $theme == "secondary" {
+      outline: auto $SECONDARY_ALT 5px;
+      border-color: $SECONDARY_ALT;
+      box-shadow: none;
+    }
+  }
+}
+
 .nh_form {
-  @include form();
-  fieldset {
-    @include field("secondary");
-  }
-  select {
-    @include select("secondary");
-  }
-  textarea {
-    @include input("secondary");
-  }
-}
-
-.nh_form_title {
   @include title("sm");
-  @include pb(2);
-}
+  @include shadow("low");
+  width: 100%;
+  background: $DEFAULT_BG;
+  position: relative;
 
-.nh_form_label {
-  @include label();
-}
-
-.nh_form_field {
-  @include field();
-  &[data-secondary] {
-    @include field("secondary");
+  .nh_form_title {
+    @include form-layout;
+    @include title("sm");
+    @include pb(2);
+  }
+  form {
+    @include form("secondary");
+    .field_note {
+      @include text("xs");
+      @include pt(1);
+      font-style: italic;
+    }
+    .form_button_section {
+      @include py(7);
+      @include mt(4);
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: $DEFAULT_WASH;
+      flex-direction: column;
+      > * {
+        flex: 1;
+        width: 100%;
+      }
+    }
   }
 }
 
-.nh_form_input {
-  @include input();
-}
-
-.nh_field_note {
-  @include text("xs");
-  @include pt(1);
-  font-style: italic;
-}
-
-.nh_select {
-  @include select();
-}
-
-.nh_form_button_section {
-  @include py(7);
-  @include mt(4);
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.field_with_errors {
+  label {
+    color: $ERROR_ALT !important;
+    position: relative;
+    &:after {
+      content: "*";
+      position: absolute;
+    }
+  }
+  input {
+    color: $ERROR_BG !important;
+    border-color: $ERROR_BG !important;
+  }
 }
 
 /*
@@ -678,8 +858,6 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 =============================================================
 */
 
-$TABLE_HEIGHT: 30;
-
 .nh_table_scroll {
   @include shadow("mid");
   position: relative;
@@ -687,8 +865,6 @@ $TABLE_HEIGHT: 30;
   z-index: 1;
   margin: auto;
   overflow: auto;
-  height: $TABLE_HEIGHT + rem;
-  max-height: -webkit-fill-available;
   flex: 1;
   table {
     width: 100%;
@@ -769,71 +945,35 @@ th:first-child {
   border-radius: 0px;
 }
 
-// .nh_table_wrapper {
-//   @include shadow("mid");
+/*
+=============================================================
+| TOOLBAR
+=============================================================
+*/
 
-//   .nh_table {
-//     width: 100%;
-//     background: $DEFAULT_BG;
-//     border-radius: 4px;
-//     thead {
-//       @include shadow("xlow");
-//       tr {
-//         display: flex;
-//         th {
-//           @include text-button($DEFAULT_ALT, 1, "sm");
-//           @include px(5);
-//           @include py(2);
-//           text-transform: capitalize;
-//           flex: 1;
-//           background: $DEFAULT_BG;
-//           text-align: left;
-//         }
-//       }
-//     }
+$TOOLBAR_HEIGHT: 3.5;
+$TOOLBAR_ZINDEX: 1000;
 
-//     tbody {
-//       display: block;
-//       overflow: auto;
-//       overflow-x: hidden;
-//       width: 100%;
-//       height: $TABLE_HEIGHT + rem;
-//     }
-//   }
-// }
-
-// .nh_actions {
-//   background: $DEFAULT_BG;
-//   display: flex;
-// }
-
-// .nh_action {
-//   border-radius: 0px !important;
-// }
-
-// .nh_table_tr {
-//   display: flex;
-
-//   td {
-//     @include text("sm");
-//     @include px(5);
-//     @include py(2);
-//     flex: 1;
-//     color: $DEFAULT_ALT;
-//     text-decoration: none;
-//     border-bottom: 2px solid $DEFAULT_WASH;
-//     position: relative;
-//     &[data-type="link"] {
-//       a {
-//         text-transform: none;
-//         position: absolute;
-//         left: 0;
-//         top: 0;
-//         width: 100%;
-//       }
-//     }
-//   }
-// }
+#nh_toolbar {
+  @include shadow("mid");
+  display: flex;
+  align-items: center;
+  position: fixed;
+  width: 100%;
+  height: $TOOLBAR_HEIGHT + rem;
+  background: $DEFAULT_BG;
+  z-index: $TOOLBAR_ZINDEX;
+  .nh_toolbar_logo {
+    @include logo("lettermark", "RGB", "xs");
+    @include mx(4);
+  }
+  .nh_toolbar_buttons {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
 
 /*
 =============================================================
@@ -842,48 +982,27 @@ th:first-child {
 Base styles for all pages.
 */
 
-$TOOLBAR_HEIGHT: 3.5;
-$TOOLBAR_ZINDEX: 1000;
-
 * {
   box-sizing: border-box;
+}
+html {
+  height: 100%;
+  display: flex;
 }
 
 html,
 body {
   font-size: 16px;
   min-width: 18rem;
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
   flex: 1;
-}
-
-#nh_toolbar {
-  @include shadow("xlow");
-  display: flex;
-  align-items: center;
-  position: fixed;
-  width: 100%;
-  height: $TOOLBAR_HEIGHT + rem;
-  background: $DEFAULT_BG;
-  z-index: $TOOLBAR_ZINDEX;
-  .logo {
-    @include logo(icon, RGB);
-    @include mx(4);
-    width: space(7);
-    height: space(7);
-  }
-  .nav_buttons {
-    flex: 1;
-    height: 100%;
-    display: flex;
-    justify-content: flex-end;
-  }
 }
 
 .nh_content {
   @include p(4);
+  position: relative;
+  flex: 1;
+  background: $DEFAULT_WASH;
+
   @media (min-width: $BREAKPOINT_SM) {
     @include p(7);
   }
@@ -893,19 +1012,14 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
-  flex: 1;
   &[data-isLoggedIn="true"] {
     padding-top: $TOOLBAR_HEIGHT + rem;
     background: $DEFAULT_WASH;
-    > :first-child {
-      @extend .nh_content;
-    }
   }
 }
 
 .nh_titlebar {
   @include py(4);
-  flex: 1;
   display: flex;
   justify-content: space-between;
   .title {
@@ -943,20 +1057,19 @@ body {
       display: flex;
       justify-content: center;
       flex-direction: column;
-      label {
-        @include title("xs");
-        text-transform: uppercase;
-        color: $DEFAULT_DK;
-      }
-
-      .login_input,
-      .login_input:focus {
+      fieldset {
+        @include field("primary");
         @include mb(4);
-        @include p(2);
-        @include text("sm");
-
-        border-color: $DEFAULT_WASH;
-        box-shadow: none;
+        &:hover,
+        &:focus-within {
+          background: none;
+        }
+        label {
+          text-transform: uppercase;
+        }
+      }
+      input[type="submit"] {
+        @include mt(4);
       }
     }
   }
@@ -1040,16 +1153,7 @@ body {
   flex: 1;
   .nh_logo {
     @include logo();
-  }
-  .nh_form {
-    @media (min-width: $BREAKPOINT_MD) {
-      padding-left: 15%;
-      padding-right: 15%;
-    }
-    @media (min-width: $BREAKPOINT_LG) {
-      padding-left: 20%;
-      padding-right: 20%;
-    }
+    @include mb(4);
   }
 }
 
@@ -1061,6 +1165,7 @@ body {
 
 #nh_projects {
   flex: 1;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }

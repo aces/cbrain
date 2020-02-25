@@ -26,21 +26,9 @@
 
 <%= link_to 'Edit', {:action => :edit, :id => @nh_project.id}, :method  => :get %>
 
-
-<% unless @nh_project.is_a?(WorkGroup) %>
-  <div>
-
-    <%# For future usage & just in the case%>
-    You should not access this page, these groups are not yet fully supported in NeuroHub
-
-  </div>
-<% end %>
-
 <h2>Project Info</h2>
 
 <P>
-
-  <%= error_messages_for @nh_projects, :header_message => "Project cannot be shown." %>
 
   <div>
 
