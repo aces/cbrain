@@ -3,9 +3,9 @@
 /*
   LEGEND
   ├── BREAKPOINTS
+  ├── PALETTE
   ├── FONTS
   ├── LOGOS
-  ├── PALETTE
   ├── SHADOWS
   ├── SPACE
   ├── TRANSITIONS
@@ -32,6 +32,43 @@ $BREAKPOINT_XS: 20em; // 320px
 $BREAKPOINT_SM: 30em; // 480px
 $BREAKPOINT_MD: 48em; // 768px
 $BREAKPOINT_LG: 64em; // 1024px
+
+/*
+=============================================================
+| PALETTE
+=============================================================
+*/
+
+$DEFAULT_BG: #ffffff;
+$DEFAULT_WASH: #f9fcfe;
+$DEFAULT_ALT: #787a7a;
+$DEFAULT_DK: #343434;
+$DEFAULT_TEXT: #000000;
+$DEFAULT_DISABLED: #e5e5e5;
+
+$PRIMARY_BG: #ff0000;
+$PRIMARY_WASH: #ffeeee;
+$PRIMARY_ALT: #e8182b;
+$PRIMARY_DK: #9b0000;
+$PRIMARY_TEXT: #b91f20;
+
+$SECONDARY_BG: #25bfc1;
+$SECONDARY_WASH: #effafa;
+$SECONDARY_ALT: #00a1a0;
+$SECONDARY_DK: #003943;
+$SECONDARY_TEXT: #008484;
+
+$SUCCESS_BG: #51b83c;
+$SUCCESS_WASH: #bbe5b3;
+$SUCCESS_DK: #00663c;
+
+$ERROR_BG: #f07171;
+$ERROR_ALT: #e22f2f;
+$ERROR_WASH: #fcc2c2;
+$ERROR_DK: #85000c;
+
+$ORCID_BG: #31789b;
+$ORCID_ALT: #a6ce39;
 
 /*
 =============================================================
@@ -135,6 +172,48 @@ $variant : xs, sm, md, lg, xl.
   @include text("xl");
 }
 
+.text-default {
+  color: $DEFAULT_TEXT;
+}
+
+.text-alt {
+  color: $DEFAULT_DK;
+}
+
+.text-reverse {
+  color: $DEFAULT_BG;
+}
+
+.text-primary {
+  color: $PRIMARY_TEXT;
+}
+
+.text-secondary {
+  color: $SECONDARY_TEXT;
+}
+
+/*
+=============================================================
+| LAYOUT
+=============================================================
+A few shortcut often-used alignment classes.
+*/
+
+.d-flex {
+  display: flex;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.text-center {
+  text-align: center;
+}
 /*
 =============================================================
 | LOGOS
@@ -188,40 +267,6 @@ $size    : xs, ssm, md, lg
     }
   }
 }
-
-/*
-=============================================================
-| PALETTE
-=============================================================
-*/
-
-$DEFAULT_BG: #ffffff;
-$DEFAULT_WASH: #f9fcfe;
-$DEFAULT_ALT: #787a7a;
-$DEFAULT_DK: #343434;
-$DEFAULT_TEXT: #000000;
-$DEFAULT_DISABLED: #e5e5e5;
-
-$PRIMARY_BG: #ff0000;
-$PRIMARY_WASH: #ffeeee;
-$PRIMARY_ALT: #e8182b;
-$PRIMARY_DK: #9b0000;
-$PRIMARY_TEXT: #b91f20;
-
-$SECONDARY_BG: #25bfc1;
-$SECONDARY_WASH: #effafa;
-$SECONDARY_ALT: #00a1a0;
-$SECONDARY_DK: #003943;
-$SECONDARY_TEXT: #008484;
-
-$SUCCESS_BG: #51b83c;
-$SUCCESS_WASH: #bbe5b3;
-$SUCCESS_DK: #00663c;
-
-$ERROR_BG: #f07171;
-$ERROR_ALT: #e22f2f;
-$ERROR_WASH: #fcc2c2;
-$ERROR_DK: #85000c;
 
 /*
 =============================================================
@@ -424,6 +469,18 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   border: 1px solid;
   &:hover {
     @include shadow("mid");
+  }
+}
+
+.btn-solid-orcid {
+  @extend .btn-solid;
+  background-color: $ORCID_BG;
+  border-color: $ORCID_BG;
+  color: $DEFAULT_BG;
+  &:hover {
+    background-color: $ORCID_ALT;
+    border-color: $ORCID_ALT;
+    color: $DEFAULT_BG;
   }
 }
 
@@ -850,6 +907,16 @@ $variant : error, notice
     color: $ERROR_BG !important;
     border-color: $ERROR_BG !important;
   }
+}
+
+/*
+=============================================================
+| CARDS
+=============================================================
+*/
+.Card {
+  @include shadow("mid");
+  background: $DEFAULT_BG;
 }
 
 /*
