@@ -262,7 +262,7 @@ Rails.application.routes.draw do
     get   '/logout'                 => 'nh_sessions#destroy'
     get   '/myaccount'              => 'nh_users#myaccount'
 
-    # ORCID anthentication
+    # ORCID authentication
     get   '/orcid'                  => 'nh_sessions#orcid'
 
     # Temporary development route
