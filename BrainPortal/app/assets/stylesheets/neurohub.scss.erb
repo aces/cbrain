@@ -13,6 +13,7 @@
   ├── BANNERS
   ├── ERRORS
   ├── FORMS
+  ├── CARDS
   ├── TABLES
   ├── TOOLBAR
   ├── PAGES
@@ -20,6 +21,7 @@
     ├── SESSIONS
     ├── SIGNUPS
     ├── PROJECTS
+    ├── USERS
   └── 
 
 /*
@@ -661,14 +663,15 @@ $variant : error, notice
   }
 }
 
-.flash-error {
+.flash_error {
   @include banner("error");
   @include px(7);
 }
 
-.flash-notice {
+.flash_notice {
   @include banner("notice");
   @include px(7);
+  z-index: 1000;
 }
 
 /*
@@ -1117,6 +1120,7 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
   &[data-isLoggedIn="true"] {
     padding-top: $TOOLBAR_HEIGHT + rem;
     background: $DEFAULT_WASH;
@@ -1273,4 +1277,22 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+/*
+=============================================================
+| USERS
+=============================================================
+*/
+
+$CARD_ITEM_MAX_WIDTH: 13;
+
+#nh_users_show {
+  .card {
+    .card-row[data-max-size] {
+      .card-item {
+        flex: 0 1 $CARD_ITEM_MAX_WIDTH + rem;
+      }
+    }
+  }
 }
