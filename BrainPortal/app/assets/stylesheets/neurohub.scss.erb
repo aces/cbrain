@@ -70,6 +70,10 @@ $ERROR_DK: #85000c;
 $ORCID_BG: #31789b;
 $ORCID_ALT: #a6ce39;
 
+.default-dk {
+  color: $DEFAULT_DK;
+}
+
 /*
 =============================================================
 | FONTS
@@ -81,7 +85,12 @@ $variant : xs, sm, md, lg, xl.
   font-family: "system-ui", sans-serif;
   font-weight: 600;
   line-height: 1.5;
+  -webkit-font-smoothing: auto;
+  letter-spacing: 0;
 
+  @if $variant == "xxs" {
+    font-size: 0.75rem;
+  }
   @if $variant == "xs" {
     font-size: 0.875rem;
   }
@@ -100,9 +109,11 @@ $variant : xs, sm, md, lg, xl.
 }
 
 @mixin text($variant) {
-  font-family: "Open Sans", sans-serif;
+  font-family: "system-ui", sans-serif;
   font-weight: 400;
   line-height: 1.5;
+  -webkit-font-smoothing: auto;
+  letter-spacing: 0;
 
   @if $variant == "xs" {
     font-size: 0.75rem;
@@ -170,26 +181,6 @@ $variant : xs, sm, md, lg, xl.
 
 .text-xl {
   @include text("xl");
-}
-
-.text-default {
-  color: $DEFAULT_TEXT;
-}
-
-.text-alt {
-  color: $DEFAULT_DK;
-}
-
-.text-reverse {
-  color: $DEFAULT_BG;
-}
-
-.text-primary {
-  color: $PRIMARY_TEXT;
-}
-
-.text-secondary {
-  color: $SECONDARY_TEXT;
 }
 
 /*
@@ -467,8 +458,11 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   @include shadow("low");
   border-radius: 4px;
   border: 1px solid;
+  transition: $TRANSITION_HOVER_OFF;
+
   &:hover {
     @include shadow("mid");
+    transition: $TRANSITION_HOVER_ON;
   }
 }
 
@@ -770,8 +764,9 @@ $variant : error, notice
 
 @mixin label($theme: "default") {
   @include mt(1);
-  @include title("xs");
-  color: $DEFAULT_DK;
+  @include title("xxs");
+  color: $DEFAULT_ALT;
+  text-transform: uppercase;
 
   @if $theme == "secondary" {
     color: $SECONDARY_TEXT;
@@ -795,6 +790,7 @@ $variant : error, notice
   width: 100%;
   background: none;
   border: 1px solid $DEFAULT_WASH;
+  cursor: pointer;
 
   @if ($theme == "primary") {
     border: 0;
@@ -913,10 +909,51 @@ $variant : error, notice
 =============================================================
 | CARDS
 =============================================================
+Cards used for simple "show"-type views
 */
-.Card {
+
+.card {
   @include shadow("mid");
   background: $DEFAULT_BG;
+  .card-row {
+    @include px(4);
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 1px solid $DEFAULT_DISABLED;
+
+    .card-item {
+      @include text("sm");
+      @include p(2);
+      display: flex;
+      flex: 1;
+      .card-stat {
+        @include title("lg");
+        @include ml(4);
+        line-height: normal;
+      }
+      .card-icon {
+        @include m(2);
+        width: 2rem;
+        height: 2rem;
+      }
+      .card-label {
+        @include label();
+      }
+      .card-text {
+        @include mx(2);
+      }
+      &[href] {
+        @include text("sm");
+        display: flex;
+        justify-content: flex-start;
+        text-align: start;
+        .card-label {
+          color: inherit;
+        }
+      }
+    }
+  }
 }
 
 /*
@@ -1004,6 +1041,7 @@ th:first-child {
 }
 
 .nh_actions {
+  @include shadow("mid");
   background: $DEFAULT_BG;
   display: flex;
 }

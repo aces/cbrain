@@ -23,19 +23,97 @@
 
 <% title "Account Info" %>
 
-<br>
-<div>
-    Login:        <%= @user.login  %>     <br>
-    Name:         <%= @user.full_name  %> <br>
-    Position:     <%= @user.position %>   <br>
-    Affiliation:  <%= @user.affiliation %><br>
-    City:         <%= @user.city %>       <br>
-    Country:      <%= @user.country %>    <br>
-    Email:        <%= @user.email %>      <br>
-    Last visit:   <%= @user.last_connected_at ? "#{to_localtime(@user.last_connected_at,
-      :datetime)} (#{pretty_elapsed(Time.now - @user.last_connected_at, :num_components => 3)} ago)" : "(Never)" %>
-    <br>
-    Files size:   <%= colored_pretty_size @user.userfiles.sum(:size) %> <br>
-    File count:   <%= @user.userfiles.count %>
+<div id="nh_account" class="nh_content">
+  <div class="card">
+    <div class="card-row p-4"> 
+      <div class="card-item">
+        <img class="card-icon" src="/images/neurohub/wireframe-black.png"/>
+        <div class="card-stat">
+          <p><%= colored_pretty_size @user.userfiles.sum(:size) %></p>
+          <p class="card-label">Files Size</p>
+        </div>
+      </div>
+      <div class="card-item">
+        <img class="card-icon" src="/images/neurohub/wireframe-black.png"/>
+        <div class="card-stat">
+          <p><%= @user.userfiles.count %></p>
+          <p class="card-label">Files</p>
+        </div>
+      </div>
+    </div>
 
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Login</p>
+          <p class="card-text"><%= @user.login %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Name</p>
+          <p class="card-text"><%= @user.full_name %></p>
+        </div>
+      </div>
+    </div>
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Position</p>
+          <p class="card-text"><%= @user.position%></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Affiliation</p>
+          <p class="card-text"><%= @user.affiliation %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">City</p>
+          <p class="card-text"><%= @user.city %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Country</p>
+          <p class="card-text"><%= @user.country %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Email</p>
+          <p class="card-text"><%= @user.email %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Last Visit</p>
+          <p class="card-text"><%= @user.last_connected_at ? "#{to_localtime(@user.last_connected_at,
+          :datetime)} (#{pretty_elapsed(Time.now - @user.last_connected_at, :num_components => 3)} ago)" : "(Never)" %></p>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
+

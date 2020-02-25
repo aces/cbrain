@@ -24,58 +24,95 @@
 
 <% title "Project Info" %>
 
-<%= link_to 'Edit', {:action => :edit, :id => @nh_project.id}, :method  => :get %>
+<div id="nh_show_project" class="nh_content"> 
+  <div class="nh_actions">
+    <%= link_to 'Edit', {:action => :edit, :id => @nh_project.id}, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
+  </div>
+  <div class="card">
+    <%
+      group_members  = @nh_project.users
+      open_invites   = Invitation.where(sender_id: current_user.id, group_id: @nh_project.id, active: true)
+    %>
+    <div class="card-row p-4">
+      <%= link_to(files_nh_project_path(@nh_project.id), :class=>"btn-text-secondary card-item") do%>
+          <img class="card-icon" src="/images/neurohub/wireframe-black.png"/>
+          <div class="card-stat">
+            <p><%= @nh_project.userfiles.count %></p>
+            <p class="card-label">Files</p>
+          </div>
+      <% end %>
+      <div class="card-item">
+        <img class="card-icon" src="/images/neurohub/wireframe-black.png"/>
+        <div class="card-stat">
+          <p><%= @nh_project.cbrain_tasks.count %></p>
+          <p class="card-label">Tasks</p>
+        </div>
+      </div>
 
+      <div class="card-item">
+        <img class="card-icon" src="/images/neurohub/wireframe-black.png"/>
+        <div class="card-stat">
+          <p><%= group_members.count %></p>
+          <p class="card-label">Members</p>
+        </div>
+      </div>
 
-<% unless @nh_project.is_a?(WorkGroup) %>
-  <div>
+      <div class="card-item">
+        <img class="card-icon" src="/images/neurohub/wireframe-black.png"/>
+        <div class="card-stat">
+          <p><%= open_invites.count %></p>
+          <p class="card-label">Pending Invites</p>
+        </div>
+      </div>
+    </div>
 
-    <%# For future usage & just in the case%>
-    You should not access this page, these groups are not yet fully supported in NeuroHub
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Name</p>
+          <p class="card-text"><%= @nh_project.name %></p>
+        </div>
+      </div>
+    </div>
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Maintainer</p>
+          <p class="card-text"><%= @nh_project.creator.name %></p>
+        </div>
+      </div>
+    </div>
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Type</p>
+          <p class="card-text"><%= @nh_project.pretty_category_name(current_user) %></p>
+        </div>
+      </div>
+    </div>
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Description</p>
+          <p class="card-text"><%= @nh_project.description %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Members</p>
+          <ul>
+            <% group_members.each do |member| %>
+                <li class="card-text"><%= member.name %> </li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
 
   </div>
-<% end %>
-
-<h2>Project Info</h2>
-
-<P>
-
-  <%= error_messages_for @nh_projects, :header_message => "Project cannot be shown." %>
-
-  <div>
-
-     Name:                  <%= @nh_project.creator.name %> <br>
-     Maintainer:            <%= @nh_project.name %> <br>
-     Type:                  <%= @nh_project.pretty_category_name(current_user) %> <br>
-     Description:           <%= @nh_project.description %> <br>
-
-  </div>
-
-<%
-  group_members  = @nh_project.users
-  open_invites   = Invitation.where(sender_id: current_user.id, group_id: @nh_project.id, active: true)
-%>
-
-
-
-  <h2>Statistics</h2>
-
-     Files count:           <%= @nh_project.userfiles.count %> <br>
-     <%= link_to("Project files", files_nh_project_path(@nh_project.id)) %> <br>
-     Tasks count:           <%= @nh_project.cbrain_tasks.count %> <br>
-     Member count:          <%= group_members.count %> <br>
-     Pending Invites count: <%= open_invites.count %> <br>
-
-<div>
-  <h2>Members: </h2>
-
-  <ul>
-  <% group_members.each do |member| %>
-
-      <li><%= member.name %> </li>
-
-  <% end %>
-  </ul>
 </div>
 
 
