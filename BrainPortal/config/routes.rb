@@ -262,11 +262,14 @@ Rails.application.routes.draw do
     get   '/logout'                 => 'nh_sessions#destroy'
     get   '/myaccount'              => 'nh_users#myaccount'
 
-    # ORCID anthentication
+    # ORCID authentication
     get   '/orcid'                  => 'nh_sessions#orcid'
 
     # Temporary development route
     get   '/reboot',         :controller => :neurohub_portal, :action => :reboot
+
+    #Invitations
+    resources :nh_invitations, :only => [ :new, :create ]
 
     # Sessions
     resource  :nh_session,   :only => [ :new, :create, :destroy ] do

@@ -28,10 +28,9 @@ class NhSessionsController < NeurohubApplicationController
   before_action :login_required,    :except => [ :new, :create, :request_password, :send_password, :orcid ]
   before_action :already_logged_in, :except => [ :destroy ]
 
-  # ORCID authentication constants
-  # TODO: register an ORCID organization
-  ORCID_AUTHORIZE_URI = "https://sandbox.orcid.org/oauth/authorize" # will be issued GETs with params
-  ORCID_TOKEN_URI     = "https://sandbox.orcid.org/oauth/token"     # will be issued POSTs
+  # ORCID authentication URL constants
+  ORCID_AUTHORIZE_URI = "https://orcid.org/oauth/authorize" # will be issued a GET with params
+  ORCID_TOKEN_URI     = "https://orcid.org/oauth/token"     # will be issued a POST with a single code
 
   def new #:nodoc:
     myself              = RemoteResource.current_resource
@@ -147,6 +146,7 @@ class NhSessionsController < NeurohubApplicationController
     end
 
     # All's good
+    user.addlog('Authenticated by ORCID')
     redirect_to nh_projects_path
     return
 
