@@ -37,4 +37,10 @@ module NeurohubHelpers
     project
   end
 
+  # For the user +user+, this method will return
+  # neurohub projects ('available' groups of class WorkGroup)
+  def find_nh_projects(user)
+    current_user.available_groups.where(:type => 'WorkGroup')
+  end
+
 end
