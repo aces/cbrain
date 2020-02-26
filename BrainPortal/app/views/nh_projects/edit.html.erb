@@ -24,12 +24,12 @@
 
 <% title 'Edit Project' %>
 
-<%= error_messages_for @nh_project, :header_message => "Project could not be updated." %>
-
-<%= link_to "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id) %>
-
-<div class="nh_content"> 
+<div id="nh_projects_edit" class="nh_content"> 
+    <div class="nh_actions">
+        <%= link_to "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action"  %>
+    </div>
     <div class="nh_form"> 
+        <%= error_messages_for @nh_project, :header_message => "Project could not be updated." %>
         <p class="nh_form_title">Edit Project</p>
         <%= render :partial => 'form_for', :locals => {:action => :update} %>
     </div>

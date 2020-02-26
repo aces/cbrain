@@ -24,17 +24,19 @@
 
 <% title 'New Invitation'%>
 
-<%= error_messages_for @nh_invitation, :header_message => "Invitation could not be created." %>
-
-<div class="nh_form">
-  <%= form_tag nh_invitations_path, action: "create" do |f| %>
-    <fieldset>
-      <%= label :email, "Email"%>
-      <%= text_field_tag :email %>
-    <end>
-    <%= hidden_field_tag "nh_project_id", @nh_project_id %>
-    <div class="nh_form_button_section">
-      <%= submit_tag "Invite", :class=>"btn-solid-secondary" %>
-    </div>
-  <% end %>
-</end>
+<div id="nh_invitations_new" class="nh_content">
+  <div class="nh_form">
+    <%= error_messages_for @nh_invitation, :header_message => "Invitation could not be created." %>
+    <p class="nh_form_title">Add Users to</p>
+    <%= form_tag nh_invitations_path, action: "create" do |f| %>
+      <fieldset>
+        <%= label :email, "Email"%>
+        <%= text_field_tag :email %>
+      </fieldset>
+      <%= hidden_field_tag "nh_project_id", @nh_project_id %>
+      <div class="form_button_section">
+        <%= submit_tag "Invite", :class=>"btn-solid-secondary" %>
+      </div>
+    <% end %>
+  </end>
+</div>
