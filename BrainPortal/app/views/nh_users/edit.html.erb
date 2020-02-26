@@ -26,7 +26,7 @@
 
 <%= error_messages_for @user, :header_message => "User could not be updated." %>
 
-<div class="nh_content"> 
+<div id="nh_users_edit" class="nh_content"> 
     <div class="nh_form"> 
         <p class="nh_form_title">Edit Account of <%=@user.login %></p>
         <%= render :partial => 'form_for', :locals => {:action => :update} %>

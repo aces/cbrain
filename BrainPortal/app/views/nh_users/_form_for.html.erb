@@ -22,13 +22,9 @@
 #
 -%>
   <%= form_for @user, :as => :user, :url => { :action => action }, :datatype => "script" do |f| -%>
-
-  <div class="nh_form">
     <%= error_messages_for @user %>
     <%= form_for @user, :as => :user, :url => { :action =>  "update", :id => @user.id } do |f|%>
-      <div class="nh_form_title">
-        <p>Please, provide only up-to-date and correct info about yourself.</p>
-      </div>
+      <p class="field_note">Please, provide only up-to-date and correct info about yourself.</p>
 
       <fieldset >
         <%= f.label(:full_name, "Name") %>
@@ -48,7 +44,6 @@
         <%= f.label(:email, "Institutional email address") %>
         <%= f.text_field :email, :size => 60 %>
         <span class="field_note">Please indicate an email address from your research institution.
-
         </span>
 
       </fieldset>
@@ -62,6 +57,7 @@
         <%= f.label(:country, "Country") %>
         <%= f.text_field :country, :size => 30 %>
       </fieldset>
+
       <fieldset >
         <%= f.label(:time_zone, "Time Zone") %>
         <%= f.time_zone_select :time_zone,
@@ -80,12 +76,11 @@
         <%= f.label(:country, "Zenodo Sandbox Token") %>
         <%= f.password_field :zenodo_sandbox_token, :size => 30 %>
       </fieldset>
-    <% end %>
-    <div class="form_button_section">
-      <%= f.submit "#{action.to_s.capitalize}", :class=>"btn-solid-secondary" %>
-    </div>
+      <div class="form_button_section">
+        <%= f.submit "#{action.to_s.capitalize}", :class=>"btn-solid-secondary" %>
+      </div>
 
-
+      <% end %>
 <% end %>
 </div>
 
