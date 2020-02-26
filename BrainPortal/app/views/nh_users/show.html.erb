@@ -34,6 +34,8 @@
     City:         <%= @user.city %>       <br>
     Country:      <%= @user.country %>    <br>
     Email:        <%= @user.email %>      <br>
+    Orcid Sandbox id           <%= @user.meta['orcid_sandbox_id'] %><br>
+    Orcid id           <%= @user.meta['orcid_id'] %><br>
     Last visit:   <%= @user.last_connected_at ? "#{to_localtime(@user.last_connected_at,
       :datetime)} (#{pretty_elapsed(Time.now - @user.last_connected_at, :num_components => 3)} ago)" : "(Never)" %>
     <br>

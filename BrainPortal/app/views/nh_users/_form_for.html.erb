@@ -70,6 +70,17 @@
         %>
       </fieldset>
 
+      <fieldset>
+        <%= f.label(:orcid_sandbox_id, "Orcid Sandbox id") %>
+        <%= text_field_tag "meta[orcid_sandbox_id]", @user.meta['orcid_sandbox_id'], :size => 30 %><br />
+      </fieldset>
+
+
+      <fieldset>
+        <%= f.label(:orcid_id, "Orcid id") %>
+        <%= text_field_tag "meta[orcid_id]", @user.meta['orcid_id'], :size => 30 %><br />
+      </fieldset>
+
       <fieldset >
         <%= f.label(:country, "Zenodo Sandbox Token") %>
         <%= f.password_field :zenodo_sandbox_token, :size => 30 %>
