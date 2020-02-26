@@ -295,7 +295,7 @@ Rails.application.routes.draw do
     end
 
     # Users
-    resources :nh_users,     :only => [ :myaccount ]
+    resources :nh_users,     :only => [ :myaccount, :edit, :update]
   end
 
 end

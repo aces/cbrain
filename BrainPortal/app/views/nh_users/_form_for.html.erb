@@ -1,0 +1,86 @@
+
+<%-
+#
+# NeuroHub Project
+#
+# Copyright (C) 2020
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+-%>
+  <%= form_for @user, :as => :user, :url => { :action => action }, :datatype => "script" do |f| -%>
+
+  <div class="nh_form">
+    <%= error_messages_for @user %>
+    <%= form_for @user, :as => :user, :url => { :action =>  "update", :id => @user.id } do |f|%>
+      <div class="nh_form_title">
+        <p>Please, provide only up-to-date and correct info about yourself.</p>
+      </div>
+
+      <fieldset >
+        <%= f.label(:full_name, "Name") %>
+        <%= f.text_field :full_name, :size => 20%>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:position, "Current position or role") %>
+        <%= f.text_field :position, :size => 20%>
+      </fieldset>
+
+      <fieldset >
+        <%= f.label(:affiliation, "Current affiliation") %>
+        <%= f.text_field :affiliation, :size => 20%>
+      </fieldset>
+
+      <fieldset >
+        <%= f.label(:email, "Institutional email address") %>
+        <%= f.text_field :email, :size => 60 %>
+        <span class="field_note">Please indicate an email address from your research institution.
+
+        </span>
+
+      </fieldset>
+
+      <fieldset >
+        <%= f.label(:city, "City") %>
+        <%= f.text_field :city, :size => 30 %>
+      </fieldset>
+
+      <fieldset >
+        <%= f.label(:country, "Country") %>
+        <%= f.text_field :country, :size => 30 %>
+      </fieldset>
+      <fieldset >
+        <%= f.label(:time_zone, "Time Zone") %>
+        <%= f.time_zone_select :time_zone,
+                               ActiveSupport::TimeZone.all.select { |t| t.name =~ /canada/i },
+                               { :default => ActiveSupport::TimeZone['Eastern Time (US & Canada)'], :include_blank => true }
+        %>
+      </fieldset>
+
+      <fieldset >
+        <%= f.label(:country, "Zenodo Sandbox Token") %>
+        <%= f.password_field :zenodo_sandbox_token, :size => 30 %>
+      </fieldset>
+    <% end %>
+    <div class="form_button_section">
+      <%= f.submit "#{action.to_s.capitalize}", :class=>"btn-solid-secondary" %>
+    </div>
+
+
+<% end %>
+</div>
+
+
