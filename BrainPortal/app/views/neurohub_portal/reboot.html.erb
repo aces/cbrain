@@ -1,46 +1,47 @@
 
-<h1>Update and reboot control page</h1>
+<div id="neurohub_portal_reboot" class="nh_content">
+  <div class="title-lg mb-4">
+    Update and reboot control page
+    <p class="text-xs text-italic">This is a temporary feature for NeuroHub developers.</p>
+  </div>
+  <p class="title-sm p-2 default-bg bg-default-alt"> Current PUMA pid: <%= @pid_to_restart %></p>
+  <fieldset class="card my-2">
+    <p class="title-sm bg-default-disabled p-2">Git log of currently running code:</p>
+    <pre class="nh-reboot-text p-2">
+      <%= IO.popen("git log -n 1 --decorate=full --stat","r") { |f| f.read } %>
+    </pre>
+  </fieldset>
+  <fieldset class="card my-2">
+    <p class="title-sm bg-default-disabled p-2">Git log of GitHub branch</p>
+    <% remote=`git rev-parse --abbrev-ref --symbolic-full-name "@{u}"`.strip %>
+    <% system("git fetch") %>
+    <pre class="nh-reboot-text p-2">
+      <%= IO.popen("git log -n 1 --decorate=full --stat #{remote.bash_escape}","r") { |f| f.read } %>
+    </pre>
+  </fieldset>
+  <div class="d-flex justify-center my-7">
+    <%= link_to 'Update and Reboot', reboot_path({ :do_it => true }), { :class => "btn-solid-primary" } %>
+  </div>
 
-<h2>This is a temporary feature for NeuroHub developers.</h2>
+  <p class="title-sm default-bg bg-default-alt p-2 mb-2"> Note: Please read below first.</p>
+  <p class="m-2">
+    Please <strong>do not abuse this system</strong>. Use only when you've pushed something new to
+    the <em>neurohub</em> GitHub branch. If anything goes wrong (it's totally possible), contact Pierre.
+    <br/>
+    On the main production server, it will take about 20 seconds for the update to finish,
+    and then the server will stop and be restarted within 30 seconds or so. While the server
+    is stopped, nginx will produce error messages. The file 'reboot.txt' is erased at the
+    beginning of the next restart, so it will disappear too.
+    <br/>
+    In development, it's often better to cycle the server manually. The server will stop but will not restart automatically.
+  </p>
+  <% if File.exists? "public/previous_reboot.txt" %>
+    <h2>Previous reboot logs</h2>
+    <pre class="nh-reboot-text"><%= File.read("public/previous_reboot.txt").gsub(/\e\[[\d\;]+m/,"") %></pre>
+  <% end %>
+</div>
 
-Current PUMA pid: <%= @pid_to_restart %><p>
 
-<fieldset>
-<legend>Git log of currently running code</legend>
-<pre class="nh-reboot-text">
-<%= IO.popen("git log -n 1 --decorate=full --stat","r") { |f| f.read } %>
-</pre>
-</fieldset>
-<p>
-<fieldset>
-<legend>Git log of GitHub branch</legend>
-<% remote=`git rev-parse --abbrev-ref --symbolic-full-name "@{u}"`.strip %>
-<% system("git fetch") %>
-<pre class="nh-reboot-text">
-<%= IO.popen("git log -n 1 --decorate=full --stat #{remote.bash_escape}","r") { |f| f.read } %>
-</pre>
-</fieldset>
-<p>
 
-<h2>Read this first</h2>
 
-Click
-<%= link_to 'Update and Reboot', reboot_path({ :do_it => true }), { :class => "button" } %>
-to start the update and reboot process.
-<p>
-Please <strong>do not abuse this system</strong>. Use only when you've pushed something new to
-the <em>neurohub</em> GitHub branch. If anything goes wrong (it's totally possible), contact Pierre.
-<p>
-On the main production server, it will take about 20 seconds for the update to finish,
-and then the server will stop and be restarted within 30 seconds or so. While the server
-is stopped, nginx will produce error messages. The file 'reboot.txt' is erased at the
-beginning of the next restart, so it will disappear too.
-<p>
-In development, it's often better to cycle the server manually. The server will stop but will not restart automatically.
-<p>
-
-<% if File.exists? "public/previous_reboot.txt" %>
-  <h2>Previous reboot logs</h2>
-  <pre class="nh-reboot-text"><%= File.read("public/previous_reboot.txt").gsub(/\e\[[\d\;]+m/,"") %></pre>
-<% end %>
 
