@@ -79,7 +79,7 @@ class NhUsersController < NeurohubApplicationController
     if @user.update_attributes_with_logging(attr_to_update, current_user)
 
       # @user = User.find(@user.id) # fully reload with new class if needed
-      add_meta_data_from_form(@user, [:orcid_sandbox_id, :orcid_id])
+      add_meta_data_from_form(@user, [:orcid])
       flash[:notice] = "User #{@user.login} was successfully updated."
       # #todo confirm email is correct
       # #todo any abuse with Ordid
