@@ -48,24 +48,6 @@ class NhUsersController < NeurohubApplicationController
     end
   end
 
-  def badupdate #:nodoc:
-    @user = User.find(params[:id])
-    unless     @user.id == current_user.id
-      cb_error "You don't have permission to edit this user.", :redirect  => :welcome
-      # probably fake forms are addressed in ROR, just in the case
-    end
-
-    attr_to_update = params.require_as_params(:user).permit([ :full_name, :email, :time_zone,
-                     :city, :country, :affiliation, :position, :zenodo_sandbox_token, :zenodo_main_token ] )
-    success        = @user.update_attributes_with_logging(attr_to_update,current_user)
-
-    if success
-      redirect_to :action => :myaccount
-    else
-      render :action => :edit
-    end
-  end
-
   def update
     @user = User.find(params[:id])
     unless  @user and @user.id == current_user.id
@@ -81,15 +63,11 @@ class NhUsersController < NeurohubApplicationController
       # @user = User.find(@user.id) # fully reload with new class if needed
       add_meta_data_from_form(@user, [:orcid])
       flash[:notice] = "User #{@user.login} was successfully updated."
-      # #todo confirm email is correct
-      # #todo any abuse with Ordid
+      #todo confirm email
       redirect_to :action => :myaccount
     else
       flash[:notice] = "User #{@user.login} was not successfully updated ."
       render :action => :edit
     end
   end
-
-
-
 end
