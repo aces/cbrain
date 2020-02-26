@@ -23,25 +23,16 @@
 
 <% title "Account Info" %>
 
-<%= link_to 'Edit', {:action => :edit, :id => @user.id}, :method  => :get %></td>
 
-<br>
-<div>
-    Login:        <%= @user.login  %>     <br>
-    Name:         <%= @user.full_name  %> <br>
-    Position:     <%= @user.position %>   <br>
-    Affiliation:  <%= @user.affiliation %><br>
-    City:         <%= @user.city %>       <br>
-    Country:      <%= @user.country %>    <br>
-    Email:        <%= @user.email %>      <br>
-    Orcid Sandbox id           <%= @user.meta['orcid_sandbox_id'] %><br>
-    Orcid id           <%= @user.meta['orcid_id'] %><br>
-    Last visit:   <%= @user.last_connected_at ? "#{to_localtime(@user.last_connected_at,
-      :datetime)} (#{pretty_elapsed(Time.now - @user.last_connected_at, :num_components => 3)} ago)" : "(Never)" %>
-    <br>
-    Files size:   <%= colored_pretty_size @user.userfiles.sum(:size) %> <br>
-    File count:   <%= @user.userfiles.count %>
+
+
+
 <div id="nh_users_show" class="nh_content">
+
+  <div class="nh_actions">
+    <%= link_to 'Edit', {:action => :edit, :id => @user.id}, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
+  </div>
+
   <div class="card">
     <div class="card-row p-4" data-max-size="true">
       <div class="card-item">
@@ -121,6 +112,25 @@
         </div>
       </div>
     </div>
+
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Orcid Sandbox id</p>
+          <p class="card-text"><%=@user.meta['orcid_sandbox_id']  %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Orcid id</p>
+          <p class="card-text"><%=@user.meta['orcid_id']  %></p>
+        </div>
+      </div>
+    </div>
+
 
     <div class="card-row">
       <div class="card-item">
