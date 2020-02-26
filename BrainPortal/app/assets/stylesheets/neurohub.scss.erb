@@ -623,7 +623,8 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 
 .btn-nav-primary {
   @extend .btn-nav;
-  &:hover {
+  &:hover,
+  &[data-active="true"] {
     background: $PRIMARY_WASH;
     border-color: $PRIMARY_BG;
     color: $PRIMARY_BG;
