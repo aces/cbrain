@@ -41,7 +41,8 @@ class NhSignupsController < ApplicationController
     @signup.generate_token
 
     unless can_edit?(@signup)
-      flash[:error] = 'Error, please try again'
+      # this check is probably just a precation
+      flash[:error] = 'Errors occurred, please try again'
       redirect_to login_path
       return
     end
