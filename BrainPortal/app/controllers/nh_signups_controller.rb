@@ -41,19 +41,21 @@ class NhSignupsController < ApplicationController
     @signup.generate_token
 
     unless can_edit?(@signup)
+      flash[:error] = 'Error, please try again'
       redirect_to login_path
       return
     end
 
     if ! @signup.save
+      flash.now[:error] = 'We are not able to accept your request'
       render :action => :new
       return
     end
 
     sleep 1
+    flash[:notice] = "Success"
     redirect_to nh_signups_path(@signup)
   end
-
 
 
   private

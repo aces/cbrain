@@ -40,8 +40,10 @@ class NhProjectsController < NeurohubApplicationController
     if @nh_project.save
       @nh_project.user_ids = [ current_user.id ]
       @nh_project.addlog_context(self,"Created by #{current_user.login}")
+      flash[:notice] = 'Project #{nh_project} is succesfully created'
       redirect_to :action => :show, :id => @nh_project.id
     else
+      flash[:notice] = 'Project #{nh_project} is succesfully created'
       render :action => :new
     end
   end
@@ -61,6 +63,7 @@ class NhProjectsController < NeurohubApplicationController
     success        = @nh_project.update_attributes_with_logging(attr_to_update,current_user)
 
     if success
+      flash[:message] = 'Project is successfully updated .'
       redirect_to :action => :show
     else
       render :action => :edit
