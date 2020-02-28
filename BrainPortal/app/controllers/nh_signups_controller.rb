@@ -55,7 +55,7 @@ class NhSignupsController < ApplicationController
 
     sleep 1
     flash[:notice] = "Success"
-    redirect_to nh_signups_path(@signup)
+    redirect_to nh_signup_path(@signup)
   end
 
 
