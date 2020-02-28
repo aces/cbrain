@@ -48,7 +48,7 @@ class NhInvitationsController < NeurohubApplicationController
       Invitation.send_out(current_user, @nh_project, @users)
       flash[:notice] = "Your invitations were successfully sent."
     else
-      flash[:notice] = "No new users were found to invite."
+      flash[:error] = "No new users were found to invite."
     end
 
     flash[:notice] += flash_message if rejected_ids.present?

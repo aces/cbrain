@@ -59,15 +59,13 @@ class NhUsersController < NeurohubApplicationController
            :city, :country, :affiliation, :position, :zenodo_sandbox_token, :zenodo_main_token ] )
 
     if @user.update_attributes_with_logging(attr_to_update, current_user)
-
       # @user = User.find(@user.id) # fully reload with new class if needed
       add_meta_data_from_form(@user, [:orcid])
       flash[:notice] = "User #{@user.login} was successfully updated."
       #todo confirm email
       redirect_to :action => :myaccount
     else
-      flash[:notice] = "User #{@user.login} was not successfully updated ."
-      render :action => :edit
+      flash.now[:error] = "User #{@user.login} was not successfully updated." #unuser anyways
     end
   end
 end
