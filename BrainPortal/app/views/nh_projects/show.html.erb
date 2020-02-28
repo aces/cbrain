@@ -95,7 +95,7 @@
       <div class="card-item">
         <div>
           <p class="card-label">Description</p>
-          <p class="card-text"><%= @nh_project.description %></p>
+          <p class="card-text"><%= @nh_project.description.presence || "-" %></p>
         </div>
       </div>
     </div>
@@ -104,11 +104,16 @@
       <div class="card-item">
         <div>
           <p class="card-label">Members</p>
-          <ul>
-            <% group_members.each do |member| %>
-                <li class="card-text"><%= member.name %> </li>
-            <% end %>
-          </ul>
+          <% if (@group_members != nil) then %>
+            <ul>
+              <% group_members.each do |member| %>
+                  <li class="card-text"><%= member.name %> </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p>-</p>
+          <% end %>
+      
         </div>
       </div>
     </div>
