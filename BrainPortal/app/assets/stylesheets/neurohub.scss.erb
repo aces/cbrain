@@ -991,13 +991,14 @@ $TABLE_BORDER: #e4e8eb;
   th,
   td {
     vertical-align: top;
-    min-width: 250px;
+    min-width: 200px;
     border-right: 1px solid $TABLE_BORDER;
+    white-space: nowrap;
   }
 
   .table_actions {
-    min-width: 200px;
-    width: 200px;
+    min-width: unset;
+    display: flex;
   }
 
   table {
@@ -1027,13 +1028,16 @@ $TABLE_BORDER: #e4e8eb;
         z-index: 3;
         box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 3px 0px;
       }
+      .table_actions {
+        justify-content: center;
+      }
     }
     tbody {
       th,
       td {
         @include px(3);
         @include py(2);
-        border-bottom: 2px solid $DEFAULT_WASH;
+        border-bottom: 1px solid $TABLE_BORDER;
         &[data-type="link"] {
           @include title("xs");
           a {
@@ -1064,19 +1068,13 @@ $TABLE_BORDER: #e4e8eb;
         padding: 0;
         display: flex;
         a {
-          padding: 0.5rem 0.75rem;
-          border-right: 1px solid $DEFAULT_ALT;
-          border-left: 1px solid $DEFAULT_ALT;
+          border-radius: 0;
+          display: flex;
+          flex: 0 1 25%;
           .table_action_icon {
             width: 1rem;
             height: 1rem;
-            fill: $DEFAULT_ALT;
-          }
-          &:hover {
-            border-color: $SECONDARY_BG;
-            .table_action_icon {
-              fill: $SECONDARY_BG;
-            }
+            fill: $DEFAULT_BG;
           }
         }
       }
@@ -1113,7 +1111,7 @@ th:first-child {
   position: sticky;
   left: 0;
   z-index: 2;
-  box-shadow: rgba(0, 0, 0, 0.24) 0px 2px 3px 0px;
+  width: 100%;
 }
 
 .nh_actions {

@@ -48,7 +48,7 @@ viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;"
       <tr>
         <th>name</th>
         <th>maintainer</th>
-        <th class="table_actions">actions</th>
+        <th class="table_actions">...</th>
       </tr>
     </thead>
 
@@ -58,7 +58,7 @@ viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;"
           <th data-type="link"><%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get %></th>
           <td><%= project.creator.try(:login) %></td>
           <td class="table_actions">
-            <%= link_to(edit_icon,{:action => :edit, :id => project.id}, :method  => :get)  %>
+            <%= link_to(edit_icon,{:action => :edit, :id => project.id}, :method  => :get,:class=>"btn-solid-secondary")  %>
           </td>
         </tr>
       <% end %>
