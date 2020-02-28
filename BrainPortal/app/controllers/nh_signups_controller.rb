@@ -42,19 +42,19 @@ class NhSignupsController < ApplicationController
 
     unless can_edit?(@signup)
       # this check is probably just a precation
-      flash[:error] = 'Errors occurred, please try again'
+      flash[:error] = 'Errors occurred, please try again.'
       redirect_to login_path
       return
     end
 
     if ! @signup.save
-      flash.now[:error] = 'We are not able to accept your request'
+      flash.now[:error] = 'We are not able to accept your request.'
       render :action => :new
       return
     end
 
     sleep 1
-    flash[:notice] = "Success"
+    flash[:notice] = "Success!"
     redirect_to nh_signup_path(@signup)
   end
 

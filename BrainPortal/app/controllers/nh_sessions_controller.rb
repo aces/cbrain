@@ -162,7 +162,7 @@ class NhSessionsController < NeurohubApplicationController
   def already_logged_in
     if current_user
       respond_to do |format|
-        flash[:notice] = 'Your are already logged in'
+        flash[:notice] = 'Your are already logged in.'
         format.html { redirect_to welcome_path }
       end
     end
