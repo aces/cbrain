@@ -181,5 +181,4 @@ class NhSessionsController < NeurohubApplicationController
     context.instance_eval(&block)
   end
 
-
 end
