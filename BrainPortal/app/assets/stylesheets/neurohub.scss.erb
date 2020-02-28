@@ -1207,7 +1207,6 @@ body {
     display: flex;
     flex-wrap: wrap;
     position: relative;
-
     .nh_features_header {
       @include logo("lettermark", "white");
       background-position-x: center;
@@ -1224,13 +1223,13 @@ body {
         text-align: center;
       }
       .nh_feature {
-        @include pb(4);
+        @include pb(7);
         display: flex;
         flex: 1;
-        margin: 0 auto;
         align-items: center;
-        justify-content: space-around;
+        flex-direction: column;
         .nh_feature_icon {
+          @include m(2);
           width: 5rem;
           height: 5rem;
         }
@@ -1259,6 +1258,18 @@ body {
     .nh_features {
       .nh_features_header {
         position: absolute;
+      }
+      .nh_features_list {
+        .nh_feature {
+          @include pb(7);
+          margin: 0 auto;
+          justify-content: space-around;
+          flex-direction: row;
+          .nh_feature_text {
+            @include pl(7);
+            text-align: left;
+          }
+        }
       }
     }
   }
