@@ -1313,17 +1313,27 @@ body {
     @extend .nh_content;
     @include title("sm");
     background: $PRIMARY_DK;
-    background-image: url(<%=asset_path"/images/neurohub/NH_login_backsplash.png"%>);
-    background-size: cover;
-    background-blend-mode: color-dodge;
     flex: 1;
     display: flex;
     flex-wrap: wrap;
     position: relative;
+    &:before {
+      content: "";
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      background-image: url(<%=asset_path"/images/neurohub/NH_login_backsplash.png"%>);
+      background-size: cover;
+      top: 0;
+      left: 0;
+      opacity: 0.15;
+      z-index: 0;
+    }
     .nh_features_header {
       @include logo("lettermark", "white");
       background-position-x: center;
       width: 100%;
+      z-index: 1;
     }
     .nh_features_list {
       color: $DEFAULT_BG;
@@ -1332,6 +1342,7 @@ body {
       flex: 1;
       align-items: center;
       align-self: center;
+      z-index: 1;
       p {
         text-align: center;
       }
