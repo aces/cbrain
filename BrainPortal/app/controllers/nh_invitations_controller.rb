@@ -28,21 +28,21 @@ class NhInvitationsController < NeurohubApplicationController
   before_action :login_required
 
   def new #:nodoc:
-    @nh_project_id = find_nh_project(current_user, params[:nh_project_id]).id
+    @nh_project    = find_nh_project(current_user, params[:nh_project_id])
   end
 
   def create #:nodoc:
     @nh_project     = find_nh_project(current_user, params[:nh_project_id])
-    user_email      = params[:email]
-    user_ids        = User.where(:email => user_email).pluck(:id)
+    user_emails     = (params[:emails].presence.try(:strip) || "").split(/[\s,]+/)
+    user_ids        = User.where(:email => user_emails).pluck(:id)
 
-    already_sent_to = Invitation.where(active: true, user_id: user_ids, group_id: @nh_project.id).all.map(&:user_id)
+    already_sent_to = Invitation.where(active: true, user_id: user_ids, group_id: @nh_project.id).pluck(:user_id)
     rejected_ids    = user_ids & already_sent_to
     if rejected_ids.present?
       flash_message = "\n#{User.find(rejected_ids).map(&:login).join(", ")} already invited."
     end
 
-    @users = User.find((user_ids - already_sent_to)) - @nh_project.users
+    @users = User.find(user_ids - already_sent_to - @nh_project.user_ids)
 
     if @users.present?
       Invitation.send_out(current_user, @nh_project, @users)

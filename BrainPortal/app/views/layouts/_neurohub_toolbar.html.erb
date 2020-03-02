@@ -32,10 +32,10 @@
             <div class="nh_toolbar_logo"></div>
         </a>
         <div class="nh_toolbar_buttons">
-            <%= link_to 'Dashboard', welcome_path, { :class => "btn-nav-primary", "data-active"=> request.path_info.include?('welcome') || action_name==="welcome"}  %>
+            <%= link_to 'Dashboard', neurohub_path, { :class => "btn-nav-primary", "data-active"=> request.path_info.include?('welcome') || action_name==="welcome"}  %>
             <%= link_to 'Projects', nh_projects_path, { :class => "btn-nav-primary", "data-active"=> request.path_info.include?('nh_projects') && action_name==="index"  }%>
             <%= link_to 'My Account', myaccount_path, { :class => "btn-nav-primary", "data-active"=> request.path_info.include?('myaccount')} %>
-            <a class="btn-nav-primary" href="/logout">Logout</a>
+            <a class="btn-nav-primary" href="/signout">Logout</a>
         </div>
     </div>
     
