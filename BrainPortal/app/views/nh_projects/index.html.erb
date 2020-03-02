@@ -22,8 +22,11 @@
   #
 -%>
 
-<% title 'Projects' %>
-       
+
+
+<% title "Projects" %>
+
+
 <% edit_icon = '<svg version="1.1" class="table_action_icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;" xml:space="preserve">
   <g>
@@ -36,34 +39,31 @@ viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;"
 
 
 <div id="nh_projects" class="nh_content">
-  <div class="nh_titlebar"><p class="title">Projects <span>(<%= @nh_projects.count %></span>)</p></div>
-
   <div class="nh_actions">
     <%= link_to "+ Add project", {:action => :new }, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
   </div>
   <div class="nh_table_scroll">
-
-  <table>
-    <thead>
-      <tr>
-        <th>name</th>
-        <th>maintainer</th>
-        <th class="table_actions">...</th>
-      </tr>
-    </thead>
-
-    <tbody>
-        <% @nh_projects.each do |project| %>
+    <table>
+      <thead>
         <tr>
-          <th data-type="link"><%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get %></th>
-          <td><%= project.creator.try(:login) %></td>
-          <td class="table_actions">
-            <%= link_to(edit_icon,{:action => :edit, :id => project.id}, :method  => :get,:class=>"btn-solid-secondary")  %>
-          </td>
+          <th>name <span>(<%= @nh_projects.count %></span>)</th>
+          <th>maintainer</th>
+          <th class="table_actions">...</th>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
+      </thead>
+
+      <tbody>
+          <% @nh_projects.each do |project| %>
+          <tr>
+            <th data-type="link"><%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get %></th>
+            <td><%= project.creator.try(:login) %></td>
+            <td class="table_actions">
+              <%= link_to(edit_icon,{:action => :edit, :id => project.id}, :method  => :get,:class=>"btn-solid-secondary")  %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
 
   </div>
 </div>

@@ -633,6 +633,16 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   color: $DEFAULT_ALT;
 }
 
+.btn-nav-default {
+  @extend .btn-nav;
+  &:hover,
+  &[data-active="true"] {
+    background: $DEFAULT_WASH;
+    border-color: $DEFAULT_BG;
+    color: $DEFAULT_BG;
+  }
+}
+
 .btn-nav-primary {
   @extend .btn-nav;
   &:hover,
@@ -645,7 +655,8 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
 
 .btn-nav-secondary {
   @extend .btn-nav;
-  &:hover {
+  &:hover,
+  &[data-active="true"] {
     background: $SECONDARY_WASH;
     border-color: $SECONDARY_BG;
     color: $SECONDARY_BG;
@@ -1151,6 +1162,50 @@ $TOOLBAR_ZINDEX: 1000;
     height: 100%;
     display: flex;
     justify-content: flex-end;
+  }
+}
+
+/*
+=============================================================
+| BREADCRUMBS
+=============================================================
+*/
+
+.nh_breadcrumbs {
+  background: #f5f5f5;
+  display: flex;
+  .nh_breadcrumbs_icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    svg {
+      width: 1rem;
+      height: 1rem;
+      fill: $DEFAULT_ALT;
+      stroke: $DEFAULT_ALT;
+      opacity: 0.5;
+    }
+  }
+  .nh_breadcrumbs_item {
+    @extend .btn-nav-secondary;
+    opacity: 0.5;
+    color: $DEFAULT_ALT;
+    transition: $TRANSITION_HOVER_OFF;
+    display: flex;
+    flex-direction: row-reverse;
+
+    &:hover,
+    &[data-active="true"] {
+      background: transparent;
+      transition: $TRANSITION_HOVER_ON;
+      opacity: 1;
+      svg {
+        width: 1rem;
+        height: 1rem;
+        fill: $SECONDARY_BG;
+        stroke: $SECONDARY_BG;
+      }
+    }
   }
 }
 

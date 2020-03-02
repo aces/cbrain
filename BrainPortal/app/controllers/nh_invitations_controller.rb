@@ -29,6 +29,7 @@ class NhInvitationsController < NeurohubApplicationController
 
   def new #:nodoc:
     @nh_project_id = find_nh_project(current_user, params[:nh_project_id]).id
+    @nh_project_name = find_nh_project(current_user, params[:nh_project_id]).name
   end
 
   def create #:nodoc:

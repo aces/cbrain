@@ -22,12 +22,12 @@
 #
 -%>
 
-<% title 'New Invitation'%>
+<% title("Add User to #{@nh_project_name}", '')%>
 
 <div id="nh_invitations_new" class="nh_content">
   <div class="nh_form">
     <%= error_messages_for @nh_invitation, :header_message => "Invitation could not be created." %>
-    <p class="nh_form_title">Add Users to</p>
+    <p class="nh_form_title">Add Users to <span><%= @nh_project_name %> </span></p>
     <%= form_tag nh_invitations_path, action: "create" do |f| %>
       <fieldset>
         <%= label :email, "Email"%>
