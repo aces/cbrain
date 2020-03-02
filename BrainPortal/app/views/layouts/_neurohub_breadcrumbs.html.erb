@@ -42,33 +42,34 @@
 </svg>'.html_safe 
 %>
 
-<div class="nh_breadcrumbs">
-    <%= link_to "Home", welcome_path, { :class => "nh_breadcrumbs_item", "data-active"=> request.path_info.include?('welcome') || action_name==="welcome"}  %>
-    <% if(request.path_info.include?('nh_projects')||request.path_info.include?('nh_invitations')) %>
-        <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
-        <%= link_to "Projects", nh_projects_path, { :class => "nh_breadcrumbs_item", "data-active"=> request.path_info.include?('nh_projects') && action_name==="index"  }%>
+<% if current_user %>
 
-        <% if(@nh_project && @nh_project.id)%>
+    <div class="nh_breadcrumbs">
+        <%= link_to "Home", welcome_path, { :class => "nh_breadcrumbs_item", "data-active"=> request.path_info.include?('welcome') || action_name==="welcome"}  %>
+        <% if(request.path_info.include?('nh_projects')||request.path_info.include?('nh_invitations')) %>
             <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
-            <%= link_to @nh_project.name, {:action => :show, :id => @nh_project.id }, :method  => :get, :class => "nh_breadcrumbs_item", "data-active"=> request.path_info.include?('nh_projects') && action_name==="show"  %>
-        <% end %> 
-        <% if(@nh_project_id && @nh_project_name)%>
-            <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
-            <%= link_to @nh_project_name, {:controller=> "nh_projects", :action => :show, :id => @nh_project_id }, :method  => :get, :class => "nh_breadcrumbs_item", "data-active"=> request.path_info.include?('nh_projects') && action_name==="show"  %>
-        <% end %> 
-        <% if action_name!="index" && action_name!="show" %>
-            <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
-            <div class="nh_breadcrumbs_item" data-active="true"><%= yield(:title) %></div>
-        <% end %>
-    <% end %>
-    <% if(request.path_info.include?('myaccount')||request.path_info.include?('nh_users')) %>
-        <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
-        <%= link_to 'My Account', myaccount_path, { :class => "nh_breadcrumbs_item", "data-active"=> request.path_info.include?('myaccount')} %>
-        <% if action_name!="myaccount" %>
-            <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
-            <div class="nh_breadcrumbs_item" data-active="true"><%= yield(:title) %></div>
-        <% end %>
-    <% end %>
-    
+            <%= link_to "Projects", nh_projects_path, { :class => "nh_breadcrumbs_item", "data-active"=> request.path_info.include?('nh_projects') && action_name==="index"  }%>
 
-</div>
+            <% if(@nh_project && @nh_project.id)%>
+                <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
+                <%= link_to @nh_project.name, {:action => :show, :id => @nh_project.id }, :method  => :get, :class => "nh_breadcrumbs_item", "data-active"=> request.path_info.include?('nh_projects') && action_name==="show"  %>
+            <% end %> 
+            <% if(@nh_project_id && @nh_project_name)%>
+                <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
+                <%= link_to @nh_project_name, {:controller=> "nh_projects", :action => :show, :id => @nh_project_id }, :method  => :get, :class => "nh_breadcrumbs_item", "data-active"=> request.path_info.include?('nh_projects') && action_name==="show"  %>
+            <% end %> 
+            <% if action_name!="index" && action_name!="show" %>
+                <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
+                <div class="nh_breadcrumbs_item" data-active="true"><%= yield(:title) %></div>
+            <% end %>
+        <% end %>
+        <% if(request.path_info.include?('myaccount')||request.path_info.include?('nh_users')) %>
+            <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
+            <%= link_to 'My Account', myaccount_path, { :class => "nh_breadcrumbs_item", "data-active"=> request.path_info.include?('myaccount')} %>
+            <% if action_name!="myaccount" %>
+                <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
+                <div class="nh_breadcrumbs_item" data-active="true"><%= yield(:title) %></div>
+            <% end %>
+        <% end %>
+    </div>
+<% end %>
