@@ -25,19 +25,25 @@
 <% title "Project files #{@nh_project.name}" %>
 
 Project files <%= @nh_project.name %><br>
-
-<table>
-  <tr>
-    <th>Name</th>
-    <th>Type</th>
-    <th>Size</th>
-  </tr>
-
-  <% @files.each do |file| %>
-    <tr>
-      <td><%= file.name %></td>
-      <td><%= file.pretty_type %></td>
-      <td><%= colored_pretty_size(file.size) %></td>
-    </tr>
-  <% end %>
-</table>
+<div id="nh_projects_files" class="nh_content">
+  <div class="nh_table_scroll">
+    <table>
+     <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Size</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @files.each do |file| %>
+          <tr>
+            <td><%= file.name %></td>
+            <td><%= file.pretty_type %></td>
+            <td><%= colored_pretty_size(file.size) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
