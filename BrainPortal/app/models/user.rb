@@ -93,21 +93,21 @@ class User < ApplicationRecord
   has_many                :data_providers,    :dependent => :restrict_with_exception
   has_many                :remote_resources,  :dependent => :restrict_with_exception
   has_many                :cbrain_tasks,      :dependent => :restrict_with_exception
-
-  has_and_belongs_to_many :access_profiles
-  has_and_belongs_to_many :groups
-  belongs_to              :site, :optional => true
-  has_one                 :signup
-
   # The following resources are destroyed automatically when the user is destroyed.
   has_many                :messages,        :dependent => :destroy
   has_many                :tools,           :dependent => :destroy
   has_many                :tags,            :dependent => :destroy
   has_many                :custom_filters,  :dependent => :destroy
   has_many                :exception_logs,  :dependent => :destroy
-
   # Resource usage is kept forever even if account is destroyed.
   has_many                :resource_usage
+
+  has_and_belongs_to_many :access_profiles
+  has_and_belongs_to_many :groups
+  has_and_belongs_to_many :editable_groups, :class_name => 'Group', join_table: "groups_editors", before_add: :can_be_editor_of!
+
+  belongs_to              :site, :optional => true
+  has_one                 :signup
 
   api_attr_visible :login, :full_name, :email, :type, :site_id, :time_zone, :city, :last_connected_at, :account_locked
 
@@ -378,7 +378,19 @@ class User < ApplicationRecord
     true
   end
 
+  def add_editable_groups(groups) #:nodoc:
+    groups                   = Array(groups)
+    group_ids_to_add         = groups.map { |g| g.is_a?(WorkGroup) ? g.id : g.to_i }
+    group_ids_to_add         = WorkGroup.where(id: group_ids_to_add).pluck(:id)
+    group_ids_to_add        &= self.group_ids
+    self.editable_group_ids |= group_ids_to_add
+  end
 
+  def remove_editable_groups(groups) #:nodoc:
+    groups                   = Array(groups)
+    group_ids_to_remove      = groups.map { |g| g.is_a?(WorkGroup) ? g.id : g.to_i }
+    self.editable_group_ids -= group_ids_to_remove
+  end
 
   protected
 
@@ -473,6 +485,11 @@ class User < ApplicationRecord
     if score < 3
       errors.add(:password, "must have three of the following properties: an uppercase letter, a lowercase letter, a digit, a symbol or be at least 15 characters in length")
     end
+  end
+
+  # Validation for join table editors_groups
+  def can_be_editor_of!(group) #:nodoc:
+    group.editor_can_be_added!(self)
   end
 
   def destroy_system_group #:nodoc:
