@@ -22,14 +22,15 @@
 
 #Controller for the User resource.
 class NhUsersController < NeurohubApplicationController
+
   Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
 
   before_action :login_required
 
   def show #:nodoc:
     @user = User.find(params[:id])
-    unless     @users=current_user.available_users.includes(:groups, :site).include?(@user)
-      cb_error "You don't have permission to view this user.", :redirect  => :welcome
+    unless current_user.available_users.to_a.include?(@user)
+      cb_error "You don't have permission to view this user.", :redirect => :neurohub
       # probably not needed until admin/manager etc added...
     end
   end
@@ -41,8 +42,8 @@ class NhUsersController < NeurohubApplicationController
 
   def edit #:nodoc:
     @user = User.find(params[:id])
-    unless     @user.id == current_user.id
-      cb_error "You don't have permission to view this user.", :redirect  => :welcome
+    unless @user.id == current_user.id
+      cb_error "You don't have permission to view this user.", :redirect => :neurohub
       # to change if admin/manager etc added...
       # todo move to security helpers
     end
@@ -50,8 +51,8 @@ class NhUsersController < NeurohubApplicationController
 
   def update
     @user = User.find(params[:id])
-    unless  @user and @user.id == current_user.id
-      cb_error "You don't have permission to edit this user or user does not exists.", :redirect  => :welcome
+    unless @user.id == current_user.id
+      cb_error "You don't have permission to edit this user or user does not exists.", :redirect  => :neurohub
       # probably fake forms are addressed in ROR, just in the case
     end
 
@@ -68,4 +69,5 @@ class NhUsersController < NeurohubApplicationController
       flash.now[:error] = "User #{@user.login} was not successfully updated." #unuser anyways
     end
   end
+
 end

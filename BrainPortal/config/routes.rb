@@ -23,7 +23,6 @@
 # CBRAIN Routing Table
 
 Rails.application.routes.draw do
-  if CBRAIN.is_app_CBRAIN?
 
   # Session
   resource  :session,         :only => [ :new, :create, :show, :destroy ]
@@ -250,26 +249,20 @@ Rails.application.routes.draw do
   #get   '/platform/provenance',     :controller => :service, :action => :provenance
   #get   '/platform/factsheet',      :controller => :service, :action => :factsheet
 
-  end
 
-  if CBRAIN.is_app_NEUROHUB?
+
+  ####################################################################################
+  # NeuroHub routes
+  ####################################################################################
 
     # Special named routes
-    root  :to                       => 'neurohub_portal#welcome'
-    get   '/home'                   => 'neurohub_portal#welcome'
-    get   '/welcome'                => 'neurohub_portal#welcome'
-    get   '/login'                  => 'nh_sessions#new'
-    get   '/logout'                 => 'nh_sessions#destroy'
+    get   '/neurohub'               => 'neurohub_portal#welcome'
+    get   '/signin'                 => 'nh_sessions#new'
+    get   '/signout'                => 'nh_sessions#destroy'
     get   '/myaccount'              => 'nh_users#myaccount'
 
     # ORCID authentication
     get   '/orcid'                  => 'nh_sessions#orcid'
-
-    # Temporary development route
-    get   '/reboot',         :controller => :neurohub_portal, :action => :reboot
-
-    #Invitations
-    resources :nh_invitations, :only => [ :new, :create ]
 
     # Sessions
     resource  :nh_session,   :only => [ :new, :create, :destroy ] do
@@ -279,23 +272,18 @@ Rails.application.routes.draw do
       end
     end
 
-    # Special alias to provide a fake route helper "new_session_path()"
-    # for compatibility with some CBRAIN methods.
-    get       :nh_session,   :to   => 'nh_sessions#new', :as => 'new_session'
-
-    # Signups
+    # NeuroHub Resources
+    resources :nh_invitations, :only => [ :new, :create ]
     resources :nh_signups
-
-    # WorkGroups
+    resources :nh_users,       :only => [ :myaccount, :edit, :update]
     resources :nh_projects do
       member do
         get 'files'
       end
-
     end
 
-    # Users
-    resources :nh_users,     :only => [ :myaccount, :edit, :update]
-  end
+    # Temporary development route
+    get   '/reboot', :controller => :neurohub_portal, :action => :reboot
+
 
 end

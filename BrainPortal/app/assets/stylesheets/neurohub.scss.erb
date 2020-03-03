@@ -974,9 +974,11 @@ Cards used for simple "show"-type views
 
 /*
 =============================================================
-| TABLE
+| TABLES
 =============================================================
 */
+
+$TABLE_BORDER: #e4e8eb;
 
 .nh_table_scroll {
   @include shadow("mid");
@@ -986,6 +988,19 @@ Cards used for simple "show"-type views
   margin: auto;
   overflow: auto;
   flex: 1;
+  th,
+  td {
+    vertical-align: top;
+    min-width: 200px;
+    border-right: 1px solid $TABLE_BORDER;
+    white-space: nowrap;
+  }
+
+  .table_actions {
+    min-width: unset;
+    display: flex;
+  }
+
   table {
     width: 100%;
     margin: auto;
@@ -993,28 +1008,99 @@ Cards used for simple "show"-type views
     border-spacing: 0;
     background: $DEFAULT_BG;
     border-radius: 4px;
+    border: 0;
     thead {
       th:first-child {
         z-index: 5;
+        box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 3px 0px;
       }
       th {
-        @include text-button($DEFAULT_ALT, 1, "sm");
-        border-bottom: 2px solid $SECONDARY_BG;
-        border-right: 1px solid $DEFAULT_WASH;
-
-        text-transform: capitalize;
-        background: $DEFAULT_BG;
+        @include p(3);
+        @include title("xs");
+        color: $DEFAULT_ALT;
+        text-transform: uppercase;
+        background: $DEFAULT_WASH;
+        border-bottom: 1px solid $TABLE_BORDER;
         text-align: left;
         position: -webkit-sticky;
         position: sticky;
         top: 0;
+        z-index: 3;
+        box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 3px 0px;
+      }
+      .table_actions {
+        justify-content: center;
       }
     }
     tbody {
       th,
       td {
-        border-bottom: 2px solid $DEFAULT_WASH;
-        border-right: 1px solid $DEFAULT_WASH;
+        @include px(3);
+        @include py(2);
+        border-bottom: 1px solid $TABLE_BORDER;
+        &[data-type="link"] {
+          @include title("xs");
+          a {
+            text-transform: none;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            padding: inherit;
+            display: flex;
+            justify-content: flex-start;
+            color: $SECONDARY_ALT;
+            &:hover {
+              text-decoration: underline;
+              color: $SECONDARY_BG;
+            }
+          }
+        }
+      }
+      td {
+        @include text("sm");
+        flex: 1;
+        color: $DEFAULT_DK;
+        text-decoration: none;
+      }
+      .table_actions {
+        padding: 0;
+        display: flex;
+        a {
+          border-radius: 0;
+          display: flex;
+          flex: 0 1 25%;
+          .table_action_icon {
+            width: 1rem;
+            height: 1rem;
+            fill: $DEFAULT_BG;
+          }
+        }
+      }
+      tr {
+        &:nth-child(even) {
+          th,
+          td {
+            background: $DEFAULT_WASH;
+          }
+        }
+        &:nth-child(odd) {
+          th,
+          td {
+            background: $DEFAULT_BG;
+          }
+        }
+        &:hover {
+          th,
+          td {
+            background: $SECONDARY_WASH;
+          }
+          td[data-type="link"],
+          th[data-type="link"] {
+            text-decoration: underline;
+          }
+        }
       }
     }
   }
@@ -1025,35 +1111,7 @@ th:first-child {
   position: sticky;
   left: 0;
   z-index: 2;
-}
-
-.nh_table_scroll th,
-.nh_table_scroll td {
-  @include px(5);
-  @include py(2);
-  vertical-align: top;
-  min-width: 250px;
-}
-
-.nh_table_scroll {
-  td {
-    @include text("sm");
-    flex: 1;
-    color: $DEFAULT_ALT;
-    text-decoration: none;
-  }
-  td[data-type="link"],
-  th[data-type="link"] {
-    background: $DEFAULT_BG;
-    a {
-      text-transform: none;
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-    }
-  }
+  width: 100%;
 }
 
 .nh_actions {
@@ -1207,7 +1265,6 @@ body {
     display: flex;
     flex-wrap: wrap;
     position: relative;
-
     .nh_features_header {
       @include logo("lettermark", "white");
       background-position-x: center;
@@ -1224,13 +1281,13 @@ body {
         text-align: center;
       }
       .nh_feature {
-        @include pb(4);
+        @include pb(7);
         display: flex;
         flex: 1;
-        margin: 0 auto;
         align-items: center;
-        justify-content: space-around;
+        flex-direction: column;
         .nh_feature_icon {
+          @include m(2);
           width: 5rem;
           height: 5rem;
         }
@@ -1259,6 +1316,18 @@ body {
     .nh_features {
       .nh_features_header {
         position: absolute;
+      }
+      .nh_features_list {
+        .nh_feature {
+          @include pb(7);
+          margin: 0 auto;
+          justify-content: space-around;
+          flex-direction: row;
+          .nh_feature_text {
+            @include pl(7);
+            text-align: left;
+          }
+        }
       }
     }
   }

@@ -64,7 +64,7 @@
       <div class="card-item">
         <div>
           <p class="card-label">Name</p>
-          <p class="card-text"><%= @user.full_name %></p>
+          <p class="card-text"><%= @user.full_name.presence || "-" %></p>
         </div>
       </div>
     </div>
@@ -72,7 +72,7 @@
       <div class="card-item">
         <div>
           <p class="card-label">Position</p>
-          <p class="card-text"><%= @user.position%></p>
+          <p class="card-text"><%= @user.position.presence || "-" %></p>
         </div>
       </div>
     </div>
@@ -81,7 +81,7 @@
       <div class="card-item">
         <div>
           <p class="card-label">Affiliation</p>
-          <p class="card-text"><%= @user.affiliation %></p>
+          <p class="card-text"><%= @user.affiliation.presence || "-" %></p>
         </div>
       </div>
     </div>
@@ -90,7 +90,7 @@
       <div class="card-item">
         <div>
           <p class="card-label">City</p>
-          <p class="card-text"><%= @user.city %></p>
+          <p class="card-text"><%= @user.city.presence || "-" %></p>
         </div>
       </div>
     </div>
@@ -99,7 +99,7 @@
       <div class="card-item">
         <div>
           <p class="card-label">Country</p>
-          <p class="card-text"><%= @user.country %></p>
+          <p class="card-text"><%= @user.country.presence || "-" %></p>
         </div>
       </div>
     </div>
@@ -108,7 +108,7 @@
       <div class="card-item">
         <div>
           <p class="card-label">Email</p>
-          <p class="card-text"><%= @user.email %></p>
+          <p class="card-text"><%= @user.email.presence || "-" %></p>
         </div>
       </div>
     </div>
@@ -117,7 +117,7 @@
       <div class="card-item">
         <div>
           <p class="card-label">Orcid id</p>
-          <p class="card-text"><%=@user.meta['orcid']  %></p>
+          <p class="card-text"><%=@user.meta['orcid'].presence || "-" %></p>
         </div>
       </div>
     </div>

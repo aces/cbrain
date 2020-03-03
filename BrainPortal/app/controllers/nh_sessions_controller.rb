@@ -58,6 +58,7 @@ class NhSessionsController < NeurohubApplicationController
     username = params[:username] # in CBRAIN we use 'login'
     password = params[:password]
 
+    # Ugly cross-controller invocation... :-(
     all_ok, new_cb_session = eval_in_controller(::SessionsController) do
       user = User.authenticate(username,password) # can be nil if it fails
       ok   = create_from_user(user)
@@ -66,17 +67,17 @@ class NhSessionsController < NeurohubApplicationController
     @cbrain_session = new_cb_session # crush the session object that was created for the NhSessionsController
 
     if ! all_ok
-      redirect_to login_path
+      redirect_to signin_path
       return
     end
 
     redirect_to nh_projects_path
   end
 
-  # GET /logout
+  # GET /signout
   def destroy
     reset_session
-    redirect_to login_path
+    redirect_to signin_path
   end
 
   def request_password #:nodoc:
@@ -88,7 +89,7 @@ class NhSessionsController < NeurohubApplicationController
   def orcid #:nodoc:
     code = params[:code].presence
     if code.blank?
-      redirect_to login_path
+      redirect_to signin_path
       return
     end
 
@@ -99,7 +100,7 @@ class NhSessionsController < NeurohubApplicationController
 
     if site_uri.blank? || orcid_client_id.blank? || orcid_client_secret.blank?
       flash[:error] = 'ORCID authentication not configured on this service.'
-      redirect_to login_path
+      redirect_to signin_path
       return
     end
 
@@ -125,7 +126,7 @@ class NhSessionsController < NeurohubApplicationController
 
     if users.size == 0
       flash[:error] = "No NeuroHub user matches your ORCID ID. Create a NeuroHub account, or add your ORCID ID to your account."
-      redirect_to login_path
+      redirect_to signin_path
       return
     elsif users.size > 1
       flash[:notice] = "Several NeuroHub user accounts matches your ORCID ID. Using the most recently updated one."
@@ -141,7 +142,7 @@ class NhSessionsController < NeurohubApplicationController
     @cbrain_session = new_cb_session # crush the session object that was created for the NhSessionsController
 
     if ! all_ok
-      redirect_to login_path
+      redirect_to signin_path
       return
     end
 
@@ -154,16 +155,17 @@ class NhSessionsController < NeurohubApplicationController
     clean_bt = Rails.backtrace_cleaner.clean(ex.backtrace || [])
     Rails.logger.info "ORCID auth failed: #{ex.class} #{ex.message} at #{clean_bt[0]}"
     flash[:error] = 'The ORCID authentication failed'
-    redirect_to login_path
+    redirect_to signin_path
   end
 
   private
 
+  # before_action callback
   def already_logged_in
     if current_user
       respond_to do |format|
         flash[:notice] = 'Your are already logged in.'
-        format.html { redirect_to welcome_path }
+        format.html { redirect_to neurohub_path }
       end
     end
   end
