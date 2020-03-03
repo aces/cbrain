@@ -31,7 +31,7 @@
     <%= form_tag nh_invitations_path, action: "create" do |f| %>
       <fieldset>
         <%= label :emails, "Emails" %>
-        Enter one or several email addresses separated by blanks or commas.
+        <div class="field_note">Enter one or several email addresses separated by blanks or commas.</div>
         <%= text_field_tag :emails %>
       </fieldset>
       <%= hidden_field_tag "nh_project_id", @nh_project.id %>
