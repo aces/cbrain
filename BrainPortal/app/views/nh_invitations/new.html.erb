@@ -22,18 +22,19 @@
 #
 -%>
 
-<% title("Add User to #{@nh_project_name}", '')%>
+<% title("Add User to #{@nh_project.name}", '')%>
 
 <div id="nh_invitations_new" class="nh_content">
   <div class="nh_form">
     <%= error_messages_for @nh_invitation, :header_message => "Invitation could not be created." %>
-    <p class="nh_form_title">Add Users to <span><%= @nh_project_name %> </span></p>
+    <p class="nh_form_title">Add Users to project '<%= @nh_project.name %>'</p>
     <%= form_tag nh_invitations_path, action: "create" do |f| %>
       <fieldset>
-        <%= label :email, "Email"%>
-        <%= text_field_tag :email %>
+        <%= label :emails, "Emails" %>
+        Enter one or several email addresses separated by blanks or commas.
+        <%= text_field_tag :emails %>
       </fieldset>
-      <%= hidden_field_tag "nh_project_id", @nh_project_id %>
+      <%= hidden_field_tag "nh_project_id", @nh_project.id %>
       <div class="form_button_section">
         <%= submit_tag "Invite", :class=>"btn-solid-secondary" %>
       </div>

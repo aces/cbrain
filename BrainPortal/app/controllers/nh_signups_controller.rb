@@ -43,7 +43,7 @@ class NhSignupsController < ApplicationController
     unless can_edit?(@signup)
       # this check is probably just a precation
       flash[:error] = 'Errors occurred, please try again.'
-      redirect_to login_path
+      redirect_to signin_path
       return
     end
 

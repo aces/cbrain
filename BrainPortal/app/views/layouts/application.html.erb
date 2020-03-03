@@ -21,10 +21,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
-<% if CBRAIN.is_app_CBRAIN? %>
-  <%= render :partial => 'layouts/cbrain_application' %>
-<% elsif CBRAIN.is_app_NEUROHUB? %>
+<% if @_NeuroHubLayout_ %>
   <%= render :partial => 'layouts/neurohub_application' %>
 <% else %>
-Well, not a known value for the app name.
+  <%= render :partial => 'layouts/cbrain_application' %>
 <% end %>

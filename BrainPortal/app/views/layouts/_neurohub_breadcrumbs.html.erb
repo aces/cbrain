@@ -54,9 +54,9 @@
                 <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
                 <%= link_to @nh_project.name, {:action => :show, :id => @nh_project.id }, :method  => :get, :class => "nh_breadcrumbs_item", "data-active"=> request.path_info.include?('nh_projects') && action_name==="show"  %>
             <% end %> 
-            <% if(@nh_project_id && @nh_project_name)%>
+            <% if(@nh_project_id && @nh_project.name)%>
                 <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
-                <%= link_to @nh_project_name, {:controller=> "nh_projects", :action => :show, :id => @nh_project_id }, :method  => :get, :class => "nh_breadcrumbs_item", "data-active"=> request.path_info.include?('nh_projects') && action_name==="show"  %>
+                <%= link_to @nh_project.name, {:controller=> "nh_projects", :action => :show, :id => @nh_project_id }, :method  => :get, :class => "nh_breadcrumbs_item", "data-active"=> request.path_info.include?('nh_projects') && action_name==="show"  %>
             <% end %> 
             <% if action_name!="index" && action_name!="show" %>
                 <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
