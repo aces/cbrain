@@ -380,7 +380,7 @@ class User < ApplicationRecord
 
   def add_editable_groups(groups) #:nodoc:
     groups                   = Array(groups)
-    group_ids_to_add         = groups.map { |g| g.is_a?(WorkGroup) ? g.id : g.to_i }
+    group_ids_to_add         = groups.map { |g| g.is_a?(Group) ? g.id : g.to_i }
     group_ids_to_add         = WorkGroup.where(id: group_ids_to_add).pluck(:id)
     group_ids_to_add        &= self.group_ids
     self.editable_group_ids |= group_ids_to_add

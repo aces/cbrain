@@ -105,14 +105,12 @@ class WorkGroup < Group
     users_to_add     = Array(users)
     user_ids_to_add  = users_to_add.map { |u| u.is_a?(User) ? u.id : u.to_i }
     user_ids_to_add &= self.user_ids
-    # Should include old editors
     self.editor_ids |= user_ids_to_add
   end
 
   def remove_editors(users) #:nodoc:
     users              = Array(users)
     user_ids_to_remove = users.map { |u| u.is_a?(User) ? u.id : u.to_i }
-    # Should keep old editors
     self.editor_ids   -= user_ids_to_remove
   end
 

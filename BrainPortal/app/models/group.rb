@@ -49,10 +49,6 @@ class Group < ApplicationRecord
                           :presence => true,
                           :name_format => true
 
-  has_and_belongs_to_many :users
-  has_and_belongs_to_many :access_profiles
-  has_and_belongs_to_many :editors, :class_name => 'User', join_table: 'groups_editors', before_add: :editor_can_be_added!
-
   has_many                :tools
   has_many                :userfiles
   has_many                :data_providers
@@ -65,6 +61,9 @@ class Group < ApplicationRecord
   belongs_to              :site, :optional => true
   belongs_to              :creator, :class_name => "User", :optional => true
 
+  has_and_belongs_to_many :users, after_remove: :after_remove_user
+  has_and_belongs_to_many :access_profiles
+  has_and_belongs_to_many :editors, :class_name => 'User', join_table: 'groups_editors', before_add: :editor_can_be_added!
 
   api_attr_visible        :name, :description, :type, :site_id, :invisible
 
@@ -116,8 +115,14 @@ class Group < ApplicationRecord
   end
 
   # Validation for join table editors_groups
-  def editor_can_be_added!(user)
+  def editor_can_be_added!(user) #:nodoc:
     cb_error "Must be redefined in subclasses."
+  end
+
+  # When a users is removed from the group,
+  # it should be not anymore an editors
+  def after_remove_user(user) #:nodoc:
+    self.remove_editors(user)
   end
 
   private

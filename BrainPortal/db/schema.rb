@@ -152,6 +152,12 @@ ActiveRecord::Schema.define(version: 20200224211918) do
     t.index ["type"], name: "index_groups_on_type", using: :btree
   end
 
+  create_table "groups_editors", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=latin1" do |t|
+    t.integer "group_id"
+    t.integer "user_id"
+    t.index ["group_id", "user_id"], name: "index_groups_editors_on_group_id_and_user_id", unique: true
+  end
+
   create_table "groups_users", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer "group_id"
     t.integer "user_id"
