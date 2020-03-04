@@ -80,6 +80,10 @@ $ORCID_ALT: #a6ce39;
   color: $DEFAULT_BG;
 }
 
+.bg-default-wash {
+  background-color: $DEFAULT_WASH;
+}
+
 .bg-default-disabled {
   background-color: $DEFAULT_DISABLED;
 }
@@ -293,8 +297,8 @@ $variant : xlow, low, mid, high.
       0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
   }
   @if $variant == "high" {
-    box-shadow: rgba(0, 0, 0, 0.26) 0px 1px 10px,
-      rgba(0, 0, 0, 0.26) 0px 1px 8px;
+    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+      0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 3px 10px 3px rgba(0, 0, 0, 0.16);
   }
 }
 
@@ -1131,7 +1135,16 @@ th:first-child {
 }
 
 .nh_action {
+  @include mr(1);
   border-radius: 0px;
+  display: flex;
+  height: 100%;
+  align-items: center;
+
+  img {
+    @include mr(2);
+    width: 1rem;
+  }
 }
 
 /*
@@ -1432,6 +1445,78 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
+  .grid {
+    @include py(4);
+    display: grid;
+    grid-gap: 1rem;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    .card {
+      display: flex;
+      flex-wrap: wrap;
+      &:hover {
+        @include shadow("high");
+      }
+      .btn-text-secondary {
+        @include p(2);
+        width: 100%;
+        justify-content: flex-start;
+        text-decoration: none;
+      }
+      .card-text {
+        @include p(2);
+        @include text("xs");
+        width: 100%;
+        color: $DEFAULT_DK;
+      }
+      .card-actions {
+        width: 100%;
+        background: $DEFAULT_WASH;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        cursor: pointer;
+        transition: $TRANSITION_HOVER_OFF;
+        &:hover {
+          background: $SECONDARY_WASH;
+          transition: $TRANSITION_HOVER_ON;
+        }
+        a {
+          @include p(2);
+          @include mx(1);
+          opacity: 0.5;
+          transition: $TRANSITION_HOVER_OFF;
+          background: transparent;
+          .table_action_icon {
+            width: 1rem;
+            height: 1rem;
+            fill: $SECONDARY_ALT;
+          }
+          &:hover {
+            opacity: 1;
+          }
+        }
+      }
+    }
+  }
+  @media (min-width: $BREAKPOINT_SM) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: $BREAKPOINT_MD) {
+    .grid {
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+    }
+  }
+  @media (min-width: $BREAKPOINT_LG) {
+    .grid {
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+    }
+  }
 }
 
 /*

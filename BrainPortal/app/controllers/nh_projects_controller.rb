@@ -49,7 +49,11 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def index  #:nodoc:
+    # Note: Should refactor to use session object instead of scope to store button state in the future.
     @nh_projects = find_nh_projects(current_user)
+    @scope = scope_from_session
+    @scope.custom[:button] = true if
+      current_user.has_role?(:normal_user) && @scope.custom[:button].nil?
   end
 
   def edit #:nodoc:

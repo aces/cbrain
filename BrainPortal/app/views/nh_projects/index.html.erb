@@ -38,33 +38,71 @@ viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;"
 %>
 
 
+<% grid_icon = '
+  <div class="btn-solid-secondary nh_action">
+    <img src="/images/neurohub/NH_icon_grid.svg"/>
+    <p>Grid View </p>
+  </div>
+'.html_safe %>
+
+<% list_icon = '
+  <div class="btn-solid-secondary nh_action">
+    <img src="/images/neurohub/NH_icon_list.svg"/>
+    <p>List View </p>
+  </div>
+'.html_safe %>
+
+
+<% button_view = @scope.custom[:button] %>
 <div id="nh_projects" class="nh_content">
   <div class="nh_actions">
+    <%=
+      scope_custom_link(
+        button_view ? list_icon : grid_icon,
+        @scope, { 'button' => !button_view },
+      )
+  %> 
     <%= link_to "+ Add project", {:action => :new }, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
   </div>
-  <div class="nh_table_scroll">
-    <table>
-      <thead>
-        <tr>
-          <th>name <span>(<%= @nh_projects.count %></span>)</th>
-          <th>maintainer</th>
-          <th class="table_actions">...</th>
-        </tr>
-      </thead>
+  <% if button_view %>
+    <div class="grid">
+      <% @nh_projects.each do |project| %>
+        <div class="card">
+          <%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get, :class=>"btn-text-secondary bg-default-wash" %>
+          <div class="btn-text-secondary">
+            <p class="text-xs"><%= project.creator.try(:login) %></p>
+          </div>
+          <p class="card-text"><%= project.description.presence || "-" %></p>
+          <div class="card-actions">
+            <%= link_to(edit_icon,{:action => :edit, :id => project.id}, :method  => :get)  %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+      <div class="nh_table_scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>name <span>(<%= @nh_projects.count %></span>)</th>
+              <th>maintainer</th>
+              <th class="table_actions">...</th>
+            </tr>
+          </thead>
 
-      <tbody>
-          <% @nh_projects.each do |project| %>
-          <tr>
-            <th data-type="link"><%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get %></th>
-            <td><%= project.creator.try(:login) %></td>
-            <td class="table_actions">
-              <%= link_to(edit_icon,{:action => :edit, :id => project.id}, :method  => :get,:class=>"btn-solid-secondary")  %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-
-  </div>
+          <tbody>
+              <% @nh_projects.each do |project| %>
+              <tr>
+                <th data-type="link"><%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get %></th>
+                <td><%= project.creator.try(:login) %></td>
+                <td class="table_actions">
+                  <%= link_to(edit_icon,{:action => :edit, :id => project.id}, :method  => :get,:class=>"btn-solid-secondary")  %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+    </div>
+  <% end %>
 </div>
 
