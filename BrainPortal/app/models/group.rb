@@ -119,10 +119,9 @@ class Group < ApplicationRecord
     cb_error "Must be redefined in subclasses."
   end
 
-  # When a users is removed from the group,
-  # it should be not anymore an editors
+  # Should be redefined in subclasses
   def after_remove_user(user) #:nodoc:
-    self.remove_editors(user)
+    true
   end
 
   private
