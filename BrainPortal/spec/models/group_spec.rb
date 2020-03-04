@@ -93,5 +93,26 @@ describe Group do
       expect(new_group.creator_id).to eq(new_user_id)
     end
   end
+
+  describe "before_add on groups_editors #editor_can_be_added!" do
+    let!(:user_a)  { create(:normal_user,    :login => "U_A" ) }
+    let!(:system_group) { create(:system_group,   :name  => "G_A", :user_ids => [user_a.id] ) }
+
+    it "should only allow editors on WorkGroup" do
+      expect{system_group.editor_ids = [user_a.id]}.to raise_error(CbrainError)
+    end
+  end
+
+  describe "after_remove on users #after_remove_user" do
+    let!(:user_a)  { create(:normal_user,    :login => "U_A" ) }
+    let!(:group_a) { create(:work_group,   :name  => "G_A", :user_ids => [user_a.id], :editor_ids => [user_a.id]) }
+
+
+    it "when a user is removed from the group it should not longer be an editor" do
+      group_a.user_ids = []
+      expect(group_a.editors).to be_empty
+    end
+  end
+
 end
 
