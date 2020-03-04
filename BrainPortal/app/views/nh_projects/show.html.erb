@@ -104,7 +104,7 @@
       <div class="card-item">
         <div>
           <p class="card-label">Members</p>
-          <% if (@group_members != nil) then %>
+          <% if group_members.exists? %>
             <ul>
               <% group_members.each do |member| %>
                   <li class="card-text"><%= member.name %> </li>
@@ -113,7 +113,6 @@
           <% else %>
             <p>-</p>
           <% end %>
-      
         </div>
       </div>
     </div>
