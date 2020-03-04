@@ -36,14 +36,14 @@
     %>
     <div class="card-row p-4">
       <%= link_to(files_nh_project_path(@nh_project.id), :class=>"btn-text-secondary card-item") do%>
-          <img class="card-icon" src="/images/neurohub/wireframe-black.png"/>
+          <img class="card-icon" src="/images/neurohub/NH_icon_files.svg"/>
           <div class="card-stat">
             <p><%= @nh_project.userfiles.count %></p>
             <p class="card-label">Files</p>
           </div>
       <% end %>
       <div class="card-item">
-        <img class="card-icon" src="/images/neurohub/wireframe-black.png"/>
+        <img class="card-icon" src="/images/neurohub/NH_icon_tasks.svg"/>
         <div class="card-stat">
           <p><%= @nh_project.cbrain_tasks.count %></p>
           <p class="card-label">Tasks</p>
@@ -51,7 +51,7 @@
       </div>
 
       <div class="card-item">
-        <img class="card-icon" src="/images/neurohub/wireframe-black.png"/>
+        <img class="card-icon" src="/images/neurohub/NH_icon_members.svg"/>
         <div class="card-stat">
           <p><%= group_members.count %></p>
           <p class="card-label">Members</p>
@@ -59,7 +59,7 @@
       </div>
 
       <div class="card-item">
-        <img class="card-icon" src="/images/neurohub/wireframe-black.png"/>
+        <img class="card-icon" src="/images/neurohub/NH_icon_invites.svg"/>
         <div class="card-stat">
           <p><%= open_invites.count %></p>
           <p class="card-label">Pending Invites</p>
