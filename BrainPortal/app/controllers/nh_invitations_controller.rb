@@ -34,6 +34,8 @@ class NhInvitationsController < NeurohubApplicationController
   def create #:nodoc:
     @nh_project     = find_nh_project(current_user, params[:nh_project_id])
     user_emails     = (params[:emails].presence.try(:strip) || "").split(/[\s,]+/)
+    user_emails     = user_emails.map(&:presence).compact
+    cb_error "Please specify at least one email address", :redirect => nh_project_path(@nh_project) if user_emails.empty?
     user_ids        = User.where(:email => user_emails).pluck(:id)
 
     already_sent_to = Invitation.where(active: true, user_id: user_ids, group_id: @nh_project.id).pluck(:user_id)
@@ -51,7 +53,10 @@ class NhInvitationsController < NeurohubApplicationController
       flash[:error] = "No new users were found to invite."
     end
 
-    flash[:notice] += flash_message if rejected_ids.present?
+    if rejected_ids.present?
+      flash[:notice] ||= ""
+      flash[:notice] += flash_message
+    end
 
     redirect_to nh_project_path(@nh_project)
   end
