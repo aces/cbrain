@@ -27,11 +27,36 @@
       <%= f.label :name, "Name"%>
       <%= f.text_field :name %>
     </fieldset>
-   
+
     <fieldset>
       <%= f.label :description, "Description"%>
       <%= f.text_field :description  %>
     </fieldset>
+
+    <fieldset>
+      <%= f.label :maintener, "Maintainer" %>
+      <%= @nh_project.creator.name %>
+    </fieldset>
+
+    <% if @nh_project.can_be_edited_by?(current_user) %>
+      <fieldset>
+        <table>
+          <tr>
+            <th>Members</th>
+            <th>Editors</th>
+          </tr>
+          <% @nh_project.users.each do |user| %>
+            <tr>
+              <td><%= user.name %></td>
+              <td><%= check_box_tag("nh_project[editor_ids][]", user.id, @nh_project.editor_ids.include?(user.id) ) %></td>
+            </tr>
+          <% end %>
+        </table>
+        <p style="margin-top:2em">
+        <small>Editors have higher priviliges than members</small>
+      </fieldset>
+    <% end %>
+
     <div class="form_button_section">
       <%= f.submit "#{action.to_s.capitalize}", :class=>"btn-solid-secondary" %>
     </div>

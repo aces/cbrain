@@ -63,7 +63,13 @@ class NhProjectsController < NeurohubApplicationController
   def update #:nodoc:
     @nh_project    = find_nh_project(current_user, params[:id])
 
-    attr_to_update = params.require_as_params(:nh_project).permit(:name, :description)
+    unless @nh_project.can_be_edited_by?(current_user)
+      flash[:error] = "You don't have permission to edit this project."
+      redirect_to :action => :show
+      return
+    end
+
+    attr_to_update = params.require_as_params(:nh_project).permit(:name, :description, :editor_ids => [])
     success        = @nh_project.update_attributes_with_logging(attr_to_update,current_user)
 
     if success

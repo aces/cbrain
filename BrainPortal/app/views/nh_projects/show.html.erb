@@ -24,14 +24,18 @@
 
 <% title("Summary", '') %>
 
-<div id="nh_projects_show" class="nh_content"> 
-  <div class="nh_actions">
-    <%= link_to "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action"  %>
-    <%= link_to "Edit", {:action => :edit, :id => @nh_project.id}, :method  => :get, :class => "btn-text-secondary nh_action"  %>
-  </div>
+<div id="nh_projects_show" class="nh_content">
+  <% if @nh_project.can_be_edited_by?(current_user) %>
+    <div class="nh_actions">
+      <%= link_to "Invite Other Users", new_nh_invitation_path(nh_project_id: @nh_project.id), :class => "btn-solid-secondary nh_action"  %>
+      <%= link_to "Edit", {:action => :edit, :id => @nh_project.id}, :method  => :get, :class => "btn-text-secondary nh_action"  %>
+    </div>
+  <% end %>
+
   <div class="card">
     <%
       group_members  = @nh_project.users
+      group_editors  = @nh_project.editors
       open_invites   = Invitation.where(sender_id: current_user.id, group_id: @nh_project.id, active: true)
     %>
     <div class="card-row p-4">
@@ -55,6 +59,14 @@
         <div class="card-stat">
           <p><%= group_members.count %></p>
           <p class="card-label">Members</p>
+        </div>
+      </div>
+
+      <div class="card-item">
+        <img class="card-icon" src="/images/neurohub/NH_icon_members.svg"/>
+        <div class="card-stat">
+          <p><%= group_editors.count %></p>
+          <p class="card-label">Editors</p>
         </div>
       </div>
 
@@ -117,6 +129,22 @@
       </div>
     </div>
 
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Editors</p>
+          <% if group_editors.exists? %>
+            <ul>
+              <% group_editors.each do |editor| %>
+                  <li class="card-text"><%= editor.name %> </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p>-</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

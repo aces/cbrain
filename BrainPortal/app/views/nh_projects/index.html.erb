@@ -34,7 +34,7 @@ viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;"
     <path d="M377.707,56.053L327.893,6.24c-8.32-8.32-21.867-8.32-30.187,0l-39.04,39.04l80,80l39.04-39.04
       C386.027,77.92,386.027,64.373,377.707,56.053z"/>
   </g>
-</svg>'.html_safe 
+</svg>'.html_safe
 %>
 
 
@@ -61,7 +61,7 @@ viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;"
         button_view ? list_icon : grid_icon,
         @scope, { 'button' => !button_view },
       )
-  %> 
+  %>
     <%= link_to "+ Add project", {:action => :new }, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
   </div>
   <% if button_view %>
@@ -74,7 +74,9 @@ viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;"
           </div>
           <p class="card-text"><%= project.description.presence || "-" %></p>
           <div class="card-actions">
-            <%= link_to(edit_icon,{:action => :edit, :id => project.id}, :method  => :get)  %>
+            <% if project.can_be_edited_by?(current_user) %>
+              <%= link_to(edit_icon,{:action => :edit, :id => project.id}, :method  => :get)  %>
+            <% end %>
           </div>
         </div>
       <% end %>
@@ -96,7 +98,9 @@ viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;"
                 <th data-type="link"><%= link_to project.name, {:action => :show, :id => project.id}, :method  => :get %></th>
                 <td><%= project.creator.try(:login) %></td>
                 <td class="table_actions">
-                  <%= link_to(edit_icon,{:action => :edit, :id => project.id}, :method  => :get,:class=>"btn-solid-secondary")  %>
+                  <% if project.can_be_edited_by?(current_user) %>
+                    <%= link_to(edit_icon,{:action => :edit, :id => project.id}, :method  => :get,:class=>"btn-solid-secondary")  %>
+                  <% end %>
                 </td>
               </tr>
             <% end %>
