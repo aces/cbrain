@@ -80,6 +80,9 @@ class UsersController < ApplicationController
     @default_bourreau       = Bourreau.find_by_id(@user.meta["pref_bourreau_id"])
     @log                    = @user.getlog()
 
+    # If needed, create a SSH key for the user
+    @ssh_key = @user.ssh_key(true) rescue nil
+
     respond_to do |format|
       format.html # show.html.erb
       format.xml  do

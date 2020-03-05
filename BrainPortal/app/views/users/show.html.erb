@@ -121,6 +121,18 @@
 
   <% end %>
 
+  <%= show_table(@user, :as => :user, :header => 'Your System SSH Key') do |t| %>
+
+    <% t.cell "Created", :show_width => 2 do %>
+      <%= @ssh_key ? "#{to_localtime(@ssh_key.created_at, :datetime)} (#{pretty_elapsed(Time.now - @ssh_key.created_at, :num_components => 3)} ago)" : "(Never)" %>
+    <% end %>
+
+    <% t.cell "Public Key", :show_width => 2 do %>
+      <pre class="ssh_key"><%= @ssh_key.try(:public_key) || "None" %></pre>
+    <% end %>
+
+  <% end %>
+
   <%= show_table(@user, :as => :user, :header => 'Zenodo Publishing', :edit_condition => edit_permission?(@user)) do |t| %>
 
     <% t.edit_cell(:zenodo_sandbox_token,
