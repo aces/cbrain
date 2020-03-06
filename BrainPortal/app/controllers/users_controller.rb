@@ -81,7 +81,7 @@ class UsersController < ApplicationController
     @log                    = @user.getlog()
 
     # If needed, create a SSH key for the user
-    @ssh_key = @user.ssh_key(true) rescue nil
+    @ssh_key = @user.ssh_key(create_it: true) rescue nil
 
     respond_to do |format|
       format.html # show.html.erb

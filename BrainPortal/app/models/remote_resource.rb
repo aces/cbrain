@@ -905,6 +905,36 @@ class RemoteResource < ApplicationRecord
     true
   end
 
+  # This installs a pair of private/public SSH keys
+  # for a user. The key pair has been created by another
+  # CBRAIN app which sent this command to install a copy
+  # of the files here.
+  def self.process_command_push_ssh_keys(command)
+    myself   = RemoteResource.current_resource
+
+    # Command params
+    priv_key = command.delete(:ssh_key_priv)
+    pub_key  = command.delete(:ssh_key_pub)
+    user_id  = command.requester_user_id
+    user     = User.find(user_id)
+
+    # To avoid sending back the info on the controls channel
+    command.ssh_key_priv = "[FILTERED]"
+    command.ssh_key_pub  = "[FILTERED]"
+
+    # Install key files
+    ssh_key  = user.ssh_key(ok_no_files: true)
+    ssh_key.install_key_files(pub_key, priv_key)
+    ssh_key.validate!
+
+    # Log install date
+    user.addlog("User SSH key installed on #{myself.name}")
+    myself.addlog("User SSH key for #{user.login} installed")
+    user.meta["ssh_key_install_date_#{myself.id}"] = Time.now
+
+    true
+  end
+
   # Helper method to prepend 'source cbrain_bashrc;' to shell command.
   # The 'cbrain_bashrc' script is the one located in
   # the "/script" subdirectory under the remote resource's

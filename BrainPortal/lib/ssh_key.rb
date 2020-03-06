@@ -37,7 +37,7 @@ class SshKey
 
   # Class configuration.
   CONFIG = { #:nodoc:
-    :ssh_keys_dir     => (Rails.root rescue nil) ? "#{Rails.root.to_s}/user_keys" : "/tmp",
+    :ssh_keys_dir     => (Rails.root rescue nil) ? "#{Rails.root.to_s}/user_keys" : "/not/yet/configured",
     :exec_ssh_keygen  => `bash -c "type -p ssh-keygen"`.strip,
     :ssh_keygen_type  => "rsa",
     :debug            => false,
@@ -162,7 +162,17 @@ class SshKey
   # Returns the date that the SSH key files were created.
   def created_at
     validate!
-    File.stat(private_key_path.to_s).mtime
+    File.stat(public_key_path.to_s).mtime
+  end
+
+  # Installs (or crushes) the key files
+  def install_key_files(pub_key, priv_key)
+    validate_name!
+    File.open(public_key_path.to_s,  "w") { |fh| fh.write(pub_key)  }
+    File.open(private_key_path.to_s, "w") { |fh| fh.write(priv_key) }
+    File.chmod(0700, public_key_path.to_s)
+    File.chmod(0700, private_key_path.to_s)
+    true
   end
 
   protected
