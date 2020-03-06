@@ -27,6 +27,10 @@ class NhInvitationsController < NeurohubApplicationController
 
   before_action :login_required
 
+  def index #:nodoc:
+    @nh_invitations = Message.where(:user_id => current_user.id, :active => true)
+  end
+
   def new #:nodoc:
     @nh_project    = find_nh_project(current_user, params[:nh_project_id])
   end
@@ -60,5 +64,30 @@ class NhInvitationsController < NeurohubApplicationController
 
     redirect_to nh_project_path(@nh_project)
   end
+
+
+  # Accept an invitation
+  def update #:nodoc:
+    @nh_invitation = Invitation.where(user_id: current_user.id).find(params[:id])
+
+    unless @nh_invitation.try(:active?)
+      flash[:error] = "This invitation has already been accepted.\nPlease contact the project owner if you wish to be invited again."
+      redirect_to nh_projects_path
+      return
+    end
+
+    @nh_project = @nh_invitation.group
+
+    unless @nh_project.users.include?(current_user)
+      @nh_project.users << current_user
+    end
+
+    @nh_invitation.active = false
+    @nh_invitation.save
+
+    flash[:notice] = "You have been added to project #{@nh_project.name}."
+    redirect_to nh_projects_path
+  end
+
 
 end

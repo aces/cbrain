@@ -273,7 +273,7 @@ Rails.application.routes.draw do
     end
 
     # NeuroHub Resources
-    resources :nh_invitations, :only => [ :new, :create ]
+    resources :nh_invitations, :only => [ :new, :create, :index, :update]
     resources :nh_signups
     resources :nh_users,       :only => [ :myaccount, :edit, :update]
     resources :nh_projects do

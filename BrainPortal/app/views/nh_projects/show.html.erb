@@ -145,6 +145,25 @@
         </div>
       </div>
     </div>
+
+    <div class="card-row">
+      <div class="card-item">
+        <div>
+          <p class="card-label">Pending Invites</p>
+          <% if open_invites.exists? %>
+            <ul>
+              <% open_invites.each do |invite| %>
+                  <li class="card-text"><%= invite.user.name %> </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p>-</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+
   </div>
 </div>
 
