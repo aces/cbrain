@@ -95,6 +95,14 @@ class SshKey
     true
   end
 
+  # Like validate!, but returns true or false
+  def valid?
+    validate!
+    true
+  rescue
+    false
+  end
+
   # Checks that the name of the key is
   # a proper alphanumeric identifier.
   # Raise an exception if anything is wrong.
@@ -199,6 +207,12 @@ class SshKey
   # Do not open the content of this file, ever!
   def private_key_path
     keys_dir + "id_#{@name}"
+  end
+
+  # Returns the private key (in SSH format)
+  def private_key(i_know_what_i_am_doing = false)
+    raise RuntimeError("Private key access denied") unless i_know_what_i_am_doing == 'I Know What I Am Doing'
+    File.read(private_key_path)
   end
 
 end

@@ -60,6 +60,7 @@ Rails.application.routes.draw do
     member do
       get  'change_password'
       post 'switch'
+      put  'push_keys'
     end
     collection do
       get  'request_password'

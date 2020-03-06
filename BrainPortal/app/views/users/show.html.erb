@@ -121,7 +121,11 @@
 
   <% end %>
 
-  <%= show_table(@user, :as => :user, :header => 'Your System SSH Key') do |t| %>
+  <%= show_table(@user, :as     => :user,
+                        :header => 'Your System SSH Key',
+                        :url    => push_keys_user_path(@user),
+                        :edit_condition => (true || @user.id == current_user.id),
+                ) do |t| %>
 
     <% t.cell "Created", :show_width => 2 do %>
       <%= @ssh_key ? "#{to_localtime(@ssh_key.created_at, :datetime)} (#{pretty_elapsed(Time.now - @ssh_key.created_at, :num_components => 3)} ago)" : "(Never)" %>
@@ -129,6 +133,24 @@
 
     <% t.cell "Public Key", :show_width => 2 do %>
       <pre class="ssh_key"><%= @ssh_key.try(:public_key) || "None" %></pre>
+    <% end %>
+
+    <%
+       installed_site_ids = @user.meta.keys.grep(/\Assh_key_install_date_/).map { |x| x[/(\d+)\z/] }
+       installed_sites    = RemoteResource.where(:id => installed_site_ids).all
+       installed_links    = installed_sites.map { |s| link_to_bourreau_if_accessible(s) }.join(", ")
+       all_bourreaux      = Bourreau.find_all_accessible_by_user(@user).order(:online, :name)
+    %>
+    <% t.edit_cell "Installation Sites", :show_with => 2, :content => installed_links.html_safe do %>
+      <%= hidden_field_tag 'user[dummy]', "dummy" %>
+      <%= array_to_table(all_bourreaux, :table_class => 'simple bordered', :fill_by_columns => true, :cols => 1) do |b,r,c| %>
+        <% date = @user.meta["ssh_key_install_date_#{b.id}"] %>
+        <%= link_to_bourreau_if_accessible(b) %>
+        </td>
+        <td>Last pushed: <%= date || 'Never' %></td>
+        <td>Push:
+        <%= check_box_tag('push_keys_to[]', b.id.to_s, installed_site_ids.include?(b.id.to_s), :disabled => (!b.online || date.present?)) %>
+      <% end %>
     <% end %>
 
   <% end %>
