@@ -147,7 +147,9 @@ ActiveRecord::Schema.define(version: 20200224211918) do
     t.integer  "creator_id"
     t.boolean  "invisible",                 default: false
     t.text     "description", limit: 65535
+    t.boolean  "public", default: false
     t.index ["invisible"], name: "index_groups_on_invisible", using: :btree
+    t.index ["public"], name: "index_groups_on_public", using: :btree
     t.index ["name"], name: "index_groups_on_name", using: :btree
     t.index ["type"], name: "index_groups_on_type", using: :btree
   end
