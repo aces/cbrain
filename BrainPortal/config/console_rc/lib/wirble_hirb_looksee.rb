@@ -41,7 +41,7 @@ extend Hirb::Console
                           user_id group_id
                           category cbrain_task_class_name
                         ),
-  'Group'          => %i( id type name site_id creator_id invisible
+  'Group'          => %i( id type name site_id creator_id invisible public
                         ),
   'Site'           => %i( id name
                         ),
