@@ -33,10 +33,12 @@
       <%= f.text_field :description  %>
     </fieldset>
 
-    <fieldset>
-      <%= f.label :maintener, "Maintainer" %>
-      <%= @nh_project.creator.name %>
-    </fieldset>
+    <% if action != :create %>
+      <fieldset>
+        <%= f.label :maintener, "Maintainer" %>
+        <%= @nh_project.creator.name %>
+      </fieldset>
+    <% end %>
 
     <% if @nh_project.can_be_edited_by?(current_user) %>
       <fieldset>
