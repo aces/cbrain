@@ -294,7 +294,7 @@ class Userfile < ApplicationRecord
   def has_owner_access?(user)
     return true if user.has_role? :admin_user
     return true if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
-    return if user.id == self.user_id
+    return user.id == self.user_id
 
     return false
   end
