@@ -275,20 +275,14 @@ class Userfile < ApplicationRecord
   # Returns whether or not +user+ has access to this
   # userfile.
   def can_be_accessed_by?(user, requested_access = :write)
-    if user.has_role? :admin_user
-      return true
-    end
-    if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
-      return true
-    end
-    if user.id == self.user_id
-      return true
-    end
-    if user.is_member_of_group(self.group_id) && (self.group_writable || requested_access == :read)
-      return true
-    end
 
-    false
+    return true if user.has_role? :admin_user
+    return true if user.id == self.user_id
+    return true if self.group.public
+    return true if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
+    return true if user.is_member_of_group(self.group_id) && (self.group_writable || requested_access == :read)
+
+    return false
   end
 
   # Returns whether or not +user+ has owner access to this
@@ -328,7 +322,7 @@ class Userfile < ApplicationRecord
   # [For regular users:] all files that belong to the user all
   #                      files assigned to a group to which the user belongs.
   def self.find_accessible_by_user(id, user, options = {})
-    # Seems weird, it is to accommodate rails5 deprecation warnin for find (accept only id)
+    # Seems weird, it is to accommodate rails5 deprecation warning for find (accept only id)
     id = id.id if id.is_a?(Userfile)
     self.accessible_for_user(user, options).find(id)
   end
@@ -350,22 +344,31 @@ class Userfile < ApplicationRecord
   # on file ownership or group access.
   def self.restrict_access_on_query(user, scope, options = {})
     return scope if user.has_role? :admin_user
+
     access_requested    = options[:access_requested] || :write
 
     data_provider_ids   = DataProvider.find_all_accessible_by_user(user).raw_first_column("#{DataProvider.table_name}.id")
 
     query_user_string  = "userfiles.user_id = ?"
     query_group_string = "userfiles.group_id IN (?) AND userfiles.data_provider_id IN (?)"
+
     if access_requested.to_sym != :read
       query_group_string += " AND userfiles.group_writable = 1"
     end
+
     query_string = "(#{query_user_string}) OR (#{query_group_string})"
     query_array  = [user.id, user.group_ids, data_provider_ids]
+
     if user.has_role? :site_manager
       scope = scope.joins(:user).readonly(false)
       query_string += "OR (users.site_id = ?)"
       query_array  << user.site_id
     end
+
+    # If file is in public group
+    scope = scope.joins(:group)
+    query_string += " OR (groups.public = ?)"
+    query_array << true
 
     scope = scope.where( [query_string] + query_array)
 

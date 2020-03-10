@@ -220,23 +220,27 @@ module ResourceLinkHelper
   # the name of the object.
   def link_to_model_if_accessible(model_class, model_obj_or_id, model_name_method = :name, user = current_user, options = {}) #:nodoc:
     return "(None)" if model_obj_or_id.blank?
-    user ||= current_user # allows us to supply 'nil' in arg
+
     model_obj = model_obj_or_id
+
     if model_obj_or_id.is_a?(String) || model_obj_or_id.is_a?(Integer)
       model_obj = model_class.find(model_obj_or_id) rescue nil
       return "(Deleted/Non-existing)" if model_obj.blank?
     end
+
     model_name_method = options[:name_method] if options[:name_method]  # allows overriding
     query_params      = options[:query_params] || {}
-    name = options[:name] || model_obj.send(model_name_method)
-    path = options[:path]
-    path ||= send("#{model_class.to_s.underscore}_path",model_obj.id,query_params)     rescue nil
-    path ||= send("#{model_obj.class.to_s.underscore}_path",model_obj.id,query_params) rescue nil
+    name              = options[:name] || model_obj.send(model_name_method)
+    path              = options[:path]
+    path            ||= send("#{model_class.to_s.underscore}_path",model_obj.id,query_params)     rescue nil
+    path            ||= send("#{model_obj.class.to_s.underscore}_path",model_obj.id,query_params) rescue nil
+
     if !path # other special cases
       path = task_path(model_obj.id)     if model_class <= CbrainTask
       path = bourreau_path(model_obj.id) if model_class <= BrainPortal
     end
-    user ||= current_user
+
+    user ||= current_user # allows us to supply 'nil' in arg
     if (
       # (!model_obj.respond_to?(:available?)          || model_obj.available?) &&
         (!model_obj.respond_to?(:can_be_accessed_by?) || model_obj.can_be_accessed_by?(user, :read))
