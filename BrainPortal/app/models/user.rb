@@ -288,12 +288,6 @@ class User < ApplicationRecord
      @group_ids_hash[group_id] ? true : false
   end
 
-  # Returns the IDs of the groups this user
-  # is a member of.
-  def cached_group_ids
-    @_cached_gids ||= self.group_ids
-  end
-
   # Destroy all sessions for user
   def destroy_user_sessions
     LargeSessionInfo.where(:user_id => self.id).destroy_all

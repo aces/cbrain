@@ -24,8 +24,10 @@
 
 <% title('File Info') %>
 
+<% is_editable_by_current_user = @userfile.can_be_accessed_by?(current_user, requested_access = :write) %>
+
 <div class="menu_bar">
-  <% if @userfile.can_be_accessed_by?(current_user, requested_access = :write) %>
+  <% if is_editable_by_current_user %>
     <%= link_to 'Delete', { :action => 'delete_files', :file_ids => [@userfile.id] }, :data => { :confirm => "Are you sure you want to delete '#{@userfile.name}' ?" }, :class  => "button menu_button", :method => :delete  %>
     <span class="vertical_bar"></span>
   <% end %>
@@ -34,7 +36,7 @@
     <span class="vertical_bar"></span>
   <% end %>
 
-  <% if @userfile.can_be_accessed_by?(current_user, requested_access = :write) %>
+  <% if is_editable_by_current_user %>
     <% if @userfile.compressed? %>
       <%= link_to "Uncompress", { :action => 'uncompress', :file_ids => [@userfile.id] }, { :method => "POST", :class => 'button menu_button' } %>
     <% else %>
@@ -46,7 +48,7 @@
 <br>
 <%= error_messages_for @userfile, :header_message => "#{@userfile.name} could not be updated." %>
 <div class="display_inline_block" style="min-width: 50%">
-  <%= show_table(@userfile, :as => :userfile, :edit_condition => true) do |t| %>
+  <%= show_table(@userfile, :as => :userfile, :edit_condition => is_editable_by_current_user ) do |t| %>
 
     <% t.edit_cell(:name, :disabled => !@userfile.has_owner_access?(current_user)) do |f| %>
       <%= f.text_field :name %>

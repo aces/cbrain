@@ -241,7 +241,7 @@ class Userfile < ApplicationRecord
   # by +user+. Actually returns a ActiveRecord::Relation.
   def get_tags_for_user(user)
     user = User.find(user) unless user.is_a?(User)
-    self.tags.where(["tags.user_id=? OR tags.group_id IN (?)", user.id, user.cached_group_ids])
+    self.tags.where(["tags.user_id=?", user.id])
   end
 
   # Set the tags associated with this file to those
@@ -278,9 +278,13 @@ class Userfile < ApplicationRecord
 
     return true if user.has_role? :admin_user
     return true if user.id == self.user_id
-    return true if self.group.public
-    return true if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
-    return true if user.is_member_of_group(self.group_id) && (self.group_writable || requested_access == :read)
+    return true if user.has_role?(:site_manager) &&
+                   self.user.site_id == user.site_id &&
+                   self.group.site_id == user.site_id
+    return true if user.is_member_of_group(self.group_id) &&
+                   (self.group_writable || requested_access == :read)
+
+    return true if self.group.public && requested_access == :read
 
     return false
   end
@@ -288,17 +292,11 @@ class Userfile < ApplicationRecord
   # Returns whether or not +user+ has owner access to this
   # userfile.
   def has_owner_access?(user)
-    if user.has_role? :admin_user
-      return true
-    end
-    if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
-      return true
-    end
-    if user.id == self.user_id
-      return true
-    end
+    return true if user.has_role? :admin_user
+    return true if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
+    return if user.id == self.user_id
 
-    false
+    return false
   end
 
   # Returns a scope representing the set of files accessible to the
