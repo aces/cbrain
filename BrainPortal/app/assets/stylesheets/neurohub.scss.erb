@@ -760,7 +760,7 @@ $variant : error, notice
 }
 
 @mixin field($theme: "default") {
-  @include title("xs");
+  @include text("sm");
   display: flex;
   flex-direction: column;
   label {
@@ -769,12 +769,18 @@ $variant : error, notice
   select {
     @include select($theme);
   }
-  input:not([type="submit"]) {
+  input:not([type="submit"]),
+  p {
     @include input($theme);
   }
   textarea {
     @include textarea($theme);
   }
+  p {
+    border: 0;
+    cursor: auto;
+  }
+
   &:hover,
   &:focus-within {
     background: $DEFAULT_WASH;
@@ -900,6 +906,7 @@ $variant : error, notice
   form {
     @include form("secondary");
     .field_note {
+      @include p(0);
       @include text("xs");
       @include pt(1);
       font-style: italic;
@@ -921,6 +928,53 @@ $variant : error, notice
   }
 }
 
+.form-list {
+  @include shadow("low");
+  @include my(2);
+  border-radius: "2px";
+  max-height: 15rem;
+  min-width: 18rem;
+  overflow: scroll;
+  .list-row {
+    @include text("sm");
+    display: flex;
+    align-items: center;
+    width: 100%;
+    &:hover {
+      background: $SECONDARY_WASH;
+    }
+    .list-item {
+      @include m(0);
+      @include p(2);
+      flex: 1;
+      border-right: 1px solid;
+      border-color: $SECONDARY_WASH;
+      &:last-child {
+        border: none;
+      }
+      input {
+        width: unset;
+      }
+      &[type="checkbox"] {
+        width: 10rem;
+        display: flex;
+        justify-content: center;
+        flex: unset;
+      }
+    }
+    .list-header {
+      @include label();
+      @include m(0);
+      background: $SECONDARY_BG;
+      color: white;
+      border-color: $DEFAULT_BG;
+    }
+  }
+  .list-row:nth-child(odd) {
+    background: $DEFAULT_WASH;
+  }
+}
+
 .field_with_errors {
   label {
     color: $ERROR_ALT !important;
@@ -934,6 +988,10 @@ $variant : error, notice
     color: $ERROR_BG !important;
     border-color: $ERROR_BG !important;
   }
+}
+
+.label {
+  @include label();
 }
 
 /*

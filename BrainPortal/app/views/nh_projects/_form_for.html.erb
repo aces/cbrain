@@ -21,6 +21,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
+
   <%= form_for @nh_project, :as => :nh_project, :url => { :action => action }, :datatype => "script" do |f| -%>
 
     <fieldset >
@@ -35,28 +36,33 @@
 
     <% if action != :create %>
       <fieldset>
-        <%= f.label :maintener, "Maintainer" %>
-        <%= @nh_project.creator.name %>
+          <label>Maintainer</label>
+          <p class="text"><%= @nh_project.creator.name %></p>
       </fieldset>
+
     <% end %>
 
     <% if @nh_project.can_be_edited_by?(current_user) %>
-      <fieldset>
-        <table>
-          <tr>
-            <th>Members</th>
-            <th>Editors</th>
-          </tr>
-          <% @nh_project.users.each do |user| %>
-            <tr>
-              <td><%= user.name %></td>
-              <td><%= check_box_tag("nh_project[editor_ids][]", user.id, @nh_project.editor_ids.include?(user.id) ) %></td>
-            </tr>
-          <% end %>
-        </table>
-        <p style="margin-top:2em">
-        <small>Editors have higher priviliges than members</small>
-      </fieldset>
+    <% if @nh_project.users.any? %>
+        <div>
+          <div class="label">Members</div>
+          <p class="field_note">Editors have more privileges than members.</p>
+
+          <div class="form-list">
+            <div class="list-row">
+              <div class="list-item list-header" >Members</div>
+              <div class="list-item list-header" type="checkbox">Enable edit access</div>
+            </div>
+            <% @nh_project.users.each do |user| %>
+              <div class="list-row">
+                <div class="list-item"><%= user.name %></div>
+                <div class="list-item" type="checkbox"><%= check_box_tag("nh_project[editor_ids][]", user.id, @nh_project.editor_ids.include?(user.id) ) %></div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+     <% end %>
+
     <% end %>
 
     <div class="form_button_section">
