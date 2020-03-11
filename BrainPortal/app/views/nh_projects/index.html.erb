@@ -56,12 +56,12 @@ viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;"
 <% button_view = @scope.custom[:button] %>
 <div id="nh_projects" class="nh_content">
   <div class="nh_actions">
-    <%=
+    <div class="nh_action"><%=
       scope_custom_link(
         button_view ? list_icon : grid_icon,
         @scope, { 'button' => !button_view },
       )
-  %>
+  %></div>
     <%= link_to "+ Add project", {:action => :new }, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
   </div>
   <% if button_view %>

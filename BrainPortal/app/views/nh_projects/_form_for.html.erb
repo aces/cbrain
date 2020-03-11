@@ -48,14 +48,14 @@
           <div class="label">Members</div>
           <p class="field_note">Editors have more privileges than members.</p>
 
-          <div class="form-list">
+          <div class="list">
             <div class="list-row">
-              <div class="list-item list-header" >Members</div>
-              <div class="list-item list-header" type="checkbox">Enable edit access</div>
+              <div class="list-item list-header"><p>Members</p></div>
+              <div class="list-item list-header" type="checkbox"><p>Enable edit access</p></div>
             </div>
             <% @nh_project.users.each do |user| %>
               <div class="list-row">
-                <div class="list-item"><%= user.name %></div>
+                <div class="list-item"><p><%= user.name %></p></div>
                 <div class="list-item" type="checkbox"><%= check_box_tag("nh_project[editor_ids][]", user.id, @nh_project.editor_ids.include?(user.id) ) %></div>
               </div>
             <% end %>
