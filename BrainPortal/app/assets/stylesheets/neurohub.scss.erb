@@ -760,7 +760,7 @@ $variant : error, notice
 }
 
 @mixin field($theme: "default") {
-  @include title("xs");
+  @include text("sm");
   display: flex;
   flex-direction: column;
   label {
@@ -769,12 +769,18 @@ $variant : error, notice
   select {
     @include select($theme);
   }
-  input:not([type="submit"]) {
+  input:not([type="submit"]),
+  p {
     @include input($theme);
   }
   textarea {
     @include textarea($theme);
   }
+  p {
+    border: 0;
+    cursor: auto;
+  }
+
   &:hover,
   &:focus-within {
     background: $DEFAULT_WASH;
@@ -900,6 +906,7 @@ $variant : error, notice
   form {
     @include form("secondary");
     .field_note {
+      @include p(0);
       @include text("xs");
       @include pt(1);
       font-style: italic;
@@ -934,6 +941,10 @@ $variant : error, notice
     color: $ERROR_BG !important;
     border-color: $ERROR_BG !important;
   }
+}
+
+.label {
+  @include label();
 }
 
 /*
@@ -971,7 +982,7 @@ Cards used for simple "show"-type views
         @include label();
       }
       .card-text {
-        @include mx(2);
+        @include px(2);
       }
       &[href] {
         @include text("sm");
@@ -1144,6 +1155,9 @@ th:first-child {
   img {
     @include mr(2);
     width: 1rem;
+  }
+  &:last-child {
+    margin-right: 0;
   }
 }
 
@@ -1440,6 +1454,8 @@ body {
 =============================================================
 */
 
+$MAX_CARD_LIST_HEIGHT: 15;
+
 #nh_projects {
   flex: 1;
   height: 100%;
@@ -1515,6 +1531,68 @@ body {
     .grid {
       grid-template-columns: repeat(4, 1fr);
       grid-template-rows: repeat(4, 1fr);
+    }
+  }
+}
+
+.list {
+  @include shadow("low");
+  @include my(2);
+  border-radius: 2px;
+  max-height: $MAX_CARD_LIST_HEIGHT + rem;
+  min-width: 18rem;
+  overflow: scroll;
+  .list-row {
+    @include text("sm");
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+    &:nth-child(odd) {
+      background: $DEFAULT_WASH;
+    }
+    &:hover {
+      background: $SECONDARY_WASH;
+    }
+    .list-item {
+      @include text("xs");
+      @include m(0);
+      flex: 1;
+      text-transform: uppercase;
+      border-right: 1px solid;
+      border-color: $SECONDARY_WASH;
+      display: flex;
+      justify-content: space-between;
+      > * {
+        @include p(2);
+      }
+      &:last-child {
+        border: none;
+      }
+      input {
+        width: unset;
+      }
+      &[type="checkbox"] {
+        width: 10rem;
+        display: flex;
+        justify-content: center;
+        flex: unset;
+      }
+      .secondary {
+        display: flex;
+        justify-content: center;
+        flex: 1;
+        background: $SECONDARY_WASH;
+        color: $SECONDARY_ALT;
+      }
+    }
+    .list-header {
+      @include label();
+      @include m(0);
+      background: $SECONDARY_BG;
+      color: white;
+      border-color: $DEFAULT_BG;
     }
   }
 }

@@ -34,8 +34,8 @@
 
   <div class="card">
     <%
-      group_members  = @nh_project.users
-      group_editors  = @nh_project.editors
+      group_members  = @nh_project.users   || []
+      group_editors  = @nh_project.editors || []
       open_invites   = Invitation.where(sender_id: current_user.id, group_id: @nh_project.id, active: true)
     %>
     <div class="card-row p-4">
@@ -114,31 +114,31 @@
 
     <div class="card-row">
       <div class="card-item">
-        <div>
+        <div style="width:100%">
           <p class="card-label">Members</p>
           <% if group_members.exists? %>
-            <ul>
+            <div class="list">
+              <div class="list-row">
+                <div class="list-item list-header"><p>Members</p></div>
+                <div class="list-item list-header" type="checkbox"><p>Access</p></div>
+              </div>
               <% group_members.each do |member| %>
-                  <li class="card-text"><%= member.name %> </li>
+                  <% if group_editors.include? member %>
+                    <div class="list-row">
+                      <div class="list-item">
+                        <p><%= member.name %></p>
+                      </div>
+                      <div class="list-item" type="checkbox">
+                        <p class="secondary">editor</p>
+                      </div>
+                    </div>
+                  <% else %>
+                    <div class="list-row">
+                      <div class="list-item"><p><%= member.name %></p></div>
+                    </div>
+                  <% end %>
               <% end %>
-            </ul>
-          <% else %>
-            <p>-</p>
-          <% end %>
-        </div>
-      </div>
-    </div>
-
-    <div class="card-row">
-      <div class="card-item">
-        <div>
-          <p class="card-label">Editors</p>
-          <% if group_editors.exists? %>
-            <ul>
-              <% group_editors.each do |editor| %>
-                  <li class="card-text"><%= editor.name %> </li>
-              <% end %>
-            </ul>
+            </div>
           <% else %>
             <p>-</p>
           <% end %>
