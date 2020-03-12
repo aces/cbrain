@@ -39,6 +39,7 @@ module GroupsHelper
 
     return "invisible" if group.invisible?
     return "empty"     if group_user_count == 0
+    return "public"    if group.public
     return "shared"    if group_user_count > 1
     return "personal"
   end
