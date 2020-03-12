@@ -111,7 +111,7 @@
         </div>
       </div>
     </div>
-    <% if ((group_members.exists?) && (group_members.count != 1)) %>
+    <% if group_members.exists? %>
       <div class="card-row">
         <div class="card-item">
           <div style="width:100%">
@@ -122,22 +122,19 @@
                 <div class="list-item list-header" type="checkbox"><p>Access</p></div>
               </div>
               <% group_members.each do |member| %>
-                <% if member.id != @nh_project.creator.id %>
-
-                  <% if group_editors.include? member %>
-                    <div class="list-row">
-                      <div class="list-item">
-                        <p><%= member.name %></p>
-                      </div>
-                      <div class="list-item" type="checkbox">
-                        <p class="secondary">editor</p>
-                      </div>
+                <% if ((group_editors.include? member) || (@nh_project.creator.id == member.id) ) %>
+                  <div class="list-row">
+                    <div class="list-item">
+                      <p><%= member.name %></p>
                     </div>
-                  <% else %>
-                    <div class="list-row">
-                      <div class="list-item"><p><%= member.name %></p></div>
+                    <div class="list-item" type="checkbox">
+                      <p class="secondary"><%= @nh_project.creator.id == member.id ? "Maintainer" : "Editor" %></p>
                     </div>
-                  <% end %>  
+                  </div>
+                <% else %>
+                  <div class="list-row">
+                    <div class="list-item"><p><%= member.name %></p></div>
+                  </div>
                 <% end %>  
               <% end %>
             </div>
