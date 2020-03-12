@@ -73,7 +73,7 @@ viewBox="0 0 383.947 383.947" style="enable-background:new 0 0 383.947 383.947;"
             <p class="text-xs"><%= project.creator.try(:login) %></p>
           </div>
           <p class="card-text"><%= project.description.presence || "-" %></p>
-          <div class="card-actions">
+          <div class="btn-section card-actions">
             <% if project.can_be_edited_by?(current_user) %>
               <%= link_to(edit_icon,{:action => :edit, :id => project.id}, :method  => :get)  %>
             <% end %>

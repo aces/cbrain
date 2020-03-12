@@ -22,20 +22,17 @@
 #
 -%>
 
-
-
-<table>
-  <tr>
-    <th>Invitations</th>
-    <th>Accept</th>
-  </tr>
-
+<div id="nh_invitations" class="nh_content" onload=>
   <% @nh_invitations.each do |invitation| %>
-    <tr>
-      <td><%= invitation.header.html_safe %></td>
-      <td><%= button_to 'Accept', nh_invitation_path(invitation.id), :method => :put  %></td>
-    </tr>
+    <div class="card">
+      <div class="card-row header">
+        <p class="card-item"><%= invitation.header.html_safe %></p>
+      </div>
+      <div class="btn-section">
+        <%= button_to 'Accept', nh_invitation_path(invitation.id), :method => :put, :class => "btn-solid-secondary" %>
+      </div>
+    </div>
   <% end %>
+</div>
 
-</table>
 

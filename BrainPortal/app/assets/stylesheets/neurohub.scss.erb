@@ -22,6 +22,7 @@
     ├── SIGNUPS
     ├── PROJECTS
     ├── USERS
+    ├── INVITATIONS
   └── 
 
 /*
@@ -667,6 +668,21 @@ $TRANSITION_HOVER_OFF: all 0.2s ease-out;
   }
 }
 
+.btn-section {
+  @include py(7);
+  @include mt(4);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $DEFAULT_WASH;
+  flex-direction: column;
+  > * {
+    flex: 1;
+    width: 100%;
+  }
+}
+
 /*
 =============================================================
 | BANNERS
@@ -911,19 +927,8 @@ $variant : error, notice
       @include pt(1);
       font-style: italic;
     }
-    .form_button_section {
+    .btn-section {
       @include py(7);
-      @include mt(4);
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: $DEFAULT_WASH;
-      flex-direction: column;
-      > * {
-        flex: 1;
-        width: 100%;
-      }
     }
   }
 }
@@ -960,15 +965,20 @@ Cards used for simple "show"-type views
   .card-row {
     @include px(4);
     flex: 1;
+    width: 100%;
     display: flex;
     flex-wrap: wrap;
     border-bottom: 1px solid $DEFAULT_DISABLED;
-
+    &.header {
+      @include p(4);
+      flex-direction: column;
+    }
     .card-item {
       @include text("sm");
       @include p(2);
       display: flex;
       flex: 1;
+      width: 100%;
       .card-stat {
         @include title("lg");
         @include ml(4);
@@ -993,6 +1003,11 @@ Cards used for simple "show"-type views
           color: inherit;
         }
       }
+    }
+  }
+  @media (min-width: $BREAKPOINT_SM) {
+    .card-row.header {
+      flex-direction: row;
     }
   }
 }
@@ -1219,6 +1234,7 @@ $TOOLBAR_ZINDEX: 1000;
     transition: $TRANSITION_HOVER_OFF;
     display: flex;
     flex-direction: row-reverse;
+    white-space: nowrap;
 
     &:hover,
     &[data-active="true"] {
@@ -1476,7 +1492,6 @@ $MAX_CARD_LIST_HEIGHT: 15;
       .btn-text-secondary {
         @include p(2);
         width: 100%;
-        justify-content: flex-start;
         text-decoration: none;
       }
       .card-text {
@@ -1486,11 +1501,9 @@ $MAX_CARD_LIST_HEIGHT: 15;
         color: $DEFAULT_DK;
       }
       .card-actions {
-        width: 100%;
-        background: $DEFAULT_WASH;
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
+        @include p(0);
+        @include mt(2);
+
         cursor: pointer;
         transition: $TRANSITION_HOVER_OFF;
         &:hover {
@@ -1500,6 +1513,9 @@ $MAX_CARD_LIST_HEIGHT: 15;
         a {
           @include p(2);
           @include mx(1);
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-end;
           opacity: 0.5;
           transition: $TRANSITION_HOVER_OFF;
           background: transparent;
@@ -1540,7 +1556,6 @@ $MAX_CARD_LIST_HEIGHT: 15;
   @include my(2);
   border-radius: 2px;
   max-height: $MAX_CARD_LIST_HEIGHT + rem;
-  min-width: 18rem;
   overflow: scroll;
   .list-row {
     @include text("sm");
@@ -1610,6 +1625,38 @@ $CARD_ITEM_MAX_WIDTH: 13;
     .card-row[data-max-size] {
       .card-item {
         flex: 0 1 $CARD_ITEM_MAX_WIDTH + rem;
+      }
+    }
+  }
+}
+
+/*
+=============================================================
+| INVITATIONS
+=============================================================
+*/
+
+#nh_invitations {
+  .card {
+    @include mb(2);
+    &:hover {
+      @include shadow("high");
+    }
+    .header {
+      border: none;
+    }
+    .btn-section {
+      @include p(4);
+      @include mt(0) align-items: flex-end;
+      > * {
+        flex: unset;
+        width: auto;
+      }
+    }
+    @media (min-width: $BREAKPOINT_SM) {
+      display: flex;
+      .btn-section {
+        width: unset;
       }
     }
   }

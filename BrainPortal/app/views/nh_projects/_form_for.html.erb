@@ -39,7 +39,6 @@
           <label>Maintainer</label>
           <p class="text"><%= @nh_project.creator.name %></p>
       </fieldset>
-
     <% end %>
 
     <% if @nh_project.can_be_edited_by?(current_user) %>
@@ -65,7 +64,7 @@
       <% end %>
     <% end %>
 
-    <div class="form_button_section">
+    <div class="btn-section">
       <%= f.submit "#{action.to_s.capitalize}", :class=>"btn-solid-secondary" %>
     </div>
   <% end %>

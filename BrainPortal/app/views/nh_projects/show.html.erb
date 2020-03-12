@@ -38,7 +38,7 @@
       group_editors  = @nh_project.editors || []
       open_invites   = Invitation.where(sender_id: current_user.id, group_id: @nh_project.id, active: true)
     %>
-    <div class="card-row p-4">
+    <div class="card-row header">
       <%= link_to(files_nh_project_path(@nh_project.id), :class=>"btn-text-secondary card-item") do%>
           <img class="card-icon" src="/images/neurohub/NH_icon_files.svg"/>
           <div class="card-stat">
@@ -114,7 +114,7 @@
     <% if group_members.exists? %>
       <div class="card-row">
         <div class="card-item">
-          <div style="width:100%">
+          <div style="width:100%;">
             <p class="card-label">Members</p>
             <div class="list">
               <div class="list-row">
