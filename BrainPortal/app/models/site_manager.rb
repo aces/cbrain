@@ -41,7 +41,7 @@ class SiteManager < User
   end
 
   def available_tasks  #:nodoc:
-    CbrainTask.where( ["cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.available_groups, self.site.user_ids] )
+    CbrainTask.where( ["cbrain_tasks.group_id IN (?) OR cbrain_tasks.user_id IN (?)", self.available_groups.pluck(:id), self.site.user_ids] )
   end
 
   def available_users  #:nodoc:

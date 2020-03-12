@@ -59,15 +59,9 @@ module ResourceAccess
   # Returns whether or not +user+ has owner access to this
   # resource.
   def has_owner_access?(user)
-    if user.has_role? :admin_user
-      return true
-    end
-    if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
-      return true
-    end
-    if user.id == self.user_id
-      return true
-    end
+    return true if user.has_role? :admin_user
+    return true if user.has_role?(:site_manager) && self.user.site_id == user.site_id && self.group.site_id == user.site_id
+    return true if user.id == self.user_id
 
     false
   end
