@@ -40,10 +40,10 @@ class NhProjectsController < NeurohubApplicationController
     if @nh_project.save
       @nh_project.user_ids = [ current_user.id ]
       @nh_project.addlog_context(self,"Created by #{current_user.login}")
-      flash[:notice] = "Project #{nh_project.name} is successfully created"
+      flash[:notice] = "Project #{@nh_project.name} is successfully created"
       redirect_to :action => :show, :id => @nh_project.id
     else
-      flash[:error] = "Cannot create project #{nh_project.name}"
+      flash[:error] = "Cannot create project #{@nh_project.name}"
       render :action => :new
     end
   end
