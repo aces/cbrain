@@ -39,7 +39,7 @@ class NormalUser < User
   end
 
   def available_tasks  #:nodoc:
-    CbrainTask.where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.group_ids] )
+    CbrainTask.where( ["cbrain_tasks.user_id = ? OR cbrain_tasks.group_id IN (?)", self.id, self.available_groups.pluck(:id)] )
   end
 
   def available_users  #:nodoc:
