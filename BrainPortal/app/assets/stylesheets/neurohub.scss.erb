@@ -1489,10 +1489,14 @@ $MAX_CARD_LIST_HEIGHT: 15;
       &:hover {
         @include shadow("high");
       }
+      .text-secondary,
       .btn-text-secondary {
         @include p(2);
         width: 100%;
         text-decoration: none;
+        text-align: center;
+        color: $SECONDARY_TEXT;
+        text-transform: uppercase;
       }
       .card-text {
         @include p(2);
