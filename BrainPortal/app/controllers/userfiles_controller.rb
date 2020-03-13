@@ -1735,6 +1735,7 @@ class UserfilesController < ApplicationController
     end
 
     base = base.where(:group_id => current_project.id) if current_project
+    base = base.where(:data_provider_id => DataProvider.find_all_accessible_by_user(current_user).pluck(:id))
     base
   end
 
