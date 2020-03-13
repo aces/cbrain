@@ -202,6 +202,12 @@ $variant : xs, sm, md, lg, xl.
   @include text("xl");
 }
 
+.ellipsis {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
 /*
 =============================================================
 | LAYOUT
@@ -1501,8 +1507,11 @@ $MAX_CARD_LIST_HEIGHT: 15;
       .card-text {
         @include p(2);
         @include text("xs");
-        width: 100%;
         color: $DEFAULT_DK;
+        width: 5rem;
+        flex: 1;
+        height: 5rem;
+        white-space: unset;
       }
       .card-actions {
         @include p(0);
