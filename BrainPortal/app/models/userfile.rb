@@ -334,7 +334,9 @@ class Userfile < ApplicationRecord
   # [For regular users:] all files that belong to the user all
   #                      files assigned to a group to which the user belongs.
   def self.find_all_accessible_by_user(user, options = {})
-    self.accessible_for_user(user, options)
+    self.accessible_for_user(user, options).where(
+      :data_provider_id => DataProvider.find_all_accessible_by_user(user).pluck(:id)
+    )
   end
 
   # This method takes in an array to be used as the :+conditions+

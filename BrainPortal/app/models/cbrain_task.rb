@@ -125,6 +125,11 @@ class CbrainTask < ApplicationRecord
         -> { where( "cbrain_tasks.cluster_workdir" => nil ) }
 
 
+  def self.find_all_accessible_by_user(user, options = {}) #:nodoc:
+    scope = super
+    scope.where(:bourreau_id => Bourreau.find_all_accessible_by_user(user).pluck(:id))
+  end
+
   # The attribute 'prerequisites' is a serialized hash table
   # containing the information about whether the current
   # task depend on the states of other tasks. As an example,

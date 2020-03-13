@@ -52,8 +52,8 @@ class GroupsController < ApplicationController
     @groups = (@groups.to_a << 'ALL') if @scope.custom[:button]
 
     # For regular groups
-    @group_id_2_userfile_counts      = Userfile.group("group_id").count
-    @group_id_2_task_counts          = CbrainTask.group("group_id").count
+    @group_id_2_userfile_counts      = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read).group("group_id").count
+    @group_id_2_task_counts          = CbrainTask.find_all_accessible_by_user(current_user).group("group_id").count
     @group_id_2_user_counts          = User.joins(:groups).group("group_id").count.convert_keys!(&:to_i) # .joins make keys as string
     @group_id_2_tool_counts          = Tool.group("group_id").count
     @group_id_2_data_provider_counts = DataProvider.group("group_id").count
