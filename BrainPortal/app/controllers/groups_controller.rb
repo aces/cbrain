@@ -55,10 +55,10 @@ class GroupsController < ApplicationController
     @group_id_2_userfile_counts      = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read).group("group_id").count
     @group_id_2_task_counts          = CbrainTask.find_all_accessible_by_user(current_user).group("group_id").count
     @group_id_2_user_counts          = User.joins(:groups).group("group_id").count.convert_keys!(&:to_i) # .joins make keys as string
-    @group_id_2_tool_counts          = Tool.group("group_id").count
-    @group_id_2_data_provider_counts = DataProvider.group("group_id").count
-    @group_id_2_bourreau_counts      = Bourreau.group("group_id").count
-    @group_id_2_brain_portal_counts  = BrainPortal.group("group_id").count
+    @group_id_2_tool_counts          = Tool.find_all_accessible_by_user(current_user).group("group_id").count
+    @group_id_2_data_provider_counts = DataProvider.find_all_accessible_by_user(current_user).group("group_id").count
+    @group_id_2_bourreau_counts      = Bourreau.find_all_accessible_by_user(current_user).group("group_id").count
+    @group_id_2_brain_portal_counts  = BrainPortal.find_all_accessible_by_user(current_user).group("group_id").count
 
     # For `ALL` group
     @group_id_2_userfile_counts[nil] = Userfile.find_all_accessible_by_user(current_user, :access_requested => :read).count
