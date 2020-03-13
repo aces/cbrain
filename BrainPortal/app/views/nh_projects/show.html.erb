@@ -38,19 +38,19 @@
       group_editors  = @nh_project.editors || []
       open_invites   = Invitation.where(sender_id: current_user.id, group_id: @nh_project.id, active: true)
     %>
-    <div class="card-row p-4">
+    <div class="card-row header">
       <%= link_to(files_nh_project_path(@nh_project.id), :class=>"btn-text-secondary card-item") do%>
           <img class="card-icon" src="/images/neurohub/NH_icon_files.svg"/>
           <div class="card-stat">
             <p><%= @nh_project.userfiles.count %></p>
-            <p class="card-label">Files</p>
+            <p class="card-label"><%= "File#{@nh_project.userfiles.count != 1 ? "s": ""}" %></p>
           </div>
       <% end %>
       <div class="card-item">
         <img class="card-icon" src="/images/neurohub/NH_icon_tasks.svg"/>
         <div class="card-stat">
           <p><%= @nh_project.cbrain_tasks.count %></p>
-          <p class="card-label">Tasks</p>
+          <p class="card-label"><%= "Task#{@nh_project.cbrain_tasks.count != 1 ? "s": ""}" %></p>
         </div>
       </div>
 
@@ -58,7 +58,7 @@
         <img class="card-icon" src="/images/neurohub/NH_icon_members.svg"/>
         <div class="card-stat">
           <p><%= group_members.count %></p>
-          <p class="card-label">Members</p>
+          <p class="card-label"><%= "Member#{group_members.count != 1 ? "s": ""}" %></p>
         </div>
       </div>
 
@@ -66,7 +66,7 @@
         <img class="card-icon" src="/images/neurohub/NH_icon_members.svg"/>
         <div class="card-stat">
           <p><%= group_editors.count %></p>
-          <p class="card-label">Editors</p>
+          <p class="card-label"><%= "Editor#{group_editors.count != 1 ? "s": ""}" %></p>
         </div>
       </div>
 
@@ -74,7 +74,7 @@
         <img class="card-icon" src="/images/neurohub/NH_icon_invites.svg"/>
         <div class="card-stat">
           <p><%= open_invites.count %></p>
-          <p class="card-label">Pending Invites</p>
+          <p class="card-label"><%= "Pending Invite#{open_invites.count != 1 ? "s": ""}" %></p>
         </div>
       </div>
     </div>
@@ -111,57 +111,52 @@
         </div>
       </div>
     </div>
-
-    <div class="card-row">
-      <div class="card-item">
-        <div style="width:100%">
-          <p class="card-label">Members</p>
-          <% if group_members.exists? %>
+    <% if group_members.exists? %>
+      <div class="card-row">
+        <div class="card-item">
+          <div style="width:100%;">
+            <p class="card-label">Members</p>
             <div class="list">
               <div class="list-row">
                 <div class="list-item list-header"><p>Members</p></div>
                 <div class="list-item list-header" type="checkbox"><p>Access</p></div>
               </div>
               <% group_members.each do |member| %>
-                  <% if group_editors.include? member %>
-                    <div class="list-row">
-                      <div class="list-item">
-                        <p><%= member.name %></p>
-                      </div>
-                      <div class="list-item" type="checkbox">
-                        <p class="secondary">editor</p>
-                      </div>
+                <% if ((group_editors.include? member) || (@nh_project.creator.id == member.id) ) %>
+                  <div class="list-row">
+                    <div class="list-item">
+                      <p><%= member.name %></p>
                     </div>
-                  <% else %>
-                    <div class="list-row">
-                      <div class="list-item"><p><%= member.name %></p></div>
+                    <div class="list-item" type="checkbox">
+                      <p class="secondary"><%= @nh_project.creator.id == member.id ? "Maintainer" : "Editor" %></p>
                     </div>
-                  <% end %>
+                  </div>
+                <% else %>
+                  <div class="list-row">
+                    <div class="list-item"><p><%= member.name %></p></div>
+                  </div>
+                <% end %>  
               <% end %>
             </div>
-          <% else %>
-            <p>-</p>
-          <% end %>
+          </div>
         </div>
       </div>
-    </div>
-
-    <div class="card-row">
-      <div class="card-item">
-        <div>
-          <p class="card-label">Pending Invites</p>
-          <% if open_invites.exists? %>
-            <ul>
-              <% open_invites.each do |invite| %>
-                  <li class="card-text"><%= invite.user.name %> </li>
-              <% end %>
-            </ul>
-          <% else %>
-            <p>-</p>
-          <% end %>
+    <% end %>
+  
+    <% if open_invites.exists? %>
+      <div class="card-row">
+        <div class="card-item">
+          <div>
+            <p class="card-label">Pending Invites</p>
+              <ul>
+                <% open_invites.each do |invite| %>
+                    <li class="card-text"><%= invite.user.name %> </li>
+                <% end %>
+              </ul>
+          </div>
         </div>
       </div>
-    </div>
+    <% end %>
 
 
   </div>

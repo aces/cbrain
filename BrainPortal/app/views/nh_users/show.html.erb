@@ -28,6 +28,7 @@
 
   <div class="nh_actions">
     <%= link_to 'Edit', {:action => :edit, :id => @user.id}, :method  => :get, :class => "btn-solid-secondary nh_action"  %>
+    <%= link_to 'View Invitations', nh_invitations_path , :method  => :get, :class => "btn-solid-secondary nh_action"  %>
   </div>
 
   <div class="card">

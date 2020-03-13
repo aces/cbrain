@@ -143,7 +143,7 @@
               This information will not be used in any other way, or passed on to any other entities or persons.
           </span>
       </fieldset>
-      <div class="form_button_section">
+      <div class="btn-section">
         <%= f.submit(@signup.new_record? ? "Request Account" : "Update Request", { :class => "btn-solid-secondary" })  %>
         <%= link_to 'Already have an account',
         url_for(:controller => :nh_sessions, :action => :new),

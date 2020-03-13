@@ -39,7 +39,6 @@
           <label>Maintainer</label>
           <p class="text"><%= @nh_project.creator.name %></p>
       </fieldset>
-
     <% end %>
 
     <fieldset>
@@ -49,29 +48,29 @@
     </fieldset>
 
     <% if @nh_project.can_be_edited_by?(current_user) %>
-    <% if @nh_project.users.any? %>
-        <div>
-          <div class="label">Members</div>
-          <p class="field_note">Editors have more privileges than members.</p>
-
-          <div class="list">
-            <div class="list-row">
-              <div class="list-item list-header"><p>Members</p></div>
-              <div class="list-item list-header" type="checkbox"><p>Enable edit access</p></div>
-            </div>
-            <% @nh_project.users.each do |user| %>
-              <div class="list-row">
-                <div class="list-item"><p><%= user.name %></p></div>
-                <div class="list-item" type="checkbox"><%= check_box_tag("nh_project[editor_ids][]", user.id, @nh_project.editor_ids.include?(user.id) ) %></div>
+      <% if ((@nh_project.users.exists?) && (@nh_project.users.count != 1)) %>
+        <% if @nh_project.users.any? %>
+            <div>
+              <div class="label">Members</div>
+              <p class="field_note">Editors have more privileges than members.</p>
+              <div class="list">
+                <div class="list-row">
+                  <div class="list-item list-header"><p>Members</p></div>
+                  <div class="list-item list-header" type="checkbox"><p>Enable edit access</p></div>
+                </div>
+                <% @nh_project.users.each do |user| %>
+                    <div class="list-row">
+                      <div class="list-item"><p><%= user.name %></p></div>
+                      <div class="list-item" type="checkbox"><%= check_box_tag("nh_project[editor_ids][]", user.id, @nh_project.editor_ids.include?(user.id), :checked => user.id == @nh_project.creator.id, :disabled=> user.id == @nh_project.creator.id ) %></div>
+                    </div>
+                <% end %>
               </div>
-            <% end %>
-          </div>
-        </div>
-     <% end %>
-
+            </div>
+        <% end %>
+      <% end %>
     <% end %>
 
-    <div class="form_button_section">
+    <div class="btn-section">
       <%= f.submit "#{action.to_s.capitalize}", :class=>"btn-solid-secondary" %>
     </div>
   <% end %>

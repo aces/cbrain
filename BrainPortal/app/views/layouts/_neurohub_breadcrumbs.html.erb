@@ -44,22 +44,8 @@
 %>
 
 <% if current_user %>
-
     <div class="nh_breadcrumbs">
-
-        <% if(params[:controller].include?('nh_projects')||params[:controller].include?('nh_invitations')) %>
-            <%= link_to "Projects", nh_projects_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === 'nh_projects' && action_name==="index"  }%>
-
-            <% if(@nh_project && @nh_project.id)%>
-                <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
-                <%= link_to @nh_project.name, {:controller=> "nh_projects",:action => :show, :id => @nh_project.id }, :method  => :get, :class => "nh_breadcrumbs_item", "data-active"=> controller_name === 'nh_projects' && action_name === "show"  %>
-            <% end %> 
-           
-            <% if action_name!="index" && action_name!="show" %>
-                <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
-                <div class="nh_breadcrumbs_item" data-active="true"><%= yield(:title) %></div>
-            <% end %>
-        <% end %>
+   
         <% if(params[:controller].include?('nh_users')||params[:action].include?('myaccount')) %>
             <%= link_to 'My Account', myaccount_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === "nh_users" && action_name === "myaccount"} %>
             <% if action_name!="myaccount" %>
@@ -67,5 +53,24 @@
                 <div class="nh_breadcrumbs_item" data-active="true"><%= yield(:title) %></div>
             <% end %>
         <% end %>
+
+        <% if(params[:controller].include?('nh_invitations') && params[:action].include?('index')) %>
+            <%= link_to 'Invitations', nh_invitations_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === "nh_invitations" && action_name === "index"} %>
+        <% end %>
+
+        <% if(params[:controller].include?('nh_projects')||(params[:controller].include?('nh_invitations') && params[:action].include?('new'))) %>
+            <%= link_to "Projects", nh_projects_path, { :class => "nh_breadcrumbs_item", "data-active"=> controller_name === 'nh_projects' && action_name==="index"  }%>
+
+            <% if(@nh_project && @nh_project.id)%>
+                <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
+                <%= link_to @nh_project.name, {:controller=> "nh_projects",:action => :show, :id => @nh_project.id }, :method  => :get, :class => "nh_breadcrumbs_item", "data-active"=> controller_name === 'nh_projects' && action_name === "show"  %>
+            <% end %> 
+        
+            <% if action_name!="index" && action_name!="show" %>
+                <div class="nh_breadcrumbs_icon"><%= caret_icon %></div>
+                <div class="nh_breadcrumbs_item" data-active="true"><%= yield(:title) %></div>
+            <% end %>
+        <% end %>
+        
     </div>
 <% end %>
