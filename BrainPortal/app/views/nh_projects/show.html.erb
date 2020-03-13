@@ -42,14 +42,14 @@
       <%= link_to(files_nh_project_path(@nh_project.id), :class=>"btn-text-secondary card-item") do%>
           <img class="card-icon" src="/images/neurohub/NH_icon_files.svg"/>
           <div class="card-stat">
-            <p><%= @nh_project.userfiles.count %></p>
+            <p><%= Userfile.find_all_accessible_by_user(current_user).where(:group => @nh_project).count %></p>
             <p class="card-label"><%= "File#{@nh_project.userfiles.count != 1 ? "s": ""}" %></p>
           </div>
       <% end %>
       <div class="card-item">
         <img class="card-icon" src="/images/neurohub/NH_icon_tasks.svg"/>
         <div class="card-stat">
-          <p><%= @nh_project.cbrain_tasks.count %></p>
+          <p><%= CbrainTask.find_all_accessible_by_user(current_user).where(:group => @nh_project).count %></p>
           <p class="card-label"><%= "Task#{@nh_project.cbrain_tasks.count != 1 ? "s": ""}" %></p>
         </div>
       </div>
@@ -135,14 +135,14 @@
                   <div class="list-row">
                     <div class="list-item"><p><%= member.name %></p></div>
                   </div>
-                <% end %>  
+                <% end %>
               <% end %>
             </div>
           </div>
         </div>
       </div>
     <% end %>
-  
+
     <% if open_invites.exists? %>
       <div class="card-row">
         <div class="card-item">
