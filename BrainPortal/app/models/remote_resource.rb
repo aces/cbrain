@@ -519,7 +519,7 @@ class RemoteResource < ApplicationRecord
       :host_uptime        => host_uptime,
       :rails_time_zone    => time_zone_name,
 
-      # Svn info
+      # Source control info
       :revision           => @git_tag,                          # 'live' value
       :lc_author          => @git_author,                       # at process start
       :lc_rev             => @git_commit,                       # at process start
