@@ -30,7 +30,9 @@ class SiteManager < User
   validates_presence_of :site_id, :message => "must be set for site managers"
 
   def available_tools  #:nodoc:
-    Tool.where( ["tools.group_id IN (?) OR tools.user_id IN (?)", self.available_groups.pluck(:id), self.site.user_ids])
+    tools = Tool.where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, self.available_groups.pluck(:id)])
+    available_bourreau_ids = Bourreau.find_all_accessible_by_user(self).pluck(:id)
+    tools.joins(:tool_configs).where(["tool_configs.bourreau_id IN (?)",available_bourreau_ids])
   end
 
   def available_groups  #:nodoc:
