@@ -1661,20 +1661,68 @@ $CARD_ITEM_MAX_WIDTH: 13;
 */
 
 #nh_invitations {
+  .section {
+    @include p(2);
+    @include px(4);
+    border-radius: 2px;
+    background: $TABLE_BORDER;
+    .section-title {
+      @include pb(2);
+      @include title("sm");
+      color: $DEFAULT_DK;
+    }
+    &.primary {
+      background: $SECONDARY_WASH;
+      .section-title {
+        color: $SECONDARY_BG;
+      }
+    }
+  }
   .card {
     @include mb(2);
+
     &:hover {
       @include shadow("high");
     }
     .header {
+      @include py(2);
       border: none;
     }
+    .card-item {
+      @include p(2);
+      align-items: center;
+    }
+
     .btn-section {
-      @include p(4);
-      @include mt(0) align-items: flex-end;
+      @include p(0);
+      @include mt(0);
+      flex-direction: row;
       > * {
         flex: unset;
         width: auto;
+        height: 100%;
+      }
+      .btn {
+        padding: 0.25rem 1rem;
+        border-radius: 0px;
+        height: 100%;
+        box-shadow: none;
+      }
+      .btn-outline-primary {
+        background: $PRIMARY_WASH;
+        color: $PRIMARY_BG;
+        &:hover {
+          border-color: transparent;
+        }
+      }
+      .btn-outline-secondary,
+      .btn-outline-primary {
+        border-color: transparent;
+        opacity: 0.6;
+        &:hover {
+          opacity: 1;
+          z-index: 100;
+        }
       }
     }
     @media (min-width: $BREAKPOINT_SM) {

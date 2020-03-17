@@ -76,6 +76,17 @@ class NhInvitationsController < NeurohubApplicationController
       return
     end
 
+    if params[:read]
+      @nh_invitation.read = true
+      @nh_invitation.save
+
+      respond_to do |format|
+        format.html { redirect_to nh_invitations_path }
+        format.xml  { head :ok }
+      end
+      return
+    end
+
     @nh_project = @nh_invitation.group
 
     unless @nh_project.users.include?(current_user)
@@ -89,5 +100,15 @@ class NhInvitationsController < NeurohubApplicationController
     redirect_to nh_projects_path
   end
 
+  # Delete an invitation
+  def destroy #:nodoc:
+    @nh_invitation = Invitation.where(user_id: current_user.id).find(params[:id])
+    @nh_project = @nh_invitation.group
+    
+    @nh_invitation.destroy
+
+    flash[:notice] = "You have declined an invitation to #{@nh_project.name}."
+    redirect_to nh_invitations_path
+  end
 
 end

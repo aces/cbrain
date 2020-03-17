@@ -22,17 +22,52 @@
 #
 -%>
 
+<%
+    if @nh_invitations.exists?
+      new_invites = Invitation.where(user_id: current_user.id, active: true, read: false).all
+      pending_invites = Invitation.where(user_id: current_user.id, active: true, read: true).all
+    else
+      new_invites = []
+      pending_invites = []
+    end
+%>
+
 <div id="nh_invitations" class="nh_content">
-  <% @nh_invitations.each do |invitation| %>
-    <div class="card">
-      <div class="card-row header">
-        <p class="card-item"><%= invitation.header.html_safe %></p>
+    <% if new_invites.count > 0 %>
+      <div class="section primary">
+        <p class="section-title">New Invitations</p>
+        <% new_invites.each do |invitation| %>
+          <div class="card">
+            <div class="card-row header">
+              <p class="card-item"><%= invitation.header.html_safe %></p>
+            </div>
+            <div class="btn-section">
+            <%= button_to 'Accept', nh_invitation_path(invitation.id), :method => :put, :class => "btn-solid-secondary btn" %>
+            <%= button_to 'Decline', nh_invitation_path(invitation.id), :method => :delete, :class => "btn-outline-primary btn" %>
+            <%= button_to 'Not Now', nh_invitation_path(invitation.id, :read => true), :method => :put, :class => "btn-outline-secondary btn" %>
+            </div>
+          </div>
+        <% end %>
       </div>
-      <div class="btn-section">
-        <%= button_to 'Accept', nh_invitation_path(invitation.id), :method => :put, :class => "btn-solid-secondary" %>
+    <% end %>
+    
+    <% if pending_invites.count > 0 %>
+      <div class="section my-4">
+        <p class="section-title">Pending Invitations</p>
+        <% pending_invites.each do |invitation| %>
+          <div class="card">
+            <div class="card-row header">
+              <p class="card-item"><%= invitation.header.html_safe %></p>
+            </div>
+            <div class="btn-section">
+              <%= button_to 'Accept', nh_invitation_path(invitation.id), :method => :put, :class => "btn-solid-secondary" %>
+              <%= button_to 'Decline', nh_invitation_path(invitation.id), :method => :delete, :class => "btn-outline-primary btn" %>
+            </div>
+          </div>
+        <% end %>
       </div>
-    </div>
-  <% end %>
+    <% end %>
+
 </div>
 
 
