@@ -24,7 +24,7 @@
   <%= form_for @user, :as => :user, :url => { :action => action }, :datatype => "script" do |f| -%>
     <%= error_messages_for @user %>
     <%= form_for @user, :as => :user, :url => { :action =>  "update", :id => @user.id } do |f|%>
-      <p class="field_note">Please, provide only up-to-date and correct info about yourself.</p>
+      <div><p class="field_note">Please, provide only up-to-date and correct info about yourself.</p></div>
 
       <fieldset >
         <%= f.label(:full_name, "Name") %>

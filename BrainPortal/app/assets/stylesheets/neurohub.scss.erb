@@ -981,14 +981,15 @@ Cards used for simple "show"-type views
     }
     .card-item {
       @include text("sm");
-      @include p(2);
+      @include p(4);
       display: flex;
-      flex: 1;
+      flex: 1 1 50%;
       width: 100%;
       .card-stat {
         @include title("lg");
         @include ml(4);
         line-height: normal;
+        height: 100%;
       }
       .card-icon {
         width: 2rem;
@@ -996,6 +997,7 @@ Cards used for simple "show"-type views
       }
       .card-label {
         @include label();
+        white-space: nowrap;
       }
       .card-text {
         @include px(2);
@@ -1012,8 +1014,17 @@ Cards used for simple "show"-type views
     }
   }
   @media (min-width: $BREAKPOINT_SM) {
-    .card-row.header {
-      flex-direction: row;
+    .card-row {
+      &.header {
+        flex-direction: row;
+      }
+    }
+  }
+  @media (min-width: $BREAKPOINT_MD) {
+    .card-row {
+      .card-item {
+        flex: 1;
+      }
     }
   }
 }
