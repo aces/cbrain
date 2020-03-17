@@ -87,8 +87,9 @@ class NhProjectsController < NeurohubApplicationController
   end
 
   def files #:nodoc:
-    @nh_project = find_nh_project(current_user, params[:id])
-    @files      = @nh_project.userfiles.where(:data_provider_id => DataProvider.find_all_accessible_by_user(current_user).pluck(:id))
+    @nh_project      = find_nh_project(current_user, params[:id])
+    available_dp_ids = DataProvider.find_all_accessible_by_user(current_user).pluck(:id)
+    @files           = @nh_project.userfiles.where(:data_provider_id => available_dp_ids)
   end
 
 end
