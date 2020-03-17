@@ -103,6 +103,10 @@ class Tool < ApplicationRecord
     application_type(:array) + application_package_name(:array) + application_tags(:array)
   end
 
+  def can_be_accessed_by?(user) #:nodoc:
+    Tool.find_all_accessible_by_user(user).where(:id => self.id)
+  end
+
   private
 
   def url_present? #:nodoc:
