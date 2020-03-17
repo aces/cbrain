@@ -105,7 +105,7 @@
       <% end %>
 
       <% # Render each of the tool info boxes %>
-      <% @my_tools.uniq.each do |tool| %>
+      <% @my_tools.each do |tool| %>
         <%
            # We build a simple hash table to generate a HTML
            # attribute to the TR element, e.g.
