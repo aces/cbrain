@@ -310,8 +310,6 @@ describe User do
           normal_user.password = nil # avoid re-encrypt check
           expect(normal_user.save).to be(true)
           allow(site_manager).to receive_message_chain(:site, :user_ids).and_return([site_manager.id, normal_user.id])
-          require 'pry'
-          binding.pry
           expect(site_manager.available_tools).to match_array([tool1,tool2])
         end
 
