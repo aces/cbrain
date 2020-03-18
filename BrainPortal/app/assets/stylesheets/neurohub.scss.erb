@@ -1668,6 +1668,9 @@ $CARD_ITEM_MAX_WIDTH: 13;
     @include title("sm");
     color: $DEFAULT_DK;
   }
+  &.transparent {
+    background: transparent;
+  }
   &.primary {
     background: $PRIMARY_WASH;
     .section-title {
@@ -1774,6 +1777,12 @@ $DASH_CARD_MIN_WIDTH: 25;
   display: flex;
   flex-direction: column;
   height: 100%;
+  .title {
+    @include px(4);
+    @include py(2);
+    background: $SECONDARY_ALT;
+    color: $DEFAULT_BG;
+  }
   .main {
     display: flex;
     flex-direction: column;
@@ -1785,12 +1794,6 @@ $DASH_CARD_MIN_WIDTH: 25;
       flex-direction: column;
     }
     .notifications {
-      .title {
-        @include px(4);
-        @include py(2);
-        background: $SECONDARY_ALT;
-        color: $DEFAULT_BG;
-      }
       .section {
         .card {
           .btn-section {
@@ -1825,6 +1828,9 @@ $DASH_CARD_MIN_WIDTH: 25;
         @include mt(0);
         @include p(0);
         flex-direction: column;
+        .card {
+          flex: 1;
+        }
       }
     }
   }

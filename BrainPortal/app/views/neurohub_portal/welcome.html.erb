@@ -27,11 +27,12 @@
 <% title("Dashboard", '') %>
 
 <div id="nh_dashboard">
+<div class="title">
+<p class="title-md">Welcome <%= @username %></p>
+</div>
   <div class="main">
     <div class="notifications">
-      <div class="title">
-        <p class="title-md">Welcome <%= @username %></p>
-      </div>
+  
 
       <% if new_invites.count > 0 %>
         <div id="nh_invitations">
@@ -54,7 +55,7 @@
           </div>
         </div>
       <% end %>
-      <div class="section mt-7 flex-1">
+      <div class="section transparent mt-7 flex-1">
         <p class="section-title">Latest Neurohub News</p>
           <div class="card">
             <div class="card-row header bg-default-wash">
