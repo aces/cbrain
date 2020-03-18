@@ -20,14 +20,76 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 -%>
+<%
+    new_invites = Invitation.where(user_id: current_user.id, active: true, read: false).all || []
+%>
 
-Neurohub Dashboard.
-<p>
-This page is temporary, Candice will make this pretty.
-<p>
+<% title("Dashboard", '') %>
 
-Hello <%= @username %>, welcome to NeuroHub.
-<p>
-<%= link_to 'My Projects', nh_projects_path, { :class => "button" } %>
-<p>
-<%= link_to 'Reboot Manager', reboot_path, { :class => "button" } %>
+<div id="nh_dashboard">
+  <div class="main">
+    <div class="notifications">
+      <div class="title">
+        <p class="title-md">Welcome <%= @username %></p>
+      </div>
+
+      <% if new_invites.count > 0 %>
+        <div id="nh_invitations">
+          <div class="section primary">
+            <p class="section-title">New Notifications</p>
+            <% if new_invites.count > 0 %>
+              <% new_invites.each do |invitation| %>
+                <div class="card">
+                  <div class="card-row header">
+                    <p class="card-item"><%= invitation.header.html_safe %></p>
+                  </div>
+                  <div class="btn-section">
+                    <%= button_to 'Accept', nh_invitation_path(invitation.id), :method => :put, :class => "btn-solid-secondary btn" %>
+                    <%= button_to 'Decline', nh_invitation_path(invitation.id), :method => :delete, :class => "btn-outline-primary btn" %>
+                    <%= button_to 'Save for Later', nh_invitation_path(invitation.id, :read => true), :method => :put, :class => "btn-outline-secondary btn" %>
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+      <div class="section secondary mt-7 flex-1">
+        <p class="section-title">Latest Neurohub News</p>
+          <div class="card">
+            <div class="card-row header bg-default-wash">
+              <p class="title-xs">New Portal Underway</p>
+            </div>
+              <div class="card-item">
+                <p class=""> Neurohub news/features </p>
+              </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section user">
+      <div class="card">
+        <%= link_to "Recently Completed Tasks", {}, :method  => :get, :class=>"btn-text-secondary bg-default-wash" %>
+        <div class="card-row">
+          <div class="card-item">
+            <p class="card-text"> coming soon </p>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <%= link_to "Other User-Related Info", {}, :method  => :get, :class=>"btn-text-secondary bg-default-wash" %>
+        <div class="card-row">
+          <div class="card-item">
+            <p class="card-text"> coming soon </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section footer">
+    <p class="section-title">For Development:</p>
+    <div class="py-4 d-flex justify-center"><%= link_to 'Reboot Manager', reboot_path, { :class => "btn-solid-primary" } %></div>
+  </div>
+</div>

@@ -23,6 +23,7 @@
     ├── PROJECTS
     ├── USERS
     ├── INVITATIONS
+    ├── DASHBOARD
   └── 
 
 /*
@@ -229,6 +230,10 @@ A few shortcut often-used alignment classes.
 
 .text-center {
   text-align: center;
+}
+
+.flex-1 {
+  flex: 1;
 }
 /*
 =============================================================
@@ -979,37 +984,37 @@ Cards used for simple "show"-type views
       @include p(4);
       flex-direction: column;
     }
-    .card-item {
+  }
+  .card-item {
+    @include text("sm");
+    @include p(4);
+    display: flex;
+    flex: 1 1 50%;
+    width: 100%;
+    .card-stat {
+      @include title("lg");
+      @include ml(4);
+      line-height: normal;
+      height: 100%;
+    }
+    .card-icon {
+      width: 2rem;
+      align-self: center;
+    }
+    .card-label {
+      @include label();
+      white-space: nowrap;
+    }
+    .card-text {
+      @include px(2);
+    }
+    &[href] {
       @include text("sm");
-      @include p(4);
       display: flex;
-      flex: 1 1 50%;
-      width: 100%;
-      .card-stat {
-        @include title("lg");
-        @include ml(4);
-        line-height: normal;
-        height: 100%;
-      }
-      .card-icon {
-        width: 2rem;
-        align-self: center;
-      }
+      justify-content: flex-start;
+      text-align: start;
       .card-label {
-        @include label();
-        white-space: nowrap;
-      }
-      .card-text {
-        @include px(2);
-      }
-      &[href] {
-        @include text("sm");
-        display: flex;
-        justify-content: flex-start;
-        text-align: start;
-        .card-label {
-          color: inherit;
-        }
+        color: inherit;
       }
     }
   }
@@ -1021,10 +1026,8 @@ Cards used for simple "show"-type views
     }
   }
   @media (min-width: $BREAKPOINT_MD) {
-    .card-row {
-      .card-item {
-        flex: 1;
-      }
+    .card-item {
+      flex: 1;
     }
   }
 }
@@ -1312,16 +1315,10 @@ body {
   }
 }
 
-.nh_titlebar {
-  @include py(4);
-  display: flex;
-  justify-content: space-between;
-  .title {
-    @include title("sm");
-    text-transform: uppercase;
-    letter-spacing: 0.089em;
-    color: $SECONDARY_DK;
-  }
+.nh_footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
 }
 
 /*
@@ -1346,6 +1343,7 @@ body {
       @include logo();
     }
     .nh_login_form {
+      @include p(7);
       align-self: center;
       flex: 1;
       display: flex;
@@ -1660,24 +1658,30 @@ $CARD_ITEM_MAX_WIDTH: 13;
 =============================================================
 */
 
-#nh_invitations {
-  .section {
-    @include p(2);
-    @include px(4);
-    border-radius: 2px;
-    background: $TABLE_BORDER;
+.section {
+  @include p(2);
+  @include px(4);
+  border-radius: 2px;
+  background: $TABLE_BORDER;
+  .section-title {
+    @include pb(2);
+    @include title("sm");
+    color: $DEFAULT_DK;
+  }
+  &.primary {
+    background: $PRIMARY_WASH;
     .section-title {
-      @include pb(2);
-      @include title("sm");
-      color: $DEFAULT_DK;
-    }
-    &.primary {
-      background: $SECONDARY_WASH;
-      .section-title {
-        color: $SECONDARY_BG;
-      }
+      color: $PRIMARY_BG;
     }
   }
+  &.secondary {
+    background: $SECONDARY_WASH;
+    .section-title {
+      color: $SECONDARY_BG;
+    }
+  }
+}
+#nh_invitations {
   .card {
     @include mb(2);
     flex-wrap: wrap;
@@ -1733,6 +1737,7 @@ $CARD_ITEM_MAX_WIDTH: 13;
       display: flex;
       .btn-section {
         flex-direction: row;
+        flex: 1;
         > * {
           width: auto;
           flex: 1;
@@ -1744,12 +1749,82 @@ $CARD_ITEM_MAX_WIDTH: 13;
     }
     @media (min-width: $BREAKPOINT_MD) {
       .btn-section {
-        width: unset;
+        width: auto;
+        flex: unset;
+
         > * {
           .btn {
             @include py(1);
           }
         }
+      }
+    }
+  }
+}
+
+/*
+=============================================================
+| DASHBOARD
+=============================================================
+*/
+
+$DASH_CARD_MIN_WIDTH: 25;
+
+#nh_dashboard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  .main {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    flex: 1;
+    > * {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .notifications {
+      .title {
+        @include px(4);
+        @include py(2);
+        background: $SECONDARY_ALT;
+        color: $DEFAULT_BG;
+      }
+      .section {
+        .card {
+          .btn-section {
+            flex: 1;
+          }
+        }
+      }
+    }
+    .section.user {
+      @include mt(7);
+      background: transparent;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+
+      .card {
+        @include m(0);
+        @include mb(1);
+        flex: 1 0 $DASH_CARD_MIN_WIDTH + rem;
+        a {
+          justify-content: flex-start;
+          text-decoration: none;
+        }
+      }
+    }
+  }
+  @media (min-width: $BREAKPOINT_MD) {
+    .main {
+      flex-direction: row;
+
+      .section.user {
+        @include mt(0);
+        @include p(0);
+        flex-direction: column;
       }
     }
   }

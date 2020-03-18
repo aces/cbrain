@@ -34,8 +34,8 @@
 
 <div id="nh_invitations" class="nh_content">
     <% if new_invites.count > 0 %>
-      <div class="section primary">
-        <p class="section-title">New Invitations</p>
+      <div class="section secondary">
+        <p class="section-title">New Invitations | <%= new_invites.count %></p>
         <% new_invites.each do |invitation| %>
           <div class="card">
             <div class="card-row header">
@@ -53,7 +53,7 @@
     
     <% if pending_invites.count > 0 %>
       <div class="section my-4">
-        <p class="section-title">Pending Invitations</p>
+        <p class="section-title">Pending Invitations | <%= pending_invites.count %></p>
         <% pending_invites.each do |invitation| %>
           <div class="card">
             <div class="card-row header">
