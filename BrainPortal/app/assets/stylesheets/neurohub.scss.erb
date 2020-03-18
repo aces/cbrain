@@ -1680,6 +1680,7 @@ $CARD_ITEM_MAX_WIDTH: 13;
   }
   .card {
     @include mb(2);
+    flex-wrap: wrap;
 
     &:hover {
       @include shadow("high");
@@ -1689,22 +1690,25 @@ $CARD_ITEM_MAX_WIDTH: 13;
       border: none;
     }
     .card-item {
-      @include p(2);
+      @include p(1);
       align-items: center;
     }
 
     .btn-section {
       @include p(0);
       @include mt(0);
-      flex-direction: row;
+      flex-direction: column;
       > * {
         flex: unset;
         width: auto;
+        width: 100%;
         height: 100%;
       }
       .btn {
-        padding: 0.25rem 1rem;
+        @include px(4);
+        @include py(3);
         border-radius: 0px;
+        width: 100%;
         height: 100%;
         box-shadow: none;
       }
@@ -1728,7 +1732,24 @@ $CARD_ITEM_MAX_WIDTH: 13;
     @media (min-width: $BREAKPOINT_SM) {
       display: flex;
       .btn-section {
+        flex-direction: row;
+        > * {
+          width: auto;
+          flex: 1;
+          .btn {
+            width: 100%;
+          }
+        }
+      }
+    }
+    @media (min-width: $BREAKPOINT_MD) {
+      .btn-section {
         width: unset;
+        > * {
+          .btn {
+            @include py(1);
+          }
+        }
       }
     }
   }
