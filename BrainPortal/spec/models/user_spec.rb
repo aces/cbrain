@@ -284,10 +284,15 @@ describe User do
     let!(:admin)        { create(:admin_user) }
     let!(:group)        { create(:group) }
     let!(:site_manager) { create(:site_manager, :group_ids => [group.id] ) }
+    let!(:bourreau)     { create(:bourreau, :group_id => group.id )}
 
     describe "#tool" do
-      let!(:tool1)        { create(:tool, :group_id => group.id) }
+      let!(:tool1)        { create(:tool, :group_id => group.id, :user => site_manager) }#
       let!(:tool2)        { create(:tool, :category => "conversion tool") }
+      let!(:tc1)          { create(:tool_config, :bourreau => bourreau, :tool => tool1)}
+      let!(:tc2)          { create(:tool_config, :bourreau => bourreau, :tool => tool2)}
+
+      # tool_config = create(:tool_config, :bourreau_id => bourreau.id, :tool_id => nil)
 
       describe "#available_tools" do
 
@@ -305,14 +310,17 @@ describe User do
           normal_user.password = nil # avoid re-encrypt check
           expect(normal_user.save).to be(true)
           allow(site_manager).to receive_message_chain(:site, :user_ids).and_return([site_manager.id, normal_user.id])
+          require 'pry'
+          binding.pry
           expect(site_manager.available_tools).to match_array([tool1,tool2])
         end
 
         it "should return tools available for a standard user" do
-          normal_user.tool_ids = [tool2.id]
-          normal_user.password = nil # avoid re-encrypt check
+          normal_user.tool_ids  = [tool2.id]
+          normal_user.group_ids = [group.id]
+          normal_user.password  = nil # avoid re-encrypt check
           expect(normal_user.save).to be(true)
-          expect(normal_user.available_tools).to eq([tool2])
+          expect(normal_user.available_tools.to_a).to eq([tool1,tool2])
         end
 
       end

@@ -32,7 +32,7 @@ class SiteManager < User
   def available_tools  #:nodoc:
     available_group_ids    = self.available_groups.pluck(:id)
     available_bourreau_ids = Bourreau.find_all_accessible_by_user(self).pluck(:id)
-    tools = Tool.where( ["tools.user_id = ? OR tools.group_id IN (?)", self.id, available_group_ids ])
+    tools = Tool.where( ["tools.group_id IN (?) OR tools.user_id IN (?)", available_group_ids , self.site.user_ids])
     tools = tools.joins(:tool_configs).where(["tool_configs.bourreau_id IN (?)",available_bourreau_ids])
   end
 
