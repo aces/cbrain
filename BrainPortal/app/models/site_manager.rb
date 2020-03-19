@@ -40,7 +40,8 @@ class SiteManager < User
     group_scope = Group.where(
                     ["groups.id IN (select groups_users.group_id from groups_users where groups_users.user_id=?) OR groups.site_id=?", self.id, self.site_id]
                   ).or(Group.where(:public => true)
-                  ).or(Group.where("groups.type <> 'EveryoneGroup'").where(:invisible => false))
+                  ).or(Group.where("groups.type <> 'EveryoneGroup'"))
+    group_scope = group_scope.where(:invisible => false)
 
     group_scope
   end
